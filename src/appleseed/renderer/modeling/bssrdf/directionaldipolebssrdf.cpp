@@ -338,7 +338,8 @@ namespace
                 const Vector3d xoxv = xo - xv;
                 const double dv = norm(xoxv);
 
-                const double sp_i =
+                // Evaluate the BSSRDF.
+                const double vr =
                     sd_prime(
                         eta,
                         cp,
@@ -349,8 +350,7 @@ namespace
                         dot_wr_no,
                         dot_xoxi_no,
                         dr);
-
-                const double sp_v =
+                const double vv =
                     sd_prime(
                         eta,
                         cp,
@@ -361,9 +361,14 @@ namespace
                         dot_wv_no,
                         dot(xoxv, no),
                         dv);
+                double value = vr - vv;
 
                 // Clamp negative values to zero (section 6.1).
-                result[i] += max(static_cast<float>(sp_i - sp_v), 0.0f);
+                if (value < 0.0)
+                    value = 0.0;
+
+                // Store result.
+                result[i] += static_cast<float>(value);
             }
 
             // todo: we seem to be missing the S_sigma_E term (single scattering).

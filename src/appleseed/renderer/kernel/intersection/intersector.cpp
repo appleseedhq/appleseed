@@ -358,9 +358,8 @@ bool Intersector::trace_same_material(
     if (offset_origin)
     {
         parent_shading_point.refine_and_offset();
-        Vector3d offset =
-                parent_shading_point.get_offset_point(down_ray.m_dir) - parent_shading_point.get_point();
-
+        const Vector3d offset =
+            parent_shading_point.get_offset_point(down_ray.m_dir) - parent_shading_point.get_point();
         up_ray.m_org += offset;
     }
 
