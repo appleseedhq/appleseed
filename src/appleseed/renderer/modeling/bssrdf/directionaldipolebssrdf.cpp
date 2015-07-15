@@ -115,22 +115,18 @@ namespace
 
             values->m_mean_free_path *= static_cast<float>(values->m_mean_free_path_multiplier);
 
-            if (values->m_reflectance.size() != values->m_mean_free_path.size())
+            if (values->m_mean_free_path.size() != values->m_reflectance.size())
             {
-                if (values->m_reflectance.is_spectral())
-                    Spectrum::upgrade(values->m_mean_free_path, values->m_mean_free_path);
+                if (values->m_mean_free_path.is_spectral())
+                    Spectrum::upgrade(values->m_reflectance, values->m_reflectance);
                 else
-                    values->m_mean_free_path.convert_to_rgb(*m_lighting_conditions);
+                    values->m_reflectance = values->m_reflectance.convert_to_rgb(get_lighting_conditions());
             }
 
-            values->m_channel_weights.resize(values->m_reflectance.size());
-            values->m_channel_cdf.resize(values->m_reflectance.size());
-            values->m_sigma_a.resize(values->m_reflectance.size());
-            values->m_sigma_s_prime.resize(values->m_reflectance.size());
+            values->m_sigma_a.resize(values->m_mean_free_path.size());
+            values->m_sigma_s_prime.resize(values->m_mean_free_path.size());
 
             // Convert values and precompute stuff.
-            values->m_channel_cdf.set(0.0f);
-            double sum_alpha_prime = 0.0;
             values->m_max_mean_free_path = 0.0;
 
             const double eta = values->m_to_ior / values->m_from_ior;
@@ -142,11 +138,8 @@ namespace
                 const double alpha_prime =
                     compute_alpha_prime(
                         saturate(static_cast<double>(values->m_reflectance[i])),
-                        c1, c2);
-                sum_alpha_prime += alpha_prime;
-
-                values->m_channel_weights[i] = static_cast<float>(alpha_prime);
-                values->m_channel_cdf[i] = static_cast<float>(sum_alpha_prime);
+                        c1,
+                        c2);
 
                 const double mfp = static_cast<double>(values->m_mean_free_path[i]);
                 values->m_max_mean_free_path = max(values->m_max_mean_free_path, mfp);
@@ -156,13 +149,6 @@ namespace
 
                 values->m_sigma_s_prime[i] = static_cast<float>(alpha_prime * sigma_t_prime);
                 values->m_sigma_a[i] = static_cast<float>(sigma_t_prime) - values->m_sigma_s_prime[i];
-            }
-
-            if (sum_alpha_prime > 0.0)
-            {
-                const float rcp_sum_alpha_prime = static_cast<float>(1.0 / sum_alpha_prime);
-                values->m_channel_weights *= rcp_sum_alpha_prime;
-                values->m_channel_cdf *= rcp_sum_alpha_prime;
             }
         }
 
@@ -219,19 +205,14 @@ namespace
             const Vector3d s = sample.get_sampling_context().next_vector2<3>();
 
             // Sample a color channel.
-            const float* cdf = &values->m_channel_cdf[0];
-            const size_t channel =
-                upper_bound(
-                    cdf,
-                    cdf + values->m_channel_cdf.size(),
-                    s[0]) - cdf;
+            const size_t channel = floor(s[0] * values->m_reflectance.size());
             sample.set_channel(channel);
 
             // Sample a radius and an angle.
             const double radius = -log(1.0 - s[1]) * values->m_mean_free_path[channel];
+
             const double phi = TwoPi * s[2];
             point = Vector2d(radius * cos(phi), radius * sin(phi));
-
             return true;
         }
 
@@ -244,7 +225,7 @@ namespace
                 reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
 
             const double s = 1.0 / values->m_mean_free_path[channel];
-            return s * exp(-s * dist) * values->m_channel_weights[channel];
+            return s * exp(-s * dist);
         }
 
         // Diffusive part of the BSSRDF.

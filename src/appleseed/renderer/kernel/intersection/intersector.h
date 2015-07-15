@@ -133,6 +133,12 @@ class Intersector
         ShadingRay                      ray,
         ShadingPoint&                   shading_point) const;
 
+    bool do_trace_same_material(
+        const ShadingRay&               ray,
+        const ShadingPoint&             parent_shading_point,
+        const bool                      offset_origin,
+        ShadingPoint&                   shading_point) const;
+
     const TraceContext&                             m_trace_context;
     TextureCache&                                   m_texture_cache;
     const bool                                      m_report_self_intersections;

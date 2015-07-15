@@ -56,10 +56,6 @@ namespace renderer      { class ShadingPoint; }
 namespace renderer
 {
 
-//
-// Normalized diffusion BSSRDF input values.
-//
-
 APPLESEED_DECLARE_INPUT_VALUES(NormalizedDiffusionBSSRDFInputValues)
 {
     Spectrum    m_reflectance;
