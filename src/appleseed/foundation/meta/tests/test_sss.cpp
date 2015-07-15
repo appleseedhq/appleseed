@@ -27,10 +27,10 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/math/fresnel.h"
-#include "foundation/math/sss.h"
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/mersennetwister.h"
+#include "foundation/math/fresnel.h"
+#include "foundation/math/sss.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
@@ -68,10 +68,12 @@ TEST_SUITE(Foundation_Math_SSS)
 
     TEST_CASE(NormalizedDiffusionA)
     {
-        static const double Result[] = {
+        static const double Result[] =
+        {
             4.68592, 4.11466, 3.77984, 3.60498, 3.52856, 3.5041, 3.50008,
             3.50002, 3.5024, 3.52074, 3.58352, 3.73426, 4.03144, 4.54858,
-            5.37416, 6.6117, 8.37968, 10.8116, 14.056, 18.2763, 23.6511};
+            5.37416, 6.6117, 8.37968, 10.8116, 14.056, 18.2763, 23.6511
+        };
 
         for (size_t i = 0, e = countof(Result); i < e; ++i)
         {
@@ -82,11 +84,13 @@ TEST_SUITE(Foundation_Math_SSS)
 
     TEST_CASE(NormalizedDiffusionR)
     {
-        static const double Result[] = {
+        static const double Result[] =
+        {
             2.53511, 0.674967, 0.327967, 0.192204, 0.124137, 0.0852575,
             0.0611367, 0.0452741, 0.0343737, 0.0266197, 0.0209473, 0.0167009,
             0.0134603, 0.0109471, 0.00897108, 0.00739936, 0.00613676, 0.00511384,
-            0.00427902, 0.0035934, 0.00302721};
+            0.00427902, 0.0035934, 0.00302721
+        };
 
         for (size_t i = 0, e = countof(Result); i < e; ++i)
         {
@@ -103,12 +107,14 @@ TEST_SUITE(Foundation_Math_SSS)
 
     TEST_CASE(NormalizedDiffusionCdf)
     {
-        static const double Result[] = {
+        static const double Result[] =
+        {
             0.282838, 0.598244, 0.760091, 0.85267, 0.908478, 0.942885, 0.964293,
             0.97766, 0.98602, 0.99125, 0.994523, 0.996572, 0.997854, 0.998657,
             0.999159, 0.999474, 0.999671, 0.999794, 0.999871, 0.999919, 0.999949,
             0.999968, 0.99998, 0.999988, 0.999992, 0.999995, 0.999997, 0.999998,
-            0.999999, 0.999999, 1};
+            0.999999, 0.999999, 1
+        };
 
         for (size_t i = 0, e = countof(Result); i < e; ++i)
         {
@@ -158,7 +164,7 @@ TEST_SUITE(Foundation_Math_SSS)
             const double s = normalized_diffusion_s(a);
             const double e = rand_double1(rng);
             const double r = normalized_diffusion_sample(s, l, e);
-            EXPECT_FEQ_EPS(e, normalized_diffusion_cdf(r, s, l), 0.0001);
+            EXPECT_FEQ_EPS(e, normalized_diffusion_cdf(r, s, l), NormalizedDiffusionTestEps);
         }
     }
 }

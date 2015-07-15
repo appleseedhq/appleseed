@@ -54,29 +54,29 @@ namespace foundation
 // Compute the Fresnel reflectance for a dielectric for parallel-polarized light.
 template <typename SpectrumType, typename T>
 void fresnel_dielectric_p_polarization(
-    SpectrumType&       reflectance,
-    const SpectrumType& ior_i,
-    const SpectrumType& ior_t,
-    const T             cos_theta_i,
-    const T             cos_theta_t);
+    SpectrumType&           reflectance,
+    const SpectrumType&     ior_i,
+    const SpectrumType&     ior_t,
+    const T                 cos_theta_i,
+    const T                 cos_theta_t);
 
 // Compute the Fresnel reflectance for a dielectric for perpendicular-polarized light.
 template <typename SpectrumType, typename T>
 void fresnel_dielectric_s_polarization(
-    SpectrumType&       reflectance,
-    const SpectrumType& ior_i,
-    const SpectrumType& ior_t,
-    const T             cos_theta_i,
-    const T             cos_theta_t);
+    SpectrumType&           reflectance,
+    const SpectrumType&     ior_i,
+    const SpectrumType&     ior_t,
+    const T                 cos_theta_i,
+    const T                 cos_theta_t);
 
 // Compute the Fresnel reflectance for a dielectric for unpolarized light.
 template <typename SpectrumType, typename T>
 void fresnel_dielectric_unpolarized(
-    SpectrumType&       reflectance,
-    const SpectrumType& ior_i,
-    const SpectrumType& ior_t,
-    const T             cos_theta_i,
-    const T             cos_theta_t);
+    SpectrumType&           reflectance,
+    const SpectrumType&     ior_i,
+    const SpectrumType&     ior_t,
+    const T                 cos_theta_i,
+    const T                 cos_theta_t);
 
 
 //
@@ -94,18 +94,18 @@ void fresnel_dielectric_unpolarized(
 
 template <typename SpectrumType, typename T>
 void fresnel_dielectric_schlick(
-    SpectrumType&       reflectance,
-    const SpectrumType& ior_i,
-    const SpectrumType& ior_t,
-    const T             cos_theta,              // cos(incident direction, normal)
-    const T             multiplier = T(1.0));   // reflectance multiplier at tangent incidence
+    SpectrumType&           reflectance,
+    const SpectrumType&     ior_i,
+    const SpectrumType&     ior_t,
+    const T                 cos_theta,              // cos(incident direction, normal)
+    const T                 multiplier = T(1.0));   // reflectance multiplier at tangent incidence
 
 template <typename SpectrumType, typename T>
 void fresnel_dielectric_schlick(
-    SpectrumType&       reflectance,
-    const SpectrumType& normal_reflectance,     // reflectance at normal incidence
-    const T             cos_theta,              // cos(incident direction, normal)
-    const T             multiplier = T(1.0));   // reflectance multiplier at tangent incidence
+    SpectrumType&           reflectance,
+    const SpectrumType&     normal_reflectance,     // reflectance at normal incidence
+    const T                 cos_theta,              // cos(incident direction, normal)
+    const T                 multiplier = T(1.0));   // reflectance multiplier at tangent incidence
 
 
 //
@@ -147,12 +147,18 @@ namespace impl
 
 template <typename SpectrumType, typename T>
 void fresnel_dielectric_p_polarization(
-    SpectrumType&       reflectance,
-    const SpectrumType& ior_i,
-    const SpectrumType& ior_t,
-    const T             cos_theta_i,
-    const T             cos_theta_t)
+    SpectrumType&           reflectance,
+    const SpectrumType&     ior_i,
+    const SpectrumType&     ior_t,
+    const T                 cos_theta_i,
+    const T                 cos_theta_t)
 {
+    //
+    //               ior_t * cos_theta_i - ior_i * cos_theta_t
+    // reflectance = -----------------------------------------
+    //               ior_t * cos_theta_i + ior_i * cos_theta_t
+    //
+
     typedef typename impl::GetValueType<SpectrumType>::ValueType ValueType;
 
     assert(cos_theta_i >= T(0.0) && cos_theta_i <= T(1.0));
@@ -175,12 +181,18 @@ void fresnel_dielectric_p_polarization(
 
 template <typename SpectrumType, typename T>
 void fresnel_dielectric_s_polarization(
-    SpectrumType&       reflectance,
-    const SpectrumType& ior_i,
-    const SpectrumType& ior_t,
-    const T             cos_theta_i,
-    const T             cos_theta_t)
+    SpectrumType&           reflectance,
+    const SpectrumType&     ior_i,
+    const SpectrumType&     ior_t,
+    const T                 cos_theta_i,
+    const T                 cos_theta_t)
 {
+    //
+    //               ior_i * cos_theta_i - ior_t * cos_theta_t
+    // reflectance = -----------------------------------------
+    //               ior_i * cos_theta_i + ior_t * cos_theta_t
+    //
+
     typedef typename impl::GetValueType<SpectrumType>::ValueType ValueType;
 
     assert(cos_theta_i >= T(0.0) && cos_theta_i <= T(1.0));
@@ -203,11 +215,11 @@ void fresnel_dielectric_s_polarization(
 
 template <typename SpectrumType, typename T>
 void fresnel_dielectric_unpolarized(
-    SpectrumType&       reflectance,
-    const SpectrumType& ior_i,
-    const SpectrumType& ior_t,
-    const T             cos_theta_i,
-    const T             cos_theta_t)
+    SpectrumType&           reflectance,
+    const SpectrumType&     ior_i,
+    const SpectrumType&     ior_t,
+    const T                 cos_theta_i,
+    const T                 cos_theta_t)
 {
     typedef typename impl::GetValueType<SpectrumType>::ValueType ValueType;
 
@@ -235,15 +247,19 @@ void fresnel_dielectric_unpolarized(
 
 template <typename SpectrumType, typename T>
 void fresnel_dielectric_schlick(
-    SpectrumType&       reflectance,
-    const SpectrumType& ior_i,
-    const SpectrumType& ior_t,
-    const T             cos_theta,
-    const T             multiplier)
+    SpectrumType&           reflectance,
+    const SpectrumType&     ior_i,
+    const SpectrumType&     ior_t,
+    const T                 cos_theta,
+    const T                 multiplier)
 {
-    typedef typename impl::GetValueType<SpectrumType>::ValueType ValueType;
+    //
+    //                      ior_i - ior_t
+    // normal_reflectance = -------------
+    //                      ior_i + ior_t
+    //
 
-    assert(cos_theta >= T(0.0) && cos_theta <= T(1.0));
+    typedef typename impl::GetValueType<SpectrumType>::ValueType ValueType;
 
     SpectrumType den = ior_i;
     den += ior_t;
@@ -261,11 +277,15 @@ void fresnel_dielectric_schlick(
 
 template <typename SpectrumType, typename T>
 void fresnel_dielectric_schlick(
-    SpectrumType&       reflectance,
-    const SpectrumType& normal_reflectance,
-    const T             cos_theta,
-    const T             multiplier)
+    SpectrumType&           reflectance,
+    const SpectrumType&     normal_reflectance,
+    const T                 cos_theta,
+    const T                 multiplier)
 {
+    //
+    // reflectance = normal_reflectance + (1 - normal_reflectance) * [1 - cos(theta)]^5
+    //
+
     typedef typename impl::GetValueType<SpectrumType>::ValueType ValueType;
 
     assert(cos_theta >= T(0.0) && cos_theta <= T(1.0));
@@ -290,8 +310,9 @@ T fresnel_transmission(const T cos_theta, const T eta)
     const T cos_theta_t = std::sqrt(T(1.0) - sin_theta_t_sqr);
     const T r_s = (cos_theta - eta * cos_theta_t) / (cos_theta + eta * cos_theta_t);
     const T r_p = (eta * cos_theta - cos_theta_t) / (eta * cos_theta + cos_theta_t);
+    const T r = (r_s * r_s + r_p * r_p) * T(0.5);
 
-    return T(1.0) - ((r_s * r_s + r_p * r_p) * T(0.5));
+    return T(1.0) - r;
 }
 
 template <typename T>

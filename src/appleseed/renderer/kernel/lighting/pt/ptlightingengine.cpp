@@ -471,6 +471,7 @@ namespace
                         Vector3d incoming;
                         double cos_on_light;
                         double transmission;
+                        double rcp_sample_square_distance;
                         Spectrum edf_value;
 
                         if (light_sample.m_triangle)
@@ -495,12 +496,12 @@ namespace
 
                             // Compute the square distance between the light sample and the shading point.
                             const double square_distance = square_norm(incoming);
-                            const double rcp_sample_square_distance = 1.0 / square_distance;
-                            const double rcp_sample_distance = sqrt(rcp_sample_square_distance);
+                            rcp_sample_square_distance = 1.0 / square_distance;
 
                             // todo: handle light near start.
 
                             // Normalize the incoming direction.
+                            const double rcp_sample_distance = sqrt(rcp_sample_square_distance);
                             incoming *= rcp_sample_distance;
                             cos_on_light *= rcp_sample_distance;
 
@@ -542,10 +543,13 @@ namespace
                         const double incoming_fresnel =
                             fresnel_transmission(cos_in, vertex.m_bssrdf_eta);    // todo: eta or 1/eta?
 
-                        if (cos_on_light > 0.0 &&
-                            transmission > 0.0 &&
+                        if (transmission > 0.0 &&
+                            cos_in > 0.0 &&
+                            cos_on > 0.0 &&
+                            cos_on_light > 0.0 &&
                             incoming_fresnel > 0.0 &&
-                            outgoing_fresnel > 0.0)
+                            outgoing_fresnel > 0.0 &&
+                            vertex.m_bssrdf_pdf > 0.0)
                         {
                             // Evaluate the BSSRDF.
                             Spectrum bssrdf_value;
@@ -557,10 +561,14 @@ namespace
                                 incoming,
                                 bssrdf_value);
 
-                            bssrdf_value *= static_cast<float>(1.0 / vertex.m_bssrdf_pdf);
-
                             // Add the contribution of this sample to the illumination.
-                            const double weight = transmission * cos_in * cos_on * cos_on_light * incoming_fresnel * outgoing_fresnel;
+                            const double weight =
+                                  transmission
+                                * cos_in * cos_on * cos_on_light
+                                * incoming_fresnel * outgoing_fresnel
+                                * rcp_sample_square_distance
+                                / vertex.m_bssrdf_pdf
+                                / light_sample.m_probability;
                             edf_value *= static_cast<float>(weight);
                             edf_value *= bssrdf_value;
                             vertex_radiance += edf_value;

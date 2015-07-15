@@ -275,16 +275,16 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         }
 #endif
 
-        // Retrieve the EDF, the BSDF and the BSSRDF.
+        // Retrieve the EDF and the BSDF.
         vertex.m_edf =
             vertex.m_shading_point->is_curve_primitive() ? 0 : material->get_edf();
         vertex.m_bsdf = material->get_bsdf();
 
-        // Do not compute SSS for indirect rays for now.
-        if (vertex.m_shading_point->get_ray().m_depth == 0)
-            vertex.m_bssrdf = material->get_bssrdf();
-        else
-            vertex.m_bssrdf = 0;
+        // Retrieve the BSSRDF. Do not compute SSS for indirect rays for now.
+        vertex.m_bssrdf =
+            vertex.m_shading_point->get_ray().m_depth == 0
+                ? material->get_bssrdf()
+                : 0;
 
         // Evaluate the input values of the BSDF.
         InputEvaluator bsdf_input_evaluator(shading_context.get_texture_cache());
