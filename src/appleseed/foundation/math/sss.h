@@ -29,16 +29,11 @@
 #ifndef APPLESEED_FOUNDATION_MATH_SSS_H
 #define APPLESEED_FOUNDATION_MATH_SSS_H
 
-// Standard headers.
-#include <algorithm>
-#include <cassert>
-#include <cmath>
-
 namespace foundation
 {
 
 //
-// References:
+// Reference:
 //
 //   Texture mapping for the Better Dipole model
 //   Christophe Hery
@@ -47,6 +42,38 @@ namespace foundation
 
 double compute_rd(double alpha_prime, double two_c1, double three_c2);
 double compute_alpha_prime(double rd, double c1, double c2);
+
+
+//
+// Reference:
+//
+//   Approximate Reflectance Profiles for Efficient Subsurface Scattering
+//   Per H. Christensen, Brent Burley
+//   http://graphics.pixar.com/library/ApproxBSSRDF/paper.pdf
+//
+
+double normalized_diffusion_s(const double a);
+
+double normalized_diffusion_r(
+    const double r,
+    const double ld,
+    const double s,
+    const double a);
+
+double normalized_diffusion_cdf(
+    const double r,
+    const double s,
+    const double ld);
+
+double normalized_diffusion_pdf(
+    const double e,
+    const double s,
+    const double ld);
+
+double normalized_diffusion_sample(
+    const double s,
+    const double ld,
+    const double e);
 
 }       // namespace foundation
 

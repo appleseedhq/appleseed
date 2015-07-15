@@ -33,6 +33,8 @@
 #include "foundation/math/scalar.h"
 
 // Standard headers.
+#include <algorithm>
+#include <cassert>
 #include <cmath>
 
 using namespace std;
@@ -58,6 +60,9 @@ double compute_rd(double alpha_prime, double two_c1, double three_c2)
 
 double compute_alpha_prime(double rd, double c1, double c2)
 {
+    if (rd == 0.0)
+        return 0.0;
+
     const double c12 = 2.0 * c1;
     const double c23 = 3.0 * c2;
 
@@ -70,6 +75,72 @@ double compute_alpha_prime(double rd, double c1, double c2)
         xmid = 0.5 * (x0 + x1);
         const double f = compute_rd(xmid, c12, c23);
         f < rd ? x0 = xmid : x1 = xmid;
+    }
+
+    return xmid;
+}
+
+//
+// Normalized diffusion
+//
+
+double normalized_diffusion_s(const double a)
+{
+    const double a2 = square(a - 0.33);
+    return 3.5 + 100.0 * square(a2);
+}
+
+double normalized_diffusion_r(
+    const double r,
+    const double ld,
+    const double s,
+    const double a)
+{
+    const double d = ld / s;
+    const double denom = Pi * 8.0 * d * r;
+    const double num = exp(-r / d) + exp(-r / (3.0 * d));
+    return (a * num) / denom;
+}
+
+double normalized_diffusion_cdf(
+    const double r,
+    const double s,
+    const double ld)
+{
+    const double d = ld / s;
+    return 1.0 - (0.25 * exp(-r / d)) - (0.75 * exp(-r / (3.0 * d)));
+}
+
+double normalized_diffusion_pdf(
+    const double e,
+    const double s,
+    const double ld)
+{
+    const double d = ld / s;
+    return (exp(-e / d) + exp(-e / (3.0 * d))) / (4.0 * d);
+}
+
+double normalized_diffusion_sample(
+    const double s,
+    const double ld,
+    const double e)
+{
+    // heuristic
+    double x1 = 10.0 + (3.0 * ld);
+
+    if (normalized_diffusion_cdf(x1, s, ld) < e)
+        return x1;
+
+    double x0 = 0.0;
+    double xmid;
+
+    // todo: we should be doing some newton steps,
+    // instead of bisection...
+    for (size_t i = 0; i < 50; ++i)
+    {
+        xmid = 0.5 * (x0 + x1);
+        const double f = normalized_diffusion_cdf(xmid, s, ld);
+        f < e ? x0 = xmid : x1 = xmid;
     }
 
     return xmid;

@@ -509,6 +509,7 @@ namespace
 
                             // Evaluate the input values of the EDF.
                             InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
+                            // todo: we need here a ShadingPoint on the light source.
                             edf->evaluate_inputs(edf_input_evaluator, vertex.m_bssrdf_incoming_point);
 
                             // Evaluate the EDF.
@@ -535,11 +536,11 @@ namespace
 
                         // Compute Fresnel coefficient at incoming point.
                         const double cos_in =
-                            -dot(
+                            dot(
                                 incoming,
                                 vertex.m_bssrdf_incoming_point.get_shading_normal());
                         const double incoming_fresnel =
-                            fresnel_transmission(cos_in, 1.0 / vertex.m_bssrdf_eta);    // todo: eta or 1/eta?
+                            fresnel_transmission(cos_in, vertex.m_bssrdf_eta);    // todo: eta or 1/eta?
 
                         if (cos_on_light > 0.0 &&
                             transmission > 0.0 &&

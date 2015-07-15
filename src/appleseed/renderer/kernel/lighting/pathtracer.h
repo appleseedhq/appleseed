@@ -279,7 +279,12 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         vertex.m_edf =
             vertex.m_shading_point->is_curve_primitive() ? 0 : material->get_edf();
         vertex.m_bsdf = material->get_bsdf();
-        vertex.m_bssrdf = material->get_bssrdf();
+
+        // Do not compute SSS for indirect rays for now.
+        if (vertex.m_shading_point->get_ray().m_depth == 0)
+            vertex.m_bssrdf = material->get_bssrdf();
+        else
+            vertex.m_bssrdf = 0;
 
         // Evaluate the input values of the BSDF.
         InputEvaluator bsdf_input_evaluator(shading_context.get_texture_cache());
@@ -325,6 +330,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                         vertex.m_bssrdf_incoming_point))
                 {
                     // Apply OSL bump mapping if needed.
+                    /*
                     const Material* incoming_material =
                         vertex.m_bssrdf_incoming_point.get_opposite_material();
                     if (incoming_material->has_osl_surface())
@@ -346,6 +352,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                             osl_evaluator.data(),
                             sampling_context.next_double2());
                     }
+                    */
 
                     vertex.m_bssrdf_pdf =
                         vertex.m_bssrdf->pdf(

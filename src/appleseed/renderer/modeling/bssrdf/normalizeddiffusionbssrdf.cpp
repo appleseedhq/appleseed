@@ -34,6 +34,7 @@
 #include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/sss.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
@@ -50,11 +51,11 @@ namespace
     //
     // Normalized diffusion BSSRDF.
     //
-
+    // Reference:
     //
-    // references:
-    //
-    // ...
+    //   Approximate Reflectance Profiles for Efficient Subsurface Scattering
+    //   Per H. Christensen, Brent Burley
+    //   http://graphics.pixar.com/library/ApproxBSSRDF/paper.pdf
     //
 
     class NormalizedDiffusionBSSRDF
@@ -103,12 +104,13 @@ namespace
 
             values->m_mean_free_path *= static_cast<float>(values->m_mean_free_path_multiplier);
 
-            if (values->m_reflectance.size() != values->m_mean_free_path.size())
+            if (values->m_mean_free_path.size() != values->m_reflectance.size())
             {
-                if (values->m_reflectance.is_spectral())
-                    Spectrum::upgrade(values->m_mean_free_path, values->m_mean_free_path);
+                if (values->m_mean_free_path.is_spectral())
+                    Spectrum::upgrade(values->m_reflectance, values->m_reflectance);
                 else
-                    values->m_mean_free_path.convert_to_rgb(*m_lighting_conditions);
+                    values->m_reflectance =
+                        values->m_reflectance.convert_to_rgb(get_lighting_conditions());
             }
         }
 
@@ -123,10 +125,16 @@ namespace
             const NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
 
-            value.resize(values->m_reflectance.size());
-            value.set(0.0f);
+            const double dist = norm(incoming_point.get_point() - outgoing_point.get_point());
 
-            // TODO: implement this...
+            value.resize(values->m_reflectance.size());
+            for (size_t i = 0, e = value.size(); i < e; ++i)
+            {
+                const double a = values->m_reflectance[i];
+                const double s = normalized_diffusion_s(a);
+                const double ld = values->m_mean_free_path[i];
+                value[i] = normalized_diffusion_r(dist, ld, s, a);
+            }
         }
 
       private:
@@ -139,11 +147,25 @@ namespace
                 reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
 
             sample.set_is_directional(false);
-            sample.set_eta(values->m_from_ior / values->m_to_ior);
+            sample.set_eta(values->m_to_ior / values->m_from_ior);
 
-            // TODO: implement this...
+            sample.get_sampling_context().split_in_place(3, 1);
+            const Vector3d s = sample.get_sampling_context().next_vector2<3>();
 
-            return false;
+            // Sample a color channel uniformly.
+            const size_t channel = s[0] * values->m_reflectance.size();
+            sample.set_channel(channel);
+
+            // Sample a radius and an angle.
+            double radius =
+                normalized_diffusion_sample(
+                    normalized_diffusion_s(values->m_reflectance[channel]),
+                    values->m_mean_free_path[channel],
+                    s[1]);
+
+            const double phi = TwoPi * s[2];
+            point = Vector2d(radius * cos(phi), radius * sin(phi));
+            return true;
         }
 
         virtual double do_pdf(
@@ -154,8 +176,10 @@ namespace
             const NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
 
-            // TODO: implement this...
-            return 0.0;
+            return normalized_diffusion_pdf(
+                dist,
+                normalized_diffusion_s(values->m_reflectance[channel]),
+                values->m_mean_free_path[channel]);
         }
     };
 }
