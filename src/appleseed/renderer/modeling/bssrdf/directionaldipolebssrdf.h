@@ -70,8 +70,6 @@ APPLESEED_DECLARE_INPUT_VALUES(DirectionalDipoleBSSRDFInputValues)
     double      m_to_ior;
 
     // Precomputed values.
-    Spectrum    m_channel_weights;
-    Spectrum    m_channel_cdf;
     double      m_max_mean_free_path;
     Spectrum    m_sigma_a;
     Spectrum    m_sigma_s_prime;

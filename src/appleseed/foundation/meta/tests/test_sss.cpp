@@ -55,6 +55,7 @@ TEST_SUITE(Foundation_Math_SSS)
 
     TEST_CASE(Rd_AlphaPrime_Roundtrip)
     {
+        EXPECT_FEQ_EPS(0.0, rd_alpha_prime_roundtrip(0.0, 1.6), 0.001);
         EXPECT_FEQ_EPS(0.1, rd_alpha_prime_roundtrip(0.1, 1.3), 0.001);
         EXPECT_FEQ_EPS(0.2, rd_alpha_prime_roundtrip(0.2, 1.2), 0.001);
         EXPECT_FEQ_EPS(0.4, rd_alpha_prime_roundtrip(0.4, 1.3), 0.001);
@@ -63,15 +64,72 @@ TEST_SUITE(Foundation_Math_SSS)
         EXPECT_FEQ_EPS(1.0, rd_alpha_prime_roundtrip(1.0, 1.5), 0.001);
     }
 
+    static const double NormalizedDiffusionTestEps = 0.0001;
 
+    TEST_CASE(NormalizedDiffusionA)
+    {
+        static const double Result[] = {
+            4.68592, 4.11466, 3.77984, 3.60498, 3.52856, 3.5041, 3.50008,
+            3.50002, 3.5024, 3.52074, 3.58352, 3.73426, 4.03144, 4.54858,
+            5.37416, 6.6117, 8.37968, 10.8116, 14.056, 18.2763, 23.6511};
+
+        for (size_t i = 0, e = countof(Result); i < e; ++i)
+        {
+            const double s = normalized_diffusion_s(static_cast<double>(i) * 0.05);
+            EXPECT_FEQ_EPS(Result[i], s, NormalizedDiffusionTestEps);
+        }
+    }
+
+    TEST_CASE(NormalizedDiffusionR)
+    {
+        static const double Result[] = {
+            2.53511, 0.674967, 0.327967, 0.192204, 0.124137, 0.0852575,
+            0.0611367, 0.0452741, 0.0343737, 0.0266197, 0.0209473, 0.0167009,
+            0.0134603, 0.0109471, 0.00897108, 0.00739936, 0.00613676, 0.00511384,
+            0.00427902, 0.0035934, 0.00302721};
+
+        for (size_t i = 0, e = countof(Result); i < e; ++i)
+        {
+            const double r =
+                normalized_diffusion_r(
+                    static_cast<double>(i) * 0.1 + 0.05,
+                    1.0,
+                    3.583521,
+                    0.5);
+
+            EXPECT_FEQ_EPS(Result[i], r, NormalizedDiffusionTestEps);
+        }
+    }
+
+    TEST_CASE(NormalizedDiffusionCdf)
+    {
+        static const double Result[] = {
+            0.282838, 0.598244, 0.760091, 0.85267, 0.908478, 0.942885, 0.964293,
+            0.97766, 0.98602, 0.99125, 0.994523, 0.996572, 0.997854, 0.998657,
+            0.999159, 0.999474, 0.999671, 0.999794, 0.999871, 0.999919, 0.999949,
+            0.999968, 0.99998, 0.999988, 0.999992, 0.999995, 0.999997, 0.999998,
+            0.999999, 0.999999, 1};
+
+        for (size_t i = 0, e = countof(Result); i < e; ++i)
+        {
+            const double cdf =
+                normalized_diffusion_cdf(
+                    static_cast<double>(i) * 0.1 + 0.05,
+                    14.056001,
+                    1.0);
+
+            EXPECT_FEQ_EPS(Result[i], cdf, NormalizedDiffusionTestEps);
+        }
+    }
+
+    /*
     TEST_CASE(NormalizedDiffusionCdfPdf)
     {
-        const size_t max_iters = 50;
         const double ndiff_step = 0.0001;
 
         MersenneTwister rng;
 
-        for (size_t i = 0; i < max_iters; ++i)
+        for (size_t i = 0; i < 50; ++i)
         {
             const double a = rand_double1(rng);
             const double l = rand_double1(rng, 0.0001, 10.0);
@@ -87,13 +145,13 @@ TEST_SUITE(Foundation_Math_SSS)
             EXPECT_FEQ_EPS(pdf, pdf_ndiff, ndiff_step);
         }
     }
+    */
 
     TEST_CASE(NormalizedDiffusionSample)
     {
-        const size_t max_iters = 50;
         MersenneTwister rng;
 
-        for (size_t i = 0; i < max_iters; ++i)
+        for (size_t i = 0; i < 50; ++i)
         {
             const double a = rand_double1(rng);
             const double l = rand_double1(rng, 0.001, 10.0);

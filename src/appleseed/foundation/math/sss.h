@@ -56,23 +56,23 @@ double normalized_diffusion_s(const double a);
 
 double normalized_diffusion_r(
     const double r,
-    const double l,
+    const double ld,
     const double s,
     const double a);
 
 double normalized_diffusion_cdf(
     const double r,
     const double s,
-    const double l);
+    const double ld);
 
 double normalized_diffusion_pdf(
-    const double r,
+    const double e,
     const double s,
-    const double l);
+    const double ld);
 
 double normalized_diffusion_sample(
     const double s,
-    const double l,
+    const double ld,
     const double e);
 
 }       // namespace foundation
