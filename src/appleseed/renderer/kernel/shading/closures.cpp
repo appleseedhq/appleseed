@@ -34,6 +34,7 @@
 #include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/cdf.h"
 #include "foundation/math/scalar.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/otherwise.h"
@@ -140,7 +141,6 @@ namespace
     };
 
     OSL::ustring directional_profile_name("directional");
-    OSL::ustring normalized_profile_name("normalized");
 
     struct SubsurfaceClosureParams
     {
@@ -190,18 +190,7 @@ void CompositeClosure::compute_cdf()
 
 size_t CompositeClosure::choose_closure(const double w) const
 {
-    assert(w >= 0.0);
-    assert(w < 1.0);
-
-    const double* i =
-        upper_bound(
-            m_cdf,
-            m_cdf + get_num_closures(),
-            w);
-
-    assert(i < m_cdf + get_num_closures());
-
-    return i - m_cdf;
+    return sample_cdf(m_cdf, m_cdf + get_num_closures(), w);
 }
 
 
@@ -658,20 +647,6 @@ void CompositeSubsurfaceClosure::process_closure_tree(
                         w,
                         values);
 
-                }
-                else if (p->profile == normalized_profile_name)
-                {
-                    NormalizedDiffusionBSSRDFInputValues values;
-                    values.m_reflectance = Color3f(p->reflectance);
-                    values.m_mean_free_path = Color3f(p->mean_free_path);
-                    values.m_mean_free_path_multiplier = 1.0;
-                    values.m_from_ior = 1.0;
-                    values.m_to_ior = 1.0 / p->eta;
-
-                    add_closure<NormalizedDiffusionBSSRDFInputValues>(
-                        SubsurfaceNormalizedID,
-                        w,
-                        values);
                 }
                 else
                     assert(false);

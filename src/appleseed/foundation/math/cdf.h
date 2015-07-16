@@ -100,6 +100,16 @@ class CDF
 
 
 //
+// Sample CDF.
+//
+
+template <typename RandomAccessIter, typename Weight>
+size_t sample_cdf(
+    RandomAccessIter    begin,
+    RandomAccessIter    end,
+    Weight              x);
+
+//
 // CDF class implementation.
 //
 
@@ -181,19 +191,33 @@ void CDF<Item, Weight>::prepare()
 template <typename Item, typename Weight>
 inline const std::pair<Item, Weight>& CDF<Item, Weight>::sample(const Weight x) const
 {
-    assert(!m_densities.empty());   // implies valid() == true
-    assert(x >= Weight(0.0));
-    assert(x < Weight(1.0));
-
-    const typename DensityVector::const_iterator i =
-        std::upper_bound(
+    const size_t i =
+        sample_cdf(
             m_densities.begin(),
             m_densities.end(),
             x);
 
-    assert(i < m_densities.end());
+    return m_items[i];
+}
 
-    return m_items[i - m_densities.begin()];
+//
+// Sample CDF implementation.
+//
+
+template <typename RandomAccessIter, typename Weight>
+inline size_t sample_cdf(
+    RandomAccessIter    begin,
+    RandomAccessIter    end,
+    Weight              x)
+{
+    assert(begin != end);
+    assert(x >= Weight(0.0));
+    assert(x < Weight(1.0));
+
+    const RandomAccessIter i = std::upper_bound(begin, end, x);
+    assert(i < end);
+
+    return i - begin;
 }
 
 }       // namespace foundation
