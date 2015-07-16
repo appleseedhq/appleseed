@@ -507,7 +507,7 @@ namespace
             assert(dot_HL >= 0.0);
             assert(dot_HN >= 0.0);
 
-            fresnel_dielectric_schlick(fr_spec, rs, dot_HL);
+            fresnel_reflectance_dielectric_schlick(fr_spec, rs, dot_HL);
             fr_spec *= static_cast<float>(mdf.evaluate(dot_HN) / (4.0 * dot_HL * dot_HL));
         }
 
@@ -578,7 +578,7 @@ namespace
 
                 // Evaluate the specular component for this (L, V) pair.
                 Spectrum fr_spec;
-                fresnel_dielectric_schlick(fr_spec, rs, dot_HV);
+                fresnel_reflectance_dielectric_schlick(fr_spec, rs, dot_HV);
                 fr_spec *= static_cast<float>((L.y * mdf.evaluate(dot_HN)) / (4.0 * pdf_L * dot_HV * dot_HV));
                 albedo += fr_spec;
             }

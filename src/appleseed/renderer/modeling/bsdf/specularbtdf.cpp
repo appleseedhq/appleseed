@@ -99,7 +99,8 @@ namespace
             const double eta = values->m_from_ior / values->m_to_ior;
             const double cos_theta_i = dot(sample.get_outgoing_vector(), shading_normal);
             const double sin_theta_i2 = 1.0 - square(cos_theta_i);
-            const double cos_theta_t2 = 1.0 - square(eta) * sin_theta_i2;
+            const double sin_theta_t2 = sin_theta_i2 * square(eta);
+            const double cos_theta_t2 = 1.0 - sin_theta_t2;
 
             Vector3d incoming;
             bool refract_differentials = true;
@@ -117,10 +118,9 @@ namespace
                 // Compute the Fresnel reflection factor.
                 const double cos_theta_t = sqrt(cos_theta_t2);
                 double fresnel_reflection;
-                fresnel_dielectric_unpolarized(
+                fresnel_reflectance_dielectric(
                     fresnel_reflection,
-                    values->m_from_ior,
-                    values->m_to_ior,
+                    1.0 / eta,
                     abs(cos_theta_i),
                     cos_theta_t);
                 fresnel_reflection *= values->m_fresnel_multiplier;

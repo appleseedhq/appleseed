@@ -218,7 +218,7 @@ namespace
             const double num = sval.m_kg * pow(cos_hn, exp);
             const double den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
             Spectrum glossy;
-            fresnel_dielectric_schlick(glossy, rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
+            fresnel_reflectance_dielectric_schlick(glossy, rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
             glossy *= static_cast<float>(num / den);
             sample.value() += glossy;
 
@@ -299,7 +299,7 @@ namespace
                 const double num = exp_den == 0.0 ? 0.0 : sval.m_kg * pow(cos_hn, exp);
                 const double den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
                 Spectrum glossy;
-                fresnel_dielectric_schlick(glossy, rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
+                fresnel_reflectance_dielectric_schlick(glossy, rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
                 glossy *= static_cast<float>(num / den);
                 value += glossy;
 

@@ -532,16 +532,20 @@ namespace
                             dot(
                                 vertex.m_outgoing.get_value(),
                                 vertex.get_shading_normal());
-                        const double outgoing_fresnel =
-                            fresnel_transmission(cos_on, vertex.m_bssrdf_eta);
+                        double outgoing_fresnel;
+                        if (cos_on > 0.0)
+                            fresnel_transmittance_dielectric(outgoing_fresnel, vertex.m_bssrdf_eta, cos_on);
+                        else outgoing_fresnel = 0.0;
 
                         // Compute Fresnel coefficient at incoming point.
                         const double cos_in =
                             dot(
                                 incoming,
                                 vertex.m_bssrdf_incoming_point.get_shading_normal());
-                        const double incoming_fresnel =
-                            fresnel_transmission(cos_in, vertex.m_bssrdf_eta);    // todo: eta or 1/eta?
+                        double incoming_fresnel;
+                        if (cos_in > 0.0)
+                            fresnel_transmittance_dielectric(incoming_fresnel, vertex.m_bssrdf_eta, cos_in);    // todo: eta or 1/eta?
+                        else incoming_fresnel = 0.0;
 
                         if (transmission > 0.0 &&
                             cos_in > 0.0 &&
