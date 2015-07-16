@@ -209,9 +209,10 @@ namespace
             const size_t channel = truncate<size_t>(floor(s[0] * values->m_reflectance.size()));
             sample.set_channel(channel);
 
-            // Sample a radius and an angle.
+            // Sample a distance, PBRT book, page 641.
             const double radius = -log(1.0 - s[1]) * values->m_mean_free_path[channel];
 
+            // Sample an angle
             const double phi = TwoPi * s[2];
             point = Vector2d(radius * cos(phi), radius * sin(phi));
             return true;
@@ -225,8 +226,9 @@ namespace
             const DirectionalDipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
 
-            const double s = 1.0 / values->m_mean_free_path[channel];
-            return s * exp(-s * dist);
+            // PBRT book, page 641.
+            const double sigma_tr = 1.0 / values->m_mean_free_path[channel];
+            return sigma_tr * exp(-sigma_tr * dist);
         }
 
         // Diffusive part of the BSSRDF.

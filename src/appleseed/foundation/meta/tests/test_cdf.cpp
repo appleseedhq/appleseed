@@ -181,4 +181,28 @@ TEST_SUITE(Foundation_Math_CDF)
         EXPECT_EQ(2, value);
         EXPECT_FEQ(0.7 * (2.0 / 3), prob);
     }
+
+    TEST_CASE(SampleCDF)
+    {
+        static const double Cdf[] =
+        {
+            0.03, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0
+        };
+
+        static const double Weights[] =
+        {
+            0.0, 0.07, 0.15, 0.23, 0.41, 0.77, 0.98
+        };
+
+        static const size_t Result[] =
+        {
+            0, 1, 2, 3, 5, 8, 10
+        };
+
+        const double* begin = Cdf;
+        const double* end = Cdf + countof(Cdf);
+
+        for (size_t i = 0, e = countof(Result); i < e; ++i)
+            EXPECT_EQ(Result[i], sample_cdf(begin, end, Weights[i]));
+    }
 }

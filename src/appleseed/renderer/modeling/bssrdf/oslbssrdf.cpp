@@ -34,7 +34,6 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
-#include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
@@ -69,11 +68,6 @@ namespace
                 DirectionalDipoleBSSRDFFactory().create(
                     "osl_dir_bssrdf",
                     ParamArray());
-
-            m_normalized_bssrdf =
-                NormalizedDiffusionBSSRDFFactory().create(
-                    "osl_norm_bssrdf",
-                    ParamArray());
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -97,9 +91,6 @@ namespace
             if (!m_directional_bssrdf->on_frame_begin(project, assembly, abort_switch))
                 return false;
 
-            if (!m_normalized_bssrdf->on_frame_begin(project, assembly, abort_switch))
-                return false;
-
             return true;
         }
 
@@ -108,7 +99,6 @@ namespace
             const Assembly&             assembly) APPLESEED_OVERRIDE
         {
             m_directional_bssrdf->on_frame_end(project, assembly);
-            m_normalized_bssrdf->on_frame_end(project, assembly);
             BSSRDF::on_frame_end(project, assembly);
         }
 
@@ -137,14 +127,6 @@ namespace
                         shading_point,
                         c->get_closure_input_offset(i));
                 }
-                else if (c->get_closure_type(i) == SubsurfaceNormalizedID)
-                {
-                    m_normalized_bssrdf->evaluate_inputs(
-                        shading_context,
-                        input_evaluator,
-                        shading_point,
-                        c->get_closure_input_offset(i));
-                }
                 else
                     assert(false);
             }
@@ -167,7 +149,6 @@ namespace
 
       private:
         auto_release_ptr<BSSRDF>    m_directional_bssrdf;
-        auto_release_ptr<BSSRDF>    m_normalized_bssrdf;
 
         virtual bool do_sample(
             const void*                 data,

@@ -35,5 +35,8 @@
 #include "renderer/modeling/bssrdf/bssrdftraits.h"
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #include "renderer/modeling/bssrdf/ibssrdffactory.h"
+#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
+#include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
+#endif
 
 #endif  // !APPLESEED_RENDERER_API_BSSRDF_H
