@@ -112,11 +112,13 @@ bool BSSRDF::sample(
 
     if (s <= 0.5)
     {
+        // We will project the sample along the surface's normal.
         sample.set_sample_basis(shading_basis);
         sample.set_use_offset_origin(true);
     }
     else if (s <= 0.75)
     {
+        // We will project the sample along the surface's U tangent.
         sample.set_sample_basis(
             Basis3d(
                 shading_basis.get_tangent_u(),
@@ -125,6 +127,7 @@ bool BSSRDF::sample(
     }
     else
     {
+        // We will project the sample along the surface's V tangent.
         sample.set_sample_basis(
             Basis3d(
                 shading_basis.get_tangent_v(),
@@ -132,13 +135,13 @@ bool BSSRDF::sample(
                 shading_basis.get_tangent_u()));
     }
 
-    Vector2d d;
-    if (do_sample(data, sample, d))
+    Vector2d point;
+    if (do_sample(data, sample, point))
     {
         sample.set_origin(
             sample.get_shading_point().get_point() +
-            sample.get_sample_basis().get_tangent_u() * d.x +
-            sample.get_sample_basis().get_tangent_v() * d.y);
+            sample.get_sample_basis().get_tangent_u() * point.x +
+            sample.get_sample_basis().get_tangent_v() * point.y);
 
         return true;
     }
