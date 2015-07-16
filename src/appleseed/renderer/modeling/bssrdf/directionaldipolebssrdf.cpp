@@ -205,16 +205,19 @@ namespace
             sample.get_sampling_context().split_in_place(3, 1);
             const Vector3d s = sample.get_sampling_context().next_vector2<3>();
 
-            // Sample a color channel.
+            // Sample a color channel uniformly.
             const size_t channel = truncate<size_t>(floor(s[0] * values->m_reflectance.size()));
             sample.set_channel(channel);
 
-            // Sample a distance, PBRT book, page 641.
+            // Sample a radius, PBRT book, page 641.
             const double radius = -log(1.0 - s[1]) * values->m_mean_free_path[channel];
 
-            // Sample an angle
+            // Sample an angle.
             const double phi = TwoPi * s[2];
+
+            // Return point on disk.
             point = Vector2d(radius * cos(phi), radius * sin(phi));
+
             return true;
         }
 
