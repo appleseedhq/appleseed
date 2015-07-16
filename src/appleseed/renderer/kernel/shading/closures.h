@@ -41,7 +41,6 @@
 #include "renderer/modeling/bsdf/specularbtdf.h"
 #include "renderer/modeling/bsdf/velvetbrdf.h"
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
-#include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
 #include "renderer/modeling/edf/diffuseedf.h"
 
 // appleseed.foundation headers.
@@ -101,7 +100,6 @@ enum ClosureID
 
     SubsurfaceID,
     SubsurfaceDirectionalID,
-    SubsurfaceNormalizedID,
 
     // Special closures.
     BackgroundID,
@@ -144,8 +142,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
         SpecularBRDFInputValues,
         SpecularBTDFInputValues,
         VelvetBRDFInputValues,
-        DirectionalDipoleBSSRDFInputValues,
-        NormalizedDiffusionBSSRDFInputValues> InputValuesTypeList;
+        DirectionalDipoleBSSRDFInputValues> InputValuesTypeList;
 
     // Find the biggest InputValues type.
     typedef boost::mpl::max_element<

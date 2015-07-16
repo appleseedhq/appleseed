@@ -72,31 +72,32 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/src/cmake/Modu
 # Build options.
 #--------------------------------------------------------------------------------------------------
 
-option (USE_EXTERNAL_ALEMBIC    "Use external Alembic library"                          OFF)
-option (USE_EXTERNAL_EXR        "Use external OpenEXR library"                          OFF)
-option (USE_EXTERNAL_OIIO       "Use external OpenImageIO library"                      OFF)
-option (USE_EXTERNAL_OSL        "Use external OpenShadingLanguage library"              OFF)
-option (USE_EXTERNAL_PNG        "Use external libpng library"                           OFF)
-option (USE_EXTERNAL_SEEXPR     "Use external SeExpr library"                           OFF)
-option (USE_EXTERNAL_XERCES     "Use external Xerces library"                           OFF)
-option (USE_EXTERNAL_ZLIB       "Use external zlib library"                             OFF)
+option (USE_EXTERNAL_ALEMBIC                "Use external Alembic library"                          OFF)
+option (USE_EXTERNAL_EXR                    "Use external OpenEXR library"                          OFF)
+option (USE_EXTERNAL_OIIO                   "Use external OpenImageIO library"                      OFF)
+option (USE_EXTERNAL_OSL                    "Use external OpenShadingLanguage library"              OFF)
+option (USE_EXTERNAL_PNG                    "Use external libpng library"                           OFF)
+option (USE_EXTERNAL_SEEXPR                 "Use external SeExpr library"                           OFF)
+option (USE_EXTERNAL_XERCES                 "Use external Xerces library"                           OFF)
+option (USE_EXTERNAL_ZLIB                   "Use external zlib library"                             OFF)
 
-option (WITH_CLI                "Build appleseed.cli"                                   ON)
-option (WITH_STUDIO             "Build appleseed.studio"                                ON)
-option (WITH_TOOLS              "Build appleseed tools"                                 ON)
-option (WITH_PYTHON             "Build Python bindings"                                 ON)
-option (WITH_ALEMBIC            "Build Alembic support"                                 OFF)
-option (WITH_OSL                "Build OSL support"                                     OFF)
-option (WITH_DISNEY_MATERIAL    "Build Disney material"                                 OFF)
+option (WITH_CLI                            "Build appleseed.cli"                                   ON)
+option (WITH_STUDIO                         "Build appleseed.studio"                                ON)
+option (WITH_TOOLS                          "Build appleseed tools"                                 ON)
+option (WITH_PYTHON                         "Build Python bindings"                                 ON)
+option (WITH_ALEMBIC                        "Build Alembic support"                                 OFF)
+option (WITH_OSL                            "Build OSL support"                                     OFF)
+option (WITH_DISNEY_MATERIAL                "Build Disney material"                                 OFF)
+option (WITH_NORMALIZED_DIFFUSION_BSSRDF    "Build Normalized diffusion BSSRDF (patented)"          OFF)
 
-option (USE_STATIC_BOOST        "Use static Boost libraries"                            ON)
-option (USE_STATIC_OIIO         "Use static OpenImageIO libraries"                      ON)
-option (USE_STATIC_OSL          "Use static OpenShadingLanguage libraries"              ON)
+option (USE_STATIC_BOOST                    "Use static Boost libraries"                            ON)
+option (USE_STATIC_OIIO                     "Use static OpenImageIO libraries"                      ON)
+option (USE_STATIC_OSL                      "Use static OpenShadingLanguage libraries"              ON)
 
-option (USE_SSE                 "Use SSE instruction sets up to version 2"              ON)
-option (USE_SSE42               "Use SSE instruction sets up to version 4.2"            OFF)
+option (USE_SSE                             "Use SSE instruction sets up to version 2"              ON)
+option (USE_SSE42                           "Use SSE instruction sets up to version 4.2"            OFF)
 
-option (HIDE_SYMBOLS            "When using gcc, hide symbols not on the public API"    ON)
+option (HIDE_SYMBOLS                        "When using gcc, hide symbols not on the public API"    ON)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -236,6 +237,9 @@ if (WITH_DISNEY_MATERIAL)
     endif ()
 endif ()
 
+if (WITH_NORMALIZED_DIFFUSION_BSSRDF)
+    add_definitions (-DAPPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF)
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.

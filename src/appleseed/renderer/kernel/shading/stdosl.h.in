@@ -515,6 +515,11 @@ closure color as_velvet(normal N, float alpha) BUILTIN;
 closure color as_subsurface(string profile, color reflectance,
                             color mean_free_path) BUILTIN;
 
+closure color as_subsurface(color reflectance, color mean_free_path)
+{
+    return as_subsurface("directional", reflectance, mean_free_path);
+}
+
 /********************************/
 // Standard OSL closures
 
