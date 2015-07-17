@@ -46,7 +46,7 @@ namespace foundation
 // Texture mapping for the better dipole.
 //
 
-double compute_rd(double alpha_prime, double two_c1, double three_c2)
+double compute_rd(const double alpha_prime, const double two_c1, const double three_c2)
 {
     const double cphi = 0.25 * (1.0 - two_c1);
     const double ce = 0.5 * (1.0 - three_c2);
@@ -58,7 +58,7 @@ double compute_rd(double alpha_prime, double two_c1, double three_c2)
                * (ce * (1.0 + myexp) + cphi / mu_tr_d * (1.0 - myexp));
 }
 
-double compute_alpha_prime(double rd, double c1, double c2)
+double compute_alpha_prime(const double rd, const double c1, const double c2)
 {
     if (rd == 0.0)
         return 0.0;
