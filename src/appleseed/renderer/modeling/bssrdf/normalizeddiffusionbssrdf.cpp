@@ -110,8 +110,7 @@ namespace
                 if (values->m_mean_free_path.is_spectral())
                     Spectrum::upgrade(values->m_reflectance, values->m_reflectance);
                 else
-                    values->m_reflectance =
-                        values->m_reflectance.convert_to_rgb(get_lighting_conditions());
+                    values->m_reflectance = values->m_reflectance.convert_to_rgb(*m_lighting_conditions);
             }
         }
 

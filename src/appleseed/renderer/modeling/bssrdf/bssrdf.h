@@ -144,10 +144,7 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const size_t                channel) const;
 
   protected:
-    const foundation::LightingConditions& get_lighting_conditions() const;
-
-  private:
-    const foundation::LightingConditions* m_lighting_conditions;
+      const foundation::LightingConditions* m_lighting_conditions;
 
     virtual bool do_sample(
         const void*                 data,
@@ -159,16 +156,6 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const size_t                channel,
         const double                dist) const = 0;
 };
-
-
-//
-// BSSRDF class implementation.
-//
-
-inline const foundation::LightingConditions& BSSRDF::get_lighting_conditions() const
-{
-    return *m_lighting_conditions;
-}
 
 }       // namespace renderer
 
