@@ -157,15 +157,19 @@ namespace
             const size_t channel = truncate<size_t>(s[0] * values->m_reflectance.size());
             sample.set_channel(channel);
 
-            // Sample a radius and an angle.
-            double radius =
+            // Sample a radius.
+            const double radius =
                 normalized_diffusion_sample(
                     normalized_diffusion_s(values->m_reflectance[channel]),
                     values->m_mean_free_path[channel],
                     s[1]);
 
+            // Sample an angle.
             const double phi = TwoPi * s[2];
+
+            // Return point on disk.
             point = Vector2d(radius * cos(phi), radius * sin(phi));
+
             return true;
         }
 
@@ -177,10 +181,21 @@ namespace
             const NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
 
-            return normalized_diffusion_pdf(
-                dist,
-                normalized_diffusion_s(values->m_reflectance[channel]),
-                values->m_mean_free_path[channel]);
+            // PDF of the sampled channel.
+            const double pdf_channel = 1.0 / values->m_reflectance.size();
+
+            // PDF of the sampled radius.
+            const double pdf_radius =
+                normalized_diffusion_pdf(
+                    dist,
+                    normalized_diffusion_s(values->m_reflectance[channel]),
+                    values->m_mean_free_path[channel]);
+
+            // PDF of the sampled angle.
+            const double pdf_angle = RcpTwoPi;
+
+            // Compute and return the final PDF.
+            return pdf_channel * pdf_radius * pdf_angle;
         }
     };
 }

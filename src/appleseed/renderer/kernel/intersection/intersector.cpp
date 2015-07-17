@@ -353,9 +353,9 @@ bool Intersector::trace_same_material(
 {
     if (do_trace_same_material(ray, parent_shading_point, offset_origin, shading_point))
     {
-        // do trace same material intersects only with triangles
-        // whose normal points in the same direction as the ray,
-        // triangles are intersected from the inside of the object and
+        // do_trace_same_material() intersects only with triangles
+        // whose normal points in the same direction as the ray.
+        // Triangles are intersected from the inside of the object and
         // shading_point.get_shading_normal() points inside the object.
 
         // todo: we maybe need a better way to flip the shading normal here.
@@ -467,8 +467,8 @@ void Intersector::manufacture_hit(
 }
 
 void Intersector::trace_back_sides(
-    ShadingRay                      ray,
-    ShadingPoint&                   shading_point) const
+    ShadingRay                          ray,
+    ShadingPoint&                       shading_point) const
 {
     while (trace(ray, shading_point))
     {

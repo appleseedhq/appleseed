@@ -144,7 +144,6 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const size_t                channel) const;
 
   protected:
-
     const foundation::LightingConditions& get_lighting_conditions() const;
 
   private:

@@ -205,16 +205,19 @@ namespace
             sample.get_sampling_context().split_in_place(3, 1);
             const Vector3d s = sample.get_sampling_context().next_vector2<3>();
 
-            // Sample a color channel.
-            const size_t channel = truncate<size_t>(floor(s[0] * values->m_reflectance.size()));
+            // Sample a color channel uniformly.
+            const size_t channel = truncate<size_t>(s[0] * values->m_reflectance.size());
             sample.set_channel(channel);
 
-            // Sample a distance, PBRT book, page 641.
+            // Sample a radius (PBRT v1, page 641).
             const double radius = -log(1.0 - s[1]) * values->m_mean_free_path[channel];
 
-            // Sample an angle
+            // Sample an angle.
             const double phi = TwoPi * s[2];
+
+            // Return point on disk.
             point = Vector2d(radius * cos(phi), radius * sin(phi));
+
             return true;
         }
 
@@ -226,9 +229,18 @@ namespace
             const DirectionalDipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
 
-            // PBRT book, page 641.
+            // PDF of the sampled channel.
+            const double pdf_channel = 1.0 / values->m_reflectance.size();
+
+            // PDF of the sampled radius (PBRT v1, page 641).
             const double sigma_tr = 1.0 / values->m_mean_free_path[channel];
-            return sigma_tr * exp(-sigma_tr * dist);
+            const double pdf_radius = sigma_tr * exp(-sigma_tr * dist);
+
+            // PDF of the sampled angle.
+            const double pdf_angle = RcpTwoPi;
+
+            // Compute and return the final PDF.
+            return pdf_channel * pdf_radius * pdf_angle;
         }
 
         // Diffusive part of the BSSRDF.
