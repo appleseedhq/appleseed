@@ -159,21 +159,15 @@ double BSSRDF::pdf(
     // From PBRT 3.
 
     const Vector3d d = outgoing_point.get_point() - incoming_point.get_point();
-    const Vector3d dlocal(
-        dot(basis.get_tangent_u(), d),
-        dot(basis.get_tangent_v(), d),
-        dot(basis.get_normal()   , d));
+    const Vector3d dlocal = basis.transform_to_local(d);
 
     const Vector3d& n = incoming_point.get_shading_normal();
-    const Vector3d nlocal(
-        dot(basis.get_tangent_u(), n),
-        dot(basis.get_tangent_v(), n),
-        dot(basis.get_normal()   , n));
+    const Vector3d nlocal = basis.transform_to_local(n);
 
     return
         do_pdf(data, channel, sqrt(square(dlocal.y) + square(dlocal.z))) * 0.125 * abs(nlocal[0]) +
-        do_pdf(data, channel, sqrt(square(dlocal.z) + square(dlocal.x))) * 0.125 * abs(nlocal[1]) +
-        do_pdf(data, channel, sqrt(square(dlocal.x) + square(dlocal.y))) * 0.250 * abs(nlocal[2]);
+        do_pdf(data, channel, sqrt(square(dlocal.x) + square(dlocal.z))) * 0.250 * abs(nlocal[1]) +
+        do_pdf(data, channel, sqrt(square(dlocal.x) + square(dlocal.y))) * 0.125 * abs(nlocal[2]);
 }
 
 }   // namespace renderer
