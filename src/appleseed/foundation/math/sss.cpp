@@ -80,8 +80,9 @@ double compute_alpha_prime(double rd, double c1, double c2)
     return xmid;
 }
 
+
 //
-// Normalized diffusion
+// Normalized diffusion.
 //
 
 double normalized_diffusion_s(const double a)
@@ -125,7 +126,7 @@ double normalized_diffusion_sample(
     const double ld,
     const double e)
 {
-    // heuristic
+    // Heuristic.
     double x1 = 10.0 + (3.0 * ld);
 
     if (normalized_diffusion_cdf(x1, s, ld) < e)

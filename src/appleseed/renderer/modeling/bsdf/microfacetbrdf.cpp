@@ -84,7 +84,7 @@ namespace
             const Vector3d& n,
             Spectrum&       value) const
         {
-            fresnel_dielectric_schlick(
+            fresnel_reflectance_dielectric_schlick(
                 value,
                 m_reflectance,
                 dot(o, n),

@@ -242,7 +242,7 @@ namespace
             double F = 1.0;
             if (values->m_fresnel_normal_reflectance != 1.0)
             {
-                fresnel_dielectric_schlick(
+                fresnel_reflectance_dielectric_schlick(
                     F,
                     values->m_fresnel_normal_reflectance,
                     dot(outgoing, n));
