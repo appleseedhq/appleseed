@@ -181,11 +181,21 @@ namespace
             const NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
 
-            return
+            // PDF of the sampled channel.
+            const double pdf_channel = 1.0 / values->m_reflectance.size();
+
+            // PDF of the sampled radius.
+            const double pdf_radius =
                 normalized_diffusion_pdf(
                     dist,
                     normalized_diffusion_s(values->m_reflectance[channel]),
                     values->m_mean_free_path[channel]);
+
+            // PDF of the sampled angle.
+            const double pdf_angle = RcpTwoPi;
+
+            // Compute and return the final PDF.
+            return pdf_channel * pdf_radius * pdf_angle;
         }
     };
 }
