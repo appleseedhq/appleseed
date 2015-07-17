@@ -46,11 +46,11 @@ TEST_SUITE(Foundation_Math_SSS)
         const double rd,
         const double eta)
     {
-        const double c1 = fresnel_moment_c1(eta);
-        const double c2 = fresnel_moment_c2(eta);
+        const double two_c1 = fresnel_moment_two_c1(eta);
+        const double three_c2 = fresnel_moment_three_c2(eta);
 
-        const double alpha_prime = compute_alpha_prime(rd, c1, c2);
-        return compute_rd(alpha_prime, 2.0 * c1, 3.0 * c2);
+        const double alpha_prime = compute_alpha_prime(rd, two_c1, three_c2);
+        return compute_rd(alpha_prime, two_c1, three_c2);
     }
 
     TEST_CASE(Rd_AlphaPrime_Roundtrip)
