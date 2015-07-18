@@ -69,6 +69,7 @@ namespace
           : BSSRDF(name, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
+            m_inputs.declare("reflectance_multiplier", InputFormatScalar);
             m_inputs.declare("mean_free_path", InputFormatSpectralReflectance);
             m_inputs.declare("mean_free_path_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("from_ior", InputFormatScalar);
@@ -103,6 +104,7 @@ namespace
             NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<NormalizedDiffusionBSSRDFInputValues*>(ptr + offset);
 
+            values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
             values->m_mean_free_path *= static_cast<float>(values->m_mean_free_path_multiplier);
 
             if (values->m_mean_free_path.size() != values->m_reflectance.size())
@@ -233,6 +235,16 @@ DictionaryArray NormalizedDiffusionBSSRDFFactory::get_input_metadata() const
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", "0.5"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "reflectance_multiplier")
+            .insert("label", "Reflectance Multiplier")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()
