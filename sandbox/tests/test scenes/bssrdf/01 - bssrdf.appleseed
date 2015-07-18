@@ -74,6 +74,7 @@
                 <parameter name="mean_free_path" value="0.1" />
                 <parameter name="mean_free_path_multiplier" value="1.0" />
                 <parameter name="reflectance" value="color1" />
+                <parameter name="reflectance_multiplier" value="1.0" />
                 <parameter name="to_ior" value="1.3" />
             </bssrdf>
             <edf name="Material.001_edf" model="diffuse_edf">
