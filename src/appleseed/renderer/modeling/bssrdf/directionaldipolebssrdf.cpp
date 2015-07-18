@@ -79,7 +79,7 @@ namespace
           : BSSRDF(name, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar);
+            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("mean_free_path", InputFormatSpectralReflectance);
             m_inputs.declare("mean_free_path_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("anisotropy", InputFormatScalar);
