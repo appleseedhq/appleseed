@@ -59,6 +59,7 @@ namespace renderer
 APPLESEED_DECLARE_INPUT_VALUES(NormalizedDiffusionBSSRDFInputValues)
 {
     Spectrum    m_reflectance;
+    double      m_reflectance_multiplier;
     Spectrum    m_mean_free_path;
     double      m_mean_free_path_multiplier;
     double      m_from_ior;

@@ -140,7 +140,6 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const void*                 data,
         const ShadingPoint&         outgoing_point,
         const ShadingPoint&         incoming_point,
-        const foundation::Basis3d&  basis,
         const size_t                channel) const;
 
   protected:

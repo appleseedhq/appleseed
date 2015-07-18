@@ -359,7 +359,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                             vertex.m_bssrdf_data,
                             *vertex.m_shading_point,
                             vertex.m_bssrdf_incoming_point,
-                            sample.get_sample_basis(),
                             sample.get_channel());
 
                     vertex.m_bssrdf_directional = sample.is_directional();

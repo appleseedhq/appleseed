@@ -105,6 +105,10 @@ bool BSSRDF::sample(
     const void*             data,
     BSSRDFSample&           sample) const
 {
+    Vector2d point;
+    if (!do_sample(data, sample, point))
+        return false;
+
     sample.get_sampling_context().split_in_place(1, 1);
     const double s = sample.get_sampling_context().next_double2();
 
@@ -135,30 +139,24 @@ bool BSSRDF::sample(
                 shading_basis.get_tangent_u()));
     }
 
-    Vector2d point;
-    if (do_sample(data, sample, point))
-    {
-        sample.set_origin(
-            sample.get_shading_point().get_point() +
-            sample.get_sample_basis().get_tangent_u() * point.x +
-            sample.get_sample_basis().get_tangent_v() * point.y);
+    sample.set_origin(
+        sample.get_shading_point().get_point() +
+        sample.get_sample_basis().get_tangent_u() * point.x +
+        sample.get_sample_basis().get_tangent_v() * point.y);
 
-        return true;
-    }
-
-    return false;
+    return true;
 }
 
 double BSSRDF::pdf(
     const void*             data,
     const ShadingPoint&     outgoing_point,
     const ShadingPoint&     incoming_point,
-    const Basis3d&          basis,
     const size_t            channel) const
 {
     // From PBRT 3.
 
     const Vector3d d = outgoing_point.get_point() - incoming_point.get_point();
+    const Basis3d& basis = outgoing_point.get_shading_basis();
     const Vector3d dlocal = basis.transform_to_local(d);
 
     const Vector3d& n = incoming_point.get_shading_normal();
