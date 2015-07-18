@@ -124,10 +124,8 @@ namespace
                     values->m_reflectance = values->m_reflectance.convert_to_rgb(*m_lighting_conditions);
             }
 
-            values->m_sigma_a.resize(values->m_mean_free_path.size());
             values->m_sigma_s_prime.resize(values->m_mean_free_path.size());
-
-            // Convert values and precompute stuff.
+            values->m_sigma_a.resize(values->m_mean_free_path.size());
             values->m_max_mean_free_path = 0.0;
 
             const double eta = values->m_to_ior / values->m_from_ior;
@@ -136,20 +134,27 @@ namespace
 
             for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
             {
-                const double alpha_prime =
-                    compute_alpha_prime(
-                        saturate(static_cast<double>(values->m_reflectance[i])),
-                        two_c1,
-                        three_c2);
-
+                // Input values: diffuse reflectance and mean free path.
+                const double rd = saturate(static_cast<double>(values->m_reflectance[i]));
                 const double mfp = static_cast<double>(values->m_mean_free_path[i]);
-                values->m_max_mean_free_path = max(values->m_max_mean_free_path, mfp);
 
+                // Find alpha' by numerically inverting Rd(alpha').
+                const double alpha_prime = compute_alpha_prime(rd, two_c1, three_c2);
+
+                // Compute effective transport coefficient.
                 const double sigma_tr = 1.0 / mfp;
+
+                // Compute reduced extinction coefficient.
                 const double sigma_t_prime = sigma_tr / sqrt(3.0 * (1.0 - alpha_prime));
 
+                // Compute reduced scattering coefficient.
                 values->m_sigma_s_prime[i] = static_cast<float>(alpha_prime * sigma_t_prime);
+
+                // Compute absorption coefficient.
                 values->m_sigma_a[i] = static_cast<float>(sigma_t_prime) - values->m_sigma_s_prime[i];
+
+                // Compute max mean free path across all wavelengths.
+                values->m_max_mean_free_path = max(values->m_max_mean_free_path, mfp);
             }
         }
 
@@ -315,7 +320,7 @@ namespace
                 const double sigma_t_prime = sigma_s_prime + sigma_a;                   // reduced extinction coefficient
                 const double alpha_prime = sigma_s_prime / sigma_t_prime;               // reduced scattering albedo
                 const double sigma_s = sigma_s_prime / (1.0 - values->m_anisotropy);    // scattering coefficient
-                const double sigma_t = sigma_a + sigma_s;                               // extinction coefficient
+                const double sigma_t = sigma_s + sigma_a;                               // extinction coefficient
 
                 // Compute extrapolation distance (equation 21).
                 const double D = 1.0 / (3.0 * sigma_t_prime);                           // diffusion coefficient
@@ -368,6 +373,7 @@ namespace
             }
 
             // todo: we seem to be missing the S_sigma_E term (single scattering).
+            // See equation 12 (section 3.2) of the Directional Dipole paper.
         }
     };
 }
