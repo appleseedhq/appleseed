@@ -42,7 +42,7 @@ using namespace std;
 
 TEST_SUITE(Foundation_Math_SSS)
 {
-    static double rd_alpha_prime_roundtrip(
+    double rd_alpha_prime_roundtrip(
         const double rd,
         const double eta)
     {
@@ -64,7 +64,7 @@ TEST_SUITE(Foundation_Math_SSS)
         EXPECT_FEQ_EPS(1.0, rd_alpha_prime_roundtrip(1.0, 1.5), 0.001);
     }
 
-    static const double NormalizedDiffusionTestEps = 0.0001;
+    const double NormalizedDiffusionTestEps = 0.0001;
 
     TEST_CASE(NormalizedDiffusionA)
     {

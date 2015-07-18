@@ -40,11 +40,13 @@ namespace foundation
 //   http://graphics.pixar.com/library/TexturingBetterDipole/paper.pdf
 //
 
+// Compute Rd (integral of the diffusion profile R) given the reduced albedo alpha'.
 double compute_rd(
     const double    alpha_prime,
     const double    two_c1,
     const double    three_c2);
 
+// Numerically solve for the reduced albedo alpha' given Rd.
 double compute_alpha_prime(
     const double    rd,
     const double    two_c1,

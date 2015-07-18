@@ -54,7 +54,7 @@ double compute_rd(
     const double cphi = 0.25 * (1.0 - two_c1);
     const double ce = 0.5 * (1.0 - three_c2);
     const double four_a = (1.0 + three_c2) / cphi;
-    const double mu_tr_d = sqrt((1.0 - alpha_prime) * (2.0 - alpha_prime) / 3.0);
+    const double mu_tr_d = sqrt((1.0 - alpha_prime) * (2.0 - alpha_prime) * (1.0 / 3.0));
     const double myexp = exp(-four_a * mu_tr_d);
     return 0.5 * square(alpha_prime)
                * exp(-sqrt(3.0 * (1.0 - alpha_prime) / (2.0 - alpha_prime)))
