@@ -146,7 +146,7 @@ namespace
     {
         OSL::ustring    profile;
         OSL::Color3     reflectance;
-        OSL::Vec3       mean_free_path;
+        OSL::Vec3       diffuse_mean_free_path;
         float           eta;
     };
 }
@@ -636,7 +636,7 @@ void CompositeSubsurfaceClosure::process_closure_tree(
                 {
                     DirectionalDipoleBSSRDFInputValues values;
                     values.m_reflectance = Color3f(p->reflectance);
-                    values.m_dmfp = Color3f(p->mean_free_path);
+                    values.m_dmfp = Color3f(p->diffuse_mean_free_path);
                     values.m_dmfp_multiplier = 1.0;
                     values.m_anisotropy = 0.0;
                     values.m_outside_ior = 1.0;
@@ -865,7 +865,7 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
 
         { "as_subsurface", SubsurfaceID, { CLOSURE_STRING_PARAM(SubsurfaceClosureParams, profile),
                                            CLOSURE_COLOR_PARAM(SubsurfaceClosureParams, reflectance),
-                                           CLOSURE_VECTOR_PARAM(SubsurfaceClosureParams, mean_free_path),
+                                           CLOSURE_VECTOR_PARAM(SubsurfaceClosureParams, diffuse_mean_free_path),
                                            CLOSURE_FLOAT_PARAM(SubsurfaceClosureParams, eta),
                                            CLOSURE_FINISH_PARAM(SubsurfaceClosureParams) } },
 
