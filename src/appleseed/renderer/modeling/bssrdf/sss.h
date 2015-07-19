@@ -26,10 +26,10 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_SSS_H
-#define APPLESEED_FOUNDATION_MATH_SSS_H
+#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_SSS_H
+#define APPLESEED_RENDERER_MODELING_BSSRDF_SSS_H
 
-namespace foundation
+namespace renderer
 {
 
 //
@@ -85,6 +85,6 @@ double normalized_diffusion_sample(
     const double    ld,
     const double    e);
 
-}       // namespace foundation
+}       // namespace renderer
 
-#endif  // !APPLESEED_FOUNDATION_MATH_SSS_H
+#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_SSS_H

@@ -26,12 +26,14 @@
 // THE SOFTWARE.
 //
 
+// appleseed.renderer headers.
+#include "renderer/modeling/bssrdf/sss.h"
+
 // appleseed.foundation headers.
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/mersennetwister.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
-#include "foundation/math/sss.h"
 #include "foundation/utility/gnuplotfile.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
@@ -41,9 +43,10 @@
 #include <vector>
 
 using namespace foundation;
+using namespace renderer;
 using namespace std;
 
-TEST_SUITE(Foundation_Math_SSS)
+TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 {
     double rd_alpha_prime_roundtrip(
         const double rd,

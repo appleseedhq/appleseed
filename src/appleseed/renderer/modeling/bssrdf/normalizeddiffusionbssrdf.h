@@ -31,30 +31,27 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/ibssrdffactory.h"
+#include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/basis.h"
-#include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Standard headers.
-#include <cstddef>
-
 // Forward declarations.
-namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class Assembly; }
-namespace renderer      { class InputEvaluator; }
+namespace foundation    { class Dictionary; }
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class BSSRDF;  }
 namespace renderer      { class ParamArray; }
-namespace renderer      { class Project; }
-namespace renderer      { class ShadingContext; }
-namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {
+
+//
+// Normalized diffusion BSSRDF input values.
+//
 
 APPLESEED_DECLARE_INPUT_VALUES(NormalizedDiffusionBSSRDFInputValues)
 {
@@ -62,8 +59,8 @@ APPLESEED_DECLARE_INPUT_VALUES(NormalizedDiffusionBSSRDFInputValues)
     double      m_reflectance_multiplier;
     Spectrum    m_mean_free_path;
     double      m_mean_free_path_multiplier;
-    double      m_from_ior;
-    double      m_to_ior;
+    double      m_outside_ior;
+    double      m_inside_ior;
 };
 
 
