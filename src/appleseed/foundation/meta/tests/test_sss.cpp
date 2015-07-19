@@ -30,7 +30,10 @@
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/mersennetwister.h"
 #include "foundation/math/fresnel.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/sss.h"
+#include "foundation/utility/gnuplotfile.h"
+#include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
@@ -166,5 +169,51 @@ TEST_SUITE(Foundation_Math_SSS)
             const double r = normalized_diffusion_sample(s, l, e);
             EXPECT_FEQ_EPS(e, normalized_diffusion_cdf(r, s, l), NormalizedDiffusionTestEps);
         }
+    }
+
+    TEST_CASE(PlotNormalizedDiffusionR)
+    {
+        GnuplotFile plotfile;
+        plotfile.set_title("Searchlight with dmfp");
+        plotfile.set_xlabel("r");
+        plotfile.set_ylabel("r R(r)");
+        plotfile.set_logscale_y();
+
+        for (size_t i = 9; i >= 1; --i)
+        {
+            const double a = static_cast<double>(i) / 10.0;
+            const double s = normalized_diffusion_s(a);
+
+            const size_t N = 1000;
+            vector<Vector2d> points;
+
+            for (size_t j = 0; j < N; ++j)
+            {
+                const double r = fit<size_t, double>(j, 0, N - 1, 0.0, 8.0);
+                const double y = r * normalized_diffusion_r(r, 1.0, s, a);
+                points.push_back(Vector2d(r, y));
+            }
+
+            static const char* Colors[9] =
+            {
+                "gray",
+                "orange",
+                "black",
+                "brown",
+                "cyan",
+                "magenta",
+                "blue",
+                "green",
+                "red"
+            };
+
+            plotfile
+                .new_plot()
+                .set_points(points)
+                .set_title("A = " + to_string(a))
+                .set_color(Colors[i - 1]);
+        }
+
+        plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_r.gnuplot");
     }
 }
