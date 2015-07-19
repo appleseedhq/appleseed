@@ -79,7 +79,7 @@ namespace
           : BSSRDF(name, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar);
+            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("mean_free_path", InputFormatSpectralReflectance);
             m_inputs.declare("mean_free_path_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("anisotropy", InputFormatScalar);
@@ -123,35 +123,40 @@ namespace
                 if (values->m_mean_free_path.is_spectral())
                     Spectrum::upgrade(values->m_reflectance, values->m_reflectance);
                 else
-                    values->m_reflectance = values->m_reflectance.convert_to_rgb(get_lighting_conditions());
+                    values->m_reflectance = values->m_reflectance.convert_to_rgb(*m_lighting_conditions);
             }
 
-            values->m_sigma_a.resize(values->m_mean_free_path.size());
             values->m_sigma_s_prime.resize(values->m_mean_free_path.size());
-
-            // Convert values and precompute stuff.
+            values->m_sigma_a.resize(values->m_mean_free_path.size());
             values->m_max_mean_free_path = 0.0;
 
             const double eta = values->m_to_ior / values->m_from_ior;
-            const double c1 = fresnel_moment_c1(eta);
-            const double c2 = fresnel_moment_c2(eta);
+            const double two_c1 = fresnel_moment_two_c1(eta);
+            const double three_c2 = fresnel_moment_three_c2(eta);
 
             for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
             {
-                const double alpha_prime =
-                    compute_alpha_prime(
-                        saturate(static_cast<double>(values->m_reflectance[i])),
-                        c1,
-                        c2);
-
+                // Input values: diffuse reflectance and mean free path.
+                const double rd = saturate(static_cast<double>(values->m_reflectance[i]));
                 const double mfp = static_cast<double>(values->m_mean_free_path[i]);
-                values->m_max_mean_free_path = max(values->m_max_mean_free_path, mfp);
 
+                // Find alpha' by numerically inverting Rd(alpha').
+                const double alpha_prime = compute_alpha_prime(rd, two_c1, three_c2);
+
+                // Compute effective transport coefficient.
                 const double sigma_tr = 1.0 / mfp;
+
+                // Compute reduced extinction coefficient.
                 const double sigma_t_prime = sigma_tr / sqrt(3.0 * (1.0 - alpha_prime));
 
+                // Compute reduced scattering coefficient.
                 values->m_sigma_s_prime[i] = static_cast<float>(alpha_prime * sigma_t_prime);
+
+                // Compute absorption coefficient.
                 values->m_sigma_a[i] = static_cast<float>(sigma_t_prime) - values->m_sigma_s_prime[i];
+
+                // Compute max mean free path across all wavelengths.
+                values->m_max_mean_free_path = max(values->m_max_mean_free_path, mfp);
             }
         }
 
@@ -262,7 +267,7 @@ namespace
             const double r2 = square(r);
             const double sigma_tr_r = sigma_tr * r;
             const double sigma_tr_r_one = 1.0 + sigma_tr_r;
-            const double cp_rcp_eta = 1.0 - 2.0 * fresnel_moment_c1(1.0 / eta);          // Cphi(1/eta) * 4
+            const double cp_rcp_eta = 1.0 - fresnel_moment_two_c1(1.0 / eta);           // Cphi(1/eta) * 4
 
             const double t0 = exp(-sigma_tr_r) / (cp_rcp_eta * FourPiSquare * r2 * r);
             const double t1 = r2 / D + 3.0 * sigma_tr_r_one * dot_xw;
@@ -297,8 +302,8 @@ namespace
             const Vector3d wv = -reflect(wr, ni_star);                                  // direction of the virtual ray source
 
             // Compute Fresnel integrals.
-            const double cp = 0.25 * (1.0 - 2.0 * fresnel_moment_c1(eta));
-            const double ce = 0.5 * (1.0 - 3.0 * fresnel_moment_c2(eta));
+            const double cp = 0.25 * (1.0 - fresnel_moment_two_c1(eta));
+            const double ce = 0.5 * (1.0 - fresnel_moment_three_c2(eta));
 
             const double A = (1.0 - ce) / (2.0 * cp);                                   // reflection parameter
 
@@ -317,7 +322,7 @@ namespace
                 const double sigma_t_prime = sigma_s_prime + sigma_a;                   // reduced extinction coefficient
                 const double alpha_prime = sigma_s_prime / sigma_t_prime;               // reduced scattering albedo
                 const double sigma_s = sigma_s_prime / (1.0 - values->m_anisotropy);    // scattering coefficient
-                const double sigma_t = sigma_a + sigma_s;                               // extinction coefficient
+                const double sigma_t = sigma_s + sigma_a;                               // extinction coefficient
 
                 // Compute extrapolation distance (equation 21).
                 const double D = 1.0 / (3.0 * sigma_t_prime);                           // diffusion coefficient
@@ -370,6 +375,7 @@ namespace
             }
 
             // todo: we seem to be missing the S_sigma_E term (single scattering).
+            // See equation 12 (section 3.2) of the Directional Dipole paper.
         }
     };
 }

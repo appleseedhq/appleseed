@@ -131,11 +131,13 @@ void fresnel_reflectance_dielectric_schlick(
 //   http://www.eugenedeon.com/wp-content/uploads/2014/04/betterdipole.pdf
 //
 
+// Compute and return 2 * C1.
 template <typename T>
-T fresnel_moment_c1(const T eta);
+T fresnel_moment_two_c1(const T eta);
 
+// Compute and return 3 * C2.
 template <typename T>
-T fresnel_moment_c2(const T eta);
+T fresnel_moment_three_c2(const T eta);
 
 
 //
@@ -323,28 +325,24 @@ void fresnel_reflectance_dielectric_schlick(
 }
 
 template <typename T>
-T fresnel_moment_c1(const T eta)
+T fresnel_moment_two_c1(const T eta)
 {
-    const T two_c1 =
+    return
         eta < T(1.0)
             ? T(0.919317) + eta * (T(-3.4793) + eta * (T(6.75335) + eta * (T(-7.80989) + eta * (T(4.98554) - eta * T(1.36881)))))
             : T(-9.23372) + eta * (T(22.2272) + eta * (T(-20.9292) + eta * (T(10.2291) + eta * (T(-2.54396) + eta * T(0.254913)))));
-
-    return two_c1 * T(0.5);
 }
 
 template <typename T>
-T fresnel_moment_c2(const T eta)
+T fresnel_moment_three_c2(const T eta)
 {
     const T rcp_eta = T(1.0) / eta;
 
-    const T three_c2 =
+    return
         eta < T(1.0)
             ? T(0.828421) + eta * (T(-2.62051) + eta * (T(3.36231) + eta * (T(-1.95284) + eta * (T(0.236494) + eta * T(0.145787)))))
             : T(-1641.1) + (((T(135.926) * rcp_eta) - T(656.175)) * rcp_eta + T(1376.53)) * rcp_eta
               + eta * (T(1213.67) + eta * (T(-568.556) + eta * (T(164.798) + eta * (T(-27.0181) + eta * T(1.91826)))));
-
-    return three_c2 * T(1.0 / 3.0);
 }
 
 }       // namespace foundation

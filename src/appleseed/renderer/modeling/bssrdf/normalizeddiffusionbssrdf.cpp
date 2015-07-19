@@ -69,7 +69,7 @@ namespace
           : BSSRDF(name, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar);
+            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("mean_free_path", InputFormatSpectralReflectance);
             m_inputs.declare("mean_free_path_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("from_ior", InputFormatScalar);
@@ -112,8 +112,7 @@ namespace
                 if (values->m_mean_free_path.is_spectral())
                     Spectrum::upgrade(values->m_reflectance, values->m_reflectance);
                 else
-                    values->m_reflectance =
-                        values->m_reflectance.convert_to_rgb(get_lighting_conditions());
+                    values->m_reflectance = values->m_reflectance.convert_to_rgb(*m_lighting_conditions);
             }
         }
 

@@ -119,6 +119,12 @@ void GnuplotFile::Plot::write_points(ofstream& file) const
 // GnuplotFile class implementation.
 //
 
+GnuplotFile::GnuplotFile()
+  : m_logscale_x(false)
+  , m_logscale_y(false)
+{
+}
+
 GnuplotFile& GnuplotFile::set_title(const string& title)
 {
     m_title = title;
@@ -134,6 +140,18 @@ GnuplotFile& GnuplotFile::set_xlabel(const string& label)
 GnuplotFile& GnuplotFile::set_ylabel(const string& label)
 {
     m_ylabel = label;
+    return *this;
+}
+
+GnuplotFile& GnuplotFile::set_logscale_x()
+{
+    m_logscale_x = true;
+    return *this;
+}
+
+GnuplotFile& GnuplotFile::set_logscale_y()
+{
+    m_logscale_y = true;
     return *this;
 }
 
@@ -158,6 +176,12 @@ bool GnuplotFile::write(const string& filepath) const
 
     if (!m_ylabel.empty())
         file << "set ylabel \"" << m_ylabel << "\"" << endl;
+
+    if (m_logscale_x)
+        file << "set logscale x" << endl;
+
+    if (m_logscale_y)
+        file << "set logscale y" << endl;
 
     if (!m_plots.empty())
     {

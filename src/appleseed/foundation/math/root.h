@@ -109,7 +109,7 @@ bool find_root_bisection(
 
     for (size_t i = 0; i < max_iterations; ++i)
     {
-        const T m = (a + b) / T(2.0);
+        const T m = (a + b) * T(0.5);
 
         if (std::abs(b - a) <= eps)
         {
@@ -150,7 +150,7 @@ bool find_root_newton(
     if (fa * fb > T(0.0))
         return false;
 
-    root = (a + b) / T(2.0);
+    root = (a + b) * T(0.5);
 
     for (size_t i = 0; i < max_iterations; ++i)
     {
@@ -176,7 +176,7 @@ void find_multiple_roots_bisection(
 {
     if (std::abs(b - a) > max_length)
     {
-        const T m = (a + b) / T(2.0);
+        const T m = (a + b) * T(0.5);
         find_multiple_roots_bisection(f, a, m, max_length, eps, max_iterations, root_handler);
         find_multiple_roots_bisection(f, m, b, max_length, eps, max_iterations, root_handler);
     }
@@ -201,7 +201,7 @@ void find_multiple_roots_newton(
 {
     if (std::abs(b - a) > max_length)
     {
-        const T m = (a + b) / T(2.0);
+        const T m = (a + b) * T(0.5);
         find_multiple_roots_newton(f, d, a, m, max_length, eps, max_iterations, root_handler);
         find_multiple_roots_newton(f, d, m, b, max_length, eps, max_iterations, root_handler);
     }

@@ -40,8 +40,17 @@ namespace foundation
 //   http://graphics.pixar.com/library/TexturingBetterDipole/paper.pdf
 //
 
-double compute_rd(double alpha_prime, double two_c1, double three_c2);
-double compute_alpha_prime(double rd, double c1, double c2);
+// Compute Rd (integral of the diffusion profile R) given the reduced albedo alpha'.
+double compute_rd(
+    const double    alpha_prime,
+    const double    two_c1,
+    const double    three_c2);
+
+// Numerically solve for the reduced albedo alpha' given Rd.
+double compute_alpha_prime(
+    const double    rd,
+    const double    two_c1,
+    const double    three_c2);
 
 
 //
@@ -52,28 +61,29 @@ double compute_alpha_prime(double rd, double c1, double c2);
 //   http://graphics.pixar.com/library/ApproxBSSRDF/paper.pdf
 //
 
-double normalized_diffusion_s(const double a);
+double normalized_diffusion_s(
+    const double    a);
 
 double normalized_diffusion_r(
-    const double r,
-    const double ld,
-    const double s,
-    const double a);
+    const double    r,
+    const double    ld,
+    const double    s,
+    const double    a);
 
 double normalized_diffusion_cdf(
-    const double r,
-    const double s,
-    const double ld);
+    const double    r,
+    const double    s,
+    const double    ld);
 
 double normalized_diffusion_pdf(
-    const double e,
-    const double s,
-    const double ld);
+    const double    e,
+    const double    s,
+    const double    ld);
 
 double normalized_diffusion_sample(
-    const double s,
-    const double ld,
-    const double e);
+    const double    s,
+    const double    ld,
+    const double    e);
 
 }       // namespace foundation
 
