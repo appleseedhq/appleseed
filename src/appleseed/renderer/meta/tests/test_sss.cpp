@@ -75,23 +75,23 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
     TEST_CASE(NormalizedDiffusionA)
     {
-        static const double Result[] =
+        static const double Expected[] =
         {
             4.68592, 4.11466, 3.77984, 3.60498, 3.52856, 3.5041, 3.50008,
             3.50002, 3.5024, 3.52074, 3.58352, 3.73426, 4.03144, 4.54858,
             5.37416, 6.6117, 8.37968, 10.8116, 14.056, 18.2763, 23.6511
         };
 
-        for (size_t i = 0, e = countof(Result); i < e; ++i)
+        for (size_t i = 0, e = countof(Expected); i < e; ++i)
         {
             const double s = normalized_diffusion_s(static_cast<double>(i) * 0.05);
-            EXPECT_FEQ_EPS(Result[i], s, NormalizedDiffusionTestEps);
+            EXPECT_FEQ_EPS(Expected[i], s, NormalizedDiffusionTestEps);
         }
     }
 
     TEST_CASE(NormalizedDiffusionR)
     {
-        static const double Result[] =
+        static const double Expected[] =
         {
             2.53511, 0.674967, 0.327967, 0.192204, 0.124137, 0.0852575,
             0.0611367, 0.0452741, 0.0343737, 0.0266197, 0.0209473, 0.0167009,
@@ -99,7 +99,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             0.00427902, 0.0035934, 0.00302721
         };
 
-        for (size_t i = 0, e = countof(Result); i < e; ++i)
+        for (size_t i = 0, e = countof(Expected); i < e; ++i)
         {
             const double r =
                 normalized_diffusion_r(
@@ -108,13 +108,13 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
                     3.583521,
                     0.5);
 
-            EXPECT_FEQ_EPS(Result[i], r, NormalizedDiffusionTestEps);
+            EXPECT_FEQ_EPS(Expected[i], r, NormalizedDiffusionTestEps);
         }
     }
 
     TEST_CASE(NormalizedDiffusionCdf)
     {
-        static const double Result[] =
+        static const double Expected[] =
         {
             0.282838, 0.598244, 0.760091, 0.85267, 0.908478, 0.942885, 0.964293,
             0.97766, 0.98602, 0.99125, 0.994523, 0.996572, 0.997854, 0.998657,
@@ -123,15 +123,18 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             0.999999, 0.999999, 1
         };
 
-        for (size_t i = 0, e = countof(Result); i < e; ++i)
+        for (size_t i = 0, e = countof(Expected); i < e; ++i)
         {
+            const double L = 1.0;           // mean free path
+            const double S = 14.056001;     // scaling factor s for A = 0.9
+
             const double cdf =
                 normalized_diffusion_cdf(
                     static_cast<double>(i) * 0.1 + 0.05,
-                    1.0,
-                    14.056001);
+                    L,
+                    S);
 
-            EXPECT_FEQ_EPS(Result[i], cdf, NormalizedDiffusionTestEps);
+            EXPECT_FEQ_EPS(Expected[i], cdf, NormalizedDiffusionTestEps);
         }
     }
 
@@ -181,6 +184,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.set_title("Searchlight Configuration with dmfp Parameterization");
         plotfile.set_xlabel("r");
         plotfile.set_ylabel("r R(r)");
+        plotfile.set_xrange(0.0, 8.0);
+        plotfile.set_yrange(0.001, 1.0);
         plotfile.set_logscale_y();
 
         for (size_t i = 9; i >= 1; --i)
