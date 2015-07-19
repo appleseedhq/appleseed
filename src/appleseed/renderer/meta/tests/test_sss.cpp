@@ -32,12 +32,16 @@
 #include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #include "renderer/modeling/bssrdf/sss.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/mersennetwister.h"
+#include "foundation/math/basis.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
+#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/gnuplotfile.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
@@ -187,7 +191,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         GnuplotFile plotfile;
         plotfile.set_title("dmfp functional approximation");
         plotfile.set_xlabel("A");
-        plotfile.set_ylabel("S(A)");
+        plotfile.set_ylabel("s(A)");
 
         const size_t N = 1000;
         vector<Vector2d> points;
