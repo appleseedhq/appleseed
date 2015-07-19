@@ -90,51 +90,71 @@ double compute_alpha_prime(
 // Normalized diffusion.
 //
 
-double normalized_diffusion_s(const double a)
+double normalized_diffusion_s(
+    const double    a)
 {
-    const double a2 = square(a - 0.33);
-    return 3.5 + 100.0 * square(a2);
+    // Equation 8.
+    return 3.5 + 100.0 * square(square(a - 0.33));
 }
 
 double normalized_diffusion_r(
     const double    r,
-    const double    ld,
+    const double    d)
+{
+    // Equation 2.
+    return (exp(-r / d) + exp(-r / (3.0 * d))) / (8.0 * Pi * d * r);
+}
+
+double normalized_diffusion_r(
+    const double    r,
+    const double    l,
     const double    s,
     const double    a)
 {
-    const double d = ld / s;
-    const double num = exp(-r / d) + exp(-r / (3.0 * d));
-    const double denom = 8.0 * Pi * d * r;
-    return a * (num / denom);
+    // Equation 3.
+    return a * normalized_diffusion_r(r, l / s);
 }
 
 double normalized_diffusion_cdf(
     const double    r,
-    const double    s,
-    const double    ld)
+    const double    d)
 {
-    const double d = ld / s;
-    return 1.0 - (0.25 * exp(-r / d)) - (0.75 * exp(-r / (3.0 * d)));
+    // Equation 11.
+    return 1.0 - 0.25 * exp(-r / d) - 0.75 * exp(-r / (3.0 * d));
+}
+
+double normalized_diffusion_cdf(
+    const double    r,
+    const double    l,
+    const double    s)
+{
+    return normalized_diffusion_cdf(r, l / s);
 }
 
 double normalized_diffusion_pdf(
-    const double    e,
-    const double    s,
-    const double    ld)
+    const double    r,
+    const double    d)
 {
-    const double d = ld / s;
-    return (exp(-e / d) + exp(-e / (3.0 * d))) / (4.0 * d);
+    return (exp(-r / d) + exp(-r / (3.0 * d))) / (4.0 * d);
+}
+
+double normalized_diffusion_pdf(
+    const double    r,
+    const double    l,
+    const double    s)
+{
+    return normalized_diffusion_pdf(r, l / s);
 }
 
 double normalized_diffusion_sample(
-    const double    s,
-    const double    ld,
-    const double    e)
+    const double    u,
+    const double    l,
+    const double    s)
 {
     // Heuristic.
-    double x1 = 10.0 + (3.0 * ld);
+    double x1 = 10.0 + (3.0 * l);
 
-    if (normalized_diffusion_cdf(x1, s, ld) < e)
+    if (normalized_diffusion_cdf(x1, l, s) < u)
         return x1;
 
     double x0 = 0.0;
@@ -145,8 +165,8 @@ double normalized_diffusion_sample(
     for (size_t i = 0; i < 50; ++i)
     {
         xmid = 0.5 * (x0 + x1);
-        const double f = normalized_diffusion_cdf(xmid, s, ld);
-        f < e ? x0 = xmid : x1 = xmid;
+        const double f = normalized_diffusion_cdf(xmid, l, s);
+        f < u ? x0 = xmid : x1 = xmid;
     }
 
     return xmid;

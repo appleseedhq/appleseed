@@ -61,29 +61,45 @@ double compute_alpha_prime(
 //   http://graphics.pixar.com/library/ApproxBSSRDF/paper.pdf
 //
 
+// Compute the scaling factor s for the searchlight configuration with dmfp parameterization.
 double normalized_diffusion_s(
-    const double    a);
+    const double    a);                 // surface albedo
 
+// Evaluate the diffuse reflectance profile R(r).
+// The d parameter shapes the height and width of the curve and can be set
+// based on artistic preference or determined based on physical parameters.
 double normalized_diffusion_r(
-    const double    r,
-    const double    ld,
-    const double    s,
-    const double    a);
+    const double    r,                  // distance
+    const double    d);                 // curve shape
+double normalized_diffusion_r(
+    const double    r,                  // distance
+    const double    l,                  // mean free path length or diffuse mean free path length
+    const double    s,                  // scaling factor
+    const double    a);                 // surface albedo
 
+// Evaluate the cumulative distribution function of R(r) * (2 * Pi * r).
 double normalized_diffusion_cdf(
-    const double    r,
-    const double    s,
-    const double    ld);
+    const double    r,                  // distance
+    const double    d);                 // curve shape
+double normalized_diffusion_cdf(
+    const double    r,                  // distance
+    const double    l,                  // mean free path length or diffuse mean free path length
+    const double    s);                 // scaling factor
 
+// Evaluate the probability density of a given sample.
 double normalized_diffusion_pdf(
-    const double    e,
-    const double    s,
-    const double    ld);
+    const double    r,                  // distance
+    const double    d);                 // curve shape
+double normalized_diffusion_pdf(
+    const double    r,                  // distance
+    const double    l,                  // mean free path length or diffuse mean free path length
+    const double    s);                 // scaling factor
 
+// Sample the function R(r) * (2 * Pi * r).
 double normalized_diffusion_sample(
-    const double    s,
-    const double    ld,
-    const double    e);
+    const double    u,                  // uniform random sample in [0,1)
+    const double    l,                  // mean free path length or diffuse mean free path length
+    const double    s);                 // scaling factor
 
 }       // namespace renderer
 
