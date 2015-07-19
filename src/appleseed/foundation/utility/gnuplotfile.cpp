@@ -123,15 +123,19 @@ bool GnuplotFile::write(const string& filepath) const
 
     if (m_has_xrange)
         file << "set xrange [" << m_xrange[0] << ":" << m_xrange[1] << "]" << endl;
+    else file << "set autoscale x" << endl;
 
     if (m_has_yrange)
         file << "set yrange [" << m_yrange[0] << ":" << m_yrange[1] << "]" << endl;
+    else file << "set autoscale y" << endl;
 
     if (m_logscale_x)
         file << "set logscale x" << endl;
+    else file << "unset logscale x" << endl;
 
     if (m_logscale_y)
         file << "set logscale y" << endl;
+    else file << "unset logscale y" << endl;
 
     if (!m_plots.empty())
     {
