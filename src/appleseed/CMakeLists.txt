@@ -292,8 +292,6 @@ set (foundation_math_sources
     foundation/math/sphericaltriangle.h
     foundation/math/spline.h
     foundation/math/split.h
-    foundation/math/sss.cpp
-    foundation/math/sss.h
     foundation/math/transform.h
     foundation/math/treeoptimizer.h
     foundation/math/triangulator.h
@@ -447,7 +445,6 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_snprintf.cpp
     foundation/meta/tests/test_sphericalimportancesampler.cpp
     foundation/meta/tests/test_spline.cpp
-    foundation/meta/tests/test_sss.cpp
     foundation/meta/tests/test_statistics.cpp
     foundation/meta/tests/test_stlallocatortestbed.cpp
     foundation/meta/tests/test_string.cpp
@@ -1204,6 +1201,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_scene.cpp
     renderer/meta/tests/test_shadingresult.cpp
     renderer/meta/tests/test_sphericalcamera.cpp
+    renderer/meta/tests/test_sss.cpp
     renderer/meta/tests/test_texturestore.cpp
     renderer/meta/tests/test_tracer.cpp
     renderer/meta/tests/test_transformsequence.cpp
@@ -1293,6 +1291,8 @@ set (renderer_modeling_bssrdf_sources
     renderer/modeling/bssrdf/directionaldipolebssrdf.cpp
     renderer/modeling/bssrdf/directionaldipolebssrdf.h
     renderer/modeling/bssrdf/ibssrdffactory.h
+    renderer/modeling/bssrdf/sss.cpp
+    renderer/modeling/bssrdf/sss.h
 )
 if (WITH_NORMALIZED_DIFFUSION_BSSRDF)
     list (APPEND renderer_modeling_bssrdf_sources

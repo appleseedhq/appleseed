@@ -36,10 +36,12 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <cstddef>
 
+using namespace foundation;
 using namespace std;
 
-namespace foundation
+namespace renderer
 {
 
 //
@@ -150,4 +152,4 @@ double normalized_diffusion_sample(
     return xmid;
 }
 
-}   // namespace foundation
+}   // namespace renderer
