@@ -57,14 +57,14 @@ APPLESEED_DECLARE_INPUT_VALUES(DirectionalDipoleBSSRDFInputValues)
 {
     Spectrum    m_reflectance;
     double      m_reflectance_multiplier;
-    Spectrum    m_mean_free_path;
-    double      m_mean_free_path_multiplier;
+    Spectrum    m_dmfp;
+    double      m_dmfp_multiplier;
     double      m_anisotropy;
     double      m_outside_ior;
     double      m_inside_ior;
 
     // Precomputed values.
-    double      m_max_mean_free_path;
+    double      m_max_dmfp;
     Spectrum    m_sigma_a;
     Spectrum    m_sigma_s_prime;
 };
