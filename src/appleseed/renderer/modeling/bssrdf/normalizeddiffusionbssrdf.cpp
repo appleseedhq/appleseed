@@ -82,8 +82,8 @@ namespace
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("mean_free_path", InputFormatSpectralReflectance);
-            m_inputs.declare("mean_free_path_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("dmfp", InputFormatSpectralReflectance);
+            m_inputs.declare("dmfp_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("outside_ior", InputFormatScalar);
             m_inputs.declare("inside_ior", InputFormatScalar);
         }
@@ -117,11 +117,11 @@ namespace
                 reinterpret_cast<NormalizedDiffusionBSSRDFInputValues*>(ptr + offset);
 
             values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
-            values->m_mean_free_path *= static_cast<float>(values->m_mean_free_path_multiplier);
+            values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
 
-            if (values->m_mean_free_path.size() != values->m_reflectance.size())
+            if (values->m_dmfp.size() != values->m_reflectance.size())
             {
-                if (values->m_mean_free_path.is_spectral())
+                if (values->m_dmfp.is_spectral())
                     Spectrum::upgrade(values->m_reflectance, values->m_reflectance);
                 else
                     values->m_reflectance = values->m_reflectance.convert_to_rgb(*m_lighting_conditions);
@@ -146,7 +146,7 @@ namespace
             {
                 const double a = values->m_reflectance[i];
                 const double s = normalized_diffusion_s(a);
-                const double ld = values->m_mean_free_path[i];
+                const double ld = values->m_dmfp[i];
                 value[i] = static_cast<float>(normalized_diffusion_r(dist, ld, s, a));
             }
         }
@@ -173,9 +173,9 @@ namespace
             // Sample a radius.
             const double radius =
                 normalized_diffusion_sample(
-                    normalized_diffusion_s(values->m_reflectance[channel]),
-                    values->m_mean_free_path[channel],
-                    s[1]);
+                    s[1],
+                    values->m_dmfp[channel],
+                    normalized_diffusion_s(values->m_reflectance[channel]));
 
             // Sample an angle.
             const double phi = TwoPi * s[2];
@@ -201,8 +201,8 @@ namespace
             const double pdf_radius =
                 normalized_diffusion_pdf(
                     dist,
-                    normalized_diffusion_s(values->m_reflectance[channel]),
-                    values->m_mean_free_path[channel]);
+                    values->m_dmfp[channel],
+                    normalized_diffusion_s(values->m_reflectance[channel]));
 
             // PDF of the sampled angle.
             const double pdf_angle = RcpTwoPi;
@@ -238,7 +238,7 @@ DictionaryArray NormalizedDiffusionBSSRDFFactory::get_input_metadata() const
     metadata.push_back(
         Dictionary()
             .insert("name", "reflectance")
-            .insert("label", "Reflectance")
+            .insert("label", "Diffuse Surface Reflectance")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
@@ -250,7 +250,7 @@ DictionaryArray NormalizedDiffusionBSSRDFFactory::get_input_metadata() const
     metadata.push_back(
         Dictionary()
             .insert("name", "reflectance_multiplier")
-            .insert("label", "Reflectance Multiplier")
+            .insert("label", "Diffuse Surface Reflectance Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
@@ -259,8 +259,8 @@ DictionaryArray NormalizedDiffusionBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "mean_free_path")
-            .insert("label", "Mean Free Path")
+            .insert("name", "dmfp")
+            .insert("label", "Diffuse Mean Free Path")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
@@ -271,8 +271,8 @@ DictionaryArray NormalizedDiffusionBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "mean_free_path_multiplier")
-            .insert("label", "Mean Free Path Multiplier")
+            .insert("name", "dmfp_multiplier")
+            .insert("label", "Diffuse Mean Free Path Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))

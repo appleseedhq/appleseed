@@ -57,8 +57,8 @@ APPLESEED_DECLARE_INPUT_VALUES(NormalizedDiffusionBSSRDFInputValues)
 {
     Spectrum    m_reflectance;
     double      m_reflectance_multiplier;
-    Spectrum    m_mean_free_path;
-    double      m_mean_free_path_multiplier;
+    Spectrum    m_dmfp;
+    double      m_dmfp_multiplier;
     double      m_outside_ior;
     double      m_inside_ior;
 };

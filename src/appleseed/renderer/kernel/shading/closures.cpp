@@ -636,8 +636,8 @@ void CompositeSubsurfaceClosure::process_closure_tree(
                 {
                     DirectionalDipoleBSSRDFInputValues values;
                     values.m_reflectance = Color3f(p->reflectance);
-                    values.m_mean_free_path = Color3f(p->mean_free_path);
-                    values.m_mean_free_path_multiplier = 1.0;
+                    values.m_dmfp = Color3f(p->mean_free_path);
+                    values.m_dmfp_multiplier = 1.0;
                     values.m_anisotropy = 0.0;
                     values.m_outside_ior = 1.0;
                     values.m_inside_ior = 1.0 / p->eta;

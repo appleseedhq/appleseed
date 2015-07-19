@@ -89,8 +89,8 @@ namespace
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("mean_free_path", InputFormatSpectralReflectance);
-            m_inputs.declare("mean_free_path_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("dmfp", InputFormatSpectralReflectance);
+            m_inputs.declare("dmfp_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("anisotropy", InputFormatScalar);
             m_inputs.declare("outside_ior", InputFormatScalar);
             m_inputs.declare("inside_ior", InputFormatScalar);
@@ -125,19 +125,19 @@ namespace
                 reinterpret_cast<DirectionalDipoleBSSRDFInputValues*>(ptr + offset);
 
             values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
-            values->m_mean_free_path *= static_cast<float>(values->m_mean_free_path_multiplier);
+            values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
 
-            if (values->m_mean_free_path.size() != values->m_reflectance.size())
+            if (values->m_dmfp.size() != values->m_reflectance.size())
             {
-                if (values->m_mean_free_path.is_spectral())
+                if (values->m_dmfp.is_spectral())
                     Spectrum::upgrade(values->m_reflectance, values->m_reflectance);
                 else
                     values->m_reflectance = values->m_reflectance.convert_to_rgb(*m_lighting_conditions);
             }
 
-            values->m_sigma_s_prime.resize(values->m_mean_free_path.size());
-            values->m_sigma_a.resize(values->m_mean_free_path.size());
-            values->m_max_mean_free_path = 0.0;
+            values->m_sigma_s_prime.resize(values->m_dmfp.size());
+            values->m_sigma_a.resize(values->m_dmfp.size());
+            values->m_max_dmfp = 0.0;
 
             const double eta = values->m_inside_ior / values->m_outside_ior;            // relative refractive index
             const double two_c1 = fresnel_moment_two_c1(eta);
@@ -147,7 +147,7 @@ namespace
             {
                 // Input values: diffuse reflectance and mean free path.
                 const double rd = saturate(static_cast<double>(values->m_reflectance[i]));
-                const double mfp = static_cast<double>(values->m_mean_free_path[i]);
+                const double mfp = static_cast<double>(values->m_dmfp[i]);
 
                 // Find alpha' by numerically inverting Rd(alpha').
                 const double alpha_prime = compute_alpha_prime(rd, two_c1, three_c2);
@@ -165,7 +165,7 @@ namespace
                 values->m_sigma_a[i] = static_cast<float>(sigma_t_prime) - values->m_sigma_s_prime[i];
 
                 // Compute max mean free path across all wavelengths.
-                values->m_max_mean_free_path = max(values->m_max_mean_free_path, mfp);
+                values->m_max_dmfp = max(values->m_max_dmfp, mfp);
             }
         }
 
@@ -226,7 +226,7 @@ namespace
             sample.set_channel(channel);
 
             // Sample a radius (PBRT v1, page 641).
-            const double radius = -log(1.0 - s[1]) * values->m_mean_free_path[channel];
+            const double radius = -log(1.0 - s[1]) * values->m_dmfp[channel];
 
             // Sample an angle.
             const double phi = TwoPi * s[2];
@@ -249,7 +249,7 @@ namespace
             const double pdf_channel = 1.0 / values->m_reflectance.size();
 
             // PDF of the sampled radius (PBRT v1, page 641).
-            const double sigma_tr = 1.0 / values->m_mean_free_path[channel];
+            const double sigma_tr = 1.0 / values->m_dmfp[channel];
             const double pdf_radius = sigma_tr * exp(-sigma_tr * dist);
 
             // PDF of the sampled angle.
@@ -414,7 +414,7 @@ DictionaryArray DirectionalDipoleBSSRDFFactory::get_input_metadata() const
     metadata.push_back(
         Dictionary()
             .insert("name", "reflectance")
-            .insert("label", "Reflectance")
+            .insert("label", "Diffuse Surface Reflectance")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
@@ -426,7 +426,7 @@ DictionaryArray DirectionalDipoleBSSRDFFactory::get_input_metadata() const
     metadata.push_back(
         Dictionary()
             .insert("name", "reflectance_multiplier")
-            .insert("label", "Reflectance Multiplier")
+            .insert("label", "Diffuse Surface Reflectance Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
@@ -435,8 +435,8 @@ DictionaryArray DirectionalDipoleBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "mean_free_path")
-            .insert("label", "Mean Free Path")
+            .insert("name", "dmfp")
+            .insert("label", "Diffuse Mean Free Path")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
@@ -447,8 +447,8 @@ DictionaryArray DirectionalDipoleBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "mean_free_path_multiplier")
-            .insert("label", "Mean Free Path Multiplier")
+            .insert("name", "dmfp_multiplier")
+            .insert("label", "Diffuse Mean Free Path Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
