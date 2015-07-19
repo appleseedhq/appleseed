@@ -39,6 +39,7 @@
 #include "foundation/utility/test.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cstddef>
 #include <vector>
 
@@ -127,8 +128,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double cdf =
                 normalized_diffusion_cdf(
                     static_cast<double>(i) * 0.1 + 0.05,
-                    14.056001,
-                    1.0);
+                    1.0,
+                    14.056001);
 
             EXPECT_FEQ_EPS(Result[i], cdf, NormalizedDiffusionTestEps);
         }
@@ -148,11 +149,11 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double s = normalized_diffusion_s(a);
             const double r = rand_double1(rng, 0.0001, 20.0);
 
-            const double pdf = normalized_diffusion_pdf(r, s, l);
+            const double pdf = normalized_diffusion_pdf(r, l, s);
 
             const double pdf_ndiff =
-                (normalized_diffusion_cdf(r + ndiff_step, s, l) -
-                 normalized_diffusion_cdf(r, s, l)) / ndiff_step;
+                (normalized_diffusion_cdf(r + ndiff_step, l, s) -
+                 normalized_diffusion_cdf(r, l, s)) / ndiff_step;
 
             EXPECT_FEQ_EPS(pdf, pdf_ndiff, ndiff_step);
         }
@@ -163,21 +164,21 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     {
         MersenneTwister rng;
 
-        for (size_t i = 0; i < 50; ++i)
+        for (size_t i = 0; i < 1000; ++i)
         {
+            const double u = rand_double1(rng);
             const double a = rand_double1(rng);
             const double l = rand_double1(rng, 0.001, 10.0);
             const double s = normalized_diffusion_s(a);
-            const double e = rand_double1(rng);
-            const double r = normalized_diffusion_sample(s, l, e);
-            EXPECT_FEQ_EPS(e, normalized_diffusion_cdf(r, s, l), NormalizedDiffusionTestEps);
+            const double r = normalized_diffusion_sample(u, l, s);
+            EXPECT_FEQ_EPS(u, normalized_diffusion_cdf(r, l, s), NormalizedDiffusionTestEps);
         }
     }
 
     TEST_CASE(PlotNormalizedDiffusionR)
     {
         GnuplotFile plotfile;
-        plotfile.set_title("Searchlight with dmfp");
+        plotfile.set_title("Searchlight Configuration with dmfp Parameterization");
         plotfile.set_xlabel("r");
         plotfile.set_ylabel("r R(r)");
         plotfile.set_logscale_y();
@@ -192,7 +193,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
             for (size_t j = 0; j < N; ++j)
             {
-                const double r = fit<size_t, double>(j, 0, N - 1, 0.0, 8.0);
+                const double r = max(fit<size_t, double>(j, 0, N - 1, 0.0, 8.0), 0.0001);
                 const double y = r * normalized_diffusion_r(r, 1.0, s, a);
                 points.push_back(Vector2d(r, y));
             }

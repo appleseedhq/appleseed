@@ -173,9 +173,9 @@ namespace
             // Sample a radius.
             const double radius =
                 normalized_diffusion_sample(
-                    normalized_diffusion_s(values->m_reflectance[channel]),
+                    s[1],
                     values->m_mean_free_path[channel],
-                    s[1]);
+                    normalized_diffusion_s(values->m_reflectance[channel]));
 
             // Sample an angle.
             const double phi = TwoPi * s[2];
@@ -201,8 +201,8 @@ namespace
             const double pdf_radius =
                 normalized_diffusion_pdf(
                     dist,
-                    normalized_diffusion_s(values->m_reflectance[channel]),
-                    values->m_mean_free_path[channel]);
+                    values->m_mean_free_path[channel],
+                    normalized_diffusion_s(values->m_reflectance[channel]));
 
             // PDF of the sampled angle.
             const double pdf_angle = RcpTwoPi;
