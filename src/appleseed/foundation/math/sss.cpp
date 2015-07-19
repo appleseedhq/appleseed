@@ -101,9 +101,9 @@ double normalized_diffusion_r(
     const double    a)
 {
     const double d = ld / s;
-    const double denom = Pi * 8.0 * d * r;
     const double num = exp(-r / d) + exp(-r / (3.0 * d));
-    return (a * num) / denom;
+    const double denom = 8.0 * Pi * d * r;
+    return a * (num / denom);
 }
 
 double normalized_diffusion_cdf(
