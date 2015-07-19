@@ -249,13 +249,17 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     void plot_dirpole_rd(
         const char*     filename,
         const char*     title,
-        const double    sigma_a)
+        const double    sigma_a,
+        const double    ymin,
+        const double    ymax)
     {
         GnuplotFile plotfile;
         plotfile.set_title(title);
         plotfile.set_xlabel("x[cm]");
         plotfile.set_ylabel("Rd(x)");
         plotfile.set_logscale_y();
+        plotfile.set_xrange(-16, 16);
+        plotfile.set_yrange(ymin, ymax);
 
         auto_release_ptr<BSSRDF> bssrdf(
             DirectionalDipoleBSSRDFFactory().create("dirpole", ParamArray()));
@@ -311,17 +315,23 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     {
         plot_dirpole_rd(
             "unit tests/outputs/test_sss_dirpole_rd_a_001.gnuplot",
-            "Directional dipole reflectance (sigma_a == 0.01)",
-            0.01);
+            "Directional dipole diffuse reflectance (sigma_a == 0.01)",
+            0.01,
+            1e-5,
+            1e+1);
 
         plot_dirpole_rd(
             "unit tests/outputs/test_sss_dirpole_rd_a_01.gnuplot",
-            "Directional dipole reflectance (sigma_a == 0.1)",
-            0.1);
+            "Directional dipole diffuse reflectance (sigma_a == 0.1)",
+            0.1,
+            1e-8,
+            1e+1);
 
         plot_dirpole_rd(
             "unit tests/outputs/test_sss_dirpole_rd_a_1.gnuplot",
-            "Directional dipole reflectance (sigma_a == 1)",
-            1);
+            "Directional dipole diffuse reflectance (sigma_a == 1)",
+            1,
+            1e-16,
+            1e+1);
     }
 }
