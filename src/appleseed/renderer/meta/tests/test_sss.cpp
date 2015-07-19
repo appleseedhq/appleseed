@@ -181,6 +181,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.set_title("Searchlight Configuration with dmfp Parameterization");
         plotfile.set_xlabel("r");
         plotfile.set_ylabel("r R(r)");
+        plotfile.set_xrange(0.0, 8.0);
+        plotfile.set_yrange(0.001, 1.0);
         plotfile.set_logscale_y();
 
         for (size_t i = 9; i >= 1; --i)
