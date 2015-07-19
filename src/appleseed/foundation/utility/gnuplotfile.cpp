@@ -42,6 +42,119 @@ namespace foundation
 {
 
 //
+// GnuplotFile class implementation.
+//
+
+GnuplotFile::GnuplotFile()
+  : m_has_xrange(false)
+  , m_has_yrange(false)
+  , m_xrange(0.0, 0.0)
+  , m_yrange(0.0, 0.0)
+  , m_logscale_x(false)
+  , m_logscale_y(false)
+{
+}
+
+GnuplotFile& GnuplotFile::set_title(const string& title)
+{
+    m_title = title;
+    return *this;
+}
+
+GnuplotFile& GnuplotFile::set_xlabel(const string& label)
+{
+    m_xlabel = label;
+    return *this;
+}
+
+GnuplotFile& GnuplotFile::set_ylabel(const string& label)
+{
+    m_ylabel = label;
+    return *this;
+}
+
+GnuplotFile& GnuplotFile::set_xrange(const double low, const double high)
+{
+    m_has_xrange = true;
+    m_xrange = Vector2d(low, high);
+    return *this;
+}
+
+GnuplotFile& GnuplotFile::set_yrange(const double low, const double high)
+{
+    m_has_yrange = true;
+    m_yrange = Vector2d(low, high);
+    return *this;
+}
+
+GnuplotFile& GnuplotFile::set_logscale_x()
+{
+    m_logscale_x = true;
+    return *this;
+}
+
+GnuplotFile& GnuplotFile::set_logscale_y()
+{
+    m_logscale_y = true;
+    return *this;
+}
+
+GnuplotFile::Plot& GnuplotFile::new_plot()
+{
+    m_plots.push_back(Plot());
+    return m_plots.back();
+}
+
+bool GnuplotFile::write(const string& filepath) const
+{
+    ofstream file(filepath.c_str());
+
+    if (!file.is_open())
+        return false;
+
+    if (!m_title.empty())
+        file << "set title \"" << m_title << "\"" << endl;
+
+    if (!m_xlabel.empty())
+        file << "set xlabel \"" << m_xlabel << "\"" << endl;
+
+    if (!m_ylabel.empty())
+        file << "set ylabel \"" << m_ylabel << "\"" << endl;
+
+    if (m_has_xrange)
+        file << "set xrange [" << m_xrange[0] << ":" << m_xrange[1] << "]" << endl;
+
+    if (m_has_yrange)
+        file << "set yrange [" << m_yrange[0] << ":" << m_yrange[1] << "]" << endl;
+
+    if (m_logscale_x)
+        file << "set logscale x" << endl;
+
+    if (m_logscale_y)
+        file << "set logscale y" << endl;
+
+    if (!m_plots.empty())
+    {
+        file << "plot ";
+
+        for (size_t i = 0; i < m_plots.size(); ++i)
+        {
+            if (i > 0)
+                file << ", ";
+            m_plots[i].write_decl(file);
+        }
+
+        file << endl;
+
+        for (size_t i = 0; i < m_plots.size(); ++i)
+            m_plots[i].write_points(file);
+    }
+
+    return file.good();
+}
+
+
+//
 // GnuplotFile::Plot class implementation.
 //
 
@@ -112,95 +225,6 @@ void GnuplotFile::Plot::write_points(ofstream& file) const
     }
 
     file << "    e" << endl;
-}
-
-
-//
-// GnuplotFile class implementation.
-//
-
-GnuplotFile::GnuplotFile()
-  : m_logscale_x(false)
-  , m_logscale_y(false)
-{
-}
-
-GnuplotFile& GnuplotFile::set_title(const string& title)
-{
-    m_title = title;
-    return *this;
-}
-
-GnuplotFile& GnuplotFile::set_xlabel(const string& label)
-{
-    m_xlabel = label;
-    return *this;
-}
-
-GnuplotFile& GnuplotFile::set_ylabel(const string& label)
-{
-    m_ylabel = label;
-    return *this;
-}
-
-GnuplotFile& GnuplotFile::set_logscale_x()
-{
-    m_logscale_x = true;
-    return *this;
-}
-
-GnuplotFile& GnuplotFile::set_logscale_y()
-{
-    m_logscale_y = true;
-    return *this;
-}
-
-GnuplotFile::Plot& GnuplotFile::new_plot()
-{
-    m_plots.push_back(Plot());
-    return m_plots.back();
-}
-
-bool GnuplotFile::write(const string& filepath) const
-{
-    ofstream file(filepath.c_str());
-
-    if (!file.is_open())
-        return false;
-
-    if (!m_title.empty())
-        file << "set title \"" << m_title << "\"" << endl;
-
-    if (!m_xlabel.empty())
-        file << "set xlabel \"" << m_xlabel << "\"" << endl;
-
-    if (!m_ylabel.empty())
-        file << "set ylabel \"" << m_ylabel << "\"" << endl;
-
-    if (m_logscale_x)
-        file << "set logscale x" << endl;
-
-    if (m_logscale_y)
-        file << "set logscale y" << endl;
-
-    if (!m_plots.empty())
-    {
-        file << "plot ";
-
-        for (size_t i = 0; i < m_plots.size(); ++i)
-        {
-            if (i > 0)
-                file << ", ";
-            m_plots[i].write_decl(file);
-        }
-
-        file << endl;
-
-        for (size_t i = 0; i < m_plots.size(); ++i)
-            m_plots[i].write_points(file);
-    }
-
-    return file.good();
 }
 
 }   // namespace foundation

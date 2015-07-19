@@ -45,6 +45,16 @@ class GnuplotFile
   : public NonCopyable
 {
   public:
+    GnuplotFile();
+
+    GnuplotFile& set_title(const std::string& title);
+    GnuplotFile& set_xlabel(const std::string& label);
+    GnuplotFile& set_ylabel(const std::string& label);
+    GnuplotFile& set_xrange(const double low, const double high);
+    GnuplotFile& set_yrange(const double low, const double high);
+    GnuplotFile& set_logscale_x();
+    GnuplotFile& set_logscale_y();
+
     class Plot
     {
       public:
@@ -68,14 +78,6 @@ class GnuplotFile
         void write_points(std::ofstream& file) const;
     };
 
-    GnuplotFile();
-
-    GnuplotFile& set_title(const std::string& title);
-    GnuplotFile& set_xlabel(const std::string& label);
-    GnuplotFile& set_ylabel(const std::string& label);
-    GnuplotFile& set_logscale_x();
-    GnuplotFile& set_logscale_y();
-
     Plot& new_plot();
 
     bool write(const std::string& filepath) const;
@@ -84,6 +86,10 @@ class GnuplotFile
     std::string         m_title;
     std::string         m_xlabel;
     std::string         m_ylabel;
+    bool                m_has_xrange;
+    bool                m_has_yrange;
+    Vector2d            m_xrange;
+    Vector2d            m_yrange;
     bool                m_logscale_x;
     bool                m_logscale_y;
     std::vector<Plot>   m_plots;
