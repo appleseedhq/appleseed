@@ -31,24 +31,34 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/bssrdf/bssrdf.h"
+#include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
 #include "foundation/math/sss.h"
+#include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/memory.h"
+
+// Standard headers.
+#include <cmath>
+#include <cstddef>
+
+// Forward declarations.
+namespace renderer  { class Assembly; }
+namespace renderer  { class ShadingContext; }
 
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
 
 namespace
 {
-
-    const char* Model = "normalized_diffusion_bssrdf";
-
     //
     // Normalized diffusion BSSRDF.
     //
@@ -58,6 +68,8 @@ namespace
     //   Per H. Christensen, Brent Burley
     //   http://graphics.pixar.com/library/ApproxBSSRDF/paper.pdf
     //
+
+    const char* Model = "normalized_diffusion_bssrdf";
 
     class NormalizedDiffusionBSSRDF
       : public BSSRDF
@@ -72,8 +84,8 @@ namespace
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("mean_free_path", InputFormatSpectralReflectance);
             m_inputs.declare("mean_free_path_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("from_ior", InputFormatScalar);
-            m_inputs.declare("to_ior", InputFormatScalar);
+            m_inputs.declare("outside_ior", InputFormatScalar);
+            m_inputs.declare("inside_ior", InputFormatScalar);
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -87,7 +99,7 @@ namespace
         }
 
         virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const
+            const Assembly&         assembly) const APPLESEED_OVERRIDE
         {
             return align(sizeof(NormalizedDiffusionBSSRDFInputValues), 16);
         }
@@ -149,7 +161,7 @@ namespace
                 reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
 
             sample.set_is_directional(false);
-            sample.set_eta(values->m_to_ior / values->m_from_ior);
+            sample.set_eta(values->m_inside_ior / values->m_outside_ior);
 
             sample.get_sampling_context().split_in_place(3, 1);
             const Vector3d s = sample.get_sampling_context().next_vector2<3>();
@@ -269,8 +281,8 @@ DictionaryArray NormalizedDiffusionBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "from_ior")
-            .insert("label", "From Index of Refraction")
+            .insert("name", "outside_ior")
+            .insert("label", "Outside Index of Refraction")
             .insert("type", "numeric")
             .insert("min_value", "0.0")
             .insert("max_value", "5.0")
@@ -279,8 +291,8 @@ DictionaryArray NormalizedDiffusionBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "to_ior")
-            .insert("label", "To Index of Refraction")
+            .insert("name", "inside_ior")
+            .insert("label", "Inside Index of Refraction")
             .insert("type", "numeric")
             .insert("min_value", "0.0")
             .insert("max_value", "5.0")

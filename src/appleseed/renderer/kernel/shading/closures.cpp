@@ -136,8 +136,8 @@ namespace
 
     struct VelvetBRDFClosureParams
     {
-        OSL::Vec3   N;
-        float       alpha;
+        OSL::Vec3       N;
+        float           alpha;
     };
 
     OSL::ustring directional_profile_name("directional");
@@ -639,8 +639,8 @@ void CompositeSubsurfaceClosure::process_closure_tree(
                     values.m_mean_free_path = Color3f(p->mean_free_path);
                     values.m_mean_free_path_multiplier = 1.0;
                     values.m_anisotropy = 0.0;
-                    values.m_from_ior = 1.0;
-                    values.m_to_ior = 1.0 / p->eta;
+                    values.m_outside_ior = 1.0;
+                    values.m_inside_ior = 1.0 / p->eta;
 
                     add_closure<DirectionalDipoleBSSRDFInputValues>(
                         SubsurfaceDirectionalID,
