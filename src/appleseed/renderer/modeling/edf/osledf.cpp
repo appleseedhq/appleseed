@@ -157,11 +157,12 @@ namespace
             const CompositeEmissionClosure* c =
                 reinterpret_cast<const CompositeEmissionClosure*>(data);
 
-            return m_diffuse_edf->evaluate_pdf(
-                &c->edf_input_values(),
-                geometric_normal,
-                shading_basis,
-                outgoing);
+            return
+                m_diffuse_edf->evaluate_pdf(
+                    &c->edf_input_values(),
+                    geometric_normal,
+                    shading_basis,
+                    outgoing);
         }
 
       private:

@@ -112,8 +112,8 @@ class APPLESEED_DLLSYMBOL EDF
     // Evaluate the inputs of this EDF.
     // Input values are stored in the input evaluator.
     virtual void evaluate_inputs(
-        InputEvaluator&     input_evaluator,
-        const ShadingPoint& shading_point) const;
+        InputEvaluator&             input_evaluator,
+        const ShadingPoint&         shading_point) const;
 
     // Sample the EDF and compute the emission direction, its probability
     // density and the value of the EDF for this direction.
