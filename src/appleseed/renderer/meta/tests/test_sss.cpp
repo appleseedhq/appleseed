@@ -27,6 +27,10 @@
 //
 
 // appleseed.renderer headers.
+#include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/shading/shadingpointbuilder.h"
+#include "renderer/modeling/bssrdf/bssrdf.h"
+#include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #include "renderer/modeling/bssrdf/sss.h"
 
 // appleseed.foundation headers.
@@ -174,6 +178,27 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         }
     }
 
+    TEST_CASE(PlotNormalizedDiffusionS)
+    {
+        GnuplotFile plotfile;
+        plotfile.set_title("dmfp functional approximation");
+        plotfile.set_xlabel("A");
+        plotfile.set_ylabel("S(A)");
+
+        const size_t N = 1000;
+        vector<Vector2d> points;
+
+        for (size_t j = 0; j < N; ++j)
+        {
+            const double a = fit<size_t, double>(j, 0, N - 1, 0.0, 1.0);
+            const double s = normalized_diffusion_s(a);
+            points.push_back(Vector2d(a, s));
+        }
+
+        plotfile.new_plot().set_points(points);
+        plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_s.gnuplot");
+    }
+
     TEST_CASE(PlotNormalizedDiffusionR)
     {
         GnuplotFile plotfile;
@@ -218,5 +243,84 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         }
 
         plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_r.gnuplot");
+    }
+
+    void plot_dirpole_rd(
+        const char*     filename,
+        const char*     title,
+        const double    sigma_a)
+    {
+        GnuplotFile plotfile;
+        plotfile.set_title(title);
+        plotfile.set_xlabel("x[cm]");
+        plotfile.set_ylabel("Rd(x)");
+        plotfile.set_logscale_y();
+
+        auto_release_ptr<BSSRDF> bssrdf(
+            DirectionalDipoleBSSRDFFactory().create("dirpole", ParamArray()));
+
+        DirectionalDipoleBSSRDFInputValues values;
+        values.m_inside_ior = 1.0;
+        values.m_outside_ior = 1.0;
+        values.m_anisotropy = 0.0;
+        values.m_sigma_a = Color3f(static_cast<float>(sigma_a));
+        values.m_sigma_s_prime = Color3f(1.0f); // We assume g == 0.
+
+        const Vector3d normal(0.0, 1.0, 0.0);
+
+        ShadingPoint outgoing;
+        ShadingPointBuilder outgoing_builder(outgoing);
+        outgoing_builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
+        outgoing_builder.set_point(Vector3d(0.0, 0.0, 0.0));
+        outgoing_builder.set_shading_basis(Basis3d(normal));
+
+        ShadingPoint incoming;
+        ShadingPointBuilder incoming_builder(incoming);
+        incoming_builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
+        incoming_builder.set_shading_basis(Basis3d(normal));
+
+        const size_t N = 1000;
+        vector<Vector2d> points;
+
+        for (size_t i = 0; i < N; ++i)
+        {
+            const double x = fit<size_t, double>(i, 0, N - 1, -16.0, 16.0);
+            incoming_builder.set_point(Vector3d(x, 0, 0));
+
+            Spectrum result;
+            bssrdf->evaluate(
+                &values,
+                outgoing,
+                normal,
+                incoming,
+                normal,
+                result);
+
+            points.push_back(Vector2d(x, result[0] * Pi));
+        }
+
+        plotfile
+            .new_plot()
+            .set_points(points);
+
+        plotfile.write(filename);
+    }
+
+    TEST_CASE(PlotDirectionalDipoleRd)
+    {
+        plot_dirpole_rd(
+            "unit tests/outputs/test_sss_dirpole_rd_a_001.gnuplot",
+            "Directional dipole reflectance (sigma_a == 0.01)",
+            0.01);
+
+        plot_dirpole_rd(
+            "unit tests/outputs/test_sss_dirpole_rd_a_01.gnuplot",
+            "Directional dipole reflectance (sigma_a == 0.1)",
+            0.1);
+
+        plot_dirpole_rd(
+            "unit tests/outputs/test_sss_dirpole_rd_a_1.gnuplot",
+            "Directional dipole reflectance (sigma_a == 1)",
+            1);
     }
 }
