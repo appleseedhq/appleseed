@@ -68,9 +68,13 @@ class GnuplotFile
         void write_points(std::ofstream& file) const;
     };
 
+    GnuplotFile();
+
     GnuplotFile& set_title(const std::string& title);
     GnuplotFile& set_xlabel(const std::string& label);
     GnuplotFile& set_ylabel(const std::string& label);
+    GnuplotFile& set_logscale_x();
+    GnuplotFile& set_logscale_y();
 
     Plot& new_plot();
 
@@ -80,6 +84,8 @@ class GnuplotFile
     std::string         m_title;
     std::string         m_xlabel;
     std::string         m_ylabel;
+    bool                m_logscale_x;
+    bool                m_logscale_y;
     std::vector<Plot>   m_plots;
 };
 
