@@ -65,7 +65,7 @@ namespace
     //
     // Directional dipole BSSRDF.
     //
-    // References:
+    // Reference:
     //
     //   Directional Dipole for Subsurface Scattering
     //   Jeppe Revall Frisvad, Toshiya Hachisuka and Thomas Kim Kjeldsen.
@@ -131,11 +131,12 @@ namespace
                     values->m_reflectance = values->m_reflectance.convert_to_rgb(*m_lighting_conditions);
             }
 
-            values->m_sigma_s_prime.resize(values->m_dmfp.size());
+            values->m_sigma_s.resize(values->m_dmfp.size());
             values->m_sigma_a.resize(values->m_dmfp.size());
 
-            // relative refractive index
+            // Relative refractive index.
             const double eta = values->m_inside_ior / values->m_outside_ior;
+            const double rcp_g_complent = 1.0 / (1.0 - values->m_anisotropy);
 
             for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
             {
@@ -152,11 +153,12 @@ namespace
                 const double sigma_t_prime =
                     reduced_extinction_coefficient(dmfp, alpha_prime);
 
-                // Compute reduced scattering coefficient.
-                values->m_sigma_s_prime[i] = static_cast<float>(alpha_prime * sigma_t_prime);
+                // Compute scattering coefficient.
+                const double sigma_s_prime = static_cast<float>(alpha_prime * sigma_t_prime);
+                values->m_sigma_s[i] = sigma_s_prime * rcp_g_complent;
 
                 // Compute absorption coefficient.
-                values->m_sigma_a[i] = static_cast<float>(sigma_t_prime) - values->m_sigma_s_prime[i];
+                values->m_sigma_a[i] = static_cast<float>(sigma_t_prime) - sigma_s_prime;
             }
         }
 
@@ -216,8 +218,11 @@ namespace
             const size_t channel = truncate<size_t>(s[0] * values->m_reflectance.size());
             sample.set_channel(channel);
 
-            // Sample a radius (PBRT v1, page 641).
-            const double radius = -log(1.0 - min(0.999999, s[1])) * values->m_dmfp[channel];
+            // Sample a radius, by importance sampling the attenuation.
+            // Volumetric Path Tracing, Steve Marschner, section 3.
+            // http://www.cs.cornell.edu/courses/cs6630/2012sp/notes/09volpath.pdf
+            const double sigma_t = values->m_sigma_a[channel] + values->m_sigma_s[channel];
+            const double radius = -log(1.0 - s[1]) / sigma_t;
 
             // Sample an angle.
             const double phi = TwoPi * s[2];
@@ -239,9 +244,9 @@ namespace
             // PDF of the sampled channel.
             const double pdf_channel = 1.0 / values->m_reflectance.size();
 
-            // PDF of the sampled radius (PBRT v1, page 641).
-            const double sigma_tr = 1.0 / values->m_dmfp[channel];
-            const double pdf_radius = sigma_tr * exp(-sigma_tr * dist);
+            // PDF of the sampled radius.
+            const double sigma_t = values->m_sigma_a[channel] + values->m_sigma_s[channel];
+            const double pdf_radius = sigma_t * exp(-sigma_t * dist);
 
             // PDF of the sampled angle.
             const double pdf_angle = RcpTwoPi;
@@ -311,15 +316,15 @@ namespace
             const double dot_wv_no = dot(wv, no);
 
             assert(result.size() == values->m_sigma_a.size());
-            assert(result.size() == values->m_sigma_s_prime.size());
+            assert(result.size() == values->m_sigma_s.size());
 
             for (size_t i = 0, e = result.size(); i < e; ++i)
             {
                 const double sigma_a = values->m_sigma_a[i];                            // absorption coefficient
-                const double sigma_s_prime = values->m_sigma_s_prime[i];                // reduced scattering coefficient
+                const double sigma_s = values->m_sigma_s[i];                            // scattering coefficient
+                const double sigma_s_prime = sigma_s * (1.0 - values->m_anisotropy);    // reduced scattering coefficient
                 const double sigma_t_prime = sigma_s_prime + sigma_a;                   // reduced extinction coefficient
                 const double alpha_prime = sigma_s_prime / sigma_t_prime;               // reduced scattering albedo
-                const double sigma_s = sigma_s_prime / (1.0 - values->m_anisotropy);    // scattering coefficient
                 const double sigma_t = sigma_s + sigma_a;                               // extinction coefficient
 
                 // Compute extrapolation distance (equation 21).

@@ -75,8 +75,8 @@ double ComputeRd::operator()(const double alpha_prime) const
 }
 
 ComputeRdBetterDipole::ComputeRdBetterDipole(const double eta)
-    : m_two_c1(fresnel_moment_two_c1(eta))
-    , m_three_c2(fresnel_moment_three_c2(eta))
+  : m_two_c1(fresnel_moment_two_c1(eta))
+  , m_three_c2(fresnel_moment_three_c2(eta))
 {
 }
 

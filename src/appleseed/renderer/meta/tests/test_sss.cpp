@@ -69,13 +69,13 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
     TEST_CASE(Rd_AlphaPrime_Roundtrip)
     {
-        EXPECT_FEQ_EPS(0.0, rd_alpha_prime_roundtrip<ComputeRd>(0.0, 1.6), 0.001);
-        EXPECT_FEQ_EPS(0.1, rd_alpha_prime_roundtrip<ComputeRd>(0.1, 1.3), 0.001);
-        EXPECT_FEQ_EPS(0.2, rd_alpha_prime_roundtrip<ComputeRd>(0.2, 1.2), 0.001);
-        EXPECT_FEQ_EPS(0.4, rd_alpha_prime_roundtrip<ComputeRd>(0.4, 1.3), 0.001);
-        EXPECT_FEQ_EPS(0.6, rd_alpha_prime_roundtrip<ComputeRd>(0.6, 1.4), 0.001);
-        EXPECT_FEQ_EPS(0.8, rd_alpha_prime_roundtrip<ComputeRd>(0.8, 1.3), 0.001);
-        EXPECT_FEQ_EPS(1.0, rd_alpha_prime_roundtrip<ComputeRd>(1.0, 1.5), 0.001);
+        EXPECT_FEQ_EPS(0.0, rd_alpha_prime_roundtrip<ComputeRd>(0.0, 1.6), 0.00001);
+        EXPECT_FEQ_EPS(0.1, rd_alpha_prime_roundtrip<ComputeRd>(0.1, 1.3), 0.00001);
+        EXPECT_FEQ_EPS(0.2, rd_alpha_prime_roundtrip<ComputeRd>(0.2, 1.2), 0.00001);
+        EXPECT_FEQ_EPS(0.4, rd_alpha_prime_roundtrip<ComputeRd>(0.4, 1.3), 0.00001);
+        EXPECT_FEQ_EPS(0.6, rd_alpha_prime_roundtrip<ComputeRd>(0.6, 1.4), 0.00001);
+        EXPECT_FEQ_EPS(0.8, rd_alpha_prime_roundtrip<ComputeRd>(0.8, 1.3), 0.00001);
+        EXPECT_FEQ_EPS(1.0, rd_alpha_prime_roundtrip<ComputeRd>(1.0, 1.5), 0.00001);
     }
 
     TEST_CASE(Rd_AlphaPrime_BetterDipole_Roundtrip)
@@ -290,7 +290,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         values.m_outside_ior = 1.0;
         values.m_anisotropy = 0.0;
         values.m_sigma_a = Color3f(static_cast<float>(sigma_a));
-        values.m_sigma_s_prime = Color3f(1.0f);     // we assume g == 0 (no anisotropy)
+        values.m_sigma_s = Color3f(1.0f);
 
         const Vector3d normal(0.0, 1.0, 0.0);
 

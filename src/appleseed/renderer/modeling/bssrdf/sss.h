@@ -160,7 +160,6 @@ inline double compute_alpha_prime(const ComputeRdFun f, const double rd)
     return xmid;
 }
 
-
 }       // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_SSS_H
