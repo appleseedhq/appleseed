@@ -391,15 +391,13 @@ namespace
 
             // Build the photon ray.
             child_sampling_context.split_in_place(1, 1);
-            ShadingRay::Time time = ShadingRay::Time::create_with_normalized_time(
-                sampling_context.next_double2(),
-                m_shutter_open_time,
-                m_shutter_close_time);
-
             const ShadingRay ray(
                 light_sample.m_point,
                 emission_direction,
-                time,
+                ShadingRay::Time::create_with_normalized_time(
+                    child_sampling_context.next_double2(),
+                    m_shutter_open_time,
+                    m_shutter_close_time),
                 VisibilityFlags::LightRay,
                 0);
 
@@ -454,15 +452,13 @@ namespace
 
             // Build the photon ray.
             child_sampling_context.split_in_place(1, 1);
-            ShadingRay::Time time = ShadingRay::Time::create_with_normalized_time(
-                sampling_context.next_double2(),
-                m_shutter_open_time,
-                m_shutter_close_time);
-
             const ShadingRay ray(
                 emission_position,
                 emission_direction,
-                time,
+                ShadingRay::Time::create_with_normalized_time(
+                    child_sampling_context.next_double2(),
+                    m_shutter_open_time,
+                    m_shutter_close_time),
                 VisibilityFlags::LightRay,
                 0);
 
@@ -669,15 +665,13 @@ namespace
 
             // Build the photon ray.
             child_sampling_context.split_in_place(1, 1);
-            ShadingRay::Time time = ShadingRay::Time::create_with_normalized_time(
-                sampling_context.next_double2(),
-                m_shutter_open_time,
-                m_shutter_close_time);
-
             const ShadingRay ray(
                 ray_origin,
                 -outgoing,
-                time,
+                ShadingRay::Time::create_with_normalized_time(
+                    child_sampling_context.next_double2(),
+                    m_shutter_open_time,
+                    m_shutter_close_time),
                 VisibilityFlags::LightRay,
                 0);
 

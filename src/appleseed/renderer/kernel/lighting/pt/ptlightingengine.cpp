@@ -698,6 +698,10 @@ namespace
                     return;
 
                 // Compute Fresnel coefficient at incoming point.
+                // We use eta and not 1/eta because the normal at the incoming point is pointing outward
+                // (away from the object), like the normal at the outgoing point. If the normal was pointing
+                // inward, i.e. facing the light ray that has been traveling inside the object, we would
+                // use 1/eta like we do when traversing an interface between two media of mismatching densities.
                 double incoming_fresnel;
                 fresnel_transmittance_dielectric(incoming_fresnel, vertex.m_bssrdf_eta, cos_in);
                 if (incoming_fresnel <= 0.0)

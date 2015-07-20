@@ -147,13 +147,13 @@ namespace
             {
                 // Input values: diffuse reflectance and mean free path.
                 const double rd = saturate(static_cast<double>(values->m_reflectance[i]));
-                const double mfp = static_cast<double>(values->m_dmfp[i]);
+                const double dmfp = static_cast<double>(values->m_dmfp[i]);
 
                 // Find alpha' by numerically inverting Rd(alpha').
                 const double alpha_prime = compute_alpha_prime(rd, two_c1, three_c2);
 
                 // Compute effective transport coefficient.
-                const double sigma_tr = 1.0 / mfp;
+                const double sigma_tr = 1.0 / dmfp;
 
                 // Compute reduced extinction coefficient.
                 const double sigma_t_prime = sigma_tr / sqrt(3.0 * (1.0 - alpha_prime));
@@ -165,7 +165,7 @@ namespace
                 values->m_sigma_a[i] = static_cast<float>(sigma_t_prime) - values->m_sigma_s_prime[i];
 
                 // Compute max mean free path across all wavelengths.
-                values->m_max_dmfp = max(values->m_max_dmfp, mfp);
+                values->m_max_dmfp = max(values->m_max_dmfp, dmfp);
             }
         }
 
@@ -310,12 +310,10 @@ namespace
             const Vector3d wr = normalize(wi * -nnt - ni * (ddn * nnt + sqrt(1.0 - square(nnt) * (1.0 - square(ddn)))));
             const Vector3d wv = -reflect(wr, ni_star);                                  // direction of the virtual ray source
 
-            // Compute Fresnel integrals.
+            // Precompute some stuff.
             const double cp = 0.25 * (1.0 - fresnel_moment_two_c1(eta));
             const double ce = 0.5 * (1.0 - fresnel_moment_three_c2(eta));
-
             const double A = (1.0 - ce) / (2.0 * cp);                                   // reflection parameter
-
             const double dot_xoxi_wr = dot(xoxi, wr);
             const double dot_wr_no = dot(wr, no);
             const double dot_xoxi_no = dot(xoxi, no);
@@ -351,29 +349,9 @@ namespace
                 const double dv = norm(xoxv);
 
                 // Evaluate the BSSRDF.
-                const double vr =
-                    sd_prime(
-                        eta,
-                        cp,
-                        ce,
-                        D,
-                        sigma_a,
-                        dot_xoxi_wr,
-                        dot_wr_no,
-                        dot_xoxi_no,
-                        dr);
-                const double vv =
-                    sd_prime(
-                        eta,
-                        cp,
-                        ce,
-                        D,
-                        sigma_a,
-                        dot(xoxv, wv),
-                        dot_wv_no,
-                        dot(xoxv, no),
-                        dv);
-                double value = vr - vv;
+                double value =
+                      sd_prime(eta, cp, ce, D, sigma_a, dot_xoxi_wr, dot_wr_no, dot_xoxi_no, dr)
+                    - sd_prime(eta, cp, ce, D, sigma_a, dot(xoxv, wv), dot_wv_no, dot(xoxv, no), dv);
 
                 // Clamp negative values to zero (section 6.1).
                 if (value < 0.0)
