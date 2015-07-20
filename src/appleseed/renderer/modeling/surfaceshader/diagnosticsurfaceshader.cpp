@@ -497,11 +497,7 @@ void DiagnosticSurfaceShader::evaluate(
                         ray.m_dir - ray.m_rx.m_dir,
                         ray.m_dir - ray.m_ry.m_dir);
 
-                    BSDFSample sample(
-                        shading_point,
-                        sampling_context,
-                        outgoing);
-
+                    BSDFSample sample(shading_point, sampling_context, outgoing);
                     bsdf->sample(
                         input_evaluator.data(),
                         false,
@@ -512,7 +508,7 @@ void DiagnosticSurfaceShader::evaluate(
                         return;
 
                     // The 3.0 factor is choosen so that ray spread
-                    // from lambertian BRDFs is approx. 1.
+                    // from lambertian BRDFs is approximately 1.
                     const double spread =
                         max(
                             norm(sample.get_incoming().get_dx()),

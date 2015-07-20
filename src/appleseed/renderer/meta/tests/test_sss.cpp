@@ -199,7 +199,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     TEST_CASE(PlotNormalizedDiffusionS)
     {
         GnuplotFile plotfile;
-        plotfile.set_title("dmfp functional approximation");
+        plotfile.set_title("Scaling Factor For Searchlight Configuration With dmfp Parameterization");
         plotfile.set_xlabel("A");
         plotfile.set_ylabel("s(A)");
         plotfile.set_xrange(0.0, 1.0);
@@ -208,9 +208,9 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         const size_t N = 1000;
         vector<Vector2d> points;
 
-        for (size_t j = 0; j < N; ++j)
+        for (size_t i = 0; i < N; ++i)
         {
-            const double a = fit<size_t, double>(j, 0, N - 1, 0.0, 1.0);
+            const double a = fit<size_t, double>(i, 0, N - 1, 0.0, 1.0);
             const double s = normalized_diffusion_s(a);
             points.push_back(Vector2d(a, s));
         }
@@ -222,7 +222,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     TEST_CASE(PlotNormalizedDiffusionR)
     {
         GnuplotFile plotfile;
-        plotfile.set_title("Searchlight Configuration with dmfp Parameterization");
+        plotfile.set_title("Reflectance Profile For Searchlight Configuration With dmfp Parameterization");
         plotfile.set_xlabel("r");
         plotfile.set_ylabel("r R(r)");
         plotfile.set_xrange(0.0, 8.0);
@@ -276,10 +276,10 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     {
         GnuplotFile plotfile;
         plotfile.set_title(title);
-        plotfile.set_xlabel("x[cm]");
+        plotfile.set_xlabel("x [cm]");
         plotfile.set_ylabel("Rd(x)");
         plotfile.set_logscale_y();
-        plotfile.set_xrange(-16, 16);
+        plotfile.set_xrange(-16.0, 16.0);   // cm
         plotfile.set_yrange(ymin, ymax);
 
         auto_release_ptr<BSSRDF> bssrdf(
@@ -290,7 +290,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         values.m_outside_ior = 1.0;
         values.m_anisotropy = 0.0;
         values.m_sigma_a = Color3f(static_cast<float>(sigma_a));
-        values.m_sigma_s_prime = Color3f(1.0f); // We assume g == 0.
+        values.m_sigma_s_prime = Color3f(1.0f);     // we assume g == 0 (no anisotropy)
 
         const Vector3d normal(0.0, 1.0, 0.0);
 
@@ -311,7 +311,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         for (size_t i = 0; i < N; ++i)
         {
             const double x = fit<size_t, double>(i, 0, N - 1, -16.0, 16.0);
-            incoming_builder.set_point(Vector3d(x, 0, 0));
+            incoming_builder.set_point(Vector3d(x, 0.0, 0.0));
 
             Spectrum result;
             bssrdf->evaluate(
@@ -336,23 +336,23 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     {
         plot_dirpole_rd(
             "unit tests/outputs/test_sss_dirpole_rd_a_001.gnuplot",
-            "Directional dipole diffuse reflectance (sigma_a == 0.01)",
-            0.01,
-            1e-5,
-            1e+1);
+            "Directional Dipole Diffuse Reflectance (sigma_a == 0.01)",
+            0.01,           // sigma_a in cm
+            1.0e-5,         // ymin
+            1.0e+1);        // ymax
 
         plot_dirpole_rd(
             "unit tests/outputs/test_sss_dirpole_rd_a_01.gnuplot",
-            "Directional dipole diffuse reflectance (sigma_a == 0.1)",
-            0.1,
-            1e-8,
-            1e+1);
+            "Directional Dipole Diffuse Reflectance (sigma_a == 0.1)",
+            0.1,            // sigma_a in cm
+            1.0e-8,         // ymin
+            1.0e+1);        // ymax
 
         plot_dirpole_rd(
             "unit tests/outputs/test_sss_dirpole_rd_a_1.gnuplot",
-            "Directional dipole diffuse reflectance (sigma_a == 1)",
-            1,
-            1e-16,
-            1e+1);
+            "Directional Dipole Diffuse Reflectance (sigma_a == 1.0)",
+            1.0,            // sigma_a in cm
+            1.0e-16,        // ymin
+            1.0e+1);        // ymax
     }
 }

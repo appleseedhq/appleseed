@@ -405,10 +405,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     assert(m_light_sampler.get_emitting_triangle_count() > 0);
 
     // Sample the BSDF.
-    BSDFSample sample(
-        m_shading_point,
-        sampling_context,
-        m_outgoing);
+    BSDFSample sample(m_shading_point, sampling_context, m_outgoing);
     m_bsdf.sample(
         m_bsdf_data,
         false,                      // not adjoint

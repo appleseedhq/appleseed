@@ -301,12 +301,10 @@ namespace
             const Vector3d wr = normalize(wi * -nnt - ni * (ddn * nnt + sqrt(1.0 - square(nnt) * (1.0 - square(ddn)))));
             const Vector3d wv = -reflect(wr, ni_star);                                  // direction of the virtual ray source
 
-            // Compute Fresnel integrals.
+            // Precompute some stuff.
             const double cp = 0.25 * (1.0 - fresnel_moment_two_c1(eta));
             const double ce = 0.5 * (1.0 - fresnel_moment_three_c2(eta));
-
             const double A = (1.0 - ce) / (2.0 * cp);                                   // reflection parameter
-
             const double dot_xoxi_wr = dot(xoxi, wr);
             const double dot_wr_no = dot(wr, no);
             const double dot_xoxi_no = dot(xoxi, no);
@@ -342,29 +340,9 @@ namespace
                 const double dv = norm(xoxv);
 
                 // Evaluate the BSSRDF.
-                const double vr =
-                    sd_prime(
-                        eta,
-                        cp,
-                        ce,
-                        D,
-                        sigma_a,
-                        dot_xoxi_wr,
-                        dot_wr_no,
-                        dot_xoxi_no,
-                        dr);
-                const double vv =
-                    sd_prime(
-                        eta,
-                        cp,
-                        ce,
-                        D,
-                        sigma_a,
-                        dot(xoxv, wv),
-                        dot_wv_no,
-                        dot(xoxv, no),
-                        dv);
-                double value = vr - vv;
+                double value =
+                      sd_prime(eta, cp, ce, D, sigma_a, dot_xoxi_wr, dot_wr_no, dot_xoxi_no, dr)
+                    - sd_prime(eta, cp, ce, D, sigma_a, dot(xoxv, wv), dot_wv_no, dot(xoxv, no), dv);
 
                 // Clamp negative values to zero (section 6.1).
                 if (value < 0.0)
