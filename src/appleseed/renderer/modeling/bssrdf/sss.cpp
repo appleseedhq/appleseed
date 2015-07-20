@@ -30,6 +30,7 @@
 #include "sss.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
 
 // Standard headers.
@@ -45,17 +46,45 @@ namespace renderer
 {
 
 //
-// Texture mapping for the better dipole.
+// BSSRDF reparameterization implementation.
 //
 
-double compute_rd(
-    const double    alpha_prime,
-    const double    two_c1,
-    const double    three_c2)
+ComputeRd::ComputeRd(const double eta)
 {
-    const double cphi = 0.25 * (1.0 - two_c1);
-    const double ce = 0.5 * (1.0 - three_c2);
-    const double four_a = (1.0 + three_c2) / cphi;
+    const double rcp_eta = 1.0 / eta;
+    const double rcp_eta2 = square(rcp_eta);
+
+    // Compute the the average diffuse Fresnel reflectance.
+    // The approximation comes from:
+    //   Towards Realistic Image Synthesis of Scattering Materials
+    //   Donner. C 2006, page 41, eq 5.27
+    const double fdr =
+        eta < 1
+            ? -0.4933 + (0.7099 * rcp_eta) - (0.3319 * rcp_eta2) + (0.0636 * rcp_eta * rcp_eta2)
+            : (-1.4933 * rcp_eta2) + (0.7099 * rcp_eta) + 0.6681 + (0.0636 * eta);
+
+    // eq 5.29
+    m_A = (1.0 + fdr) / (1.0 - fdr);
+}
+
+double ComputeRd::operator()(const double alpha_prime) const
+{
+    // [1] eq. 15.
+    const double sqrt_3ap = sqrt(3.0 * (1.0 - alpha_prime));
+    return (0.5 * alpha_prime) * (1.0 + exp(-1.25 * m_A * sqrt_3ap)) * exp(-sqrt_3ap);
+}
+
+ComputeRdBetterDipole::ComputeRdBetterDipole(const double eta)
+  : m_two_c1(fresnel_moment_two_c1(eta))
+  , m_three_c2(fresnel_moment_three_c2(eta))
+{
+}
+
+double ComputeRdBetterDipole::operator()(const double alpha_prime) const
+{
+    const double cphi = 0.25 * (1.0 - m_two_c1);
+    const double ce = 0.5 * (1.0 - m_three_c2);
+    const double four_a = (1.0 + m_three_c2) / cphi;
     const double mu_tr_d = sqrt((1.0 - alpha_prime) * (2.0 - alpha_prime) * (1.0 / 3.0));
     const double myexp = exp(-four_a * mu_tr_d);
     return 0.5 * square(alpha_prime)
@@ -63,28 +92,23 @@ double compute_rd(
                * (ce * (1.0 + myexp) + cphi / mu_tr_d * (1.0 - myexp));
 }
 
-double compute_alpha_prime(
-    const double    rd,
-    const double    two_c1,
-    const double    three_c2)
+double diffusion_coefficient(const double sigma_a, const double sigma_t)
 {
-    if (rd == 0.0)
-        return 0.0;
-
-    double x0 = 0.0, x1 = 1.0, xmid;
-
-    // For now simple bisection.
-    // todo: switch to faster algorithm.
-    for (size_t i = 0, iters = 50; i < iters; ++i)
-    {
-        xmid = 0.5 * (x0 + x1);
-        const double f = compute_rd(xmid, two_c1, three_c2);
-        f < rd ? x0 = xmid : x1 = xmid;
-    }
-
-    return xmid;
+    return (sigma_t + sigma_a) / (3.0 * square(sigma_t));
 }
 
+double diffuse_mean_free_path(const double sigma_a, const double sigma_t)
+{
+    const double D = diffusion_coefficient(sigma_a, sigma_t);
+    return 1.0 / sqrt(sigma_a / D);
+}
+
+double reduced_extinction_coefficient(
+    const double diffuse_mean_free_path,
+    const double alpha_prime)
+{
+    return 1.0 / (sqrt(3.0 * (1.0 - alpha_prime)) * diffuse_mean_free_path);
+}
 
 //
 // Normalized diffusion.
