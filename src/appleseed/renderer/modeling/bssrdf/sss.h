@@ -29,30 +29,64 @@
 #ifndef APPLESEED_RENDERER_MODELING_BSSRDF_SSS_H
 #define APPLESEED_RENDERER_MODELING_BSSRDF_SSS_H
 
+// Standard headers.
+#include <cstddef>
+
 namespace renderer
 {
 
 //
-// Reference:
+// BSSRDF reparameterization.
 //
-//   Texture mapping for the Better Dipole model
+// References:
+//
+//   [1] A Rapid Hierarchical Rendering Technique for Translucent Materials
+//   Henrik Wann Jensen, Juan Buhler
+//   http://graphics.ucsd.edu/~henrik/papers/fast_bssrdf/fast_bssrdf.pdf
+//
+//   [2] Texture mapping for the Better Dipole model
 //   Christophe Hery
 //   http://graphics.pixar.com/library/TexturingBetterDipole/paper.pdf
 //
 
+
 // Compute Rd (integral of the diffusion profile R) given the reduced albedo alpha'.
-double compute_rd(
-    const double    alpha_prime,
-    const double    two_c1,
-    const double    three_c2);
+struct ComputeRd
+{
+    explicit ComputeRd(const double eta);
+
+    double operator()(const double alpha_prime) const;
+
+  private:
+    double m_A;
+};
+
+// Compute Rd (integral of the diffusion profile R) given the reduced albedo alpha'.
+struct ComputeRdBetterDipole
+{
+    explicit ComputeRdBetterDipole(const double eta);
+
+    double operator()(const double alpha_prime) const;
+
+  private:
+    const double m_two_c1;
+    const double m_three_c2;
+};
 
 // Numerically solve for the reduced albedo alpha' given Rd.
-double compute_alpha_prime(
-    const double    rd,
-    const double    two_c1,
-    const double    three_c2);
+template <typename ComputeRdFun>
+double compute_alpha_prime(ComputeRdFun f, const double rd);
 
+double diffusion_coefficient(const double sigma_a, const double sigma_t);
 
+double diffuse_mean_free_path(const double sigma_a, const double sigma_t);
+
+double reduced_extinction_coefficient(
+    const double diffuse_mean_free_path,
+    const double alpha_prime);
+
+//
+// Normalized diffusion profile.
 //
 // Reference:
 //
@@ -100,6 +134,32 @@ double normalized_diffusion_sample(
     const double    u,                  // uniform random sample in [0,1)
     const double    l,                  // mean free path length or diffuse mean free path length
     const double    s);                 // scaling factor
+
+
+//
+// BSSRDF reparameterization implementation.
+//
+
+template <typename ComputeRdFun>
+inline double compute_alpha_prime(const ComputeRdFun f, const double rd)
+{
+    if (rd == 0.0)
+        return 0.0;
+
+    double x0 = 0.0, x1 = 1.0, xmid;
+
+    // For now simple bisection.
+    // todo: switch to faster algorithm.
+    for (std::size_t i = 0, iters = 50; i < iters; ++i)
+    {
+        xmid = 0.5 * (x0 + x1);
+        const double x = f(xmid);
+        x < rd ? x0 = xmid : x1 = xmid;
+    }
+
+    return xmid;
+}
+
 
 }       // namespace renderer
 

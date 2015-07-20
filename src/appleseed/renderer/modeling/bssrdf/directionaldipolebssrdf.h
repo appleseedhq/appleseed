@@ -64,7 +64,6 @@ APPLESEED_DECLARE_INPUT_VALUES(DirectionalDipoleBSSRDFInputValues)
     double      m_inside_ior;
 
     // Precomputed values.
-    double      m_max_dmfp;
     Spectrum    m_sigma_a;
     Spectrum    m_sigma_s_prime;
 };

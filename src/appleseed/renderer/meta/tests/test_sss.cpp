@@ -57,26 +57,36 @@ using namespace std;
 
 TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 {
+    template <typename ComputeRdFun>
     double rd_alpha_prime_roundtrip(
         const double rd,
         const double eta)
     {
-        const double two_c1 = fresnel_moment_two_c1(eta);
-        const double three_c2 = fresnel_moment_three_c2(eta);
-
-        const double alpha_prime = compute_alpha_prime(rd, two_c1, three_c2);
-        return compute_rd(alpha_prime, two_c1, three_c2);
+        ComputeRdFun f(eta);
+        const double alpha_prime = compute_alpha_prime(f, rd);
+        return f(alpha_prime);
     }
 
     TEST_CASE(Rd_AlphaPrime_Roundtrip)
     {
-        EXPECT_FEQ_EPS(0.0, rd_alpha_prime_roundtrip(0.0, 1.6), 0.001);
-        EXPECT_FEQ_EPS(0.1, rd_alpha_prime_roundtrip(0.1, 1.3), 0.001);
-        EXPECT_FEQ_EPS(0.2, rd_alpha_prime_roundtrip(0.2, 1.2), 0.001);
-        EXPECT_FEQ_EPS(0.4, rd_alpha_prime_roundtrip(0.4, 1.3), 0.001);
-        EXPECT_FEQ_EPS(0.6, rd_alpha_prime_roundtrip(0.6, 1.4), 0.001);
-        EXPECT_FEQ_EPS(0.8, rd_alpha_prime_roundtrip(0.8, 1.3), 0.001);
-        EXPECT_FEQ_EPS(1.0, rd_alpha_prime_roundtrip(1.0, 1.5), 0.001);
+        EXPECT_FEQ_EPS(0.0, rd_alpha_prime_roundtrip<ComputeRd>(0.0, 1.6), 0.001);
+        EXPECT_FEQ_EPS(0.1, rd_alpha_prime_roundtrip<ComputeRd>(0.1, 1.3), 0.001);
+        EXPECT_FEQ_EPS(0.2, rd_alpha_prime_roundtrip<ComputeRd>(0.2, 1.2), 0.001);
+        EXPECT_FEQ_EPS(0.4, rd_alpha_prime_roundtrip<ComputeRd>(0.4, 1.3), 0.001);
+        EXPECT_FEQ_EPS(0.6, rd_alpha_prime_roundtrip<ComputeRd>(0.6, 1.4), 0.001);
+        EXPECT_FEQ_EPS(0.8, rd_alpha_prime_roundtrip<ComputeRd>(0.8, 1.3), 0.001);
+        EXPECT_FEQ_EPS(1.0, rd_alpha_prime_roundtrip<ComputeRd>(1.0, 1.5), 0.001);
+    }
+
+    TEST_CASE(Rd_AlphaPrime_BetterDipole_Roundtrip)
+    {
+        EXPECT_FEQ_EPS(0.0, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.0, 1.6), 0.001);
+        EXPECT_FEQ_EPS(0.1, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.1, 1.3), 0.001);
+        EXPECT_FEQ_EPS(0.2, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.2, 1.2), 0.001);
+        EXPECT_FEQ_EPS(0.4, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.4, 1.3), 0.001);
+        EXPECT_FEQ_EPS(0.6, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.6, 1.4), 0.001);
+        EXPECT_FEQ_EPS(0.8, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.8, 1.3), 0.001);
+        EXPECT_FEQ_EPS(1.0, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(1.0, 1.5), 0.001);
     }
 
     const double NormalizedDiffusionTestEps = 0.0001;
@@ -192,6 +202,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.set_title("dmfp functional approximation");
         plotfile.set_xlabel("A");
         plotfile.set_ylabel("s(A)");
+        plotfile.set_xrange(0.0, 1.0);
+        plotfile.set_yrange(0.0, 20.0);
 
         const size_t N = 1000;
         vector<Vector2d> points;

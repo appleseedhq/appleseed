@@ -67,13 +67,9 @@ namespace
     //
     // References:
     //
-    //   [1] Directional Dipole for Subsurface Scattering
-    //       Jeppe Revall Frisvad, Toshiya Hachisuka and Thomas Kim Kjeldsen.
-    //       http://www.ci.i.u-tokyo.ac.jp/~hachisuka/dirpole.pdf
-    //
-    //   [2] Texture mapping for the Better Dipole model
-    //       Christophe Hery
-    //       http://graphics.pixar.com/library/TexturingBetterDipole/paper.pdf
+    //   Directional Dipole for Subsurface Scattering
+    //   Jeppe Revall Frisvad, Toshiya Hachisuka and Thomas Kim Kjeldsen.
+    //   http://www.ci.i.u-tokyo.ac.jp/~hachisuka/dirpole.pdf
     //
 
     const char* Model = "directional_dipole_bssrdf";
@@ -137,35 +133,30 @@ namespace
 
             values->m_sigma_s_prime.resize(values->m_dmfp.size());
             values->m_sigma_a.resize(values->m_dmfp.size());
-            values->m_max_dmfp = 0.0;
 
-            const double eta = values->m_inside_ior / values->m_outside_ior;            // relative refractive index
-            const double two_c1 = fresnel_moment_two_c1(eta);
-            const double three_c2 = fresnel_moment_three_c2(eta);
+            // relative refractive index
+            const double eta = values->m_inside_ior / values->m_outside_ior;
 
             for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
             {
-                // Input values: diffuse reflectance and mean free path.
+                // Input values: diffuse reflectance and diffuse mean free path.
                 const double rd = saturate(static_cast<double>(values->m_reflectance[i]));
-                const double mfp = static_cast<double>(values->m_dmfp[i]);
+                const double dmfp = static_cast<double>(values->m_dmfp[i]);
 
                 // Find alpha' by numerically inverting Rd(alpha').
-                const double alpha_prime = compute_alpha_prime(rd, two_c1, three_c2);
+                const double alpha_prime =
+                    compute_alpha_prime(
+                        ComputeRdBetterDipole(eta),
+                        rd);
 
-                // Compute effective transport coefficient.
-                const double sigma_tr = 1.0 / mfp;
-
-                // Compute reduced extinction coefficient.
-                const double sigma_t_prime = sigma_tr / sqrt(3.0 * (1.0 - alpha_prime));
+                const double sigma_t_prime =
+                    reduced_extinction_coefficient(dmfp, alpha_prime);
 
                 // Compute reduced scattering coefficient.
                 values->m_sigma_s_prime[i] = static_cast<float>(alpha_prime * sigma_t_prime);
 
                 // Compute absorption coefficient.
                 values->m_sigma_a[i] = static_cast<float>(sigma_t_prime) - values->m_sigma_s_prime[i];
-
-                // Compute max mean free path across all wavelengths.
-                values->m_max_dmfp = max(values->m_max_dmfp, mfp);
             }
         }
 
@@ -226,7 +217,7 @@ namespace
             sample.set_channel(channel);
 
             // Sample a radius (PBRT v1, page 641).
-            const double radius = -log(1.0 - s[1]) * values->m_dmfp[channel];
+            const double radius = -log(1.0 - min(0.999999, s[1])) * values->m_dmfp[channel];
 
             // Sample an angle.
             const double phi = TwoPi * s[2];
