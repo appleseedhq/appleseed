@@ -331,6 +331,7 @@ Vector3d ShadingPoint::get_biased_point(const Vector3d& direction) const
     if (!(m_members & HasBiasedPoint))
     {
         const Vector3d& point = get_point();
+        cache_source_geometry();
 
         switch (m_object_instance->get_ray_bias_method())
         {
