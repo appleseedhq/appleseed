@@ -330,37 +330,39 @@ Vector3d ShadingPoint::get_biased_point(const Vector3d& direction) const
 
     if (!(m_members & HasBiasedPoint))
     {
-        const Vector3d& point = get_point();
         cache_source_geometry();
 
         switch (m_object_instance->get_ray_bias_method())
         {
           case ObjectInstance::RayBiasMethodNone:
             {
-                m_biased_point = point;
+                m_biased_point = get_point();
                 m_members |= HasBiasedPoint;
                 return m_biased_point;
             }
 
           case ObjectInstance::RayBiasMethodNormal:
             {
+                const Vector3d& p = get_point();
                 const Vector3d& n = get_geometric_normal();
                 const double bias = m_object_instance->get_ray_bias_distance();
-                return dot(direction, n) > 0.0 ? point + bias * n : point - bias * n;
+                return dot(direction, n) > 0.0 ? p + bias * n : p - bias * n;
             }
 
           case ObjectInstance::RayBiasMethodIncomingDirection:
             {
+                const Vector3d& p = get_point();
                 const double bias = m_object_instance->get_ray_bias_distance();
-                m_biased_point = point + bias * m_ray.m_dir;
+                m_biased_point = p + bias * m_ray.m_dir;
                 m_members |= HasBiasedPoint;
                 return m_biased_point;
             }
 
           case ObjectInstance::RayBiasMethodOutgoingDirection:
             {
+                const Vector3d& p = get_point();
                 const double bias = m_object_instance->get_ray_bias_distance();
-                return point + bias * normalize(direction);
+                return p + bias * normalize(direction);
             }
 
           assert_otherwise;
