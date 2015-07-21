@@ -83,10 +83,11 @@ namespace
             const ParamArray&       params)
           : BSSRDF(name, params)
         {
-            m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("dmfp", InputFormatSpectralReflectance);
-            m_inputs.declare("dmfp_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("weight", InputFormatScalar, "1.0");
+            m_inputs.declare("sigma_a", InputFormatSpectralReflectance);
+            m_inputs.declare("sigma_a_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("sigma_s", InputFormatSpectralReflectance);
+            m_inputs.declare("sigma_s_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("anisotropy", InputFormatScalar);
             m_inputs.declare("outside_ior", InputFormatScalar);
             m_inputs.declare("inside_ior", InputFormatScalar);
@@ -120,6 +121,9 @@ namespace
             DirectionalDipoleBSSRDFInputValues* values =
                 reinterpret_cast<DirectionalDipoleBSSRDFInputValues*>(ptr + offset);
 
+            assert(values->m_sigma_a.size() == values->m_sigma_s.size());
+
+            /*
             values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
             values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
 
@@ -160,6 +164,7 @@ namespace
                 // Compute absorption coefficient.
                 values->m_sigma_a[i] = static_cast<float>(sigma_t_prime) - sigma_s_prime;
             }
+            */
         }
 
         virtual void evaluate(
@@ -174,8 +179,6 @@ namespace
                 reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
 
             value.resize(values->m_sigma_a.size());
-            value.set(0.0f);
-
             bssrdf(
                 values,
                 incoming_point.get_point(),
@@ -185,8 +188,10 @@ namespace
                 outgoing_point.get_shading_normal(),
                 value);
 
-#if 0
             // Hack to make the BSSRDF reciprocal (section 6.3).
+#if 0
+            Spectrum tmp;
+            tmp.resize(values->m_sigma_a.size());
             bssrdf(
                 values,
                 outgoing_point.get_point(),
@@ -194,9 +199,12 @@ namespace
                 outgoing_dir,
                 incoming_point.get_point(),
                 incoming_point.get_shading_normal(),
-                value);
-            value *= 0.5f;
+                tmp);
+                value += tmp;
+                value *= 0.5f;
 #endif
+
+            value *= static_cast<float>(values->m_weight);
         }
 
       private:
@@ -215,7 +223,7 @@ namespace
             const Vector3d s = sample.get_sampling_context().next_vector2<3>();
 
             // Sample a color channel uniformly.
-            const size_t channel = truncate<size_t>(s[0] * values->m_reflectance.size());
+            const size_t channel = truncate<size_t>(s[0] * values->m_sigma_a.size());
             sample.set_channel(channel);
 
             // Sample a radius, by importance sampling the attenuation.
@@ -242,7 +250,7 @@ namespace
                 reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
 
             // PDF of the sampled channel.
-            const double pdf_channel = 1.0 / values->m_reflectance.size();
+            const double pdf_channel = 1.0 / values->m_sigma_a.size();
 
             // PDF of the sampled radius.
             const double sigma_t = values->m_sigma_a[channel] + values->m_sigma_s[channel];
@@ -354,7 +362,7 @@ namespace
                     value = 0.0;
 
                 // Store result.
-                result[i] += static_cast<float>(value);
+                result[i] = static_cast<float>(value);
             }
 
             // todo: we seem to be missing the S_sigma_E term (single scattering).
@@ -387,20 +395,8 @@ DictionaryArray DirectionalDipoleBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "reflectance")
-            .insert("label", "Diffuse Surface Reflectance")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary()
-                    .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
-            .insert("use", "required")
-            .insert("default", "0.5"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "reflectance_multiplier")
-            .insert("label", "Diffuse Surface Reflectance Multiplier")
+            .insert("name", "weight")
+            .insert("label", "Weight")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
@@ -409,25 +405,53 @@ DictionaryArray DirectionalDipoleBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "dmfp")
-            .insert("label", "Diffuse Mean Free Path")
+            .insert("name", "sigma_a")
+            .insert("label", "Absorption")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", "0.5"));
+            .insert("default", "0.0030"));
 
+    // Since presets are usually specified in mm.,
+    // we set the multipliers so that the values are correct
+    // for scenes modeled in meters.
     metadata.push_back(
         Dictionary()
-            .insert("name", "dmfp_multiplier")
-            .insert("label", "Diffuse Mean Free Path Multiplier")
+            .insert("name", "sigma_a_multiplier")
+            .insert("label", "Absorption Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "1.0"));
+            .insert("default", "1000"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "sigma_s")
+            .insert("label", "Scattering")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "required")
+            .insert("default", "2.29"));
+
+    // Since presets are usually specified in mm.,
+    // we set the multipliers so that the values are correct
+    // for scenes modeled in meters.
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "sigma_s_multiplier")
+            .insert("label", "Scattering Multiplier")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1000"));
 
     metadata.push_back(
         Dictionary()

@@ -629,6 +629,7 @@ void CompositeSubsurfaceClosure::process_closure_tree(
 
             if (c->id == SubsurfaceID)
             {
+                /*
                 const SubsurfaceClosureParams* p =
                     reinterpret_cast<const SubsurfaceClosureParams*>(c->data());
 
@@ -650,6 +651,7 @@ void CompositeSubsurfaceClosure::process_closure_tree(
                 }
                 else
                     assert(false);
+                */
             }
         }
         break;

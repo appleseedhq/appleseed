@@ -80,6 +80,7 @@ namespace
             const ParamArray&       params)
           : BSSRDF(name, params)
         {
+            m_inputs.declare("weight", InputFormatScalar, "1.0");
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("dmfp", InputFormatSpectralReflectance);
@@ -149,6 +150,8 @@ namespace
                 const double ld = values->m_dmfp[i];
                 value[i] = static_cast<float>(normalized_diffusion_r(dist, ld, s, a));
             }
+
+            value *= static_cast<float>(values->m_weight);
         }
 
       private:
@@ -234,6 +237,16 @@ Dictionary NormalizedDiffusionBSSRDFFactory::get_model_metadata() const
 DictionaryArray NormalizedDiffusionBSSRDFFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "weight")
+            .insert("label", "Weight")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()
