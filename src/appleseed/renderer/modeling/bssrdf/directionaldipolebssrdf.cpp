@@ -83,6 +83,7 @@ namespace
             const ParamArray&       params)
           : BSSRDF(name, params)
         {
+            m_inputs.declare("weight", InputFormatScalar, "1.0");
             m_inputs.declare("sigma_a", InputFormatSpectralReflectance);
             m_inputs.declare("sigma_a_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("sigma_s", InputFormatSpectralReflectance);
@@ -186,6 +187,24 @@ namespace
                 outgoing_point.get_point(),
                 outgoing_point.get_shading_normal(),
                 value);
+
+            // Hack to make the BSSRDF reciprocal (section 6.3).
+#if 0
+            Spectrum tmp;
+            tmp.resize(values->m_sigma_a.size());
+            bssrdf(
+                values,
+                outgoing_point.get_point(),
+                outgoing_point.get_shading_normal(),
+                outgoing_dir,
+                incoming_point.get_point(),
+                incoming_point.get_shading_normal(),
+                tmp);
+                value += tmp;
+                value *= 0.5f;
+#endif
+
+            value *= static_cast<float>(values->m_weight);
         }
 
       private:
@@ -376,6 +395,16 @@ DictionaryArray DirectionalDipoleBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
+            .insert("name", "weight")
+            .insert("label", "Weight")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
             .insert("name", "sigma_a")
             .insert("label", "Absorption")
             .insert("type", "colormap")
@@ -388,7 +417,7 @@ DictionaryArray DirectionalDipoleBSSRDFFactory::get_input_metadata() const
 
     // Since presets are usually specified in mm.,
     // we set the multipliers so that the values are correct
-    // for scenes modelled in meters.
+    // for scenes modeled in meters.
     metadata.push_back(
         Dictionary()
             .insert("name", "sigma_a_multiplier")
@@ -397,7 +426,7 @@ DictionaryArray DirectionalDipoleBSSRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "0.001"));
+            .insert("default", "1000"));
 
     metadata.push_back(
         Dictionary()
@@ -413,7 +442,7 @@ DictionaryArray DirectionalDipoleBSSRDFFactory::get_input_metadata() const
 
     // Since presets are usually specified in mm.,
     // we set the multipliers so that the values are correct
-    // for scenes modelled in meters.
+    // for scenes modeled in meters.
     metadata.push_back(
         Dictionary()
             .insert("name", "sigma_s_multiplier")
@@ -422,7 +451,7 @@ DictionaryArray DirectionalDipoleBSSRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "0.001"));
+            .insert("default", "1000"));
 
     metadata.push_back(
         Dictionary()

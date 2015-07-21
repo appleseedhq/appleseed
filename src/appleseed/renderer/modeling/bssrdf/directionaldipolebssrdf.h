@@ -55,6 +55,7 @@ namespace renderer
 
 APPLESEED_DECLARE_INPUT_VALUES(DirectionalDipoleBSSRDFInputValues)
 {
+    double      m_weight;
     Spectrum    m_sigma_a;
     double      m_sigma_a_multiplier;
     Spectrum    m_sigma_s;
