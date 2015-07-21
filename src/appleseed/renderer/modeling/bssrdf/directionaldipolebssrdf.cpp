@@ -138,9 +138,9 @@ namespace
             values->m_sigma_s.resize(values->m_dmfp.size());
             values->m_sigma_a.resize(values->m_dmfp.size());
 
-            // Relative refractive index.
+            // Precompute some stuff.
             const double eta = values->m_inside_ior / values->m_outside_ior;
-            const double rcp_g_complent = 1.0 / (1.0 - values->m_anisotropy);
+            const double rcp_g_complement = 1.0 / (1.0 - values->m_anisotropy);
 
             for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
             {
@@ -154,15 +154,16 @@ namespace
                         ComputeRdBetterDipole(eta),
                         rd);
 
+                // Compute reduced extinction coefficient.
                 const double sigma_t_prime =
                     reduced_extinction_coefficient(dmfp, alpha_prime);
 
                 // Compute scattering coefficient.
-                const double sigma_s_prime = static_cast<float>(alpha_prime * sigma_t_prime);
-                values->m_sigma_s[i] = sigma_s_prime * rcp_g_complent;
+                const double sigma_s_prime = alpha_prime * sigma_t_prime;
+                values->m_sigma_s[i] = static_cast<float>(sigma_s_prime * rcp_g_complement);
 
                 // Compute absorption coefficient.
-                values->m_sigma_a[i] = static_cast<float>(sigma_t_prime) - sigma_s_prime;
+                values->m_sigma_a[i] = static_cast<float>(sigma_t_prime - sigma_s_prime);
             }
             */
         }
@@ -200,8 +201,8 @@ namespace
                 incoming_point.get_point(),
                 incoming_point.get_shading_normal(),
                 tmp);
-                value += tmp;
-                value *= 0.5f;
+            value += tmp;
+            value *= 0.5f;
 #endif
 
             value *= static_cast<float>(values->m_weight);
