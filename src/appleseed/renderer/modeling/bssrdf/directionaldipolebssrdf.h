@@ -55,17 +55,13 @@ namespace renderer
 
 APPLESEED_DECLARE_INPUT_VALUES(DirectionalDipoleBSSRDFInputValues)
 {
-    Spectrum    m_reflectance;
-    double      m_reflectance_multiplier;
-    Spectrum    m_dmfp;
-    double      m_dmfp_multiplier;
+    Spectrum    m_sigma_a;
+    double      m_sigma_a_multiplier;
+    Spectrum    m_sigma_s;
+    double      m_sigma_s_multiplier;
     double      m_anisotropy;
     double      m_outside_ior;
     double      m_inside_ior;
-
-    // Precomputed values.
-    Spectrum    m_sigma_a;
-    Spectrum    m_sigma_s;
 };
 
 
