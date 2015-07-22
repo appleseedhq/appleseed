@@ -36,12 +36,13 @@
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer      { class TextureCache; }
+namespace renderer  { class TextureCache; }
 
 namespace renderer
 {
@@ -68,8 +69,8 @@ class InputEvaluator
         const size_t                offset = 0);
 
     // Access the values stored by the evaluate() methods.
-    const void* data() const;
-    void* data();
+    const foundation::uint8* data() const;
+    foundation::uint8* data();
 
     enum { DataSize = 12 * 1024 }; // bytes
 
@@ -107,12 +108,12 @@ inline const T* InputEvaluator::evaluate(
     return reinterpret_cast<const T*>(m_data + offset);
 }
 
-inline const void* InputEvaluator::data() const
+inline const foundation::uint8* InputEvaluator::data() const
 {
     return m_data;
 }
 
-inline void* InputEvaluator::data()
+inline foundation::uint8* InputEvaluator::data()
 {
     return m_data;
 }

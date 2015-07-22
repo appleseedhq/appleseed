@@ -367,8 +367,9 @@ namespace
                 shading_point,
                 offset);
 
-            char* ptr = reinterpret_cast<char*>(input_evaluator.data());
-            DisneyBRDFInputValues* values = reinterpret_cast<DisneyBRDFInputValues*>(ptr + offset);
+            DisneyBRDFInputValues* values =
+                reinterpret_cast<DisneyBRDFInputValues*>(input_evaluator.data() + offset);
+
             values->precompute_tint_color();
         }
 

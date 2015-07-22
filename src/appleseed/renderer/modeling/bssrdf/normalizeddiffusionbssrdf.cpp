@@ -113,9 +113,8 @@ namespace
         {
             BSSRDF::evaluate_inputs(shading_context, input_evaluator, shading_point, offset);
 
-            char* ptr = reinterpret_cast<char*>(input_evaluator.data());
             NormalizedDiffusionBSSRDFInputValues* values =
-                reinterpret_cast<NormalizedDiffusionBSSRDFInputValues*>(ptr + offset);
+                reinterpret_cast<NormalizedDiffusionBSSRDFInputValues*>(input_evaluator.data() + offset);
 
             values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
             values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);

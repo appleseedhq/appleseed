@@ -117,9 +117,8 @@ namespace
         {
             BSSRDF::evaluate_inputs(shading_context, input_evaluator, shading_point, offset);
 
-            char* ptr = reinterpret_cast<char*>(input_evaluator.data());
             DirectionalDipoleBSSRDFInputValues* values =
-                reinterpret_cast<DirectionalDipoleBSSRDFInputValues*>(ptr + offset);
+                reinterpret_cast<DirectionalDipoleBSSRDFInputValues*>(input_evaluator.data() + offset);
 
             assert(values->m_sigma_a.size() == values->m_sigma_s.size());
 
