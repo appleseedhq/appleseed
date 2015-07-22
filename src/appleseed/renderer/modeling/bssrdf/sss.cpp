@@ -30,6 +30,7 @@
 #include "sss.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/cdf.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
 
@@ -159,7 +160,7 @@ double normalized_diffusion_pdf(
     const double    r,
     const double    d)
 {
-    return (exp(-r / d) + exp(-r / (3.0 * d))) / (4.0 * d);
+    return r * TwoPi * normalized_diffusion_r(r, d);
 }
 
 double normalized_diffusion_pdf(
@@ -170,30 +171,93 @@ double normalized_diffusion_pdf(
     return normalized_diffusion_pdf(r, l / s);
 }
 
+namespace
+{
+    const int NdCdfTableSize = 128;
+    const double NdCdfTableRmax = 50.0; // cdf(50,1) = 4.59779e-11
+    const double NdCdfTableStep = NdCdfTableRmax / NdCdfTableSize;
+    double nd_cdf_table[NdCdfTableSize];
+    double nd_cdf_rmax;
+
+    struct InitializeNdCdfTable
+    {
+        InitializeNdCdfTable()
+        {
+            for (size_t i = 0; i < NdCdfTableSize; ++i)
+            {
+                const double r = fit<size_t, double>(i, 0, NdCdfTableSize - 1, 0.0, NdCdfTableRmax);
+                nd_cdf_table[i] = normalized_diffusion_cdf(r, 1.0);
+            }
+
+            // Save the real value of cdf(rmax,1).
+            nd_cdf_rmax = nd_cdf_table[NdCdfTableSize - 1];
+            nd_cdf_table[NdCdfTableSize - 1] = 1.0;
+        }
+    };
+
+    InitializeNdCdfTable initialize_nd_cdf_table;
+}
+
 double normalized_diffusion_sample(
     const double    u,
     const double    l,
-    const double    s)
+    const double    s,
+    const double    eps,
+    const size_t    max_iterations)
 {
-    // Heuristic.
-    double x1 = 10.0 + (3.0 * l);
+    assert(u >= 0.0);
+    assert(u < 1.0);
 
-    if (normalized_diffusion_cdf(x1, l, s) < u)
-        return x1;
+    const double d = l / s;
 
-    double x0 = 0.0;
-    double xmid;
+    // Handle the case where u is greater than the
+    // value we consider 1 in our cdf.
+    if (u >= nd_cdf_rmax)
+        return NdCdfTableRmax * d;
 
-    // todo: we should be doing some newton steps,
-    // instead of bisection...
-    for (size_t i = 0; i < 50; ++i)
+    // Use the cdf to find an initial interval for the root of cdf(r,1) - u = 0.
+    const size_t i = sample_cdf(nd_cdf_table, nd_cdf_table + NdCdfTableSize, u);
+    assert(i > 0);
+    assert(nd_cdf_table[i - 1] <= u);
+    assert(nd_cdf_table[i] > u);
+
+    // Transform the cdf(r,1) interval to cdf(r,d) using the fact that cdf(r,d) == cdf(r/d,1).
+    double rmin = fit<size_t, double>(i - 1, 0, NdCdfTableSize - 1, 0.0, NdCdfTableRmax) * d;
+    double rmax = fit<size_t, double>(i,     0, NdCdfTableSize - 1, 0.0, NdCdfTableRmax) * d;
+    assert(normalized_diffusion_cdf(rmin, d) <= u);
+    assert(normalized_diffusion_cdf(rmax, d) > u);
+
+    double r = (rmax + rmin) * 0.5;
+
+    // Refine the root.
+    for (size_t i = 0; i < max_iterations; ++i)
     {
-        xmid = 0.5 * (x0 + x1);
-        const double f = normalized_diffusion_cdf(xmid, l, s);
-        f < u ? x0 = xmid : x1 = xmid;
+        // Use bisection if we go out of bounds.
+        if (r < rmin || r > rmax)
+            r = (rmax + rmin) * 0.5;
+
+        const double f = normalized_diffusion_cdf(r, d) - u;
+
+        // Convergence test.
+        if (abs(f) <= eps)
+            break;
+
+        // Update bounds.
+        f < 0.0 ? rmin = r : rmax = r;
+
+        // Newton step
+        const double df = normalized_diffusion_pdf(r, d);
+        r -= f / df;
     }
 
-    return xmid;
+    return r;
+}
+
+double normalized_diffusion_max_distance(
+    const double    l,
+    const double    s)
+{
+    return NdCdfTableRmax * l / s;
 }
 
 }   // namespace renderer
