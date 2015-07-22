@@ -97,44 +97,50 @@ double reduced_extinction_coefficient(
 
 // Compute the scaling factor s for the searchlight configuration with dmfp parameterization.
 double normalized_diffusion_s(
-    const double    a);                 // surface albedo
+    const double    a);                     // surface albedo
 
 // Evaluate the diffuse reflectance profile R(r).
 // The d parameter shapes the height and width of the curve and can be set
 // based on artistic preference or determined based on physical parameters.
 double normalized_diffusion_r(
-    const double    r,                  // distance
-    const double    d);                 // curve shape
+    const double    r,                      // distance
+    const double    d);                     // curve shape
 double normalized_diffusion_r(
-    const double    r,                  // distance
-    const double    l,                  // mean free path length or diffuse mean free path length
-    const double    s,                  // scaling factor
-    const double    a);                 // surface albedo
+    const double    r,                      // distance
+    const double    l,                      // mean free path length or diffuse mean free path length
+    const double    s,                      // scaling factor
+    const double    a);                     // surface albedo
 
 // Evaluate the cumulative distribution function of R(r) * (2 * Pi * r).
 double normalized_diffusion_cdf(
-    const double    r,                  // distance
-    const double    d);                 // curve shape
+    const double    r,                      // distance
+    const double    d);                     // curve shape
 double normalized_diffusion_cdf(
-    const double    r,                  // distance
-    const double    l,                  // mean free path length or diffuse mean free path length
-    const double    s);                 // scaling factor
+    const double    r,                      // distance
+    const double    l,                      // mean free path length or diffuse mean free path length
+    const double    s);                     // scaling factor
 
 // Evaluate the probability density of a given sample.
 double normalized_diffusion_pdf(
-    const double    r,                  // distance
-    const double    d);                 // curve shape
+    const double    r,                      // distance
+    const double    d);                     // curve shape
 double normalized_diffusion_pdf(
-    const double    r,                  // distance
-    const double    l,                  // mean free path length or diffuse mean free path length
-    const double    s);                 // scaling factor
+    const double    r,                      // distance
+    const double    l,                      // mean free path length or diffuse mean free path length
+    const double    s);                     // scaling factor
 
-// Sample the function R(r) * (2 * Pi * r).
+// Sample the function R(r, l / s) * (2 * Pi * r).
 double normalized_diffusion_sample(
-    const double    u,                  // uniform random sample in [0,1)
-    const double    l,                  // mean free path length or diffuse mean free path length
-    const double    s);                 // scaling factor
+    const double    u,                      // uniform random sample in [0,1)
+    const double    l,                      // mean free path length or diffuse mean free path length
+    const double    s,                      // scaling factor
+    const double    eps = 0.0001,           // root precision
+    const size_t    max_iterations = 10);   // max root refinement iterations
 
+// Return the distance at which we consider R(r, l / s) zero.
+double normalized_diffusion_max_distance(
+    const double    l,                      // mean free path length or diffuse mean free path length
+    const double    s);                     // scaling factor
 
 //
 // BSSRDF reparameterization implementation.
