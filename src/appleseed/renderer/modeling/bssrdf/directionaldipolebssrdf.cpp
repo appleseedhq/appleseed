@@ -216,6 +216,9 @@ namespace
             const DirectionalDipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
 
+            if (values->m_weight == 0.0)
+                return false;
+
             sample.set_is_directional(true);
             sample.set_eta(values->m_inside_ior / values->m_outside_ior);
 
@@ -226,7 +229,7 @@ namespace
             const size_t channel = truncate<size_t>(s[0] * values->m_sigma_a.size());
             sample.set_channel(channel);
 
-            // Sample a radius, by importance sampling the attenuation.
+            // Sample a radius by importance sampling the attenuation.
             // Volumetric Path Tracing, Steve Marschner, section 3.
             // http://www.cs.cornell.edu/courses/cs6630/2012sp/notes/09volpath.pdf
             const double sigma_t = values->m_sigma_a[channel] + values->m_sigma_s[channel];

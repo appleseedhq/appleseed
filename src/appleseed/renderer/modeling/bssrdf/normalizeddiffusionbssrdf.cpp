@@ -163,6 +163,9 @@ namespace
             const NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
 
+            if (values->m_weight == 0.0)
+                return false;
+
             sample.set_is_directional(false);
             sample.set_eta(values->m_inside_ior / values->m_outside_ior);
 
@@ -173,15 +176,27 @@ namespace
             const size_t channel = truncate<size_t>(s[0] * values->m_reflectance.size());
             sample.set_channel(channel);
 
+            const double nd_r = values->m_reflectance[channel];
+            if (nd_r == 0)
+                return false;
+
+            const double nd_s = normalized_diffusion_s(nd_r);
+
             // Sample a radius.
             const double radius =
                 normalized_diffusion_sample(
                     s[1],
                     values->m_dmfp[channel],
-                    normalized_diffusion_s(values->m_reflectance[channel]));
+                    nd_s);
 
             // Sample an angle.
             const double phi = TwoPi * s[2];
+
+            // Set the max distance.
+            sample.set_max_distance(
+                normalized_diffusion_max_distance(
+                    values->m_dmfp[channel],
+                    nd_s));
 
             // Return point on disk.
             point = Vector2d(radius * cos(phi), radius * sin(phi));
