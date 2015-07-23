@@ -136,6 +136,12 @@ Vector<T, N> flip_to_same_hemisphere(
     const Vector<T, N>& v,
     const Vector<T, N>& ref);
 
+// Return v with the component along n zeroed.
+template <typename T, size_t N>
+Vector<T, N> project(
+    const Vector<T, N>& v,
+    const Vector<T, N>& n);
+
 // Return the reflection vector given an incoming vector i and a unit-length normal vector n.
 template <typename T, size_t N>
 Vector<T, N> reflect(
@@ -740,6 +746,14 @@ inline Vector<T, N> flip_to_same_hemisphere(
 }
 
 template <typename T, size_t N>
+inline Vector<T, N> project(
+    const Vector<T, N>& v,
+    const Vector<T, N>& n)
+{
+    return v - dot(v, n) * n;
+}
+
+template <typename T, size_t N>
 inline Vector<T, N> reflect(
     const Vector<T, N>& i,
     const Vector<T, N>& n)
@@ -747,7 +761,6 @@ inline Vector<T, N> reflect(
     assert(is_normalized(n));
 
     const T dot_in = dot(i, n);
-
     return (dot_in + dot_in) * n - i;
 }
 
