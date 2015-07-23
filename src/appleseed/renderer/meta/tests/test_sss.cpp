@@ -67,26 +67,28 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         return f(alpha_prime);
     }
 
+    const double AlphaPrimeRoundtripTestEps = 0.00001;
+
     TEST_CASE(Rd_AlphaPrime_Roundtrip)
     {
-        EXPECT_FEQ_EPS(0.0, rd_alpha_prime_roundtrip<ComputeRd>(0.0, 1.6), 0.00001);
-        EXPECT_FEQ_EPS(0.1, rd_alpha_prime_roundtrip<ComputeRd>(0.1, 1.3), 0.00001);
-        EXPECT_FEQ_EPS(0.2, rd_alpha_prime_roundtrip<ComputeRd>(0.2, 1.2), 0.00001);
-        EXPECT_FEQ_EPS(0.4, rd_alpha_prime_roundtrip<ComputeRd>(0.4, 1.3), 0.00001);
-        EXPECT_FEQ_EPS(0.6, rd_alpha_prime_roundtrip<ComputeRd>(0.6, 1.4), 0.00001);
-        EXPECT_FEQ_EPS(0.8, rd_alpha_prime_roundtrip<ComputeRd>(0.8, 1.3), 0.00001);
-        EXPECT_FEQ_EPS(1.0, rd_alpha_prime_roundtrip<ComputeRd>(1.0, 1.5), 0.00001);
+        EXPECT_FEQ_EPS(0.0, rd_alpha_prime_roundtrip<ComputeRd>(0.0, 1.6), AlphaPrimeRoundtripTestEps);
+        EXPECT_FEQ_EPS(0.1, rd_alpha_prime_roundtrip<ComputeRd>(0.1, 1.3), AlphaPrimeRoundtripTestEps);
+        EXPECT_FEQ_EPS(0.2, rd_alpha_prime_roundtrip<ComputeRd>(0.2, 1.2), AlphaPrimeRoundtripTestEps);
+        EXPECT_FEQ_EPS(0.4, rd_alpha_prime_roundtrip<ComputeRd>(0.4, 1.3), AlphaPrimeRoundtripTestEps);
+        EXPECT_FEQ_EPS(0.6, rd_alpha_prime_roundtrip<ComputeRd>(0.6, 1.4), AlphaPrimeRoundtripTestEps);
+        EXPECT_FEQ_EPS(0.8, rd_alpha_prime_roundtrip<ComputeRd>(0.8, 1.3), AlphaPrimeRoundtripTestEps);
+        EXPECT_FEQ_EPS(1.0, rd_alpha_prime_roundtrip<ComputeRd>(1.0, 1.5), AlphaPrimeRoundtripTestEps);
     }
 
     TEST_CASE(Rd_AlphaPrime_BetterDipole_Roundtrip)
     {
-        EXPECT_FEQ_EPS(0.0, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.0, 1.6), 0.001);
-        EXPECT_FEQ_EPS(0.1, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.1, 1.3), 0.001);
-        EXPECT_FEQ_EPS(0.2, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.2, 1.2), 0.001);
-        EXPECT_FEQ_EPS(0.4, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.4, 1.3), 0.001);
-        EXPECT_FEQ_EPS(0.6, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.6, 1.4), 0.001);
-        EXPECT_FEQ_EPS(0.8, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.8, 1.3), 0.001);
-        EXPECT_FEQ_EPS(1.0, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(1.0, 1.5), 0.001);
+        EXPECT_FEQ_EPS(0.0, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.0, 1.6), AlphaPrimeRoundtripTestEps);
+        EXPECT_FEQ_EPS(0.1, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.1, 1.3), AlphaPrimeRoundtripTestEps);
+        EXPECT_FEQ_EPS(0.2, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.2, 1.2), AlphaPrimeRoundtripTestEps);
+        EXPECT_FEQ_EPS(0.4, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.4, 1.3), AlphaPrimeRoundtripTestEps);
+        EXPECT_FEQ_EPS(0.6, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.6, 1.4), AlphaPrimeRoundtripTestEps);
+        EXPECT_FEQ_EPS(0.8, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.8, 1.3), AlphaPrimeRoundtripTestEps);
+        EXPECT_FEQ_EPS(1.0, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(1.0, 1.5), AlphaPrimeRoundtripTestEps);
     }
 
     const double NormalizedDiffusionTestEps = 0.0001;
@@ -156,31 +158,6 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         }
     }
 
-    /*
-    TEST_CASE(NormalizedDiffusionCdfPdf)
-    {
-        const double ndiff_step = 0.0001;
-
-        MersenneTwister rng;
-
-        for (size_t i = 0; i < 50; ++i)
-        {
-            const double a = rand_double1(rng);
-            const double l = rand_double1(rng, 0.0001, 10.0);
-            const double s = normalized_diffusion_s(a);
-            const double r = rand_double1(rng, 0.0001, 20.0);
-
-            const double pdf = normalized_diffusion_pdf(r, l, s);
-
-            const double pdf_ndiff =
-                (normalized_diffusion_cdf(r + ndiff_step, l, s) -
-                 normalized_diffusion_cdf(r, l, s)) / ndiff_step;
-
-            EXPECT_FEQ_EPS(pdf, pdf_ndiff, ndiff_step);
-        }
-    }
-    */
-
     TEST_CASE(NormalizedDiffusionSample)
     {
         MersenneTwister rng;
@@ -191,8 +168,24 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double a = rand_double1(rng);
             const double l = rand_double1(rng, 0.001, 10.0);
             const double s = normalized_diffusion_s(a);
-            const double r = normalized_diffusion_sample(u, l, s);
-            EXPECT_FEQ_EPS(u, normalized_diffusion_cdf(r, l, s), NormalizedDiffusionTestEps);
+            const double r = normalized_diffusion_sample(u, l, s, 0.00001);
+            const double e = normalized_diffusion_cdf(r, l, s);
+            EXPECT_FEQ_EPS(u, e, 0.005);
+        }
+    }
+
+    TEST_CASE(NormalizedDiffusionMaxDistance)
+    {
+        MersenneTwister rng;
+
+        for (size_t i = 0; i < 1000; ++i)
+        {
+            const double a = rand_double1(rng);
+            const double l = rand_double1(rng, 0.001, 10.0);
+            const double s = normalized_diffusion_s(a);
+            const double maxd = normalized_diffusion_max_distance(l, s);
+            const double r = normalized_diffusion_r(maxd, l, s, a);
+            EXPECT_LT(0.00001, r);
         }
     }
 
@@ -265,6 +258,29 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         }
 
         plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_r.gnuplot");
+    }
+
+    TEST_CASE(PlotNormalizedDiffusionCdf)
+    {
+        GnuplotFile plotfile;
+        plotfile.set_title("CDF");
+        plotfile.set_xlabel("r");
+        plotfile.set_ylabel("u");
+        plotfile.set_xrange(0.0, 40.0);
+        plotfile.set_yrange(0.0, 1.0);
+
+        const size_t N = 1000;
+        vector<Vector2d> points;
+
+        for (size_t i = 0; i < N; ++i)
+        {
+            const double r = fit<size_t, double>(i, 0, N - 1, 0.0, 40.0);
+            const double u = normalized_diffusion_cdf(r, 1.0);
+            points.push_back(Vector2d(r, u));
+        }
+
+        plotfile.new_plot().set_points(points);
+        plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_cdf.gnuplot");
     }
 
     void plot_dirpole_rd(
