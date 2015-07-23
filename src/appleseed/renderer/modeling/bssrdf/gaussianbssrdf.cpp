@@ -1,0 +1,305 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2015 Francois Beaune, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Interface header.
+#include "gaussianbssrdf.h"
+
+// appleseed.renderer headers.
+#include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/bssrdf/bssrdf.h"
+#include "renderer/modeling/bssrdf/bssrdfsample.h"
+#include "renderer/modeling/bssrdf/sss.h"
+#include "renderer/modeling/input/inputevaluator.h"
+
+// appleseed.foundation headers.
+#include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/memory.h"
+
+// Standard headers.
+#include <cmath>
+#include <cstddef>
+
+// Forward declarations.
+namespace renderer  { class Assembly; }
+namespace renderer  { class ShadingContext; }
+
+using namespace foundation;
+using namespace std;
+
+namespace renderer
+{
+
+namespace
+{
+    //
+    // Gaussian BSSRDF.
+    //
+    // References:
+    //
+    //   BSSRDF Importance Sampling
+    //   http://library.imageworks.com/pdfs/imageworks-library-BSSRDF-sampling.pdf
+    //
+    //   BSSRDF Importance Sampling
+    //   http://rendering-memo.blogspot.fr/2015/01/bssrdf-importance-sampling-4-multiple.html
+    //
+    // Derivation:
+    //
+    //   The profile function is a simple gaussian:
+    //
+    //            exp(-r^2 / (2*v))
+    //     R(r) = -----------------
+    //               2 * Pi * v
+    //
+    //   We want the integral of this function over a disk of radius Rmax to equal 1.
+    //   Let's compute the value of this integral:
+    //
+    //     / 2 Pi   / Rmax
+    //     |        |
+    //     |        |  R(r) r dr dtheta  =  1 - exp(-Rmax^2 / (2*v))
+    //     |        |
+    //     / 0      / 0
+    //
+    //   (Recall that dA = r dr dtheta.)
+    //
+    //   Our (multiplicative) normalization factor is then
+    //
+    //                    1
+    //     K = ------------------------
+    //         1 - exp(-Rmax^2 / (2*v))
+    //
+    //   Rmax is the radius at which the value of the integral of the gaussian profile
+    //   is low enough, i.e. when the integral over the disk is close enough to one:
+    //
+    //     1 - exp(-Rmax^2 / (2*v)) = 0.999
+    //
+    //   We find that
+    //
+    //     Rmax = sqrt(-2 * v * ln(0.001))
+    //
+    //          = sqrt(v * 13.815510558)
+    //
+
+    const char* Model = "gaussian_bssrdf";
+
+    class GaussianBSSRDF
+      : public BSSRDF
+    {
+      public:
+        GaussianBSSRDF(
+            const char*             name,
+            const ParamArray&       params)
+          : BSSRDF(name, params)
+        {
+            m_inputs.declare("weight", InputFormatScalar, "1.0");
+            m_inputs.declare("v", InputFormatScalar);
+            m_inputs.declare("outside_ior", InputFormatScalar);
+            m_inputs.declare("inside_ior", InputFormatScalar);
+        }
+
+        virtual void release() APPLESEED_OVERRIDE
+        {
+            delete this;
+        }
+
+        virtual const char* get_model() const APPLESEED_OVERRIDE
+        {
+            return Model;
+        }
+
+        virtual size_t compute_input_data_size(
+            const Assembly&         assembly) const APPLESEED_OVERRIDE
+        {
+            return align(sizeof(GaussianBSSRDFInputValues), 16);
+        }
+
+        virtual void evaluate_inputs(
+            const ShadingContext&   shading_context,
+            InputEvaluator&         input_evaluator,
+            const ShadingPoint&     shading_point,
+            const size_t            offset = 0) const APPLESEED_OVERRIDE
+        {
+            BSSRDF::evaluate_inputs(shading_context, input_evaluator, shading_point, offset);
+
+            GaussianBSSRDFInputValues* values =
+                reinterpret_cast<GaussianBSSRDFInputValues*>(input_evaluator.data() + offset);
+
+            values->m_rmax2 = values->m_v * 13.815510558;
+        }
+
+        virtual void evaluate(
+            const void*             data,
+            const ShadingPoint&     outgoing_point,
+            const Vector3d&         outgoing_dir,
+            const ShadingPoint&     incoming_point,
+            const Vector3d&         incoming_dir,
+            Spectrum&               value) const APPLESEED_OVERRIDE
+        {
+            const GaussianBSSRDFInputValues* values =
+                reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
+
+            const double rmax2 = values->m_rmax2;
+            const double r2 = square_norm(incoming_point.get_point() - outgoing_point.get_point());
+
+            if (r2 > rmax2)
+            {
+                value.set(0.0f);
+                return;
+            }
+
+            const double v = values->m_v;
+            const double rcp_k = 1.0 - exp(-rmax2 / (2.0 * v));
+            const double rd = exp(-r2 / (2.0 * v)) / (TwoPi * values->m_v * rcp_k);
+
+            value.set(static_cast<float>(rd * values->m_weight));
+        }
+
+      private:
+        virtual bool do_sample(
+            const void*             data,
+            BSSRDFSample&           sample,
+            Vector2d&               point) const APPLESEED_OVERRIDE
+        {
+            const GaussianBSSRDFInputValues* values =
+                reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
+
+            sample.set_is_directional(false);
+            sample.set_eta(values->m_inside_ior / values->m_outside_ior);
+            sample.set_channel(0);
+
+            const double rmax2 = values->m_rmax2;
+            sample.set_rmax(sqrt(rmax2));
+
+            sample.get_sampling_context().split_in_place(2, 1);
+            const Vector2d s = sample.get_sampling_context().next_vector2<2>();
+
+            const double v = values->m_v;
+            const double radius =
+                sqrt(-2.0 * v * log(1.0 - s[0] * (1.0 - exp(-rmax2 / (2.0 * v)))));
+            const double phi = TwoPi * s[1];
+
+            point = Vector2d(radius * cos(phi), radius * sin(phi));
+            return true;
+        }
+
+        virtual double do_pdf(
+            const void*             data,
+            const size_t            channel,
+            const double            radius) const APPLESEED_OVERRIDE
+        {
+            const GaussianBSSRDFInputValues* values =
+                reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
+
+            const double rmax2 = values->m_rmax2;
+            const double r2 = radius * radius;
+
+            if (r2 > rmax2)
+                return 0.0;
+
+            const double v = values->m_v;
+            const double rcp_k = 1.0 - exp(-rmax2 / (2.0 * v));
+            return exp(-r2 / (2.0 * v)) / (TwoPi * values->m_v * rcp_k);
+        }
+    };
+}
+
+
+//
+// GaussianBSSRDFFactory class implementation.
+//
+
+const char* GaussianBSSRDFFactory::get_model() const
+{
+    return Model;
+}
+
+Dictionary GaussianBSSRDFFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Gaussian BSSRDF");
+}
+
+DictionaryArray GaussianBSSRDFFactory::get_input_metadata() const
+{
+    DictionaryArray metadata;
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "weight")
+            .insert("label", "Weight")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "v")
+            .insert("label", "V")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "10.0")
+            .insert("use", "required")
+            .insert("default", "0.5"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "outside_ior")
+            .insert("label", "Outside Index of Refraction")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "5.0")
+            .insert("use", "required")
+            .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "inside_ior")
+            .insert("label", "Inside Index of Refraction")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "5.0")
+            .insert("use", "required")
+            .insert("default", "1.3"));
+
+    return metadata;
+}
+
+auto_release_ptr<BSSRDF> GaussianBSSRDFFactory::create(
+    const char*         name,
+    const ParamArray&   params) const
+{
+    return auto_release_ptr<BSSRDF>(new GaussianBSSRDF(name, params));
+}
+
+}   // namespace renderer
