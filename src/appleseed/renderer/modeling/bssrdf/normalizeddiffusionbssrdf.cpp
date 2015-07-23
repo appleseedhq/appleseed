@@ -145,26 +145,21 @@ namespace
             sample.set_channel(channel);
 
             const double nd_r = values->m_reflectance[channel];
-            if (nd_r == 0)
+            if (nd_r == 0.0)
                 return false;
 
             const double nd_s = normalized_diffusion_s(nd_r);
 
             // Sample a radius.
             const double radius =
-                normalized_diffusion_sample(
-                    s[1],
-                    values->m_dmfp[channel],
-                    nd_s);
+                normalized_diffusion_sample(s[1], values->m_dmfp[channel], nd_s);
 
             // Sample an angle.
             const double phi = TwoPi * s[2];
 
-            // Set the max distance.
-            sample.set_max_distance(
-                normalized_diffusion_max_distance(
-                    values->m_dmfp[channel],
-                    nd_s));
+            // Set the max radius.
+            sample.set_rmax(
+                normalized_diffusion_max_distance(values->m_dmfp[channel], nd_s));
 
             // Return point on disk.
             point = Vector2d(radius * cos(phi), radius * sin(phi));

@@ -167,48 +167,7 @@ namespace
             */
         }
 
-        virtual void evaluate(
-            const void*             data,
-            const ShadingPoint&     outgoing_point,
-            const Vector3d&         outgoing_dir,
-            const ShadingPoint&     incoming_point,
-            const Vector3d&         incoming_dir,
-            Spectrum&               value) const APPLESEED_OVERRIDE
-        {
-            const DirectionalDipoleBSSRDFInputValues* values =
-                reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
-
-            value.resize(values->m_sigma_a.size());
-            bssrdf(
-                values,
-                incoming_point.get_point(),
-                incoming_point.get_shading_normal(),
-                incoming_dir,
-                outgoing_point.get_point(),
-                outgoing_point.get_shading_normal(),
-                value);
-
-            // Hack to make the BSSRDF reciprocal (section 6.3).
-#if 0
-            Spectrum tmp;
-            tmp.resize(values->m_sigma_a.size());
-            bssrdf(
-                values,
-                outgoing_point.get_point(),
-                outgoing_point.get_shading_normal(),
-                outgoing_dir,
-                incoming_point.get_point(),
-                incoming_point.get_shading_normal(),
-                tmp);
-            value += tmp;
-            value *= 0.5f;
-#endif
-
-            value *= static_cast<float>(values->m_weight);
-        }
-
-      private:
-        virtual bool do_sample(
+        virtual bool sample(
             const void*             data,
             BSSRDFSample&           sample,
             Vector2d&               point) const APPLESEED_OVERRIDE
@@ -244,7 +203,47 @@ namespace
             return true;
         }
 
-        virtual double do_pdf(
+        virtual void evaluate(
+            const void*             data,
+            const ShadingPoint&     outgoing_point,
+            const Vector3d&         outgoing_dir,
+            const ShadingPoint&     incoming_point,
+            const Vector3d&         incoming_dir,
+            Spectrum&               value) const APPLESEED_OVERRIDE
+        {
+            const DirectionalDipoleBSSRDFInputValues* values =
+                reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
+
+            value.resize(values->m_sigma_a.size());
+            bssrdf(
+                values,
+                incoming_point.get_point(),
+                incoming_point.get_shading_normal(),
+                incoming_dir,
+                outgoing_point.get_point(),
+                outgoing_point.get_shading_normal(),
+                value);
+
+#if 0
+            // Hack to make the BSSRDF reciprocal (section 6.3).
+            Spectrum tmp;
+            tmp.resize(values->m_sigma_a.size());
+            bssrdf(
+                values,
+                outgoing_point.get_point(),
+                outgoing_point.get_shading_normal(),
+                outgoing_dir,
+                incoming_point.get_point(),
+                incoming_point.get_shading_normal(),
+                tmp);
+            value += tmp;
+            value *= 0.5f;
+#endif
+
+            value *= static_cast<float>(values->m_weight);
+        }
+
+        virtual double evaluate_pdf(
             const void*             data,
             const size_t            channel,
             const double            dist) const APPLESEED_OVERRIDE
@@ -266,6 +265,7 @@ namespace
             return pdf_channel * pdf_radius * pdf_angle;
         }
 
+      private:
         // Diffusive part of the BSSRDF.
         static double sd_prime(
             const double            eta,
