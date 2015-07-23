@@ -84,7 +84,6 @@ class BSSRDFSample
   private:
     const ShadingPoint&     m_shading_point;       // shading point at which the sampling is done
     SamplingContext&        m_sampling_context;    // sampling context used to sample BSSRDFs
-
     bool                    m_is_directional;
     foundation::Basis3d     m_sample_basis;
     size_t                  m_channel;

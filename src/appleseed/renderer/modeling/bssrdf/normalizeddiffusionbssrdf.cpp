@@ -142,6 +142,7 @@ namespace
             const double dist = norm(incoming_point.get_point() - outgoing_point.get_point());
 
             value.resize(values->m_reflectance.size());
+
             for (size_t i = 0, e = value.size(); i < e; ++i)
             {
                 const double a = values->m_reflectance[i];

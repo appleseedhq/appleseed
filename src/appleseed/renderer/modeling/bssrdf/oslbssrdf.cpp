@@ -148,7 +148,7 @@ namespace
         }
 
       private:
-        auto_release_ptr<BSSRDF>    m_directional_bssrdf;
+        auto_release_ptr<BSSRDF> m_directional_bssrdf;
 
         virtual bool do_sample(
             const void*                 data,

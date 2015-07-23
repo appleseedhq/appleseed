@@ -143,7 +143,7 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const size_t                channel) const;
 
   protected:
-      const foundation::LightingConditions* m_lighting_conditions;
+    const foundation::LightingConditions* m_lighting_conditions;
 
     virtual bool do_sample(
         const void*                 data,

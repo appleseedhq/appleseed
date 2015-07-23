@@ -243,10 +243,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 {
                     cutoff_ray.m_rx = ray.m_rx;
                     cutoff_ray.m_rx.m_org = ray.m_rx.point_at(ray.m_tmax);
-
                     cutoff_ray.m_ry = ray.m_ry;
                     cutoff_ray.m_ry.m_org = ray.m_ry.point_at(ray.m_tmax);
-
                     cutoff_ray.m_has_differentials = true;
                 }
 
