@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/shading/shadingpoint.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -39,7 +38,9 @@
 
 // Standard headers
 #include <cstddef>
-#include <limits>
+
+// Forward declarations.
+namespace renderer  { class ShadingPoint; }
 
 namespace renderer
 {
@@ -59,38 +60,30 @@ class BSSRDFSample
 
     // Output fields.
 
-    const foundation::Basis3d& get_sample_basis() const;
-    void set_sample_basis(const foundation::Basis3d& basis);
-
-    size_t get_channel() const;
-    void set_channel(const size_t channel);
-
-    const foundation::Vector3d& get_origin() const;
-    void set_origin(const foundation::Vector3d& origin);
-
-    bool get_use_offset_origin() const;
-    void set_use_offset_origin(const bool use_offset_origin);
-
-    double get_max_distance() const;
-    void set_max_distance(double max_distance);
-
-    // 'Directional' means that BSSRDF::evaluate() depends on the incoming vector.
+    // Set/get whether BSSRDF::evaluate() depends on the incoming vector.
     bool is_directional() const;
     void set_is_directional(const bool is_directional);
 
     double get_eta() const;
     void set_eta(const double eta);
 
+    size_t get_channel() const;
+    void set_channel(const size_t channel);
+
+    double get_rmax() const;
+    void set_rmax(const double rmax);
+
+    const foundation::Basis3d& get_projection_basis() const;
+    void set_projection_basis(const foundation::Basis3d& basis);
+
   private:
     const ShadingPoint&     m_shading_point;       // shading point at which the sampling is done
     SamplingContext&        m_sampling_context;    // sampling context used to sample BSSRDFs
     bool                    m_is_directional;
-    foundation::Basis3d     m_sample_basis;
-    size_t                  m_channel;
     double                  m_eta;
-    foundation::Vector3d    m_origin;
-    bool                    m_use_offset_origin;
-    double                  m_max_distance;
+    size_t                  m_channel;
+    double                  m_rmax;
+    foundation::Basis3d     m_projection_basis;
 };
 
 
@@ -104,8 +97,6 @@ inline BSSRDFSample::BSSRDFSample(
   : m_shading_point(shading_point)
   , m_sampling_context(sampling_context)
   , m_is_directional(false)
-  , m_use_offset_origin(false)
-  , m_max_distance(std::numeric_limits<double>::max())
 {
 }
 
@@ -117,56 +108,6 @@ inline SamplingContext& BSSRDFSample::get_sampling_context()
 inline const ShadingPoint& BSSRDFSample::get_shading_point() const
 {
     return m_shading_point;
-}
-
-inline const foundation::Basis3d& BSSRDFSample::get_sample_basis() const
-{
-    return m_sample_basis;
-}
-
-inline void BSSRDFSample::set_sample_basis(const foundation::Basis3d& basis)
-{
-    m_sample_basis = basis;
-}
-
-inline size_t BSSRDFSample::get_channel() const
-{
-    return m_channel;
-}
-
-inline void BSSRDFSample::set_channel(const size_t channel)
-{
-    m_channel = channel;
-}
-
-inline const foundation::Vector3d&BSSRDFSample::get_origin() const
-{
-    return m_origin;
-}
-
-inline void BSSRDFSample::set_origin(const foundation::Vector3d& origin)
-{
-    m_origin = origin;
-}
-
-inline bool BSSRDFSample::get_use_offset_origin() const
-{
-    return m_use_offset_origin;
-}
-
-inline void BSSRDFSample::set_use_offset_origin(const bool use_offset_origin)
-{
-    m_use_offset_origin = use_offset_origin;
-}
-
-inline double BSSRDFSample::get_max_distance() const
-{
-    return m_max_distance;
-}
-
-inline void BSSRDFSample::set_max_distance(const double max_distance)
-{
-    m_max_distance = max_distance;
 }
 
 inline bool BSSRDFSample::is_directional() const
@@ -187,6 +128,36 @@ inline double BSSRDFSample::get_eta() const
 inline void BSSRDFSample::set_eta(const double eta)
 {
     m_eta = eta;
+}
+
+inline size_t BSSRDFSample::get_channel() const
+{
+    return m_channel;
+}
+
+inline void BSSRDFSample::set_channel(const size_t channel)
+{
+    m_channel = channel;
+}
+
+inline double BSSRDFSample::get_rmax() const
+{
+    return m_rmax;
+}
+
+inline void BSSRDFSample::set_rmax(const double rmax)
+{
+    m_rmax = rmax;
+}
+
+inline const foundation::Basis3d& BSSRDFSample::get_projection_basis() const
+{
+    return m_projection_basis;
+}
+
+inline void BSSRDFSample::set_projection_basis(const foundation::Basis3d& basis)
+{
+    m_projection_basis = basis;
 }
 
 }       // namespace renderer

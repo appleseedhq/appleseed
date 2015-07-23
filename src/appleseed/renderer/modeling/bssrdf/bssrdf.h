@@ -31,11 +31,9 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/entity/connectableentity.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/uid.h"
 
@@ -49,6 +47,7 @@
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class LightingConditions; }
 namespace renderer      { class Assembly; }
+namespace renderer      { class BSSRDFSample; }
 namespace renderer      { class InputEvaluator; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
@@ -123,9 +122,10 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const size_t                offset = 0) const;
 
     // Sample the BSSRDF.
-    bool sample(
+    virtual bool sample(
         const void*                 data,
-        BSSRDFSample&               sample) const;
+        BSSRDFSample&               sample,
+        foundation::Vector2d&       point) const = 0;
 
     // Evaluate the BSSRDF for a given pair of points and directions.
     virtual void evaluate(
@@ -136,24 +136,14 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const foundation::Vector3d& incoming_dir,
         Spectrum&                   value) const = 0;
 
-    double pdf(
+    // Evaluate the PDF for a given radius.
+    virtual double evaluate_pdf(
         const void*                 data,
-        const ShadingPoint&         outgoing_point,
-        const ShadingPoint&         incoming_point,
-        const size_t                channel) const;
+        const size_t                channel,
+        const double                radius) const = 0;
 
   protected:
     const foundation::LightingConditions* m_lighting_conditions;
-
-    virtual bool do_sample(
-        const void*                 data,
-        BSSRDFSample&               sample,
-        foundation::Vector2d&       point) const = 0;
-
-    virtual double do_pdf(
-        const void*                 data,
-        const size_t                channel,
-        const double                dist) const = 0;
 };
 
 }       // namespace renderer

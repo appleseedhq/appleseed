@@ -99,12 +99,6 @@ namespace
             return Model;
         }
 
-        virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const APPLESEED_OVERRIDE
-        {
-            return align(sizeof(NormalizedDiffusionBSSRDFInputValues), 16);
-        }
-
         virtual void evaluate_inputs(
             const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
@@ -116,6 +110,7 @@ namespace
             NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<NormalizedDiffusionBSSRDFInputValues*>(input_evaluator.data() + offset);
 
+            // Apply multipliers.
             values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
             values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
 
@@ -128,34 +123,7 @@ namespace
             }
         }
 
-        virtual void evaluate(
-            const void*             data,
-            const ShadingPoint&     outgoing_point,
-            const Vector3d&         outgoing_dir,
-            const ShadingPoint&     incoming_point,
-            const Vector3d&         incoming_dir,
-            Spectrum&               value) const APPLESEED_OVERRIDE
-        {
-            const NormalizedDiffusionBSSRDFInputValues* values =
-                reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
-
-            const double dist = norm(incoming_point.get_point() - outgoing_point.get_point());
-
-            value.resize(values->m_reflectance.size());
-
-            for (size_t i = 0, e = value.size(); i < e; ++i)
-            {
-                const double a = values->m_reflectance[i];
-                const double s = normalized_diffusion_s(a);
-                const double ld = values->m_dmfp[i];
-                value[i] = static_cast<float>(normalized_diffusion_r(dist, ld, s, a));
-            }
-
-            value *= static_cast<float>(values->m_weight);
-        }
-
-      private:
-        virtual bool do_sample(
+        virtual bool sample(
             const void*             data,
             BSSRDFSample&           sample,
             Vector2d&               point) const APPLESEED_OVERRIDE
@@ -189,10 +157,36 @@ namespace
             return true;
         }
 
-        virtual double do_pdf(
+        virtual void evaluate(
+            const void*             data,
+            const ShadingPoint&     outgoing_point,
+            const Vector3d&         outgoing_dir,
+            const ShadingPoint&     incoming_point,
+            const Vector3d&         incoming_dir,
+            Spectrum&               value) const APPLESEED_OVERRIDE
+        {
+            const NormalizedDiffusionBSSRDFInputValues* values =
+                reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
+
+            const double radius = norm(incoming_point.get_point() - outgoing_point.get_point());
+
+            value.resize(values->m_reflectance.size());
+
+            for (size_t i = 0, e = value.size(); i < e; ++i)
+            {
+                const double a = values->m_reflectance[i];
+                const double s = normalized_diffusion_s(a);
+                const double ld = values->m_dmfp[i];
+                value[i] = static_cast<float>(normalized_diffusion_r(radius, ld, s, a));
+            }
+
+            value *= static_cast<float>(values->m_weight);
+        }
+
+        virtual double evaluate_pdf(
             const void*             data,
             const size_t            channel,
-            const double            dist) const APPLESEED_OVERRIDE
+            const double            radius) const APPLESEED_OVERRIDE
         {
             const NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
@@ -203,7 +197,7 @@ namespace
             // PDF of the sampled radius.
             const double pdf_radius =
                 normalized_diffusion_pdf(
-                    dist,
+                    radius,
                     values->m_dmfp[channel],
                     normalized_diffusion_s(values->m_reflectance[channel]));
 

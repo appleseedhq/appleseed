@@ -154,6 +154,33 @@ namespace
             values->m_rmax2 = values->m_v * 13.815510558;
         }
 
+        virtual bool sample(
+            const void*             data,
+            BSSRDFSample&           sample,
+            Vector2d&               point) const APPLESEED_OVERRIDE
+        {
+            const GaussianBSSRDFInputValues* values =
+                reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
+
+            sample.set_is_directional(false);
+            sample.set_eta(values->m_inside_ior / values->m_outside_ior);
+            sample.set_channel(0);
+
+            const double rmax2 = values->m_rmax2;
+            sample.set_rmax(sqrt(rmax2));
+
+            sample.get_sampling_context().split_in_place(2, 1);
+            const Vector2d s = sample.get_sampling_context().next_vector2<2>();
+
+            const double v = values->m_v;
+            const double radius =
+                sqrt(-2.0 * v * log(1.0 - s[0] * (1.0 - exp(-rmax2 / (2.0 * v)))));
+            const double phi = TwoPi * s[1];
+
+            point = Vector2d(radius * cos(phi), radius * sin(phi));
+            return true;
+        }
+
         virtual void evaluate(
             const void*             data,
             const ShadingPoint&     outgoing_point,
@@ -181,35 +208,7 @@ namespace
             value.set(static_cast<float>(rd * values->m_weight));
         }
 
-      private:
-        virtual bool do_sample(
-            const void*             data,
-            BSSRDFSample&           sample,
-            Vector2d&               point) const APPLESEED_OVERRIDE
-        {
-            const GaussianBSSRDFInputValues* values =
-                reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
-
-            sample.set_is_directional(false);
-            sample.set_eta(values->m_inside_ior / values->m_outside_ior);
-            sample.set_channel(0);
-
-            const double rmax2 = values->m_rmax2;
-            sample.set_rmax(sqrt(rmax2));
-
-            sample.get_sampling_context().split_in_place(2, 1);
-            const Vector2d s = sample.get_sampling_context().next_vector2<2>();
-
-            const double v = values->m_v;
-            const double radius =
-                sqrt(-2.0 * v * log(1.0 - s[0] * (1.0 - exp(-rmax2 / (2.0 * v)))));
-            const double phi = TwoPi * s[1];
-
-            point = Vector2d(radius * cos(phi), radius * sin(phi));
-            return true;
-        }
-
-        virtual double do_pdf(
+        virtual double evaluate_pdf(
             const void*             data,
             const size_t            channel,
             const double            radius) const APPLESEED_OVERRIDE

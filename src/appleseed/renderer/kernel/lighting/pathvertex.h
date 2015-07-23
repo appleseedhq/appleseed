@@ -73,14 +73,8 @@ class PathVertex
     const EDF*                  m_edf;
     const BSDF*                 m_bsdf;
     const void*                 m_bsdf_data;
-
-    // BSSRDF data.
     const BSSRDF*               m_bssrdf;
     const void*                 m_bssrdf_data;
-    ShadingPoint                m_bssrdf_incoming_point;
-    double                      m_bssrdf_eta;
-    bool                        m_bssrdf_directional;
-    double                      m_bssrdf_pdf;
 
     size_t                      m_path_length;
     BSDFSample::ScatteringMode  m_prev_bsdf_mode;
