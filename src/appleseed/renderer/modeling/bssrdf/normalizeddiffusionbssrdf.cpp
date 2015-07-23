@@ -99,12 +99,6 @@ namespace
             return Model;
         }
 
-        virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const APPLESEED_OVERRIDE
-        {
-            return align(sizeof(NormalizedDiffusionBSSRDFInputValues), 16);
-        }
-
         virtual void evaluate_inputs(
             const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
@@ -113,10 +107,10 @@ namespace
         {
             BSSRDF::evaluate_inputs(shading_context, input_evaluator, shading_point, offset);
 
-            char* ptr = reinterpret_cast<char*>(input_evaluator.data());
             NormalizedDiffusionBSSRDFInputValues* values =
-                reinterpret_cast<NormalizedDiffusionBSSRDFInputValues*>(ptr + offset);
+                reinterpret_cast<NormalizedDiffusionBSSRDFInputValues*>(input_evaluator.data() + offset);
 
+            // Apply multipliers.
             values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
             values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
 
@@ -129,33 +123,7 @@ namespace
             }
         }
 
-        virtual void evaluate(
-            const void*             data,
-            const ShadingPoint&     outgoing_point,
-            const Vector3d&         outgoing_dir,
-            const ShadingPoint&     incoming_point,
-            const Vector3d&         incoming_dir,
-            Spectrum&               value) const APPLESEED_OVERRIDE
-        {
-            const NormalizedDiffusionBSSRDFInputValues* values =
-                reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
-
-            const double dist = norm(incoming_point.get_point() - outgoing_point.get_point());
-
-            value.resize(values->m_reflectance.size());
-            for (size_t i = 0, e = value.size(); i < e; ++i)
-            {
-                const double a = values->m_reflectance[i];
-                const double s = normalized_diffusion_s(a);
-                const double ld = values->m_dmfp[i];
-                value[i] = static_cast<float>(normalized_diffusion_r(dist, ld, s, a));
-            }
-
-            value *= static_cast<float>(values->m_weight);
-        }
-
-      private:
-        virtual bool do_sample(
+        virtual bool sample(
             const void*             data,
             BSSRDFSample&           sample,
             Vector2d&               point) const APPLESEED_OVERRIDE
@@ -177,26 +145,21 @@ namespace
             sample.set_channel(channel);
 
             const double nd_r = values->m_reflectance[channel];
-            if (nd_r == 0)
+            if (nd_r == 0.0)
                 return false;
 
             const double nd_s = normalized_diffusion_s(nd_r);
 
             // Sample a radius.
             const double radius =
-                normalized_diffusion_sample(
-                    s[1],
-                    values->m_dmfp[channel],
-                    nd_s);
+                normalized_diffusion_sample(s[1], values->m_dmfp[channel], nd_s);
 
             // Sample an angle.
             const double phi = TwoPi * s[2];
 
-            // Set the max distance.
-            sample.set_max_distance(
-                normalized_diffusion_max_distance(
-                    values->m_dmfp[channel],
-                    nd_s));
+            // Set the max radius.
+            sample.set_rmax(
+                normalized_diffusion_max_distance(values->m_dmfp[channel], nd_s));
 
             // Return point on disk.
             point = Vector2d(radius * cos(phi), radius * sin(phi));
@@ -204,10 +167,36 @@ namespace
             return true;
         }
 
-        virtual double do_pdf(
+        virtual void evaluate(
+            const void*             data,
+            const ShadingPoint&     outgoing_point,
+            const Vector3d&         outgoing_dir,
+            const ShadingPoint&     incoming_point,
+            const Vector3d&         incoming_dir,
+            Spectrum&               value) const APPLESEED_OVERRIDE
+        {
+            const NormalizedDiffusionBSSRDFInputValues* values =
+                reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
+
+            const double radius = norm(incoming_point.get_point() - outgoing_point.get_point());
+
+            value.resize(values->m_reflectance.size());
+
+            for (size_t i = 0, e = value.size(); i < e; ++i)
+            {
+                const double a = values->m_reflectance[i];
+                const double s = normalized_diffusion_s(a);
+                const double ld = values->m_dmfp[i];
+                value[i] = static_cast<float>(normalized_diffusion_r(radius, ld, s, a));
+            }
+
+            value *= static_cast<float>(values->m_weight);
+        }
+
+        virtual double evaluate_pdf(
             const void*             data,
             const size_t            channel,
-            const double            dist) const APPLESEED_OVERRIDE
+            const double            radius) const APPLESEED_OVERRIDE
         {
             const NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
@@ -218,7 +207,7 @@ namespace
             // PDF of the sampled radius.
             const double pdf_radius =
                 normalized_diffusion_pdf(
-                    dist,
+                    radius,
                     values->m_dmfp[channel],
                     normalized_diffusion_s(values->m_reflectance[channel]));
 

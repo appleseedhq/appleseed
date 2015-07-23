@@ -132,25 +132,7 @@ namespace
             }
         }
 
-        virtual void evaluate(
-            const void*                 data,
-            const ShadingPoint&         outgoing_point,
-            const Vector3d&             outgoing_dir,
-            const ShadingPoint&         incoming_point,
-            const Vector3d&             incoming_dir,
-            Spectrum&                   value) const APPLESEED_OVERRIDE
-        {
-            const CompositeSubsurfaceClosure* c =
-                reinterpret_cast<const CompositeSubsurfaceClosure*>(data);
-
-            // TODO: implement this...
-            value.set(0.0f);
-        }
-
-      private:
-        auto_release_ptr<BSSRDF>    m_directional_bssrdf;
-
-        virtual bool do_sample(
+        virtual bool sample(
             const void*                 data,
             BSSRDFSample&               sample,
             Vector2d&                   point) const APPLESEED_OVERRIDE
@@ -166,7 +148,22 @@ namespace
             return false;
         }
 
-        virtual double do_pdf(
+        virtual void evaluate(
+            const void*                 data,
+            const ShadingPoint&         outgoing_point,
+            const Vector3d&             outgoing_dir,
+            const ShadingPoint&         incoming_point,
+            const Vector3d&             incoming_dir,
+            Spectrum&                   value) const APPLESEED_OVERRIDE
+        {
+            const CompositeSubsurfaceClosure* c =
+                reinterpret_cast<const CompositeSubsurfaceClosure*>(data);
+
+            // TODO: implement this...
+            value.set(0.0f);
+        }
+
+        virtual double evaluate_pdf(
             const void*                 data,
             const size_t                channel,
             const double                dist) const APPLESEED_OVERRIDE
@@ -177,6 +174,9 @@ namespace
             // TODO: implement this...
             return 0.0;
         }
+
+      private:
+        auto_release_ptr<BSSRDF> m_directional_bssrdf;
     };
 }
 

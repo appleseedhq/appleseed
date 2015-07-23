@@ -111,8 +111,9 @@ void DisneyLayeredBRDF::evaluate_inputs(
     const ShadingPoint&         shading_point,
     const size_t                offset) const
 {
-    char* ptr = reinterpret_cast<char*>(input_evaluator.data());
-    DisneyBRDFInputValues* values = reinterpret_cast<DisneyBRDFInputValues*>(ptr + offset);
+    DisneyBRDFInputValues* values =
+        reinterpret_cast<DisneyBRDFInputValues*>(input_evaluator.data() + offset);
+
     memset(values, 0, sizeof(DisneyBRDFInputValues));
 
     Color3d base_color(0.0);

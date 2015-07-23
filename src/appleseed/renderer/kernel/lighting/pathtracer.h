@@ -243,10 +243,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 {
                     cutoff_ray.m_rx = ray.m_rx;
                     cutoff_ray.m_rx.m_org = ray.m_rx.point_at(ray.m_tmax);
-
                     cutoff_ray.m_ry = ray.m_ry;
                     cutoff_ray.m_ry.m_org = ray.m_ry.point_at(ray.m_tmax);
-
                     cutoff_ray.m_has_differentials = true;
                 }
 
@@ -275,16 +273,11 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         }
 #endif
 
-        // Retrieve the EDF and the BSDF.
+        // Retrieve the EDF, the BSDF and the BSSRDF.
         vertex.m_edf =
             vertex.m_shading_point->is_curve_primitive() ? 0 : material->get_edf();
         vertex.m_bsdf = material->get_bsdf();
-
-        // Retrieve the BSSRDF. Do not compute SSS for indirect rays for now.
-        vertex.m_bssrdf =
-            vertex.m_shading_point->get_ray().m_depth == 0
-                ? material->get_bssrdf()
-                : 0;
+        vertex.m_bssrdf = material->get_bssrdf();
 
         // Evaluate the input values of the BSDF.
         InputEvaluator bsdf_input_evaluator(shading_context.get_texture_cache());
@@ -297,75 +290,15 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             vertex.m_bsdf_data = bsdf_input_evaluator.data();
         }
 
-        // Evaluate the input values of the BSSRDF and sample it.
+        // Evaluate the inputs of the BSSRDF.
         InputEvaluator bssrdf_input_evaluator(shading_context.get_texture_cache());
         if (vertex.m_bssrdf)
         {
-            // Evaluate the inputs of the BSSRDF.
             vertex.m_bssrdf->evaluate_inputs(
                 shading_context,
                 bssrdf_input_evaluator,
                 *vertex.m_shading_point);
             vertex.m_bssrdf_data = bssrdf_input_evaluator.data();
-
-            // Sample the BSSRDF.
-            BSSRDFSample sample(*vertex.m_shading_point, vertex.m_sampling_context);
-            if (vertex.m_bssrdf->sample(vertex.m_bssrdf_data, sample))
-            {
-                vertex.m_bssrdf_eta = sample.get_eta();
-
-                ShadingRay ray(
-                    sample.get_origin(),
-                    sample.get_sample_basis().get_normal(),
-                    0.0,
-                    sample.get_max_distance(),
-                    vertex.m_shading_point->get_ray().m_time,
-                    VisibilityFlags::ProbeRay,
-                    vertex.m_shading_point->get_ray().m_depth + 1);
-
-                if (shading_context.get_intersector().trace_same_material(
-                        ray,
-                        *vertex.m_shading_point,
-                        sample.get_use_offset_origin(),
-                        vertex.m_bssrdf_incoming_point))
-                {
-                    // Apply OSL bump mapping if needed.
-                    /*
-                    const Material* incoming_material =
-                        vertex.m_bssrdf_incoming_point.get_opposite_material();
-                    if (incoming_material->has_osl_surface())
-                    {
-                        shading_context.execute_osl_shading(
-                            *incoming_material->get_osl_surface(),
-                            vertex.m_bssrdf_incoming_point);
-
-                        InputEvaluator osl_evaluator(shading_context.get_texture_cache());
-                        incoming_material->get_bsdf()->evaluate_inputs(
-                            shading_context,
-                            osl_evaluator,
-                            vertex.m_bssrdf_incoming_point);
-
-                        sampling_context.split_in_place(1, 1);
-                        shading_context.execute_osl_normal(
-                            *incoming_material->get_osl_surface(),
-                            vertex.m_bssrdf_incoming_point,
-                            osl_evaluator.data(),
-                            sampling_context.next_double2());
-                    }
-                    */
-
-                    vertex.m_bssrdf_pdf =
-                        vertex.m_bssrdf->pdf(
-                            vertex.m_bssrdf_data,
-                            *vertex.m_shading_point,
-                            vertex.m_bssrdf_incoming_point,
-                            sample.get_channel());
-
-                    vertex.m_bssrdf_directional = sample.is_directional();
-                }
-                else vertex.m_bssrdf = 0;
-            }
-            else vertex.m_bssrdf = 0;
         }
 
         // Compute radiance contribution at this vertex.

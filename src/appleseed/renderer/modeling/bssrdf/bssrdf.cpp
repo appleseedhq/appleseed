@@ -35,14 +35,7 @@
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/project/project.h"
 
-// appleseed.foundation headers.
-#include "foundation/image/colorspace.h"
-
-// Standard headers.
-#include <cmath>
-
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -99,73 +92,6 @@ void BSSRDF::evaluate_inputs(
     const size_t            offset) const
 {
     input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0), offset);
-}
-
-bool BSSRDF::sample(
-    const void*             data,
-    BSSRDFSample&           sample) const
-{
-    Vector2d point;
-    if (!do_sample(data, sample, point))
-        return false;
-
-    sample.get_sampling_context().split_in_place(1, 1);
-    const double s = sample.get_sampling_context().next_double2();
-
-    const Basis3d& shading_basis = sample.get_shading_point().get_shading_basis();
-
-    if (s <= 0.5)
-    {
-        // We will project the sample along the surface's normal.
-        sample.set_sample_basis(shading_basis);
-        sample.set_use_offset_origin(true);
-    }
-    else if (s <= 0.75)
-    {
-        // We will project the sample along the surface's U tangent.
-        sample.set_sample_basis(
-            Basis3d(
-                shading_basis.get_tangent_u(),
-                shading_basis.get_tangent_v(),
-                shading_basis.get_normal()));
-    }
-    else
-    {
-        // We will project the sample along the surface's V tangent.
-        sample.set_sample_basis(
-            Basis3d(
-                shading_basis.get_tangent_v(),
-                shading_basis.get_normal(),
-                shading_basis.get_tangent_u()));
-    }
-
-    sample.set_origin(
-        sample.get_shading_point().get_point() +
-        sample.get_sample_basis().get_tangent_u() * point.x +
-        sample.get_sample_basis().get_tangent_v() * point.y);
-
-    return true;
-}
-
-double BSSRDF::pdf(
-    const void*             data,
-    const ShadingPoint&     outgoing_point,
-    const ShadingPoint&     incoming_point,
-    const size_t            channel) const
-{
-    // From PBRT 3.
-
-    const Vector3d d = outgoing_point.get_point() - incoming_point.get_point();
-    const Basis3d& basis = outgoing_point.get_shading_basis();
-    const Vector3d dlocal = basis.transform_to_local(d);
-
-    const Vector3d& n = incoming_point.get_shading_normal();
-    const Vector3d nlocal = basis.transform_to_local(n);
-
-    return
-        do_pdf(data, channel, sqrt(square(dlocal.y) + square(dlocal.z))) * 0.125 * abs(nlocal[0]) +
-        do_pdf(data, channel, sqrt(square(dlocal.x) + square(dlocal.z))) * 0.250 * abs(nlocal[1]) +
-        do_pdf(data, channel, sqrt(square(dlocal.x) + square(dlocal.y))) * 0.125 * abs(nlocal[2]);
 }
 
 }   // namespace renderer

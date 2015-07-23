@@ -30,6 +30,9 @@
 #ifndef APPLESEED_FOUNDATION_MATH_MIS_H
 #define APPLESEED_FOUNDATION_MATH_MIS_H
 
+// appleseed.foundation headers.
+#include "foundation/math/minmax.h"
+
 // Standard headers.
 #include <algorithm>
 #include <cassert>
@@ -48,28 +51,28 @@ namespace foundation
 //
 
 // Balance heuristic.
-template <typename T>
-T mis_balance(const T q1, const T q2);
+template <typename T> T mis_balance(const T q1, const T q2);
+template <typename T> T mis_balance(const T q1, const T q2, const T q3);
 
-// Power heuristic.  beta is >= 0.
-template <typename T>
-T mis_power(const T q1, const T q2, const T beta);
+// Power heuristic. beta is >= 0.
+template <typename T> T mis_power(const T q1, const T q2, const T beta);
+template <typename T> T mis_power(const T q1, const T q2, const T q3, const T beta);
 
 // Power heuristic with beta = 2.
-template <typename T>
-T mis_power2(const T q1, const T q2);
+template <typename T> T mis_power2(const T q1, const T q2);
+template <typename T> T mis_power2(const T q1, const T q2, const T q3);
 
-// Cutoff heuristic.  The cutoff threshold alpha is in [0,1].
-template <typename T>
-T mis_cutoff(const T q1, const T q2, const T alpha);
+// Cutoff heuristic. The cutoff threshold alpha is in [0,1].
+template <typename T> T mis_cutoff(const T q1, const T q2, const T alpha);
+template <typename T> T mis_cutoff(const T q1, const T q2, const T q3, const T alpha);
 
 // Maximum heuristic.
-template <typename T>
-T mis_maximum(const T q1, const T q2);
+template <typename T> T mis_maximum(const T q1, const T q2);
+template <typename T> T mis_maximum(const T q1, const T q2, const T q3);
 
 
 //
-// MIS heuristics implementation.
+// Implementation.
 //
 
 template <typename T>
@@ -83,17 +86,46 @@ inline T mis_balance(const T q1, const T q2)
 }
 
 template <typename T>
+inline T mis_balance(const T q1, const T q2, const T q3)
+{
+    assert(q1 >= T(0.0));
+    assert(q2 >= T(0.0));
+    assert(q3 >= T(0.0));
+    assert(q1 + q2 + q3 > T(0.0));
+
+    return q1 / (q1 + q2 + q3);
+}
+
+template <typename T>
 inline T mis_power(const T q1, const T q2, const T beta)
 {
     assert(q1 >= T(0.0));
     assert(q2 >= T(0.0));
     assert(q1 + q2 > T(0.0));
+
     assert(beta >= T(0.0));
 
     const T q1_pow = std::pow(q1, beta);
     const T q2_pow = std::pow(q2, beta);
 
     return q1_pow / (q1_pow + q2_pow);
+}
+
+template <typename T>
+inline T mis_power(const T q1, const T q2, const T q3, const T beta)
+{
+    assert(q1 >= T(0.0));
+    assert(q2 >= T(0.0));
+    assert(q3 >= T(0.0));
+    assert(q1 + q2 + q3 > T(0.0));
+
+    assert(beta >= T(0.0));
+
+    const T q1_pow = std::pow(q1, beta);
+    const T q2_pow = std::pow(q2, beta);
+    const T q3_pow = std::pow(q3, beta);
+
+    return q1_pow / (q1_pow + q2_pow + q3_pow);
 }
 
 template <typename T>
@@ -110,11 +142,27 @@ inline T mis_power2(const T q1, const T q2)
 }
 
 template <typename T>
+inline T mis_power2(const T q1, const T q2, const T q3)
+{
+    assert(q1 >= T(0.0));
+    assert(q2 >= T(0.0));
+    assert(q3 >= T(0.0));
+    assert(q1 + q2 + q3 > T(0.0));
+
+    const T q1_pow = q1 * q1;
+    const T q2_pow = q2 * q2;
+    const T q3_pow = q3 * q3;
+
+    return q1_pow / (q1_pow + q2_pow + q3_pow);
+}
+
+template <typename T>
 inline T mis_cutoff(const T q1, const T q2, const T alpha)
 {
     assert(q1 >= T(0.0));
     assert(q2 >= T(0.0));
     assert(q1 + q2 > T(0.0));
+
     assert(alpha >= T(0.0));
     assert(alpha <= T(1.0));
 
@@ -128,6 +176,29 @@ inline T mis_cutoff(const T q1, const T q2, const T alpha)
 }
 
 template <typename T>
+inline T mis_cutoff(const T q1, const T q2, const T q3, const T alpha)
+{
+    assert(q1 >= T(0.0));
+    assert(q2 >= T(0.0));
+    assert(q3 >= T(0.0));
+    assert(q1 + q2 + q3 > T(0.0));
+
+    assert(alpha >= T(0.0));
+    assert(alpha <= T(1.0));
+
+    const T cutoff = max(q1, q2, q3) * alpha;
+
+    if (q1 < cutoff)
+         return T(0.0);
+
+    T den = q1;
+    if (q2 >= cutoff) den += q2;
+    if (q3 >= cutoff) den += q3;
+
+    return q1 / den;
+}
+
+template <typename T>
 inline T mis_maximum(const T q1, const T q2)
 {
     assert(q1 >= T(0.0));
@@ -135,6 +206,17 @@ inline T mis_maximum(const T q1, const T q2)
     assert(q1 + q2 > T(0.0));
 
     return q1 >= q2 ? T(1.0) : T(0.0);
+}
+
+template <typename T>
+inline T mis_maximum(const T q1, const T q2, const T q3)
+{
+    assert(q1 >= T(0.0));
+    assert(q2 >= T(0.0));
+    assert(q3 >= T(0.0));
+    assert(q1 + q2 + q3 > T(0.0));
+
+    return q1 >= q2 && q1 >= q3 ? T(1.0) : T(0.0);
 }
 
 }       // namespace foundation

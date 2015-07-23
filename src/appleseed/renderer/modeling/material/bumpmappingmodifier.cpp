@@ -104,9 +104,7 @@ Basis3d BumpMappingModifier::modify(
         perturbed_n = -perturbed_n;
 
     // Construct an orthonormal basis around the perturbed normal.
-    return Basis3d(
-        perturbed_n,
-        perturbed_dpdu);
+    return Basis3d(perturbed_n, perturbed_dpdu);
 }
 
 }   // namespace renderer

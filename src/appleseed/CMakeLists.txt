@@ -1290,6 +1290,8 @@ set (renderer_modeling_bssrdf_sources
     renderer/modeling/bssrdf/bssrdftraits.h
     renderer/modeling/bssrdf/directionaldipolebssrdf.cpp
     renderer/modeling/bssrdf/directionaldipolebssrdf.h
+    renderer/modeling/bssrdf/gaussianbssrdf.cpp
+    renderer/modeling/bssrdf/gaussianbssrdf.h
     renderer/modeling/bssrdf/ibssrdffactory.h
     renderer/modeling/bssrdf/sss.cpp
     renderer/modeling/bssrdf/sss.h

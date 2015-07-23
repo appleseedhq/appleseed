@@ -111,6 +111,7 @@ double reduced_extinction_coefficient(
     return 1.0 / (sqrt(3.0 * (1.0 - alpha_prime)) * diffuse_mean_free_path);
 }
 
+
 //
 // Normalized diffusion.
 //
@@ -173,15 +174,15 @@ double normalized_diffusion_pdf(
 
 namespace
 {
-    const int NdCdfTableSize = 128;
+    const size_t NdCdfTableSize = 128;
     const double NdCdfTableRmax = 55.0;
     const double NdCdfTableStep = NdCdfTableRmax / NdCdfTableSize;
     double nd_cdf_table[NdCdfTableSize];
     double nd_cdf_rmax;
 
-    struct InitializeNdCdfTable
+    struct InitializeNdCDFTable
     {
-        InitializeNdCdfTable()
+        InitializeNdCDFTable()
         {
             for (size_t i = 0; i < NdCdfTableSize; ++i)
             {
@@ -195,7 +196,7 @@ namespace
         }
     };
 
-    InitializeNdCdfTable initialize_nd_cdf_table;
+    InitializeNdCDFTable initialize_nd_cdf_table;
 }
 
 double normalized_diffusion_sample(
