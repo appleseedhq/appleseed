@@ -461,7 +461,7 @@ namespace
                 }
 
                 // Subsurface scattering.
-                if (vertex.m_bssrdf)
+                if (vertex.m_bssrdf && vertex.m_cos_on > 0.0)
                 {
                     add_sss_contribution(
                         vertex,
@@ -702,27 +702,28 @@ namespace
                 Vector2d point;
                 if (!vertex.m_bssrdf->sample(vertex.m_bssrdf_data, bssrdf_sample, point))
                     return;
-
-                // Reject points too far away. This introduces negligible bias
-                // in comparison to the other approximations.
                 const double radius2 = square_norm(point);
                 const double radius = sqrt(radius2);
+                const double bssrdf_sample_pdf =
+                    vertex.m_bssrdf->evaluate_pdf(vertex.m_bssrdf_data, bssrdf_sample.get_channel(), radius);
+
+                // Reject points too far away.
+                // This introduces negligible bias in comparison to the other approximations.
                 const double rmax = bssrdf_sample.get_rmax();
                 if (radius > rmax)
                     return;
 
-                // Pick a projection basis.
+                // Pick a sampling basis.
                 vertex.m_sampling_context.split_in_place(1, 1);
-                Axis axis;
-                Basis3d basis;
-                double basis_pdf;
+                Axis sampling_axis;
+                Basis3d sampling_basis;
+                double sampling_basis_pdf;
                 pick_sampling_basis(
                     vertex.get_shading_basis(),
                     vertex.m_sampling_context.next_double2(),
-                    axis,
-                    basis,
-                    basis_pdf);
-                bssrdf_sample.set_projection_basis(basis);
+                    sampling_axis,
+                    sampling_basis,
+                    sampling_basis_pdf);
 
                 // Compute height of sample point on (positive) hemisphere of radius Rmax.
                 const double rmax2 = rmax * rmax;
@@ -732,17 +733,13 @@ namespace
                 // Compute sphere entry and exit points.
                 Vector3d entry_point, exit_point;
                 entry_point = exit_point = bssrdf_sample.get_shading_point().get_point();
-                entry_point += basis.transform_to_parent(Vector3d(point[0], +h, point[1]));
-                exit_point += basis.transform_to_parent(Vector3d(point[0], -h, point[1]));
+                entry_point += sampling_basis.transform_to_parent(Vector3d(point[0], +h, point[1]));
+                exit_point += sampling_basis.transform_to_parent(Vector3d(point[0], -h, point[1]));
 
-                // Compute near-final BSSRDF sample PDF.
-                const double bssrdf_sample_pdf =
-                      vertex.m_bssrdf->evaluate_pdf(vertex.m_bssrdf_data, bssrdf_sample.get_channel(), radius)
-                    * basis_pdf;
-
+                // Build a probe ray inscribed inside the sphere of radius Rmax.
                 ShadingRay probe_ray(
                     entry_point,
-                    -basis.get_normal(),
+                    -sampling_basis.get_normal(),
                     0.0,
                     2.0 * h,
                     vertex.get_time(),
@@ -784,7 +781,9 @@ namespace
                         add_sss_sample_contribution(
                             vertex,
                             incoming_point,
-                            axis,
+                            sampling_axis,
+                            sampling_basis,
+                            sampling_basis_pdf,
                             bssrdf_sample,
                             bssrdf_sample_pdf,
                             radiance);
@@ -805,6 +804,87 @@ namespace
                     radiance *= 1.0f / sample_count;
                     vertex_radiance += radiance;
                 }
+            }
+
+            void add_sss_sample_contribution(
+                const PathVertex&       vertex,
+                const ShadingPoint&     incoming_point,
+                const Axis              sampling_axis,
+                const Basis3d&          sampling_basis,
+                const double            sampling_basis_pdf,
+                const BSSRDFSample&     bssrdf_sample,
+                const double            bssrdf_sample_pdf,
+                Spectrum&               radiance)
+            {
+                // Compute irradiance at incoming point.
+                Vector3d incoming;
+                double transmission;
+                double cos_in;
+                Spectrum irradiance;
+                if (!compute_irradiance(
+                        incoming_point,
+                        incoming,
+                        transmission,
+                        cos_in,
+                        irradiance))
+                    return;
+
+                // Evaluate the diffusion profile.
+                Spectrum rd;
+                vertex.m_bssrdf->evaluate(
+                    vertex.m_bssrdf_data,
+                    *vertex.m_shading_point,
+                    vertex.m_outgoing.get_value(),
+                    incoming_point,
+                    incoming,
+                    rd);
+
+                // Compute PDF.
+                const double pdf =
+                      bssrdf_sample_pdf
+                    * sampling_basis_pdf
+                    * abs(dot(sampling_basis.get_normal(), incoming_point.get_geometric_normal()));    // todo: or shading normal?
+
+                // Compute MIS weight.
+                const double mis_weight =
+                    compute_mis_weight(
+                        *vertex.m_bssrdf,
+                        vertex.m_bssrdf_data,
+                        bssrdf_sample.get_channel(),
+                        sampling_basis,
+                        sampling_axis,
+                        pdf,
+                        vertex.get_point(),
+                        incoming_point.get_point(),
+                        incoming_point.get_geometric_normal());     // todo: or shading normal?
+
+                // Compute Fresnel coefficient at outgoing point.
+                double outgoing_fresnel;
+                fresnel_transmittance_dielectric(outgoing_fresnel, bssrdf_sample.get_eta(), vertex.m_cos_on);
+                if (outgoing_fresnel <= 0.0)
+                    return;
+
+                // Compute Fresnel coefficient at incoming point.
+                // We use eta and not 1/eta because the normal at the incoming point is pointing outward
+                // (away from the object), like the normal at the outgoing point. If the normal was pointing
+                // inward, i.e. facing the light ray that has been traveling inside the object, we would
+                // use 1/eta like we do when traversing an interface between two media of mismatching densities.
+                double incoming_fresnel;
+                fresnel_transmittance_dielectric(incoming_fresnel, bssrdf_sample.get_eta(), cos_in);
+                if (incoming_fresnel <= 0.0)
+                    return;
+
+                // Add the contribution of this sample to the illumination.
+                const double weight =
+                      RcpPi
+                    * transmission
+                    * incoming_fresnel
+                    * outgoing_fresnel
+                    * mis_weight
+                    / pdf;
+                irradiance *= rd;
+                irradiance *= static_cast<float>(weight);
+                radiance += irradiance;
             }
 
             // Compute irradiance at a given point of the scene. Works on back faces too.
@@ -891,87 +971,6 @@ namespace
                 irradiance *= static_cast<float>(rcp_sample_square_distance * cos_on_light);
 
                 return true;
-            }
-
-            void add_sss_sample_contribution(
-                const PathVertex&       vertex,
-                const ShadingPoint&     incoming_point,
-                const Axis              axis,
-                const BSSRDFSample&     bssrdf_sample,
-                double                  bssrdf_sample_pdf,
-                Spectrum&               radiance)
-            {
-                // Compute irradiance at incoming point.
-                Vector3d incoming;
-                double transmission;
-                double cos_in;
-                Spectrum irradiance;
-                if (!compute_irradiance(
-                        incoming_point,
-                        incoming,
-                        transmission,
-                        cos_in,
-                        irradiance))
-                    return;
-
-                // Evaluate the diffusion profile.
-                Spectrum rd;
-                vertex.m_bssrdf->evaluate(
-                    vertex.m_bssrdf_data,
-                    *vertex.m_shading_point,
-                    vertex.m_outgoing.get_value(),
-                    incoming_point,
-                    incoming,
-                    rd);
-
-                // Compute final BSSRDF sample PDF.
-                bssrdf_sample_pdf *= abs(dot(bssrdf_sample.get_projection_basis().get_normal(), incoming_point.get_geometric_normal()));
-
-                // Compute MIS weight.
-                const double mis_weight =
-                    compute_mis_weight(
-                        *vertex.m_bssrdf,
-                        vertex.m_bssrdf_data,
-                        bssrdf_sample.get_channel(),
-                        bssrdf_sample.get_projection_basis(),
-                        axis,
-                        bssrdf_sample_pdf,
-                        vertex.get_point(),
-                        incoming_point.get_point(),
-                        incoming_point.get_geometric_normal());   // todo: or shading normal?
-
-                // Compute cosine factor at outgoing point.
-                const double cos_on = dot(vertex.m_outgoing.get_value(), vertex.get_shading_normal());
-                if (cos_on <= 0.0)
-                    return;
-
-                // Compute Fresnel coefficient at outgoing point.
-                double outgoing_fresnel;
-                fresnel_transmittance_dielectric(outgoing_fresnel, bssrdf_sample.get_eta(), cos_on);
-                if (outgoing_fresnel <= 0.0)
-                    return;
-
-                // Compute Fresnel coefficient at incoming point.
-                // We use eta and not 1/eta because the normal at the incoming point is pointing outward
-                // (away from the object), like the normal at the outgoing point. If the normal was pointing
-                // inward, i.e. facing the light ray that has been traveling inside the object, we would
-                // use 1/eta like we do when traversing an interface between two media of mismatching densities.
-                double incoming_fresnel;
-                fresnel_transmittance_dielectric(incoming_fresnel, bssrdf_sample.get_eta(), cos_in);
-                if (incoming_fresnel <= 0.0)
-                    return;
-
-                // Add the contribution of this sample to the illumination.
-                const double weight =
-                      RcpPi
-                    * transmission
-                    * incoming_fresnel
-                    * outgoing_fresnel
-                    * mis_weight
-                    / bssrdf_sample_pdf;
-                irradiance *= rd;
-                irradiance *= static_cast<float>(weight);
-                radiance += irradiance;
             }
 
             void add_emitted_light_contribution(

@@ -33,7 +33,6 @@
 #include "renderer/global/globaltypes.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
 
 // Standard headers
@@ -73,9 +72,6 @@ class BSSRDFSample
     double get_rmax() const;
     void set_rmax(const double rmax);
 
-    const foundation::Basis3d& get_projection_basis() const;
-    void set_projection_basis(const foundation::Basis3d& basis);
-
   private:
     const ShadingPoint&     m_shading_point;       // shading point at which the sampling is done
     SamplingContext&        m_sampling_context;    // sampling context used to sample BSSRDFs
@@ -83,7 +79,6 @@ class BSSRDFSample
     double                  m_eta;
     size_t                  m_channel;
     double                  m_rmax;
-    foundation::Basis3d     m_projection_basis;
 };
 
 
@@ -96,7 +91,6 @@ inline BSSRDFSample::BSSRDFSample(
     SamplingContext&        sampling_context)
   : m_shading_point(shading_point)
   , m_sampling_context(sampling_context)
-  , m_is_directional(false)
 {
 }
 
@@ -148,16 +142,6 @@ inline double BSSRDFSample::get_rmax() const
 inline void BSSRDFSample::set_rmax(const double rmax)
 {
     m_rmax = rmax;
-}
-
-inline const foundation::Basis3d& BSSRDFSample::get_projection_basis() const
-{
-    return m_projection_basis;
-}
-
-inline void BSSRDFSample::set_projection_basis(const foundation::Basis3d& basis)
-{
-    m_projection_basis = basis;
 }
 
 }       // namespace renderer
