@@ -206,6 +206,7 @@ namespace
             const double rd = exp(-r2 / (2.0 * v)) / (TwoPi * values->m_v * rcp_k);
 
             value.set(static_cast<float>(rd * values->m_weight));
+            value *= static_cast<float>(values->m_weight);
         }
 
         virtual double evaluate_pdf(
