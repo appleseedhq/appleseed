@@ -807,25 +807,22 @@ namespace
                 }
             }
 
-            void add_sss_sample_contribution(
-                const PathVertex&       vertex,
-                const ShadingPoint&     incoming_point,
-                const Axis              axis,
-                const BSSRDFSample&     bssrdf_sample,
-                double                  bssrdf_sample_pdf,
-                Spectrum&               radiance)
+            // Compute irradiance at a given point of the scene. Works on back faces too.
+            bool compute_irradiance(
+                const ShadingPoint&     shading_point,
+                Vector3d&               incoming,
+                double&                 transmission,
+                double&                 cos_in,
+                Spectrum&               irradiance) const
             {
                 // Sample the lights.
                 m_sampling_context.split_in_place(3, 1);
                 const Vector3d s = m_sampling_context.next_vector2<3>();
                 LightSample light_sample;
-                m_light_sampler.sample(vertex.get_time(), s, light_sample);
+                m_light_sampler.sample(shading_point.get_ray().m_time, s, light_sample);
 
-                Vector3d incoming;
                 double cos_on_light;
-                double transmission;
                 double rcp_sample_square_distance;
-                Spectrum edf_value;
 
                 if (light_sample.m_triangle)
                 {
@@ -835,23 +832,23 @@ namespace
                     // todo: check EDF flags.
 
                     // Compute the incoming direction in world space.
-                    incoming = light_sample.m_point - incoming_point.get_point();
+                    incoming = light_sample.m_point - shading_point.get_point();
 
                     // Cull samples on lights emitting in the wrong direction.
                     cos_on_light = dot(-incoming, light_sample.m_shading_normal);
                     if (cos_on_light <= 0.0)
-                        return;
+                        return false;
 
                     // Compute the transmission factor between the light sample and the shading point.
                     transmission =
                         m_shading_context.get_tracer().trace_between(
-                            incoming_point,
+                            shading_point,
                             light_sample.m_point,
                             VisibilityFlags::ShadowRay);
 
                     // Discard occluded samples.
                     if (transmission == 0.0)
-                        return;
+                        return false;
 
                     // Compute the square distance between the light sample and the shading point.
                     const double square_distance = square_norm(incoming);
@@ -869,7 +866,7 @@ namespace
                     // Evaluate the EDF inputs.
                     // todo: we need here a ShadingPoint on the light source.
                     InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
-                    edf->evaluate_inputs(edf_input_evaluator, incoming_point);
+                    edf->evaluate_inputs(edf_input_evaluator, shading_point);
 
                     // Evaluate the EDF.
                     edf->evaluate(
@@ -877,7 +874,7 @@ namespace
                         light_sample.m_geometric_normal,
                         Basis3d(light_sample.m_shading_normal),
                         -incoming,
-                        edf_value);
+                        irradiance);
                 }
                 else
                 {
@@ -885,31 +882,36 @@ namespace
                     assert(!"Not implemented yet.");
                 }
 
-                // Compute cosine factor at outgoing point.
-                const double cos_on = dot(vertex.m_outgoing.get_value(), vertex.get_shading_normal());
-                if (cos_on <= 0.0)
-                    return;
+                // Compute cosine factor at shading point.
+                // abs() because we might be on the backside of the surface.
+                cos_in = abs(dot(incoming, shading_point.get_shading_normal()));
 
-                // Compute Fresnel coefficient at outgoing point.
-                double outgoing_fresnel;
-                fresnel_transmittance_dielectric(outgoing_fresnel, bssrdf_sample.get_eta(), cos_on);
-                if (outgoing_fresnel <= 0.0)
-                    return;
+                // Compute irradiance at shading point.
+                irradiance *= static_cast<float>(cos_in / light_sample.m_probability);
+                irradiance *= static_cast<float>(rcp_sample_square_distance * cos_on_light);
 
-                // Compute cosine factor at incoming point.
-                // todo: abs() because we might have hit the back face.
-                const double cos_in = abs(dot(incoming, incoming_point.get_shading_normal()));
-                if (cos_in <= 0.0)
-                    return;
+                return true;
+            }
 
-                // Compute Fresnel coefficient at incoming point.
-                // We use eta and not 1/eta because the normal at the incoming point is pointing outward
-                // (away from the object), like the normal at the outgoing point. If the normal was pointing
-                // inward, i.e. facing the light ray that has been traveling inside the object, we would
-                // use 1/eta like we do when traversing an interface between two media of mismatching densities.
-                double incoming_fresnel;
-                fresnel_transmittance_dielectric(incoming_fresnel, bssrdf_sample.get_eta(), cos_in);
-                if (incoming_fresnel <= 0.0)
+            void add_sss_sample_contribution(
+                const PathVertex&       vertex,
+                const ShadingPoint&     incoming_point,
+                const Axis              axis,
+                const BSSRDFSample&     bssrdf_sample,
+                double                  bssrdf_sample_pdf,
+                Spectrum&               radiance)
+            {
+                // Compute irradiance at incoming point.
+                Vector3d incoming;
+                double transmission;
+                double cos_in;
+                Spectrum irradiance;
+                if (!compute_irradiance(
+                        incoming_point,
+                        incoming,
+                        transmission,
+                        cos_in,
+                        irradiance))
                     return;
 
                 // Evaluate the diffusion profile.
@@ -921,10 +923,6 @@ namespace
                     incoming_point,
                     incoming,
                     rd);
-
-                // Compute irradiance at the incoming point.
-                edf_value *= static_cast<float>(cos_in / light_sample.m_probability);
-                edf_value *= static_cast<float>(rcp_sample_square_distance * cos_on_light);
 
                 // Compute final BSSRDF sample PDF.
                 bssrdf_sample_pdf *= abs(dot(bssrdf_sample.get_projection_basis().get_normal(), incoming_point.get_geometric_normal()));
@@ -942,6 +940,27 @@ namespace
                         incoming_point.get_point(),
                         incoming_point.get_geometric_normal());   // todo: or shading normal?
 
+                // Compute cosine factor at outgoing point.
+                const double cos_on = dot(vertex.m_outgoing.get_value(), vertex.get_shading_normal());
+                if (cos_on <= 0.0)
+                    return;
+
+                // Compute Fresnel coefficient at outgoing point.
+                double outgoing_fresnel;
+                fresnel_transmittance_dielectric(outgoing_fresnel, bssrdf_sample.get_eta(), cos_on);
+                if (outgoing_fresnel <= 0.0)
+                    return;
+
+                // Compute Fresnel coefficient at incoming point.
+                // We use eta and not 1/eta because the normal at the incoming point is pointing outward
+                // (away from the object), like the normal at the outgoing point. If the normal was pointing
+                // inward, i.e. facing the light ray that has been traveling inside the object, we would
+                // use 1/eta like we do when traversing an interface between two media of mismatching densities.
+                double incoming_fresnel;
+                fresnel_transmittance_dielectric(incoming_fresnel, bssrdf_sample.get_eta(), cos_in);
+                if (incoming_fresnel <= 0.0)
+                    return;
+
                 // Add the contribution of this sample to the illumination.
                 const double weight =
                       RcpPi
@@ -950,9 +969,9 @@ namespace
                     * outgoing_fresnel
                     * mis_weight
                     / bssrdf_sample_pdf;
-                edf_value *= rd;
-                edf_value *= static_cast<float>(weight);
-                radiance += edf_value;
+                irradiance *= rd;
+                irradiance *= static_cast<float>(weight);
+                radiance += irradiance;
             }
 
             void add_emitted_light_contribution(
