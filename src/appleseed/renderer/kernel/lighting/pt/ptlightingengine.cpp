@@ -38,6 +38,7 @@
 #include "renderer/kernel/lighting/imagebasedlighting.h"
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/pathvertex.h"
+#include "renderer/kernel/lighting/subsurfacesampler.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -606,88 +607,6 @@ namespace
                 vertex_aovs.add(m_env_edf->get_render_layer_index(), ibl_radiance);
             }
 
-            enum Axis { NAxis, UAxis, VAxis };
-
-            static void pick_sampling_basis(
-                const Basis3d&          shading_basis,
-                const double            s,
-                Axis&                   axis,
-                Basis3d&                basis,
-                double&                 basis_pdf)
-            {
-                const Vector3d& n = shading_basis.get_normal();
-                const Vector3d& u = shading_basis.get_tangent_u();
-                const Vector3d& v = shading_basis.get_tangent_v();
-
-                if (s <= 0.5)
-                {
-                    // Project the sample along N.
-                    axis = NAxis;
-                    basis = Basis3d(n, u, v);
-                    basis_pdf = 0.5;
-                }
-                else if (s <= 0.75)
-                {
-                    // Project the sample along U.
-                    axis = UAxis;
-                    basis = Basis3d(u, v, n);
-                    basis_pdf = 0.25;
-                }
-                else
-                {
-                    // Project the sample along V.
-                    axis = VAxis;
-                    basis = Basis3d(v, n, u);
-                    basis_pdf = 0.25;
-                }
-            }
-
-            static double compute_mis_weight(
-                const BSSRDF&           bssrdf,
-                const void*             data,
-                const size_t            channel,
-                const Basis3d&          basis,
-                const Axis              axis,
-                const double            sample_pdf,
-                const Vector3d&         outgoing_point,
-                const Vector3d&         incoming_point,
-                const Vector3d&         incoming_normal)
-            {
-                const Vector3d& n = basis.get_normal();
-                const Vector3d& u = basis.get_tangent_u();
-                const Vector3d& v = basis.get_tangent_v();
-                const Vector3d d = incoming_point - outgoing_point;
-
-                // todo: not sure about the 2.0 factors.
-
-                switch (axis)
-                {
-                  case NAxis:
-                    {
-                        const double pdf_u = 0.25 * bssrdf.evaluate_pdf(data, channel, norm(project(d, u))) * abs(dot(u, incoming_normal));
-                        const double pdf_v = 0.25 * bssrdf.evaluate_pdf(data, channel, norm(project(d, v))) * abs(dot(v, incoming_normal));
-                        return mis_power2(2.0 * sample_pdf, pdf_u, pdf_v);
-                    }
-
-                  case UAxis:
-                    {
-                        const double pdf_n = 0.5  * bssrdf.evaluate_pdf(data, channel, norm(project(d, n))) * abs(dot(n, incoming_normal));
-                        const double pdf_v = 0.25 * bssrdf.evaluate_pdf(data, channel, norm(project(d, v))) * abs(dot(v, incoming_normal));
-                        return mis_power2(sample_pdf, 2.0 * pdf_n, pdf_v);
-                    }
-
-                  case VAxis:
-                    {
-                        const double pdf_n = 0.5  * bssrdf.evaluate_pdf(data, channel, norm(project(d, n))) * abs(dot(n, incoming_normal));
-                        const double pdf_u = 0.25 * bssrdf.evaluate_pdf(data, channel, norm(project(d, u))) * abs(dot(u, incoming_normal));
-                        return mis_power2(sample_pdf, 2.0 * pdf_n, pdf_u);
-                    }
-                }
-
-                assert(!"Should never happen.");
-                return 0.0;
-            }
-
             void add_sss_contribution(
                 const PathVertex&       vertex,
                 Spectrum&               vertex_radiance,
@@ -697,124 +616,35 @@ namespace
                 if (!m_light_sampler.has_lights_or_emitting_triangles())
                     return;
 
-                // Sample the diffusion profile.
-                BSSRDFSample bssrdf_sample(*vertex.m_shading_point, vertex.m_sampling_context);
-                Vector2d point;
-                if (!vertex.m_bssrdf->sample(vertex.m_bssrdf_data, bssrdf_sample, point))
+                const size_t MaxSubsurfaceSampleCount = 10;
+                SubsurfaceSample subsurface_samples[MaxSubsurfaceSampleCount];
+                SubsurfaceSampler subsurface_sampler(m_shading_context);
+                const size_t incoming_point_count =
+                    subsurface_sampler.sample(
+                        m_sampling_context,
+                        *vertex.m_shading_point,
+                        *vertex.m_bssrdf,
+                        vertex.m_bssrdf_data,
+                        subsurface_samples,
+                        MaxSubsurfaceSampleCount);
+
+                if (incoming_point_count == 0)
                     return;
-
-                // Reject points too far away.
-                // This introduces negligible bias in comparison to the other approximations.
-                const double radius2 = square_norm(point);
-                const double rmax2 = bssrdf_sample.get_rmax2();
-                if (radius2 > rmax2)
-                    return;
-
-                // Evaluate diffusion profile PDF.
-                const double radius = sqrt(radius2);
-                const double bssrdf_sample_pdf =
-                    vertex.m_bssrdf->evaluate_pdf(vertex.m_bssrdf_data, bssrdf_sample.get_channel(), radius);
-
-                // Pick a sampling basis.
-                vertex.m_sampling_context.split_in_place(1, 1);
-                Axis sampling_axis;
-                Basis3d sampling_basis;
-                double sampling_basis_pdf;
-                pick_sampling_basis(
-                    vertex.get_shading_basis(),
-                    vertex.m_sampling_context.next_double2(),
-                    sampling_axis,
-                    sampling_basis,
-                    sampling_basis_pdf);
-
-                // Compute height of sample point on (positive) hemisphere of radius Rmax.
-                assert(rmax2 >= radius2);
-                const double h = sqrt(rmax2 - radius2);
-
-                // Compute sphere entry and exit points.
-                Vector3d entry_point, exit_point;
-                entry_point = exit_point = bssrdf_sample.get_shading_point().get_point();
-                entry_point += sampling_basis.transform_to_parent(Vector3d(point[0], +h, point[1]));
-                exit_point += sampling_basis.transform_to_parent(Vector3d(point[0], -h, point[1]));
-
-                // Build a probe ray inscribed inside the sphere of radius Rmax.
-                ShadingRay probe_ray(
-                    entry_point,
-                    -sampling_basis.get_normal(),
-                    0.0,
-                    2.0 * h,
-                    vertex.get_time(),
-                    VisibilityFlags::ProbeRay,
-                    vertex.get_ray().m_depth + 1);
-
-                ShadingPoint shading_points[2];
-                size_t shading_point_index = 0;
-                bool first = true;
 
                 Spectrum radiance(0.0f);
-                size_t sample_count = 0;
 
-                while (true)
-                {
-                    if (first)
-                    {
-                        if (!m_shading_context.get_intersector().trace(
-                                probe_ray,
-                                shading_points[shading_point_index]))
-                            break;
-                        first = false;
-                    }
-                    else
-                    {
-                        shading_points[shading_point_index].clear();
+                for (size_t i = 0; i < incoming_point_count; ++i)
+                    add_sss_sample_contribution(vertex, subsurface_samples[i], radiance);
 
-                        if (!m_shading_context.get_intersector().trace(
-                                probe_ray,
-                                shading_points[shading_point_index],
-                                &shading_points[1 - shading_point_index]))
-                            break;
-                    }
+                if (incoming_point_count > 1)
+                    radiance *= 1.0f / incoming_point_count;
 
-                    const ShadingPoint& incoming_point = shading_points[shading_point_index];
-
-                    if (incoming_point.get_material() == vertex.get_material())
-                    {
-                        add_sss_sample_contribution(
-                            vertex,
-                            incoming_point,
-                            sampling_axis,
-                            sampling_basis,
-                            sampling_basis_pdf,
-                            bssrdf_sample,
-                            bssrdf_sample_pdf,
-                            radiance);
-
-                        ++sample_count;
-                    }
-
-                    // Move the ray's origin past this occluder.
-                    probe_ray.m_org = incoming_point.get_point();
-                    probe_ray.m_tmax = norm(exit_point - probe_ray.m_org);
-
-                    // Swap the parent and current shading points.
-                    shading_point_index = 1 - shading_point_index;
-                }
-
-                if (sample_count > 0)
-                {
-                    radiance *= 1.0f / sample_count;
-                    vertex_radiance += radiance;
-                }
+                vertex_radiance += radiance;
             }
 
             void add_sss_sample_contribution(
                 const PathVertex&       vertex,
-                const ShadingPoint&     incoming_point,
-                const Axis              sampling_axis,
-                const Basis3d&          sampling_basis,
-                const double            sampling_basis_pdf,
-                const BSSRDFSample&     bssrdf_sample,
-                const double            bssrdf_sample_pdf,
+                const SubsurfaceSample& subsurface_sample,
                 Spectrum&               radiance)
             {
                 // Compute irradiance at incoming point.
@@ -823,7 +653,7 @@ namespace
                 double cos_in;
                 Spectrum irradiance;
                 if (!compute_irradiance(
-                        incoming_point,
+                        subsurface_sample.m_point,
                         incoming,
                         transmission,
                         cos_in,
@@ -836,32 +666,13 @@ namespace
                     vertex.m_bssrdf_data,
                     *vertex.m_shading_point,
                     vertex.m_outgoing.get_value(),
-                    incoming_point,
+                    subsurface_sample.m_point,
                     incoming,
                     rd);
 
-                // Compute PDF.
-                const double pdf =
-                      bssrdf_sample_pdf
-                    * sampling_basis_pdf
-                    * abs(dot(sampling_basis.get_normal(), incoming_point.get_geometric_normal()));    // todo: or shading normal?
-
-                // Compute MIS weight.
-                const double mis_weight =
-                    compute_mis_weight(
-                        *vertex.m_bssrdf,
-                        vertex.m_bssrdf_data,
-                        bssrdf_sample.get_channel(),
-                        sampling_basis,
-                        sampling_axis,
-                        pdf,
-                        vertex.get_point(),
-                        incoming_point.get_point(),
-                        incoming_point.get_geometric_normal());     // todo: or shading normal?
-
                 // Compute Fresnel coefficient at outgoing point.
                 double outgoing_fresnel;
-                fresnel_transmittance_dielectric(outgoing_fresnel, bssrdf_sample.get_eta(), vertex.m_cos_on);
+                fresnel_transmittance_dielectric(outgoing_fresnel, subsurface_sample.m_eta, vertex.m_cos_on);
                 if (outgoing_fresnel <= 0.0)
                     return;
 
@@ -871,7 +682,7 @@ namespace
                 // inward, i.e. facing the light ray that has been traveling inside the object, we would
                 // use 1/eta like we do when traversing an interface between two media of mismatching densities.
                 double incoming_fresnel;
-                fresnel_transmittance_dielectric(incoming_fresnel, bssrdf_sample.get_eta(), cos_in);
+                fresnel_transmittance_dielectric(incoming_fresnel, subsurface_sample.m_eta, cos_in);
                 if (incoming_fresnel <= 0.0)
                     return;
 
@@ -881,8 +692,7 @@ namespace
                     * transmission
                     * incoming_fresnel
                     * outgoing_fresnel
-                    * mis_weight
-                    / pdf;
+                    / subsurface_sample.m_probability;
                 irradiance *= rd;
                 irradiance *= static_cast<float>(weight);
                 radiance += irradiance;
