@@ -55,7 +55,8 @@ namespace renderer
 
 APPLESEED_DECLARE_INPUT_VALUES(GaussianBSSRDFInputValues)
 {
-    double      m_weight;
+    Spectrum    m_reflectance;
+    double      m_reflectance_multiplier;
     double      m_v;
     double      m_outside_ior;
     double      m_inside_ior;

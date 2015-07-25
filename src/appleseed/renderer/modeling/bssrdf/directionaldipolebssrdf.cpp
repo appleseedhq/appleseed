@@ -251,9 +251,6 @@ namespace
             const DirectionalDipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
 
-            // PDF of the sampled channel.
-            const double pdf_channel = 1.0 / values->m_sigma_a.size();
-
             // PDF of the sampled radius.
             const double sigma_t = values->m_sigma_a[channel] + values->m_sigma_s[channel];
             const double pdf_radius = sigma_t * exp(-sigma_t * dist);
@@ -262,7 +259,7 @@ namespace
             const double pdf_angle = RcpTwoPi;
 
             // Compute and return the final PDF.
-            return pdf_channel * pdf_radius * pdf_angle;
+            return pdf_radius * pdf_angle;
         }
 
       private:

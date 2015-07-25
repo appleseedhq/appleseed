@@ -177,6 +177,7 @@ namespace
     const size_t NdCdfTableSize = 128;
     const double NdCdfTableRmax = 55.0;
     const double NdCdfTableStep = NdCdfTableRmax / NdCdfTableSize;
+
     double nd_cdf_table[NdCdfTableSize];
     double nd_cdf_rmax;
 
@@ -190,8 +191,10 @@ namespace
                 nd_cdf_table[i] = normalized_diffusion_cdf(r, 1.0);
             }
 
-            // Save the real value of cdf(rmax,1).
+            // Save the real value of cdf(Rmax, 1).
             nd_cdf_rmax = nd_cdf_table[NdCdfTableSize - 1];
+
+            // Make sure the last value is exactly 1.
             nd_cdf_table[NdCdfTableSize - 1] = 1.0;
         }
     };
