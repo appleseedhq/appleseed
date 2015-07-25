@@ -69,8 +69,8 @@ class BSSRDFSample
     size_t get_channel() const;
     void set_channel(const size_t channel);
 
-    double get_rmax() const;
-    void set_rmax(const double rmax);
+    double get_rmax2() const;
+    void set_rmax2(const double rmax2);
 
   private:
     const ShadingPoint&     m_shading_point;       // shading point at which the sampling is done
@@ -78,7 +78,7 @@ class BSSRDFSample
     bool                    m_is_directional;
     double                  m_eta;
     size_t                  m_channel;
-    double                  m_rmax;
+    double                  m_rmax2;
 };
 
 
@@ -134,14 +134,14 @@ inline void BSSRDFSample::set_channel(const size_t channel)
     m_channel = channel;
 }
 
-inline double BSSRDFSample::get_rmax() const
+inline double BSSRDFSample::get_rmax2() const
 {
-    return m_rmax;
+    return m_rmax2;
 }
 
-inline void BSSRDFSample::set_rmax(const double rmax)
+inline void BSSRDFSample::set_rmax2(const double rmax2)
 {
-    m_rmax = rmax;
+    m_rmax2 = rmax2;
 }
 
 }       // namespace renderer

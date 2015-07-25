@@ -702,16 +702,18 @@ namespace
                 Vector2d point;
                 if (!vertex.m_bssrdf->sample(vertex.m_bssrdf_data, bssrdf_sample, point))
                     return;
-                const double radius2 = square_norm(point);
-                const double radius = sqrt(radius2);
-                const double bssrdf_sample_pdf =
-                    vertex.m_bssrdf->evaluate_pdf(vertex.m_bssrdf_data, bssrdf_sample.get_channel(), radius);
 
                 // Reject points too far away.
                 // This introduces negligible bias in comparison to the other approximations.
-                const double rmax = bssrdf_sample.get_rmax();
-                if (radius > rmax)
+                const double radius2 = square_norm(point);
+                const double rmax2 = bssrdf_sample.get_rmax2();
+                if (radius2 > rmax2)
                     return;
+
+                // Evaluate diffusion profile PDF.
+                const double radius = sqrt(radius2);
+                const double bssrdf_sample_pdf =
+                    vertex.m_bssrdf->evaluate_pdf(vertex.m_bssrdf_data, bssrdf_sample.get_channel(), radius);
 
                 // Pick a sampling basis.
                 vertex.m_sampling_context.split_in_place(1, 1);
@@ -726,7 +728,6 @@ namespace
                     sampling_basis_pdf);
 
                 // Compute height of sample point on (positive) hemisphere of radius Rmax.
-                const double rmax2 = rmax * rmax;
                 assert(rmax2 >= radius2);
                 const double h = sqrt(rmax2 - radius2);
 

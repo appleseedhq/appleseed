@@ -81,11 +81,11 @@ namespace
     //   We want the integral of this function over a disk of radius Rmax to equal 1.
     //   Let's compute the value of this integral:
     //
-    //     / 2 Pi   / Rmax
-    //     |        |
-    //     |        |  R(r) r dr dtheta  =  1 - exp(-Rmax^2 / (2*v))
-    //     |        |
-    //     / 0      / 0
+    //     /              / 2 Pi   / Rmax
+    //     |              |        |
+    //     |  R(r) dA  =  |        |  R(r) r dr dtheta  =  1 - exp(-Rmax^2 / (2*v))
+    //     |              |        |
+    //     / disk         / 0      / 0
     //
     //   (Recall that dA = r dr dtheta.)
     //
@@ -96,18 +96,20 @@ namespace
     //         1 - exp(-Rmax^2 / (2*v))
     //
     //   Rmax is the radius at which the value of the integral of the gaussian profile
-    //   is low enough, i.e. when the integral over the disk is close enough to one:
+    //   is low enough, i.e. when the integral over the disk is close enough to one.
+    //   For instance, if we pick 0.999 as a threshold:
     //
     //     1 - exp(-Rmax^2 / (2*v)) = 0.999
     //
     //   We find that
     //
-    //     Rmax = sqrt(-2 * v * ln(0.001))
-    //
-    //          = sqrt(v * 13.815510558)
+    //     Rmax = sqrt(-2 * v * ln(0.001)) = sqrt(v * 13.815510558)
     //
 
     const char* Model = "gaussian_bssrdf";
+
+    const double RIntegralThreshold = 0.999;
+    const double RMax2Constant = -2.0 * log(1.0 - RIntegralThreshold);
 
     class GaussianBSSRDF
       : public BSSRDF
@@ -118,7 +120,8 @@ namespace
             const ParamArray&       params)
           : BSSRDF(name, params)
         {
-            m_inputs.declare("weight", InputFormatScalar, "1.0");
+            m_inputs.declare("reflectance", InputFormatSpectralReflectance);
+            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("v", InputFormatScalar);
             m_inputs.declare("outside_ior", InputFormatScalar);
             m_inputs.declare("inside_ior", InputFormatScalar);
@@ -151,7 +154,7 @@ namespace
             GaussianBSSRDFInputValues* values =
                 reinterpret_cast<GaussianBSSRDFInputValues*>(input_evaluator.data() + offset);
 
-            values->m_rmax2 = values->m_v * 13.815510558;
+            values->m_rmax2 = values->m_v * RMax2Constant;
         }
 
         virtual bool sample(
@@ -162,12 +165,15 @@ namespace
             const GaussianBSSRDFInputValues* values =
                 reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
 
+            const double rmax2 = values->m_rmax2;
+
+            if (rmax2 <= 0.0)
+                return false;
+
             sample.set_is_directional(false);
             sample.set_eta(values->m_inside_ior / values->m_outside_ior);
             sample.set_channel(0);
-
-            const double rmax2 = values->m_rmax2;
-            sample.set_rmax(sqrt(rmax2));
+            sample.set_rmax2(rmax2);
 
             sample.get_sampling_context().split_in_place(2, 1);
             const Vector2d s = sample.get_sampling_context().next_vector2<2>();
@@ -202,11 +208,10 @@ namespace
             }
 
             const double v = values->m_v;
-            const double rcp_k = 1.0 - exp(-rmax2 / (2.0 * v));
-            const double rd = exp(-r2 / (2.0 * v)) / (TwoPi * values->m_v * rcp_k);
+            const double rd = exp(-r2 / (2.0 * v)) / (TwoPi * v * RIntegralThreshold);
 
-            value.set(static_cast<float>(rd * values->m_weight));
-            value *= static_cast<float>(values->m_weight);
+            value = values->m_reflectance;
+            value *= static_cast<float>(values->m_reflectance_multiplier * rd);
         }
 
         virtual double evaluate_pdf(
@@ -224,8 +229,7 @@ namespace
                 return 0.0;
 
             const double v = values->m_v;
-            const double rcp_k = 1.0 - exp(-rmax2 / (2.0 * v));
-            return exp(-r2 / (2.0 * v)) / (TwoPi * values->m_v * rcp_k);
+            return exp(-r2 / (2.0 * v)) / (TwoPi * v * RIntegralThreshold);
         }
     };
 }
@@ -254,8 +258,20 @@ DictionaryArray GaussianBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "weight")
-            .insert("label", "Weight")
+            .insert("name", "reflectance")
+            .insert("label", "Reflectance")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "required")
+            .insert("default", "0.5"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "reflectance_multiplier")
+            .insert("label", "Reflectance Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))

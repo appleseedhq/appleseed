@@ -158,8 +158,9 @@ namespace
             const double phi = TwoPi * s[2];
 
             // Set the max radius.
-            sample.set_rmax(
-                normalized_diffusion_max_distance(values->m_dmfp[channel], nd_s));
+            const double rmax =
+                normalized_diffusion_max_distance(values->m_dmfp[channel], nd_s);
+            sample.set_rmax2(rmax * rmax);
 
             // Return point on disk.
             point = Vector2d(radius * cos(phi), radius * sin(phi));
@@ -201,9 +202,6 @@ namespace
             const NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
 
-            // PDF of the sampled channel.
-            const double pdf_channel = 1.0 / values->m_reflectance.size();
-
             // PDF of the sampled radius.
             const double pdf_radius =
                 normalized_diffusion_pdf(
@@ -215,7 +213,7 @@ namespace
             const double pdf_angle = RcpTwoPi;
 
             // Compute and return the final PDF.
-            return pdf_channel * pdf_radius * pdf_angle;
+            return pdf_radius * pdf_angle;
         }
     };
 }
