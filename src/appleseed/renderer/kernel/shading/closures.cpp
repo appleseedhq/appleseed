@@ -75,6 +75,7 @@ namespace
         OSL::Color3     rg;
         float           nu;
         float           nv;
+        float           fr;
     };
 
     struct DebugClosureParams
@@ -257,7 +258,7 @@ void CompositeSurfaceClosure::process_closure_tree(
                     values.m_rg_multiplier = 1.0;
                     values.m_nu = max(p->nu, 0.01f);
                     values.m_nv = max(p->nv, 0.01f);
-                    values.m_fr_multiplier = 1.0;
+                    values.m_fr_multiplier = p->fr;
 
                     add_closure<AshikhminBRDFInputValues>(
                         static_cast<ClosureID>(c->id),
@@ -861,6 +862,7 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                                         CLOSURE_COLOR_PARAM(AshikhminShirleyBRDFClosureParams, rg),
                                                         CLOSURE_FLOAT_PARAM(AshikhminShirleyBRDFClosureParams, nu),
                                                         CLOSURE_FLOAT_PARAM(AshikhminShirleyBRDFClosureParams, nv),
+                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyBRDFClosureParams, fr),
                                                         CLOSURE_FINISH_PARAM(AshikhminShirleyBRDFClosureParams) } },
 
         { "as_disney", DisneyID, { CLOSURE_VECTOR_PARAM(DisneyBRDFClosureParams, N),
