@@ -1,0 +1,27 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.7.0dev
+surface noise_blocks
+param	float	Kd	0.80000001		%read{3,3} %write{2147483647,-1}
+param	matrix	Xform	1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1		%read{0,0} %write{2147483647,-1}
+global	point	P	%read{0,0} %write{2147483647,-1}
+global	normal	N	%read{2,2} %write{2147483647,-1}
+global	closure color	Ci	%read{2147483647,-1} %write{4,4}
+local	point	PP	%read{1,1} %write{0,0}
+local	color	Cs	%read{3,3} %write{1,1}
+const	string	$const1	"cell"		%read{1,1} %write{2147483647,-1}
+temp	closure color	$tmp1	%read{4,4} %write{2,2}
+const	string	$const2	"diffuse"		%read{2,2} %write{2147483647,-1}
+temp	color	$tmp2	%read{4,4} %write{3,3}
+code ___main___
+# noise_blocks.osl:6
+#     point PP = transform(Xform, P);
+	transform	PP Xform P 	%filename{"noise_blocks.osl"} %line{6} %argrw{"wrr"}
+# noise_blocks.osl:7
+#     color Cs = noise("cell", PP);
+	noise		Cs $const1 PP 	%line{7} %argrw{"wrr"}
+# noise_blocks.osl:8
+#     Ci = Cs * Kd * diffuse(N);
+	closure		$tmp1 $const2 N 	%line{8} %argrw{"wrr"}
+	mul		$tmp2 Cs Kd 	%argrw{"wrr"}
+	mul		Ci $tmp1 $tmp2 	%argrw{"wrr"}
+	end

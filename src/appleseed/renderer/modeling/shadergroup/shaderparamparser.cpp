@@ -57,6 +57,8 @@ ShaderParamParser::ShaderParamParser(const string& s)
         m_param_type = OSLParamTypeFloat;
     else if (tok == "int")
         m_param_type = OSLParamTypeInt;
+    else if (tok == "matrix")
+        m_param_type = OSLParamTypeMatrix;
     else if (tok == "normal")
         m_param_type = OSLParamTypeNormal;
     else if (tok == "point")
