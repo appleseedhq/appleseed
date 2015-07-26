@@ -34,7 +34,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/bsdf/oslashikhminbrdf.h"
+#include "renderer/modeling/bsdf/ashikhminbrdf.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
@@ -87,7 +87,7 @@ namespace
             memset(m_all_bsdfs, 0, sizeof(BSDF*) * NumClosuresIDs);
 
             m_ashikhmin_shirley_brdf =
-                OSLAshikhminBRDFFactory().create(
+                AshikhminBRDFFactory().create(
                     "ashikhmin_brdf",
                     ParamArray());
 

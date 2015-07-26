@@ -1266,8 +1266,6 @@ list (APPEND renderer_modeling_bsdf_sources
 endif ()
 if (WITH_OSL)
     list (APPEND renderer_modeling_bsdf_sources
-        renderer/modeling/bsdf/oslashikhminbrdf.cpp
-        renderer/modeling/bsdf/oslashikhminbrdf.h
         renderer/modeling/bsdf/oslbsdf.cpp
         renderer/modeling/bsdf/oslbsdf.h
         renderer/modeling/bsdf/oslmicrofacetbrdf.cpp
