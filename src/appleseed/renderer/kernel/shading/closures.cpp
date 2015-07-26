@@ -201,8 +201,12 @@ size_t CompositeClosure::choose_closure(const double w) const
 BOOST_STATIC_ASSERT(sizeof(CompositeSurfaceClosure) <= InputEvaluator::DataSize);
 
 CompositeSurfaceClosure::CompositeSurfaceClosure(
+    const BSDF*                 osl_bsdf,
     const OSL::ClosureColor*    ci)
+  : m_osl_bsdf(osl_bsdf)
 {
+    assert(m_osl_bsdf);
+
     process_closure_tree(ci, Color3f(1.0f));
     compute_cdf();
 }

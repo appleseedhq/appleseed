@@ -72,6 +72,9 @@ END_OSL_INCLUDES
 #include <cassert>
 #include <cstddef>
 
+// Forward declarations.
+namespace renderer  { class BSDF; }
+
 namespace renderer
 {
 
@@ -178,16 +181,22 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
   : public CompositeClosure
 {
   public:
-    explicit CompositeSurfaceClosure(const OSL::ClosureColor* ci);
+    CompositeSurfaceClosure(
+        const BSDF*                 osl_bsdf,
+        const OSL::ClosureColor*    ci);
 
     const foundation::Vector3d& get_closure_normal(const size_t index) const;
     bool closure_has_tangent(const size_t index) const;
     const foundation::Vector3d& get_closure_tangent(const size_t index) const;
 
+    // For future layered closures.
+    const BSDF* get_osl_bsdf() const;
+
   private:
     foundation::Vector3d            m_normals[MaxClosureEntries];
     bool                            m_has_tangent[MaxClosureEntries];
     foundation::Vector3d            m_tangents[MaxClosureEntries];
+    const BSDF*                     m_osl_bsdf;
 
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
@@ -339,6 +348,10 @@ inline const foundation::Vector3d& CompositeSurfaceClosure::get_closure_tangent(
     return m_tangents[index];
 }
 
+inline const BSDF* CompositeSurfaceClosure::get_osl_bsdf() const
+{
+    return m_osl_bsdf;
+}
 
 //
 // CompositeEmissionClosure class implementation.

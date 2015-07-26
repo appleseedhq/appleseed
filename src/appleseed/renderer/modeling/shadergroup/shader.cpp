@@ -99,6 +99,14 @@ struct Shader::Impl
                     }
                     break;
 
+                  case OSLParamTypeMatrix:
+                    {
+                        float val[16];
+                        parser.parse_n_values(16, val);
+                        m_params.insert(ShaderParam::create_matrix_param(i.it().name(), val));
+                    }
+                    break;
+
                   case OSLParamTypeNormal:
                     {
                         float x, y, z;

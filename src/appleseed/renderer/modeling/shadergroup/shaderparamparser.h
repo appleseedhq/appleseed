@@ -75,6 +75,9 @@ class ShaderParamParser
         T&          c,
         const bool  parse_as_color = false);
 
+    template <typename T>
+    void parse_n_values(size_t n, T* values);
+
     std::string parse_string_value();
 
   private:
@@ -160,6 +163,13 @@ void ShaderParamParser::parse_three_values(
         throw ExceptionOSLParamParseError();
 
     c = parse_one_value<T>(true);
+}
+
+template <typename T>
+void ShaderParamParser::parse_n_values(size_t n, T* values)
+{
+    for (size_t i = 0; i < n; ++i)
+        values[i] = parse_one_value<T>((i == n - 1) ? true : false);
 }
 
 }       // namespace renderer

@@ -64,6 +64,7 @@ enum OSLParamType
     OSLParamTypeColor,
     OSLParamTypeFloat,
     OSLParamTypeInt,
+    OSLParamTypeMatrix,
     OSLParamTypeNormal,
     OSLParamTypePoint,
     OSLParamTypeString,
@@ -99,46 +100,51 @@ class APPLESEED_DLLSYMBOL ShaderParam
 
     // Create an int param.
     static foundation::auto_release_ptr<ShaderParam> create_int_param(
-        const char* name,
-        const int   value);
+        const char*     name,
+        const int       value);
 
     // Create a float param.
     static foundation::auto_release_ptr<ShaderParam> create_float_param(
-        const char* name,
-        const float value);
+        const char*     name,
+        const float     value);
 
     // Create a vector param.
     static foundation::auto_release_ptr<ShaderParam> create_vector_param(
-        const char* name,
-        const float vx,
-        const float vy,
-        const float vz);
+        const char*     name,
+        const float     vx,
+        const float     vy,
+        const float     vz);
 
     // Create a normal param.
     static foundation::auto_release_ptr<ShaderParam> create_normal_param(
-        const char* name,
-        const float nx,
-        const float ny,
-        const float nz);
+        const char*     name,
+        const float     nx,
+        const float     ny,
+        const float     nz);
 
     // Create a point param.
     static foundation::auto_release_ptr<ShaderParam> create_point_param(
-        const char* name,
-        const float vx,
-        const float vy,
-        const float vz);
+        const char*     name,
+        const float     vx,
+        const float     vy,
+        const float     vz);
 
     // Create a color param.
     static foundation::auto_release_ptr<ShaderParam> create_color_param(
-        const char* name,
-        const float vx,
-        const float vy,
-        const float vz);
+        const char*     name,
+        const float     vx,
+        const float     vy,
+        const float     vz);
+
+    // Create a matrix param.
+    static foundation::auto_release_ptr<ShaderParam> create_matrix_param(
+        const char*     name,
+        const float*    values);
 
     // Create a string param.
     static foundation::auto_release_ptr<ShaderParam> create_string_param(
-        const char* name,
-        const char* value);
+        const char*     name,
+        const char*     value);
 
     // Return a const void pointer to this param value.
     const void* get_value() const;

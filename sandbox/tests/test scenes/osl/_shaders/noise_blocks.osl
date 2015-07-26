@@ -1,0 +1,9 @@
+
+surface noise_blocks(
+    float Kd = 0.8,
+    matrix Xform = 1)
+{
+    point PP = transform(Xform, P);
+    color Cs = noise("cell", PP);
+    Ci = Cs * Kd * diffuse(N);
+}
