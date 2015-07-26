@@ -164,7 +164,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         for (size_t i = 0; i < 1000; ++i)
         {
-            const double u = rand_double1(rng);
+            const double u = rand_double2(rng);
             const double a = rand_double1(rng);
             const double l = rand_double1(rng, 0.001, 10.0);
             const double s = normalized_diffusion_s(a);
