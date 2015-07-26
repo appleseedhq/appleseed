@@ -154,12 +154,12 @@ size_t SubsurfaceSampler::sample(
 
     // Sample the diffusion profile.
     BSSRDFSample bssrdf_sample(outgoing_point, sampling_context);
-    Vector2d point; // todo: should be part of BSSRDFSample
-    if (!bssrdf.sample(bssrdf_data, bssrdf_sample, point))
+    if (!bssrdf.sample(bssrdf_data, bssrdf_sample))
         return 0;
 
     // Reject points too far away.
     // This introduces negligible bias in comparison to the other approximations.
+    const Vector2d& point(bssrdf_sample.get_point());
     const double radius2 = square_norm(point);
     const double rmax2 = bssrdf_sample.get_rmax2();
     if (radius2 > rmax2)

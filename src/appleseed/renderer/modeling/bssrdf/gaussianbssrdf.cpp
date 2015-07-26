@@ -159,8 +159,7 @@ namespace
 
         virtual bool sample(
             const void*             data,
-            BSSRDFSample&           sample,
-            Vector2d&               point) const APPLESEED_OVERRIDE
+            BSSRDFSample&           sample) const APPLESEED_OVERRIDE
         {
             const GaussianBSSRDFInputValues* values =
                 reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
@@ -183,7 +182,8 @@ namespace
                 sqrt(-2.0 * v * log(1.0 - s[0] * (1.0 - exp(-rmax2 / (2.0 * v)))));
             const double phi = TwoPi * s[1];
 
-            point = Vector2d(radius * cos(phi), radius * sin(phi));
+            // Set the sampled point.
+            sample.set_point(Vector2d(radius * cos(phi), radius * sin(phi)));
             return true;
         }
 

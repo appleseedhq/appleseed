@@ -84,7 +84,7 @@ namespace
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("dmfp", InputFormatSpectralReflectance);
-            m_inputs.declare("dmfp_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("dmfp_multiplier", InputFormatScalar, "0.1");
             m_inputs.declare("outside_ior", InputFormatScalar);
             m_inputs.declare("inside_ior", InputFormatScalar);
         }
@@ -125,8 +125,7 @@ namespace
 
         virtual bool sample(
             const void*             data,
-            BSSRDFSample&           sample,
-            Vector2d&               point) const APPLESEED_OVERRIDE
+            BSSRDFSample&           sample) const APPLESEED_OVERRIDE
         {
             const NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
@@ -162,8 +161,8 @@ namespace
                 normalized_diffusion_max_distance(values->m_dmfp[channel], nd_s);
             sample.set_rmax2(rmax * rmax);
 
-            // Return point on disk.
-            point = Vector2d(radius * cos(phi), radius * sin(phi));
+            // Set the sampled point.
+            sample.set_point(Vector2d(radius * cos(phi), radius * sin(phi)));
 
             return true;
         }
@@ -282,7 +281,7 @@ DictionaryArray NormalizedDiffusionBSSRDFFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", "0.5"));
+            .insert("default", "5"));
 
     metadata.push_back(
         Dictionary()
@@ -292,7 +291,7 @@ DictionaryArray NormalizedDiffusionBSSRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "1.0"));
+            .insert("default", "0.1"));
 
     metadata.push_back(
         Dictionary()

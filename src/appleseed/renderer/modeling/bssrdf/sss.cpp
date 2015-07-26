@@ -111,9 +111,45 @@ double reduced_extinction_coefficient(
     return 1.0 / (sqrt(3.0 * (1.0 - alpha_prime)) * diffuse_mean_free_path);
 }
 
+void compute_absorption_and_scattering(
+    const Spectrum& rd,
+    const Spectrum& dmfp,
+    const double    eta,
+    const double    g,
+    Spectrum&       sigma_a,
+    Spectrum&       sigma_s)
+{
+    assert(rd.size() == dmfp.size());
+
+    sigma_a.resize(rd.size());
+    sigma_s.resize(rd.size());
+
+    ComputeRdBetterDipole rd_fun(eta);
+    const double rcp_g_complement = 1.0 / (1.0 - g);
+
+    for (size_t i = 0, e = rd.size(); i < e; ++i)
+    {
+        // Find alpha' by numerically inverting Rd(alpha').
+        const double alpha_prime =
+            compute_alpha_prime(
+                rd_fun,
+                static_cast<double>(clamp(rd[i], 0.0f, 1.0f)));
+
+        // Compute reduced extinction coefficient.
+        const double sigma_t_prime =
+            reduced_extinction_coefficient(dmfp[i], alpha_prime);
+
+        // Compute scattering coefficient.
+        const double sigma_s_prime = alpha_prime * sigma_t_prime;
+        sigma_s[i] = static_cast<float>(sigma_s_prime * rcp_g_complement);
+
+        // Compute absorption coefficient.
+        sigma_a[i] = static_cast<float>(sigma_t_prime - sigma_s_prime);
+    }
+}
 
 //
-// Normalized diffusion.
+// Normalized diffusion implementation.
 //
 
 double normalized_diffusion_s(
@@ -262,6 +298,30 @@ double normalized_diffusion_max_distance(
     const double    s)
 {
     return NdCdfTableRmax * l / s;
+}
+
+//
+// Sampling implementation.
+//
+
+double sample_attenuation(
+    const double sigma_t,
+    const double s)
+{
+    return -log(1.0 - s) / sigma_t;
+}
+
+double pdf_attenuation(
+    const double sigma_t,
+    const double dist)
+{
+    return sigma_t * exp(-sigma_t * dist);
+}
+
+double max_attenuation_distance(const double sigma_t)
+{
+    // 18.420680743952367 == -log(0.00000001)
+    return 18.420680743952367 / sigma_t;
 }
 
 }   // namespace renderer

@@ -69,6 +69,9 @@ class BSSRDFSample
     size_t get_channel() const;
     void set_channel(const size_t channel);
 
+    const foundation::Vector2d& get_point() const;
+    void set_point(const foundation::Vector2d& point);
+
     double get_rmax2() const;
     void set_rmax2(const double rmax2);
 
@@ -78,6 +81,7 @@ class BSSRDFSample
     bool                    m_is_directional;
     double                  m_eta;
     size_t                  m_channel;
+    foundation::Vector2d    m_point;
     double                  m_rmax2;
 };
 
@@ -132,6 +136,16 @@ inline size_t BSSRDFSample::get_channel() const
 inline void BSSRDFSample::set_channel(const size_t channel)
 {
     m_channel = channel;
+}
+
+inline const foundation::Vector2d& BSSRDFSample::get_point() const
+{
+    return m_point;
+}
+
+inline void BSSRDFSample::set_point(const foundation::Vector2d& point)
+{
+    m_point = point;
 }
 
 inline double BSSRDFSample::get_rmax2() const
