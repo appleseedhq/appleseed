@@ -62,7 +62,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         const double rd,
         const double eta)
     {
-        ComputeRdFun f(eta);
+        const ComputeRdFun f(eta);
         const double alpha_prime = compute_alpha_prime(f, rd);
         return f(alpha_prime);
     }
@@ -93,7 +93,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
     const double NormalizedDiffusionTestEps = 0.0001;
 
-    TEST_CASE(NormalizedDiffusionA)
+    TEST_CASE(NormalizedDiffusionS)
     {
         static const double Expected[] =
         {
@@ -283,7 +283,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_cdf.gnuplot");
     }
 
-    void init_dirpole_bssrdf_values(
+    void init_dirpole_bssrdf_values_sigmas(
         const double                        sigma_a,
         const double                        sigma_s,
         const double                        eta,
@@ -311,8 +311,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         values.m_anisotropy = g;
 
         compute_absorption_and_scattering(
-            Spectrum(Color3f(rd)),
-            Spectrum(Color3f(dmfp)),
+            Spectrum(Color3f(static_cast<float>(rd))),
+            Spectrum(Color3f(static_cast<float>(dmfp))),
             values.m_inside_ior / values.m_outside_ior,
             values.m_anisotropy,
             values.m_sigma_a,
@@ -338,7 +338,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             DirectionalDipoleBSSRDFFactory().create("dirpole", ParamArray()));
 
         DirectionalDipoleBSSRDFInputValues values;
-        init_dirpole_bssrdf_values(sigma_a, 1.0, 1.0, 0.0, values);
+        init_dirpole_bssrdf_values_sigmas(sigma_a, 1.0, 1.0, 0.0, values);
 
         const Vector3d normal(0.0, 1.0, 0.0);
 

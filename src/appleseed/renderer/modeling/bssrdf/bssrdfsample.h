@@ -38,9 +38,6 @@
 // Standard headers
 #include <cstddef>
 
-// Forward declarations.
-namespace renderer  { class ShadingPoint; }
-
 namespace renderer
 {
 
@@ -48,14 +45,11 @@ class BSSRDFSample
 {
   public:
     // Constructor.
-    BSSRDFSample(
-        const ShadingPoint& shading_point,
-        SamplingContext&    sampling_context);
+    explicit BSSRDFSample(SamplingContext& sampling_context);
 
     // Input fields.
 
     SamplingContext& get_sampling_context();
-    const ShadingPoint& get_shading_point() const;
 
     // Output fields.
 
@@ -76,7 +70,6 @@ class BSSRDFSample
     void set_rmax2(const double rmax2);
 
   private:
-    const ShadingPoint&     m_shading_point;       // shading point at which the sampling is done
     SamplingContext&        m_sampling_context;    // sampling context used to sample BSSRDFs
     bool                    m_is_directional;
     double                  m_eta;
@@ -90,22 +83,14 @@ class BSSRDFSample
 // BSSRDFSample class implementation.
 //
 
-inline BSSRDFSample::BSSRDFSample(
-    const ShadingPoint&     shading_point,
-    SamplingContext&        sampling_context)
-  : m_shading_point(shading_point)
-  , m_sampling_context(sampling_context)
+inline BSSRDFSample::BSSRDFSample(SamplingContext& sampling_context)
+  : m_sampling_context(sampling_context)
 {
 }
 
 inline SamplingContext& BSSRDFSample::get_sampling_context()
 {
     return m_sampling_context;
-}
-
-inline const ShadingPoint& BSSRDFSample::get_shading_point() const
-{
-    return m_shading_point;
 }
 
 inline bool BSSRDFSample::is_directional() const

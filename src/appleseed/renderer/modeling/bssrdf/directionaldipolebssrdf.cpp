@@ -161,17 +161,7 @@ namespace
             const size_t channel = truncate<size_t>(s[0] * values->m_sigma_a.size());
             sample.set_channel(channel);
 
-#ifndef DIRPOLE_USE_ND_SAMPLING
-            // Sample a radius by importance sampling the attenuation.
-            const double sigma_t = values->m_sigma_a[channel] + values->m_sigma_s[channel];
-            const double radius =
-                sample_attenuation(
-                    sigma_t,
-                    s[1]);
-
-            // Set the max distance.
-            sample.set_rmax2(square(max_attenuation_distance(sigma_t)));
-#else
+#ifdef DIRPOLE_USE_ND_SAMPLING
             const double nd_r = values->m_reflectance[channel];
             if (nd_r == 0.0)
                 return false;
@@ -183,9 +173,15 @@ namespace
                 normalized_diffusion_sample(s[1], values->m_dmfp[channel], nd_s);
 
             // Set the max radius.
-            const double rmax =
-                normalized_diffusion_max_distance(values->m_dmfp[channel], nd_s);
-            sample.set_rmax2(rmax * rmax);
+            sample.set_rmax2(
+                square(normalized_diffusion_max_distance(values->m_dmfp[channel], nd_s)));
+#else
+            // Sample a radius by importance sampling the attenuation.
+            const double sigma_t = values->m_sigma_a[channel] + values->m_sigma_s[channel];
+            const double radius = sample_attenuation(sigma_t, s[1]);
+
+            // Set the max distance.
+            sample.set_rmax2(square(max_attenuation_distance(sigma_t)));
 #endif
 
             // Sample an angle.
@@ -240,24 +236,25 @@ namespace
         virtual double evaluate_pdf(
             const void*             data,
             const size_t            channel,
-            const double            dist) const APPLESEED_OVERRIDE
+            const double            radius) const APPLESEED_OVERRIDE
         {
             const DirectionalDipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
 
             // PDF of the sampled radius.
-#ifndef DIRPOLE_USE_ND_SAMPLING
-            const double pdf_radius =
-                pdf_attenuation(
-                    values->m_sigma_a[channel] + values->m_sigma_s[channel],
-                    dist);
-#else
+#ifdef DIRPOLE_USE_ND_SAMPLING
             const double pdf_radius =
                 normalized_diffusion_pdf(
-                    dist,
+                    radius,
                     values->m_dmfp[channel],
                     normalized_diffusion_s(values->m_reflectance[channel]));
+#else
+            const double pdf_radius =
+                pdf_attenuation(
+                    radius,
+                    values->m_sigma_a[channel] + values->m_sigma_s[channel]);
 #endif
+
             // PDF of the sampled angle.
             const double pdf_angle = RcpTwoPi;
 

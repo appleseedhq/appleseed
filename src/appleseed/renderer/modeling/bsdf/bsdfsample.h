@@ -63,11 +63,8 @@ class BSDFSample
     // Input fields.
 
     SamplingContext& get_sampling_context();
-
     const foundation::Vector3d& get_geometric_normal() const;
-
     const foundation::Vector3d& get_shading_normal() const;
-
     const foundation::Vector3d& get_outgoing_vector() const;
 
     // Input / Output fields.

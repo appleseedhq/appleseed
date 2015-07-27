@@ -65,14 +65,14 @@ ComputeRd::ComputeRd(const double eta)
             : (-1.4933 * rcp_eta2) + (0.7099 * rcp_eta) + 0.6681 + (0.0636 * eta);
 
     // eq 5.29
-    m_A = (1.0 + fdr) / (1.0 - fdr);
+    m_a = (1.0 + fdr) / (1.0 - fdr);
 }
 
 double ComputeRd::operator()(const double alpha_prime) const
 {
     // [1] eq. 15.
     const double sqrt_3ap = sqrt(3.0 * (1.0 - alpha_prime));
-    return (0.5 * alpha_prime) * (1.0 + exp(-1.25 * m_A * sqrt_3ap)) * exp(-sqrt_3ap);
+    return (0.5 * alpha_prime) * (1.0 + exp(-1.25 * m_a * sqrt_3ap)) * exp(-sqrt_3ap);
 }
 
 ComputeRdBetterDipole::ComputeRdBetterDipole(const double eta)
@@ -147,6 +147,7 @@ void compute_absorption_and_scattering(
         sigma_a[i] = static_cast<float>(sigma_t_prime - sigma_s_prime);
     }
 }
+
 
 //
 // Normalized diffusion implementation.
@@ -250,18 +251,17 @@ double normalized_diffusion_sample(
 
     const double d = l / s;
 
-    // Handle the case where u is greater than the
-    // value we consider 1 in our cdf.
+    // Handle the case where u is greater than the value we consider 1 in our CDF.
     if (u >= nd_cdf_rmax)
         return NdCdfTableRmax * d;
 
-    // Use the cdf to find an initial interval for the root of cdf(r,1) - u = 0.
+    // Use the CDF to find an initial interval for the root of cdf(r, 1) - u = 0.
     const size_t i = sample_cdf(nd_cdf_table, nd_cdf_table + NdCdfTableSize, u);
     assert(i > 0);
     assert(nd_cdf_table[i - 1] <= u);
     assert(nd_cdf_table[i] > u);
 
-    // Transform the cdf(r,1) interval to cdf(r,d) using the fact that cdf(r,d) == cdf(r/d,1).
+    // Transform the cdf(r, 1) interval to cdf(r, d) using the fact that cdf(r, d) == cdf(r/d, 1).
     double rmin = fit<size_t, double>(i - 1, 0, NdCdfTableSize - 1, 0.0, NdCdfTableRmax) * d;
     double rmax = fit<size_t, double>(i,     0, NdCdfTableSize - 1, 0.0, NdCdfTableRmax) * d;
     assert(normalized_diffusion_cdf(rmin, d) <= u);
@@ -285,7 +285,7 @@ double normalized_diffusion_sample(
         // Update bounds.
         f < 0.0 ? rmin = r : rmax = r;
 
-        // Newton step
+        // Newton step.
         const double df = normalized_diffusion_pdf(r, d);
         r -= f / df;
     }
@@ -300,20 +300,21 @@ double normalized_diffusion_max_distance(
     return NdCdfTableRmax * l / s;
 }
 
+
 //
 // Sampling implementation.
 //
 
 double sample_attenuation(
-    const double sigma_t,
-    const double s)
+    const double    sigma_t,
+    const double    s)
 {
     return -log(1.0 - s) / sigma_t;
 }
 
 double pdf_attenuation(
-    const double sigma_t,
-    const double dist)
+    const double    dist,
+    const double    sigma_t)
 {
     return sigma_t * exp(-sigma_t * dist);
 }

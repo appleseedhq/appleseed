@@ -616,10 +616,11 @@ namespace
                 if (!m_light_sampler.has_lights_or_emitting_triangles())
                     return;
 
+                // Sample the BSSRDF.
                 const size_t MaxSubsurfaceSampleCount = 10;
                 SubsurfaceSample subsurface_samples[MaxSubsurfaceSampleCount];
                 SubsurfaceSampler subsurface_sampler(m_shading_context);
-                const size_t incoming_point_count =
+                const size_t sample_count =
                     subsurface_sampler.sample(
                         m_sampling_context,
                         *vertex.m_shading_point,
@@ -628,16 +629,15 @@ namespace
                         subsurface_samples,
                         MaxSubsurfaceSampleCount);
 
-                if (incoming_point_count == 0)
+                if (sample_count == 0)
                     return;
 
+                // Accumulate the contribution of the individual samples.
                 Spectrum radiance(0.0f);
-
-                for (size_t i = 0; i < incoming_point_count; ++i)
+                for (size_t i = 0; i < sample_count; ++i)
                     add_sss_sample_contribution(vertex, subsurface_samples[i], radiance);
-
-                if (incoming_point_count > 1)
-                    radiance *= 1.0f / incoming_point_count;
+                if (sample_count > 1)
+                    radiance *= 1.0f / sample_count;
 
                 vertex_radiance += radiance;
             }
