@@ -134,8 +134,7 @@ namespace
 
         virtual bool sample(
             const void*                 data,
-            BSSRDFSample&               sample,
-            Vector2d&                   point) const APPLESEED_OVERRIDE
+            BSSRDFSample&               sample) const APPLESEED_OVERRIDE
         {
             const CompositeSubsurfaceClosure* c =
                 reinterpret_cast<const CompositeSubsurfaceClosure*>(data);

@@ -124,8 +124,7 @@ class APPLESEED_DLLSYMBOL BSSRDF
     // Sample the BSSRDF.
     virtual bool sample(
         const void*                 data,
-        BSSRDFSample&               sample,
-        foundation::Vector2d&       point) const = 0;
+        BSSRDFSample&               sample) const = 0;
 
     // Evaluate the BSSRDF for a given pair of points and directions.
     virtual void evaluate(

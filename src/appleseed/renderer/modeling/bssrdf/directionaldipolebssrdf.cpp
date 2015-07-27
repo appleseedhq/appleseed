@@ -84,10 +84,10 @@ namespace
           : BSSRDF(name, params)
         {
             m_inputs.declare("weight", InputFormatScalar, "1.0");
-            m_inputs.declare("sigma_a", InputFormatSpectralReflectance);
-            m_inputs.declare("sigma_a_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("sigma_s", InputFormatSpectralReflectance);
-            m_inputs.declare("sigma_s_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("reflectance", InputFormatSpectralReflectance);
+            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("dmfp", InputFormatSpectralReflectance);
+            m_inputs.declare("dmfp_multiplier", InputFormatScalar, "0.1");
             m_inputs.declare("anisotropy", InputFormatScalar);
             m_inputs.declare("outside_ior", InputFormatScalar);
             m_inputs.declare("inside_ior", InputFormatScalar);
@@ -120,9 +120,7 @@ namespace
             DirectionalDipoleBSSRDFInputValues* values =
                 reinterpret_cast<DirectionalDipoleBSSRDFInputValues*>(input_evaluator.data() + offset);
 
-            assert(values->m_sigma_a.size() == values->m_sigma_s.size());
-
-            /*
+            // Apply multipliers.
             values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
             values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
 
@@ -134,43 +132,18 @@ namespace
                     values->m_reflectance = values->m_reflectance.convert_to_rgb(*m_lighting_conditions);
             }
 
-            values->m_sigma_s.resize(values->m_dmfp.size());
-            values->m_sigma_a.resize(values->m_dmfp.size());
-
-            // Precompute some stuff.
-            const double eta = values->m_inside_ior / values->m_outside_ior;
-            const double rcp_g_complement = 1.0 / (1.0 - values->m_anisotropy);
-
-            for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
-            {
-                // Input values: diffuse reflectance and diffuse mean free path.
-                const double rd = saturate(static_cast<double>(values->m_reflectance[i]));
-                const double dmfp = static_cast<double>(values->m_dmfp[i]);
-
-                // Find alpha' by numerically inverting Rd(alpha').
-                const double alpha_prime =
-                    compute_alpha_prime(
-                        ComputeRdBetterDipole(eta),
-                        rd);
-
-                // Compute reduced extinction coefficient.
-                const double sigma_t_prime =
-                    reduced_extinction_coefficient(dmfp, alpha_prime);
-
-                // Compute scattering coefficient.
-                const double sigma_s_prime = alpha_prime * sigma_t_prime;
-                values->m_sigma_s[i] = static_cast<float>(sigma_s_prime * rcp_g_complement);
-
-                // Compute absorption coefficient.
-                values->m_sigma_a[i] = static_cast<float>(sigma_t_prime - sigma_s_prime);
-            }
-            */
+            compute_absorption_and_scattering(
+                values->m_reflectance,
+                values->m_dmfp,
+                values->m_inside_ior / values->m_outside_ior,
+                values->m_anisotropy,
+                values->m_sigma_a,
+                values->m_sigma_s);
         }
 
         virtual bool sample(
             const void*             data,
-            BSSRDFSample&           sample,
-            Vector2d&               point) const APPLESEED_OVERRIDE
+            BSSRDFSample&           sample) const APPLESEED_OVERRIDE
         {
             const DirectionalDipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
@@ -188,17 +161,38 @@ namespace
             const size_t channel = truncate<size_t>(s[0] * values->m_sigma_a.size());
             sample.set_channel(channel);
 
+#ifndef DIRPOLE_USE_ND_SAMPLING
             // Sample a radius by importance sampling the attenuation.
-            // Volumetric Path Tracing, Steve Marschner, section 3.
-            // http://www.cs.cornell.edu/courses/cs6630/2012sp/notes/09volpath.pdf
             const double sigma_t = values->m_sigma_a[channel] + values->m_sigma_s[channel];
-            const double radius = -log(1.0 - s[1]) / sigma_t;
+            const double radius =
+                sample_attenuation(
+                    sigma_t,
+                    s[1]);
+
+            // Set the max distance.
+            sample.set_rmax2(square(max_attenuation_distance(sigma_t)));
+#else
+            const double nd_r = values->m_reflectance[channel];
+            if (nd_r == 0.0)
+                return false;
+
+            const double nd_s = normalized_diffusion_s(nd_r);
+
+            // Sample a radius.
+            const double radius =
+                normalized_diffusion_sample(s[1], values->m_dmfp[channel], nd_s);
+
+            // Set the max radius.
+            const double rmax =
+                normalized_diffusion_max_distance(values->m_dmfp[channel], nd_s);
+            sample.set_rmax2(rmax * rmax);
+#endif
 
             // Sample an angle.
             const double phi = TwoPi * s[2];
 
-            // Return point on disk.
-            point = Vector2d(radius * cos(phi), radius * sin(phi));
+            // Set the sampled point.
+            sample.set_point(Vector2d(radius * cos(phi), radius * sin(phi)));
 
             return true;
         }
@@ -224,7 +218,7 @@ namespace
                 outgoing_point.get_shading_normal(),
                 value);
 
-#if 0
+#ifdef DIRPOLE_RECIPROCAL
             // Hack to make the BSSRDF reciprocal (section 6.3).
             Spectrum tmp;
             tmp.resize(values->m_sigma_a.size());
@@ -252,9 +246,18 @@ namespace
                 reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
 
             // PDF of the sampled radius.
-            const double sigma_t = values->m_sigma_a[channel] + values->m_sigma_s[channel];
-            const double pdf_radius = sigma_t * exp(-sigma_t * dist);
-
+#ifndef DIRPOLE_USE_ND_SAMPLING
+            const double pdf_radius =
+                pdf_attenuation(
+                    values->m_sigma_a[channel] + values->m_sigma_s[channel],
+                    dist);
+#else
+            const double pdf_radius =
+                normalized_diffusion_pdf(
+                    dist,
+                    values->m_dmfp[channel],
+                    normalized_diffusion_s(values->m_reflectance[channel]));
+#endif
             // PDF of the sampled angle.
             const double pdf_angle = RcpTwoPi;
 
@@ -405,53 +408,47 @@ DictionaryArray DirectionalDipoleBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "sigma_a")
-            .insert("label", "Absorption")
+            .insert("name", "reflectance")
+            .insert("label", "Diffuse Surface Reflectance")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", "0.0030"));
+            .insert("default", "0.5"));
 
-    // Since presets are usually specified in mm.,
-    // we set the multipliers so that the values are correct
-    // for scenes modeled in meters.
     metadata.push_back(
         Dictionary()
-            .insert("name", "sigma_a_multiplier")
-            .insert("label", "Absorption Multiplier")
+            .insert("name", "reflectance_multiplier")
+            .insert("label", "Diffuse Surface Reflectance Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "1000"));
+            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "sigma_s")
-            .insert("label", "Scattering")
+            .insert("name", "dmfp")
+            .insert("label", "Diffuse Mean Free Path")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", "2.29"));
+            .insert("default", "5"));
 
-    // Since presets are usually specified in mm.,
-    // we set the multipliers so that the values are correct
-    // for scenes modeled in meters.
     metadata.push_back(
         Dictionary()
-            .insert("name", "sigma_s_multiplier")
-            .insert("label", "Scattering Multiplier")
+            .insert("name", "dmfp_multiplier")
+            .insert("label", "Diffuse Mean Free Path Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "1000"));
+            .insert("default", "0.1"));
 
     metadata.push_back(
         Dictionary()

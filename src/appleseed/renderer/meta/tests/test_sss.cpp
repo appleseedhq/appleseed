@@ -283,6 +283,42 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_cdf.gnuplot");
     }
 
+    void init_dirpole_bssrdf_values(
+        const double                        sigma_a,
+        const double                        sigma_s,
+        const double                        eta,
+        const double                        g,
+        DirectionalDipoleBSSRDFInputValues& values)
+    {
+        values.m_weight = 1.0;
+        values.m_inside_ior = eta;
+        values.m_outside_ior = 1.0;
+        values.m_anisotropy = g;
+        values.m_sigma_a = Color3f(static_cast<float>(sigma_a));
+        values.m_sigma_s = Color3f(static_cast<float>(sigma_s));
+    }
+
+    void init_dirpole_bssrdf_values_rd_dmfp(
+        const double                        rd,
+        const double                        dmfp,
+        const double                        eta,
+        const double                        g,
+        DirectionalDipoleBSSRDFInputValues& values)
+    {
+        values.m_weight = 1.0;
+        values.m_inside_ior = eta;
+        values.m_outside_ior = 1.0;
+        values.m_anisotropy = g;
+
+        compute_absorption_and_scattering(
+            Spectrum(Color3f(rd)),
+            Spectrum(Color3f(dmfp)),
+            values.m_inside_ior / values.m_outside_ior,
+            values.m_anisotropy,
+            values.m_sigma_a,
+            values.m_sigma_s);
+    }
+
     void plot_dirpole_rd(
         const char*     filename,
         const char*     title,
@@ -302,11 +338,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             DirectionalDipoleBSSRDFFactory().create("dirpole", ParamArray()));
 
         DirectionalDipoleBSSRDFInputValues values;
-        values.m_inside_ior = 1.0;
-        values.m_outside_ior = 1.0;
-        values.m_anisotropy = 0.0;
-        values.m_sigma_a = Color3f(static_cast<float>(sigma_a));
-        values.m_sigma_s = Color3f(1.0f);
+        init_dirpole_bssrdf_values(sigma_a, 1.0, 1.0, 0.0, values);
 
         const Vector3d normal(0.0, 1.0, 0.0);
 

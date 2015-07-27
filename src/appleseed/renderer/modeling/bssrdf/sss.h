@@ -29,6 +29,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_BSSRDF_SSS_H
 #define APPLESEED_RENDERER_MODELING_BSSRDF_SSS_H
 
+// appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
+
 // Standard headers.
 #include <cstddef>
 
@@ -82,8 +85,16 @@ double diffusion_coefficient(const double sigma_a, const double sigma_t);
 double diffuse_mean_free_path(const double sigma_a, const double sigma_t);
 
 double reduced_extinction_coefficient(
-    const double diffuse_mean_free_path,
-    const double alpha_prime);
+    const double    diffuse_mean_free_path,
+    const double    alpha_prime);
+
+void compute_absorption_and_scattering(
+    const Spectrum& rd,                     // surface albedo
+    const Spectrum& dmfp,                   // diffuse mean free path
+    const double    eta,                    // relative index of refraction
+    const double    g,                      // anisotropy
+    Spectrum&       sigma_a,                // absorption coefficient
+    Spectrum&       sigma_s);               // scattering coefficient
 
 //
 // Normalized diffusion profile.
@@ -141,6 +152,26 @@ double normalized_diffusion_sample(
 double normalized_diffusion_max_distance(
     const double    l,                      // mean free path length or diffuse mean free path length
     const double    s);                     // scaling factor
+
+//
+// Sampling.
+//
+// References:
+//
+//   Volumetric Path Tracing, Steve Marschner, section 3.
+//   http://www.cs.cornell.edu/courses/cs6630/2012sp/notes/09volpath.pdf
+//
+
+// Sample a distance by importance sampling the attenuation.
+double sample_attenuation(
+    const double    sigma_t,
+    const double    s);
+
+double pdf_attenuation(
+    const double    sigma_t,
+    const double    dist);
+
+double max_attenuation_distance(const double sigma_t);
 
 //
 // BSSRDF reparameterization implementation.
