@@ -345,101 +345,6 @@ bool Intersector::trace_probe(
     return visitor.hit();
 }
 
-bool Intersector::trace_same_material(
-    const ShadingRay&               ray,
-    const ShadingPoint&             parent_shading_point,
-    const bool                      offset_origin,
-    ShadingPoint&                   shading_point) const
-{
-    if (do_trace_same_material(ray, parent_shading_point, offset_origin, shading_point))
-    {
-        // do_trace_same_material() intersects only with triangles
-        // whose normal points in the same direction as the ray.
-        // Triangles are intersected from the inside of the object and
-        // shading_point.get_shading_normal() points inside the object.
-
-        // todo: we maybe need a better way to flip the shading normal here.
-        const Basis3d& basis = shading_point.get_shading_basis();
-        shading_point.set_shading_basis(
-            Basis3d(
-                -basis.get_normal(),
-                -basis.get_tangent_u(),
-                 basis.get_tangent_v()));
-
-        return true;
-    }
-
-    return false;
-}
-
-bool Intersector::do_trace_same_material(
-    const ShadingRay&               ray,
-    const ShadingPoint&             parent_shading_point,
-    const bool                      offset_origin,
-    ShadingPoint&                   shading_point) const
-{
-    ShadingRay up_ray(ray);
-    ShadingRay down_ray(ray);
-    down_ray.m_dir = -down_ray.m_dir;
-
-    if (offset_origin)
-    {
-        parent_shading_point.refine_and_offset();
-        const Vector3d offset =
-            parent_shading_point.get_offset_point(down_ray.m_dir) - parent_shading_point.get_point();
-        up_ray.m_org += offset;
-    }
-
-    const Material* parent_material = parent_shading_point.get_material();
-
-    // Trace the ray.
-    ShadingPoint up_shading_point;
-    trace_back_sides(
-        up_ray,
-        up_shading_point);
-
-    // Discard objects with different materials.
-    if (up_shading_point.hit())
-    {
-        if (up_shading_point.get_opposite_material() != parent_material)
-            up_shading_point.clear();
-    }
-
-    // Trace the opposite ray.
-    ShadingPoint down_shading_point;
-    trace_back_sides(
-        down_ray,
-        down_shading_point);
-
-    // Discard objects with different materials.
-    if (down_shading_point.hit())
-    {
-        if (down_shading_point.get_opposite_material() != parent_material)
-            down_shading_point.clear();
-    }
-
-    // Keep the nearest hit, if any.
-    if (up_shading_point.hit() && down_shading_point.hit())
-    {
-        shading_point =
-            up_shading_point.get_distance() < down_shading_point.get_distance() ? up_shading_point : down_shading_point;
-
-        return true;
-    }
-    else if (up_shading_point.hit())
-    {
-        shading_point = up_shading_point;
-        return true;
-    }
-    else if (down_shading_point.hit())
-    {
-        shading_point = down_shading_point;
-        return true;
-    }
-
-    return false;
-}
-
 void Intersector::manufacture_hit(
     ShadingPoint&                       shading_point,
     const ShadingRay&                   shading_ray,
@@ -464,21 +369,6 @@ void Intersector::manufacture_hit(
     shading_point.m_region_index = region_index;
     shading_point.m_primitive_index = primitive_index;
     shading_point.m_triangle_support_plane = triangle_support_plane;
-}
-
-void Intersector::trace_back_sides(
-    ShadingRay                          ray,
-    ShadingPoint&                       shading_point) const
-{
-    while (trace(ray, shading_point))
-    {
-        if (dot(ray.m_dir, shading_point.get_original_shading_normal()) > 0.0)
-            break;
-
-        shading_point.refine_and_offset();
-        ray.m_org = shading_point.get_offset_point(ray.m_dir);
-        shading_point.clear();
-    }
 }
 
 namespace

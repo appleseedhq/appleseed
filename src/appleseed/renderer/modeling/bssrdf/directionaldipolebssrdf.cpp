@@ -174,7 +174,7 @@ namespace
 
             // Set the max radius.
             sample.set_rmax2(
-                square(normalized_diffusion_max_distance(values->m_dmfp[channel], nd_s)));
+                square(normalized_diffusion_max_radius(values->m_dmfp[channel], nd_s)));
 #else
             // Sample a radius by importance sampling the attenuation.
             const double sigma_t = values->m_sigma_a[channel] + values->m_sigma_s[channel];
@@ -230,7 +230,9 @@ namespace
             value *= 0.5f;
 #endif
 
-            value *= static_cast<float>(values->m_weight);
+            const double radius = norm(incoming_point.get_point() - outgoing_point.get_point());
+
+            value *= static_cast<float>(radius * values->m_weight);
         }
 
         virtual double evaluate_pdf(

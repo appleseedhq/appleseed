@@ -98,16 +98,6 @@ class Intersector
         ShadingPoint&                   shading_point,
         const ShadingPoint*             parent_shading_point = 0) const;
 
-    // This needs a better name...
-    // The idea comes from pbrt3. Traces ray and -ray against
-    // objects with the same material as parent_shading_point,
-    // Keep the nearest hit, if any.
-    bool trace_same_material(
-        const ShadingRay&               ray,
-        const ShadingPoint&             parent_shading_point,
-        const bool                      offset_origin,
-        ShadingPoint&                   shading_point) const;
-
     // Trace a world space probe ray through the scene.
     bool trace_probe(
         const ShadingRay&               ray,
@@ -129,16 +119,6 @@ class Intersector
     foundation::StatisticsVector get_statistics() const;
 
   private:
-    void trace_back_sides(
-        ShadingRay                      ray,
-        ShadingPoint&                   shading_point) const;
-
-    bool do_trace_same_material(
-        const ShadingRay&               ray,
-        const ShadingPoint&             parent_shading_point,
-        const bool                      offset_origin,
-        ShadingPoint&                   shading_point) const;
-
     const TraceContext&                             m_trace_context;
     TextureCache&                                   m_texture_cache;
     const bool                                      m_report_self_intersections;

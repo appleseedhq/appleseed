@@ -57,6 +57,10 @@ using namespace std;
 
 TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 {
+    //
+    // BSSRDF reparameterization.
+    //
+
     template <typename ComputeRdFun>
     double rd_alpha_prime_roundtrip(
         const double rd,
@@ -91,6 +95,68 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         EXPECT_FEQ_EPS(1.0, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(1.0, 1.5), AlphaPrimeRoundtripTestEps);
     }
 
+    //
+    // Gaussian profile.
+    //
+
+    TEST_CASE(GaussianProfileIntegration_UniformSampling)
+    {
+        const double V = 1.0;
+        const double RIntegralThreshold = 0.999;
+        const double RMax2Constant = -2.0 * log(1.0 - RIntegralThreshold);
+        const double RMax2 = V * RMax2Constant;
+
+        const size_t SampleCount = 10000;
+        MersenneTwister rng;
+
+        double integral = 0.0;
+
+        for (size_t i = 0; i < SampleCount; ++i)
+        {
+            const double u = rand_double2(rng);
+            const double r = u * sqrt(RMax2);
+            const double pdf_radius = 1.0 / sqrt(RMax2);
+            const double pdf_angle = RcpTwoPi;
+            const double pdf = pdf_radius * pdf_angle;
+            const double value = r * gaussian_profile(r, V, RIntegralThreshold);
+            integral += value / pdf;
+        }
+
+        integral /= SampleCount;
+
+        EXPECT_FEQ_EPS(1.0, integral, 0.01);
+    }
+
+    TEST_CASE(GaussianProfileIntegration_ImportanceSampling)
+    {
+        const double V = 1.0;
+        const double RIntegralThreshold = 0.999;
+        const double RMax2Constant = -2.0 * log(1.0 - RIntegralThreshold);
+        const double RMax2 = V * RMax2Constant;
+
+        const size_t SampleCount = 1000;
+        MersenneTwister rng;
+
+        double integral = 0.0;
+
+        for (size_t i = 0; i < SampleCount; ++i)
+        {
+            const double u = rand_double2(rng);
+            const double r = gaussian_profile_sample(u, V, RMax2);
+            const double pdf = gaussian_profile_pdf(r, V, RIntegralThreshold);
+            const double value = gaussian_profile(r, V, RIntegralThreshold);
+            integral += value / pdf;
+        }
+
+        integral /= SampleCount;
+
+        EXPECT_FEQ(1.0, integral);
+    }
+
+    //
+    // Normalized diffusion profile.
+    //
+
     const double NormalizedDiffusionTestEps = 0.0001;
 
     TEST_CASE(NormalizedDiffusionS)
@@ -104,7 +170,9 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         for (size_t i = 0, e = countof(Expected); i < e; ++i)
         {
-            const double s = normalized_diffusion_s(static_cast<double>(i) * 0.05);
+            const double a = fit<size_t, double>(i, 0, countof(Expected) - 1, 0.0, 1.0);
+            const double s = normalized_diffusion_s(a);
+
             EXPECT_FEQ_EPS(Expected[i], s, NormalizedDiffusionTestEps);
         }
     }
@@ -121,18 +189,17 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         for (size_t i = 0, e = countof(Expected); i < e; ++i)
         {
-            const double r =
-                normalized_diffusion_r(
-                    static_cast<double>(i) * 0.1 + 0.05,
-                    1.0,
-                    3.583521,
-                    0.5);
+            const double A = 0.5;                           // surface albedo
+            const double L = 1.0;                           // mean free path
+            const double S = 3.583521;                      // scaling factor for A = 0.5
+            const double r = static_cast<double>(i) * 0.1 + 0.05;
+            const double value = normalized_diffusion_profile(r, L, S, A);
 
-            EXPECT_FEQ_EPS(Expected[i], r, NormalizedDiffusionTestEps);
+            EXPECT_FEQ_EPS(Expected[i], value, NormalizedDiffusionTestEps);
         }
     }
 
-    TEST_CASE(NormalizedDiffusionCdf)
+    TEST_CASE(NormalizedDiffusionCDF)
     {
         static const double Expected[] =
         {
@@ -145,14 +212,10 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         for (size_t i = 0, e = countof(Expected); i < e; ++i)
         {
-            const double L = 1.0;           // mean free path
-            const double S = 14.056001;     // scaling factor s for A = 0.9
-
-            const double cdf =
-                normalized_diffusion_cdf(
-                    static_cast<double>(i) * 0.1 + 0.05,
-                    L,
-                    S);
+            const double L = 1.0;                           // mean free path
+            const double S = 14.056001;                     // scaling factor for A = 0.9
+            const double r = static_cast<double>(i) * 0.1 + 0.05;
+            const double cdf = normalized_diffusion_cdf(r, L, S);
 
             EXPECT_FEQ_EPS(Expected[i], cdf, NormalizedDiffusionTestEps);
         }
@@ -170,11 +233,12 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double s = normalized_diffusion_s(a);
             const double r = normalized_diffusion_sample(u, l, s, 0.00001);
             const double e = normalized_diffusion_cdf(r, l, s);
+
             EXPECT_FEQ_EPS(u, e, 0.005);
         }
     }
 
-    TEST_CASE(NormalizedDiffusionMaxDistance)
+    TEST_CASE(NormalizedDiffusionMaxRadius)
     {
         MersenneTwister rng;
 
@@ -183,10 +247,38 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double a = rand_double1(rng);
             const double l = rand_double1(rng, 0.001, 10.0);
             const double s = normalized_diffusion_s(a);
-            const double maxd = normalized_diffusion_max_distance(l, s);
-            const double r = normalized_diffusion_r(maxd, l, s, a);
-            EXPECT_LT(0.00001, r);
+            const double r = normalized_diffusion_max_radius(l, s);
+            const double value = normalized_diffusion_profile(r, l, s, a);
+
+            EXPECT_LT(0.00001, value);
         }
+    }
+
+    TEST_CASE(NormalizedDiffusionProfileIntegration)
+    {
+        const double A = 0.5;
+        const double L = 100;
+        const double s = normalized_diffusion_s(A);
+
+        const size_t SampleCount = 1000;
+        MersenneTwister rng;
+
+        double integral = 0.0;
+
+        for (size_t i = 0; i < SampleCount; ++i)
+        {
+            const double u = rand_double2(rng);
+            const double r = normalized_diffusion_sample(u, L, s);
+            const double pdf_radius = normalized_diffusion_pdf(r, L, s);
+            const double pdf_angle = RcpTwoPi;
+            const double pdf = pdf_radius * pdf_angle;
+            const double value = r * normalized_diffusion_profile(r, L, s, A);
+            integral += value / pdf;
+        }
+
+        integral /= SampleCount;
+
+        EXPECT_FEQ(A, integral);
     }
 
     TEST_CASE(PlotNormalizedDiffusionS)
@@ -233,7 +325,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             for (size_t j = 0; j < N; ++j)
             {
                 const double r = max(fit<size_t, double>(j, 0, N - 1, 0.0, 8.0), 0.0001);
-                const double y = r * normalized_diffusion_r(r, 1.0, s, a);
+                const double y = r * normalized_diffusion_profile(r, 1.0, s, a);
                 points.push_back(Vector2d(r, y));
             }
 
@@ -260,7 +352,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_r.gnuplot");
     }
 
-    TEST_CASE(PlotNormalizedDiffusionCdf)
+    TEST_CASE(PlotNormalizedDiffusionCDF)
     {
         GnuplotFile plotfile;
         plotfile.set_title("CDF");
@@ -282,6 +374,10 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.new_plot().set_points(points);
         plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_cdf.gnuplot");
     }
+
+    //
+    // Directional dipole profile.
+    //
 
     void init_dirpole_bssrdf_values_sigmas(
         const double                        sigma_a,

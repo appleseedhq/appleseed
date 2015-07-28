@@ -158,7 +158,7 @@ namespace
 
             // Set the max radius.
             const double rmax =
-                normalized_diffusion_max_distance(values->m_dmfp[channel], nd_s);
+                normalized_diffusion_max_radius(values->m_dmfp[channel], nd_s);
             sample.set_rmax2(rmax * rmax);
 
             // Set the sampled point.
@@ -187,10 +187,10 @@ namespace
                 const double a = values->m_reflectance[i];
                 const double s = normalized_diffusion_s(a);
                 const double ld = values->m_dmfp[i];
-                value[i] = static_cast<float>(normalized_diffusion_r(radius, ld, s, a));
+                value[i] = static_cast<float>(normalized_diffusion_profile(radius, ld, s, a));
             }
 
-            value *= static_cast<float>(values->m_weight);
+            value *= static_cast<float>(radius * values->m_weight);
         }
 
         virtual double evaluate_pdf(
