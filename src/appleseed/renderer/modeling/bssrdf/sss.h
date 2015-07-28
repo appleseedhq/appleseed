@@ -44,29 +44,30 @@ namespace renderer
 // References:
 //
 //   [1] A Rapid Hierarchical Rendering Technique for Translucent Materials
-//   Henrik Wann Jensen, Juan Buhler
-//   http://graphics.ucsd.edu/~henrik/papers/fast_bssrdf/fast_bssrdf.pdf
+//       Henrik Wann Jensen, Juan Buhler
+//       http://graphics.ucsd.edu/~henrik/papers/fast_bssrdf/fast_bssrdf.pdf
 //
 //   [2] Texture mapping for the Better Dipole model
-//   Christophe Hery
-//   http://graphics.pixar.com/library/TexturingBetterDipole/paper.pdf
+//       Christophe Hery
+//       http://graphics.pixar.com/library/TexturingBetterDipole/paper.pdf
 //
 
-
 // Compute Rd (integral of the diffusion profile R) given the reduced albedo alpha'.
-struct ComputeRd
+class ComputeRd
 {
+  public:
     explicit ComputeRd(const double eta);
 
     double operator()(const double alpha_prime) const;
 
   private:
-    double m_A;
+    double m_a;
 };
 
 // Compute Rd (integral of the diffusion profile R) given the reduced albedo alpha'.
-struct ComputeRdBetterDipole
+class ComputeRdBetterDipole
 {
+  public:
     explicit ComputeRdBetterDipole(const double eta);
 
     double operator()(const double alpha_prime) const;
@@ -81,7 +82,6 @@ template <typename ComputeRdFun>
 double compute_alpha_prime(ComputeRdFun f, const double rd);
 
 double diffusion_coefficient(const double sigma_a, const double sigma_t);
-
 double diffuse_mean_free_path(const double sigma_a, const double sigma_t);
 
 double reduced_extinction_coefficient(
@@ -95,6 +95,7 @@ void compute_absorption_and_scattering(
     const double    g,                      // anisotropy
     Spectrum&       sigma_a,                // absorption coefficient
     Spectrum&       sigma_s);               // scattering coefficient
+
 
 //
 // Normalized diffusion profile.
@@ -153,10 +154,11 @@ double normalized_diffusion_max_distance(
     const double    l,                      // mean free path length or diffuse mean free path length
     const double    s);                     // scaling factor
 
+
 //
 // Sampling.
 //
-// References:
+// Reference:
 //
 //   Volumetric Path Tracing, Steve Marschner, section 3.
 //   http://www.cs.cornell.edu/courses/cs6630/2012sp/notes/09volpath.pdf
@@ -168,10 +170,11 @@ double sample_attenuation(
     const double    s);
 
 double pdf_attenuation(
-    const double    sigma_t,
-    const double    dist);
+    const double    dist,
+    const double    sigma_t);
 
 double max_attenuation_distance(const double sigma_t);
+
 
 //
 // BSSRDF reparameterization implementation.

@@ -153,7 +153,7 @@ size_t SubsurfaceSampler::sample(
     assert(max_sample_count > 0);
 
     // Sample the diffusion profile.
-    BSSRDFSample bssrdf_sample(outgoing_point, sampling_context);
+    BSSRDFSample bssrdf_sample(sampling_context);
     if (!bssrdf.sample(bssrdf_data, bssrdf_sample))
         return 0;
 
