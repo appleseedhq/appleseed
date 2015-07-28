@@ -57,6 +57,10 @@ using namespace std;
 
 TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 {
+    //
+    // BSSRDF reparameterization.
+    //
+
     template <typename ComputeRdFun>
     double rd_alpha_prime_roundtrip(
         const double rd,
@@ -90,6 +94,68 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         EXPECT_FEQ_EPS(0.8, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.8, 1.3), AlphaPrimeRoundtripTestEps);
         EXPECT_FEQ_EPS(1.0, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(1.0, 1.5), AlphaPrimeRoundtripTestEps);
     }
+
+    //
+    // Gaussian profile.
+    //
+
+    TEST_CASE(GaussianProfileIntegration_UniformSampling)
+    {
+        const double V = 1.0;
+        const double RIntegralThreshold = 0.999;
+        const double RMax2Constant = -2.0 * log(1.0 - RIntegralThreshold);
+        const double RMax2 = V * RMax2Constant;
+
+        const size_t SampleCount = 10000;
+        MersenneTwister rng;
+
+        double integral = 0.0;
+
+        for (size_t i = 0; i < SampleCount; ++i)
+        {
+            const double u = rand_double2(rng);
+            const double r = u * sqrt(RMax2);
+            const double pdf_radius = 1.0 / sqrt(RMax2);
+            const double pdf_angle = RcpTwoPi;
+            const double pdf = pdf_radius * pdf_angle;
+            const double value = r * gaussian_profile(r, V, RIntegralThreshold);
+            integral += value / pdf;
+        }
+
+        integral /= SampleCount;
+
+        EXPECT_FEQ_EPS(1.0, integral, 0.01);
+    }
+
+    TEST_CASE(GaussianProfileIntegration_ImportanceSampling)
+    {
+        const double V = 1.0;
+        const double RIntegralThreshold = 0.999;
+        const double RMax2Constant = -2.0 * log(1.0 - RIntegralThreshold);
+        const double RMax2 = V * RMax2Constant;
+
+        const size_t SampleCount = 1000;
+        MersenneTwister rng;
+
+        double integral = 0.0;
+
+        for (size_t i = 0; i < SampleCount; ++i)
+        {
+            const double u = rand_double2(rng);
+            const double r = gaussian_profile_sample(u, V, RMax2);
+            const double pdf = gaussian_profile_pdf(r, V, RIntegralThreshold);
+            const double value = gaussian_profile(r, V, RIntegralThreshold);
+            integral += value / pdf;
+        }
+
+        integral /= SampleCount;
+
+        EXPECT_FEQ(1.0, integral);
+    }
+
+    //
+    // Normalized diffusion profile.
+    //
 
     const double NormalizedDiffusionTestEps = 0.0001;
 
@@ -133,7 +199,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         }
     }
 
-    TEST_CASE(NormalizedDiffusionCdf)
+    TEST_CASE(NormalizedDiffusionCDF)
     {
         static const double Expected[] =
         {
@@ -186,6 +252,33 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
             EXPECT_LT(0.00001, value);
         }
+    }
+
+    TEST_CASE(NormalizedDiffusionProfileIntegration)
+    {
+        const double A = 0.5;
+        const double L = 100;
+        const double s = normalized_diffusion_s(A);
+
+        const size_t SampleCount = 1000;
+        MersenneTwister rng;
+
+        double integral = 0.0;
+
+        for (size_t i = 0; i < SampleCount; ++i)
+        {
+            const double u = rand_double2(rng);
+            const double r = normalized_diffusion_sample(u, L, s);
+            const double pdf_radius = normalized_diffusion_pdf(r, L, s);
+            const double pdf_angle = RcpTwoPi;
+            const double pdf = pdf_radius * pdf_angle;
+            const double value = r * normalized_diffusion_profile(r, L, s, A);
+            integral += value / pdf;
+        }
+
+        integral /= SampleCount;
+
+        EXPECT_FEQ(A, integral);
     }
 
     TEST_CASE(PlotNormalizedDiffusionS)
@@ -259,7 +352,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_r.gnuplot");
     }
 
-    TEST_CASE(PlotNormalizedDiffusionCdf)
+    TEST_CASE(PlotNormalizedDiffusionCDF)
     {
         GnuplotFile plotfile;
         plotfile.set_title("CDF");
@@ -281,6 +374,10 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.new_plot().set_points(points);
         plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_cdf.gnuplot");
     }
+
+    //
+    // Directional dipole profile.
+    //
 
     void init_dirpole_bssrdf_values_sigmas(
         const double                        sigma_a,

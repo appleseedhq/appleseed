@@ -103,6 +103,26 @@ void compute_absorption_and_scattering(
 
 
 //
+// Gaussian diffusion profile.
+//
+
+double gaussian_profile(
+    const double    r,
+    const double    v,
+    const double    r_integral_threshold);
+
+double gaussian_profile_sample(
+    const double    u,
+    const double    v,
+    const double    rmax2);
+
+double gaussian_profile_pdf(
+    const double    r,
+    const double    v,
+    const double    r_integral_threshold);
+
+
+//
 // Normalized diffusion profile.
 //
 // Reference:
