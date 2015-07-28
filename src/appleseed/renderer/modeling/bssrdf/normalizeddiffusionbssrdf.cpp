@@ -190,7 +190,7 @@ namespace
                 value[i] = static_cast<float>(normalized_diffusion_profile(radius, ld, s, a));
             }
 
-            value *= static_cast<float>(values->m_weight);
+            value *= static_cast<float>(radius * values->m_weight);
         }
 
         virtual double evaluate_pdf(

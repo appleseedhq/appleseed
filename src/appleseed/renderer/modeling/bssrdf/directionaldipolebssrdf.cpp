@@ -230,7 +230,9 @@ namespace
             value *= 0.5f;
 #endif
 
-            value *= static_cast<float>(values->m_weight);
+            const double radius = norm(incoming_point.get_point() - outgoing_point.get_point());
+
+            value *= static_cast<float>(radius * values->m_weight);
         }
 
         virtual double evaluate_pdf(
