@@ -104,7 +104,9 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         for (size_t i = 0, e = countof(Expected); i < e; ++i)
         {
-            const double s = normalized_diffusion_s(static_cast<double>(i) * 0.05);
+            const double a = fit<size_t, double>(i, 0, countof(Expected) - 1, 0.0, 1.0);
+            const double s = normalized_diffusion_s(a);
+
             EXPECT_FEQ_EPS(Expected[i], s, NormalizedDiffusionTestEps);
         }
     }
@@ -121,14 +123,13 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         for (size_t i = 0, e = countof(Expected); i < e; ++i)
         {
-            const double r =
-                normalized_diffusion_r(
-                    static_cast<double>(i) * 0.1 + 0.05,
-                    1.0,
-                    3.583521,
-                    0.5);
+            const double A = 0.5;                           // surface albedo
+            const double L = 1.0;                           // mean free path
+            const double S = 3.583521;                      // scaling factor for A = 0.5
+            const double r = static_cast<double>(i) * 0.1 + 0.05;
+            const double value = normalized_diffusion_profile(r, L, S, A);
 
-            EXPECT_FEQ_EPS(Expected[i], r, NormalizedDiffusionTestEps);
+            EXPECT_FEQ_EPS(Expected[i], value, NormalizedDiffusionTestEps);
         }
     }
 
@@ -145,14 +146,10 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         for (size_t i = 0, e = countof(Expected); i < e; ++i)
         {
-            const double L = 1.0;           // mean free path
-            const double S = 14.056001;     // scaling factor s for A = 0.9
-
-            const double cdf =
-                normalized_diffusion_cdf(
-                    static_cast<double>(i) * 0.1 + 0.05,
-                    L,
-                    S);
+            const double L = 1.0;                           // mean free path
+            const double S = 14.056001;                     // scaling factor for A = 0.9
+            const double r = static_cast<double>(i) * 0.1 + 0.05;
+            const double cdf = normalized_diffusion_cdf(r, L, S);
 
             EXPECT_FEQ_EPS(Expected[i], cdf, NormalizedDiffusionTestEps);
         }
@@ -170,11 +167,12 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double s = normalized_diffusion_s(a);
             const double r = normalized_diffusion_sample(u, l, s, 0.00001);
             const double e = normalized_diffusion_cdf(r, l, s);
+
             EXPECT_FEQ_EPS(u, e, 0.005);
         }
     }
 
-    TEST_CASE(NormalizedDiffusionMaxDistance)
+    TEST_CASE(NormalizedDiffusionMaxRadius)
     {
         MersenneTwister rng;
 
@@ -183,9 +181,10 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double a = rand_double1(rng);
             const double l = rand_double1(rng, 0.001, 10.0);
             const double s = normalized_diffusion_s(a);
-            const double maxd = normalized_diffusion_max_distance(l, s);
-            const double r = normalized_diffusion_r(maxd, l, s, a);
-            EXPECT_LT(0.00001, r);
+            const double r = normalized_diffusion_max_radius(l, s);
+            const double value = normalized_diffusion_profile(r, l, s, a);
+
+            EXPECT_LT(0.00001, value);
         }
     }
 
@@ -233,7 +232,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             for (size_t j = 0; j < N; ++j)
             {
                 const double r = max(fit<size_t, double>(j, 0, N - 1, 0.0, 8.0), 0.0001);
-                const double y = r * normalized_diffusion_r(r, 1.0, s, a);
+                const double y = r * normalized_diffusion_profile(r, 1.0, s, a);
                 points.push_back(Vector2d(r, y));
             }
 

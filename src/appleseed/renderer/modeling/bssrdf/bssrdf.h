@@ -121,12 +121,12 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const ShadingPoint&         shading_point,
         const size_t                offset = 0) const;
 
-    // Sample the BSSRDF.
+    // Sample r * R(r).
     virtual bool sample(
         const void*                 data,
         BSSRDFSample&               sample) const = 0;
 
-    // Evaluate the BSSRDF for a given pair of points and directions.
+    // Evaluate r * R(r) for a given pair of points and directions.
     virtual void evaluate(
         const void*                 data,
         const ShadingPoint&         outgoing_point,
@@ -135,7 +135,7 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const foundation::Vector3d& incoming_dir,
         Spectrum&                   value) const = 0;
 
-    // Evaluate the PDF for a given radius.
+    // Evaluate the PDF of r * R(r) for a given radius r.
     virtual double evaluate_pdf(
         const void*                 data,
         const size_t                channel,

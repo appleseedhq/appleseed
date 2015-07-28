@@ -617,17 +617,17 @@ namespace
                     return;
 
                 // Sample the BSSRDF.
-                const size_t MaxSubsurfaceSampleCount = 10;
-                SubsurfaceSample subsurface_samples[MaxSubsurfaceSampleCount];
-                SubsurfaceSampler subsurface_sampler(m_shading_context);
+                const size_t MaxSampleCount = 10;
+                SubsurfaceSample samples[MaxSampleCount];
+                SubsurfaceSampler sampler(m_shading_context);
                 const size_t sample_count =
-                    subsurface_sampler.sample(
+                    sampler.sample(
                         m_sampling_context,
                         *vertex.m_shading_point,
                         *vertex.m_bssrdf,
                         vertex.m_bssrdf_data,
-                        subsurface_samples,
-                        MaxSubsurfaceSampleCount);
+                        samples,
+                        MaxSampleCount);
 
                 if (sample_count == 0)
                     return;
@@ -635,7 +635,7 @@ namespace
                 // Accumulate the contribution of the individual samples.
                 Spectrum radiance(0.0f);
                 for (size_t i = 0; i < sample_count; ++i)
-                    add_sss_sample_contribution(vertex, subsurface_samples[i], radiance);
+                    add_sss_sample_contribution(vertex, samples[i], radiance);
                 if (sample_count > 1)
                     radiance *= 1.0f / sample_count;
 
@@ -644,7 +644,7 @@ namespace
 
             void add_sss_sample_contribution(
                 const PathVertex&       vertex,
-                const SubsurfaceSample& subsurface_sample,
+                const SubsurfaceSample& sample,
                 Spectrum&               radiance)
             {
                 // Compute irradiance at incoming point.
@@ -653,7 +653,7 @@ namespace
                 double cos_in;
                 Spectrum irradiance;
                 if (!compute_irradiance(
-                        subsurface_sample.m_point,
+                        sample.m_point,
                         incoming,
                         transmission,
                         cos_in,
@@ -666,13 +666,13 @@ namespace
                     vertex.m_bssrdf_data,
                     *vertex.m_shading_point,
                     vertex.m_outgoing.get_value(),
-                    subsurface_sample.m_point,
+                    sample.m_point,
                     incoming,
                     rd);
 
                 // Compute Fresnel coefficient at outgoing point.
                 double outgoing_fresnel;
-                fresnel_transmittance_dielectric(outgoing_fresnel, subsurface_sample.m_eta, vertex.m_cos_on);
+                fresnel_transmittance_dielectric(outgoing_fresnel, sample.m_eta, vertex.m_cos_on);
                 if (outgoing_fresnel <= 0.0)
                     return;
 
@@ -682,7 +682,7 @@ namespace
                 // inward, i.e. facing the light ray that has been traveling inside the object, we would
                 // use 1/eta like we do when traversing an interface between two media of mismatching densities.
                 double incoming_fresnel;
-                fresnel_transmittance_dielectric(incoming_fresnel, subsurface_sample.m_eta, cos_in);
+                fresnel_transmittance_dielectric(incoming_fresnel, sample.m_eta, cos_in);
                 if (incoming_fresnel <= 0.0)
                     return;
 
@@ -692,7 +692,7 @@ namespace
                     * transmission
                     * incoming_fresnel
                     * outgoing_fresnel
-                    / subsurface_sample.m_probability;
+                    / sample.m_probability;
                 irradiance *= rd;
                 irradiance *= static_cast<float>(weight);
                 radiance += irradiance;

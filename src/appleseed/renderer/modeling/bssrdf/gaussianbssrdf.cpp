@@ -72,14 +72,17 @@ namespace
     //
     // Derivation:
     //
-    //   The profile function is a simple gaussian:
+    //   The profile function is a simple Gaussian:
     //
     //            exp(-r^2 / (2*v))
     //     R(r) = -----------------
     //               2 * Pi * v
     //
-    //   We want the integral of this function over a disk of radius Rmax to equal 1.
-    //   Let's compute the value of this integral:
+    //   The integral of this function over R^2 is equal to 1. Since we want to truncate
+    //   this function to a disk of radius Rmax and still have it integrate to 1, we'll
+    //   need an additional scaling factor.
+    //
+    //   Let's compute the value of this integral for a disk of radius Rmax:
     //
     //     /              / 2 Pi   / Rmax
     //     |              |        |
@@ -95,7 +98,7 @@ namespace
     //     K = ------------------------
     //         1 - exp(-Rmax^2 / (2*v))
     //
-    //   Rmax is the radius at which the value of the integral of the gaussian profile
+    //   Rmax is the radius at which the value of the integral of the Gaussian profile
     //   is low enough, i.e. when the integral over the disk is close enough to one.
     //   For instance, if we pick 0.999 as a threshold:
     //
@@ -181,9 +184,8 @@ namespace
             const double radius =
                 sqrt(-2.0 * v * log(1.0 - s[0] * (1.0 - exp(-rmax2 / (2.0 * v)))));
             const double phi = TwoPi * s[1];
-
-            // Set the sampled point.
             sample.set_point(Vector2d(radius * cos(phi), radius * sin(phi)));
+
             return true;
         }
 

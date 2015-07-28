@@ -93,20 +93,24 @@ double ComputeRdBetterDipole::operator()(const double alpha_prime) const
                * (ce * (1.0 + myexp) + cphi / mu_tr_d * (1.0 - myexp));
 }
 
-double diffusion_coefficient(const double sigma_a, const double sigma_t)
+double diffusion_coefficient(
+    const double    sigma_a,
+    const double    sigma_t)
 {
     return (sigma_t + sigma_a) / (3.0 * square(sigma_t));
 }
 
-double diffuse_mean_free_path(const double sigma_a, const double sigma_t)
+double diffuse_mean_free_path(
+    const double    sigma_a,
+    const double    sigma_t)
 {
     const double D = diffusion_coefficient(sigma_a, sigma_t);
     return 1.0 / sqrt(sigma_a / D);
 }
 
 double reduced_extinction_coefficient(
-    const double diffuse_mean_free_path,
-    const double alpha_prime)
+    const double    diffuse_mean_free_path,
+    const double    alpha_prime)
 {
     return 1.0 / (sqrt(3.0 * (1.0 - alpha_prime)) * diffuse_mean_free_path);
 }
@@ -150,7 +154,7 @@ void compute_absorption_and_scattering(
 
 
 //
-// Normalized diffusion implementation.
+// Normalized diffusion profile implementation.
 //
 
 double normalized_diffusion_s(
@@ -160,7 +164,7 @@ double normalized_diffusion_s(
     return 3.5 + 100.0 * square(square(a - 0.33));
 }
 
-double normalized_diffusion_r(
+double normalized_diffusion_profile(
     const double    r,
     const double    d)
 {
@@ -168,45 +172,14 @@ double normalized_diffusion_r(
     return (exp(-r / d) + exp(-r / (3.0 * d))) / (8.0 * Pi * d * r);
 }
 
-double normalized_diffusion_r(
+double normalized_diffusion_profile(
     const double    r,
     const double    l,
     const double    s,
     const double    a)
 {
     // Equation 3.
-    return a * normalized_diffusion_r(r, l / s);
-}
-
-double normalized_diffusion_cdf(
-    const double    r,
-    const double    d)
-{
-    // Equation 11.
-    return 1.0 - 0.25 * exp(-r / d) - 0.75 * exp(-r / (3.0 * d));
-}
-
-double normalized_diffusion_cdf(
-    const double    r,
-    const double    l,
-    const double    s)
-{
-    return normalized_diffusion_cdf(r, l / s);
-}
-
-double normalized_diffusion_pdf(
-    const double    r,
-    const double    d)
-{
-    return r * TwoPi * normalized_diffusion_r(r, d);
-}
-
-double normalized_diffusion_pdf(
-    const double    r,
-    const double    l,
-    const double    s)
-{
-    return normalized_diffusion_pdf(r, l / s);
+    return a * normalized_diffusion_profile(r, l / s);
 }
 
 namespace
@@ -293,7 +266,38 @@ double normalized_diffusion_sample(
     return r;
 }
 
-double normalized_diffusion_max_distance(
+double normalized_diffusion_cdf(
+    const double    r,
+    const double    d)
+{
+    // Equation 11.
+    return 1.0 - 0.25 * exp(-r / d) - 0.75 * exp(-r / (3.0 * d));
+}
+
+double normalized_diffusion_cdf(
+    const double    r,
+    const double    l,
+    const double    s)
+{
+    return normalized_diffusion_cdf(r, l / s);
+}
+
+double normalized_diffusion_pdf(
+    const double    r,
+    const double    d)
+{
+    return r * TwoPi * normalized_diffusion_profile(r, d);
+}
+
+double normalized_diffusion_pdf(
+    const double    r,
+    const double    l,
+    const double    s)
+{
+    return normalized_diffusion_pdf(r, l / s);
+}
+
+double normalized_diffusion_max_radius(
     const double    l,
     const double    s)
 {
@@ -302,7 +306,7 @@ double normalized_diffusion_max_distance(
 
 
 //
-// Sampling implementation.
+// Attenuation sampling implementation.
 //
 
 double sample_attenuation(

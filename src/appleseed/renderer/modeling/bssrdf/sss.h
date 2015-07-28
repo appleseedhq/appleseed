@@ -81,8 +81,13 @@ class ComputeRdBetterDipole
 template <typename ComputeRdFun>
 double compute_alpha_prime(ComputeRdFun f, const double rd);
 
-double diffusion_coefficient(const double sigma_a, const double sigma_t);
-double diffuse_mean_free_path(const double sigma_a, const double sigma_t);
+double diffusion_coefficient(
+    const double    sigma_a,
+    const double    sigma_t);
+
+double diffuse_mean_free_path(
+    const double    sigma_a,
+    const double    sigma_t);
 
 double reduced_extinction_coefficient(
     const double    diffuse_mean_free_path,
@@ -114,34 +119,16 @@ double normalized_diffusion_s(
 // Evaluate the diffuse reflectance profile R(r).
 // The d parameter shapes the height and width of the curve and can be set
 // based on artistic preference or determined based on physical parameters.
-double normalized_diffusion_r(
-    const double    r,                      // distance
+double normalized_diffusion_profile(
+    const double    r,                      // radius
     const double    d);                     // curve shape
-double normalized_diffusion_r(
-    const double    r,                      // distance
+double normalized_diffusion_profile(
+    const double    r,                      // radius
     const double    l,                      // mean free path length or diffuse mean free path length
     const double    s,                      // scaling factor
     const double    a);                     // surface albedo
 
-// Evaluate the cumulative distribution function of R(r) * (2 * Pi * r).
-double normalized_diffusion_cdf(
-    const double    r,                      // distance
-    const double    d);                     // curve shape
-double normalized_diffusion_cdf(
-    const double    r,                      // distance
-    const double    l,                      // mean free path length or diffuse mean free path length
-    const double    s);                     // scaling factor
-
-// Evaluate the probability density of a given sample.
-double normalized_diffusion_pdf(
-    const double    r,                      // distance
-    const double    d);                     // curve shape
-double normalized_diffusion_pdf(
-    const double    r,                      // distance
-    const double    l,                      // mean free path length or diffuse mean free path length
-    const double    s);                     // scaling factor
-
-// Sample the function R(r, l / s) * (2 * Pi * r).
+// Sample the function r * R(r).
 double normalized_diffusion_sample(
     const double    u,                      // uniform random sample in [0,1)
     const double    l,                      // mean free path length or diffuse mean free path length
@@ -149,14 +136,32 @@ double normalized_diffusion_sample(
     const double    eps = 0.0001,           // root precision
     const size_t    max_iterations = 10);   // max root refinement iterations
 
-// Return the distance at which we consider R(r, l / s) zero.
-double normalized_diffusion_max_distance(
+// Evaluate the cumulative distribution function of r * R(r).
+double normalized_diffusion_cdf(
+    const double    r,                      // radius
+    const double    d);                     // curve shape
+double normalized_diffusion_cdf(
+    const double    r,                      // radius
+    const double    l,                      // mean free path length or diffuse mean free path length
+    const double    s);                     // scaling factor
+
+// Evaluate the probability density of a given sample.
+double normalized_diffusion_pdf(
+    const double    r,                      // radius
+    const double    d);                     // curve shape
+double normalized_diffusion_pdf(
+    const double    r,                      // radius
+    const double    l,                      // mean free path length or diffuse mean free path length
+    const double    s);                     // scaling factor
+
+// Return the radius r at which we consider R(r, l / s) zero.
+double normalized_diffusion_max_radius(
     const double    l,                      // mean free path length or diffuse mean free path length
     const double    s);                     // scaling factor
 
 
 //
-// Sampling.
+// Attenuation sampling.
 //
 // Reference:
 //
