@@ -86,7 +86,7 @@ namespace
             m_inputs.declare("weight", InputFormatScalar, "1.0");
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("dmfp", InputFormatSpectralReflectance);
+            m_inputs.declare("dmfp", InputFormatScalar, "5.0");
             m_inputs.declare("dmfp_multiplier", InputFormatScalar, "0.1");
             m_inputs.declare("anisotropy", InputFormatScalar);
             m_inputs.declare("outside_ior", InputFormatScalar);
@@ -122,15 +122,10 @@ namespace
 
             // Apply multipliers.
             values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
-            values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
+            values->m_dmfp *= values->m_dmfp_multiplier;
 
-            if (values->m_dmfp.size() != values->m_reflectance.size())
-            {
-                if (values->m_dmfp.is_spectral())
-                    Spectrum::upgrade(values->m_reflectance, values->m_reflectance);
-                else
-                    values->m_reflectance = values->m_reflectance.convert_to_rgb(*m_lighting_conditions);
-            }
+            // Clamp reflectance.
+            values->m_reflectance = saturate(values->m_reflectance);
 
             compute_absorption_and_scattering(
                 values->m_reflectance,
@@ -170,11 +165,11 @@ namespace
 
             // Sample a radius.
             const double radius =
-                normalized_diffusion_sample(s[1], values->m_dmfp[channel], nd_s);
+                normalized_diffusion_sample(s[1], values->m_dmfp, nd_s);
 
             // Set the max radius.
             sample.set_rmax2(
-                square(normalized_diffusion_max_radius(values->m_dmfp[channel], nd_s)));
+                square(normalized_diffusion_max_radius(values->m_dmfp, nd_s)));
 #else
             // Sample a radius by importance sampling the attenuation.
             const double sigma_t = values->m_sigma_a[channel] + values->m_sigma_s[channel];
@@ -248,7 +243,7 @@ namespace
             const double pdf_radius =
                 normalized_diffusion_pdf(
                     radius,
-                    values->m_dmfp[channel],
+                    values->m_dmfp,
                     normalized_diffusion_s(values->m_reflectance[channel]));
 #else
             const double pdf_radius =
@@ -434,7 +429,6 @@ DictionaryArray DirectionalDipoleBSSRDFFactory::get_input_metadata() const
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
-                    .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", "5"));

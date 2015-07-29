@@ -117,14 +117,12 @@ double reduced_extinction_coefficient(
 
 void compute_absorption_and_scattering(
     const Spectrum& rd,
-    const Spectrum& dmfp,
+    const double    dmfp,
     const double    eta,
     const double    g,
     Spectrum&       sigma_a,
     Spectrum&       sigma_s)
 {
-    assert(rd.size() == dmfp.size());
-
     sigma_a.resize(rd.size());
     sigma_s.resize(rd.size());
 
@@ -133,15 +131,15 @@ void compute_absorption_and_scattering(
 
     for (size_t i = 0, e = rd.size(); i < e; ++i)
     {
+        assert(rd[i] >= 0.0f);
+        assert(rd[i] <= 1.0f);
+
         // Find alpha' by numerically inverting Rd(alpha').
-        const double alpha_prime =
-            compute_alpha_prime(
-                rd_fun,
-                static_cast<double>(clamp(rd[i], 0.0f, 1.0f)));
+        const double alpha_prime = compute_alpha_prime(rd_fun, rd[i]);
 
         // Compute reduced extinction coefficient.
         const double sigma_t_prime =
-            reduced_extinction_coefficient(dmfp[i], alpha_prime);
+            reduced_extinction_coefficient(dmfp, alpha_prime);
 
         // Compute scattering coefficient.
         const double sigma_s_prime = alpha_prime * sigma_t_prime;

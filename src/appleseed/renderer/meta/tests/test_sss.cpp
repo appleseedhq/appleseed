@@ -402,13 +402,15 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         DirectionalDipoleBSSRDFInputValues& values)
     {
         values.m_weight = 1.0;
+        values.m_reflectance.set(static_cast<float>(rd));
+        values.m_dmfp = dmfp;
         values.m_inside_ior = eta;
         values.m_outside_ior = 1.0;
         values.m_anisotropy = g;
 
         compute_absorption_and_scattering(
-            Spectrum(Color3f(static_cast<float>(rd))),
-            Spectrum(Color3f(static_cast<float>(dmfp))),
+            values.m_reflectance,
+            values.m_dmfp,
             values.m_inside_ior / values.m_outside_ior,
             values.m_anisotropy,
             values.m_sigma_a,

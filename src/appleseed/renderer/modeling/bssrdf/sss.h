@@ -95,7 +95,7 @@ double reduced_extinction_coefficient(
 
 void compute_absorption_and_scattering(
     const Spectrum& rd,                     // surface albedo
-    const Spectrum& dmfp,                   // diffuse mean free path
+    const double    dmfp,                   // diffuse mean free path
     const double    eta,                    // relative index of refraction
     const double    g,                      // anisotropy
     Spectrum&       sigma_a,                // absorption coefficient

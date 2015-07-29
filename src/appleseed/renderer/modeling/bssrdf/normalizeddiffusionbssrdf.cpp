@@ -83,7 +83,7 @@ namespace
             m_inputs.declare("weight", InputFormatScalar, "1.0");
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("dmfp", InputFormatSpectralReflectance);
+            m_inputs.declare("dmfp", InputFormatScalar, "5.0");
             m_inputs.declare("dmfp_multiplier", InputFormatScalar, "0.1");
             m_inputs.declare("outside_ior", InputFormatScalar);
             m_inputs.declare("inside_ior", InputFormatScalar);
@@ -114,13 +114,8 @@ namespace
             values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
             values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
 
-            if (values->m_dmfp.size() != values->m_reflectance.size())
-            {
-                if (values->m_dmfp.is_spectral())
-                    Spectrum::upgrade(values->m_reflectance, values->m_reflectance);
-                else
-                    values->m_reflectance = values->m_reflectance.convert_to_rgb(*m_lighting_conditions);
-            }
+            // Clamp reflectance.
+            values->m_reflectance = saturate(values->m_reflectance);
         }
 
         virtual bool sample(
@@ -151,14 +146,14 @@ namespace
 
             // Sample a radius.
             const double radius =
-                normalized_diffusion_sample(s[1], values->m_dmfp[channel], nd_s);
+                normalized_diffusion_sample(s[1], values->m_dmfp, nd_s);
 
             // Sample an angle.
             const double phi = TwoPi * s[2];
 
             // Set the max radius.
             const double rmax =
-                normalized_diffusion_max_radius(values->m_dmfp[channel], nd_s);
+                normalized_diffusion_max_radius(values->m_dmfp, nd_s);
             sample.set_rmax2(rmax * rmax);
 
             // Set the sampled point.
@@ -186,8 +181,7 @@ namespace
             {
                 const double a = values->m_reflectance[i];
                 const double s = normalized_diffusion_s(a);
-                const double ld = values->m_dmfp[i];
-                value[i] = static_cast<float>(normalized_diffusion_profile(radius, ld, s, a));
+                value[i] = static_cast<float>(normalized_diffusion_profile(radius, values->m_dmfp, s, a));
             }
 
             value *= static_cast<float>(radius * values->m_weight);
@@ -205,7 +199,7 @@ namespace
             const double pdf_radius =
                 normalized_diffusion_pdf(
                     radius,
-                    values->m_dmfp[channel],
+                    values->m_dmfp,
                     normalized_diffusion_s(values->m_reflectance[channel]));
 
             // PDF of the sampled angle.
@@ -278,7 +272,6 @@ DictionaryArray NormalizedDiffusionBSSRDFFactory::get_input_metadata() const
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
-                    .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", "5"));
