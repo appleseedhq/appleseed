@@ -174,7 +174,9 @@ double normalized_diffusion_pdf(
     const double    l,                      // mean free path length or diffuse mean free path length
     const double    s);                     // scaling factor
 
-// Return the radius r at which we consider R(r, l / s) zero.
+// Return the radius r at which we consider R(r) zero.
+double normalized_diffusion_max_radius(
+    const double    d);                     // curve shape
 double normalized_diffusion_max_radius(
     const double    l,                      // mean free path length or diffuse mean free path length
     const double    s);                     // scaling factor

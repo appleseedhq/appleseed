@@ -325,10 +325,16 @@ double normalized_diffusion_pdf(
 }
 
 double normalized_diffusion_max_radius(
+    const double    d)
+{
+    return d * NdCdfTableRmax;
+}
+
+double normalized_diffusion_max_radius(
     const double    l,
     const double    s)
 {
-    return NdCdfTableRmax * l / s;
+    return normalized_diffusion_max_radius(l / s);
 }
 
 
