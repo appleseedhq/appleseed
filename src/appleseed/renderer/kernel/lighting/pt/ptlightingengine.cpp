@@ -612,10 +612,6 @@ namespace
                 Spectrum&               vertex_radiance,
                 SpectrumStack&          vertex_aovs)
             {
-                // No lights, no subsurface scattering.
-                if (!m_light_sampler.has_lights_or_emitting_triangles())
-                    return;
-
                 // Sample the BSSRDF.
                 const size_t MaxSampleCount = 10;
                 SubsurfaceSample samples[MaxSampleCount];
@@ -629,73 +625,61 @@ namespace
                         samples,
                         MaxSampleCount);
 
-                if (sample_count == 0)
-                    return;
-
                 // Accumulate the contribution of the individual samples.
-                Spectrum radiance(0.0f);
                 for (size_t i = 0; i < sample_count; ++i)
-                    add_sss_sample_contribution(vertex, samples[i], radiance);
-                if (sample_count > 1)
-                    radiance *= 1.0f / sample_count;
+                {
+                    const SubsurfaceSample& sample = samples[i];
 
-                vertex_radiance += radiance;
-            }
+                    // Compute irradiance at incoming point.
+                    Vector3d incoming;
+                    double transmission;
+                    double cos_in;
+                    Spectrum irradiance;
+                    if (!compute_irradiance(
+                            sample.m_point,
+                            incoming,
+                            transmission,
+                            cos_in,
+                            irradiance))
+                        continue;
 
-            void add_sss_sample_contribution(
-                const PathVertex&       vertex,
-                const SubsurfaceSample& sample,
-                Spectrum&               radiance)
-            {
-                // Compute irradiance at incoming point.
-                Vector3d incoming;
-                double transmission;
-                double cos_in;
-                Spectrum irradiance;
-                if (!compute_irradiance(
+                    // Evaluate the diffusion profile.
+                    Spectrum rd;
+                    vertex.m_bssrdf->evaluate(
+                        vertex.m_bssrdf_data,
+                        *vertex.m_shading_point,
+                        vertex.m_outgoing.get_value(),
                         sample.m_point,
                         incoming,
-                        transmission,
-                        cos_in,
-                        irradiance))
-                    return;
+                        rd);
 
-                // Evaluate the diffusion profile.
-                Spectrum rd;
-                vertex.m_bssrdf->evaluate(
-                    vertex.m_bssrdf_data,
-                    *vertex.m_shading_point,
-                    vertex.m_outgoing.get_value(),
-                    sample.m_point,
-                    incoming,
-                    rd);
+                    // Compute Fresnel coefficient at outgoing point.
+                    double outgoing_fresnel;
+                    fresnel_transmittance_dielectric(outgoing_fresnel, sample.m_eta, vertex.m_cos_on);
+                    if (outgoing_fresnel <= 0.0)
+                        continue;
 
-                // Compute Fresnel coefficient at outgoing point.
-                double outgoing_fresnel;
-                fresnel_transmittance_dielectric(outgoing_fresnel, sample.m_eta, vertex.m_cos_on);
-                if (outgoing_fresnel <= 0.0)
-                    return;
+                    // Compute Fresnel coefficient at incoming point.
+                    // We use eta and not 1/eta because the normal at the incoming point is pointing outward
+                    // (away from the object), like the normal at the outgoing point. If the normal was pointing
+                    // inward, i.e. facing the light ray that has been traveling inside the object, we would
+                    // use 1/eta like we do when traversing an interface between two media of mismatching densities.
+                    double incoming_fresnel;
+                    fresnel_transmittance_dielectric(incoming_fresnel, sample.m_eta, cos_in);
+                    if (incoming_fresnel <= 0.0)
+                        continue;
 
-                // Compute Fresnel coefficient at incoming point.
-                // We use eta and not 1/eta because the normal at the incoming point is pointing outward
-                // (away from the object), like the normal at the outgoing point. If the normal was pointing
-                // inward, i.e. facing the light ray that has been traveling inside the object, we would
-                // use 1/eta like we do when traversing an interface between two media of mismatching densities.
-                double incoming_fresnel;
-                fresnel_transmittance_dielectric(incoming_fresnel, sample.m_eta, cos_in);
-                if (incoming_fresnel <= 0.0)
-                    return;
-
-                // Add the contribution of this sample to the illumination.
-                const double weight =
-                      RcpPi
-                    * transmission
-                    * incoming_fresnel
-                    * outgoing_fresnel
-                    / sample.m_probability;
-                irradiance *= rd;
-                irradiance *= static_cast<float>(weight);
-                radiance += irradiance;
+                    // Add the contribution of this sample to the illumination.
+                    const double weight =
+                          RcpPi
+                        * transmission
+                        * incoming_fresnel
+                        * outgoing_fresnel
+                        / sample.m_probability;
+                    irradiance *= rd;
+                    irradiance *= static_cast<float>(weight);
+                    vertex_radiance += irradiance;
+                }
             }
 
             // Compute irradiance at a given point of the scene. Works on back faces too.
