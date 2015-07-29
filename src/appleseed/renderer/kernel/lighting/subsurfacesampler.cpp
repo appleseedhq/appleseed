@@ -39,6 +39,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/mis.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 
 // Standard headers.
@@ -191,6 +192,7 @@ size_t SubsurfaceSampler::sample(
     entry_point = exit_point = outgoing_point.get_point();
     entry_point += sampling_basis.transform_to_parent(Vector3d(point[0], +h, point[1]));
     exit_point += sampling_basis.transform_to_parent(Vector3d(point[0], -h, point[1]));
+    assert(feq(norm(exit_point - entry_point), 2.0 * h));
 
     // Build a probe ray inscribed inside the sphere of radius Rmax.
     ShadingRay probe_ray(
