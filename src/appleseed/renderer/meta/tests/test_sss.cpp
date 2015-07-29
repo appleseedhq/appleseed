@@ -466,7 +466,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
                 normal,
                 result);
 
-            points.push_back(Vector2d(x, result[0] * Pi));
+            points.push_back(Vector2d(x, result[0] * Pi / abs(x)));
         }
 
         plotfile
@@ -479,21 +479,21 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     TEST_CASE(PlotDirectionalDipoleRd)
     {
         plot_dirpole_rd(
-            "unit tests/outputs/test_sss_dirpole_rd_a_001.gnuplot",
+            "unit tests/outputs/test_sss_dirpole_sg_a_001.gnuplot",
             "Directional Dipole Diffuse Reflectance (sigma_a == 0.01)",
             0.01,           // sigma_a in cm
             1.0e-5,         // ymin
             1.0e+1);        // ymax
 
         plot_dirpole_rd(
-            "unit tests/outputs/test_sss_dirpole_rd_a_01.gnuplot",
+            "unit tests/outputs/test_sss_dirpole_sg_a_01.gnuplot",
             "Directional Dipole Diffuse Reflectance (sigma_a == 0.1)",
             0.1,            // sigma_a in cm
             1.0e-8,         // ymin
             1.0e+1);        // ymax
 
         plot_dirpole_rd(
-            "unit tests/outputs/test_sss_dirpole_rd_a_1.gnuplot",
+            "unit tests/outputs/test_sss_dirpole_sg_a_1.gnuplot",
             "Directional Dipole Diffuse Reflectance (sigma_a == 1.0)",
             1.0,            // sigma_a in cm
             1.0e-16,        // ymin
