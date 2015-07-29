@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/project/project.h"
 
@@ -58,7 +57,6 @@ BSSRDF::BSSRDF(
     const char*             name,
     const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
-  , m_lighting_conditions(0)
 {
     set_name(name);
 }
@@ -68,7 +66,6 @@ bool BSSRDF::on_frame_begin(
     const Assembly&         assembly,
     IAbortSwitch*           abort_switch)
 {
-    m_lighting_conditions = &project.get_frame()->get_lighting_conditions();
     return true;
 }
 
@@ -76,7 +73,6 @@ void BSSRDF::on_frame_end(
     const Project&          project,
     const Assembly&         assembly)
 {
-    m_lighting_conditions = 0;
 }
 
 size_t BSSRDF::compute_input_data_size(

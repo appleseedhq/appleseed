@@ -45,7 +45,6 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace foundation    { class LightingConditions; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class BSSRDFSample; }
 namespace renderer      { class InputEvaluator; }
@@ -140,9 +139,6 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const void*                 data,
         const size_t                channel,
         const double                radius) const = 0;
-
-  protected:
-    const foundation::LightingConditions* m_lighting_conditions;
 };
 
 }       // namespace renderer
