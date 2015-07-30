@@ -34,13 +34,13 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/bsdf/oslashikhminbrdf.h"
+#include "renderer/modeling/bsdf/ashikhminbrdf.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
-#include "renderer/modeling/bsdf/oslmicrofacetbrdf.h"
-#include "renderer/modeling/bsdf/oslmicrofacetbtdf.h"
+#include "renderer/modeling/bsdf/osl/oslmicrofacetbrdf.h"
+#include "renderer/modeling/bsdf/osl/oslmicrofacetbtdf.h"
 #include "renderer/modeling/bsdf/velvetbrdf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/scene/assembly.h"
@@ -87,7 +87,7 @@ namespace
             memset(m_all_bsdfs, 0, sizeof(BSDF*) * NumClosuresIDs);
 
             m_ashikhmin_shirley_brdf =
-                OSLAshikhminBRDFFactory().create(
+                AshikhminBRDFFactory().create(
                     "ashikhmin_brdf",
                     ParamArray());
 
