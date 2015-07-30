@@ -1264,22 +1264,31 @@ list (APPEND renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/disneylayeredbrdf.h
 )
 endif ()
-if (WITH_OSL)
-    list (APPEND renderer_modeling_bsdf_sources
-        renderer/modeling/bsdf/oslbsdf.cpp
-        renderer/modeling/bsdf/oslbsdf.h
-        renderer/modeling/bsdf/oslmicrofacetbrdf.cpp
-        renderer/modeling/bsdf/oslmicrofacetbrdf.h
-        renderer/modeling/bsdf/oslmicrofacetbtdf.cpp
-        renderer/modeling/bsdf/oslmicrofacetbtdf.h
-    )
-endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_bsdf_sources}
 )
 source_group ("renderer\\modeling\\bsdf" FILES
     ${renderer_modeling_bsdf_sources}
 )
+
+if (WITH_OSL)
+    set (renderer_modeling_bsdf_osl_sources
+        renderer/modeling/bsdf/osl/oslbsdf.cpp
+        renderer/modeling/bsdf/osl/oslbsdf.h
+        renderer/modeling/bsdf/osl/oslmicrofacetbrdf.cpp
+        renderer/modeling/bsdf/osl/oslmicrofacetbrdf.h
+        renderer/modeling/bsdf/osl/oslmicrofacetbtdf.cpp
+        renderer/modeling/bsdf/osl/oslmicrofacetbtdf.h
+    )
+    list (APPEND appleseed_sources
+        ${renderer_modeling_bsdf_osl_sources}
+    )
+    source_group ("renderer\\modeling\\bsdf\\osl" FILES
+        ${renderer_modeling_bsdf_osl_sources}
+    )
+endif ()
+
+
 
 set (renderer_modeling_bssrdf_sources
     renderer/modeling/bssrdf/bssrdf.cpp
