@@ -643,7 +643,7 @@ inline size_t min_index(const RegularSpectrum<T, N>& s)
 
     for (size_t i = 1; i < N; ++i)
     {
-        const size_t x = s[i];
+        const T x = s[i];
 
         if (value > x)
         {
@@ -663,7 +663,7 @@ inline size_t max_index(const RegularSpectrum<T, N>& s)
 
     for (size_t i = 1; i < N; ++i)
     {
-        const size_t x = s[i];
+        const T x = s[i];
 
         if (value < x)
         {
@@ -683,7 +683,7 @@ inline size_t min_abs_index(const RegularSpectrum<T, N>& s)
 
     for (size_t i = 1; i < N; ++i)
     {
-        const size_t x = std::abs(s[i]);
+        const T x = std::abs(s[i]);
 
         if (value > x)
         {
@@ -703,7 +703,7 @@ inline size_t max_abs_index(const RegularSpectrum<T, N>& s)
 
     for (size_t i = 1; i < N; ++i)
     {
-        const size_t x = std::abs(s[i]);
+        const T x = std::abs(s[i]);
 
         if (value < x)
         {
