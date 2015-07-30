@@ -41,6 +41,7 @@
 #include "renderer/modeling/bsdf/ibsdffactory.h"
 #include "renderer/modeling/bsdf/osl/oslmicrofacetbrdf.h"
 #include "renderer/modeling/bsdf/osl/oslmicrofacetbtdf.h"
+#include "renderer/modeling/bsdf/osl/oslnoplayerbsdf.h"
 #include "renderer/modeling/bsdf/velvetbrdf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/scene/assembly.h"
@@ -90,7 +91,6 @@ namespace
                 AshikhminBRDFFactory().create(
                     "ashikhmin_brdf",
                     ParamArray());
-
             m_all_bsdfs[AshikhminShirleyID] = m_ashikhmin_shirley_brdf.get();
 
             m_diffuse_btdf =
@@ -165,6 +165,9 @@ namespace
                     MicrofacetGGXRefractionID,
                     "ggx",
                     "osl_ggx_btdf");
+
+            m_nop_layer_bsdf = OSLNopLayerBSDFFactory().create();
+            m_all_bsdfs[NopLayerID] = m_nop_layer_bsdf.get();
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -337,6 +340,7 @@ namespace
         auto_release_ptr<BSDF>      m_microfacet_blinn_brdf;
         auto_release_ptr<BSDF>      m_microfacet_ggx_brdf;
         auto_release_ptr<BSDF>      m_microfacet_ggx_btdf;
+        auto_release_ptr<BSDF>      m_nop_layer_bsdf;
         auto_release_ptr<BSDF>      m_orennayar_brdf;
         auto_release_ptr<BSDF>      m_specular_brdf;
         auto_release_ptr<BSDF>      m_specular_btdf;

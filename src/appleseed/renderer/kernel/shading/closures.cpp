@@ -120,6 +120,12 @@ namespace
         int             refract;
     };
 
+    struct NopLayerClosureParams
+    {
+        OSL::Vec3           N;
+        OSL::ClosureColor*  base;
+    };
+
     struct OrenNayarBRDFClosureParams
     {
         OSL::Vec3       N;
@@ -395,6 +401,23 @@ void CompositeSurfaceClosure::process_closure_tree(
                     }
                 }
                 break;
+
+              case NopLayerID:
+              {
+                  const NopLayerClosureParams* p =
+                      reinterpret_cast<const NopLayerClosureParams*>(c->data());
+
+                  OSLNopLayerBSDFInputValues values;
+                  values.m_osl_bsdf = get_osl_bsdf();
+                  values.m_base = p->base;
+
+                  add_closure<OSLNopLayerBSDFInputValues>(
+                      static_cast<ClosureID>(c->id),
+                      w,
+                      Vector3d(p->N),
+                      values);
+              }
+              break;
 
               case OrenNayarID:
                 {
@@ -879,6 +902,11 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                    CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, clearcoat),
                                    CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, clearcoat_gloss),
                                    CLOSURE_FINISH_PARAM(DisneyBRDFClosureParams) } },
+
+
+        { "as_nop_layer", NopLayerID, { CLOSURE_VECTOR_PARAM(NopLayerClosureParams, N),
+                                        CLOSURE_CLOSURE_PARAM(NopLayerClosureParams, base),
+                                        CLOSURE_FINISH_PARAM(NopLayerClosureParams) } },
 
         { "as_subsurface", SubsurfaceID, { CLOSURE_STRING_PARAM(SubsurfaceClosureParams, profile),
                                            CLOSURE_COLOR_PARAM(SubsurfaceClosureParams, reflectance),

@@ -1,0 +1,6 @@
+
+surface nop_layer(float Kd = 1, color Cs = 0.5)
+{
+    closure color base = Kd * Cs * diffuse(N);
+    Ci = as_nop_layer(N, base);
+}

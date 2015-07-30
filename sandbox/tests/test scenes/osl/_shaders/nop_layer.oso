@@ -1,0 +1,22 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.7.0dev
+surface nop_layer
+param	float	Kd	1		%read{1,1} %write{2147483647,-1}
+param	color	Cs	0.5 0.5 0.5		%read{1,1} %write{2147483647,-1}
+global	normal	N	%read{0,3} %write{2147483647,-1}
+global	closure color	Ci	%read{2147483647,-1} %write{3,3}
+local	closure color	base	%read{3,3} %write{2,2}
+temp	closure color	$tmp1	%read{2,2} %write{0,0}
+const	string	$const1	"diffuse"		%read{0,0} %write{2147483647,-1}
+temp	color	$tmp2	%read{2,2} %write{1,1}
+const	string	$const2	"as_nop_layer"		%read{3,3} %write{2147483647,-1}
+code ___main___
+# nop_layer.osl:4
+#     closure color base = Kd * Cs * diffuse(N);
+	closure		$tmp1 $const1 N 	%filename{"nop_layer.osl"} %line{4} %argrw{"wrr"}
+	mul		$tmp2 Kd Cs 	%argrw{"wrr"}
+	mul		base $tmp1 $tmp2 	%argrw{"wrr"}
+# nop_layer.osl:5
+#     Ci = as_nop_layer(N, base);
+	closure		Ci $const2 N base 	%line{5} %argrw{"wrrr"}
+	end

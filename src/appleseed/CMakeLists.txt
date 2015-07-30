@@ -1275,6 +1275,8 @@ if (WITH_OSL)
     set (renderer_modeling_bsdf_osl_sources
         renderer/modeling/bsdf/osl/oslbsdf.cpp
         renderer/modeling/bsdf/osl/oslbsdf.h
+        renderer/modeling/bsdf/osl/oslnoplayerbsdf.cpp
+        renderer/modeling/bsdf/osl/oslnoplayerbsdf.h
         renderer/modeling/bsdf/osl/oslmicrofacetbrdf.cpp
         renderer/modeling/bsdf/osl/oslmicrofacetbrdf.h
         renderer/modeling/bsdf/osl/oslmicrofacetbtdf.cpp

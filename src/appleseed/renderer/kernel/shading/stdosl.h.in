@@ -521,6 +521,8 @@ closure color as_subsurface(color reflectance, color mean_free_path)
     return as_subsurface("directional", reflectance, mean_free_path);
 }
 
+closure color as_nop_layer(normal N, closure color base) BUILTIN;
+
 /********************************/
 // Standard OSL closures
 
