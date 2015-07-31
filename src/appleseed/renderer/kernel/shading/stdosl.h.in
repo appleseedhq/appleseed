@@ -487,13 +487,14 @@ string concat (string a, string b, string c, string d, string e, string f) {
 /********************************/
 // appleseed specific closures
 
-// Specular component of Ashikhmin-Shirley (anisotropic Phong model)
-// without Fresnel term.
 closure color as_ashikhmin_shirley(
     normal N,
     vector T,
+    color rd,
+    color rg,
     float nu,
-    float nv) BUILTIN;
+    float nv,
+    float fr) BUILTIN;
 
 closure color as_disney(
         normal N,
@@ -568,7 +569,7 @@ closure color oren_nayar(normal N, float roughness) BUILTIN;
 
 closure color phong(normal N, float exponent)
 {
-    return as_ashikhmin_shirley(N, vector(0), exponent, exponent);
+    return as_ashikhmin_shirley(N, vector(0), color(0), color(1), exponent, exponent, 1.0);
 }
 
 // Renderer state
@@ -597,4 +598,3 @@ int getmatrix (string fromspace, output matrix M) {
 #undef PERCOMP2F
 
 #endif /* STDOSL_H */
-

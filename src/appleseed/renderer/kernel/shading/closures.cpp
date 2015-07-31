@@ -71,8 +71,11 @@ namespace
     {
         OSL::Vec3       N;
         OSL::Vec3       T;
+        OSL::Color3     rd;
+        OSL::Color3     rg;
         float           nu;
         float           nv;
+        float           fr;
     };
 
     struct DebugClosureParams
@@ -248,11 +251,16 @@ void CompositeSurfaceClosure::process_closure_tree(
                     const AshikhminShirleyBRDFClosureParams* p =
                         reinterpret_cast<const AshikhminShirleyBRDFClosureParams*>(c->data());
 
-                    OSLAshikhminBRDFInputValues values;
+                    AshikhminBRDFInputValues values;
+                    values.m_rd = Color3f(p->rd);
+                    values.m_rd_multiplier = 1.0;
+                    values.m_rg = Color3f(p->rg);
+                    values.m_rg_multiplier = 1.0;
                     values.m_nu = max(p->nu, 0.01f);
                     values.m_nv = max(p->nv, 0.01f);
+                    values.m_fr_multiplier = p->fr;
 
-                    add_closure<OSLAshikhminBRDFInputValues>(
+                    add_closure<AshikhminBRDFInputValues>(
                         static_cast<ClosureID>(c->id),
                         w,
                         Vector3d(p->N),
@@ -850,8 +858,11 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
     {
         { "as_ashikhmin_shirley", AshikhminShirleyID, { CLOSURE_VECTOR_PARAM(AshikhminShirleyBRDFClosureParams, N),
                                                         CLOSURE_VECTOR_PARAM(AshikhminShirleyBRDFClosureParams, T),
+                                                        CLOSURE_COLOR_PARAM(AshikhminShirleyBRDFClosureParams, rd),
+                                                        CLOSURE_COLOR_PARAM(AshikhminShirleyBRDFClosureParams, rg),
                                                         CLOSURE_FLOAT_PARAM(AshikhminShirleyBRDFClosureParams, nu),
                                                         CLOSURE_FLOAT_PARAM(AshikhminShirleyBRDFClosureParams, nv),
+                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyBRDFClosureParams, fr),
                                                         CLOSURE_FINISH_PARAM(AshikhminShirleyBRDFClosureParams) } },
 
         { "as_disney", DisneyID, { CLOSURE_VECTOR_PARAM(DisneyBRDFClosureParams, N),
