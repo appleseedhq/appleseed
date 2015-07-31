@@ -131,11 +131,19 @@ namespace
                 values->m_inside_ior / values->m_outside_ior,
                 values->m_anisotropy,
                 values->m_sigma_a,
-                values->m_sigma_s);
+                values->m_sigma_s,
+                values->m_sigma_tr);
 #else
             // Skim milk.
             values->m_sigma_a = Color3f(0.0014f, 0.0025f, 0.0142f) * 1000.0f;
             values->m_sigma_s = Color3f(0.70f, 1.22f, 1.90f) * 1000.0f;
+            values->m_anisotropy = 0.0;
+
+            effective_extinction_coefficient(
+                values->m_sigma_a,
+                values->m_sigma_s,
+                values->m_anisotropy,
+                values->m_sigma_tr);
 #endif
         }
 
@@ -164,16 +172,12 @@ namespace
             sample.get_sampling_context().split_in_place(2, 1);
             const Vector2d s = sample.get_sampling_context().next_vector2<2>();
 
-            // Sample a radius by importance-sampling the attenuation.
-            const double sigma_a = values->m_sigma_a[channel];
-            const double sigma_s = values->m_sigma_s[channel];
-            const double sigma_s_prime = sigma_s * (1.0 - values->m_anisotropy);
-            const double sigma_t_prime = sigma_s_prime + sigma_a;
-            const double sigma_tr = sqrt(3.0 * sigma_a * sigma_t_prime);
-            const double radius = sample_attenuation(sigma_tr, s[0]);
+            // Sample a radius.
+            const double sigma_tr = values->m_sigma_tr[channel];
+            const double radius = dipole_sample(sigma_tr, s[0]);
 
             // Set the max radius.
-            sample.set_rmax2(square(max_attenuation_distance(sigma_tr)));
+            sample.set_rmax2(square(dipole_max_radius(sigma_tr)));
 
             // Sample an angle.
             const double phi = TwoPi * s[1];
@@ -209,7 +213,7 @@ namespace
                 const double sigma_s_prime = sigma_s * (1.0 - values->m_anisotropy);
                 const double sigma_t_prime = sigma_s_prime + sigma_a;
                 const double alpha_prime = sigma_s_prime / sigma_t_prime;
-                const double sigma_tr = sqrt(3.0 * sigma_a * sigma_t_prime);
+                const double sigma_tr = values->m_sigma_tr[i];
                 const double D = 1.0 / (3.0 * sigma_t_prime);
                 const double zr = 1.0 / sigma_t_prime;
                 const double zv = zr + 4.0 * A * D;
@@ -239,12 +243,8 @@ namespace
                 return 0.0;
 
             // PDF of the sampled radius.
-            const double sigma_a = values->m_sigma_a[channel];
-            const double sigma_s = values->m_sigma_s[channel];
-            const double sigma_s_prime = sigma_s * (1.0 - values->m_anisotropy);
-            const double sigma_t_prime = sigma_s_prime + sigma_a;
-            const double sigma_tr = sqrt(3.0 * sigma_a * sigma_t_prime);
-            const double pdf_radius = pdf_attenuation(radius, sigma_tr);
+            const double sigma_tr = values->m_sigma_tr[channel];
+            const double pdf_radius = dipole_pdf(radius, sigma_tr);
 
             // PDF of the sampled angle.
             const double pdf_angle = RcpTwoPi;

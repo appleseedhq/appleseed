@@ -93,13 +93,25 @@ double reduced_extinction_coefficient(
     const double    dmfp,
     const double    alpha_prime);
 
+double effective_extinction_coefficient(
+    const double    sigma_a,
+    const double    sigma_s,
+    const double    anisotropy);
+
+void effective_extinction_coefficient(
+    const Spectrum& sigma_a,
+    const Spectrum& sigma_s,
+    const double    anisotropy,
+    Spectrum&       sigma_tr);
+
 void compute_absorption_and_scattering(
     const Spectrum& rd,                     // surface albedo
     const double    dmfp,                   // diffuse mean free path
     const double    eta,                    // relative index of refraction
     const double    g,                      // anisotropy
     Spectrum&       sigma_a,                // absorption coefficient
-    Spectrum&       sigma_s);               // scattering coefficient
+    Spectrum&       sigma_s,                // scattering coefficient
+    Spectrum&       sigma_tr);              // effective extinction coefficient
 
 
 //
@@ -183,24 +195,23 @@ double normalized_diffusion_max_radius(
 
 
 //
-// Attenuation sampling.
+// Dipole sampling.
 //
 // Reference:
 //
-//   Volumetric Path Tracing, Steve Marschner, section 3.
-//   http://www.cs.cornell.edu/courses/cs6630/2012sp/notes/09volpath.pdf
+//   A Practical Model for Subsurface Light Transport
+//   https://graphics.stanford.edu/papers/bssrdf/bssrdf.pdf
 //
 
-// Sample a distance by importance sampling the attenuation.
-double sample_attenuation(
-    const double    sigma_t,
+double dipole_sample(
+    const double    sigma_tr,
     const double    s);
 
-double pdf_attenuation(
+double dipole_pdf(
     const double    dist,
-    const double    sigma_t);
+    const double    sigma_tr);
 
-double max_attenuation_distance(const double sigma_t);
+double dipole_max_radius(const double sigma_tr);
 
 
 //

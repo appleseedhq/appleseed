@@ -67,6 +67,7 @@ APPLESEED_DECLARE_INPUT_VALUES(StandardDipoleBSSRDFInputValues)
     // Precomputed values.
     Spectrum    m_sigma_a;
     Spectrum    m_sigma_s;
+    Spectrum    m_sigma_tr;
 };
 
 
