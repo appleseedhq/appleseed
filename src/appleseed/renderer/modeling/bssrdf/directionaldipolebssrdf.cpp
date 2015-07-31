@@ -124,9 +124,11 @@ namespace
             values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
             values->m_dmfp *= values->m_dmfp_multiplier;
 
-            // Clamp reflectance.
+            // Clamp reflectance to [0, 1].
             values->m_reflectance = saturate(values->m_reflectance);
 
+#if 1
+            // Compute sigma_a and sigma_s from the reflectance and dmfp parameters.
             compute_absorption_and_scattering(
                 values->m_reflectance,
                 values->m_dmfp,
@@ -134,6 +136,11 @@ namespace
                 values->m_anisotropy,
                 values->m_sigma_a,
                 values->m_sigma_s);
+#else
+            // Skim milk.
+            values->m_sigma_a = Color3f(0.0014f, 0.0025f, 0.0142f) * 1000.0f;
+            values->m_sigma_s = Color3f(0.70f, 1.22f, 1.90f) * 1000.0f;
+#endif
         }
 
         virtual bool sample(
@@ -149,38 +156,27 @@ namespace
             sample.set_is_directional(true);
             sample.set_eta(values->m_inside_ior / values->m_outside_ior);
 
-            sample.get_sampling_context().split_in_place(3, 1);
-            const Vector3d s = sample.get_sampling_context().next_vector2<3>();
-
-            // Sample a color channel uniformly.
-            const size_t channel = truncate<size_t>(s[0] * values->m_sigma_a.size());
+            // Select the channel leading to the strongest scattering.
+            const size_t channel = min_index(values->m_reflectance);
             sample.set_channel(channel);
 
-#ifdef DIRPOLE_USE_ND_SAMPLING
-            const double nd_r = values->m_reflectance[channel];
-            if (nd_r == 0.0)
+            // todo: fix.
+            const double reflectance = values->m_reflectance[channel];
+            if (reflectance == 0.0)
                 return false;
 
-            const double nd_s = normalized_diffusion_s(nd_r);
+            sample.get_sampling_context().split_in_place(2, 1);
+            const Vector2d s = sample.get_sampling_context().next_vector2<2>();
 
-            // Sample a radius.
-            const double radius =
-                normalized_diffusion_sample(s[1], values->m_dmfp, nd_s);
+            // Sample a radius by importance-sampling the attenuation.
+            const double sigma_t = values->m_sigma_a[channel] + values->m_sigma_s[channel];
+            const double radius = sample_attenuation(sigma_t, s[0]);
 
             // Set the max radius.
-            sample.set_rmax2(
-                square(normalized_diffusion_max_radius(values->m_dmfp, nd_s)));
-#else
-            // Sample a radius by importance sampling the attenuation.
-            const double sigma_t = values->m_sigma_a[channel] + values->m_sigma_s[channel];
-            const double radius = sample_attenuation(sigma_t, s[1]);
-
-            // Set the max distance.
             sample.set_rmax2(square(max_attenuation_distance(sigma_t)));
-#endif
 
             // Sample an angle.
-            const double phi = TwoPi * s[2];
+            const double phi = TwoPi * s[1];
 
             // Set the sampled point.
             sample.set_point(Vector2d(radius * cos(phi), radius * sin(phi)));
@@ -226,7 +222,6 @@ namespace
 #endif
 
             const double radius = norm(incoming_point.get_point() - outgoing_point.get_point());
-
             value *= static_cast<float>(radius * values->m_weight);
         }
 
@@ -238,19 +233,15 @@ namespace
             const DirectionalDipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
 
+            const double reflectance = values->m_reflectance[channel];
+            if (reflectance == 0.0)
+                return 0.0;
+
             // PDF of the sampled radius.
-#ifdef DIRPOLE_USE_ND_SAMPLING
-            const double pdf_radius =
-                normalized_diffusion_pdf(
-                    radius,
-                    values->m_dmfp,
-                    normalized_diffusion_s(values->m_reflectance[channel]));
-#else
             const double pdf_radius =
                 pdf_attenuation(
                     radius,
                     values->m_sigma_a[channel] + values->m_sigma_s[channel]);
-#endif
 
             // PDF of the sampled angle.
             const double pdf_angle = RcpTwoPi;
@@ -327,6 +318,13 @@ namespace
             {
                 const double sigma_a = values->m_sigma_a[i];                            // absorption coefficient
                 const double sigma_s = values->m_sigma_s[i];                            // scattering coefficient
+
+                if (sigma_s == 0.0)
+                {
+                    result[i] = 0.0f;
+                    continue;
+                }
+
                 const double sigma_s_prime = sigma_s * (1.0 - values->m_anisotropy);    // reduced scattering coefficient
                 const double sigma_t_prime = sigma_s_prime + sigma_a;                   // reduced extinction coefficient
                 const double alpha_prime = sigma_s_prime / sigma_t_prime;               // reduced scattering albedo
@@ -362,7 +360,7 @@ namespace
                 result[i] = static_cast<float>(value);
             }
 
-            // todo: we seem to be missing the S_sigma_E term (single scattering).
+            // todo: add reduced intensity component here (S_sigma_E term).
             // See equation 12 (section 3.2) of the Directional Dipole paper.
         }
     };

@@ -131,30 +131,30 @@ namespace
             sample.set_is_directional(false);
             sample.set_eta(values->m_inside_ior / values->m_outside_ior);
 
-            sample.get_sampling_context().split_in_place(3, 1);
-            const Vector3d s = sample.get_sampling_context().next_vector2<3>();
-
-            // Sample a color channel uniformly.
-            const size_t channel = truncate<size_t>(s[0] * values->m_reflectance.size());
+            // Select the channel leading to the strongest scattering.
+            const size_t channel = min_index(values->m_reflectance);
             sample.set_channel(channel);
 
-            const double nd_r = values->m_reflectance[channel];
-            if (nd_r == 0.0)
+            // todo: fix.
+            const double reflectance = values->m_reflectance[channel];
+            if (reflectance == 0.0)
                 return false;
 
-            const double nd_s = normalized_diffusion_s(nd_r);
+            const double nd_s = normalized_diffusion_s(reflectance);
+
+            sample.get_sampling_context().split_in_place(2, 1);
+            const Vector2d s = sample.get_sampling_context().next_vector2<2>();
 
             // Sample a radius.
             const double radius =
-                normalized_diffusion_sample(s[1], values->m_dmfp, nd_s);
+                normalized_diffusion_sample(s[0], values->m_dmfp, nd_s);
 
             // Sample an angle.
-            const double phi = TwoPi * s[2];
+            const double phi = TwoPi * s[1];
 
             // Set the max radius.
-            const double rmax =
-                normalized_diffusion_max_radius(values->m_dmfp, nd_s);
-            sample.set_rmax2(rmax * rmax);
+            sample.set_rmax2(
+                square(normalized_diffusion_max_radius(values->m_dmfp, nd_s)));
 
             // Set the sampled point.
             sample.set_point(Vector2d(radius * cos(phi), radius * sin(phi)));
