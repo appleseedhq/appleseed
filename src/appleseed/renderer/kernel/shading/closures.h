@@ -30,13 +30,13 @@
 #define APPLESEED_RENDERER_KERNEL_SHADING_CLOSURES_H
 
 // appleseed.renderer headers.
+#include "renderer/modeling/bsdf/osl/oslmicrofacetbrdf.h"
+#include "renderer/modeling/bsdf/osl/oslmicrofacetbtdf.h"
 #include "renderer/modeling/bsdf/ashikhminbrdf.h"
 #include "renderer/modeling/bsdf/diffusebtdf.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
 #include "renderer/modeling/bsdf/orennayarbrdf.h"
-#include "renderer/modeling/bsdf/osl/oslmicrofacetbrdf.h"
-#include "renderer/modeling/bsdf/osl/oslmicrofacetbtdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
 #include "renderer/modeling/bsdf/velvetbrdf.h"
