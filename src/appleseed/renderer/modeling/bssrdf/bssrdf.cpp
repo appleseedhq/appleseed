@@ -32,7 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/input/inputevaluator.h"
-#include "renderer/modeling/project/project.h"
 
 using namespace foundation;
 
