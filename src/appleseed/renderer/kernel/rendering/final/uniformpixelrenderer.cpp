@@ -170,7 +170,7 @@ namespace
                             static_cast<float>(ty + s.y),
                             shading_result);
                     }
-                    else signal_invalid_sample();
+                    else signal_invalid_sample(ix, iy);
                 }
             }
             else
@@ -216,7 +216,7 @@ namespace
                                 static_cast<float>(s.y - iy + ty),
                                 shading_result);
                         }
-                        else signal_invalid_sample();
+                        else signal_invalid_sample(ix, iy);
                     }
                 }
             }

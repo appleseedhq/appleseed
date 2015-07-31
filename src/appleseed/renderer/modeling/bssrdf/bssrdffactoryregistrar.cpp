@@ -36,6 +36,7 @@
 #ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
 #endif
+#include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -66,6 +67,7 @@ BSSRDFFactoryRegistrar::BSSRDFFactoryRegistrar()
 #ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
     register_factory(auto_ptr<FactoryType>(new NormalizedDiffusionBSSRDFFactory()));
 #endif
+    register_factory(auto_ptr<FactoryType>(new StandardDipoleBSSRDFFactory()));
 }
 
 BSSRDFFactoryRegistrar::~BSSRDFFactoryRegistrar()

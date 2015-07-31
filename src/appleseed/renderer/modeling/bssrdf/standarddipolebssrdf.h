@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_DIRECTIONALDIPOLEBSSRDF_H
-#define APPLESEED_RENDERER_MODELING_BSSRDF_DIRECTIONALDIPOLEBSSRDF_H
+#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_STANDARDDIPOLEBSSRDF_H
+#define APPLESEED_RENDERER_MODELING_BSSRDF_STANDARDDIPOLEBSSRDF_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -50,10 +50,10 @@ namespace renderer
 {
 
 //
-// Directional dipole BSSRDF input values.
+// Standard dipole BSSRDF input values.
 //
 
-APPLESEED_DECLARE_INPUT_VALUES(DirectionalDipoleBSSRDFInputValues)
+APPLESEED_DECLARE_INPUT_VALUES(StandardDipoleBSSRDFInputValues)
 {
     double      m_weight;
     Spectrum    m_reflectance;
@@ -71,10 +71,10 @@ APPLESEED_DECLARE_INPUT_VALUES(DirectionalDipoleBSSRDFInputValues)
 
 
 //
-// Directional dipole BSSRDF factory.
+// Standard dipole BSSRDF factory.
 //
 
-class APPLESEED_DLLSYMBOL DirectionalDipoleBSSRDFFactory
+class APPLESEED_DLLSYMBOL StandardDipoleBSSRDFFactory
   : public IBSSRDFFactory
 {
   public:
@@ -95,4 +95,4 @@ class APPLESEED_DLLSYMBOL DirectionalDipoleBSSRDFFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_DIRECTIONALDIPOLEBSSRDF_H
+#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_STANDARDDIPOLEBSSRDF_H

@@ -90,7 +90,7 @@ double diffuse_mean_free_path(
     const double    sigma_t);
 
 double reduced_extinction_coefficient(
-    const double    diffuse_mean_free_path,
+    const double    dmfp,
     const double    alpha_prime);
 
 void compute_absorption_and_scattering(

@@ -1302,6 +1302,8 @@ set (renderer_modeling_bssrdf_sources
     renderer/modeling/bssrdf/ibssrdffactory.h
     renderer/modeling/bssrdf/sss.cpp
     renderer/modeling/bssrdf/sss.h
+    renderer/modeling/bssrdf/standarddipolebssrdf.cpp
+    renderer/modeling/bssrdf/standarddipolebssrdf.h
 )
 if (WITH_NORMALIZED_DIFFUSION_BSSRDF)
     list (APPEND renderer_modeling_bssrdf_sources
