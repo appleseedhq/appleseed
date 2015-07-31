@@ -109,10 +109,10 @@ double diffuse_mean_free_path(
 }
 
 double reduced_extinction_coefficient(
-    const double    diffuse_mean_free_path,
+    const double    dmfp,
     const double    alpha_prime)
 {
-    return 1.0 / (sqrt(3.0 * (1.0 - alpha_prime)) * diffuse_mean_free_path);
+    return 1.0 / (sqrt(3.0 * (1.0 - alpha_prime)) * dmfp);
 }
 
 void compute_absorption_and_scattering(
