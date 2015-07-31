@@ -169,11 +169,15 @@ namespace
             const Vector2d s = sample.get_sampling_context().next_vector2<2>();
 
             // Sample a radius by importance-sampling the attenuation.
-            const double sigma_t = values->m_sigma_a[channel] + values->m_sigma_s[channel];
-            const double radius = sample_attenuation(sigma_t, s[0]);
+            const double sigma_a = values->m_sigma_a[channel];
+            const double sigma_s = values->m_sigma_s[channel];
+            const double sigma_s_prime = sigma_s * (1.0 - values->m_anisotropy);
+            const double sigma_t_prime = sigma_s_prime + sigma_a;
+            const double sigma_tr = sqrt(3.0 * sigma_a * sigma_t_prime);
+            const double radius = sample_attenuation(sigma_tr, s[0]);
 
             // Set the max radius.
-            sample.set_rmax2(square(max_attenuation_distance(sigma_t)));
+            sample.set_rmax2(square(max_attenuation_distance(sigma_tr)));
 
             // Sample an angle.
             const double phi = TwoPi * s[1];
@@ -238,10 +242,12 @@ namespace
                 return 0.0;
 
             // PDF of the sampled radius.
-            const double pdf_radius =
-                pdf_attenuation(
-                    radius,
-                    values->m_sigma_a[channel] + values->m_sigma_s[channel]);
+            const double sigma_a = values->m_sigma_a[channel];
+            const double sigma_s = values->m_sigma_s[channel];
+            const double sigma_s_prime = sigma_s * (1.0 - values->m_anisotropy);
+            const double sigma_t_prime = sigma_s_prime + sigma_a;
+            const double sigma_tr = sqrt(3.0 * sigma_a * sigma_t_prime);
+            const double pdf_radius = pdf_attenuation(radius, sigma_tr);
 
             // PDF of the sampled angle.
             const double pdf_angle = RcpTwoPi;

@@ -164,7 +164,7 @@ namespace
             sample.get_sampling_context().split_in_place(2, 1);
             const Vector2d s = sample.get_sampling_context().next_vector2<2>();
 
-            // Sample a radius.
+            // Sample a radius by importance-sampling the attenuation.
             const double sigma_a = values->m_sigma_a[channel];
             const double sigma_s = values->m_sigma_s[channel];
             const double sigma_s_prime = sigma_s * (1.0 - values->m_anisotropy);
