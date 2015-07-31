@@ -233,7 +233,7 @@ namespace
                     // Ignore invalid samples.
                     if (!shading_result.is_valid_linear_rgb())
                     {
-                        signal_invalid_sample();
+                        signal_invalid_sample(ix, iy);
                         continue;
                     }
 
