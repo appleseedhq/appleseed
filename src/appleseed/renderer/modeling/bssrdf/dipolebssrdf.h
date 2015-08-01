@@ -41,6 +41,7 @@
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
+namespace renderer      { class BSSRDFSample; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer
@@ -90,6 +91,15 @@ class DipoleBSSRDF
         InputEvaluator&             input_evaluator,
         const ShadingPoint&         shading_point,
         const size_t                offset = 0) const APPLESEED_OVERRIDE;
+
+    virtual bool sample(
+        const void*                 data,
+        BSSRDFSample&               sample) const APPLESEED_OVERRIDE = 0;
+
+    virtual double evaluate_pdf(
+        const void*                 data,
+        const size_t                channel,
+        const double                radius) const APPLESEED_OVERRIDE;
 };
 
 
