@@ -31,7 +31,9 @@
 #include "renderer/kernel/shading/shadingpointbuilder.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
+#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
+#endif
 #include "renderer/modeling/bssrdf/sss.h"
 #include "renderer/utility/paramarray.h"
 
@@ -39,6 +41,7 @@
 #include "foundation/image/color.h"
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/mersennetwister.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
@@ -58,6 +61,119 @@ using namespace std;
 
 TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 {
+    //
+    // Util
+    //
+
+    void init_dipole_bssrdf_values_rd_dmfp(
+        const double             rd,
+        const double             dmfp,
+        const double             eta,
+        const double             g,
+        DipoleBSSRDFInputValues& values)
+    {
+        values.m_weight = 1.0;
+        values.m_reflectance.set(static_cast<float>(rd));
+        values.m_dmfp = dmfp;
+        values.m_inside_ior = eta;
+        values.m_outside_ior = 1.0;
+        values.m_anisotropy = g;
+
+        compute_absorption_and_scattering(
+            values.m_reflectance,
+            values.m_dmfp,
+            values.m_inside_ior / values.m_outside_ior,
+            values.m_anisotropy,
+            values.m_sigma_a,
+            values.m_sigma_s,
+            values.m_sigma_tr);
+    }
+
+    template <typename BSSRDFFactory>
+    class DipoleBSSRDFEvaluator
+    {
+      public:
+        DipoleBSSRDFEvaluator()
+          : m_bssrdf(BSSRDFFactory().create("bssrdf", ParamArray()))
+          , m_outgoing_builder(m_outgoing)
+          , m_incoming_builder(m_incoming)
+        {
+            const Vector3d normal(0.0, 1.0, 0.0);
+
+            m_outgoing_builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
+            m_outgoing_builder.set_point(Vector3d(0.0, 0.0, 0.0));
+            m_outgoing_builder.set_shading_basis(Basis3d(normal));
+
+            m_incoming_builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
+            m_incoming_builder.set_shading_basis(Basis3d(normal));
+        }
+
+        void init_values_sigmas(
+            const double    sigma_a,
+            const double    sigma_s,
+            const double    eta,
+            const double    g)
+        {
+            m_values.m_weight = 1.0;
+            m_values.m_inside_ior = eta;
+            m_values.m_outside_ior = 1.0;
+            m_values.m_anisotropy = g;
+            m_values.m_sigma_a = Color3f(static_cast<float>(sigma_a));
+            m_values.m_sigma_s = Color3f(static_cast<float>(sigma_s));
+            effective_extinction_coefficient(
+                m_values.m_sigma_a,
+                m_values.m_sigma_s,
+                m_values.m_anisotropy,
+                m_values.m_sigma_tr);
+        }
+
+        void init_values_rd_dmfp(
+            const double    rd,
+            const double    dmfp,
+            const double    eta,
+            const double    g)
+        {
+            init_dipole_bssrdf_values_rd_dmfp(rd, dmfp, eta, g, m_values);
+        }
+
+        void set_incoming_distance(const double d)
+        {
+            m_incoming_builder.set_point(Vector3d(d, 0.0, 0.0));
+        }
+
+        const double get_sigma_tr() const
+        {
+            return static_cast<double>(m_values.m_sigma_tr[0]);
+        }
+
+        double evaluate(const Vector3d& incoming_dir) const
+        {
+            Spectrum result;
+            m_bssrdf->evaluate(
+                &m_values,
+                m_outgoing,
+                Vector3d(0.0, 1.0, 0.0),
+                m_incoming,
+                incoming_dir,
+                result);
+
+            return static_cast<double>(result[0]);
+        }
+
+        double evaluate_searchlight() const
+        {
+            return evaluate(Vector3d(0.0, 1.0, 0.0));
+        }
+
+      private:
+        auto_release_ptr<BSSRDF>    m_bssrdf;
+        DipoleBSSRDFInputValues     m_values;
+        ShadingPoint                m_outgoing;
+        ShadingPointBuilder         m_outgoing_builder;
+        ShadingPoint                m_incoming;
+        ShadingPointBuilder         m_incoming_builder;
+    };
+
     //
     // BSSRDF reparameterization.
     //
@@ -95,7 +211,6 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         EXPECT_FEQ_EPS(0.8, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.8, 1.3), AlphaPrimeRoundtripTestEps);
         EXPECT_FEQ_EPS(1.0, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(1.0, 1.5), AlphaPrimeRoundtripTestEps);
     }
-
 
     TEST_CASE(BSSRDFReparam_VaryingDiffuseMeanFreePath)
     {
@@ -136,8 +251,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const float sa = sigma_a1[0] / static_cast<float>(dmfp);
             const float ss = sigma_s1[0] / static_cast<float>(dmfp);
 
-            EXPECT_FEQ_EPS(sa, sigma_a[0], 0.0001f);
-            EXPECT_FEQ_EPS(ss, sigma_s[0], 0.0001f);
+            EXPECT_FEQ_EPS(sa, sigma_a[0], 1.0e-6f);
+            EXPECT_FEQ_EPS(ss, sigma_s[0], 1.0e-6f);
         }
     }
 
@@ -147,8 +262,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.set_title("BSSRDF Reparameterization");
         plotfile.set_xlabel("Rd");
         plotfile.set_ylabel("alpha prime");
-        plotfile.set_xrange(0.0, 1.0);
-        plotfile.set_yrange(0.0, 1.0);
+        plotfile.set_xrange(-0.05, 1.0);
+        plotfile.set_yrange(0.0, 1.05);
 
         const size_t N = 1000;
         const double Eta = 1.3;
@@ -472,50 +587,6 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     // Directional dipole profile.
     //
 
-    void init_dirpole_bssrdf_values_sigmas(
-        const double                        sigma_a,
-        const double                        sigma_s,
-        const double                        eta,
-        const double                        g,
-        DirectionalDipoleBSSRDFInputValues& values)
-    {
-        values.m_weight = 1.0;
-        values.m_inside_ior = eta;
-        values.m_outside_ior = 1.0;
-        values.m_anisotropy = g;
-        values.m_sigma_a = Color3f(static_cast<float>(sigma_a));
-        values.m_sigma_s = Color3f(static_cast<float>(sigma_s));
-        effective_extinction_coefficient(
-            values.m_sigma_a,
-            values.m_sigma_s,
-            values.m_anisotropy,
-            values.m_sigma_tr);
-    }
-
-    void init_dirpole_bssrdf_values_rd_dmfp(
-        const double                        rd,
-        const double                        dmfp,
-        const double                        eta,
-        const double                        g,
-        DirectionalDipoleBSSRDFInputValues& values)
-    {
-        values.m_weight = 1.0;
-        values.m_reflectance.set(static_cast<float>(rd));
-        values.m_dmfp = dmfp;
-        values.m_inside_ior = eta;
-        values.m_outside_ior = 1.0;
-        values.m_anisotropy = g;
-
-        compute_absorption_and_scattering(
-            values.m_reflectance,
-            values.m_dmfp,
-            values.m_inside_ior / values.m_outside_ior,
-            values.m_anisotropy,
-            values.m_sigma_a,
-            values.m_sigma_s,
-            values.m_sigma_tr);
-    }
-
     void plot_dirpole_rd(
         const char*     filename,
         const char*     title,
@@ -531,24 +602,9 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.set_xrange(-16.0, 16.0);   // cm
         plotfile.set_yrange(ymin, ymax);
 
-        auto_release_ptr<BSSRDF> bssrdf(
-            DirectionalDipoleBSSRDFFactory().create("dirpole", ParamArray()));
+        DipoleBSSRDFEvaluator<DirectionalDipoleBSSRDFFactory> bssrdf_eval;
 
-        DirectionalDipoleBSSRDFInputValues values;
-        init_dirpole_bssrdf_values_sigmas(sigma_a, 1.0, 1.0, 0.0, values);
-
-        const Vector3d normal(0.0, 1.0, 0.0);
-
-        ShadingPoint outgoing;
-        ShadingPointBuilder outgoing_builder(outgoing);
-        outgoing_builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
-        outgoing_builder.set_point(Vector3d(0.0, 0.0, 0.0));
-        outgoing_builder.set_shading_basis(Basis3d(normal));
-
-        ShadingPoint incoming;
-        ShadingPointBuilder incoming_builder(incoming);
-        incoming_builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
-        incoming_builder.set_shading_basis(Basis3d(normal));
+        bssrdf_eval.init_values_sigmas(sigma_a, 1.0, 1.0, 0.0);
 
         const size_t N = 1000;
         vector<Vector2d> points;
@@ -556,18 +612,10 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         for (size_t i = 0; i < N; ++i)
         {
             const double x = fit<size_t, double>(i, 0, N - 1, -16.0, 16.0);
-            incoming_builder.set_point(Vector3d(x, 0.0, 0.0));
+            bssrdf_eval.set_incoming_distance(x);
 
-            Spectrum result;
-            bssrdf->evaluate(
-                &values,
-                outgoing,
-                normal,
-                incoming,
-                normal,
-                result);
-
-            points.push_back(Vector2d(x, result[0] * Pi / abs(x)));
+            const double result = bssrdf_eval.evaluate_searchlight();
+            points.push_back(Vector2d(x, result * Pi / abs(x)));
         }
 
         plotfile
@@ -601,6 +649,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             1.0e+1);        // ymax
     }
 
+#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
     void plot_dirpole_and_nd_r(
         const char*     filename,
         const char*     title,
@@ -612,14 +661,14 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.set_xlabel("r");
         plotfile.set_ylabel("r R(r)");
         plotfile.set_xrange(0.0, 4.0);
-        plotfile.set_yrange(0.001, 50.0);
+        plotfile.set_yrange(0.001, 1.0);
         plotfile.set_logscale_y();
 
         auto_release_ptr<BSSRDF> dp_bssrdf(
             DirectionalDipoleBSSRDFFactory().create("dirpole", ParamArray()));
 
-        DirectionalDipoleBSSRDFInputValues dp_values;
-        init_dirpole_bssrdf_values_rd_dmfp(rd, dmfp, 1.0, 0.0, dp_values);
+        DipoleBSSRDFInputValues dp_values;
+        init_dipole_bssrdf_values_rd_dmfp(rd, dmfp, 1.0, 0.0, dp_values);
 
         auto_release_ptr<BSSRDF> nd_bssrdf(
             NormalizedDiffusionBSSRDFFactory().create("norm_diff", ParamArray()));
@@ -663,7 +712,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
                 incoming,
                 normal,
                 result);
-            dp_points.push_back(Vector2d(r, result[0] /  r));
+            dp_points.push_back(Vector2d(r, result[0]));
 
             nd_bssrdf->evaluate(
                 &nd_values,
@@ -730,48 +779,82 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             0.9,
             dmfp);
     }
+#endif
 
     TEST_CASE(DirpoleMaxRadius)
     {
         MersenneTwister rng;
 
-        auto_release_ptr<BSSRDF> bssrdf(
-            DirectionalDipoleBSSRDFFactory().create("dirpole", ParamArray()));
-
-        const Vector3d normal(0.0, 1.0, 0.0);
-
-        ShadingPoint outgoing;
-        ShadingPointBuilder outgoing_builder(outgoing);
-        outgoing_builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
-        outgoing_builder.set_point(Vector3d(0.0, 0.0, 0.0));
-        outgoing_builder.set_shading_basis(Basis3d(normal));
-
-        ShadingPoint incoming;
-        ShadingPointBuilder incoming_builder(incoming);
-        incoming_builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
-        incoming_builder.set_shading_basis(Basis3d(normal));
-
-        DirectionalDipoleBSSRDFInputValues values;
+        DipoleBSSRDFEvaluator<DirectionalDipoleBSSRDFFactory> bssrdf_eval;
 
         for (size_t i = 0; i < 1000; ++i)
         {
             const double rd = rand_double1(rng);
-            const double dmfp = rand_double1(rng, 0.001, 10.0);
-            init_dirpole_bssrdf_values_rd_dmfp(rd, dmfp, 1.0, 0.0, values);
+            const double dmfp = rand_double1(rng, 0.001, 100.0);
+            bssrdf_eval.init_values_rd_dmfp(rd, dmfp, 1.0, 0.0);
 
-            const double r = dipole_max_radius(values.m_sigma_tr[0]);
-            incoming_builder.set_point(Vector3d(r, 0.0, 0.0));
+            const double r = dipole_max_radius(bssrdf_eval.get_sigma_tr());
+            bssrdf_eval.set_incoming_distance(r);
 
-            Spectrum result;
-            bssrdf->evaluate(
-                &values,
-                outgoing,
-                normal,
-                incoming,
-                normal,
-                result);
-
-            EXPECT_LT(0.00001, result[0]);
+            const double result = bssrdf_eval.evaluate_searchlight();
+            EXPECT_LT(0.00001, result);
         }
+    }
+
+    double integrate_dirpole(
+        const double rd,
+        const double dmfp,
+        const size_t num_samples)
+    {
+        DipoleBSSRDFEvaluator<DirectionalDipoleBSSRDFFactory> bssrdf_eval;
+        bssrdf_eval.init_values_rd_dmfp(rd, dmfp, 1.0, 0.0);
+
+        MersenneTwister rng;
+
+        double integral = 0.0;
+
+        for (size_t i = 0; i < num_samples; ++i)
+        {
+            const double u = rand_double2(rng);
+            const double r = dipole_sample(bssrdf_eval.get_sigma_tr(), u);
+            bssrdf_eval.set_incoming_distance(r);
+
+            const double pdf_radius = dipole_pdf(r, bssrdf_eval.get_sigma_tr());
+            const double pdf_angle = RcpTwoPi;
+            const double pdf = pdf_radius * pdf_angle;
+
+            Vector3d incoming_dir =
+                sample_hemisphere_uniform(
+                    Vector2d(rand_double2(rng), rand_double2(rng)));
+
+            const double value =
+                bssrdf_eval.evaluate(incoming_dir);
+
+            integral += static_cast<double>(value) / pdf;
+        }
+
+        return integral / num_samples;
+    }
+
+    TEST_CASE(PlotDirpoleIntegralRd)
+    {
+        GnuplotFile plotfile;
+        plotfile.set_title("Directional dipole integral");
+        plotfile.set_xlabel("Rd");
+        plotfile.set_ylabel("Int");
+        plotfile.set_xrange(0.0, 1.0);
+        plotfile.set_yrange(0.0, 1.0);
+
+        const size_t N = 256;
+        vector<Vector2d> points;
+
+        for (size_t i = 1; i < N; ++i)
+        {
+            const double rd = fit<size_t, double>(i, 0, N - 1, 0.0, 1.0);
+            points.push_back(Vector2d(rd, integrate_dirpole(rd, 1.0, 1000)));
+        }
+
+        plotfile.new_plot().set_points(points);
+        plotfile.write("unit tests/outputs/test_sss_dirpole_integral_rd.gnuplot");
     }
 }
