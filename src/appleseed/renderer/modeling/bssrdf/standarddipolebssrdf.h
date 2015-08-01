@@ -31,7 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/bssrdf/ibssrdffactory.h"
+#include "renderer/modeling/bssrdf/dipolebssrdf.h"
 #include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
@@ -43,40 +43,17 @@
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
-namespace renderer      { class BSSRDF; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
 
 //
-// Standard dipole BSSRDF input values.
-//
-
-APPLESEED_DECLARE_INPUT_VALUES(StandardDipoleBSSRDFInputValues)
-{
-    double      m_weight;
-    Spectrum    m_reflectance;
-    double      m_reflectance_multiplier;
-    double      m_dmfp;
-    double      m_dmfp_multiplier;
-    double      m_anisotropy;
-    double      m_outside_ior;
-    double      m_inside_ior;
-
-    // Precomputed values.
-    Spectrum    m_sigma_a;
-    Spectrum    m_sigma_s;
-    Spectrum    m_sigma_tr;
-};
-
-
-//
 // Standard dipole BSSRDF factory.
 //
 
 class APPLESEED_DLLSYMBOL StandardDipoleBSSRDFFactory
-  : public IBSSRDFFactory
+  : public DipoleBSSRDFFactory
 {
   public:
     // Return a string identifying this BSSRDF model.
@@ -84,9 +61,6 @@ class APPLESEED_DLLSYMBOL StandardDipoleBSSRDFFactory
 
     // Return metadata for this BSSRDF model.
     virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
-
-    // Return metadata for the inputs of this BSSRDF model.
-    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 
     // Create a new BSSRDF instance.
     virtual foundation::auto_release_ptr<BSSRDF> create(

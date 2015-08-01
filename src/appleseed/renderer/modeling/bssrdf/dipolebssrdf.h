@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,49 +26,83 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_DIRECTIONALDIPOLEBSSRDF_H
-#define APPLESEED_RENDERER_MODELING_BSSRDF_DIRECTIONALDIPOLEBSSRDF_H
+#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_DIPOLEBSSRDF_H
+#define APPLESEED_RENDERER_MODELING_BSSRDF_DIPOLEBSSRDF_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/bssrdf/dipolebssrdf.h"
+#include "renderer/modeling/bssrdf/bssrdf.h"
+#include "renderer/modeling/bssrdf/ibssrdffactory.h"
 #include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
-namespace renderer      { class BSSRDF; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
 
 //
-// Directional dipole BSSRDF factory.
+// Dipole BSSRDF input values.
 //
 
-class APPLESEED_DLLSYMBOL DirectionalDipoleBSSRDFFactory
-  : public DipoleBSSRDFFactory
+APPLESEED_DECLARE_INPUT_VALUES(DipoleBSSRDFInputValues)
+{
+    double      m_weight;
+    Spectrum    m_reflectance;
+    double      m_reflectance_multiplier;
+    double      m_dmfp;
+    double      m_dmfp_multiplier;
+    double      m_anisotropy;
+    double      m_outside_ior;
+    double      m_inside_ior;
+
+    // Precomputed values.
+    Spectrum    m_sigma_a;
+    Spectrum    m_sigma_s;
+    Spectrum    m_sigma_tr;
+};
+
+
+//
+// Base class for dipole BSSRDFs.
+//
+
+class DipoleBSSRDF
+  : public BSSRDF
 {
   public:
-    // Return a string identifying this BSSRDF model.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
+    // Constructor.
+    DipoleBSSRDF(
+        const char*                 name,
+        const ParamArray&           params);
 
-    // Return metadata for this BSSRDF model.
-    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
+    virtual size_t compute_input_data_size(
+        const Assembly&             assembly) const APPLESEED_OVERRIDE;
 
-    // Create a new BSSRDF instance.
-    virtual foundation::auto_release_ptr<BSSRDF> create(
-        const char*         name,
-        const ParamArray&   params) const APPLESEED_OVERRIDE;
+    virtual void evaluate_inputs(
+        const ShadingContext&       shading_context,
+        InputEvaluator&             input_evaluator,
+        const ShadingPoint&         shading_point,
+        const size_t                offset = 0) const APPLESEED_OVERRIDE;
+};
+
+
+//
+// Base class for dipole BSSRDF factories.
+//
+
+class APPLESEED_DLLSYMBOL DipoleBSSRDFFactory
+  : public IBSSRDFFactory
+{
+  public:
+    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_DIRECTIONALDIPOLEBSSRDF_H
+#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_DIPOLEBSSRDF_H
