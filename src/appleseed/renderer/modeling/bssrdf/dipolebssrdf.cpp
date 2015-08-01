@@ -115,6 +115,8 @@ void DipoleBSSRDF::evaluate_inputs(
         values->m_anisotropy,
         values->m_sigma_tr);
 #endif
+
+    values->m_max_radius2 = square(dipole_max_radius(max_value(values->m_sigma_tr)));
 }
 
 

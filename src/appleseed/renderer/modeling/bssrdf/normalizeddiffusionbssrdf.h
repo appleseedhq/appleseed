@@ -62,6 +62,9 @@ APPLESEED_DECLARE_INPUT_VALUES(NormalizedDiffusionBSSRDFInputValues)
     double      m_dmfp_multiplier;
     double      m_outside_ior;
     double      m_inside_ior;
+
+    // Precomputed values.
+    double      m_max_radius2;
 };
 
 

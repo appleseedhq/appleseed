@@ -125,7 +125,7 @@ namespace
             const double radius = dipole_sample(sigma_tr, s[0]);
 
             // Set the max radius.
-            sample.set_rmax2(square(dipole_max_radius(sigma_tr)));
+            sample.set_rmax2(values->m_max_radius2);
 
             // Sample an angle.
             const double phi = TwoPi * s[1];

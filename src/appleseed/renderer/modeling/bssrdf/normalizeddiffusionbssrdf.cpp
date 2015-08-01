@@ -116,6 +116,11 @@ namespace
 
             // Clamp reflectance.
             values->m_reflectance = saturate(values->m_reflectance);
+
+            // Precompute the max radius.
+            const size_t channel = min_index(values->m_reflectance);
+            const double nd_s = normalized_diffusion_s(values->m_reflectance[channel]);
+            values->m_max_radius2 = square(normalized_diffusion_max_radius(values->m_dmfp, nd_s));
         }
 
         virtual bool sample(
@@ -153,8 +158,7 @@ namespace
             const double phi = TwoPi * s[1];
 
             // Set the max radius.
-            sample.set_rmax2(
-                square(normalized_diffusion_max_radius(values->m_dmfp, nd_s)));
+            sample.set_rmax2(values->m_max_radius2);
 
             // Set the sampled point.
             sample.set_point(Vector2d(radius * cos(phi), radius * sin(phi)));
