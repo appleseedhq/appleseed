@@ -112,8 +112,7 @@ double reduced_extinction_coefficient(
     const double    dmfp,
     const double    alpha_prime)
 {
-    const double sigma_tr = 1.0 / dmfp;
-    return sigma_tr / sqrt(3.0 * (1.0 - alpha_prime));
+    return 1.0 / (sqrt(3.0 * (1.0 - alpha_prime)) * dmfp);
 }
 
 double effective_extinction_coefficient(
@@ -140,8 +139,8 @@ void effective_extinction_coefficient(
         sigma_tr[i] =
             static_cast<float>(
                 effective_extinction_coefficient(
-                    sigma_a[i],
-                    sigma_s[i],
+                    static_cast<double>(sigma_a[i]),
+                    static_cast<double>(sigma_s[i]),
                     anisotropy));
     }
 }
