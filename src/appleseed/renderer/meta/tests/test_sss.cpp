@@ -882,7 +882,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         }
     }
 
-    TEST_CASE(PlotDirpoleIntegralRd)
+    TEST_CASE(PlotDirpoleIntegralHemiRd)
     {
         GnuplotFile plotfile;
         plotfile.set_title("Directional Dipole Integral");
@@ -907,6 +907,34 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         }
 
         plotfile.new_plot().set_points(points);
-        plotfile.write("unit tests/outputs/test_sss_dirpole_integral_rd.gnuplot");
+        plotfile.write("unit tests/outputs/test_sss_dirpole_integral_hemi_rd.gnuplot");
+    }
+
+    TEST_CASE(PlotDirpoleIntegralSearchlightRd)
+    {
+        GnuplotFile plotfile;
+        plotfile.set_title("Directional Dipole Integral Searchlight");
+        plotfile.set_xlabel("Rd");
+        plotfile.set_ylabel("Int");
+        plotfile.set_xrange(0.0, 1.0);
+        plotfile.set_yrange(0.0, 1.0);
+
+        const size_t N = 256;
+        vector<Vector2d> points;
+
+        for (size_t i = 0; i < N; ++i)
+        {
+            const double rd = fit<size_t, double>(i, 0, N - 1, 0.01, 1.0);
+            const double x =
+                integrate_dipole<DirectionalDipoleBSSRDFFactory, false>(
+                    rd,
+                    1.0,
+                    1000);
+
+            points.push_back(Vector2d(rd, x));
+        }
+
+        plotfile.new_plot().set_points(points);
+        plotfile.write("unit tests/outputs/test_sss_dirpole_integral_searchlight_rd.gnuplot");
     }
 }
