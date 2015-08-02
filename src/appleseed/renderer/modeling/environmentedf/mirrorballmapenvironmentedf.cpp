@@ -117,7 +117,7 @@ namespace
         {
             outgoing = sample_sphere_uniform(s);
             lookup_envmap(input_evaluator, outgoing, value);
-            probability = 1.0 / (4.0 * Pi);
+            probability = RcpFourPi;
         }
 
         virtual void evaluate(
@@ -139,7 +139,7 @@ namespace
         {
             assert(is_normalized(outgoing));
             lookup_envmap(input_evaluator, outgoing, value);
-            probability = 1.0 / (4.0 * Pi);
+            probability = RcpFourPi;
         }
 
         virtual double evaluate_pdf(
@@ -147,7 +147,7 @@ namespace
             const Vector3d&     outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
-            return 1.0 / (4.0 * Pi);
+            return RcpFourPi;
         }
 
       private:

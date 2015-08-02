@@ -119,7 +119,7 @@ namespace
                 outgoing.y >= 0.0
                     ? m_values.m_upper_hemi_radiance
                     : m_values.m_lower_hemi_radiance;
-            probability = 1.0 / (4.0 * Pi);
+            probability = RcpFourPi;
         }
 
         virtual void evaluate(
@@ -147,7 +147,7 @@ namespace
                 outgoing.y >= 0.0
                     ? m_values.m_upper_hemi_radiance
                     : m_values.m_lower_hemi_radiance;
-            probability = 1.0 / (4.0 * Pi);
+            probability = RcpFourPi;
         }
 
         virtual double evaluate_pdf(
@@ -155,7 +155,7 @@ namespace
             const Vector3d&     outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
-            return 1.0 / (4.0 * Pi);
+            return RcpFourPi;
         }
 
       private:

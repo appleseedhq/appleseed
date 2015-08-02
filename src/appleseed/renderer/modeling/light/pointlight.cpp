@@ -115,7 +115,7 @@ namespace
             position = light_transform.get_parent_origin();
             outgoing = sample_sphere_uniform(s);
             value = m_values.m_intensity;
-            probability = 1.0 / (4.0 * Pi);
+            probability = RcpFourPi;
         }
 
         virtual void evaluate(
