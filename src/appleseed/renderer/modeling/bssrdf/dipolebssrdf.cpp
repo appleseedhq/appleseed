@@ -91,8 +91,8 @@ void DipoleBSSRDF::evaluate_inputs(
     values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
     values->m_dmfp *= values->m_dmfp_multiplier;
 
-    // Clamp reflectance to [0, 1].
-    values->m_reflectance = saturate(values->m_reflectance);
+    // Clamp reflectance to [0.001, 1].
+    values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
 
 #if 1
     // Compute sigma_a and sigma_s from the reflectance and dmfp parameters.
@@ -133,15 +133,7 @@ bool DipoleBSSRDF::sample(
         return false;
 
     sample.set_eta(values->m_inside_ior / values->m_outside_ior);
-
-    // Select the channel leading to the strongest scattering.
-    const size_t channel = min_index(values->m_reflectance);
-    sample.set_channel(channel);
-
-    // todo: fix.
-    const double reflectance = values->m_reflectance[channel];
-    if (reflectance == 0.0)
-        return false;
+    sample.set_channel(0);
 
     sample.get_sampling_context().split_in_place(2, 1);
     const Vector2d s = sample.get_sampling_context().next_vector2<2>();
