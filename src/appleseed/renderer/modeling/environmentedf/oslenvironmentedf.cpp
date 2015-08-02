@@ -120,7 +120,7 @@ namespace
         {
             outgoing = sample_sphere_uniform(s);
             evaluate(shading_context, input_evaluator, outgoing, value);
-            probability = 1.0 / (4.0 * Pi);
+            probability = RcpFourPi;
         }
 
         virtual void evaluate(
@@ -130,7 +130,6 @@ namespace
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
-
             if (m_shader_group)
                 shading_context.execute_osl_background(*m_shader_group, outgoing, value);
             else
@@ -145,7 +144,6 @@ namespace
             double&                 probability) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
-
             evaluate(shading_context, input_evaluator, outgoing, value);
             probability = evaluate_pdf(input_evaluator, outgoing);
         }
@@ -155,8 +153,7 @@ namespace
             const Vector3d&     outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
-
-            return 1.0 / (4.0 * Pi);
+            return RcpFourPi;
         }
 
       private:
