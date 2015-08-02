@@ -718,7 +718,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         NormalizedDiffusionBSSRDFInputValues nd_values;
         nd_values.m_weight = 1.0;
-        nd_values.m_reflectance.set(rd);
+        nd_values.m_reflectance.set(static_cast<float>(rd));
         nd_values.m_reflectance_multiplier = 1.0;
         nd_values.m_dmfp = dmfp;
         nd_values.m_dmfp_multiplier = 1.0;

@@ -181,7 +181,7 @@ void compute_absorption_and_scattering(
         sigma_a[i] = static_cast<float>(sigma_t_prime - sigma_s_prime);
 
         // Compute effective extinction coefficient.
-        sigma_tr[i] = sqrt(3.0 * sigma_a[i] * sigma_t_prime);
+        sigma_tr[i] = static_cast<float>(sqrt(3.0 * sigma_a[i] * sigma_t_prime));
     }
 }
 
