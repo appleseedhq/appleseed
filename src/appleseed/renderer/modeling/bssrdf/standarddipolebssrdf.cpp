@@ -110,7 +110,7 @@ namespace
             const DipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
 
-            const Vector3d& x = outgoing_point.get_point();
+            const double r2 = square_norm(outgoing_point.get_point() - incoming_point.get_point());
             const double eta = values->m_inside_ior / values->m_outside_ior;
             const double Fdr = -1.440 / square(eta) + 0.710 / eta + 0.668 + 0.0636 * eta;
             const double A = (1.0 + Fdr) / (1.0 - Fdr);
@@ -128,10 +128,34 @@ namespace
                 const double D = 1.0 / (3.0 * sigma_t_prime);
                 const double zr = 1.0 / sigma_t_prime;
                 const double zv = zr + 4.0 * A * D;
-                const Vector3d xr = incoming_point.get_point() - incoming_point.get_shading_normal() * zr;
-                const Vector3d xv = incoming_point.get_point() + incoming_point.get_shading_normal() * zv;
-                const double dr = norm(x - xr);
-                const double dv = norm(x - xv);
+
+                //
+                // Let's call xo the outgoing point, xi the incoming point and ni the normal at
+                // the incoming point.
+                //
+                // dr is the (world space) distance between the outgoing point xo and the real
+                // point light source located below the surface at xi, i.e. at xi - ni * zr.
+                //
+                // dv is the (world space) distance between the outgoing point xo and the virtual
+                // point light source located above the surface at xi, i.e. at xi + ni * zv.
+                //
+                // If we were to compute these distances naively, i.e.
+                //
+                //   dr = || xo - (xi - ni * zr) ||
+                //   dv = || xo - (xi + ni * zv) ||
+                //
+                // we would naturally account for the local curvature of the surface.
+                //
+                // Since the dipole model assumes a locally flat region, we compute these distances
+                // assuming that the vector (xo - xi) is always orthogonal to the normal ni at xi:
+                //
+                //   dr = sqrt( ||xo - xi||^2 + zr^2 )
+                //   dv = sqrt( ||xo - xi||^2 + zv^2 )
+                //
+
+                const double dr = sqrt(r2 + zr * zr);
+                const double dv = sqrt(r2 + zv * zv);
+
                 const double value_r = (sigma_tr * dr + 1.0) * exp(-sigma_tr * dr) / (sigma_t_prime * dr * dr * dr);
                 const double value_v = (sigma_tr * dv + 1.0) * exp(-sigma_tr * dv) / (sigma_t_prime * dv * dv * dv);
                 value[i] = static_cast<float>(alpha_prime / (4.0 * Pi) * (value_r + zv * value_v));
