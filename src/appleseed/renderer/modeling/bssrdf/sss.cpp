@@ -151,12 +151,10 @@ void compute_absorption_and_scattering(
     const double    eta,
     const double    g,
     Spectrum&       sigma_a,
-    Spectrum&       sigma_s,
-    Spectrum&       sigma_tr)
+    Spectrum&       sigma_s)
 {
     sigma_a.resize(rd.size());
     sigma_s.resize(rd.size());
-    sigma_tr.resize(rd.size());
 
     ComputeRdBetterDipole rd_fun(eta);
     const double rcp_g_complement = 1.0 / (1.0 - g);
@@ -179,9 +177,6 @@ void compute_absorption_and_scattering(
 
         // Compute absorption coefficient.
         sigma_a[i] = static_cast<float>(sigma_t_prime - sigma_s_prime);
-
-        // Compute effective extinction coefficient.
-        sigma_tr[i] = static_cast<float>(sqrt(3.0 * sigma_a[i] * sigma_t_prime));
     }
 }
 

@@ -110,8 +110,7 @@ void compute_absorption_and_scattering(
     const double    eta,                    // relative index of refraction
     const double    g,                      // anisotropy
     Spectrum&       sigma_a,                // absorption coefficient
-    Spectrum&       sigma_s,                // scattering coefficient
-    Spectrum&       sigma_tr);              // effective extinction coefficient
+    Spectrum&       sigma_s);               // scattering coefficient
 
 
 //

@@ -102,22 +102,24 @@ void DipoleBSSRDF::evaluate_inputs(
         values->m_inside_ior / values->m_outside_ior,
         values->m_anisotropy,
         values->m_sigma_a,
-        values->m_sigma_s,
-        values->m_sigma_tr);
+        values->m_sigma_s);
 #else
     // Skim milk.
     values->m_sigma_a = Color3f(0.0014f, 0.0025f, 0.0142f) * 1000.0f;
     values->m_sigma_s = Color3f(0.70f, 1.22f, 1.90f) * 1000.0f;
     values->m_anisotropy = 0.0;
 
+    // TODO: compute dmfp here!
+    /*
     effective_extinction_coefficient(
         values->m_sigma_a,
         values->m_sigma_s,
         values->m_anisotropy,
         values->m_sigma_tr);
+    */
 #endif
 
-    values->m_max_radius2 = square(dipole_max_radius(max_value(values->m_sigma_tr)));
+    values->m_max_radius2 = square(dipole_max_radius(1.0 / values->m_dmfp));
 }
 
 bool DipoleBSSRDF::sample(
@@ -145,7 +147,7 @@ bool DipoleBSSRDF::sample(
     const Vector2d s = sample.get_sampling_context().next_vector2<2>();
 
     // Sample a radius.
-    const double sigma_tr = values->m_sigma_tr[channel];
+    const double sigma_tr = 1.0 / values->m_dmfp;
     const double radius = dipole_sample(sigma_tr, s[0]);
 
     // Set the max radius.
@@ -173,7 +175,7 @@ double DipoleBSSRDF::evaluate_pdf(
         return 0.0;
 
     // PDF of the sampled radius.
-    const double sigma_tr = values->m_sigma_tr[channel];
+    const double sigma_tr = 1.0 / values->m_dmfp;
     const double pdf_radius = dipole_pdf(radius, sigma_tr);
 
     // PDF of the sampled angle.

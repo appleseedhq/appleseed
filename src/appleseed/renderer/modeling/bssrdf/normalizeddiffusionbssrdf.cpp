@@ -100,6 +100,12 @@ namespace
             return Model;
         }
 
+        virtual size_t compute_input_data_size(
+            const Assembly&         assembly) const APPLESEED_OVERRIDE
+        {
+            return align(sizeof(NormalizedDiffusionBSSRDFInputValues), 16);
+        }
+
         virtual void evaluate_inputs(
             const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
@@ -141,6 +147,7 @@ namespace
             const float rcp_pdf_sum = 1.0f / pdf_sum;
             values->m_channel_pdf *= rcp_pdf_sum;
             values->m_channel_cdf *= rcp_pdf_sum;
+            values->m_channel_cdf[values->m_channel_cdf.size() - 1] = 1.0f;
 
             // Precompute the max radius.
             const size_t channel = min_index(values->m_reflectance);
@@ -173,6 +180,7 @@ namespace
                     cdf_begin,
                     cdf_begin + values->m_channel_cdf.size(),
                     s[0]);
+            sample.set_channel(channel);
 
             // Sample a radius.
             const double radius =
@@ -217,6 +225,7 @@ namespace
 
         virtual double evaluate_pdf(
             const void*             data,
+            const size_t            channel,
             const double            radius) const APPLESEED_OVERRIDE
         {
             const NormalizedDiffusionBSSRDFInputValues* values =

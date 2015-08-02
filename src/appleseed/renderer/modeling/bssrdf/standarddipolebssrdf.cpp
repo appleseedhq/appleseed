@@ -117,6 +117,7 @@ namespace
             const double eta = values->m_inside_ior / values->m_outside_ior;
             const double Fdr = -1.440 / square(eta) + 0.710 / eta + 0.668 + 0.0636 * eta;
             const double A = (1.0 + Fdr) / (1.0 - Fdr);
+            const double sigma_tr = 1.0 / values->m_dmfp;
 
             value.resize(values->m_sigma_a.size());
 
@@ -127,7 +128,6 @@ namespace
                 const double sigma_s_prime = sigma_s * (1.0 - values->m_anisotropy);
                 const double sigma_t_prime = sigma_s_prime + sigma_a;
                 const double alpha_prime = sigma_s_prime / sigma_t_prime;
-                const double sigma_tr = values->m_sigma_tr[i];
 
                 //
                 // We have
