@@ -52,7 +52,7 @@ namespace renderer
 {
 
 //
-// Dipole BSSRDF base class implementation.
+// DipoleBSSRDF class implementation.
 //
 
 DipoleBSSRDF::DipoleBSSRDF(
@@ -182,6 +182,7 @@ double DipoleBSSRDF::evaluate_pdf(
     // Compute and return the final PDF.
     return pdf_radius * pdf_angle;
 }
+
 
 //
 // DipoleBSSRDFFactory class implementation.

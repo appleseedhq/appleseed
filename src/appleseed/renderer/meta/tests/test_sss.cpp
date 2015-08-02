@@ -63,7 +63,7 @@ using namespace std;
 TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 {
     //
-    // Util
+    // Utilities.
     //
 
     void init_dipole_bssrdf_values_rd_dmfp(
@@ -198,18 +198,10 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double pdf_angle = RcpTwoPi;
             const double pdf = pdf_radius * pdf_angle;
 
-            double value;
-
-            if (Directional)
-            {
-                Vector3d incoming_dir =
-                    sample_hemisphere_uniform(
-                        Vector2d(rand_double2(rng), rand_double2(rng)));
-
-                 value = bssrdf_eval.evaluate(incoming_dir);
-            }
-            else
-                value = bssrdf_eval.evaluate_searchlight();
+            const double value =
+                Directional
+                    ? bssrdf_eval.evaluate(sample_hemisphere_uniform(rand_vector2<Vector2d>(rng)))
+                    : bssrdf_eval.evaluate_searchlight();
 
             integral += value / pdf;
         }
@@ -627,6 +619,58 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     }
 
     //
+    // Standard dipole profile.
+    //
+
+    TEST_CASE(StdDipoleMaxRadius)
+    {
+        MersenneTwister rng;
+
+        DipoleBSSRDFEvaluator<StandardDipoleBSSRDFFactory> bssrdf_eval;
+
+        for (size_t i = 0; i < 1000; ++i)
+        {
+            const double rd = rand_double1(rng);
+            const double dmfp = rand_double1(rng, 0.001, 100.0);
+            bssrdf_eval.init_values_rd_dmfp(rd, dmfp, 1.0, 0.0);
+
+            const double r = dipole_max_radius(bssrdf_eval.get_sigma_tr());
+            bssrdf_eval.set_incoming_distance(r);
+
+            const double result = bssrdf_eval.evaluate_searchlight();
+            EXPECT_LT(0.00001, result);
+        }
+    }
+
+    TEST_CASE(PlotStdDipoleIntegralRd)
+    {
+        GnuplotFile plotfile;
+        plotfile.set_title("Standard Dipole Integral");
+        plotfile.set_xlabel("Rd");
+        plotfile.set_ylabel("Int");
+        plotfile.set_xrange(0.0, 1.0);
+        plotfile.set_yrange(0.0, 1.0);
+
+        const size_t N = 256;
+        vector<Vector2d> points;
+
+        for (size_t i = 1; i < N; ++i)
+        {
+            const double rd = fit<size_t, double>(i, 0, N - 1, 0.0, 1.0);
+            const double x =
+                integrate_dipole<StandardDipoleBSSRDFFactory, false>(
+                    rd,
+                    1.0,
+                    1000);
+
+            points.push_back(Vector2d(rd, x));
+        }
+
+        plotfile.new_plot().set_points(points);
+        plotfile.write("unit tests/outputs/test_sss_std_dipole_integral_rd.gnuplot");
+    }
+
+    //
     // Directional dipole profile.
     //
 
@@ -847,7 +891,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     TEST_CASE(PlotDirpoleIntegralRd)
     {
         GnuplotFile plotfile;
-        plotfile.set_title("Directional dipole integral");
+        plotfile.set_title("Directional Dipole Integral");
         plotfile.set_xlabel("Rd");
         plotfile.set_ylabel("Int");
         plotfile.set_xrange(0.0, 1.0);
@@ -870,57 +914,5 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         plotfile.new_plot().set_points(points);
         plotfile.write("unit tests/outputs/test_sss_dirpole_integral_rd.gnuplot");
-    }
-
-    //
-    // Standard dipole profile.
-    //
-
-    TEST_CASE(StdDipoleMaxRadius)
-    {
-        MersenneTwister rng;
-
-        DipoleBSSRDFEvaluator<StandardDipoleBSSRDFFactory> bssrdf_eval;
-
-        for (size_t i = 0; i < 1000; ++i)
-        {
-            const double rd = rand_double1(rng);
-            const double dmfp = rand_double1(rng, 0.001, 100.0);
-            bssrdf_eval.init_values_rd_dmfp(rd, dmfp, 1.0, 0.0);
-
-            const double r = dipole_max_radius(bssrdf_eval.get_sigma_tr());
-            bssrdf_eval.set_incoming_distance(r);
-
-            const double result = bssrdf_eval.evaluate_searchlight();
-            EXPECT_LT(0.00001, result);
-        }
-    }
-
-    TEST_CASE(PlotStdDipoleIntegralRd)
-    {
-        GnuplotFile plotfile;
-        plotfile.set_title("Standard dipole integral");
-        plotfile.set_xlabel("Rd");
-        plotfile.set_ylabel("Int");
-        plotfile.set_xrange(0.0, 1.0);
-        plotfile.set_yrange(0.0, 1.0);
-
-        const size_t N = 256;
-        vector<Vector2d> points;
-
-        for (size_t i = 1; i < N; ++i)
-        {
-            const double rd = fit<size_t, double>(i, 0, N - 1, 0.0, 1.0);
-            const double x =
-                integrate_dipole<StandardDipoleBSSRDFFactory, false>(
-                    rd,
-                    1.0,
-                    1000);
-
-            points.push_back(Vector2d(rd, x));
-        }
-
-        plotfile.new_plot().set_points(points);
-        plotfile.write("unit tests/outputs/test_sss_std_dipole_integral_rd.gnuplot");
     }
 }
