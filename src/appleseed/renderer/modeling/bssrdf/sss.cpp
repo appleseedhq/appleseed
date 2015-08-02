@@ -115,16 +115,48 @@ double reduced_extinction_coefficient(
     return 1.0 / (sqrt(3.0 * (1.0 - alpha_prime)) * dmfp);
 }
 
+double effective_extinction_coefficient(
+    const double    sigma_a,
+    const double    sigma_s,
+    const double    anisotropy)
+{
+    const double sigma_s_prime = sigma_s * (1.0 - anisotropy);
+    const double sigma_t_prime = sigma_s_prime + sigma_a;
+    return sqrt(3.0 * sigma_a * sigma_t_prime);
+}
+
+void effective_extinction_coefficient(
+    const Spectrum& sigma_a,
+    const Spectrum& sigma_s,
+    const double    anisotropy,
+    Spectrum&       sigma_tr)
+{
+    assert(sigma_a.size() == sigma_s.size());
+    sigma_tr.resize(sigma_a.size());
+
+    for (size_t i = 0, e = sigma_tr.size(); i < e; ++i)
+    {
+        sigma_tr[i] =
+            static_cast<float>(
+                effective_extinction_coefficient(
+                    static_cast<double>(sigma_a[i]),
+                    static_cast<double>(sigma_s[i]),
+                    anisotropy));
+    }
+}
+
 void compute_absorption_and_scattering(
     const Spectrum& rd,
     const double    dmfp,
     const double    eta,
     const double    g,
     Spectrum&       sigma_a,
-    Spectrum&       sigma_s)
+    Spectrum&       sigma_s,
+    Spectrum&       sigma_tr)
 {
     sigma_a.resize(rd.size());
     sigma_s.resize(rd.size());
+    sigma_tr.resize(rd.size());
 
     ComputeRdBetterDipole rd_fun(eta);
     const double rcp_g_complement = 1.0 / (1.0 - g);
@@ -147,6 +179,9 @@ void compute_absorption_and_scattering(
 
         // Compute absorption coefficient.
         sigma_a[i] = static_cast<float>(sigma_t_prime - sigma_s_prime);
+
+        // Compute effective extinction coefficient.
+        sigma_tr[i] = sqrt(3.0 * sigma_a[i] * sigma_t_prime);
     }
 }
 
@@ -339,27 +374,26 @@ double normalized_diffusion_max_radius(
 
 
 //
-// Attenuation sampling implementation.
+// Dipole sampling implementation.
 //
 
-double sample_attenuation(
-    const double    sigma_t,
+double dipole_sample(
+    const double    sigma_tr,
     const double    s)
 {
-    return -log(1.0 - s) / sigma_t;
+    return -log(1.0 - s) / sigma_tr;
 }
 
-double pdf_attenuation(
+double dipole_pdf(
     const double    dist,
-    const double    sigma_t)
+    const double    sigma_tr)
 {
-    return sigma_t * exp(-sigma_t * dist);
+    return sigma_tr * exp(-sigma_tr * dist);
 }
 
-double max_attenuation_distance(const double sigma_t)
+double dipole_max_radius(const double sigma_tr)
 {
-    // 18.420680743952367 == -log(0.00000001)
-    return 18.420680743952367 / sigma_t;
+    return -log(0.00001) / sigma_tr;
 }
 
 }   // namespace renderer

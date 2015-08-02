@@ -145,7 +145,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
         SpecularBRDFInputValues,
         SpecularBTDFInputValues,
         VelvetBRDFInputValues,
-        DirectionalDipoleBSSRDFInputValues> InputValuesTypeList;
+        DipoleBSSRDFInputValues> InputValuesTypeList;
 
     // Find the biggest InputValues type.
     typedef boost::mpl::max_element<
