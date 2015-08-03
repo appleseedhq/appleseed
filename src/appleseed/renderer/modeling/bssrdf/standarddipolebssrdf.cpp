@@ -30,8 +30,8 @@
 #include "standarddipolebssrdf.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/bssrdf/sss.h"
 #include "renderer/modeling/input/inputevaluator.h"
@@ -41,15 +41,12 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
-#include "foundation/utility/memory.h"
 
 // Standard headers.
 #include <cmath>
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
 namespace renderer  { class ShadingContext; }
 
 using namespace foundation;
@@ -95,6 +92,39 @@ namespace
             return Model;
         }
 
+        virtual void evaluate_inputs(
+            const ShadingContext&   shading_context,
+            InputEvaluator&         input_evaluator,
+            const ShadingPoint&     shading_point,
+            const size_t            offset) const APPLESEED_OVERRIDE
+        {
+            BSSRDF::evaluate_inputs(shading_context, input_evaluator, shading_point, offset);
+
+            DipoleBSSRDFInputValues* values =
+                reinterpret_cast<DipoleBSSRDFInputValues*>(input_evaluator.data() + offset);
+
+            // Apply multipliers.
+            values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
+            values->m_dmfp *= values->m_dmfp_multiplier;
+
+            // Clamp reflectance to [0, 1].
+            values->m_reflectance = saturate(values->m_reflectance);
+
+            // Compute sigma_a and sigma_s from the reflectance and dmfp parameters.
+            const ComputeRdStandardDipole rd_fun(values->m_outside_ior / values->m_inside_ior);     // 1 / eta
+            compute_absorption_and_scattering(
+                rd_fun,
+                values->m_reflectance,
+                values->m_dmfp,
+                values->m_anisotropy,
+                values->m_sigma_a,
+                values->m_sigma_s,
+                values->m_sigma_tr);
+
+            // Compute square of max radius.
+            values->m_max_radius2 = square(dipole_max_radius(max_value(values->m_sigma_tr)));
+        }
+
         virtual bool sample(
             const void*             data,
             BSSRDFSample&           sample) const APPLESEED_OVERRIDE
@@ -115,9 +145,9 @@ namespace
                 reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
 
             const double r2 = square_norm(outgoing_point.get_point() - incoming_point.get_point());
-            const double eta = values->m_inside_ior / values->m_outside_ior;
-            const double Fdr = fresnel_internal_diffuse_reflectance(eta);
-            const double A = (1.0 + Fdr) / (1.0 - Fdr);
+            const double rcp_eta = values->m_inside_ior / values->m_outside_ior;
+            const double fdr = fresnel_internal_diffuse_reflectance(rcp_eta);
+            const double a = (1.0 + fdr) / (1.0 - fdr);
 
             value.resize(values->m_sigma_a.size());
 
@@ -149,7 +179,7 @@ namespace
                 //
 
                 const double zr = 1.0 / sigma_t_prime;
-                const double zv = zr * (1.0 + (4.0 / 3.0) * A);
+                const double zv = zr * (1.0 + (4.0 / 3.0) * a);
 
                 //
                 // Let's call xo the outgoing point, xi the incoming point and ni the normal at
@@ -178,7 +208,7 @@ namespace
                 const double dr = sqrt(r2 + zr * zr);
                 const double dv = sqrt(r2 + zv * zv);
 
-                // The expression for R(r) in [1] is incorrect. We use the correct expression from [2].
+                // The expression for R(r) in [1] is incorrect; use the correct expression from [2].
                 const double sigma_tr_dr = sigma_tr * dr;
                 const double sigma_tr_dv = sigma_tr * dv;
                 const double value_r = (sigma_tr_dr + 1.0) * exp(-sigma_tr_dr) / (dr * dr * dr);

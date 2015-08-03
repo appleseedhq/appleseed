@@ -34,12 +34,6 @@
 #include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
 
-// Standard headers.
-#include <algorithm>
-#include <cassert>
-#include <cmath>
-#include <cstddef>
-
 using namespace foundation;
 using namespace std;
 
@@ -50,13 +44,13 @@ namespace renderer
 // BSSRDF reparameterization implementation.
 //
 
-ComputeRd::ComputeRd(const double eta)
+ComputeRdStandardDipole::ComputeRdStandardDipole(const double rcp_eta)
 {
-    const double fdr = fresnel_internal_diffuse_reflectance(eta);
+    const double fdr = fresnel_internal_diffuse_reflectance(rcp_eta);
     m_a = (1.0 + fdr) / (1.0 - fdr);
 }
 
-double ComputeRd::operator()(const double alpha_prime) const
+double ComputeRdStandardDipole::operator()(const double alpha_prime) const
 {
     // [1] eq. 15.
     const double sqrt_3ap = sqrt(3.0 * (1.0 - alpha_prime));
@@ -130,46 +124,6 @@ void effective_extinction_coefficient(
                     static_cast<double>(sigma_a[i]),
                     static_cast<double>(sigma_s[i]),
                     anisotropy));
-    }
-}
-
-void compute_absorption_and_scattering(
-    const Spectrum& rd,
-    const double    dmfp,
-    const double    eta,
-    const double    g,
-    Spectrum&       sigma_a,
-    Spectrum&       sigma_s,
-    Spectrum&       sigma_tr)
-{
-    sigma_a.resize(rd.size());
-    sigma_s.resize(rd.size());
-    sigma_tr.resize(rd.size());
-
-    ComputeRdBetterDipole rd_fun(eta);
-    const double rcp_g_complement = 1.0 / (1.0 - g);
-
-    for (size_t i = 0, e = rd.size(); i < e; ++i)
-    {
-        assert(rd[i] >= 0.0f);
-        assert(rd[i] <= 1.0f);
-
-        // Find alpha' by numerically inverting Rd(alpha').
-        const double alpha_prime = compute_alpha_prime(rd_fun, rd[i]);
-
-        // Compute reduced extinction coefficient.
-        const double sigma_t_prime =
-            reduced_extinction_coefficient(dmfp, alpha_prime);
-
-        // Compute scattering coefficient.
-        const double sigma_s_prime = alpha_prime * sigma_t_prime;
-        sigma_s[i] = static_cast<float>(sigma_s_prime * rcp_g_complement);
-
-        // Compute absorption coefficient.
-        sigma_a[i] = static_cast<float>(sigma_t_prime - sigma_s_prime);
-
-        // Compute effective extinction coefficient.
-        sigma_tr[i] = static_cast<float>(sqrt(3.0 * sigma_a[i] * sigma_t_prime));
     }
 }
 
