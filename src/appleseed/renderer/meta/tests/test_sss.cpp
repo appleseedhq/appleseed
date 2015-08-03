@@ -86,8 +86,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             values.m_inside_ior / values.m_outside_ior,
             values.m_anisotropy,
             values.m_sigma_a,
-            values.m_sigma_s,
-            values.m_sigma_tr);
+            values.m_sigma_s);
     }
 
     template <typename BSSRDFFactory>
@@ -121,11 +120,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             m_values.m_anisotropy = g;
             m_values.m_sigma_a = Color3f(static_cast<float>(sigma_a));
             m_values.m_sigma_s = Color3f(static_cast<float>(sigma_s));
-            effective_extinction_coefficient(
-                m_values.m_sigma_a,
-                m_values.m_sigma_s,
-                m_values.m_anisotropy,
-                m_values.m_sigma_tr);
+            m_values.m_dmfp = 1.0 / effective_extinction_coefficient(sigma_a, sigma_s, g);
         }
 
         void init_values_rd_dmfp(
@@ -144,7 +139,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         const double get_sigma_tr() const
         {
-            return static_cast<double>(m_values.m_sigma_tr[0]);
+            return static_cast<double>(1.0f / m_values.m_dmfp);
         }
 
         double evaluate(const Vector3d& incoming_dir) const
@@ -257,8 +252,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         const double Eta = 1.3;
         const double Anisotropy = 0.0;
 
-        Spectrum sigma_a1, sigma_s1, sigma_tr1;
-        Spectrum sigma_a, sigma_s, sigma_tr;
+        Spectrum sigma_a1, sigma_s1;
+        Spectrum sigma_a, sigma_s;
 
         for (size_t i = 0; i < N; ++i)
         {
@@ -270,8 +265,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
                 Eta,
                 Anisotropy,
                 sigma_a1,
-                sigma_s1,
-                sigma_tr1);
+                sigma_s1);
 
             const double dmfp = rand_double1(rng, 0.001, 10.0);
             compute_absorption_and_scattering(
@@ -280,8 +274,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
                 Eta,
                 Anisotropy,
                 sigma_a,
-                sigma_s,
-                sigma_tr);
+                sigma_s);
 
             const float sa = sigma_a1[0] / static_cast<float>(dmfp);
             const float ss = sigma_s1[0] / static_cast<float>(dmfp);
@@ -649,14 +642,14 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.set_xlabel("Rd");
         plotfile.set_ylabel("Int");
         plotfile.set_xrange(0.0, 1.0);
-        plotfile.set_yrange(0.0, 1.0);
+        plotfile.set_yrange(0.0, 1.25);
 
         const size_t N = 256;
         vector<Vector2d> points;
 
-        for (size_t i = 1; i < N; ++i)
+        for (size_t i = 0; i < N; ++i)
         {
-            const double rd = fit<size_t, double>(i, 0, N - 1, 0.0, 1.0);
+            const double rd = fit<size_t, double>(i, 0, N - 1, 0.01, 1.0);
             const double x =
                 integrate_dipole<StandardDipoleBSSRDFFactory, false>(
                     rd,
@@ -768,6 +761,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         nd_values.m_dmfp_multiplier = 1.0;
         nd_values.m_inside_ior = 1.0;
         nd_values.m_outside_ior = 1.0;
+        nd_values.m_s.set(static_cast<float>(normalized_diffusion_s(rd)));
 
         const Vector3d normal(0.0, 1.0, 0.0);
 
@@ -888,7 +882,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         }
     }
 
-    TEST_CASE(PlotDirpoleIntegralRd)
+    TEST_CASE(PlotDirpoleIntegralHemiRd)
     {
         GnuplotFile plotfile;
         plotfile.set_title("Directional Dipole Integral");
@@ -900,19 +894,47 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         const size_t N = 256;
         vector<Vector2d> points;
 
-        for (size_t i = 1; i < N; ++i)
+        for (size_t i = 0; i < N; ++i)
         {
-            const double rd = fit<size_t, double>(i, 0, N - 1, 0.0, 1.0);
+            const double rd = fit<size_t, double>(i, 0, N - 1, 0.01, 1.0);
             const double x =
                 integrate_dipole<DirectionalDipoleBSSRDFFactory, true>(
                     rd,
                     1.0,
-                    2000);
+                    3000);
 
             points.push_back(Vector2d(rd, x));
         }
 
         plotfile.new_plot().set_points(points);
-        plotfile.write("unit tests/outputs/test_sss_dirpole_integral_rd.gnuplot");
+        plotfile.write("unit tests/outputs/test_sss_dirpole_integral_hemi_rd.gnuplot");
+    }
+
+    TEST_CASE(PlotDirpoleIntegralSearchlightRd)
+    {
+        GnuplotFile plotfile;
+        plotfile.set_title("Directional Dipole Integral Searchlight");
+        plotfile.set_xlabel("Rd");
+        plotfile.set_ylabel("Int");
+        plotfile.set_xrange(0.0, 1.0);
+        plotfile.set_yrange(0.0, 1.0);
+
+        const size_t N = 256;
+        vector<Vector2d> points;
+
+        for (size_t i = 0; i < N; ++i)
+        {
+            const double rd = fit<size_t, double>(i, 0, N - 1, 0.01, 1.0);
+            const double x =
+                integrate_dipole<DirectionalDipoleBSSRDFFactory, false>(
+                    rd,
+                    1.0,
+                    1000);
+
+            points.push_back(Vector2d(rd, x));
+        }
+
+        plotfile.new_plot().set_points(points);
+        plotfile.write("unit tests/outputs/test_sss_dirpole_integral_searchlight_rd.gnuplot");
     }
 }
