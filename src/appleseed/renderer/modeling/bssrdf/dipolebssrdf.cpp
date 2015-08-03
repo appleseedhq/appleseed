@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/bssrdf/sss.h"
+#include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
@@ -51,8 +52,8 @@ namespace renderer
 //
 
 DipoleBSSRDF::DipoleBSSRDF(
-    const char*         name,
-    const ParamArray&   params)
+    const char*             name,
+    const ParamArray&       params)
   : BSSRDF(name, params)
 {
     m_inputs.declare("weight", InputFormatScalar, "1.0");
@@ -66,14 +67,46 @@ DipoleBSSRDF::DipoleBSSRDF(
 }
 
 size_t DipoleBSSRDF::compute_input_data_size(
-    const Assembly&     assembly) const
+    const Assembly&         assembly) const
 {
     return align(sizeof(DipoleBSSRDFInputValues), 16);
 }
 
+void DipoleBSSRDF::evaluate_inputs(
+    const ShadingContext&   shading_context,
+    InputEvaluator&         input_evaluator,
+    const ShadingPoint&     shading_point,
+    const size_t            offset) const
+{
+    BSSRDF::evaluate_inputs(shading_context, input_evaluator, shading_point, offset);
+
+    DipoleBSSRDFInputValues* values =
+        reinterpret_cast<DipoleBSSRDFInputValues*>(input_evaluator.data() + offset);
+
+    // Apply multipliers.
+    values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
+    values->m_dmfp *= values->m_dmfp_multiplier;
+
+    // Clamp reflectance.
+    values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
+
+    // Compute sigma_a and sigma_s from the reflectance and dmfp parameters.
+    const ComputeRdStandardDipole rd_fun(values->m_outside_ior / values->m_inside_ior);     // 1 / eta
+    compute_absorption_and_scattering(
+        rd_fun,
+        values->m_reflectance,
+        values->m_dmfp,
+        values->m_anisotropy,
+        values->m_sigma_a,
+        values->m_sigma_s);
+
+    // Precompute the (square of the) max radius.
+    values->m_max_radius2 = square(dipole_max_radius(1.0 / values->m_dmfp));
+}
+
 bool DipoleBSSRDF::sample(
-    const void*         data,
-    BSSRDFSample&       sample) const
+    const void*             data,
+    BSSRDFSample&           sample) const
 {
     const DipoleBSSRDFInputValues* values =
         reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
@@ -104,9 +137,9 @@ bool DipoleBSSRDF::sample(
 }
 
 double DipoleBSSRDF::evaluate_pdf(
-    const void*         data,
-    const size_t        channel,
-    const double        radius) const
+    const void*             data,
+    const size_t            channel,
+    const double            radius) const
 {
     const DipoleBSSRDFInputValues* values =
         reinterpret_cast<const DipoleBSSRDFInputValues*>(data);

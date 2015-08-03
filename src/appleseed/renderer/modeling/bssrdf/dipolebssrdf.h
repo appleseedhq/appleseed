@@ -45,7 +45,10 @@
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class BSSRDFSample; }
+namespace renderer      { class InputEvaluator; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class ShadingContext; }
+namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {
@@ -82,20 +85,26 @@ class DipoleBSSRDF
   public:
     // Constructor.
     DipoleBSSRDF(
-        const char*         name,
-        const ParamArray&   params);
+        const char*             name,
+        const ParamArray&       params);
 
     virtual size_t compute_input_data_size(
-        const Assembly&     assembly) const APPLESEED_OVERRIDE;
+        const Assembly&         assembly) const APPLESEED_OVERRIDE;
+
+    virtual void evaluate_inputs(
+        const ShadingContext&   shading_context,
+        InputEvaluator&         input_evaluator,
+        const ShadingPoint&     shading_point,
+        const size_t            offset = 0) const APPLESEED_OVERRIDE;
 
     virtual bool sample(
-        const void*         data,
-        BSSRDFSample&       sample) const APPLESEED_OVERRIDE;
+        const void*             data,
+        BSSRDFSample&           sample) const APPLESEED_OVERRIDE;
 
     virtual double evaluate_pdf(
-        const void*         data,
-        const size_t        channel,
-        const double        radius) const APPLESEED_OVERRIDE;
+        const void*             data,
+        const size_t            channel,
+        const double            radius) const APPLESEED_OVERRIDE;
 };
 
 
