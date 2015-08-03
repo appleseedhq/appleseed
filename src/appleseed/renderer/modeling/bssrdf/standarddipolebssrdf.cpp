@@ -186,8 +186,8 @@ namespace
                 value[i] = static_cast<float>(alpha_prime * RcpFourPi * (zr * value_r + zv * value_v));
             }
 
-            const double radius = norm(incoming_point.get_point() - outgoing_point.get_point());
-            value *= static_cast<float>(radius * values->m_weight);
+            // Return r * R(r) * weight.
+            value *= static_cast<float>(sqrt(r2) * values->m_weight);
         }
     };
 }

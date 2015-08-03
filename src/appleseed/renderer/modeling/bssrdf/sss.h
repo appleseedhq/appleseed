@@ -52,7 +52,8 @@ namespace renderer
 //       http://graphics.pixar.com/library/TexturingBetterDipole/paper.pdf
 //
 
-// Compute Rd (integral of the diffusion profile R) given the reduced albedo alpha'.
+// Compute Rd (integral of the diffusion profile R) given the reduced albedo alpha'
+// using the reparameterization of the standard dipole model.
 class ComputeRd
 {
   public:
@@ -64,7 +65,8 @@ class ComputeRd
     double m_a;
 };
 
-// Compute Rd (integral of the diffusion profile R) given the reduced albedo alpha'.
+// Compute Rd (integral of the diffusion profile R) given the reduced albedo alpha'
+// using the reparameterization of the better dipole model.
 class ComputeRdBetterDipole
 {
   public:

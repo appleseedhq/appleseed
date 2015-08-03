@@ -88,20 +88,6 @@ void fresnel_transmittance_dielectric(
 
 
 //
-// Compute the reflectance at normal incidence at the interface between two dieletric materials.
-//
-// Reference:
-//
-//   http://www.kayelaby.npl.co.uk/general_physics/2_5/2_5_9.html
-//
-
-template <typename SpectrumType>
-void normal_reflectance_dielectric(
-    SpectrumType&           normal_reflectance,
-    const SpectrumType&     eta);
-
-
-//
 // Compute the Fresnel reflectance for a dielectric material using Schlick's approximation:
 //
 //   R(theta) = R0 + (1 - R0) * (1 - cos(theta)) ^ 5
@@ -123,19 +109,42 @@ void fresnel_reflectance_dielectric_schlick(
 
 
 //
-// Compute Fresnel moments C1 and C2.
+// Compute the reflectance at normal incidence at the interface between two dieletric materials.
 //
 // Reference:
 //
-//   A better dipole, Eugene d'Eon
-//   http://www.eugenedeon.com/wp-content/uploads/2014/04/betterdipole.pdf
+//   http://www.kayelaby.npl.co.uk/general_physics/2_5/2_5_9.html
 //
 
-// Compute and return 2 * C1.
+template <typename SpectrumType>
+void normal_reflectance_dielectric(
+    SpectrumType&           normal_reflectance,
+    const SpectrumType&     eta);
+
+
+//
+// Fresnel integrals.
+//
+// References:
+//
+//   A Better Dipole
+//   http://www.eugenedeon.com/wp-content/uploads/2014/04/betterdipole.pdf
+//
+//   Towards Realistic Image Synthesis of Scattering Materials (eq. 5.27 page 41)
+//   http://www.cs.jhu.edu/~misha/Fall11/Donner.Thesis.pdf
+//
+//   Fresnel Reflection of Diffusely Incident Light 
+//   http://nvlpubs.nist.gov/nistpubs/jres/29/jresv29n5p329_A1b.pdf
+//
+//   Diffuse Fresnel Reflectance
+//   http://photorealizer.blogspot.fr/2012/05/diffuse-fresnel-reflectance.html
+//
+
+// Compute 2 * C1 where C1 is the first Fresnel moment.
 template <typename T>
 T fresnel_moment_two_c1(const T eta);
 
-// Compute and return 3 * C2.
+// Compute 3 * C2 where C2 is the second Fresnel moment.
 template <typename T>
 T fresnel_moment_three_c2(const T eta);
 
@@ -283,27 +292,6 @@ void fresnel_transmittance_dielectric(
     }
 }
 
-template <typename SpectrumType>
-void normal_reflectance_dielectric(
-    SpectrumType&           normal_reflectance,
-    const SpectrumType&     eta)
-{
-    //
-    //                        /  ior_i - ior_t  \ 2     /  1 - eta  \ 2
-    // normal_reflectance  =  |  -------------  |    =  |  -------  |  
-    //                        \  ior_i + ior_t  /       \  1 + eta  /  
-    //
-
-    typedef typename impl::GetValueType<SpectrumType>::ValueType ValueType;
-
-    SpectrumType den(ValueType(1.0));
-    normal_reflectance = den;
-    normal_reflectance -= eta;
-    den += eta;
-    normal_reflectance /= den;
-    normal_reflectance *= normal_reflectance;
-}
-
 template <typename SpectrumType, typename T>
 void fresnel_reflectance_dielectric_schlick(
     SpectrumType&           reflectance,
@@ -328,8 +316,29 @@ void fresnel_reflectance_dielectric_schlick(
     reflectance += SpectrumType(static_cast<ValueType>(k5 * multiplier));
 }
 
+template <typename SpectrumType>
+void normal_reflectance_dielectric(
+    SpectrumType&           normal_reflectance,
+    const SpectrumType&     eta)
+{
+    //
+    //                        /  ior_i - ior_t  \ 2     /  1 - eta  \ 2
+    // normal_reflectance  =  |  -------------  |    =  |  -------  |  
+    //                        \  ior_i + ior_t  /       \  1 + eta  /  
+    //
+
+    typedef typename impl::GetValueType<SpectrumType>::ValueType ValueType;
+
+    SpectrumType den(ValueType(1.0));
+    normal_reflectance = den;
+    normal_reflectance -= eta;
+    den += eta;
+    normal_reflectance /= den;
+    normal_reflectance *= normal_reflectance;
+}
+
 template <typename T>
-T fresnel_moment_two_c1(const T eta)
+inline T fresnel_moment_two_c1(const T eta)
 {
     return
         eta < T(1.0)
@@ -338,10 +347,9 @@ T fresnel_moment_two_c1(const T eta)
 }
 
 template <typename T>
-T fresnel_moment_three_c2(const T eta)
+inline T fresnel_moment_three_c2(const T eta)
 {
     const T rcp_eta = T(1.0) / eta;
-
     return
         eta < T(1.0)
             ? T(0.828421) + eta * (T(-2.62051) + eta * (T(3.36231) + eta * (T(-1.95284) + eta * (T(0.236494) + eta * T(0.145787)))))

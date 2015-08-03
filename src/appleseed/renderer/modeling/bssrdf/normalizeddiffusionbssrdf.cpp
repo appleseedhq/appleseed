@@ -188,6 +188,7 @@ namespace
                 value[i] = static_cast<float>(normalized_diffusion_profile(radius, values->m_dmfp, s, a));
             }
 
+            // Return r * R(r) * weight.
             value *= static_cast<float>(radius * values->m_weight);
         }
 

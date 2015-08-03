@@ -179,7 +179,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     double integrate_dipole(
         const double rd,
         const double dmfp,
-        const size_t num_samples)
+        const size_t sample_count)
     {
         DipoleBSSRDFEvaluator<BSSRDFFactory> bssrdf_eval;
         bssrdf_eval.init_values_rd_dmfp(rd, dmfp, 1.0, 0.0);
@@ -188,7 +188,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         double integral = 0.0;
 
-        for (size_t i = 0; i < num_samples; ++i)
+        for (size_t i = 0; i < sample_count; ++i)
         {
             const double u = rand_double2(rng);
             const double r = dipole_sample(bssrdf_eval.get_sigma_tr(), u);
@@ -206,7 +206,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             integral += value / pdf;
         }
 
-        return integral / num_samples;
+        return integral / sample_count;
     }
 
     //
@@ -326,13 +326,13 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile
             .new_plot()
             .set_points(std_points)
-            .set_title("dipole")
+            .set_title("Standard Dipole")
             .set_color("orange");
 
         plotfile
             .new_plot()
             .set_points(better_points)
-            .set_title("better dipole")
+            .set_title("Better Dipole")
             .set_color("blue");
 
         plotfile.write("unit tests/outputs/test_sss_reparam_compare.gnuplot");
@@ -814,13 +814,13 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile
             .new_plot()
             .set_points(dp_points)
-            .set_title("dirpole")
+            .set_title("Directional Dipole")
             .set_color("orange");
 
         plotfile
             .new_plot()
             .set_points(nd_points)
-            .set_title("normdiff")
+            .set_title("Normalized Diffusion")
             .set_color("blue");
 
         plotfile.write(filename);
