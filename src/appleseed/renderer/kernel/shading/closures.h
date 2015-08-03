@@ -46,6 +46,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/color.h"
+#include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 
@@ -183,28 +184,27 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
   public:
     CompositeSurfaceClosure(
         const BSDF*                 osl_bsdf,
+        const foundation::Basis3d&  original_shading_basis,
         const OSL::ClosureColor*    ci);
 
-    const foundation::Vector3d& get_closure_normal(const size_t index) const;
-    bool closure_has_tangent(const size_t index) const;
-    const foundation::Vector3d& get_closure_tangent(const size_t index) const;
+    const foundation::Basis3d& get_closure_shading_basis(const size_t index) const;
 
     // For future layered closures.
     const BSDF* get_osl_bsdf() const;
 
   private:
-    foundation::Vector3d            m_normals[MaxClosureEntries];
-    bool                            m_has_tangent[MaxClosureEntries];
-    foundation::Vector3d            m_tangents[MaxClosureEntries];
+    foundation::Basis3d             m_bases[MaxClosureEntries];
     const BSDF*                     m_osl_bsdf;
 
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
+        const foundation::Basis3d&  original_shading_basis,
         const foundation::Color3f&  weight);
 
     template <typename InputValues>
     void add_closure(
         const ClosureID             closure_type,
+        const foundation::Basis3d&  original_shading_basis,
         const foundation::Color3f&  weight,
         const foundation::Vector3d& normal,
         const InputValues&          values);
@@ -212,6 +212,7 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
     template <typename InputValues>
     void add_closure(
         const ClosureID             closure_type,
+        const foundation::Basis3d&  original_shading_basis,
         const foundation::Color3f&  weight,
         const foundation::Vector3d& normal,
         const foundation::Vector3d& tangent,
@@ -220,6 +221,7 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
     template <typename InputValues>
     void do_add_closure(
         const ClosureID             closure_type,
+        const foundation::Basis3d&  original_shading_basis,
         const foundation::Color3f&  weight,
         const foundation::Vector3d& normal,
         bool                        has_tangent,
@@ -329,23 +331,10 @@ inline size_t CompositeClosure::get_closure_input_offset(const size_t index) con
 // CompositeSurfaceClosure class implementation.
 //
 
-inline const foundation::Vector3d& CompositeSurfaceClosure::get_closure_normal(const size_t index) const
+inline const foundation::Basis3d& CompositeSurfaceClosure::get_closure_shading_basis(const size_t index) const
 {
     assert(index < get_num_closures());
-    return m_normals[index];
-}
-
-inline bool CompositeSurfaceClosure::closure_has_tangent(const size_t index) const
-{
-    assert(index < get_num_closures());
-    return m_has_tangent[index];
-}
-
-inline const foundation::Vector3d& CompositeSurfaceClosure::get_closure_tangent(const size_t index) const
-{
-    assert(index < get_num_closures());
-    assert(closure_has_tangent(index));
-    return m_tangents[index];
+    return m_bases[index];
 }
 
 inline const BSDF* CompositeSurfaceClosure::get_osl_bsdf() const

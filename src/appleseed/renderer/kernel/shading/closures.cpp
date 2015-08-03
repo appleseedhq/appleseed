@@ -205,17 +205,19 @@ BOOST_STATIC_ASSERT(sizeof(CompositeSurfaceClosure) <= InputEvaluator::DataSize)
 
 CompositeSurfaceClosure::CompositeSurfaceClosure(
     const BSDF*                 osl_bsdf,
+    const Basis3d&              original_shading_basis,
     const OSL::ClosureColor*    ci)
   : m_osl_bsdf(osl_bsdf)
 {
     assert(m_osl_bsdf);
 
-    process_closure_tree(ci, Color3f(1.0f));
+    process_closure_tree(ci, original_shading_basis, Color3f(1.0f));
     compute_cdf();
 }
 
 void CompositeSurfaceClosure::process_closure_tree(
     const OSL::ClosureColor*    closure,
+    const Basis3d&              original_shading_basis,
     const Color3f&              weight)
 {
     if (closure == 0)
@@ -227,15 +229,15 @@ void CompositeSurfaceClosure::process_closure_tree(
         {
             const OSL::ClosureMul* c = reinterpret_cast<const OSL::ClosureMul*>(closure);
             const Color3f w = weight * Color3f(c->weight);
-            process_closure_tree(c->closure, w);
+            process_closure_tree(c->closure, original_shading_basis, w);
         }
         break;
 
       case OSL::ClosureColor::ADD:
         {
             const OSL::ClosureAdd* c = reinterpret_cast<const OSL::ClosureAdd*>(closure);
-            process_closure_tree(c->closureA, weight);
-            process_closure_tree(c->closureB, weight);
+            process_closure_tree(c->closureA, original_shading_basis, weight);
+            process_closure_tree(c->closureB, original_shading_basis, weight);
         }
         break;
 
@@ -262,6 +264,7 @@ void CompositeSurfaceClosure::process_closure_tree(
 
                     add_closure<AshikhminBRDFInputValues>(
                         static_cast<ClosureID>(c->id),
+                        original_shading_basis,
                         w,
                         Vector3d(p->N),
                         Vector3d(p->T),
@@ -290,6 +293,7 @@ void CompositeSurfaceClosure::process_closure_tree(
 
                     add_closure<DisneyBRDFInputValues>(
                         static_cast<ClosureID>(c->id),
+                        original_shading_basis,
                         w,
                         Vector3d(p->N),
                         Vector3d(p->T),
@@ -308,6 +312,7 @@ void CompositeSurfaceClosure::process_closure_tree(
 
                     add_closure<LambertianBRDFInputValues>(
                         static_cast<ClosureID>(c->id),
+                        original_shading_basis,
                         w,
                         Vector3d(p->N),
                         values);
@@ -329,6 +334,7 @@ void CompositeSurfaceClosure::process_closure_tree(
                         {
                             add_closure<OSLMicrofacetBRDFInputValues>(
                                 MicrofacetBlinnReflectionID,
+                                original_shading_basis,
                                 w,
                                 Vector3d(p->N),
                                 Vector3d(p->T),
@@ -338,6 +344,7 @@ void CompositeSurfaceClosure::process_closure_tree(
                         {
                             add_closure<OSLMicrofacetBRDFInputValues>(
                                 MicrofacetGGXReflectionID,
+                                original_shading_basis,
                                 w,
                                 Vector3d(p->N),
                                 Vector3d(p->T),
@@ -347,6 +354,7 @@ void CompositeSurfaceClosure::process_closure_tree(
                         {
                             add_closure<OSLMicrofacetBRDFInputValues>(
                                 MicrofacetBeckmannReflectionID,
+                                original_shading_basis,
                                 w,
                                 Vector3d(p->N),
                                 Vector3d(p->T),
@@ -378,6 +386,7 @@ void CompositeSurfaceClosure::process_closure_tree(
                         {
                             add_closure<OSLMicrofacetBTDFInputValues>(
                                 MicrofacetGGXRefractionID,
+                                original_shading_basis,
                                 w,
                                 Vector3d(p->N),
                                 Vector3d(p->T),
@@ -387,6 +396,7 @@ void CompositeSurfaceClosure::process_closure_tree(
                         {
                             add_closure<OSLMicrofacetBTDFInputValues>(
                                 MicrofacetBeckmannRefractionID,
+                                original_shading_basis,
                                 w,
                                 Vector3d(p->N),
                                 Vector3d(p->T),
@@ -408,6 +418,7 @@ void CompositeSurfaceClosure::process_closure_tree(
 
                     add_closure<OrenNayarBRDFInputValues>(
                         static_cast<ClosureID>(c->id),
+                        original_shading_basis,
                         w,
                         Vector3d(p->N),
                         values);
@@ -425,6 +436,7 @@ void CompositeSurfaceClosure::process_closure_tree(
 
                     add_closure<SpecularBRDFInputValues>(
                         static_cast<ClosureID>(c->id),
+                        original_shading_basis,
                         w,
                         Vector3d(p->N),
                         values);
@@ -460,6 +472,7 @@ void CompositeSurfaceClosure::process_closure_tree(
 
                     add_closure<SpecularBTDFInputValues>(
                         static_cast<ClosureID>(c->id),
+                        original_shading_basis,
                         w,
                         Vector3d(p->N),
                         values);
@@ -477,6 +490,7 @@ void CompositeSurfaceClosure::process_closure_tree(
 
                     add_closure<DiffuseBTDFInputValues>(
                         static_cast<ClosureID>(c->id),
+                        original_shading_basis,
                         w,
                         Vector3d(p->N),
                         values);
@@ -498,6 +512,7 @@ void CompositeSurfaceClosure::process_closure_tree(
 
                   add_closure<VelvetBRDFInputValues>(
                       static_cast<ClosureID>(c->id),
+                      original_shading_basis,
                       w,
                       Vector3d(p->N),
                       values);
@@ -515,12 +530,14 @@ void CompositeSurfaceClosure::process_closure_tree(
 template <typename InputValues>
 void CompositeSurfaceClosure::add_closure(
     const ClosureID             closure_type,
+    const Basis3d&              original_shading_basis,
     const Color3f&              weight,
     const Vector3d&             normal,
     const InputValues&          params)
 {
     do_add_closure<InputValues>(
         closure_type,
+        original_shading_basis,
         weight,
         normal,
         false,
@@ -531,6 +548,7 @@ void CompositeSurfaceClosure::add_closure(
 template <typename InputValues>
 void CompositeSurfaceClosure::add_closure(
     const ClosureID             closure_type,
+    const Basis3d&              original_shading_basis,
     const Color3f&              weight,
     const Vector3d&             normal,
     const Vector3d&             tangent,
@@ -538,6 +556,7 @@ void CompositeSurfaceClosure::add_closure(
 {
     do_add_closure<InputValues>(
         closure_type,
+        original_shading_basis,
         weight,
         normal,
         true,
@@ -548,6 +567,7 @@ void CompositeSurfaceClosure::add_closure(
 template <typename InputValues>
 void CompositeSurfaceClosure::do_add_closure(
     const ClosureID             closure_type,
+    const Basis3d&              original_shading_basis,
     const Color3f&              weight,
     const Vector3d&             normal,
     bool                        has_tangent,
@@ -576,17 +596,18 @@ void CompositeSurfaceClosure::do_add_closure(
 
     m_pdf_weights[m_num_closures] = w;
     m_weights[m_num_closures] = weight;
-    m_normals[m_num_closures] = normalize(normal);
 
     // If the tangent is zero, ignore it.
     // This can happen when using the isotropic microfacet closure overloads, for example.
     if (square_norm(tangent) == 0.0)
         has_tangent = false;
 
-    m_has_tangent[m_num_closures] = has_tangent;
-
-    if (has_tangent)
-        m_tangents[m_num_closures] = normalize(tangent);
+    m_bases[m_num_closures] =
+        Basis3d(
+            normalize(normal),
+            has_tangent
+                ? normalize(tangent)
+                : original_shading_basis.get_tangent_u());
 
     m_closure_types[m_num_closures] = closure_type;
 
