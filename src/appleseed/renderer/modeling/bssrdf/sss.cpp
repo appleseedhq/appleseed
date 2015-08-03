@@ -52,19 +52,7 @@ namespace renderer
 
 ComputeRd::ComputeRd(const double eta)
 {
-    const double rcp_eta = 1.0 / eta;
-    const double rcp_eta2 = square(rcp_eta);
-
-    // Compute the the average diffuse Fresnel reflectance.
-    // The approximation comes from:
-    //   Towards Realistic Image Synthesis of Scattering Materials
-    //   Donner. C 2006, page 41, eq 5.27
-    const double fdr =
-        eta < 1
-            ? -0.4933 + (0.7099 * rcp_eta) - (0.3319 * rcp_eta2) + (0.0636 * rcp_eta * rcp_eta2)
-            : (-1.4933 * rcp_eta2) + (0.7099 * rcp_eta) + 0.6681 + (0.0636 * eta);
-
-    // eq 5.29
+    const double fdr = fresnel_internal_diffuse_reflectance(eta);
     m_a = (1.0 + fdr) / (1.0 - fdr);
 }
 

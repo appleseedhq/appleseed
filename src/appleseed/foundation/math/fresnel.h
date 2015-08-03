@@ -139,6 +139,10 @@ T fresnel_moment_two_c1(const T eta);
 template <typename T>
 T fresnel_moment_three_c2(const T eta);
 
+// Compute the internal diffuse reflectance of a dielectric.
+template <typename T>
+T fresnel_internal_diffuse_reflectance(const T eta);
+
 
 //
 // Implementation.
@@ -343,6 +347,17 @@ T fresnel_moment_three_c2(const T eta)
             ? T(0.828421) + eta * (T(-2.62051) + eta * (T(3.36231) + eta * (T(-1.95284) + eta * (T(0.236494) + eta * T(0.145787)))))
             : T(-1641.1) + (((T(135.926) * rcp_eta) - T(656.175)) * rcp_eta + T(1376.53)) * rcp_eta
               + eta * (T(1213.67) + eta * (T(-568.556) + eta * (T(164.798) + eta * (T(-27.0181) + eta * T(1.91826)))));
+}
+
+template <typename T>
+inline T fresnel_internal_diffuse_reflectance(const T eta)
+{
+    const T rcp_eta = T(1.0) / eta;
+    const T rcp_eta2 = rcp_eta * rcp_eta;
+    return
+        eta < T(1.0)
+            ? T(-0.4399) + T(0.7099) * rcp_eta - T(0.3319) * rcp_eta2 + T(0.0636) * rcp_eta * rcp_eta2
+            : T(-1.4399) * rcp_eta2 + T(0.7099) * rcp_eta + T(0.6681) + T(0.0636) * eta;
 }
 
 }       // namespace foundation

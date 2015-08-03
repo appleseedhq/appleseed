@@ -37,6 +37,7 @@
 #include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -115,7 +116,7 @@ namespace
 
             const double r2 = square_norm(outgoing_point.get_point() - incoming_point.get_point());
             const double eta = values->m_inside_ior / values->m_outside_ior;
-            const double Fdr = -1.440 / square(eta) + 0.710 / eta + 0.668 + 0.0636 * eta;
+            const double Fdr = fresnel_internal_diffuse_reflectance(eta);
             const double A = (1.0 + Fdr) / (1.0 - Fdr);
 
             value.resize(values->m_sigma_a.size());
