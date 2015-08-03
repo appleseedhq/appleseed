@@ -34,7 +34,6 @@
 
 // Standard headers.
 #include <cassert>
-#include <cmath>
 #include <cstddef>
 
 namespace renderer
@@ -117,8 +116,7 @@ void compute_absorption_and_scattering(
     const double        dmfp,                   // diffuse mean free path
     const double        g,                      // anisotropy
     Spectrum&           sigma_a,                // absorption coefficient
-    Spectrum&           sigma_s,                // scattering coefficient
-    Spectrum&           sigma_tr);              // effective extinction coefficient
+    Spectrum&           sigma_s);               // scattering coefficient
 
 
 //
@@ -237,7 +235,7 @@ inline double compute_alpha_prime(
 
     // For now simple bisection.
     // todo: switch to faster algorithm.
-    for (std::size_t i = 0, iters = 50; i < iters; ++i)
+    for (size_t i = 0, iters = 50; i < iters; ++i)
     {
         xmid = 0.5 * (x0 + x1);
         const double x = rd_fun(xmid);
@@ -254,12 +252,10 @@ void compute_absorption_and_scattering(
     const double        dmfp,
     const double        g,
     Spectrum&           sigma_a,
-    Spectrum&           sigma_s,
-    Spectrum&           sigma_tr)
+    Spectrum&           sigma_s)
 {
     sigma_a.resize(rd.size());
     sigma_s.resize(rd.size());
-    sigma_tr.resize(rd.size());
 
     const double rcp_g_complement = 1.0 / (1.0 - g);
 
@@ -281,9 +277,6 @@ void compute_absorption_and_scattering(
 
         // Compute absorption coefficient.
         sigma_a[i] = static_cast<float>(sigma_t_prime - sigma_s_prime);
-
-        // Compute effective extinction coefficient.
-        sigma_tr[i] = static_cast<float>(std::sqrt(3.0 * sigma_a[i] * sigma_t_prime));
     }
 }
 

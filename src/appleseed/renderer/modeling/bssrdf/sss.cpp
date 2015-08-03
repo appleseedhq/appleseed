@@ -34,6 +34,9 @@
 #include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
 
+// Standard headers.
+#include <cmath>
+
 using namespace foundation;
 using namespace std;
 

@@ -82,21 +82,13 @@ bool DipoleBSSRDF::sample(
         return false;
 
     sample.set_eta(values->m_inside_ior / values->m_outside_ior);
-
-    // Select the channel leading to the strongest scattering.
-    const size_t channel = min_index(values->m_reflectance);
-    sample.set_channel(channel);
-
-    // todo: fix.
-    const double reflectance = values->m_reflectance[channel];
-    if (reflectance == 0.0)
-        return false;
+    sample.set_channel(0);
 
     sample.get_sampling_context().split_in_place(2, 1);
     const Vector2d s = sample.get_sampling_context().next_vector2<2>();
 
     // Sample a radius.
-    const double sigma_tr = values->m_sigma_tr[channel];
+    const double sigma_tr = 1.0 / values->m_dmfp;
     const double radius = dipole_sample(sigma_tr, s[0]);
 
     // Set the max radius.
@@ -124,7 +116,7 @@ double DipoleBSSRDF::evaluate_pdf(
         return 0.0;
 
     // PDF of the sampled radius.
-    const double sigma_tr = values->m_sigma_tr[channel];
+    const double sigma_tr = 1.0 / values->m_dmfp;
     const double pdf_radius = dipole_pdf(radius, sigma_tr);
 
     // PDF of the sampled angle.

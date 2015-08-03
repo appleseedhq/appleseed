@@ -64,6 +64,9 @@ APPLESEED_DECLARE_INPUT_VALUES(NormalizedDiffusionBSSRDFInputValues)
     double      m_inside_ior;
 
     // Precomputed values.
+    Spectrum    m_s;
+    Spectrum    m_channel_pdf;
+    Spectrum    m_channel_cdf;
     double      m_max_radius2;
 };
 

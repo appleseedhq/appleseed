@@ -107,8 +107,8 @@ namespace
             values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
             values->m_dmfp *= values->m_dmfp_multiplier;
 
-            // Clamp reflectance to [0, 1].
-            values->m_reflectance = saturate(values->m_reflectance);
+            // Clamp reflectance.
+            values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
 
             // Compute sigma_a and sigma_s from the reflectance and dmfp parameters.
             const ComputeRdStandardDipole rd_fun(values->m_outside_ior / values->m_inside_ior);     // 1 / eta
@@ -118,11 +118,10 @@ namespace
                 values->m_dmfp,
                 values->m_anisotropy,
                 values->m_sigma_a,
-                values->m_sigma_s,
-                values->m_sigma_tr);
+                values->m_sigma_s);
 
-            // Compute square of max radius.
-            values->m_max_radius2 = square(dipole_max_radius(max_value(values->m_sigma_tr)));
+            // Precompute the (square of the) max radius.
+            values->m_max_radius2 = square(dipole_max_radius(1.0 / values->m_dmfp));
         }
 
         virtual bool sample(
@@ -148,6 +147,7 @@ namespace
             const double rcp_eta = values->m_inside_ior / values->m_outside_ior;
             const double fdr = fresnel_internal_diffuse_reflectance(rcp_eta);
             const double a = (1.0 + fdr) / (1.0 - fdr);
+            const double sigma_tr = 1.0 / values->m_dmfp;
 
             value.resize(values->m_sigma_a.size());
 
@@ -158,7 +158,6 @@ namespace
                 const double sigma_s_prime = sigma_s * (1.0 - values->m_anisotropy);
                 const double sigma_t_prime = sigma_s_prime + sigma_a;
                 const double alpha_prime = sigma_s_prime / sigma_t_prime;
-                const double sigma_tr = values->m_sigma_tr[i];
 
                 //
                 // We have
