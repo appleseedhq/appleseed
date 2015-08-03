@@ -120,6 +120,99 @@ TEST_SUITE(Foundation_Math_Fresnel)
         }
     }
 
+    TEST_CASE(PlotFresnelReflectanceTransmittanceDielectric)
+    {
+        GnuplotFile plotfile;
+        plotfile.set_title("Fresnel Reflectance/Transmittance for a Dielectric");
+        plotfile.set_xlabel("Theta");
+        plotfile.set_ylabel("Reflectance");
+
+        const double Eta = 1.5;
+        const size_t PointCount = 256;
+        vector<Vector2d> reflectance_points, transmittance_points;
+
+        for (size_t i = 0; i < PointCount; ++i)
+        {
+            const double theta_i = fit<size_t, double>(i, 0, PointCount - 1, 0.0, 90.0);
+            const double cos_theta_i = cos(deg_to_rad(theta_i));
+
+            const double sin_theta_i2 = 1.0 - square(cos_theta_i);
+            const double sin_theta_t2 = sin_theta_i2 / square(Eta);
+            const double cos_theta_t2 = 1.0 - sin_theta_t2;
+            assert(cos_theta_t2 >= 0.0);
+            const double cos_theta_t = sqrt(cos_theta_t2);
+
+            double reflectance;
+            fresnel_reflectance_dielectric(reflectance, Eta, cos_theta_i, cos_theta_t);
+
+            double transmittance;
+            fresnel_transmittance_dielectric(transmittance, Eta, cos_theta_i);
+
+            reflectance_points.push_back(Vector2d(theta_i, reflectance));
+            transmittance_points.push_back(Vector2d(theta_i, transmittance));
+        }
+
+        plotfile
+            .new_plot()
+            .set_points(reflectance_points)
+            .set_title("Reflectance, eta = 1.5");
+
+        plotfile
+            .new_plot()
+            .set_points(transmittance_points)
+            .set_title("Transmittance, eta = 1.5");
+
+        plotfile.write("unit tests/outputs/test_fresnel_reflectance_transmittance_dielectric.gnuplot");
+    }
+
+    TEST_CASE(PlotFresnelReflectanceDielectricSchlick)
+    {
+        GnuplotFile plotfile;
+        plotfile.set_title("Fresnel Reflectance for a Dielectric, Schlick Approximation");
+        plotfile.set_xlabel("Theta");
+        plotfile.set_ylabel("Reflectance");
+
+        const double Eta = 1.5;
+        const size_t PointCount = 256;
+        vector<Vector2d> ref_refl_points, schlick_refl_points;
+
+        for (size_t i = 0; i < PointCount; ++i)
+        {
+            const double theta_i = fit<size_t, double>(i, 0, PointCount - 1, 0.0, 90.0);
+            const double cos_theta_i = cos(deg_to_rad(theta_i));
+
+            const double sin_theta_i2 = 1.0 - square(cos_theta_i);
+            const double sin_theta_t2 = sin_theta_i2 / square(Eta);
+            const double cos_theta_t2 = 1.0 - sin_theta_t2;
+            assert(cos_theta_t2 >= 0.0);
+            const double cos_theta_t = sqrt(cos_theta_t2);
+
+            double ref_refl;
+            fresnel_reflectance_dielectric(ref_refl, Eta, cos_theta_i, cos_theta_t);
+
+            double r0;
+            normal_reflectance_dielectric(r0, Eta);
+
+            double schlick_refl;
+            fresnel_reflectance_dielectric_schlick(schlick_refl, r0, cos_theta_i);
+
+            ref_refl_points.push_back(Vector2d(theta_i, ref_refl));
+            schlick_refl_points.push_back(Vector2d(theta_i, schlick_refl));
+        }
+
+        plotfile
+            .new_plot()
+            .set_points(ref_refl_points)
+            .set_title("Exact, eta = 1.5");
+
+        plotfile
+            .new_plot()
+            .set_points(schlick_refl_points)
+            .set_title("Schlick, eta = 1.5");
+
+        plotfile.write("unit tests/outputs/test_fresnel_reflectance_dielectric_schlick.gnuplot");
+    }
+
     double integrate_diffuse_fresnel_reflectance(const double eta)
     {
         const size_t SampleCount = 1024;
