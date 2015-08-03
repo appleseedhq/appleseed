@@ -121,7 +121,7 @@ namespace
             values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
             values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
 
-            // Clamp reflectance to [0.001, 1].
+            // Clamp reflectance.
             values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
 
             // Precompute stuff.
@@ -149,7 +149,7 @@ namespace
             values->m_channel_cdf *= rcp_pdf_sum;
             values->m_channel_cdf[values->m_channel_cdf.size() - 1] = 1.0f;
 
-            // Precompute the max radius.
+            // Precompute the (square of the) max radius.
             const size_t channel = min_index(values->m_reflectance);
             values->m_max_radius2 =
                 square(normalized_diffusion_max_radius(
@@ -220,6 +220,7 @@ namespace
                 value[i] = static_cast<float>(normalized_diffusion_profile(radius, values->m_dmfp, s, a));
             }
 
+            // Return r * R(r) * weight.
             value *= static_cast<float>(radius * values->m_weight);
         }
 

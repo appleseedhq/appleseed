@@ -80,10 +80,11 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         values.m_outside_ior = 1.0;
         values.m_anisotropy = g;
 
+        const ComputeRdBetterDipole rd_fun(1.0 / eta);
         compute_absorption_and_scattering(
+            rd_fun,
             values.m_reflectance,
             values.m_dmfp,
-            values.m_inside_ior / values.m_outside_ior,
             values.m_anisotropy,
             values.m_sigma_a,
             values.m_sigma_s);
@@ -174,7 +175,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     double integrate_dipole(
         const double rd,
         const double dmfp,
-        const size_t num_samples)
+        const size_t sample_count)
     {
         DipoleBSSRDFEvaluator<BSSRDFFactory> bssrdf_eval;
         bssrdf_eval.init_values_rd_dmfp(rd, dmfp, 1.0, 0.0);
@@ -183,7 +184,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         double integral = 0.0;
 
-        for (size_t i = 0; i < num_samples; ++i)
+        for (size_t i = 0; i < sample_count; ++i)
         {
             const double u = rand_double2(rng);
             const double r = dipole_sample(bssrdf_eval.get_sigma_tr(), u);
@@ -201,7 +202,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             integral += value / pdf;
         }
 
-        return integral / num_samples;
+        return integral / sample_count;
     }
 
     //
@@ -220,15 +221,15 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
     const double AlphaPrimeRoundtripTestEps = 0.00001;
 
-    TEST_CASE(BSSRDFReparam_DipoleRoundtrip)
+    TEST_CASE(BSSRDFReparam_StandardDipoleRoundtrip)
     {
-        EXPECT_FEQ_EPS(0.0, rd_alpha_prime_roundtrip<ComputeRd>(0.0, 1.6), AlphaPrimeRoundtripTestEps);
-        EXPECT_FEQ_EPS(0.1, rd_alpha_prime_roundtrip<ComputeRd>(0.1, 1.3), AlphaPrimeRoundtripTestEps);
-        EXPECT_FEQ_EPS(0.2, rd_alpha_prime_roundtrip<ComputeRd>(0.2, 1.2), AlphaPrimeRoundtripTestEps);
-        EXPECT_FEQ_EPS(0.4, rd_alpha_prime_roundtrip<ComputeRd>(0.4, 1.3), AlphaPrimeRoundtripTestEps);
-        EXPECT_FEQ_EPS(0.6, rd_alpha_prime_roundtrip<ComputeRd>(0.6, 1.4), AlphaPrimeRoundtripTestEps);
-        EXPECT_FEQ_EPS(0.8, rd_alpha_prime_roundtrip<ComputeRd>(0.8, 1.3), AlphaPrimeRoundtripTestEps);
-        EXPECT_FEQ_EPS(1.0, rd_alpha_prime_roundtrip<ComputeRd>(1.0, 1.5), AlphaPrimeRoundtripTestEps);
+        EXPECT_FEQ_EPS(0.0, rd_alpha_prime_roundtrip<ComputeRdStandardDipole>(0.0, 1.6), AlphaPrimeRoundtripTestEps);
+        EXPECT_FEQ_EPS(0.1, rd_alpha_prime_roundtrip<ComputeRdStandardDipole>(0.1, 1.3), AlphaPrimeRoundtripTestEps);
+        EXPECT_FEQ_EPS(0.2, rd_alpha_prime_roundtrip<ComputeRdStandardDipole>(0.2, 1.2), AlphaPrimeRoundtripTestEps);
+        EXPECT_FEQ_EPS(0.4, rd_alpha_prime_roundtrip<ComputeRdStandardDipole>(0.4, 1.3), AlphaPrimeRoundtripTestEps);
+        EXPECT_FEQ_EPS(0.6, rd_alpha_prime_roundtrip<ComputeRdStandardDipole>(0.6, 1.4), AlphaPrimeRoundtripTestEps);
+        EXPECT_FEQ_EPS(0.8, rd_alpha_prime_roundtrip<ComputeRdStandardDipole>(0.8, 1.3), AlphaPrimeRoundtripTestEps);
+        EXPECT_FEQ_EPS(1.0, rd_alpha_prime_roundtrip<ComputeRdStandardDipole>(1.0, 1.5), AlphaPrimeRoundtripTestEps);
     }
 
     TEST_CASE(BSSRDFReparam_BetterDipoleRoundtrip)
@@ -242,45 +243,40 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         EXPECT_FEQ_EPS(1.0, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(1.0, 1.5), AlphaPrimeRoundtripTestEps);
     }
 
-    TEST_CASE(BSSRDFReparam_VaryingDiffuseMeanFreePath)
+    TEST_CASE(BSSRDFReparamStandardDipole_VaryingDiffuseMeanFreePath)
     {
-        MersenneTwister rng;
-
-        Spectrum rd(Color3f(0.0f));
-
         const size_t N = 1000;
         const double Eta = 1.3;
         const double Anisotropy = 0.0;
 
-        Spectrum sigma_a1, sigma_s1;
-        Spectrum sigma_a, sigma_s;
+        MersenneTwister rng;
 
         for (size_t i = 0; i < N; ++i)
         {
-            rd = Color3f(static_cast<float>(rand_double1(rng)));
+            const ComputeRdStandardDipole rd_fun(1.0 / Eta);
+            const Spectrum rd(Color3f(static_cast<float>(rand_double1(rng))));
 
+            Spectrum sigma_a1, sigma_s1;
             compute_absorption_and_scattering(
+                rd_fun,
                 rd,
                 1.0,
-                Eta,
                 Anisotropy,
                 sigma_a1,
                 sigma_s1);
 
+            Spectrum sigma_a, sigma_s;
             const double dmfp = rand_double1(rng, 0.001, 10.0);
             compute_absorption_and_scattering(
+                rd_fun,
                 rd,
                 dmfp,
-                Eta,
                 Anisotropy,
                 sigma_a,
                 sigma_s);
 
-            const float sa = sigma_a1[0] / static_cast<float>(dmfp);
-            const float ss = sigma_s1[0] / static_cast<float>(dmfp);
-
-            EXPECT_FEQ_EPS(sa, sigma_a[0], 1.0e-6f);
-            EXPECT_FEQ_EPS(ss, sigma_s[0], 1.0e-6f);
+            EXPECT_FEQ_EPS(sigma_a1[0] / static_cast<float>(dmfp), sigma_a[0], 1.0e-6f);
+            EXPECT_FEQ_EPS(sigma_s1[0] / static_cast<float>(dmfp), sigma_s[0], 1.0e-6f);
         }
     }
 
@@ -289,16 +285,15 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         GnuplotFile plotfile;
         plotfile.set_title("BSSRDF Reparameterization");
         plotfile.set_xlabel("Rd");
-        plotfile.set_ylabel("alpha prime");
+        plotfile.set_ylabel("Alpha'");
         plotfile.set_xrange(-0.05, 1.0);
         plotfile.set_yrange(0.0, 1.05);
 
-        const size_t N = 1000;
         const double Eta = 1.3;
+        const ComputeRdStandardDipole std_rd_fun(Eta);
+        const ComputeRdBetterDipole better_rd_fun(Eta);
 
-        const ComputeRd std_f(Eta);
-        const ComputeRdBetterDipole better_f(Eta);
-
+        const size_t N = 1000;
         vector<Vector2d> std_points, better_points;
 
         for (size_t i = 0; i < N; ++i)
@@ -308,24 +303,24 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             std_points.push_back(
                 Vector2d(
                     rd,
-                    compute_alpha_prime(std_f, rd)));
+                    compute_alpha_prime(std_rd_fun, rd)));
 
             better_points.push_back(
                 Vector2d(
                     rd,
-                    compute_alpha_prime(better_f, rd)));
+                    compute_alpha_prime(better_rd_fun, rd)));
         }
 
         plotfile
             .new_plot()
             .set_points(std_points)
-            .set_title("dipole")
+            .set_title("Standard Dipole")
             .set_color("orange");
 
         plotfile
             .new_plot()
             .set_points(better_points)
-            .set_title("better dipole")
+            .set_title("Better Dipole")
             .set_color("blue");
 
         plotfile.write("unit tests/outputs/test_sss_reparam_compare.gnuplot");
@@ -640,7 +635,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         GnuplotFile plotfile;
         plotfile.set_title("Standard Dipole Integral");
         plotfile.set_xlabel("Rd");
-        plotfile.set_ylabel("Int");
+        plotfile.set_ylabel("Integral");
         plotfile.set_xrange(0.0, 1.0);
         plotfile.set_yrange(0.0, 1.25);
 
@@ -808,13 +803,13 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile
             .new_plot()
             .set_points(dp_points)
-            .set_title("dirpole")
+            .set_title("Directional Dipole")
             .set_color("orange");
 
         plotfile
             .new_plot()
             .set_points(nd_points)
-            .set_title("normdiff")
+            .set_title("Normalized Diffusion")
             .set_color("blue");
 
         plotfile.write(filename);

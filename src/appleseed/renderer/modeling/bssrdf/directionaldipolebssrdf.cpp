@@ -140,6 +140,7 @@ namespace
             value *= 0.5f;
 #endif
 
+            // Return r * R(r) * weight.
             const double radius = norm(incoming_point.get_point() - outgoing_point.get_point());
             value *= static_cast<float>(radius * values->m_weight);
         }

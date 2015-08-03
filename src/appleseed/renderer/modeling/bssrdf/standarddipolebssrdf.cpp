@@ -30,26 +30,20 @@
 #include "standarddipolebssrdf.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/bssrdf/sss.h"
-#include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
-#include "foundation/utility/memory.h"
 
 // Standard headers.
 #include <cmath>
 #include <cstddef>
-
-// Forward declarations.
-namespace renderer  { class Assembly; }
-namespace renderer  { class ShadingContext; }
 
 using namespace foundation;
 using namespace std;
@@ -114,9 +108,9 @@ namespace
                 reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
 
             const double r2 = square_norm(outgoing_point.get_point() - incoming_point.get_point());
-            const double eta = values->m_inside_ior / values->m_outside_ior;
-            const double Fdr = -1.440 / square(eta) + 0.710 / eta + 0.668 + 0.0636 * eta;
-            const double A = (1.0 + Fdr) / (1.0 - Fdr);
+            const double rcp_eta = values->m_outside_ior / values->m_inside_ior;
+            const double fdr = fresnel_internal_diffuse_reflectance(rcp_eta);
+            const double a = (1.0 + fdr) / (1.0 - fdr);
             const double sigma_tr = 1.0 / values->m_dmfp;
 
             value.resize(values->m_sigma_a.size());
@@ -148,7 +142,7 @@ namespace
                 //
 
                 const double zr = 1.0 / sigma_t_prime;
-                const double zv = zr * (1.0 + (4.0 / 3.0) * A);
+                const double zv = zr * (1.0 + (4.0 / 3.0) * a);
 
                 //
                 // Let's call xo the outgoing point, xi the incoming point and ni the normal at
@@ -177,7 +171,7 @@ namespace
                 const double dr = sqrt(r2 + zr * zr);
                 const double dv = sqrt(r2 + zv * zv);
 
-                // The expression for R(r) in [1] is incorrect. We use the correct expression from [2].
+                // The expression for R(r) in [1] is incorrect; use the correct expression from [2].
                 const double sigma_tr_dr = sigma_tr * dr;
                 const double sigma_tr_dv = sigma_tr * dv;
                 const double value_r = (sigma_tr_dr + 1.0) * exp(-sigma_tr_dr) / (dr * dr * dr);
@@ -185,8 +179,8 @@ namespace
                 value[i] = static_cast<float>(alpha_prime * RcpFourPi * (zr * value_r + zv * value_v));
             }
 
-            const double radius = norm(incoming_point.get_point() - outgoing_point.get_point());
-            value *= static_cast<float>(radius * values->m_weight);
+            // Return r * R(r) * weight.
+            value *= static_cast<float>(sqrt(r2) * values->m_weight);
         }
     };
 }

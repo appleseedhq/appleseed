@@ -41,10 +41,6 @@
 #include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/memory.h"
 
-// Standard headers.
-#include <cmath>
-#include <cstddef>
-
 using namespace foundation;
 using namespace std;
 
@@ -91,34 +87,20 @@ void DipoleBSSRDF::evaluate_inputs(
     values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
     values->m_dmfp *= values->m_dmfp_multiplier;
 
-    // Clamp reflectance to [0.001, 1].
+    // Clamp reflectance.
     values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
 
-#if 1
     // Compute sigma_a and sigma_s from the reflectance and dmfp parameters.
+    const ComputeRdStandardDipole rd_fun(values->m_outside_ior / values->m_inside_ior);     // 1 / eta
     compute_absorption_and_scattering(
+        rd_fun,
         values->m_reflectance,
         values->m_dmfp,
-        values->m_inside_ior / values->m_outside_ior,
         values->m_anisotropy,
         values->m_sigma_a,
         values->m_sigma_s);
-#else
-    // Skim milk.
-    values->m_sigma_a = Color3f(0.0014f, 0.0025f, 0.0142f) * 1000.0f;
-    values->m_sigma_s = Color3f(0.70f, 1.22f, 1.90f) * 1000.0f;
-    values->m_anisotropy = 0.0;
 
-    // TODO: compute dmfp here!
-    /*
-    effective_extinction_coefficient(
-        values->m_sigma_a,
-        values->m_sigma_s,
-        values->m_anisotropy,
-        values->m_sigma_tr);
-    */
-#endif
-
+    // Precompute the (square of the) max radius.
     values->m_max_radius2 = square(dipole_max_radius(1.0 / values->m_dmfp));
 }
 

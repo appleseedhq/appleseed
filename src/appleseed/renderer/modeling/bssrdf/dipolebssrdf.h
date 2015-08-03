@@ -38,11 +38,17 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
+// Standard headers.
+#include <cstddef>
+
 // Forward declarations.
-namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
+namespace renderer      { class Assembly; }
 namespace renderer      { class BSSRDFSample; }
+namespace renderer      { class InputEvaluator; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class ShadingContext; }
+namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {

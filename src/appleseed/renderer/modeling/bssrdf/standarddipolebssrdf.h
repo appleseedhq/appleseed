@@ -30,19 +30,18 @@
 #define APPLESEED_RENDERER_MODELING_BSSRDF_STANDARDDIPOLEBSSRDF_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
+#include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/dipolebssrdf.h"
-#include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Forward declarations.
 namespace foundation    { class Dictionary; }
-namespace foundation    { class DictionaryArray; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer
