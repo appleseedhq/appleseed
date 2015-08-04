@@ -142,8 +142,8 @@ namespace
 
             const double r2 = square_norm(outgoing_point.get_point() - incoming_point.get_point());
             const double eta = values->m_inside_ior / values->m_outside_ior;
-            const double two_c1 = fresnel_moment_two_c1(eta);
-            const double three_c2 = fresnel_moment_three_c2(eta);
+            const double two_c1 = fresnel_first_moment(eta);
+            const double three_c2 = fresnel_second_moment(eta);
             const double A = (1.0 + three_c2) / (1.0 - two_c1);
             const double cphi = 0.25 * (1.0 - two_c1);
             const double ce = 0.5 * (1.0 - three_c2);

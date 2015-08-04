@@ -163,7 +163,7 @@ namespace
             const double r2 = square(r);
             const double sigma_tr_r = sigma_tr * r;
             const double sigma_tr_r_one = 1.0 + sigma_tr_r;
-            const double cp_rcp_eta = 1.0 - fresnel_moment_two_c1(1.0 / eta);           // Cphi(1/eta) * 4
+            const double cp_rcp_eta = 1.0 - fresnel_first_moment(1.0 / eta);            // Cphi(1/eta) * 4
 
             const double t0 = exp(-sigma_tr_r) / (cp_rcp_eta * FourPiSquare * r2 * r);
             const double t1 = r2 / D + 3.0 * sigma_tr_r_one * dot_xw;
@@ -198,8 +198,8 @@ namespace
             const Vector3d wv = -reflect(wr, ni_star);                                  // direction of the virtual ray source
 
             // Precompute some stuff.
-            const double cp = 0.25 * (1.0 - fresnel_moment_two_c1(eta));
-            const double ce = 0.5 * (1.0 - fresnel_moment_three_c2(eta));
+            const double cp = 0.25 * (1.0 - fresnel_first_moment(eta));
+            const double ce = 0.5 * (1.0 - fresnel_second_moment(eta));
             const double A = (1.0 - ce) / (2.0 * cp);                                   // reflection parameter
             const double dot_xoxi_wr = dot(xoxi, wr);
             const double dot_wr_no = dot(wr, no);
