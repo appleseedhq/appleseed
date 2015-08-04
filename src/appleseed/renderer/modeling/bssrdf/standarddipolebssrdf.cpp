@@ -127,22 +127,24 @@ namespace
                 // We have
                 //
                 //   zr = 1 / sigma_t_prime
-                //   zv = zr + 4 * A * D
+                //   zv = -zr - 4 * A * D
                 //
                 // where
                 //
                 //   D = 1 / (3 * sigma_t_prime)
                 //
-                // This simplifies to
+                // Note that we use the sign conventions of the Better Dipole model:
+                // zr is positive, zv is negative.
                 //
-                //   zr = 1 / sigma_t_prime
-                //   zv = zr + 4 * A / (3 * sigma_t_prime)
-                //      = zr + zr * 4/3 * A
-                //      = zr * (1 + 4/3 * A)
+                // The expression of zv can thus be simplified:
+                //
+                //   zv = -zr - 4 * A / (3 * sigma_t_prime)
+                //      = -zr - zr * 4/3 * A
+                //      = -zr * (1 + 4/3 * A)
                 //
 
                 const double zr = 1.0 / sigma_t_prime;
-                const double zv = zr * (1.0 + (4.0 / 3.0) * a);
+                const double zv = -zr * (1.0 + (4.0 / 3.0) * a);
 
                 //
                 // Let's call xo the outgoing point, xi the incoming point and ni the normal at
@@ -172,11 +174,15 @@ namespace
                 const double dv = sqrt(r2 + zv * zv);
 
                 // The expression for R(r) in [1] is incorrect; use the correct expression from [2].
+                const double rcp_dr = 1.0 / dr;
+                const double rcp_dv = 1.0 / dv;
                 const double sigma_tr_dr = sigma_tr * dr;
                 const double sigma_tr_dv = sigma_tr * dv;
-                const double value_r = (sigma_tr_dr + 1.0) * exp(-sigma_tr_dr) / (dr * dr * dr);
-                const double value_v = (sigma_tr_dv + 1.0) * exp(-sigma_tr_dv) / (dv * dv * dv);
-                value[i] = static_cast<float>(alpha_prime * RcpFourPi * (zr * value_r + zv * value_v));
+                const double kr = zr * (sigma_tr_dr + 1.0) * square(rcp_dr);
+                const double kv = zv * (sigma_tr_dv + 1.0) * square(rcp_dv);
+                const double er = exp(-sigma_tr_dr) * rcp_dr;
+                const double ev = exp(-sigma_tr_dv) * rcp_dv;
+                value[i] = static_cast<float>(alpha_prime * RcpFourPi * (kr * er - kv * ev));
             }
 
             // Return r * R(r) * weight.
