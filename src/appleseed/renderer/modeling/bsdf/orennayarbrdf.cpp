@@ -231,7 +231,7 @@ namespace
             }
             assert(C2 >= 0.0);
 
-            const double C3 = 0.125 * (sigma2 / (sigma2 + 0.09) * square(4.0 * alpha * beta * RcpPiSq)) * tan((alpha + beta) * 0.5);
+            const double C3 = 0.125 * (sigma2 / (sigma2 + 0.09) * square(4.0 * alpha * beta * RcpPiSquare)) * tan((alpha + beta) * 0.5);
             assert(C3 >= 0.0);
 
             value = reflectance ;
