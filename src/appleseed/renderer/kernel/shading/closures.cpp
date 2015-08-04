@@ -423,6 +423,7 @@ void CompositeSurfaceClosure::process_closure_tree(
 
                   add_closure<OSLNopLayerBSDFInputValues>(
                       static_cast<ClosureID>(c->id),
+                      original_shading_basis,
                       w,
                       Vector3d(p->N),
                       values);
