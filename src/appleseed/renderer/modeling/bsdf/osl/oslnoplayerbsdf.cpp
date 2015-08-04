@@ -61,11 +61,12 @@ namespace
     {
         OSLLayerHelper(
             const BSDF*         osl_bsdf,
+            const Basis3d&      shading_basis,
             void*               ci)
         {
             OSL::ClosureColor* closure_tree = reinterpret_cast<OSL::ClosureColor*>(ci);
             CompositeSurfaceClosure* c = reinterpret_cast<CompositeSurfaceClosure*>(data);
-            new (c) CompositeSurfaceClosure(osl_bsdf, closure_tree);
+            new (c) CompositeSurfaceClosure(osl_bsdf, shading_basis, closure_tree);
         }
 
         // Must be first (alignment).
@@ -108,7 +109,7 @@ namespace
             const OSLNopLayerBSDFInputValues* values =
                 reinterpret_cast<const OSLNopLayerBSDFInputValues*>(data);
 
-            OSLLayerHelper helper(values->m_osl_bsdf, values->m_base);
+            OSLLayerHelper helper(values->m_osl_bsdf, sample.get_shading_basis(), values->m_base);
             values->m_osl_bsdf->sample(
                 helper.data,
                 adjoint,
@@ -130,7 +131,7 @@ namespace
             const OSLNopLayerBSDFInputValues* values =
                 reinterpret_cast<const OSLNopLayerBSDFInputValues*>(data);
 
-            OSLLayerHelper helper(values->m_osl_bsdf, values->m_base);
+            OSLLayerHelper helper(values->m_osl_bsdf, shading_basis, values->m_base);
             const double pdf = values->m_osl_bsdf->evaluate(
                 helper.data,
                 adjoint,
@@ -156,7 +157,7 @@ namespace
             const OSLNopLayerBSDFInputValues* values =
                 reinterpret_cast<const OSLNopLayerBSDFInputValues*>(data);
 
-            OSLLayerHelper helper(values->m_osl_bsdf, values->m_base);
+            OSLLayerHelper helper(values->m_osl_bsdf, shading_basis, values->m_base);
             const double pdf = values->m_osl_bsdf->evaluate_pdf(
                 helper.data,
                 geometric_normal,

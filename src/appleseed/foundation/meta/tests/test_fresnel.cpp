@@ -31,14 +31,18 @@
 #include "foundation/image/regularspectrum.h"
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/mersennetwister.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
+#include "foundation/utility/gnuplotfile.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
 #include <cmath>
 #include <cstddef>
+#include <vector>
 
 using namespace foundation;
 using namespace std;
@@ -114,5 +118,182 @@ TEST_SUITE(Foundation_Math_Fresnel)
 
             EXPECT_FEQ_EPS(tr_eta, tr_rcp_eta, 1.0e-8);
         }
+    }
+
+    TEST_CASE(PlotFresnelReflectanceTransmittanceDielectric)
+    {
+        GnuplotFile plotfile;
+        plotfile.set_title("Fresnel Reflectance/Transmittance for a Dielectric");
+        plotfile.set_xlabel("Theta");
+        plotfile.set_ylabel("Reflectance");
+
+        const double Eta = 1.5;
+        const size_t PointCount = 256;
+        vector<Vector2d> reflectance_points, transmittance_points;
+
+        for (size_t i = 0; i < PointCount; ++i)
+        {
+            const double theta_i = fit<size_t, double>(i, 0, PointCount - 1, 0.0, 90.0);
+            const double cos_theta_i = cos(deg_to_rad(theta_i));
+
+            const double sin_theta_i2 = 1.0 - square(cos_theta_i);
+            const double sin_theta_t2 = sin_theta_i2 / square(Eta);
+            const double cos_theta_t2 = 1.0 - sin_theta_t2;
+            assert(cos_theta_t2 >= 0.0);
+            const double cos_theta_t = sqrt(cos_theta_t2);
+
+            double reflectance;
+            fresnel_reflectance_dielectric(reflectance, Eta, cos_theta_i, cos_theta_t);
+
+            double transmittance;
+            fresnel_transmittance_dielectric(transmittance, Eta, cos_theta_i);
+
+            reflectance_points.push_back(Vector2d(theta_i, reflectance));
+            transmittance_points.push_back(Vector2d(theta_i, transmittance));
+        }
+
+        plotfile
+            .new_plot()
+            .set_points(reflectance_points)
+            .set_title("Reflectance, eta = 1.5");
+
+        plotfile
+            .new_plot()
+            .set_points(transmittance_points)
+            .set_title("Transmittance, eta = 1.5");
+
+        plotfile.write("unit tests/outputs/test_fresnel_reflectance_transmittance_dielectric.gnuplot");
+    }
+
+    TEST_CASE(PlotFresnelReflectanceDielectricSchlick)
+    {
+        GnuplotFile plotfile;
+        plotfile.set_title("Fresnel Reflectance for a Dielectric, Schlick Approximation");
+        plotfile.set_xlabel("Theta");
+        plotfile.set_ylabel("Reflectance");
+
+        const double Eta = 1.5;
+        const size_t PointCount = 256;
+        vector<Vector2d> ref_refl_points, schlick_refl_points;
+
+        for (size_t i = 0; i < PointCount; ++i)
+        {
+            const double theta_i = fit<size_t, double>(i, 0, PointCount - 1, 0.0, 90.0);
+            const double cos_theta_i = cos(deg_to_rad(theta_i));
+
+            const double sin_theta_i2 = 1.0 - square(cos_theta_i);
+            const double sin_theta_t2 = sin_theta_i2 / square(Eta);
+            const double cos_theta_t2 = 1.0 - sin_theta_t2;
+            assert(cos_theta_t2 >= 0.0);
+            const double cos_theta_t = sqrt(cos_theta_t2);
+
+            double ref_refl;
+            fresnel_reflectance_dielectric(ref_refl, Eta, cos_theta_i, cos_theta_t);
+
+            double r0;
+            normal_reflectance_dielectric(r0, Eta);
+
+            double schlick_refl;
+            fresnel_reflectance_dielectric_schlick(schlick_refl, r0, cos_theta_i);
+
+            ref_refl_points.push_back(Vector2d(theta_i, ref_refl));
+            schlick_refl_points.push_back(Vector2d(theta_i, schlick_refl));
+        }
+
+        plotfile
+            .new_plot()
+            .set_points(ref_refl_points)
+            .set_title("Exact, eta = 1.5");
+
+        plotfile
+            .new_plot()
+            .set_points(schlick_refl_points)
+            .set_title("Schlick, eta = 1.5");
+
+        plotfile.write("unit tests/outputs/test_fresnel_reflectance_dielectric_schlick.gnuplot");
+    }
+
+    double integrate_diffuse_fresnel_reflectance(const double eta)
+    {
+        const size_t SampleCount = 1024;
+        MersenneTwister rng;
+
+        double integral = 0.0;
+
+        for (size_t i = 0; i < SampleCount; ++i)
+        {
+            const Vector3d wi = sample_hemisphere_cosine(rand_vector2<Vector2d>(rng));
+            const double cos_theta_i = wi[1];
+
+            const double sin_theta_i2 = 1.0 - square(cos_theta_i);
+            const double sin_theta_t2 = sin_theta_i2 / square(eta);
+            const double cos_theta_t2 = 1.0 - sin_theta_t2;
+
+            double reflectance;
+            if (cos_theta_t2 >= 0.0)
+            {
+                const double cos_theta_t = sqrt(cos_theta_t2);
+                fresnel_reflectance_dielectric(reflectance, eta, cos_theta_i, cos_theta_t);
+            }
+            else
+            {
+                // Total internal reflection.
+                reflectance = 1.0;
+            }
+
+            const double value = reflectance * cos_theta_i;
+            const double pdf = cos_theta_i * RcpPi;
+
+            integral += value / pdf;
+        }
+
+        // todo: either we are computing the *average* internal diffuse reflectance,
+        // and we should divide by 2 * Pi, or we are just computing the integral, in
+        // which case we shouldn't divide at all. In any case, this allows to match
+        // the polynomial approximation perfectly.
+        integral *= RcpPi;
+
+        return integral / SampleCount;
+    }
+
+    TEST_CASE(PlotInternalDiffuseFresnelReflectance)
+    {
+        GnuplotFile plotfile;
+        plotfile.set_title("Internal Diffuse Fresnel Reflectance");
+        plotfile.set_xlabel("Eta");
+        plotfile.set_ylabel("Fdr");
+
+        const size_t PointCount = 256;
+        vector<Vector2d> integral_points, approx_points;
+
+        for (size_t i = 0; i < PointCount; ++i)
+        {
+            const double eta = fit<size_t, double>(i, 0, PointCount - 1, 0.5, 2.0);
+
+            // Pass 1/eta because we compute the *internal* diffuse reflectance.
+            integral_points.push_back(
+                Vector2d(
+                    eta,
+                    integrate_diffuse_fresnel_reflectance(1.0 / eta)));
+
+            approx_points.push_back(
+                Vector2d(
+                    eta,
+                    fresnel_internal_diffuse_reflectance(eta)));
+        }
+
+        plotfile
+            .new_plot()
+            .set_points(integral_points)
+            .set_title("Numerical Integration")
+            .set_color("blue");
+
+        plotfile
+            .new_plot()
+            .set_points(approx_points)
+            .set_title("Polynomial Approximation")
+            .set_color("orange");
+
+        plotfile.write("unit tests/outputs/test_fresnel_internal_diffuse_reflectance.gnuplot");
     }
 }

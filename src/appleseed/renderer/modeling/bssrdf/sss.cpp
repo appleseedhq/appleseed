@@ -35,10 +35,7 @@
 #include "foundation/math/scalar.h"
 
 // Standard headers.
-#include <algorithm>
-#include <cassert>
 #include <cmath>
-#include <cstddef>
 
 using namespace foundation;
 using namespace std;
@@ -50,25 +47,13 @@ namespace renderer
 // BSSRDF reparameterization implementation.
 //
 
-ComputeRd::ComputeRd(const double eta)
+ComputeRdStandardDipole::ComputeRdStandardDipole(const double rcp_eta)
 {
-    const double rcp_eta = 1.0 / eta;
-    const double rcp_eta2 = square(rcp_eta);
-
-    // Compute the the average diffuse Fresnel reflectance.
-    // The approximation comes from:
-    //   Towards Realistic Image Synthesis of Scattering Materials
-    //   Donner. C 2006, page 41, eq 5.27
-    const double fdr =
-        eta < 1
-            ? -0.4933 + (0.7099 * rcp_eta) - (0.3319 * rcp_eta2) + (0.0636 * rcp_eta * rcp_eta2)
-            : (-1.4933 * rcp_eta2) + (0.7099 * rcp_eta) + 0.6681 + (0.0636 * eta);
-
-    // eq 5.29
+    const double fdr = fresnel_internal_diffuse_reflectance(rcp_eta);
     m_a = (1.0 + fdr) / (1.0 - fdr);
 }
 
-double ComputeRd::operator()(const double alpha_prime) const
+double ComputeRdStandardDipole::operator()(const double alpha_prime) const
 {
     // [1] eq. 15.
     const double sqrt_3ap = sqrt(3.0 * (1.0 - alpha_prime));
@@ -109,44 +94,39 @@ double diffuse_mean_free_path(
 }
 
 double reduced_extinction_coefficient(
-    const double    diffuse_mean_free_path,
+    const double    dmfp,
     const double    alpha_prime)
 {
-    return 1.0 / (sqrt(3.0 * (1.0 - alpha_prime)) * diffuse_mean_free_path);
+    return 1.0 / (sqrt(3.0 * (1.0 - alpha_prime)) * dmfp);
 }
 
-void compute_absorption_and_scattering(
-    const Spectrum& rd,
-    const double    dmfp,
-    const double    eta,
-    const double    g,
-    Spectrum&       sigma_a,
-    Spectrum&       sigma_s)
+double effective_extinction_coefficient(
+    const double    sigma_a,
+    const double    sigma_s,
+    const double    anisotropy)
 {
-    sigma_a.resize(rd.size());
-    sigma_s.resize(rd.size());
+    const double sigma_s_prime = sigma_s * (1.0 - anisotropy);
+    const double sigma_t_prime = sigma_s_prime + sigma_a;
+    return sqrt(3.0 * sigma_a * sigma_t_prime);
+}
 
-    ComputeRdBetterDipole rd_fun(eta);
-    const double rcp_g_complement = 1.0 / (1.0 - g);
+void effective_extinction_coefficient(
+    const Spectrum& sigma_a,
+    const Spectrum& sigma_s,
+    const double    anisotropy,
+    Spectrum&       sigma_tr)
+{
+    assert(sigma_a.size() == sigma_s.size());
+    sigma_tr.resize(sigma_a.size());
 
-    for (size_t i = 0, e = rd.size(); i < e; ++i)
+    for (size_t i = 0, e = sigma_tr.size(); i < e; ++i)
     {
-        assert(rd[i] >= 0.0f);
-        assert(rd[i] <= 1.0f);
-
-        // Find alpha' by numerically inverting Rd(alpha').
-        const double alpha_prime = compute_alpha_prime(rd_fun, rd[i]);
-
-        // Compute reduced extinction coefficient.
-        const double sigma_t_prime =
-            reduced_extinction_coefficient(dmfp, alpha_prime);
-
-        // Compute scattering coefficient.
-        const double sigma_s_prime = alpha_prime * sigma_t_prime;
-        sigma_s[i] = static_cast<float>(sigma_s_prime * rcp_g_complement);
-
-        // Compute absorption coefficient.
-        sigma_a[i] = static_cast<float>(sigma_t_prime - sigma_s_prime);
+        sigma_tr[i] =
+            static_cast<float>(
+                effective_extinction_coefficient(
+                    static_cast<double>(sigma_a[i]),
+                    static_cast<double>(sigma_s[i]),
+                    anisotropy));
     }
 }
 
@@ -325,35 +305,40 @@ double normalized_diffusion_pdf(
 }
 
 double normalized_diffusion_max_radius(
+    const double    d)
+{
+    return d * NdCdfTableRmax;
+}
+
+double normalized_diffusion_max_radius(
     const double    l,
     const double    s)
 {
-    return NdCdfTableRmax * l / s;
+    return normalized_diffusion_max_radius(l / s);
 }
 
 
 //
-// Attenuation sampling implementation.
+// Dipole sampling implementation.
 //
 
-double sample_attenuation(
-    const double    sigma_t,
+double dipole_sample(
+    const double    sigma_tr,
     const double    s)
 {
-    return -log(1.0 - s) / sigma_t;
+    return -log(1.0 - s) / sigma_tr;
 }
 
-double pdf_attenuation(
+double dipole_pdf(
     const double    dist,
-    const double    sigma_t)
+    const double    sigma_tr)
 {
-    return sigma_t * exp(-sigma_t * dist);
+    return sigma_tr * exp(-sigma_tr * dist);
 }
 
-double max_attenuation_distance(const double sigma_t)
+double dipole_max_radius(const double sigma_tr)
 {
-    // 18.420680743952367 == -log(0.00000001)
-    return 18.420680743952367 / sigma_t;
+    return -log(0.00001) / sigma_tr;
 }
 
 }   // namespace renderer

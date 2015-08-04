@@ -130,11 +130,7 @@ void ShadingContext::execute_osl_normal(
     {
         const size_t index = c->choose_closure(s);
         shading_point.set_shading_basis(
-            Basis3d(
-                c->get_closure_normal(index),
-                c->closure_has_tangent(index)
-                    ? c->get_closure_tangent(index)
-                    : shading_point.get_shading_basis().get_tangent_u()));
+            c->get_closure_shading_basis(index));
     }
 }
 

@@ -30,8 +30,8 @@
 #include "oslmaterial.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/osl/oslbsdf.h"
+#include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/oslbssrdf.h"
 #include "renderer/modeling/edf/edf.h"

@@ -34,21 +34,20 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/bsdf/osl/oslmicrofacetbrdf.h"
+#include "renderer/modeling/bsdf/osl/oslmicrofacetbtdf.h"
+#include "renderer/modeling/bsdf/osl/oslnoplayerbsdf.h"
 #include "renderer/modeling/bsdf/ashikhminbrdf.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
-#include "renderer/modeling/bsdf/osl/oslmicrofacetbrdf.h"
-#include "renderer/modeling/bsdf/osl/oslmicrofacetbtdf.h"
-#include "renderer/modeling/bsdf/osl/oslnoplayerbsdf.h"
 #include "renderer/modeling/bsdf/velvetbrdf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
@@ -226,7 +225,10 @@ namespace
             const size_t            offset) const APPLESEED_OVERRIDE
         {
             CompositeSurfaceClosure* c = reinterpret_cast<CompositeSurfaceClosure*>(input_evaluator.data());
-            new (c) CompositeSurfaceClosure(this, shading_point.get_osl_shader_globals().Ci);
+            new (c) CompositeSurfaceClosure(
+                this,
+                shading_point.get_shading_basis(),
+                shading_point.get_osl_shader_globals().Ci);
         }
 
         FORCE_INLINE virtual void sample(
@@ -243,7 +245,7 @@ namespace
                 const double s = sample.get_sampling_context().next_double2();
 
                 const size_t closure_index = c->choose_closure(s);
-                sample.set_shading_basis(make_osl_basis(c, closure_index, sample.get_shading_basis()));
+                sample.set_shading_basis(c->get_closure_shading_basis(closure_index));
                 bsdf_to_closure_id(
                     c->get_closure_type(closure_index)).sample(
                         c->get_closure_input_values(closure_index),
@@ -274,15 +276,13 @@ namespace
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
                 Spectrum s;
-                const Basis3d new_shading_basis = make_osl_basis(c, i, shading_basis);
-
                 const double bsdf_prob =
                     bsdf_to_closure_id(c->get_closure_type(i)).evaluate(
                         c->get_closure_input_values(i),
                         adjoint,
                         false,
                         geometric_normal,
-                        new_shading_basis,
+                        c->get_closure_shading_basis(i),
                         outgoing,
                         incoming,
                         modes,
@@ -312,13 +312,11 @@ namespace
 
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
-                const Basis3d new_shading_basis = make_osl_basis(c, i, shading_basis);
-
                 const double bsdf_prob =
                     bsdf_to_closure_id(c->get_closure_type(i)).evaluate_pdf(
                         c->get_closure_input_values(i),
                         geometric_normal,
-                        new_shading_basis,
+                        c->get_closure_shading_basis(i),
                         outgoing,
                         incoming,
                         modes);
@@ -401,19 +399,6 @@ namespace
             BSDF* bsdf = m_all_bsdfs[cid];
             assert(bsdf);
             return *bsdf;
-        }
-
-        Basis3d make_osl_basis(
-            const CompositeSurfaceClosure* c,
-            const size_t            index,
-            const Basis3d&          original_basis) const
-        {
-            return
-                Basis3d(
-                    c->get_closure_normal(index),
-                    c->closure_has_tangent(index)
-                        ? c->get_closure_tangent(index)
-                        : original_basis.get_tangent_u());
         }
     };
 

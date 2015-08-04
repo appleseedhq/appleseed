@@ -72,7 +72,7 @@ class PixelRendererBase
         TileStack&                  aov_tiles) APPLESEED_OVERRIDE;
 
   protected:
-    void signal_invalid_sample();
+    void signal_invalid_sample(const int x, const int y);
 
   private:
     foundation::uint64 m_invalid_sample_count;

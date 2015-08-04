@@ -78,11 +78,12 @@ void PixelRendererBase::on_tile_end(
 {
 }
 
-void PixelRendererBase::signal_invalid_sample()
+void PixelRendererBase::signal_invalid_sample(const int x, const int y)
 {
     // todo: mark pixel as faulty in the diagnostic map.
     if (m_invalid_sample_count++ == 0)
-        RENDERER_LOG_WARNING("found at least one pixel sample with NaN or negative values.");
+        RENDERER_LOG_WARNING("at least one sample at pixel (%d, %d) has NaN or negative values.", x, y);
+    else RENDERER_LOG_WARNING("found more pixel samples with NaN or negative values.");
 }
 
 }   // namespace renderer

@@ -42,7 +42,7 @@ const	float	$const14	2		%read{22,22} %write{2147483647,-1}
 const	float	$const15	0.75		%read{23,23} %write{2147483647,-1}
 temp	float	$tmp11	%read{25,25} %write{23,23}
 const	float	$const16	0		%read{26,26} %write{2147483647,-1}
-const	float	$const17	1		%read{25,25} %write{2147483647,-1}
+const	float	$const17	1		%read{25,31} %write{2147483647,-1}
 const	string	$const18	"clamp"		%read{24,24} %write{2147483647,-1}
 temp	float	$tmp12	%read{26,26} %write{25,25}
 temp	color	$tmp13	%read{29,29} %write{28,28}
@@ -125,9 +125,9 @@ code ___main___
 # marble.osl:58
 #         Ks * Cs * phong(N, exponent);
 	functioncall	$const19 32 	%line{58} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:573
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:572
 # closure color as_velvet(normal N, float alpha) BUILTIN;
-	closure		$tmp15 $const23 N $const20 $const21 $const22 exponent exponent 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{573} %argrw{"wrrrrrrr"}
+	closure		$tmp15 $const23 N $const20 $const21 $const22 exponent exponent $const17 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{572} %argrw{"wrrrrrrrr"}
 # marble.osl:58
 #         Ks * Cs * phong(N, exponent);
 	mul		$tmp19 Ks Cs 	%filename{"marble.osl"} %line{58} %argrw{"wrr"}

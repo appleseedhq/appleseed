@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,74 +26,99 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_NORMALIZEDDIFFUSIONBSSRDF_H
-#define APPLESEED_RENDERER_MODELING_BSSRDF_NORMALIZEDDIFFUSIONBSSRDF_H
+#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_DIPOLEBSSRDF_H
+#define APPLESEED_RENDERER_MODELING_BSSRDF_DIPOLEBSSRDF_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/ibssrdffactory.h"
 #include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
-namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
-namespace renderer      { class BSSRDF;  }
+namespace renderer      { class Assembly; }
+namespace renderer      { class BSSRDFSample; }
+namespace renderer      { class InputEvaluator; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class ShadingContext; }
+namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {
 
 //
-// Normalized diffusion BSSRDF input values.
+// Dipole BSSRDF input values.
 //
 
-APPLESEED_DECLARE_INPUT_VALUES(NormalizedDiffusionBSSRDFInputValues)
+APPLESEED_DECLARE_INPUT_VALUES(DipoleBSSRDFInputValues)
 {
     double      m_weight;
     Spectrum    m_reflectance;
     double      m_reflectance_multiplier;
     double      m_dmfp;
     double      m_dmfp_multiplier;
+    double      m_anisotropy;
     double      m_outside_ior;
     double      m_inside_ior;
 
     // Precomputed values.
-    Spectrum    m_s;
-    Spectrum    m_channel_pdf;
-    Spectrum    m_channel_cdf;
+    Spectrum    m_sigma_a;
+    Spectrum    m_sigma_s;
     double      m_max_radius2;
 };
 
 
 //
-// Normalized diffusion BSSRDF factory.
+// Base class for dipole BSSRDFs.
 //
 
-class APPLESEED_DLLSYMBOL NormalizedDiffusionBSSRDFFactory
+class DipoleBSSRDF
+  : public BSSRDF
+{
+  public:
+    // Constructor.
+    DipoleBSSRDF(
+        const char*             name,
+        const ParamArray&       params);
+
+    virtual size_t compute_input_data_size(
+        const Assembly&         assembly) const APPLESEED_OVERRIDE;
+
+    virtual void evaluate_inputs(
+        const ShadingContext&   shading_context,
+        InputEvaluator&         input_evaluator,
+        const ShadingPoint&     shading_point,
+        const size_t            offset = 0) const APPLESEED_OVERRIDE;
+
+    virtual bool sample(
+        const void*             data,
+        BSSRDFSample&           sample) const APPLESEED_OVERRIDE;
+
+    virtual double evaluate_pdf(
+        const void*             data,
+        const size_t            channel,
+        const double            radius) const APPLESEED_OVERRIDE;
+};
+
+
+//
+// Base class for dipole BSSRDF factories.
+//
+
+class APPLESEED_DLLSYMBOL DipoleBSSRDFFactory
   : public IBSSRDFFactory
 {
   public:
-    // Return a string identifying this BSSRDF model.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
-
-    // Return metadata for this BSSRDF model.
-    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
-
-    // Return metadata for the inputs of this BSSRDF model.
     virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
-
-    // Create a new BSSRDF instance.
-    virtual foundation::auto_release_ptr<BSSRDF> create(
-        const char*         name,
-        const ParamArray&   params) const APPLESEED_OVERRIDE;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_NORMALIZEDDIFFUSIONBSSRDF_H
+#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_DIPOLEBSSRDF_H

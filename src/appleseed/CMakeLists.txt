@@ -1290,8 +1290,6 @@ if (WITH_OSL)
     )
 endif ()
 
-
-
 set (renderer_modeling_bssrdf_sources
     renderer/modeling/bssrdf/bssrdf.cpp
     renderer/modeling/bssrdf/bssrdf.h
@@ -1299,6 +1297,8 @@ set (renderer_modeling_bssrdf_sources
     renderer/modeling/bssrdf/bssrdffactoryregistrar.h
     renderer/modeling/bssrdf/bssrdfsample.h
     renderer/modeling/bssrdf/bssrdftraits.h
+    renderer/modeling/bssrdf/dipolebssrdf.cpp
+    renderer/modeling/bssrdf/dipolebssrdf.h
     renderer/modeling/bssrdf/directionaldipolebssrdf.cpp
     renderer/modeling/bssrdf/directionaldipolebssrdf.h
     renderer/modeling/bssrdf/gaussianbssrdf.cpp
@@ -1306,6 +1306,8 @@ set (renderer_modeling_bssrdf_sources
     renderer/modeling/bssrdf/ibssrdffactory.h
     renderer/modeling/bssrdf/sss.cpp
     renderer/modeling/bssrdf/sss.h
+    renderer/modeling/bssrdf/standarddipolebssrdf.cpp
+    renderer/modeling/bssrdf/standarddipolebssrdf.h
 )
 if (WITH_NORMALIZED_DIFFUSION_BSSRDF)
     list (APPEND renderer_modeling_bssrdf_sources
