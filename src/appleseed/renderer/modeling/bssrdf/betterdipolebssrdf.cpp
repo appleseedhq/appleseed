@@ -91,14 +91,12 @@ namespace
 
         virtual void evaluate_inputs(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
+            uint8*                  data,
             const ShadingPoint&     shading_point,
             const size_t            offset) const APPLESEED_OVERRIDE
         {
-            BSSRDF::evaluate_inputs(shading_context, input_evaluator, shading_point, offset);
-
             DipoleBSSRDFInputValues* values =
-                reinterpret_cast<DipoleBSSRDFInputValues*>(input_evaluator.data() + offset);
+                reinterpret_cast<DipoleBSSRDFInputValues*>(data + offset);
 
             // Apply multipliers.
             values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);

@@ -120,6 +120,14 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const ShadingPoint&         shading_point,
         const size_t                offset = 0) const;
 
+    // Evaluate the inputs of this BSSRDF and of its child BSSRDFs, if any.
+    // This method is called once per shading point and pair of incoming/outgoing directions.
+    virtual void evaluate_inputs(
+        const ShadingContext&       shading_context,
+        foundation::uint8*          data,
+        const ShadingPoint&         shading_point,
+        const size_t                offset = 0) const = 0;
+
     // Sample r * R(r).
     virtual bool sample(
         const void*                 data,

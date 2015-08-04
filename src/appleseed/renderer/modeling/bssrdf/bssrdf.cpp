@@ -87,6 +87,7 @@ void BSSRDF::evaluate_inputs(
     const size_t            offset) const
 {
     input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0), offset);
+    evaluate_inputs(shading_context, input_evaluator.data(), shading_point, offset);
 }
 
 }   // namespace renderer
