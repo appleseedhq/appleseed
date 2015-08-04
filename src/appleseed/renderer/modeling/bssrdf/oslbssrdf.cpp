@@ -33,7 +33,6 @@
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
-#include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
@@ -64,10 +63,6 @@ namespace
             const ParamArray&           params)
           : BSSRDF(name, params)
         {
-            m_directional_bssrdf =
-                DirectionalDipoleBSSRDFFactory().create(
-                    "osl_dir_bssrdf",
-                    ParamArray());
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -88,9 +83,6 @@ namespace
             if (!BSSRDF::on_frame_begin(project, assembly, abort_switch))
                 return false;
 
-            if (!m_directional_bssrdf->on_frame_begin(project, assembly, abort_switch))
-                return false;
-
             return true;
         }
 
@@ -98,7 +90,6 @@ namespace
             const Project&              project,
             const Assembly&             assembly) APPLESEED_OVERRIDE
         {
-            m_directional_bssrdf->on_frame_end(project, assembly);
             BSSRDF::on_frame_end(project, assembly);
         }
 
@@ -119,16 +110,7 @@ namespace
 
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
-                if (c->get_closure_type(i) == SubsurfaceDirectionalID)
-                {
-                    m_directional_bssrdf->evaluate_inputs(
-                        shading_context,
-                        input_evaluator,
-                        shading_point,
-                        c->get_closure_input_offset(i));
-                }
-                else
-                    assert(false);
+                // todo: implement this...
             }
         }
 
@@ -141,7 +123,7 @@ namespace
 
             if (c->get_num_closures() > 0)
             {
-                // TODO: implement this...
+                // todo: implement this...
             }
 
             return false;
@@ -158,7 +140,8 @@ namespace
             const CompositeSubsurfaceClosure* c =
                 reinterpret_cast<const CompositeSubsurfaceClosure*>(data);
 
-            // TODO: implement this...
+            // todo: implement this...
+
             value.set(0.0f);
         }
 
@@ -170,12 +153,10 @@ namespace
             const CompositeSubsurfaceClosure* c =
                 reinterpret_cast<const CompositeSubsurfaceClosure*>(data);
 
-            // TODO: implement this...
+            // todo: implement this...
+
             return 0.0;
         }
-
-      private:
-        auto_release_ptr<BSSRDF> m_directional_bssrdf;
     };
 }
 

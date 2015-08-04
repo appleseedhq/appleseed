@@ -83,6 +83,11 @@ namespace
         OSL::ustring    tag;
     };
 
+    struct DiffuseBSDFClosureParams
+    {
+        OSL::Vec3       N;
+    };
+
     struct DisneyBRDFClosureParams
     {
         OSL::Vec3       N;
@@ -100,9 +105,24 @@ namespace
         float           clearcoat_gloss;
     };
 
-    struct DiffuseBSDFClosureParams
+    OSL::ustring standard_dipole_profile_name("standard_dipole");
+    OSL::ustring better_dipole_profile_name("better_dipole");
+    OSL::ustring directional_dipole_profile_name("directional_dipole");
+
+    struct DipoleSubsurfaceClosureParams
     {
-        OSL::Vec3       N;
+        OSL::ustring    profile;
+        OSL::Color3     rd;
+        float           dmfp;
+        float           g;
+        float           eta;
+    };
+
+    struct GaussianSubsurfaceClosureParams
+    {
+        OSL::Color3     rd;
+        float           radius;
+        float           eta;
     };
 
     OSL::ustring beckmann_mdf_name("beckmann");
@@ -118,6 +138,13 @@ namespace
         float           yalpha;
         float           eta;
         int             refract;
+    };
+
+    struct NormalizedSubsurfaceClosureParams
+    {
+        OSL::Color3     rd;
+        float           dmfp;
+        float           eta;
     };
 
     struct OrenNayarBRDFClosureParams
@@ -141,16 +168,6 @@ namespace
     {
         OSL::Vec3       N;
         float           alpha;
-    };
-
-    OSL::ustring directional_profile_name("directional");
-
-    struct SubsurfaceClosureParams
-    {
-        OSL::ustring    profile;
-        OSL::Color3     reflectance;
-        OSL::Vec3       diffuse_mean_free_path;
-        float           eta;
     };
 }
 
@@ -518,7 +535,6 @@ void CompositeSurfaceClosure::process_closure_tree(
                       values);
               }
               break;
-
             }
         }
         break;
@@ -660,31 +676,59 @@ void CompositeSubsurfaceClosure::process_closure_tree(
             const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
             const Color3f w = weight * Color3f(c->w);
 
-            if (c->id == SubsurfaceID)
+            if (c->id == SubsurfaceDipoleID)
             {
-                /*
-                const SubsurfaceClosureParams* p =
-                    reinterpret_cast<const SubsurfaceClosureParams*>(c->data());
+                const DipoleSubsurfaceClosureParams* p =
+                    reinterpret_cast<const DipoleSubsurfaceClosureParams*>(c->data());
 
-                if (p->profile == directional_profile_name)
-                {
-                    DirectionalDipoleBSSRDFInputValues values;
-                    values.m_reflectance = Color3f(p->reflectance);
-                    values.m_dmfp = Color3f(p->diffuse_mean_free_path);
-                    values.m_dmfp_multiplier = 1.0;
-                    values.m_anisotropy = 0.0;
-                    values.m_outside_ior = 1.0;
-                    values.m_inside_ior = 1.0 / p->eta;
+                DipoleBSSRDFInputValues values;
+                values.m_weight = 1.0;
+                values.m_reflectance = Color3f(p->rd);
+                values.m_reflectance_multiplier = 1.0;
+                values.m_dmfp = p->dmfp;
+                values.m_dmfp_multiplier = 1.0;
+                values.m_anisotropy = p->g;
+                values.m_inside_ior = p->eta;
+                values.m_outside_ior = 1.0;
 
-                    add_closure<DirectionalDipoleBSSRDFInputValues>(
-                        SubsurfaceDirectionalID,
-                        w,
-                        values);
+                if (p->profile == better_dipole_profile_name)
+                    add_closure<DipoleBSSRDFInputValues>(SubsurfaceBetterDipoleID, w, values);
+                else if (p->profile == standard_dipole_profile_name)
+                    add_closure<DipoleBSSRDFInputValues>(SubsurfaceDipoleID, w, values);
+                else if (p->profile == directional_dipole_profile_name)
+                    add_closure<DipoleBSSRDFInputValues>(SubsurfaceDirectionalDipoleID, w, values);
+            }
+            else if (c->id == SubsurfaceGaussianID)
+            {
+                const GaussianSubsurfaceClosureParams* p =
+                    reinterpret_cast<const GaussianSubsurfaceClosureParams*>(c->data());
 
-                }
-                else
-                    assert(false);
-                */
+                GaussianBSSRDFInputValues values;
+                values.m_reflectance = Color3f(p->rd);
+                values.m_reflectance_multiplier = 1.0;
+                values.m_v = p->radius;
+                values.m_inside_ior = p->eta;
+                values.m_outside_ior = 1.0;
+
+                add_closure<GaussianBSSRDFInputValues>(SubsurfaceGaussianID, w, values);
+            }
+            else if (c->id == SubsurfaceNormalizedID)
+            {
+#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
+                const NormalizedSubsurfaceClosureParams* p =
+                    reinterpret_cast<const NormalizedSubsurfaceClosureParams*>(c->data());
+
+                NormalizedDiffusionBSSRDFInputValues values;
+                values.m_weight = 1.0;
+                values.m_reflectance = Color3f(p->rd);
+                values.m_reflectance_multiplier = 1.0;
+                values.m_dmfp = p->dmfp;
+                values.m_dmfp_multiplier = 1.0;
+                values.m_inside_ior = p->eta;
+                values.m_outside_ior = 1.0;
+
+                add_closure<NormalizedDiffusionBSSRDFInputValues>(SubsurfaceNormalizedID, w, values);
+#endif
             }
         }
         break;
@@ -901,11 +945,22 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                    CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, clearcoat_gloss),
                                    CLOSURE_FINISH_PARAM(DisneyBRDFClosureParams) } },
 
-        { "as_subsurface", SubsurfaceID, { CLOSURE_STRING_PARAM(SubsurfaceClosureParams, profile),
-                                           CLOSURE_COLOR_PARAM(SubsurfaceClosureParams, reflectance),
-                                           CLOSURE_VECTOR_PARAM(SubsurfaceClosureParams, diffuse_mean_free_path),
-                                           CLOSURE_FLOAT_PARAM(SubsurfaceClosureParams, eta),
-                                           CLOSURE_FINISH_PARAM(SubsurfaceClosureParams) } },
+        { "as_subsurface_dipole", SubsurfaceDipoleID, { CLOSURE_STRING_PARAM(DipoleSubsurfaceClosureParams, profile),
+                                                        CLOSURE_COLOR_PARAM(DipoleSubsurfaceClosureParams, rd),
+                                                        CLOSURE_FLOAT_PARAM(DipoleSubsurfaceClosureParams, dmfp),
+                                                        CLOSURE_FLOAT_PARAM(DipoleSubsurfaceClosureParams, g),
+                                                        CLOSURE_FLOAT_PARAM(DipoleSubsurfaceClosureParams, eta),
+                                                        CLOSURE_FINISH_PARAM(DipoleSubsurfaceClosureParams) } },
+
+        { "as_subsurface_gaussian", SubsurfaceGaussianID, { CLOSURE_COLOR_PARAM(GaussianSubsurfaceClosureParams, rd),
+                                                            CLOSURE_FLOAT_PARAM(GaussianSubsurfaceClosureParams, radius),
+                                                            CLOSURE_FLOAT_PARAM(GaussianSubsurfaceClosureParams, eta),
+                                                            CLOSURE_FINISH_PARAM(GaussianSubsurfaceClosureParams) } },
+
+        { "as_subsurface_normalized", SubsurfaceNormalizedID, { CLOSURE_COLOR_PARAM(NormalizedSubsurfaceClosureParams, rd),
+                                                                CLOSURE_FLOAT_PARAM(NormalizedSubsurfaceClosureParams, dmfp),
+                                                                CLOSURE_FLOAT_PARAM(NormalizedSubsurfaceClosureParams, eta),
+                                                                CLOSURE_FINISH_PARAM(NormalizedSubsurfaceClosureParams) } },
 
         { "as_velvet", VelvetID, { CLOSURE_VECTOR_PARAM(VelvetBRDFClosureParams, N),
                                    CLOSURE_FLOAT_PARAM(VelvetBRDFClosureParams, alpha),
