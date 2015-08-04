@@ -32,7 +32,15 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/bssrdf/betterdipolebssrdf.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
+#include "renderer/modeling/bssrdf/bssrdfsample.h"
+#include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
+#include "renderer/modeling/bssrdf/gaussianbssrdf.h"
+#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
+#include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
+#endif
+#include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
@@ -63,6 +71,34 @@ namespace
             const ParamArray&           params)
           : BSSRDF(name, params)
         {
+            memset(m_all_bssrdfs, 0, sizeof(BSSRDF*) * NumClosuresIDs);
+
+            m_better_dipole =
+                create_and_register_bssrdf<BetterDipoleBSSRDFFactory>(
+                    SubsurfaceBetterDipoleID,
+                    "better_dipole");
+
+            m_dir_dipole =
+                create_and_register_bssrdf<DirectionalDipoleBSSRDFFactory>(
+                    SubsurfaceDirectionalDipoleID,
+                    "dir_dipole");
+
+            m_gaussian =
+                create_and_register_bssrdf<GaussianBSSRDFFactory>(
+                    SubsurfaceGaussianID,
+                    "gaussian");
+
+#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
+            m_normalized =
+                create_and_register_bssrdf<NormalizedDiffusionBSSRDFFactory>(
+                    SubsurfaceNormalizedID,
+                    "normalized");
+#endif
+
+            m_std_dipole =
+                create_and_register_bssrdf<StandardDipoleBSSRDFFactory>(
+                    SubsurfaceStandardDipoleID,
+                    "std_dipole");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -83,6 +119,15 @@ namespace
             if (!BSSRDF::on_frame_begin(project, assembly, abort_switch))
                 return false;
 
+            for (int i = 0; i < NumClosuresIDs; ++i)
+            {
+                if (BSSRDF* bsrsdf = m_all_bssrdfs[i])
+                {
+                    if (!bsrsdf->on_frame_begin(project, assembly))
+                        return false;
+                }
+            }
+
             return true;
         }
 
@@ -90,6 +135,12 @@ namespace
             const Project&              project,
             const Assembly&             assembly) APPLESEED_OVERRIDE
         {
+            for (int i = 0; i < NumClosuresIDs; ++i)
+            {
+                if (BSSRDF* bsrsdf = m_all_bssrdfs[i])
+                    bsrsdf->on_frame_end(project, assembly);
+            }
+
             BSSRDF::on_frame_end(project, assembly);
         }
 
@@ -105,12 +156,28 @@ namespace
             const ShadingPoint&         shading_point,
             const size_t                offset = 0) const APPLESEED_OVERRIDE
         {
-            CompositeSubsurfaceClosure* c = reinterpret_cast<CompositeSubsurfaceClosure*>(input_evaluator.data());
+            evaluate_inputs(
+                shading_context,
+                input_evaluator.data(),
+                shading_point,
+                offset);
+        }
+
+        virtual void evaluate_inputs(
+            const ShadingContext&       shading_context,
+            uint8*                      data,
+            const ShadingPoint&         shading_point,
+            const size_t                offset = 0) const APPLESEED_OVERRIDE
+        {
+            CompositeSubsurfaceClosure* c = reinterpret_cast<CompositeSubsurfaceClosure*>(data);
             new (c) CompositeSubsurfaceClosure(shading_point.get_osl_shader_globals().Ci);
 
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
-                // todo: implement this...
+                bssrdf_from_closure_id(c->get_closure_type(i)).evaluate_inputs(
+                    shading_context,
+                    reinterpret_cast<uint8*>(c->get_closure_input_values(i)),
+                    shading_point);
             }
         }
 
@@ -123,7 +190,13 @@ namespace
 
             if (c->get_num_closures() > 0)
             {
-                // todo: implement this...
+                sample.get_sampling_context().split_in_place(1, 1);
+                const double s = sample.get_sampling_context().next_double2();
+
+                const size_t closure_index = c->choose_closure(s);
+                return bssrdf_from_closure_id(c->get_closure_type(closure_index)).sample(
+                    c->get_closure_input_values(closure_index),
+                    sample);
             }
 
             return false;
@@ -140,9 +213,22 @@ namespace
             const CompositeSubsurfaceClosure* c =
                 reinterpret_cast<const CompositeSubsurfaceClosure*>(data);
 
-            // todo: implement this...
-
             value.set(0.0f);
+
+            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
+            {
+                Spectrum s;
+                bssrdf_from_closure_id(c->get_closure_type(i)).evaluate(
+                    c->get_closure_input_values(i),
+                    outgoing_point,
+                    outgoing_dir,
+                    incoming_point,
+                    incoming_dir,
+                    s);
+
+                s *= static_cast<float>(c->get_closure_pdf_weight(i));
+                value += s;
+            }
         }
 
         virtual double evaluate_pdf(
@@ -153,10 +239,54 @@ namespace
             const CompositeSubsurfaceClosure* c =
                 reinterpret_cast<const CompositeSubsurfaceClosure*>(data);
 
-            // todo: implement this...
+            double pdf = 0.0;
 
-            return 0.0;
+            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
+            {
+                pdf +=
+                    bssrdf_from_closure_id(c->get_closure_type(i)).evaluate_pdf(
+                        c->get_closure_input_values(i),
+                        channel,
+                        dist) * c->get_closure_pdf_weight(i);
+            }
+
+            return pdf;
         }
+
+      private:
+        template <typename BSSRDFFactory>
+        auto_release_ptr<BSSRDF> create_and_register_bssrdf(
+            const ClosureID cid,
+            const char*     name)
+        {
+            auto_release_ptr<BSSRDF> bssrdf = BSSRDFFactory().create(name, ParamArray());
+            m_all_bssrdfs[cid] = bssrdf.get();
+            return bssrdf;
+        }
+
+        const BSSRDF& bssrdf_from_closure_id(const ClosureID cid) const
+        {
+            const BSSRDF* bssrdf = m_all_bssrdfs[cid];
+            assert(bssrdf);
+            return *bssrdf;
+        }
+
+        BSSRDF& bssrdf_from_closure_id(const ClosureID cid)
+        {
+            BSSRDF* bssrdf = m_all_bssrdfs[cid];
+            assert(bssrdf);
+            return *bssrdf;
+        }
+
+        auto_release_ptr<BSSRDF>    m_better_dipole;
+        auto_release_ptr<BSSRDF>    m_dir_dipole;
+        auto_release_ptr<BSSRDF>    m_gaussian;
+#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
+        auto_release_ptr<BSSRDF>    m_normalized;
+#endif
+        auto_release_ptr<BSSRDF>    m_std_dipole;
+
+        BSSRDF*                     m_all_bssrdfs[NumClosuresIDs];
     };
 }
 
