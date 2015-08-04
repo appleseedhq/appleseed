@@ -147,9 +147,7 @@ namespace
         }
 
         virtual void evaluate_inputs(
-            const ShadingContext&   shading_context,
             uint8*                  data,
-            const ShadingPoint&     shading_point,
             const size_t            offset = 0) const APPLESEED_OVERRIDE
         {
             GaussianBSSRDFInputValues* values =

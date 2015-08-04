@@ -73,9 +73,7 @@ size_t DipoleBSSRDF::compute_input_data_size(
 }
 
 void DipoleBSSRDF::evaluate_inputs(
-    const ShadingContext&   shading_context,
     uint8*                  data,
-    const ShadingPoint&     shading_point,
     const size_t            offset) const
 {
     DipoleBSSRDFInputValues* values =
