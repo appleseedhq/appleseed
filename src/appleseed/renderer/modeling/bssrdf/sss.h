@@ -140,6 +140,27 @@ double gaussian_profile_pdf(
 
 
 //
+// Dipole diffusion profile.
+//
+// Reference:
+//
+//   A Practical Model for Subsurface Light Transport
+//   https://graphics.stanford.edu/papers/bssrdf/bssrdf.pdf
+//
+
+double dipole_profile_sample(
+    const double        u,                      // uniform random sample in [0,1)
+    const double        sigma_tr);
+
+double dipole_profile_pdf(
+    const double        r,
+    const double        sigma_tr);
+
+double dipole_max_radius(
+    const double        sigma_tr);
+
+
+//
 // Normalized diffusion profile.
 //
 // Reference:
@@ -200,26 +221,6 @@ double normalized_diffusion_max_radius(
 
 
 //
-// Dipole sampling.
-//
-// Reference:
-//
-//   A Practical Model for Subsurface Light Transport
-//   https://graphics.stanford.edu/papers/bssrdf/bssrdf.pdf
-//
-
-double dipole_sample(
-    const double        sigma_tr,
-    const double        s);
-
-double dipole_pdf(
-    const double        dist,
-    const double        sigma_tr);
-
-double dipole_max_radius(const double sigma_tr);
-
-
-//
 // BSSRDF reparameterization implementation.
 //
 
@@ -235,7 +236,7 @@ inline double compute_alpha_prime(
 
     // For now simple bisection.
     // todo: switch to faster algorithm.
-    for (size_t i = 0, iters = 50; i < iters; ++i)
+    for (size_t i = 0; i < 50; ++i)
     {
         xmid = 0.5 * (x0 + x1);
         const double x = rd_fun(xmid);
