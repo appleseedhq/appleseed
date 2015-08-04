@@ -197,7 +197,10 @@ namespace
             return cos_in * RcpPi;
         }
 
-        void oren_nayar_qualitative(
+      private:
+        typedef OrenNayarBRDFInputValues InputValues;
+
+        static void oren_nayar_qualitative(
             const double        cos_on,
             const double        cos_in,
             const double        roughness,
@@ -205,7 +208,7 @@ namespace
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
             const Vector3d&     n,
-            Spectrum&           value) const
+            Spectrum&           value)
         {
             const double theta_r = min(HalfPi, acos(cos_on));
             const double theta_i = acos(cos_in);
@@ -240,9 +243,6 @@ namespace
                                                              (1 - cos_phi_diff * square(2 * beta * RcpPi)));
             assert(min_value(value) >= 0.0 );
         }
-
-      private:
-        typedef OrenNayarBRDFInputValues InputValues;
     };
 
     typedef BSDFWrapper<OrenNayarBRDFImpl> OrenNayarBRDF;
