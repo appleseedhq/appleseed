@@ -127,26 +127,29 @@ void normal_reflectance_dielectric(
 //
 // References:
 //
-//   A Better Dipole
-//   http://www.eugenedeon.com/wp-content/uploads/2014/04/betterdipole.pdf
+//   Light Transport in Tissue (appendix A2, page 167)
+//   http://omlc.org/~prahl/pubs/pdf/prahl88.pdf
+//
+//   Fresnel Reflection of Diffusely Incident Light 
+//   http://nvlpubs.nist.gov/nistpubs/jres/29/jresv29n5p329_A1b.pdf
 //
 //   Towards Realistic Image Synthesis of Scattering Materials (eq. 5.27 page 41)
 //   http://www.cs.jhu.edu/~misha/Fall11/Donner.Thesis.pdf
 //
-//   Fresnel Reflection of Diffusely Incident Light 
-//   http://nvlpubs.nist.gov/nistpubs/jres/29/jresv29n5p329_A1b.pdf
+//   A Better Dipole
+//   http://www.eugenedeon.com/wp-content/uploads/2014/04/betterdipole.pdf
 //
 //   Diffuse Fresnel Reflectance
 //   http://photorealizer.blogspot.fr/2012/05/diffuse-fresnel-reflectance.html
 //
 
-// Compute 2 * C1 where C1 is the first Fresnel moment.
+// Compute the first moment of the Fresnel equation.
 template <typename T>
-T fresnel_moment_two_c1(const T eta);
+T fresnel_first_moment(const T eta);
 
-// Compute 3 * C2 where C2 is the second Fresnel moment.
+// Compute the second moment of the Fresnel equation.
 template <typename T>
-T fresnel_moment_three_c2(const T eta);
+T fresnel_second_moment(const T eta);
 
 // Compute the internal diffuse reflectance of a dielectric.
 template <typename T>
@@ -338,7 +341,7 @@ void normal_reflectance_dielectric(
 }
 
 template <typename T>
-inline T fresnel_moment_two_c1(const T eta)
+inline T fresnel_first_moment(const T eta)
 {
     return
         eta < T(1.0)
@@ -347,7 +350,7 @@ inline T fresnel_moment_two_c1(const T eta)
 }
 
 template <typename T>
-inline T fresnel_moment_three_c2(const T eta)
+inline T fresnel_second_moment(const T eta)
 {
     const T rcp_eta = T(1.0) / eta;
     return

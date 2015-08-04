@@ -60,9 +60,9 @@ double ComputeRdStandardDipole::operator()(const double alpha_prime) const
     return (0.5 * alpha_prime) * (1.0 + exp(-1.25 * m_a * sqrt_3ap)) * exp(-sqrt_3ap);
 }
 
-ComputeRdBetterDipole::ComputeRdBetterDipole(const double eta)
-  : m_two_c1(fresnel_moment_two_c1(eta))
-  , m_three_c2(fresnel_moment_three_c2(eta))
+ComputeRdBetterDipole::ComputeRdBetterDipole(const double rcp_eta)
+  : m_two_c1(fresnel_first_moment(rcp_eta))
+  , m_three_c2(fresnel_second_moment(rcp_eta))
 {
 }
 
