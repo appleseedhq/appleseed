@@ -290,8 +290,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.set_yrange(0.0, 1.05);
 
         const double Eta = 1.3;
-        const ComputeRdStandardDipole std_rd_fun(Eta);
-        const ComputeRdBetterDipole better_rd_fun(Eta);
+        const ComputeRdStandardDipole std_rd_fun(1.0 / Eta);
+        const ComputeRdBetterDipole better_rd_fun(1.0 / Eta);
 
         const size_t N = 1000;
         vector<Vector2d> std_points, better_points;
@@ -704,21 +704,21 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     {
         plot_dirpole_rd(
             "unit tests/outputs/test_sss_dirpole_sg_a_001.gnuplot",
-            "Directional Dipole Diffuse Reflectance (sigma_a == 0.01)",
+            "Directional Dipole Diffuse Reflectance (sigma_a = 0.01)",
             0.01,           // sigma_a in cm
             1.0e-5,         // ymin
             1.0e+1);        // ymax
 
         plot_dirpole_rd(
             "unit tests/outputs/test_sss_dirpole_sg_a_01.gnuplot",
-            "Directional Dipole Diffuse Reflectance (sigma_a == 0.1)",
+            "Directional Dipole Diffuse Reflectance (sigma_a = 0.1)",
             0.1,            // sigma_a in cm
             1.0e-8,         // ymin
             1.0e+1);        // ymax
 
         plot_dirpole_rd(
             "unit tests/outputs/test_sss_dirpole_sg_a_1.gnuplot",
-            "Directional Dipole Diffuse Reflectance (sigma_a == 1.0)",
+            "Directional Dipole Diffuse Reflectance (sigma_a = 1.0)",
             1.0,            // sigma_a in cm
             1.0e-16,        // ymin
             1.0e+1);        // ymax
@@ -882,7 +882,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         GnuplotFile plotfile;
         plotfile.set_title("Directional Dipole Integral");
         plotfile.set_xlabel("Rd");
-        plotfile.set_ylabel("Int");
+        plotfile.set_ylabel("Integral");
         plotfile.set_xrange(0.0, 1.0);
         plotfile.set_yrange(0.0, 1.0);
 
@@ -908,9 +908,9 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     TEST_CASE(PlotDirpoleIntegralSearchlightRd)
     {
         GnuplotFile plotfile;
-        plotfile.set_title("Directional Dipole Integral Searchlight");
+        plotfile.set_title("Directional Dipole Integral For Searchlight Configuration");
         plotfile.set_xlabel("Rd");
-        plotfile.set_ylabel("Int");
+        plotfile.set_ylabel("Integral");
         plotfile.set_xrange(0.0, 1.0);
         plotfile.set_yrange(0.0, 1.0);
 

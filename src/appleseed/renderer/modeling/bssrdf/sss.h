@@ -71,7 +71,7 @@ class ComputeRdStandardDipole
 class ComputeRdBetterDipole
 {
   public:
-    explicit ComputeRdBetterDipole(const double eta);
+    explicit ComputeRdBetterDipole(const double rcp_eta);       // note: 1/eta
 
     double operator()(const double alpha_prime) const;
 
