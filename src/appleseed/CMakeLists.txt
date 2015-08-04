@@ -1289,6 +1289,8 @@ if (WITH_OSL)
 endif ()
 
 set (renderer_modeling_bssrdf_sources
+    renderer/modeling/bssrdf/betterdipolebssrdf.cpp
+    renderer/modeling/bssrdf/betterdipolebssrdf.h
     renderer/modeling/bssrdf/bssrdf.cpp
     renderer/modeling/bssrdf/bssrdf.h
     renderer/modeling/bssrdf/bssrdffactoryregistrar.cpp
