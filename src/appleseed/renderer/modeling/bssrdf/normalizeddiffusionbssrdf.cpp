@@ -106,16 +106,10 @@ namespace
             return align(sizeof(NormalizedDiffusionBSSRDFInputValues), 16);
         }
 
-        virtual void evaluate_inputs(
-            const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
-            const ShadingPoint&     shading_point,
-            const size_t            offset = 0) const APPLESEED_OVERRIDE
+        virtual void prepare_inputs(void* data) const APPLESEED_OVERRIDE
         {
-            BSSRDF::evaluate_inputs(shading_context, input_evaluator, shading_point, offset);
-
             NormalizedDiffusionBSSRDFInputValues* values =
-                reinterpret_cast<NormalizedDiffusionBSSRDFInputValues*>(input_evaluator.data() + offset);
+                reinterpret_cast<NormalizedDiffusionBSSRDFInputValues*>(data);
 
             // Apply multipliers.
             values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);

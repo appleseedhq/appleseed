@@ -72,16 +72,10 @@ size_t DipoleBSSRDF::compute_input_data_size(
     return align(sizeof(DipoleBSSRDFInputValues), 16);
 }
 
-void DipoleBSSRDF::evaluate_inputs(
-    const ShadingContext&   shading_context,
-    InputEvaluator&         input_evaluator,
-    const ShadingPoint&     shading_point,
-    const size_t            offset) const
+void DipoleBSSRDF::prepare_inputs(void* data) const
 {
-    BSSRDF::evaluate_inputs(shading_context, input_evaluator, shading_point, offset);
-
     DipoleBSSRDFInputValues* values =
-        reinterpret_cast<DipoleBSSRDFInputValues*>(input_evaluator.data() + offset);
+        reinterpret_cast<DipoleBSSRDFInputValues*>(data);
 
     // Apply multipliers.
     values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);

@@ -120,6 +120,9 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const ShadingPoint&         shading_point,
         const size_t                offset = 0) const;
 
+    // Performs any precomputation needed for this BSSRDF input values.
+    virtual void prepare_inputs(void* data) const = 0;
+
     // Sample r * R(r).
     virtual bool sample(
         const void*                 data,

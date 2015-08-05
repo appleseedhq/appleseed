@@ -41,6 +41,10 @@
 #include "renderer/modeling/bsdf/specularbtdf.h"
 #include "renderer/modeling/bsdf/velvetbrdf.h"
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
+#include "renderer/modeling/bssrdf/gaussianbssrdf.h"
+#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
+#include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
+#endif
 #include "renderer/modeling/edf/diffuseedf.h"
 
 // appleseed.foundation headers.
@@ -102,8 +106,13 @@ enum ClosureID
     MicrofacetBeckmannRefractionID,
     MicrofacetGGXRefractionID,
 
-    SubsurfaceID,
-    SubsurfaceDirectionalID,
+    // BSSRDF closures.
+    SubsurfaceDipoleID,
+    SubsurfaceBetterDipoleID,
+    SubsurfaceStandardDipoleID,
+    SubsurfaceDirectionalDipoleID,
+    SubsurfaceGaussianID,
+    SubsurfaceNormalizedID,
 
     // Special closures.
     BackgroundID,
@@ -114,7 +123,6 @@ enum ClosureID
 
     NumClosuresIDs
 };
-
 
 //
 // Composite OSL closure.
@@ -130,7 +138,6 @@ class APPLESEED_ALIGN(16) CompositeClosure
     const Spectrum& get_closure_weight(const size_t index) const;
     double get_closure_pdf_weight(const size_t index) const;
     void* get_closure_input_values(const size_t index) const;
-    size_t get_closure_input_offset(const size_t index) const;
 
     size_t choose_closure(const double w) const;
 
@@ -138,15 +145,20 @@ class APPLESEED_ALIGN(16) CompositeClosure
     typedef boost::mpl::vector<
         AshikhminBRDFInputValues,
         DiffuseBTDFInputValues,
+        DipoleBSSRDFInputValues,
         DisneyBRDFInputValues,
+        GaussianBSSRDFInputValues,
         LambertianBRDFInputValues,
+#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
+        NormalizedDiffusionBSSRDFInputValues,
+#endif
         OSLMicrofacetBRDFInputValues,
         OSLMicrofacetBTDFInputValues,
         OrenNayarBRDFInputValues,
         SpecularBRDFInputValues,
         SpecularBTDFInputValues,
-        VelvetBRDFInputValues,
-        DipoleBSSRDFInputValues> InputValuesTypeList;
+        VelvetBRDFInputValues
+    > InputValuesTypeList;
 
     // Find the biggest InputValues type.
     typedef boost::mpl::max_element<
@@ -250,7 +262,6 @@ class APPLESEED_ALIGN(16) CompositeSubsurfaceClosure
         const ClosureID             closure_type,
         const foundation::Color3f&  weight,
         const InputValues&          values);
-
 };
 
 
@@ -318,12 +329,6 @@ inline void* CompositeClosure::get_closure_input_values(const size_t index) cons
 {
     assert(index < get_num_closures());
     return m_input_values[index];
-}
-
-inline size_t CompositeClosure::get_closure_input_offset(const size_t index) const
-{
-    assert(index < get_num_closures());
-    return reinterpret_cast<char*>(m_input_values[index]) - m_pool;
 }
 
 
