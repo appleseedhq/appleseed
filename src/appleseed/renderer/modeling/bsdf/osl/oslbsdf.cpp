@@ -229,8 +229,8 @@ namespace
 
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
-               bsdf_from_closure_id(c->get_closure_type(i)).prepare_inputs(
-                c->get_closure_input_values(i));
+                bsdf_from_closure_id(c->get_closure_type(i)).prepare_inputs(
+                    c->get_closure_input_values(i));
             }
         }
 

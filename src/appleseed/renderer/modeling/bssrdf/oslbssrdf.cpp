@@ -158,16 +158,19 @@ namespace
         {
             CompositeSubsurfaceClosure* c = reinterpret_cast<CompositeSubsurfaceClosure*>(input_evaluator.data());
             new (c) CompositeSubsurfaceClosure(shading_point.get_osl_shader_globals().Ci);
-
-            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
-            {
-                bssrdf_from_closure_id(c->get_closure_type(i)).prepare_inputs(
-                    reinterpret_cast<uint8*>(c->get_closure_input_values(i)));
-            }
+            prepare_inputs(input_evaluator.data());
         }
 
         virtual void prepare_inputs(void* data) const APPLESEED_OVERRIDE
         {
+            const CompositeSubsurfaceClosure* c =
+                reinterpret_cast<const CompositeSubsurfaceClosure*>(data);
+
+            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
+            {
+                bssrdf_from_closure_id(c->get_closure_type(i)).prepare_inputs(
+                    c->get_closure_input_values(i));
+            }
         }
 
         virtual bool sample(
