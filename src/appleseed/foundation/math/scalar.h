@@ -108,20 +108,12 @@ T abs(const T x);
 template <typename T>
 T square(const T x);
 
-// Compile-time integer exponentiation of the form X^P.
-// Example: static_pow_int<2, 8>::value evaluates to 2^8=256.
-template <int X, int P>
-struct static_pow_int
-{
-    static const int value = X * static_pow_int<X, P - 1>::value;
-};
-template <int X>
-struct static_pow_int<X, 0>
-{
-    static const int value = 1;
-};
+// Compile-time exponentiation of the form x^p where p >= 0.
+// Note: swapped template arguments to allow writing pow_int<3>(3.14).
+template <size_t P, typename T>
+T pow_int(const T x);
 
-// Runtime integer exponentiation of the form x^p.
+// Runtime exponentiation of the form x^p where p >= 0.
 template <typename T>
 T pow_int(const T x, size_t p);
 
@@ -136,7 +128,7 @@ bool is_pow2(const T x);
 
 // Return the base-2 logarithm of a given integer.
 template <typename T>
-T int_log2(T x);
+T log2_int(T x);
 
 // Return the factorial of a given integer.
 template <typename T>
@@ -301,13 +293,39 @@ inline T square(const T x)
     return x * x;
 }
 
+template <typename T, size_t P>
+struct PowIntHelper
+{
+    static T eval(const T x)
+    {
+        return x * PowIntHelper<T, P - 1>::eval(x);
+    }
+};
+
+template <typename T>
+struct PowIntHelper<T, 0>
+{
+    static T eval(const T x)
+    {
+        return T(1);
+    }
+};
+
+template <size_t P, typename T>
+inline T pow_int(const T x)
+{
+    // todo: implement exponentiation by squaring.
+    // Reference: http://en.wikipedia.org/wiki/Exponentiation_by_squaring.
+    return PowIntHelper<T, P>::eval(x);
+}
+
 template <typename T>
 inline T pow_int(const T x, size_t p)
 {
-    // todo: implement exponentiation by squaring for large values of p.
+    // todo: implement exponentiation by squaring.
     // Reference: http://en.wikipedia.org/wiki/Exponentiation_by_squaring.
 
-    T y = 1;
+    T y = T(1);
 
     while (p--)
         y *= x;
@@ -363,7 +381,7 @@ inline bool is_pow2(const T x)
 }
 
 template <typename T>
-inline T int_log2(T x)
+inline T log2_int(T x)
 {
     assert(x > 0);
 
@@ -379,7 +397,7 @@ inline T int_log2(T x)
 #if defined _MSC_VER
 
 template <>
-inline uint32 int_log2(const uint32 x)
+inline uint32 log2_int(const uint32 x)
 {
     assert(x > 0);
 
@@ -390,7 +408,7 @@ inline uint32 int_log2(const uint32 x)
 }
 
 template <>
-inline uint64 int_log2(const uint64 x)
+inline uint64 log2_int(const uint64 x)
 {
     assert(x > 0);
 
@@ -404,7 +422,7 @@ inline uint64 int_log2(const uint64 x)
 #elif defined __GNUC__
 
 template <>
-inline unsigned int int_log2(const unsigned int x)
+inline unsigned int log2_int(const unsigned int x)
 {
     assert(x > 0);
 
@@ -412,7 +430,7 @@ inline unsigned int int_log2(const unsigned int x)
 }
 
 template <>
-inline unsigned long int_log2(const unsigned long x)
+inline unsigned long log2_int(const unsigned long x)
 {
     assert(x > 0);
 

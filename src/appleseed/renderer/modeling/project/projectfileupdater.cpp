@@ -460,7 +460,7 @@ namespace
 
             double operator()(const double x) const
             {
-                return 100.0 * pow_int(x, 3) + 9900.0 * pow(x, 30.0) - m_e;
+                return 100.0 * pow_int<3>(x) + 9900.0 * pow_int<30>(x) - m_e;
             }
 
           private:
