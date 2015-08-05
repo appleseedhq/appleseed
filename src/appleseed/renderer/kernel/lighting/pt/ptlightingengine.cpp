@@ -736,12 +736,21 @@ namespace
                     incoming *= rcp_sample_distance;
                     cos_on_light *= rcp_sample_distance;
 
-                    // todo: check for OSL here and possibly execute the shader.
+                    ShadingPoint light_shading_point;
+                    light_sample.make_shading_point(
+                        light_shading_point,
+                        -incoming,
+                        m_shading_context.get_intersector());
+
+                    // Execute the OSL emission shader if needed.
+#ifdef APPLESEED_WITH_OSL
+                    if (const ShaderGroup* sg = material->get_osl_surface())
+                        m_shading_context.execute_osl_emission(*sg, light_shading_point);
+#endif
 
                     // Evaluate the EDF inputs.
-                    // todo: we need here a ShadingPoint on the light source.
                     InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
-                    edf->evaluate_inputs(edf_input_evaluator, shading_point);
+                    edf->evaluate_inputs(edf_input_evaluator, light_shading_point);
 
                     // Evaluate the EDF.
                     edf->evaluate(

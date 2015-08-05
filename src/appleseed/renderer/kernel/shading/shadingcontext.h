@@ -117,10 +117,11 @@ class ShadingContext
         const ShaderGroup&  shader_group,
         const ShadingPoint& shading_point) const;
 
-    void execute_osl_normal(
+    // Execute the OSL shader group, use s to choose
+    // one of the closures and set its shading basis in shading point.
+    void execute_osl_bump(
         const ShaderGroup&          shader_group,
         const ShadingPoint&         shading_point,
-        const void*                 data,
         const double                s) const;
 
     void execute_osl_background(

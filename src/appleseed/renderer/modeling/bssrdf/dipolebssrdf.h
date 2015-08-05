@@ -92,9 +92,7 @@ class DipoleBSSRDF
         const Assembly&         assembly) const APPLESEED_OVERRIDE;
 
     virtual void evaluate_inputs(
-        const ShadingContext&   shading_context,
-        InputEvaluator&         input_evaluator,
-        const ShadingPoint&     shading_point,
+        foundation::uint8*      data,
         const size_t            offset = 0) const APPLESEED_OVERRIDE;
 
     virtual bool sample(

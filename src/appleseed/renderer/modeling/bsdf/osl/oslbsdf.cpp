@@ -243,7 +243,7 @@ namespace
 
                 const size_t closure_index = c->choose_closure(s);
                 sample.set_shading_basis(c->get_closure_shading_basis(closure_index));
-                bsdf_to_closure_id(
+                bsdf_from_closure_id(
                     c->get_closure_type(closure_index)).sample(
                         c->get_closure_input_values(closure_index),
                         adjoint,
@@ -274,7 +274,7 @@ namespace
             {
                 Spectrum s;
                 const double bsdf_prob =
-                    bsdf_to_closure_id(c->get_closure_type(i)).evaluate(
+                    bsdf_from_closure_id(c->get_closure_type(i)).evaluate(
                         c->get_closure_input_values(i),
                         adjoint,
                         false,
@@ -310,7 +310,7 @@ namespace
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
                 const double bsdf_prob =
-                    bsdf_to_closure_id(c->get_closure_type(i)).evaluate_pdf(
+                    bsdf_from_closure_id(c->get_closure_type(i)).evaluate_pdf(
                         c->get_closure_input_values(i),
                         geometric_normal,
                         c->get_closure_shading_basis(i),
@@ -383,14 +383,14 @@ namespace
             return bsdf;
         }
 
-        const BSDF& bsdf_to_closure_id(const ClosureID cid) const
+        const BSDF& bsdf_from_closure_id(const ClosureID cid) const
         {
             const BSDF* bsdf = m_all_bsdfs[cid];
             assert(bsdf);
             return *bsdf;
         }
 
-        BSDF& bsdf_to_closure_id(const ClosureID cid)
+        BSDF& bsdf_from_closure_id(const ClosureID cid)
         {
             BSDF* bsdf = m_all_bsdfs[cid];
             assert(bsdf);

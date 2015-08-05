@@ -204,6 +204,7 @@ size_t SubsurfaceSampler::sample(
         VisibilityFlags::ProbeRay,
         outgoing_point.get_ray().m_depth + 1);
 
+    const Material* material = outgoing_point.get_material();
     ShadingPoint shading_points[2];
     size_t shading_point_index = 0;
     ShadingPoint* parent_shading_point = 0;
@@ -222,8 +223,19 @@ size_t SubsurfaceSampler::sample(
             break;
 
         // Only consider points lying on surfaces with the same material as the outgoing point.
-        if (shading_points[shading_point_index].get_material() == outgoing_point.get_material())
+        if (shading_points[shading_point_index].get_material() == material)
         {
+            // Execute the OSL shader if we have one. Needed for bump mapping.
+#ifdef APPLESEED_WITH_OSL
+            if (material->has_osl_surface())
+            {
+                sampling_context.split_in_place(1, 1);
+                m_shading_context.execute_osl_bump(
+                    *material->get_osl_surface(),
+                    shading_points[shading_point_index],
+                    sampling_context.next_double2());
+            }
+#endif
             SubsurfaceSample& sample = samples[sample_count++];
             sample.m_point = shading_points[shading_point_index];
 

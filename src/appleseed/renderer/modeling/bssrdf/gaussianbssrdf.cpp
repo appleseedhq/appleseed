@@ -147,15 +147,11 @@ namespace
         }
 
         virtual void evaluate_inputs(
-            const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
-            const ShadingPoint&     shading_point,
+            uint8*                  data,
             const size_t            offset = 0) const APPLESEED_OVERRIDE
         {
-            BSSRDF::evaluate_inputs(shading_context, input_evaluator, shading_point, offset);
-
             GaussianBSSRDFInputValues* values =
-                reinterpret_cast<GaussianBSSRDFInputValues*>(input_evaluator.data() + offset);
+                reinterpret_cast<GaussianBSSRDFInputValues*>(data + offset);
 
             values->m_rmax2 = values->m_v * RMax2Constant;
         }

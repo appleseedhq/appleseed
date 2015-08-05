@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/input/inputevaluator.h"
 #ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #endif
@@ -116,12 +117,13 @@ void ShadingContext::execute_osl_emission(
     m_shadergroup_exec.execute_emission(shader_group, shading_point);
 }
 
-void ShadingContext::execute_osl_normal(
+void ShadingContext::execute_osl_bump(
     const ShaderGroup&          shader_group,
     const ShadingPoint&         shading_point,
-    const void*                 data,
     const double                s) const
 {
+    SSE_ALIGN uint8 data[InputEvaluator::DataSize];
+
     execute_osl_shading(shader_group, shading_point);
     const CompositeSurfaceClosure* c =
         reinterpret_cast<const CompositeSurfaceClosure*>(data);
