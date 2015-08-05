@@ -66,30 +66,6 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     // Utilities.
     //
 
-    void init_dipole_bssrdf_values_rd_dmfp(
-        const double             rd,
-        const double             dmfp,
-        const double             eta,
-        const double             g,
-        DipoleBSSRDFInputValues& values)
-    {
-        values.m_weight = 1.0;
-        values.m_reflectance.set(static_cast<float>(rd));
-        values.m_dmfp = dmfp;
-        values.m_inside_ior = eta;
-        values.m_outside_ior = 1.0;
-        values.m_anisotropy = g;
-
-        const ComputeRdBetterDipole rd_fun(1.0 / eta);
-        compute_absorption_and_scattering(
-            rd_fun,
-            values.m_reflectance,
-            values.m_dmfp,
-            values.m_anisotropy,
-            values.m_sigma_a,
-            values.m_sigma_s);
-    }
-
     template <typename BSSRDFFactory>
     class DipoleBSSRDFEvaluator
     {
@@ -130,7 +106,15 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double    eta,
             const double    g)
         {
-            init_dipole_bssrdf_values_rd_dmfp(rd, dmfp, eta, g, m_values);
+            m_values.m_weight = 1.0;
+            m_values.m_reflectance.set(static_cast<float>(rd));
+            m_values.m_reflectance_multiplier = 1.0;
+            m_values.m_dmfp = dmfp;
+            m_values.m_dmfp_multiplier = 1.0;
+            m_values.m_inside_ior = eta;
+            m_values.m_outside_ior = 1.0;
+            m_values.m_anisotropy = g;
+            m_bssrdf->prepare_inputs(&m_values);
         }
 
         void set_incoming_distance(const double d)
@@ -743,7 +727,15 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             DirectionalDipoleBSSRDFFactory().create("dirpole", ParamArray()));
 
         DipoleBSSRDFInputValues dp_values;
-        init_dipole_bssrdf_values_rd_dmfp(rd, dmfp, 1.0, 0.0, dp_values);
+        dp_values.m_weight = 1.0;
+        dp_values.m_reflectance.set(static_cast<float>(rd));
+        dp_values.m_reflectance_multiplier = 1.0;
+        dp_values.m_dmfp = dmfp;
+        dp_values.m_dmfp_multiplier = 1.0;
+        dp_values.m_inside_ior = 1.0;
+        dp_values.m_outside_ior = 1.0;
+        dp_values.m_anisotropy = 0.0;
+        dp_bssrdf->prepare_inputs(&dp_values);
 
         auto_release_ptr<BSSRDF> nd_bssrdf(
             NormalizedDiffusionBSSRDFFactory().create("norm_diff", ParamArray()));
@@ -756,7 +748,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         nd_values.m_dmfp_multiplier = 1.0;
         nd_values.m_inside_ior = 1.0;
         nd_values.m_outside_ior = 1.0;
-        nd_values.m_s.set(static_cast<float>(normalized_diffusion_s(rd)));
+        nd_bssrdf->prepare_inputs(&nd_values);
 
         const Vector3d normal(0.0, 1.0, 0.0);
 
