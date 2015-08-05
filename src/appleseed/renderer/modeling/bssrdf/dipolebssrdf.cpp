@@ -72,12 +72,10 @@ size_t DipoleBSSRDF::compute_input_data_size(
     return align(sizeof(DipoleBSSRDFInputValues), 16);
 }
 
-void DipoleBSSRDF::evaluate_inputs(
-    uint8*                  data,
-    const size_t            offset) const
+void DipoleBSSRDF::prepare_inputs(void* data) const
 {
     DipoleBSSRDFInputValues* values =
-        reinterpret_cast<DipoleBSSRDFInputValues*>(data + offset);
+        reinterpret_cast<DipoleBSSRDFInputValues*>(data);
 
     // Apply multipliers.
     values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);

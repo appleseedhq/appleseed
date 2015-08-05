@@ -149,6 +149,9 @@ class APPLESEED_DLLSYMBOL BSDF
         const ShadingPoint&         shading_point,
         const size_t                offset = 0) const;
 
+    // Performs any precomputation needed for this BSDF input values.
+    virtual void prepare_inputs(void* data) const;
+
     // Given an outgoing direction, sample the BSDF and compute the incoming
     // direction, its probability density and the value of the BSDF for this
     // pair of directions. Return the scattering mode. If the scattering mode

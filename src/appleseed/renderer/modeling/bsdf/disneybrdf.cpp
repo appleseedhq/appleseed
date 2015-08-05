@@ -355,22 +355,22 @@ namespace
             return align(sizeof(DisneyBRDFInputValues), 16);
         }
 
-        virtual void evaluate_inputs(
-            const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
-            const ShadingPoint&     shading_point,
-            const size_t            offset) const APPLESEED_OVERRIDE
+        void prepare_inputs(void* data) const APPLESEED_OVERRIDE
         {
-            BSDF::evaluate_inputs(
-                shading_context,
-                input_evaluator,
-                shading_point,
-                offset);
-
             DisneyBRDFInputValues* values =
-                reinterpret_cast<DisneyBRDFInputValues*>(input_evaluator.data() + offset);
+                reinterpret_cast<DisneyBRDFInputValues*>(data);
 
-            values->precompute_tint_color();
+            const Color3f tint_xyz =
+                values->m_base_color.is_rgb()
+                    ? linear_rgb_to_ciexyz(values->m_base_color.rgb())
+                    : spectrum_to_ciexyz<float>(g_std_lighting_conditions, values->m_base_color);
+
+            values->m_tint_color =
+                tint_xyz[1] > 0.0f
+                    ? ciexyz_to_linear_rgb(tint_xyz / tint_xyz[1])
+                    : Color3f(1.0f);
+
+            values->m_base_color_luminance = static_cast<double>(tint_xyz[1]);
         }
 
         virtual void sample(
@@ -648,21 +648,6 @@ namespace
     };
 
     typedef BSDFWrapper<DisneyBRDFImpl> DisneyBRDF;
-}
-
-void DisneyBRDFInputValues::precompute_tint_color()
-{
-    const Color3f tint_xyz =
-        m_base_color.is_rgb()
-            ? linear_rgb_to_ciexyz(m_base_color.rgb())
-            : spectrum_to_ciexyz<float>(g_std_lighting_conditions, m_base_color);
-
-    m_tint_color =
-        tint_xyz[1] > 0.0f
-            ? ciexyz_to_linear_rgb(tint_xyz / tint_xyz[1])
-            : Color3f(1.0f);
-
-    m_base_color_luminance = static_cast<double>(tint_xyz[1]);
 }
 
 

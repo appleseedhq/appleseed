@@ -161,14 +161,12 @@ namespace
 
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
-                bssrdf_from_closure_id(c->get_closure_type(i)).evaluate_inputs(
+                bssrdf_from_closure_id(c->get_closure_type(i)).prepare_inputs(
                     reinterpret_cast<uint8*>(c->get_closure_input_values(i)));
             }
         }
 
-        virtual void evaluate_inputs(
-            uint8*                      data,
-            const size_t                offset = 0) const APPLESEED_OVERRIDE
+        virtual void prepare_inputs(void* data) const APPLESEED_OVERRIDE
         {
         }
 

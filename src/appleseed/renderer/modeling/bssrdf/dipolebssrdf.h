@@ -91,9 +91,7 @@ class DipoleBSSRDF
     virtual size_t compute_input_data_size(
         const Assembly&         assembly) const APPLESEED_OVERRIDE;
 
-    virtual void evaluate_inputs(
-        foundation::uint8*      data,
-        const size_t            offset = 0) const APPLESEED_OVERRIDE;
+    virtual void prepare_inputs(void* data) const APPLESEED_OVERRIDE;
 
     virtual bool sample(
         const void*             data,
