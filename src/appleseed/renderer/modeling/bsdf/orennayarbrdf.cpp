@@ -61,6 +61,11 @@ namespace
     //
     // Oren-Nayar BRDF.
     //
+    // Reference:
+    //
+    //   Generalization of Lambert's Reflectance Model
+    //   http://www1.cs.columbia.edu/CAVE/publications/pdfs/Oren_SIGGRAPH94.pdf
+    //
 
     const char* Model = "orennayar_brdf";
 
@@ -122,15 +127,18 @@ namespace
                     cos_in,
                     values->m_roughness,
                     values->m_reflectance,
+                    values->m_reflectance_multiplier,
                     sample.get_outgoing_vector(),
                     incoming,
                     n,
                     sample.value());
             }
             else
+            {
+                // Revert to Lambertian when roughness is zero.
                 sample.value() = values->m_reflectance;
-
-            sample.value() *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
+                sample.value() *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
+            }
 
             // Compute the probability density of the sampled direction.
             sample.set_probability(wi.y * RcpPi);
@@ -167,10 +175,24 @@ namespace
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
             if (values->m_roughness != 0.0)
-                oren_nayar_qualitative(cos_on, cos_in, values->m_roughness, values->m_reflectance, outgoing, incoming, n, value);
+            {
+                oren_nayar_qualitative(
+                    cos_on,
+                    cos_in,
+                    values->m_roughness,
+                    values->m_reflectance,
+                    values->m_reflectance_multiplier,
+                    outgoing,
+                    incoming,
+                    n,
+                    value);
+            }
             else
+            {
+                // Revert to Lambertian when roughness is zero.
                 value = values->m_reflectance;
-            value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
+                value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
+            }
 
             // Return the probability density of the sampled direction.
             return cos_in * RcpPi;
@@ -205,43 +227,66 @@ namespace
             const double        cos_in,
             const double        roughness,
             const Spectrum&     reflectance,
+            const double        reflectance_multiplier,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
             const Vector3d&     n,
             Spectrum&           value)
         {
-            const double theta_r = min(HalfPi, acos(cos_on));
-            const double theta_i = acos(cos_in);
-            const double alpha = max(theta_i, theta_r);
-            const double beta = min(theta_i, theta_r);
-
             const double sigma2 = square(roughness);
+            const double theta_r = min(acos(cos_on), HalfPi);
+            const double theta_i = acos(cos_in);
+            const double alpha = max(theta_r, theta_i);
+            const double beta = min(theta_r, theta_i);
 
+            // Project outgoing and incoming vectors onto the tangent plane
+            // and compute the cosine of the angle between them.
+            const Vector3d V_perp_N = normalize(project(outgoing, n));
+            const Vector3d I_perp_N = normalize(incoming - n * cos_in);
+            const double delta_cos_phi = dot(V_perp_N, I_perp_N);
+
+            // Compute C1 coefficient.
             const double C1 = 1.0 - 0.5 * (sigma2 / (sigma2 + 0.33));
 
-            double C2 = 0.45 * sigma2 / (sigma2 + 0.09);
-
-            const Vector3d V_perp_N = normalize(outgoing - n * dot(outgoing, n));
-
-            const double cos_phi_diff = dot(V_perp_N, normalize(incoming - n * cos_in));
-
-            if (cos_phi_diff >= 0.0)
-                C2 *= sin(alpha);
-            else
-            {
-                const double temp = 2.0 * beta * RcpPi;
-                C2 *= sin(alpha) - square(temp) * temp;
-            }
+            // Compute C2 coefficient.
+            const double sigma2_009 = sigma2 / (sigma2 + 0.09);
+            const double C2 =
+                  0.45
+                * sigma2_009
+                * (delta_cos_phi >= 0.0
+                      ? sin(alpha)
+                      : sin(alpha) - pow_int<3>(2.0 * beta * RcpPi));
             assert(C2 >= 0.0);
 
-            const double C3 = 0.125 * (sigma2 / (sigma2 + 0.09) * square(4.0 * alpha * beta * RcpPiSquare)) * tan((alpha + beta) * 0.5);
+            // Compute C3 coefficient.
+            const double C3 =
+                  0.125
+                * sigma2_009
+                * square(4.0 * alpha * beta * RcpPiSquare);
             assert(C3 >= 0.0);
 
-            value = reflectance ;
-            value *= static_cast<float>(C1 + (abs(cos_phi_diff) * C2 * tan(beta)) + (1 - abs(cos_phi_diff)) * C3);
-            value += square(reflectance) * static_cast<float>(0.17 * cos_in * (sigma2 / (sigma2 + 0.13)) *
-                                                             (1 - cos_phi_diff * square(2 * beta * RcpPi)));
-            assert(min_value(value) >= 0.0 );
+            // Direct illumination component.
+            value = reflectance;
+            value *=
+                static_cast<float>(
+                    reflectance_multiplier * RcpPi * (
+                          C1
+                        + delta_cos_phi * C2 * tan(beta)
+                        + (1.0 - abs(delta_cos_phi)) * C3 * tan(0.5 * (alpha + beta))));
+
+            // Add interreflection component.
+            Spectrum r2 = reflectance;
+            r2 *= r2;
+            r2 *=
+                static_cast<float>(
+                      0.17
+                    * square(reflectance_multiplier) * RcpPi
+                    * cos_in
+                    * sigma2 / (sigma2 + 0.13)
+                    * (1.0 - delta_cos_phi * square(2.0 * beta * RcpPi)));
+            value += r2;
+
+            assert(min_value(value) >= 0.0f);
         }
     };
 
