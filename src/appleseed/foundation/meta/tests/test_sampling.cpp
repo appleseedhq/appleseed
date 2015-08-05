@@ -402,7 +402,7 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
     double func(const Vector3d& dir)
     {
         assert(dir.y >= 0.0);
-        return pow_int(dir.y, 5);
+        return pow_int<5>(dir.y);
     }
 
     // Value of the integral of func() over the hemisphere.

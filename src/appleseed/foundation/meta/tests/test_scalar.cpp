@@ -57,6 +57,29 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_FEQ(360.0,    rad_to_deg(2.0 * Pi));
     }
 
+    TEST_CASE(PowInt)
+    {
+        EXPECT_EQ(1, (pow_int<0, int>(0)));
+        EXPECT_EQ(0, (pow_int<1, int>(0)));
+        EXPECT_EQ(0, (pow_int<2, int>(0)));
+
+        EXPECT_EQ(1, (pow_int<0, int>(1)));
+        EXPECT_EQ(1, (pow_int<1, int>(1)));
+        EXPECT_EQ(1, (pow_int<2, int>(1)));
+
+        EXPECT_EQ(1, (pow_int<0, int>(2)));
+        EXPECT_EQ(2, (pow_int<1, int>(2)));
+        EXPECT_EQ(4, (pow_int<2, int>(2)));
+
+        EXPECT_EQ(1, (pow_int<0, unsigned int>(2)));
+        EXPECT_EQ(2, (pow_int<1, unsigned int>(2)));
+        EXPECT_EQ(4, (pow_int<2, unsigned int>(2)));
+
+        EXPECT_FEQ(1.0, (pow_int<0, double>(2.0)));
+        EXPECT_FEQ(2.0, (pow_int<1, double>(2.0)));
+        EXPECT_FEQ(4.0, (pow_int<2, double>(2.0)));
+    }
+
     TEST_CASE(NextPow2)
     {
         EXPECT_EQ(1,   next_pow2(1));
@@ -140,20 +163,20 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_FALSE(is_pow2(255));
     }
 
-    TEST_CASE(Log2)
+    TEST_CASE(Log2Int)
     {
-        EXPECT_EQ(0,  int_log2(1));
-        EXPECT_EQ(1,  int_log2(2));
-        EXPECT_EQ(1,  int_log2(3));
-        EXPECT_EQ(2,  int_log2(4));
-        EXPECT_EQ(5,  int_log2<int16>(1 << 5));
-        EXPECT_EQ(5,  int_log2<int32>(1 << 5));
-        EXPECT_EQ(5,  int_log2<int64>(1 << 5));
-        EXPECT_EQ(5,  int_log2<uint16>(1 << 5));
-        EXPECT_EQ(5,  int_log2<uint32>(1 << 5));
-        EXPECT_EQ(5,  int_log2<uint64>(1 << 5));
-        EXPECT_EQ(16, int_log2(1UL << 16));
-        EXPECT_EQ(31, int_log2(1UL << 31));
+        EXPECT_EQ(0,  log2_int(1));
+        EXPECT_EQ(1,  log2_int(2));
+        EXPECT_EQ(1,  log2_int(3));
+        EXPECT_EQ(2,  log2_int(4));
+        EXPECT_EQ(5,  log2_int<int16>(1 << 5));
+        EXPECT_EQ(5,  log2_int<int32>(1 << 5));
+        EXPECT_EQ(5,  log2_int<int64>(1 << 5));
+        EXPECT_EQ(5,  log2_int<uint16>(1 << 5));
+        EXPECT_EQ(5,  log2_int<uint32>(1 << 5));
+        EXPECT_EQ(5,  log2_int<uint64>(1 << 5));
+        EXPECT_EQ(16, log2_int(1UL << 16));
+        EXPECT_EQ(31, log2_int(1UL << 31));
     }
 
     TEST_CASE(Factorial)

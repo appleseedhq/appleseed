@@ -433,7 +433,7 @@ namespace
 
         double glossiness_to_blinn_exponent(const double g) const
         {
-            return 100.0 * pow_int(g, 3) + 9900.0 * pow(g, 30.0);
+            return 100.0 * pow_int<3>(g) + 9900.0 * pow_int<30>(g);
         }
 
         double glossiness_to_roughness(const double g) const
