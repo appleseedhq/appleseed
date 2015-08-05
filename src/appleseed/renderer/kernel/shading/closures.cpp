@@ -306,7 +306,6 @@ void CompositeSurfaceClosure::process_closure_tree(
                     values.m_sheen_tint = saturate(p->sheen_tint);
                     values.m_clearcoat = max(p->clearcoat, 0.0f);
                     values.m_clearcoat_gloss = clamp(p->clearcoat_gloss, 0.0001f, 1.0f);
-                    values.precompute_tint_color();
 
                     add_closure<DisneyBRDFInputValues>(
                         static_cast<ClosureID>(c->id),

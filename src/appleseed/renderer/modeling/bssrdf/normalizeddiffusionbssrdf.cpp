@@ -106,12 +106,10 @@ namespace
             return align(sizeof(NormalizedDiffusionBSSRDFInputValues), 16);
         }
 
-        virtual void evaluate_inputs(
-            uint8*                  data,
-            const size_t            offset = 0) const APPLESEED_OVERRIDE
+        virtual void prepare_inputs(void* data) const APPLESEED_OVERRIDE
         {
             NormalizedDiffusionBSSRDFInputValues* values =
-                reinterpret_cast<NormalizedDiffusionBSSRDFInputValues*>(data + offset);
+                reinterpret_cast<NormalizedDiffusionBSSRDFInputValues*>(data);
 
             // Apply multipliers.
             values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);

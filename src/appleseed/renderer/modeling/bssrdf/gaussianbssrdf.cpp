@@ -146,12 +146,10 @@ namespace
             return align(sizeof(GaussianBSSRDFInputValues), 16);
         }
 
-        virtual void evaluate_inputs(
-            uint8*                  data,
-            const size_t            offset = 0) const APPLESEED_OVERRIDE
+        virtual void prepare_inputs(void* data) const APPLESEED_OVERRIDE
         {
             GaussianBSSRDFInputValues* values =
-                reinterpret_cast<GaussianBSSRDFInputValues*>(data + offset);
+                reinterpret_cast<GaussianBSSRDFInputValues*>(data);
 
             values->m_rmax2 = values->m_v * RMax2Constant;
         }

@@ -71,8 +71,6 @@ APPLESEED_DECLARE_INPUT_VALUES(DisneyBRDFInputValues)
     // Instead, they are used to hold some temporary values.
     Spectrum    m_tint_color;
     double      m_base_color_luminance;
-
-    void precompute_tint_color();
 };
 
 
