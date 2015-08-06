@@ -59,36 +59,39 @@ class VPythonFile
     // Destructor, closes the file.
     ~VPythonFile();
 
+    // Close the file.
+    void close();
+
     // Output a single point.
     void draw_point(
         const Vector3d&     point,
-        const char*         color = "white",
+        const char*         color = "color.white",
         const size_t        size = 5);
 
     // Output a collection of points.
     void draw_points(
         const size_t        point_count,
         const Vector3d      points[],
-        const char*         color = "white",
+        const char*         color = "color.white",
         const size_t        size = 5);
 
     // Output a polyline.
     void draw_polyline(
         const size_t        point_count,
         const Vector3d      points[],
-        const char*         color = "white",
+        const char*         color = "color.white",
         const double        thickness = 0.001);
 
     // Output the unit square in the XZ plane.
     void draw_unit_square(
-        const char*         color = "white",
+        const char*         color = "color.white",
         const double        thickness = 0.001);
 
     // Output an arrow.
     void draw_arrow(
         const Vector3d&     from,
         const Vector3d&     to,
-        const char*         color = "white",
+        const char*         color = "color.white",
         const double        shaft_width = 0.001);
 
     // Output the canonical axes.
@@ -97,7 +100,7 @@ class VPythonFile
     // Output a bounding box.
     void draw_aabb(
         const AABB3d&       bbox,
-        const char*         color = "white",
+        const char*         color = "color.white",
         const double        thickness = 0.001);
 
     // Output a triangle.
@@ -105,7 +108,7 @@ class VPythonFile
         const Vector3d&     v0,
         const Vector3d&     v1,
         const Vector3d&     v2,
-        const char*         color = "white");
+        const char*         color = "color.white");
 
   private:
     std::FILE* m_file;

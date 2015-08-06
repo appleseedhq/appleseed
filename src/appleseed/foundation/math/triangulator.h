@@ -499,7 +499,7 @@ void Triangulator<T>::debug(
     std::vector<Vector3d> poly;
     for (size_t i = 0, c = curr; i < remaining_vertices + 1; ++i, c = m_links[c].m_next)
         poly.push_back(Vector3d(m_polygon2[c].x, m_polygon2[c].y, 0.0));
-    file.draw_polyline(poly.size(), &poly[0], "white", 0.0025);
+    file.draw_polyline(poly.size(), &poly[0], "color.white", 0.0025);
 
     // Fetch the vertices of the candidate ear.
     const Vector2Type& v0 = m_polygon2[prev];
@@ -520,10 +520,10 @@ void Triangulator<T>::debug(
     poly.push_back(Vector3d(v1.x, v1.y, 0.0));
     poly.push_back(Vector3d(v2.x, v2.y, 0.0));
     poly.push_back(Vector3d(v0.x, v0.y, 0.0));
-    file.draw_polyline(poly.size(), &poly[0], ear ? "green" : "red", 0.0025);
+    file.draw_polyline(poly.size(), &poly[0], ear ? "color.green" : "color.red", 0.0025);
 
     // Highlight the tip of the candidate ear.
-    file.draw_point(Vector3d(v1.x, v1.y, 0.0), "yellow", 10);
+    file.draw_point(Vector3d(v1.x, v1.y, 0.0), "color.yellow", 10);
 }
 
 }       // namespace foundation
