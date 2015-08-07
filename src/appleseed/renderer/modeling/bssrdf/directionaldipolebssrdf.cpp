@@ -65,11 +65,15 @@ namespace
     //
     // Directional dipole BSSRDF.
     //
-    // Reference:
+    // References:
     //
-    //   Directional Dipole for Subsurface Scattering
-    //   Jeppe Revall Frisvad, Toshiya Hachisuka and Thomas Kim Kjeldsen.
-    //   http://www.ci.i.u-tokyo.ac.jp/~hachisuka/dirpole.pdf
+    //   [1] Directional Dipole for Subsurface Scattering
+    //       Jeppe Revall Frisvad, Toshiya Hachisuka, Thomas Kim Kjeldsen
+    //       http://www.ci.i.u-tokyo.ac.jp/~hachisuka/dirpole.pdf
+    //
+    //   [2] Directional Dipole for Subsurface Scattering in Translucent Materials
+    //       Jeppe Revall Frisvad, Toshiya Hachisuka, Thomas Kim Kjeldsen
+    //       http://www.ci.i.u-tokyo.ac.jp/~hachisuka/dirpole_tr.pdf
     //
 
     const char* Model = "directional_dipole_bssrdf";
@@ -114,17 +118,22 @@ namespace
             const DipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
 
+            const Vector3d incoming_normal =
+                dot(incoming_dir, incoming_point.get_shading_normal()) > 0.0
+                    ? incoming_point.get_shading_normal()
+                    : -incoming_point.get_shading_normal();
+
             bssrdf(
                 values,
                 incoming_point.get_point(),
-                incoming_point.get_shading_normal(),
+                incoming_normal,
                 incoming_dir,
                 outgoing_point.get_point(),
                 outgoing_point.get_shading_normal(),
                 value);
 
 #ifdef DIRPOLE_RECIPROCAL
-            // Hack to make the BSSRDF reciprocal (section 6.3).
+            // Hack to make the BSSRDF reciprocal ([1] section 6.3).
             Spectrum tmp;
             bssrdf(
                 values,
@@ -132,7 +141,7 @@ namespace
                 outgoing_point.get_shading_normal(),
                 outgoing_dir,
                 incoming_point.get_point(),
-                incoming_point.get_shading_normal(),
+                incoming_point.get_shading_normal(),    // todo: possibly need to swap the normal here?
                 tmp);
             value += tmp;
             value *= 0.5f;
@@ -144,31 +153,6 @@ namespace
         }
 
       private:
-        // Diffusive part of the BSSRDF.
-        static double sd_prime(
-            const double            rcp_eta,
-            const double            cphi,
-            const double            ce,
-            const double            D,
-            const double            sigma_tr,
-            const double            dot_xw,
-            const double            dot_wn,
-            const double            dot_xn,
-            const double            r)                                                  // distance from point of incidence
-        {
-            const double r2 = square(r);
-            const double sigma_tr_r = sigma_tr * r;
-            const double sigma_tr_r_one = sigma_tr_r + 1.0;
-            const double cp_rcp_eta = 1.0 - fresnel_first_moment(rcp_eta);              // Cphi(1/eta) * 4
-
-            const double t0 = exp(-sigma_tr_r) / (cp_rcp_eta * r2 * r);
-            const double t1 = r2 / D + 3.0 * sigma_tr_r_one * dot_xw;
-            const double t2 = 3.0 * D * sigma_tr_r_one * dot_wn;
-            const double t3 = (sigma_tr_r_one + 3.0 * D * (3.0 * sigma_tr_r_one + square(sigma_tr_r)) / r2 * dot_xw) * dot_xn;
-
-            return RcpFourPiSquare * t0 * (cphi * t1 - ce * (t2 - t3));
-        }
-
         // Evaluate the directional dipole BSSRDF.
         static void bssrdf(
             const DipoleBSSRDFInputValues*  values,
@@ -182,25 +166,30 @@ namespace
             // Precompute some stuff. Same as for the Better Dipole model.
             const Vector3d xoxi = xo - xi;
             const double r2 = square_norm(xoxi);                                        // square distance between points of incidence and emergence
-            const double rcp_eta = values->m_outside_ior / values->m_inside_ior;        // 1 / relative refractive index
-            const double two_c1 = fresnel_first_moment(rcp_eta);
-            const double three_c2 = fresnel_second_moment(rcp_eta);
-            const double A = (1.0 + three_c2) / (1.0 - two_c1);                         // reflection parameter
-            const double cphi = 0.25 * (1.0 - two_c1);
-            const double ce = 0.5 * (1.0 - three_c2);
+            const double eta = values->m_outside_ior / values->m_inside_ior;            // relative refractive index
+            const double rcp_eta = 1.0 / eta;
+            const double cphi_eta = 0.25 * (1.0 - fresnel_first_moment(rcp_eta));
+            const double cphi_rcp_eta = 0.25 * (1.0 - fresnel_first_moment(eta));
+            const double ce_eta = 0.5 * (1.0 - fresnel_second_moment(rcp_eta));
+            const double A = (1.0 - ce_eta) / (2.0 * cphi_eta);                         // reflection parameter
             const double sigma_tr = 1.0 / values->m_dmfp;                               // effective transport coefficient
 
             // Compute normal to modified tangent plane.
             const Vector3d ni_star = cross(xoxi / sqrt(r2), normalize(cross(ni, xoxi)));
             assert(is_normalized(ni_star));
 
-            // Compute direction of ray sources.
-            const double ddn = -dot(wi, ni);
-            const Vector3d wr = normalize(wi * -rcp_eta - ni * (ddn * rcp_eta + sqrt(1.0 - square(rcp_eta) * (1.0 - square(ddn)))));
-            const Vector3d wv = -reflect(wr, ni_star);                                  // direction of the virtual ray source
+            // Compute direction of real ray source.
+            Vector3d wr;
+            const bool successful = refract(wi, ni, eta, wr);
+            assert(successful);
+            assert(is_normalized(wr));
 
-            const double dot_xoxi_wr = dot(xoxi, wr);
-            const double dot_wr_no = dot(wr, no);
+            // Compute direction of virtual ray source.
+            const Vector3d wv = -reflect(wr, ni_star);
+            assert(is_normalized(wv));
+
+            const double dot_wr_xoxi = dot(xoxi, wr);                                   // r * cos( real source direction, modified plane tangent )
+            const double dot_wr_no = dot(wr, no);                                       // cos( real source direction, normal at outgoing )
             const double dot_xoxi_no = dot(xoxi, no);
             const double dot_wv_no = dot(wv, no);
 
@@ -210,53 +199,67 @@ namespace
             {
                 const double sigma_a = values->m_sigma_a[i];                            // absorption coefficient
                 const double sigma_s = values->m_sigma_s[i];                            // scattering coefficient
-
-                if (sigma_s == 0.0)
-                {
-                    value[i] = 0.0f;
-                    continue;
-                }
-
+                const double sigma_t = sigma_s + sigma_a;                               // extinction coefficient
                 const double sigma_s_prime = sigma_s * (1.0 - values->m_anisotropy);    // reduced scattering coefficient
                 const double sigma_t_prime = sigma_s_prime + sigma_a;                   // reduced extinction coefficient
                 const double alpha_prime = sigma_s_prime / sigma_t_prime;               // reduced scattering albedo
-                const double sigma_t = sigma_s + sigma_a;                               // extinction coefficient
 
-                // Compute extrapolation distance (equation 21).
+                // Compute extrapolation distance ([1] equation 21).
                 const double D = 1.0 / (3.0 * sigma_t_prime);                           // diffusion coefficient
                 const double de = 2.131 * D / sqrt(alpha_prime);                        // distance to extrapolated boundary
+                //const double de = 2.121 * D / alpha_prime;                            // [2] equation 18
 
                 // Compute corrected distance to real source.
+                const double cos_beta = -sqrt((r2 - square(dot_wr_xoxi)) / (r2 + de * de));
                 const double mu0 = -dot_wr_no;
-                const double cos_beta = -sqrt((r2 - square(dot(wr, xoxi))) / (r2 + square(de)));
                 const double zr2 =
                     mu0 > 0.0
                         ? D * mu0 * (D * mu0 - 2.0 * de * cos_beta)                     // frontlit
-                        : D * D;                                                        // backlit
-                const double dr = sqrt(r2 + zr2);
+                        : 1.0 / square(3.0 * sigma_t);                                  // backlit
+                const double dr = sqrt(r2 + zr2);                                       // distance to real ray source
 
-                // Compute position and distance to virtual source.
+                // Compute position of virtual source.
                 const Vector3d xv = xi + (2.0 * A * de) * ni_star;                      // position of the virtual ray source
                 const Vector3d xoxv = xo - xv;
-                //const double dv = norm(xoxv);
-                const double zv = 2.0 * A * de;
-                const double dv = sqrt(r2 + zv * zv);
+                const double dot_xoxv_no = dot(xoxv, no);
+
+                // Compute distance to virtual source.
+                const double dv = norm(xoxv);                                           // distance to virtual ray source
+                assert(feq(dv, sqrt(r2 + square(2.0 * A * de))));                       // true because we computed xv using ni_star, not ni
 
                 // Evaluate the BSSRDF.
-                double result =
-                      sd_prime(rcp_eta, cphi, ce, D, sigma_tr, dot_xoxi_wr, dot_wr_no, dot_xoxi_no, dr)
-                    - sd_prime(rcp_eta, cphi, ce, D, sigma_tr, dot(xoxv, wv), dot_wv_no, dot(xoxv, no), dv);
-
-                // Clamp negative values to zero (section 6.1).
-                if (result < 0.0)
-                    result = 0.0;
+                const double sdr = sd_prime(cphi_eta, ce_eta, D, sigma_tr, dot_wr_xoxi, dot_wr_no, dot_xoxi_no, dr);
+                const double sdv = sd_prime(cphi_eta, ce_eta, D, sigma_tr, dot(wv, xoxv), dot_wv_no, dot_xoxv_no, dv);
+                const double result = max((sdr - sdv) / (4.0 * cphi_rcp_eta), 0.0);
 
                 // Store result.
                 value[i] = static_cast<float>(result);
             }
 
             // todo: add reduced intensity component here (S_sigma_E term).
-            // See equation 12 (section 3.2) of the Directional Dipole paper.
+            // See [1] equation 12 (section 3.2).
+        }
+
+        // Diffusive part of the BSSRDF.
+        static double sd_prime(
+            const double            cphi_eta,
+            const double            ce_eta,
+            const double            D,
+            const double            sigma_tr,
+            const double            dot_w_x,
+            const double            dot_w_n,
+            const double            dot_x_n,
+            const double            r)
+        {
+            const double r2 = square(r);
+            const double sigma_tr_r = sigma_tr * r;
+
+            const double t0 = RcpFourPiSquare * exp(-sigma_tr_r) / (r2 * r);
+            const double t1 = r2 / D + 3.0 * (1.0 + sigma_tr_r) * dot_w_x;
+            const double t2 = 3.0 * D * (1.0 + sigma_tr_r) * dot_w_n;
+            const double t3 = (1.0 + sigma_tr_r + 3.0 * D * (3.0 * (1.0 + sigma_tr_r) + square(sigma_tr_r)) / r2 * dot_w_x) * dot_x_n;
+
+            return t0 * (cphi_eta * t1 - ce_eta * (t2 - t3));
         }
     };
 }
