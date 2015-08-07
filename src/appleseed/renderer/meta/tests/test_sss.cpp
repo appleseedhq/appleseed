@@ -149,7 +149,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     };
 
     template <typename BSSRDFFactory, bool Directional>
-    double integrate_dipole(
+    double integrate_dipole_rd_dmfp(
         const double rd,
         const double dmfp,
         const size_t sample_count)
@@ -183,19 +183,17 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     }
 
     template <typename BSSRDFFactory>
-    double dipole_integrate_rd(
+    double integrate_dipole_alpha_prime(
         const double alpha_prime,
         const size_t sample_count)
     {
-        DipoleBSSRDFEvaluator<BSSRDFFactory> bssrdf_eval;
-
-        const double sigma_s_prime = 1.0;
         const double sigma_t_prime = 1.0 / alpha_prime;
-        const double sigma_a = sigma_t_prime - 1.0;
+        const double sigma_s_prime = 1.0;
+        const double sigma_a = sigma_t_prime - sigma_s_prime;
 
+        DipoleBSSRDFEvaluator<BSSRDFFactory> bssrdf_eval;
         bssrdf_eval.set_values_from_sigmas(sigma_a, sigma_s_prime, 1.0, 0.0);
         const double sigma_tr = bssrdf_eval.get_sigma_tr();
-        assert(sigma_tr != 0.0);
 
         MersenneTwister rng;
 
@@ -352,7 +350,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double alpha_prime = fit<size_t, double>(i, 0, TestCount - 1, 0.0 + Eps, 1.0 - Eps);
 
             const double rd_a = rd_fun(alpha_prime);
-            const double rd_n = dipole_integrate_rd<StandardDipoleBSSRDFFactory>(alpha_prime, SampleCount);
+            const double rd_n = integrate_dipole_alpha_prime<StandardDipoleBSSRDFFactory>(alpha_prime, SampleCount);
 
             EXPECT_FEQ_EPS(rd_a, rd_n, 0.02);
         }
@@ -361,17 +359,15 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     TEST_CASE(Plot_CompareAnalyticalAndNumericalIntegrals_StandardDipole)
     {
         GnuplotFile plotfile;
-        plotfile.set_title("BSSRDF Reparameterization");
-        plotfile.set_xlabel("Rd");
-        plotfile.set_ylabel("Alpha'");
-        plotfile.set_xrange(-0.05, 1.0);
-        plotfile.set_yrange(0.0, 1.05);
+        plotfile.set_title("Integration of the Standard Dipole Profile");
+        plotfile.set_xlabel("Alpha'");
+        plotfile.set_ylabel("Rd");
 
         const double Eta = 1.0 / 1.0;
         const ComputeRdStandardDipole rd_fun(Eta);
 
         const size_t PointCount = 1000;
-        const size_t SampleCount = 10000;
+        const size_t SampleCount = 1000;
         vector<Vector2d> ai_points, ni_points;
 
         for (size_t i = 0; i < PointCount; ++i)
@@ -387,19 +383,19 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             ni_points.push_back(
                 Vector2d(
                     alpha_prime,
-                    dipole_integrate_rd<StandardDipoleBSSRDFFactory>(alpha_prime, SampleCount)));
+                    integrate_dipole_alpha_prime<StandardDipoleBSSRDFFactory>(alpha_prime, SampleCount)));
         }
 
         plotfile
             .new_plot()
             .set_points(ai_points)
-            .set_title("Standard Dipole (Analytical Integration)")
+            .set_title("Analytical Integration")
             .set_color("gray");
 
         plotfile
             .new_plot()
             .set_points(ni_points)
-            .set_title("Standard Dipole (Numerical Integration)")
+            .set_title("Numerical Integration")
             .set_color("blue");
 
         plotfile.write("unit tests/outputs/test_sss_stddipole_integrals.gnuplot");
@@ -408,17 +404,15 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     TEST_CASE(Plot_CompareAnalyticalAndNumericalIntegrals_BetterDipole)
     {
         GnuplotFile plotfile;
-        plotfile.set_title("BSSRDF Reparameterization");
-        plotfile.set_xlabel("Rd");
-        plotfile.set_ylabel("Alpha'");
-        plotfile.set_xrange(-0.05, 1.0);
-        plotfile.set_yrange(0.0, 1.05);
+        plotfile.set_title("Integration of the Better Dipole Profile");
+        plotfile.set_xlabel("Alpha'");
+        plotfile.set_ylabel("Rd");
 
         const double Eta = 1.0 / 1.0;
         const ComputeRdStandardDipole rd_fun(Eta);
 
         const size_t PointCount = 1000;
-        const size_t SampleCount = 10000;
+        const size_t SampleCount = 1000;
         vector<Vector2d> ai_points, ni_points;
 
         for (size_t i = 0; i < PointCount; ++i)
@@ -434,19 +428,19 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             ni_points.push_back(
                 Vector2d(
                     alpha_prime,
-                    dipole_integrate_rd<BetterDipoleBSSRDFFactory>(alpha_prime, SampleCount)));
+                    integrate_dipole_alpha_prime<BetterDipoleBSSRDFFactory>(alpha_prime, SampleCount)));
         }
 
         plotfile
             .new_plot()
             .set_points(ai_points)
-            .set_title("Better Dipole (Analytical Integration)")
+            .set_title("Analytical Integration")
             .set_color("gray");
 
         plotfile
             .new_plot()
             .set_points(ni_points)
-            .set_title("Better Dipole (Numerical Integration)")
+            .set_title("Numerical Integration")
             .set_color("blue");
 
         plotfile.write("unit tests/outputs/test_sss_betterdipole_integrals.gnuplot");
@@ -771,7 +765,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             const double rd = fit<size_t, double>(i, 0, N - 1, 0.01, 1.0);
             const double x =
-                integrate_dipole<StandardDipoleBSSRDFFactory, false>(
+                integrate_dipole_rd_dmfp<StandardDipoleBSSRDFFactory, false>(
                     rd,
                     1.0,
                     1000);
@@ -780,7 +774,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         }
 
         plotfile.new_plot().set_points(points);
-        plotfile.write("unit tests/outputs/test_sss_std_dipole_integral_rd.gnuplot");
+        plotfile.write("unit tests/outputs/test_sss_stddipole_integral_rd.gnuplot");
     }
 
     //
@@ -1022,7 +1016,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             const double rd = fit<size_t, double>(i, 0, N - 1, 0.01, 1.0);
             const double x =
-                integrate_dipole<DirectionalDipoleBSSRDFFactory, true>(
+                integrate_dipole_rd_dmfp<DirectionalDipoleBSSRDFFactory, true>(
                     rd,
                     1.0,
                     3000);
@@ -1050,7 +1044,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             const double rd = fit<size_t, double>(i, 0, N - 1, 0.01, 1.0);
             const double x =
-                integrate_dipole<DirectionalDipoleBSSRDFFactory, false>(
+                integrate_dipole_rd_dmfp<DirectionalDipoleBSSRDFFactory, false>(
                     rd,
                     1.0,
                     1000);
