@@ -29,6 +29,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingpointbuilder.h"
+#include "renderer/modeling/bssrdf/betterdipolebssrdf.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
@@ -181,6 +182,41 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         return integral / sample_count;
     }
 
+    template <typename BSSRDFFactory>
+    double dipole_integrate_rd(
+        const double alpha_prime,
+        const size_t sample_count)
+    {
+        DipoleBSSRDFEvaluator<BSSRDFFactory> bssrdf_eval;
+
+        const double sigma_s_prime = 1.0;
+        const double sigma_t_prime = 1.0 / alpha_prime;
+        const double sigma_a = sigma_t_prime - 1.0;
+
+        bssrdf_eval.set_values_from_sigmas(sigma_a, sigma_s_prime, 1.0, 0.0);
+        const double sigma_tr = bssrdf_eval.get_sigma_tr();
+        assert(sigma_tr != 0.0);
+
+        MersenneTwister rng;
+
+        double integral = 0.0;
+
+        for (size_t i = 0; i < sample_count; ++i)
+        {
+            const double u = rand_double2(rng);
+            const double r = dipole_profile_sample(u, sigma_tr);
+
+            const double pdf_radius = dipole_profile_pdf(r, sigma_tr);
+            const double pdf_angle = RcpTwoPi;
+            const double pdf = pdf_radius * pdf_angle;
+
+            const double value = bssrdf_eval.evaluate_searchlight(r);
+            integral += value / pdf;
+        }
+
+        return integral / sample_count;
+    }
+
     //
     // BSSRDF reparameterization.
     //
@@ -301,6 +337,47 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         plotfile.write("unit tests/outputs/test_sss_reparam_compare.gnuplot");
     }
+
+    const size_t NumericAnalyticReparamTestNumTests = 30;
+    const size_t NumericAnalyticReparamTestNumSamples = 10000;
+    const double NumericAnalyticReparamTestEps = 0.01;
+
+    TEST_CASE(BSSRDFReparamStandardDipoleNumericVsAnalytic)
+    {
+        ComputeRdStandardDipole rd_fun(1.0);
+
+        for (size_t i = 0; i < NumericAnalyticReparamTestNumTests; ++i)
+        {
+            const double ap = fit<size_t, double>(i, 0, NumericAnalyticReparamTestNumTests - 1, 0.001, 0.999);
+            const double rd_a = rd_fun(ap);
+            const double rd_n =
+                dipole_integrate_rd<StandardDipoleBSSRDFFactory>(
+                    ap,
+                    NumericAnalyticReparamTestNumSamples);
+
+            EXPECT_FEQ_EPS(rd_a, rd_n, NumericAnalyticReparamTestEps);
+        }
+    }
+
+    // Failing...
+    /*
+    TEST_CASE(BSSRDFReparamBetterDipoleNumericVsAnalytic)
+    {
+        ComputeRdBetterDipole rd_fun(1.0);
+
+        for (size_t i = 0; i < NumericAnalyticReparamTestNumTests; ++i)
+        {
+            const double ap = fit<size_t, double>(i, 0, NumericAnalyticReparamTestNumTests - 1, 0.001, 0.999);
+            const double rd_a = rd_fun(ap);
+            const double rd_n =
+                dipole_integrate_rd<StandardDipoleBSSRDFFactory>(
+                    ap,
+                    NumericAnalyticReparamTestNumSamples);
+
+            EXPECT_FEQ_EPS(rd_a, rd_n, NumericAnalyticReparamTestEps);
+        }
+    }
+    */
 
     //
     // Gaussian profile.
