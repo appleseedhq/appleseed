@@ -124,10 +124,15 @@ namespace
                 const double alpha_prime = sigma_s_prime / sigma_t_prime;
 
                 //
+                // The extended source represented by the refracted ray in the medium is approximated
+                // by a single isotropic point source at the center of mass of the beam, at a depth
+                // of one mean free path, i.e. at zr = 1 / sigma_t_prime (searchlight configuration).
+                //
                 // We have
                 //
                 //   zr = 1 / sigma_t_prime
-                //   zv = -zr - 4 * A * D
+                //   zv = -zr - 2 * zb
+                //      = -zr - 4 * A * D
                 //
                 // where
                 //

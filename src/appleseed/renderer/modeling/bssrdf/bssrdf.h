@@ -57,7 +57,9 @@ namespace renderer
 {
 
 //
-// Bidirectional Surface Scattering Reflectance Distribution Function (BSSRDF).
+// Profile of a Bidirectional Surface Scattering Reflectance Distribution Function (BSSRDF).
+//
+// The 1/Pi factor and the Fresnel terms at the incoming and outgoing points are not included.
 //
 // Conventions (Veach, 3.7.5, figure 3.3 on page 93):
 //
