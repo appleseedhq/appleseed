@@ -243,7 +243,7 @@ size_t SubsurfaceSampler::sample(
             sample.m_probability =
                   bssrdf_sample_pdf
                 * sampling_basis_pdf
-                * abs(dot(sampling_basis.get_normal(), sample.m_point.get_geometric_normal()));     // todo: or shading normal?
+                * abs(dot(sampling_basis.get_normal(), sample.m_point.get_shading_normal()));
 
             // Weight sample probability with multiple importance sampling.
             sample.m_probability /=
@@ -256,7 +256,7 @@ size_t SubsurfaceSampler::sample(
                     sample.m_probability,
                     outgoing_point.get_point(),
                     sample.m_point.get_point(),
-                    sample.m_point.get_geometric_normal());     // todo: or shading normal?
+                    sample.m_point.get_shading_normal());
 
             // Return the relative index of refraction.
             sample.m_eta = bssrdf_sample.get_eta();
