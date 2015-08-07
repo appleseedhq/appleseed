@@ -102,7 +102,7 @@ namespace
             values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
 
             // Compute sigma_a and sigma_s from the reflectance and dmfp parameters.
-            const ComputeRdBetterDipole rd_fun(values->m_outside_ior / values->m_inside_ior);   // 1 / eta
+            const ComputeRdBetterDipole rd_fun(values->m_outside_ior / values->m_inside_ior);
             compute_absorption_and_scattering(
                 rd_fun,
                 values->m_reflectance,
@@ -135,9 +135,9 @@ namespace
                 reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
 
             const double r2 = square_norm(outgoing_point.get_point() - incoming_point.get_point());
-            const double rcp_eta = values->m_outside_ior / values->m_inside_ior;
-            const double two_c1 = fresnel_first_moment(rcp_eta);
-            const double three_c2 = fresnel_second_moment(rcp_eta);
+            const double eta = values->m_outside_ior / values->m_inside_ior;
+            const double two_c1 = fresnel_first_moment(eta);
+            const double three_c2 = fresnel_second_moment(eta);
             const double A = (1.0 + three_c2) / (1.0 - two_c1);
             const double cphi = 0.25 * (1.0 - two_c1);
             const double ce = 0.5 * (1.0 - three_c2);

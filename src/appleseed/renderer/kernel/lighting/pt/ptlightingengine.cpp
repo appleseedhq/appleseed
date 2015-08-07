@@ -630,6 +630,17 @@ namespace
                 {
                     const SubsurfaceSample& sample = samples[i];
 
+                    // Since the direction in the outside medium--be it the outgoing or the incoming
+                    // direction--is always fixed, we always need to figure out a refracted direction
+                    // in the inside medium, and thus we compute both Fresnel coefficients at the
+                    // incoming and outgoing points using eta (defined as outside IOR / inside IOR).
+
+                    // Compute Fresnel coefficient at outgoing point.
+                    double outgoing_fresnel;
+                    fresnel_transmittance_dielectric(outgoing_fresnel, sample.m_eta, vertex.m_cos_on);
+                    if (outgoing_fresnel <= 0.0)
+                        continue;
+
                     // Compute irradiance at incoming point.
                     Vector3d incoming;
                     double transmission;
@@ -643,6 +654,12 @@ namespace
                             irradiance))
                         continue;
 
+                    // Compute Fresnel coefficient at incoming point.
+                    double incoming_fresnel;
+                    fresnel_transmittance_dielectric(incoming_fresnel, sample.m_eta, cos_in);
+                    if (incoming_fresnel <= 0.0)
+                        continue;
+
                     // Evaluate the diffusion profile.
                     Spectrum rd;
                     vertex.m_bssrdf->evaluate(
@@ -652,22 +669,6 @@ namespace
                         sample.m_point,
                         incoming,
                         rd);
-
-                    // Compute Fresnel coefficient at outgoing point.
-                    double outgoing_fresnel;
-                    fresnel_transmittance_dielectric(outgoing_fresnel, sample.m_eta, vertex.m_cos_on);
-                    if (outgoing_fresnel <= 0.0)
-                        continue;
-
-                    // Compute Fresnel coefficient at incoming point.
-                    // We use eta and not 1/eta because the normal at the incoming point is pointing outward
-                    // (away from the object), like the normal at the outgoing point. If the normal was pointing
-                    // inward, i.e. facing the light ray that has been traveling inside the object, we would
-                    // use 1/eta like we do when traversing an interface between two media of mismatching densities.
-                    double incoming_fresnel;
-                    fresnel_transmittance_dielectric(incoming_fresnel, sample.m_eta, cos_in);
-                    if (incoming_fresnel <= 0.0)
-                        continue;
 
                     // Add the contribution of this sample to the illumination.
                     const double weight =

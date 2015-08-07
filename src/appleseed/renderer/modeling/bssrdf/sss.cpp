@@ -47,9 +47,9 @@ namespace renderer
 // BSSRDF reparameterization implementation.
 //
 
-ComputeRdStandardDipole::ComputeRdStandardDipole(const double rcp_eta)
+ComputeRdStandardDipole::ComputeRdStandardDipole(const double eta)
 {
-    const double fdr = fresnel_internal_diffuse_reflectance(rcp_eta);
+    const double fdr = fresnel_internal_diffuse_reflectance(eta);
     m_a = (1.0 + fdr) / (1.0 - fdr);
 }
 
@@ -60,9 +60,9 @@ double ComputeRdStandardDipole::operator()(const double alpha_prime) const
     return (0.5 * alpha_prime) * (1.0 + exp(-(4.0 / 3.0) * m_a * sqrt_3ap)) * exp(-sqrt_3ap);
 }
 
-ComputeRdBetterDipole::ComputeRdBetterDipole(const double rcp_eta)
-  : m_two_c1(fresnel_first_moment(rcp_eta))
-  , m_three_c2(fresnel_second_moment(rcp_eta))
+ComputeRdBetterDipole::ComputeRdBetterDipole(const double eta)
+  : m_two_c1(fresnel_first_moment(eta))
+  , m_three_c2(fresnel_second_moment(eta))
 {
 }
 

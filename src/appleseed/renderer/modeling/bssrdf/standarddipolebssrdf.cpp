@@ -108,8 +108,8 @@ namespace
                 reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
 
             const double r2 = square_norm(outgoing_point.get_point() - incoming_point.get_point());
-            const double rcp_eta = values->m_outside_ior / values->m_inside_ior;
-            const double fdr = fresnel_internal_diffuse_reflectance(rcp_eta);
+            const double eta = values->m_outside_ior / values->m_inside_ior;
+            const double fdr = fresnel_internal_diffuse_reflectance(eta);
             const double a = (1.0 + fdr) / (1.0 - fdr);
             const double sigma_tr = 1.0 / values->m_dmfp;
 

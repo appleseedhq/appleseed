@@ -85,7 +85,7 @@ void DipoleBSSRDF::prepare_inputs(void* data) const
     values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
 
     // Compute sigma_a and sigma_s from the reflectance and dmfp parameters.
-    const ComputeRdStandardDipole rd_fun(values->m_outside_ior / values->m_inside_ior);     // 1 / eta
+    const ComputeRdStandardDipole rd_fun(values->m_outside_ior / values->m_inside_ior);
     compute_absorption_and_scattering(
         rd_fun,
         values->m_reflectance,
@@ -108,7 +108,7 @@ bool DipoleBSSRDF::sample(
     if (values->m_weight == 0.0)
         return false;
 
-    sample.set_eta(values->m_inside_ior / values->m_outside_ior);
+    sample.set_eta(values->m_outside_ior / values->m_inside_ior);
     sample.set_channel(0);
 
     sample.get_sampling_context().split_in_place(2, 1);
