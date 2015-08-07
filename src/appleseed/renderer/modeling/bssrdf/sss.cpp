@@ -57,7 +57,7 @@ double ComputeRdStandardDipole::operator()(const double alpha_prime) const
 {
     // [1] eq. 15.
     const double sqrt_3ap = sqrt(3.0 * (1.0 - alpha_prime));
-    return (0.5 * alpha_prime) * (1.0 + exp(-1.25 * m_a * sqrt_3ap)) * exp(-sqrt_3ap);
+    return (0.5 * alpha_prime) * (1.0 + exp(-(4.0 / 3.0) * m_a * sqrt_3ap)) * exp(-sqrt_3ap);
 }
 
 ComputeRdBetterDipole::ComputeRdBetterDipole(const double rcp_eta)
