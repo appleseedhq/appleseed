@@ -804,6 +804,8 @@ inline bool refract(
     assert(is_normalized(n));
 
     const T cos_theta_i = dot(i, n);
+    assert(cos_theta_i >= T(0.0));
+
     const T sin_theta_i2 = T(1.0) - square(cos_theta_i);
     const T sin_theta_t2 = sin_theta_i2 * square(eta);
     const T cos_theta_t2 = T(1.0) - sin_theta_t2;
@@ -816,11 +818,7 @@ inline bool refract(
 
     const T cos_theta_t = std::sqrt(cos_theta_t2);
 
-    t =
-        cos_theta_i > T(0.0)
-            ? (eta * cos_theta_i - cos_theta_t) * n - eta * i
-            : (eta * cos_theta_i + cos_theta_t) * n - eta * i;
-
+    t = (eta * cos_theta_i - cos_theta_t) * n - eta * i;
     assert(is_normalized(t));
 
     return true;

@@ -283,18 +283,6 @@ TEST_SUITE(Foundation_Math_Vector)
         EXPECT_FEQ(Vector2d(0.63639610306789274, -0.77136243102707558), r);
     }
 
-    TEST_CASE(TestRefract_IncidentDirectionAndNormalAreInOppositeHemispheres)
-    {
-        const Vector2d i = normalize(Vector2d(-1.0, 1.0));
-        const Vector2d n(0.0, -1.0);
-        const double eta = 0.9;
-
-        Vector2d r;
-        EXPECT_TRUE(refract(i, n, eta, r));
-
-        EXPECT_FEQ(Vector2d(0.63639610306789274, -0.77136243102707558), r);
-    }
-
     TEST_CASE(TestClamp)
     {
         const Vector3d v(-1.0, 2.0, 3.0);
