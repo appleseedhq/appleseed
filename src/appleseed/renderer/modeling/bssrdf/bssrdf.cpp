@@ -90,4 +90,8 @@ void BSSRDF::evaluate_inputs(
     prepare_inputs(input_evaluator.data() + offset);
 }
 
+void BSSRDF::prepare_inputs(void* data) const
+{
+}
+
 }   // namespace renderer

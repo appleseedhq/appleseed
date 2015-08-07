@@ -149,7 +149,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     };
 
     template <typename BSSRDFFactory, bool Directional>
-    double integrate_dipole(
+    double integrate_dipole_rd_dmfp(
         const double rd,
         const double dmfp,
         const size_t sample_count)
@@ -183,19 +183,17 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     }
 
     template <typename BSSRDFFactory>
-    double dipole_integrate_rd(
+    double integrate_dipole_alpha_prime(
         const double alpha_prime,
         const size_t sample_count)
     {
-        DipoleBSSRDFEvaluator<BSSRDFFactory> bssrdf_eval;
-
-        const double sigma_s_prime = 1.0;
         const double sigma_t_prime = 1.0 / alpha_prime;
-        const double sigma_a = sigma_t_prime - 1.0;
+        const double sigma_s_prime = 1.0;
+        const double sigma_a = sigma_t_prime - sigma_s_prime;
 
+        DipoleBSSRDFEvaluator<BSSRDFFactory> bssrdf_eval;
         bssrdf_eval.set_values_from_sigmas(sigma_a, sigma_s_prime, 1.0, 0.0);
         const double sigma_tr = bssrdf_eval.get_sigma_tr();
-        assert(sigma_tr != 0.0);
 
         MersenneTwister rng;
 
@@ -258,14 +256,14 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     TEST_CASE(BSSRDFReparamStandardDipole_VaryingDiffuseMeanFreePath)
     {
         const size_t N = 1000;
-        const double Eta = 1.3;
+        const double Eta = 1.0 / 1.3;
         const double Anisotropy = 0.0;
 
         MersenneTwister rng;
 
         for (size_t i = 0; i < N; ++i)
         {
-            const ComputeRdStandardDipole rd_fun(1.0 / Eta);
+            const ComputeRdStandardDipole rd_fun(Eta);
             const Spectrum rd(Color3f(static_cast<float>(rand_double1(rng))));
 
             Spectrum sigma_a1, sigma_s1;
@@ -292,7 +290,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         }
     }
 
-    TEST_CASE(PlotBSSRDFReparam)
+    TEST_CASE(Plot_CompareStandardAndBetterDipolesReparameterizations)
     {
         GnuplotFile plotfile;
         plotfile.set_title("BSSRDF Reparameterization");
@@ -301,16 +299,16 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.set_xrange(-0.05, 1.0);
         plotfile.set_yrange(0.0, 1.05);
 
-        const double Eta = 1.3;
-        const ComputeRdStandardDipole std_rd_fun(1.0 / Eta);
-        const ComputeRdBetterDipole better_rd_fun(1.0 / Eta);
+        const double Eta = 1.0 / 1.3;
+        const ComputeRdStandardDipole std_rd_fun(Eta);
+        const ComputeRdBetterDipole better_rd_fun(Eta);
 
-        const size_t N = 1000;
+        const size_t PointCount = 1000;
         vector<Vector2d> std_points, better_points;
 
-        for (size_t i = 0; i < N; ++i)
+        for (size_t i = 0; i < PointCount; ++i)
         {
-            const double rd = fit<size_t, double>(i, 0, N - 1, 0.0, 1.0);
+            const double rd = fit<size_t, double>(i, 0, PointCount - 1, 0.0, 1.0);
 
             std_points.push_back(
                 Vector2d(
@@ -338,46 +336,115 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.write("unit tests/outputs/test_sss_reparam_compare.gnuplot");
     }
 
-    const size_t NumericAnalyticReparamTestNumTests = 30;
-    const size_t NumericAnalyticReparamTestNumSamples = 10000;
-    const double NumericAnalyticReparamTestEps = 0.01;
-
-    TEST_CASE(BSSRDFReparamStandardDipoleNumericVsAnalytic)
+    TEST_CASE(CompareAnalyticalAndNumericalIntegrals_StandardDipole)
     {
-        ComputeRdStandardDipole rd_fun(1.0);
+        const double Eta = 1.0 / 1.0;
+        const ComputeRdStandardDipole rd_fun(Eta);
 
-        for (size_t i = 0; i < NumericAnalyticReparamTestNumTests; ++i)
+        const size_t TestCount = 100;
+        const size_t SampleCount = 10000;
+
+        for (size_t i = 0; i < TestCount; ++i)
         {
-            const double ap = fit<size_t, double>(i, 0, NumericAnalyticReparamTestNumTests - 1, 0.001, 0.999);
-            const double rd_a = rd_fun(ap);
-            const double rd_n =
-                dipole_integrate_rd<StandardDipoleBSSRDFFactory>(
-                    ap,
-                    NumericAnalyticReparamTestNumSamples);
+            const double Eps = 1.0e-6;
+            const double alpha_prime = fit<size_t, double>(i, 0, TestCount - 1, 0.0 + Eps, 1.0 - Eps);
 
-            EXPECT_FEQ_EPS(rd_a, rd_n, NumericAnalyticReparamTestEps);
+            const double rd_a = rd_fun(alpha_prime);
+            const double rd_n = integrate_dipole_alpha_prime<StandardDipoleBSSRDFFactory>(alpha_prime, SampleCount);
+
+            EXPECT_FEQ_EPS(rd_a, rd_n, 0.02);
         }
     }
 
-    // Failing...
-    /*
-    TEST_CASE(BSSRDFReparamBetterDipoleNumericVsAnalytic)
+    TEST_CASE(Plot_CompareAnalyticalAndNumericalIntegrals_StandardDipole)
     {
-        ComputeRdBetterDipole rd_fun(1.0);
+        GnuplotFile plotfile;
+        plotfile.set_title("Integration of the Standard Dipole Profile");
+        plotfile.set_xlabel("Alpha'");
+        plotfile.set_ylabel("Rd");
 
-        for (size_t i = 0; i < NumericAnalyticReparamTestNumTests; ++i)
+        const double Eta = 1.0 / 1.0;
+        const ComputeRdStandardDipole rd_fun(Eta);
+
+        const size_t PointCount = 1000;
+        const size_t SampleCount = 1000;
+        vector<Vector2d> ai_points, ni_points;
+
+        for (size_t i = 0; i < PointCount; ++i)
         {
-            const double ap = fit<size_t, double>(i, 0, NumericAnalyticReparamTestNumTests - 1, 0.001, 0.999);
-            const double rd_a = rd_fun(ap);
-            const double rd_n =
-                dipole_integrate_rd<StandardDipoleBSSRDFFactory>(
-                    ap,
-                    NumericAnalyticReparamTestNumSamples);
+            const double Eps = 1.0e-6;
+            const double alpha_prime = fit<size_t, double>(i, 0, PointCount - 1, 0.0 + Eps, 1.0 - Eps);
 
-            EXPECT_FEQ_EPS(rd_a, rd_n, NumericAnalyticReparamTestEps);
+            ai_points.push_back(
+                Vector2d(
+                    alpha_prime,
+                    rd_fun(alpha_prime)));
+
+            ni_points.push_back(
+                Vector2d(
+                    alpha_prime,
+                    integrate_dipole_alpha_prime<StandardDipoleBSSRDFFactory>(alpha_prime, SampleCount)));
         }
+
+        plotfile
+            .new_plot()
+            .set_points(ai_points)
+            .set_title("Analytical Integration")
+            .set_color("gray");
+
+        plotfile
+            .new_plot()
+            .set_points(ni_points)
+            .set_title("Numerical Integration")
+            .set_color("blue");
+
+        plotfile.write("unit tests/outputs/test_sss_stddipole_integrals.gnuplot");
     }
-    */
+
+    TEST_CASE(Plot_CompareAnalyticalAndNumericalIntegrals_BetterDipole)
+    {
+        GnuplotFile plotfile;
+        plotfile.set_title("Integration of the Better Dipole Profile");
+        plotfile.set_xlabel("Alpha'");
+        plotfile.set_ylabel("Rd");
+
+        const double Eta = 1.0 / 1.0;
+        const ComputeRdStandardDipole rd_fun(Eta);
+
+        const size_t PointCount = 1000;
+        const size_t SampleCount = 1000;
+        vector<Vector2d> ai_points, ni_points;
+
+        for (size_t i = 0; i < PointCount; ++i)
+        {
+            const double Eps = 1.0e-6;
+            const double alpha_prime = fit<size_t, double>(i, 0, PointCount - 1, 0.0 + Eps, 1.0 - Eps);
+
+            ai_points.push_back(
+                Vector2d(
+                    alpha_prime,
+                    rd_fun(alpha_prime)));
+
+            ni_points.push_back(
+                Vector2d(
+                    alpha_prime,
+                    integrate_dipole_alpha_prime<BetterDipoleBSSRDFFactory>(alpha_prime, SampleCount)));
+        }
+
+        plotfile
+            .new_plot()
+            .set_points(ai_points)
+            .set_title("Analytical Integration")
+            .set_color("gray");
+
+        plotfile
+            .new_plot()
+            .set_points(ni_points)
+            .set_title("Numerical Integration")
+            .set_color("blue");
+
+        plotfile.write("unit tests/outputs/test_sss_betterdipole_integrals.gnuplot");
+    }
 
     //
     // Gaussian profile.
@@ -698,7 +765,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             const double rd = fit<size_t, double>(i, 0, N - 1, 0.01, 1.0);
             const double x =
-                integrate_dipole<StandardDipoleBSSRDFFactory, false>(
+                integrate_dipole_rd_dmfp<StandardDipoleBSSRDFFactory, false>(
                     rd,
                     1.0,
                     1000);
@@ -707,7 +774,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         }
 
         plotfile.new_plot().set_points(points);
-        plotfile.write("unit tests/outputs/test_sss_std_dipole_integral_rd.gnuplot");
+        plotfile.write("unit tests/outputs/test_sss_stddipole_integral_rd.gnuplot");
     }
 
     //
@@ -949,7 +1016,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             const double rd = fit<size_t, double>(i, 0, N - 1, 0.01, 1.0);
             const double x =
-                integrate_dipole<DirectionalDipoleBSSRDFFactory, true>(
+                integrate_dipole_rd_dmfp<DirectionalDipoleBSSRDFFactory, true>(
                     rd,
                     1.0,
                     3000);
@@ -977,7 +1044,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             const double rd = fit<size_t, double>(i, 0, N - 1, 0.01, 1.0);
             const double x =
-                integrate_dipole<DirectionalDipoleBSSRDFFactory, false>(
+                integrate_dipole_rd_dmfp<DirectionalDipoleBSSRDFFactory, false>(
                     rd,
                     1.0,
                     1000);

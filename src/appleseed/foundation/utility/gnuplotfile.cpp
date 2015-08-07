@@ -113,13 +113,16 @@ bool GnuplotFile::write(const string& filepath) const
         return false;
 
     if (!m_title.empty())
-        file << "set title \"" << m_title << "\"" << endl;
+        file << "set title \"" << m_title << "\" noenhanced" << endl;
+    else file << "unset title" << endl;
 
     if (!m_xlabel.empty())
-        file << "set xlabel \"" << m_xlabel << "\"" << endl;
+        file << "set xlabel \"" << m_xlabel << "\" noenhanced" << endl;
+    else file << "unset xlabel" << endl;
 
     if (!m_ylabel.empty())
-        file << "set ylabel \"" << m_ylabel << "\"" << endl;
+        file << "set ylabel \"" << m_ylabel << "\" noenhanced" << endl;
+    else file << "unset ylabel" << endl;
 
     if (m_has_xrange)
         file << "set xrange [" << m_xrange[0] << ":" << m_xrange[1] << "]" << endl;
@@ -217,7 +220,8 @@ void GnuplotFile::Plot::write_decl(ofstream& file) const
         file << " smooth " << m_smoothing;
 
     if (!m_title.empty())
-        file << " title \"" << m_title << "\"";
+        file << " title \"" << m_title << "\" noenhanced";
+    else file << " notitle";
 }
 
 void GnuplotFile::Plot::write_points(ofstream& file) const

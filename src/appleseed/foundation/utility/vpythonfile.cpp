@@ -59,7 +59,16 @@ VPythonFile::VPythonFile(const string& filename)
 
 VPythonFile::~VPythonFile()
 {
-    fclose(m_file);
+    close();
+}
+
+void VPythonFile::close()
+{
+    if (m_file)
+    {
+        fclose(m_file);
+        m_file = 0;
+    }
 }
 
 namespace
@@ -89,7 +98,7 @@ void VPythonFile::draw_point(
 {
     fprintf(
         m_file,
-        "points(pos=[(%f,%f,%f)], size=" FMT_SIZE_T ", color=color.%s)\n",
+        "points(pos=[(%f,%f,%f)], size=" FMT_SIZE_T ", color=%s)\n",
         point.x, point.y, point.z,
         size,
         color);
@@ -103,7 +112,7 @@ void VPythonFile::draw_points(
 {
     fprintf(
         m_file,
-        "points(pos=[%s], size=" FMT_SIZE_T ", color=color.%s)\n",
+        "points(pos=[%s], size=" FMT_SIZE_T ", color=%s)\n",
         points_to_string(point_count, points).c_str(),
         size,
         color);
@@ -117,7 +126,7 @@ void VPythonFile::draw_polyline(
 {
     fprintf(
         m_file,
-        "curve(pos=[%s], radius=%f, color=color.%s)\n",
+        "curve(pos=[%s], radius=%f, color=%s)\n",
         points_to_string(point_count, points).c_str(),
         thickness,
         color);
@@ -129,7 +138,7 @@ void VPythonFile::draw_unit_square(
 {
     fprintf(
         m_file,
-        "curve(pos=[(0,0,0),(0,0,1),(1,0,1),(1,0,0),(0,0,0)], radius=%f, color=color.%s)\n",
+        "curve(pos=[(0,0,0),(0,0,1),(1,0,1),(1,0,0),(0,0,0)], radius=%f, color=%s)\n",
         thickness,
         color);
 }
@@ -144,7 +153,7 @@ void VPythonFile::draw_arrow(
 
     fprintf(
         m_file,
-        "arrow(pos=(%f,%f,%f), axis=(%f,%f,%f), shaftwidth=%f, fixedwidth=True, color=color.%s)\n",
+        "arrow(pos=(%f,%f,%f), axis=(%f,%f,%f), shaftwidth=%f, fixedwidth=True, color=%s)\n",
         from.x, from.y, from.z,
         axis.x, axis.y, axis.z,
         shaft_width,
@@ -153,9 +162,9 @@ void VPythonFile::draw_arrow(
 
 void VPythonFile::draw_axes(const double shaft_width)
 {
-    draw_arrow(Vector3d(0.0), Vector3d(1.0, 0.0, 0.0), "red", shaft_width);
-    draw_arrow(Vector3d(0.0), Vector3d(0.0, 1.0, 0.0), "green", shaft_width);
-    draw_arrow(Vector3d(0.0), Vector3d(0.0, 0.0, 1.0), "blue", shaft_width);
+    draw_arrow(Vector3d(0.0), Vector3d(1.0, 0.0, 0.0), "color.red", shaft_width);
+    draw_arrow(Vector3d(0.0), Vector3d(0.0, 1.0, 0.0), "color.green", shaft_width);
+    draw_arrow(Vector3d(0.0), Vector3d(0.0, 0.0, 1.0), "color.blue", shaft_width);
 }
 
 void VPythonFile::draw_aabb(
@@ -165,7 +174,7 @@ void VPythonFile::draw_aabb(
 {
     fprintf(
         m_file,
-        "curve(pos=[(%f,%f,%f),(%f,%f,%f),(%f,%f,%f),(%f,%f,%f),(%f,%f,%f)], radius=%f, color=color.%s)\n",
+        "curve(pos=[(%f,%f,%f),(%f,%f,%f),(%f,%f,%f),(%f,%f,%f),(%f,%f,%f)], radius=%f, color=%s)\n",
         bbox.min.x, bbox.min.y, bbox.min.z,
         bbox.max.x, bbox.min.y, bbox.min.z,
         bbox.max.x, bbox.max.y, bbox.min.z,
@@ -176,7 +185,7 @@ void VPythonFile::draw_aabb(
 
     fprintf(
         m_file,
-        "curve(pos=[(%f,%f,%f),(%f,%f,%f),(%f,%f,%f),(%f,%f,%f),(%f,%f,%f)], radius=%f, color=color.%s)\n",
+        "curve(pos=[(%f,%f,%f),(%f,%f,%f),(%f,%f,%f),(%f,%f,%f),(%f,%f,%f)], radius=%f, color=%s)\n",
         bbox.min.x, bbox.min.y, bbox.max.z,
         bbox.max.x, bbox.min.y, bbox.max.z,
         bbox.max.x, bbox.max.y, bbox.max.z,
@@ -187,7 +196,7 @@ void VPythonFile::draw_aabb(
 
     fprintf(
         m_file,
-        "curve(pos=[(%f,%f,%f),(%f,%f,%f)], radius=%f, color=color.%s)\n",
+        "curve(pos=[(%f,%f,%f),(%f,%f,%f)], radius=%f, color=%s)\n",
         bbox.min.x, bbox.min.y, bbox.min.z,
         bbox.min.x, bbox.min.y, bbox.max.z,
         thickness,
@@ -195,7 +204,7 @@ void VPythonFile::draw_aabb(
 
     fprintf(
         m_file,
-        "curve(pos=[(%f,%f,%f),(%f,%f,%f)], radius=%f, color=color.%s)\n",
+        "curve(pos=[(%f,%f,%f),(%f,%f,%f)], radius=%f, color=%s)\n",
         bbox.max.x, bbox.min.y, bbox.min.z,
         bbox.max.x, bbox.min.y, bbox.max.z,
         thickness,
@@ -203,7 +212,7 @@ void VPythonFile::draw_aabb(
 
     fprintf(
         m_file,
-        "curve(pos=[(%f,%f,%f),(%f,%f,%f)], radius=%f, color=color.%s)\n",
+        "curve(pos=[(%f,%f,%f),(%f,%f,%f)], radius=%f, color=%s)\n",
         bbox.max.x, bbox.max.y, bbox.min.z,
         bbox.max.x, bbox.max.y, bbox.max.z,
         thickness,
@@ -211,7 +220,7 @@ void VPythonFile::draw_aabb(
 
     fprintf(
         m_file,
-        "curve(pos=[(%f,%f,%f),(%f,%f,%f)], radius=%f, color=color.%s)\n",
+        "curve(pos=[(%f,%f,%f),(%f,%f,%f)], radius=%f, color=%s)\n",
         bbox.min.x, bbox.max.y, bbox.min.z,
         bbox.min.x, bbox.max.y, bbox.max.z,
         thickness,
@@ -226,7 +235,7 @@ void VPythonFile::draw_triangle(
 {
     fprintf(
         m_file,
-        "faces(pos=[(%f,%f,%f),(%f,%f,%f),(%f,%f,%f)], color=color.%s)\n",
+        "faces(pos=[(%f,%f,%f),(%f,%f,%f),(%f,%f,%f)], color=%s)\n",
         v0.x, v0.y, v0.z,
         v1.x, v1.y, v1.z,
         v2.x, v2.y, v2.z,

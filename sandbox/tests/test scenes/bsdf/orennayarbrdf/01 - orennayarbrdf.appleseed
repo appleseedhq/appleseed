@@ -110,9 +110,6 @@
                     </matrix>
                 </transform>
             </light>
-            <object name="Plane" model="mesh_object">
-                <parameter name="filename" value="Plane.binarymesh" />
-            </object>
             <object name="Sphere.001" model="mesh_object">
                 <parameter name="filename" value="Sphere.001.binarymesh" />
             </object>

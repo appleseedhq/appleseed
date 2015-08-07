@@ -148,12 +148,37 @@ Vector<T, N> reflect(
     const Vector<T, N>& i,
     const Vector<T, N>& n);
 
+//
 // Sets t to the refracted vector given a unit-length incoming vector i, a unit-length normal
 // vector n and a relative index of refraction eta.  eta is the ratio of the index of
 // refraction in the volume containing the incoming vector to that of the volume being entered.
 // Returns false in the case of total internal reflection.
+//
+// Geometry:
+//
+//           i      n                      eta_i
+//                                   eta = -----
+//           ^      ^                      eta_t
+//            \     |
+//             \    |
+//              \   |
+//               \  |                IOR = eta_i
+//                \ |
+//                 \|
+//   ---------------+---------------  interface
+//                  |
+//                  |
+//                   |               IOR = eta_t
+//                   |
+//                    |
+//                    |
+//                    v
+//
+//      t = refract(i, n, eta_i / eta_t)
+//
+
 template <typename T, size_t N>
-inline bool refract(
+bool refract(
     const Vector<T, N>& i,
     const Vector<T, N>& n,
     const T             eta,
@@ -779,12 +804,15 @@ inline bool refract(
     assert(is_normalized(n));
 
     const T cos_theta_i = dot(i, n);
-    const T sin_theta_i2 = T(1.0) - cos_theta_i * cos_theta_i;
-    const T cos_theta_t2 = T(1.0) - eta * eta * sin_theta_i2;
+    const T sin_theta_i2 = T(1.0) - square(cos_theta_i);
+    const T sin_theta_t2 = sin_theta_i2 * square(eta);
+    const T cos_theta_t2 = T(1.0) - sin_theta_t2;
 
-    // Handle total internal reflection.
     if (cos_theta_t2 < T(0.0))
+    {
+        // Total internal reflection.
         return false;
+    }
 
     const T cos_theta_t = std::sqrt(cos_theta_t2);
 
@@ -792,6 +820,8 @@ inline bool refract(
         cos_theta_i > T(0.0)
             ? (eta * cos_theta_i - cos_theta_t) * n - eta * i
             : (eta * cos_theta_i + cos_theta_t) * n - eta * i;
+
+    assert(is_normalized(t));
 
     return true;
 }

@@ -51,7 +51,7 @@ namespace foundation
 //
 // Conventions:
 //
-//   eta = To IOR / From IOR = ior_t / ior_i
+//   eta = eta_i / eta_t
 //   cos_theta_i = cos(incident direction, normal)
 //
 
@@ -175,17 +175,17 @@ void fresnel_reflectance_dielectric_p(
     const T                 cos_theta_t)
 {
     //
-    //                 /  ior_t * cos_theta_i - ior_i * cos_theta_t  \ 2
+    //                 /  ior_i * cos_theta_t - ior_t * cos_theta_i  \ 2
     // reflectance  =  |  -----------------------------------------  |
-    //                 \  ior_t * cos_theta_i + ior_i * cos_theta_t  /
+    //                 \  ior_i * cos_theta_t + ior_t * cos_theta_i  /
     //
-    //                 /  eta * cos_theta_i - cos_theta_t  \ 2
+    //                 /  eta * cos_theta_t - cos_theta_i  \ 2
     //              =  |  -------------------------------  |
-    //                 \  eta * cos_theta_i + cos_theta_t  /
+    //                 \  eta * cos_theta_t + cos_theta_i  /
     //
-    //                 /  cos_theta_t - eta * cos_theta_i  \ 2
+    //                 /  cos_theta_i - eta * cos_theta_t  \ 2
     //              =  |  -------------------------------  |
-    //                 \  cos_theta_t + eta * cos_theta_i  /
+    //                 \  cos_theta_i + eta * cos_theta_t  /
     //
 
     typedef typename impl::GetValueType<SpectrumType>::ValueType ValueType;
@@ -194,9 +194,9 @@ void fresnel_reflectance_dielectric_p(
     assert(cos_theta_t >= T(0.0) && cos_theta_t <= T(1.0));
 
     SpectrumType k(eta);
-    k *= static_cast<ValueType>(cos_theta_i);
+    k *= static_cast<ValueType>(cos_theta_t);
 
-    SpectrumType den(static_cast<ValueType>(cos_theta_t));
+    SpectrumType den(static_cast<ValueType>(cos_theta_i));
     reflectance = den;
     reflectance -= k;
     den += k;
@@ -216,9 +216,13 @@ void fresnel_reflectance_dielectric_s(
     // reflectance  =  |  -----------------------------------------  |
     //                 \  ior_i * cos_theta_i + ior_t * cos_theta_t  /
     //
-    //                 /  cos_theta_i - eta * cos_theta_t  \ 2
+    //                 /  eta * cos_theta_i - cos_theta_t  \ 2
     //              =  |  -------------------------------  |
-    //                 \  cos_theta_i + eta * cos_theta_t  /
+    //                 \  eta * cos_theta_i + cos_theta_t  /
+    //
+    //                 /  cos_theta_t - eta * cos_theta_i  \ 2
+    //              =  |  -------------------------------  |
+    //                 \  cos_theta_t + eta * cos_theta_i  /
     //
 
     typedef typename impl::GetValueType<SpectrumType>::ValueType ValueType;
@@ -227,9 +231,9 @@ void fresnel_reflectance_dielectric_s(
     assert(cos_theta_t >= T(0.0) && cos_theta_t <= T(1.0));
 
     SpectrumType k(eta);
-    k *= static_cast<ValueType>(cos_theta_t);
+    k *= static_cast<ValueType>(cos_theta_i);
 
-    SpectrumType den(static_cast<ValueType>(cos_theta_i));
+    SpectrumType den(static_cast<ValueType>(cos_theta_t));
     reflectance = den;
     reflectance -= k;
     den += k;
@@ -275,7 +279,7 @@ void fresnel_transmittance_dielectric(
     typedef typename impl::GetValueType<SpectrumType>::ValueType ValueType;
 
     const T sin_theta_i2 = T(1.0) - square(cos_theta_i);
-    const T sin_theta_t2 = sin_theta_i2 / square(eta);
+    const T sin_theta_t2 = sin_theta_i2 * square(eta);
     const T cos_theta_t2 = T(1.0) - sin_theta_t2;
 
     if (cos_theta_t2 < T(0.0))
@@ -325,9 +329,9 @@ void normal_reflectance_dielectric(
     const SpectrumType&     eta)
 {
     //
-    //                        /  ior_i - ior_t  \ 2     /  1 - eta  \ 2
-    // normal_reflectance  =  |  -------------  |    =  |  -------  |  
-    //                        \  ior_i + ior_t  /       \  1 + eta  /  
+    //                        /  ior_i - ior_t  \ 2     /  eta - 1  \ 2     /  1 - eta  \ 2
+    // normal_reflectance  =  |  -------------  |    =  |  -------  |    =  |  -------  |  
+    //                        \  ior_i + ior_t  /       \  eta + 1  /       \  1 + eta  /  
     //
 
     typedef typename impl::GetValueType<SpectrumType>::ValueType ValueType;

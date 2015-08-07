@@ -58,7 +58,7 @@ namespace renderer
 class ComputeRdStandardDipole
 {
   public:
-    explicit ComputeRdStandardDipole(const double rcp_eta);     // note: 1/eta
+    explicit ComputeRdStandardDipole(const double eta);
 
     double operator()(const double alpha_prime) const;
 
@@ -71,7 +71,7 @@ class ComputeRdStandardDipole
 class ComputeRdBetterDipole
 {
   public:
-    explicit ComputeRdBetterDipole(const double rcp_eta);       // note: 1/eta
+    explicit ComputeRdBetterDipole(const double eta);
 
     double operator()(const double alpha_prime) const;
 

@@ -167,7 +167,7 @@ namespace
                 return false;
 
             sample.set_is_directional(false);
-            sample.set_eta(values->m_inside_ior / values->m_outside_ior);
+            sample.set_eta(values->m_outside_ior / values->m_inside_ior);
             sample.set_channel(0);
             sample.set_rmax2(rmax2);
 

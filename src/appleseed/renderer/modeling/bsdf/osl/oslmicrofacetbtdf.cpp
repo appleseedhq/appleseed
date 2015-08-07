@@ -62,11 +62,9 @@ namespace renderer
 
 namespace
 {
-
     //
     // OSLMicrofacet BTDF.
     //
-
     // References:
     //
     //   [1] Microfacet Models for Refraction through Rough Surfaces
@@ -116,8 +114,7 @@ namespace
                 m_mdf.reset(new BeckmannMDF<double>());
             else if (mdf == "ggx")
                 m_mdf.reset(new GGXMDF<double>());
-            else
-                return false;
+            else return false;
 
             return true;
         }
@@ -126,7 +123,7 @@ namespace
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            BSDFSample&         sample) const
+            BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
@@ -137,10 +134,9 @@ namespace
             const Vector3d m = m_mdf->sample(wo, s, values->m_ax, values->m_ay);
             const Vector3d ht = sample.get_shading_basis().transform_to_parent(m);
             const double eta = values->m_from_ior / values->m_to_ior;
-
             Vector3d incoming;
             if (!refract(sample.get_outgoing_vector(), ht, eta, incoming))
-                return; // Ignore TIR.
+                return;         // ignore total internal reflection
 
             // If incoming and outgoing are on the same hemisphere
             // this is not a refraction.
@@ -176,6 +172,7 @@ namespace
 
             const double ht_norm =
                 norm(values->m_from_ior * sample.get_outgoing_vector() + values->m_to_ior * incoming);
+
             const double dwh_dwo =
                 refraction_jacobian(
                     incoming,
@@ -198,7 +195,7 @@ namespace
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
             const int           modes,
-            Spectrum&           value) const
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
             if (!(modes & BSDFSample::Glossy))
                 return 0.0;
@@ -212,13 +209,14 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
 
             double ht_norm;
-            const Vector3d ht = half_refraction_vector(
-                outgoing,
-                incoming,
-                n,
-                values->m_from_ior,
-                values->m_to_ior,
-                ht_norm);
+            const Vector3d ht =
+                half_refraction_vector(
+                    outgoing,
+                    incoming,
+                    n,
+                    values->m_from_ior,
+                    values->m_to_ior,
+                    ht_norm);
 
             const Vector3d m = shading_basis.transform_to_local(ht);
             const Vector3d wo = shading_basis.transform_to_local(outgoing);
@@ -248,11 +246,12 @@ namespace
                         G,
                         adjoint)));
 
-            const double dwh_dwo = refraction_jacobian(
-                incoming,
-                values->m_to_ior,
-                ht,
-                ht_norm);
+            const double dwh_dwo =
+                refraction_jacobian(
+                    incoming,
+                    values->m_to_ior,
+                    ht,
+                    ht_norm);
 
             return m_mdf->pdf(wo, m, values->m_ax, values->m_ay) * dwh_dwo;
         }
@@ -263,7 +262,7 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
-            const int           modes) const
+            const int           modes) const APPLESEED_OVERRIDE
         {
             if (!(modes & BSDFSample::Glossy))
                 return 0.0;
@@ -277,26 +276,29 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
 
             double ht_norm;
-            const Vector3d ht = half_refraction_vector(
-                outgoing,
-                incoming,
-                n,
-                values->m_from_ior,
-                values->m_to_ior,
-                ht_norm);
+            const Vector3d ht =
+                half_refraction_vector(
+                    outgoing,
+                    incoming,
+                    n,
+                    values->m_from_ior,
+                    values->m_to_ior,
+                    ht_norm);
 
             const Vector3d m = shading_basis.transform_to_local(ht);
-            const double dwh_dwo = refraction_jacobian(
-                incoming,
-                values->m_to_ior,
-                ht,
-                ht_norm);
+            const double dwh_dwo =
+                refraction_jacobian(
+                    incoming,
+                    values->m_to_ior,
+                    ht,
+                    ht_norm);
 
-            return m_mdf->pdf(
-                shading_basis.transform_to_local(outgoing),
-                m,
-                values->m_ax,
-                values->m_ay) * dwh_dwo;
+            return
+                m_mdf->pdf(
+                    shading_basis.transform_to_local(outgoing),
+                    m,
+                    values->m_ax,
+                    values->m_ay) * dwh_dwo;
         }
 
       private:
@@ -305,12 +307,12 @@ namespace
         auto_ptr<MDF<double> > m_mdf;
 
         static Vector3d half_refraction_vector(
-            const Vector3d& outgoing,
-            const Vector3d& incoming,
-            const Vector3d& normal,
-            const double    from_ior,
-            const double    to_ior,
-            double&         ht_norm)
+            const Vector3d&     outgoing,
+            const Vector3d&     incoming,
+            const Vector3d&     normal,
+            const double        from_ior,
+            const double        to_ior,
+            double&             ht_norm)
         {
             // [1] equation 16.
             Vector3d ht = -(from_ior * outgoing + to_ior * incoming);
@@ -325,25 +327,25 @@ namespace
         }
 
         static double refraction_jacobian(
-            const Vector3d& incoming,
-            const double    to_ior,
-            const Vector3d& h,
-            const double    hnorm)
+            const Vector3d&     incoming,
+            const double        to_ior,
+            const Vector3d&     h,
+            const double        hnorm)
         {
             // [1] equation 17.
             return abs(square(to_ior) * dot(incoming, h) / square(hnorm));
         }
 
         static double refraction_term(
-            const Vector3d& outgoing,
-            const Vector3d& incoming,
-            const Vector3d& n,
-            const Vector3d& ht,
-            const double from_ior,
-            const double to_ior,
-            const double D,
-            const double G,
-            bool adjoint)
+            const Vector3d&     outgoing,
+            const Vector3d&     incoming,
+            const Vector3d&     n,
+            const Vector3d&     ht,
+            const double        from_ior,
+            const double        to_ior,
+            const double        D,
+            const double        G,
+            const bool          adjoint)
         {
             const double cos_oh = dot(outgoing, ht);
             const double cos_ih = dot(incoming, ht);

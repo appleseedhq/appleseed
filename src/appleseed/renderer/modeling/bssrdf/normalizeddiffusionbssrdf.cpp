@@ -162,7 +162,7 @@ namespace
                 return false;
 
             sample.set_is_directional(false);
-            sample.set_eta(values->m_inside_ior / values->m_outside_ior);
+            sample.set_eta(values->m_outside_ior / values->m_inside_ior);
 
             sample.get_sampling_context().split_in_place(3, 1);
             const Vector3d s = sample.get_sampling_context().next_vector2<3>();

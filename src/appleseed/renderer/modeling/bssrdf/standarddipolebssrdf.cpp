@@ -108,8 +108,8 @@ namespace
                 reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
 
             const double r2 = square_norm(outgoing_point.get_point() - incoming_point.get_point());
-            const double rcp_eta = values->m_outside_ior / values->m_inside_ior;
-            const double fdr = fresnel_internal_diffuse_reflectance(rcp_eta);
+            const double eta = values->m_outside_ior / values->m_inside_ior;
+            const double fdr = fresnel_internal_diffuse_reflectance(eta);
             const double a = (1.0 + fdr) / (1.0 - fdr);
             const double sigma_tr = 1.0 / values->m_dmfp;
 
@@ -124,10 +124,15 @@ namespace
                 const double alpha_prime = sigma_s_prime / sigma_t_prime;
 
                 //
+                // The extended source represented by the refracted ray in the medium is approximated
+                // by a single isotropic point source at the center of mass of the beam, at a depth
+                // of one mean free path, i.e. at zr = 1 / sigma_t_prime (searchlight configuration).
+                //
                 // We have
                 //
                 //   zr = 1 / sigma_t_prime
-                //   zv = -zr - 4 * A * D
+                //   zv = -zr - 2 * zb
+                //      = -zr - 4 * A * D
                 //
                 // where
                 //

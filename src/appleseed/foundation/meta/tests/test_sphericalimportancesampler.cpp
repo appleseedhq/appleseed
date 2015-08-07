@@ -59,7 +59,7 @@ TEST_SUITE(Foundation_Math_Sampling_SphericalImportanceSampler)
             const Vector3d s = hammersley_sequence<double, 3>(Bases, i, N);
 
             const Vector3d p = sampler.sample(s);
-            file.draw_point(p, "white", 1);
+            file.draw_point(p, "color.white", 1);
         }
     }
 }

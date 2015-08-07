@@ -57,7 +57,9 @@ namespace renderer
 {
 
 //
-// Bidirectional Surface Scattering Reflectance Distribution Function (BSSRDF).
+// Profile of a Bidirectional Surface Scattering Reflectance Distribution Function (BSSRDF).
+//
+// The 1/Pi factor and the Fresnel terms at the incoming and outgoing points are not included.
 //
 // Conventions (Veach, 3.7.5, figure 3.3 on page 93):
 //
@@ -121,7 +123,7 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const size_t                offset = 0) const;
 
     // Performs any precomputation needed for this BSSRDF input values.
-    virtual void prepare_inputs(void* data) const = 0;
+    virtual void prepare_inputs(void* data) const;
 
     // Sample r * R(r).
     virtual bool sample(

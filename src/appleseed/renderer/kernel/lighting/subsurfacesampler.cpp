@@ -208,7 +208,6 @@ size_t SubsurfaceSampler::sample(
     ShadingPoint shading_points[2];
     size_t shading_point_index = 0;
     ShadingPoint* parent_shading_point = 0;
-
     size_t sample_count = 0;
 
     // Trace the ray and return all intersections (or up to max_sample_count of them) found inside the sphere.
@@ -225,8 +224,8 @@ size_t SubsurfaceSampler::sample(
         // Only consider points lying on surfaces with the same material as the outgoing point.
         if (shading_points[shading_point_index].get_material() == material)
         {
-            // Execute the OSL shader if we have one. Needed for bump mapping.
 #ifdef APPLESEED_WITH_OSL
+            // Execute the OSL shader if we have one. Needed for bump mapping.
             if (material->has_osl_surface())
             {
                 sampling_context.split_in_place(1, 1);
@@ -236,6 +235,7 @@ size_t SubsurfaceSampler::sample(
                     sampling_context.next_double2());
             }
 #endif
+
             SubsurfaceSample& sample = samples[sample_count++];
             sample.m_point = shading_points[shading_point_index];
 
@@ -243,9 +243,9 @@ size_t SubsurfaceSampler::sample(
             sample.m_probability =
                   bssrdf_sample_pdf
                 * sampling_basis_pdf
-                * abs(dot(sampling_basis.get_normal(), sample.m_point.get_geometric_normal()));     // todo: or shading normal?
+                * abs(dot(sampling_basis.get_normal(), sample.m_point.get_shading_normal()));
 
-            // Weight sample probability with multiple importance sampling.
+            // Weight sample probability using multiple importance sampling.
             sample.m_probability /=
                 compute_mis_weight(
                     bssrdf,
@@ -256,7 +256,7 @@ size_t SubsurfaceSampler::sample(
                     sample.m_probability,
                     outgoing_point.get_point(),
                     sample.m_point.get_point(),
-                    sample.m_point.get_geometric_normal());     // todo: or shading normal?
+                    sample.m_point.get_shading_normal());
 
             // Return the relative index of refraction.
             sample.m_eta = bssrdf_sample.get_eta();
