@@ -123,7 +123,7 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const size_t                offset = 0) const;
 
     // Performs any precomputation needed for this BSSRDF input values.
-    virtual void prepare_inputs(void* data) const = 0;
+    virtual void prepare_inputs(void* data) const;
 
     // Sample r * R(r).
     virtual bool sample(
