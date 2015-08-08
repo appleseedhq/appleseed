@@ -69,12 +69,6 @@ namespace renderer
 //
 //   * All probability densities are measured with respect to solid angle.
 //
-//   * When the adjoint flag is false, such as in path tracing, the BSSRDF
-//     characterizes the light flow.
-//
-//   * When the adjoint flag is true, such as in photon tracing, the BSSRDF
-//     characterizes the importance flow.
-//
 //   * Regardless of the adjoint flag, light and importance always flow
 //     from the incoming direction to the outgoing direction.
 //

@@ -954,7 +954,6 @@ set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/pathtracer.h
     renderer/kernel/lighting/pathvertex.cpp
     renderer/kernel/lighting/pathvertex.h
-    renderer/kernel/lighting/subsurfacesampler.cpp
     renderer/kernel/lighting/subsurfacesampler.h
     renderer/kernel/lighting/tracer.cpp
     renderer/kernel/lighting/tracer.h

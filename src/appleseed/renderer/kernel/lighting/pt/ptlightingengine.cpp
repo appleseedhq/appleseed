@@ -261,6 +261,192 @@ namespace
         Population<uint64>              m_path_length;
 
         //
+        // Subsurface sample visitor.
+        //
+        // Accumulates the contribution of individual subsurface samples.
+        //
+
+        class SubsurfaceSampleVisitor
+        {
+          public:
+            SubsurfaceSampleVisitor(
+                const LightSampler&     light_sampler,
+                SamplingContext&        sampling_context,
+                const ShadingContext&   shading_context,
+                const PathVertex&       vertex,
+                Spectrum&               vertex_radiance,
+                SpectrumStack&          vertex_aovs)
+              : m_light_sampler(light_sampler)
+              , m_sampling_context(sampling_context)
+              , m_shading_context(shading_context)
+              , m_vertex(vertex)
+              , m_vertex_radiance(vertex_radiance)
+              , m_vertex_aovs(vertex_aovs)
+            {
+            }
+
+            void visit(
+                const BSSRDFSample&     bssrdf_sample,
+                const ShadingPoint&     incoming_point,
+                const double            probability) const
+            {
+                // Since the direction in the outside medium--be it the outgoing or the incoming
+                // direction--is always fixed, we always need to figure out a refracted direction
+                // in the inside medium, and thus we compute both Fresnel coefficients at the
+                // incoming and outgoing points using eta (defined as outside IOR / inside IOR).
+
+                // Compute Fresnel coefficient at outgoing point.
+                double outgoing_fresnel;
+                fresnel_transmittance_dielectric(outgoing_fresnel, bssrdf_sample.get_eta(), m_vertex.m_cos_on);
+                if (outgoing_fresnel <= 0.0)
+                    return;
+
+                // Compute irradiance at incoming point.
+                Vector3d incoming;
+                double transmission;
+                double cos_in;
+                Spectrum irradiance;
+                if (!compute_irradiance(
+                        incoming_point,
+                        incoming,
+                        transmission,
+                        cos_in,
+                        irradiance))
+                    return;
+
+                // Compute Fresnel coefficient at incoming point.
+                double incoming_fresnel;
+                fresnel_transmittance_dielectric(incoming_fresnel, bssrdf_sample.get_eta(), cos_in);
+                if (incoming_fresnel <= 0.0)
+                    return;
+
+                // Evaluate the diffusion profile.
+                Spectrum rd;
+                m_vertex.m_bssrdf->evaluate(
+                    m_vertex.m_bssrdf_data,
+                    *m_vertex.m_shading_point,
+                    m_vertex.m_outgoing.get_value(),
+                    incoming_point,
+                    incoming,
+                    rd);
+
+                // Add the contribution of this sample to the illumination.
+                const double weight =
+                      RcpPi
+                    * transmission
+                    * incoming_fresnel
+                    * outgoing_fresnel
+                    / probability;
+                irradiance *= rd;
+                irradiance *= static_cast<float>(weight);
+                m_vertex_radiance += irradiance;
+            }
+
+          private:
+            const LightSampler&         m_light_sampler;
+            SamplingContext&            m_sampling_context;
+            const ShadingContext&       m_shading_context;
+            const PathVertex&           m_vertex;
+            Spectrum&                   m_vertex_radiance;
+            SpectrumStack&              m_vertex_aovs;
+
+            // Compute irradiance at a given point of the scene. Works on back faces too.
+            bool compute_irradiance(
+                const ShadingPoint&     shading_point,
+                Vector3d&               incoming,
+                double&                 transmission,
+                double&                 cos_in,
+                Spectrum&               irradiance) const
+            {
+                // Sample the lights.
+                m_sampling_context.split_in_place(3, 1);
+                const Vector3d s = m_sampling_context.next_vector2<3>();
+                LightSample light_sample;
+                m_light_sampler.sample(shading_point.get_ray().m_time, s, light_sample);
+
+                double cos_on_light;
+                double rcp_sample_square_distance;
+
+                if (light_sample.m_triangle)
+                {
+                    const Material* material = light_sample.m_triangle->m_material;
+                    const EDF* edf = material->get_edf();
+
+                    // todo: check EDF flags.
+
+                    // Compute the incoming direction in world space.
+                    incoming = light_sample.m_point - shading_point.get_point();
+
+                    // Cull samples on lights emitting in the wrong direction.
+                    cos_on_light = dot(-incoming, light_sample.m_shading_normal);
+                    if (cos_on_light <= 0.0)
+                        return false;
+
+                    // Compute the transmission factor between the light sample and the shading point.
+                    transmission =
+                        m_shading_context.get_tracer().trace_between(
+                            shading_point,
+                            light_sample.m_point,
+                            VisibilityFlags::ShadowRay);
+
+                    // Discard occluded samples.
+                    if (transmission == 0.0)
+                        return false;
+
+                    // Compute the square distance between the light sample and the shading point.
+                    const double square_distance = square_norm(incoming);
+                    rcp_sample_square_distance = 1.0 / square_distance;
+
+                    // todo: handle light near start.
+
+                    // Normalize the incoming direction.
+                    const double rcp_sample_distance = sqrt(rcp_sample_square_distance);
+                    incoming *= rcp_sample_distance;
+                    cos_on_light *= rcp_sample_distance;
+
+                    ShadingPoint light_shading_point;
+                    light_sample.make_shading_point(
+                        light_shading_point,
+                        -incoming,
+                        m_shading_context.get_intersector());
+
+                    // Execute the OSL emission shader if needed.
+#ifdef APPLESEED_WITH_OSL
+                    if (const ShaderGroup* sg = material->get_osl_surface())
+                        m_shading_context.execute_osl_emission(*sg, light_shading_point);
+#endif
+
+                    // Evaluate the EDF inputs.
+                    InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
+                    edf->evaluate_inputs(edf_input_evaluator, light_shading_point);
+
+                    // Evaluate the EDF.
+                    edf->evaluate(
+                        edf_input_evaluator.data(),
+                        light_sample.m_geometric_normal,
+                        Basis3d(light_sample.m_shading_normal),
+                        -incoming,
+                        irradiance);
+                }
+                else
+                {
+                    // todo: implement.
+                    assert(!"Not implemented yet.");
+                }
+
+                // Compute cosine factor at shading point.
+                // abs() because we might be on the backside of the surface.
+                cos_in = abs(dot(incoming, shading_point.get_shading_normal()));
+
+                // Compute irradiance at shading point.
+                irradiance *= static_cast<float>(cos_in / light_sample.m_probability);
+                irradiance *= static_cast<float>(rcp_sample_square_distance * cos_on_light);
+
+                return true;
+            }
+        };
+
+        //
         // Base path visitor.
         //
 
@@ -612,180 +798,20 @@ namespace
                 Spectrum&               vertex_radiance,
                 SpectrumStack&          vertex_aovs)
             {
-                // Sample the BSSRDF.
-                const size_t MaxSampleCount = 10;
-                SubsurfaceSample samples[MaxSampleCount];
-                SubsurfaceSampler sampler(m_shading_context);
-                const size_t sample_count =
-                    sampler.sample(
-                        m_sampling_context,
-                        *vertex.m_shading_point,
-                        *vertex.m_bssrdf,
-                        vertex.m_bssrdf_data,
-                        samples,
-                        MaxSampleCount);
-                if (sample_count == 0)
-                    return;
-
-                //
-                // Two notes:
-                //
-                // 1. We assume that eta is constant over the whole object.
-                //
-                // 2. Since the direction in the outside medium--be it the outgoing or the incoming
-                //    direction--is always fixed, we always need to figure out a refracted direction
-                //    in the inside medium, and thus we compute both Fresnel coefficients at the
-                //    incoming and outgoing points using eta (defined as outside IOR / inside IOR).
-                //
-
-                // Compute Fresnel coefficient at outgoing point.
-                const double eta = samples[0].m_eta;
-                double outgoing_fresnel;
-                fresnel_transmittance_dielectric(outgoing_fresnel, eta, vertex.m_cos_on);
-                if (outgoing_fresnel <= 0.0)
-                    return;
-
-                // Accumulate the contribution of the individual samples.
-                for (size_t i = 0; i < sample_count; ++i)
-                {
-                    const SubsurfaceSample& sample = samples[i];
-                    assert(sample.m_eta == eta);
-
-                    // Compute irradiance at incoming point.
-                    Vector3d incoming;
-                    double transmission;
-                    double cos_in;
-                    Spectrum irradiance;
-                    if (!compute_irradiance(
-                            sample.m_point,
-                            incoming,
-                            transmission,
-                            cos_in,
-                            irradiance))
-                        continue;
-
-                    // Compute Fresnel coefficient at incoming point.
-                    double incoming_fresnel;
-                    fresnel_transmittance_dielectric(incoming_fresnel, eta, cos_in);
-                    if (incoming_fresnel <= 0.0)
-                        continue;
-
-                    // Evaluate the diffusion profile.
-                    Spectrum rd;
-                    vertex.m_bssrdf->evaluate(
-                        vertex.m_bssrdf_data,
-                        *vertex.m_shading_point,
-                        vertex.m_outgoing.get_value(),
-                        sample.m_point,
-                        incoming,
-                        rd);
-
-                    // Add the contribution of this sample to the illumination.
-                    const double weight =
-                          RcpPi
-                        * transmission
-                        * incoming_fresnel
-                        * outgoing_fresnel
-                        / sample.m_probability;
-                    irradiance *= rd;
-                    irradiance *= static_cast<float>(weight);
-                    vertex_radiance += irradiance;
-                }
-            }
-
-            // Compute irradiance at a given point of the scene. Works on back faces too.
-            bool compute_irradiance(
-                const ShadingPoint&     shading_point,
-                Vector3d&               incoming,
-                double&                 transmission,
-                double&                 cos_in,
-                Spectrum&               irradiance) const
-            {
-                // Sample the lights.
-                m_sampling_context.split_in_place(3, 1);
-                const Vector3d s = m_sampling_context.next_vector2<3>();
-                LightSample light_sample;
-                m_light_sampler.sample(shading_point.get_ray().m_time, s, light_sample);
-
-                double cos_on_light;
-                double rcp_sample_square_distance;
-
-                if (light_sample.m_triangle)
-                {
-                    const Material* material = light_sample.m_triangle->m_material;
-                    const EDF* edf = material->get_edf();
-
-                    // todo: check EDF flags.
-
-                    // Compute the incoming direction in world space.
-                    incoming = light_sample.m_point - shading_point.get_point();
-
-                    // Cull samples on lights emitting in the wrong direction.
-                    cos_on_light = dot(-incoming, light_sample.m_shading_normal);
-                    if (cos_on_light <= 0.0)
-                        return false;
-
-                    // Compute the transmission factor between the light sample and the shading point.
-                    transmission =
-                        m_shading_context.get_tracer().trace_between(
-                            shading_point,
-                            light_sample.m_point,
-                            VisibilityFlags::ShadowRay);
-
-                    // Discard occluded samples.
-                    if (transmission == 0.0)
-                        return false;
-
-                    // Compute the square distance between the light sample and the shading point.
-                    const double square_distance = square_norm(incoming);
-                    rcp_sample_square_distance = 1.0 / square_distance;
-
-                    // todo: handle light near start.
-
-                    // Normalize the incoming direction.
-                    const double rcp_sample_distance = sqrt(rcp_sample_square_distance);
-                    incoming *= rcp_sample_distance;
-                    cos_on_light *= rcp_sample_distance;
-
-                    ShadingPoint light_shading_point;
-                    light_sample.make_shading_point(
-                        light_shading_point,
-                        -incoming,
-                        m_shading_context.get_intersector());
-
-                    // Execute the OSL emission shader if needed.
-#ifdef APPLESEED_WITH_OSL
-                    if (const ShaderGroup* sg = material->get_osl_surface())
-                        m_shading_context.execute_osl_emission(*sg, light_shading_point);
-#endif
-
-                    // Evaluate the EDF inputs.
-                    InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
-                    edf->evaluate_inputs(edf_input_evaluator, light_shading_point);
-
-                    // Evaluate the EDF.
-                    edf->evaluate(
-                        edf_input_evaluator.data(),
-                        light_sample.m_geometric_normal,
-                        Basis3d(light_sample.m_shading_normal),
-                        -incoming,
-                        irradiance);
-                }
-                else
-                {
-                    // todo: implement.
-                    assert(!"Not implemented yet.");
-                }
-
-                // Compute cosine factor at shading point.
-                // abs() because we might be on the backside of the surface.
-                cos_in = abs(dot(incoming, shading_point.get_shading_normal()));
-
-                // Compute irradiance at shading point.
-                irradiance *= static_cast<float>(cos_in / light_sample.m_probability);
-                irradiance *= static_cast<float>(rcp_sample_square_distance * cos_on_light);
-
-                return true;
+                const SubsurfaceSampleVisitor visitor(
+                    m_light_sampler,
+                    m_sampling_context,
+                    m_shading_context,
+                    vertex,
+                    vertex_radiance,
+                    vertex_aovs);
+                const SubsurfaceSampler sampler(m_shading_context);
+                sampler.sample(
+                    m_sampling_context,
+                    *vertex.m_shading_point,
+                    *vertex.m_bssrdf,
+                    vertex.m_bssrdf_data,
+                    visitor);
             }
 
             void add_emitted_light_contribution(
