@@ -624,22 +624,32 @@ namespace
                         vertex.m_bssrdf_data,
                         samples,
                         MaxSampleCount);
+                if (sample_count == 0)
+                    return;
+
+                //
+                // Two notes:
+                //
+                // 1. We assume that eta is constant over the whole object.
+                //
+                // 2. Since the direction in the outside medium--be it the outgoing or the incoming
+                //    direction--is always fixed, we always need to figure out a refracted direction
+                //    in the inside medium, and thus we compute both Fresnel coefficients at the
+                //    incoming and outgoing points using eta (defined as outside IOR / inside IOR).
+                //
+
+                // Compute Fresnel coefficient at outgoing point.
+                const double eta = samples[0].m_eta;
+                double outgoing_fresnel;
+                fresnel_transmittance_dielectric(outgoing_fresnel, eta, vertex.m_cos_on);
+                if (outgoing_fresnel <= 0.0)
+                    return;
 
                 // Accumulate the contribution of the individual samples.
                 for (size_t i = 0; i < sample_count; ++i)
                 {
                     const SubsurfaceSample& sample = samples[i];
-
-                    // Since the direction in the outside medium--be it the outgoing or the incoming
-                    // direction--is always fixed, we always need to figure out a refracted direction
-                    // in the inside medium, and thus we compute both Fresnel coefficients at the
-                    // incoming and outgoing points using eta (defined as outside IOR / inside IOR).
-
-                    // Compute Fresnel coefficient at outgoing point.
-                    double outgoing_fresnel;
-                    fresnel_transmittance_dielectric(outgoing_fresnel, sample.m_eta, vertex.m_cos_on);
-                    if (outgoing_fresnel <= 0.0)
-                        continue;
+                    assert(sample.m_eta == eta);
 
                     // Compute irradiance at incoming point.
                     Vector3d incoming;
@@ -656,7 +666,7 @@ namespace
 
                     // Compute Fresnel coefficient at incoming point.
                     double incoming_fresnel;
-                    fresnel_transmittance_dielectric(incoming_fresnel, sample.m_eta, cos_in);
+                    fresnel_transmittance_dielectric(incoming_fresnel, eta, cos_in);
                     if (incoming_fresnel <= 0.0)
                         continue;
 
