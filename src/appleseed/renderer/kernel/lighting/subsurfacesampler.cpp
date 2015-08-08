@@ -204,7 +204,7 @@ size_t SubsurfaceSampler::sample(
         VisibilityFlags::ProbeRay,
         outgoing_point.get_ray().m_depth + 1);
 
-    const Material* material = outgoing_point.get_material();
+    const Material* outgoing_material = outgoing_point.get_material();
     ShadingPoint shading_points[2];
     size_t shading_point_index = 0;
     ShadingPoint* parent_shading_point = 0;
@@ -214,30 +214,37 @@ size_t SubsurfaceSampler::sample(
     while (true)
     {
         // Continue tracing the ray.
-        shading_points[shading_point_index].clear();
+        ShadingPoint& shading_point = shading_points[shading_point_index];
+        shading_point.clear();
         if (!m_shading_context.get_intersector().trace(
                 probe_ray,
-                shading_points[shading_point_index],
+                shading_point,
                 parent_shading_point))
             break;
 
-        // Only consider points lying on surfaces with the same material as the outgoing point.
-        if (shading_points[shading_point_index].get_material() == material)
+        // Retrieve the front side material at the hit point.
+        const Material* hit_material =
+            shading_point.get_side() == ObjectInstance::BackSide
+                ? shading_point.get_opposite_material()
+                : shading_point.get_material();
+
+        // Only consider hit points with the same material as the outgoing point.
+        if (hit_material == outgoing_material)
         {
 #ifdef APPLESEED_WITH_OSL
             // Execute the OSL shader if we have one. Needed for bump mapping.
-            if (material->has_osl_surface())
+            if (hit_material->has_osl_surface())
             {
                 sampling_context.split_in_place(1, 1);
                 m_shading_context.execute_osl_bump(
-                    *material->get_osl_surface(),
-                    shading_points[shading_point_index],
+                    *hit_material->get_osl_surface(),
+                    shading_point,
                     sampling_context.next_double2());
             }
 #endif
 
             SubsurfaceSample& sample = samples[sample_count++];
-            sample.m_point = shading_points[shading_point_index];
+            sample.m_point = shading_point;
 
             // Compute sample probability.
             sample.m_probability =
@@ -266,11 +273,11 @@ size_t SubsurfaceSampler::sample(
         }
 
         // Move the ray's origin past the hit surface.
-        probe_ray.m_org = shading_points[shading_point_index].get_point();
+        probe_ray.m_org = shading_point.get_point();
         probe_ray.m_tmax = norm(exit_point - probe_ray.m_org);
 
         // Swap the current and parent shading points.
-        parent_shading_point = &shading_points[shading_point_index];
+        parent_shading_point = &shading_point;
         shading_point_index = 1 - shading_point_index;
     }
 
