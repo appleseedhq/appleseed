@@ -48,6 +48,7 @@
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/light/light.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/stochasticcast.h"
 
@@ -273,12 +274,16 @@ namespace
                 const LightSampler&     light_sampler,
                 SamplingContext&        sampling_context,
                 const ShadingContext&   shading_context,
+                const EnvironmentEDF*   env_edf,
+                const size_t            env_sample_count,
                 const PathVertex&       vertex,
                 Spectrum&               vertex_radiance,
                 SpectrumStack&          vertex_aovs)
               : m_light_sampler(light_sampler)
               , m_sampling_context(sampling_context)
               , m_shading_context(shading_context)
+              , m_env_edf(env_edf)
+              , m_env_sample_count(env_sample_count)
               , m_vertex(vertex)
               , m_vertex_radiance(vertex_radiance)
               , m_vertex_aovs(vertex_aovs)
@@ -340,12 +345,35 @@ namespace
                 irradiance *= rd;
                 irradiance *= static_cast<float>(weight);
                 m_vertex_radiance += irradiance;
+
+                if (m_env_edf)
+                {
+                    // Add Image-based lighting contribution.
+                    compute_ibl(
+                        m_sampling_context,
+                        m_shading_context,
+                        *m_env_edf,
+                        *m_vertex.m_bssrdf,
+                        m_vertex.m_bssrdf_data,
+                        probability,
+                        incoming_point,
+                        *m_vertex.m_shading_point,
+                        m_vertex.m_outgoing,
+                        bssrdf_sample.get_eta(),
+                        outgoing_fresnel,
+                        m_env_sample_count,
+                        irradiance);
+
+                    m_vertex_radiance += irradiance;
+                }
             }
 
           private:
             const LightSampler&         m_light_sampler;
             SamplingContext&            m_sampling_context;
             const ShadingContext&       m_shading_context;
+            const EnvironmentEDF*       m_env_edf;
+            const size_t                m_env_sample_count;
             const PathVertex&           m_vertex;
             Spectrum&                   m_vertex_radiance;
             SpectrumStack&              m_vertex_aovs;
@@ -364,8 +392,7 @@ namespace
                 LightSample light_sample;
                 m_light_sampler.sample(shading_point.get_ray().m_time, s, light_sample);
 
-                double cos_on_light;
-                double rcp_sample_square_distance;
+                double attenuation;
 
                 if (light_sample.m_triangle)
                 {
@@ -378,7 +405,7 @@ namespace
                     incoming = light_sample.m_point - shading_point.get_point();
 
                     // Cull samples on lights emitting in the wrong direction.
-                    cos_on_light = dot(-incoming, light_sample.m_shading_normal);
+                    double cos_on_light = dot(-incoming, light_sample.m_shading_normal);
                     if (cos_on_light <= 0.0)
                         return false;
 
@@ -395,7 +422,7 @@ namespace
 
                     // Compute the square distance between the light sample and the shading point.
                     const double square_distance = square_norm(incoming);
-                    rcp_sample_square_distance = 1.0 / square_distance;
+                    const double rcp_sample_square_distance = 1.0 / square_distance;
 
                     // todo: handle light near start.
 
@@ -427,11 +454,42 @@ namespace
                         Basis3d(light_sample.m_shading_normal),
                         -incoming,
                         irradiance);
+
+                    attenuation = rcp_sample_square_distance * cos_on_light;
                 }
                 else
                 {
-                    // todo: implement.
-                    assert(!"Not implemented yet.");
+                    const Light* light = light_sample.m_light;
+
+                    // todo: check light flags.
+
+                    // Evaluate the light.
+                    InputEvaluator light_input_evaluator(m_shading_context.get_texture_cache());
+                    Vector3d emission_position, emission_direction;
+                    Spectrum light_value;
+                    light->evaluate(
+                        light_input_evaluator,
+                        light_sample.m_light_transform,
+                        shading_point.get_point(),
+                        emission_position,
+                        emission_direction,
+                        light_value);
+
+                    // Compute the transmission factor between the light sample and the shading point.
+                    transmission =
+                        m_shading_context.get_tracer().trace_between(
+                            shading_point,
+                            light_sample.m_point,
+                            VisibilityFlags::ShadowRay);
+
+                    // Discard occluded samples.
+                    if (transmission == 0.0)
+                        return false;
+
+                    // Compute the incoming direction in world space.
+                    incoming = -emission_direction;
+
+                    attenuation = light->compute_distance_attenuation(shading_point.get_point(), emission_position);
                 }
 
                 // Compute cosine factor at shading point.
@@ -440,7 +498,7 @@ namespace
 
                 // Compute irradiance at shading point.
                 irradiance *= static_cast<float>(cos_in / light_sample.m_probability);
-                irradiance *= static_cast<float>(rcp_sample_square_distance * cos_on_light);
+                irradiance *= static_cast<float>(attenuation);
 
                 return true;
             }
@@ -798,10 +856,17 @@ namespace
                 Spectrum&               vertex_radiance,
                 SpectrumStack&          vertex_aovs)
             {
+                const size_t env_sample_count =
+                    stochastic_cast<size_t>(
+                        m_sampling_context,
+                        m_params.m_ibl_env_sample_count);
+
                 const SubsurfaceSampleVisitor visitor(
                     m_light_sampler,
                     m_sampling_context,
                     m_shading_context,
+                    m_params.m_enable_ibl ? m_env_edf : 0,
+                    env_sample_count,
                     vertex,
                     vertex_radiance,
                     vertex_aovs);

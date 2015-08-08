@@ -43,6 +43,7 @@
 
 // Forward declarations.
 namespace renderer  { class BSDF; }
+namespace renderer  { class BSSRDF; }
 namespace renderer  { class EnvironmentEDF; }
 namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingPoint; }
@@ -78,6 +79,22 @@ void compute_ibl(
     const size_t                    env_sample_count,       // number of samples in environment sampling
     Spectrum&                       radiance);
 
+// Compute image-based lighting via BSSRDF and environment sampling.
+void compute_ibl(
+    SamplingContext&                sampling_context,
+    const ShadingContext&           shading_context,
+    const EnvironmentEDF&           environment_edf,
+    const BSSRDF&                   bssrdf,
+    const void*                     bssrdf_data,
+    const double                    bssrdf_probability,
+    const ShadingPoint&             incoming_point,
+    const ShadingPoint&             outgoing_point,
+    const foundation::Dual3d&       outgoing,
+    const double                    eta,
+    const double                    outgoing_fresnel,
+    const size_t                    sample_count,
+    Spectrum&                       radiance);
+
 // Compute image-based lighting via BSDF sampling.
 void compute_ibl_bsdf_sampling(
     SamplingContext&                sampling_context,
@@ -100,6 +117,22 @@ void compute_ibl_bsdf_sampling(
     const size_t                    env_sample_count,       // number of samples in environment sampling
     Spectrum&                       radiance);
 
+// Compute image-based lighting via BSSRDF sampling.
+void compute_ibl_bssrdf_sampling(
+    SamplingContext&                sampling_context,
+    const ShadingContext&           shading_context,
+    const EnvironmentEDF&           environment_edf,
+    const BSSRDF&                   bssrdf,
+    const void*                     bssrdf_data,
+    const double                    bssrdf_probability,
+    const ShadingPoint&             incoming_point,
+    const ShadingPoint&             outgoing_point,
+    const foundation::Dual3d&       outgoing,
+    const double                    eta,
+    const double                    outgoing_fresnel,
+    const size_t                    sample_count,
+    Spectrum&                       radiance);
+
 // Compute image-based lighting via environment sampling.
 void compute_ibl_environment_sampling(
     SamplingContext&                sampling_context,
@@ -120,6 +153,20 @@ void compute_ibl_environment_sampling(
     const int                       env_sampling_modes,     // permitted scattering modes during environment sampling
     const size_t                    bsdf_sample_count,      // number of samples in BSDF sampling
     const size_t                    env_sample_count,       // number of samples in environment sampling
+    Spectrum&                       radiance);
+void compute_ibl_environment_sampling(
+    SamplingContext&                sampling_context,
+    const ShadingContext&           shading_context,
+    const EnvironmentEDF&           environment_edf,
+    const BSSRDF&                   bssrdf,
+    const void*                     bssrdf_data,
+    const double                    bssrdf_probability,
+    const ShadingPoint&             incoming_point,
+    const ShadingPoint&             outgoing_point,
+    const foundation::Dual3d&       outgoing,
+    const double                    eta,
+    const double                    outgoing_fresnel,
+    const size_t                    sample_count,
     Spectrum&                       radiance);
 
 

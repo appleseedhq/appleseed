@@ -35,13 +35,16 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/fresnel.h"
 #include "foundation/math/mis.h"
+#include "foundation/math/sampling/mappings.h"
 
 // Standard headers.
 #include <cassert>
@@ -94,6 +97,58 @@ void compute_ibl(
         env_sampling_modes,
         bsdf_sample_count,
         env_sample_count,
+        radiance_env_sampling);
+    radiance += radiance_env_sampling;
+}
+
+void compute_ibl(
+    SamplingContext&        sampling_context,
+    const ShadingContext&   shading_context,
+    const EnvironmentEDF&   environment_edf,
+    const BSSRDF&           bssrdf,
+    const void*             bssrdf_data,
+    const double            bssrdf_probability,
+    const ShadingPoint&     incoming_point,
+    const ShadingPoint&     outgoing_point,
+    const Dual3d&           outgoing,
+    const double            eta,
+    const double            outgoing_fresnel,
+    const size_t            sample_count,
+    Spectrum&               radiance)
+{
+    assert(is_normalized(outgoing.get_value()));
+
+    // Compute IBL by sampling the BSSRDF.
+    compute_ibl_bssrdf_sampling(
+        sampling_context,
+        shading_context,
+        environment_edf,
+        bssrdf,
+        bssrdf_data,
+        bssrdf_probability,
+        incoming_point,
+        outgoing_point,
+        outgoing,
+        eta,
+        outgoing_fresnel,
+        sample_count,
+        radiance);
+
+    // Compute IBL by sampling the environment.
+    Spectrum radiance_env_sampling;
+    compute_ibl_environment_sampling(
+        sampling_context,
+        shading_context,
+        environment_edf,
+        bssrdf,
+        bssrdf_data,
+        bssrdf_probability,
+        incoming_point,
+        outgoing_point,
+        outgoing,
+        eta,
+        outgoing_fresnel,
+        sample_count,
         radiance_env_sampling);
     radiance += radiance_env_sampling;
 }
@@ -172,6 +227,98 @@ void compute_ibl_bsdf_sampling(
 
     if (bsdf_sample_count > 1)
         radiance /= static_cast<float>(bsdf_sample_count);
+}
+
+void compute_ibl_bssrdf_sampling(
+    SamplingContext&        sampling_context,
+    const ShadingContext&   shading_context,
+    const EnvironmentEDF&   environment_edf,
+    const BSSRDF&           bssrdf,
+    const void*             bssrdf_data,
+    const double            bssrdf_probability,
+    const ShadingPoint&     incoming_point,
+    const ShadingPoint&     outgoing_point,
+    const Dual3d&           outgoing,
+    const double            eta,
+    const double            outgoing_fresnel,
+    const size_t            sample_count,
+    Spectrum&               radiance)
+{
+    assert(is_normalized(outgoing.get_value()));
+    assert(bssrdf_probability > 0.0);
+
+    radiance.set(0.0f);
+
+    sampling_context.split_in_place(2, sample_count);
+
+    for (size_t i = 0; i < sample_count; ++i)
+    {
+        // Generate a uniform sample in [0,1)^2.
+        const Vector2d s = sampling_context.next_vector2<2>();
+
+        // Sample the BSSRDF (hemisphere cosine).
+        Vector3d incoming = sample_hemisphere_cosine(s);
+        const double cos_in = incoming.y;
+        const double bssrdf_prob = cos_in * RcpPi * bssrdf_probability;
+        incoming = incoming_point.get_shading_basis().transform_to_parent(incoming);
+
+        // Compute Fresnel coefficient at incoming point.
+        double incoming_fresnel;
+        fresnel_transmittance_dielectric(incoming_fresnel, eta, cos_in);
+        if (incoming_fresnel <= 0.0)
+            return;
+
+        // Discard occluded samples.
+        const double transmission =
+            shading_context.get_tracer().trace(
+                incoming_point,
+                incoming,
+                VisibilityFlags::ShadowRay);
+        if (transmission == 0.0)
+            continue;
+
+        // Evaluate the diffusion profile.
+        Spectrum bssrdf_value;
+        bssrdf.evaluate(
+            bssrdf_data,
+            outgoing_point,
+            outgoing.get_value(),
+            incoming_point,
+            incoming,
+            bssrdf_value);
+
+        const double weight =
+              RcpPi
+            * cos_in
+            * transmission
+            * incoming_fresnel
+            * outgoing_fresnel;
+
+        // Evaluate the environment's EDF.
+        InputEvaluator input_evaluator(shading_context.get_texture_cache());
+        Spectrum env_value;
+        double env_prob;
+        environment_edf.evaluate(
+            shading_context,
+            input_evaluator,
+            incoming,
+            env_value,
+            env_prob);
+
+        const double mis_weight =
+            mis_power2(
+                sample_count * bssrdf_prob,
+                sample_count * env_prob);
+
+        env_value *= static_cast<float>(weight / bssrdf_prob * mis_weight);
+
+        // Add the contribution of this sample to the illumination.
+        env_value *= bssrdf_value;
+        radiance += env_value;
+    }
+
+    if (sample_count > 1)
+        radiance /= static_cast<float>(sample_count);
 }
 
 void compute_ibl_environment_sampling(
@@ -263,6 +410,104 @@ void compute_ibl_environment_sampling(
 
     if (env_sample_count > 1)
         radiance /= static_cast<float>(env_sample_count);
+}
+
+void compute_ibl_environment_sampling(
+    SamplingContext&        sampling_context,
+    const ShadingContext&   shading_context,
+    const EnvironmentEDF&   environment_edf,
+    const BSSRDF&           bssrdf,
+    const void*             bssrdf_data,
+    const double            bssrdf_probability,
+    const ShadingPoint&     incoming_point,
+    const ShadingPoint&     outgoing_point,
+    const Dual3d&           outgoing,
+    const double            eta,
+    const double            outgoing_fresnel,
+    const size_t            sample_count,
+    Spectrum&               radiance)
+{
+    assert(is_normalized(outgoing.get_value()));
+    assert(bssrdf_probability > 0.0);
+
+    const Basis3d& shading_basis = incoming_point.get_shading_basis();
+
+    radiance.set(0.0f);
+
+    sampling_context.split_in_place(2, sample_count);
+
+    for (size_t i = 0; i < sample_count; ++i)
+    {
+        // Generate a uniform sample in [0,1)^2.
+        const Vector2d s = sampling_context.next_vector2<2>();
+
+        // Sample the environment.
+        InputEvaluator input_evaluator(shading_context.get_texture_cache());
+        Vector3d incoming;
+        Spectrum env_value;
+        double env_prob;
+        environment_edf.sample(
+            shading_context,
+            input_evaluator,
+            s,
+            incoming,
+            env_value,
+            env_prob);
+
+        // Cull samples behind the shading surface.
+        assert(is_normalized(incoming));
+        const double cos_in = dot(incoming, shading_basis.get_normal());
+        if (cos_in <= 0.0)
+            continue;
+
+        // Compute Fresnel coefficient at incoming point.
+        double incoming_fresnel;
+        fresnel_transmittance_dielectric(incoming_fresnel, eta, cos_in);
+        if (incoming_fresnel <= 0.0)
+            return;
+
+        // Discard occluded samples.
+        const double transmission =
+            shading_context.get_tracer().trace(
+                incoming_point,
+                incoming,
+                VisibilityFlags::ShadowRay);
+        if (transmission == 0.0)
+            continue;
+
+        // Evaluate the diffusion profile.
+        Spectrum bssrdf_value;
+        bssrdf.evaluate(
+            bssrdf_data,
+            outgoing_point,
+            outgoing.get_value(),
+            incoming_point,
+            incoming,
+            bssrdf_value);
+
+        const double bssrdf_prob = cos_in * RcpPi * bssrdf_probability;
+
+        const double weight =
+              RcpPi
+            * cos_in
+            * transmission
+            * incoming_fresnel
+            * outgoing_fresnel;
+
+        // Compute MIS weight.
+        const double mis_weight =
+            mis_power2(
+                sample_count * env_prob,
+                sample_count * bssrdf_prob);
+
+        // Add the contribution of this sample to the illumination.
+        env_value *= static_cast<float>(weight / env_prob * mis_weight);
+        env_value *= bssrdf_value;
+        radiance += env_value;
+    }
+
+    if (sample_count > 1)
+        radiance /= static_cast<float>(sample_count);
 }
 
 }   // namespace renderer
