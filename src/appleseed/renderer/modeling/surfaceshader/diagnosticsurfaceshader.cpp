@@ -269,23 +269,41 @@ void DiagnosticSurfaceShader::evaluate(
         break;
 
       case Tangent:
-        shading_result.set_main_to_linear_rgb(
-            vector3_to_color(normalize(shading_point.get_shading_basis().get_tangent_u())));
-        break;
-
       case Bitangent:
-        shading_result.set_main_to_linear_rgb(
-            vector3_to_color(normalize(shading_point.get_shading_basis().get_tangent_v())));
+      case ShadingNormal:
+        {
+#ifdef APPLESEED_WITH_OSL
+            const Material* material = shading_point.get_material();
+            if (material)
+            {
+                // Execute the OSL shader if there is one.
+                if (material->get_osl_surface())
+                {
+                    sampling_context.split_in_place(1, 1);
+                    shading_context.execute_osl_bump(
+                        *material->get_osl_surface(),
+                        shading_point,
+                        sampling_context.next_double2());
+                }
+            }
+#endif
+            Vector3d v;
+
+            if (m_shading_mode == ShadingNormal)
+                v = shading_point.get_shading_basis().get_normal();
+            else if (m_shading_mode == Tangent)
+                v = shading_point.get_shading_basis().get_tangent_u();
+            else
+                v = shading_point.get_shading_basis().get_tangent_v();
+
+            shading_result.set_main_to_linear_rgb(
+                vector3_to_color(normalize(v)));
+        }
         break;
 
       case GeometricNormal:
         shading_result.set_main_to_linear_rgb(
             vector3_to_color(shading_point.get_geometric_normal()));
-        break;
-
-      case ShadingNormal:
-        shading_result.set_main_to_linear_rgb(
-            vector3_to_color(shading_point.get_shading_normal()));
         break;
 
       case OriginalShadingNormal:
