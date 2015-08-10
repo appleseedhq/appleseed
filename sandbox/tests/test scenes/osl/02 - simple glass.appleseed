@@ -56,7 +56,7 @@
         <assembly name="assembly">
             <texture name="uv_grid_mip" model="disk_texture_2d">
                 <parameter name="color_space" value="linear_rgb" />
-                <parameter name="filename" value="../common/_textures/uv_grid_mip.exr" />
+                <parameter name="filename" value="../texture/UVCheckerMap03-512.exr" />
             </texture>
             <texture_instance name="uv_grid_mip_inst" texture="uv_grid_mip">
                 <parameter name="addressing_mode" value="wrap" />
