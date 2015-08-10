@@ -33,6 +33,9 @@
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 
+// Standard headers.
+#include <cassert>
+
 namespace foundation
 {
 
@@ -56,6 +59,7 @@ class ExceptionNotImplemented
 inline ExceptionNotImplemented::ExceptionNotImplemented()
   : Exception("reached non-implemented code path")
 {
+    assert(!"reached non-implemented code path");
 }
 
 }       // namespace foundation
