@@ -226,8 +226,6 @@ CompositeSurfaceClosure::CompositeSurfaceClosure(
     const OSL::ClosureColor*    ci)
   : m_osl_bsdf(osl_bsdf)
 {
-    assert(m_osl_bsdf);
-
     process_closure_tree(ci, original_shading_basis, Color3f(1.0f));
     compute_cdf();
 }

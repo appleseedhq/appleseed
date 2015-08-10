@@ -202,7 +202,7 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
     const foundation::Basis3d& get_closure_shading_basis(const size_t index) const;
 
     // For future layered closures.
-    const BSDF* get_osl_bsdf() const;
+    const BSDF& get_osl_bsdf() const;
 
   private:
     foundation::Basis3d             m_bases[MaxClosureEntries];
@@ -342,9 +342,9 @@ inline const foundation::Basis3d& CompositeSurfaceClosure::get_closure_shading_b
     return m_bases[index];
 }
 
-inline const BSDF* CompositeSurfaceClosure::get_osl_bsdf() const
+inline const BSDF& CompositeSurfaceClosure::get_osl_bsdf() const
 {
-    return m_osl_bsdf;
+    return *m_osl_bsdf;
 }
 
 //

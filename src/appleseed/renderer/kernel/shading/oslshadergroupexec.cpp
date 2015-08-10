@@ -113,6 +113,29 @@ void OSLShaderGroupExec::execute_emission(
         VisibilityFlags::LightRay);
 }
 
+void OSLShaderGroupExec::execute_bump(
+    const ShaderGroup&              shader_group,
+    const ShadingPoint&             shading_point,
+    const double                    s) const
+{
+    do_execute(
+        shader_group,
+        shading_point,
+        VisibilityFlags::CameraRay);
+
+    CompositeSurfaceClosure c(
+        0,
+        shading_point.get_shading_basis(),
+        shading_point.get_osl_shader_globals().Ci);
+
+    if (c.get_num_closures() > 0)
+    {
+        const size_t index = c.choose_closure(s);
+        shading_point.set_shading_basis(
+            c.get_closure_shading_basis(index));
+    }
+}
+
 Color3f OSLShaderGroupExec::execute_background(
     const ShaderGroup&              shader_group,
     const Vector3d&                 outgoing) const
