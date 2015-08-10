@@ -107,50 +107,44 @@ void compute_ibl(
     const EnvironmentEDF&   environment_edf,
     const BSSRDF&           bssrdf,
     const void*             bssrdf_data,
-    const double            bssrdf_probability,
     const ShadingPoint&     incoming_point,
     const ShadingPoint&     outgoing_point,
     const Dual3d&           outgoing,
     const double            eta,
-    const double            outgoing_fresnel,
     const size_t            sample_count,
     Spectrum&               radiance)
 {
     assert(is_normalized(outgoing.get_value()));
 
-    // Compute IBL by sampling the BSSRDF.
-    compute_ibl_bssrdf_sampling(
-        sampling_context,
-        shading_context,
-        environment_edf,
-        bssrdf,
-        bssrdf_data,
-        bssrdf_probability,
-        incoming_point,
-        outgoing_point,
-        outgoing,
-        eta,
-        outgoing_fresnel,
-        sample_count,
-        radiance);
-
     // Compute IBL by sampling the environment.
-    Spectrum radiance_env_sampling;
     compute_ibl_environment_sampling(
         sampling_context,
         shading_context,
         environment_edf,
         bssrdf,
         bssrdf_data,
-        bssrdf_probability,
         incoming_point,
         outgoing_point,
         outgoing,
         eta,
-        outgoing_fresnel,
         sample_count,
-        radiance_env_sampling);
-    radiance += radiance_env_sampling;
+        radiance);
+
+    // Compute IBL by sampling the BSSRDF.
+    Spectrum bssrdf_radiance;
+    compute_ibl_bssrdf_sampling(
+        sampling_context,
+        shading_context,
+        environment_edf,
+        bssrdf,
+        bssrdf_data,
+        incoming_point,
+        outgoing_point,
+        outgoing,
+        eta,
+        sample_count,
+        bssrdf_radiance);
+    radiance += bssrdf_radiance;
 }
 
 void compute_ibl_bsdf_sampling(
@@ -235,17 +229,14 @@ void compute_ibl_bssrdf_sampling(
     const EnvironmentEDF&   environment_edf,
     const BSSRDF&           bssrdf,
     const void*             bssrdf_data,
-    const double            bssrdf_probability,
     const ShadingPoint&     incoming_point,
     const ShadingPoint&     outgoing_point,
     const Dual3d&           outgoing,
     const double            eta,
-    const double            outgoing_fresnel,
     const size_t            sample_count,
     Spectrum&               radiance)
 {
     assert(is_normalized(outgoing.get_value()));
-    assert(bssrdf_probability > 0.0);
 
     radiance.set(0.0f);
 
@@ -259,7 +250,7 @@ void compute_ibl_bssrdf_sampling(
         // Sample the BSSRDF (hemisphere cosine).
         Vector3d incoming = sample_hemisphere_cosine(s);
         const double cos_in = incoming.y;
-        const double bssrdf_prob = cos_in * RcpPi * bssrdf_probability;
+        const double bssrdf_prob = cos_in * RcpPi;
         incoming = incoming_point.get_shading_basis().transform_to_parent(incoming);
 
         // Compute Fresnel coefficient at incoming point.
@@ -291,8 +282,7 @@ void compute_ibl_bssrdf_sampling(
               RcpPi
             * cos_in
             * transmission
-            * incoming_fresnel
-            * outgoing_fresnel;
+            * incoming_fresnel;
 
         // Evaluate the environment's EDF.
         InputEvaluator input_evaluator(shading_context.get_texture_cache());
@@ -418,17 +408,14 @@ void compute_ibl_environment_sampling(
     const EnvironmentEDF&   environment_edf,
     const BSSRDF&           bssrdf,
     const void*             bssrdf_data,
-    const double            bssrdf_probability,
     const ShadingPoint&     incoming_point,
     const ShadingPoint&     outgoing_point,
     const Dual3d&           outgoing,
     const double            eta,
-    const double            outgoing_fresnel,
     const size_t            sample_count,
     Spectrum&               radiance)
 {
     assert(is_normalized(outgoing.get_value()));
-    assert(bssrdf_probability > 0.0);
 
     const Basis3d& shading_basis = incoming_point.get_shading_basis();
 
@@ -485,16 +472,15 @@ void compute_ibl_environment_sampling(
             incoming,
             bssrdf_value);
 
-        const double bssrdf_prob = cos_in * RcpPi * bssrdf_probability;
-
         const double weight =
               RcpPi
             * cos_in
-            * transmission
             * incoming_fresnel
-            * outgoing_fresnel;
+            * transmission;
 
         // Compute MIS weight.
+        const double bssrdf_prob = cos_in * RcpPi;
+
         const double mis_weight =
             mis_power2(
                 sample_count * env_prob,

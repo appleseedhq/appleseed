@@ -306,66 +306,17 @@ namespace
                 if (outgoing_fresnel <= 0.0)
                     return;
 
-                // Compute irradiance at incoming point.
-                Vector3d incoming;
-                double transmission;
-                double cos_in;
-                Spectrum irradiance;
-                if (!compute_irradiance(
-                        incoming_point,
-                        incoming,
-                        transmission,
-                        cos_in,
-                        irradiance))
-                    return;
-
-                // Compute Fresnel coefficient at incoming point.
-                double incoming_fresnel;
-                fresnel_transmittance_dielectric(incoming_fresnel, bssrdf_sample.get_eta(), cos_in);
-                if (incoming_fresnel <= 0.0)
-                    return;
-
-                // Evaluate the diffusion profile.
-                Spectrum rd;
-                m_vertex.m_bssrdf->evaluate(
-                    m_vertex.m_bssrdf_data,
-                    *m_vertex.m_shading_point,
-                    m_vertex.m_outgoing.get_value(),
+                add_dl_contribution(
                     incoming_point,
-                    incoming,
-                    rd);
+                    bssrdf_sample.get_eta(),
+                    outgoing_fresnel,
+                    probability);
 
-                // Add the contribution of this sample to the illumination.
-                const double weight =
-                      RcpPi
-                    * transmission
-                    * incoming_fresnel
-                    * outgoing_fresnel
-                    / probability;
-                irradiance *= rd;
-                irradiance *= static_cast<float>(weight);
-                m_vertex_radiance += irradiance;
-
-                if (m_env_edf)
-                {
-                    // Add Image-based lighting contribution.
-                    compute_ibl(
-                        m_sampling_context,
-                        m_shading_context,
-                        *m_env_edf,
-                        *m_vertex.m_bssrdf,
-                        m_vertex.m_bssrdf_data,
-                        probability,
-                        incoming_point,
-                        *m_vertex.m_shading_point,
-                        m_vertex.m_outgoing,
-                        bssrdf_sample.get_eta(),
-                        outgoing_fresnel,
-                        m_env_sample_count,
-                        irradiance);
-
-                    m_vertex_radiance += irradiance;
-                }
+                add_ibl_contribution(
+                    incoming_point,
+                    bssrdf_sample.get_eta(),
+                    outgoing_fresnel,
+                    probability);
             }
 
           private:
@@ -501,6 +452,80 @@ namespace
                 irradiance *= static_cast<float>(attenuation);
 
                 return true;
+            }
+
+            void add_dl_contribution(
+                const ShadingPoint&     incoming_point,
+                const double            eta,
+                const double            outgoing_fresnel,
+                const double            probability) const
+            {
+                // Compute irradiance at incoming point.
+                Vector3d incoming;
+                double transmission;
+                double cos_in;
+                Spectrum irradiance;
+                if (!compute_irradiance(
+                        incoming_point,
+                        incoming,
+                        transmission,
+                        cos_in,
+                        irradiance))
+                    return;
+
+                // Compute Fresnel coefficient at incoming point.
+                double incoming_fresnel;
+                fresnel_transmittance_dielectric(incoming_fresnel, eta, cos_in);
+                if (incoming_fresnel <= 0.0)
+                    return;
+
+                // Evaluate the diffusion profile.
+                Spectrum rd;
+                m_vertex.m_bssrdf->evaluate(
+                    m_vertex.m_bssrdf_data,
+                    *m_vertex.m_shading_point,
+                    m_vertex.m_outgoing.get_value(),
+                    incoming_point,
+                    incoming,
+                    rd);
+
+                // Add the contribution of this sample to the illumination.
+                const double weight =
+                      RcpPi
+                    * transmission
+                    * incoming_fresnel
+                    * outgoing_fresnel
+                    / probability;
+                irradiance *= rd;
+                irradiance *= static_cast<float>(weight);
+                m_vertex_radiance += irradiance;
+            }
+
+            void add_ibl_contribution(
+                const ShadingPoint&     incoming_point,
+                const double            eta,
+                const double            outgoing_fresnel,
+                const double            probability) const
+            {
+                if (m_env_edf)
+                {
+                    Spectrum irradiance;
+                    compute_ibl(
+                        m_sampling_context,
+                        m_shading_context,
+                        *m_env_edf,
+                        *m_vertex.m_bssrdf,
+                        m_vertex.m_bssrdf_data,
+                        incoming_point,
+                        *m_vertex.m_shading_point,
+                        m_vertex.m_outgoing,
+                        eta,
+                        m_env_sample_count,
+                        irradiance);
+
+                    irradiance *= static_cast<float>(outgoing_fresnel / probability);
+                    m_vertex_radiance += irradiance;
+                }
             }
         };
 
