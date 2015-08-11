@@ -228,9 +228,10 @@ V fit(
 //
 
 // Default epsilon values for floating-point tests.
-template <typename T> T default_eps();          // intentionally left unimplemented
-template <> inline float default_eps<float>()   { return 1.0e-6f; }
-template <> inline double default_eps<double>() { return 1.0e-14; }
+template <typename T> T default_eps();                      // intentionally left unimplemented
+template <> inline float default_eps<float>()               { return 1.0e-6f; }
+template <> inline double default_eps<double>()             { return 1.0e-14; }
+template <> inline long double default_eps<long double>()   { return 1.0e-30L; }
 
 // Allow using custom epsilon values in template code.
 template <typename T> T make_eps(const float feps, const double deps);
