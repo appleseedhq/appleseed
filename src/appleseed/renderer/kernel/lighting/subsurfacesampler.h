@@ -186,22 +186,17 @@ void SubsurfaceSampler::sample(
                 parent_shading_point))
             break;
 
-        // Retrieve the front side material at the hit point.
-        const Material* incoming_material =
-            incoming_point.get_side() == ObjectInstance::BackSide
-                ? incoming_point.get_opposite_material()
-                : incoming_point.get_material();
-
         // Only consider hit points with the same material as the outgoing point.
-        if (incoming_material == outgoing_material)
+        if (incoming_point.get_material() == outgoing_material ||
+            incoming_point.get_opposite_material() == outgoing_material)
         {
 #ifdef APPLESEED_WITH_OSL
             // Execute the OSL shader if we have one. Needed for bump mapping.
-            if (incoming_material->has_osl_surface())
+            if (outgoing_material->has_osl_surface())
             {
                 sampling_context.split_in_place(1, 1);
                 m_shading_context.execute_osl_bump(
-                    *incoming_material->get_osl_surface(),
+                    *outgoing_material->get_osl_surface(),
                     incoming_point,
                     sampling_context.next_double2());
             }
@@ -212,9 +207,9 @@ void SubsurfaceSampler::sample(
                 std::abs(foundation::dot(
                     sampling_basis.get_normal(),
                     incoming_point.get_shading_normal()));
-            double probability = bssrdf_sample_pdf * sampling_basis_pdf * dot_nn;
+            double probability = sampling_basis_pdf * bssrdf_sample_pdf * dot_nn;
 
-            // Weight sample probability using multiple importance sampling.
+            // Weight sample contribution using multiple importance sampling.
             probability /=
                 compute_mis_weight(
                     bssrdf,
@@ -227,7 +222,7 @@ void SubsurfaceSampler::sample(
                     incoming_point.get_point(),
                     incoming_point.get_shading_normal());
 
-            // Pass the subsurface sample to the visitor.
+            // Pass incoming point to visitor.
             visitor.visit(bssrdf_sample, incoming_point, probability);
         }
 
