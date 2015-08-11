@@ -78,6 +78,7 @@ static const double RcpFourPi       =  0.0795774715459477;      // 1 / (4 * Pi)
 static const double RcpPiSquare     =  0.1013211836423378;      // 1 / (Pi^2) = (1 / Pi)^2
 static const double RcpFourPiSquare =  0.0253302959105844;      // 1 / (4 * Pi^2)
 static const double SqrtTwo         =  1.4142135623730950;      // sqrt(2)
+static const double RcpSqrtTwo      =  0.7071067811865475;      // 1 / sqrt(2) = sqrt(2) / 2
 static const double GoldenRatio     =  1.6180339887498948;      // (1 + sqrt(5)) / 2
 
 
