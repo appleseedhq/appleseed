@@ -286,43 +286,32 @@ inline double SubsurfaceSampler::compute_mis_weight(
     const foundation::Vector3d&     incoming_point,
     const foundation::Vector3d&     incoming_normal)
 {
-    // todo: not sure about the 2.0 factors.
-
     const foundation::Vector3d d = incoming_point - outgoing_point;
+    const double du = foundation::norm(foundation::project(d, basis.get_tangent_u()));
+    const double dv = foundation::norm(foundation::project(d, basis.get_tangent_v()));
+    const double dot_un = std::abs(foundation::dot(basis.get_tangent_u(), incoming_normal));
+    const double dot_vn = std::abs(foundation::dot(basis.get_tangent_v(), incoming_normal));
+    const double pdf_u = bssrdf.evaluate_pdf(data, channel, du) * dot_un;
+    const double pdf_v = bssrdf.evaluate_pdf(data, channel, dv) * dot_vn;
 
     switch (axis)
     {
       case NAxis:
       {
-          const double du = foundation::norm(foundation::project(d, basis.get_tangent_u()));
-          const double dv = foundation::norm(foundation::project(d, basis.get_tangent_v()));
-          const double dot_un = std::abs(foundation::dot(basis.get_tangent_u(), incoming_normal));
-          const double dot_vn = std::abs(foundation::dot(basis.get_tangent_v(), incoming_normal));
-          const double pdf_u = 0.25 * bssrdf.evaluate_pdf(data, channel, du) * dot_un;
-          const double pdf_v = 0.25 * bssrdf.evaluate_pdf(data, channel, dv) * dot_vn;
-          return foundation::mis_power2(2.0 * sample_pdf, pdf_u, pdf_v);
+          // We chose N: the original U is at U and the original V is at V.
+          return foundation::mis_power2(sample_pdf, 0.25 * pdf_u, 0.25 * pdf_v);
       }
 
       case UAxis:
       {
-          const double dn = foundation::norm(foundation::project(d, basis.get_normal()));
-          const double dv = foundation::norm(foundation::project(d, basis.get_tangent_v()));
-          const double dot_nn = std::abs(foundation::dot(basis.get_normal(), incoming_normal));
-          const double dot_vn = std::abs(foundation::dot(basis.get_tangent_v(), incoming_normal));
-          const double pdf_n = 0.5  * bssrdf.evaluate_pdf(data, channel, dn) * dot_nn;
-          const double pdf_v = 0.25 * bssrdf.evaluate_pdf(data, channel, dv) * dot_vn;
-          return foundation::mis_power2(sample_pdf, 2.0 * pdf_n, pdf_v);
+          // We chose U: the original V is at U and the original N is at V.
+          return foundation::mis_power2(sample_pdf, 0.25 * pdf_u, 0.5 * pdf_v);
       }
 
       case VAxis:
       {
-          const double dn = foundation::norm(foundation::project(d, basis.get_normal()));
-          const double du = foundation::norm(foundation::project(d, basis.get_tangent_u()));
-          const double dot_nn = std::abs(foundation::dot(basis.get_normal(), incoming_normal));
-          const double dot_un = std::abs(foundation::dot(basis.get_tangent_u(), incoming_normal));
-          const double pdf_n = 0.5  * bssrdf.evaluate_pdf(data, channel, dn) * dot_nn;
-          const double pdf_u = 0.25 * bssrdf.evaluate_pdf(data, channel, du) * dot_un;
-          return foundation::mis_power2(sample_pdf, 2.0 * pdf_n, pdf_u);
+          // We chose V: the original N is at U and the original U is at V.
+          return foundation::mis_power2(sample_pdf, 0.5 * pdf_u, 0.25 * pdf_v);
       }
     }
 
