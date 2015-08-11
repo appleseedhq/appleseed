@@ -265,16 +265,40 @@ template <> inline long double signed_min()     { return -std::numeric_limits<lo
 // Conversion operations implementation.
 //
 
-template <typename T>
-inline T deg_to_rad(const T angle)
+template <>
+inline float deg_to_rad(const float angle)
 {
-    return angle * T(Pi / 180.0);
+    return angle * static_cast<float>(Pi / 180.0);
 }
 
-template <typename T>
-inline T rad_to_deg(const T angle)
+template <>
+inline double deg_to_rad(const double angle)
 {
-    return angle * T(180.0 / Pi);
+    return angle * (Pi / 180.0);
+}
+
+template <>
+inline long double deg_to_rad(const long double angle)
+{
+    return angle * static_cast<long double>(Pi / 180.0);
+}
+
+template <>
+inline float rad_to_deg(const float angle)
+{
+    return angle * static_cast<float>(180.0 / Pi);
+}
+
+template <>
+inline double rad_to_deg(const double angle)
+{
+    return angle * (180.0 / Pi);
+}
+
+template <>
+inline long double rad_to_deg(const long double angle)
+{
+    return angle * static_cast<long double>(180.0 / Pi);
 }
 
 
