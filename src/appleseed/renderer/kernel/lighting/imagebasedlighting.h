@@ -86,12 +86,10 @@ void compute_ibl(
     const EnvironmentEDF&           environment_edf,
     const BSSRDF&                   bssrdf,
     const void*                     bssrdf_data,
-    const double                    bssrdf_probability,
     const ShadingPoint&             incoming_point,
     const ShadingPoint&             outgoing_point,
     const foundation::Dual3d&       outgoing,
     const double                    eta,
-    const double                    outgoing_fresnel,
     const size_t                    sample_count,
     Spectrum&                       radiance);
 
@@ -124,12 +122,10 @@ void compute_ibl_bssrdf_sampling(
     const EnvironmentEDF&           environment_edf,
     const BSSRDF&                   bssrdf,
     const void*                     bssrdf_data,
-    const double                    bssrdf_probability,
     const ShadingPoint&             incoming_point,
     const ShadingPoint&             outgoing_point,
     const foundation::Dual3d&       outgoing,
     const double                    eta,
-    const double                    outgoing_fresnel,
     const size_t                    sample_count,
     Spectrum&                       radiance);
 
@@ -160,12 +156,10 @@ void compute_ibl_environment_sampling(
     const EnvironmentEDF&           environment_edf,
     const BSSRDF&                   bssrdf,
     const void*                     bssrdf_data,
-    const double                    bssrdf_probability,
     const ShadingPoint&             incoming_point,
     const ShadingPoint&             outgoing_point,
     const foundation::Dual3d&       outgoing,
     const double                    eta,
-    const double                    outgoing_fresnel,
     const size_t                    sample_count,
     Spectrum&                       radiance);
 

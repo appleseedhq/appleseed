@@ -122,18 +122,7 @@ void ShadingContext::execute_osl_bump(
     const ShadingPoint&         shading_point,
     const double                s) const
 {
-    SSE_ALIGN uint8 data[InputEvaluator::DataSize];
-
-    execute_osl_shading(shader_group, shading_point);
-    const CompositeSurfaceClosure* c =
-        reinterpret_cast<const CompositeSurfaceClosure*>(data);
-
-    if (c->get_num_closures() > 0)
-    {
-        const size_t index = c->choose_closure(s);
-        shading_point.set_shading_basis(
-            c->get_closure_shading_basis(index));
-    }
+    m_shadergroup_exec.execute_bump(shader_group, shading_point, s);
 }
 
 void ShadingContext::execute_osl_background(

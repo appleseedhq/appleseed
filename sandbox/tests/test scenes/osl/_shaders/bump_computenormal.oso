@@ -1,0 +1,42 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.7.0dev
+surface bump_computenormal
+param	float	Kd	1		%read{9,9} %write{2147483647,-1}
+param	string	texfile	""		%read{2,2} %write{2147483647,-1} %derivs
+global	point	P	%read{5,5} %write{2147483647,-1} %derivs
+global	normal	N	%read{3,3} %write{2147483647,-1} %derivs
+global	float	u	%read{0,0} %write{2147483647,-1} %derivs
+global	float	v	%read{1,1} %write{2147483647,-1} %derivs
+global	closure color	Ci	%read{2147483647,-1} %write{9,9}
+local	float	height	%read{3,3} %write{2,2} %derivs
+local	normal	Normal	%read{8,8} %write{7,7}
+temp	float	$tmp1	%read{2,2} %write{0,0} %derivs
+const	float	$const2	2		%read{0,1} %write{2147483647,-1}
+temp	float	$tmp2	%read{2,2} %write{1,1} %derivs
+const	string	$const3	"wrap"		%read{2,2} %write{2147483647,-1}
+const	string	$const4	"periodic"		%read{2,2} %write{2147483647,-1}
+temp	vector	$tmp3	%read{7,7} %write{6,6}
+temp	normal	$tmp4	%read{4,4} %write{3,3} %derivs
+const	float	$const5	0.5		%read{4,4} %write{2147483647,-1}
+temp	normal	$tmp5	%read{5,5} %write{4,4} %derivs
+temp	point	$tmp6	%read{6,6} %write{5,5} %derivs
+temp	closure color	$tmp7	%read{9,9} %write{8,8}
+const	string	$const6	"diffuse"		%read{8,8} %write{2147483647,-1}
+code ___main___
+# bump_computenormal.osl:6
+#     float height = texture( texfile, 2 * u, 2 * v, "wrap", "periodic");
+	mul		$tmp1 $const2 u 	%filename{"bump_computenormal.osl"} %line{6} %argrw{"wrr"}
+	mul		$tmp2 $const2 v 	%argrw{"wrr"}
+	texture		height texfile $tmp1 $tmp2 $const3 $const4 	%argrw{"wrrrrr"} %argderivs{2,3}
+# bump_computenormal.osl:7
+#     normal Normal = normalize(calculatenormal(P + (N * height * 0.5)));
+	mul		$tmp4 N height 	%line{7} %argrw{"wrr"}
+	mul		$tmp5 $tmp4 $const5 	%argrw{"wrr"}
+	add		$tmp6 P $tmp5 	%argrw{"wrr"}
+	calculatenormal	$tmp3 $tmp6 	%argrw{"wr"} %argderivs{1}
+	normalize	Normal $tmp3 	%argrw{"wr"}
+# bump_computenormal.osl:8
+#     Ci = Kd * diffuse(Normal);
+	closure		$tmp7 $const6 Normal 	%line{8} %argrw{"wrr"}
+	mul		Ci $tmp7 Kd 	%argrw{"wrr"}
+	end
