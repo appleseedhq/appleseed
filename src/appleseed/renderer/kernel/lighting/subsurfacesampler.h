@@ -44,6 +44,7 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/mis.h"
+#include "foundation/math/quaternion.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 
@@ -58,6 +59,8 @@ namespace renderer
 //
 // Subsurface sampler.
 //
+
+#define SUBSURFACESAMPLER_BASIS_ROTATION
 
 class SubsurfaceSampler
   : public foundation::NonCopyable
@@ -82,7 +85,7 @@ class SubsurfaceSampler
 
     static void pick_sampling_basis(
         const foundation::Basis3d&  shading_basis,
-        const double                s,
+        const foundation::Vector2d& s,
         Axis&                       axis,
         foundation::Basis3d&        basis,
         double&                     basis_pdf);
@@ -137,13 +140,13 @@ void SubsurfaceSampler::sample(
         bssrdf.evaluate_pdf(bssrdf_data, bssrdf_sample.get_channel(), radius);
 
     // Pick a sampling basis.
-    sampling_context.split_in_place(1, 1);
+    sampling_context.split_in_place(2, 1);
     Axis sampling_axis;
     foundation::Basis3d sampling_basis;
     double sampling_basis_pdf;
     pick_sampling_basis(
         outgoing_point.get_shading_basis(),
-        sampling_context.next_double2(),
+        sampling_context.next_vector2<2>(),
         sampling_axis,
         sampling_basis,
         sampling_basis_pdf);
@@ -238,23 +241,31 @@ void SubsurfaceSampler::sample(
 
 inline void SubsurfaceSampler::pick_sampling_basis(
     const foundation::Basis3d&      shading_basis,
-    const double                    s,
+    const foundation::Vector2d&     s,
     Axis&                           axis,
     foundation::Basis3d&            basis,
     double&                         basis_pdf)
 {
+#ifdef SUBSURFACESAMPLER_BASIS_ROTATION
+    const foundation::Vector3d& n = shading_basis.get_normal();
+    const foundation::Quaterniond q =
+        foundation::Quaterniond::rotation(n, s[0] * foundation::Pi);
+    const foundation::Vector3d u = foundation::rotate(q, shading_basis.get_tangent_u());
+    const foundation::Vector3d v = foundation::rotate(q, shading_basis.get_tangent_v());
+#else
     const foundation::Vector3d& n = shading_basis.get_normal();
     const foundation::Vector3d& u = shading_basis.get_tangent_u();
     const foundation::Vector3d& v = shading_basis.get_tangent_v();
+#endif
 
-    if (s <= 0.5)
+    if (s[1] < 0.5)
     {
         // Project the sample along N.
         axis = NAxis;
         basis = foundation::Basis3d(n, u, v);
         basis_pdf = 0.5;
     }
-    else if (s <= 0.75)
+    else if (s[1] < 0.75)
     {
         // Project the sample along U.
         axis = UAxis;
