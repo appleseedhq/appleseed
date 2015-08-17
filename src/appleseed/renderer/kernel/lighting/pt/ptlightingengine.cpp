@@ -411,6 +411,9 @@ namespace
                 double&                 cos_in,
                 Spectrum&               irradiance) const
             {
+                if (!m_light_sampler.has_lights_or_emitting_triangles())
+                    return false;
+
                 // Sample the lights.
                 m_sampling_context.split_in_place(3, 1);
                 const Vector3d s = m_sampling_context.next_vector2<3>();
