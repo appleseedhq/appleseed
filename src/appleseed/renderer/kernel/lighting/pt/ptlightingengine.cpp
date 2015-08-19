@@ -290,7 +290,7 @@ namespace
             {
             }
 
-            void visit(
+            bool visit(
                 const BSSRDFSample&     bssrdf_sample,
                 const ShadingPoint&     incoming_point,
                 const double            probability) const
@@ -300,23 +300,30 @@ namespace
                 // in the inside medium, and thus we compute both Fresnel coefficients at the
                 // incoming and outgoing points using eta (defined as outside IOR / inside IOR).
 
+                const double eta = bssrdf_sample.get_eta();
+
                 // Compute Fresnel coefficient at outgoing point.
                 double outgoing_fresnel;
-                fresnel_transmittance_dielectric(outgoing_fresnel, bssrdf_sample.get_eta(), m_vertex.m_cos_on);
+                fresnel_transmittance_dielectric(outgoing_fresnel, eta, m_vertex.m_cos_on);
                 if (outgoing_fresnel <= 0.0)
-                    return;
+                    return true;
 
+                // Add direct lighting contribution.
                 add_dl_contribution(
                     incoming_point,
-                    bssrdf_sample.get_eta(),
+                    eta,
                     outgoing_fresnel,
                     probability);
 
+                // Add image-based lighting contribution.
                 add_ibl_contribution(
                     incoming_point,
-                    bssrdf_sample.get_eta(),
+                    eta,
                     outgoing_fresnel,
                     probability);
+
+                // Continue visiting samples.
+                return true;
             }
 
           private:
