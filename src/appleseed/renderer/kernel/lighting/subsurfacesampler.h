@@ -212,21 +212,25 @@ void SubsurfaceSampler::sample(
                     incoming_point.get_shading_normal()));
             double probability = sampling_basis_pdf * bssrdf_sample_pdf * dot_nn;
 
-            // Weight sample contribution using multiple importance sampling.
-            probability /=
-                compute_mis_weight(
-                    bssrdf,
-                    bssrdf_data,
-                    bssrdf_sample.get_channel(),
-                    sampling_basis,
-                    sampling_axis,
-                    probability,
-                    outgoing_point.get_point(),
-                    incoming_point.get_point(),
-                    incoming_point.get_shading_normal());
+            if (probability > 0.0)
+            {
+                // Weight sample contribution using multiple importance sampling.
+                probability /=
+                    compute_mis_weight(
+                        bssrdf,
+                        bssrdf_data,
+                        bssrdf_sample.get_channel(),
+                        sampling_basis,
+                        sampling_axis,
+                        probability,
+                        outgoing_point.get_point(),
+                        incoming_point.get_point(),
+                        incoming_point.get_shading_normal());
 
-            // Pass incoming point to visitor.
-            visitor.visit(bssrdf_sample, incoming_point, probability);
+                // Pass incoming point to visitor.
+                if (!visitor.visit(bssrdf_sample, incoming_point, probability))
+                    break;
+            }
         }
 
         // Move the ray's origin past the hit surface.
