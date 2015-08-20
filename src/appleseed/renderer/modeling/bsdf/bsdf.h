@@ -149,7 +149,7 @@ class APPLESEED_DLLSYMBOL BSDF
         const ShadingPoint&         shading_point,
         const size_t                offset = 0) const;
 
-    // Performs any precomputation needed for this BSDF input values.
+    // Perform any precomputation needed for this BSDF input values.
     virtual void prepare_inputs(void* data) const;
 
     // Given an outgoing direction, sample the BSDF and compute the incoming
@@ -237,8 +237,8 @@ inline bool BSDF::is_purely_glossy_or_specular() const
 }
 
 inline foundation::Vector3d BSDF::force_above_surface(
-    const foundation::Vector3d& direction,
-    const foundation::Vector3d& normal)
+    const foundation::Vector3d&     direction,
+    const foundation::Vector3d&     normal)
 {
     const double Eps = 1.0e-4;
 
