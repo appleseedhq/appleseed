@@ -428,8 +428,6 @@ namespace
                 LightSample light_sample;
                 m_light_sampler.sample(shading_point.get_ray().m_time, s, light_sample);
 
-                double attenuation;
-
                 if (light_sample.m_triangle)
                 {
                     const Material* material = light_sample.m_triangle->m_material;
@@ -491,7 +489,12 @@ namespace
                         -incoming,
                         irradiance);
 
-                    attenuation = rcp_sample_square_distance * cos_on_light;
+                    // Compute cosine factor at shading point.
+                    // abs() because we might be on the backside of the surface.
+                    cos_in = abs(dot(incoming, shading_point.get_shading_normal()));
+
+                    // Compute irradiance at shading point.
+                    irradiance *= static_cast<float>((cos_on_light * cos_in * rcp_sample_square_distance) / light_sample.m_probability);
                 }
                 else
                 {
@@ -502,20 +505,19 @@ namespace
                     // Evaluate the light.
                     InputEvaluator light_input_evaluator(m_shading_context.get_texture_cache());
                     Vector3d emission_position, emission_direction;
-                    Spectrum light_value;
                     light->evaluate(
                         light_input_evaluator,
                         light_sample.m_light_transform,
                         shading_point.get_point(),
                         emission_position,
                         emission_direction,
-                        light_value);
+                        irradiance);
 
                     // Compute the transmission factor between the light sample and the shading point.
                     transmission =
                         m_shading_context.get_tracer().trace_between(
                             shading_point,
-                            light_sample.m_point,
+                            emission_position,
                             VisibilityFlags::ShadowRay);
 
                     // Discard occluded samples.
@@ -525,16 +527,14 @@ namespace
                     // Compute the incoming direction in world space.
                     incoming = -emission_direction;
 
-                    attenuation = light->compute_distance_attenuation(shading_point.get_point(), emission_position);
+                    // Compute cosine factor at shading point.
+                    // abs() because we might be on the backside of the surface.
+                    cos_in = abs(dot(incoming, shading_point.get_shading_normal()));
+
+                    // Compute irradiance at shading point.
+                    const double attenuation = light->compute_distance_attenuation(shading_point.get_point(), emission_position);
+                    irradiance *= static_cast<float>(attenuation / light_sample.m_probability);
                 }
-
-                // Compute cosine factor at shading point.
-                // abs() because we might be on the backside of the surface.
-                cos_in = abs(dot(incoming, shading_point.get_shading_normal()));
-
-                // Compute irradiance at shading point.
-                irradiance *= static_cast<float>(cos_in / light_sample.m_probability);
-                irradiance *= static_cast<float>(attenuation);
 
                 return true;
             }
