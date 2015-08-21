@@ -450,7 +450,7 @@ namespace
             value.set(0.0f);
             double pdf = 0.0;
 
-            if (modes & ScatteringMode::Diffuse)
+            if (ScatteringMode::has_diffuse(modes))
             {
                 if (weights[DiffuseComponent] != 0.0)
                 {
@@ -475,7 +475,7 @@ namespace
                 }
             }
 
-            if (modes & ScatteringMode::Glossy)
+            if (ScatteringMode::has_glossy(modes))
             {
                 if (weights[SpecularComponent] != 0.0)
                 {
@@ -538,7 +538,7 @@ namespace
 
             double pdf = 0.0;
 
-            if (modes & ScatteringMode::Diffuse)
+            if (ScatteringMode::has_diffuse(modes))
             {
                 if (weights[DiffuseComponent] != 0.0)
                 {
@@ -555,7 +555,7 @@ namespace
                 }
             }
 
-            if (modes & ScatteringMode::Glossy)
+            if (ScatteringMode::has_glossy(modes))
             {
                 if (weights[SpecularComponent] != 0.0)
                 {

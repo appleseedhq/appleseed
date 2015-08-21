@@ -275,7 +275,7 @@ namespace
             const double cos_hu = dot(h, shading_basis.get_tangent_u());
             const double cos_hv = dot(h, shading_basis.get_tangent_v());
 
-            if (modes & ScatteringMode::Diffuse)
+            if (ScatteringMode::has_diffuse(modes))
             {
                 // Evaluate the diffuse component of the BRDF (equation 5).
                 const double a = 1.0 - pow5(1.0 - 0.5 * cos_in);
@@ -290,7 +290,7 @@ namespace
                 probability += rval.m_pd * pdf_diffuse;
             }
 
-            if (modes & ScatteringMode::Glossy)
+            if (ScatteringMode::has_glossy(modes))
             {
                 // Evaluate the glossy component of the BRDF (equation 4).
                 const double exp_num_u = values->m_nu * cos_hu * cos_hu;
@@ -350,7 +350,7 @@ namespace
             const double cos_hu = dot(h, shading_basis.get_tangent_u());
             const double cos_hv = dot(h, shading_basis.get_tangent_v());
 
-            if (modes & ScatteringMode::Diffuse)
+            if (ScatteringMode::has_diffuse(modes))
             {
                 // Evaluate the PDF of the diffuse component.
                 const double pdf_diffuse = cos_in * RcpPi;
@@ -358,7 +358,7 @@ namespace
                 probability += pdf_diffuse;
             }
 
-            if (modes & ScatteringMode::Glossy)
+            if (ScatteringMode::has_glossy(modes))
             {
                 // Evaluate the PDF for the halfway vector (equation 6).
                 const double exp_num_u = values->m_nu * cos_hu * cos_hu;

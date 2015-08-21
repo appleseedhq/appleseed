@@ -151,7 +151,7 @@ namespace
             const int           modes,
             Spectrum&           value) const
         {
-            if (!(modes & ScatteringMode::Glossy))
+            if (!ScatteringMode::has_glossy(modes))
                 return 0.0;
 
             // No reflection below the shading surface.
@@ -184,7 +184,7 @@ namespace
             const Vector3d&     incoming,
             const int           modes) const
         {
-            if (!(modes & ScatteringMode::Glossy))
+            if (!ScatteringMode::has_glossy(modes))
                 return 0.0;
 
             // No reflection below the shading surface.

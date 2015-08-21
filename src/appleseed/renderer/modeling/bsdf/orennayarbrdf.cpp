@@ -163,7 +163,7 @@ namespace
             const int           modes,
             Spectrum&           value) const
         {
-            if (!(modes & ScatteringMode::Diffuse))
+            if (!ScatteringMode::has_diffuse(modes))
                 return 0.0;
 
             // No reflection below the shading surface.
@@ -207,7 +207,7 @@ namespace
             const Vector3d&     incoming,
             const int           modes) const
         {
-            if (!(modes & ScatteringMode::Diffuse))
+            if (!ScatteringMode::has_diffuse(modes))
                 return 0.0;
 
             // No reflection below the shading surface.

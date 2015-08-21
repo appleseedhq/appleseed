@@ -113,7 +113,7 @@ class MicrofacetBRDFHelper
         FresnelFun          f,
         Spectrum&           value)
     {
-        if (!(modes & ScatteringMode::Glossy))
+        if (!ScatteringMode::has_glossy(modes))
             return 0.0;
 
         // No reflection below the shading surface.
@@ -152,7 +152,7 @@ class MicrofacetBRDFHelper
         const VectorType&   incoming,
         const int           modes)
     {
-        if (!(modes & ScatteringMode::Glossy))
+        if (!ScatteringMode::has_glossy(modes))
             return T(0.0);
 
         // No reflection below the shading surface.

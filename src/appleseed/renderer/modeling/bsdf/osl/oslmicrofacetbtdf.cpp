@@ -198,7 +198,7 @@ namespace
             const int           modes,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
-            if (!(modes & ScatteringMode::Glossy))
+            if (!ScatteringMode::has_glossy(modes))
                 return 0.0;
 
             // If incoming and outgoing are on the same hemisphere
@@ -265,7 +265,7 @@ namespace
             const Vector3d&     incoming,
             const int           modes) const APPLESEED_OVERRIDE
         {
-            if (!(modes & ScatteringMode::Glossy))
+            if (!ScatteringMode::has_glossy(modes))
                 return 0.0;
 
             // If incoming and outgoing are on the same hemisphere

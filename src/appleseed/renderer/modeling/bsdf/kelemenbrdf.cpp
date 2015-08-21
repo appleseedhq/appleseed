@@ -370,7 +370,7 @@ namespace
             evaluate_a_spec(m_a_spec, dot_VN, specular_albedo_V);
             evaluate_a_spec(m_a_spec, dot_LN, specular_albedo_L);
 
-            if (modes & ScatteringMode::Diffuse)
+            if (ScatteringMode::has_diffuse(modes))
             {
                 // Compute the matte albedo.
                 Spectrum matte_albedo(1.0f);
@@ -394,7 +394,7 @@ namespace
                 probability += matte_prob * pdf_matte;
             }
 
-            if (modes & ScatteringMode::Glossy)
+            if (ScatteringMode::has_glossy(modes))
             {
                 // Compute the specular component (equation 3).
                 Spectrum rs(values->m_rs);
@@ -448,7 +448,7 @@ namespace
             Spectrum specular_albedo_V;
             evaluate_a_spec(m_a_spec, dot_VN, specular_albedo_V);
 
-            if (modes & ScatteringMode::Diffuse)
+            if (ScatteringMode::has_diffuse(modes))
             {
                 // Compute the matte albedo.
                 Spectrum matte_albedo(1.0f);
@@ -465,7 +465,7 @@ namespace
                 probability += matte_prob * pdf_matte;
             }
 
-            if (modes & ScatteringMode::Glossy)
+            if (ScatteringMode::has_glossy(modes))
             {
                 // Compute the probability of a specular bounce.
                 const double specular_prob = average_value(specular_albedo_V);
