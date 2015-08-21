@@ -56,11 +56,11 @@ class ScatteringMode
     };
 
     // Test for the presence of specific scattering modes.
-    static bool has_diffuse(const Mode mode);
-    static bool has_glossy(const Mode mode);
-    static bool has_specular(const Mode mode);
-    static bool has_diffuse_or_glossy(const Mode mode);
-    static bool has_glossy_or_specular(const Mode mode);
+    static bool has_diffuse(const int modes);
+    static bool has_glossy(const int modes);
+    static bool has_specular(const int modes);
+    static bool has_diffuse_or_glossy(const int modes);
+    static bool has_glossy_or_specular(const int modes);
 
     // Determine the appropriate visibility type for a given scattering mode.
     static VisibilityFlags::Type get_vis_flags(const Mode mode);
@@ -71,29 +71,29 @@ class ScatteringMode
 // ScatteringMode class implementation.
 //
 
-inline bool ScatteringMode::has_diffuse(const Mode mode)
+inline bool ScatteringMode::has_diffuse(const int modes)
 {
-    return (mode & Diffuse) != 0;
+    return (modes & Diffuse) != 0;
 }
 
-inline bool ScatteringMode::has_glossy(const Mode mode)
+inline bool ScatteringMode::has_glossy(const int modes)
 {
-    return (mode & Glossy) != 0;
+    return (modes & Glossy) != 0;
 }
 
-inline bool ScatteringMode::has_specular(const Mode mode)
+inline bool ScatteringMode::has_specular(const int modes)
 {
-    return (mode & Specular) != 0;
+    return (modes & Specular) != 0;
 }
 
-inline bool ScatteringMode::has_diffuse_or_glossy(const Mode mode)
+inline bool ScatteringMode::has_diffuse_or_glossy(const int modes)
 {
-    return (mode & (Diffuse | Glossy)) != 0;
+    return (modes & (Diffuse | Glossy)) != 0;
 }
 
-inline bool ScatteringMode::has_glossy_or_specular(const Mode mode)
+inline bool ScatteringMode::has_glossy_or_specular(const int modes)
 {
-    return (mode & (Glossy | Specular)) != 0;
+    return (modes & (Glossy | Specular)) != 0;
 }
 
 inline VisibilityFlags::Type ScatteringMode::get_vis_flags(const Mode mode)
