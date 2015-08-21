@@ -30,6 +30,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
 
 // appleseed.foundation headers.
@@ -47,18 +48,18 @@ template <typename T>
 class MicrofacetBRDFHelper
 {
   public:
-    typedef foundation::Vector<T, 3>    VectorType;
-    typedef foundation::Basis3<T>       BasisType;
+    typedef foundation::Vector<T, 3> VectorType;
+    typedef foundation::Basis3<T> BasisType;
 
     template <typename MDF, typename FresnelFun>
     static void sample(
-        const MDF&  mdf,
-        const T     alpha_x,
-        const T     alpha_y,
-        const T     g_alpha_x,
-        const T     g_alpha_y,
-        FresnelFun  f,
-        BSDFSample& sample)
+        const MDF&          mdf,
+        const T             alpha_x,
+        const T             alpha_y,
+        const T             g_alpha_x,
+        const T             g_alpha_y,
+        FresnelFun          f,
+        BSDFSample&         sample)
     {
         const VectorType& n = sample.get_shading_normal();
         const T cos_on = std::min(foundation::dot(sample.get_outgoing_vector(), n), T(1.0));
@@ -93,7 +94,7 @@ class MicrofacetBRDFHelper
         f(sample.get_outgoing_vector(), h, sample.get_shading_normal(), sample.value());
         sample.value() *= static_cast<float>(D * G / (T(4.0) * cos_on * cos_in));
         sample.set_probability(mdf.pdf(wo, m, alpha_x, alpha_y) / (T(4.0) * cos_oh));
-        sample.set_mode(BSDFSample::Glossy);
+        sample.set_mode(ScatteringMode::Glossy);
         sample.set_incoming(incoming);
         sample.compute_reflected_differentials();
     }
@@ -112,7 +113,7 @@ class MicrofacetBRDFHelper
         FresnelFun          f,
         Spectrum&           value)
     {
-        if (!(modes & BSDFSample::Glossy))
+        if (!(modes & ScatteringMode::Glossy))
             return 0.0;
 
         // No reflection below the shading surface.
@@ -151,7 +152,7 @@ class MicrofacetBRDFHelper
         const VectorType&   incoming,
         const int           modes)
     {
-        if (!(modes & BSDFSample::Glossy))
+        if (!(modes & ScatteringMode::Glossy))
             return T(0.0);
 
         // No reflection below the shading surface.

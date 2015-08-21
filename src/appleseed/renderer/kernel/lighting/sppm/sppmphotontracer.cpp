@@ -38,6 +38,7 @@
 #include "renderer/kernel/lighting/lightsampler.h"
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/pathvertex.h"
+#include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/lighting/tracer.h"
 #ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/shading/oslshadergroupexec.h"
@@ -120,10 +121,10 @@ namespace
         }
 
         bool accept_scattering(
-            const BSDFSample::ScatteringMode prev_bsdf_mode,
-            const BSDFSample::ScatteringMode bsdf_mode) const
+            const ScatteringMode::Mode  prev_mode,
+            const ScatteringMode::Mode  next_mode) const
         {
-            assert(bsdf_mode != BSDFSample::Absorption);
+            assert(next_mode != ScatteringMode::Absorption);
 
             // Terminate the path at the first vertex if we aren't interested in indirect photons.
             if (!m_store_indirect)
@@ -132,7 +133,7 @@ namespace
             if (!m_store_caustics)
             {
                 // Don't follow paths leading to caustics.
-                if (BSDFSample::has_glossy_or_specular(bsdf_mode))
+                if (ScatteringMode::has_glossy_or_specular(next_mode))
                     return false;
             }
 

@@ -33,11 +33,12 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/lighting/lightsampler.h"
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/pathvertex.h"
+#include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/lighting/tracer.h"
-#include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/rendering/globalsampleaccumulationbuffer.h"
 #include "renderer/kernel/rendering/sample.h"
 #include "renderer/kernel/rendering/samplegeneratorbase.h"
@@ -289,15 +290,15 @@ namespace
             }
 
             bool accept_scattering(
-                const BSDFSample::ScatteringMode  prev_bsdf_mode,
-                const BSDFSample::ScatteringMode  bsdf_mode) const
+                const ScatteringMode::Mode  prev_mode,
+                const ScatteringMode::Mode  next_mode) const
             {
-                assert(bsdf_mode != BSDFSample::Absorption);
+                assert(next_mode != ScatteringMode::Absorption);
 
                 if (!m_params.m_enable_caustics)
                 {
                     // Don't follow paths leading to caustics.
-                    if (BSDFSample::has_glossy_or_specular(bsdf_mode))
+                    if (ScatteringMode::has_glossy_or_specular(next_mode))
                         return false;
                 }
 
@@ -447,7 +448,7 @@ namespace
                         vertex.get_shading_basis(),
                         vertex.m_outgoing.get_value(),  // outgoing (toward the light)
                         -camera_outgoing,               // incoming (toward the camera)
-                        BSDFSample::AllScatteringModes, // todo: likely incorrect
+                        ScatteringMode::All,            // todo: likely incorrect
                         bsdf_value);
                 if (bsdf_prob == 0.0)
                     return;

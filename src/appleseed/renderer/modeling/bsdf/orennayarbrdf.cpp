@@ -30,6 +30,7 @@
 #include "orennayarbrdf.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 
@@ -76,7 +77,7 @@ namespace
         OrenNayarBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Reflective, BSDFSample::Diffuse, params)
+          : BSDF(name, Reflective, ScatteringMode::Diffuse, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
@@ -145,7 +146,7 @@ namespace
             assert(sample.get_probability() > 0.0);
 
             // Set the scattering mode.
-            sample.set_mode(BSDFSample::Diffuse);
+            sample.set_mode(ScatteringMode::Diffuse);
 
             sample.set_incoming(incoming);
             sample.compute_reflected_differentials();
@@ -162,7 +163,7 @@ namespace
             const int           modes,
             Spectrum&           value) const
         {
-            if (!(modes & BSDFSample::Diffuse))
+            if (!(modes & ScatteringMode::Diffuse))
                 return 0.0;
 
             // No reflection below the shading surface.
@@ -206,7 +207,7 @@ namespace
             const Vector3d&     incoming,
             const int           modes) const
         {
-            if (!(modes & BSDFSample::Diffuse))
+            if (!(modes & ScatteringMode::Diffuse))
                 return 0.0;
 
             // No reflection below the shading surface.

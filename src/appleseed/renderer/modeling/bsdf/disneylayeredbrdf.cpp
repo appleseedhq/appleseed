@@ -30,6 +30,7 @@
 #include "disneylayeredbrdf.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/input/inputevaluator.h"
@@ -60,7 +61,7 @@ namespace
 }
 
 DisneyLayeredBRDF::DisneyLayeredBRDF(const DisneyMaterial* parent)
-  : BSDF("disney_layered_brdf", Reflective, BSDFSample::Diffuse | BSDFSample::Glossy, ParamArray())
+  : BSDF("disney_layered_brdf", Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy, ParamArray())
   , m_parent(parent)
   , m_brdf(DisneyBRDFFactory().create("disney_brdf", ParamArray()))
 {

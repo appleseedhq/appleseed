@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 
 // appleseed.foundation headers.
@@ -51,7 +52,7 @@ class NullBSDF
 {
   public:
     NullBSDF()
-      : BSDF("null_bsdf", Reflective, BSDFSample::Absorption, ParamArray())
+      : BSDF("null_bsdf", Reflective, ScatteringMode::Absorption, ParamArray())
     {
     }
 

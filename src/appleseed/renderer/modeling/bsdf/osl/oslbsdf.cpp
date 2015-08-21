@@ -81,7 +81,7 @@ namespace
         OSLBSDFImpl(
             const char*             name,
             const ParamArray&       params)
-          : BSDF(name, AllBSDFTypes, BSDFSample::AllScatteringModes, params)
+          : BSDF(name, AllBSDFTypes, ScatteringMode::All, params)
         {
             memset(m_all_bsdfs, 0, sizeof(BSDF*) * NumClosuresIDs);
 

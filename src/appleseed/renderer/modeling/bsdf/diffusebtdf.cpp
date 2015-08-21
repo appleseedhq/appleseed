@@ -31,6 +31,7 @@
 #include "diffusebtdf.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 
@@ -67,7 +68,7 @@ namespace
         DiffuseBTDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Transmissive, BSDFSample::Diffuse, params)
+          : BSDF(name, Transmissive, ScatteringMode::Diffuse, params)
         {
             m_inputs.declare("transmittance", InputFormatSpectralReflectance);
             m_inputs.declare("transmittance_multiplier", InputFormatScalar, "1.0");
@@ -107,7 +108,7 @@ namespace
             assert(sample.get_probability() > 0.0);
 
             // Set the scattering mode.
-            sample.set_mode(BSDFSample::Diffuse);
+            sample.set_mode(ScatteringMode::Diffuse);
         }
 
         FORCE_INLINE virtual double evaluate(
@@ -121,7 +122,7 @@ namespace
             const int           modes,
             Spectrum&           value) const
         {
-            if (!(modes & BSDFSample::Diffuse))
+            if (!(modes & ScatteringMode::Diffuse))
                 return 0.0;
 
             const Vector3d& n = shading_basis.get_normal();
@@ -144,7 +145,7 @@ namespace
             const Vector3d&     incoming,
             const int           modes) const
         {
-            if (!(modes & BSDFSample::Diffuse))
+            if (!(modes & ScatteringMode::Diffuse))
                 return 0.0;
 
             const Vector3d& n = shading_basis.get_normal();

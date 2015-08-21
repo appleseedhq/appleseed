@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/microfacetbrdfhelper.h"
@@ -63,7 +64,6 @@ namespace renderer
 
 namespace
 {
-
     struct NoFresnel
     {
         void operator()(
@@ -76,8 +76,9 @@ namespace
         }
     };
 
+
     //
-    // OSLMicrofacet BRDF.
+    // OSL microfacet BRDF.
     //
 
     const char* Model = "osl_microfacet_brdf";
@@ -89,7 +90,7 @@ namespace
         OSLMicrofacetBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Reflective, BSDFSample::Glossy, params)
+          : BSDF(name, Reflective, ScatteringMode::Glossy, params)
         {
         }
 

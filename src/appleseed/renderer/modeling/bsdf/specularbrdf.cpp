@@ -31,6 +31,7 @@
 #include "specularbrdf.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 
@@ -61,7 +62,7 @@ namespace
         SpecularBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Reflective, BSDFSample::Specular, params)
+          : BSDF(name, Reflective, ScatteringMode::Specular, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
@@ -109,7 +110,7 @@ namespace
             sample.set_probability(DiracDelta);
 
             // Set the scattering mode.
-            sample.set_mode(BSDFSample::Specular);
+            sample.set_mode(ScatteringMode::Specular);
 
             sample.set_incoming(incoming);
             sample.compute_reflected_differentials();

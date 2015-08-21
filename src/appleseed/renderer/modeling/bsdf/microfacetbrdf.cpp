@@ -31,6 +31,7 @@
 #include "microfacetbrdf.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/microfacetbrdfhelper.h"
@@ -67,9 +68,11 @@ namespace renderer
 
 namespace
 {
-
     struct FresnelDielectricSchlickFun
     {
+        const Spectrum&     m_reflectance;
+        const double        m_fr_multiplier;
+
         FresnelDielectricSchlickFun(
             const Spectrum& reflectance,
             const double    fr_multiplier)
@@ -90,10 +93,8 @@ namespace
                 dot(o, n),
                 m_fr_multiplier);
         }
-
-        const Spectrum& m_reflectance;
-        const double    m_fr_multiplier;
     };
+
 
     //
     // Microfacet BRDF.
@@ -108,7 +109,7 @@ namespace
         MicrofacetBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Reflective, BSDFSample::Glossy, params)
+          : BSDF(name, Reflective, ScatteringMode::Glossy, params)
         {
             m_inputs.declare("glossiness", InputFormatScalar);
             m_inputs.declare("glossiness_multiplier", InputFormatScalar, "1.0");

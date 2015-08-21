@@ -245,7 +245,7 @@ void DiagnosticSurfaceShader::evaluate(
                         shading_point.get_shading_basis(),
                         direction,
                         direction,
-                        BSDFSample::AllScatteringModes,
+                        ScatteringMode::All,
                         shading_result.m_main.m_color);
 
                     shading_result.m_color_space = ColorSpaceSpectral;

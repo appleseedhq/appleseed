@@ -35,6 +35,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/lighting/pathvertex.h"
+#include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/lighting/subsurfacesampler.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
@@ -44,7 +45,6 @@
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
-#include "renderer/modeling/scene/visibilityflags.h"
 #ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #endif
@@ -119,10 +119,6 @@ class PathTracer
     const size_t                m_max_iterations;
     const double                m_near_start;
 
-    // Determine the appropriate ray type for a given scattering mode.
-    static VisibilityFlags::Type bsdf_mode_to_ray_flags(
-        const BSDFSample::ScatteringMode mode);
-
     // Determine whether a ray can pass through a surface with a given alpha value.
     static bool pass_through(
         SamplingContext&        sampling_context,
@@ -180,11 +176,11 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
     size_t shading_point_index = 0;
 
     PathVertex vertex(sampling_context);
-    vertex.m_shading_point = &shading_point;
     vertex.m_path_length = 1;
-    vertex.m_prev_bsdf_mode = BSDFSample::Specular;
-    vertex.m_prev_bsdf_prob = BSDF::DiracDelta;
     vertex.m_throughput.set(1.0f);
+    vertex.m_shading_point = &shading_point;
+    vertex.m_prev_mode = ScatteringMode::Specular;
+    vertex.m_prev_prob = BSDF::DiracDelta;
 
     size_t iterations = 0;
 
@@ -340,13 +336,15 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             vertex.m_throughput *= 2.0f;
         }
 
+        // This visitor must live outside the 'if' block below because it owns
+        // the incoming points that were found during subsurface sampling, one
+        // of which will become the parent point for the next ray.
         SubsurfaceSampleVisitor visitor;
 
-        foundation::Dual3d incoming;
-        foundation::Vector3d origin;
-        Spectrum value;
-        BSDFSample::ScatteringMode mode;
         const ShadingPoint* parent_shading_point;
+        foundation::Dual3d incoming;
+        Spectrum value;
+        ScatteringMode::Mode mode;
 
         if (vertex.m_bsdf)
         {
@@ -366,20 +364,22 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 break;
 
             // Terminate the path if this scattering event is not accepted.
-            if (!m_path_visitor.accept_scattering(vertex.m_prev_bsdf_mode, sample.get_mode()))
+            if (!m_path_visitor.accept_scattering(vertex.m_prev_mode, sample.get_mode()))
                 break;
 
-            vertex.m_prev_bsdf_prob = sample.get_probability();
-            vertex.m_prev_bsdf_mode = sample.get_mode();
-
-            if (sample.get_probability() != BSDF::DiracDelta)
-                sample.value() /= static_cast<float>(sample.get_probability());
-
-            origin = vertex.m_shading_point->get_point();
-            incoming = sample.get_incoming();
+            // Compute the path throughput multiplier.
             value = sample.value();
-            mode = sample.get_mode();
+            if (sample.get_probability() != BSDF::DiracDelta)
+                value /= static_cast<float>(sample.get_probability());
+
+            // Properties of this scattering event.
+            vertex.m_prev_mode = sample.get_mode();
+            vertex.m_prev_prob = sample.get_probability();
+
+            // Origin, direction and scattering mode of the next ray.
             parent_shading_point = vertex.m_shading_point;
+            incoming = sample.get_incoming();
+            mode = sample.get_mode();
         }
         else if (vertex.m_bssrdf)
         {
@@ -415,9 +415,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             if (outgoing_fresnel <= 0.0)
                 break;
 
-            // Retrieve the incoming point.
-            origin = incoming_point.get_point();
-
             // Pick an incoming direction.
             foundation::Vector3d incoming_vector =
                 foundation::sample_hemisphere_cosine(foundation::Vector2d(s[1], s[2]));
@@ -444,7 +441,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 incoming_vector,
                 rd);
 
-            // Compute the weight of this sample.
+            // Compute the path throughput multiplier.
             const double weight =
                   foundation::RcpPi
                 * incoming_fresnel
@@ -454,12 +451,13 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             value = rd;
             value *= static_cast<float>(weight);
 
-            assert(!foundation::has_nan(value));
+            // Properties of this scattering event.
+            vertex.m_prev_mode = ScatteringMode::Subsurface;
+            vertex.m_prev_prob = probability * incoming_prob;
 
-            // todo: fix.
-            mode = BSDFSample::Diffuse;
-
+            // Origin and scattering mode of the next ray.
             parent_shading_point = &incoming_point;
+            mode = ScatteringMode::Diffuse;
         }
         else
         {
@@ -497,10 +495,10 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
         // Construct the scattered ray.
         ShadingRay scattered_ray(
-            origin,
+            parent_shading_point->get_point(),
             incoming.get_value(),
             ray.m_time,
-            bsdf_mode_to_ray_flags(mode),
+            ScatteringMode::get_vis_flags(mode),
             ray.m_depth + 1);
 
         // Compute scattered ray differentials.
@@ -526,21 +524,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
     }
 
     return vertex.m_path_length;
-}
-
-template <typename PathVisitor, bool Adjoint>
-inline VisibilityFlags::Type PathTracer<PathVisitor, Adjoint>::bsdf_mode_to_ray_flags(
-    const BSDFSample::ScatteringMode mode)
-{
-    switch (mode)
-    {
-      case BSDFSample::Diffuse:   return VisibilityFlags::DiffuseRay;
-      case BSDFSample::Glossy:    return VisibilityFlags::GlossyRay;
-      case BSDFSample::Specular:  return VisibilityFlags::SpecularRay;
-      default:
-        assert(!"Invalid scattering mode.");
-        return VisibilityFlags::DiffuseRay;
-    }
 }
 
 template <typename PathVisitor, bool Adjoint>

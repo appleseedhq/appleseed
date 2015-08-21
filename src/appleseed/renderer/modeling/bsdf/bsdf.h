@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/entity/connectableentity.h"
 
@@ -149,7 +150,7 @@ class APPLESEED_DLLSYMBOL BSDF
         const ShadingPoint&         shading_point,
         const size_t                offset = 0) const;
 
-    // Perform any precomputation needed for this BSDF input values.
+    // Perform any precomputation needed for this BSDF's input values.
     virtual void prepare_inputs(void* data) const;
 
     // Given an outgoing direction, sample the BSDF and compute the incoming
@@ -213,27 +214,27 @@ inline int BSDF::get_modes() const
 
 inline bool BSDF::is_purely_diffuse() const
 {
-    return m_modes == BSDFSample::Diffuse;
+    return m_modes == ScatteringMode::Diffuse;
 }
 
 inline bool BSDF::is_purely_glossy() const
 {
-    return m_modes == BSDFSample::Glossy;
+    return m_modes == ScatteringMode::Glossy;
 }
 
 inline bool BSDF::is_purely_specular() const
 {
-    return m_modes == BSDFSample::Specular;
+    return m_modes == ScatteringMode::Specular;
 }
 
 inline bool BSDF::is_purely_diffuse_or_glossy() const
 {
-    return m_modes == (BSDFSample::Diffuse | BSDFSample::Glossy);
+    return m_modes == (ScatteringMode::Diffuse | ScatteringMode::Glossy);
 }
 
 inline bool BSDF::is_purely_glossy_or_specular() const
 {
-    return m_modes == (BSDFSample::Glossy | BSDFSample::Specular);
+    return m_modes == (ScatteringMode::Glossy | ScatteringMode::Specular);
 }
 
 inline foundation::Vector3d BSDF::force_above_surface(

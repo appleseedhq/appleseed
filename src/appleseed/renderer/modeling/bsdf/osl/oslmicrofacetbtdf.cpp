@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/utility/messagecontext.h"
@@ -63,7 +64,7 @@ namespace renderer
 namespace
 {
     //
-    // OSLMicrofacet BTDF.
+    // OSL microfacet BTDF.
     //
     // References:
     //
@@ -80,7 +81,7 @@ namespace
         OSLMicrofacetBTDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Transmissive, BSDFSample::Glossy, params)
+          : BSDF(name, Transmissive, ScatteringMode::Glossy, params)
         {
         }
 
@@ -181,7 +182,7 @@ namespace
                     ht_norm);
 
             sample.set_probability(m_mdf->pdf(wo, m, values->m_ax, values->m_ay) * dwh_dwo);
-            sample.set_mode(BSDFSample::Glossy);
+            sample.set_mode(ScatteringMode::Glossy);
             sample.set_incoming(incoming);
             sample.compute_transmitted_differentials(eta);
         }
@@ -197,7 +198,7 @@ namespace
             const int           modes,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
-            if (!(modes & BSDFSample::Glossy))
+            if (!(modes & ScatteringMode::Glossy))
                 return 0.0;
 
             // If incoming and outgoing are on the same hemisphere
@@ -264,7 +265,7 @@ namespace
             const Vector3d&     incoming,
             const int           modes) const APPLESEED_OVERRIDE
         {
-            if (!(modes & BSDFSample::Glossy))
+            if (!(modes & ScatteringMode::Glossy))
                 return 0.0;
 
             // If incoming and outgoing are on the same hemisphere
