@@ -403,10 +403,10 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             sampling_context.split_in_place(3, 1);
             const foundation::Vector3d s = sampling_context.next_vector2<3>();
 
-            // Select one incoming point at random.
+            // Select one of the incoming points at random.
             const size_t sample_index = foundation::truncate<size_t>(s[0] * visitor.m_sample_count);
             const ShadingPoint& incoming_point = visitor.m_incoming_points[sample_index];
-            const double probability = visitor.m_probabilities[sample_index] / visitor.m_sample_count;
+            const double probability = visitor.m_probabilities[sample_index];
             const double eta = visitor.m_etas[sample_index];
 
             // Compute Fresnel coefficient at outgoing point.
@@ -415,7 +415,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             if (outgoing_fresnel <= 0.0)
                 break;
 
-            // Pick an incoming direction.
+            // Pick an incoming direction at random.
             foundation::Vector3d incoming_vector =
                 foundation::sample_hemisphere_cosine(foundation::Vector2d(s[1], s[2]));
             const double cos_in = incoming_vector.y;
@@ -447,6 +447,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 * incoming_fresnel
                 * outgoing_fresnel
                 * cos_in
+                * visitor.m_sample_count
                 / (probability * incoming_prob);
             value = rd;
             value *= static_cast<float>(weight);
