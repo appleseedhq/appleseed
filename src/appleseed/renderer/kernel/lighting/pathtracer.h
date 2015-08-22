@@ -411,7 +411,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
             // Compute Fresnel coefficient at outgoing point.
             double outgoing_fresnel;
-            fresnel_transmittance_dielectric(outgoing_fresnel, eta, vertex.m_cos_on);
+            foundation::fresnel_transmittance_dielectric(outgoing_fresnel, eta, vertex.m_cos_on);
             if (outgoing_fresnel <= 0.0)
                 break;
 
@@ -427,7 +427,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
             // Compute Fresnel coefficient at incoming point.
             double incoming_fresnel;
-            fresnel_transmittance_dielectric(incoming_fresnel, eta, cos_in);
+            foundation::fresnel_transmittance_dielectric(incoming_fresnel, eta, cos_in);
             if (incoming_fresnel <= 0.0)
                 break;
 
