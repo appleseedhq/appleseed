@@ -41,8 +41,6 @@ using namespace std;
 
 TEST_SUITE(Foundation_Math_Scalar)
 {
-    const long double PiLongDouble = 3.1415926535897932384626433832795L;
-
     TEST_CASE(DegToRad)
     {
         EXPECT_FEQ(0.0,      deg_to_rad(0.0));
@@ -51,7 +49,7 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_FEQ(2.0 * Pi, deg_to_rad(360.0));
 
         EXPECT_FEQ(static_cast<float>(Pi / 4.0), deg_to_rad(45.0f));
-        EXPECT_FEQ(PiLongDouble / 4.0, deg_to_rad(45.0L));
+        EXPECT_FEQ_EPS(static_cast<long double>(Pi / 4.0), deg_to_rad(45.0L), 1.0e-14L);
     }
 
     TEST_CASE(RadToDeg)
@@ -61,8 +59,8 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_FEQ(180.0,    rad_to_deg(Pi));
         EXPECT_FEQ(360.0,    rad_to_deg(2.0 * Pi));
 
-        EXPECT_FEQ(45.0f,    rad_to_deg(static_cast<float>(Pi / 4.0)));
-        EXPECT_FEQ(45.0L,    rad_to_deg(PiLongDouble / 4.0));
+        EXPECT_FEQ(45.0f, rad_to_deg(static_cast<float>(Pi / 4.0)));
+        EXPECT_FEQ_EPS(45.0L, rad_to_deg(static_cast<long double>(Pi / 4.0)), 1.0e-14L);
     }
 
     TEST_CASE(PowInt)
