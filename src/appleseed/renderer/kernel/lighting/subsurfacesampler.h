@@ -44,6 +44,7 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/mis.h"
+#include "foundation/math/quaternion.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 
@@ -58,6 +59,8 @@ namespace renderer
 //
 // Subsurface sampler.
 //
+
+#define SUBSURFACESAMPLER_BASIS_ROTATION
 
 class SubsurfaceSampler
   : public foundation::NonCopyable
@@ -82,7 +85,7 @@ class SubsurfaceSampler
 
     static void pick_sampling_basis(
         const foundation::Basis3d&  shading_basis,
-        const double                s,
+        const foundation::Vector2d& s,
         Axis&                       axis,
         foundation::Basis3d&        basis,
         double&                     basis_pdf);
@@ -137,13 +140,13 @@ void SubsurfaceSampler::sample(
         bssrdf.evaluate_pdf(bssrdf_data, bssrdf_sample.get_channel(), radius);
 
     // Pick a sampling basis.
-    sampling_context.split_in_place(1, 1);
+    sampling_context.split_in_place(2, 1);
     Axis sampling_axis;
     foundation::Basis3d sampling_basis;
     double sampling_basis_pdf;
     pick_sampling_basis(
         outgoing_point.get_shading_basis(),
-        sampling_context.next_double2(),
+        sampling_context.next_vector2<2>(),
         sampling_axis,
         sampling_basis,
         sampling_basis_pdf);
@@ -186,22 +189,17 @@ void SubsurfaceSampler::sample(
                 parent_shading_point))
             break;
 
-        // Retrieve the front side material at the hit point.
-        const Material* incoming_material =
-            incoming_point.get_side() == ObjectInstance::BackSide
-                ? incoming_point.get_opposite_material()
-                : incoming_point.get_material();
-
         // Only consider hit points with the same material as the outgoing point.
-        if (incoming_material == outgoing_material)
+        if (incoming_point.get_material() == outgoing_material ||
+            incoming_point.get_opposite_material() == outgoing_material)
         {
 #ifdef APPLESEED_WITH_OSL
             // Execute the OSL shader if we have one. Needed for bump mapping.
-            if (incoming_material->has_osl_surface())
+            if (outgoing_material->has_osl_surface())
             {
                 sampling_context.split_in_place(1, 1);
                 m_shading_context.execute_osl_bump(
-                    *incoming_material->get_osl_surface(),
+                    *outgoing_material->get_osl_surface(),
                     incoming_point,
                     sampling_context.next_double2());
             }
@@ -212,23 +210,27 @@ void SubsurfaceSampler::sample(
                 std::abs(foundation::dot(
                     sampling_basis.get_normal(),
                     incoming_point.get_shading_normal()));
-            double probability = bssrdf_sample_pdf * sampling_basis_pdf * dot_nn;
+            double probability = sampling_basis_pdf * bssrdf_sample_pdf * dot_nn;
 
-            // Weight sample probability using multiple importance sampling.
-            probability /=
-                compute_mis_weight(
-                    bssrdf,
-                    bssrdf_data,
-                    bssrdf_sample.get_channel(),
-                    sampling_basis,
-                    sampling_axis,
-                    probability,
-                    outgoing_point.get_point(),
-                    incoming_point.get_point(),
-                    incoming_point.get_shading_normal());
+            if (probability > 0.0)
+            {
+                // Weight sample contribution using multiple importance sampling.
+                probability /=
+                    compute_mis_weight(
+                        bssrdf,
+                        bssrdf_data,
+                        bssrdf_sample.get_channel(),
+                        sampling_basis,
+                        sampling_axis,
+                        probability,
+                        outgoing_point.get_point(),
+                        incoming_point.get_point(),
+                        incoming_point.get_shading_normal());
 
-            // Pass the subsurface sample to the visitor.
-            visitor.visit(bssrdf_sample, incoming_point, probability);
+                // Pass incoming point to visitor.
+                if (!visitor.visit(bssrdf_sample, incoming_point, probability))
+                    break;
+            }
         }
 
         // Move the ray's origin past the hit surface.
@@ -243,23 +245,31 @@ void SubsurfaceSampler::sample(
 
 inline void SubsurfaceSampler::pick_sampling_basis(
     const foundation::Basis3d&      shading_basis,
-    const double                    s,
+    const foundation::Vector2d&     s,
     Axis&                           axis,
     foundation::Basis3d&            basis,
     double&                         basis_pdf)
 {
+#ifdef SUBSURFACESAMPLER_BASIS_ROTATION
+    const foundation::Vector3d& n = shading_basis.get_normal();
+    const foundation::Quaterniond q =
+        foundation::Quaterniond::rotation(n, s[0] * foundation::Pi);
+    const foundation::Vector3d u = foundation::rotate(q, shading_basis.get_tangent_u());
+    const foundation::Vector3d v = foundation::rotate(q, shading_basis.get_tangent_v());
+#else
     const foundation::Vector3d& n = shading_basis.get_normal();
     const foundation::Vector3d& u = shading_basis.get_tangent_u();
     const foundation::Vector3d& v = shading_basis.get_tangent_v();
+#endif
 
-    if (s <= 0.5)
+    if (s[1] < 0.5)
     {
         // Project the sample along N.
         axis = NAxis;
         basis = foundation::Basis3d(n, u, v);
         basis_pdf = 0.5;
     }
-    else if (s <= 0.75)
+    else if (s[1] < 0.75)
     {
         // Project the sample along U.
         axis = UAxis;
@@ -286,43 +296,32 @@ inline double SubsurfaceSampler::compute_mis_weight(
     const foundation::Vector3d&     incoming_point,
     const foundation::Vector3d&     incoming_normal)
 {
-    // todo: not sure about the 2.0 factors.
-
     const foundation::Vector3d d = incoming_point - outgoing_point;
+    const double du = foundation::norm(foundation::project(d, basis.get_tangent_u()));
+    const double dv = foundation::norm(foundation::project(d, basis.get_tangent_v()));
+    const double dot_un = std::abs(foundation::dot(basis.get_tangent_u(), incoming_normal));
+    const double dot_vn = std::abs(foundation::dot(basis.get_tangent_v(), incoming_normal));
+    const double pdf_u = bssrdf.evaluate_pdf(data, channel, du) * dot_un;
+    const double pdf_v = bssrdf.evaluate_pdf(data, channel, dv) * dot_vn;
 
     switch (axis)
     {
       case NAxis:
       {
-          const double du = foundation::norm(foundation::project(d, basis.get_tangent_u()));
-          const double dv = foundation::norm(foundation::project(d, basis.get_tangent_v()));
-          const double dot_un = std::abs(foundation::dot(basis.get_tangent_u(), incoming_normal));
-          const double dot_vn = std::abs(foundation::dot(basis.get_tangent_v(), incoming_normal));
-          const double pdf_u = 0.25 * bssrdf.evaluate_pdf(data, channel, du) * dot_un;
-          const double pdf_v = 0.25 * bssrdf.evaluate_pdf(data, channel, dv) * dot_vn;
-          return foundation::mis_power2(2.0 * sample_pdf, pdf_u, pdf_v);
+          // We chose N: the original U is at U and the original V is at V.
+          return foundation::mis_power2(sample_pdf, 0.25 * pdf_u, 0.25 * pdf_v);
       }
 
       case UAxis:
       {
-          const double dn = foundation::norm(foundation::project(d, basis.get_normal()));
-          const double dv = foundation::norm(foundation::project(d, basis.get_tangent_v()));
-          const double dot_nn = std::abs(foundation::dot(basis.get_normal(), incoming_normal));
-          const double dot_vn = std::abs(foundation::dot(basis.get_tangent_v(), incoming_normal));
-          const double pdf_n = 0.5  * bssrdf.evaluate_pdf(data, channel, dn) * dot_nn;
-          const double pdf_v = 0.25 * bssrdf.evaluate_pdf(data, channel, dv) * dot_vn;
-          return foundation::mis_power2(sample_pdf, 2.0 * pdf_n, pdf_v);
+          // We chose U: the original V is at U and the original N is at V.
+          return foundation::mis_power2(sample_pdf, 0.25 * pdf_u, 0.5 * pdf_v);
       }
 
       case VAxis:
       {
-          const double dn = foundation::norm(foundation::project(d, basis.get_normal()));
-          const double du = foundation::norm(foundation::project(d, basis.get_tangent_u()));
-          const double dot_nn = std::abs(foundation::dot(basis.get_normal(), incoming_normal));
-          const double dot_un = std::abs(foundation::dot(basis.get_tangent_u(), incoming_normal));
-          const double pdf_n = 0.5  * bssrdf.evaluate_pdf(data, channel, dn) * dot_nn;
-          const double pdf_u = 0.25 * bssrdf.evaluate_pdf(data, channel, du) * dot_un;
-          return foundation::mis_power2(sample_pdf, 2.0 * pdf_n, pdf_u);
+          // We chose V: the original N is at U and the original U is at V.
+          return foundation::mis_power2(sample_pdf, 0.5 * pdf_u, 0.25 * pdf_v);
       }
     }
 

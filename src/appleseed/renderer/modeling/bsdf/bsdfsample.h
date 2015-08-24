@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 
 // appleseed.foundation headers.
@@ -44,16 +45,6 @@ namespace renderer
 class BSDFSample
 {
   public:
-    // Scattering modes.
-    enum ScatteringMode
-    {
-        Absorption          = 0,
-        Diffuse             = 1 << 0,
-        Glossy              = 1 << 1,
-        Specular            = 1 << 2,
-        AllScatteringModes  = Diffuse | Glossy | Specular
-    };
-
     // Constructor.
     BSDFSample(
         const ShadingPoint&         shading_point,
@@ -74,8 +65,8 @@ class BSDFSample
 
     // Output fields.
 
-    ScatteringMode get_mode() const;
-    void set_mode(const ScatteringMode mode);
+    ScatteringMode::Mode get_mode() const;
+    void set_mode(const ScatteringMode::Mode mode);
 
     bool is_absorption() const;
     bool is_specular() const;
@@ -94,13 +85,6 @@ class BSDFSample
     void compute_reflected_differentials();
     void compute_transmitted_differentials(const double eta);
 
-    // Test for the presence of specific scattering modes.
-    static bool has_diffuse(const ScatteringMode mode);
-    static bool has_glossy(const ScatteringMode mode);
-    static bool has_specular(const ScatteringMode mode);
-    static bool has_diffuse_or_glossy(const ScatteringMode mode);
-    static bool has_glossy_or_specular(const ScatteringMode mode);
-
   private:
     void compute_normal_derivatives(
         foundation::Vector3d&       dndx,
@@ -113,7 +97,7 @@ class BSDFSample
     const ShadingPoint&             m_shading_point;        // shading point at which the sampling is done
     SamplingContext&                m_sampling_context;     // sampling context used to sample BSDFs
     foundation::Dual3d              m_outgoing;             // world space outgoing direction, unit-length
-    ScatteringMode                  m_mode;                 // scattering mode
+    ScatteringMode::Mode            m_mode;                 // scattering mode
     foundation::Dual3d              m_incoming;             // world space incoming direction, unit-length
     double                          m_probability;          // PDF value
     Spectrum                        m_value;                // BSDF value
@@ -131,7 +115,7 @@ inline BSDFSample::BSDFSample(
   : m_shading_point(shading_point)
   , m_sampling_context(sampling_context)
   , m_outgoing(outgoing)
-  , m_mode(Absorption)
+  , m_mode(ScatteringMode::Absorption)
   , m_value(0.0f)
   , m_probability(0.0)
 {
@@ -167,24 +151,24 @@ inline void BSDFSample::set_shading_basis(const foundation::Basis3d& basis)
     m_shading_point.set_shading_basis(basis);
 }
 
-inline BSDFSample::ScatteringMode BSDFSample::get_mode() const
+inline ScatteringMode::Mode BSDFSample::get_mode() const
 {
     return m_mode;
 }
 
-inline void BSDFSample::set_mode(const ScatteringMode mode)
+inline void BSDFSample::set_mode(const ScatteringMode::Mode mode)
 {
     m_mode = mode;
 }
 
 inline bool BSDFSample::is_absorption() const
 {
-    return m_mode == Absorption;
+    return m_mode == ScatteringMode::Absorption;
 }
 
 inline bool BSDFSample::is_specular() const
 {
-    return m_mode == Specular;
+    return m_mode == ScatteringMode::Specular;
 }
 
 inline const foundation::Dual3d& BSDFSample::get_incoming() const
@@ -220,31 +204,6 @@ inline const Spectrum& BSDFSample::value() const
 inline Spectrum& BSDFSample::value()
 {
     return m_value;
-}
-
-inline bool BSDFSample::has_diffuse(const ScatteringMode mode)
-{
-    return (mode & Diffuse) != 0;
-}
-
-inline bool BSDFSample::has_glossy(const ScatteringMode mode)
-{
-    return (mode & Glossy) != 0;
-}
-
-inline bool BSDFSample::has_specular(const ScatteringMode mode)
-{
-    return (mode & Specular) != 0;
-}
-
-inline bool BSDFSample::has_diffuse_or_glossy(const ScatteringMode mode)
-{
-    return (mode & (Diffuse | Glossy)) != 0;
-}
-
-inline bool BSDFSample::has_glossy_or_specular(const ScatteringMode mode)
-{
-    return (mode & (Glossy | Specular)) != 0;
 }
 
 }       // namespace renderer

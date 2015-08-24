@@ -30,6 +30,7 @@
 #include "velvetbrdf.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 
@@ -74,7 +75,7 @@ namespace
         VelvetBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Reflective, BSDFSample::Glossy, params)
+          : BSDF(name, Reflective, ScatteringMode::Glossy, params)
         {
             m_inputs.declare("roughness", InputFormatScalar);
             m_inputs.declare("roughness_multiplier", InputFormatScalar, "1.0");
@@ -133,7 +134,7 @@ namespace
             sample.set_probability(RcpTwoPi);
 
             // Set the scattering mode.
-            sample.set_mode(BSDFSample::Glossy);
+            sample.set_mode(ScatteringMode::Glossy);
 
             sample.set_incoming(incoming);
             sample.compute_reflected_differentials();
@@ -150,7 +151,7 @@ namespace
             const int           modes,
             Spectrum&           value) const
         {
-            if (!(modes & BSDFSample::Glossy))
+            if (!ScatteringMode::has_glossy(modes))
                 return 0.0;
 
             // No reflection below the shading surface.
@@ -183,7 +184,7 @@ namespace
             const Vector3d&     incoming,
             const int           modes) const
         {
-            if (!(modes & BSDFSample::Glossy))
+            if (!ScatteringMode::has_glossy(modes))
                 return 0.0;
 
             // No reflection below the shading surface.

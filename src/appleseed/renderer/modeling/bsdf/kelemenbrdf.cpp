@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/input/inputarray.h"
@@ -134,7 +135,7 @@ namespace
         KelemenBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Reflective, BSDFSample::Diffuse | BSDFSample::Glossy, params)
+          : BSDF(name, Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy, params)
         {
             m_inputs.declare("matte_reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("matte_reflectance_multiplier", InputFormatScalar, "1.0");
@@ -246,14 +247,14 @@ namespace
             sample.get_sampling_context().split_in_place(3, 1);
             const Vector3d s = sample.get_sampling_context().next_vector2<3>();
 
-            BSDFSample::ScatteringMode mode;
+            ScatteringMode::Mode mode;
             Vector3d H, incoming;
             double dot_LN, dot_HN, dot_HV;
 
             // Select a component and sample it to compute the incoming direction.
             if (s[2] < matte_prob)
             {
-                mode = BSDFSample::Diffuse;
+                mode = ScatteringMode::Diffuse;
 
                 // Compute the incoming direction in local space.
                 const Vector3d wi = sample_hemisphere_cosine(Vector2d(s[0], s[1]));
@@ -270,7 +271,7 @@ namespace
             }
             else if (s[2] < matte_prob + specular_prob)
             {
-                mode = BSDFSample::Glossy;
+                mode = ScatteringMode::Glossy;
 
                 // Sample the microfacet distribution to get an halfway vector H.
                 const Vector3d local_H = m_mdf->sample(Vector2d(s[0], s[1]));
@@ -369,7 +370,7 @@ namespace
             evaluate_a_spec(m_a_spec, dot_VN, specular_albedo_V);
             evaluate_a_spec(m_a_spec, dot_LN, specular_albedo_L);
 
-            if (modes & BSDFSample::Diffuse)
+            if (ScatteringMode::has_diffuse(modes))
             {
                 // Compute the matte albedo.
                 Spectrum matte_albedo(1.0f);
@@ -393,7 +394,7 @@ namespace
                 probability += matte_prob * pdf_matte;
             }
 
-            if (modes & BSDFSample::Glossy)
+            if (ScatteringMode::has_glossy(modes))
             {
                 // Compute the specular component (equation 3).
                 Spectrum rs(values->m_rs);
@@ -447,7 +448,7 @@ namespace
             Spectrum specular_albedo_V;
             evaluate_a_spec(m_a_spec, dot_VN, specular_albedo_V);
 
-            if (modes & BSDFSample::Diffuse)
+            if (ScatteringMode::has_diffuse(modes))
             {
                 // Compute the matte albedo.
                 Spectrum matte_albedo(1.0f);
@@ -464,7 +465,7 @@ namespace
                 probability += matte_prob * pdf_matte;
             }
 
-            if (modes & BSDFSample::Glossy)
+            if (ScatteringMode::has_glossy(modes))
             {
                 // Compute the probability of a specular bounce.
                 const double specular_prob = average_value(specular_albedo_V);

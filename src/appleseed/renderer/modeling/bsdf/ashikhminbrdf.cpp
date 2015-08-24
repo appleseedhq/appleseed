@@ -31,6 +31,7 @@
 #include "ashikhminbrdf.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 
@@ -78,7 +79,7 @@ namespace
         AshikhminBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Reflective, BSDFSample::Diffuse | BSDFSample::Glossy, params)
+          : BSDF(name, Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy, params)
         {
             m_inputs.declare("diffuse_reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("diffuse_reflectance_multiplier", InputFormatScalar, "1.0");
@@ -126,14 +127,14 @@ namespace
             sample.get_sampling_context().split_in_place(3, 1);
             const Vector3d s = sample.get_sampling_context().next_vector2<3>();
 
-            BSDFSample::ScatteringMode mode;
+            ScatteringMode::Mode mode;
             Vector3d h, incoming;
             double exp;
 
             // Select a component and sample it to compute the incoming direction.
             if (s[2] < rval.m_pd)
             {
-                mode = BSDFSample::Diffuse;
+                mode = ScatteringMode::Diffuse;
 
                 // Compute the incoming direction in local space.
                 const Vector3d wi = sample_hemisphere_cosine(Vector2d(s[0], s[1]));
@@ -155,7 +156,7 @@ namespace
             }
             else
             {
-                mode = BSDFSample::Glossy;
+                mode = ScatteringMode::Glossy;
 
                 double cos_phi, sin_phi;
 
@@ -274,7 +275,7 @@ namespace
             const double cos_hu = dot(h, shading_basis.get_tangent_u());
             const double cos_hv = dot(h, shading_basis.get_tangent_v());
 
-            if (modes & BSDFSample::Diffuse)
+            if (ScatteringMode::has_diffuse(modes))
             {
                 // Evaluate the diffuse component of the BRDF (equation 5).
                 const double a = 1.0 - pow5(1.0 - 0.5 * cos_in);
@@ -289,7 +290,7 @@ namespace
                 probability += rval.m_pd * pdf_diffuse;
             }
 
-            if (modes & BSDFSample::Glossy)
+            if (ScatteringMode::has_glossy(modes))
             {
                 // Evaluate the glossy component of the BRDF (equation 4).
                 const double exp_num_u = values->m_nu * cos_hu * cos_hu;
@@ -349,7 +350,7 @@ namespace
             const double cos_hu = dot(h, shading_basis.get_tangent_u());
             const double cos_hv = dot(h, shading_basis.get_tangent_v());
 
-            if (modes & BSDFSample::Diffuse)
+            if (ScatteringMode::has_diffuse(modes))
             {
                 // Evaluate the PDF of the diffuse component.
                 const double pdf_diffuse = cos_in * RcpPi;
@@ -357,7 +358,7 @@ namespace
                 probability += pdf_diffuse;
             }
 
-            if (modes & BSDFSample::Glossy)
+            if (ScatteringMode::has_glossy(modes))
             {
                 // Evaluate the PDF for the halfway vector (equation 6).
                 const double exp_num_u = values->m_nu * cos_hu * cos_hu;

@@ -153,6 +153,7 @@ template <typename T> bool is_normalized(const Quaternion<T>& q);
 template <typename T> bool is_normalized(const Quaternion<T>& q, const T eps);
 
 // Spherical linear interpolation between two unit-length quaternions.
+// todo: implement fast version (http://zeuxcg.org/2015/07/23/approximating-slerp/).
 template <typename T> Quaternion<T> slerp(const Quaternion<T>& p, const Quaternion<T>& q, const T t);
 
 // Rotation of a vector by a quaternion.
@@ -490,7 +491,14 @@ FORCE_INLINE Quaternion<T> slerp(const Quaternion<T>& p, const Quaternion<T>& q,
 template <typename T>
 inline Vector<T, 3> rotate(const Quaternion<T>& q, const Vector<T, 3>& v)
 {
-    return (q * Quaternion<T>(T(0.0), v) * conjugate(q)).v;
+    //
+    // Unoptimized implementation:
+    //
+    //     return (q * Quaternion<T>(T(0.0), v) * conjugate(q)).v;
+    //
+
+    const Vector<T, 3> w = q.s * v + cross(q.v, v);
+    return dot(q.v, v) * q.v + q.s * w + cross(w, -q.v);
 }
 
 }       // namespace foundation

@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/lightsampler.h"
+#include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 
@@ -67,6 +68,12 @@ class PathVertex
 {
   public:
     SamplingContext&            m_sampling_context;
+
+    // Path properties.
+    size_t                      m_path_length;
+    Spectrum                    m_throughput;
+
+    // Current vertex properties.
     const ShadingPoint*         m_shading_point;
     foundation::Dual3d          m_outgoing;
     double                      m_cos_on;       // cos(outgoing direction, shading normal)
@@ -76,10 +83,9 @@ class PathVertex
     const BSSRDF*               m_bssrdf;
     const void*                 m_bssrdf_data;
 
-    size_t                      m_path_length;
-    BSDFSample::ScatteringMode  m_prev_bsdf_mode;
-    double                      m_prev_bsdf_prob;
-    Spectrum                    m_throughput;
+    // Properties of the last scattering event (for multiple importance sampling).
+    ScatteringMode::Mode        m_prev_mode;
+    double                      m_prev_prob;
 
     // Constructor.
     explicit PathVertex(SamplingContext& sampling_context);
@@ -101,10 +107,10 @@ class PathVertex
         Spectrum&               radiance) const;
 
     // Return the probability density wrt. surface area mesure of reaching this vertex via BSDF sampling.
-    double get_bsdf_point_prob() const;
+    double get_prev_prob_area() const;
 
     // Return the probability density wrt. surface area mesure of reaching this vertex via light sampling.
-    double get_light_point_prob(const LightSampler& light_sampler) const;
+    double get_light_prob_area(const LightSampler& light_sampler) const;
 };
 
 
@@ -157,15 +163,18 @@ inline const Material* PathVertex::get_material() const
     return m_shading_point->get_material();
 }
 
-inline double PathVertex::get_bsdf_point_prob() const
+inline double PathVertex::get_prev_prob_area() const
 {
+    // Make sure we're coming from a valid scattering event.
+    assert(m_prev_mode != ScatteringMode::Absorption);
+    assert(m_prev_prob > 0.0);
+
     // Veach: 8.2.2.2 eq. 8.10.
-    assert(m_prev_bsdf_prob > 0.0);
     const double d = m_shading_point->get_distance();
-    return m_prev_bsdf_prob * m_cos_on / (d * d);
+    return m_prev_prob * m_cos_on / (d * d);
 }
 
-inline double PathVertex::get_light_point_prob(const LightSampler& light_sampler) const
+inline double PathVertex::get_light_prob_area(const LightSampler& light_sampler) const
 {
     return light_sampler.evaluate_pdf(*m_shading_point);
 }

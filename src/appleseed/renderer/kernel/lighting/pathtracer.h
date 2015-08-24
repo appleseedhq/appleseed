@@ -35,6 +35,8 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/lighting/pathvertex.h"
+#include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/lighting/subsurfacesampler.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
@@ -43,16 +45,18 @@
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
-#include "renderer/modeling/scene/visibilityflags.h"
 #ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #endif
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/sampling/mappings.h"
+#include "foundation/math/dual.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/rr.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/string.h"
 
@@ -92,15 +96,28 @@ class PathTracer
         const ShadingPoint&     shading_point);
 
   private:
+    struct SubsurfaceSampleVisitor
+    {
+        enum { MaxSampleCount = 16 };
+
+        ShadingPoint            m_incoming_points[MaxSampleCount];
+        double                  m_etas[MaxSampleCount];
+        double                  m_probabilities[MaxSampleCount];
+        size_t                  m_sample_count;
+
+        SubsurfaceSampleVisitor();
+
+        bool visit(
+            const BSSRDFSample& bssrdf_sample,
+            const ShadingPoint& incoming_point,
+            const double        probability);
+    };
+
     PathVisitor&                m_path_visitor;
     const size_t                m_rr_min_path_length;
     const size_t                m_max_path_length;
     const size_t                m_max_iterations;
     const double                m_near_start;
-
-    // Determine the appropriate ray type for a given scattering mode.
-    static VisibilityFlags::Type bsdf_mode_to_ray_flags(
-        const BSDFSample::ScatteringMode mode);
 
     // Determine whether a ray can pass through a surface with a given alpha value.
     static bool pass_through(
@@ -159,11 +176,11 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
     size_t shading_point_index = 0;
 
     PathVertex vertex(sampling_context);
-    vertex.m_shading_point = &shading_point;
     vertex.m_path_length = 1;
-    vertex.m_prev_bsdf_mode = BSDFSample::Specular;
-    vertex.m_prev_bsdf_prob = BSDF::DiracDelta;
     vertex.m_throughput.set(1.0f);
+    vertex.m_shading_point = &shading_point;
+    vertex.m_prev_mode = ScatteringMode::Specular;
+    vertex.m_prev_prob = BSDF::DiracDelta;
 
     size_t iterations = 0;
 
@@ -305,36 +322,152 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         vertex.m_cos_on = foundation::dot(vertex.m_outgoing.get_value(), vertex.get_shading_normal());
         m_path_visitor.visit_vertex(vertex);
 
-        // Terminate the path if the material doesn't have a BSDF.
-        if (vertex.m_bsdf == 0)
+        // Honor the user bounce limit.
+        if (vertex.m_path_length >= m_max_path_length)
             break;
 
-        // Sample the BSDF.
-        BSDFSample sample(
-            *vertex.m_shading_point,
-            sampling_context,
-            vertex.m_outgoing);
-        vertex.m_bsdf->sample(
-            vertex.m_bsdf_data,
-            Adjoint,
-            true,       // multiply by |cos(incoming, normal)|
-            sample);
+        // If there is both a BSDF and a BSSRDF, pick one to continue the path.
+        if (vertex.m_bsdf && vertex.m_bssrdf)
+        {
+            sampling_context.split_in_place(1, 1);
+            if (sampling_context.next_double2() < 0.5)
+                vertex.m_bsdf = 0;
+            else vertex.m_bssrdf = 0;
+            vertex.m_throughput *= 2.0f;
+        }
 
-        if (sample.is_absorption())
+        // This visitor must live outside the 'if' block below because it owns
+        // the incoming points that were found during subsurface sampling, one
+        // of which will become the parent point for the next ray.
+        SubsurfaceSampleVisitor visitor;
+
+        const ShadingPoint* parent_shading_point;
+        foundation::Dual3d incoming;
+        Spectrum value;
+        ScatteringMode::Mode mode;
+
+        if (vertex.m_bsdf)
+        {
+            // Sample the BSDF.
+            BSDFSample sample(
+                *vertex.m_shading_point,
+                sampling_context,
+                vertex.m_outgoing);
+            vertex.m_bsdf->sample(
+                vertex.m_bsdf_data,
+                Adjoint,
+                true,       // multiply by |cos(incoming, normal)|
+                sample);
+
+            // Terminate the path if it gets absorbed.
+            if (sample.is_absorption())
+                break;
+
+            // Terminate the path if this scattering event is not accepted.
+            if (!m_path_visitor.accept_scattering(vertex.m_prev_mode, sample.get_mode()))
+                break;
+
+            // Compute the path throughput multiplier.
+            value = sample.value();
+            if (sample.get_probability() != BSDF::DiracDelta)
+                value /= static_cast<float>(sample.get_probability());
+
+            // Properties of this scattering event.
+            vertex.m_prev_mode = sample.get_mode();
+            vertex.m_prev_prob = sample.get_probability();
+
+            // Origin, direction and scattering mode of the next ray.
+            parent_shading_point = vertex.m_shading_point;
+            incoming = sample.get_incoming();
+            mode = sample.get_mode();
+        }
+        else if (vertex.m_bssrdf)
+        {
+            // todo: why does this happen again, and what should we do in that case?
+            if (vertex.m_cos_on <= 0.0)
+                break;
+
+            // Find an incoming point.
+            const SubsurfaceSampler sampler(shading_context);
+            sampler.sample(
+                sampling_context,
+                *vertex.m_shading_point,
+                *vertex.m_bssrdf,
+                vertex.m_bssrdf_data,
+                visitor);
+
+            // Terminate the path if no incoming point could be found.
+            if (visitor.m_sample_count == 0)
+                break;
+
+            sampling_context.split_in_place(3, 1);
+            const foundation::Vector3d s = sampling_context.next_vector2<3>();
+
+            // Select one of the incoming points at random.
+            const size_t sample_index = foundation::truncate<size_t>(s[0] * visitor.m_sample_count);
+            const ShadingPoint& incoming_point = visitor.m_incoming_points[sample_index];
+            const double probability = visitor.m_probabilities[sample_index];
+            const double eta = visitor.m_etas[sample_index];
+
+            // Compute Fresnel coefficient at outgoing point.
+            double outgoing_fresnel;
+            foundation::fresnel_transmittance_dielectric(outgoing_fresnel, eta, vertex.m_cos_on);
+            if (outgoing_fresnel <= 0.0)
+                break;
+
+            // Pick an incoming direction at random.
+            foundation::Vector3d incoming_vector =
+                foundation::sample_hemisphere_cosine(foundation::Vector2d(s[1], s[2]));
+            const double cos_in = incoming_vector.y;
+            const double incoming_prob = cos_in * foundation::RcpPi;
+            incoming_vector = incoming_point.get_shading_basis().transform_to_parent(incoming_vector);
+            if (incoming_point.get_side() == ObjectInstance::BackSide)  // todo: not exactly right
+                incoming_vector = -incoming_vector;
+            incoming = foundation::Dual3d(incoming_vector);
+
+            // Compute Fresnel coefficient at incoming point.
+            double incoming_fresnel;
+            foundation::fresnel_transmittance_dielectric(incoming_fresnel, eta, cos_in);
+            if (incoming_fresnel <= 0.0)
+                break;
+
+            // Evaluate the diffusion profile.
+            Spectrum rd;
+            vertex.m_bssrdf->evaluate(
+                vertex.m_bssrdf_data,
+                *vertex.m_shading_point,
+                vertex.m_outgoing.get_value(),
+                incoming_point,
+                incoming_vector,
+                rd);
+
+            // Compute the path throughput multiplier.
+            const double weight =
+                  foundation::RcpPi
+                * incoming_fresnel
+                * outgoing_fresnel
+                * cos_in
+                * visitor.m_sample_count
+                / (probability * incoming_prob);
+            value = rd;
+            value *= static_cast<float>(weight);
+
+            // Properties of this scattering event.
+            vertex.m_prev_mode = ScatteringMode::Subsurface;
+            vertex.m_prev_prob = probability * incoming_prob;
+
+            // Origin and scattering mode of the next ray.
+            parent_shading_point = &incoming_point;
+            mode = ScatteringMode::Diffuse;
+        }
+        else
+        {
+            // No scattering possible, terminate the path.
             break;
-
-        // Terminate the path if this scattering event is not accepted.
-        if (!m_path_visitor.accept_scattering(vertex.m_prev_bsdf_mode, sample.get_mode()))
-            break;
-
-        vertex.m_prev_bsdf_prob = sample.get_probability();
-        vertex.m_prev_bsdf_mode = sample.get_mode();
-
-        if (sample.get_probability() != BSDF::DiracDelta)
-            sample.value() /= static_cast<float>(sample.get_probability());
+        }
 
         // Update the path throughput.
-        vertex.m_throughput *= sample.value();
+        vertex.m_throughput *= value;
 
         // Use Russian Roulette to cut the path without introducing bias.
         if (vertex.m_path_length >= m_rr_min_path_length)
@@ -346,7 +479,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             // Compute the probability of extending this path.
             const double scattering_prob =
                 std::min(
-                    static_cast<double>(foundation::max_value(sample.value())),
+                    static_cast<double>(foundation::max_value(value)),
                     1.0);
 
             // Russian Roulette.
@@ -358,28 +491,24 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             vertex.m_throughput /= static_cast<float>(scattering_prob);
         }
 
-        // Honor the user bounce limit.
-        if (vertex.m_path_length >= m_max_path_length)
-            break;
-
         // Keep track of the number of bounces.
         ++vertex.m_path_length;
 
         // Construct the scattered ray.
         ShadingRay scattered_ray(
-            vertex.m_shading_point->get_biased_point(sample.get_incoming_vector()),
-            sample.get_incoming_vector(),
+            parent_shading_point->get_point(),
+            incoming.get_value(),
             ray.m_time,
-            bsdf_mode_to_ray_flags(sample.get_mode()),
+            ScatteringMode::get_vis_flags(mode),
             ray.m_depth + 1);
 
         // Compute scattered ray differentials.
-        if (sample.get_incoming().has_derivatives())
+        if (incoming.has_derivatives())
         {
             scattered_ray.m_rx.m_org = scattered_ray.m_org + vertex.m_shading_point->get_dpdx();
             scattered_ray.m_ry.m_org = scattered_ray.m_org + vertex.m_shading_point->get_dpdy();
-            scattered_ray.m_rx.m_dir = scattered_ray.m_dir + sample.get_incoming().get_dx();
-            scattered_ray.m_ry.m_dir = scattered_ray.m_dir + sample.get_incoming().get_dy();
+            scattered_ray.m_rx.m_dir = scattered_ray.m_dir + incoming.get_dx();
+            scattered_ray.m_ry.m_dir = scattered_ray.m_dir + incoming.get_dy();
             scattered_ray.m_has_differentials = true;
         }
 
@@ -388,7 +517,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         shading_context.get_intersector().trace(
             scattered_ray,
             shading_points[shading_point_index],
-            vertex.m_shading_point);
+            parent_shading_point);
 
         // Update the pointers to the shading points.
         vertex.m_shading_point = &shading_points[shading_point_index];
@@ -396,21 +525,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
     }
 
     return vertex.m_path_length;
-}
-
-template <typename PathVisitor, bool Adjoint>
-inline VisibilityFlags::Type PathTracer<PathVisitor, Adjoint>::bsdf_mode_to_ray_flags(
-    const BSDFSample::ScatteringMode mode)
-{
-    switch (mode)
-    {
-      case BSDFSample::Diffuse:   return VisibilityFlags::DiffuseRay;
-      case BSDFSample::Glossy:    return VisibilityFlags::GlossyRay;
-      case BSDFSample::Specular:  return VisibilityFlags::SpecularRay;
-      default:
-        assert(!"Invalid scattering mode.");
-        return VisibilityFlags::DiffuseRay;
-    }
 }
 
 template <typename PathVisitor, bool Adjoint>
@@ -427,6 +541,36 @@ inline bool PathTracer<PathVisitor, Adjoint>::pass_through(
     sampling_context.split_in_place(1, 1);
 
     return sampling_context.next_double2() >= alpha[0];
+}
+
+
+//
+// PathTracer::SubsurfaceSampleVisitor class implementation.
+//
+
+template <typename PathVisitor, bool Adjoint>
+PathTracer<PathVisitor, Adjoint>::SubsurfaceSampleVisitor::SubsurfaceSampleVisitor()
+  : m_sample_count(0)
+{
+}
+
+template <typename PathVisitor, bool Adjoint>
+bool PathTracer<PathVisitor, Adjoint>::SubsurfaceSampleVisitor::visit(
+    const BSSRDFSample&         bssrdf_sample,
+    const ShadingPoint&         incoming_point,
+    const double                probability)
+{
+    if (m_sample_count < MaxSampleCount)
+    {
+        m_incoming_points[m_sample_count] = incoming_point;
+        m_etas[m_sample_count] = bssrdf_sample.get_eta();
+        m_probabilities[m_sample_count] = probability;
+        ++m_sample_count;
+
+        // Continue visiting samples.
+        return true;
+    }
+    else return false;
 }
 
 }       // namespace renderer

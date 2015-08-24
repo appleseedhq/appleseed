@@ -78,6 +78,7 @@ static const double RcpFourPi       =  0.0795774715459477;      // 1 / (4 * Pi)
 static const double RcpPiSquare     =  0.1013211836423378;      // 1 / (Pi^2) = (1 / Pi)^2
 static const double RcpFourPiSquare =  0.0253302959105844;      // 1 / (4 * Pi^2)
 static const double SqrtTwo         =  1.4142135623730950;      // sqrt(2)
+static const double RcpSqrtTwo      =  0.7071067811865475;      // 1 / sqrt(2) = sqrt(2) / 2
 static const double GoldenRatio     =  1.6180339887498948;      // (1 + sqrt(5)) / 2
 
 
@@ -228,9 +229,10 @@ V fit(
 //
 
 // Default epsilon values for floating-point tests.
-template <typename T> T default_eps();          // intentionally left unimplemented
-template <> inline float default_eps<float>()   { return 1.0e-6f; }
-template <> inline double default_eps<double>() { return 1.0e-14; }
+template <typename T> T default_eps();                      // intentionally left unimplemented
+template <> inline float default_eps<float>()               { return 1.0e-6f; }
+template <> inline double default_eps<double>()             { return 1.0e-14; }
+template <> inline long double default_eps<long double>()   { return 1.0e-30L; }
 
 // Allow using custom epsilon values in template code.
 template <typename T> T make_eps(const float feps, const double deps);
@@ -253,27 +255,50 @@ bool fz(const int lhs);
 //
 
 // Return the minimum signed finite value for a given type.
-template <typename T> T signed_min()            { return std::numeric_limits<T>::min(); }
-template <> inline float signed_min()           { return -std::numeric_limits<float>::max(); }
-template <> inline double signed_min()          { return -std::numeric_limits<double>::max(); }
-template <> inline long double signed_min()     { return -std::numeric_limits<long double>::max(); }
+template <typename T> T signed_min()        { return std::numeric_limits<T>::min(); }
+template <> inline float signed_min()       { return -std::numeric_limits<float>::max(); }
+template <> inline double signed_min()      { return -std::numeric_limits<double>::max(); }
+template <> inline long double signed_min() { return -std::numeric_limits<long double>::max(); }
 
 
-//
 //
 // Conversion operations implementation.
 //
 
-template <typename T>
-inline T deg_to_rad(const T angle)
+template <>
+inline float deg_to_rad(const float angle)
 {
-    return angle * T(Pi / 180.0);
+    return angle * static_cast<float>(Pi / 180.0);
 }
 
-template <typename T>
-inline T rad_to_deg(const T angle)
+template <>
+inline double deg_to_rad(const double angle)
 {
-    return angle * T(180.0 / Pi);
+    return angle * (Pi / 180.0);
+}
+
+template <>
+inline long double deg_to_rad(const long double angle)
+{
+    return angle * static_cast<long double>(Pi / 180.0);
+}
+
+template <>
+inline float rad_to_deg(const float angle)
+{
+    return angle * static_cast<float>(180.0 / Pi);
+}
+
+template <>
+inline double rad_to_deg(const double angle)
+{
+    return angle * (180.0 / Pi);
+}
+
+template <>
+inline long double rad_to_deg(const long double angle)
+{
+    return angle * static_cast<long double>(180.0 / Pi);
 }
 
 

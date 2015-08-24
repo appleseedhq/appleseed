@@ -38,6 +38,7 @@
 #include "renderer/kernel/lighting/imagebasedlighting.h"
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/pathvertex.h"
+#include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -233,13 +234,13 @@ namespace
             }
 
             bool accept_scattering(
-                const BSDFSample::ScatteringMode  prev_bsdf_mode,
-                const BSDFSample::ScatteringMode  bsdf_mode) const
+                const ScatteringMode::Mode  prev_mode,
+                const ScatteringMode::Mode  next_mode) const
             {
-                assert(bsdf_mode != BSDFSample::Absorption);
+                assert(next_mode != ScatteringMode::Absorption);
 
                 // No diffuse bounces.
-                if (BSDFSample::has_diffuse(bsdf_mode))
+                if (ScatteringMode::has_diffuse(next_mode))
                     return false;
 
                 return true;
@@ -305,8 +306,8 @@ namespace
                     m_shading_context,
                     m_light_sampler,
                     vertex,
-                    BSDFSample::Diffuse,
-                    BSDFSample::AllScatteringModes,
+                    ScatteringMode::Diffuse,
+                    ScatteringMode::All,
                     bsdf_sample_count,
                     light_sample_count,
                     false);             // not computing indirect lighting
@@ -350,8 +351,8 @@ namespace
                     m_shading_context,
                     *m_env_edf,
                     vertex,
-                    BSDFSample::Diffuse,
-                    BSDFSample::AllScatteringModes,
+                    ScatteringMode::Diffuse,
+                    ScatteringMode::All,
                     bsdf_sample_count,
                     env_sample_count,
                     ibl_radiance);
@@ -378,13 +379,13 @@ namespace
                     emitted_radiance);
 
                 // Multiple importance sampling.
-                if (vertex.m_prev_bsdf_mode != BSDFSample::Specular)
+                if (vertex.m_prev_mode != ScatteringMode::Specular)
                 {
                     const double light_sample_count = max(m_params.m_dl_light_sample_count, 1.0);
                     const double mis_weight =
                         mis_power2(
-                            1.0 * vertex.get_bsdf_point_prob(),
-                            light_sample_count * vertex.get_light_point_prob(m_light_sampler));
+                            1.0 * vertex.get_prev_prob_area(),
+                            light_sample_count * vertex.get_light_prob_area(m_light_sampler));
                     emitted_radiance *= static_cast<float>(mis_weight);
                 }
 
@@ -395,14 +396,14 @@ namespace
 
             void visit_environment(const PathVertex& vertex)
             {
-                assert(vertex.m_prev_bsdf_mode != BSDFSample::Absorption);
+                assert(vertex.m_prev_mode != ScatteringMode::Absorption);
 
                 // Can't look up the environment if there's no environment EDF.
                 if (m_env_edf == 0)
                     return;
 
                 // When IBL is disabled, only specular reflections should contribute here.
-                if (!m_params.m_enable_ibl && vertex.m_prev_bsdf_mode != BSDFSample::Specular)
+                if (!m_params.m_enable_ibl && vertex.m_prev_mode != ScatteringMode::Specular)
                     return;
 
                 // Evaluate the environment EDF.
@@ -417,13 +418,13 @@ namespace
                     env_prob);
 
                 // Multiple importance sampling.
-                if (vertex.m_prev_bsdf_mode != BSDFSample::Specular)
+                if (vertex.m_prev_mode != ScatteringMode::Specular)
                 {
-                    assert(vertex.m_prev_bsdf_prob > 0.0);
+                    assert(vertex.m_prev_prob > 0.0);
                     const double env_sample_count = max(m_params.m_ibl_env_sample_count, 1.0);
                     const double mis_weight =
                         mis_power2(
-                            1.0 * vertex.m_prev_bsdf_prob,
+                            1.0 * vertex.m_prev_prob,
                             env_sample_count * env_prob);
                     env_radiance *= static_cast<float>(mis_weight);
                 }

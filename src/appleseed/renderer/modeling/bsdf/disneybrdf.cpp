@@ -30,6 +30,7 @@
 #include "disneybrdf.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/microfacetbrdfhelper.h"
 #include "renderer/modeling/color/colorspace.h"
@@ -172,7 +173,7 @@ namespace
                     sample.value()));
 
             assert(sample.get_probability() > 0.0);
-            sample.set_mode(BSDFSample::Diffuse);
+            sample.set_mode(ScatteringMode::Diffuse);
             sample.set_incoming(incoming);
             sample.compute_reflected_differentials();
         }
@@ -259,7 +260,7 @@ namespace
                     sample.value()));
 
             assert(sample.get_probability() > 0.0);
-            sample.set_mode(BSDFSample::Diffuse);
+            sample.set_mode(ScatteringMode::Diffuse);
             sample.set_incoming(incoming);
             sample.compute_reflected_differentials();
         }
@@ -324,7 +325,7 @@ namespace
         DisneyBRDFImpl(
             const char*             name,
             const ParamArray&       params)
-          : BSDF(name, Reflective, BSDFSample::Diffuse | BSDFSample::Glossy, params)
+          : BSDF(name, Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy, params)
         {
             m_inputs.declare("base_color", InputFormatSpectralReflectance);
             m_inputs.declare("subsurface", InputFormatScalar, "0.0");
@@ -449,7 +450,7 @@ namespace
             value.set(0.0f);
             double pdf = 0.0;
 
-            if (modes & BSDFSample::Diffuse)
+            if (ScatteringMode::has_diffuse(modes))
             {
                 if (weights[DiffuseComponent] != 0.0)
                 {
@@ -474,7 +475,7 @@ namespace
                 }
             }
 
-            if (modes & BSDFSample::Glossy)
+            if (ScatteringMode::has_glossy(modes))
             {
                 if (weights[SpecularComponent] != 0.0)
                 {
@@ -537,7 +538,7 @@ namespace
 
             double pdf = 0.0;
 
-            if (modes & BSDFSample::Diffuse)
+            if (ScatteringMode::has_diffuse(modes))
             {
                 if (weights[DiffuseComponent] != 0.0)
                 {
@@ -554,7 +555,7 @@ namespace
                 }
             }
 
-            if (modes & BSDFSample::Glossy)
+            if (ScatteringMode::has_glossy(modes))
             {
                 if (weights[SpecularComponent] != 0.0)
                 {

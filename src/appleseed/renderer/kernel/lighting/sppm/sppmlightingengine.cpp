@@ -39,6 +39,7 @@
 #include "renderer/kernel/lighting/directlightingintegrator.h"
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/pathvertex.h"
+#include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -237,13 +238,13 @@ namespace
             }
 
             bool accept_scattering(
-                const BSDFSample::ScatteringMode prev_bsdf_mode,
-                const BSDFSample::ScatteringMode bsdf_mode) const
+                const ScatteringMode::Mode  prev_mode,
+                const ScatteringMode::Mode  next_mode) const
             {
-                assert(bsdf_mode != BSDFSample::Absorption);
+                assert(next_mode != ScatteringMode::Absorption);
 
                 // No diffuse bounces.
-                if (BSDFSample::has_diffuse(bsdf_mode))
+                if (ScatteringMode::has_diffuse(next_mode))
                     return false;
 
                 return true;
@@ -312,8 +313,8 @@ namespace
                     m_shading_context,
                     m_light_sampler,
                     vertex,
-                    BSDFSample::Diffuse,
-                    BSDFSample::AllScatteringModes,
+                    ScatteringMode::Diffuse,
+                    ScatteringMode::All,
                     bsdf_sample_count,
                     light_sample_count,
                     false);             // not computing indirect lighting
@@ -452,7 +453,7 @@ namespace
                             vertex.get_shading_basis(),
                             vertex.m_outgoing.get_value(),              // toward the camera
                             normalize(Vector3d(photon.m_incoming)),     // toward the light
-                            BSDFSample::Diffuse,
+                            ScatteringMode::Diffuse,
                             bsdf_value);
                     if (bsdf_prob == 0.0)
                         continue;
@@ -528,7 +529,7 @@ namespace
                             vertex.get_shading_basis(),
                             vertex.m_outgoing.get_value(),              // toward the camera
                             normalize(Vector3d(photon.m_incoming)),     // toward the light
-                            BSDFSample::Diffuse,
+                            ScatteringMode::Diffuse,
                             bsdf_value);
                     if (bsdf_prob == 0.0)
                         continue;
@@ -566,14 +567,14 @@ namespace
 
             void visit_environment(const PathVertex& vertex)
             {
-                assert(vertex.m_prev_bsdf_mode != BSDFSample::Absorption);
+                assert(vertex.m_prev_mode != ScatteringMode::Absorption);
 
                 // Can't look up the environment if there's no environment EDF.
                 if (m_env_edf == 0)
                     return;
 
                 // When IBL is disabled, only specular reflections should contribute here.
-                if (!m_params.m_enable_ibl && vertex.m_prev_bsdf_mode != BSDFSample::Specular)
+                if (!m_params.m_enable_ibl && vertex.m_prev_mode != ScatteringMode::Specular)
                     return;
 
                 // Evaluate the environment EDF.

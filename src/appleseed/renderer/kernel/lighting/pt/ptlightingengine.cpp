@@ -38,6 +38,7 @@
 #include "renderer/kernel/lighting/imagebasedlighting.h"
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/pathvertex.h"
+#include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/lighting/subsurfacesampler.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
@@ -290,7 +291,7 @@ namespace
             {
             }
 
-            void visit(
+            bool visit(
                 const BSSRDFSample&     bssrdf_sample,
                 const ShadingPoint&     incoming_point,
                 const double            probability) const
@@ -300,23 +301,30 @@ namespace
                 // in the inside medium, and thus we compute both Fresnel coefficients at the
                 // incoming and outgoing points using eta (defined as outside IOR / inside IOR).
 
+                const double eta = bssrdf_sample.get_eta();
+
                 // Compute Fresnel coefficient at outgoing point.
                 double outgoing_fresnel;
-                fresnel_transmittance_dielectric(outgoing_fresnel, bssrdf_sample.get_eta(), m_vertex.m_cos_on);
+                fresnel_transmittance_dielectric(outgoing_fresnel, eta, m_vertex.m_cos_on);
                 if (outgoing_fresnel <= 0.0)
-                    return;
+                    return true;
 
+                // Add direct lighting contribution.
                 add_dl_contribution(
                     incoming_point,
-                    bssrdf_sample.get_eta(),
+                    eta,
                     outgoing_fresnel,
                     probability);
 
+                // Add image-based lighting contribution.
                 add_ibl_contribution(
                     incoming_point,
-                    bssrdf_sample.get_eta(),
+                    eta,
                     outgoing_fresnel,
                     probability);
+
+                // Continue visiting samples.
+                return true;
             }
 
           private:
@@ -328,131 +336,6 @@ namespace
             const PathVertex&           m_vertex;
             Spectrum&                   m_vertex_radiance;
             SpectrumStack&              m_vertex_aovs;
-
-            // Compute irradiance at a given point of the scene. Works on back faces too.
-            bool compute_irradiance(
-                const ShadingPoint&     shading_point,
-                Vector3d&               incoming,
-                double&                 transmission,
-                double&                 cos_in,
-                Spectrum&               irradiance) const
-            {
-                // Sample the lights.
-                m_sampling_context.split_in_place(3, 1);
-                const Vector3d s = m_sampling_context.next_vector2<3>();
-                LightSample light_sample;
-                m_light_sampler.sample(shading_point.get_ray().m_time, s, light_sample);
-
-                double attenuation;
-
-                if (light_sample.m_triangle)
-                {
-                    const Material* material = light_sample.m_triangle->m_material;
-                    const EDF* edf = material->get_edf();
-
-                    // todo: check EDF flags.
-
-                    // Compute the incoming direction in world space.
-                    incoming = light_sample.m_point - shading_point.get_point();
-
-                    // Cull samples on lights emitting in the wrong direction.
-                    double cos_on_light = dot(-incoming, light_sample.m_shading_normal);
-                    if (cos_on_light <= 0.0)
-                        return false;
-
-                    // Compute the transmission factor between the light sample and the shading point.
-                    transmission =
-                        m_shading_context.get_tracer().trace_between(
-                            shading_point,
-                            light_sample.m_point,
-                            VisibilityFlags::ShadowRay);
-
-                    // Discard occluded samples.
-                    if (transmission == 0.0)
-                        return false;
-
-                    // Compute the square distance between the light sample and the shading point.
-                    const double square_distance = square_norm(incoming);
-                    const double rcp_sample_square_distance = 1.0 / square_distance;
-
-                    // todo: handle light near start.
-
-                    // Normalize the incoming direction.
-                    const double rcp_sample_distance = sqrt(rcp_sample_square_distance);
-                    incoming *= rcp_sample_distance;
-                    cos_on_light *= rcp_sample_distance;
-
-                    ShadingPoint light_shading_point;
-                    light_sample.make_shading_point(
-                        light_shading_point,
-                        -incoming,
-                        m_shading_context.get_intersector());
-
-                    // Execute the OSL emission shader if needed.
-#ifdef APPLESEED_WITH_OSL
-                    if (const ShaderGroup* sg = material->get_osl_surface())
-                        m_shading_context.execute_osl_emission(*sg, light_shading_point);
-#endif
-
-                    // Evaluate the EDF inputs.
-                    InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
-                    edf->evaluate_inputs(edf_input_evaluator, light_shading_point);
-
-                    // Evaluate the EDF.
-                    edf->evaluate(
-                        edf_input_evaluator.data(),
-                        light_sample.m_geometric_normal,
-                        Basis3d(light_sample.m_shading_normal),
-                        -incoming,
-                        irradiance);
-
-                    attenuation = rcp_sample_square_distance * cos_on_light;
-                }
-                else
-                {
-                    const Light* light = light_sample.m_light;
-
-                    // todo: check light flags.
-
-                    // Evaluate the light.
-                    InputEvaluator light_input_evaluator(m_shading_context.get_texture_cache());
-                    Vector3d emission_position, emission_direction;
-                    Spectrum light_value;
-                    light->evaluate(
-                        light_input_evaluator,
-                        light_sample.m_light_transform,
-                        shading_point.get_point(),
-                        emission_position,
-                        emission_direction,
-                        light_value);
-
-                    // Compute the transmission factor between the light sample and the shading point.
-                    transmission =
-                        m_shading_context.get_tracer().trace_between(
-                            shading_point,
-                            light_sample.m_point,
-                            VisibilityFlags::ShadowRay);
-
-                    // Discard occluded samples.
-                    if (transmission == 0.0)
-                        return false;
-
-                    // Compute the incoming direction in world space.
-                    incoming = -emission_direction;
-
-                    attenuation = light->compute_distance_attenuation(shading_point.get_point(), emission_position);
-                }
-
-                // Compute cosine factor at shading point.
-                // abs() because we might be on the backside of the surface.
-                cos_in = abs(dot(incoming, shading_point.get_shading_normal()));
-
-                // Compute irradiance at shading point.
-                irradiance *= static_cast<float>(cos_in / light_sample.m_probability);
-                irradiance *= static_cast<float>(attenuation);
-
-                return true;
-            }
 
             void add_dl_contribution(
                 const ShadingPoint&     incoming_point,
@@ -527,6 +410,134 @@ namespace
                     m_vertex_radiance += irradiance;
                 }
             }
+
+            // Compute irradiance at a given point of the scene. Works on back faces too.
+            bool compute_irradiance(
+                const ShadingPoint&     shading_point,
+                Vector3d&               incoming,
+                double&                 transmission,
+                double&                 cos_in,
+                Spectrum&               irradiance) const
+            {
+                if (!m_light_sampler.has_lights_or_emitting_triangles())
+                    return false;
+
+                // Sample the lights.
+                m_sampling_context.split_in_place(3, 1);
+                const Vector3d s = m_sampling_context.next_vector2<3>();
+                LightSample light_sample;
+                m_light_sampler.sample(shading_point.get_ray().m_time, s, light_sample);
+
+                if (light_sample.m_triangle)
+                {
+                    const Material* material = light_sample.m_triangle->m_material;
+                    const EDF* edf = material->get_edf();
+
+                    // todo: check EDF flags.
+
+                    // Compute the incoming direction in world space.
+                    incoming = light_sample.m_point - shading_point.get_point();
+
+                    // Cull samples on lights emitting in the wrong direction.
+                    double cos_on_light = dot(-incoming, light_sample.m_shading_normal);
+                    if (cos_on_light <= 0.0)
+                        return false;
+
+                    // Compute the transmission factor between the light sample and the shading point.
+                    transmission =
+                        m_shading_context.get_tracer().trace_between(
+                            shading_point,
+                            light_sample.m_point,
+                            VisibilityFlags::ShadowRay);
+
+                    // Discard occluded samples.
+                    if (transmission == 0.0)
+                        return false;
+
+                    // Compute the square distance between the light sample and the shading point.
+                    const double square_distance = square_norm(incoming);
+                    const double rcp_sample_square_distance = 1.0 / square_distance;
+
+                    // todo: handle light near start.
+
+                    // Normalize the incoming direction.
+                    const double rcp_sample_distance = sqrt(rcp_sample_square_distance);
+                    incoming *= rcp_sample_distance;
+                    cos_on_light *= rcp_sample_distance;
+
+                    ShadingPoint light_shading_point;
+                    light_sample.make_shading_point(
+                        light_shading_point,
+                        -incoming,
+                        m_shading_context.get_intersector());
+
+                    // Execute the OSL emission shader if needed.
+#ifdef APPLESEED_WITH_OSL
+                    if (const ShaderGroup* sg = material->get_osl_surface())
+                        m_shading_context.execute_osl_emission(*sg, light_shading_point);
+#endif
+
+                    // Evaluate the EDF inputs.
+                    InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
+                    edf->evaluate_inputs(edf_input_evaluator, light_shading_point);
+
+                    // Evaluate the EDF.
+                    edf->evaluate(
+                        edf_input_evaluator.data(),
+                        light_sample.m_geometric_normal,
+                        Basis3d(light_sample.m_shading_normal),
+                        -incoming,
+                        irradiance);
+
+                    // Compute cosine factor at shading point.
+                    // abs() because we might be on the backside of the surface.
+                    cos_in = abs(dot(incoming, shading_point.get_shading_normal()));
+
+                    // Compute irradiance at shading point.
+                    irradiance *= static_cast<float>((cos_on_light * cos_in * rcp_sample_square_distance) / light_sample.m_probability);
+                }
+                else
+                {
+                    const Light* light = light_sample.m_light;
+
+                    // todo: check light flags.
+
+                    // Evaluate the light.
+                    InputEvaluator light_input_evaluator(m_shading_context.get_texture_cache());
+                    Vector3d emission_position, emission_direction;
+                    light->evaluate(
+                        light_input_evaluator,
+                        light_sample.m_light_transform,
+                        shading_point.get_point(),
+                        emission_position,
+                        emission_direction,
+                        irradiance);
+
+                    // Compute the transmission factor between the light sample and the shading point.
+                    transmission =
+                        m_shading_context.get_tracer().trace_between(
+                            shading_point,
+                            emission_position,
+                            VisibilityFlags::ShadowRay);
+
+                    // Discard occluded samples.
+                    if (transmission == 0.0)
+                        return false;
+
+                    // Compute the incoming direction in world space.
+                    incoming = -emission_direction;
+
+                    // Compute cosine factor at shading point.
+                    // abs() because we might be on the backside of the surface.
+                    cos_in = abs(dot(incoming, shading_point.get_shading_normal()));
+
+                    // Compute irradiance at shading point.
+                    const double attenuation = light->compute_distance_attenuation(shading_point.get_point(), emission_position);
+                    irradiance *= static_cast<float>(attenuation / light_sample.m_probability);
+                }
+
+                return true;
+            }
         };
 
         //
@@ -566,19 +577,21 @@ namespace
             }
 
             bool accept_scattering(
-                const BSDFSample::ScatteringMode  prev_bsdf_mode,
-                const BSDFSample::ScatteringMode  bsdf_mode)
+                const ScatteringMode::Mode  prev_mode,
+                const ScatteringMode::Mode  next_mode)
             {
-                assert(bsdf_mode != BSDFSample::Absorption);
+                assert(next_mode != ScatteringMode::Absorption);
 
                 if (!m_params.m_enable_caustics)
                 {
                     // Don't follow paths leading to caustics.
-                    if (BSDFSample::has_diffuse(prev_bsdf_mode) && BSDFSample::has_glossy_or_specular(bsdf_mode))
+                    if (ScatteringMode::has_diffuse(prev_mode) &&
+                        ScatteringMode::has_glossy_or_specular(next_mode))
                         return false;
 
                     // Ignore light emission after glossy-to-specular bounces to prevent another class of fireflies.
-                    if (BSDFSample::has_glossy(prev_bsdf_mode) && BSDFSample::has_specular(bsdf_mode))
+                    if (ScatteringMode::has_glossy(prev_mode) &&
+                        ScatteringMode::has_specular(next_mode))
                         m_omit_emitted_light = true;
                 }
 
@@ -636,14 +649,14 @@ namespace
 
             void visit_environment(const PathVertex& vertex)
             {
-                assert(vertex.m_prev_bsdf_mode != BSDFSample::Absorption);
+                assert(vertex.m_prev_mode != ScatteringMode::Absorption);
 
                 // Can't look up the environment if there's no environment EDF.
                 if (m_env_edf == 0)
                     return;
 
                 // When IBL is disabled, only specular reflections should contribute here.
-                if (!m_params.m_enable_ibl && vertex.m_prev_bsdf_mode != BSDFSample::Specular)
+                if (!m_params.m_enable_ibl && vertex.m_prev_mode != ScatteringMode::Specular)
                     return;
 
                 // Evaluate the environment EDF.
@@ -696,7 +709,7 @@ namespace
             void visit_vertex(const PathVertex& vertex)
             {
                 // Any light contribution after a diffuse or glossy bounce is considered indirect.
-                if (BSDFSample::has_diffuse_or_glossy(vertex.m_prev_bsdf_mode))
+                if (ScatteringMode::has_diffuse_or_glossy(vertex.m_prev_mode))
                     m_is_indirect_lighting = true;
 
                 Spectrum vertex_radiance(0.0f);
@@ -705,9 +718,9 @@ namespace
                 if (vertex.m_bsdf)
                 {
                     const int scattering_modes =
-                        !m_params.m_enable_caustics && vertex.m_prev_bsdf_mode == BSDFSample::Diffuse
-                            ? BSDFSample::Diffuse
-                            : BSDFSample::AllScatteringModes;
+                        !m_params.m_enable_caustics && vertex.m_prev_mode == ScatteringMode::Diffuse
+                            ? ScatteringMode::Diffuse
+                            : ScatteringMode::All;
 
                     // Direct lighting.
                     if (m_params.m_enable_dl || vertex.m_path_length > 1)
@@ -917,13 +930,13 @@ namespace
                     emitted_radiance);
 
                 // Multiple importance sampling.
-                if (vertex.m_prev_bsdf_mode != BSDFSample::Specular)
+                if (vertex.m_prev_mode != ScatteringMode::Specular)
                 {
                     const double light_sample_count = max(m_params.m_dl_light_sample_count, 1.0);
                     const double mis_weight =
                         mis_power2(
-                            1.0 * vertex.get_bsdf_point_prob(),
-                            light_sample_count * vertex.get_light_point_prob(m_light_sampler));
+                            1.0 * vertex.get_prev_prob_area(),
+                            light_sample_count * vertex.get_light_prob_area(m_light_sampler));
                     emitted_radiance *= static_cast<float>(mis_weight);
                 }
 
@@ -934,14 +947,14 @@ namespace
 
             void visit_environment(const PathVertex& vertex)
             {
-                assert(vertex.m_prev_bsdf_mode != BSDFSample::Absorption);
+                assert(vertex.m_prev_mode != ScatteringMode::Absorption);
 
                 // Can't look up the environment if there's no environment EDF.
                 if (m_env_edf == 0)
                     return;
 
                 // When IBL is disabled, only specular reflections should contribute here.
-                if (!m_params.m_enable_ibl && vertex.m_prev_bsdf_mode != BSDFSample::Specular)
+                if (!m_params.m_enable_ibl && vertex.m_prev_mode != ScatteringMode::Specular)
                     return;
 
                 // Evaluate the environment EDF.
@@ -956,13 +969,13 @@ namespace
                     env_prob);
 
                 // Multiple importance sampling.
-                if (vertex.m_prev_bsdf_mode != BSDFSample::Specular)
+                if (vertex.m_prev_mode != ScatteringMode::Specular)
                 {
-                    assert(vertex.m_prev_bsdf_prob > 0.0);
+                    assert(vertex.m_prev_prob > 0.0);
                     const double env_sample_count = max(m_params.m_ibl_env_sample_count, 1.0);
                     const double mis_weight =
                         mis_power2(
-                            1.0 * vertex.m_prev_bsdf_prob,
+                            1.0 * vertex.m_prev_prob,
                             env_sample_count * env_prob);
                     env_radiance *= static_cast<float>(mis_weight);
                 }
