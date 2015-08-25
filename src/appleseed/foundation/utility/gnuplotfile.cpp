@@ -220,7 +220,7 @@ void GnuplotFile::Plot::write_decl(ofstream& file) const
         file << " smooth " << m_smoothing;
 
     if (!m_title.empty())
-        file << " title \"" << m_title << "\" noenhanced";
+        file << " title \"" << m_title << "\"";
     else file << " notitle";
 }
 
