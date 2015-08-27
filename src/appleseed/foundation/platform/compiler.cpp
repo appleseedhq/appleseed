@@ -43,6 +43,10 @@ const char* Compiler::get_compiler_name()
 #if defined _MSC_VER
     return "Microsoft Visual C++";
 
+// Clang.
+#elif defined __clang__
+    return "clang";
+
 // gcc.
 #elif defined __GNUC__
     return "gcc";
@@ -58,6 +62,12 @@ const char* Compiler::get_compiler_version()
 // Visual C++.
 #if defined _MSC_VER
     return TO_STRING_EVAL(_MSC_VER);
+
+// Clang.
+#elif defined __clang__
+    return TO_STRING_EVAL(__clang_major__) "."
+           TO_STRING_EVAL(__clang_minor__) "."
+           TO_STRING_EVAL(__clang_patchlevel__);
 
 // gcc.
 #elif defined __GNUC__
