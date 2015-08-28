@@ -481,18 +481,18 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     if (square_distance > 0.0)
     {
         // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
-        const double bsdf_point_prob = sample.get_probability() * cos_on / square_distance;
+        const double bsdf_prob_area = sample.get_probability() * cos_on / square_distance;
 
         // Compute the probability density wrt. surface area mesure of the light sample.
-        const double light_point_prob = m_light_sampler.evaluate_pdf(light_shading_point);
+        const double light_prob_area = m_light_sampler.evaluate_pdf(light_shading_point);
 
         // Apply the weighting function.
         weight *=
             weighting_function(
                 m_bsdf_sample_count,
                 m_light_sample_count,
-                bsdf_point_prob,
-                light_point_prob);
+                bsdf_prob_area,
+                light_prob_area);
     }
 
     // Add the contribution of this sample to the illumination.
@@ -555,15 +555,13 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     // Compute the incoming direction in world space.
     foundation::Vector3d incoming = sample.m_point - m_point;
 
-    // Cull light samples behind the shading surface
-    // if the BSDF is either Reflective or Transmissive, but not both.
+    // Cull light samples behind the shading surface if the BSDF is either reflective or transmissive,
+    // but not both.
     if (m_bsdf.get_type() != BSDF::AllBSDFTypes)
     {
         double cos_in = foundation::dot(incoming, m_shading_basis.get_normal());
-
         if (m_bsdf.get_type() == BSDF::Transmissive)
             cos_in = -cos_in;
-
         if (cos_in <= 0.0)
             return;
     }
@@ -639,7 +637,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
         edf_value);
 
     // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
-    const double bsdf_point_prob = bsdf_prob * cos_on * rcp_sample_square_distance;
+    const double bsdf_prob_area = bsdf_prob * cos_on * rcp_sample_square_distance;
 
     // Evaluate the weighting function.
     const double mis_weight =
@@ -647,7 +645,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
             m_light_sample_count,
             m_bsdf_sample_count,
             sample.m_probability,
-            bsdf_point_prob);
+            bsdf_prob_area);
 
     // Add the contribution of this sample to the illumination.
     const double weight = mis_weight * transmission * cos_on * rcp_sample_square_distance / sample.m_probability;

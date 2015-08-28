@@ -345,13 +345,11 @@ namespace
             {
                 // Compute irradiance at incoming point.
                 Vector3d incoming;
-                double transmission;
                 double cos_in;
                 Spectrum irradiance;
                 if (!compute_irradiance(
                         incoming_point,
                         incoming,
-                        transmission,
                         cos_in,
                         irradiance))
                     return;
@@ -375,7 +373,6 @@ namespace
                 // Add the contribution of this sample to the illumination.
                 const double weight =
                       RcpPi
-                    * transmission
                     * incoming_fresnel
                     * outgoing_fresnel
                     / probability;
@@ -415,7 +412,6 @@ namespace
             bool compute_irradiance(
                 const ShadingPoint&     shading_point,
                 Vector3d&               incoming,
-                double&                 transmission,
                 double&                 cos_in,
                 Spectrum&               irradiance) const
             {
@@ -444,7 +440,7 @@ namespace
                         return false;
 
                     // Compute the transmission factor between the light sample and the shading point.
-                    transmission =
+                    const double transmission =
                         m_shading_context.get_tracer().trace_between(
                             shading_point,
                             light_sample.m_point,
@@ -465,13 +461,13 @@ namespace
                     incoming *= rcp_sample_distance;
                     cos_on_light *= rcp_sample_distance;
 
+                    // Build a shading point on the light source.
                     ShadingPoint light_shading_point;
                     light_sample.make_shading_point(
                         light_shading_point,
                         -incoming,
                         m_shading_context.get_intersector());
 
-                    // Execute the OSL emission shader if needed.
 #ifdef APPLESEED_WITH_OSL
                     if (const ShaderGroup* sg = material->get_osl_surface())
                         m_shading_context.execute_osl_emission(*sg, light_shading_point);
@@ -487,14 +483,32 @@ namespace
                         light_sample.m_geometric_normal,
                         Basis3d(light_sample.m_shading_normal),
                         -incoming,
-                        irradiance);
+                        irradiance);    // a radiance at this point
 
                     // Compute cosine factor at shading point.
                     // abs() because we might be on the backside of the surface.
                     cos_in = abs(dot(incoming, shading_point.get_shading_normal()));
 
+                    // Compute probability wrt. surface area measure of hitting this point on the light
+                    // by sampling the diffuse BRDF at the incoming point (Veach: 8.2.2.2 eq. 8.10).
+                    const double bsdf_prob = cos_in * RcpPi;
+                    const double bsdf_prob_area = bsdf_prob * cos_on_light * rcp_sample_square_distance;
+
+                    // Compute the multiple importance sampling weight.
+                    const double mis_weight =
+                        mis_power2(
+                            1.0 * light_sample.m_probability,
+                            1.0 * bsdf_prob_area);
+
                     // Compute irradiance at shading point.
-                    irradiance *= static_cast<float>((cos_on_light * cos_in * rcp_sample_square_distance) / light_sample.m_probability);
+                    const double weight =
+                          mis_weight
+                        * transmission
+                        * cos_on_light
+                        * cos_in
+                        * rcp_sample_square_distance
+                        / light_sample.m_probability;
+                    irradiance *= static_cast<float>(weight);
                 }
                 else
                 {
@@ -514,7 +528,7 @@ namespace
                         irradiance);
 
                     // Compute the transmission factor between the light sample and the shading point.
-                    transmission =
+                    const double transmission =
                         m_shading_context.get_tracer().trace_between(
                             shading_point,
                             emission_position,
@@ -533,7 +547,8 @@ namespace
 
                     // Compute irradiance at shading point.
                     const double attenuation = light->compute_distance_attenuation(shading_point.get_point(), emission_position);
-                    irradiance *= static_cast<float>(attenuation / light_sample.m_probability);
+                    const double weight = transmission * attenuation / light_sample.m_probability;
+                    irradiance *= static_cast<float>(weight);
                 }
 
                 return true;

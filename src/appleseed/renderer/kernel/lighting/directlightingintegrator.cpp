@@ -217,12 +217,11 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     // Compute the incoming direction in world space.
     const Vector3d incoming = -emission_direction;
 
-    // Cull light samples behind the shading surface
-    // if the BSDF is either Reflective or Transmissive, but not both.
+    // Cull light samples behind the shading surface if the BSDF is either reflective or transmissive,
+    // but not both.
     if (m_bsdf.get_type() != BSDF::AllBSDFTypes)
     {
         double cos_in = dot(incoming, m_shading_basis.get_normal());
-
         if (m_bsdf.get_type() == BSDF::Transmissive)
             cos_in = -cos_in;
         if (cos_in <= 0.0)
@@ -258,7 +257,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
 
     // Add the contribution of this sample to the illumination.
     const double attenuation = light->compute_distance_attenuation(m_point, emission_position);
-    const double weight = (transmission * attenuation) / sample.m_probability;
+    const double weight = transmission * attenuation / sample.m_probability;
     light_value *= static_cast<float>(weight);
     light_value *= bsdf_value;
     radiance += light_value;
