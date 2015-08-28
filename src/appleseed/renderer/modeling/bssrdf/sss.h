@@ -142,19 +142,6 @@ double gaussian_profile_pdf(
 //
 // Dipole diffusion profile.
 //
-// Reference:
-//
-//   A Practical Model for Subsurface Light Transport
-//   https://graphics.stanford.edu/papers/bssrdf/bssrdf.pdf
-//
-
-double dipole_profile_sample(
-    const double        u,                      // uniform random sample in [0,1)
-    const double        sigma_tr);
-
-double dipole_profile_pdf(
-    const double        r,
-    const double        sigma_tr);
 
 double dipole_max_radius(
     const double        sigma_tr);
