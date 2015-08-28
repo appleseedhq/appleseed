@@ -148,6 +148,26 @@ Vector<T, 3> sample_spherical_triangle_uniform(
     const Vector<T, 3>& v2,
     const Vector<T, 2>& eta);
 
+//
+// Exponential sampling functions.
+//
+
+//
+// References:
+//
+//   Physically based rendering, first edition, page 641.
+//
+
+template <typename T>
+T sample_exponential_distribution(
+    const T u,                      // uniform random sample in [0,1)
+    const T a);
+
+template <typename T>
+T exponential_distribution_pdf(
+    const T x,
+    const T a);
+
 
 //
 // Implementation.
@@ -405,6 +425,27 @@ Vector<T, 3> sample_spherical_triangle_uniform(
 
     // Construct the corresponding point on the sphere.
     return z * B + std::sqrt(T(1.0) - z * z) * normalize(C_hat - dot(C_hat, B) * B);
+}
+
+template <typename T>
+inline T sample_exponential_distribution(
+    const T u,
+    const T a)
+{
+    assert(u >= T(0.0));
+    assert(u < T(1.0));
+
+    return -std::log(T(1.0) - u) / a;
+}
+
+template <typename T>
+inline T exponential_distribution_pdf(
+    const T x,
+    const T a)
+{
+    assert(x >= T(0.0));
+
+    return a * std::exp(-a * x);
 }
 
 }       // namespace foundation

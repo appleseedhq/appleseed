@@ -35,6 +35,7 @@
 #include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -116,7 +117,7 @@ bool DipoleBSSRDF::sample(
 
     // Sample a radius.
     const double sigma_tr = 1.0 / values->m_dmfp;
-    const double radius = dipole_profile_sample(s[0], sigma_tr);
+    const double radius = sample_exponential_distribution(s[0], sigma_tr);
 
     // Set the max radius.
     sample.set_rmax2(values->m_max_radius2);
@@ -144,7 +145,7 @@ double DipoleBSSRDF::evaluate_pdf(
 
     // PDF of the sampled radius.
     const double sigma_tr = 1.0 / values->m_dmfp;
-    const double pdf_radius = dipole_profile_pdf(radius, sigma_tr);
+    const double pdf_radius = exponential_distribution_pdf(radius, sigma_tr);
 
     // PDF of the sampled angle.
     const double pdf_angle = RcpTwoPi;

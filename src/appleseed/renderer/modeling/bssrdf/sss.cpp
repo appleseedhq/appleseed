@@ -164,20 +164,6 @@ double gaussian_profile_pdf(
 // Dipole diffusion profile implementation.
 //
 
-double dipole_profile_sample(
-    const double    u,
-    const double    sigma_tr)
-{
-    return -log(1.0 - u) / sigma_tr;
-}
-
-double dipole_profile_pdf(
-    const double    r,
-    const double    sigma_tr)
-{
-    return sigma_tr * exp(-sigma_tr * r);
-}
-
 double dipole_max_radius(const double sigma_tr)
 {
     return -log(0.00001) / sigma_tr;
