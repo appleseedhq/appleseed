@@ -950,7 +950,7 @@ namespace
                     const double light_sample_count = max(m_params.m_dl_light_sample_count, 1.0);
                     const double mis_weight =
                         mis_power2(
-                            1.0 * vertex.get_prev_prob_area(),
+                            1.0 * vertex.get_bsdf_prob_area(),
                             light_sample_count * vertex.get_light_prob_area(m_light_sampler));
                     emitted_radiance *= static_cast<float>(mis_weight);
                 }
