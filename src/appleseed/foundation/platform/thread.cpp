@@ -31,6 +31,7 @@
 #include "thread.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/platform/defaulttimers.h"
 #ifdef _WIN32
 #include "foundation/platform/windows.h"
@@ -78,7 +79,7 @@ namespace foundation
               case ProcessPriorityHigh:     return ABOVE_NORMAL_PRIORITY_CLASS;
               case ProcessPriorityHighest:  return HIGH_PRIORITY_CLASS;
               default:
-                assert(!"Should never happen.");
+                UNREACHABLE;
                 return NORMAL_PRIORITY_CLASS;
             }
         }
@@ -164,7 +165,7 @@ namespace foundation
               case ProcessPriorityHigh:     return THREAD_PRIORITY_ABOVE_NORMAL;
               case ProcessPriorityHighest:  return THREAD_PRIORITY_HIGHEST;
               default:
-                assert(!"Should never happen.");
+                UNREACHABLE;
                 return THREAD_PRIORITY_NORMAL;
             }
         }
