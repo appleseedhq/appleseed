@@ -309,7 +309,7 @@ namespace
 
                 // Unlike in the path tracer, we need to sample the diffuse components
                 // of the BSDF because we won't extend the path after a diffuse bounce.
-                DirectLightingIntegrator integrator(
+                const DirectLightingIntegrator integrator(
                     m_shading_context,
                     m_light_sampler,
                     vertex,

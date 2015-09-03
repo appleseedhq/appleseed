@@ -103,7 +103,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(
 void DirectLightingIntegrator::sample_bsdf_and_lights(
     SamplingContext&            sampling_context,
     Spectrum&                   radiance,
-    SpectrumStack&              aovs)
+    SpectrumStack&              aovs) const
 {
     sample_bsdf(
         sampling_context,
@@ -127,7 +127,7 @@ void DirectLightingIntegrator::sample_bsdf_and_lights(
 void DirectLightingIntegrator::sample_bsdf_and_lights_low_variance(
     SamplingContext&            sampling_context,
     Spectrum&                   radiance,
-    SpectrumStack&              aovs)
+    SpectrumStack&              aovs) const
 {
     sample_bsdf(
         sampling_context,
@@ -151,7 +151,7 @@ void DirectLightingIntegrator::sample_bsdf_and_lights_low_variance(
 void DirectLightingIntegrator::take_single_bsdf_or_light_sample(
     SamplingContext&            sampling_context,
     Spectrum&                   radiance,
-    SpectrumStack&              aovs)
+    SpectrumStack&              aovs) const
 {
     radiance.set(0.0f);
     aovs.set(0.0f);
@@ -194,7 +194,7 @@ void DirectLightingIntegrator::take_single_bsdf_or_light_sample(
 void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     const LightSample&          sample,
     Spectrum&                   radiance,
-    SpectrumStack&              aovs)
+    SpectrumStack&              aovs) const
 {
     const Light* light = sample.m_light;
 

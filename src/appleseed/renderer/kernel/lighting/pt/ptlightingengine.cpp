@@ -812,7 +812,7 @@ namespace
 
                 const size_t bsdf_sample_count = last_vertex ? light_sample_count : 1;
 
-                DirectLightingIntegrator integrator(
+                const DirectLightingIntegrator integrator(
                     m_shading_context,
                     m_light_sampler,
                     vertex,
