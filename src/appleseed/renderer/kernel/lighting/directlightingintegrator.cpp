@@ -40,7 +40,6 @@ using namespace std;
 namespace renderer
 {
 
-
 DirectLightingIntegrator::DirectLightingIntegrator(
     const ShadingContext&       shading_context,
     const LightSampler&         light_sampler,

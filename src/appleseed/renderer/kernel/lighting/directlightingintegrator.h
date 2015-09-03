@@ -566,7 +566,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
             return;
     }
 
-    // Cull samples on lights emitting in the wrong direction.
+    // No contribution if the shading point is behind the light.
     double cos_on = foundation::dot(-incoming, sample.m_shading_normal);
     if (cos_on <= 0.0)
         return;
