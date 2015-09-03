@@ -37,9 +37,6 @@
 // Partio headers.
 #include <Partio.h>
 
-// Standard headers.
-#include <string>
-
 namespace foundation
 {
 
@@ -50,9 +47,9 @@ class PartioFile
     PartioFile();
     ~PartioFile();
 
-    Partio::ParticleAttribute add_float_attribute(const std::string& name);
-    Partio::ParticleAttribute add_vector_attribute(const std::string& name);
-    Partio::ParticleAttribute add_color_attribute(const std::string& name);
+    Partio::ParticleAttribute add_float_attribute(const char* name);
+    Partio::ParticleAttribute add_vector_attribute(const char* name);
+    Partio::ParticleAttribute add_color_attribute(const char* name);
 
     Partio::ParticleIndex add_particle();
 
@@ -74,7 +71,7 @@ class PartioFile
         const Partio::ParticleAttribute&    attribute,
         const foundation::Color<T,3>&       value);
 
-    void write(const std::string& filepath) const;
+    void write(const char* filepath) const;
 
   private:
     Partio::ParticlesDataMutable*   m_particles;

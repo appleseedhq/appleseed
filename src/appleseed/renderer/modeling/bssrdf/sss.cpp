@@ -30,6 +30,7 @@
 #include "sss.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/cdf.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
@@ -82,6 +83,8 @@ double diffusion_coefficient(
     const double    sigma_a,
     const double    sigma_t)
 {
+    assert(sigma_t > 0.0);
+
     return (sigma_t + sigma_a) / (3.0 * square(sigma_t));
 }
 
@@ -89,6 +92,8 @@ double diffuse_mean_free_path(
     const double    sigma_a,
     const double    sigma_t)
 {
+    assert(sigma_a > 0.0);
+
     const double D = diffusion_coefficient(sigma_a, sigma_t);
     return 1.0 / sqrt(sigma_a / D);
 }
@@ -97,6 +102,9 @@ double reduced_extinction_coefficient(
     const double    dmfp,
     const double    alpha_prime)
 {
+    assert(alpha_prime >= 0.0);
+    assert(alpha_prime < 1.0);
+
     return 1.0 / (sqrt(3.0 * (1.0 - alpha_prime)) * dmfp);
 }
 
@@ -117,6 +125,7 @@ void effective_extinction_coefficient(
     Spectrum&       sigma_tr)
 {
     assert(sigma_a.size() == sigma_s.size());
+
     sigma_tr.resize(sigma_a.size());
 
     for (size_t i = 0, e = sigma_tr.size(); i < e; ++i)
@@ -164,8 +173,118 @@ double gaussian_profile_pdf(
 // Dipole diffusion profile implementation.
 //
 
+//
+// Sampling derivation:
+//
+//   We want to generate samples according to R(r) * 2 * Pi * r.
+//   We choose the exponential term in all dipole formulations:
+//
+//     exp(-sigma_tr * r)
+//
+//   Our distribution is:
+//
+//     p(r) = exp(-sigma_tr * r) * 2 * Pi * r
+//
+//   And the normalization factor is:
+//
+//     / inf
+//     |                 2 * Pi
+//     |  p(r) dr  =  ------------
+//     |               sigma_tr^2
+//     / 0
+//
+//  Our PDF is:
+//
+//    pdf(r) = sigma_tr^2 * exp(-sigma_tr * r) * r
+//
+//  We integrate the PDF to find the CDF:
+//
+//     / R
+//     |
+//     |  pdf(r) dr  = 1 - exp(-sigma_tr * r) * (1 + sigma_tr * r)
+//     |
+//     / 0
+//
+//  The CDF is not analytically invertible.
+//  We use a combination of bisection and Newton-Raphson steps
+//  to invert it numerically.
+//
+
+double dipole_pdf(const double r, const double sigma_tr)
+{
+    return square(sigma_tr) * exp(-sigma_tr * r) * r;
+}
+
+double dipole_cdf(const double r, const double sigma_tr)
+{
+    const double x = sigma_tr * r;
+    return 1.0 - exp(-x) * (1.0 + x);
+}
+
+namespace
+{
+    struct DipoleCDFFun
+    {
+        explicit DipoleCDFFun(const double sigma_tr)
+          : m_sigma_tr(sigma_tr)
+        {
+        }
+
+        double operator()(const double r) const
+        {
+            return dipole_cdf(r, m_sigma_tr);
+        }
+
+        const double m_sigma_tr;
+    };
+
+    struct DipolePDFFun
+    {
+        explicit DipolePDFFun(const double sigma_tr)
+          : m_sigma_tr(sigma_tr)
+        {
+        }
+
+        double operator()(const double r) const
+        {
+            return dipole_pdf(r, m_sigma_tr);
+        }
+
+        const double m_sigma_tr;
+    };
+}
+
+double dipole_sample(
+    const double    u,
+    const double    sigma_tr,
+    const double    eps,
+    const size_t    max_iterations)
+{
+    // Bracket the root.
+    const double rmin = 0.0;
+    const double rmax = dipole_max_radius(sigma_tr);
+    assert(dipole_cdf(rmax, sigma_tr) >= u);
+
+    // Initial guess. This seems to reduce the number of Newton steps
+    // by approx. 2 on average compared to using rmax / 2.
+    double r = 2.0 * sample_exponential_distribution(u, sigma_tr);
+
+    return invert_cdf_function(
+        DipoleCDFFun(sigma_tr),
+        DipolePDFFun(sigma_tr),
+        u,
+        rmin,
+        rmax,
+        r,
+        eps,
+        max_iterations);
+}
+
 double dipole_max_radius(const double sigma_tr)
 {
+    // todo: some plots suggest that our estimate
+    // for max radius is too conservative.
+    // We could probably reduce it a bit.
     return -log(0.00001) / sigma_tr;
 }
 
@@ -201,32 +320,62 @@ double normalized_diffusion_profile(
 
 namespace
 {
-    const size_t NdCdfTableSize = 128;
-    const double NdCdfTableRmax = 55.0;
-    const double NdCdfTableStep = NdCdfTableRmax / NdCdfTableSize;
+    const size_t NDCDFTableSize = 128;
+    const double NDCDFTableRmax = 55.0;
+    const double NDCDFTableStep = NDCDFTableRmax / NDCDFTableSize;
 
-    double nd_cdf_table[NdCdfTableSize];
+    double nd_cdf_table[NDCDFTableSize];
     double nd_cdf_rmax;
 
-    struct InitializeNdCDFTable
+    struct InitializeNDCDFTable
     {
-        InitializeNdCDFTable()
+        InitializeNDCDFTable()
         {
-            for (size_t i = 0; i < NdCdfTableSize; ++i)
+            for (size_t i = 0; i < NDCDFTableSize; ++i)
             {
-                const double r = fit<size_t, double>(i, 0, NdCdfTableSize - 1, 0.0, NdCdfTableRmax);
+                const double r = fit<size_t, double>(i, 0, NDCDFTableSize - 1, 0.0, NDCDFTableRmax);
                 nd_cdf_table[i] = normalized_diffusion_cdf(r, 1.0);
             }
 
             // Save the real value of cdf(Rmax, 1).
-            nd_cdf_rmax = nd_cdf_table[NdCdfTableSize - 1];
+            nd_cdf_rmax = nd_cdf_table[NDCDFTableSize - 1];
 
             // Make sure the last value is exactly 1.
-            nd_cdf_table[NdCdfTableSize - 1] = 1.0;
+            nd_cdf_table[NDCDFTableSize - 1] = 1.0;
         }
     };
 
-    InitializeNdCDFTable initialize_nd_cdf_table;
+    InitializeNDCDFTable initialize_nd_cdf_table;
+
+    struct NDCDFFun
+    {
+        explicit NDCDFFun(const double d)
+          : m_d(d)
+        {
+        }
+
+        double operator()(const double r) const
+        {
+            return normalized_diffusion_cdf(r, m_d);
+        }
+
+        const double m_d;
+    };
+
+    struct NDPDFFun
+    {
+        explicit NDPDFFun(const double d)
+          : m_d(d)
+        {
+        }
+
+        double operator()(const double r) const
+        {
+            return normalized_diffusion_pdf(r, m_d);
+        }
+
+        const double m_d;
+    };
 }
 
 double normalized_diffusion_sample(
@@ -243,44 +392,27 @@ double normalized_diffusion_sample(
 
     // Handle the case where u is greater than the value we consider 1 in our CDF.
     if (u >= nd_cdf_rmax)
-        return NdCdfTableRmax * d;
+        return NDCDFTableRmax * d;
 
     // Use the CDF to find an initial interval for the root of cdf(r, 1) - u = 0.
-    const size_t i = sample_cdf(nd_cdf_table, nd_cdf_table + NdCdfTableSize, u);
+    const size_t i = sample_cdf(nd_cdf_table, nd_cdf_table + NDCDFTableSize, u);
     assert(i > 0);
     assert(nd_cdf_table[i - 1] <= u);
     assert(nd_cdf_table[i] > u);
 
     // Transform the cdf(r, 1) interval to cdf(r, d) using the fact that cdf(r, d) == cdf(r/d, 1).
-    double rmin = fit<size_t, double>(i - 1, 0, NdCdfTableSize - 1, 0.0, NdCdfTableRmax) * d;
-    double rmax = fit<size_t, double>(i,     0, NdCdfTableSize - 1, 0.0, NdCdfTableRmax) * d;
-    assert(normalized_diffusion_cdf(rmin, d) <= u);
-    assert(normalized_diffusion_cdf(rmax, d) > u);
+    const double rmin = fit<size_t, double>(i - 1, 0, NDCDFTableSize - 1, 0.0, NDCDFTableRmax) * d;
+    const double rmax = fit<size_t, double>(i,     0, NDCDFTableSize - 1, 0.0, NDCDFTableRmax) * d;
 
-    double r = (rmax + rmin) * 0.5;
-
-    // Refine the root.
-    for (size_t i = 0; i < max_iterations; ++i)
-    {
-        // Use bisection if we go out of bounds.
-        if (r < rmin || r > rmax)
-            r = (rmax + rmin) * 0.5;
-
-        const double f = normalized_diffusion_cdf(r, d) - u;
-
-        // Convergence test.
-        if (abs(f) <= eps)
-            break;
-
-        // Update bounds.
-        f < 0.0 ? rmin = r : rmax = r;
-
-        // Newton step.
-        const double df = normalized_diffusion_pdf(r, d);
-        r -= f / df;
-    }
-
-    return r;
+    return invert_cdf_function(
+        NDCDFFun(d),
+        NDPDFFun(d),
+        u,
+        rmin,
+        rmax,
+        (rmax + rmin) * 0.5,
+        eps,
+        max_iterations);
 }
 
 double normalized_diffusion_cdf(
@@ -317,7 +449,10 @@ double normalized_diffusion_pdf(
 double normalized_diffusion_max_radius(
     const double    d)
 {
-    return d * NdCdfTableRmax;
+    // todo: some plots suggest that our estimate
+    // for max radius is too conservative.
+    // We could probably reduce it a bit.
+    return d * NDCDFTableRmax;
 }
 
 double normalized_diffusion_max_radius(

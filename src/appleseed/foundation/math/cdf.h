@@ -110,6 +110,24 @@ size_t sample_cdf(
     Weight              x);
 
 //
+// Invert CDF.
+//
+
+// Numerically invert the CDF function cdf, with corresponding PDF pdf,
+// using a combination of bisection and Newton's method.
+template <typename CDF, typename PDF, typename T>
+T invert_cdf_function(
+    CDF             cdf,                // cdf function to invert
+    PDF             pdf,                // pdf function
+    const T         u,                  // uniform random sample in [0,1)
+    T               xmin,               // lower bound of the root search interval
+    T               xmax,               // upper bound of the root search interval
+    const T         guess,              // initial root guess
+    const T         eps,                // root precision
+    const size_t    max_iterations);    // max root refinement iterations
+
+
+//
 // CDF class implementation.
 //
 
@@ -218,6 +236,48 @@ inline size_t sample_cdf(
     assert(i < end);
 
     return i - begin;
+}
+
+//
+// Invert CDF implementation.
+//
+
+template <typename CDF, typename PDF, typename T>
+inline T invert_cdf_function(
+    CDF             cdf,
+    PDF             pdf,
+    const T         u,
+    T               xmin,
+    T               xmax,
+    const T         guess,
+    const T         eps,
+    const size_t    max_iterations)
+{
+    assert(cdf(xmin) < u);
+    assert(cdf(xmax) > u);
+
+    T x = guess;
+    for (size_t i = 0; i < max_iterations; ++i)
+    {
+        // Use bisection if we go out of bounds.
+        if (x < xmin || x > xmax)
+            x = (xmax + xmin) * 0.5;
+
+        const T f = cdf(x) - u;
+
+        // Convergence test.
+        if (std::abs(f) <= eps)
+            break;
+
+        // Update bounds.
+        f < 0.0 ? xmin = x : xmax = x;
+
+        // Newton step.
+        const T df = pdf(x);
+        x -= f / df;
+    }
+
+    return x;
 }
 
 }       // namespace foundation

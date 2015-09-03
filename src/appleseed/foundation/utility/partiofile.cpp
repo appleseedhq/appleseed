@@ -29,8 +29,6 @@
 // Interface header.
 #include "partiofile.h"
 
-// appleseed.foundation headers.
-
 // Standard headers.
 #include <cstddef>
 
@@ -53,19 +51,19 @@ PartioFile::~PartioFile()
     m_particles->release();
 }
 
-Partio::ParticleAttribute PartioFile::add_float_attribute(const std::string& name)
+Partio::ParticleAttribute PartioFile::add_float_attribute(const char* name)
 {
-    return m_particles->addAttribute(name.c_str(), Partio::FLOAT, 1);
+    return m_particles->addAttribute(name, Partio::FLOAT, 1);
 }
 
-Partio::ParticleAttribute PartioFile::add_vector_attribute(const std::string& name)
+Partio::ParticleAttribute PartioFile::add_vector_attribute(const char* name)
 {
-    return m_particles->addAttribute(name.c_str(), Partio::VECTOR, 3);
+    return m_particles->addAttribute(name, Partio::VECTOR, 3);
 }
 
-Partio::ParticleAttribute PartioFile::add_color_attribute(const string& name)
+Partio::ParticleAttribute PartioFile::add_color_attribute(const char* name)
 {
-    return m_particles->addAttribute(name.c_str(), Partio::VECTOR, 3);
+    return m_particles->addAttribute(name, Partio::VECTOR, 3);
 }
 
 Partio::ParticleIndex PartioFile::add_particle()
@@ -73,9 +71,9 @@ Partio::ParticleIndex PartioFile::add_particle()
     return m_particles->addParticle();
 }
 
-void PartioFile::write(const string& filepath) const
+void PartioFile::write(const char* filepath) const
 {
-    Partio::write(filepath.c_str(), *m_particles);
+    Partio::write(filepath, *m_particles);
 }
 
 }   // namespace foundation
