@@ -93,6 +93,7 @@ option (WITH_ALEMBIC                        "Build Alembic support"             
 option (WITH_OSL                            "Build OSL support"                                     OFF)
 option (WITH_DISNEY_MATERIAL                "Build Disney material"                                 OFF)
 option (WITH_NORMALIZED_DIFFUSION_BSSRDF    "Build Normalized diffusion BSSRDF (patented)"          OFF)
+option (WITH_PARTIO                         "Build Partio support (used in unit tests)"             OFF)
 
 option (USE_STATIC_BOOST                    "Use static Boost libraries"                            ON)
 option (USE_STATIC_OIIO                     "Use static OpenImageIO libraries"                      ON)
@@ -245,6 +246,11 @@ if (WITH_NORMALIZED_DIFFUSION_BSSRDF)
     add_definitions (-DAPPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF)
 endif ()
 
+if (WITH_PARTIO)
+    add_definitions (-DAPPLESEED_WITH_PARTIO)
+    find_package (Partio REQUIRED)
+endif ()
+
 #--------------------------------------------------------------------------------------------------
 # Include paths.
 #--------------------------------------------------------------------------------------------------
@@ -328,6 +334,9 @@ if (WITH_DISNEY_MATERIAL)
     endif ()
 endif ()
 
+if (WITH_PARTIO)
+    include_directories (${PARTIO_INCLUDE_DIRS})
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Preprocessor definitions.
