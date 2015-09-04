@@ -98,7 +98,6 @@ option (WITH_PARTIO                         "Build Partio support (used in unit 
 option (USE_STATIC_BOOST                    "Use static Boost libraries"                            ON)
 option (USE_STATIC_OIIO                     "Use static OpenImageIO libraries"                      ON)
 option (USE_STATIC_OSL                      "Use static OpenShadingLanguage libraries"              ON)
-option (USE_RPATH_ORIGIN                    "Use $ORIGIN in rpath to locate shared libraries"       OFF)
 
 option (USE_SSE                             "Use SSE instruction sets up to version 2"              ON)
 option (USE_SSE42                           "Use SSE instruction sets up to version 4.2"            OFF)
