@@ -58,6 +58,9 @@
 #ifdef __linux__
     #define FIXED_WIDTH_FONT_FAMILY         "Courier New"
 #endif
+#ifdef __FreeBSD__
+    #define FIXED_WIDTH_FONT_FAMILY         "Courier New"
+#endif
 
 
 /*
