@@ -82,11 +82,11 @@ target_link_libraries (dumpmetadata
     ${Boost_LIBRARIES}
 )
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+if (UNIX AND NOT WIN32 AND NOT APPLE)
     set_target_properties (dumpmetadata PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"
     )
-endif ()
+endif (UNIX AND NOT WIN32 AND NOT APPLE)
 
 
 #--------------------------------------------------------------------------------------------------

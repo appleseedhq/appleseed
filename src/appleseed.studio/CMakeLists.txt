@@ -404,11 +404,11 @@ if (WIN32)
     )
 endif ()
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+if (UNIX AND NOT WIN32 AND NOT APPLE)
     set_target_properties (appleseed.studio PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"
     )
-endif ()
+endif (UNIX AND NOT WIN32 AND NOT APPLE)
 
 
 #--------------------------------------------------------------------------------------------------
