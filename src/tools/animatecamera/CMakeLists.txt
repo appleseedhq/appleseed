@@ -85,7 +85,7 @@ target_link_libraries (animatecamera
     ${Boost_LIBRARIES}
 )
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+if (USE_RPATH_ORIGIN)
     set_target_properties (animatecamera PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"
     )

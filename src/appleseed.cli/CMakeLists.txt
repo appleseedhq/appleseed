@@ -59,7 +59,7 @@ add_executable (appleseed.cli
     ${appleseed.cli_sources}
 )
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+if (USE_RPATH_ORIGIN)
     set_target_properties (appleseed.cli PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"
     )
