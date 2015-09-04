@@ -89,7 +89,7 @@ if (UNIX AND NOT WIN32 AND NOT APPLE)
     set_target_properties (animatecamera PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"
     )
-endif (UNIX AND NOT WIN32 AND NOT APPLE)
+endif ()
 
 
 #--------------------------------------------------------------------------------------------------
