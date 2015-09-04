@@ -404,7 +404,7 @@ if (WIN32)
     )
 endif ()
 
-if (UNIX AND NOT WIN32 AND NOT APPLE)
+if (USE_RPATH_ORIGIN)
     set_target_properties (appleseed.studio PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"
     )

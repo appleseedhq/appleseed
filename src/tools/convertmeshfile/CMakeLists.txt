@@ -83,7 +83,7 @@ target_link_libraries (convertmeshfile
     ${Boost_LIBRARIES}
 )
 
-if (UNIX AND NOT WIN32 AND NOT APPLE)
+if (USE_RPATH_ORIGIN)
     set_target_properties (convertmeshfile PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"
     )

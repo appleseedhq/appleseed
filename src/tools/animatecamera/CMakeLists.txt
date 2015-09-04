@@ -85,7 +85,7 @@ target_link_libraries (animatecamera
     ${Boost_LIBRARIES}
 )
 
-if (UNIX AND NOT WIN32 AND NOT APPLE)
+if (USE_RPATH_ORIGIN)
     set_target_properties (animatecamera PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"
     )

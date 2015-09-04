@@ -82,7 +82,7 @@ target_link_libraries (makefluffy
     ${Boost_LIBRARIES}
 )
 
-if (UNIX AND NOT WIN32 AND NOT APPLE)
+if (USE_RPATH_ORIGIN)
     set_target_properties (makefluffy PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"
     )

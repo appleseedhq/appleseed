@@ -82,7 +82,7 @@ target_link_libraries (dumpmetadata
     ${Boost_LIBRARIES}
 )
 
-if (UNIX AND NOT WIN32 AND NOT APPLE)
+if (USE_RPATH_ORIGIN)
     set_target_properties (dumpmetadata PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"
     )
