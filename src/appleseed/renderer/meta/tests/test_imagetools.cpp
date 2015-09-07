@@ -37,6 +37,7 @@
 #include "foundation/image/pixel.h"
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/mersennetwister.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
@@ -88,22 +89,42 @@ TEST_SUITE(ImageTools)
         return result;
     }
 
-    struct IPixelOp
+    struct IOnePixelOp
+    {
+        virtual Color3f operator()(const Color3f& c) const = 0;
+    };
+
+    struct ColorMultiply : public IOnePixelOp
+    {
+        const float m_multiplier;
+
+        explicit ColorMultiply(const float multiplier)
+          : m_multiplier(multiplier)
+        {
+        }
+
+        virtual Color3f operator()(const Color3f& c) const APPLESEED_OVERRIDE
+        {
+            return c * m_multiplier;
+        }
+    };
+
+    struct ITwoPixelOp
     {
         virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const = 0;
     };
 
-    struct ColorDifference : public IPixelOp
+    struct ColorDifference : public ITwoPixelOp
     {
-        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const
+        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const APPLESEED_OVERRIDE
         {
             return abs_diff(lhs, rhs);
         }
     };
 
-    struct ColorRatio : public IPixelOp
+    struct ColorRatio : public ITwoPixelOp
     {
-        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const
+        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const APPLESEED_OVERRIDE
         {
             Color3f result;
 
@@ -114,18 +135,18 @@ TEST_SUITE(ImageTools)
         }
     };
 
-    struct LuminanceDifference : public IPixelOp
+    struct LuminanceDifference : public ITwoPixelOp
     {
-        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const
+        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const APPLESEED_OVERRIDE
         {
             const float result = luminance(lhs) - luminance(rhs);
             return result > 0.0f ? IsoLumRed : IsoLumBlue;
         }
     };
 
-    struct LuminanceRatio : public IPixelOp
+    struct LuminanceRatio : public ITwoPixelOp
     {
-        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const
+        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const APPLESEED_OVERRIDE
         {
             const float lhs_lum = luminance(lhs);
             const float rhs_lum = luminance(rhs);
@@ -134,16 +155,16 @@ TEST_SUITE(ImageTools)
         }
     };
 
-    struct LuminanceDifferenceSign : public IPixelOp
+    struct LuminanceDifferenceSign : public ITwoPixelOp
     {
         const float m_threshold;
 
-        LuminanceDifferenceSign(const float threshold = 0.0f)
+        explicit LuminanceDifferenceSign(const float threshold = 0.0f)
           : m_threshold(threshold)
         {
         }
 
-        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const
+        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const APPLESEED_OVERRIDE
         {
             const float diff = luminance(lhs) - luminance(rhs);
             return
@@ -153,16 +174,16 @@ TEST_SUITE(ImageTools)
         }
     };
 
-    struct MaximumComponentDifferenceSign : public IPixelOp
+    struct MaximumComponentDifferenceSign : public ITwoPixelOp
     {
         const float m_threshold;
 
-        MaximumComponentDifferenceSign(const float threshold = 0.0f)
+        explicit MaximumComponentDifferenceSign(const float threshold = 0.0f)
           : m_threshold(threshold)
         {
         }
 
-        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const
+        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const APPLESEED_OVERRIDE
         {
             const Color3f delta = lhs - rhs;
             const float diff = delta[max_abs_index(delta)];
@@ -173,7 +194,34 @@ TEST_SUITE(ImageTools)
         }
     };
 
-    auto_ptr<Image> compare(const Image& lhs, const Image& rhs, const IPixelOp& op)
+    auto_ptr<Image> apply(const Image& image, const IOnePixelOp& op)
+    {
+        const CanvasProperties& props = image.properties();
+
+        if (props.m_channel_count != 4)
+            throw ExceptionUnsupportedChannelCount();
+
+        auto_ptr<Image> output(new Image(props));
+
+        for (size_t y = 0; y < props.m_canvas_height; ++y)
+        {
+            for (size_t x = 0; x < props.m_canvas_width; ++x)
+            {
+                Color4f color;
+                image.get_pixel(x, y, color);
+
+                Color4f result;
+                result.rgb() = op(color.rgb());
+                result.a = color.a;
+
+                output->set_pixel(x, y, saturate(result));
+            }
+        }
+
+        return output;
+    }
+
+    auto_ptr<Image> apply(const Image& lhs, const Image& rhs, const ITwoPixelOp& op)
     {
         const CanvasProperties& lhs_props = lhs.properties();
         const CanvasProperties& rhs_props = rhs.properties();
@@ -199,8 +247,14 @@ TEST_SUITE(ImageTools)
                 rhs.get_pixel(x, y, rhs_color);
 
                 Color4f result;
-                result.rgb() = op(lhs_color.rgb(), rhs_color.rgb());
-                result.a = 1.0f;
+
+                if (lhs_color.a == 0.0f && rhs_color.a == 0.0f)
+                    result.set(0.0f);
+                else
+                {
+                    result.rgb() = op(lhs_color.rgb(), rhs_color.rgb());
+                    result.a = 1.0f;
+                }
 
                 output->set_pixel(x, y, saturate(result));
             }
@@ -227,7 +281,10 @@ TEST_SUITE(ImageTools)
         // LuminanceDifferenceSign op(1.0e-9f);
         MaximumComponentDifferenceSign op(1.0e-9f);
 
-        auto_ptr<Image> result = compare(*left_image.get(), *right_image.get(), op);
+        auto_ptr<Image> result =
+            apply(
+                *apply(*left_image.get(), *right_image.get(), op).get(),
+                ColorMultiply(1.0f));
 
         GenericImageFileWriter writer;
         writer.write("unit tests/outputs/test_imagetools_compareimages.png", *result.get());
