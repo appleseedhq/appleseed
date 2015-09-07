@@ -101,7 +101,6 @@ inline VisibilityFlags::Type ScatteringMode::get_vis_flags(const Mode mode)
     switch (mode)
     {
       case Diffuse:
-      case Subsurface:
         return VisibilityFlags::DiffuseRay;
 
       case Glossy:

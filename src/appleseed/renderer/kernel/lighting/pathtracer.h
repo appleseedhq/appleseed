@@ -387,7 +387,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             if (vertex.m_cos_on <= 0.0)
                 break;
 
-            // Find an incoming point.
+            // Find possible incoming points.
             const SubsurfaceSampler sampler(shading_context);
             sampler.sample(
                 sampling_context,
@@ -421,7 +421,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             const double cos_in = incoming_vector.y;
             const double incoming_prob = cos_in * foundation::RcpPi;
             incoming_vector = incoming_point.get_shading_basis().transform_to_parent(incoming_vector);
-            if (incoming_point.get_side() == ObjectInstance::BackSide)  // todo: not exactly right
+            if (incoming_point.get_side() == ObjectInstance::BackSide)
                 incoming_vector = -incoming_vector;
             incoming = foundation::Dual3d(incoming_vector);
 
@@ -454,7 +454,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
             // Properties of this scattering event.
             vertex.m_prev_mode = ScatteringMode::Subsurface;
-            vertex.m_prev_prob = probability * incoming_prob;
+            vertex.m_prev_prob = incoming_prob;
 
             // Origin and scattering mode of the next ray.
             parent_shading_point = &incoming_point;

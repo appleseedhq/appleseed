@@ -107,7 +107,7 @@ class PathVertex
         Spectrum&               radiance) const;
 
     // Return the probability density wrt. surface area mesure of reaching this vertex via BSDF sampling.
-    double get_prev_prob_area() const;
+    double get_bsdf_prob_area() const;
 
     // Return the probability density wrt. surface area mesure of reaching this vertex via light sampling.
     double get_light_prob_area(const LightSampler& light_sampler) const;
@@ -163,7 +163,7 @@ inline const Material* PathVertex::get_material() const
     return m_shading_point->get_material();
 }
 
-inline double PathVertex::get_prev_prob_area() const
+inline double PathVertex::get_bsdf_prob_area() const
 {
     // Make sure we're coming from a valid scattering event.
     assert(m_prev_mode != ScatteringMode::Absorption);

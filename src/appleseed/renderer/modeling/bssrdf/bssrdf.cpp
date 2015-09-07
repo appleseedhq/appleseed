@@ -31,9 +31,19 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bsdf/lambertianbrdf.h"
 #include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/utility/paramarray.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
+
+// Standard headers.
+#include <string>
 
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
@@ -47,6 +57,11 @@ namespace
     const UniqueID g_class_uid = new_guid();
 }
 
+struct BSSRDF::Impl
+{
+    auto_release_ptr<BSDF> m_brdf;
+};
+
 UniqueID BSSRDF::get_class_uid()
 {
     return g_class_uid;
@@ -56,8 +71,24 @@ BSSRDF::BSSRDF(
     const char*             name,
     const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
+  , impl(new Impl())
 {
+    impl->m_brdf =
+        LambertianBRDFFactory().create(
+            (string(name) + "_brdf").c_str(),
+            ParamArray().insert("reflectance", "1.0"));
+
     set_name(name);
+}
+
+BSSRDF::~BSSRDF()
+{
+    delete impl;
+}
+
+const BSDF& BSSRDF::get_brdf() const
+{
+    return impl->m_brdf.ref();
 }
 
 bool BSSRDF::on_frame_begin(

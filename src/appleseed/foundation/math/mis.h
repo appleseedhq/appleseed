@@ -32,6 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/minmax.h"
+#include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <algorithm>
@@ -69,6 +70,10 @@ template <typename T> T mis_cutoff(const T q1, const T q2, const T q3, const T a
 // Maximum heuristic.
 template <typename T> T mis_maximum(const T q1, const T q2);
 template <typename T> T mis_maximum(const T q1, const T q2, const T q3);
+
+// Apply a MIS heuristic chosen at runtime.
+enum MISHeuristic { MISNone, MISBalance, MISPower2, MISMaximum };
+template <typename T> T mis(const MISHeuristic heuristic, const T q1, const T q2);
 
 
 //
@@ -217,6 +222,21 @@ inline T mis_maximum(const T q1, const T q2, const T q3)
     assert(q1 + q2 + q3 > T(0.0));
 
     return q1 >= q2 && q1 >= q3 ? T(1.0) : T(0.0);
+}
+
+template <typename T>
+inline T mis(const MISHeuristic heuristic, const T q1, const T q2)
+{
+    switch (heuristic)
+    {
+      case MISNone:     return T(1.0);
+      case MISBalance:  return mis_balance(q1, q2);
+      case MISPower2:   return mis_power2(q1, q2);
+      case MISMaximum:  return mis_maximum(q1, q2);
+    }
+
+    UNREACHABLE;
+    return T(-1.0);
 }
 
 }       // namespace foundation

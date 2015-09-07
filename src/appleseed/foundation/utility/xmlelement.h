@@ -31,6 +31,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_XMLELEMENT_H
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/indenter.h"
@@ -195,7 +196,7 @@ inline void XMLElement::close()
         switch (m_content_type)
         {
           case HasNoContent:
-            assert(!"Should never happen.");
+            UNREACHABLE;
             break;
 
           case HasChildElements:

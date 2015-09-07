@@ -302,7 +302,7 @@ namespace
 
                 // Unlike in the path tracer, we need to sample the diffuse components
                 // of the BSDF because we won't extend the path after a diffuse bounce.
-                DirectLightingIntegrator integrator(
+                const DirectLightingIntegrator integrator(
                     m_shading_context,
                     m_light_sampler,
                     vertex,
@@ -313,8 +313,9 @@ namespace
                     false);             // not computing indirect lighting
 
                 // Always sample both the lights and the BSDF.
-                integrator.sample_bsdf_and_lights_low_variance(
+                integrator.compute_outgoing_radiance_combined_sampling_low_variance(
                     vertex.m_sampling_context,
+                    vertex.m_outgoing,
                     dl_radiance,
                     dl_aovs);
 
@@ -384,7 +385,7 @@ namespace
                     const double light_sample_count = max(m_params.m_dl_light_sample_count, 1.0);
                     const double mis_weight =
                         mis_power2(
-                            1.0 * vertex.get_prev_prob_area(),
+                            1.0 * vertex.get_bsdf_prob_area(),
                             light_sample_count * vertex.get_light_prob_area(m_light_sampler));
                     emitted_radiance *= static_cast<float>(mis_weight);
                 }

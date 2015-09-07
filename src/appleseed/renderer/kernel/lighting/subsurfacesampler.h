@@ -47,6 +47,7 @@
 #include "foundation/math/quaternion.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cassert>
@@ -325,8 +326,8 @@ inline double SubsurfaceSampler::compute_mis_weight(
       }
     }
 
-    assert(!"Should never happen.");
-    return 0.0;
+    UNREACHABLE;
+    return -1.0;
 }
 
 }       // namespace renderer
