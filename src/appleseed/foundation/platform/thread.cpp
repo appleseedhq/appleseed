@@ -48,6 +48,9 @@
 // Platform headers.
 #if defined __APPLE__
 #include <pthread.h>
+#elif defined __FreeBSD__
+#include <pthread.h>
+#include <pthread_np.h>
 #elif defined __linux__
 #include <sys/prctl.h>
 #endif
@@ -324,6 +327,14 @@ namespace foundation
     void set_current_thread_name(const char* name)
     {
         pthread_setname_np(name);
+    }
+
+// FreeBSD.
+#elif defined __FreeBSD__
+
+    void set_current_thread_name(const char* name)
+    {
+        pthread_set_name_np(pthread_self(), name);
     }
 
 // Linux.

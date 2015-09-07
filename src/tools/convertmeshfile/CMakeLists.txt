@@ -83,7 +83,7 @@ target_link_libraries (convertmeshfile
     ${Boost_LIBRARIES}
 )
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+if (USE_RPATH_ORIGIN)
     set_target_properties (convertmeshfile PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"
     )

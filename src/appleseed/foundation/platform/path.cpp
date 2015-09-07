@@ -49,6 +49,8 @@
 #include <mach-o/dyld.h>
 #elif defined __linux__
 #include <unistd.h>
+#elif defined __FreeBSD__
+#include <sys/sysctl.h>
 #endif
 
 using namespace boost;
@@ -87,6 +89,14 @@ const char* get_executable_path()
         const ssize_t result = readlink("/proc/self/exe", path, sizeof(path) - 1);
         assert(result > 0);
         path[result] = '\0';
+
+// FreeBSD.
+#elif defined __FreeBSD__
+
+        const int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1 };
+        size_t len = sizeof(path);
+        const int result = sysctl(mib, 4, path, &len, 0x0, 0);
+        assert(result == 0);
 
 // Other platforms.
 #else

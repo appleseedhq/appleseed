@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,60 +27,53 @@
 //
 
 // Interface header.
-#include "superlogger.h"
+#include "partiofile.h"
 
 // Standard headers.
-#include <cstdio>
+#include <cstddef>
 
-// Platform headers.
-#ifndef _WIN32
-#include <unistd.h>
-#endif
-
-using namespace foundation;
 using namespace std;
 
-namespace appleseed {
-namespace shared {
-
-SuperLogger::SuperLogger()
-  : m_log_target(0)
+namespace foundation
 {
-    set_log_target(create_open_file_log_target(stderr));
+
+//
+// PartioFile class implementation.
+//
+
+PartioFile::PartioFile()
+{
+    m_particles = Partio::create();
 }
 
-SuperLogger::~SuperLogger()
+PartioFile::~PartioFile()
 {
-    delete m_log_target;
+    m_particles->release();
 }
 
-void SuperLogger::set_log_target(ILogTarget* log_target)
+Partio::ParticleAttribute PartioFile::add_float_attribute(const char* name)
 {
-    if (m_log_target)
-    {
-        remove_target(m_log_target);
-        delete m_log_target;
-    }
-
-    m_log_target = log_target;
-    add_target(m_log_target);
+    return m_particles->addAttribute(name, Partio::FLOAT, 1);
 }
 
-ILogTarget& SuperLogger::get_log_target() const
+Partio::ParticleAttribute PartioFile::add_vector_attribute(const char* name)
 {
-    return *m_log_target;
+    return m_particles->addAttribute(name, Partio::VECTOR, 3);
 }
 
-void SuperLogger::enable_message_coloring()
+Partio::ParticleAttribute PartioFile::add_color_attribute(const char* name)
 {
-#ifndef _WIN32
-    const int StdErrFileDesc = 2;
-    if (!isatty(StdErrFileDesc))
-        return;
-#endif
-
-    set_log_target(create_console_log_target(stderr));
+    return m_particles->addAttribute(name, Partio::VECTOR, 3);
 }
 
-}   // namespace shared
-}   // namespace appleseed
+Partio::ParticleIndex PartioFile::add_particle()
+{
+    return m_particles->addParticle();
+}
+
+void PartioFile::write(const char* filepath) const
+{
+    Partio::write(filepath, *m_particles);
+}
+
+}   // namespace foundation

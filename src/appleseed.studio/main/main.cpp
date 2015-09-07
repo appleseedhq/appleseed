@@ -174,6 +174,9 @@ namespace
 #ifdef __linux__
         preprocessor.define_symbol("__linux__");
 #endif
+#ifdef __FreeBSD__
+        preprocessor.define_symbol("__FreeBSD__");
+#endif
 
         preprocessor.process(stylesheet.c_str());
 

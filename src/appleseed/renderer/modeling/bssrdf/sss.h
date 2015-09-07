@@ -142,23 +142,18 @@ double gaussian_profile_pdf(
 //
 // Dipole diffusion profile.
 //
-// Reference:
-//
-//   A Practical Model for Subsurface Light Transport
-//   https://graphics.stanford.edu/papers/bssrdf/bssrdf.pdf
-//
 
-double dipole_profile_sample(
-    const double        u,                      // uniform random sample in [0,1)
-    const double        sigma_tr);
+double dipole_pdf(const double r, const double sigma_tr);
 
-double dipole_profile_pdf(
-    const double        r,
-    const double        sigma_tr);
+double dipole_cdf(const double r, const double sigma_tr);
 
-double dipole_max_radius(
-    const double        sigma_tr);
+double dipole_sample(
+    const double    u,                      // uniform random sample in [0,1)
+    const double    sigma_tr,               // effective_extinction_coefficient
+    const double    eps = 0.0001,           // root precision
+    const size_t    max_iterations = 10);   // max root refinement iterations
 
+double dipole_max_radius(const double sigma_tr);
 
 //
 // Normalized diffusion profile.
@@ -229,14 +224,11 @@ inline double compute_alpha_prime(
     const ComputeRdFun  rd_fun,
     const double        rd)
 {
-    if (rd == 0.0)
-        return 0.0;
-
     double x0 = 0.0, x1 = 1.0, xmid;
 
     // For now simple bisection.
     // todo: switch to faster algorithm.
-    for (size_t i = 0; i < 50; ++i)
+    for (size_t i = 0; i < 20; ++i)
     {
         xmid = 0.5 * (x0 + x1);
         const double x = rd_fun(xmid);
@@ -255,6 +247,9 @@ void compute_absorption_and_scattering(
     Spectrum&           sigma_a,
     Spectrum&           sigma_s)
 {
+    assert(g > -1.0);
+    assert(g < 1.0);
+
     sigma_a.resize(rd.size());
     sigma_s.resize(rd.size());
 
@@ -265,8 +260,18 @@ void compute_absorption_and_scattering(
         assert(rd[i] >= 0.0f);
         assert(rd[i] <= 1.0f);
 
+        if (rd[i] == 0.0f)
+        {
+            // rd == 0 -> alpha_prime == 0 -> sigma_s == 0
+            sigma_s[i] = 0.0f;
+            sigma_a[i] = 1.0 / (foundation::SqrtThree * dmfp);
+            continue;
+        }
+
         // Find alpha' by numerically inverting Rd(alpha').
         const double alpha_prime = compute_alpha_prime(rd_fun, rd[i]);
+        assert(alpha_prime > 0.0);
+        assert(alpha_prime < 1.0);
 
         // Compute reduced extinction coefficient.
         const double sigma_t_prime =

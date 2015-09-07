@@ -40,6 +40,10 @@ if (POLICY CMP0043)
     cmake_policy (SET CMP0043 OLD)  # consume the content of the suffixed COMPILE_DEFINITIONS_<CONFIG>
 endif ()
 
+if (POLICY CMP0026)
+    cmake_policy (SET CMP0026 OLD)  # disallow use of the LOCATION target property (cmake 3.0)
+endif ()
+
 include (src/cmake/utilities.txt)
 
 
@@ -89,6 +93,7 @@ option (WITH_ALEMBIC                        "Build Alembic support"             
 option (WITH_OSL                            "Build OSL support"                                     OFF)
 option (WITH_DISNEY_MATERIAL                "Build Disney material"                                 OFF)
 option (WITH_NORMALIZED_DIFFUSION_BSSRDF    "Build Normalized diffusion BSSRDF (patented)"          OFF)
+option (WITH_PARTIO                         "Build Partio support (used in unit tests)"             OFF)
 
 option (USE_STATIC_BOOST                    "Use static Boost libraries"                            ON)
 option (USE_STATIC_OIIO                     "Use static OpenImageIO libraries"                      ON)
@@ -241,6 +246,11 @@ if (WITH_NORMALIZED_DIFFUSION_BSSRDF)
     add_definitions (-DAPPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF)
 endif ()
 
+if (WITH_PARTIO)
+    add_definitions (-DAPPLESEED_WITH_PARTIO)
+    find_package (Partio REQUIRED)
+endif ()
+
 #--------------------------------------------------------------------------------------------------
 # Include paths.
 #--------------------------------------------------------------------------------------------------
@@ -324,6 +334,9 @@ if (WITH_DISNEY_MATERIAL)
     endif ()
 endif ()
 
+if (WITH_PARTIO)
+    include_directories (${PARTIO_INCLUDE_DIRS})
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Preprocessor definitions.
@@ -338,6 +351,11 @@ if (is_x86)
         ${preprocessor_definitions_common}
         APPLESEED_X86
     )
+endif ()
+
+# $ORIGIN support in rpath.
+if (UNIX AND NOT APPLE)
+    set (USE_RPATH_ORIGIN TRUE)
 endif ()
 
 # SSE.

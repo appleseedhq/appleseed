@@ -49,6 +49,9 @@
 #include "foundation/math/scalar.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/gnuplotfile.h"
+#ifdef APPLESEED_WITH_PARTIO
+#include "foundation/utility/partiofile.h"
+#endif
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
@@ -148,7 +151,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         DipoleBSSRDFInputValues     m_values;
     };
 
-    template <typename BSSRDFFactory, bool Directional>
+    template <typename BSSRDFFactory>
     double integrate_dipole_rd_dmfp(
         const double rd,
         const double dmfp,
@@ -165,16 +168,12 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         for (size_t i = 0; i < sample_count; ++i)
         {
             const double u = rand_double2(rng);
-            const double r = dipole_profile_sample(u, sigma_tr);
+            const double r = sample_exponential_distribution(u, sigma_tr);
 
-            const double pdf_radius = dipole_profile_pdf(r, sigma_tr);
+            const double pdf_radius = exponential_distribution_pdf(r, sigma_tr);
             const double pdf_angle = RcpTwoPi;
             const double pdf = pdf_radius * pdf_angle;
-
-            const double value =
-                Directional
-                    ? bssrdf_eval.evaluate(r, sample_hemisphere_uniform(rand_vector2<Vector2d>(rng)))
-                    : bssrdf_eval.evaluate_searchlight(r);
+            const double value = bssrdf_eval.evaluate_searchlight(r);
 
             integral += value / pdf;
         }
@@ -202,9 +201,9 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         for (size_t i = 0; i < sample_count; ++i)
         {
             const double u = rand_double2(rng);
-            const double r = dipole_profile_sample(u, sigma_tr);
+            const double r = sample_exponential_distribution(u, sigma_tr);
 
-            const double pdf_radius = dipole_profile_pdf(r, sigma_tr);
+            const double pdf_radius = exponential_distribution_pdf(r, sigma_tr);
             const double pdf_angle = RcpTwoPi;
             const double pdf = pdf_radius * pdf_angle;
 
@@ -229,28 +228,28 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         return f(alpha_prime);
     }
 
-    const double AlphaPrimeRoundtripTestEps = 0.00001;
+    const double AlphaPrimeRoundtripTestEps = 0.001;
+
+    static const double AlphaPrimes[] =
+    {
+        0.025, 0.1, 0.2, 0.4, 0.6, 0.8, 0.99
+    };
+
+    static const double IORs[] =
+    {
+        1.6, 1.3, 1.2, 1.3, 1.4, 1.3, 1.5
+    };
 
     TEST_CASE(BSSRDFReparam_StandardDipoleRoundtrip)
     {
-        EXPECT_FEQ_EPS(0.0, rd_alpha_prime_roundtrip<ComputeRdStandardDipole>(0.0, 1.6), AlphaPrimeRoundtripTestEps);
-        EXPECT_FEQ_EPS(0.1, rd_alpha_prime_roundtrip<ComputeRdStandardDipole>(0.1, 1.3), AlphaPrimeRoundtripTestEps);
-        EXPECT_FEQ_EPS(0.2, rd_alpha_prime_roundtrip<ComputeRdStandardDipole>(0.2, 1.2), AlphaPrimeRoundtripTestEps);
-        EXPECT_FEQ_EPS(0.4, rd_alpha_prime_roundtrip<ComputeRdStandardDipole>(0.4, 1.3), AlphaPrimeRoundtripTestEps);
-        EXPECT_FEQ_EPS(0.6, rd_alpha_prime_roundtrip<ComputeRdStandardDipole>(0.6, 1.4), AlphaPrimeRoundtripTestEps);
-        EXPECT_FEQ_EPS(0.8, rd_alpha_prime_roundtrip<ComputeRdStandardDipole>(0.8, 1.3), AlphaPrimeRoundtripTestEps);
-        EXPECT_FEQ_EPS(1.0, rd_alpha_prime_roundtrip<ComputeRdStandardDipole>(1.0, 1.5), AlphaPrimeRoundtripTestEps);
+        for (size_t i = 0, e = countof(AlphaPrimes); i < e; ++i)
+            EXPECT_FEQ_EPS(AlphaPrimes[i], rd_alpha_prime_roundtrip<ComputeRdStandardDipole>(AlphaPrimes[i], IORs[i]), AlphaPrimeRoundtripTestEps);
     }
 
     TEST_CASE(BSSRDFReparam_BetterDipoleRoundtrip)
     {
-        EXPECT_FEQ_EPS(0.0, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.0, 1.6), AlphaPrimeRoundtripTestEps);
-        EXPECT_FEQ_EPS(0.1, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.1, 1.3), AlphaPrimeRoundtripTestEps);
-        EXPECT_FEQ_EPS(0.2, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.2, 1.2), AlphaPrimeRoundtripTestEps);
-        EXPECT_FEQ_EPS(0.4, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.4, 1.3), AlphaPrimeRoundtripTestEps);
-        EXPECT_FEQ_EPS(0.6, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.6, 1.4), AlphaPrimeRoundtripTestEps);
-        EXPECT_FEQ_EPS(0.8, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(0.8, 1.3), AlphaPrimeRoundtripTestEps);
-        EXPECT_FEQ_EPS(1.0, rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(1.0, 1.5), AlphaPrimeRoundtripTestEps);
+        for (size_t i = 0, e = countof(AlphaPrimes); i < e; ++i)
+            EXPECT_FEQ_EPS(AlphaPrimes[i], rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(AlphaPrimes[i], IORs[i]), AlphaPrimeRoundtripTestEps);
     }
 
     TEST_CASE(BSSRDFReparamStandardDipole_VaryingDiffuseMeanFreePath)
@@ -726,9 +725,96 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_cdf.gnuplot");
     }
 
+#ifdef APPLESEED_WITH_PARTIO
+    TEST_CASE(PartioNormalizedDiffusionSample)
+    {
+        const double A = 1.0;
+        const double L = 1;
+        const double s = normalized_diffusion_s(A);
+
+        const size_t SampleCount = 1000;
+
+        MersenneTwister rng;
+
+        PartioFile particles;
+        Partio::ParticleAttribute pos_attr = particles.add_vector_attribute("position");
+        Partio::ParticleAttribute col_attr = particles.add_color_attribute("color");
+
+        for (size_t i = 0; i < SampleCount; ++i)
+        {
+            const double u = rand_double2(rng);
+            const double r = normalized_diffusion_sample(u, L, s);
+            const double phi = TwoPi * rand_double2(rng);
+            const Vector3d sample(r * cos(phi), 0.0, r * sin(phi));
+
+            Partio::ParticleIndex p = particles.add_particle();
+            particles.set_vector_attribute(p, pos_attr, sample);
+            particles.set_color_attribute(p, col_attr, Color3d(1.0, 1.0, 1.0));
+        }
+
+        // Add a circle of particles of radius max_radius.
+        const size_t CircleCount = 100;
+        const double max_radius = normalized_diffusion_max_radius(L, s);
+
+        for (size_t i = 0; i < CircleCount; ++i)
+        {
+            const double phi = fit<size_t, double>(i, 0, CircleCount - 1, 0.0, TwoPi);
+            const Vector3d c(max_radius * cos(phi), 0.0, max_radius * sin(phi));
+
+            Partio::ParticleIndex p = particles.add_particle();
+            particles.set_vector_attribute(p, pos_attr, c);
+            particles.set_color_attribute(p, col_attr, Color3d(0.0, 0.0, 1.0));
+        }
+
+        // Add particles with the value of the profile.
+        const size_t ProfileCount = 500;
+        for (size_t i = 0; i < ProfileCount; ++i)
+        {
+            const double r = fit<size_t, double>(i, 0, ProfileCount - 1, 0.0, max_radius);
+            const double v = normalized_diffusion_profile(r, L, s, A) * r;
+
+            Partio::ParticleIndex p = particles.add_particle();
+            particles.set_vector_attribute(p, pos_attr, Vector3d(r, v, 0.0));
+            particles.set_color_attribute(p, col_attr, Color3d(1.0, 0.0, 0.0));
+
+            p = particles.add_particle();
+            particles.set_vector_attribute(p, pos_attr, Vector3d(-r, v, 0.0));
+            particles.set_color_attribute(p, col_attr, Color3d(1.0, 0.0, 0.0));
+
+            p = particles.add_particle();
+            particles.set_vector_attribute(p, pos_attr, Vector3d(0.0, v, r));
+            particles.set_color_attribute(p, col_attr, Color3d(1.0, 0.0, 0.0));
+
+            p = particles.add_particle();
+            particles.set_vector_attribute(p, pos_attr, Vector3d(0.0, v, -r));
+            particles.set_color_attribute(p, col_attr, Color3d(1.0, 0.0, 0.0));
+        }
+
+        particles.write("unit tests/outputs/test_sss_nd_sampling_particles.bgeo");
+    }
+#endif
+
     //
     // Standard dipole profile.
     //
+
+    // Fails in 6 cases out of 1000.
+    /*
+    TEST_CASE(StdDipoleSampleNew)
+    {
+        MersenneTwister rng;
+
+        for (size_t i = 0; i < 1000; ++i)
+        {
+            const double u = rand_double2(rng);
+            const double sigma_tr = 1.0 / rand_double1(rng, 0.001, 10.0);
+            const double r = dipole_sample(u, sigma_tr, 0.001);
+            const double e = dipole_cdf(r, sigma_tr);
+
+            EXPECT_FEQ_EPS(u, e, 0.05);
+        }
+    }
+    */
 
     TEST_CASE(StdDipoleMaxRadius)
     {
@@ -765,7 +851,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             const double rd = fit<size_t, double>(i, 0, N - 1, 0.01, 1.0);
             const double x =
-                integrate_dipole_rd_dmfp<StandardDipoleBSSRDFFactory, false>(
+                integrate_dipole_rd_dmfp<StandardDipoleBSSRDFFactory>(
                     rd,
                     1.0,
                     1000);
@@ -776,6 +862,85 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.new_plot().set_points(points);
         plotfile.write("unit tests/outputs/test_sss_stddipole_integral_rd.gnuplot");
     }
+
+#ifdef APPLESEED_WITH_PARTIO
+    TEST_CASE(PartioStdDipoleSampleOldAndNew)
+    {
+        DipoleBSSRDFEvaluator<StandardDipoleBSSRDFFactory> bssrdf_eval;
+        bssrdf_eval.set_values_from_rd_dmfp(0.75, 0.135, 1.3, 0.0);
+        const double sigma_tr = bssrdf_eval.get_sigma_tr();
+
+        const size_t SampleCount = 1000;
+
+        MersenneTwister rng;
+
+        PartioFile particles;
+        Partio::ParticleAttribute pos_attr = particles.add_vector_attribute("position");
+        Partio::ParticleAttribute col_attr = particles.add_color_attribute("color");
+
+        for (size_t i = 0; i < SampleCount; ++i)
+        {
+            const double u = rand_double2(rng);
+            const double phi = TwoPi * rand_double2(rng);
+
+            const double r =
+                phi < Pi
+                    ? sample_exponential_distribution(u, sigma_tr)
+                    : dipole_sample(u, sigma_tr);
+
+            const Vector3d sample(r * cos(phi), 0.0, r * sin(phi));
+
+            Partio::ParticleIndex p = particles.add_particle();
+            particles.set_vector_attribute(p, pos_attr, sample);
+
+            if (phi < Pi)
+                particles.set_color_attribute(p, col_attr, Color3d(0.0, 1.0, 0.0));
+            else
+                particles.set_color_attribute(p, col_attr, Color3d(0.0, 0.0, 1.0));
+        }
+
+        // Add a circle of particles of radius max_radius.
+        const size_t CircleCount = 100;
+        const double max_radius = dipole_max_radius(sigma_tr);
+
+        for (size_t i = 0; i < CircleCount; ++i)
+        {
+            const double phi = fit<size_t, double>(i, 0, CircleCount - 1, 0.0, TwoPi);
+            const Vector3d c(max_radius * cos(phi), 0.0, max_radius * sin(phi));
+
+            Partio::ParticleIndex p = particles.add_particle();
+            particles.set_vector_attribute(p, pos_attr, c);
+            particles.set_color_attribute(p, col_attr, Color3d(1.0, 1.0, 1.0));
+        }
+
+        // Add particles with the value of the profile.
+        const size_t ProfileCount = 500;
+
+        for (size_t i = 0; i < ProfileCount; ++i)
+        {
+            const double r = fit<size_t, double>(i, 0, ProfileCount - 1, 0.0, max_radius);
+            const double v = bssrdf_eval.evaluate_searchlight(r);
+
+            Partio::ParticleIndex p = particles.add_particle();
+            particles.set_vector_attribute(p, pos_attr, Vector3d(r, v, 0.0));
+            particles.set_color_attribute(p, col_attr, Color3d(1.0, 0.0, 0.0));
+
+            p = particles.add_particle();
+            particles.set_vector_attribute(p, pos_attr, Vector3d(-r, v, 0.0));
+            particles.set_color_attribute(p, col_attr, Color3d(1.0, 0.0, 0.0));
+
+            p = particles.add_particle();
+            particles.set_vector_attribute(p, pos_attr, Vector3d(0.0, v, r));
+            particles.set_color_attribute(p, col_attr, Color3d(1.0, 0.0, 0.0));
+
+            p = particles.add_particle();
+            particles.set_vector_attribute(p, pos_attr, Vector3d(0.0, v, -r));
+            particles.set_color_attribute(p, col_attr, Color3d(1.0, 0.0, 0.0));
+        }
+
+        particles.write("unit tests/outputs/test_sss_dipole_sampling_particles.bgeo");
+    }
+#endif
 
     //
     // Directional dipole profile.
@@ -840,147 +1005,6 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             1.0e+1);        // ymax
     }
 
-#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
-    void plot_dirpole_and_nd_r(
-        const char*     filename,
-        const char*     title,
-        const double    rd,
-        const double    dmfp)
-    {
-        GnuplotFile plotfile;
-        plotfile.set_title(title);
-        plotfile.set_xlabel("r");
-        plotfile.set_ylabel("r R(r)");
-        plotfile.set_xrange(0.0, 4.0);
-        plotfile.set_yrange(0.001, 1.0);
-        plotfile.set_logscale_y();
-
-        auto_release_ptr<BSSRDF> dp_bssrdf(
-            DirectionalDipoleBSSRDFFactory().create("dirpole", ParamArray()));
-
-        DipoleBSSRDFInputValues dp_values;
-        dp_values.m_weight = 1.0;
-        dp_values.m_reflectance.set(static_cast<float>(rd));
-        dp_values.m_reflectance_multiplier = 1.0;
-        dp_values.m_dmfp = dmfp;
-        dp_values.m_dmfp_multiplier = 1.0;
-        dp_values.m_inside_ior = 1.0;
-        dp_values.m_outside_ior = 1.0;
-        dp_values.m_anisotropy = 0.0;
-        dp_bssrdf->prepare_inputs(&dp_values);
-
-        auto_release_ptr<BSSRDF> nd_bssrdf(
-            NormalizedDiffusionBSSRDFFactory().create("norm_diff", ParamArray()));
-
-        NormalizedDiffusionBSSRDFInputValues nd_values;
-        nd_values.m_weight = 1.0;
-        nd_values.m_reflectance.set(static_cast<float>(rd));
-        nd_values.m_reflectance_multiplier = 1.0;
-        nd_values.m_dmfp = dmfp;
-        nd_values.m_dmfp_multiplier = 1.0;
-        nd_values.m_inside_ior = 1.0;
-        nd_values.m_outside_ior = 1.0;
-        nd_bssrdf->prepare_inputs(&nd_values);
-
-        const Vector3d normal(0.0, 1.0, 0.0);
-
-        ShadingPoint outgoing;
-        ShadingPointBuilder outgoing_builder(outgoing);
-        outgoing_builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
-        outgoing_builder.set_point(Vector3d(0.0, 0.0, 0.0));
-        outgoing_builder.set_shading_basis(Basis3d(normal));
-
-        ShadingPoint incoming;
-        ShadingPointBuilder incoming_builder(incoming);
-        incoming_builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
-        incoming_builder.set_shading_basis(Basis3d(normal));
-
-        const size_t N = 1000;
-        vector<Vector2d> nd_points, dp_points;
-
-        for (size_t j = 0; j < N; ++j)
-        {
-            const double r = max(fit<size_t, double>(j, 0, N - 1, 0.0, 4.0), 0.0001);
-            incoming_builder.set_point(Vector3d(r, 0.0, 0.0));
-
-            Spectrum result;
-
-            dp_bssrdf->evaluate(
-                &dp_values,
-                outgoing,
-                normal,
-                incoming,
-                normal,
-                result);
-            dp_points.push_back(Vector2d(r, result[0]));
-
-            nd_bssrdf->evaluate(
-                &nd_values,
-                outgoing,
-                normal,
-                incoming,
-                normal,
-                result);
-            nd_points.push_back(Vector2d(r, result[0]));
-        }
-
-        plotfile
-            .new_plot()
-            .set_points(dp_points)
-            .set_title("Directional Dipole")
-            .set_color("orange");
-
-        plotfile
-            .new_plot()
-            .set_points(nd_points)
-            .set_title("Normalized Diffusion")
-            .set_color("blue");
-
-        plotfile.write(filename);
-    }
-
-    TEST_CASE(PlotDirpoleAndNormalizedDiffusionR)
-    {
-        const double dmfp = 1.0;
-
-        plot_dirpole_and_nd_r(
-            "unit tests/outputs/test_sss_dirpole_nd_r_005.gnuplot",
-            "Reflectance Profiles For Searchlight Configuration, Rd = 0.05",
-            0.05,
-            dmfp);
-
-        plot_dirpole_and_nd_r(
-            "unit tests/outputs/test_sss_dirpole_nd_r_015.gnuplot",
-            "Reflectance Profiles For Searchlight Configuration, Rd = 0.15",
-            0.15,
-            dmfp);
-
-        plot_dirpole_and_nd_r(
-            "unit tests/outputs/test_sss_dirpole_nd_r_030.gnuplot",
-            "Reflectance Profiles For Searchlight Configuration, Rd = 0.30",
-            0.30,
-            dmfp);
-
-        plot_dirpole_and_nd_r(
-            "unit tests/outputs/test_sss_dirpole_nd_r_050.gnuplot",
-            "Reflectance Profiles For Searchlight Configuration, Rd = 0.5",
-            0.5,
-            dmfp);
-
-        plot_dirpole_and_nd_r(
-            "unit tests/outputs/test_sss_dirpole_nd_r_070.gnuplot",
-            "Reflectance Profiles For Searchlight Configuration, Rd = 0.7",
-            0.7,
-            dmfp);
-
-        plot_dirpole_and_nd_r(
-            "unit tests/outputs/test_sss_dirpole_nd_r_090.gnuplot",
-            "Reflectance Profiles For Searchlight Configuration, Rd = 0.9",
-            0.9,
-            dmfp);
-    }
-#endif
-
     TEST_CASE(DirpoleMaxRadius)
     {
         MersenneTwister rng;
@@ -998,61 +1022,5 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
             EXPECT_LT(0.00001, result);
         }
-    }
-
-    TEST_CASE(PlotDirpoleIntegralHemiRd)
-    {
-        GnuplotFile plotfile;
-        plotfile.set_title("Directional Dipole Integral");
-        plotfile.set_xlabel("Rd");
-        plotfile.set_ylabel("Integral");
-        plotfile.set_xrange(0.0, 1.0);
-        plotfile.set_yrange(0.0, 1.0);
-
-        const size_t N = 256;
-        vector<Vector2d> points;
-
-        for (size_t i = 0; i < N; ++i)
-        {
-            const double rd = fit<size_t, double>(i, 0, N - 1, 0.01, 1.0);
-            const double x =
-                integrate_dipole_rd_dmfp<DirectionalDipoleBSSRDFFactory, true>(
-                    rd,
-                    1.0,
-                    3000);
-
-            points.push_back(Vector2d(rd, x));
-        }
-
-        plotfile.new_plot().set_points(points);
-        plotfile.write("unit tests/outputs/test_sss_dirpole_integral_hemi_rd.gnuplot");
-    }
-
-    TEST_CASE(PlotDirpoleIntegralSearchlightRd)
-    {
-        GnuplotFile plotfile;
-        plotfile.set_title("Directional Dipole Integral For Searchlight Configuration");
-        plotfile.set_xlabel("Rd");
-        plotfile.set_ylabel("Integral");
-        plotfile.set_xrange(0.0, 1.0);
-        plotfile.set_yrange(0.0, 1.0);
-
-        const size_t N = 256;
-        vector<Vector2d> points;
-
-        for (size_t i = 0; i < N; ++i)
-        {
-            const double rd = fit<size_t, double>(i, 0, N - 1, 0.01, 1.0);
-            const double x =
-                integrate_dipole_rd_dmfp<DirectionalDipoleBSSRDFFactory, false>(
-                    rd,
-                    1.0,
-                    1000);
-
-            points.push_back(Vector2d(rd, x));
-        }
-
-        plotfile.new_plot().set_points(points);
-        plotfile.write("unit tests/outputs/test_sss_dirpole_integral_searchlight_rd.gnuplot");
     }
 }
