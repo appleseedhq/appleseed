@@ -320,8 +320,9 @@ namespace
                     false);             // not computing indirect lighting
 
                 // Always sample both the lights and the BSDF.
-                integrator.sample_bsdf_and_lights_low_variance(
+                integrator.compute_outgoing_radiance_combined_sampling_low_variance(
                     vertex.m_sampling_context,
+                    vertex.m_outgoing,
                     dl_radiance,
                     dl_aovs);
 

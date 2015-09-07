@@ -46,6 +46,7 @@
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Assembly; }
+namespace renderer      { class BSDF; }
 namespace renderer      { class BSSRDFSample; }
 namespace renderer      { class InputEvaluator; }
 namespace renderer      { class ParamArray; }
@@ -87,8 +88,14 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const char*                 name,
         const ParamArray&           params);
 
+    // Destructor.
+    ~BSSRDF();
+
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
+
+    // Return the BRDF associated with this BSSRDF.
+    const BSDF& get_brdf() const;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
@@ -138,6 +145,10 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const void*                 data,
         const size_t                channel,
         const double                radius) const = 0;
+
+  protected:
+    struct Impl;
+    Impl* impl;
 };
 
 }       // namespace renderer

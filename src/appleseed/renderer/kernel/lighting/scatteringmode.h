@@ -51,7 +51,8 @@ class ScatteringMode
         Diffuse     = 1 << 0,
         Glossy      = 1 << 1,
         Specular    = 1 << 2,
-        All         = Diffuse | Glossy | Specular
+        Subsurface  = 1 << 3,
+        All         = Diffuse | Glossy | Specular | Subsurface
     };
 
     // Test for the presence of specific scattering modes.

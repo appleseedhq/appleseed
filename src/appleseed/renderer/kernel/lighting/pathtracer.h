@@ -453,7 +453,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             value *= static_cast<float>(weight);
 
             // Properties of this scattering event.
-            vertex.m_prev_mode = ScatteringMode::Diffuse;
+            vertex.m_prev_mode = ScatteringMode::Subsurface;
             vertex.m_prev_prob = incoming_prob;
 
             // Origin and scattering mode of the next ray.
