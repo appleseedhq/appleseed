@@ -180,7 +180,7 @@ void compute_ibl_bsdf_sampling(
 
         // Filter scattering modes.
         if (!(bsdf_sampling_modes & sample.get_mode()))
-            return;
+            continue;
 
         // Discard occluded samples.
         const double transmission =
@@ -257,7 +257,7 @@ void compute_ibl_bssrdf_sampling(
         double incoming_fresnel;
         fresnel_transmittance_dielectric(incoming_fresnel, eta, cos_in);
         if (incoming_fresnel <= 0.0)
-            return;
+            continue;
 
         // Discard occluded samples.
         const double transmission =
@@ -451,7 +451,7 @@ void compute_ibl_environment_sampling(
         double incoming_fresnel;
         fresnel_transmittance_dielectric(incoming_fresnel, eta, cos_in);
         if (incoming_fresnel <= 0.0)
-            return;
+            continue;
 
         // Discard occluded samples.
         const double transmission =
