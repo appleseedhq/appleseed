@@ -263,166 +263,6 @@ namespace
         Population<uint64>              m_path_length;
 
         //
-        // Subsurface sample visitor.
-        //
-        // Accumulates the contribution of individual subsurface samples.
-        //
-
-        class SubsurfaceSampleVisitor
-        {
-          public:
-            SubsurfaceSampleVisitor(
-                const LightSampler&     light_sampler,
-                SamplingContext&        sampling_context,
-                const ShadingContext&   shading_context,
-                const EnvironmentEDF*   env_edf,
-                const size_t            env_sample_count,
-                const bool              is_indirect_lighting,
-                const PathVertex&       vertex,
-                Spectrum&               vertex_radiance,
-                SpectrumStack&          vertex_aovs)
-              : m_light_sampler(light_sampler)
-              , m_sampling_context(sampling_context)
-              , m_shading_context(shading_context)
-              , m_env_edf(env_edf)
-              , m_env_sample_count(env_sample_count)
-              , m_is_indirect_lighting(is_indirect_lighting)
-              , m_vertex(vertex)
-              , m_vertex_radiance(vertex_radiance)
-              , m_vertex_aovs(vertex_aovs)
-            {
-            }
-
-            bool visit(
-                const BSSRDFSample&     bssrdf_sample,
-                const ShadingPoint&     incoming_point,
-                const double            probability) const
-            {
-                // Since the direction in the outside medium--be it the outgoing or the incoming
-                // direction--is always fixed, we always need to figure out a refracted direction
-                // in the inside medium, and thus we compute both Fresnel coefficients at the
-                // incoming and outgoing points using eta (defined as outside IOR / inside IOR).
-
-                const double eta = bssrdf_sample.get_eta();
-
-                // Compute Fresnel coefficient at outgoing point.
-                double outgoing_fresnel;
-                fresnel_transmittance_dielectric(outgoing_fresnel, eta, m_vertex.m_cos_on);
-                if (outgoing_fresnel <= 0.0)
-                    return true;
-
-                // Add direct lighting contribution.
-                add_dl_contribution(
-                    incoming_point,
-                    eta,
-                    outgoing_fresnel,
-                    probability);
-
-                // Add image-based lighting contribution.
-                add_ibl_contribution(
-                    incoming_point,
-                    eta,
-                    outgoing_fresnel,
-                    probability);
-
-                // Continue visiting samples.
-                return true;
-            }
-
-          private:
-            const LightSampler&         m_light_sampler;
-            SamplingContext&            m_sampling_context;
-            const ShadingContext&       m_shading_context;
-            const EnvironmentEDF*       m_env_edf;
-            const size_t                m_env_sample_count;
-            const bool                  m_is_indirect_lighting;
-            const PathVertex&           m_vertex;
-            Spectrum&                   m_vertex_radiance;
-            SpectrumStack&              m_vertex_aovs;
-
-            void add_dl_contribution(
-                const ShadingPoint&     incoming_point,
-                const double            eta,
-                const double            outgoing_fresnel,
-                const double            probability) const
-            {
-                // Compute incoming radiance at incoming point.
-                const DirectLightingIntegrator integrator(
-                    m_shading_context,
-                    m_light_sampler,
-                    incoming_point,
-                    m_vertex.m_bssrdf->get_brdf(),
-                    0,                                  // todo: fix
-                    ScatteringMode::All,                // todo: fix
-                    ScatteringMode::All,                // todo: fix
-                    1,
-                    1,
-                    m_is_indirect_lighting);
-                Vector3d incoming;
-                Spectrum radiance;
-                integrator.compute_incoming_radiance(
-                    m_sampling_context,
-                    incoming,
-                    radiance);
-
-                // Compute Fresnel coefficient at incoming point.
-                const double cos_in = abs(dot(incoming, incoming_point.get_shading_normal()));
-                double incoming_fresnel;
-                fresnel_transmittance_dielectric(incoming_fresnel, eta, cos_in);
-                if (incoming_fresnel <= 0.0)
-                    return;
-
-                // Evaluate the diffusion profile.
-                Spectrum rd;
-                m_vertex.m_bssrdf->evaluate(
-                    m_vertex.m_bssrdf_data,
-                    *m_vertex.m_shading_point,
-                    m_vertex.m_outgoing.get_value(),
-                    incoming_point,
-                    incoming,
-                    rd);
-
-                // Add the contribution of this sample to the illumination.
-                const double weight =
-                      RcpPi
-                    * cos_in
-                    * incoming_fresnel
-                    * outgoing_fresnel
-                    / probability;
-                radiance *= rd;
-                radiance *= static_cast<float>(weight);
-                m_vertex_radiance += radiance;
-            }
-
-            void add_ibl_contribution(
-                const ShadingPoint&     incoming_point,
-                const double            eta,
-                const double            outgoing_fresnel,
-                const double            probability) const
-            {
-                if (m_env_edf)
-                {
-                    Spectrum irradiance;
-                    compute_ibl(
-                        m_sampling_context,
-                        m_shading_context,
-                        *m_env_edf,
-                        *m_vertex.m_bssrdf,
-                        m_vertex.m_bssrdf_data,
-                        incoming_point,
-                        *m_vertex.m_shading_point,
-                        m_vertex.m_outgoing,
-                        eta,
-                        m_env_sample_count,
-                        irradiance);
-
-                    irradiance *= static_cast<float>(outgoing_fresnel / probability);
-                    m_vertex_radiance += irradiance;
-                }
-            }
-        };
-
-        //
         // Base path visitor.
         //
 
@@ -436,7 +276,7 @@ namespace
             const EnvironmentEDF*       m_env_edf;
             Spectrum&                   m_path_radiance;
             SpectrumStack&              m_path_aovs;
-            bool                        m_omit_emitted_light;
+            bool                        m_omit_emitted_light;   // todo: get rid of this
 
             PathVisitorBase(
                 const Parameters&       params,
@@ -594,30 +434,29 @@ namespace
                 if (ScatteringMode::has_diffuse_or_glossy(vertex.m_prev_mode))
                     m_is_indirect_lighting = true;
 
+                const int scattering_modes =
+                    !m_params.m_enable_caustics && vertex.m_prev_mode == ScatteringMode::Diffuse
+                        ? ScatteringMode::Diffuse
+                        : ScatteringMode::All;
+
                 Spectrum vertex_radiance(0.0f);
                 SpectrumStack vertex_aovs(m_path_aovs.size(), 0.0f);
 
-                if (vertex.m_bsdf)
+                // Direct lighting.
+                if (m_params.m_enable_dl || vertex.m_path_length > 1)
                 {
-                    const int scattering_modes =
-                        !m_params.m_enable_caustics && vertex.m_prev_mode == ScatteringMode::Diffuse
-                            ? ScatteringMode::Diffuse
-                            : ScatteringMode::All;
-
-                    // Direct lighting.
-                    if (m_params.m_enable_dl || vertex.m_path_length > 1)
+                    if (vertex.m_bsdf)
                     {
-                        add_direct_lighting_contribution(
+                        add_direct_lighting_contribution_bsdf(
                             vertex,
                             scattering_modes,
                             vertex_radiance,
                             vertex_aovs);
                     }
 
-                    // Image-based lighting.
-                    if (m_params.m_enable_ibl && m_env_edf)
+                    if (vertex.m_bssrdf && vertex.m_cos_on > 0.0)   // todo: cos_on check needed?
                     {
-                        add_image_based_lighting_contribution(
+                        add_direct_lighting_contribution_bssrdf(
                             vertex,
                             scattering_modes,
                             vertex_radiance,
@@ -625,18 +464,30 @@ namespace
                     }
                 }
 
-                // Subsurface scattering.
-                if (vertex.m_bssrdf && vertex.m_cos_on > 0.0)
+                // Image-based lighting.
+                if (m_params.m_enable_ibl && m_env_edf)
                 {
-                    add_sss_contribution(
-                        vertex,
-                        vertex_radiance,
-                        vertex_aovs);
+                    if (vertex.m_bsdf)
+                    {
+                        add_image_based_lighting_contribution_bsdf(
+                            vertex,
+                            scattering_modes,
+                            vertex_radiance,
+                            vertex_aovs);
+                    }
+
+                    if (vertex.m_bssrdf && vertex.m_cos_on > 0.0)   // todo: cos_on check needed?
+                    {
+                        add_image_based_lighting_contribution_bssrdf(
+                            vertex,
+                            scattering_modes,
+                            vertex_radiance,
+                            vertex_aovs);
+                    }
                 }
 
                 // Emitted light.
-                if (vertex.m_prev_mode != ScatteringMode::Subsurface &&
-                    (!m_omit_emitted_light || m_params.m_enable_caustics) &&
+                if ((!m_omit_emitted_light || m_params.m_enable_caustics) &&
                     vertex.m_edf &&
                     vertex.m_cos_on > 0.0 &&
                     (vertex.m_path_length > 2 || m_params.m_enable_dl) &&
@@ -662,7 +513,7 @@ namespace
                 m_path_aovs += vertex_aovs;
             }
 
-            void add_direct_lighting_contribution(
+            void add_direct_lighting_contribution_bsdf(
                 const PathVertex&       vertex,
                 const int               scattering_modes,
                 Spectrum&               vertex_radiance,
@@ -722,7 +573,76 @@ namespace
                 vertex_aovs += dl_aovs;
             }
 
-            void add_image_based_lighting_contribution(
+            void add_direct_lighting_contribution_bssrdf(
+                const PathVertex&       vertex,
+                const int               scattering_modes,
+                Spectrum&               vertex_radiance,
+                SpectrumStack&          vertex_aovs)
+            {
+                // Compute incoming radiance at incoming point.
+                const DirectLightingIntegrator integrator(
+                    m_shading_context,
+                    m_light_sampler,
+                    *vertex.m_incoming_point,
+                    vertex.m_bssrdf->get_brdf(),        // todo: we shouldn't have to pass this
+                    0,                                  // todo: we shouldn't have to pass this
+                    scattering_modes,                   // todo: we shouldn't have to pass this
+                    scattering_modes,                   // todo: we shouldn't have to pass this
+                    1,
+                    1,
+                    m_is_indirect_lighting);
+                Vector3d incoming;
+                double incoming_prob;
+                Spectrum radiance;
+                if (!integrator.compute_incoming_radiance(
+                        m_sampling_context,
+                        incoming,
+                        incoming_prob,
+                        radiance))
+                    return;
+
+                // Compute Fresnel coefficient at incoming point.
+                // Since the direction in the outside medium--be it the outgoing or the incoming
+                // direction--is always fixed, we always need to figure out a refracted direction
+                // in the inside medium, and thus we compute both Fresnel coefficients at the
+                // incoming and outgoing points using eta (defined as outside IOR / inside IOR).
+                const double cos_in = abs(dot(incoming, vertex.m_incoming_point->get_shading_normal()));
+                double incoming_fresnel;
+                fresnel_transmittance_dielectric(incoming_fresnel, vertex.m_eta, cos_in);
+                if (incoming_fresnel <= 0.0)
+                    return;
+
+                // Evaluate the diffusion profile.
+                Spectrum rd;
+                vertex.m_bssrdf->evaluate(
+                    vertex.m_bssrdf_data,
+                    *vertex.m_shading_point,
+                    vertex.m_outgoing.get_value(),
+                    *vertex.m_incoming_point,
+                    incoming,
+                    rd);
+
+                double weight =
+                      vertex.m_partial_sss_weight
+                    * incoming_fresnel
+                    * cos_in;
+
+                // Multiple importance sampling.
+                const bool last_vertex = vertex.m_path_length == m_params.m_max_path_length;
+                if (incoming_prob != BSDF::DiracDelta && !last_vertex)
+                {
+                    const double cos_in = abs(dot(incoming, vertex.m_incoming_point->get_shading_normal()));
+                    const double bsdf_prob = cos_in * RcpPi;
+                    weight *= mis_power2(incoming_prob, bsdf_prob);
+                }
+
+                // Add the direct lighting contributions.
+                radiance *= rd;
+                radiance *= static_cast<float>(weight);
+                vertex_radiance += radiance;
+            }
+
+            void add_image_based_lighting_contribution_bsdf(
                 const PathVertex&       vertex,
                 const int               scattering_modes,
                 Spectrum&               vertex_radiance,
@@ -743,9 +663,13 @@ namespace
                 {
                     // This path won't be extended: sample both the environment and the BSDF.
                     compute_ibl(
+                        m_sampling_context,
                         m_shading_context,
                         *m_env_edf,
-                        vertex,
+                        *vertex.m_shading_point,
+                        vertex.m_outgoing,
+                        *vertex.m_bsdf,
+                        vertex.m_bsdf_data,
                         scattering_modes,
                         scattering_modes,
                         bsdf_sample_count,
@@ -756,9 +680,13 @@ namespace
                 {
                     // This path will be extended via BSDF sampling: sample the environment only.
                     compute_ibl_environment_sampling(
+                        m_sampling_context,
                         m_shading_context,
                         *m_env_edf,
-                        vertex,
+                        *vertex.m_shading_point,
+                        vertex.m_outgoing,
+                        *vertex.m_bsdf,
+                        vertex.m_bsdf_data,
                         scattering_modes,
                         bsdf_sample_count,
                         env_sample_count,
@@ -774,33 +702,67 @@ namespace
                 vertex_aovs.add(m_env_edf->get_render_layer_index(), ibl_radiance);
             }
 
-            void add_sss_contribution(
+            void add_image_based_lighting_contribution_bssrdf(
                 const PathVertex&       vertex,
+                const int               scattering_modes,
                 Spectrum&               vertex_radiance,
                 SpectrumStack&          vertex_aovs)
             {
+                Spectrum ibl_radiance;
+
+                const bool last_vertex = vertex.m_path_length == m_params.m_max_path_length;
+
                 const size_t env_sample_count =
                     stochastic_cast<size_t>(
                         m_sampling_context,
                         m_params.m_ibl_env_sample_count);
 
-                const SubsurfaceSampleVisitor visitor(
-                    m_light_sampler,
-                    m_sampling_context,
-                    m_shading_context,
-                    m_params.m_enable_ibl ? m_env_edf : 0,
-                    env_sample_count,
-                    m_is_indirect_lighting,
-                    vertex,
-                    vertex_radiance,
-                    vertex_aovs);
-                const SubsurfaceSampler sampler(m_shading_context);
-                sampler.sample(
-                    m_sampling_context,
-                    *vertex.m_shading_point,
-                    *vertex.m_bssrdf,
-                    vertex.m_bssrdf_data,
-                    visitor);
+                const size_t bssrdf_sample_count = last_vertex ? env_sample_count : 1;
+
+                if (last_vertex)
+                {
+                    // This path won't be extended: sample both the environment and the BSDF.
+                    compute_ibl(
+                        m_sampling_context,
+                        m_shading_context,
+                        *m_env_edf,
+                        *vertex.m_bssrdf,
+                        vertex.m_bssrdf_data,
+                        *vertex.m_incoming_point,
+                        *vertex.m_shading_point,
+                        vertex.m_outgoing,
+                        vertex.m_eta,
+                        bssrdf_sample_count,
+                        env_sample_count,
+                        ibl_radiance);
+                }
+                else
+                {
+                    // This path will be extended via BSDF sampling: sample the environment only.
+                    compute_ibl_environment_sampling(
+                        m_sampling_context,
+                        m_shading_context,
+                        *m_env_edf,
+                        *vertex.m_bssrdf,
+                        vertex.m_bssrdf_data,
+                        *vertex.m_incoming_point,
+                        *vertex.m_shading_point,
+                        vertex.m_outgoing,
+                        vertex.m_eta,
+                        bssrdf_sample_count,
+                        env_sample_count,
+                        ibl_radiance);
+                }
+
+                ibl_radiance *= static_cast<float>(vertex.m_partial_sss_weight);
+
+                // Divide by the sample count when this number is less than 1.
+                if (m_params.m_rcp_ibl_env_sample_count > 0.0f)
+                    ibl_radiance *= m_params.m_rcp_ibl_env_sample_count;
+
+                // Add the image-based lighting contributions.
+                vertex_radiance += ibl_radiance;
+                vertex_aovs.add(m_env_edf->get_render_layer_index(), ibl_radiance);
             }
 
             void add_emitted_light_contribution(
@@ -821,7 +783,7 @@ namespace
                     const double light_sample_count = max(m_params.m_dl_light_sample_count, 1.0);
                     const double mis_weight =
                         mis_power2(
-                            1.0 * vertex.get_bsdf_prob_area(),
+                            1 * vertex.get_bsdf_prob_area(),
                             light_sample_count * vertex.get_light_prob_area(m_light_sampler));
                     emitted_radiance *= static_cast<float>(mis_weight);
                 }

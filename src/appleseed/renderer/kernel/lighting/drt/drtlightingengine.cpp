@@ -349,9 +349,13 @@ namespace
                 // we limit ourselves to sampling diffuse components of the BSDF; sampling
                 // of glossy components will be done by extending the current path.
                 compute_ibl(
+                    m_sampling_context,
                     m_shading_context,
                     *m_env_edf,
-                    vertex,
+                    *vertex.m_shading_point,
+                    vertex.m_outgoing,
+                    *vertex.m_bsdf,
+                    vertex.m_bsdf_data,
                     ScatteringMode::Diffuse,
                     ScatteringMode::All,
                     bsdf_sample_count,

@@ -139,9 +139,10 @@ class DirectLightingIntegrator
         SpectrumStack&                  aovs) const;
 
     // Evaluate incoming radiance.
-    void compute_incoming_radiance(
+    bool compute_incoming_radiance(
         SamplingContext&                sampling_context,
         foundation::Vector3d&           incoming,
+        double&                         incoming_prob,
         Spectrum&                       radiance) const;
 
   private:
