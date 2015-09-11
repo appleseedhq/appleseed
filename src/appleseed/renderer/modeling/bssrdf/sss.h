@@ -264,7 +264,7 @@ void compute_absorption_and_scattering(
         {
             // rd == 0 -> alpha_prime == 0 -> sigma_s == 0
             sigma_s[i] = 0.0f;
-            sigma_a[i] = 1.0 / (foundation::SqrtThree * dmfp);
+            sigma_a[i] = static_cast<float>(1.0 / (foundation::SqrtThree * dmfp));
             continue;
         }
 

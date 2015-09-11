@@ -367,16 +367,14 @@ void DirectLightingIntegrator::compute_outgoing_radiance_single_sample(
     }
 }
 
-void DirectLightingIntegrator::compute_incoming_radiance(
+bool DirectLightingIntegrator::compute_incoming_radiance(
     SamplingContext&            sampling_context,
     Vector3d&                   incoming,
+    double&                     incoming_prob,
     Spectrum&                   radiance) const
 {
     if (!m_light_sampler.has_lights_or_emitting_triangles())
-    {
-        radiance.set(0.0f);
-        return;
-    }
+        return false;
 
     sampling_context.split_in_place(3, 1);
     const Vector3d s = sampling_context.next_vector2<3>();
@@ -391,10 +389,7 @@ void DirectLightingIntegrator::compute_incoming_radiance(
 
         // No contribution if we are computing indirect lighting but this light does not cast indirect light.
         if (m_indirect && !(edf->get_flags() & EDF::CastIndirectLight))
-        {
-            radiance.set(0.0f);
-            return;
-        }
+            return false;
 
         // Compute the incoming direction in world space.
         incoming = sample.m_point - m_point;
@@ -402,10 +397,7 @@ void DirectLightingIntegrator::compute_incoming_radiance(
         // No contribution if the shading point is behind the light.
         double cos_on_light = dot(-incoming, sample.m_shading_normal);
         if (cos_on_light <= 0.0)
-        {
-            radiance.set(0.0f);
-            return;
-        }
+            return false;
 
         // Compute the transmission factor between the light sample and the shading point.
         const double transmission =
@@ -416,18 +408,12 @@ void DirectLightingIntegrator::compute_incoming_radiance(
 
         // Discard occluded samples.
         if (transmission == 0.0)
-        {
-            radiance.set(0.0f);
-            return;
-        }
+            return false;
 
         // Don't use this sample if we're closer than the light near start value.
         const double square_distance = square_norm(incoming);
         if (square_distance < square(edf->get_light_near_start()))
-        {
-            radiance.set(0.0f);
-            return;
-        }
+            return false;
 
         // Normalize the incoming direction.
         const double rcp_square_distance = 1.0 / square_distance;
@@ -459,10 +445,12 @@ void DirectLightingIntegrator::compute_incoming_radiance(
             -incoming,
             radiance);
 
-        // Compute and return the incoming radiance.
+        // Compute probability with respect to solid angle of incoming direction.
         const double g = cos_on_light * rcp_square_distance;
-        const double weight = transmission * g / sample.m_probability;
-        radiance *= static_cast<float>(weight);
+        incoming_prob = sample.m_probability / g;
+
+        // Compute and return the incoming radiance.
+        radiance *= static_cast<float>(transmission * g / sample.m_probability);
     }
     else
     {
@@ -470,10 +458,7 @@ void DirectLightingIntegrator::compute_incoming_radiance(
 
         // No contribution if we are computing indirect lighting but this light does not cast indirect light.
         if (m_indirect && !(light->get_flags() & Light::CastIndirectLight))
-        {
-            radiance.set(0.0f);
-            return;
-        }
+            return false;
 
         // Evaluate the light.
         InputEvaluator input_evaluator(m_shading_context.get_texture_cache());
@@ -486,9 +471,6 @@ void DirectLightingIntegrator::compute_incoming_radiance(
             emission_direction,
             radiance);
 
-        // Compute the incoming direction in world space.
-        incoming = -emission_direction;
-
         // Compute the transmission factor between the light sample and the shading point.
         const double transmission =
             m_shading_context.get_tracer().trace_between(
@@ -498,15 +480,18 @@ void DirectLightingIntegrator::compute_incoming_radiance(
 
         // Discard occluded samples.
         if (transmission == 0.0)
-        {
-            radiance.set(0.0f);
-            return;
-        }
+            return false;
+
+        // Compute the incoming direction in world space.
+        incoming = -emission_direction;
+        incoming_prob = BSDF::DiracDelta;
 
         // Compute and return the incoming radiance.
         const double attenuation = light->compute_distance_attenuation(m_point, emission_position);
         radiance *= static_cast<float>(transmission * attenuation / sample.m_probability);
     }
+
+    return true;
 }
 
 void DirectLightingIntegrator::take_single_bsdf_sample(

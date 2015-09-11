@@ -111,27 +111,13 @@ void compute_ibl(
     const ShadingPoint&     outgoing_point,
     const Dual3d&           outgoing,
     const double            eta,
-    const size_t            sample_count,
+    const size_t            bssrdf_sample_count,
+    const size_t            env_sample_count,
     Spectrum&               radiance)
 {
     assert(is_normalized(outgoing.get_value()));
 
-    // Compute IBL by sampling the environment.
-    compute_ibl_environment_sampling(
-        sampling_context,
-        shading_context,
-        environment_edf,
-        bssrdf,
-        bssrdf_data,
-        incoming_point,
-        outgoing_point,
-        outgoing,
-        eta,
-        sample_count,
-        radiance);
-
     // Compute IBL by sampling the BSSRDF.
-    Spectrum bssrdf_radiance;
     compute_ibl_bssrdf_sampling(
         sampling_context,
         shading_context,
@@ -142,9 +128,26 @@ void compute_ibl(
         outgoing_point,
         outgoing,
         eta,
-        sample_count,
-        bssrdf_radiance);
-    radiance += bssrdf_radiance;
+        bssrdf_sample_count,
+        env_sample_count,
+        radiance);
+
+    // Compute IBL by sampling the environment.
+    Spectrum radiance_env_sampling;
+    compute_ibl_environment_sampling(
+        sampling_context,
+        shading_context,
+        environment_edf,
+        bssrdf,
+        bssrdf_data,
+        incoming_point,
+        outgoing_point,
+        outgoing,
+        eta,
+        bssrdf_sample_count,
+        env_sample_count,
+        radiance_env_sampling);
+    radiance += radiance_env_sampling;
 }
 
 void compute_ibl_bsdf_sampling(
@@ -180,7 +183,7 @@ void compute_ibl_bsdf_sampling(
 
         // Filter scattering modes.
         if (!(bsdf_sampling_modes & sample.get_mode()))
-            return;
+            continue;
 
         // Discard occluded samples.
         const double transmission =
@@ -233,16 +236,17 @@ void compute_ibl_bssrdf_sampling(
     const ShadingPoint&     outgoing_point,
     const Dual3d&           outgoing,
     const double            eta,
-    const size_t            sample_count,
+    const size_t            bssrdf_sample_count,
+    const size_t            env_sample_count,
     Spectrum&               radiance)
 {
     assert(is_normalized(outgoing.get_value()));
 
     radiance.set(0.0f);
 
-    sampling_context.split_in_place(2, sample_count);
+    sampling_context.split_in_place(2, bssrdf_sample_count);
 
-    for (size_t i = 0; i < sample_count; ++i)
+    for (size_t i = 0; i < bssrdf_sample_count; ++i)
     {
         // Generate a uniform sample in [0,1)^2.
         const Vector2d s = sampling_context.next_vector2<2>();
@@ -252,12 +256,15 @@ void compute_ibl_bssrdf_sampling(
         const double cos_in = incoming.y;
         const double bssrdf_prob = cos_in * RcpPi;
         incoming = incoming_point.get_shading_basis().transform_to_parent(incoming);
+        if (incoming_point.get_side() == ObjectInstance::BackSide)
+            incoming = -incoming;
+        assert(is_normalized(incoming));
 
         // Compute Fresnel coefficient at incoming point.
         double incoming_fresnel;
         fresnel_transmittance_dielectric(incoming_fresnel, eta, cos_in);
         if (incoming_fresnel <= 0.0)
-            return;
+            continue;
 
         // Discard occluded samples.
         const double transmission =
@@ -278,12 +285,6 @@ void compute_ibl_bssrdf_sampling(
             incoming,
             bssrdf_value);
 
-        const double weight =
-              RcpPi
-            * cos_in
-            * transmission
-            * incoming_fresnel;
-
         // Evaluate the environment's EDF.
         InputEvaluator input_evaluator(shading_context.get_texture_cache());
         Spectrum env_value;
@@ -295,20 +296,20 @@ void compute_ibl_bssrdf_sampling(
             env_value,
             env_prob);
 
+        // Compute MIS weight.
         const double mis_weight =
             mis_power2(
-                sample_count * bssrdf_prob,
-                sample_count * env_prob);
-
-        env_value *= static_cast<float>(weight / bssrdf_prob * mis_weight);
+                bssrdf_sample_count * bssrdf_prob,
+                env_sample_count * env_prob);
 
         // Add the contribution of this sample to the illumination.
+        env_value *= static_cast<float>(transmission * incoming_fresnel * cos_in / bssrdf_prob * mis_weight);
         env_value *= bssrdf_value;
         radiance += env_value;
     }
 
-    if (sample_count > 1)
-        radiance /= static_cast<float>(sample_count);
+    if (bssrdf_sample_count > 1)
+        radiance /= static_cast<float>(bssrdf_sample_count);
 }
 
 void compute_ibl_environment_sampling(
@@ -412,7 +413,8 @@ void compute_ibl_environment_sampling(
     const ShadingPoint&     outgoing_point,
     const Dual3d&           outgoing,
     const double            eta,
-    const size_t            sample_count,
+    const size_t            bssrdf_sample_count,
+    const size_t            env_sample_count,
     Spectrum&               radiance)
 {
     assert(is_normalized(outgoing.get_value()));
@@ -421,9 +423,9 @@ void compute_ibl_environment_sampling(
 
     radiance.set(0.0f);
 
-    sampling_context.split_in_place(2, sample_count);
+    sampling_context.split_in_place(2, env_sample_count);
 
-    for (size_t i = 0; i < sample_count; ++i)
+    for (size_t i = 0; i < env_sample_count; ++i)
     {
         // Generate a uniform sample in [0,1)^2.
         const Vector2d s = sampling_context.next_vector2<2>();
@@ -451,7 +453,7 @@ void compute_ibl_environment_sampling(
         double incoming_fresnel;
         fresnel_transmittance_dielectric(incoming_fresnel, eta, cos_in);
         if (incoming_fresnel <= 0.0)
-            return;
+            continue;
 
         // Discard occluded samples.
         const double transmission =
@@ -472,28 +474,21 @@ void compute_ibl_environment_sampling(
             incoming,
             bssrdf_value);
 
-        const double weight =
-              RcpPi
-            * cos_in
-            * incoming_fresnel
-            * transmission;
-
         // Compute MIS weight.
         const double bssrdf_prob = cos_in * RcpPi;
-
         const double mis_weight =
             mis_power2(
-                sample_count * env_prob,
-                sample_count * bssrdf_prob);
+                env_sample_count * env_prob,
+                bssrdf_sample_count * bssrdf_prob);
 
         // Add the contribution of this sample to the illumination.
-        env_value *= static_cast<float>(weight / env_prob * mis_weight);
+        env_value *= static_cast<float>(transmission * incoming_fresnel * cos_in / env_prob * mis_weight);
         env_value *= bssrdf_value;
         radiance += env_value;
     }
 
-    if (sample_count > 1)
-        radiance /= static_cast<float>(sample_count);
+    if (env_sample_count > 1)
+        radiance /= static_cast<float>(env_sample_count);
 }
 
 }   // namespace renderer

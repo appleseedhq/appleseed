@@ -82,6 +82,9 @@ class PathVertex
     const void*                 m_bsdf_data;
     const BSSRDF*               m_bssrdf;
     const void*                 m_bssrdf_data;
+    double                      m_eta;
+    double                      m_partial_sss_weight;
+    const ShadingPoint*         m_incoming_point;
 
     // Properties of the last scattering event (for multiple importance sampling).
     ScatteringMode::Mode        m_prev_mode;
@@ -171,7 +174,8 @@ inline double PathVertex::get_bsdf_prob_area() const
 
     // Veach: 8.2.2.2 eq. 8.10.
     const double d = m_shading_point->get_distance();
-    return m_prev_prob * m_cos_on / (d * d);
+    const double g = m_cos_on / (d * d);
+    return m_prev_prob * g;
 }
 
 inline double PathVertex::get_light_prob_area(const LightSampler& light_sampler) const

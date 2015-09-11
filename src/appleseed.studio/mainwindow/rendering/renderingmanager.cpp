@@ -192,7 +192,7 @@ void RenderingManager::start_rendering(
 
 bool RenderingManager::is_rendering() const
 {
-    return m_master_renderer_thread.get() && m_master_renderer_thread->isRunning();
+    return m_master_renderer.get() != 0;
 }
 
 void RenderingManager::wait_until_rendering_end()
