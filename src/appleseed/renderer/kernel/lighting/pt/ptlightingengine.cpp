@@ -392,7 +392,7 @@ namespace
                     env_radiance,
                     env_prob);
 
-                // Update the path radiance.
+                // Update path radiance.
                 env_radiance *= vertex.m_throughput;
                 m_path_radiance += env_radiance;
                 m_path_aovs.add(m_env_edf->get_render_layer_index(), env_radiance);
@@ -499,6 +499,10 @@ namespace
                         vertex_aovs);
                 }
 
+                // Apply path throughput.
+                vertex_radiance *= vertex.m_throughput;
+                vertex_aovs *= vertex.m_throughput;
+
                 // Optionally clamp secondary rays contribution.
                 if (m_params.m_has_max_ray_intensity && vertex.m_path_length > 1)
                 {
@@ -506,10 +510,8 @@ namespace
                     clamp_contribution(vertex_aovs);
                 }
 
-                // Update the path radiance.
-                vertex_radiance *= vertex.m_throughput;
+                // Update path radiance.
                 m_path_radiance += vertex_radiance;
-                vertex_aovs *= vertex.m_throughput;
                 m_path_aovs += vertex_aovs;
             }
 
@@ -828,17 +830,19 @@ namespace
                     env_radiance *= static_cast<float>(mis_weight);
                 }
 
+                // Apply path throughput.
+                env_radiance *= vertex.m_throughput;
+
                 // Optionally clamp secondary rays contribution.
                 if (m_params.m_has_max_ray_intensity && vertex.m_path_length > 1)
                     clamp_contribution(env_radiance);
 
                 // Update the path radiance.
-                env_radiance *= vertex.m_throughput;
                 m_path_radiance += env_radiance;
                 m_path_aovs.add(m_env_edf->get_render_layer_index(), env_radiance);
             }
 
-            void clamp_contribution(Spectrum& radiance)
+            void clamp_contribution(Spectrum& radiance) const
             {
                 const float avg = average_value(radiance);
 
@@ -846,11 +850,9 @@ namespace
                     radiance *= m_params.m_max_ray_intensity / avg;
             }
 
-            void clamp_contribution(SpectrumStack& aovs)
+            void clamp_contribution(SpectrumStack& aovs) const
             {
-                const size_t size = aovs.size();
-
-                for (size_t i = 0; i < size; ++i)
+                for (size_t i = 0, e = aovs.size(); i < e; ++i)
                     clamp_contribution(aovs[i]);
             }
         };
