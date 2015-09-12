@@ -356,6 +356,7 @@ set (foundation_meta_benchmarks_sources
     foundation/meta/benchmarks/benchmark_permutation.cpp
     foundation/meta/benchmarks/benchmark_poolallocator.cpp
     foundation/meta/benchmarks/benchmark_qmc.cpp
+    foundation/meta/benchmarks/benchmark_quaternion.cpp
     foundation/meta/benchmarks/benchmark_ray.cpp
     foundation/meta/benchmarks/benchmark_regularspectrum.cpp
     foundation/meta/benchmarks/benchmark_rng.cpp

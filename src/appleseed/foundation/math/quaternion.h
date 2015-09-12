@@ -153,8 +153,11 @@ template <typename T> bool is_normalized(const Quaternion<T>& q);
 template <typename T> bool is_normalized(const Quaternion<T>& q, const T eps);
 
 // Spherical linear interpolation between two unit-length quaternions.
-// todo: implement fast version (http://zeuxcg.org/2015/07/23/approximating-slerp/).
 template <typename T> Quaternion<T> slerp(const Quaternion<T>& p, const Quaternion<T>& q, const T t);
+
+// Approximate but faster spherical linear interpolation between two unit-length quaternions.
+// See http://zeuxcg.org/2015/07/23/approximating-slerp/ for derivation and error analysis.
+template <typename T> Quaternion<T> fast_slerp(const Quaternion<T>& p, const Quaternion<T>& q, const T t);
 
 // Rotation of a vector by a quaternion.
 template <typename T> Vector<T, 3> rotate(const Quaternion<T>& q, const Vector<T, 3>& v);
@@ -486,6 +489,19 @@ FORCE_INLINE Quaternion<T> slerp(const Quaternion<T>& p, const Quaternion<T>& q,
         sin_theta < Eps
             ? lerp(p, q, t)
             : (std::sin((T(1.0) - t) * theta) * p + std::sin(t * theta) * q) / sin_theta;
+}
+
+template <typename T>
+inline Quaternion<T> fast_slerp(const Quaternion<T>& p, const Quaternion<T>& q, const T t)
+{
+    const T d = dot(p, q);
+    const T a = T(1.0904) + d * (T(-3.2452) + d * (T(3.55645) + d * T(-1.43519)));
+    const T b = T(0.848013) + d * (T(-1.06021) + d * T(0.215638));
+    const T u = t - T(1.0);
+    const T v = t - T(0.5);
+    const T k = a * v * v + b;
+    const T w = k * u * v * t + t;
+    return normalize(lerp(p, q, w));
 }
 
 template <typename T>
