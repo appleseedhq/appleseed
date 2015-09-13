@@ -505,7 +505,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
         // Construct the scattered ray.
         ShadingRay scattered_ray(
-            parent_shading_point->get_point(),
+            parent_shading_point->get_biased_point(incoming.get_value()),
             incoming.get_value(),
             ray.m_time,
             ScatteringMode::get_vis_flags(mode),
