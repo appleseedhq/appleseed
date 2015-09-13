@@ -122,7 +122,6 @@ class MDF
         const T              alpha_y) const
     {
         // Preconditions.
-        assert(is_normalized(v));
         assert(s[0] >= T(0.0));
         assert(s[0] <  T(1.0));
         assert(s[1] >= T(0.0));
@@ -280,6 +279,9 @@ class MDF
         const Vector<T, 3>&  h,
         const T              s)
     {
+        // Preconditions.
+        assert(is_normalized(v));
+
         const Vector<T, 3> hm(-h[0], h[1], -h[2]);
         const T dot_vh  = std::max(dot(v, h), T(0.0));
         const T dot_vhm = std::max(dot(v, hm), T(0.0));
@@ -299,6 +301,9 @@ class MDF
         const T              alpha_x,
         const T              alpha_y)
     {
+        // Preconditions.
+        assert(is_normalized(v));
+
         // Stretch incident.
         Vector<T, 3> stretched(
             v[0] * alpha_x,
