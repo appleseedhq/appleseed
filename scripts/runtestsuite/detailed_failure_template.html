@@ -25,7 +25,18 @@
                 <table class="details">
                     <tr>
                         <td>Reason</td>
-                        <td>{failure-reason}</td>
+                        <td>
+                            {failure-reason}
+                            <div class="popup">
+                                <div class="window">
+                                    <div class="compare-images">
+                                        <img src="{output-image-url}">
+                                        <img src="{ref-image-url}">
+                                    </div>
+                                </div>
+                            </div>
+                            <a class="popup-toggle" href="#">Compare</a>
+                        </td>
                     </tr>
                     <tr>
                         <td>Log File</td>
