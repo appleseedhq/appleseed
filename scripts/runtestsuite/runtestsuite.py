@@ -177,7 +177,7 @@ class ReportWriter:
                                         'log-file-path': os.path.basename(log_filepath),
                                         'max-abs-diff': max_diff,
                                         'diff-comps-count': num_diff,
-                                        'diff-comps-percents': 100.0 * num_diff / num_comps,
+                                        'diff-comps-percents': "{0:.2f}".format(100.0 * num_diff / num_comps),
                                         'update-command': command }))
         self.file.flush()
 
