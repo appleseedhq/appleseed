@@ -63,6 +63,13 @@
                     $(this).hide();
                     return false;
                 });
+
+                $(document).keyup(function (e) {
+                    if (e.keyCode == 27) {
+                        $(".popup").hide();
+                        return false;
+                    }
+                });
             });
         </script>
         <style type="text/css">
