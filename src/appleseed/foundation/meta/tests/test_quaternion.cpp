@@ -31,6 +31,7 @@
 #include "foundation/math/quaternion.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/gnuplotfile.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
@@ -43,7 +44,13 @@ BEGIN_EXR_INCLUDES
 END_EXR_INCLUDES
 #endif
 
+// Standard headers.
+#include <cmath>
+#include <cstddef>
+#include <vector>
+
 using namespace foundation;
+using namespace std;
 
 TEST_SUITE(Foundation_Math_Quaternion)
 {
@@ -137,5 +144,35 @@ TEST_SUITE(Foundation_Math_Quaternion)
         const Vector3d result = rotate(q, Vector3d(1.0, 0.0, 0.0));
 
         EXPECT_FEQ(Vector3d(RcpSqrtTwo, 0.0, -RcpSqrtTwo), result);
+    }
+
+    TEST_CASE(PlotFastSlerpError)
+    {
+        GnuplotFile plotfile;
+        plotfile.set_title("Fast Spherical Linear Interpolation of Quaternions");
+        plotfile.set_xlabel("t");
+        plotfile.set_ylabel("Absolute Angular Error");
+
+        const Quaterniond q1 = Quaterniond::rotation(Vector3d(0.0, 0.0, 1.0), 0.0);
+        const Quaterniond q2 = Quaterniond::rotation(Vector3d(0.0, 0.0, 1.0), Pi);
+
+        const size_t PointCount = 1000;
+        vector<Vector2d> points;
+
+        for (size_t i = 0; i < PointCount; ++i)
+        {
+            const double t = fit<size_t, double>(i, 0, PointCount - 1, 0.0, 1.0);
+            const Quaterniond q_slerp = slerp(q1, q2, t);
+            const Quaterniond q_fast_slerp = fast_slerp(q1, q2, t);
+            const double e = 2.0 * abs(acos(q_slerp.s) - acos(q_fast_slerp.s));
+            points.push_back(Vector2d(t, e));
+        }
+
+        plotfile
+            .new_plot()
+            .set_points(points)
+            .set_color("red");
+
+        plotfile.write("unit tests/outputs/test_quaternion_slerp.gnuplot");
     }
 }

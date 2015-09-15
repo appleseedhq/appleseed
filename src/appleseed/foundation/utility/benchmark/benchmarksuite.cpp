@@ -31,6 +31,7 @@
 #include "benchmarksuite.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
 #include "foundation/platform/timers.h"
 #include "foundation/platform/types.h"
@@ -66,12 +67,12 @@ namespace
     struct EmptyBenchmarkCase
       : public IBenchmarkCase
     {
-        virtual const char* get_name() const
+        virtual const char* get_name() const APPLESEED_OVERRIDE
         {
             return "Empty";
         }
 
-        virtual void run()
+        virtual void run() APPLESEED_OVERRIDE
         {
         }
     };

@@ -155,7 +155,6 @@ class ReportWriter:
         self.file.write(self.__render(self.simple_failure_template,
                                       { 'project-path': scene,
                                         'ref-image-url': urllib.quote(reference_filepath),
-                                        'diff-image-url': "",
                                         'output-image-url': urllib.quote(output_filepath),
                                         'failure-reason': error_message,
                                         'log-file-url': urllib.quote(log_filepath),
@@ -352,7 +351,7 @@ def render_test_scene(args, logger, report_writer, project_directory, project_fi
     if out_width != ref_width or out_height != ref_height:
         logger.fail_rendering(rendering_time, "OUTPUT/REFERENCE SIZE MISMATCH")
         report_writer.report_simple_failure(project_filepath, ref_filepath, output_filepath, log_filepath,
-                                     "Output and reference images have different sizes")
+                                            "Output and reference images have different sizes")
         return False
 
     num_diff, max_diff, diff_image = compare_images(out_rows, ref_rows, VALUE_THRESHOLD)

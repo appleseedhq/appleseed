@@ -609,11 +609,11 @@ bool TransformInterpolator<T>::set_transforms(
     from.get_local_to_parent().decompose(m_s0, m_q0, m_t0);
     to.get_local_to_parent().decompose(m_s1, m_q1, m_t1);
 
+    // Handle double-cover.
     if (dot(m_q0, m_q1) < T(0.0))
         m_q1 = -m_q1;
 
     const T Eps = make_eps<T>(1.0e-4f, 1.0e-6);
-
     return is_normalized(m_q0, Eps) && is_normalized(m_q1, Eps);
 }
 
@@ -682,7 +682,7 @@ inline void TransformInterpolator<T>::evaluate(const T t, Transform<T>& result) 
     //     parent_to_local = inv_smat * parent_to_local;
     //
 
-    const Quaternion<T> q = slerp(m_q0, m_q1, t);
+    const Quaternion<T> q = fast_slerp(m_q0, m_q1, t);
 
     const T rtx = q.v[0] + q.v[0];
     const T rty = q.v[1] + q.v[1];
