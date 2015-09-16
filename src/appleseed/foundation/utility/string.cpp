@@ -54,9 +54,7 @@ char* duplicate_string(const char* s)
     assert(s);
 
     char* result = new char[strlen(s) + 1];
-
-    if (result)
-        strcpy(result, s);
+    strcpy(result, s);
 
     return result;
 }
