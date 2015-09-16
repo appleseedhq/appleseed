@@ -134,14 +134,14 @@ inline void Stopwatch<Timer>::clear()
 template <typename Timer>
 inline void Stopwatch<Timer>::start()
 {
-    m_start = m_timer.read();
+    m_start = m_timer.read_start();
 }
 
 template <typename Timer>
 inline Stopwatch<Timer>& Stopwatch<Timer>::measure()
 {
     // Compute and store elapsed time.
-    const uint64 end = m_timer.read();
+    const uint64 end = m_timer.read_end();
     m_elapsed = end >= m_start ? end - m_start : 0;
 
     // Subtract known overhead from elapsed time.

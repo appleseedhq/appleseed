@@ -58,6 +58,12 @@ class APPLESEED_DLLSYMBOL DefaultProcessorTimer
     // Read the timer value.
     uint64 read();
 
+    // For benchmarking, read the timer value before the benchmark starts.
+    uint64 read_start() { return read(); }
+
+    // For benchmarking, read the timer value after the benchmark ends.
+    uint64 read_end() { return read(); }
+
 #ifdef _WIN32
   private:
     bool m_has_qpc;     // is QueryPerformanceCounter() available?
@@ -79,6 +85,12 @@ class APPLESEED_DLLSYMBOL DefaultWallclockTimer
 
     // Read the timer value.
     uint64 read();
+
+    // For benchmarking, read the timer value before the benchmark starts.
+    uint64 read_start() { return read(); }
+
+    // For benchmarking, read the timer value after the benchmark ends.
+    uint64 read_end() { return read(); }
 };
 
 }       // namespace foundation

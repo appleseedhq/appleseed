@@ -367,11 +367,11 @@ void sleep(const uint32 ms, IAbortSwitch& abort_switch)
     DefaultWallclockTimer timer;
 
     const uint64 freq = timer.frequency();
-    const uint64 start_time = timer.read();
+    const uint64 start_time = timer.read_start();
 
     while (!abort_switch.is_aborted())
     {
-        const uint64 elapsed_ticks = timer.read() - start_time;
+        const uint64 elapsed_ticks = timer.read_end() - start_time;
         const uint64 elapsed_ms = (1000 * elapsed_ticks) / freq;
 
         if (elapsed_ms >= ms)

@@ -42,8 +42,8 @@ namespace foundation
 
 //
 // x86-specific timer measuring processor time (not wallclock time).
-// Uses the RDTSC instruction available on all modern x86 processors
-// to read the CPU internal clock cycle counter.
+// Uses the RDTSC and RDTSCP instructions available on all modern
+// x86 processors to read the CPU internal clock cycle counter.
 //
 
 class APPLESEED_DLLSYMBOL X86Timer
@@ -57,7 +57,13 @@ class APPLESEED_DLLSYMBOL X86Timer
     uint64 frequency();
 
     // Read the timer value.
-    uint64 read();
+    uint64 read() { return read_start(); }
+
+    // For benchmarking, read the timer value before the benchmark starts.
+    uint64 read_start();
+
+    // For benchmarking, read the timer value after the benchmark ends.
+    uint64 read_end();
 
   private:
     const uint64 m_frequency;
