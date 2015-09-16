@@ -8,6 +8,9 @@ DEPSDIR=$THISDIR/travis-linux-deps
 mkdir build
 cd build
 
+export CC=gcc-4.8
+export CXX=g++-4.8
+
 cmake \
     -D WITH_CLI=ON \
     -D WITH_STUDIO=OFF \
