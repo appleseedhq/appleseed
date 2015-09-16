@@ -90,14 +90,36 @@ namespace
     void load_settings()
     {
         const filesystem::path root_path(Application::get_root_path());
-        const filesystem::path settings_file_path = root_path / "settings" / "appleseed.cli.xml";
         const filesystem::path schema_file_path = root_path / "schemas" / "settings.xsd";
 
         SettingsFileReader reader(g_logger);
-        reader.read(
-            settings_file_path.string().c_str(),
-            schema_file_path.string().c_str(),
-            g_settings);
+
+        // First try to read the settings from the user path.
+        if (const char* p = Application::get_user_settings_path())
+        {
+            const filesystem::path user_settings_path(p);
+            const filesystem::path user_settings_file_path = user_settings_path / "appleseed.cli.xml";
+
+            if (reader.read(
+                    user_settings_file_path.string().c_str(),
+                    schema_file_path.string().c_str(),
+                    g_settings))
+            {
+                RENDERER_LOG_INFO("successfully loaded settings from %s.", user_settings_file_path.string().c_str());
+                return;
+            }
+        }
+
+        // As a fallback, try to read the settings from the appleseed install.
+        const filesystem::path settings_file_path = root_path / "settings" / "appleseed.cli.xml";
+
+        if (reader.read(
+                settings_file_path.string().c_str(),
+                schema_file_path.string().c_str(),
+                g_settings))
+        {
+            RENDERER_LOG_INFO("successfully loaded settings from %s.", settings_file_path.string().c_str());
+        }
     }
 
     void apply_settings()

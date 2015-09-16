@@ -64,6 +64,9 @@ class SHAREDDLL Application
     // an empty string if the application is not correctly installed.
     static const char* get_root_path();
 
+    // Return the user settings path.
+    static const char* get_user_settings_path();
+
     // Return the root path of the application's tests.
     static const char* get_tests_root_path();
 

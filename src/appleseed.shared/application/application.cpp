@@ -137,6 +137,40 @@ const char* Application::get_root_path()
     return root_path_buffer;
 }
 
+const char* Application::get_user_settings_path()
+{
+    static char user_settings_buffer[FOUNDATION_MAX_PATH_LENGTH + 1];
+    static bool user_settings_initialized = false;
+
+    if (!user_settings_initialized)
+    {
+// Windows.
+#if defined _WIN32
+
+        return 0;
+
+// OS X.
+#elif defined __APPLE__
+
+        return 0;
+
+#elif defined __linux__ || defined __FreeBSD__
+
+        filesystem::path p(get_home_directory());
+        p /= ".appleseed/settings";
+        copy_directory_path_to_buffer(p, user_settings_buffer);
+
+#else
+
+        #error Unsupported platform.
+
+#endif
+        user_settings_initialized = true;
+    }
+
+    return user_settings_buffer;
+}
+
 const char* Application::get_tests_root_path()
 {
     static char tests_root_path_buffer[FOUNDATION_MAX_PATH_LENGTH + 1];
