@@ -8,6 +8,9 @@ DEPSDIR=$THISDIR/travis-linux-deps
 mkdir build
 cd build
 
+export CC=gcc-4.8
+export CXX=g++-4.8
+
 cmake \
     -D WITH_CLI=ON \
     -D WITH_STUDIO=OFF \
@@ -61,7 +64,7 @@ cmake \
     -D CMAKE_BUILD_TYPE=Debug \
     ..
 
-make
+make -j 2
 
 export LD_LIBRARY_PATH=$DEPSDIR/lib:../sandbox/lib/Debug:$LD_LIBRARY_PATH
 ../sandbox/bin/Debug/appleseed.cli --run-unit-tests --verbose-unit-tests
