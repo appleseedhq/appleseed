@@ -48,12 +48,12 @@
 #if defined __APPLE__
 #include <mach-o/dyld.h>
 #elif defined __linux__
-#include <pwd.h>
 #include <sys/types.h>
+#include <pwd.h>
 #include <unistd.h>
 #elif defined __FreeBSD__
-#include <pwd.h>
 #include <sys/sysctl.h>
+#include <pwd.h>
 #include <unistd.h>
 #endif
 
@@ -78,7 +78,7 @@ const char* get_executable_path()
                 GetModuleHandle(NULL),
                 path,
                 sizeof(path));
-        assert(result);
+        assert(result != 0);
 
 // OS X.
 #elif defined __APPLE__
@@ -144,23 +144,26 @@ const char* get_home_directory()
 
     if (!path_initialized)
     {
+// Windows.
 #if defined _WIN32
 
         return 0;
 
-+#elif defined __APPLE__
+// OS X.
+#elif defined __APPLE__
 
         return 0;
 
+// Other Unices.
 #elif defined __linux__ || defined __FreeBSD__
 
-        const char *home_dir = getenv("HOME");
+        const char* home_dir = getenv("HOME");
 
         if (home_dir == 0)
             home_dir = getpwuid(getuid())->pw_dir;
 
         strncpy(path, home_dir, FOUNDATION_MAX_PATH_LENGTH);
-        path[FOUNDATION_MAX_PATH_LENGTH] = 0;
+        path[FOUNDATION_MAX_PATH_LENGTH] = '\0';
 
 // Other platforms.
 #else

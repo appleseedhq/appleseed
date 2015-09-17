@@ -31,6 +31,7 @@
 #include "benchmarksuite.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
 #include "foundation/platform/timers.h"
@@ -40,15 +41,18 @@
 #include "foundation/utility/benchmark/ibenchmarkcasefactory.h"
 #include "foundation/utility/benchmark/timingresult.h"
 #include "foundation/utility/filter.h"
+#include "foundation/utility/gnuplotfile.h"
 #include "foundation/utility/stopwatch.h"
 
 // Standard headers.
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <cstddef>
 #include <exception>
 #include <limits>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -61,6 +65,8 @@ namespace foundation
 // BenchmarkSuite class implementation.
 //
 
+#define GENERATE_BENCHMARK_PLOTS
+
 namespace
 {
     // An empty benchmark case used for measuring the overhead of calling IBenchmarkCase::run().
@@ -72,7 +78,7 @@ namespace
             return "Empty";
         }
 
-        virtual void run() APPLESEED_OVERRIDE
+        NO_INLINE virtual void run() APPLESEED_OVERRIDE
         {
         }
     };
@@ -91,14 +97,10 @@ struct BenchmarkSuite::Impl
 
     static double measure_runtime_seconds(
         IBenchmarkCase*         benchmark,
-        StopwatchType&          stopwatch,
-        const size_t            iteration_count)
+        StopwatchType&          stopwatch)
     {
         stopwatch.start();
-
-        for (size_t i = 0; i < iteration_count; ++i)
-            benchmark->run();
-
+        benchmark->run();
         stopwatch.measure();
 
         return stopwatch.get_seconds();
@@ -106,14 +108,10 @@ struct BenchmarkSuite::Impl
 
     static double measure_runtime_ticks(
         IBenchmarkCase*         benchmark,
-        StopwatchType&          stopwatch,
-        const size_t            iteration_count)
+        StopwatchType&          stopwatch)
     {
         stopwatch.start();
-
-        for (size_t i = 0; i < iteration_count; ++i)
-            benchmark->run();
-
+        benchmark->run();
         stopwatch.measure();
 
         return static_cast<double>(stopwatch.get_ticks());
@@ -124,81 +122,52 @@ struct BenchmarkSuite::Impl
         IBenchmarkCase*         benchmark,
         StopwatchType&          stopwatch,
         MeasurementFunction&    measurement_function,
-        const size_t            iteration_count,
         const size_t            measurement_count)
     {
         double lowest_runtime = numeric_limits<double>::max();
 
         for (size_t i = 0; i < measurement_count; ++i)
         {
-            const double runtime =
-                measurement_function(
-                    benchmark,
-                    stopwatch,
-                    iteration_count);
-
+            const double runtime = measurement_function(benchmark, stopwatch);
             lowest_runtime = min(lowest_runtime, runtime);
         }
 
         return lowest_runtime;
     }
 
-    struct BenchmarkParams
-    {
-        size_t  m_iteration_count;
-        size_t  m_measurement_count;
-    };
-
-    static void estimate_benchmark_params(
+    static size_t compute_measurement_count(
         IBenchmarkCase*         benchmark,
-        StopwatchType&          stopwatch,
-        BenchmarkParams&        params)
+        StopwatchType&          stopwatch)
     {
-        const size_t InitialIterationCount = 1;
-        const size_t InitialMeasurementCount = 3;
-        const double TargetMeasurementTime = 1.0e-3;    // seconds
-        const double TargetTotalTime = 0.5;             // seconds
-
-        // Measure the runtime for the initial number of iterations.
-        const double time =
+        // Measure the runtime using a very small number of measurements. Not accurate.
+        const size_t InitialMeasurementCount = 10;
+        const double measurement_time =
             measure_runtime(
                 benchmark,
                 stopwatch,
                 BenchmarkSuite::Impl::measure_runtime_seconds,
-                InitialIterationCount,
                 InitialMeasurementCount);
 
-        // Compute the number of iterations.
-        const double iteration_time = time / InitialIterationCount;
-        params.m_iteration_count = max<size_t>(1, static_cast<size_t>(TargetMeasurementTime / iteration_time));
-
-        // Compute the number of measurements.
-        const double measurement_time = iteration_time * params.m_iteration_count;
-        params.m_measurement_count = max<size_t>(1, static_cast<size_t>(TargetTotalTime / measurement_time));
-    }
-
-    static double measure_iteration_runtime(
-        IBenchmarkCase*         benchmark,
-        StopwatchType&          stopwatch,
-        const BenchmarkParams&  params)
-    {
+        // Compute the number of measurements to get an accurate runtime measure.
+        const size_t MaxMeasurementCount = 1000000;
+        const double MaxTargetTotalTime = 0.1;          // seconds
         return
-            measure_runtime(
-                benchmark,
-                stopwatch,
-                BenchmarkSuite::Impl::measure_runtime_ticks,
-                params.m_iteration_count,
-                params.m_measurement_count)
-            / params.m_iteration_count;
+            static_cast<size_t>(ceil(
+                min(MaxMeasurementCount * measurement_time, MaxTargetTotalTime) / measurement_time));
     }
 
     // Measure and return the overhead (in ticks) of running an empty benchmark case.
-    static double measure_call_overhead(
+    static double measure_call_overhead_ticks(
         StopwatchType&          stopwatch,
-        const BenchmarkParams&  params)
+        const size_t            measurement_count)
     {
         auto_ptr<IBenchmarkCase> empty_case(new EmptyBenchmarkCase());
-        return measure_iteration_runtime(empty_case.get(), stopwatch, params);
+        return
+            measure_runtime(
+                empty_case.get(),
+                stopwatch,
+                BenchmarkSuite::Impl::measure_runtime_ticks,
+                measurement_count);
     }
 };
 
@@ -273,29 +242,54 @@ void BenchmarkSuite::run(
             suite_result.signal_case_execution();
 
             // Estimate benchmarking parameters.
-            Impl::BenchmarkParams params;
-            Impl::estimate_benchmark_params(
-                benchmark.get(),
-                stopwatch,
-                params);
+            const size_t measurement_count =
+                Impl::compute_measurement_count(benchmark.get(), stopwatch);
 
             // Measure the overhead of calling IBenchmarkCase::run().
-            const double overhead =
-                Impl::measure_call_overhead(stopwatch, params);
+            const double overhead_ticks =
+                Impl::measure_call_overhead_ticks(stopwatch, measurement_count);
 
             // Run the benchmark case.
-            const double execution_time =
-                Impl::measure_iteration_runtime(
+            const double runtime_ticks =
+                Impl::measure_runtime(
                     benchmark.get(),
                     stopwatch,
-                    params);
+                    BenchmarkSuite::Impl::measure_runtime_ticks,
+                    measurement_count);
+
+#ifdef GENERATE_BENCHMARK_PLOTS
+            vector<Vector2d> points;
+
+            for (size_t j = 0; j < 100; ++j)
+            {
+                const double ticks =
+                    Impl::measure_runtime(
+                        benchmark.get(),
+                        stopwatch,
+                        BenchmarkSuite::Impl::measure_runtime_ticks,
+                        max<size_t>(1, measurement_count / 100));
+                points.push_back(
+                    Vector2d(
+                        static_cast<double>(j),
+                        ticks > overhead_ticks ? ticks - overhead_ticks : 0.0));
+            }
+
+            stringstream sstr;
+            sstr << "unit benchmarks/plots/";
+            sstr << get_name() << "_" << benchmark->get_name();
+            sstr << ".gnuplot";
+
+            GnuplotFile plotfile;
+            plotfile.new_plot().set_points(points);
+            plotfile.write(sstr.str());
+#endif
 
             // Gather the timing results.
             TimingResult timing_result;
-            timing_result.m_iteration_count = params.m_iteration_count;
-            timing_result.m_measurement_count = params.m_measurement_count;
+            timing_result.m_iteration_count = 1;
+            timing_result.m_measurement_count = measurement_count;
             timing_result.m_frequency = static_cast<double>(stopwatch.get_timer().frequency());
-            timing_result.m_ticks = execution_time > overhead ? execution_time - overhead : 0.0;
+            timing_result.m_ticks = runtime_ticks > overhead_ticks ? runtime_ticks - overhead_ticks : 0.0;
 
             // Post the timing result.
             suite_result.write(

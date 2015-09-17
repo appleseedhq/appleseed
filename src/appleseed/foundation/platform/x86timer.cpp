@@ -47,6 +47,11 @@ namespace foundation
 //
 // X86Timer class implementation.
 //
+// Reference:
+//
+//    How to Benchmark Code Execution Times on Intel IA-32 and IA-64 Instruction Set Architectures
+//    http://www.intel.com/content/dam/www/public/us/en/documents/white-papers/ia-32-ia-64-benchmark-code-execution-paper.pdf
+//
 
 namespace
 {
@@ -54,9 +59,9 @@ namespace
     template <typename Timer>
     uint64 measure_timer_frequency(Timer& timer, const uint32 calibration_time_ms)
     {
-        const uint64 begin = timer.read();
+        const uint64 begin = timer.read_start();
         sleep(calibration_time_ms);
-        const uint64 end = timer.read();
+        const uint64 end = timer.read_end();
         return ((end - begin) * 1000) / calibration_time_ms;
     }
 }
@@ -72,7 +77,7 @@ uint64 X86Timer::frequency()
     return m_frequency;
 }
 
-uint64 X86Timer::read()
+uint64 X86Timer::read_start()
 {
 // Visual C++, 32-bit mode.
 #if defined _MSC_VER && !defined _WIN64
@@ -81,7 +86,7 @@ uint64 X86Timer::read()
 
     __asm
     {
-        cpuid                   // force in-order execution of the RDTSC instruction
+        cpuid                               // force in-order execution of the RDTSC instruction
         rdtsc
         mov h, edx
         mov l, eax
@@ -93,7 +98,7 @@ uint64 X86Timer::read()
 #elif defined _MSC_VER && defined _WIN64
 
     int cpu_info[4];
-    __cpuid(cpu_info, 0);       // force in-order execution of the RDTSC instruction
+    __cpuid(cpu_info, 0);                   // force in-order execution of the RDTSC instruction
 
     return __rdtsc();
 
@@ -102,13 +107,67 @@ uint64 X86Timer::read()
 
     uint32 h, l;
 
-    asm volatile
-    ("  rdtsc;                  \
-        mov %%edx, %0;          \
-        mov %%eax, %1"
-        : "=rm" (h), "=rm" (l)  // outputs
-        :                       // inputs
-        : "%eax", "%edx"        // clobbered registers
+    asm volatile (
+        "cpuid\n\t"                         // force in-order execution of the RDTSC instruction
+        "rdtsc\n\t"
+        "mov %%edx, %0\n\t"
+        "mov %%eax, %1\n\t"
+        : "=r" (h), "=r" (l)                // outputs
+        :                                   // inputs
+        : "%rax", "%rbx", "%rcx", "%rdx"    // clobbered registers
+    );
+
+    return (static_cast<uint64>(h) << 32) | l;
+
+// Other platforms.
+#else
+
+    #error The x86 timer is not supported on this platform.
+
+#endif
+}
+
+uint64 X86Timer::read_end()
+{
+// Visual C++, 32-bit mode.
+#if defined _MSC_VER && !defined _WIN64
+
+    uint32 h, l;
+
+    __asm
+    {
+        rdtscp
+        mov h, edx
+        mov l, eax
+        cpuid                               // prevent instructions coming afterward from executing before the RDTSCP instruction
+    }
+
+    return (static_cast<uint64>(h) << 32) | l;
+
+// Visual C++, 64-bit mode.
+#elif defined _MSC_VER && defined _WIN64
+
+    unsigned int aux;
+    const uint64 value = __rdtscp(&aux);
+
+    int cpu_info[4];
+    __cpuid(cpu_info, 0);                   // prevent instructions coming afterward from executing before the RDTSCP instruction
+
+    return value;
+
+// gcc.
+#elif defined __GNUC__
+
+    uint32 h, l;
+
+    asm volatile (
+        "rdtscp\n\t"
+        "mov %%edx, %0\n\t"
+        "mov %%eax, %1\n\t"
+        "cpuid\n\t"                         // prevent instructions coming afterward from executing before the RDTSCP instruction
+        : "=r" (h), "=r" (l)                // outputs
+        :                                   // inputs
+        : "%rax", "%rbx", "%rcx", "%rdx"    // clobbered registers
     );
 
     return (static_cast<uint64>(h) << 32) | l;

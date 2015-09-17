@@ -383,13 +383,13 @@ TEST_SUITE(Foundation_Utility_Job_WorkerThread)
         explicit TimeoutChecker(const double timeout_seconds)
           : m_timeout_seconds(timeout_seconds)
           , m_timer_frequency(m_timer.frequency())
-          , m_start_ticks(m_timer.read())
+          , m_start_ticks(m_timer.read_start())
         {
         }
 
         bool timeout() const
         {
-            const uint64 elapsed_ticks = m_timer.read();
+            const uint64 elapsed_ticks = m_timer.read_end();
 
             const double elasped_seconds =
                 static_cast<double>(elapsed_ticks - m_start_ticks) / m_timer_frequency;
