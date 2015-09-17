@@ -47,8 +47,12 @@
 // Platform headers.
 #if defined __APPLE__
 #include <mach-o/dyld.h>
-#elif defined __linux__ || defined __FreeBSD__
+#elif defined __linux__
 #include <sys/types.h>
+#include <pwd.h>
+#include <unistd.h>
+#elif defined __FreeBSD__
+#include <sys/sysctl.h>
 #include <pwd.h>
 #include <unistd.h>
 #endif
@@ -150,7 +154,7 @@ const char* get_home_directory()
 
         return 0;
 
-// Other Unixes.
+// Other Unices.
 #elif defined __linux__ || defined __FreeBSD__
 
         const char* home_dir = getenv("HOME");
