@@ -1326,7 +1326,7 @@ void MainWindow::slot_save_settings()
             filesystem::create_directories(user_settings_path);
             const filesystem::path user_settings_file_path = user_settings_path / "appleseed.studio.xml";
 
-            if (writer.write(user_settings_file_path.c_str(), m_settings))
+            if (writer.write(user_settings_file_path.string().c_str(), m_settings))
             {
                 RENDERER_LOG_INFO("successfully saved settings to %s.", user_settings_file_path.c_str());
                 return;
