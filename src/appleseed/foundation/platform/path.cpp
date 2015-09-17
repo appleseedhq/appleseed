@@ -48,9 +48,13 @@
 #if defined __APPLE__
 #include <mach-o/dyld.h>
 #elif defined __linux__
+#include <pwd.h>
+#include <sys/types.h>
 #include <unistd.h>
 #elif defined __FreeBSD__
+#include <pwd.h>
 #include <sys/sysctl.h>
+#include <unistd.h>
 #endif
 
 using namespace boost;
@@ -69,11 +73,11 @@ const char* get_executable_path()
 // Windows.
 #if defined _WIN32
 
-	    const DWORD result =
+        const DWORD result =
             GetModuleFileName(
-		        GetModuleHandle(NULL),
-		        path,
-		        sizeof(path));
+                GetModuleHandle(NULL),
+                path,
+                sizeof(path));
         assert(result);
 
 // OS X.
@@ -126,6 +130,44 @@ const char* get_executable_directory()
         assert(executable_path.string().size() <= FOUNDATION_MAX_PATH_LENGTH);
         strncpy(path, executable_path.string().c_str(), sizeof(path) - 1);
         path[sizeof(path) - 1] = '\0';
+
+        path_initialized = true;
+    }
+
+    return path;
+}
+
+const char* get_home_directory()
+{
+    static char path[FOUNDATION_MAX_PATH_LENGTH + 1];
+    static bool path_initialized = false;
+
+    if (!path_initialized)
+    {
+#if defined _WIN32
+
+        return 0;
+
++#elif defined __APPLE__
+
+        return 0;
+
+#elif defined __linux__ || defined __FreeBSD__
+
+        const char *home_dir = getenv("HOME");
+
+        if (home_dir == 0)
+            home_dir = getpwuid(getuid())->pw_dir;
+
+        strncpy(path, home_dir, FOUNDATION_MAX_PATH_LENGTH);
+        path[FOUNDATION_MAX_PATH_LENGTH] = 0;
+
+// Other platforms.
+#else
+
+        #error Unsupported platform.
+
+#endif
 
         path_initialized = true;
     }

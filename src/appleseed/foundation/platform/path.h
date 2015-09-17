@@ -83,6 +83,8 @@ APPLESEED_DLLSYMBOL const char* get_executable_path();
 // Return the path to the directory containing the application's executable. NOT thread-safe.
 APPLESEED_DLLSYMBOL const char* get_executable_directory();
 
+// Return the path to the user's home directory.
+APPLESEED_DLLSYMBOL const char* get_home_directory();
 
 //
 // Operations on boost::filesystem::path objects.
