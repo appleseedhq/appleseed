@@ -1266,18 +1266,19 @@ void MainWindow::slot_load_settings()
     if (const char* p = Application::get_user_settings_path())
     {
         const filesystem::path user_settings_path(p);
-        const filesystem::path user_settings_file_path = user_settings_path / "appleseed.studio.xml";
+        const string user_settings_file_path = (user_settings_path / "appleseed.studio.xml").string();
 
-        success = reader.read(
-            user_settings_file_path.string().c_str(),
-            schema_file_path.c_str(),
-            settings);
+        success =
+            reader.read(
+                user_settings_file_path.c_str(),
+                schema_file_path.c_str(),
+                settings);
 
         if (success)
             RENDERER_LOG_INFO("successfully loaded settings from %s.", user_settings_file_path.c_str());
     }
 
-    // As a fallback, try to read the settings from the appleseed install.
+    // As a fallback, try to read the settings from the appleseed's installation directory.
     const string settings_file_path = (root_path / "settings" / "appleseed.studio.xml").string();
 
     if (!success)
@@ -1324,9 +1325,9 @@ void MainWindow::slot_save_settings()
         {
             const filesystem::path user_settings_path(p);
             filesystem::create_directories(user_settings_path);
-            const filesystem::path user_settings_file_path = user_settings_path / "appleseed.studio.xml";
+            const string user_settings_file_path = (user_settings_path / "appleseed.studio.xml").string();
 
-            if (writer.write(user_settings_file_path.string().c_str(), m_settings))
+            if (writer.write(user_settings_file_path.c_str(), m_settings))
             {
                 RENDERER_LOG_INFO("successfully saved settings to %s.", user_settings_file_path.c_str());
                 return;
@@ -1337,19 +1338,17 @@ void MainWindow::slot_save_settings()
         }
     }
 
-    // As a fallback, try to save the settings to the appleseed install.
+    // As a fallback, try to save the settings to the appleseed's installation directory.
     const filesystem::path root_path(Application::get_root_path());
     const string settings_file_path = (root_path / "settings" / "appleseed.studio.xml").string();
 
-    const bool success =
-        writer.write(
-            settings_file_path.c_str(),
-            m_settings);
-
-    if (success)
+    if (writer.write(settings_file_path.c_str(), m_settings))
+    {
         RENDERER_LOG_INFO("successfully saved settings to %s.", settings_file_path.c_str());
-    else
-        RENDERER_LOG_ERROR("failed to save settings to %s.", settings_file_path.c_str());
+        return;
+    }
+
+    RENDERER_LOG_ERROR("failed to save settings to %s.", settings_file_path.c_str());
 }
 
 void MainWindow::slot_start_interactive_rendering()
