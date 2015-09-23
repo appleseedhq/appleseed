@@ -33,6 +33,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/ibssrdffactory.h"
+#include "renderer/modeling/bssrdf/sss.h"
 #include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
@@ -100,8 +101,48 @@ class DipoleBSSRDF
         const void*             data,
         const size_t            channel,
         const double            radius) const APPLESEED_OVERRIDE;
+
+  protected:
+    template <typename ComputeRdFun>
+    void do_prepare_inputs(
+        ComputeRdFun                rd_fun,
+        DipoleBSSRDFInputValues*    values) const;
 };
 
+
+//
+// DipoleBSSRDF class implementation.
+//
+
+template <typename ComputeRdFun>
+void DipoleBSSRDF::do_prepare_inputs(
+    ComputeRdFun                rd_fun,
+    DipoleBSSRDFInputValues*    values) const
+{
+    // Apply multipliers.
+    values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
+    values->m_dmfp *= values->m_dmfp_multiplier;
+
+    // Clamp reflectance.
+    values->m_reflectance = foundation::clamp(values->m_reflectance, 0.001f, 1.0f);
+
+    // Compute sigma_a and sigma_s from the reflectance and dmfp parameters.
+    compute_absorption_and_scattering(
+        rd_fun,
+        values->m_reflectance,
+        values->m_dmfp,
+        values->m_anisotropy,
+        values->m_sigma_a,
+        values->m_sigma_s);
+
+    // Precompute effective extinction coefficient.
+    values->m_sigma_tr.resize(values->m_sigma_a.size());
+    values->m_sigma_tr.set(static_cast<float>(1.0f / values->m_dmfp));
+
+    // Precompute the (square of the) max radius.
+    const double min_sigma_tr = foundation::min_value(values->m_sigma_tr);
+    values->m_max_radius2 = foundation::square(dipole_max_radius(min_sigma_tr));
+}
 
 //
 // Base class for dipole BSSRDF factories.

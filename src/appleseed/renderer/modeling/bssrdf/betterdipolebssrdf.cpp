@@ -94,30 +94,8 @@ namespace
             DipoleBSSRDFInputValues* values =
                 reinterpret_cast<DipoleBSSRDFInputValues*>(data);
 
-            // Apply multipliers.
-            values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
-            values->m_dmfp *= values->m_dmfp_multiplier;
-
-            // Clamp reflectance.
-            values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
-
-            // Compute sigma_a and sigma_s from the reflectance and dmfp parameters.
             const ComputeRdBetterDipole rd_fun(values->m_outside_ior / values->m_inside_ior);
-            compute_absorption_and_scattering(
-                rd_fun,
-                values->m_reflectance,
-                values->m_dmfp,
-                values->m_anisotropy,
-                values->m_sigma_a,
-                values->m_sigma_s);
-
-            // Precompute effective extinction coefficient.
-            values->m_sigma_tr.resize(values->m_sigma_a.size());
-            values->m_sigma_tr.set(static_cast<float>(1.0f / values->m_dmfp));
-
-            // Precompute the (square of the) max radius.
-            const double min_sigma_tr = min_value(values->m_sigma_tr);
-            values->m_max_radius2 = square(dipole_max_radius(min_sigma_tr));
+            do_prepare_inputs(rd_fun, values);
         }
 
         virtual void evaluate(
