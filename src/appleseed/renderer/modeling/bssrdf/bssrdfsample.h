@@ -131,3 +131,4 @@ inline void BSSRDFSample::set_rmax2(const double rmax2)
 }       // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_BSSRDFSAMPLE_H
+

@@ -71,6 +71,7 @@ APPLESEED_DECLARE_INPUT_VALUES(DipoleBSSRDFInputValues)
     // Precomputed values.
     Spectrum    m_sigma_a;
     Spectrum    m_sigma_s;
+    Spectrum    m_sigma_tr;
     double      m_max_radius2;
 };
 
@@ -90,8 +91,6 @@ class DipoleBSSRDF
 
     virtual size_t compute_input_data_size(
         const Assembly&         assembly) const APPLESEED_OVERRIDE;
-
-    virtual void prepare_inputs(void* data) const APPLESEED_OVERRIDE;
 
     virtual bool sample(
         const void*             data,

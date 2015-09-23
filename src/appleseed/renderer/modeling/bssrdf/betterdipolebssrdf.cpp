@@ -111,8 +111,13 @@ namespace
                 values->m_sigma_a,
                 values->m_sigma_s);
 
+            // Precompute effective extinction coefficient.
+            values->m_sigma_tr.resize(values->m_sigma_a.size());
+            values->m_sigma_tr.set(static_cast<float>(1.0f / values->m_dmfp));
+
             // Precompute the (square of the) max radius.
-            values->m_max_radius2 = square(dipole_max_radius(1.0 / values->m_dmfp));
+            const double min_sigma_tr = min_value(values->m_sigma_tr);
+            values->m_max_radius2 = square(dipole_max_radius(min_sigma_tr));
         }
 
         virtual void evaluate(
@@ -133,7 +138,6 @@ namespace
             const double A = (1.0 + three_c2) / (1.0 - two_c1);
             const double cphi = 0.25 * (1.0 - two_c1);
             const double ce = 0.5 * (1.0 - three_c2);
-            const double sigma_tr = 1.0 / values->m_dmfp;
 
             value.resize(values->m_sigma_a.size());
 
@@ -144,6 +148,7 @@ namespace
                 const double sigma_s_prime = sigma_s * (1.0 - values->m_anisotropy);
                 const double sigma_t_prime = sigma_s_prime + sigma_a;
                 const double alpha_prime = sigma_s_prime / sigma_t_prime;
+                const double sigma_tr = values->m_sigma_tr[i];
 
                 const double D = (2.0 * sigma_a + sigma_s_prime) / (3.0 * square(sigma_t_prime));
                 const double zr = 1.0 / sigma_t_prime;

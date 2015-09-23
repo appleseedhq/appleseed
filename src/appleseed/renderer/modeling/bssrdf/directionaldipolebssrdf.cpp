@@ -38,6 +38,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/fresnel.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -79,14 +80,22 @@ namespace
     const char* Model = "directional_dipole_bssrdf";
 
     class DirectionalDipoleBSSRDF
-      : public DipoleBSSRDF
+      : public BSSRDF
     {
       public:
         DirectionalDipoleBSSRDF(
             const char*             name,
             const ParamArray&       params)
-          : DipoleBSSRDF(name, params)
+          : BSSRDF(name, params)
         {
+            m_inputs.declare("weight", InputFormatScalar, "1.0");
+            m_inputs.declare("preset", InputFormatScalar, "0.0");
+            m_inputs.declare("sigma_a", InputFormatSpectralReflectance);
+            m_inputs.declare("sigma_s", InputFormatSpectralReflectance);
+            m_inputs.declare("anisotropy", InputFormatScalar);
+            m_inputs.declare("outside_ior", InputFormatScalar);
+            m_inputs.declare("inside_ior", InputFormatScalar);
+            m_inputs.declare("scale", InputFormatScalar, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -99,6 +108,72 @@ namespace
             return Model;
         }
 
+        size_t compute_input_data_size(
+            const Assembly&         assembly) const APPLESEED_OVERRIDE
+        {
+            return align(sizeof(DirectionalDipoleBSSRDFInputValues), 16);
+        }
+
+        void prepare_inputs(void* data) const APPLESEED_OVERRIDE
+        {
+            DirectionalDipoleBSSRDFInputValues* values =
+                reinterpret_cast<DirectionalDipoleBSSRDFInputValues*>(data);
+
+            // Presets.
+            const size_t preset = floor(values->m_preset);
+            apply_preset(preset, values);
+
+            // Apply multipliers.
+            values->m_sigma_a *= static_cast<float>(values->m_scale);
+            values->m_sigma_s *= static_cast<float>(values->m_scale);
+
+            // Precompute sigma_tr.
+            effective_extinction_coefficient(
+                values->m_sigma_a,
+                values->m_sigma_s,
+                values->m_anisotropy,
+                values->m_sigma_tr);
+
+            // Precompute max radius.
+            const double min_sigma_tr = min_value(values->m_sigma_tr);
+            values->m_max_radius2 = square(dipole_max_radius(min_sigma_tr));
+        }
+
+        virtual bool sample(
+            const void*             data,
+            BSSRDFSample&           sample) const APPLESEED_OVERRIDE
+        {
+            const DirectionalDipoleBSSRDFInputValues* values =
+                reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
+
+            if (values->m_weight == 0.0)
+                return false;
+
+            sample.set_eta(values->m_outside_ior / values->m_inside_ior);
+
+            sample.get_sampling_context().split_in_place(3, 1);
+            const Vector3d s = sample.get_sampling_context().next_vector2<3>();
+
+            // Sample a channel.
+            const size_t channel = truncate<size_t>(s[0] * values->m_sigma_a.size());
+            sample.set_channel(channel);
+
+            // Sample a radius.
+            const double sigma_tr = values->m_sigma_tr[channel];
+            const double radius = sample_exponential_distribution(s[1], sigma_tr);
+
+            // Set the max radius.
+            sample.set_rmax2(values->m_max_radius2);
+
+            // Sample an angle.
+            const double phi = TwoPi * s[2];
+
+            // Set the sampled point.
+            sample.set_point(Vector2d(radius * cos(phi), radius * sin(phi)));
+
+            return true;
+        }
+
         virtual void evaluate(
             const void*             data,
             const ShadingPoint&     outgoing_point,
@@ -107,8 +182,8 @@ namespace
             const Vector3d&         incoming_dir,
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
-            const DipoleBSSRDFInputValues* values =
-                reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
+            const DirectionalDipoleBSSRDFInputValues* values =
+                reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
 
             const Vector3d incoming_normal =
                 dot(incoming_dir, incoming_point.get_shading_normal()) > 0.0
@@ -138,22 +213,131 @@ namespace
             value += tmp;
             value *= 0.5f;
 #endif
+            value *= static_cast<float>(norm(outgoing_point.get_point() - incoming_point.get_point()));
+            value *= static_cast<float>(values->m_weight);
+        }
 
-            // Return r * R(r) * weight.
-            const double radius = norm(incoming_point.get_point() - outgoing_point.get_point());
-            value *= static_cast<float>(radius * values->m_weight);
+        double evaluate_pdf(
+            const void*             data,
+            const size_t            channel,
+            const double            radius) const APPLESEED_OVERRIDE
+        {
+            const DirectionalDipoleBSSRDFInputValues* values =
+                reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
+
+            // PDF of the sampled radius.
+            double pdf_radius = 0.0;
+            for (size_t i = 0, e = values->m_sigma_tr.size(); i < e; ++i)
+            {
+                const double sigma_tr = values->m_sigma_tr[i];
+                pdf_radius += exponential_distribution_pdf(radius, sigma_tr);
+            }
+
+            pdf_radius /= static_cast<double>(values->m_sigma_tr.size());
+
+            // PDF of the sampled angle.
+            const double pdf_angle = RcpTwoPi;
+
+            // Compute and return the final PDF.
+            return pdf_radius * pdf_angle;
         }
 
       private:
+        void apply_preset(const size_t preset, DirectionalDipoleBSSRDFInputValues* values) const
+        {
+            switch(preset)
+            {
+                case 1: // Apple
+                    values->m_sigma_s = foundation::Color3f(2.29f, 2.39f, 1.97f);
+                    values->m_sigma_a = foundation::Color3f(0.0030f, 0.0034f, 0.046f);
+                    values->m_anisotropy = 0.0;
+                    values->m_inside_ior = 1.3;
+                break;
+
+                case 2: // Chicken1
+                    values->m_sigma_s = foundation::Color3f(0.15, 0.21, 0.38f);
+                    values->m_sigma_a = foundation::Color3f(0.0015, 0.077,  0.19f);
+                    values->m_anisotropy = 0.0;
+                    values->m_inside_ior = 1.3;
+                break;
+
+                case 3: // Chicken2
+                    values->m_sigma_s = foundation::Color3f(0.19, 0.25, 0.32f);
+                    values->m_sigma_a = foundation::Color3f(0.0018, 0.088,  0.20f);
+                    values->m_anisotropy = 0.0;
+                    values->m_inside_ior = 1.3;
+                break;
+
+                case 4: // Cream
+                    values->m_sigma_s = foundation::Color3f(7.38, 5.47, 3.15f);
+                    values->m_sigma_a = foundation::Color3f(0.0002, 0.0028, 0.0163f);
+                    values->m_anisotropy = 0.0;
+                    values->m_inside_ior = 1.3;
+                break;
+
+                case 5: // Ketchup
+                    values->m_sigma_s = foundation::Color3f(0.18, 0.07, 0.03f);
+                    values->m_sigma_a = foundation::Color3f(0.061,  0.97,   1.45f);
+                    values->m_anisotropy = 0.0;
+                    values->m_inside_ior = 1.3;
+                break;
+
+                case 6: // Marble
+                    values->m_sigma_s = foundation::Color3f(2.19, 2.62, 3.00f);
+                    values->m_sigma_a = foundation::Color3f(0.0021, 0.0041, 0.0071f);
+                    values->m_anisotropy = 0.0;
+                    values->m_inside_ior = 1.3;
+                break;
+
+                case 7: // Potato
+                    values->m_sigma_s = foundation::Color3f(0.68, 0.70, 0.55f);
+                    values->m_sigma_a = foundation::Color3f( 0.0024, 0.0090, 0.12);
+                    values->m_anisotropy = 0.0;
+                    values->m_inside_ior = 1.3;
+                break;
+
+                case 8: // Skimmilk
+                    values->m_sigma_s = foundation::Color3f(0.70, 1.22, 1.90f);
+                    values->m_sigma_a = foundation::Color3f(0.0014, 0.0025, 0.0142f);
+                    values->m_anisotropy = 0.0;
+                    values->m_inside_ior = 1.3;
+                break;
+
+                case 9: // Skin1
+                    values->m_sigma_s = foundation::Color3f(0.74, 0.88, 1.01);
+                    values->m_sigma_a = foundation::Color3f(0.032,  0.17,   0.48);
+                    values->m_anisotropy = 0.0;
+                    values->m_inside_ior = 1.3;
+                break;
+
+                case 10: // Skin2
+                    values->m_sigma_s = foundation::Color3f(1.09, 1.59, 1.79);
+                    values->m_sigma_a = foundation::Color3f(0.013,  0.070,  0.145);
+                    values->m_anisotropy = 0.0;
+                    values->m_inside_ior = 1.3;
+                break;
+
+                case 11: // Wholemilk
+                    values->m_sigma_s = foundation::Color3f(2.55, 3.21, 3.77);
+                    values->m_sigma_a = foundation::Color3f(0.0011, 0.0024, 0.014);
+                    values->m_anisotropy = 0.0;
+                    values->m_inside_ior = 1.3;
+                break;
+
+                default:
+                break;
+            }
+        }
+
         // Evaluate the directional dipole BSSRDF.
         static void bssrdf(
-            const DipoleBSSRDFInputValues*  values,
-            const Vector3d&                 xi,
-            const Vector3d&                 ni,
-            const Vector3d&                 wi,
-            const Vector3d&                 xo,
-            const Vector3d&                 no,
-            Spectrum&                       value)
+            const DirectionalDipoleBSSRDFInputValues*   values,
+            const Vector3d&                             xi,
+            const Vector3d&                             ni,
+            const Vector3d&                             wi,
+            const Vector3d&                             xo,
+            const Vector3d&                             no,
+            Spectrum&                                   value)
         {
             // Precompute some stuff. Same as for the Better Dipole model.
             const Vector3d xoxi = xo - xi;
@@ -164,7 +348,6 @@ namespace
             const double cphi_rcp_eta = 0.25 * (1.0 - fresnel_first_moment(eta));
             const double ce_eta = 0.5 * (1.0 - fresnel_second_moment(rcp_eta));
             const double A = (1.0 - ce_eta) / (2.0 * cphi_eta);                         // reflection parameter
-            const double sigma_tr = 1.0 / values->m_dmfp;                               // effective transport coefficient
 
             // Compute normal to modified tangent plane.
             const Vector3d ni_star = cross(xoxi / sqrt(r2), normalize(cross(ni, xoxi)));
@@ -195,6 +378,7 @@ namespace
                 const double sigma_s_prime = sigma_s * (1.0 - values->m_anisotropy);    // reduced scattering coefficient
                 const double sigma_t_prime = sigma_s_prime + sigma_a;                   // reduced extinction coefficient
                 const double alpha_prime = sigma_s_prime / sigma_t_prime;               // reduced scattering albedo
+                const double sigma_tr = values->m_sigma_tr[i];                          // effective transport coefficient
 
                 // Compute extrapolation distance ([1] equation 21).
                 const double D = 1.0 / (3.0 * sigma_t_prime);                           // diffusion coefficient
@@ -272,6 +456,97 @@ Dictionary DirectionalDipoleBSSRDFFactory::get_model_metadata() const
         Dictionary()
             .insert("name", Model)
             .insert("label", "Directional Dipole BSSRDF");
+}
+
+DictionaryArray DirectionalDipoleBSSRDFFactory::get_input_metadata() const
+{
+    DictionaryArray metadata;
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "weight")
+            .insert("label", "Weight")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "preset")
+            .insert("label", "Preset")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "11.0")
+            .insert("use", "optional")
+            .insert("default", "0.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "sigma_a")
+            .insert("label", "Absorption")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "required")
+            .insert("default", "0.5"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "sigma_s")
+            .insert("label", "Scattering")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "required")
+            .insert("default", "0.5"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "anisotropy")
+            .insert("label", "Anisotropy")
+            .insert("type", "numeric")
+            .insert("min_value", "-1.0")
+            .insert("max_value", "1.0")
+            .insert("use", "required")
+            .insert("default", "0.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "outside_ior")
+            .insert("label", "Outside Index of Refraction")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "5.0")
+            .insert("use", "required")
+            .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "inside_ior")
+            .insert("label", "Inside Index of Refraction")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "5.0")
+            .insert("use", "required")
+            .insert("default", "1.3"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "scale")
+            .insert("label", "Scale")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "100000.0")
+            .insert("use", "optional")
+            .insert("default", "1.0"));
+
+    return metadata;
 }
 
 auto_release_ptr<BSSRDF> DirectionalDipoleBSSRDFFactory::create(
