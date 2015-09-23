@@ -125,7 +125,8 @@ TEST_SUITE(Foundation_Utility_Cache_LRUCache)
         ElementSwapperCountingUnloads element_swapper;
 
         {
-            LRUCache<Key, Element, ElementSwapperCountingUnloads> cache(element_swapper);
+            KeyHasher key_hasher;
+            LRUCache<Key, KeyHasher, Element, ElementSwapperCountingUnloads> cache(key_hasher, element_swapper);
 
             cache.get(1);
             cache.get(2);
@@ -163,8 +164,9 @@ TEST_SUITE(Foundation_Utility_Cache_LRUCache)
 
     TEST_CASE(MemoryLimitIsHonored)
     {
+        KeyHasher key_hasher;
         ElementSwapperTrackingSize element_swapper;
-        LRUCache<Key, Element, ElementSwapperTrackingSize> cache(element_swapper);
+        LRUCache<Key, KeyHasher, Element, ElementSwapperTrackingSize> cache(key_hasher, element_swapper);
 
         cache.get(1);
         ASSERT_EQ(1000, element_swapper.m_memory_size);
