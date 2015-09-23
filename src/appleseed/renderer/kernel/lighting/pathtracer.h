@@ -363,6 +363,17 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             const double probability = visitor.m_probabilities[sample_index];
             vertex.m_eta = visitor.m_etas[sample_index];
 
+#ifdef APPLESEED_WITH_OSL
+            // Execute the OSL shader if we have one. Needed for bump mapping.
+            if (material->has_osl_surface())
+            {
+                sampling_context.split_in_place(1, 1);
+                shading_context.execute_osl_bump(
+                    *material->get_osl_surface(),
+                    *vertex.m_incoming_point,
+                    sampling_context.next_double2());
+            }
+#endif
             // Compute Fresnel coefficient at outgoing point.
             double outgoing_fresnel;
             foundation::fresnel_transmittance_dielectric(outgoing_fresnel, vertex.m_eta, vertex.m_cos_on);

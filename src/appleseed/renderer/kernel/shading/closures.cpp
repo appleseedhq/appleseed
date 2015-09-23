@@ -107,7 +107,6 @@ namespace
 
     OSL::ustring standard_dipole_profile_name("standard_dipole");
     OSL::ustring better_dipole_profile_name("better_dipole");
-    OSL::ustring directional_dipole_profile_name("directional_dipole");
 
     struct DipoleSubsurfaceClosureParams
     {
@@ -692,8 +691,6 @@ void CompositeSubsurfaceClosure::process_closure_tree(
                     add_closure<DipoleBSSRDFInputValues>(SubsurfaceBetterDipoleID, w, values);
                 else if (p->profile == standard_dipole_profile_name)
                     add_closure<DipoleBSSRDFInputValues>(SubsurfaceDipoleID, w, values);
-                else if (p->profile == directional_dipole_profile_name)
-                    add_closure<DipoleBSSRDFInputValues>(SubsurfaceDirectionalDipoleID, w, values);
             }
             else if (c->id == SubsurfaceGaussianID)
             {

@@ -34,7 +34,9 @@
 #include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/bssrdffactoryregistrar.h"
 #include "renderer/modeling/bssrdf/bssrdftraits.h"
+#ifdef APPLESEED_WITH_DIRECTIONAL_DIPOLE_BSSRDF
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
+#endif
 #include "renderer/modeling/bssrdf/gaussianbssrdf.h"
 #include "renderer/modeling/bssrdf/ibssrdffactory.h"
 #ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF

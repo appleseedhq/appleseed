@@ -1306,8 +1306,6 @@ set (renderer_modeling_bssrdf_sources
     renderer/modeling/bssrdf/bssrdftraits.h
     renderer/modeling/bssrdf/dipolebssrdf.cpp
     renderer/modeling/bssrdf/dipolebssrdf.h
-    renderer/modeling/bssrdf/directionaldipolebssrdf.cpp
-    renderer/modeling/bssrdf/directionaldipolebssrdf.h
     renderer/modeling/bssrdf/gaussianbssrdf.cpp
     renderer/modeling/bssrdf/gaussianbssrdf.h
     renderer/modeling/bssrdf/ibssrdffactory.h
@@ -1322,6 +1320,13 @@ if (WITH_NORMALIZED_DIFFUSION_BSSRDF)
         renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h
     )
 endif ()
+if (WITH_DIRECTIONAL_DIPOLE_BSSRDF)
+    list (APPEND renderer_modeling_bssrdf_sources
+        renderer/modeling/bssrdf/directionaldipolebssrdf.cpp
+        renderer/modeling/bssrdf/directionaldipolebssrdf.h
+    )
+endif ()
+
 if (WITH_OSL)
     list (APPEND renderer_modeling_bssrdf_sources
         renderer/modeling/bssrdf/oslbssrdf.cpp

@@ -94,33 +94,8 @@ namespace
             DipoleBSSRDFInputValues* values =
                 reinterpret_cast<DipoleBSSRDFInputValues*>(data);
 
-            // Apply multipliers.
-            values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
-            values->m_dmfp *= values->m_dmfp_multiplier;
-
-            // Clamp reflectance.
-            values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
-
-            // Compute sigma_a and sigma_s from the reflectance and dmfp parameters.
             const ComputeRdBetterDipole rd_fun(values->m_outside_ior / values->m_inside_ior);
-            compute_absorption_and_scattering(
-                rd_fun,
-                values->m_reflectance,
-                values->m_dmfp,
-                values->m_anisotropy,
-                values->m_sigma_a,
-                values->m_sigma_s);
-
-            // Precompute the (square of the) max radius.
-            values->m_max_radius2 = square(dipole_max_radius(1.0 / values->m_dmfp));
-        }
-
-        virtual bool sample(
-            const void*             data,
-            BSSRDFSample&           sample) const APPLESEED_OVERRIDE
-        {
-            sample.set_is_directional(false);
-            return DipoleBSSRDF::sample(data, sample);
+            do_prepare_inputs(rd_fun, values);
         }
 
         virtual void evaluate(
@@ -141,7 +116,6 @@ namespace
             const double A = (1.0 + three_c2) / (1.0 - two_c1);
             const double cphi = 0.25 * (1.0 - two_c1);
             const double ce = 0.5 * (1.0 - three_c2);
-            const double sigma_tr = 1.0 / values->m_dmfp;
 
             value.resize(values->m_sigma_a.size());
 
@@ -152,6 +126,7 @@ namespace
                 const double sigma_s_prime = sigma_s * (1.0 - values->m_anisotropy);
                 const double sigma_t_prime = sigma_s_prime + sigma_a;
                 const double alpha_prime = sigma_s_prime / sigma_t_prime;
+                const double sigma_tr = values->m_sigma_tr[i];
 
                 const double D = (2.0 * sigma_a + sigma_s_prime) / (3.0 * square(sigma_t_prime));
                 const double zr = 1.0 / sigma_t_prime;

@@ -93,6 +93,7 @@ option (WITH_ALEMBIC                        "Build Alembic support"             
 option (WITH_OSL                            "Build OSL support"                                     OFF)
 option (WITH_DISNEY_MATERIAL                "Build Disney material"                                 OFF)
 option (WITH_NORMALIZED_DIFFUSION_BSSRDF    "Build Normalized diffusion BSSRDF (patented)"          OFF)
+option (WITH_DIRECTIONAL_DIPOLE_BSSRDF      "Build Directional dipole BSSRDF"                       OFF)
 option (WITH_PARTIO                         "Build Partio support (used in unit tests)"             OFF)
 
 option (USE_STATIC_BOOST                    "Use static Boost libraries"                            ON)
@@ -244,6 +245,10 @@ endif ()
 
 if (WITH_NORMALIZED_DIFFUSION_BSSRDF)
     add_definitions (-DAPPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF)
+endif ()
+
+if (WITH_DIRECTIONAL_DIPOLE_BSSRDF)
+    add_definitions (-DAPPLESEED_WITH_DIRECTIONAL_DIPOLE_BSSRDF)
 endif ()
 
 if (WITH_PARTIO)

@@ -73,32 +73,6 @@ size_t DipoleBSSRDF::compute_input_data_size(
     return align(sizeof(DipoleBSSRDFInputValues), 16);
 }
 
-void DipoleBSSRDF::prepare_inputs(void* data) const
-{
-    DipoleBSSRDFInputValues* values =
-        reinterpret_cast<DipoleBSSRDFInputValues*>(data);
-
-    // Apply multipliers.
-    values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
-    values->m_dmfp *= values->m_dmfp_multiplier;
-
-    // Clamp reflectance.
-    values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
-
-    // Compute sigma_a and sigma_s from the reflectance and dmfp parameters.
-    const ComputeRdStandardDipole rd_fun(values->m_outside_ior / values->m_inside_ior);
-    compute_absorption_and_scattering(
-        rd_fun,
-        values->m_reflectance,
-        values->m_dmfp,
-        values->m_anisotropy,
-        values->m_sigma_a,
-        values->m_sigma_s);
-
-    // Precompute the (square of the) max radius.
-    values->m_max_radius2 = square(dipole_max_radius(1.0 / values->m_dmfp));
-}
-
 bool DipoleBSSRDF::sample(
     const void*             data,
     BSSRDFSample&           sample) const
@@ -110,20 +84,23 @@ bool DipoleBSSRDF::sample(
         return false;
 
     sample.set_eta(values->m_outside_ior / values->m_inside_ior);
-    sample.set_channel(0);
 
-    sample.get_sampling_context().split_in_place(2, 1);
-    const Vector2d s = sample.get_sampling_context().next_vector2<2>();
+    sample.get_sampling_context().split_in_place(3, 1);
+    const Vector3d s = sample.get_sampling_context().next_vector2<3>();
+
+    // Sample a channel.
+    const size_t channel = truncate<size_t>(s[0] * values->m_sigma_a.size());
+    sample.set_channel(channel);
 
     // Sample a radius.
-    const double sigma_tr = 1.0 / values->m_dmfp;
-    const double radius = sample_exponential_distribution(s[0], sigma_tr);
+    const double sigma_tr = values->m_sigma_tr[channel];
+    const double radius = sample_exponential_distribution(s[1], sigma_tr);
 
     // Set the max radius.
     sample.set_rmax2(values->m_max_radius2);
 
     // Sample an angle.
-    const double phi = TwoPi * s[1];
+    const double phi = TwoPi * s[2];
 
     // Set the sampled point.
     sample.set_point(Vector2d(radius * cos(phi), radius * sin(phi)));
@@ -144,8 +121,14 @@ double DipoleBSSRDF::evaluate_pdf(
         return 0.0;
 
     // PDF of the sampled radius.
-    const double sigma_tr = 1.0 / values->m_dmfp;
-    const double pdf_radius = exponential_distribution_pdf(radius, sigma_tr);
+    double pdf_radius = 0.0;
+    for (size_t i = 0, e = values->m_sigma_tr.size(); i < e; ++i)
+    {
+        const double sigma_tr = values->m_sigma_tr[i];
+        pdf_radius += exponential_distribution_pdf(radius, sigma_tr);
+    }
+
+    pdf_radius /= static_cast<double>(values->m_sigma_tr.size());
 
     // PDF of the sampled angle.
     const double pdf_angle = RcpTwoPi;

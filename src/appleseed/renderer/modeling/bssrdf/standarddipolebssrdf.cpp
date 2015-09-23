@@ -88,12 +88,13 @@ namespace
             return Model;
         }
 
-        virtual bool sample(
-            const void*             data,
-            BSSRDFSample&           sample) const APPLESEED_OVERRIDE
+        void prepare_inputs(void* data) const APPLESEED_OVERRIDE
         {
-            sample.set_is_directional(false);
-            return DipoleBSSRDF::sample(data, sample);
+            DipoleBSSRDFInputValues* values =
+                reinterpret_cast<DipoleBSSRDFInputValues*>(data);
+
+            const ComputeRdStandardDipole rd_fun(values->m_outside_ior / values->m_inside_ior);
+            do_prepare_inputs(rd_fun, values);
         }
 
         virtual void evaluate(
@@ -111,7 +112,6 @@ namespace
             const double eta = values->m_outside_ior / values->m_inside_ior;
             const double fdr = fresnel_internal_diffuse_reflectance(eta);
             const double a = (1.0 + fdr) / (1.0 - fdr);
-            const double sigma_tr = 1.0 / values->m_dmfp;
 
             value.resize(values->m_sigma_a.size());
 
@@ -122,6 +122,7 @@ namespace
                 const double sigma_s_prime = sigma_s * (1.0 - values->m_anisotropy);
                 const double sigma_t_prime = sigma_s_prime + sigma_a;
                 const double alpha_prime = sigma_s_prime / sigma_t_prime;
+                const double sigma_tr = values->m_sigma_tr[i];
 
                 //
                 // The extended source represented by the refracted ray in the medium is approximated
