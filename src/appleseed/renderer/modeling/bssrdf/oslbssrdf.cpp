@@ -35,7 +35,6 @@
 #include "renderer/modeling/bssrdf/betterdipolebssrdf.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
-#include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #include "renderer/modeling/bssrdf/gaussianbssrdf.h"
 #ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
@@ -77,11 +76,6 @@ namespace
                 create_and_register_bssrdf<BetterDipoleBSSRDFFactory>(
                     SubsurfaceBetterDipoleID,
                     "better_dipole");
-
-            m_dir_dipole =
-                create_and_register_bssrdf<DirectionalDipoleBSSRDFFactory>(
-                    SubsurfaceDirectionalDipoleID,
-                    "dir_dipole");
 
             m_gaussian =
                 create_and_register_bssrdf<GaussianBSSRDFFactory>(
