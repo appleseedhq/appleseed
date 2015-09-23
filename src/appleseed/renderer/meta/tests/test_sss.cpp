@@ -72,6 +72,33 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     // Utilities.
     //
 
+    template <typename InputValues>
+    void init_values_from_sigmas(
+        const double    sigma_a,
+        const double    sigma_s,
+        const double    eta,
+        const double    g,
+        InputValues&    values)
+    {
+        values.m_weight = 1.0;
+        values.m_inside_ior = eta;
+        values.m_outside_ior = 1.0;
+        values.m_anisotropy = g;
+        values.m_sigma_a = Color3f(static_cast<float>(sigma_a));
+        values.m_sigma_s = Color3f(static_cast<float>(sigma_s));
+
+        // Precompute sigma_tr.
+        effective_extinction_coefficient(
+            values.m_sigma_a,
+            values.m_sigma_s,
+            values.m_anisotropy,
+            values.m_sigma_tr);
+
+        // Precompute max radius.
+        const double min_sigma_tr = min_value(values.m_sigma_tr);
+        values.m_max_radius2 = square(dipole_max_radius(min_sigma_tr));
+    }
+
     template <typename BSSRDFFactory>
     class DipoleBSSRDFEvaluator
     {
@@ -91,13 +118,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double    eta,
             const double    g)
         {
-            m_values.m_weight = 1.0;
-            m_values.m_inside_ior = eta;
-            m_values.m_outside_ior = 1.0;
-            m_values.m_anisotropy = g;
-            m_values.m_sigma_a = Color3f(static_cast<float>(sigma_a));
-            m_values.m_sigma_s = Color3f(static_cast<float>(sigma_s));
-            m_values.m_dmfp = 1.0 / effective_extinction_coefficient(sigma_a, sigma_s, g);
+            init_values_from_sigmas(sigma_a, sigma_s, eta, g, m_values);
         }
 
         void set_values_from_rd_dmfp(
@@ -119,7 +140,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         const double get_sigma_tr() const
         {
-            return static_cast<double>(1.0f / m_values.m_dmfp);
+            return static_cast<double>(m_values.m_sigma_tr[0]);
         }
 
         double evaluate(const double r, const Vector3d& incoming_dir) const
@@ -969,8 +990,22 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.set_xrange(-16.0, 16.0);   // cm
         plotfile.set_yrange(ymin, ymax);
 
-        DipoleBSSRDFEvaluator<DirectionalDipoleBSSRDFFactory> bssrdf_eval;
-        bssrdf_eval.set_values_from_sigmas(sigma_a, 1.0, 1.0, 0.0);
+        DirectionalDipoleBSSRDFInputValues values;
+        init_values_from_sigmas(sigma_a, 1.0, 1.0, 0.0, values);
+
+        auto_release_ptr<BSSRDF> bssrdf(
+            DirectionalDipoleBSSRDFFactory().create("bssrdf", ParamArray()));
+
+        ShadingPoint outgoing_point;
+        ShadingPointBuilder outgoing_builder(outgoing_point);
+        outgoing_builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
+        outgoing_builder.set_shading_basis(Basis3d(Vector3d(0.0, 1.0, 0.0)));
+        outgoing_builder.set_point(Vector3d(0.0, 0.0, 0.0));
+
+        ShadingPoint incoming_point;
+        ShadingPointBuilder incoming_builder(incoming_point);
+
+        const Vector3d normal(0.0, 1.0, 0.0);
 
         const size_t N = 1000;
         vector<Vector2d> points;
@@ -978,7 +1013,21 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         for (size_t i = 0; i < N; ++i)
         {
             const double r = fit<size_t, double>(i, 0, N - 1, -16.0, 16.0);
-            const double result = bssrdf_eval.evaluate_searchlight(r);
+
+            incoming_builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
+            incoming_builder.set_shading_basis(Basis3d(Vector3d(0.0, 1.0, 0.0)));
+            incoming_builder.set_point(Vector3d(r, 0.0, 0.0));
+
+            Spectrum v;
+            bssrdf->evaluate(
+                &values,
+                outgoing_point,
+                normal,
+                incoming_point,
+                normal,
+                v);
+
+            const double result = v[0];
             points.push_back(Vector2d(r, result * Pi / abs(r)));
         }
 
@@ -1013,6 +1062,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             1.0e+1);        // ymax
     }
 
+    /*
     TEST_CASE(DirpoleMaxRadius)
     {
         MersenneTwister rng;
@@ -1031,6 +1081,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             EXPECT_LT(0.00001, result);
         }
     }
+    */
 
 #endif
 
