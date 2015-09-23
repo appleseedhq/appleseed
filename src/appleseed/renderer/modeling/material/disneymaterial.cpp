@@ -70,6 +70,10 @@ using namespace std;
 namespace renderer
 {
 
+//
+// DisneyParamExpression class implementation.
+//
+
 namespace
 {
     bool texture_is_srgb(const OIIO::ustring& filename)
@@ -85,7 +89,7 @@ namespace
     {
       public:
         TextureSeExprFunc()
-          : SeExprFuncX(true)
+          : SeExprFuncX(true)   // true = thread-safe
           , m_texture_system(0)
           , m_texture_is_srgb(true)
         {
@@ -111,13 +115,13 @@ namespace
 
             if (!node->isStrArg(0))
             {
-                node->addError("First argument must be a texture filename.");
+                node->addError("First argument must be a texture file path.");
                 return false;
             }
 
             if (node->getStrArg(0).empty())
             {
-                node->addError("Filepath to texture is empty.");
+                node->addError("Path to texture file is empty.");
                 return false;
             }
 
@@ -151,9 +155,13 @@ namespace
 #endif
                     &color[0]))
             {
-                result = SeVec3d(color[0], color[1], color[2]);
+                // Failed to find or open the texture.
+                // todo: issue an error message (once).
+                result = SeVec3d(1.0, 0.0, 1.0);
+                return;
             }
 
+            // Colors in SeExpr are always in the sRGB color space.
             if (!m_texture_is_srgb)
                 color = linear_rgb_to_srgb(color);
 
@@ -207,16 +215,14 @@ namespace
             m_vars["v"] = Var(0.0);
         }
 
+        // Called during preparation.
         SeExprVarRef* resolveVar(const string& name) const APPLESEED_OVERRIDE
         {
             const map<string, Var>::iterator i = m_vars.find(name);
-
-            if (i != m_vars.end())
-                return &i->second;
-
-            return 0;
+            return i != m_vars.end() ? &i->second : 0;
         }
 
+        // Called during preparation.
         SeExprFunc* resolveFunc(const string& name) const APPLESEED_OVERRIDE
         {
             if (name == "texture")
@@ -235,14 +241,15 @@ namespace
             const ShadingPoint&     shading_point,
             OIIO::TextureSystem&    texture_system)
         {
-            for (each<ptr_vector<TextureSeExprFunc> > it = m_functions_x; it; ++it)
-                it->set_texture_system(&texture_system);
+            for (each<ptr_vector<TextureSeExprFunc> > i = m_functions_x; i; ++i)
+                i->set_texture_system(&texture_system);
 
             const Vector2d& uv = shading_point.get_uv(0);
             m_vars["u"] = Var(uv[0]);
             m_vars["v"] = Var(uv[1]);
 
             const SeVec3d result = evaluate();
+
             return Color3d(result[0], result[1], result[2]);
         }
 
@@ -275,17 +282,11 @@ namespace
     }
 }
 
-
-//
-// DisneyParamExpression class implementation.
-//
-
 struct DisneyParamExpression::Impl
-  : public NonCopyable
 {
     SeAppleseedExpr m_expr;
 
-    explicit Impl(const char *expr)
+    explicit Impl(const char* expr)
       : m_expr(expr)
     {
     }
@@ -323,7 +324,7 @@ bool DisneyParamExpression::is_constant() const
 
 
 //
-// DisneyLayerParam class.
+// DisneyMaterialLayer class implementation.
 //
 
 namespace
@@ -385,6 +386,7 @@ namespace
                 return false;
             }
 
+            // Case of a simple constant.
             m_is_constant = m_expression.isConstant();
             if (m_is_constant)
             {
@@ -393,7 +395,7 @@ namespace
                 return true;
             }
 
-            // Check for simple texture lookups.
+            // Case of a simple texture lookup.
             {
                 const string expression = trim_both(m_expression.getExpr(), " \r\n");
                 vector<string> tokens;
@@ -456,9 +458,12 @@ namespace
 #endif
                         &color[0]))
                 {
+                    // Failed to find or open the texture.
+                    // todo: issue an error message (once).
                     return Color3d(1.0, 0.0, 1.0);
                 }
 
+                // Colors in SeExpr are always in the sRGB color space.
                 if (!m_texture_is_srgb)
                     color = linear_rgb_to_srgb(color);
 
@@ -482,15 +487,7 @@ namespace
         bool                        m_texture_is_srgb;
         mutable SeAppleseedExpr     m_expression;
     };
-}
 
-
-//
-// DisneyMaterialLayer class implementation.
-//
-
-namespace
-{
     const UniqueID g_disney_material_layer_class_uid = new_guid();
 }
 
@@ -516,20 +513,20 @@ struct DisneyMaterialLayer::Impl
     {
     }
 
-    const string        m_name;
-    const int           m_layer_number;
-    DisneyLayerParam    m_mask;
-    DisneyLayerParam    m_base_color;
-    DisneyLayerParam    m_subsurface;
-    DisneyLayerParam    m_metallic;
-    DisneyLayerParam    m_specular;
-    DisneyLayerParam    m_specular_tint;
-    DisneyLayerParam    m_anisotropic;
-    DisneyLayerParam    m_roughness;
-    DisneyLayerParam    m_sheen;
-    DisneyLayerParam    m_sheen_tint;
-    DisneyLayerParam    m_clearcoat;
-    DisneyLayerParam    m_clearcoat_gloss;
+    const string            m_name;
+    const int               m_layer_number;
+    DisneyLayerParam        m_mask;
+    DisneyLayerParam        m_base_color;
+    DisneyLayerParam        m_subsurface;
+    DisneyLayerParam        m_metallic;
+    DisneyLayerParam        m_specular;
+    DisneyLayerParam        m_specular_tint;
+    DisneyLayerParam        m_anisotropic;
+    DisneyLayerParam        m_roughness;
+    DisneyLayerParam        m_sheen;
+    DisneyLayerParam        m_sheen_tint;
+    DisneyLayerParam        m_clearcoat;
+    DisneyLayerParam        m_clearcoat_gloss;
 };
 
 DisneyMaterialLayer::DisneyMaterialLayer(
