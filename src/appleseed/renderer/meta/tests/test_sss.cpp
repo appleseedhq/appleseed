@@ -31,7 +31,9 @@
 #include "renderer/kernel/shading/shadingpointbuilder.h"
 #include "renderer/modeling/bssrdf/betterdipolebssrdf.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
+#ifdef APPLESEED_WITH_DIRECTIONAL_DIPOLE_BSSRDF
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
+#endif
 #ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
 #endif
@@ -507,6 +509,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     // Normalized diffusion profile.
     //
 
+#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
+
     const double NormalizedDiffusionTestEps = 0.0001;
 
     TEST_CASE(NormalizedDiffusionS)
@@ -794,6 +798,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     }
 #endif
 
+#endif
+
     //
     // Standard dipole profile.
     //
@@ -946,6 +952,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     // Directional dipole profile.
     //
 
+#ifdef APPLESEED_WITH_DIRECTIONAL_DIPOLE_BSSRDF
+
     void plot_dirpole_rd(
         const char*     filename,
         const char*     title,
@@ -1023,4 +1031,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             EXPECT_LT(0.00001, result);
         }
     }
+
+#endif
+
 }
