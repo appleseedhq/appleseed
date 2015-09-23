@@ -38,12 +38,14 @@
 #include "foundation/utility/iterators.h"
 #include "foundation/utility/statistics.h"
 
+// Boost headers.
+#include "boost/unordered_map.hpp"
+
 // Standard headers.
 #include <cassert>
 #include <cstddef>
 #include <functional>
 #include <list>
-#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -440,6 +442,7 @@ class SACache
 
 template <
     typename    Key,
+    typename    KeyHasher,
     typename    Element,
     typename    ElementSwapper,
     typename    Allocator = std::allocator<void>
@@ -450,12 +453,14 @@ class LRUCache
   public:
     // Types.
     typedef Key             KeyType;
+    typedef KeyHasher       KeyHasherType;
     typedef Element         ElementType;
     typedef ElementSwapper  ElementSwapperType;
     typedef Allocator       AllocatorType;
 
     // Constructor.
     LRUCache(
+        KeyHasherType&      key_hasher,
         ElementSwapperType& element_swapper,
         AllocatorType       allocator = AllocatorType());
 
@@ -491,10 +496,11 @@ class LRUCache
     typedef typename Queue::iterator QueueIterator;
 
     // Index: given a key, find the cache line in the queue.
-    typedef std::map<
+    typedef boost::unordered_map<
         KeyType,
         QueueIterator,
-        std::less<KeyType>,
+        KeyHasherType,
+        std::equal_to<KeyType>,
         typename AllocatorType::template rebind<
             std::pair<const KeyType, QueueIterator>
         >::other
@@ -614,6 +620,7 @@ class DualStageCache
     class S1ElementSwapper;
     typedef LRUCache<
         KeyType,
+        KeyHasherType,
         ElementType,
         S1ElementSwapper,
         AllocatorType
@@ -840,6 +847,7 @@ check_integrity(IntegrityChecker& checker) const
 #define FOUNDATION_LRUCACHE_TEMPLATE_DEF(MiddleDecl)    \
     template <                                          \
         typename    Key,                                \
+        typename    KeyHasher,                          \
         typename    Element,                            \
         typename    ElementSwapper,                     \
         typename    Allocator                           \
@@ -847,6 +855,7 @@ check_integrity(IntegrityChecker& checker) const
     MiddleDecl                                          \
     LRUCache<                                           \
         Key,                                            \
+        KeyHasher,                                      \
         Element,                                        \
         ElementSwapper,                                 \
         Allocator                                       \
@@ -854,9 +863,10 @@ check_integrity(IntegrityChecker& checker) const
 
 FOUNDATION_LRUCACHE_TEMPLATE_DEF(APPLESEED_EMPTY)
 LRUCache(
+    KeyHasherType&      key_hasher,
     ElementSwapperType& element_swapper,
     AllocatorType       allocator)
-  : m_index(typename Index::key_compare(), allocator)
+  : m_index(4, key_hasher, typename Index::key_equal(), allocator)
   , m_queue(allocator)
   , m_queue_size(0)
   , m_element_swapper(element_swapper)
@@ -1007,7 +1017,7 @@ DualStageCache(
     const KeyType&      invalid_key,
     AllocatorType       allocator)
   : m_s1_element_swapper(m_s0_cache, element_swapper)   // warning: referring to an uninitialized member
-  , m_s1_cache(m_s1_element_swapper, allocator)
+  , m_s1_cache(key_hasher, m_s1_element_swapper, allocator)
   , m_s0_element_swapper(m_s1_cache)
   , m_s0_cache(key_hasher, m_s0_element_swapper, invalid_key)
 {

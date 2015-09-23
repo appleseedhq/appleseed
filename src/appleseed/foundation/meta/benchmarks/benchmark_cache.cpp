@@ -48,6 +48,14 @@ BENCHMARK_SUITE(Foundation_Utility_Cache_LRUCache)
         typedef size_t MyKey;
         typedef int MyElement;
 
+        struct MyKeyHasher
+        {
+            size_t operator()(const MyKey& key) const
+            {
+                return key;
+            }
+        };
+
         struct MyElementSwapper
         {
             void load(const MyKey key, MyElement& element)
@@ -67,12 +75,17 @@ BENCHMARK_SUITE(Foundation_Utility_Cache_LRUCache)
             }
         };
 
-        MyElementSwapper                                m_element_swapper;
-        LRUCache<MyKey, MyElement, MyElementSwapper>    m_cache;
-        int                                             m_dummy;
+        MyKeyHasher             m_key_hasher;
+        MyElementSwapper        m_element_swapper;
+        LRUCache<
+            MyKey,
+            MyKeyHasher,
+            MyElement,
+            MyElementSwapper>   m_cache;
+        int                     m_dummy;
 
         Fixture()
-          : m_cache(m_element_swapper)
+          : m_cache(m_key_hasher, m_element_swapper)
         {
         }
 

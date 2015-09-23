@@ -332,9 +332,9 @@ namespace
     {
       public:
         DisneyLayerParam(
-            const char*         name,
-            const Dictionary&   params,
-            const bool          is_vector)
+            const char*             name,
+            const Dictionary&       params,
+            const bool              is_vector)
           : m_param_name(name)
           , m_expr(params.get<string>(m_param_name))
           , m_is_vector(is_vector)
@@ -440,6 +440,7 @@ namespace
             if (!m_texture_filename.empty())
             {
                 const Vector2d& uv = shading_point.get_uv(0);
+
                 Color3f color;
                 if (!texture_system.texture(
                         m_texture_filename,
@@ -464,9 +465,10 @@ namespace
                 return Color3d(color);
             }
 
-            return m_expression.update_and_evaluate(
-                shading_point,
-                texture_system);
+            return
+                m_expression.update_and_evaluate(
+                    shading_point,
+                    texture_system);
         }
 
       private:

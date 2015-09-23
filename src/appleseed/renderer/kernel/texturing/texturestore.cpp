@@ -66,7 +66,7 @@ TextureStore::TextureStore(
     const Scene&        scene,
     const ParamArray&   params)
   : m_tile_swapper(scene, params)
-  , m_tile_cache(m_tile_swapper)
+  , m_tile_cache(m_tile_key_hasher, m_tile_swapper)
 {
 }
 

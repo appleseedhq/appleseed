@@ -35,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/hash.h"
 #include "foundation/platform/thread.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/cache.h"
@@ -125,6 +126,11 @@ class TextureStore
     static foundation::Dictionary get_params_metadata();
 
   private:
+    struct TileKeyHasher
+    {
+        size_t operator()(const TileKey& key) const;
+    };
+
     class TileSwapper
       : public foundation::NonCopyable
     {
@@ -170,13 +176,15 @@ class TextureStore
 
     typedef foundation::LRUCache<
         TileKey,
+        TileKeyHasher,
         TileRecord,
         TileSwapper
     > TileCache;
 
-    boost::mutex    m_mutex;
-    TileSwapper     m_tile_swapper;
-    TileCache       m_tile_cache;
+    boost::mutex            m_mutex;
+    TileKeyHasher           m_tile_key_hasher;
+    TileSwapper             m_tile_swapper;
+    TileCache               m_tile_cache;
 };
 
 
@@ -277,6 +285,16 @@ inline bool TextureStore::TileKey::operator<(const TileKey& rhs) const
                 m_tile_xy < rhs.m_tile_xy :
             m_texture_uid < rhs.m_texture_uid :
         m_assembly_uid < rhs.m_assembly_uid;
+}
+
+
+//
+// TextureStore::TileKeyHasher class implementation.
+//
+
+inline size_t TextureStore::TileKeyHasher::operator()(const TileKey& key) const
+{
+    return foundation::mix_uint64(key.m_assembly_uid, key.m_texture_uid, key.m_tile_xy);
 }
 
 
