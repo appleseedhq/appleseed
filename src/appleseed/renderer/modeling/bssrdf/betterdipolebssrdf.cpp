@@ -115,14 +115,6 @@ namespace
             values->m_max_radius2 = square(dipole_max_radius(1.0 / values->m_dmfp));
         }
 
-        virtual bool sample(
-            const void*             data,
-            BSSRDFSample&           sample) const APPLESEED_OVERRIDE
-        {
-            sample.set_is_directional(false);
-            return DipoleBSSRDF::sample(data, sample);
-        }
-
         virtual void evaluate(
             const void*             data,
             const ShadingPoint&     outgoing_point,

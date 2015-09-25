@@ -85,6 +85,7 @@ class BSSRDFSample
 
 inline BSSRDFSample::BSSRDFSample(SamplingContext& sampling_context)
   : m_sampling_context(sampling_context)
+  , m_is_directional(false)
 {
 }
 

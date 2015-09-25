@@ -117,6 +117,13 @@ void ShadingContext::execute_osl_emission(
     m_shadergroup_exec.execute_emission(shader_group, shading_point);
 }
 
+void ShadingContext::execute_osl_subsurface(
+    const ShaderGroup&          shader_group,
+    const ShadingPoint&         shading_point) const
+{
+    m_shadergroup_exec.execute_subsurface(shader_group, shading_point);
+}
+
 void ShadingContext::execute_osl_bump(
     const ShaderGroup&          shader_group,
     const ShadingPoint&         shading_point,
