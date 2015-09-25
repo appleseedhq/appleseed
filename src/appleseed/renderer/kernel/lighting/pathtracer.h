@@ -375,6 +375,21 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 * outgoing_fresnel
                 * visitor.m_sample_count
                 / probability;
+
+            // Evaluate the BSSRDF at the incoming point.
+#ifdef APPLESEED_WITH_OSL
+            // Execute the OSL shader if we have one.
+            if (material->has_osl_surface())
+            {
+                shading_context.execute_osl_subsurface(
+                    *material->get_osl_surface(),
+                    *vertex.m_incoming_point);
+            }
+#endif
+            vertex.m_bssrdf->evaluate_inputs(
+                shading_context,
+                bssrdf_input_evaluator,
+                *vertex.m_incoming_point);
         }
 
         // Pass this vertex to the path visitor.
