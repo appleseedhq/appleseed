@@ -48,19 +48,19 @@ namespace renderer
 //
 
 ShadingContext::ShadingContext(
-    const Intersector&          intersector,
-    Tracer&                     tracer,
-    TextureCache&               texture_cache,
+    const Intersector&      intersector,
+    Tracer&                 tracer,
+    TextureCache&           texture_cache,
 #ifdef APPLESEED_WITH_OIIO
-    OIIO::TextureSystem&        oiio_texture_system,
+    OIIO::TextureSystem&    oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL
-    OSLShaderGroupExec&         osl_shadergroup_exec,
+    OSLShaderGroupExec&     osl_shadergroup_exec,
 #endif
-    const size_t                thread_index,
-    ILightingEngine*            lighting_engine,
-    const float                 transparency_threshold,
-    const size_t                max_iterations)
+    const size_t            thread_index,
+    ILightingEngine*        lighting_engine,
+    const float             transparency_threshold,
+    const size_t            max_iterations)
   : m_intersector(intersector)
   , m_tracer(tracer)
   , m_texture_cache(texture_cache)
@@ -89,8 +89,8 @@ OIIO::TextureSystem& ShadingContext::get_oiio_texture_system() const
 #ifdef APPLESEED_WITH_OSL
 
 void ShadingContext::execute_osl_shading(
-    const ShaderGroup&          shader_group,
-    const ShadingPoint&         shading_point) const
+    const ShaderGroup&      shader_group,
+    const ShadingPoint&     shading_point) const
 {
     m_shadergroup_exec.execute_shading(
         shader_group,
@@ -98,10 +98,10 @@ void ShadingContext::execute_osl_shading(
 }
 
 void ShadingContext::execute_osl_transparency(
-    const ShaderGroup&          shader_group,
-    const ShadingPoint&         shading_point,
-    Alpha&                      alpha,
-    float*                      holdout) const
+    const ShaderGroup&      shader_group,
+    const ShadingPoint&     shading_point,
+    Alpha&                  alpha,
+    float*                  holdout) const
 {
     m_shadergroup_exec.execute_transparency(
         shader_group,
@@ -111,28 +111,34 @@ void ShadingContext::execute_osl_transparency(
 }
 
 void ShadingContext::execute_osl_emission(
-    const ShaderGroup&          shader_group,
-    const ShadingPoint&         shading_point) const
+    const ShaderGroup&      shader_group,
+    const ShadingPoint&     shading_point) const
 {
-    m_shadergroup_exec.execute_emission(shader_group, shading_point);
+    m_shadergroup_exec.execute_emission(
+        shader_group,
+        shading_point);
 }
 
 void ShadingContext::execute_osl_bump(
-    const ShaderGroup&          shader_group,
-    const ShadingPoint&         shading_point,
-    const double                s) const
+    const ShaderGroup&      shader_group,
+    const ShadingPoint&     shading_point,
+    const double            s) const
 {
-    m_shadergroup_exec.execute_bump(shader_group, shading_point, s);
+    m_shadergroup_exec.execute_bump(
+        shader_group,
+        shading_point,
+        s);
 }
 
 void ShadingContext::execute_osl_background(
-    const ShaderGroup&  shader_group,
-    const Vector3d&     outgoing,
-    Spectrum&           value) const
+    const ShaderGroup&      shader_group,
+    const Vector3d&         outgoing,
+    Spectrum&               value) const
 {
-    value = m_shadergroup_exec.execute_background(
-        shader_group,
-        outgoing);
+    value =
+        m_shadergroup_exec.execute_background(
+            shader_group,
+            outgoing);
 }
 
 #endif
