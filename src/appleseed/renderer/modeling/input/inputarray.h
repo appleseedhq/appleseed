@@ -50,7 +50,7 @@ namespace renderer
 {
 
 //
-// Supported input formats.
+// Input formats.
 //
 
 enum InputFormat
@@ -61,6 +61,17 @@ enum InputFormat
     InputFormatSpectralReflectanceWithAlpha,
     InputFormatSpectralIlluminanceWithAlpha,
     InputFormatEntity
+};
+
+
+//
+// Input types.
+//
+
+enum InputType
+{
+    InputTypeRequired,
+    InputTypeOptional
 };
 
 
@@ -106,6 +117,9 @@ class APPLESEED_DLLSYMBOL InputArray
 
         // Get the format of this input.
         InputFormat format() const;
+
+        // Get the type (required or optional) of this input.
+        InputType type() const;
 
         // Get the default value of this input, or 0 if this input has no default value.
         const char* default_value() const;

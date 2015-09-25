@@ -82,6 +82,7 @@ namespace
     {
         string          m_name;
         InputFormat     m_format;
+        InputType       m_type;
         bool            m_has_default_value;
         string          m_default_value;
         Source*         m_source;
@@ -270,7 +271,7 @@ void InputArray::declare(
     Input input;
     input.m_name = name;
     input.m_format = format;
-    input.m_has_default_value = default_value != 0;
+    input.m_type = default_value ? InputTypeOptional : InputTypeRequired;
 
     if (default_value)
         input.m_default_value = default_value;
@@ -474,10 +475,16 @@ InputFormat InputArray::const_iterator::format() const
     return m_input_array->impl->m_inputs[m_input_index].m_format;
 }
 
+InputType InputArray::const_iterator::type() const
+{
+    return m_input_array->impl->m_inputs[m_input_index].m_type;
+}
+
 const char* InputArray::const_iterator::default_value() const
 {
     const Input& input = m_input_array->impl->m_inputs[m_input_index];
-    return input.m_has_default_value ? input.m_default_value.c_str() : 0;
+    assert(input.m_type == InputTypeOptional);
+    return input.m_default_value.c_str();
 }
 
 Source* InputArray::const_iterator::source() const

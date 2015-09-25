@@ -278,16 +278,16 @@ void InputBinder::bind_scene_entity_inputs(
             // A value is assigned to this input, retrieve it.
             param_value = entity_params.get<string>(input.name());
         }
-        else if (input.default_value())
+        else if (input.type() == InputTypeOptional)
         {
-            // A default value is assigned to this input, use it.
+            // This input is optional, use its default value.
             param_value = input.default_value();
             if (param_value.empty())
                 continue;
         }
         else
         {
-            // No value or default value, this is an error.
+            // This input is required but has no value, this is an error.
             RENDERER_LOG_ERROR(
                 "while defining %s \"%s\": required parameter \"%s\" missing.",
                 entity_type,
@@ -494,16 +494,16 @@ void InputBinder::bind_assembly_entity_inputs(
             // A value is assigned to this input, retrieve it.
             param_value = entity_params.get<string>(input.name());
         }
-        else if (input.default_value())
+        else if (input.type() == InputTypeOptional)
         {
-            // A default value is assigned to this input, use it.
+            // This input is optional, use its default value.
             param_value = input.default_value();
             if (param_value.empty())
                 continue;
         }
         else
         {
-            // No value or default value, this is an error.
+            // This input is required but has no value, this is an error.
             RENDERER_LOG_ERROR(
                 "while defining %s \"%s\": required parameter \"%s\" missing.",
                 entity_type,
