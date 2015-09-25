@@ -113,6 +113,16 @@ void OSLShaderGroupExec::execute_emission(
         VisibilityFlags::LightRay);
 }
 
+void OSLShaderGroupExec::execute_subsurface(
+    const ShaderGroup&              shader_group,
+    const ShadingPoint&             shading_point) const
+{
+    do_execute(
+        shader_group,
+        shading_point,
+        VisibilityFlags::SubsurfaceRay);
+}
+
 void OSLShaderGroupExec::execute_bump(
     const ShaderGroup&              shader_group,
     const ShadingPoint&             shading_point,

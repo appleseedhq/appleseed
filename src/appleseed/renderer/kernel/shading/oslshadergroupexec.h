@@ -90,6 +90,10 @@ class OSLShaderGroupExec
         const ShaderGroup&              shader_group,
         const ShadingPoint&             shading_point) const;
 
+    void execute_subsurface(
+        const ShaderGroup&              shader_group,
+        const ShadingPoint&             shading_point) const;
+
     void execute_bump(
         const ShaderGroup&              shader_group,
         const ShadingPoint&             shading_point,
