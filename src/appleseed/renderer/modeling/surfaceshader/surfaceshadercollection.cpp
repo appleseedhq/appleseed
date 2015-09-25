@@ -36,7 +36,6 @@
 #include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/inputformat.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 
 // appleseed.foundation headers.

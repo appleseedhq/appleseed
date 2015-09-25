@@ -44,7 +44,6 @@
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/input/colorsource.h"
-#include "renderer/modeling/input/inputformat.h"
 #include "renderer/modeling/input/scalarsource.h"
 #include "renderer/modeling/input/symbol.h"
 #include "renderer/modeling/input/texturesource.h"
