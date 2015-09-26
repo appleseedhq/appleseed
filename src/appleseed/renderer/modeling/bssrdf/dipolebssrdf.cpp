@@ -60,8 +60,10 @@ DipoleBSSRDF::DipoleBSSRDF(
     m_inputs.declare("weight", InputFormatScalar, "1.0");
     m_inputs.declare("reflectance", InputFormatSpectralReflectance);
     m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-    m_inputs.declare("dmfp", InputFormatScalar, "5.0");
-    m_inputs.declare("dmfp_multiplier", InputFormatScalar, "0.1");
+    m_inputs.declare("dmfp", InputFormatScalar);
+    m_inputs.declare("dmfp_multiplier", InputFormatScalar, "1.0");
+    m_inputs.declare("sigma_a", InputFormatSpectralReflectance, "");
+    m_inputs.declare("sigma_s", InputFormatSpectralReflectance, "");
     m_inputs.declare("anisotropy", InputFormatScalar);
     m_inputs.declare("outside_ior", InputFormatScalar);
     m_inputs.declare("inside_ior", InputFormatScalar);
@@ -78,25 +80,35 @@ void DipoleBSSRDF::prepare_inputs(void* data) const
     DipoleBSSRDFInputValues* values =
         reinterpret_cast<DipoleBSSRDFInputValues*>(data);
 
-    // Apply multipliers.
-    values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
-    values->m_dmfp *= values->m_dmfp_multiplier;
+    if (m_inputs.source("sigma_a") == 0 || m_inputs.source("sigma_s") == 0)
+    {
+        // Apply multipliers.
+        values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
+        values->m_dmfp *= values->m_dmfp_multiplier;
 
-    // Clamp reflectance.
-    values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
+        // Clamp reflectance.
+        values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
 
-    // Compute sigma_a and sigma_s from the reflectance and dmfp parameters.
-    const ComputeRdStandardDipole rd_fun(values->m_outside_ior / values->m_inside_ior);
-    compute_absorption_and_scattering(
-        rd_fun,
-        values->m_reflectance,
-        values->m_dmfp,
-        values->m_anisotropy,
+        // Compute sigma_a and sigma_s from the reflectance and dmfp parameters.
+        const ComputeRdStandardDipole rd_fun(values->m_outside_ior / values->m_inside_ior);
+        compute_absorption_and_scattering(
+            rd_fun,
+            values->m_reflectance,
+            values->m_dmfp,
+            values->m_anisotropy,
+            values->m_sigma_a,
+            values->m_sigma_s);
+    }
+
+    // Compute sigma_tr.
+    effective_extinction_coefficient(
         values->m_sigma_a,
-        values->m_sigma_s);
+        values->m_sigma_s,
+        values->m_anisotropy,
+        values->m_sigma_tr);
 
     // Precompute the (square of the) max radius.
-    values->m_max_radius2 = square(dipole_max_radius(1.0 / values->m_dmfp));
+    values->m_max_radius2 = square(dipole_max_radius(min_value(values->m_sigma_tr)));
 }
 
 bool DipoleBSSRDF::sample(
@@ -116,7 +128,7 @@ bool DipoleBSSRDF::sample(
     const Vector2d s = sample.get_sampling_context().next_vector2<2>();
 
     // Sample a radius.
-    const double sigma_tr = 1.0 / values->m_dmfp;
+    const double sigma_tr = values->m_sigma_tr[0];
     const double radius = sample_exponential_distribution(s[0], sigma_tr);
 
     // Set the max radius.
@@ -139,12 +151,8 @@ double DipoleBSSRDF::evaluate_pdf(
     const DipoleBSSRDFInputValues* values =
         reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
 
-    const double reflectance = values->m_reflectance[channel];
-    if (reflectance == 0.0)
-        return 0.0;
-
     // PDF of the sampled radius.
-    const double sigma_tr = 1.0 / values->m_dmfp;
+    const double sigma_tr = values->m_sigma_tr[channel];
     const double pdf_radius = exponential_distribution_pdf(radius, sigma_tr);
 
     // PDF of the sampled angle.
@@ -204,7 +212,7 @@ DictionaryArray DipoleBSSRDFFactory::get_input_metadata() const
                 Dictionary()
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", "5"));
+            .insert("default", "0.5"));
 
     metadata.push_back(
         Dictionary()
@@ -214,7 +222,7 @@ DictionaryArray DipoleBSSRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "0.1"));
+            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()

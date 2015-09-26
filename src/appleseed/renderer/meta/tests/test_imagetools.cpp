@@ -43,6 +43,7 @@
 // Standard headers.
 #include <cmath>
 #include <cstddef>
+#include <iostream>
 #include <memory>
 
 using namespace foundation;
@@ -268,8 +269,8 @@ TEST_SUITE(ImageTools)
     TEST_CASE(CompareImages)
     {
         GenericImageFileReader reader;
-        auto_ptr<Image> left_image(reader.read("../images/autosave/autosave.XXXXXXXX.XXXXXX.XXX.exr"));
-        auto_ptr<Image> right_image(reader.read("../images/autosave/autosave.XXXXXXXX.XXXXXX.XXX.exr"));
+        auto_ptr<Image> left_image(reader.read("left.exr"));
+        auto_ptr<Image> right_image(reader.read("right.exr"));
 
         ASSERT_TRUE(left_image.get());
         ASSERT_TRUE(right_image.get());
@@ -302,7 +303,7 @@ TEST_SUITE(ImageTools)
         const float DarksGammaCorrection = 10.0f;
 
         GenericImageFileReader reader;
-        auto_ptr<Image> input_image(reader.read("../images/autosave/autosave.XXXXXXXX.XXXXXX.XXX.exr"));
+        auto_ptr<Image> input_image(reader.read("input.exr"));
 
         ASSERT_TRUE(input_image.get());
 
@@ -360,6 +361,35 @@ TEST_SUITE(ImageTools)
 
         GenericImageFileWriter writer;
         writer.write("unit tests/outputs/test_imagetools_tweakimage.png", output_image);
+    }
+
+#endif
+
+#if 0
+
+    TEST_CASE(ComputeAverageImageValue)
+    {
+        GenericImageFileReader reader;
+        auto_ptr<Image> input_image(reader.read("input.exr"));
+
+        ASSERT_TRUE(input_image.get());
+
+        Color3d avg(0.0);
+
+        const CanvasProperties& props = input_image->properties();
+        for (size_t y = 0; y < props.m_canvas_height; ++y)
+        {
+            for (size_t x = 0; x < props.m_canvas_width; ++x)
+            {
+                Color4f input_color;
+                input_image->get_pixel(x, y, input_color);
+                avg += Color3d(input_color.rgb());
+            }
+        }
+
+        avg /= static_cast<double>(props.m_pixel_count);
+
+        cerr << "Average: " << avg[0] << " " << avg[1] << " " << avg[2] << endl;
     }
 
 #endif

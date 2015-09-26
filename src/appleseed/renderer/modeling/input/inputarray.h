@@ -30,9 +30,6 @@
 #ifndef APPLESEED_RENDERER_MODELING_INPUT_INPUTARRAY_H
 #define APPLESEED_RENDERER_MODELING_INPUT_INPUTARRAY_H
 
-// appleseed.renderer headers.
-#include "renderer/modeling/input/inputformat.h"
-
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/vector.h"
@@ -51,6 +48,32 @@ namespace renderer      { class TextureCache; }
 
 namespace renderer
 {
+
+//
+// Input formats.
+//
+
+enum InputFormat
+{
+    InputFormatScalar,
+    InputFormatSpectralReflectance,
+    InputFormatSpectralIlluminance,
+    InputFormatSpectralReflectanceWithAlpha,
+    InputFormatSpectralIlluminanceWithAlpha,
+    InputFormatEntity
+};
+
+
+//
+// Input types.
+//
+
+enum InputType
+{
+    InputTypeRequired,
+    InputTypeOptional
+};
+
 
 //
 // A collection of named and typed inputs.
@@ -94,6 +117,9 @@ class APPLESEED_DLLSYMBOL InputArray
 
         // Get the format of this input.
         InputFormat format() const;
+
+        // Get the type (required or optional) of this input.
+        InputType type() const;
 
         // Get the default value of this input, or 0 if this input has no default value.
         const char* default_value() const;

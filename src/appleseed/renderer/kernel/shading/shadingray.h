@@ -139,42 +139,6 @@ ShadingRay transform_to_parent(
 // ShadingRay class implementation.
 //
 
-inline ShadingRay::Time::Time()
-  : m_absolute(0.0)
-  , m_normalized(0.0)
-  , m_shutter_open(0.0)
-  , m_shutter_close(0.0)
-{
-}
-
-inline ShadingRay::Time::Time(
-    const double absolute,
-    const double normalized,
-    const double shutter_open,
-    const double shutter_close)
-  : m_absolute(absolute)
-  , m_normalized(normalized)
-  , m_shutter_open(shutter_open)
-  , m_shutter_close(shutter_close)
-{
-    assert(m_normalized >= 0.0);
-    assert(m_normalized < 1.0);
-    assert(m_absolute >= m_shutter_open);
-    assert(m_absolute <= m_shutter_close);
-}
-
-inline ShadingRay::Time ShadingRay::Time::create_with_normalized_time(
-    const double time,
-    const double shutter_open,
-    const double shutter_close)
-{
-    return Time(
-        foundation::lerp(shutter_open, shutter_close, time),
-        time,
-        shutter_open,
-        shutter_close);
-}
-
 inline ShadingRay::ShadingRay()
   : m_has_differentials(false)
 {
@@ -292,6 +256,48 @@ inline ShadingRay transform_to_parent(
                 ray.m_flags,
                 ray.m_depth);
     }
+}
+
+
+//
+// ShadingRay::Time class implementation.
+//
+
+inline ShadingRay::Time::Time()
+  : m_absolute(0.0)
+  , m_normalized(0.0)
+  , m_shutter_open(0.0)
+  , m_shutter_close(0.0)
+{
+}
+
+inline ShadingRay::Time::Time(
+    const double absolute,
+    const double normalized,
+    const double shutter_open,
+    const double shutter_close)
+  : m_absolute(absolute)
+  , m_normalized(normalized)
+  , m_shutter_open(shutter_open)
+  , m_shutter_close(shutter_close)
+{
+    assert(m_normalized >= 0.0);
+    assert(m_normalized < 1.0);
+    assert(m_absolute >= m_shutter_open);
+    assert(m_absolute <= m_shutter_close);
+}
+
+inline ShadingRay::Time ShadingRay::Time::create_with_normalized_time(
+    const double time,
+    const double shutter_open,
+    const double shutter_close)
+{
+    return
+        Time(
+            foundation::lerp(shutter_open, shutter_close, time),
+            time,
+            shutter_open,
+            shutter_close);
 }
 
 }       // namespace renderer
