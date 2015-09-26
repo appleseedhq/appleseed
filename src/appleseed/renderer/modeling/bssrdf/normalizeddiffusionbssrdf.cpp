@@ -146,9 +146,10 @@ namespace
             // Precompute the (square of the) max radius.
             const size_t channel = min_index(values->m_reflectance);
             values->m_max_radius2 =
-                square(normalized_diffusion_max_radius(
-                    values->m_dmfp,
-                    values->m_s[channel]));
+                square(
+                    normalized_diffusion_max_radius(
+                        values->m_dmfp,
+                        values->m_s[channel]));
         }
 
         virtual bool sample(
