@@ -172,7 +172,6 @@ namespace
             const double cphi_rcp_eta = 0.25 * (1.0 - fresnel_first_moment(eta));
             const double ce_eta = 0.5 * (1.0 - fresnel_second_moment(rcp_eta));
             const double A = (1.0 - ce_eta) / (2.0 * cphi_eta);                         // reflection parameter
-            const double sigma_tr = 1.0 / values->m_dmfp;                               // effective transport coefficient
 
             // Compute normal to modified tangent plane.
             const Vector3d ni_star = cross(xoxi / sqrt(r2), normalize(cross(ni, xoxi)));
@@ -203,6 +202,7 @@ namespace
                 const double sigma_s_prime = sigma_s * (1.0 - values->m_anisotropy);    // reduced scattering coefficient
                 const double sigma_t_prime = sigma_s_prime + sigma_a;                   // reduced extinction coefficient
                 const double alpha_prime = sigma_s_prime / sigma_t_prime;               // reduced scattering albedo
+                const double sigma_tr = values->m_sigma_tr[i];                          // effective transport coefficient
 
                 // Compute extrapolation distance ([1] equation 21).
                 const double D = 1.0 / (3.0 * sigma_t_prime);                           // diffusion coefficient

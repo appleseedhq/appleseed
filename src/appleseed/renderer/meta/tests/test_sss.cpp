@@ -90,12 +90,17 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double    g)
         {
             m_values.m_weight = 1.0;
-            m_values.m_inside_ior = eta;
-            m_values.m_outside_ior = 1.0;
-            m_values.m_anisotropy = g;
             m_values.m_sigma_a = Color3f(static_cast<float>(sigma_a));
             m_values.m_sigma_s = Color3f(static_cast<float>(sigma_s));
-            m_values.m_dmfp = 1.0 / effective_extinction_coefficient(sigma_a, sigma_s, g);
+            m_values.m_anisotropy = g;
+            m_values.m_outside_ior = 1.0;
+            m_values.m_inside_ior = eta;
+
+            effective_extinction_coefficient(
+                m_values.m_sigma_a,
+                m_values.m_sigma_s,
+                m_values.m_anisotropy,
+                m_values.m_sigma_tr);
         }
 
         void set_values_from_rd_dmfp(
@@ -109,15 +114,16 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             m_values.m_reflectance_multiplier = 1.0;
             m_values.m_dmfp = dmfp;
             m_values.m_dmfp_multiplier = 1.0;
-            m_values.m_inside_ior = eta;
-            m_values.m_outside_ior = 1.0;
             m_values.m_anisotropy = g;
+            m_values.m_outside_ior = 1.0;
+            m_values.m_inside_ior = eta;
+
             m_bssrdf->prepare_inputs(&m_values);
         }
 
         const double get_sigma_tr() const
         {
-            return static_cast<double>(1.0f / m_values.m_dmfp);
+            return static_cast<double>(m_values.m_sigma_tr[0]);
         }
 
         double evaluate(const double r, const Vector3d& incoming_dir) const
@@ -151,18 +157,14 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         DipoleBSSRDFInputValues     m_values;
     };
 
-    template <typename BSSRDFFactory>
-    double integrate_dipole_rd_dmfp(
-        const double rd,
-        const double dmfp,
-        const size_t sample_count)
+    template <typename BSSRDFEvaluator>
+    double integrate_dipole(
+        const BSSRDFEvaluator&  bssrdf_eval,
+        const size_t            sample_count)
     {
-        DipoleBSSRDFEvaluator<BSSRDFFactory> bssrdf_eval;
-        bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, 1.0, 0.0);
-        const double sigma_tr = bssrdf_eval.get_sigma_tr();
-
         MersenneTwister rng;
 
+        const double sigma_tr = bssrdf_eval.get_sigma_tr();
         double integral = 0.0;
 
         for (size_t i = 0; i < sample_count; ++i)
@@ -173,8 +175,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double pdf_radius = exponential_distribution_pdf(r, sigma_tr);
             const double pdf_angle = RcpTwoPi;
             const double pdf = pdf_radius * pdf_angle;
-            const double value = bssrdf_eval.evaluate_searchlight(r);
 
+            const double value = bssrdf_eval.evaluate_searchlight(r);
             integral += value / pdf;
         }
 
@@ -182,9 +184,21 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     }
 
     template <typename BSSRDFFactory>
+    double integrate_dipole_rd_dmfp(
+        const double            rd,
+        const double            dmfp,
+        const size_t            sample_count)
+    {
+        DipoleBSSRDFEvaluator<BSSRDFFactory> bssrdf_eval;
+        bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, 1.0, 0.0);
+
+        return integrate_dipole(bssrdf_eval, sample_count);
+    }
+
+    template <typename BSSRDFFactory>
     double integrate_dipole_alpha_prime(
-        const double alpha_prime,
-        const size_t sample_count)
+        const double            alpha_prime,
+        const size_t            sample_count)
     {
         const double sigma_t_prime = 1.0 / alpha_prime;
         const double sigma_s_prime = 1.0;
@@ -192,26 +206,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         DipoleBSSRDFEvaluator<BSSRDFFactory> bssrdf_eval;
         bssrdf_eval.set_values_from_sigmas(sigma_a, sigma_s_prime, 1.0, 0.0);
-        const double sigma_tr = bssrdf_eval.get_sigma_tr();
 
-        MersenneTwister rng;
-
-        double integral = 0.0;
-
-        for (size_t i = 0; i < sample_count; ++i)
-        {
-            const double u = rand_double2(rng);
-            const double r = sample_exponential_distribution(u, sigma_tr);
-
-            const double pdf_radius = exponential_distribution_pdf(r, sigma_tr);
-            const double pdf_angle = RcpTwoPi;
-            const double pdf = pdf_radius * pdf_angle;
-
-            const double value = bssrdf_eval.evaluate_searchlight(r);
-            integral += value / pdf;
-        }
-
-        return integral / sample_count;
+        return integrate_dipole(bssrdf_eval, sample_count);
     }
 
     //
@@ -220,8 +216,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
     template <typename ComputeRdFun>
     double rd_alpha_prime_roundtrip(
-        const double rd,
-        const double eta)
+        const double        rd,
+        const double        eta)
     {
         const ComputeRdFun f(eta);
         const double alpha_prime = compute_alpha_prime(f, rd);
