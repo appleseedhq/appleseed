@@ -603,18 +603,7 @@ namespace
                         radiance))
                     return;
 
-                // Compute Fresnel coefficient at incoming point.
-                // Since the direction in the outside medium--be it the outgoing or the incoming
-                // direction--is always fixed, we always need to figure out a refracted direction
-                // in the inside medium, and thus we compute both Fresnel coefficients at the
-                // incoming and outgoing points using eta (defined as outside IOR / inside IOR).
-                const double cos_in = abs(dot(incoming, vertex.m_incoming_point->get_shading_normal()));
-                double incoming_fresnel;
-                fresnel_transmittance_dielectric(incoming_fresnel, vertex.m_eta, cos_in);
-                if (incoming_fresnel <= 0.0)
-                    return;
-
-                // Evaluate the diffusion profile.
+                // Evaluate the BSSRDF.
                 Spectrum rd;
                 vertex.m_bssrdf->evaluate(
                     vertex.m_bssrdf_data,
@@ -624,10 +613,8 @@ namespace
                     incoming,
                     rd);
 
-                double weight =
-                      vertex.m_partial_sss_weight
-                    * incoming_fresnel
-                    * cos_in;
+                const double cos_in = abs(dot(incoming, vertex.m_incoming_point->get_shading_normal()));
+                double weight = cos_in / vertex.m_incoming_point_prob;
 
                 // Multiple importance sampling.
                 const bool last_vertex = vertex.m_path_length == m_params.m_max_path_length;
@@ -733,7 +720,6 @@ namespace
                         *vertex.m_incoming_point,
                         *vertex.m_shading_point,
                         vertex.m_outgoing,
-                        vertex.m_eta,
                         bssrdf_sample_count,
                         env_sample_count,
                         ibl_radiance);
@@ -750,13 +736,12 @@ namespace
                         *vertex.m_incoming_point,
                         *vertex.m_shading_point,
                         vertex.m_outgoing,
-                        vertex.m_eta,
                         bssrdf_sample_count,
                         env_sample_count,
                         ibl_radiance);
                 }
 
-                ibl_radiance *= static_cast<float>(vertex.m_partial_sss_weight);
+                ibl_radiance /= static_cast<float>(vertex.m_incoming_point_prob);
 
                 // Divide by the sample count when this number is less than 1.
                 if (m_params.m_rcp_ibl_env_sample_count > 0.0f)

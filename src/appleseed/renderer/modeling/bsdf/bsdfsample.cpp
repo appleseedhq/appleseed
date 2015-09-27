@@ -50,7 +50,7 @@ void BSDFSample::compute_reflected_differentials()
 {
     if (m_outgoing.has_derivatives())
     {
-        // Physically based rendering, first edition, page 513.
+        // Physically Based rendering, first edition, page 513.
         Vector3d dndx, dndy;
         double ddndx, ddndy;
         compute_normal_derivatives(dndx, dndy, ddndx, ddndy);
@@ -102,7 +102,7 @@ void BSDFSample::compute_normal_derivatives(
     double&     ddndx,
     double&     ddndy) const
 {
-    // Physically based rendering, first edition, page 513.
+    // Physically Based rendering, first edition, page 513.
     const Vector3d& dndu = m_shading_point.get_dndu(0);
     const Vector3d& dndv = m_shading_point.get_dndv(0);
     const Vector2d& duvdx = m_shading_point.get_duvdx(0);

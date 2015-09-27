@@ -30,9 +30,8 @@
 #include "normalizeddiffusionbssrdf.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
+#include "renderer/modeling/bssrdf/separablebssrdf.h"
 #include "renderer/modeling/bssrdf/sss.h"
 #include "renderer/modeling/input/inputevaluator.h"
 
@@ -73,13 +72,13 @@ namespace
     const char* Model = "normalized_diffusion_bssrdf";
 
     class NormalizedDiffusionBSSRDF
-      : public BSSRDF
+      : public SeparableBSSRDF
     {
       public:
         NormalizedDiffusionBSSRDF(
-            const char*             name,
-            const ParamArray&       params)
-          : BSSRDF(name, params)
+            const char*         name,
+            const ParamArray&   params)
+          : SeparableBSSRDF(name, params)
         {
             m_inputs.declare("weight", InputFormatScalar, "1.0");
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
@@ -101,7 +100,7 @@ namespace
         }
 
         virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const APPLESEED_OVERRIDE
+            const Assembly&     assembly) const APPLESEED_OVERRIDE
         {
             return align(sizeof(NormalizedDiffusionBSSRDFInputValues), 16);
         }
@@ -111,6 +110,9 @@ namespace
             NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<NormalizedDiffusionBSSRDFInputValues*>(data);
 
+            // Precompute the relative index of refraction.
+            values->m_eta = values->m_outside_ior / values->m_inside_ior;
+
             // Apply multipliers.
             values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
             values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
@@ -118,12 +120,13 @@ namespace
             // Clamp reflectance.
             values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
 
-            // Precompute stuff.
+            // Build a CDF for channel sampling.
+
             values->m_s.resize(values->m_reflectance.size());
             values->m_channel_pdf.resize(values->m_reflectance.size());
             values->m_channel_cdf.resize(values->m_reflectance.size());
 
-            float pdf_sum = 0.0f;
+            float cumulated_pdf = 0.0f;
             for (size_t i = 0, e = values->m_channel_pdf.size(); i < e; ++i)
             {
                 const double a = static_cast<double>(values->m_reflectance[i]);
@@ -134,18 +137,18 @@ namespace
                 const float pdf = static_cast<float>(s / l);
                 values->m_channel_pdf[i] = pdf;
 
-                pdf_sum += pdf;
-                values->m_channel_cdf[i] = pdf_sum;
+                cumulated_pdf += pdf;
+                values->m_channel_cdf[i] = cumulated_pdf;
             }
 
-            const float rcp_pdf_sum = 1.0f / pdf_sum;
-            values->m_channel_pdf *= rcp_pdf_sum;
-            values->m_channel_cdf *= rcp_pdf_sum;
+            const float rcp_cumulated_pdf = 1.0f / cumulated_pdf;
+            values->m_channel_pdf *= rcp_cumulated_pdf;
+            values->m_channel_cdf *= rcp_cumulated_pdf;
             values->m_channel_cdf[values->m_channel_cdf.size() - 1] = 1.0f;
 
             // Precompute the (square of the) max radius.
             const size_t channel = min_index(values->m_reflectance);
-            values->m_max_radius2 =
+            values->m_rmax2 =
                 square(
                     normalized_diffusion_max_radius(
                         values->m_dmfp,
@@ -153,8 +156,8 @@ namespace
         }
 
         virtual bool sample(
-            const void*             data,
-            BSSRDFSample&           sample) const APPLESEED_OVERRIDE
+            const void*         data,
+            BSSRDFSample&       sample) const APPLESEED_OVERRIDE
         {
             const NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
@@ -162,8 +165,7 @@ namespace
             if (values->m_weight == 0.0)
                 return false;
 
-            sample.set_is_directional(false);
-            sample.set_eta(values->m_outside_ior / values->m_inside_ior);
+            sample.set_eta(values->m_eta);
 
             sample.get_sampling_context().split_in_place(3, 1);
             const Vector3d s = sample.get_sampling_context().next_vector2<3>();
@@ -185,7 +187,7 @@ namespace
             const double phi = TwoPi * s[2];
 
             // Set the max radius.
-            sample.set_rmax2(values->m_max_radius2);
+            sample.set_rmax2(values->m_rmax2);
 
             // Set the sampled point.
             sample.set_point(Vector2d(radius * cos(phi), radius * sin(phi)));
@@ -193,18 +195,21 @@ namespace
             return true;
         }
 
-        virtual void evaluate(
-            const void*             data,
-            const ShadingPoint&     outgoing_point,
-            const Vector3d&         outgoing_dir,
-            const ShadingPoint&     incoming_point,
-            const Vector3d&         incoming_dir,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+        virtual double get_eta(
+            const void*         data) const APPLESEED_OVERRIDE
+        {
+            return reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data)->m_eta;
+        }
+
+        virtual void evaluate_profile(
+            const void*         data,
+            const double        square_radius,
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
             const NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
 
-            const double radius = norm(incoming_point.get_point() - outgoing_point.get_point());
+            const double radius = sqrt(square_radius);
 
             value.resize(values->m_reflectance.size());
 
@@ -220,9 +225,9 @@ namespace
         }
 
         virtual double evaluate_pdf(
-            const void*             data,
-            const size_t            channel,
-            const double            radius) const APPLESEED_OVERRIDE
+            const void*         data,
+            const size_t        channel,
+            const double        radius) const APPLESEED_OVERRIDE
         {
             const NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);

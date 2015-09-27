@@ -148,21 +148,21 @@ Vector<T, 3> sample_spherical_triangle_uniform(
     const Vector<T, 3>& v2,
     const Vector<T, 2>& eta);
 
+
 //
 // Exponential sampling functions.
 //
-
+// Reference:
 //
-// References:
-//
-//   Physically based rendering, first edition, page 641.
+//   Physically Based Rendering, first edition, page 641.
 //
 
+// Map a uniform random sample in [0,1) to an exponential distribution 
+// of the form exp(-a*x).
 template <typename T>
 T sample_exponential_distribution(
-    const T u,                      // uniform random sample in [0,1)
+    const T s,
     const T a);
-
 template <typename T>
 T exponential_distribution_pdf(
     const T x,
@@ -429,13 +429,13 @@ Vector<T, 3> sample_spherical_triangle_uniform(
 
 template <typename T>
 inline T sample_exponential_distribution(
-    const T u,
+    const T s,
     const T a)
 {
-    assert(u >= T(0.0));
-    assert(u < T(1.0));
+    assert(s >= T(0.0));
+    assert(s < T(1.0));
 
-    return -std::log(T(1.0) - u) / a;
+    return -std::log(T(1.0) - s) / a;
 }
 
 template <typename T>

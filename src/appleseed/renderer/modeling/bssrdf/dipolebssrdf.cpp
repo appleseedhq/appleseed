@@ -36,11 +36,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/sampling/mappings.h"
+#include "foundation/math/cdf.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
-#include "foundation/utility/memory.h"
 
 using namespace foundation;
 using namespace std;
@@ -53,9 +53,9 @@ namespace renderer
 //
 
 DipoleBSSRDF::DipoleBSSRDF(
-    const char*             name,
-    const ParamArray&       params)
-  : BSSRDF(name, params)
+    const char*         name,
+    const ParamArray&   params)
+  : SeparableBSSRDF(name, params)
 {
     m_inputs.declare("weight", InputFormatScalar, "1.0");
     m_inputs.declare("reflectance", InputFormatSpectralReflectance);
@@ -69,51 +69,9 @@ DipoleBSSRDF::DipoleBSSRDF(
     m_inputs.declare("inside_ior", InputFormatScalar);
 }
 
-size_t DipoleBSSRDF::compute_input_data_size(
-    const Assembly&         assembly) const
-{
-    return align(sizeof(DipoleBSSRDFInputValues), 16);
-}
-
-void DipoleBSSRDF::prepare_inputs(void* data) const
-{
-    DipoleBSSRDFInputValues* values =
-        reinterpret_cast<DipoleBSSRDFInputValues*>(data);
-
-    if (m_inputs.source("sigma_a") == 0 || m_inputs.source("sigma_s") == 0)
-    {
-        // Apply multipliers.
-        values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
-        values->m_dmfp *= values->m_dmfp_multiplier;
-
-        // Clamp reflectance.
-        values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
-
-        // Compute sigma_a and sigma_s from the reflectance and dmfp parameters.
-        const ComputeRdStandardDipole rd_fun(values->m_outside_ior / values->m_inside_ior);
-        compute_absorption_and_scattering(
-            rd_fun,
-            values->m_reflectance,
-            values->m_dmfp,
-            values->m_anisotropy,
-            values->m_sigma_a,
-            values->m_sigma_s);
-    }
-
-    // Compute sigma_tr.
-    effective_extinction_coefficient(
-        values->m_sigma_a,
-        values->m_sigma_s,
-        values->m_anisotropy,
-        values->m_sigma_tr);
-
-    // Precompute the (square of the) max radius.
-    values->m_max_radius2 = square(dipole_max_radius(min_value(values->m_sigma_tr)));
-}
-
 bool DipoleBSSRDF::sample(
-    const void*             data,
-    BSSRDFSample&           sample) const
+    const void*         data,
+    BSSRDFSample&       sample) const
 {
     const DipoleBSSRDFInputValues* values =
         reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
@@ -121,39 +79,48 @@ bool DipoleBSSRDF::sample(
     if (values->m_weight == 0.0)
         return false;
 
-    sample.set_eta(values->m_outside_ior / values->m_inside_ior);
-    sample.set_channel(0);
+    sample.get_sampling_context().split_in_place(3, 1);
+    const Vector3d s = sample.get_sampling_context().next_vector2<3>();
 
-    sample.get_sampling_context().split_in_place(2, 1);
-    const Vector2d s = sample.get_sampling_context().next_vector2<2>();
+    // Sample a channel.
+    const size_t channel =
+        sample_cdf(
+            &values->m_channel_cdf[0],
+            &values->m_channel_cdf[0] + values->m_channel_cdf.size(),
+            s[0]);
 
     // Sample a radius.
-    const double sigma_tr = values->m_sigma_tr[0];
-    const double radius = sample_exponential_distribution(s[0], sigma_tr);
-
-    // Set the max radius.
-    sample.set_rmax2(values->m_max_radius2);
+    const double sigma_tr = values->m_sigma_tr[channel];
+    const double radius = sample_exponential_distribution(s[1], sigma_tr);
 
     // Sample an angle.
-    const double phi = TwoPi * s[1];
+    const double phi = TwoPi * s[2];
 
-    // Set the sampled point.
+    sample.set_eta(values->m_eta);
+    sample.set_channel(channel);
     sample.set_point(Vector2d(radius * cos(phi), radius * sin(phi)));
+    sample.set_rmax2(values->m_rmax2);
 
     return true;
 }
 
 double DipoleBSSRDF::evaluate_pdf(
-    const void*             data,
-    const size_t            channel,
-    const double            radius) const
+    const void*         data,
+    const size_t        channel,
+    const double        radius) const
 {
     const DipoleBSSRDFInputValues* values =
         reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
 
     // PDF of the sampled radius.
-    const double sigma_tr = values->m_sigma_tr[channel];
-    const double pdf_radius = exponential_distribution_pdf(radius, sigma_tr);
+    double pdf_radius = 0.0;
+    for (size_t i = 0, e = values->m_sigma_tr.size(); i < e; ++i)
+    {
+        const double sigma_tr = values->m_sigma_tr[i];
+        pdf_radius +=
+              exponential_distribution_pdf(radius, sigma_tr)
+            * values->m_channel_pdf[i];
+    }
 
     // PDF of the sampled angle.
     const double pdf_angle = RcpTwoPi;

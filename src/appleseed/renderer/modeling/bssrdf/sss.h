@@ -143,17 +143,8 @@ double gaussian_profile_pdf(
 // Dipole diffusion profile.
 //
 
-double dipole_pdf(const double r, const double sigma_tr);
-
-double dipole_cdf(const double r, const double sigma_tr);
-
-double dipole_sample(
-    const double    u,                      // uniform random sample in [0,1)
-    const double    sigma_tr,               // effective_extinction_coefficient
-    const double    eps = 0.0001,           // root precision
-    const size_t    max_iterations = 10);   // max root refinement iterations
-
 double dipole_max_radius(const double sigma_tr);
+
 
 //
 // Normalized diffusion profile.

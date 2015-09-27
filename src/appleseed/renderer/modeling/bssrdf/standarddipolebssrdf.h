@@ -30,7 +30,6 @@
 #define APPLESEED_RENDERER_MODELING_BSSRDF_STANDARDDIPOLEBSSRDF_H
 
 // appleseed.renderer headers.
-#include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/dipolebssrdf.h"
 
 // appleseed.foundation headers.
@@ -42,6 +41,7 @@
 
 // Forward declarations.
 namespace foundation    { class Dictionary; }
+namespace renderer      { class BSSRDF;  }
 namespace renderer      { class ParamArray; }
 
 namespace renderer

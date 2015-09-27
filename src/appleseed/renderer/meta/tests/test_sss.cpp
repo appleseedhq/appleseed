@@ -37,6 +37,8 @@
 #endif
 #include "renderer/modeling/bssrdf/sss.h"
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
+#include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/scalarsource.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -90,17 +92,17 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double    g)
         {
             m_values.m_weight = 1.0;
-            m_values.m_sigma_a = Color3f(static_cast<float>(sigma_a));
-            m_values.m_sigma_s = Color3f(static_cast<float>(sigma_s));
             m_values.m_anisotropy = g;
             m_values.m_outside_ior = 1.0;
             m_values.m_inside_ior = eta;
 
-            effective_extinction_coefficient(
-                m_values.m_sigma_a,
-                m_values.m_sigma_s,
-                m_values.m_anisotropy,
-                m_values.m_sigma_tr);
+            m_bssrdf->get_inputs().find("sigma_a").bind(new ScalarSource(sigma_a));
+            m_bssrdf->get_inputs().find("sigma_a").source()->evaluate_uniform(m_values.m_sigma_a);
+
+            m_bssrdf->get_inputs().find("sigma_s").bind(new ScalarSource(sigma_s));
+            m_bssrdf->get_inputs().find("sigma_s").source()->evaluate_uniform(m_values.m_sigma_s);
+
+            m_bssrdf->prepare_inputs(&m_values);
         }
 
         void set_values_from_rd_dmfp(
@@ -344,7 +346,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double Eps = 1.0e-6;
             const double alpha_prime = fit<size_t, double>(i, 0, TestCount - 1, 0.0 + Eps, 1.0 - Eps);
 
-            const double rd_a = rd_fun(alpha_prime);
+            const double rd_a = RcpPi * rd_fun(alpha_prime);
             const double rd_n = integrate_dipole_alpha_prime<StandardDipoleBSSRDFFactory>(alpha_prime, SampleCount);
 
             EXPECT_FEQ_EPS(rd_a, rd_n, 0.02);
@@ -373,7 +375,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             ai_points.push_back(
                 Vector2d(
                     alpha_prime,
-                    rd_fun(alpha_prime)));
+                    RcpPi * rd_fun(alpha_prime)));
 
             ni_points.push_back(
                 Vector2d(
@@ -418,7 +420,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             ai_points.push_back(
                 Vector2d(
                     alpha_prime,
-                    rd_fun(alpha_prime)));
+                    RcpPi * rd_fun(alpha_prime)));
 
             ni_points.push_back(
                 Vector2d(
@@ -722,6 +724,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     }
 
 #ifdef APPLESEED_WITH_PARTIO
+
     TEST_CASE(PartioNormalizedDiffusionSample)
     {
         const double A = 1.0;
@@ -788,29 +791,12 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         particles.write("unit tests/outputs/test_sss_nd_sampling_particles.bgeo");
     }
+
 #endif
 
     //
     // Standard dipole profile.
     //
-
-    // Fails in 6 cases out of 1000.
-    /*
-    TEST_CASE(StdDipoleSampleNew)
-    {
-        MersenneTwister rng;
-
-        for (size_t i = 0; i < 1000; ++i)
-        {
-            const double u = rand_double2(rng);
-            const double sigma_tr = 1.0 / rand_double1(rng, 0.001, 10.0);
-            const double r = dipole_sample(u, sigma_tr, 0.001);
-            const double e = dipole_cdf(r, sigma_tr);
-
-            EXPECT_FEQ_EPS(u, e, 0.05);
-        }
-    }
-    */
 
     TEST_CASE(StdDipoleMaxRadius)
     {
@@ -858,85 +844,6 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.new_plot().set_points(points);
         plotfile.write("unit tests/outputs/test_sss_stddipole_integral_rd.gnuplot");
     }
-
-#ifdef APPLESEED_WITH_PARTIO
-    TEST_CASE(PartioStdDipoleSampleOldAndNew)
-    {
-        DipoleBSSRDFEvaluator<StandardDipoleBSSRDFFactory> bssrdf_eval;
-        bssrdf_eval.set_values_from_rd_dmfp(0.75, 0.135, 1.3, 0.0);
-        const double sigma_tr = bssrdf_eval.get_sigma_tr();
-
-        const size_t SampleCount = 1000;
-
-        MersenneTwister rng;
-
-        PartioFile particles;
-        Partio::ParticleAttribute pos_attr = particles.add_vector_attribute("position");
-        Partio::ParticleAttribute col_attr = particles.add_color_attribute("color");
-
-        for (size_t i = 0; i < SampleCount; ++i)
-        {
-            const double u = rand_double2(rng);
-            const double phi = TwoPi * rand_double2(rng);
-
-            const double r =
-                phi < Pi
-                    ? sample_exponential_distribution(u, sigma_tr)
-                    : dipole_sample(u, sigma_tr);
-
-            const Vector3d sample(r * cos(phi), 0.0, r * sin(phi));
-
-            Partio::ParticleIndex p = particles.add_particle();
-            particles.set_vector_attribute(p, pos_attr, sample);
-
-            if (phi < Pi)
-                particles.set_color_attribute(p, col_attr, Color3d(0.0, 1.0, 0.0));
-            else
-                particles.set_color_attribute(p, col_attr, Color3d(0.0, 0.0, 1.0));
-        }
-
-        // Add a circle of particles of radius max_radius.
-        const size_t CircleCount = 100;
-        const double max_radius = dipole_max_radius(sigma_tr);
-
-        for (size_t i = 0; i < CircleCount; ++i)
-        {
-            const double phi = fit<size_t, double>(i, 0, CircleCount - 1, 0.0, TwoPi);
-            const Vector3d c(max_radius * cos(phi), 0.0, max_radius * sin(phi));
-
-            Partio::ParticleIndex p = particles.add_particle();
-            particles.set_vector_attribute(p, pos_attr, c);
-            particles.set_color_attribute(p, col_attr, Color3d(1.0, 1.0, 1.0));
-        }
-
-        // Add particles with the value of the profile.
-        const size_t ProfileCount = 500;
-
-        for (size_t i = 0; i < ProfileCount; ++i)
-        {
-            const double r = fit<size_t, double>(i, 0, ProfileCount - 1, 0.0, max_radius);
-            const double v = bssrdf_eval.evaluate_searchlight(r);
-
-            Partio::ParticleIndex p = particles.add_particle();
-            particles.set_vector_attribute(p, pos_attr, Vector3d(r, v, 0.0));
-            particles.set_color_attribute(p, col_attr, Color3d(1.0, 0.0, 0.0));
-
-            p = particles.add_particle();
-            particles.set_vector_attribute(p, pos_attr, Vector3d(-r, v, 0.0));
-            particles.set_color_attribute(p, col_attr, Color3d(1.0, 0.0, 0.0));
-
-            p = particles.add_particle();
-            particles.set_vector_attribute(p, pos_attr, Vector3d(0.0, v, r));
-            particles.set_color_attribute(p, col_attr, Color3d(1.0, 0.0, 0.0));
-
-            p = particles.add_particle();
-            particles.set_vector_attribute(p, pos_attr, Vector3d(0.0, v, -r));
-            particles.set_color_attribute(p, col_attr, Color3d(1.0, 0.0, 0.0));
-        }
-
-        particles.write("unit tests/outputs/test_sss_dipole_sampling_particles.bgeo");
-    }
-#endif
 
     //
     // Directional dipole profile.
