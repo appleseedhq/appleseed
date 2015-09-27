@@ -164,7 +164,6 @@ namespace
             if (values->m_weight == 0.0)
                 return false;
 
-            sample.set_is_directional(false);
             sample.set_eta(values->m_eta);
 
             sample.get_sampling_context().split_in_place(3, 1);

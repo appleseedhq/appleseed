@@ -166,7 +166,6 @@ namespace
             if (rmax2 <= 0.0)
                 return false;
 
-            sample.set_is_directional(false);
             sample.set_eta(values->m_eta);
             sample.set_channel(0);
             sample.set_rmax2(rmax2);

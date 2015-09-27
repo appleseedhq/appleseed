@@ -53,10 +53,6 @@ class BSSRDFSample
 
     // Output fields.
 
-    // Set/get whether BSSRDF::evaluate() depends on the incoming vector.
-    bool is_directional() const;
-    void set_is_directional(const bool is_directional);
-
     double get_eta() const;
     void set_eta(const double eta);
 
@@ -71,7 +67,6 @@ class BSSRDFSample
 
   private:
     SamplingContext&        m_sampling_context;    // sampling context used to sample BSSRDFs
-    bool                    m_is_directional;
     double                  m_eta;
     size_t                  m_channel;
     foundation::Vector2d    m_point;
@@ -91,16 +86,6 @@ inline BSSRDFSample::BSSRDFSample(SamplingContext& sampling_context)
 inline SamplingContext& BSSRDFSample::get_sampling_context()
 {
     return m_sampling_context;
-}
-
-inline bool BSSRDFSample::is_directional() const
-{
-    return m_is_directional;
-}
-
-inline void BSSRDFSample::set_is_directional(const bool is_directional)
-{
-    m_is_directional = is_directional;
 }
 
 inline double BSSRDFSample::get_eta() const

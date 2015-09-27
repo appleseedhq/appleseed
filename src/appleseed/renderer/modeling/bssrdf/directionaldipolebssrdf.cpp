@@ -164,7 +164,6 @@ namespace
             if (values->m_weight == 0.0)
                 return false;
 
-            sample.set_is_directional(true);
             sample.set_eta(values->m_eta);
             sample.set_channel(0);
 
