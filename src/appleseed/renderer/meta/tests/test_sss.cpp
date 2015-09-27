@@ -37,6 +37,8 @@
 #endif
 #include "renderer/modeling/bssrdf/sss.h"
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
+#include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/scalarsource.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -90,17 +92,17 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double    g)
         {
             m_values.m_weight = 1.0;
-            m_values.m_sigma_a = Color3f(static_cast<float>(sigma_a));
-            m_values.m_sigma_s = Color3f(static_cast<float>(sigma_s));
             m_values.m_anisotropy = g;
             m_values.m_outside_ior = 1.0;
             m_values.m_inside_ior = eta;
 
-            effective_extinction_coefficient(
-                m_values.m_sigma_a,
-                m_values.m_sigma_s,
-                m_values.m_anisotropy,
-                m_values.m_sigma_tr);
+            m_bssrdf->get_inputs().find("sigma_a").bind(new ScalarSource(sigma_a));
+            m_bssrdf->get_inputs().find("sigma_a").source()->evaluate_uniform(m_values.m_sigma_a);
+
+            m_bssrdf->get_inputs().find("sigma_s").bind(new ScalarSource(sigma_s));
+            m_bssrdf->get_inputs().find("sigma_s").source()->evaluate_uniform(m_values.m_sigma_s);
+
+            m_bssrdf->prepare_inputs(&m_values);
         }
 
         void set_values_from_rd_dmfp(
