@@ -38,6 +38,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/sampling/mappings.h"
+#include "foundation/math/cdf.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -132,7 +133,7 @@ namespace
                 // Clamp reflectance.
                 values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
 
-                // Compute sigma_a and sigma_s from the reflectance and dmfp parameters.
+                // Compute sigma_a, sigma_s and sigma_tr from the reflectance and dmfp parameters.
                 const ComputeRdStandardDipole rd_fun(values->m_eta);
                 compute_absorption_and_scattering(
                     rd_fun,
@@ -141,14 +142,37 @@ namespace
                     values->m_anisotropy,
                     values->m_sigma_a,
                     values->m_sigma_s);
+                values->m_sigma_tr = Spectrum(static_cast<float>(1.0 / values->m_dmfp));
+            }
+            else
+            {
+                // Compute sigma_tr.
+                effective_extinction_coefficient(
+                    values->m_sigma_a,
+                    values->m_sigma_s,
+                    values->m_anisotropy,
+                    values->m_sigma_tr);
             }
 
-            // Compute sigma_tr.
-            effective_extinction_coefficient(
-                values->m_sigma_a,
-                values->m_sigma_s,
-                values->m_anisotropy,
-                values->m_sigma_tr);
+            // Precompute some coefficients.
+            values->m_sigma_t = values->m_sigma_s + values->m_sigma_a;
+            values->m_sigma_s_prime = values->m_sigma_s * static_cast<float>(1.0 - values->m_anisotropy);
+            values->m_sigma_t_prime = values->m_sigma_s_prime + values->m_sigma_a;
+            values->m_alpha_prime = values->m_sigma_s_prime / values->m_sigma_t_prime;
+
+            // Build a CDF for channel sampling.
+            values->m_channel_pdf = values->m_alpha_prime;
+            values->m_channel_cdf.resize(values->m_channel_pdf.size());
+            float cumulated_pdf = 0.0f;
+            for (size_t i = 0, e = values->m_channel_cdf.size(); i < e; ++i)
+            {
+                cumulated_pdf += values->m_channel_pdf[i];
+                values->m_channel_cdf[i] = cumulated_pdf;
+            }
+            const float rcp_cumulated_pdf = 1.0f / cumulated_pdf;
+            values->m_channel_pdf *= rcp_cumulated_pdf;
+            values->m_channel_cdf *= rcp_cumulated_pdf;
+            values->m_channel_cdf[values->m_channel_cdf.size() - 1] = 1.0f;
 
             // Precompute the (square of the) max radius.
             values->m_rmax2 = square(dipole_max_radius(min_value(values->m_sigma_tr)));
@@ -164,24 +188,27 @@ namespace
             if (values->m_weight == 0.0)
                 return false;
 
-            sample.set_eta(values->m_eta);
-            sample.set_channel(0);
+            sample.get_sampling_context().split_in_place(3, 1);
+            const Vector3d s = sample.get_sampling_context().next_vector2<3>();
 
-            sample.get_sampling_context().split_in_place(2, 1);
-            const Vector2d s = sample.get_sampling_context().next_vector2<2>();
+            // Sample a channel.
+            const size_t channel =
+                sample_cdf(
+                    &values->m_channel_cdf[0],
+                    &values->m_channel_cdf[0] + values->m_channel_cdf.size(),
+                    s[0]);
 
             // Sample a radius.
-            const double sigma_tr = values->m_sigma_tr[0];
-            const double radius = sample_exponential_distribution(s[0], sigma_tr);
-
-            // Set the max radius.
-            sample.set_rmax2(values->m_rmax2);
+            const double sigma_tr = values->m_sigma_tr[channel];
+            const double radius = sample_exponential_distribution(s[1], sigma_tr);
 
             // Sample an angle.
-            const double phi = TwoPi * s[1];
+            const double phi = TwoPi * s[2];
 
-            // Set the sampled point.
+            sample.set_eta(values->m_eta);
+            sample.set_channel(channel);
             sample.set_point(Vector2d(radius * cos(phi), radius * sin(phi)));
+            sample.set_rmax2(values->m_rmax2);
 
             return true;
         }
@@ -247,8 +274,14 @@ namespace
                 reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
 
             // PDF of the sampled radius.
-            const double sigma_tr = values->m_sigma_tr[channel];
-            const double pdf_radius = exponential_distribution_pdf(radius, sigma_tr);
+            double pdf_radius = 0.0;
+            for (size_t i = 0, e = values->m_sigma_tr.size(); i < e; ++i)
+            {
+                const double sigma_tr = values->m_sigma_tr[i];
+                pdf_radius +=
+                      exponential_distribution_pdf(radius, sigma_tr)
+                    * values->m_channel_pdf[i];
+            }
 
             // PDF of the sampled angle.
             const double pdf_angle = RcpTwoPi;
@@ -302,10 +335,10 @@ namespace
             {
                 const double sigma_a = values->m_sigma_a[i];                            // absorption coefficient
                 const double sigma_s = values->m_sigma_s[i];                            // scattering coefficient
-                const double sigma_t = sigma_s + sigma_a;                               // extinction coefficient
-                const double sigma_s_prime = sigma_s * (1.0 - values->m_anisotropy);    // reduced scattering coefficient
-                const double sigma_t_prime = sigma_s_prime + sigma_a;                   // reduced extinction coefficient
-                const double alpha_prime = sigma_s_prime / sigma_t_prime;               // reduced scattering albedo
+                const double sigma_t = values->m_sigma_t[i];                            // extinction coefficient
+                const double sigma_s_prime = values->m_sigma_s_prime[i];                // reduced scattering coefficient
+                const double sigma_t_prime = values->m_sigma_t_prime[i];                // reduced extinction coefficient
+                const double alpha_prime = values->m_alpha_prime[i];                    // reduced scattering albedo
                 const double sigma_tr = values->m_sigma_tr[i];                          // effective transport coefficient
 
                 // Compute extrapolation distance ([1] equation 21).

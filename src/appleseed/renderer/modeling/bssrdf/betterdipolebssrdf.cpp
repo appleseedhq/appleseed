@@ -101,7 +101,7 @@ namespace
                 // Clamp reflectance.
                 values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
 
-                // Compute sigma_a and sigma_s from the reflectance and dmfp parameters.
+                // Compute sigma_a, sigma_s and sigma_tr from the reflectance and dmfp parameters.
                 const ComputeRdBetterDipole rd_fun(values->m_eta);
                 compute_absorption_and_scattering(
                     rd_fun,
@@ -110,14 +110,36 @@ namespace
                     values->m_anisotropy,
                     values->m_sigma_a,
                     values->m_sigma_s);
+                values->m_sigma_tr = Spectrum(static_cast<float>(1.0 / values->m_dmfp));
+            }
+            else
+            {
+                // Compute sigma_tr.
+                effective_extinction_coefficient(
+                    values->m_sigma_a,
+                    values->m_sigma_s,
+                    values->m_anisotropy,
+                    values->m_sigma_tr);
             }
 
-            // Compute sigma_tr.
-            effective_extinction_coefficient(
-                values->m_sigma_a,
-                values->m_sigma_s,
-                values->m_anisotropy,
-                values->m_sigma_tr);
+            // Precompute some coefficients.
+            values->m_sigma_s_prime = values->m_sigma_s * static_cast<float>(1.0 - values->m_anisotropy);
+            values->m_sigma_t_prime = values->m_sigma_s_prime + values->m_sigma_a;
+            values->m_alpha_prime = values->m_sigma_s_prime / values->m_sigma_t_prime;
+
+            // Build a CDF for channel sampling.
+            values->m_channel_pdf = values->m_alpha_prime;
+            values->m_channel_cdf.resize(values->m_channel_pdf.size());
+            float cumulated_pdf = 0.0f;
+            for (size_t i = 0, e = values->m_channel_cdf.size(); i < e; ++i)
+            {
+                cumulated_pdf += values->m_channel_pdf[i];
+                values->m_channel_cdf[i] = cumulated_pdf;
+            }
+            const float rcp_cumulated_pdf = 1.0f / cumulated_pdf;
+            values->m_channel_pdf *= rcp_cumulated_pdf;
+            values->m_channel_cdf *= rcp_cumulated_pdf;
+            values->m_channel_cdf[values->m_channel_cdf.size() - 1] = 1.0f;
 
             // Precompute the (square of the) max radius.
             values->m_rmax2 = square(dipole_max_radius(min_value(values->m_sigma_tr)));

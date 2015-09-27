@@ -36,6 +36,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/sampling/mappings.h"
+#include "foundation/math/cdf.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -78,24 +79,27 @@ bool DipoleBSSRDF::sample(
     if (values->m_weight == 0.0)
         return false;
 
-    sample.set_eta(values->m_eta);
-    sample.set_channel(0);
+    sample.get_sampling_context().split_in_place(3, 1);
+    const Vector3d s = sample.get_sampling_context().next_vector2<3>();
 
-    sample.get_sampling_context().split_in_place(2, 1);
-    const Vector2d s = sample.get_sampling_context().next_vector2<2>();
+    // Sample a channel.
+    const size_t channel =
+        sample_cdf(
+            &values->m_channel_cdf[0],
+            &values->m_channel_cdf[0] + values->m_channel_cdf.size(),
+            s[0]);
 
     // Sample a radius.
-    const double sigma_tr = values->m_sigma_tr[0];
-    const double radius = sample_exponential_distribution(s[0], sigma_tr);
-
-    // Set the max radius.
-    sample.set_rmax2(values->m_rmax2);
+    const double sigma_tr = values->m_sigma_tr[channel];
+    const double radius = sample_exponential_distribution(s[1], sigma_tr);
 
     // Sample an angle.
-    const double phi = TwoPi * s[1];
+    const double phi = TwoPi * s[2];
 
-    // Set the sampled point.
+    sample.set_eta(values->m_eta);
+    sample.set_channel(channel);
     sample.set_point(Vector2d(radius * cos(phi), radius * sin(phi)));
+    sample.set_rmax2(values->m_rmax2);
 
     return true;
 }
@@ -109,8 +113,14 @@ double DipoleBSSRDF::evaluate_pdf(
         reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
 
     // PDF of the sampled radius.
-    const double sigma_tr = values->m_sigma_tr[channel];
-    const double pdf_radius = exponential_distribution_pdf(radius, sigma_tr);
+    double pdf_radius = 0.0;
+    for (size_t i = 0, e = values->m_sigma_tr.size(); i < e; ++i)
+    {
+        const double sigma_tr = values->m_sigma_tr[i];
+        pdf_radius +=
+              exponential_distribution_pdf(radius, sigma_tr)
+            * values->m_channel_pdf[i];
+    }
 
     // PDF of the sampled angle.
     const double pdf_angle = RcpTwoPi;

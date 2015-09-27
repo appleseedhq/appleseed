@@ -71,9 +71,11 @@ class SeparableBSSRDF
         Spectrum&                   value) const APPLESEED_OVERRIDE;
 
   protected:
+    // Return the relative index of refraction.
     virtual double get_eta(
         const void*                 data) const = 0;
 
+    // Evaluate the profile for a given (square) radius.
     virtual void evaluate_profile(
         const void*                 data,
         const double                square_radius,
