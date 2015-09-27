@@ -61,6 +61,7 @@ cmake \
     -D USE_EXTERNAL_XERCES=ON \
     -D USE_SSE=ON \
     -D USE_SSE42=ON \
+    -D HIDE_SYMBOLS=ON \
     -D CMAKE_BUILD_TYPE=Debug \
     ..
 
