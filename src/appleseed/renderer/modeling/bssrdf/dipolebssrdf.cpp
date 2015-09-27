@@ -90,7 +90,7 @@ bool DipoleBSSRDF::sample(
     const double radius = sample_exponential_distribution(s[0], sigma_tr);
 
     // Set the max radius.
-    sample.set_rmax2(values->m_max_radius2);
+    sample.set_rmax2(values->m_rmax2);
 
     // Sample an angle.
     const double phi = TwoPi * s[1];

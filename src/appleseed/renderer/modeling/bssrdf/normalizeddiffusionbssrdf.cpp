@@ -147,7 +147,7 @@ namespace
 
             // Precompute the (square of the) max radius.
             const size_t channel = min_index(values->m_reflectance);
-            values->m_max_radius2 =
+            values->m_rmax2 =
                 square(
                     normalized_diffusion_max_radius(
                         values->m_dmfp,
@@ -187,7 +187,7 @@ namespace
             const double phi = TwoPi * s[2];
 
             // Set the max radius.
-            sample.set_rmax2(values->m_max_radius2);
+            sample.set_rmax2(values->m_rmax2);
 
             // Set the sampled point.
             sample.set_point(Vector2d(radius * cos(phi), radius * sin(phi)));

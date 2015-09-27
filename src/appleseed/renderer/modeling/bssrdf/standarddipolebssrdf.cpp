@@ -123,7 +123,7 @@ namespace
                 values->m_sigma_tr);
 
             // Precompute the (square of the) max radius.
-            values->m_max_radius2 = square(dipole_max_radius(min_value(values->m_sigma_tr)));
+            values->m_rmax2 = square(dipole_max_radius(min_value(values->m_sigma_tr)));
         }
 
         virtual void evaluate_profile(
