@@ -122,7 +122,7 @@ void SubsurfaceSampler::sample(
     const void*                     bssrdf_data,
     Visitor&                        visitor) const
 {
-    // Sample the diffusion profile.
+    // Sample the BSSRDF.
     BSSRDFSample bssrdf_sample(sampling_context);
     if (!bssrdf.sample(bssrdf_data, bssrdf_sample))
         return;
@@ -135,7 +135,8 @@ void SubsurfaceSampler::sample(
     if (radius2 > rmax2)
         return;
 
-    // Evaluate the PDF of the diffusion profile.
+    // Evaluate the PDF of the BSSRDF sample.
+    // todo: integrate into BSSRDF sampling.
     const double radius = std::sqrt(radius2);
     const double bssrdf_sample_pdf =
         bssrdf.evaluate_pdf(bssrdf_data, bssrdf_sample.get_channel(), radius);

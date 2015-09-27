@@ -30,9 +30,8 @@
 #include "normalizeddiffusionbssrdf.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
+#include "renderer/modeling/bssrdf/separablebssrdf.h"
 #include "renderer/modeling/bssrdf/sss.h"
 #include "renderer/modeling/input/inputevaluator.h"
 
@@ -73,13 +72,13 @@ namespace
     const char* Model = "normalized_diffusion_bssrdf";
 
     class NormalizedDiffusionBSSRDF
-      : public BSSRDF
+      : public SeparableBSSRDF
     {
       public:
         NormalizedDiffusionBSSRDF(
-            const char*             name,
-            const ParamArray&       params)
-          : BSSRDF(name, params)
+            const char*         name,
+            const ParamArray&   params)
+          : SeparableBSSRDF(name, params)
         {
             m_inputs.declare("weight", InputFormatScalar, "1.0");
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
@@ -101,7 +100,7 @@ namespace
         }
 
         virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const APPLESEED_OVERRIDE
+            const Assembly&     assembly) const APPLESEED_OVERRIDE
         {
             return align(sizeof(NormalizedDiffusionBSSRDFInputValues), 16);
         }
@@ -110,6 +109,9 @@ namespace
         {
             NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<NormalizedDiffusionBSSRDFInputValues*>(data);
+
+            // Precompute the relative index of refraction.
+            values->m_eta = values->m_outside_ior / values->m_inside_ior;
 
             // Apply multipliers.
             values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
@@ -153,8 +155,8 @@ namespace
         }
 
         virtual bool sample(
-            const void*             data,
-            BSSRDFSample&           sample) const APPLESEED_OVERRIDE
+            const void*         data,
+            BSSRDFSample&       sample) const APPLESEED_OVERRIDE
         {
             const NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
@@ -163,7 +165,7 @@ namespace
                 return false;
 
             sample.set_is_directional(false);
-            sample.set_eta(values->m_outside_ior / values->m_inside_ior);
+            sample.set_eta(values->m_eta);
 
             sample.get_sampling_context().split_in_place(3, 1);
             const Vector3d s = sample.get_sampling_context().next_vector2<3>();
@@ -193,18 +195,21 @@ namespace
             return true;
         }
 
-        virtual void evaluate(
-            const void*             data,
-            const ShadingPoint&     outgoing_point,
-            const Vector3d&         outgoing_dir,
-            const ShadingPoint&     incoming_point,
-            const Vector3d&         incoming_dir,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+        virtual double get_eta(
+            const void*         data) const APPLESEED_OVERRIDE
+        {
+            return reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data)->m_eta;
+        }
+
+        virtual void evaluate_profile(
+            const void*         data,
+            const double        square_radius,
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
             const NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
 
-            const double radius = norm(incoming_point.get_point() - outgoing_point.get_point());
+            const double radius = sqrt(square_radius);
 
             value.resize(values->m_reflectance.size());
 
@@ -220,9 +225,9 @@ namespace
         }
 
         virtual double evaluate_pdf(
-            const void*             data,
-            const size_t            channel,
-            const double            radius) const APPLESEED_OVERRIDE
+            const void*         data,
+            const size_t        channel,
+            const double        radius) const APPLESEED_OVERRIDE
         {
             const NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);

@@ -344,7 +344,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double Eps = 1.0e-6;
             const double alpha_prime = fit<size_t, double>(i, 0, TestCount - 1, 0.0 + Eps, 1.0 - Eps);
 
-            const double rd_a = rd_fun(alpha_prime);
+            const double rd_a = RcpPi * rd_fun(alpha_prime);
             const double rd_n = integrate_dipole_alpha_prime<StandardDipoleBSSRDFFactory>(alpha_prime, SampleCount);
 
             EXPECT_FEQ_EPS(rd_a, rd_n, 0.02);
@@ -373,7 +373,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             ai_points.push_back(
                 Vector2d(
                     alpha_prime,
-                    rd_fun(alpha_prime)));
+                    RcpPi * rd_fun(alpha_prime)));
 
             ni_points.push_back(
                 Vector2d(
@@ -418,7 +418,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             ai_points.push_back(
                 Vector2d(
                     alpha_prime,
-                    rd_fun(alpha_prime)));
+                    RcpPi * rd_fun(alpha_prime)));
 
             ni_points.push_back(
                 Vector2d(
@@ -722,6 +722,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     }
 
 #ifdef APPLESEED_WITH_PARTIO
+
     TEST_CASE(PartioNormalizedDiffusionSample)
     {
         const double A = 1.0;
@@ -788,6 +789,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         particles.write("unit tests/outputs/test_sss_nd_sampling_particles.bgeo");
     }
+
 #endif
 
     //
@@ -860,6 +862,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     }
 
 #ifdef APPLESEED_WITH_PARTIO
+
     TEST_CASE(PartioStdDipoleSampleOldAndNew)
     {
         DipoleBSSRDFEvaluator<StandardDipoleBSSRDFFactory> bssrdf_eval;
@@ -936,6 +939,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         particles.write("unit tests/outputs/test_sss_dipole_sampling_particles.bgeo");
     }
+
 #endif
 
     //

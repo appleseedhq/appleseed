@@ -42,7 +42,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
-#include "foundation/math/fresnel.h"
 #include "foundation/math/mis.h"
 #include "foundation/math/sampling/mappings.h"
 
@@ -110,7 +109,6 @@ void compute_ibl(
     const ShadingPoint&     incoming_point,
     const ShadingPoint&     outgoing_point,
     const Dual3d&           outgoing,
-    const double            eta,
     const size_t            bssrdf_sample_count,
     const size_t            env_sample_count,
     Spectrum&               radiance)
@@ -127,7 +125,6 @@ void compute_ibl(
         incoming_point,
         outgoing_point,
         outgoing,
-        eta,
         bssrdf_sample_count,
         env_sample_count,
         radiance);
@@ -143,7 +140,6 @@ void compute_ibl(
         incoming_point,
         outgoing_point,
         outgoing,
-        eta,
         bssrdf_sample_count,
         env_sample_count,
         radiance_env_sampling);
@@ -235,7 +231,6 @@ void compute_ibl_bssrdf_sampling(
     const ShadingPoint&     incoming_point,
     const ShadingPoint&     outgoing_point,
     const Dual3d&           outgoing,
-    const double            eta,
     const size_t            bssrdf_sample_count,
     const size_t            env_sample_count,
     Spectrum&               radiance)
@@ -260,12 +255,6 @@ void compute_ibl_bssrdf_sampling(
             incoming = -incoming;
         assert(is_normalized(incoming));
 
-        // Compute Fresnel coefficient at incoming point.
-        double incoming_fresnel;
-        fresnel_transmittance_dielectric(incoming_fresnel, eta, cos_in);
-        if (incoming_fresnel <= 0.0)
-            continue;
-
         // Discard occluded samples.
         const double transmission =
             shading_context.get_tracer().trace(
@@ -275,7 +264,7 @@ void compute_ibl_bssrdf_sampling(
         if (transmission == 0.0)
             continue;
 
-        // Evaluate the diffusion profile.
+        // Evaluate the BSSRDF.
         Spectrum bssrdf_value;
         bssrdf.evaluate(
             bssrdf_data,
@@ -303,7 +292,7 @@ void compute_ibl_bssrdf_sampling(
                 env_sample_count * env_prob);
 
         // Add the contribution of this sample to the illumination.
-        env_value *= static_cast<float>(transmission * incoming_fresnel * cos_in / bssrdf_prob * mis_weight);
+        env_value *= static_cast<float>(transmission * cos_in / bssrdf_prob * mis_weight);
         env_value *= bssrdf_value;
         radiance += env_value;
     }
@@ -412,7 +401,6 @@ void compute_ibl_environment_sampling(
     const ShadingPoint&     incoming_point,
     const ShadingPoint&     outgoing_point,
     const Dual3d&           outgoing,
-    const double            eta,
     const size_t            bssrdf_sample_count,
     const size_t            env_sample_count,
     Spectrum&               radiance)
@@ -449,12 +437,6 @@ void compute_ibl_environment_sampling(
         if (cos_in <= 0.0)
             continue;
 
-        // Compute Fresnel coefficient at incoming point.
-        double incoming_fresnel;
-        fresnel_transmittance_dielectric(incoming_fresnel, eta, cos_in);
-        if (incoming_fresnel <= 0.0)
-            continue;
-
         // Discard occluded samples.
         const double transmission =
             shading_context.get_tracer().trace(
@@ -464,7 +446,7 @@ void compute_ibl_environment_sampling(
         if (transmission == 0.0)
             continue;
 
-        // Evaluate the diffusion profile.
+        // Evaluate the BSSRDF.
         Spectrum bssrdf_value;
         bssrdf.evaluate(
             bssrdf_data,
@@ -482,7 +464,7 @@ void compute_ibl_environment_sampling(
                 bssrdf_sample_count * bssrdf_prob);
 
         // Add the contribution of this sample to the illumination.
-        env_value *= static_cast<float>(transmission * incoming_fresnel * cos_in / env_prob * mis_weight);
+        env_value *= static_cast<float>(transmission * cos_in / env_prob * mis_weight);
         env_value *= bssrdf_value;
         radiance += env_value;
     }

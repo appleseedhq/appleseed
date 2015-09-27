@@ -82,9 +82,10 @@ class PathVertex
     const void*                 m_bsdf_data;
     const BSSRDF*               m_bssrdf;
     const void*                 m_bssrdf_data;
-    double                      m_eta;
-    double                      m_partial_sss_weight;
+
+    // Sampled incoming point for subsurface scattering.
     const ShadingPoint*         m_incoming_point;
+    double                      m_incoming_point_prob;
 
     // Properties of the last scattering event (for multiple importance sampling).
     ScatteringMode::Mode        m_prev_mode;

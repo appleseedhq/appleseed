@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/bssrdf/sss.h"
 
@@ -72,8 +71,8 @@ namespace
     {
       public:
         StandardDipoleBSSRDF(
-            const char*             name,
-            const ParamArray&       params)
+            const char*         name,
+            const ParamArray&   params)
           : DipoleBSSRDF(name, params)
         {
         }
@@ -88,28 +87,54 @@ namespace
             return Model;
         }
 
-        virtual bool sample(
-            const void*             data,
-            BSSRDFSample&           sample) const APPLESEED_OVERRIDE
+        void prepare_inputs(void* data) const APPLESEED_OVERRIDE
         {
-            sample.set_is_directional(false);
-            return DipoleBSSRDF::sample(data, sample);
+            DipoleBSSRDFInputValues* values =
+                reinterpret_cast<DipoleBSSRDFInputValues*>(data);
+
+            // Precompute the relative index of refraction.
+            values->m_eta = values->m_outside_ior / values->m_inside_ior;
+
+            if (m_inputs.source("sigma_a") == 0 || m_inputs.source("sigma_s") == 0)
+            {
+                // Apply multipliers.
+                values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
+                values->m_dmfp *= values->m_dmfp_multiplier;
+
+                // Clamp reflectance.
+                values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
+
+                // Compute sigma_a and sigma_s from the reflectance and dmfp parameters.
+                const ComputeRdStandardDipole rd_fun(values->m_eta);
+                compute_absorption_and_scattering(
+                    rd_fun,
+                    values->m_reflectance,
+                    values->m_dmfp,
+                    values->m_anisotropy,
+                    values->m_sigma_a,
+                    values->m_sigma_s);
+            }
+
+            // Compute sigma_tr.
+            effective_extinction_coefficient(
+                values->m_sigma_a,
+                values->m_sigma_s,
+                values->m_anisotropy,
+                values->m_sigma_tr);
+
+            // Precompute the (square of the) max radius.
+            values->m_max_radius2 = square(dipole_max_radius(min_value(values->m_sigma_tr)));
         }
 
-        virtual void evaluate(
-            const void*             data,
-            const ShadingPoint&     outgoing_point,
-            const Vector3d&         outgoing_dir,
-            const ShadingPoint&     incoming_point,
-            const Vector3d&         incoming_dir,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+        virtual void evaluate_profile(
+            const void*         data,
+            const double        square_radius,
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
             const DipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
 
-            const double r2 = square_norm(outgoing_point.get_point() - incoming_point.get_point());
-            const double eta = values->m_outside_ior / values->m_inside_ior;
-            const double fdr = fresnel_internal_diffuse_reflectance(eta);
+            const double fdr = fresnel_internal_diffuse_reflectance(values->m_eta);
             const double a = (1.0 + fdr) / (1.0 - fdr);
 
             value.resize(values->m_sigma_a.size());
@@ -175,8 +200,8 @@ namespace
                 //   dv = sqrt( ||xo - xi||^2 + zv^2 )
                 //
 
-                const double dr = sqrt(r2 + zr * zr);
-                const double dv = sqrt(r2 + zv * zv);
+                const double dr = sqrt(square_radius + zr * zr);
+                const double dv = sqrt(square_radius + zv * zv);
 
                 // The expression for R(r) in [1] is incorrect; use the correct expression from [2].
                 const double rcp_dr = 1.0 / dr;
@@ -191,7 +216,7 @@ namespace
             }
 
             // Return r * R(r) * weight.
-            value *= static_cast<float>(sqrt(r2) * values->m_weight);
+            value *= static_cast<float>(sqrt(square_radius) * values->m_weight);
         }
     };
 }

@@ -30,9 +30,8 @@
 #include "gaussianbssrdf.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
+#include "renderer/modeling/bssrdf/separablebssrdf.h"
 #include "renderer/modeling/bssrdf/sss.h"
 #include "renderer/modeling/input/inputevaluator.h"
 
@@ -115,13 +114,13 @@ namespace
     const double RMax2Constant = -2.0 * log(1.0 - RIntegralThreshold);
 
     class GaussianBSSRDF
-      : public BSSRDF
+      : public SeparableBSSRDF
     {
       public:
         GaussianBSSRDF(
-            const char*             name,
-            const ParamArray&       params)
-          : BSSRDF(name, params)
+            const char*         name,
+            const ParamArray&   params)
+          : SeparableBSSRDF(name, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
@@ -141,7 +140,7 @@ namespace
         }
 
         virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const APPLESEED_OVERRIDE
+            const Assembly&     assembly) const APPLESEED_OVERRIDE
         {
             return align(sizeof(GaussianBSSRDFInputValues), 16);
         }
@@ -152,11 +151,12 @@ namespace
                 reinterpret_cast<GaussianBSSRDFInputValues*>(data);
 
             values->m_rmax2 = values->m_v * RMax2Constant;
+            values->m_eta = values->m_outside_ior / values->m_inside_ior;
         }
 
         virtual bool sample(
-            const void*             data,
-            BSSRDFSample&           sample) const APPLESEED_OVERRIDE
+            const void*         data,
+            BSSRDFSample&       sample) const APPLESEED_OVERRIDE
         {
             const GaussianBSSRDFInputValues* values =
                 reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
@@ -167,7 +167,7 @@ namespace
                 return false;
 
             sample.set_is_directional(false);
-            sample.set_eta(values->m_outside_ior / values->m_inside_ior);
+            sample.set_eta(values->m_eta);
             sample.set_channel(0);
             sample.set_rmax2(rmax2);
 
@@ -183,37 +183,39 @@ namespace
             return true;
         }
 
-        virtual void evaluate(
-            const void*             data,
-            const ShadingPoint&     outgoing_point,
-            const Vector3d&         outgoing_dir,
-            const ShadingPoint&     incoming_point,
-            const Vector3d&         incoming_dir,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+        virtual double get_eta(
+            const void*         data) const APPLESEED_OVERRIDE
+        {
+            return reinterpret_cast<const GaussianBSSRDFInputValues*>(data)->m_eta;
+        }
+
+        virtual void evaluate_profile(
+            const void*         data,
+            const double        square_radius,
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
             const GaussianBSSRDFInputValues* values =
                 reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
 
             const double rmax2 = values->m_rmax2;
-            const double r2 = square_norm(incoming_point.get_point() - outgoing_point.get_point());
 
-            if (r2 > rmax2)
+            if (square_radius > rmax2)
             {
                 value.set(0.0f);
                 return;
             }
 
             const double v = values->m_v;
-            const double rd = exp(-r2 / (2.0 * v)) / (TwoPi * v * RIntegralThreshold);
+            const double rd = exp(-square_radius / (2.0 * v)) / (TwoPi * v * RIntegralThreshold);
 
             value = values->m_reflectance;
             value *= static_cast<float>(values->m_reflectance_multiplier * rd);
         }
 
         virtual double evaluate_pdf(
-            const void*             data,
-            const size_t            channel,
-            const double            radius) const APPLESEED_OVERRIDE
+            const void*         data,
+            const size_t        channel,
+            const double        radius) const APPLESEED_OVERRIDE
         {
             const GaussianBSSRDFInputValues* values =
                 reinterpret_cast<const GaussianBSSRDFInputValues*>(data);

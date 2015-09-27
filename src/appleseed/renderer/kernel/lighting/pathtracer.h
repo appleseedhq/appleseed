@@ -53,7 +53,6 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/dual.h"
-#include "foundation/math/fresnel.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/rr.h"
 #include "foundation/math/scalar.h"
@@ -101,7 +100,6 @@ class PathTracer
         enum { MaxSampleCount = 16 };
 
         ShadingPoint            m_incoming_points[MaxSampleCount];
-        double                  m_etas[MaxSampleCount];
         double                  m_probabilities[MaxSampleCount];
         size_t                  m_sample_count;
 
@@ -330,18 +328,13 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             vertex.m_bssrdf_data = bssrdf_input_evaluator.data();
         }
 
-        // This visitor must live outside all 'if' blocks below because it owns
-        // the incoming points that were found during subsurface sampling, one
-        // of which will become the parent point for the next ray.
-        SubsurfaceSampleVisitor visitor;
-
-        // If we picked the BSSRDF, teleport to the incoming point through the medium.
+        // If we picked the BSSRDF, find an incoming point.
+        // The subsurface visitor must live outside the 'if' block below because
+        // it owns the incoming points that were found during subsurface sampling,
+        // one of which will become the parent point for the next ray.
+        SubsurfaceSampleVisitor subsurf_visitor;
         if (vertex.m_bssrdf)
         {
-            // todo: why does this happen again, and what should we do in that case?
-            if (vertex.m_cos_on <= 0.0)
-                break;
-
             // Find possible incoming points.
             const SubsurfaceSampler sampler(shading_context);
             sampler.sample(
@@ -349,32 +342,18 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 *vertex.m_shading_point,
                 *vertex.m_bssrdf,
                 vertex.m_bssrdf_data,
-                visitor);
+                subsurf_visitor);
 
             // Terminate the path if no incoming point could be found.
-            if (visitor.m_sample_count == 0)
+            if (subsurf_visitor.m_sample_count == 0)
                 break;
 
             // Select one of the incoming points at random.
             sampling_context.split_in_place(1, 1);
             const double s = sampling_context.next_double2();
-            const size_t sample_index = foundation::truncate<size_t>(s * visitor.m_sample_count);
-            vertex.m_incoming_point = &visitor.m_incoming_points[sample_index];
-            const double probability = visitor.m_probabilities[sample_index];
-            vertex.m_eta = visitor.m_etas[sample_index];
-
-            // Compute Fresnel coefficient at outgoing point.
-            double outgoing_fresnel;
-            foundation::fresnel_transmittance_dielectric(outgoing_fresnel, vertex.m_eta, vertex.m_cos_on);
-            if (outgoing_fresnel <= 0.0)
-                break;
-
-            // Compute the part of the weight that doesn't depend on the incoming direction.
-            vertex.m_partial_sss_weight =
-                  foundation::RcpPi
-                * outgoing_fresnel
-                * visitor.m_sample_count
-                / probability;
+            const size_t i = foundation::truncate<size_t>(s * subsurf_visitor.m_sample_count);
+            vertex.m_incoming_point = &subsurf_visitor.m_incoming_points[i];
+            vertex.m_incoming_point_prob = subsurf_visitor.m_probabilities[i] / subsurf_visitor.m_sample_count;
         }
 
         // Pass this vertex to the path visitor.
@@ -438,13 +417,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 incoming_vector = -incoming_vector;
             incoming = foundation::Dual3d(incoming_vector);
 
-            // Compute Fresnel coefficient at incoming point.
-            double incoming_fresnel;
-            foundation::fresnel_transmittance_dielectric(incoming_fresnel, vertex.m_eta, cos_in);
-            if (incoming_fresnel <= 0.0)
-                break;
-
-            // Evaluate the diffusion profile.
+            // Evaluate the BSSRDF.
             vertex.m_bssrdf->evaluate(
                 vertex.m_bssrdf_data,
                 *vertex.m_shading_point,
@@ -454,12 +427,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 value);
 
             // Compute the path throughput multiplier.
-            const double weight =
-                  vertex.m_partial_sss_weight
-                * incoming_fresnel
-                * cos_in
-                / incoming_prob;
-            value *= static_cast<float>(weight);
+            value *= static_cast<float>(cos_in / (vertex.m_incoming_point_prob * incoming_prob));
 
             // Properties of this scattering event.
             vertex.m_prev_mode = ScatteringMode::Diffuse;
@@ -572,7 +540,6 @@ bool PathTracer<PathVisitor, Adjoint>::SubsurfaceSampleVisitor::visit(
     if (m_sample_count < MaxSampleCount)
     {
         m_incoming_points[m_sample_count] = incoming_point;
-        m_etas[m_sample_count] = bssrdf_sample.get_eta();
         m_probabilities[m_sample_count] = probability;
         ++m_sample_count;
 

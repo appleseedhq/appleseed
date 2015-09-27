@@ -30,18 +30,18 @@
 #include "directionaldipolebssrdf.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/bssrdf/sss.h"
-#include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/memory.h"
 
 // Standard headers.
@@ -67,7 +67,7 @@ namespace
     //
     // References:
     //
-    //   [1] Directional Dipole for Subsurface Scattering
+    //   [1] Directional Dipole Model for Subsurface Scattering
     //       Jeppe Revall Frisvad, Toshiya Hachisuka, Thomas Kim Kjeldsen
     //       http://www.ci.i.u-tokyo.ac.jp/~hachisuka/dirpole.pdf
     //
@@ -79,14 +79,24 @@ namespace
     const char* Model = "directional_dipole_bssrdf";
 
     class DirectionalDipoleBSSRDF
-      : public DipoleBSSRDF
+      : public BSSRDF
     {
       public:
         DirectionalDipoleBSSRDF(
-            const char*             name,
-            const ParamArray&       params)
-          : DipoleBSSRDF(name, params)
+            const char*         name,
+            const ParamArray&   params)
+          : BSSRDF(name, params)
         {
+            m_inputs.declare("weight", InputFormatScalar, "1.0");
+            m_inputs.declare("reflectance", InputFormatSpectralReflectance);
+            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("dmfp", InputFormatScalar);
+            m_inputs.declare("dmfp_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("sigma_a", InputFormatSpectralReflectance, "");
+            m_inputs.declare("sigma_s", InputFormatSpectralReflectance, "");
+            m_inputs.declare("anisotropy", InputFormatScalar);
+            m_inputs.declare("outside_ior", InputFormatScalar);
+            m_inputs.declare("inside_ior", InputFormatScalar);
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -99,21 +109,91 @@ namespace
             return Model;
         }
 
-        virtual bool sample(
-            const void*             data,
-            BSSRDFSample&           sample) const APPLESEED_OVERRIDE
+        virtual size_t compute_input_data_size(
+            const Assembly&     assembly) const APPLESEED_OVERRIDE
         {
+            return align(sizeof(DipoleBSSRDFInputValues), 16);
+        }
+
+        virtual void prepare_inputs(void* data) const APPLESEED_OVERRIDE
+        {
+            DipoleBSSRDFInputValues* values =
+                reinterpret_cast<DipoleBSSRDFInputValues*>(data);
+
+            // Precompute the relative index of refraction.
+            values->m_eta = values->m_outside_ior / values->m_inside_ior;
+
+            if (m_inputs.source("sigma_a") == 0 || m_inputs.source("sigma_s") == 0)
+            {
+                // Apply multipliers.
+                values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
+                values->m_dmfp *= values->m_dmfp_multiplier;
+
+                // Clamp reflectance.
+                values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
+
+                // Compute sigma_a and sigma_s from the reflectance and dmfp parameters.
+                const ComputeRdStandardDipole rd_fun(values->m_eta);
+                compute_absorption_and_scattering(
+                    rd_fun,
+                    values->m_reflectance,
+                    values->m_dmfp,
+                    values->m_anisotropy,
+                    values->m_sigma_a,
+                    values->m_sigma_s);
+            }
+
+            // Compute sigma_tr.
+            effective_extinction_coefficient(
+                values->m_sigma_a,
+                values->m_sigma_s,
+                values->m_anisotropy,
+                values->m_sigma_tr);
+
+            // Precompute the (square of the) max radius.
+            values->m_max_radius2 = square(dipole_max_radius(min_value(values->m_sigma_tr)));
+        }
+
+        virtual bool sample(
+            const void*         data,
+            BSSRDFSample&       sample) const APPLESEED_OVERRIDE
+        {
+            const DipoleBSSRDFInputValues* values =
+                reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
+
+            if (values->m_weight == 0.0)
+                return false;
+
             sample.set_is_directional(true);
-            return DipoleBSSRDF::sample(data, sample);
+            sample.set_eta(values->m_eta);
+            sample.set_channel(0);
+
+            sample.get_sampling_context().split_in_place(2, 1);
+            const Vector2d s = sample.get_sampling_context().next_vector2<2>();
+
+            // Sample a radius.
+            const double sigma_tr = values->m_sigma_tr[0];
+            const double radius = sample_exponential_distribution(s[0], sigma_tr);
+
+            // Set the max radius.
+            sample.set_rmax2(values->m_max_radius2);
+
+            // Sample an angle.
+            const double phi = TwoPi * s[1];
+
+            // Set the sampled point.
+            sample.set_point(Vector2d(radius * cos(phi), radius * sin(phi)));
+
+            return true;
         }
 
         virtual void evaluate(
-            const void*             data,
-            const ShadingPoint&     outgoing_point,
-            const Vector3d&         outgoing_dir,
-            const ShadingPoint&     incoming_point,
-            const Vector3d&         incoming_dir,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+            const void*         data,
+            const ShadingPoint& outgoing_point,
+            const Vector3d&     outgoing_dir,
+            const ShadingPoint& incoming_point,
+            const Vector3d&     incoming_dir,
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
             const DipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
@@ -147,9 +227,35 @@ namespace
             value *= 0.5f;
 #endif
 
-            // Return r * R(r) * weight.
+            double fo;
+            const double cos_on = abs(dot(outgoing_dir, outgoing_point.get_shading_normal()));
+            fresnel_transmittance_dielectric(fo, values->m_eta, cos_on);
+
+            double fi;
+            const double cos_in = abs(dot(incoming_dir, incoming_point.get_shading_normal()));
+            fresnel_transmittance_dielectric(fi, values->m_eta, cos_in);
+
             const double radius = norm(incoming_point.get_point() - outgoing_point.get_point());
-            value *= static_cast<float>(radius * values->m_weight);
+            value *= static_cast<float>(radius * fo * fi * values->m_weight);
+        }
+
+        virtual double evaluate_pdf(
+            const void*         data,
+            const size_t        channel,
+            const double        radius) const APPLESEED_OVERRIDE
+        {
+            const DipoleBSSRDFInputValues* values =
+                reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
+
+            // PDF of the sampled radius.
+            const double sigma_tr = values->m_sigma_tr[channel];
+            const double pdf_radius = exponential_distribution_pdf(radius, sigma_tr);
+
+            // PDF of the sampled angle.
+            const double pdf_angle = RcpTwoPi;
+
+            // Compute and return the final PDF.
+            return pdf_radius * pdf_angle;
         }
 
       private:
@@ -166,10 +272,9 @@ namespace
             // Precompute some stuff. Same as for the Better Dipole model.
             const Vector3d xoxi = xo - xi;
             const double r2 = square_norm(xoxi);                                        // square distance between points of incidence and emergence
-            const double eta = values->m_outside_ior / values->m_inside_ior;            // relative refractive index
-            const double rcp_eta = 1.0 / eta;
+            const double rcp_eta = 1.0 / values->m_eta;
             const double cphi_eta = 0.25 * (1.0 - fresnel_first_moment(rcp_eta));
-            const double cphi_rcp_eta = 0.25 * (1.0 - fresnel_first_moment(eta));
+            const double cphi_rcp_eta = 0.25 * (1.0 - fresnel_first_moment(values->m_eta));
             const double ce_eta = 0.5 * (1.0 - fresnel_second_moment(rcp_eta));
             const double A = (1.0 - ce_eta) / (2.0 * cphi_eta);                         // reflection parameter
 
@@ -179,7 +284,7 @@ namespace
 
             // Compute direction of real ray source.
             Vector3d wr;
-            const bool successful = refract(wi, ni, eta, wr);
+            const bool successful = refract(wi, ni, values->m_eta, wr);
             assert(successful);
             assert(is_normalized(wr));
 
@@ -240,16 +345,16 @@ namespace
             // See [1] equation 12 (section 3.2).
         }
 
-        // Diffusive part of the BSSRDF.
+        // Diffusion term of the BSSRDF.
         static double sd_prime(
-            const double            cphi_eta,
-            const double            ce_eta,
-            const double            D,
-            const double            sigma_tr,
-            const double            dot_w_x,
-            const double            dot_w_n,
-            const double            dot_x_n,
-            const double            r)
+            const double        cphi_eta,
+            const double        ce_eta,
+            const double        D,
+            const double        sigma_tr,
+            const double        dot_w_x,
+            const double        dot_w_n,
+            const double        dot_x_n,
+            const double        r)
         {
             const double r2 = square(r);
             const double sigma_tr_r = sigma_tr * r;

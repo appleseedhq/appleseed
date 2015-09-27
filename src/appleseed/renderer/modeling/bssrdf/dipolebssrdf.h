@@ -31,12 +31,13 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/ibssrdffactory.h"
+#include "renderer/modeling/bssrdf/separablebssrdf.h"
 #include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/memory.h"
 
 // Standard headers.
 #include <cstddef>
@@ -45,10 +46,7 @@
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class BSSRDFSample; }
-namespace renderer      { class InputEvaluator; }
 namespace renderer      { class ParamArray; }
-namespace renderer      { class ShadingContext; }
-namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {
@@ -73,35 +71,38 @@ APPLESEED_DECLARE_INPUT_VALUES(DipoleBSSRDFInputValues)
     // Precomputed values.
     Spectrum    m_sigma_tr;
     double      m_max_radius2;
+    double      m_eta;
 };
 
 
 //
-// Base class for dipole BSSRDFs.
+// Base class for radially-symmetric dipole BSSRDFs.
 //
 
 class DipoleBSSRDF
-  : public BSSRDF
+  : public SeparableBSSRDF
 {
   public:
     // Constructor.
     DipoleBSSRDF(
-        const char*             name,
-        const ParamArray&       params);
+        const char*         name,
+        const ParamArray&   params);
 
     virtual size_t compute_input_data_size(
-        const Assembly&         assembly) const APPLESEED_OVERRIDE;
-
-    virtual void prepare_inputs(void* data) const APPLESEED_OVERRIDE;
+        const Assembly&     assembly) const APPLESEED_OVERRIDE;
 
     virtual bool sample(
-        const void*             data,
-        BSSRDFSample&           sample) const APPLESEED_OVERRIDE;
+        const void*         data,
+        BSSRDFSample&       sample) const APPLESEED_OVERRIDE;
 
     virtual double evaluate_pdf(
-        const void*             data,
-        const size_t            channel,
-        const double            radius) const APPLESEED_OVERRIDE;
+        const void*         data,
+        const size_t        channel,
+        const double        radius) const APPLESEED_OVERRIDE;
+
+  private:
+    virtual double get_eta(
+        const void*         data) const APPLESEED_OVERRIDE;
 };
 
 
@@ -115,6 +116,23 @@ class APPLESEED_DLLSYMBOL DipoleBSSRDFFactory
   public:
     virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 };
+
+
+//
+// DipoleBSSRDF class implementation.
+//
+
+inline size_t DipoleBSSRDF::compute_input_data_size(
+    const Assembly&         assembly) const
+{
+    return foundation::align(sizeof(DipoleBSSRDFInputValues), 16);
+}
+
+inline double DipoleBSSRDF::get_eta(
+    const void*             data) const
+{
+    return reinterpret_cast<const DipoleBSSRDFInputValues*>(data)->m_eta;
+}
 
 }       // namespace renderer
 
