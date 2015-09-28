@@ -523,15 +523,15 @@ void DiagnosticSurfaceShader::evaluate(
                         false,
                         sample);
 
-                    if (!sample.get_incoming().has_derivatives())
+                    if (!sample.m_incoming.has_derivatives())
                         return;
 
                     // The 3.0 factor is choosen so that ray spread
                     // from lambertian BRDFs is approximately 1.
                     const double spread =
                         max(
-                            norm(sample.get_incoming().get_dx()),
-                            norm(sample.get_incoming().get_dy())) * 3.0;
+                            norm(sample.m_incoming.get_dx()),
+                            norm(sample.m_incoming.get_dy())) * 3.0;
 
                     shading_result.set_main_to_linear_rgb(
                         Color3f(static_cast<float>(spread)));

@@ -258,7 +258,7 @@ namespace
                         false,
                         sample);
 
-                sample.value() *= c->get_closure_weight(closure_index);
+                sample.m_value *= c->get_closure_weight(closure_index);
             }
         }
 

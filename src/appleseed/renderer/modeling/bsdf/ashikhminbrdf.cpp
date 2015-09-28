@@ -109,7 +109,7 @@ namespace
         {
             // No reflection below the shading surface.
             const Vector3d& shading_normal = sample.get_shading_normal();
-            const double cos_on = dot(sample.get_outgoing_vector(), shading_normal);
+            const double cos_on = dot(sample.m_outgoing.get_value(), shading_normal);
             if (cos_on < 0.0)
                 return;
 
@@ -144,7 +144,7 @@ namespace
                 incoming = sample.get_shading_basis().transform_to_parent(wi);
 
                 // Compute the halfway vector in world space.
-                h = normalize(incoming + sample.get_outgoing_vector());
+                h = normalize(incoming + sample.m_outgoing.get_value());
 
                 // Compute the glossy exponent, needed to evaluate the PDF.
                 const double cos_hn = dot(h, sample.get_shading_normal());
@@ -193,7 +193,7 @@ namespace
                 // Compute the incoming direction in world space.
                 incoming =
                     force_above_surface(
-                        reflect(sample.get_outgoing_vector(), h), sample.get_geometric_normal());
+                        reflect(sample.m_outgoing.get_value(), h), sample.get_geometric_normal());
             }
 
             // No reflection below the shading surface.
@@ -202,14 +202,14 @@ namespace
                 return;
 
             // Compute dot products.
-            const double cos_oh = abs(dot(sample.get_outgoing_vector(), h));
+            const double cos_oh = abs(dot(sample.m_outgoing.get_value(), h));
             const double cos_hn = dot(h, shading_normal);
 
             // Evaluate the diffuse component of the BRDF (equation 5).
             const double a = 1.0 - pow5(1.0 - 0.5 * cos_in);
             const double b = 1.0 - pow5(1.0 - 0.5 * cos_on);
-            sample.value() = rval.m_kd;
-            sample.value() *= static_cast<float>(a * b);
+            sample.m_value = rval.m_kd;
+            sample.m_value *= static_cast<float>(a * b);
 
             // Evaluate the PDF of the diffuse component.
             const double pdf_diffuse = cos_in * RcpPi;
@@ -222,16 +222,16 @@ namespace
             Spectrum glossy;
             fresnel_reflectance_dielectric_schlick(glossy, rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
             glossy *= static_cast<float>(num / den);
-            sample.value() += glossy;
+            sample.m_value += glossy;
 
             // Evaluate the PDF of the glossy component (equation 8).
             const double pdf_glossy = num / cos_oh;     // omit division by 4 since num = pdf(h) / 4
             assert(pdf_glossy >= 0.0);
             probability += rval.m_pg * pdf_glossy;
 
-            sample.set_mode(mode);
-            sample.set_probability(probability);
-            sample.set_incoming(incoming);
+            sample.m_mode = mode;
+            sample.m_probability = probability;
+            sample.m_incoming = Dual3d(incoming);
             sample.compute_reflected_differentials();
         }
 

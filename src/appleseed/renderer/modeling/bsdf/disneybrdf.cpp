@@ -165,17 +165,18 @@ namespace
 
             // Transform the incoming direction to parent space.
             const Vector3d incoming = sample.get_shading_basis().transform_to_parent(wi);
-            sample.set_probability(
+
+            sample.m_probability =
                 evaluate(
                     values,
                     sample.get_shading_basis(),
-                    sample.get_outgoing_vector(),
+                    sample.m_outgoing.get_value(),
                     incoming,
-                    sample.value()));
+                    sample.m_value);
+            assert(sample.m_probability > 0.0);
 
-            assert(sample.get_probability() > 0.0);
-            sample.set_mode(ScatteringMode::Diffuse);
-            sample.set_incoming(incoming);
+            sample.m_mode = ScatteringMode::Diffuse;
+            sample.m_incoming = Dual3d(incoming);
             sample.compute_reflected_differentials();
         }
 
@@ -252,17 +253,18 @@ namespace
 
             // Transform the incoming direction to parent space.
             const Vector3d incoming = sample.get_shading_basis().transform_to_parent(wi);
-            sample.set_probability(
+
+            sample.m_probability =
                 evaluate(
                     values,
                     sample.get_shading_basis(),
-                    sample.get_outgoing_vector(),
+                    sample.m_outgoing.get_value(),
                     incoming,
-                    sample.value()));
+                    sample.m_value);
+            assert(sample.m_probability > 0.0);
 
-            assert(sample.get_probability() > 0.0);
-            sample.set_mode(ScatteringMode::Diffuse);
-            sample.set_incoming(incoming);
+            sample.m_mode = ScatteringMode::Diffuse;
+            sample.m_incoming = Dual3d(incoming);
             sample.compute_reflected_differentials();
         }
 

@@ -380,26 +380,26 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 sample);
 
             // Terminate the path if it gets absorbed.
-            if (sample.is_absorption())
+            if (sample.m_mode == ScatteringMode::Absorption)
                 break;
 
             // Terminate the path if this scattering event is not accepted.
-            if (!m_path_visitor.accept_scattering(vertex.m_prev_mode, sample.get_mode()))
+            if (!m_path_visitor.accept_scattering(vertex.m_prev_mode, sample.m_mode))
                 break;
 
             // Compute the path throughput multiplier.
-            value = sample.value();
-            if (sample.get_probability() != BSDF::DiracDelta)
-                value /= static_cast<float>(sample.get_probability());
+            value = sample.m_value;
+            if (sample.m_probability != BSDF::DiracDelta)
+                value /= static_cast<float>(sample.m_probability);
 
             // Properties of this scattering event.
-            vertex.m_prev_mode = sample.get_mode();
-            vertex.m_prev_prob = sample.get_probability();
+            vertex.m_prev_mode = sample.m_mode;
+            vertex.m_prev_prob = sample.m_probability;
 
             // Origin, direction and scattering mode of the next ray.
             parent_shading_point = vertex.m_shading_point;
-            incoming = sample.get_incoming();
-            mode = sample.get_mode();
+            incoming = sample.m_incoming;
+            mode = sample.m_mode;
         }
         else if (vertex.m_bssrdf)
         {

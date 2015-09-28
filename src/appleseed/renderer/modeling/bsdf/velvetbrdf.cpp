@@ -103,7 +103,7 @@ namespace
             BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
             const Vector3d& n = sample.get_shading_normal();
-            const double cos_on = min(dot(sample.get_outgoing_vector(), n), 1.0);
+            const double cos_on = min(dot(sample.m_outgoing.get_value(), n), 1.0);
             if (cos_on < 0.0)
                 return;
 
@@ -126,18 +126,18 @@ namespace
                 values,
                 n,
                 incoming,
-                sample.get_outgoing_vector(),
+                sample.m_outgoing.get_value(),
                 cos_in,
                 cos_on,
-                sample.value());
+                sample.m_value);
 
             // Compute the probability density of the sampled direction.
-            sample.set_probability(RcpTwoPi);
+            sample.m_probability = RcpTwoPi;
 
             // Set the scattering mode.
-            sample.set_mode(ScatteringMode::Glossy);
+            sample.m_mode = ScatteringMode::Glossy;
 
-            sample.set_incoming(incoming);
+            sample.m_incoming = Dual3d(incoming);
             sample.compute_reflected_differentials();
         }
 

@@ -45,41 +45,24 @@ namespace renderer
 class BSDFSample
 {
   public:
+    const ShadingPoint&             m_shading_point;        // shading point at which the sampling is done
+    const foundation::Dual3d        m_outgoing;             // world space outgoing direction, unit-length
+    foundation::Dual3d              m_incoming;             // world space incoming direction, unit-length
+    ScatteringMode::Mode            m_mode;                 // scattering mode
+    double                          m_probability;          // PDF value
+    Spectrum                        m_value;                // BSDF value
+
     // Constructor.
     BSDFSample(
         const ShadingPoint&         shading_point,
         const foundation::Dual3d&   outgoing);
 
-    // Input fields.
-
     const foundation::Vector3d& get_geometric_normal() const;
     const foundation::Vector3d& get_shading_normal() const;
-    const foundation::Vector3d& get_outgoing_vector() const;
-
-    // Input / Output fields.
-
     const foundation::Basis3d& get_shading_basis() const;
+
     void set_shading_basis(const foundation::Basis3d& basis);
 
-    // Output fields.
-
-    ScatteringMode::Mode get_mode() const;
-    void set_mode(const ScatteringMode::Mode mode);
-
-    bool is_absorption() const;
-    bool is_specular() const;
-
-    const foundation::Dual3d& get_incoming() const;
-    const foundation::Vector3d& get_incoming_vector() const;
-    void set_incoming(const foundation::Vector3d& incoming);
-
-    double get_probability() const;
-    void set_probability(const double probability);
-
-    const Spectrum& value() const;
-    Spectrum& value();
-
-    // Ray differentials.
     void compute_reflected_differentials();
     void compute_transmitted_differentials(const double eta);
 
@@ -91,13 +74,6 @@ class BSDFSample
         double&                     ddndy) const;
 
     void apply_pdf_differentials_heuristic();
-
-    const ShadingPoint&             m_shading_point;        // shading point at which the sampling is done
-    foundation::Dual3d              m_outgoing;             // world space outgoing direction, unit-length
-    ScatteringMode::Mode            m_mode;                 // scattering mode
-    foundation::Dual3d              m_incoming;             // world space incoming direction, unit-length
-    double                          m_probability;          // PDF value
-    Spectrum                        m_value;                // BSDF value
 };
 
 
@@ -111,7 +87,6 @@ inline BSDFSample::BSDFSample(
   : m_shading_point(shading_point)
   , m_outgoing(outgoing)
   , m_mode(ScatteringMode::Absorption)
-  , m_value(0.0f)
   , m_probability(0.0)
 {
 }
@@ -126,11 +101,6 @@ inline const foundation::Vector3d& BSDFSample::get_shading_normal() const
     return m_shading_point.get_shading_normal();
 }
 
-inline const foundation::Vector3d& BSDFSample::get_outgoing_vector() const
-{
-    return m_outgoing.get_value();
-}
-
 inline const foundation::Basis3d& BSDFSample::get_shading_basis() const
 {
     return m_shading_point.get_shading_basis();
@@ -139,61 +109,6 @@ inline const foundation::Basis3d& BSDFSample::get_shading_basis() const
 inline void BSDFSample::set_shading_basis(const foundation::Basis3d& basis)
 {
     m_shading_point.set_shading_basis(basis);
-}
-
-inline ScatteringMode::Mode BSDFSample::get_mode() const
-{
-    return m_mode;
-}
-
-inline void BSDFSample::set_mode(const ScatteringMode::Mode mode)
-{
-    m_mode = mode;
-}
-
-inline bool BSDFSample::is_absorption() const
-{
-    return m_mode == ScatteringMode::Absorption;
-}
-
-inline bool BSDFSample::is_specular() const
-{
-    return m_mode == ScatteringMode::Specular;
-}
-
-inline const foundation::Dual3d& BSDFSample::get_incoming() const
-{
-    return m_incoming;
-}
-
-inline const foundation::Vector3d& BSDFSample::get_incoming_vector() const
-{
-    return m_incoming.get_value();
-}
-
-inline void BSDFSample::set_incoming(const foundation::Vector3d& incoming)
-{
-    m_incoming = foundation::Dual3d(incoming);
-}
-
-inline double BSDFSample::get_probability() const
-{
-    return m_probability;
-}
-
-inline void BSDFSample::set_probability(const double probability)
-{
-    m_probability = probability;
-}
-
-inline const Spectrum& BSDFSample::value() const
-{
-    return m_value;
-}
-
-inline Spectrum& BSDFSample::value()
-{
-    return m_value;
 }
 
 }       // namespace renderer

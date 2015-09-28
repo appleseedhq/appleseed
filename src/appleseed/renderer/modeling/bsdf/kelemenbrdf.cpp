@@ -218,7 +218,7 @@ namespace
             BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
             // Define aliases to match the notations in the paper.
-            const Vector3d& V = sample.get_outgoing_vector();
+            const Vector3d& V = sample.m_outgoing.get_value();
             const Vector3d& N = sample.get_shading_normal();
 
             // No reflection below the shading surface.
@@ -306,13 +306,13 @@ namespace
             evaluate_fr_spec(*m_mdf.get(), rs, dot_HV, dot_HN, fr_spec);
 
             // Matte component (last equation of section 2.2).
-            sample.value().set(1.0f);
-            sample.value() -= specular_albedo_L;
-            sample.value() *= matte_albedo;
-            sample.value() *= m_s;
+            sample.m_value.set(1.0f);
+            sample.m_value -= specular_albedo_L;
+            sample.m_value *= matte_albedo;
+            sample.m_value *= m_s;
 
             // The final value of the BRDF is the sum of the specular and matte components.
-            sample.value() += fr_spec;
+            sample.m_value += fr_spec;
 
             // Evaluate the PDF of the incoming direction for the specular component.
             const double pdf_H = m_mdf->evaluate_pdf(dot_HN);
@@ -324,13 +324,13 @@ namespace
             assert(pdf_matte >= 0.0);
 
             // Evaluate the final PDF.
-            sample.set_probability(specular_prob * pdf_specular + matte_prob * pdf_matte);
-            assert(sample.get_probability() >= 0.0);
+            sample.m_probability = specular_prob * pdf_specular + matte_prob * pdf_matte;
+            assert(sample.m_probability >= 0.0);
 
             // Set the scattering mode.
-            sample.set_mode(mode);
+            sample.m_mode = mode;
 
-            sample.set_incoming(incoming);
+            sample.m_incoming = Dual3d(incoming);
             sample.compute_reflected_differentials();
         }
 

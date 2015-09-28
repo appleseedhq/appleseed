@@ -63,19 +63,19 @@ class MicrofacetBRDFHelper
         BSDFSample&         sample)
     {
         const VectorType& n = sample.get_shading_normal();
-        const T cos_on = std::min(foundation::dot(sample.get_outgoing_vector(), n), T(1.0));
+        const T cos_on = std::min(foundation::dot(sample.m_outgoing.get_value(), n), T(1.0));
         if (cos_on < T(0.0))
             return;
 
         // Compute the incoming direction by sampling the MDF.
         sampling_context.split_in_place(3, 1);
         const VectorType s = sampling_context.next_vector2<3>();
-        const VectorType wo = sample.get_shading_basis().transform_to_local(sample.get_outgoing_vector());
+        const VectorType wo = sample.get_shading_basis().transform_to_local(sample.m_outgoing.get_value());
         const VectorType m = mdf.sample(wo, s, alpha_x, alpha_y);
         const VectorType h = sample.get_shading_basis().transform_to_parent(m);
 
-        const foundation::Vector3d incoming = foundation::reflect(sample.get_outgoing_vector(), h);
-        const T cos_oh = foundation::dot(sample.get_outgoing_vector(), h);
+        const foundation::Vector3d incoming = foundation::reflect(sample.m_outgoing.get_value(), h);
+        const T cos_oh = foundation::dot(sample.m_outgoing.get_value(), h);
 
         // No reflection below the shading surface.
         const T cos_in = foundation::dot(incoming, n);
@@ -92,11 +92,11 @@ class MicrofacetBRDFHelper
                 g_alpha_x,
                 g_alpha_y);
 
-        f(sample.get_outgoing_vector(), h, sample.get_shading_normal(), sample.value());
-        sample.value() *= static_cast<float>(D * G / (T(4.0) * cos_on * cos_in));
-        sample.set_probability(mdf.pdf(wo, m, alpha_x, alpha_y) / (T(4.0) * cos_oh));
-        sample.set_mode(ScatteringMode::Glossy);
-        sample.set_incoming(incoming);
+        f(sample.m_outgoing.get_value(), h, sample.get_shading_normal(), sample.m_value);
+        sample.m_value *= static_cast<float>(D * G / (T(4.0) * cos_on * cos_in));
+        sample.m_probability = mdf.pdf(wo, m, alpha_x, alpha_y) / (T(4.0) * cos_oh);
+        sample.m_mode = ScatteringMode::Glossy;
+        sample.m_incoming = Dual3d(incoming);
         sample.compute_reflected_differentials();
     }
 

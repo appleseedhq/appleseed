@@ -234,7 +234,7 @@ namespace
               assert_otherwise;
             }
 
-            sample.value() *= static_cast<float>(values->m_reflectance_multiplier);
+            sample.m_value *= static_cast<float>(values->m_reflectance_multiplier);
         }
 
         FORCE_INLINE virtual double evaluate(

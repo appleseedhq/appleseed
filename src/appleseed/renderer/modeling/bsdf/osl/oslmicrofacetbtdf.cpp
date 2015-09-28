@@ -132,18 +132,18 @@ namespace
             // Compute the incoming direction by sampling the MDF.
             sampling_context.split_in_place(3, 1);
             const Vector3d s = sampling_context.next_vector2<3>();
-            const Vector3d wo = sample.get_shading_basis().transform_to_local(sample.get_outgoing_vector());
+            const Vector3d wo = sample.get_shading_basis().transform_to_local(sample.m_outgoing.get_value());
             const Vector3d m = m_mdf->sample(wo, s, values->m_ax, values->m_ay);
             const Vector3d ht = sample.get_shading_basis().transform_to_parent(m);
             const double eta = values->m_from_ior / values->m_to_ior;
             Vector3d incoming;
-            if (!refract(sample.get_outgoing_vector(), ht, eta, incoming))
+            if (!refract(sample.m_outgoing.get_value(), ht, eta, incoming))
                 return;         // ignore total internal reflection
 
             // If incoming and outgoing are on the same hemisphere
             // this is not a refraction.
             const Vector3d& n = sample.get_shading_normal();
-            if (dot(incoming, n) * dot(sample.get_outgoing_vector(), n) >= 0.0)
+            if (dot(incoming, n) * dot(sample.m_outgoing.get_value(), n) >= 0.0)
                 return;
 
             const double G =
@@ -159,10 +159,10 @@ namespace
 
             const double D = m_mdf->D(m, values->m_ax, values->m_ay);
 
-            sample.value().set(
+            sample.m_value.set(
                 static_cast<float>(
                     refraction_term(
-                        sample.get_outgoing_vector(),
+                        sample.m_outgoing.get_value(),
                         incoming,
                         n,
                         ht,
@@ -173,7 +173,7 @@ namespace
                         adjoint)));
 
             const double ht_norm =
-                norm(values->m_from_ior * sample.get_outgoing_vector() + values->m_to_ior * incoming);
+                norm(values->m_from_ior * sample.m_outgoing.get_value() + values->m_to_ior * incoming);
 
             const double dwh_dwo =
                 refraction_jacobian(
@@ -182,9 +182,9 @@ namespace
                     ht,
                     ht_norm);
 
-            sample.set_probability(m_mdf->pdf(wo, m, values->m_ax, values->m_ay) * dwh_dwo);
-            sample.set_mode(ScatteringMode::Glossy);
-            sample.set_incoming(incoming);
+            sample.m_probability = m_mdf->pdf(wo, m, values->m_ax, values->m_ay) * dwh_dwo;
+            sample.m_mode = ScatteringMode::Glossy;
+            sample.m_incoming = Dual3d(incoming);
             sample.compute_transmitted_differentials(eta);
         }
 
