@@ -101,6 +101,7 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
+            SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
@@ -124,8 +125,8 @@ namespace
             compute_sval(sval, values->m_nu, values->m_nv);
 
             // Generate a uniform sample in [0,1)^3.
-            sample.get_sampling_context().split_in_place(3, 1);
-            const Vector3d s = sample.get_sampling_context().next_vector2<3>();
+            sampling_context.split_in_place(3, 1);
+            const Vector3d s = sampling_context.next_vector2<3>();
 
             ScatteringMode::Mode mode;
             Vector3d h, incoming;

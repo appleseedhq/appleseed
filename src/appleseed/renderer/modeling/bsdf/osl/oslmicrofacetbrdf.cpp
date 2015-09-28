@@ -133,6 +133,7 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
+            SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
@@ -140,6 +141,7 @@ namespace
         {
             const InputValues* values = static_cast<const InputValues*>(data);
             MicrofacetBRDFHelper<double>::sample(
+                sampling_context,
                 *m_mdf,
                 values->m_ax,
                 values->m_ay,

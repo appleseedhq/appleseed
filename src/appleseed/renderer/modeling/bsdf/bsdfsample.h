@@ -48,12 +48,10 @@ class BSDFSample
     // Constructor.
     BSDFSample(
         const ShadingPoint&         shading_point,
-        SamplingContext&            sampling_context,
         const foundation::Dual3d&   outgoing);
 
     // Input fields.
 
-    SamplingContext& get_sampling_context();
     const foundation::Vector3d& get_geometric_normal() const;
     const foundation::Vector3d& get_shading_normal() const;
     const foundation::Vector3d& get_outgoing_vector() const;
@@ -95,7 +93,6 @@ class BSDFSample
     void apply_pdf_differentials_heuristic();
 
     const ShadingPoint&             m_shading_point;        // shading point at which the sampling is done
-    SamplingContext&                m_sampling_context;     // sampling context used to sample BSDFs
     foundation::Dual3d              m_outgoing;             // world space outgoing direction, unit-length
     ScatteringMode::Mode            m_mode;                 // scattering mode
     foundation::Dual3d              m_incoming;             // world space incoming direction, unit-length
@@ -110,20 +107,13 @@ class BSDFSample
 
 inline BSDFSample::BSDFSample(
     const ShadingPoint&             shading_point,
-    SamplingContext&                sampling_context,
     const foundation::Dual3d&       outgoing)
   : m_shading_point(shading_point)
-  , m_sampling_context(sampling_context)
   , m_outgoing(outgoing)
   , m_mode(ScatteringMode::Absorption)
   , m_value(0.0f)
   , m_probability(0.0)
 {
-}
-
-inline SamplingContext& BSDFSample::get_sampling_context()
-{
-    return m_sampling_context;
 }
 
 inline const foundation::Vector3d& BSDFSample::get_geometric_normal() const

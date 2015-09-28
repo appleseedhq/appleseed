@@ -211,6 +211,7 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
+            SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
@@ -244,8 +245,8 @@ namespace
             const double matte_prob = average_value(matte_albedo);
 
             // Generate a uniform sample in [0,1)^3.
-            sample.get_sampling_context().split_in_place(3, 1);
-            const Vector3d s = sample.get_sampling_context().next_vector2<3>();
+            sampling_context.split_in_place(3, 1);
+            const Vector3d s = sampling_context.next_vector2<3>();
 
             ScatteringMode::Mode mode;
             Vector3d H, incoming;

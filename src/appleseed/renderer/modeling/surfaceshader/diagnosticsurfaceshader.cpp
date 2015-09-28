@@ -515,8 +515,9 @@ void DiagnosticSurfaceShader::evaluate(
                         ray.m_dir - ray.m_rx.m_dir,
                         ray.m_dir - ray.m_ry.m_dir);
 
-                    BSDFSample sample(shading_point, sampling_context, outgoing);
+                    BSDFSample sample(shading_point, outgoing);
                     bsdf->sample(
+                        sampling_context,
                         input_evaluator.data(),
                         false,
                         false,

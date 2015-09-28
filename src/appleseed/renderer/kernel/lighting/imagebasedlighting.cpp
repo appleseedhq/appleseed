@@ -170,8 +170,9 @@ void compute_ibl_bsdf_sampling(
         // includes the contribution of a specular component since these are explicitly rejected
         // afterward. We need a mechanism to indicate that we want the contribution of some of
         // the components only.
-        BSDFSample sample(shading_point, sampling_context, outgoing);
+        BSDFSample sample(shading_point, outgoing);
         bsdf.sample(
+            sampling_context,
             bsdf_data,
             false,              // not adjoint
             true,               // multiply by |cos(incoming, normal)|

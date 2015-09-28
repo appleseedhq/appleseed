@@ -121,6 +121,7 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
+            SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
@@ -129,8 +130,8 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute the incoming direction by sampling the MDF.
-            sample.get_sampling_context().split_in_place(3, 1);
-            const Vector3d s = sample.get_sampling_context().next_vector2<3>();
+            sampling_context.split_in_place(3, 1);
+            const Vector3d s = sampling_context.next_vector2<3>();
             const Vector3d wo = sample.get_shading_basis().transform_to_local(sample.get_outgoing_vector());
             const Vector3d m = m_mdf->sample(wo, s, values->m_ax, values->m_ay);
             const Vector3d ht = sample.get_shading_basis().transform_to_parent(m);

@@ -156,6 +156,7 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
+            SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
@@ -171,6 +172,7 @@ namespace
                     const double e = glossiness_to_blinn_exponent(glossiness);
                     const BlinnMDF<double> blinn_mdf;
                     MicrofacetBRDFHelper<double>::sample(
+                        sampling_context,
                         blinn_mdf,
                         e,
                         e,
@@ -186,6 +188,7 @@ namespace
                     const double a = glossiness_to_roughness(glossiness);
                     const BeckmannMDF<double> beckmann_mdf;
                     MicrofacetBRDFHelper<double>::sample(
+                        sampling_context,
                         beckmann_mdf,
                         a,
                         a,
@@ -201,6 +204,7 @@ namespace
                     const double a = glossiness_to_roughness(glossiness);
                     const WardMDF<double> ward_mdf;
                     MicrofacetBRDFHelper<double>::sample(
+                        sampling_context,
                         ward_mdf,
                         a,
                         a,
@@ -216,6 +220,7 @@ namespace
                     const double a = glossiness_to_roughness(glossiness);
                     const GGXMDF<double> ggx_mdf;
                     MicrofacetBRDFHelper<double>::sample(
+                        sampling_context,
                         ggx_mdf,
                         a,
                         a,

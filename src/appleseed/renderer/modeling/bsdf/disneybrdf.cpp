@@ -154,12 +154,13 @@ namespace
     {
       public:
         void sample(
+            SamplingContext&                sampling_context,
             const DisneyBRDFInputValues*    values,
             BSDFSample&                     sample) const
         {
             // Compute the incoming direction in local space.
-            sample.get_sampling_context().split_in_place(2, 1);
-            const Vector2d s = sample.get_sampling_context().next_vector2<2>();
+            sampling_context.split_in_place(2, 1);
+            const Vector2d s = sampling_context.next_vector2<2>();
             const Vector3d wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
@@ -241,12 +242,13 @@ namespace
     {
       public:
         void sample(
+            SamplingContext&                sampling_context,
             const DisneyBRDFInputValues*    values,
             BSDFSample&                     sample) const
         {
             // Compute the incoming direction in local space.
-            sample.get_sampling_context().split_in_place(2, 1);
-            const Vector2d s = sample.get_sampling_context().next_vector2<2>();
+            sampling_context.split_in_place(2, 1);
+            const Vector2d s = sampling_context.next_vector2<2>();
             const Vector3d wi = sample_hemisphere_uniform(s);
 
             // Transform the incoming direction to parent space.
@@ -375,6 +377,7 @@ namespace
         }
 
         virtual void sample(
+            SamplingContext&        sampling_context,
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
@@ -387,19 +390,30 @@ namespace
             compute_component_cdf(values, cdf);
 
             // Choose which of the components to sample.
-            sample.get_sampling_context().split_in_place(1, 1);
-            const double s = sample.get_sampling_context().next_double2();
+            sampling_context.split_in_place(1, 1);
+            const double s = sampling_context.next_double2();
 
             if (s < cdf[DiffuseComponent])
-                DisneyDiffuseComponent().sample(values, sample);
+            {
+                DisneyDiffuseComponent().sample(
+                    sampling_context,
+                    values,
+                    sample);
+            }
             else if (s < cdf[SheenComponent])
-                DisneySheenComponent().sample(values, sample);
+            {
+                DisneySheenComponent().sample(
+                    sampling_context,
+                    values,
+                    sample);
+            }
             else if (s < cdf[SpecularComponent])
             {
                 double alpha_x, alpha_y;
                 specular_roughness(values, alpha_x, alpha_y);
                 const GGXMDF<double> ggx_mdf;
                 MicrofacetBRDFHelper<double>::sample(
+                    sampling_context,
                     ggx_mdf,
                     alpha_x,
                     alpha_y,
@@ -413,6 +427,7 @@ namespace
                 const double alpha = clearcoat_roughness(values);
                 const BerryMDF<double> berry_mdf;
                 MicrofacetBRDFHelper<double>::sample(
+                    sampling_context,
                     berry_mdf,
                     alpha,
                     alpha,

@@ -235,6 +235,7 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
+            SamplingContext&        sampling_context,
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
@@ -244,13 +245,14 @@ namespace
 
             if (c->get_num_closures() > 0)
             {
-                sample.get_sampling_context().split_in_place(1, 1);
-                const double s = sample.get_sampling_context().next_double2();
+                sampling_context.split_in_place(1, 1);
+                const double s = sampling_context.next_double2();
 
                 const size_t closure_index = c->choose_closure(s);
                 sample.set_shading_basis(c->get_closure_shading_basis(closure_index));
                 bsdf_from_closure_id(
                     c->get_closure_type(closure_index)).sample(
+                        sampling_context,
                         c->get_closure_input_values(closure_index),
                         adjoint,
                         false,

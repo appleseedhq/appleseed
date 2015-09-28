@@ -53,6 +53,7 @@ class MicrofacetBRDFHelper
 
     template <typename MDF, typename FresnelFun>
     static void sample(
+        SamplingContext&    sampling_context,
         const MDF&          mdf,
         const T             alpha_x,
         const T             alpha_y,
@@ -67,8 +68,8 @@ class MicrofacetBRDFHelper
             return;
 
         // Compute the incoming direction by sampling the MDF.
-        sample.get_sampling_context().split_in_place(3, 1);
-        const VectorType s = sample.get_sampling_context().next_vector2<3>();
+        sampling_context.split_in_place(3, 1);
+        const VectorType s = sampling_context.next_vector2<3>();
         const VectorType wo = sample.get_shading_basis().transform_to_local(sample.get_outgoing_vector());
         const VectorType m = mdf.sample(wo, s, alpha_x, alpha_y);
         const VectorType h = sample.get_shading_basis().transform_to_parent(m);

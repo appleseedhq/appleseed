@@ -158,6 +158,7 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
+            SamplingContext&        sampling_context,
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
@@ -169,12 +170,13 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Choose which of the two BSDFs to sample.
-            sample.get_sampling_context().split_in_place(1, 1);
-            const double s = sample.get_sampling_context().next_double2();
+            sampling_context.split_in_place(1, 1);
+            const double s = sampling_context.next_double2();
             const size_t bsdf_index = s < values->m_weight ? 0 : 1;
 
             // Sample the chosen BSDF.
             m_bsdf[bsdf_index]->sample(
+                sampling_context,
                 get_bsdf_data(data, bsdf_index),
                 adjoint,
                 false,                      // do not multiply by |cos(incoming, normal)|

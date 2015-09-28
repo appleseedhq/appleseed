@@ -85,14 +85,15 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
+            SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
             BSDFSample&         sample) const
         {
             // Compute the incoming direction in local space.
-            sample.get_sampling_context().split_in_place(2, 1);
-            const Vector2d s = sample.get_sampling_context().next_vector2<2>();
+            sampling_context.split_in_place(2, 1);
+            const Vector2d s = sampling_context.next_vector2<2>();
             const Vector3d wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
