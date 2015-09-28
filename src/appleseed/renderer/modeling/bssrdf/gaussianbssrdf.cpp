@@ -167,10 +167,6 @@ namespace
             if (rmax2 <= 0.0)
                 return false;
 
-            sample.set_eta(values->m_eta);
-            sample.set_channel(0);
-            sample.set_rmax2(rmax2);
-
             sampling_context.split_in_place(2, 1);
             const Vector2d s = sampling_context.next_vector2<2>();
 
@@ -178,7 +174,11 @@ namespace
             const double radius =
                 sqrt(-2.0 * v * log(1.0 - s[0] * (1.0 - exp(-rmax2 / (2.0 * v)))));
             const double phi = TwoPi * s[1];
-            sample.set_point(Vector2d(radius * cos(phi), radius * sin(phi)));
+
+            sample.m_eta = values->m_eta;
+            sample.m_channel = 0;
+            sample.m_point = Vector2d(radius * cos(phi), radius * sin(phi));
+            sample.m_rmax2 = rmax2;
 
             return true;
         }

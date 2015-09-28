@@ -206,10 +206,10 @@ namespace
             // Sample an angle.
             const double phi = TwoPi * s[2];
 
-            sample.set_eta(values->m_eta);
-            sample.set_channel(channel);
-            sample.set_point(Vector2d(radius * cos(phi), radius * sin(phi)));
-            sample.set_rmax2(values->m_rmax2);
+            sample.m_eta = values->m_eta;
+            sample.m_channel = channel;
+            sample.m_point = Vector2d(radius * cos(phi), radius * sin(phi));
+            sample.m_rmax2 = values->m_rmax2;
 
             return true;
         }

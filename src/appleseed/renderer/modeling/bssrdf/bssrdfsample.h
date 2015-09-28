@@ -41,71 +41,11 @@ namespace renderer
 class BSSRDFSample
 {
   public:
-    // Output fields.
-
-    double get_eta() const;
-    void set_eta(const double eta);
-
-    size_t get_channel() const;
-    void set_channel(const size_t channel);
-
-    const foundation::Vector2d& get_point() const;
-    void set_point(const foundation::Vector2d& point);
-
-    double get_rmax2() const;
-    void set_rmax2(const double rmax2);
-
-  private:
     double                  m_eta;
     size_t                  m_channel;
     foundation::Vector2d    m_point;
     double                  m_rmax2;
 };
-
-
-//
-// BSSRDFSample class implementation.
-//
-
-inline double BSSRDFSample::get_eta() const
-{
-    return m_eta;
-}
-
-inline void BSSRDFSample::set_eta(const double eta)
-{
-    m_eta = eta;
-}
-
-inline size_t BSSRDFSample::get_channel() const
-{
-    return m_channel;
-}
-
-inline void BSSRDFSample::set_channel(const size_t channel)
-{
-    m_channel = channel;
-}
-
-inline const foundation::Vector2d& BSSRDFSample::get_point() const
-{
-    return m_point;
-}
-
-inline void BSSRDFSample::set_point(const foundation::Vector2d& point)
-{
-    m_point = point;
-}
-
-inline double BSSRDFSample::get_rmax2() const
-{
-    return m_rmax2;
-}
-
-inline void BSSRDFSample::set_rmax2(const double rmax2)
-{
-    m_rmax2 = rmax2;
-}
 
 }       // namespace renderer
 

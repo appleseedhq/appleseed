@@ -129,9 +129,9 @@ void SubsurfaceSampler::sample(
 
     // Reject points too far away.
     // This introduces negligible bias in comparison to the other approximations.
-    const foundation::Vector2d& point(bssrdf_sample.get_point());
+    const foundation::Vector2d& point = bssrdf_sample.m_point;
     const double radius2 = foundation::square_norm(point);
-    const double rmax2 = bssrdf_sample.get_rmax2();
+    const double rmax2 = bssrdf_sample.m_rmax2;
     if (radius2 > rmax2)
         return;
 
@@ -139,7 +139,7 @@ void SubsurfaceSampler::sample(
     // todo: integrate into BSSRDF sampling.
     const double radius = std::sqrt(radius2);
     const double bssrdf_sample_pdf =
-        bssrdf.evaluate_pdf(bssrdf_data, bssrdf_sample.get_channel(), radius);
+        bssrdf.evaluate_pdf(bssrdf_data, bssrdf_sample.m_channel, radius);
 
     // Pick a sampling basis.
     sampling_context.split_in_place(2, 1);
@@ -221,7 +221,7 @@ void SubsurfaceSampler::sample(
                     compute_mis_weight(
                         bssrdf,
                         bssrdf_data,
-                        bssrdf_sample.get_channel(),
+                        bssrdf_sample.m_channel,
                         sampling_basis,
                         sampling_axis,
                         probability,
