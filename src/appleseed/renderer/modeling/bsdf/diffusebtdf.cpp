@@ -89,7 +89,7 @@ namespace
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            BSDFSample&         sample) const
+            BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);
@@ -121,7 +121,7 @@ namespace
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
             const int           modes,
-            Spectrum&           value) const
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0;
@@ -144,7 +144,7 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
-            const int           modes) const
+            const int           modes) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0;

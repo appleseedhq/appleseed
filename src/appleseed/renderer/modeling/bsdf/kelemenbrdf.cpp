@@ -203,7 +203,7 @@ namespace
 
         virtual void on_frame_end(
             const Project&      project,
-            const Assembly&     assembly)
+            const Assembly&     assembly) APPLESEED_OVERRIDE
         {
             m_mdf.reset();
 
@@ -215,7 +215,7 @@ namespace
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            BSDFSample&         sample) const
+            BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
             // Define aliases to match the notations in the paper.
             const Vector3d& V = sample.get_outgoing_vector();
@@ -343,7 +343,7 @@ namespace
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
             const int           modes,
-            Spectrum&           value) const
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
             // Define aliases to match the notations in the paper.
             const Vector3d& V = outgoing;
@@ -423,7 +423,7 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
-            const int           modes) const
+            const int           modes) const APPLESEED_OVERRIDE
         {
             // Define aliases to match the notations in the paper.
             const Vector3d& V = outgoing;

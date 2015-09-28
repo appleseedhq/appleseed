@@ -105,7 +105,7 @@ namespace
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            BSDFSample&         sample) const
+            BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
             // No reflection below the shading surface.
             const Vector3d& shading_normal = sample.get_shading_normal();
@@ -244,7 +244,7 @@ namespace
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
             const int           modes,
-            Spectrum&           value) const
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
             // No reflection below the shading surface.
             const Vector3d& shading_normal = shading_basis.get_normal();
@@ -320,7 +320,7 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
-            const int           modes) const
+            const int           modes) const APPLESEED_OVERRIDE
         {
             // No reflection below the shading surface.
             const Vector3d& shading_normal = shading_basis.get_normal();

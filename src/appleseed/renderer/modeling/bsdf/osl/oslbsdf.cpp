@@ -239,7 +239,7 @@ namespace
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
-            BSDFSample&             sample) const
+            BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
             const CompositeSurfaceClosure* c = reinterpret_cast<const CompositeSurfaceClosure*>(data);
 
@@ -271,7 +271,7 @@ namespace
             const Vector3d&         outgoing,
             const Vector3d&         incoming,
             const int               modes,
-            Spectrum&               value) const
+            Spectrum&               value) const APPLESEED_OVERRIDE
         {
             double prob = 0.0;
             value.set(0.0f);
@@ -310,7 +310,7 @@ namespace
             const Basis3d&          shading_basis,
             const Vector3d&         outgoing,
             const Vector3d&         incoming,
-            const int               modes) const
+            const int               modes) const APPLESEED_OVERRIDE
         {
             const CompositeSurfaceClosure* c = reinterpret_cast<const CompositeSurfaceClosure*>(data);
             double prob = 0.0;

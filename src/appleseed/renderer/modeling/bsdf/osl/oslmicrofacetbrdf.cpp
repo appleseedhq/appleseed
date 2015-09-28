@@ -137,7 +137,7 @@ namespace
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            BSDFSample&         sample) const
+            BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
             const InputValues* values = static_cast<const InputValues*>(data);
             MicrofacetBRDFHelper<double>::sample(
@@ -160,7 +160,7 @@ namespace
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
             const int           modes,
-            Spectrum&           value) const
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
             const InputValues* values = static_cast<const InputValues*>(data);
             return MicrofacetBRDFHelper<double>::evaluate(
@@ -183,7 +183,7 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
-            const int           modes) const
+            const int           modes) const APPLESEED_OVERRIDE
         {
             const InputValues* values = static_cast<const InputValues*>(data);
             return MicrofacetBRDFHelper<double>::pdf(
