@@ -208,10 +208,9 @@ namespace
 
             if (values->m_subsurface > 0.0)
             {
-                // Based on Hanrahan-Krueger brdf approximation of isotropic bssrdf
-                // 1.25 scale is used to (roughly) preserve albedo
-                // Fss90 used to "flatten" retroreflection based on roughness
-
+                // Based on Hanrahan-Krueger BRDF approximation of isotropic BSRDF.
+                // The 1.25 scale is used to (roughly) preserve albedo.
+                // Fss90 is used to "flatten" retroreflection based on roughness.
                 const double fss90 = square(cos_ih) * values->m_roughness;
                 const double fss = mix(1.0, fss90, fl) * mix(1.0, fss90, fv);
                 const double ss = 1.25 * (fss * (1.0 / (cos_on + cos_in) - 0.5) + 0.5);
@@ -422,7 +421,7 @@ namespace
                     DisneySpecularFresnelFun(*values),
                     sample);
             }
-            else //if (s < cdf[CleatcoatComponent])
+            else
             {
                 const double alpha = clearcoat_roughness(values);
                 const BerryMDF<double> berry_mdf;
