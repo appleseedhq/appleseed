@@ -29,9 +29,6 @@
 #ifndef APPLESEED_RENDERER_MODELING_BSSRDF_BSSRDFSAMPLE_H
 #define APPLESEED_RENDERER_MODELING_BSSRDF_BSSRDFSAMPLE_H
 
-// appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
-
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 
@@ -44,13 +41,6 @@ namespace renderer
 class BSSRDFSample
 {
   public:
-    // Constructor.
-    explicit BSSRDFSample(SamplingContext& sampling_context);
-
-    // Input fields.
-
-    SamplingContext& get_sampling_context();
-
     // Output fields.
 
     double get_eta() const;
@@ -66,7 +56,6 @@ class BSSRDFSample
     void set_rmax2(const double rmax2);
 
   private:
-    SamplingContext&        m_sampling_context;    // sampling context used to sample BSSRDFs
     double                  m_eta;
     size_t                  m_channel;
     foundation::Vector2d    m_point;
@@ -77,16 +66,6 @@ class BSSRDFSample
 //
 // BSSRDFSample class implementation.
 //
-
-inline BSSRDFSample::BSSRDFSample(SamplingContext& sampling_context)
-  : m_sampling_context(sampling_context)
-{
-}
-
-inline SamplingContext& BSSRDFSample::get_sampling_context()
-{
-    return m_sampling_context;
-}
 
 inline double BSSRDFSample::get_eta() const
 {

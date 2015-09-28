@@ -179,6 +179,7 @@ namespace
         }
 
         virtual bool sample(
+            SamplingContext&    sampling_context,
             const void*         data,
             BSSRDFSample&       sample) const APPLESEED_OVERRIDE
         {
@@ -188,8 +189,8 @@ namespace
             if (values->m_weight == 0.0)
                 return false;
 
-            sample.get_sampling_context().split_in_place(3, 1);
-            const Vector3d s = sample.get_sampling_context().next_vector2<3>();
+            sampling_context.split_in_place(3, 1);
+            const Vector3d s = sampling_context.next_vector2<3>();
 
             // Sample a channel.
             const size_t channel =

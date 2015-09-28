@@ -156,6 +156,7 @@ namespace
         }
 
         virtual bool sample(
+            SamplingContext&    sampling_context,
             const void*         data,
             BSSRDFSample&       sample) const APPLESEED_OVERRIDE
         {
@@ -167,8 +168,8 @@ namespace
 
             sample.set_eta(values->m_eta);
 
-            sample.get_sampling_context().split_in_place(3, 1);
-            const Vector3d s = sample.get_sampling_context().next_vector2<3>();
+            sampling_context.split_in_place(3, 1);
+            const Vector3d s = sampling_context.next_vector2<3>();
 
             // Sample a channel.
             const float* cdf_begin = &values->m_channel_cdf[0];

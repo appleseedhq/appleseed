@@ -123,8 +123,8 @@ void SubsurfaceSampler::sample(
     Visitor&                        visitor) const
 {
     // Sample the BSSRDF.
-    BSSRDFSample bssrdf_sample(sampling_context);
-    if (!bssrdf.sample(bssrdf_data, bssrdf_sample))
+    BSSRDFSample bssrdf_sample;
+    if (!bssrdf.sample(sampling_context, bssrdf_data, bssrdf_sample))
         return;
 
     // Reject points too far away.

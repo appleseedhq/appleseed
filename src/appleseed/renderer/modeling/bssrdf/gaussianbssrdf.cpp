@@ -155,6 +155,7 @@ namespace
         }
 
         virtual bool sample(
+            SamplingContext&    sampling_context,
             const void*         data,
             BSSRDFSample&       sample) const APPLESEED_OVERRIDE
         {
@@ -170,8 +171,8 @@ namespace
             sample.set_channel(0);
             sample.set_rmax2(rmax2);
 
-            sample.get_sampling_context().split_in_place(2, 1);
-            const Vector2d s = sample.get_sampling_context().next_vector2<2>();
+            sampling_context.split_in_place(2, 1);
+            const Vector2d s = sampling_context.next_vector2<2>();
 
             const double v = values->m_v;
             const double radius =

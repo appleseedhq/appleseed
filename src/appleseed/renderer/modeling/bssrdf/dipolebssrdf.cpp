@@ -70,6 +70,7 @@ DipoleBSSRDF::DipoleBSSRDF(
 }
 
 bool DipoleBSSRDF::sample(
+    SamplingContext&    sampling_context,
     const void*         data,
     BSSRDFSample&       sample) const
 {
@@ -79,8 +80,8 @@ bool DipoleBSSRDF::sample(
     if (values->m_weight == 0.0)
         return false;
 
-    sample.get_sampling_context().split_in_place(3, 1);
-    const Vector3d s = sample.get_sampling_context().next_vector2<3>();
+    sampling_context.split_in_place(3, 1);
+    const Vector3d s = sampling_context.next_vector2<3>();
 
     // Sample a channel.
     const size_t channel =
