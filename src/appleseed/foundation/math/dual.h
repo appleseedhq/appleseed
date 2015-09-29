@@ -71,6 +71,20 @@ class Dual
 
 
 //
+// Full specializations for scalars and vectors of type float and double.
+//
+
+typedef Dual<float>     Dual1f;
+typedef Dual<double>    Dual1d;
+
+typedef Dual<Vector2f>  Dual2f;
+typedef Dual<Vector2d>  Dual2d;
+
+typedef Dual<Vector3f>  Dual3f;
+typedef Dual<Vector3d>  Dual3d;
+
+
+//
 // Dual class implementation.
 //
 
@@ -121,20 +135,6 @@ inline const T& Dual<T>::get_dy() const
     assert(m_has_derivatives);
     return m_dy;
 }
-
-
-//
-// Full specializations for scalars and vectors of type float and double.
-//
-
-typedef Dual<float>     Dual1f;
-typedef Dual<double>    Dual1d;
-
-typedef Dual<Vector2f>  Dual2f;
-typedef Dual<Vector2d>  Dual2d;
-
-typedef Dual<Vector3f>  Dual3f;
-typedef Dual<Vector3d>  Dual3d;
 
 }       // namespace foundation
 
