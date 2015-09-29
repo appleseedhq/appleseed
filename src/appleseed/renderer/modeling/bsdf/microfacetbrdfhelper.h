@@ -73,8 +73,7 @@ class MicrofacetBRDFHelper
         const VectorType wo = sample.get_shading_basis().transform_to_local(sample.m_outgoing.get_value());
         const VectorType m = mdf.sample(wo, s, alpha_x, alpha_y);
         const VectorType h = sample.get_shading_basis().transform_to_parent(m);
-
-        const foundation::Vector3d incoming = foundation::reflect(sample.m_outgoing.get_value(), h);
+        const VectorType incoming = foundation::reflect(sample.m_outgoing.get_value(), h);
         const T cos_oh = foundation::dot(sample.m_outgoing.get_value(), h);
 
         // No reflection below the shading surface.
@@ -96,7 +95,7 @@ class MicrofacetBRDFHelper
         sample.m_value *= static_cast<float>(D * G / (T(4.0) * cos_on * cos_in));
         sample.m_probability = mdf.pdf(wo, m, alpha_x, alpha_y) / (T(4.0) * cos_oh);
         sample.m_mode = ScatteringMode::Glossy;
-        sample.m_incoming = Dual3d(incoming);
+        sample.m_incoming = Dual<VectorType>(incoming);
         sample.compute_reflected_differentials();
     }
 
