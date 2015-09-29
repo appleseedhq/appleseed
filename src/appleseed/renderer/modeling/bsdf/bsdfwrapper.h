@@ -64,6 +64,7 @@ class BSDFWrapper
         const ParamArray&               params);
 
     virtual void sample(
+        SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
@@ -104,38 +105,40 @@ BSDFWrapper<BSDFImpl>::BSDFWrapper(
 
 template <typename BSDFImpl>
 void BSDFWrapper<BSDFImpl>::sample(
+    SamplingContext&                    sampling_context,
     const void*                         data,
     const bool                          adjoint,
     const bool                          cosine_mult,
     BSDFSample&                         sample) const
 {
     assert(foundation::is_normalized(sample.get_geometric_normal()));
-    assert(foundation::is_normalized(sample.get_outgoing_vector()));
+    assert(foundation::is_normalized(sample.m_outgoing.get_value()));
 
     BSDFImpl::sample(
+        sampling_context,
         data,
         adjoint,
         false,
         sample);
 
-    if (!sample.is_absorption())
+    if (sample.m_mode != ScatteringMode::Absorption)
     {
-        assert(foundation::is_normalized(sample.get_incoming_vector()));
-        assert(sample.get_probability() == BSDFImpl::DiracDelta || sample.get_probability() > 0.0);
+        assert(foundation::is_normalized(sample.m_incoming.get_value()));
+        assert(sample.m_probability == BSDFImpl::DiracDelta || sample.m_probability > 0.0);
 
         if (cosine_mult)
         {
             if (adjoint)
             {
-                const double cos_on = std::abs(foundation::dot(sample.get_outgoing_vector(), sample.get_shading_normal()));
-                const double cos_ig = std::abs(foundation::dot(sample.get_incoming_vector(), sample.get_geometric_normal()));
-                const double cos_og = std::abs(foundation::dot(sample.get_outgoing_vector(), sample.get_geometric_normal()));
-                sample.value() *= static_cast<float>(cos_on * cos_ig / cos_og);
+                const double cos_on = std::abs(foundation::dot(sample.m_outgoing.get_value(), sample.get_shading_normal()));
+                const double cos_ig = std::abs(foundation::dot(sample.m_incoming.get_value(), sample.get_geometric_normal()));
+                const double cos_og = std::abs(foundation::dot(sample.m_outgoing.get_value(), sample.get_geometric_normal()));
+                sample.m_value *= static_cast<float>(cos_on * cos_ig / cos_og);
             }
             else
             {
-                const double cos_in = std::abs(foundation::dot(sample.get_incoming_vector(), sample.get_shading_normal()));
-                sample.value() *= static_cast<float>(cos_in);
+                const double cos_in = std::abs(foundation::dot(sample.m_incoming.get_value(), sample.get_shading_normal()));
+                sample.m_value *= static_cast<float>(cos_in);
             }
         }
     }

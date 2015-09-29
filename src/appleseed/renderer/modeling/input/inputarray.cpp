@@ -38,6 +38,7 @@
 #include "foundation/platform/types.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/memory.h"
+#include "foundation/utility/otherwise.h"
 
 // Standard headers.
 #include <cassert>
@@ -109,6 +110,12 @@ namespace
                 size += sizeof(Spectrum);
                 size += sizeof(Alpha);
                 break;
+
+              case InputFormatEntity:
+                // Nothing to do.
+                break;
+
+              assert_otherwise;
             }
 
             return size;
@@ -173,6 +180,12 @@ namespace
                     ptr += sizeof(Alpha);
                 }
                 break;
+
+              case InputFormatEntity:
+                // Nothing to do.
+                break;
+
+              assert_otherwise;
             }
 
             return ptr;
@@ -234,6 +247,12 @@ namespace
                     ptr += sizeof(Alpha);
                 }
                 break;
+
+              case InputFormatEntity:
+                // Nothing to do.
+                break;
+
+              assert_otherwise;
             }
 
             return ptr;

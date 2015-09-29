@@ -98,6 +98,7 @@ class DipoleBSSRDF
         const Assembly&     assembly) const APPLESEED_OVERRIDE;
 
     virtual bool sample(
+        SamplingContext&    sampling_context,
         const void*         data,
         BSSRDFSample&       sample) const APPLESEED_OVERRIDE;
 

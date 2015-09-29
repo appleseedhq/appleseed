@@ -235,28 +235,30 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
+            SamplingContext&        sampling_context,
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
-            BSDFSample&             sample) const
+            BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
             const CompositeSurfaceClosure* c = reinterpret_cast<const CompositeSurfaceClosure*>(data);
 
             if (c->get_num_closures() > 0)
             {
-                sample.get_sampling_context().split_in_place(1, 1);
-                const double s = sample.get_sampling_context().next_double2();
+                sampling_context.split_in_place(1, 1);
+                const double s = sampling_context.next_double2();
 
                 const size_t closure_index = c->choose_closure(s);
                 sample.set_shading_basis(c->get_closure_shading_basis(closure_index));
                 bsdf_from_closure_id(
                     c->get_closure_type(closure_index)).sample(
+                        sampling_context,
                         c->get_closure_input_values(closure_index),
                         adjoint,
                         false,
                         sample);
 
-                sample.value() *= c->get_closure_weight(closure_index);
+                sample.m_value *= c->get_closure_weight(closure_index);
             }
         }
 
@@ -269,7 +271,7 @@ namespace
             const Vector3d&         outgoing,
             const Vector3d&         incoming,
             const int               modes,
-            Spectrum&               value) const
+            Spectrum&               value) const APPLESEED_OVERRIDE
         {
             double prob = 0.0;
             value.set(0.0f);
@@ -308,7 +310,7 @@ namespace
             const Basis3d&          shading_basis,
             const Vector3d&         outgoing,
             const Vector3d&         incoming,
-            const int               modes) const
+            const int               modes) const APPLESEED_OVERRIDE
         {
             const CompositeSurfaceClosure* c = reinterpret_cast<const CompositeSurfaceClosure*>(data);
             double prob = 0.0;

@@ -79,21 +79,22 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
+            SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            BSDFSample&         sample) const
+            BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
             // No reflection below the shading surface.
             const Vector3d& shading_normal = sample.get_shading_normal();
-            const double cos_on = dot(sample.get_outgoing_vector(), shading_normal);
+            const double cos_on = dot(sample.m_outgoing.get_value(), shading_normal);
             if (cos_on < 0.0)
                 return;
 
             // Compute the incoming direction.
             const Vector3d incoming(
                 force_above_surface(
-                    reflect(sample.get_outgoing_vector(), shading_normal),
+                    reflect(sample.m_outgoing.get_value(), shading_normal),
                     sample.get_geometric_normal()));
 
             // No reflection below the shading surface.
@@ -103,16 +104,16 @@ namespace
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
-            sample.value() = values->m_reflectance;
-            sample.value() *= static_cast<float>(values->m_reflectance_multiplier / cos_in);
+            sample.m_value = values->m_reflectance;
+            sample.m_value *= static_cast<float>(values->m_reflectance_multiplier / cos_in);
 
             // The probability density of the sampled direction is the Dirac delta.
-            sample.set_probability(DiracDelta);
+            sample.m_probability = DiracDelta;
 
             // Set the scattering mode.
-            sample.set_mode(ScatteringMode::Specular);
+            sample.m_mode = ScatteringMode::Specular;
 
-            sample.set_incoming(incoming);
+            sample.m_incoming = Dual3d(incoming);
             sample.compute_reflected_differentials();
         }
 
@@ -125,7 +126,7 @@ namespace
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
             const int           modes,
-            Spectrum&           value) const
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
             return 0.0;
         }
@@ -136,7 +137,7 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
-            const int           modes) const
+            const int           modes) const APPLESEED_OVERRIDE
         {
             return 0.0;
         }

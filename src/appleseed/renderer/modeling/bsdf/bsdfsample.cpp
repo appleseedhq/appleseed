@@ -50,7 +50,10 @@ void BSDFSample::compute_reflected_differentials()
 {
     if (m_outgoing.has_derivatives())
     {
-        // Physically Based rendering, first edition, page 513.
+        //
+        // Physically Based Rendering, first edition, page 513.
+        //
+
         Vector3d dndx, dndy;
         double ddndx, ddndy;
         compute_normal_derivatives(dndx, dndy, ddndx, ddndy);
@@ -58,12 +61,13 @@ void BSDFSample::compute_reflected_differentials()
         const Vector3d& normal = m_shading_point.get_shading_normal();
         const double dot_on = dot(m_outgoing.get_value(), normal);
 
-        m_incoming = Dual3d(
-            get_incoming_vector(),
-            -m_outgoing.get_dx() + 2.0 * Vector3d(dot_on * dndx + ddndx * normal),
-            -m_outgoing.get_dy() + 2.0 * Vector3d(dot_on * dndy + ddndy * normal));
+        m_incoming =
+            Dual3d(
+                m_incoming.get_value(),
+                -m_outgoing.get_dx() + 2.0 * Vector3d(dot_on * dndx + ddndx * normal),
+                -m_outgoing.get_dy() + 2.0 * Vector3d(dot_on * dndy + ddndy * normal));
 
-        if (get_probability() != BSDF::DiracDelta)
+        if (m_probability != BSDF::DiracDelta)
             apply_pdf_differentials_heuristic();
     }
 }
@@ -78,20 +82,21 @@ void BSDFSample::compute_transmitted_differentials(const double eta)
 
         const Vector3d& normal = m_shading_point.get_shading_normal();
 
-        const double dot_on = dot(-get_outgoing_vector(), normal);
-        const double dot_in = dot(get_incoming_vector(), normal);
+        const double dot_on = dot(-m_outgoing.get_value(), normal);
+        const double dot_in = dot(m_incoming.get_value(), normal);
         const double mu = eta * dot_on - dot_in;
 
         const double a = eta - (square(eta) * dot_on) / dot_in;
         const double dmudx = a * ddndx;
         const double dmudy = a * ddndy;
 
-        m_incoming = Dual3d(
-            get_incoming_vector(),
-            eta * m_outgoing.get_dx() - Vector3d(mu * dndx + dmudx * normal),
-            eta * m_outgoing.get_dy() - Vector3d(mu * dndy + dmudy * normal));
+        m_incoming =
+            Dual3d(
+                m_incoming.get_value(),
+                eta * m_outgoing.get_dx() - Vector3d(mu * dndx + dmudx * normal),
+                eta * m_outgoing.get_dy() - Vector3d(mu * dndy + dmudy * normal));
 
-        if (get_probability() != BSDF::DiracDelta)
+        if (m_probability != BSDF::DiracDelta)
             apply_pdf_differentials_heuristic();
     }
 }
@@ -102,7 +107,10 @@ void BSDFSample::compute_normal_derivatives(
     double&     ddndx,
     double&     ddndy) const
 {
-    // Physically Based rendering, first edition, page 513.
+    //
+    // Physically Based Rendering, first edition, page 513.
+    //
+
     const Vector3d& dndu = m_shading_point.get_dndu(0);
     const Vector3d& dndv = m_shading_point.get_dndv(0);
     const Vector2d& duvdx = m_shading_point.get_duvdx(0);
@@ -119,24 +127,28 @@ void BSDFSample::compute_normal_derivatives(
 
 void BSDFSample::apply_pdf_differentials_heuristic()
 {
-    // reference:
-    // http://renderman.pixar.com/resources/current/RenderMan/integratorRef.html#about-ray-differentials-ray-spreads
+    //
+    // Reference:
+    //
+    //   http://renderman.pixar.com/resources/current/RenderMan/integratorRef.html#about-ray-differentials-ray-spreads
+    //
 
     assert(m_incoming.has_derivatives());
-    assert(get_probability() > 0.0);
+    assert(m_probability > 0.0);
 
-    const double pdf_spread = 1.0 / (8.0 * sqrt(get_probability()));
+    const double pdf_spread = 1.0 / (8.0 * sqrt(m_probability));
 
-    const double rx_spread = norm(get_incoming().get_dx());
-    const double ry_spread = norm(get_incoming().get_dy());
+    const double rx_spread = norm(m_incoming.get_dx());
+    const double ry_spread = norm(m_incoming.get_dy());
 
     const double sx = max(pdf_spread, rx_spread) / rx_spread;
     const double sy = max(pdf_spread, ry_spread) / ry_spread;
 
-    m_incoming = Dual3d(
-        get_incoming_vector(),
-        get_incoming().get_dx() * sx,
-        get_incoming().get_dy() * sy);
+    m_incoming =
+        Dual3d(
+            m_incoming.get_value(),
+            m_incoming.get_dx() * sx,
+            m_incoming.get_dy() * sy);
 }
 
 }   // namespace renderer

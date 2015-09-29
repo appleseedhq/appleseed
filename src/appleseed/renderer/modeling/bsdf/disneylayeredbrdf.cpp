@@ -138,6 +138,7 @@ void DisneyLayeredBRDF::evaluate_inputs(
 }
 
 void DisneyLayeredBRDF::sample(
+    SamplingContext&            sampling_context,
     const void*                 data,
     const bool                  adjoint,
     const bool                  cosine_mult,
@@ -147,6 +148,7 @@ void DisneyLayeredBRDF::sample(
         return;
 
     m_brdf->sample(
+        sampling_context,
         data,
         adjoint,
         cosine_mult,

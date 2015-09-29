@@ -156,10 +156,11 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
+            SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            BSDFSample&         sample) const
+            BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
             const InputValues* values = static_cast<const InputValues*>(data);
             const double glossiness = values->m_glossiness * values->m_glossiness_multiplier;
@@ -171,6 +172,7 @@ namespace
                     const double e = glossiness_to_blinn_exponent(glossiness);
                     const BlinnMDF<double> blinn_mdf;
                     MicrofacetBRDFHelper<double>::sample(
+                        sampling_context,
                         blinn_mdf,
                         e,
                         e,
@@ -186,6 +188,7 @@ namespace
                     const double a = glossiness_to_roughness(glossiness);
                     const BeckmannMDF<double> beckmann_mdf;
                     MicrofacetBRDFHelper<double>::sample(
+                        sampling_context,
                         beckmann_mdf,
                         a,
                         a,
@@ -201,6 +204,7 @@ namespace
                     const double a = glossiness_to_roughness(glossiness);
                     const WardMDF<double> ward_mdf;
                     MicrofacetBRDFHelper<double>::sample(
+                        sampling_context,
                         ward_mdf,
                         a,
                         a,
@@ -216,6 +220,7 @@ namespace
                     const double a = glossiness_to_roughness(glossiness);
                     const GGXMDF<double> ggx_mdf;
                     MicrofacetBRDFHelper<double>::sample(
+                        sampling_context,
                         ggx_mdf,
                         a,
                         a,
@@ -229,7 +234,7 @@ namespace
               assert_otherwise;
             }
 
-            sample.value() *= static_cast<float>(values->m_reflectance_multiplier);
+            sample.m_value *= static_cast<float>(values->m_reflectance_multiplier);
         }
 
         FORCE_INLINE virtual double evaluate(
@@ -241,7 +246,7 @@ namespace
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
             const int           modes,
-            Spectrum&           value) const
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
             const InputValues* values = static_cast<const InputValues*>(data);
             const double glossiness = values->m_glossiness * values->m_glossiness_multiplier;
@@ -339,7 +344,7 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
-            const int           modes) const
+            const int           modes) const APPLESEED_OVERRIDE
         {
             const InputValues* values = static_cast<const InputValues*>(data);
             const double glossiness = values->m_glossiness * values->m_glossiness_multiplier;

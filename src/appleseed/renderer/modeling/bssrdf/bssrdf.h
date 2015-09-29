@@ -128,6 +128,7 @@ class APPLESEED_DLLSYMBOL BSSRDF
 
     // Sample r * R(r).
     virtual bool sample(
+        SamplingContext&            sampling_context,
         const void*                 data,
         BSSRDFSample&               sample) const = 0;
 

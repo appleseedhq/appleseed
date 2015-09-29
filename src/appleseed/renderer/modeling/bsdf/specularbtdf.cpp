@@ -89,16 +89,17 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
+            SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            BSDFSample&         sample) const
+            BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
             const Vector3d& shading_normal = sample.get_shading_normal();
             const double eta = values->m_from_ior / values->m_to_ior;
-            const double cos_theta_i = dot(sample.get_outgoing_vector(), shading_normal);
+            const double cos_theta_i = dot(sample.m_outgoing.get_value(), shading_normal);
             const double sin_theta_i2 = 1.0 - square(cos_theta_i);
             const double sin_theta_t2 = sin_theta_i2 * square(eta);
             const double cos_theta_t2 = 1.0 - sin_theta_t2;
@@ -109,9 +110,9 @@ namespace
             if (cos_theta_t2 < 0.0)
             {
                 // Total internal reflection: compute the reflected direction and radiance.
-                incoming = reflect(sample.get_outgoing_vector(), shading_normal);
-                sample.value() = values->m_transmittance;
-                sample.value() *= static_cast<float>(values->m_transmittance_multiplier);
+                incoming = reflect(sample.m_outgoing.get_value(), shading_normal);
+                sample.m_value = values->m_transmittance;
+                sample.m_value *= static_cast<float>(values->m_transmittance_multiplier);
                 refract_differentials = false;
             }
             else
@@ -126,15 +127,15 @@ namespace
                     cos_theta_t);
                 fresnel_reflection *= values->m_fresnel_multiplier;
 
-                sample.get_sampling_context().split_in_place(1, 1);
-                const double s = sample.get_sampling_context().next_double2();
+                sampling_context.split_in_place(1, 1);
+                const double s = sampling_context.next_double2();
 
                 if (s < fresnel_reflection)
                 {
                     // Fresnel reflection: compute the reflected direction and radiance.
-                    incoming = reflect(sample.get_outgoing_vector(), shading_normal);
-                    sample.value() = values->m_reflectance;
-                    sample.value() *= static_cast<float>(values->m_reflectance_multiplier);
+                    incoming = reflect(sample.m_outgoing.get_value(), shading_normal);
+                    sample.m_value = values->m_reflectance;
+                    sample.m_value *= static_cast<float>(values->m_reflectance_multiplier);
                     refract_differentials = false;
                 }
                 else
@@ -142,12 +143,12 @@ namespace
                     // Compute the refracted direction.
                     incoming =
                         cos_theta_i > 0.0
-                            ? (eta * cos_theta_i - cos_theta_t) * shading_normal - eta * sample.get_outgoing_vector()
-                            : (eta * cos_theta_i + cos_theta_t) * shading_normal - eta * sample.get_outgoing_vector();
+                            ? (eta * cos_theta_i - cos_theta_t) * shading_normal - eta * sample.m_outgoing.get_value()
+                            : (eta * cos_theta_i + cos_theta_t) * shading_normal - eta * sample.m_outgoing.get_value();
 
                     // Compute the refracted radiance.
-                    sample.value() = values->m_transmittance;
-                    sample.value() *=
+                    sample.m_value = values->m_transmittance;
+                    sample.m_value *=
                         adjoint
                             ? static_cast<float>(values->m_transmittance_multiplier)
                             : static_cast<float>(eta * eta * values->m_transmittance_multiplier);
@@ -155,15 +156,15 @@ namespace
             }
 
             const double cos_in = abs(dot(incoming, shading_normal));
-            sample.value() /= static_cast<float>(cos_in);
+            sample.m_value /= static_cast<float>(cos_in);
 
             // The probability density of the sampled direction is the Dirac delta.
-            sample.set_probability(DiracDelta);
+            sample.m_probability = DiracDelta;
 
             // Set the scattering mode.
-            sample.set_mode(ScatteringMode::Specular);
+            sample.m_mode = ScatteringMode::Specular;
 
-            sample.set_incoming(incoming);
+            sample.m_incoming = Dual3d(incoming);
 
             if (refract_differentials)
                 sample.compute_transmitted_differentials(eta);
@@ -180,7 +181,7 @@ namespace
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
             const int           modes,
-            Spectrum&           value) const
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
             return 0.0;
         }
@@ -191,7 +192,7 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
-            const int           modes) const
+            const int           modes) const APPLESEED_OVERRIDE
         {
             return 0.0;
         }

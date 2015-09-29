@@ -85,30 +85,31 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
+            SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            BSDFSample&         sample) const
+            BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
             // Compute the incoming direction in local space.
-            sample.get_sampling_context().split_in_place(2, 1);
-            const Vector2d s = sample.get_sampling_context().next_vector2<2>();
+            sampling_context.split_in_place(2, 1);
+            const Vector2d s = sampling_context.next_vector2<2>();
             const Vector3d wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
-            sample.set_incoming(-sample.get_shading_basis().transform_to_parent(wi));
+            sample.m_incoming = Dual3d(-sample.get_shading_basis().transform_to_parent(wi));
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
-            sample.value() = values->m_transmittance;
-            sample.value() *= static_cast<float>(values->m_transmittance_multiplier * RcpPi);
+            sample.m_value = values->m_transmittance;
+            sample.m_value *= static_cast<float>(values->m_transmittance_multiplier * RcpPi);
 
             // Compute the probability density of the sampled direction.
-            sample.set_probability(wi.y * RcpPi);
-            assert(sample.get_probability() > 0.0);
+            sample.m_probability = wi.y * RcpPi;
+            assert(sample.m_probability > 0.0);
 
             // Set the scattering mode.
-            sample.set_mode(ScatteringMode::Diffuse);
+            sample.m_mode = ScatteringMode::Diffuse;
         }
 
         FORCE_INLINE virtual double evaluate(
@@ -120,7 +121,7 @@ namespace
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
             const int           modes,
-            Spectrum&           value) const
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0;
@@ -143,7 +144,7 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
-            const int           modes) const
+            const int           modes) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0;

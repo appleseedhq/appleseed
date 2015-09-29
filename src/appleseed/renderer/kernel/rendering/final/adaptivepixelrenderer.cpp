@@ -94,14 +94,14 @@ namespace
                 ImageStack& images = frame.aov_images();
 
                 m_variation_aov_index = images.get_index("variation");
-                if (m_variation_aov_index == ~0 && images.size() < MaxAOVCount)
+                if (m_variation_aov_index == size_t(~0) && images.size() < MaxAOVCount)
                     m_variation_aov_index = images.append("variation", ImageStack::IdentificationType, 4, PixelFormatFloat);
 
                 m_samples_aov_index = images.get_index("samples");
-                if (m_samples_aov_index == ~0 && images.size() < MaxAOVCount)
+                if (m_samples_aov_index == size_t(~0) && images.size() < MaxAOVCount)
                     m_samples_aov_index = images.append("samples", ImageStack::IdentificationType, 4, PixelFormatFloat);
 
-                if ((thread_index == 0) && (m_variation_aov_index == ~0 || m_samples_aov_index == ~0))
+                if ((thread_index == 0) && (m_variation_aov_index == size_t(~0) || m_samples_aov_index == size_t(~0)))
                 {
                     RENDERER_LOG_WARNING(
                         "could not create some of the diagnostic AOVs, maximum number of AOVs (" FMT_SIZE_T ") reached.",
@@ -151,10 +151,10 @@ namespace
                         Color<float, 2> values;
                         m_diagnostics->get_pixel(x, y, values);
 
-                        if (m_variation_aov_index < ~0)
+                        if (m_variation_aov_index != size_t(~0))
                             aov_tiles.set_pixel(x, y, m_variation_aov_index, scalar_to_color(values[0]));
 
-                        if (m_samples_aov_index != ~0)
+                        if (m_samples_aov_index != size_t(~0))
                             aov_tiles.set_pixel(x, y, m_samples_aov_index, scalar_to_color(values[1]));
                     }
                 }

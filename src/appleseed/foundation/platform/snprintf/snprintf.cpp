@@ -170,7 +170,11 @@
 #define HAVE_ASPRINTF 1
 #define HAVE_STDARG_H 1
 #define HAVE_STDDEF_H 1
+#if defined __GNUC__
+#define HAVE_STDINT_H 1
+#else
 #undef HAVE_STDINT_H
+#endif
 #define HAVE_STDLIB_H 1
 #undef HAVE_INTTYPES_H
 #undef HAVE_LOCALE_H
@@ -182,7 +186,7 @@
 #define HAVE_UNSIGNED_LONG_LONG_INT 1
 #undef HAVE_INTMAX_T
 #undef HAVE_UINTMAX_T
-#undef HAVE_UINTPTR_T
+#define HAVE_UINTPTR_T 1
 #define HAVE_PTRDIFF_T 1
 #undef HAVE_VA_COPY
 #undef HAVE___VA_COPY

@@ -95,20 +95,21 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
+            SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            BSDFSample&         sample) const
+            BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
             // No reflection below the shading surface.
             const Vector3d& n = sample.get_shading_normal();
-            const double cos_on = dot(sample.get_outgoing_vector(), n);
+            const double cos_on = dot(sample.m_outgoing.get_value(), n);
             if (cos_on < 0.0)
                 return;
 
             // Compute the incoming direction in local space.
-            sample.get_sampling_context().split_in_place(2, 1);
-            const Vector2d s = sample.get_sampling_context().next_vector2<2>();
+            sampling_context.split_in_place(2, 1);
+            const Vector2d s = sampling_context.next_vector2<2>();
             const Vector3d wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
@@ -129,26 +130,26 @@ namespace
                     values->m_roughness,
                     values->m_reflectance,
                     values->m_reflectance_multiplier,
-                    sample.get_outgoing_vector(),
+                    sample.m_outgoing.get_value(),
                     incoming,
                     n,
-                    sample.value());
+                    sample.m_value);
             }
             else
             {
                 // Revert to Lambertian when roughness is zero.
-                sample.value() = values->m_reflectance;
-                sample.value() *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
+                sample.m_value = values->m_reflectance;
+                sample.m_value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
             }
 
             // Compute the probability density of the sampled direction.
-            sample.set_probability(wi.y * RcpPi);
-            assert(sample.get_probability() > 0.0);
+            sample.m_probability = wi.y * RcpPi;
+            assert(sample.m_probability > 0.0);
 
             // Set the scattering mode.
-            sample.set_mode(ScatteringMode::Diffuse);
+            sample.m_mode = ScatteringMode::Diffuse;
 
-            sample.set_incoming(incoming);
+            sample.m_incoming = Dual3d(incoming);
             sample.compute_reflected_differentials();
         }
 
@@ -161,7 +162,7 @@ namespace
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
             const int           modes,
-            Spectrum&           value) const
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0;
@@ -205,7 +206,7 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
-            const int           modes) const
+            const int           modes) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0;

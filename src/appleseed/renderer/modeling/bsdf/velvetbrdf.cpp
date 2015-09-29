@@ -96,19 +96,20 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
+            SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            BSDFSample&         sample) const
+            BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
             const Vector3d& n = sample.get_shading_normal();
-            const double cos_on = min(dot(sample.get_outgoing_vector(), n), 1.0);
+            const double cos_on = min(dot(sample.m_outgoing.get_value(), n), 1.0);
             if (cos_on < 0.0)
                 return;
 
             // Compute the incoming direction in local space.
-            sample.get_sampling_context().split_in_place(2, 1);
-            const Vector2d s = sample.get_sampling_context().next_vector2<2>();
+            sampling_context.split_in_place(2, 1);
+            const Vector2d s = sampling_context.next_vector2<2>();
             const Vector3d wi = sample_hemisphere_uniform(s);
 
             // Transform the incoming direction to parent space.
@@ -125,18 +126,18 @@ namespace
                 values,
                 n,
                 incoming,
-                sample.get_outgoing_vector(),
+                sample.m_outgoing.get_value(),
                 cos_in,
                 cos_on,
-                sample.value());
+                sample.m_value);
 
             // Compute the probability density of the sampled direction.
-            sample.set_probability(RcpTwoPi);
+            sample.m_probability = RcpTwoPi;
 
             // Set the scattering mode.
-            sample.set_mode(ScatteringMode::Glossy);
+            sample.m_mode = ScatteringMode::Glossy;
 
-            sample.set_incoming(incoming);
+            sample.m_incoming = Dual3d(incoming);
             sample.compute_reflected_differentials();
         }
 
@@ -149,7 +150,7 @@ namespace
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
             const int           modes,
-            Spectrum&           value) const
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0;
@@ -182,7 +183,7 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             const Vector3d&     incoming,
-            const int           modes) const
+            const int           modes) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0;

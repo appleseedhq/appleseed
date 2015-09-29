@@ -154,27 +154,29 @@ namespace
     {
       public:
         void sample(
+            SamplingContext&                sampling_context,
             const DisneyBRDFInputValues*    values,
             BSDFSample&                     sample) const
         {
             // Compute the incoming direction in local space.
-            sample.get_sampling_context().split_in_place(2, 1);
-            const Vector2d s = sample.get_sampling_context().next_vector2<2>();
+            sampling_context.split_in_place(2, 1);
+            const Vector2d s = sampling_context.next_vector2<2>();
             const Vector3d wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
             const Vector3d incoming = sample.get_shading_basis().transform_to_parent(wi);
-            sample.set_probability(
+
+            sample.m_probability =
                 evaluate(
                     values,
                     sample.get_shading_basis(),
-                    sample.get_outgoing_vector(),
+                    sample.m_outgoing.get_value(),
                     incoming,
-                    sample.value()));
+                    sample.m_value);
+            assert(sample.m_probability > 0.0);
 
-            assert(sample.get_probability() > 0.0);
-            sample.set_mode(ScatteringMode::Diffuse);
-            sample.set_incoming(incoming);
+            sample.m_mode = ScatteringMode::Diffuse;
+            sample.m_incoming = Dual3d(incoming);
             sample.compute_reflected_differentials();
         }
 
@@ -207,10 +209,9 @@ namespace
 
             if (values->m_subsurface > 0.0)
             {
-                // Based on Hanrahan-Krueger brdf approximation of isotropic bssrdf
-                // 1.25 scale is used to (roughly) preserve albedo
-                // Fss90 used to "flatten" retroreflection based on roughness
-
+                // Based on Hanrahan-Krueger BRDF approximation of isotropic BSRDF.
+                // The 1.25 scale is used to (roughly) preserve albedo.
+                // Fss90 is used to "flatten" retroreflection based on roughness.
                 const double fss90 = square(cos_ih) * values->m_roughness;
                 const double fss = mix(1.0, fss90, fl) * mix(1.0, fss90, fv);
                 const double ss = 1.25 * (fss * (1.0 / (cos_on + cos_in) - 0.5) + 0.5);
@@ -241,27 +242,29 @@ namespace
     {
       public:
         void sample(
+            SamplingContext&                sampling_context,
             const DisneyBRDFInputValues*    values,
             BSDFSample&                     sample) const
         {
             // Compute the incoming direction in local space.
-            sample.get_sampling_context().split_in_place(2, 1);
-            const Vector2d s = sample.get_sampling_context().next_vector2<2>();
+            sampling_context.split_in_place(2, 1);
+            const Vector2d s = sampling_context.next_vector2<2>();
             const Vector3d wi = sample_hemisphere_uniform(s);
 
             // Transform the incoming direction to parent space.
             const Vector3d incoming = sample.get_shading_basis().transform_to_parent(wi);
-            sample.set_probability(
+
+            sample.m_probability =
                 evaluate(
                     values,
                     sample.get_shading_basis(),
-                    sample.get_outgoing_vector(),
+                    sample.m_outgoing.get_value(),
                     incoming,
-                    sample.value()));
+                    sample.m_value);
+            assert(sample.m_probability > 0.0);
 
-            assert(sample.get_probability() > 0.0);
-            sample.set_mode(ScatteringMode::Diffuse);
-            sample.set_incoming(incoming);
+            sample.m_mode = ScatteringMode::Diffuse;
+            sample.m_incoming = Dual3d(incoming);
             sample.compute_reflected_differentials();
         }
 
@@ -375,6 +378,7 @@ namespace
         }
 
         virtual void sample(
+            SamplingContext&        sampling_context,
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
@@ -387,19 +391,30 @@ namespace
             compute_component_cdf(values, cdf);
 
             // Choose which of the components to sample.
-            sample.get_sampling_context().split_in_place(1, 1);
-            const double s = sample.get_sampling_context().next_double2();
+            sampling_context.split_in_place(1, 1);
+            const double s = sampling_context.next_double2();
 
             if (s < cdf[DiffuseComponent])
-                DisneyDiffuseComponent().sample(values, sample);
+            {
+                DisneyDiffuseComponent().sample(
+                    sampling_context,
+                    values,
+                    sample);
+            }
             else if (s < cdf[SheenComponent])
-                DisneySheenComponent().sample(values, sample);
+            {
+                DisneySheenComponent().sample(
+                    sampling_context,
+                    values,
+                    sample);
+            }
             else if (s < cdf[SpecularComponent])
             {
                 double alpha_x, alpha_y;
                 specular_roughness(values, alpha_x, alpha_y);
                 const GGXMDF<double> ggx_mdf;
                 MicrofacetBRDFHelper<double>::sample(
+                    sampling_context,
                     ggx_mdf,
                     alpha_x,
                     alpha_y,
@@ -408,11 +423,12 @@ namespace
                     DisneySpecularFresnelFun(*values),
                     sample);
             }
-            else //if (s < cdf[CleatcoatComponent])
+            else
             {
                 const double alpha = clearcoat_roughness(values);
                 const BerryMDF<double> berry_mdf;
                 MicrofacetBRDFHelper<double>::sample(
+                    sampling_context,
                     berry_mdf,
                     alpha,
                     alpha,

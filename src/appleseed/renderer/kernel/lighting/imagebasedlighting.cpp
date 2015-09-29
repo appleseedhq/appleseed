@@ -170,22 +170,23 @@ void compute_ibl_bsdf_sampling(
         // includes the contribution of a specular component since these are explicitly rejected
         // afterward. We need a mechanism to indicate that we want the contribution of some of
         // the components only.
-        BSDFSample sample(shading_point, sampling_context, outgoing);
+        BSDFSample sample(shading_point, outgoing);
         bsdf.sample(
+            sampling_context,
             bsdf_data,
             false,              // not adjoint
             true,               // multiply by |cos(incoming, normal)|
             sample);
 
         // Filter scattering modes.
-        if (!(bsdf_sampling_modes & sample.get_mode()))
+        if (!(bsdf_sampling_modes & sample.m_mode))
             continue;
 
         // Discard occluded samples.
         const double transmission =
             shading_context.get_tracer().trace(
                 shading_point,
-                sample.get_incoming_vector(),
+                sample.m_incoming.get_value(),
                 VisibilityFlags::ShadowRay);
         if (transmission == 0.0)
             continue;
@@ -197,24 +198,24 @@ void compute_ibl_bsdf_sampling(
         environment_edf.evaluate(
             shading_context,
             input_evaluator,
-            sample.get_incoming_vector(),
+            sample.m_incoming.get_value(),
             env_value,
             env_prob);
 
         // Apply all weights, including MIS weight.
-        if (sample.is_specular())
+        if (sample.m_mode == ScatteringMode::Specular)
             env_value *= static_cast<float>(transmission);
         else
         {
             const double mis_weight =
                 mis_power2(
-                    bsdf_sample_count * sample.get_probability(),
+                    bsdf_sample_count * sample.m_probability,
                     env_sample_count * env_prob);
-            env_value *= static_cast<float>(transmission / sample.get_probability() * mis_weight);
+            env_value *= static_cast<float>(transmission / sample.m_probability * mis_weight);
         }
 
         // Add the contribution of this sample to the illumination.
-        env_value *= sample.value();
+        env_value *= sample.m_value;
         radiance += env_value;
     }
 

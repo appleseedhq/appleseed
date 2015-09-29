@@ -350,13 +350,13 @@ Entity* EntityVector::get_by_index(const size_t index) const
 Entity* EntityVector::get_by_uid(const UniqueID id) const
 {
     const size_t index = get_index(id);
-    return index == ~0 ? 0 : get_by_index(index);
+    return index == size_t(~0) ? 0 : get_by_index(index);
 }
 
 Entity* EntityVector::get_by_name(const char* name) const
 {
     const size_t index = get_index(name);
-    return index == ~0 ? 0 : get_by_index(index);
+    return index == size_t(~0) ? 0 : get_by_index(index);
 }
 
 EntityVector::iterator EntityVector::begin()

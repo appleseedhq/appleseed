@@ -156,6 +156,7 @@ namespace
         }
 
         virtual bool sample(
+            SamplingContext&    sampling_context,
             const void*         data,
             BSSRDFSample&       sample) const APPLESEED_OVERRIDE
         {
@@ -165,10 +166,8 @@ namespace
             if (values->m_weight == 0.0)
                 return false;
 
-            sample.set_eta(values->m_eta);
-
-            sample.get_sampling_context().split_in_place(3, 1);
-            const Vector3d s = sample.get_sampling_context().next_vector2<3>();
+            sampling_context.split_in_place(3, 1);
+            const Vector3d s = sampling_context.next_vector2<3>();
 
             // Sample a channel.
             const float* cdf_begin = &values->m_channel_cdf[0];
@@ -177,7 +176,6 @@ namespace
                     cdf_begin,
                     cdf_begin + values->m_channel_cdf.size(),
                     s[0]);
-            sample.set_channel(channel);
 
             // Sample a radius.
             const double radius =
@@ -186,11 +184,10 @@ namespace
             // Sample an angle.
             const double phi = TwoPi * s[2];
 
-            // Set the max radius.
-            sample.set_rmax2(values->m_rmax2);
-
-            // Set the sampled point.
-            sample.set_point(Vector2d(radius * cos(phi), radius * sin(phi)));
+            sample.m_eta = values->m_eta;
+            sample.m_channel = channel;
+            sample.m_point = Vector2d(radius * cos(phi), radius * sin(phi));
+            sample.m_rmax2 = values->m_rmax2;
 
             return true;
         }

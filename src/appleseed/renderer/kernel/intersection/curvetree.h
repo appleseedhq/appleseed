@@ -310,7 +310,7 @@ inline bool CurveLeafVisitor::visit(
 
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(curve3_curve_count));
 
-    if (hit_curve_index != ~0)
+    if (hit_curve_index != size_t(~0))
     {
         const CurveKey& curve_key = m_tree.m_curve_keys[hit_curve_index];
         m_shading_point.m_object_instance_index = curve_key.get_object_instance_index();
