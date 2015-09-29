@@ -26,47 +26,32 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_BETTERDIPOLEBSSRDF_H
-#define APPLESEED_RENDERER_MODELING_BSSRDF_BETTERDIPOLEBSSRDF_H
+#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_DIPOLEBSSRDF_FACTORY_H
+#define APPLESEED_RENDERER_MODELING_BSSRDF_DIPOLEBSSRDF_FACTORY_H
 
 // appleseed.renderer headers.
-#include "renderer/modeling/bssrdf/dipolebssrdffactory.h"
+#include "renderer/modeling/bssrdf/ibssrdffactory.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/autoreleaseptr.h"
-
-// appleseed.main headers.
-#include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace renderer      { class BSSRDF;  }
-namespace renderer      { class ParamArray; }
+namespace foundation    { class DictionaryArray; }
 
 namespace renderer
 {
 
 //
-// Better dipole BSSRDF factory.
+// Base class for dipole BSSRDF factories.
 //
 
-class APPLESEED_DLLSYMBOL BetterDipoleBSSRDFFactory
-  : public DipoleBSSRDFFactory
+class APPLESEED_DLLSYMBOL DipoleBSSRDFFactory
+  : public IBSSRDFFactory
 {
   public:
-    // Return a string identifying this BSSRDF model.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
-
-    // Return metadata for this BSSRDF model.
-    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
-
-    // Create a new BSSRDF instance.
-    virtual foundation::auto_release_ptr<BSSRDF> create(
-        const char*         name,
-        const ParamArray&   params) const APPLESEED_OVERRIDE;
+    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_BETTERDIPOLEBSSRDF_H
+#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_DIPOLEBSSRDF_FACTORY_H

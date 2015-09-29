@@ -1306,6 +1306,7 @@ set (renderer_modeling_bssrdf_sources
     renderer/modeling/bssrdf/bssrdftraits.h
     renderer/modeling/bssrdf/dipolebssrdf.cpp
     renderer/modeling/bssrdf/dipolebssrdf.h
+    renderer/modeling/bssrdf/dipolebssrdffactory.h
     renderer/modeling/bssrdf/directionaldipolebssrdf.cpp
     renderer/modeling/bssrdf/directionaldipolebssrdf.h
     renderer/modeling/bssrdf/gaussianbssrdf.cpp
