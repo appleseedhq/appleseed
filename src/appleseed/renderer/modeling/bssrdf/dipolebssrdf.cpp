@@ -28,6 +28,7 @@
 
 // Interface header.
 #include "dipolebssrdf.h"
+#include "dipolebssrdffactory.h"
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bssrdf/bssrdfsample.h"

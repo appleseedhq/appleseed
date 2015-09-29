@@ -31,6 +31,7 @@
 #include "renderer/kernel/shading/shadingpointbuilder.h"
 #include "renderer/modeling/bssrdf/betterdipolebssrdf.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
+#include "renderer/modeling/bssrdf/dipolebssrdf.h"
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"

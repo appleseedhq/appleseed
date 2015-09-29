@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/bssrdf/ibssrdffactory.h"
 #include "renderer/modeling/bssrdf/separablebssrdf.h"
 #include "renderer/modeling/input/inputarray.h"
 
@@ -43,7 +42,6 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace foundation    { class DictionaryArray; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class BSSRDFSample; }
 namespace renderer      { class ParamArray; }
@@ -110,18 +108,6 @@ class DipoleBSSRDF
   private:
     virtual double get_eta(
         const void*         data) const APPLESEED_OVERRIDE;
-};
-
-
-//
-// Base class for dipole BSSRDF factories.
-//
-
-class APPLESEED_DLLSYMBOL DipoleBSSRDFFactory
-  : public IBSSRDFFactory
-{
-  public:
-    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 };
 
 
