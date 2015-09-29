@@ -95,7 +95,7 @@ class MicrofacetBRDFHelper
         sample.m_value *= static_cast<float>(D * G / (T(4.0) * cos_on * cos_in));
         sample.m_probability = mdf.pdf(wo, m, alpha_x, alpha_y) / (T(4.0) * cos_oh);
         sample.m_mode = ScatteringMode::Glossy;
-        sample.m_incoming = Dual<VectorType>(incoming);
+        sample.m_incoming = foundation::Dual<VectorType>(incoming);
         sample.compute_reflected_differentials();
     }
 
