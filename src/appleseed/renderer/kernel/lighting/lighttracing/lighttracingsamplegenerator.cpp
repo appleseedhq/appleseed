@@ -150,8 +150,8 @@ namespace
                     "  rr min path len. %s",
                     m_enable_ibl ? "on" : "off",
                     m_enable_caustics ? "on" : "off",
-                    m_max_path_length == ~0 ? "infinite" : pretty_uint(m_max_path_length).c_str(),
-                    m_rr_min_path_length == ~0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str());
+                    m_max_path_length == size_t(~0) ? "infinite" : pretty_uint(m_max_path_length).c_str(),
+                    m_rr_min_path_length == size_t(~0) ? "infinite" : pretty_uint(m_rr_min_path_length).c_str());
             }
         };
 

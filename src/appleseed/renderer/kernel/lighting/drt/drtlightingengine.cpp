@@ -132,8 +132,8 @@ namespace
                     "  dl light samples %s\n"
                     "  ibl env samples  %s",
                     m_enable_ibl ? "on" : "off",
-                    m_max_path_length == ~0 ? "infinite" : pretty_uint(m_max_path_length).c_str(),
-                    m_rr_min_path_length == ~0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
+                    m_max_path_length == size_t(~0) ? "infinite" : pretty_uint(m_max_path_length).c_str(),
+                    m_rr_min_path_length == size_t(~0) ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
                     pretty_scalar(m_dl_light_sample_count).c_str(),
                     pretty_scalar(m_ibl_env_sample_count).c_str());
             }

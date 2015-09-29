@@ -321,7 +321,7 @@ namespace
             {
                 const RenderLayerRule* rule = *r;
 
-                if (rule->get_entity_type_uid() == ~0 ||
+                if (rule->get_entity_type_uid() == UniqueID(~0) ||
                     rule->get_entity_type_uid() == entity.get_class_uid())
                 {
                     if (rule->applies(entity))

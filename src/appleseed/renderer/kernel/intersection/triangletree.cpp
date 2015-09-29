@@ -1367,7 +1367,7 @@ bool TriangleLeafVisitor::visit(
     const uint8* user_data = &node.get_user_data<uint8>();
     const uint32 leaf_data_index = *reinterpret_cast<const uint32*>(user_data);
     const uint8* leaf_data =
-        leaf_data_index == ~0
+        leaf_data_index == uint32(~0)
             ? user_data + sizeof(uint32)                // triangles are stored in the leaf node
             : &m_tree.m_leaf_data[leaf_data_index];     // triangles are stored in the tree
     MemoryReader reader(leaf_data);
@@ -1522,7 +1522,7 @@ bool TriangleLeafProbeVisitor::visit(
     const uint8* user_data = &node.get_user_data<uint8>();
     const uint32 leaf_data_index = *reinterpret_cast<const uint32*>(user_data);
     const uint8* leaf_data =
-        leaf_data_index == ~0
+        leaf_data_index == uint32(~0)
             ? user_data + sizeof(uint32)                // triangles are stored in the leaf node
             : &m_tree.m_leaf_data[leaf_data_index];     // triangles are stored in the tree
     MemoryReader reader(leaf_data);
