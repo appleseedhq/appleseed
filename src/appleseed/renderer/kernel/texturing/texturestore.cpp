@@ -81,11 +81,13 @@ StatisticsVector TextureStore::get_statistics() const
 Dictionary TextureStore::get_params_metadata()
 {
     Dictionary metadata;
+
+    const size_t DefaultTextureStoreSizeMB = 1024;
     metadata.dictionaries().insert(
         "max_size",
         Dictionary()
             .insert("type", "int")
-            .insert("default", "268435456")
+            .insert("default", DefaultTextureStoreSizeMB * 1024 * 1024)
             .insert("help", "Texture cache size in bytes"));
 
     return metadata;
