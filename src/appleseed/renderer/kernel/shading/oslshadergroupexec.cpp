@@ -73,6 +73,16 @@ void OSLShaderGroupExec::execute_shading(
         shading_point.get_ray().m_flags);
 }
 
+void OSLShaderGroupExec::execute_subsurface(
+    const ShaderGroup&              shader_group,
+    const ShadingPoint&             shading_point) const
+{
+    do_execute(
+        shader_group,
+        shading_point,
+        VisibilityFlags::SubsurfaceRay);
+}
+
 void OSLShaderGroupExec::execute_transparency(
     const ShaderGroup&              shader_group,
     const ShadingPoint&             shading_point,

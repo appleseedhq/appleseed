@@ -107,6 +107,10 @@ class ShadingContext
         const ShaderGroup&  shader_group,
         const ShadingPoint& shading_point) const;
 
+    void execute_osl_subsurface(
+        const ShaderGroup&  shader_group,
+        const ShadingPoint& shading_point) const;
+
     void execute_osl_transparency(
         const ShaderGroup&  shader_group,
         const ShadingPoint& shading_point,
