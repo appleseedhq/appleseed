@@ -131,7 +131,7 @@ void ShadingContext::execute_osl_emission(
 void ShadingContext::execute_osl_bump(
     const ShaderGroup&      shader_group,
     const ShadingPoint&     shading_point,
-    const double            s) const
+    const Vector2d&         s) const
 {
     m_shadergroup_exec.execute_bump(
         shader_group,

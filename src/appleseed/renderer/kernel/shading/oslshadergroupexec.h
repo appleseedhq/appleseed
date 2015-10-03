@@ -95,7 +95,7 @@ class OSLShaderGroupExec
     void execute_bump(
         const ShaderGroup&              shader_group,
         const ShadingPoint&             shading_point,
-        const double                    s) const;
+        const foundation::Vector2d&     s) const;
 
     foundation::Color3f execute_background(
         const ShaderGroup&              shader_group,

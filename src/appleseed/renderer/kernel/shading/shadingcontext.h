@@ -126,7 +126,7 @@ class ShadingContext
     void execute_osl_bump(
         const ShaderGroup&          shader_group,
         const ShadingPoint&         shading_point,
-        const double                s) const;
+        const foundation::Vector2d& s) const;
 
     void execute_osl_background(
         const ShaderGroup&          shader_group,
