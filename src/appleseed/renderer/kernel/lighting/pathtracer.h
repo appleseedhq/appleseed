@@ -302,7 +302,9 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             sampling_context.split_in_place(1, 1);
             if (sampling_context.next_double2() < 0.5)
                 vertex.m_bsdf = 0;
-            else vertex.m_bssrdf = 0;
+            else
+                vertex.m_bssrdf = 0;
+
             vertex.m_throughput *= 2.0f;
         }
 
@@ -335,6 +337,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         SubsurfaceSampleVisitor subsurf_visitor;
         if (vertex.m_bssrdf)
         {
+            // todo: handle OSL bump mapping here.
+
             // Find possible incoming points.
             const SubsurfaceSampler sampler(shading_context);
             sampler.sample(
@@ -354,6 +358,11 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             const size_t i = foundation::truncate<size_t>(s * subsurf_visitor.m_sample_count);
             vertex.m_incoming_point = &subsurf_visitor.m_incoming_points[i];
             vertex.m_incoming_point_prob = subsurf_visitor.m_probabilities[i] / subsurf_visitor.m_sample_count;
+
+            // todo:
+            //     exec the OSL shader at the incoming point if needed.
+            //     eval the bssrdf at incoming point.
+            //     apply OSL bump.
         }
 
         // Pass this vertex to the path visitor.
