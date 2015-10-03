@@ -73,6 +73,14 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/src/cmake/Modu
 
 
 #--------------------------------------------------------------------------------------------------
+# Detect target architecture.
+#--------------------------------------------------------------------------------------------------
+
+detect_target_arch (TARGET_ARCH)
+message ("Detected ${TARGET_ARCH} target architecture")
+
+
+#--------------------------------------------------------------------------------------------------
 # Build options.
 #--------------------------------------------------------------------------------------------------
 
@@ -129,7 +137,7 @@ else ()
 endif ()
 
 # Detect x86-based platforms.
-if (CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(X86)|(amd64)|(AMD64)")
+if (TARGET_ARCH MATCHES "i386|x86_64")
     set (is_x86 TRUE)
 else ()
     set (is_x86 FALSE)
