@@ -77,7 +77,14 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/src/cmake/Modu
 #--------------------------------------------------------------------------------------------------
 
 detect_target_arch (TARGET_ARCH)
-message ("Detected ${TARGET_ARCH} target architecture")
+message ("Target architecture: ${TARGET_ARCH}")
+
+# Detect x86-based platforms.
+if (TARGET_ARCH MATCHES "i386|x86_64")
+    set (is_x86 TRUE)
+else ()
+    set (is_x86 FALSE)
+endif ()
 
 
 #--------------------------------------------------------------------------------------------------
@@ -107,11 +114,23 @@ option (USE_STATIC_BOOST                    "Use static Boost libraries"        
 option (USE_STATIC_OIIO                     "Use static OpenImageIO libraries"                      ON)
 option (USE_STATIC_OSL                      "Use static OpenShadingLanguage libraries"              ON)
 
-option (USE_SSE                             "Use SSE instruction sets up to version 2"              ON)
-option (USE_SSE42                           "Use SSE instruction sets up to version 4.2"            OFF)
-
 option (HIDE_SYMBOLS                        "When using gcc, hide symbols not on the public API"    ON)
 
+# SIMD options.
+if (is_x86)
+    option (USE_SSE                         "Use SSE instruction sets up to version 2"              ON)
+    option (USE_SSE42                       "Use SSE instruction sets up to version 4.2"            OFF)
+
+    if (TARGET_ARCH MATCHES "x86_64")
+       option (USE_AVX                      "Use AVX instruction set"                               OFF)
+    endif ()
+elseif(TARGET_ARCH MATCHES "ARM")
+   option (USE_NEON                         "Use NEON instruction set"                              OFF)
+elseif(TARGET_ARCH MATCHES "PPC")
+   option (USE_ALTIVEC                      "Use Altivec instruction set"                           OFF)
+else()
+   # Unknown arch. No SIMD.
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Common settings.
@@ -134,13 +153,6 @@ elseif (CMAKE_SYSTEM_NAME MATCHES "Linux|FreeBSD")
 else ()
     message (FATAL_ERROR "Unsupported platform or compiler (CMAKE_SYSTEM_NAME is \"${CMAKE_SYSTEM_NAME}\"). "
                          "Edit ${CMAKE_CURRENT_LIST_FILE} to add support for it.")
-endif ()
-
-# Detect x86-based platforms.
-if (TARGET_ARCH MATCHES "i386|x86_64")
-    set (is_x86 TRUE)
-else ()
-    set (is_x86 FALSE)
 endif ()
 
 
