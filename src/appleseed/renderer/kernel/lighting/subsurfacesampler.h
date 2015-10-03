@@ -195,18 +195,6 @@ void SubsurfaceSampler::sample(
         if (incoming_point.get_material() == outgoing_material ||
             incoming_point.get_opposite_material() == outgoing_material)
         {
-#ifdef APPLESEED_WITH_OSL
-            // Execute the OSL shader if we have one. Needed for bump mapping.
-            if (outgoing_material->has_osl_surface())
-            {
-                sampling_context.split_in_place(1, 1);
-                m_shading_context.execute_osl_bump(
-                    *outgoing_material->get_osl_surface(),
-                    incoming_point,
-                    sampling_context.next_double2());
-            }
-#endif
-
             // Compute sample probability.
             const double dot_nn =
                 std::abs(foundation::dot(
