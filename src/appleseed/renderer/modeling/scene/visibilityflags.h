@@ -56,7 +56,8 @@ class VisibilityFlags
         ProbeRay        = 1 << 4,
         DiffuseRay      = 1 << 5,
         GlossyRay       = 1 << 6,
-        SpecularRay     = 1 << 7
+        SpecularRay     = 1 << 7,
+        SubsurfaceRay   = 1 << 8
     };
 
     static const size_t Count;

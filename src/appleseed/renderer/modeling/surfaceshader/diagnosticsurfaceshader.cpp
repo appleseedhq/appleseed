@@ -279,11 +279,11 @@ void DiagnosticSurfaceShader::evaluate(
                 // Execute the OSL shader if there is one.
                 if (material->get_osl_surface())
                 {
-                    sampling_context.split_in_place(1, 1);
+                    sampling_context.split_in_place(2, 1);
                     shading_context.execute_osl_bump(
                         *material->get_osl_surface(),
                         shading_point,
-                        sampling_context.next_double2());
+                        sampling_context.next_vector2<2>());
                 }
             }
 #endif

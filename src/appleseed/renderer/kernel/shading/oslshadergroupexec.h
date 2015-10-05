@@ -57,10 +57,8 @@ class OSLShaderGroupExec
   : public foundation::NonCopyable
 {
   public:
-    // Constructor.
     explicit OSLShaderGroupExec(OSL::ShadingSystem& shading_system);
 
-    // Destructor.
     ~OSLShaderGroupExec();
 
   private:
@@ -72,6 +70,10 @@ class OSLShaderGroupExec
     OSL::ShadingContext*    m_osl_shading_context;
 
     void execute_shading(
+        const ShaderGroup&              shader_group,
+        const ShadingPoint&             shading_point) const;
+
+    void execute_subsurface(
         const ShaderGroup&              shader_group,
         const ShadingPoint&             shading_point) const;
 
@@ -93,7 +95,7 @@ class OSLShaderGroupExec
     void execute_bump(
         const ShaderGroup&              shader_group,
         const ShadingPoint&             shading_point,
-        const double                    s) const;
+        const foundation::Vector2d&     s) const;
 
     foundation::Color3f execute_background(
         const ShaderGroup&              shader_group,

@@ -97,6 +97,15 @@ void ShadingContext::execute_osl_shading(
         shading_point);
 }
 
+void ShadingContext::execute_osl_subsurface(
+    const ShaderGroup&      shader_group,
+    const ShadingPoint&     shading_point) const
+{
+    m_shadergroup_exec.execute_subsurface(
+        shader_group,
+        shading_point);
+}
+
 void ShadingContext::execute_osl_transparency(
     const ShaderGroup&      shader_group,
     const ShadingPoint&     shading_point,
@@ -122,7 +131,7 @@ void ShadingContext::execute_osl_emission(
 void ShadingContext::execute_osl_bump(
     const ShaderGroup&      shader_group,
     const ShadingPoint&     shading_point,
-    const double            s) const
+    const Vector2d&         s) const
 {
     m_shadergroup_exec.execute_bump(
         shader_group,
