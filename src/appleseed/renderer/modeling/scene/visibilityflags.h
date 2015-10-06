@@ -32,6 +32,9 @@
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Standard headers.
 #include <cstddef>
 
@@ -42,7 +45,7 @@ namespace renderer  { class ParamArray; }
 namespace renderer
 {
 
-class VisibilityFlags
+class APPLESEED_DLLSYMBOL VisibilityFlags
 {
   public:
     typedef foundation::uint32 Type;
