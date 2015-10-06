@@ -434,7 +434,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 value);
 
             // Compute the path throughput multiplier.
-            value *= static_cast<float>(cos_in / (vertex.m_incoming_point_prob * incoming_prob));
+            value *= static_cast<float>(cos_in / vertex.m_incoming_point_prob);
 
             // Properties of this scattering event.
             vertex.m_prev_mode = ScatteringMode::Diffuse;

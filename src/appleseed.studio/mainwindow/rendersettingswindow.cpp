@@ -1049,8 +1049,10 @@ namespace
             set_widget("rendering_threads.value", rendering_threads == "auto" ? default_rendering_threads : rendering_threads);
             set_widget("rendering_threads.auto", rendering_threads == "auto");
 
+            const size_t MB = 1024 * 1024;
+            const size_t DefaultTextureStoreSizeMB = 1024 * MB;
             set_widget("texture_store_max_size.override", config.get_inherited_parameters().exist_path("texture_store.max_size"));
-            set_widget("texture_store_max_size.value", get_config<size_t>(config, "texture_store.max_size", 256 * 1024 * 1024) / (1024 * 1024));
+            set_widget("texture_store_max_size.value", get_config<size_t>(config, "texture_store.max_size", DefaultTextureStoreSizeMB) / MB);
 
             set_widget("tile_ordering.override", config.get_parameters().exist_path("generic_frame_renderer.tile_ordering"));
             set_widget("tile_ordering.value", get_config<string>(config, "generic_frame_renderer.tile_ordering", "hilbert"));
