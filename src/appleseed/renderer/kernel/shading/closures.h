@@ -40,6 +40,7 @@
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
 #include "renderer/modeling/bsdf/velvetbrdf.h"
+#include "renderer/modeling/bssrdf/dipolebssrdf.h"
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #include "renderer/modeling/bssrdf/gaussianbssrdf.h"
 #ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
@@ -187,11 +188,26 @@ class APPLESEED_ALIGN(16) CompositeClosure
 
 
 //
+// Composite OSL reflection closure.
+//
+
+class APPLESEED_ALIGN(16) CompositeReflectionClosure
+  : public CompositeClosure
+{
+  public:
+    const foundation::Basis3d& get_closure_shading_basis(const size_t index) const;
+
+  protected:
+    foundation::Basis3d m_bases[MaxClosureEntries];
+};
+
+
+//
 // Composite OSL surface closure.
 //
 
 class APPLESEED_ALIGN(16) CompositeSurfaceClosure
-  : public CompositeClosure
+  : public CompositeReflectionClosure
 {
   public:
     CompositeSurfaceClosure(
@@ -199,13 +215,10 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
         const foundation::Basis3d&  original_shading_basis,
         const OSL::ClosureColor*    ci);
 
-    const foundation::Basis3d& get_closure_shading_basis(const size_t index) const;
-
     // For future layered closures.
     const BSDF& get_osl_bsdf() const;
 
   private:
-    foundation::Basis3d             m_bases[MaxClosureEntries];
     const BSDF*                     m_osl_bsdf;
 
     void process_closure_tree(
@@ -247,20 +260,25 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
 //
 
 class APPLESEED_ALIGN(16) CompositeSubsurfaceClosure
-  : public CompositeClosure
+  : public CompositeReflectionClosure
 {
   public:
-    explicit CompositeSubsurfaceClosure(const OSL::ClosureColor* ci);
+    CompositeSubsurfaceClosure(
+        const foundation::Basis3d&  original_shading_basis,
+        const OSL::ClosureColor* ci);
 
   private:
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
+        const foundation::Basis3d&  original_shading_basis,
         const foundation::Color3f&  weight);
 
     template <typename InputValues>
     void add_closure(
         const ClosureID             closure_type,
+        const foundation::Basis3d&  original_shading_basis,
         const foundation::Color3f&  weight,
+        const foundation::Vector3d& normal,
         const InputValues&          values);
 };
 
@@ -333,14 +351,19 @@ inline void* CompositeClosure::get_closure_input_values(const size_t index) cons
 
 
 //
-// CompositeSurfaceClosure class implementation.
+// CompositeReflectionClosure class implementation.
 //
 
-inline const foundation::Basis3d& CompositeSurfaceClosure::get_closure_shading_basis(const size_t index) const
+inline const foundation::Basis3d& CompositeReflectionClosure::get_closure_shading_basis(const size_t index) const
 {
     assert(index < get_num_closures());
     return m_bases[index];
 }
+
+
+//
+// CompositeSurfaceClosure class implementation.
+//
 
 inline const BSDF& CompositeSurfaceClosure::get_osl_bsdf() const
 {

@@ -31,6 +31,7 @@
 #include "renderer/kernel/shading/shadingpointbuilder.h"
 #include "renderer/modeling/bssrdf/betterdipolebssrdf.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
+#include "renderer/modeling/bssrdf/dipolebssrdf.h"
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
@@ -128,7 +129,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             return static_cast<double>(m_values.m_sigma_tr[0]);
         }
 
-        double evaluate(const double r, const Vector3d& incoming_dir) const
+        double evaluate(const double r) const
         {
             ShadingPoint incoming_point;
             ShadingPointBuilder incoming_builder(incoming_point);
@@ -136,21 +137,18 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             incoming_builder.set_shading_basis(Basis3d(Vector3d(0.0, 1.0, 0.0)));
             incoming_builder.set_point(Vector3d(r, 0.0, 0.0));
 
+            const Vector3d Up(0.0, 1.0, 0.0);
+
             Spectrum result;
             m_bssrdf->evaluate(
                 &m_values,
                 m_outgoing_point,
-                Vector3d(0.0, 1.0, 0.0),
+                Up,
                 incoming_point,
-                incoming_dir,
+                Up,
                 result);
 
             return static_cast<double>(result[0]);
-        }
-
-        double evaluate_searchlight(const double r) const
-        {
-            return evaluate(r, Vector3d(0.0, 1.0, 0.0));
         }
 
       private:
@@ -178,7 +176,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double pdf_angle = RcpTwoPi;
             const double pdf = pdf_radius * pdf_angle;
 
-            const double value = bssrdf_eval.evaluate_searchlight(r);
+            const double value = bssrdf_eval.evaluate(r);
             integral += value / pdf;
         }
 
@@ -189,10 +187,11 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     double integrate_dipole_rd_dmfp(
         const double            rd,
         const double            dmfp,
+        const double            eta,
         const size_t            sample_count)
     {
         DipoleBSSRDFEvaluator<BSSRDFFactory> bssrdf_eval;
-        bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, 1.0, 0.0);
+        bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, eta, 0.0);
 
         return integrate_dipole(bssrdf_eval, sample_count);
     }
@@ -200,14 +199,14 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     template <typename BSSRDFFactory>
     double integrate_dipole_alpha_prime(
         const double            alpha_prime,
+        const double            eta,
         const size_t            sample_count)
     {
-        const double sigma_t_prime = 1.0 / alpha_prime;
-        const double sigma_s_prime = 1.0;
-        const double sigma_a = sigma_t_prime - sigma_s_prime;
+        const double sigma_s_prime = alpha_prime;
+        const double sigma_a = 1.0 - alpha_prime;
 
         DipoleBSSRDFEvaluator<BSSRDFFactory> bssrdf_eval;
-        bssrdf_eval.set_values_from_sigmas(sigma_a, sigma_s_prime, 1.0, 0.0);
+        bssrdf_eval.set_values_from_sigmas(sigma_a, sigma_s_prime, eta, 0.0);
 
         return integrate_dipole(bssrdf_eval, sample_count);
     }
@@ -347,7 +346,11 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double alpha_prime = fit<size_t, double>(i, 0, TestCount - 1, 0.0 + Eps, 1.0 - Eps);
 
             const double rd_a = RcpPi * rd_fun(alpha_prime);
-            const double rd_n = integrate_dipole_alpha_prime<StandardDipoleBSSRDFFactory>(alpha_prime, SampleCount);
+            const double rd_n =
+                integrate_dipole_alpha_prime<StandardDipoleBSSRDFFactory>(
+                    alpha_prime,
+                    Eta,
+                    SampleCount);
 
             EXPECT_FEQ_EPS(rd_a, rd_n, 0.02);
         }
@@ -380,7 +383,10 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             ni_points.push_back(
                 Vector2d(
                     alpha_prime,
-                    integrate_dipole_alpha_prime<StandardDipoleBSSRDFFactory>(alpha_prime, SampleCount)));
+                    integrate_dipole_alpha_prime<StandardDipoleBSSRDFFactory>(
+                        alpha_prime,
+                        Eta,
+                        SampleCount)));
         }
 
         plotfile
@@ -406,7 +412,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.set_ylabel("Rd");
 
         const double Eta = 1.0 / 1.0;
-        const ComputeRdStandardDipole rd_fun(Eta);
+        const ComputeRdBetterDipole rd_fun(Eta);
 
         const size_t PointCount = 1000;
         const size_t SampleCount = 1000;
@@ -425,7 +431,10 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             ni_points.push_back(
                 Vector2d(
                     alpha_prime,
-                    integrate_dipole_alpha_prime<BetterDipoleBSSRDFFactory>(alpha_prime, SampleCount)));
+                    integrate_dipole_alpha_prime<BetterDipoleBSSRDFFactory>(
+                        alpha_prime,
+                        Eta,
+                        SampleCount)));
         }
 
         plotfile
@@ -811,7 +820,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, 1.0, 0.0);
 
             const double r = dipole_max_radius(bssrdf_eval.get_sigma_tr());
-            const double result = bssrdf_eval.evaluate_searchlight(r);
+            const double result = bssrdf_eval.evaluate(r);
 
             EXPECT_LT(0.00001, result);
         }
@@ -835,6 +844,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double x =
                 integrate_dipole_rd_dmfp<StandardDipoleBSSRDFFactory>(
                     rd,
+                    1.0,
                     1.0,
                     1000);
 
@@ -873,7 +883,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         for (size_t i = 0; i < N; ++i)
         {
             const double r = fit<size_t, double>(i, 0, N - 1, -16.0, 16.0);
-            const double result = bssrdf_eval.evaluate_searchlight(r);
+            const double result = bssrdf_eval.evaluate(r);
             points.push_back(Vector2d(r, result * Pi / abs(r)));
         }
 
@@ -921,7 +931,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, 1.0, 0.0);
 
             const double r = dipole_max_radius(bssrdf_eval.get_sigma_tr());
-            const double result = bssrdf_eval.evaluate_searchlight(r);
+            const double result = bssrdf_eval.evaluate(r);
 
             EXPECT_LT(0.00001, result);
         }

@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,49 +26,32 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SCENE_VISIBILITYFLAGS_H
-#define APPLESEED_RENDERER_MODELING_SCENE_VISIBILITYFLAGS_H
+#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_DIPOLEBSSRDF_FACTORY_H
+#define APPLESEED_RENDERER_MODELING_BSSRDF_DIPOLEBSSRDF_FACTORY_H
+
+// appleseed.renderer headers.
+#include "renderer/modeling/bssrdf/ibssrdffactory.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/types.h"
-
-// Standard headers.
-#include <cstddef>
+#include "foundation/platform/compiler.h"
 
 // Forward declarations.
-namespace renderer  { class MessageContext; }
-namespace renderer  { class ParamArray; }
+namespace foundation    { class DictionaryArray; }
 
 namespace renderer
 {
 
-class VisibilityFlags
+//
+// Base class for dipole BSSRDF factories.
+//
+
+class APPLESEED_DLLSYMBOL DipoleBSSRDFFactory
+  : public IBSSRDFFactory
 {
   public:
-    typedef foundation::uint32 Type;
-
-    enum Values
-    {
-        CameraRay       = 1 << 0,
-        LightRay        = 1 << 1,
-        ShadowRay       = 1 << 2,
-        TransparencyRay = 1 << 3,
-        ProbeRay        = 1 << 4,
-        DiffuseRay      = 1 << 5,
-        GlossyRay       = 1 << 6,
-        SpecularRay     = 1 << 7,
-        SubsurfaceRay   = 1 << 8
-    };
-
-    static const size_t Count;
-    static const char* Names[];
-
-    // Parse visibility flags defined in a dictionary and combine them into a bitmask.
-    static Type parse(
-        const ParamArray&       params,
-        const MessageContext&   message_context);
+    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_SCENE_VISIBILITYFLAGS_H
+#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_DIPOLEBSSRDF_FACTORY_H

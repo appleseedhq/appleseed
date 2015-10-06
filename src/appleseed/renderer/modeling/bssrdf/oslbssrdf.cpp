@@ -157,7 +157,10 @@ namespace
             const size_t            offset = 0) const APPLESEED_OVERRIDE
         {
             CompositeSubsurfaceClosure* c = reinterpret_cast<CompositeSubsurfaceClosure*>(input_evaluator.data());
-            new (c) CompositeSubsurfaceClosure(shading_point.get_osl_shader_globals().Ci);
+            new (c) CompositeSubsurfaceClosure(
+                shading_point.get_shading_basis(),
+                shading_point.get_osl_shader_globals().Ci);
+
             prepare_inputs(input_evaluator.data());
         }
 

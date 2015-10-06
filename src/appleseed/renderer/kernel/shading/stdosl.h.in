@@ -511,6 +511,7 @@ closure color as_disney(
 closure color as_velvet(normal N, float alpha) BUILTIN;
 
 closure color as_subsurface_dipole(
+    normal  N,
     string  profile,
     color   rd,
     float   dmfp,
@@ -518,11 +519,13 @@ closure color as_subsurface_dipole(
     float   eta) BUILTIN;
 
 closure color as_subsurface_gaussian(
+    normal  N,
     color   rd,
     float   radius,
     float   eta) BUILTIN;
 
 closure color as_subsurface_normalized(
+    normal  N,
     color   rd,
     float   dmfp,
     float   eta) BUILTIN;

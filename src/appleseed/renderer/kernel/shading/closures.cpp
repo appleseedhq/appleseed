@@ -111,6 +111,7 @@ namespace
 
     struct DipoleSubsurfaceClosureParams
     {
+        OSL::Vec3       N;
         OSL::ustring    profile;
         OSL::Color3     rd;
         float           dmfp;
@@ -120,6 +121,7 @@ namespace
 
     struct GaussianSubsurfaceClosureParams
     {
+        OSL::Vec3       N;
         OSL::Color3     rd;
         float           radius;
         float           eta;
@@ -142,6 +144,7 @@ namespace
 
     struct NormalizedSubsurfaceClosureParams
     {
+        OSL::Vec3       N;
         OSL::Color3     rd;
         float           dmfp;
         float           eta;
@@ -638,14 +641,16 @@ void CompositeSurfaceClosure::do_add_closure(
 //
 
 CompositeSubsurfaceClosure::CompositeSubsurfaceClosure(
+    const Basis3d&              original_shading_basis,
     const OSL::ClosureColor*    ci)
 {
-    process_closure_tree(ci, Color3f(1.0f));
+    process_closure_tree(ci, original_shading_basis, Color3f(1.0f));
     compute_cdf();
 }
 
 void CompositeSubsurfaceClosure::process_closure_tree(
     const OSL::ClosureColor*    closure,
+    const Basis3d&              original_shading_basis,
     const foundation::Color3f&  weight)
 {
     if (closure == 0)
@@ -656,15 +661,15 @@ void CompositeSubsurfaceClosure::process_closure_tree(
       case OSL::ClosureColor::MUL:
         {
             const OSL::ClosureMul* c = reinterpret_cast<const OSL::ClosureMul*>(closure);
-            process_closure_tree(c->closure, weight * Color3f(c->weight));
+            process_closure_tree(c->closure, original_shading_basis, weight * Color3f(c->weight));
         }
         break;
 
       case OSL::ClosureColor::ADD:
         {
             const OSL::ClosureAdd* c = reinterpret_cast<const OSL::ClosureAdd*>(closure);
-            process_closure_tree(c->closureA, weight);
-            process_closure_tree(c->closureB, weight);
+            process_closure_tree(c->closureA, original_shading_basis, weight);
+            process_closure_tree(c->closureB, original_shading_basis, weight);
         }
         break;
 
@@ -689,11 +694,32 @@ void CompositeSubsurfaceClosure::process_closure_tree(
                 values.m_outside_ior = 1.0;
 
                 if (p->profile == better_dipole_profile_name)
-                    add_closure<DipoleBSSRDFInputValues>(SubsurfaceBetterDipoleID, w, values);
+                {
+                    add_closure<DipoleBSSRDFInputValues>(
+                        SubsurfaceBetterDipoleID,
+                        original_shading_basis,
+                        w,
+                        Vector3d(p->N),
+                        values);
+                }
                 else if (p->profile == standard_dipole_profile_name)
-                    add_closure<DipoleBSSRDFInputValues>(SubsurfaceDipoleID, w, values);
+                {
+                    add_closure<DipoleBSSRDFInputValues>(
+                        SubsurfaceDipoleID,
+                        original_shading_basis,
+                        w,
+                        Vector3d(p->N),
+                        values);
+                }
                 else if (p->profile == directional_dipole_profile_name)
-                    add_closure<DipoleBSSRDFInputValues>(SubsurfaceDirectionalDipoleID, w, values);
+                {
+                    add_closure<DipoleBSSRDFInputValues>(
+                        SubsurfaceDirectionalDipoleID,
+                        original_shading_basis,
+                        w,
+                        Vector3d(p->N),
+                        values);
+                }
             }
             else if (c->id == SubsurfaceGaussianID)
             {
@@ -707,7 +733,12 @@ void CompositeSubsurfaceClosure::process_closure_tree(
                 values.m_inside_ior = p->eta;
                 values.m_outside_ior = 1.0;
 
-                add_closure<GaussianBSSRDFInputValues>(SubsurfaceGaussianID, w, values);
+                add_closure<GaussianBSSRDFInputValues>(
+                    SubsurfaceGaussianID,
+                    original_shading_basis,
+                    w,
+                    Vector3d(p->N),
+                    values);
             }
             else if (c->id == SubsurfaceNormalizedID)
             {
@@ -724,7 +755,12 @@ void CompositeSubsurfaceClosure::process_closure_tree(
                 values.m_inside_ior = p->eta;
                 values.m_outside_ior = 1.0;
 
-                add_closure<NormalizedDiffusionBSSRDFInputValues>(SubsurfaceNormalizedID, w, values);
+                add_closure<NormalizedDiffusionBSSRDFInputValues>(
+                    SubsurfaceNormalizedID,
+                    original_shading_basis,
+                    w,
+                    Vector3d(p->N),
+                    values);
 #endif
             }
         }
@@ -737,7 +773,9 @@ void CompositeSubsurfaceClosure::process_closure_tree(
 template <typename InputValues>
 void CompositeSubsurfaceClosure::add_closure(
     const ClosureID             closure_type,
+    const Basis3d&              original_shading_basis,
     const Color3f&              weight,
+    const Vector3d&             normal,
     const InputValues&          params)
 {
     // Check that InputValues is included in our type list.
@@ -763,6 +801,11 @@ void CompositeSubsurfaceClosure::add_closure(
     m_pdf_weights[m_num_closures] = w;
     m_weights[m_num_closures] = weight;
     m_closure_types[m_num_closures] = closure_type;
+
+    m_bases[m_num_closures] =
+        Basis3d(
+            normalize(normal),
+            original_shading_basis.get_tangent_u());
 
     char* values_ptr = m_pool + m_num_bytes;
     assert(is_aligned(values_ptr, InputValuesAlignment));
@@ -942,19 +985,22 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                    CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, clearcoat_gloss),
                                    CLOSURE_FINISH_PARAM(DisneyBRDFClosureParams) } },
 
-        { "as_subsurface_dipole", SubsurfaceDipoleID, { CLOSURE_STRING_PARAM(DipoleSubsurfaceClosureParams, profile),
+        { "as_subsurface_dipole", SubsurfaceDipoleID, { CLOSURE_VECTOR_PARAM(DipoleSubsurfaceClosureParams, N),
+                                                        CLOSURE_STRING_PARAM(DipoleSubsurfaceClosureParams, profile),
                                                         CLOSURE_COLOR_PARAM(DipoleSubsurfaceClosureParams, rd),
                                                         CLOSURE_FLOAT_PARAM(DipoleSubsurfaceClosureParams, dmfp),
                                                         CLOSURE_FLOAT_PARAM(DipoleSubsurfaceClosureParams, g),
                                                         CLOSURE_FLOAT_PARAM(DipoleSubsurfaceClosureParams, eta),
                                                         CLOSURE_FINISH_PARAM(DipoleSubsurfaceClosureParams) } },
 
-        { "as_subsurface_gaussian", SubsurfaceGaussianID, { CLOSURE_COLOR_PARAM(GaussianSubsurfaceClosureParams, rd),
+        { "as_subsurface_gaussian", SubsurfaceGaussianID, { CLOSURE_VECTOR_PARAM(GaussianSubsurfaceClosureParams, N),
+                                                            CLOSURE_COLOR_PARAM(GaussianSubsurfaceClosureParams, rd),
                                                             CLOSURE_FLOAT_PARAM(GaussianSubsurfaceClosureParams, radius),
                                                             CLOSURE_FLOAT_PARAM(GaussianSubsurfaceClosureParams, eta),
                                                             CLOSURE_FINISH_PARAM(GaussianSubsurfaceClosureParams) } },
 
-        { "as_subsurface_normalized", SubsurfaceNormalizedID, { CLOSURE_COLOR_PARAM(NormalizedSubsurfaceClosureParams, rd),
+        { "as_subsurface_normalized", SubsurfaceNormalizedID, { CLOSURE_VECTOR_PARAM(NormalizedSubsurfaceClosureParams, N),
+                                                                CLOSURE_COLOR_PARAM(NormalizedSubsurfaceClosureParams, rd),
                                                                 CLOSURE_FLOAT_PARAM(NormalizedSubsurfaceClosureParams, dmfp),
                                                                 CLOSURE_FLOAT_PARAM(NormalizedSubsurfaceClosureParams, eta),
                                                                 CLOSURE_FINISH_PARAM(NormalizedSubsurfaceClosureParams) } },

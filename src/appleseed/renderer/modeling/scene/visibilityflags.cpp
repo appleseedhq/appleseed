@@ -39,7 +39,7 @@
 namespace renderer
 {
 
-// The Names array must be kept in sync with the VisibilityFlags::Values enum and 
+// The Names array must be kept in sync with the VisibilityFlags::Values enum and
 // the order of the strings has to match the order of the enum.
 const char* VisibilityFlags::Names[] =
 {
@@ -50,7 +50,8 @@ const char* VisibilityFlags::Names[] =
     "probe",
     "diffuse",
     "glossy",
-    "specular"
+    "specular",
+    "subsurface"
 };
 
 const size_t VisibilityFlags::Count = countof(VisibilityFlags::Names);

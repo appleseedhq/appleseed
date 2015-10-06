@@ -73,6 +73,16 @@ void OSLShaderGroupExec::execute_shading(
         shading_point.get_ray().m_flags);
 }
 
+void OSLShaderGroupExec::execute_subsurface(
+    const ShaderGroup&              shader_group,
+    const ShadingPoint&             shading_point) const
+{
+    do_execute(
+        shader_group,
+        shading_point,
+        VisibilityFlags::SubsurfaceRay);
+}
+
 void OSLShaderGroupExec::execute_transparency(
     const ShaderGroup&              shader_group,
     const ShadingPoint&             shading_point,
@@ -116,23 +126,47 @@ void OSLShaderGroupExec::execute_emission(
 void OSLShaderGroupExec::execute_bump(
     const ShaderGroup&              shader_group,
     const ShadingPoint&             shading_point,
-    const double                    s) const
+    const Vector2d&                 s) const
 {
-    do_execute(
-        shader_group,
-        shading_point,
-        VisibilityFlags::CameraRay);
-
-    CompositeSurfaceClosure c(
-        0,
-        shading_point.get_shading_basis(),
-        shading_point.get_osl_shader_globals().Ci);
-
-    if (c.get_num_closures() > 0)
+    // Choose between BSSRDF and BSDF.
+    if (shader_group.has_subsurface() && s[0] < 0.5)
     {
-        const size_t index = c.choose_closure(s);
-        shading_point.set_shading_basis(
-            c.get_closure_shading_basis(index));
+        do_execute(
+            shader_group,
+            shading_point,
+            VisibilityFlags::SubsurfaceRay);
+
+        CompositeSubsurfaceClosure c(
+            shading_point.get_shading_basis(),
+            shading_point.get_osl_shader_globals().Ci);
+
+        // Pick a shading basis from one of the BSSRDF closures.
+        if (c.get_num_closures() > 0)
+        {
+            const size_t index = c.choose_closure(s[1]);
+            shading_point.set_shading_basis(
+                c.get_closure_shading_basis(index));
+        }
+    }
+    else
+    {
+        do_execute(
+            shader_group,
+            shading_point,
+            VisibilityFlags::CameraRay);
+
+        CompositeSurfaceClosure c(
+            0,
+            shading_point.get_shading_basis(),
+            shading_point.get_osl_shader_globals().Ci);
+
+        // Pick a shading basis from one of the BSDF closures.
+        if (c.get_num_closures() > 0)
+        {
+            const size_t index = c.choose_closure(s[1]);
+            shading_point.set_shading_basis(
+                c.get_closure_shading_basis(index));
+        }
     }
 }
 

@@ -30,7 +30,7 @@
 #define APPLESEED_RENDERER_MODELING_BSSRDF_DIRECTIONALDIPOLEBSSRDF_H
 
 // appleseed.renderer headers.
-#include "renderer/modeling/bssrdf/dipolebssrdf.h"
+#include "renderer/modeling/bssrdf/dipolebssrdffactory.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
