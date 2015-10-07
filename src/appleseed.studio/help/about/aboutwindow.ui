@@ -79,7 +79,7 @@ p, li { white-space: pre-wrap; }
      <property name="styleSheet">
       <string>QFrame
 {
-	background-color: rgb(60, 60, 60);
+	background-color: rgb(44, 44, 44);
 	border-left: 0px;
 	border-top: 0px;
 	border-right: 0px;
