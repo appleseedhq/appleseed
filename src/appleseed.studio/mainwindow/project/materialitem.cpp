@@ -81,7 +81,10 @@ QMenu* MaterialItem::get_single_item_context_menu() const
 
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
     if (strcmp(m_entity->get_model(), "disney_material") == 0)
+    {
+        menu->addSeparator();
         menu->addAction("Export...", this, SLOT(slot_export()));
+    }
 #endif
 
     return menu;
