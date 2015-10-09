@@ -104,7 +104,7 @@ class ObjectInstanceItem
 
     typedef SingleModelEntityItem<renderer::ObjectInstance, renderer::Assembly, ObjectInstanceCollectionItem> Base;
 
-    virtual void slot_delete() APPLESEED_OVERRIDE;
+    virtual void delete_multiple(const QList<ItemBase*>& items) APPLESEED_OVERRIDE;
     void do_delete();
 
     void add_material_assignment_menu_actions(

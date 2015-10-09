@@ -30,14 +30,19 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ITEMBASE_H
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ITEMBASE_H
 
+// appleseed.studio headers.
+#include "utility/miscellaneous.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
 
 // Qt headers.
+#include <QAction>
 #include <QList>
 #include <QMetaType>
 #include <QObject>
 #include <QTreeWidgetItem>
+#include <QVariant>
 
 // Forward declarations.
 namespace appleseed { namespace studio { class AttributeEditor; } }
@@ -79,18 +84,18 @@ class ItemBase
     virtual QMenu* get_single_item_context_menu() const;
     virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const;
 
-    void delete_multiple(const QList<ItemBase*>& items);
+    virtual void delete_multiple(const QList<ItemBase*>& items);
 
   public slots:
     virtual void slot_edit(AttributeEditor* attribute_editor = 0);
     virtual void slot_instantiate();
-    virtual void slot_delete();
-    virtual void slot_delete_multiple();
+    void slot_delete_multiple();
 
   protected:
     EntityEditorContext&        m_editor_context;
 
-    QList<ItemBase*> get_action_items();
+    template <typename Item>
+    QList<Item*> get_action_items();
 
   private:
     const foundation::UniqueID  m_class_uid;
@@ -98,9 +103,31 @@ class ItemBase
     bool                        m_allow_deletion;
 };
 
+
+//
+// ItemBase class implementation.
+//
+
+template <typename Item>
+QList<Item*> ItemBase::get_action_items()
+{
+    QAction* action = qobject_cast<QAction*>(sender());
+
+    if (action && !action->data().isNull())
+    {
+        const QList<Item*> items = qlist_static_cast<Item*>(action->data().value<QList<ItemBase*> >());
+
+        if (!items.empty())
+            return items;
+    }
+
+    return make_qlist(static_cast<Item*>(this));
+}
+
 }       // namespace studio
 }       // namespace appleseed
 
 Q_DECLARE_METATYPE(QList<appleseed::studio::ItemBase*>);
+Q_DECLARE_METATYPE(QList<const appleseed::studio::ItemBase*>);
 
 #endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ITEMBASE_H

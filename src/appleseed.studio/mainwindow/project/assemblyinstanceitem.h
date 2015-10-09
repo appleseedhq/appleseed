@@ -38,8 +38,12 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
+// Qt headers.
+#include <QList>
+
 // Forward declarations.
 namespace appleseed { namespace studio { class EntityEditorContext; } }
+namespace appleseed { namespace studio { class ItemBase; } }
 namespace renderer  { class AssemblyInstance; }
 namespace renderer  { class BaseGroup; }
 
@@ -64,7 +68,7 @@ class AssemblyInstanceItem
     renderer::BaseGroup&                m_parent;
     AssemblyInstanceCollectionItem*     m_collection_item;
 
-    virtual void slot_delete() APPLESEED_OVERRIDE;
+    virtual void delete_multiple(const QList<ItemBase*>& items) APPLESEED_OVERRIDE;
     void do_delete();
 };
 
