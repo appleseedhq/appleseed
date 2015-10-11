@@ -93,6 +93,9 @@ namespace
             // Precompute the relative index of refraction.
             values->m_eta = values->m_outside_ior / values->m_inside_ior;
 
+            // Clamp anisotropy.
+            values->m_anisotropy = clamp(values->m_anisotropy, 0.0, 0.999);
+
             if (m_inputs.source("sigma_a") == 0 || m_inputs.source("sigma_s") == 0)
             {
                 // Apply multipliers.
