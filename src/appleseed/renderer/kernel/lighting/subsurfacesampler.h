@@ -135,6 +135,10 @@ void SubsurfaceSampler::sample(
     if (radius2 > rmax2)
         return;
 
+    // Apply OSL bump / normal mapping.
+    if (bssrdf_sample.m_shading_basis)
+        outgoing_point.set_shading_basis(*bssrdf_sample.m_shading_basis);
+
     // Evaluate the PDF of the BSSRDF sample.
     // todo: integrate into BSSRDF sampling.
     const double radius = std::sqrt(radius2);

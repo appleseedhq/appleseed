@@ -189,6 +189,10 @@ namespace
                 sampling_context.split_in_place(1, 1);
                 const double s = sampling_context.next_double2();
                 const size_t closure_index = c->choose_closure(s);
+
+                sample.m_shading_basis =
+                    &c->get_closure_shading_basis(closure_index);
+
                 return
                     bssrdf_from_closure_id(c->get_closure_type(closure_index)).sample(
                         sampling_context,

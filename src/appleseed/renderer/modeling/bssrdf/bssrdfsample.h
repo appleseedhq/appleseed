@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
+#include "foundation/math/basis.h"
 
 // Standard headers
 #include <cstddef>
@@ -41,11 +42,24 @@ namespace renderer
 class BSSRDFSample
 {
   public:
-    double                  m_eta;
-    size_t                  m_channel;
-    foundation::Vector2d    m_point;
-    double                  m_rmax2;
+    BSSRDFSample();
+
+    const foundation::Basis3d*  m_shading_basis;
+    double                      m_eta;
+    size_t                      m_channel;
+    foundation::Vector2d        m_point;
+    double                      m_rmax2;
 };
+
+
+//
+// BSSRDFSample class implementation.
+//
+
+inline BSSRDFSample::BSSRDFSample()
+  : m_shading_basis(0)
+{
+}
 
 }       // namespace renderer
 

@@ -97,6 +97,11 @@ class OSLShaderGroupExec
         const ShadingPoint&             shading_point,
         const foundation::Vector2d&     s) const;
 
+    void choose_subsurface_normal(
+        const ShadingPoint&             shading_point,
+        const void*                     bssrdf_data,
+        const double                    s) const;
+
     foundation::Color3f execute_background(
         const ShaderGroup&              shader_group,
         const foundation::Vector3d&     outgoing) const;

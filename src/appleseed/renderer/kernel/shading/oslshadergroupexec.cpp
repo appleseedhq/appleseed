@@ -170,6 +170,22 @@ void OSLShaderGroupExec::execute_bump(
     }
 }
 
+void OSLShaderGroupExec::choose_subsurface_normal(
+    const ShadingPoint&             shading_point,
+    const void*                     bssrdf_data,
+    const double                    s) const
+{
+    const CompositeSubsurfaceClosure* c =
+        reinterpret_cast<const CompositeSubsurfaceClosure*>(bssrdf_data);
+
+    if (c->get_num_closures() > 0)
+    {
+        const size_t index = c->choose_closure(s);
+        shading_point.set_shading_basis(
+            c->get_closure_shading_basis(index));
+    }
+}
+
 Color3f OSLShaderGroupExec::execute_background(
     const ShaderGroup&              shader_group,
     const Vector3d&                 outgoing) const
