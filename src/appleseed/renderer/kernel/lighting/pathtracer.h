@@ -337,8 +337,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         SubsurfaceSampleVisitor subsurf_visitor;
         if (vertex.m_bssrdf)
         {
-            // todo: handle OSL bump mapping here.
-
             // Find possible incoming points.
             const SubsurfaceSampler sampler(shading_context);
             sampler.sample(
@@ -359,10 +357,45 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             vertex.m_incoming_point = &subsurf_visitor.m_incoming_points[i];
             vertex.m_incoming_point_prob = subsurf_visitor.m_probabilities[i] / subsurf_visitor.m_sample_count;
 
-            // todo:
-            //     exec the OSL shader at the incoming point if needed.
-            //     eval the bssrdf at incoming point.
-            //     apply OSL bump.
+            // Here, when tracing rays from the camera we should "jump" to the sampled
+            // point, which is the point the light arrives to, evaluate the bssrdf there
+            // and use the bssrdf parameters for the following lighting calculations.
+            // This has the side effect of blurring the textures used in bssrdfs and makes
+            // it impossible to have detailed textures for highly translucent materials.
+            // It's probably not what most users want, so we use the bssrdf parameters
+            // at the outgoing point for lighting calculations.
+            // Maybe this could be exposed as an option later.
+            //
+            // Interesting reference:
+            //
+            //   http://renderman.pixar.com/resources/current/RenderMan/subsurface.html#varying-albedo-and-diffuse-mean-free-path-length
+            //   section 2.6: Where to apply the surface albedo
+#if 0
+            if (!Adjoint)
+            {
+                if (material->has_osl_surface())
+                {
+                    shading_context.execute_osl_subsurface(
+                        *material->get_osl_surface(),
+                        *vertex.m_incoming_point);
+                }
+
+                vertex.m_bssrdf->evaluate_inputs(
+                    shading_context,
+                    bssrdf_input_evaluator,
+                    *vertex.m_incoming_point);
+
+                if (material->has_osl_surface())
+                {
+                    sampling_context.split_in_place(1, 1);
+                    const double s = sampling_context.next_double2();
+                    shading_context.choose_osl_subsurface_normal(
+                        *vertex.m_incoming_point,
+                        vertex.m_bssrdf_data,
+                        s);
+                }
+            }
+#endif
         }
 
         // Pass this vertex to the path visitor.
