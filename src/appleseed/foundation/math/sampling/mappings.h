@@ -157,7 +157,7 @@ Vector<T, 3> sample_spherical_triangle_uniform(
 //   Physically Based Rendering, first edition, page 641.
 //
 
-// Map a uniform random sample in [0,1) to an exponential distribution 
+// Map a uniform random sample in [0,1) to an exponential distribution
 // of the form exp(-a*x).
 template <typename T>
 T sample_exponential_distribution(
@@ -167,6 +167,29 @@ template <typename T>
 T exponential_distribution_pdf(
     const T x,
     const T a);
+
+
+// Equi-angular sampling along a ray with respect to a point.
+//
+// Reference:
+//
+//   Importance Sampling Techniques for Path Tracing in Participating Media
+//   Christopher Kulla and Marcos Fajardo
+//   https://www.solidangle.com/research/egsr2012_volume.pdf
+
+template <typename T>
+T sample_equi_angular_distribution(
+    const T u,                      // uniform random sample in [0,1)
+    const T theta_a,                // start angle
+    const T theta_b,                // end angle
+    const T D);                     // distance from point to the ray
+
+template <typename T>
+T equi_angular_distribution_pdf(
+    const T t,
+    const T theta_a,                // start angle
+    const T theta_b,                // end angle
+    const T D);                     // distance from point to the ray
 
 
 //
@@ -446,6 +469,26 @@ inline T exponential_distribution_pdf(
     assert(x >= T(0.0));
 
     return a * std::exp(-a * x);
+}
+
+template <typename T>
+T sample_equi_angular_distribution(
+    const T u,
+    const T theta_a,
+    const T theta_b,
+    const T D)
+{
+    return D * std::tan(lerp(theta_a, theta_b, u));
+}
+
+template <typename T>
+T equi_angular_distribution_pdf(
+    const T t,
+    const T theta_a,
+    const T theta_b,
+    const T D)
+{
+    return D / ((theta_b - theta_a) * (square(D) + square(t)));
 }
 
 }       // namespace foundation
