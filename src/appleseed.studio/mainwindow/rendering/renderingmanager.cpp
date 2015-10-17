@@ -237,8 +237,18 @@ void RenderingManager::schedule_or_execute(auto_ptr<IScheduledAction> action)
 {
     if (is_rendering())
     {
-        m_scheduled_actions.push_back(action.release());
-        reinitialize_rendering();
+        // For now, we limit the size of the queue of scheduled actions to 1.
+        // Here is why: a scheduled action, when executed, may invalidate one or
+        // several other scheduled actions. For instance, a scheduled deletion,
+        // when executed, will invalidate all other actions on the same entity
+        // (and in particular, other scheduled *deletions* on the same entity).
+        // Since we don't check dependencies between scheduled actions, we need
+        // to limit the number of scheduled actions to 1 to prevent crashes.
+        if (m_scheduled_actions.size() < 1)
+        {
+            m_scheduled_actions.push_back(action.release());
+            reinitialize_rendering();
+        }
     }
     else
     {

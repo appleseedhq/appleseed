@@ -46,6 +46,7 @@
 #include "mainwindow/project/texturecollectionitem.h"
 #include "mainwindow/project/tools.h"
 #include "mainwindow/rendering/renderingmanager.h"
+#include "utility/miscellaneous.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
@@ -362,11 +363,12 @@ namespace
     }
 }
 
-void AssemblyItem::slot_delete()
+void AssemblyItem::delete_multiple(const QList<ItemBase*>& items)
 {
     m_editor_context.m_rendering_manager.schedule_or_execute(
         auto_ptr<RenderingManager::IScheduledAction>(
-            new EntityDeletionAction<AssemblyItem>(this)));
+            new EntityDeletionAction<AssemblyItem>(
+                qlist_static_cast<AssemblyItem*>(items))));
 }
 
 void AssemblyItem::do_delete()

@@ -37,6 +37,12 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/containers/dictionary.h"
 
+// Qt headers.
+#include <QList>
+
+// Standard headers.
+#include <string>
+
 // Forward declarations.
 namespace renderer { class Project; }
 
@@ -54,9 +60,9 @@ class EntityCreationAction
 {
   public:
     EntityCreationAction(
-        EntityItem*                     parent,
+        EntityItem*                     item,
         const foundation::Dictionary&   values)
-      : m_parent(parent)
+      : m_item(item)
       , m_values(values)
     {
     }
@@ -64,11 +70,11 @@ class EntityCreationAction
     virtual void operator()(
         renderer::Project&              project) APPLESEED_OVERRIDE
     {
-        m_parent->create(m_values);
+        m_item->create(m_values);
     }
 
   private:
-    EntityItem*                         m_parent;
+    EntityItem*                         m_item;
     const foundation::Dictionary        m_values;
 };
 
@@ -78,9 +84,9 @@ class EntityEditionAction
 {
   public:
     EntityEditionAction(
-        EntityItem*                     parent,
+        EntityItem*                     item,
         const foundation::Dictionary&   values)
-      : m_parent(parent)
+      : m_item(item)
       , m_values(values)
     {
     }
@@ -88,11 +94,11 @@ class EntityEditionAction
     virtual void operator()(
         renderer::Project&              project) APPLESEED_OVERRIDE
     {
-        m_parent->edit(m_values);
+        m_item->edit(m_values);
     }
 
   private:
-    EntityItem*                         m_parent;
+    EntityItem*                         m_item;
     const foundation::Dictionary        m_values;
 };
 
@@ -102,9 +108,9 @@ class EntityInstantiationAction
 {
   public:
     explicit EntityInstantiationAction(
-        EntityItem*                     parent,
+        EntityItem*                     item,
         const std::string               name)
-      : m_parent(parent)
+      : m_item(item)
       , m_name(name)
     {
     }
@@ -112,11 +118,11 @@ class EntityInstantiationAction
     virtual void operator()(
         renderer::Project&              project) APPLESEED_OVERRIDE
     {
-        m_parent->do_instantiate(m_name);
+        m_item->do_instantiate(m_name);
     }
 
   private:
-    EntityItem*                         m_parent;
+    EntityItem*                         m_item;
     const std::string                   m_name;
 };
 
@@ -126,19 +132,26 @@ class EntityDeletionAction
 {
   public:
     explicit EntityDeletionAction(
-        EntityItem*                     parent)
-      : m_parent(parent)
+        EntityItem*                     item)
+    {
+        m_items.append(item);
+    }
+
+    explicit EntityDeletionAction(
+        const QList<EntityItem*>&       items)
+      : m_items(items)
     {
     }
 
     virtual void operator()(
         renderer::Project&              project) APPLESEED_OVERRIDE
     {
-        m_parent->do_delete();
+        for (int i = 0; i < m_items.size(); ++i)
+            m_items[i]->do_delete();
     }
 
   private:
-    EntityItem*                         m_parent;
+    QList<EntityItem*>                  m_items;
 };
 
 }       // namespace studio

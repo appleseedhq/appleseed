@@ -83,7 +83,7 @@
                 <parameter name="importance_multiplier" value="1.0" />
                 <parameter name="light_near_start" value="0.0" />
                 <parameter name="radiance" value="Material.001_edf_radiance" />
-                <parameter name="radiance_multiplier" value="50" />
+                <parameter name="radiance_multiplier" value="100" />
             </edf>
             <surface_shader name="physical_surface_shader" model="physical_surface_shader" />
             <material name="Material" model="generic_material">

@@ -152,19 +152,24 @@ class ReportWriter:
 
     def report_simple_failure(self, scene, reference_filepath, output_filepath, log_filepath, error_message):
         self.failures += 1
+
+        command = self.__make_update_command(output_filepath, reference_filepath)
+        self.all_commands.append(command)
+
         self.file.write(self.__render(self.simple_failure_template,
                                       { 'project-path': scene,
                                         'ref-image-url': urllib.quote(reference_filepath),
                                         'output-image-url': urllib.quote(output_filepath),
                                         'failure-reason': error_message,
                                         'log-file-url': urllib.quote(log_filepath),
-                                        'log-file-path': os.path.basename(log_filepath) }))
+                                        'log-file-path': os.path.basename(log_filepath),
+                                        'update-command': command }))
         self.file.flush()
 
     def report_detailed_failure(self, scene, reference_filepath, output_filepath, log_filepath, error_message, num_diff, max_diff, num_comps, diff_filepath):
         self.failures += 1
 
-        command = '{0} "{1}" "{2}"'.format("copy" if os.name == 'nt' else "cp", output_filepath, reference_filepath)
+        command = self.__make_update_command(output_filepath, reference_filepath)
         self.all_commands.append(command)
 
         self.file.write(self.__render(self.detailed_failure_template,
@@ -202,6 +207,12 @@ class ReportWriter:
         for name, value in variables.iteritems():
             html = html.replace('{' + name + '}', str(value))
         return html
+
+    def __make_update_command(self, output_filepath, reference_filepath):
+        if os.name == 'nt':
+            return 'copy /Y "{0}" "{1}"'.format(output_filepath, reference_filepath)
+        else:
+            return 'cp "{0}" "{1}"'.format(output_filepath, reference_filepath)
 
 
 #--------------------------------------------------------------------------------------------------

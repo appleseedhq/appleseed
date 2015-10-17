@@ -37,9 +37,13 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
+// Qt headers.
+#include <QList>
+
 // Forward declarations.
 namespace appleseed { namespace studio { class BaseGroupItem; } }
 namespace appleseed { namespace studio { class EntityEditorContext; } }
+namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class TextureCollectionItem; } }
 namespace renderer  { class BaseGroup; }
 namespace renderer  { class Texture; }
@@ -65,7 +69,7 @@ class TextureItem
 
     BaseGroupItem* m_base_group_item;
 
-    virtual void slot_delete() APPLESEED_OVERRIDE;
+    virtual void delete_multiple(const QList<ItemBase*>& items) APPLESEED_OVERRIDE;
     void do_delete();
 };
 

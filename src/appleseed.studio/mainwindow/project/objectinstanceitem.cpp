@@ -41,6 +41,7 @@
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/rendering/renderingmanager.h"
+#include "utility/miscellaneous.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"
@@ -124,12 +125,12 @@ QMenu* ObjectInstanceItem::get_single_item_context_menu() const
 {
     QMenu* menu = ItemBase::get_single_item_context_menu();
 
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
     menu->addSeparator();
+
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
     menu->addAction("Assign New Disney Material", this, SLOT(slot_assign_new_disney_material()));
 #endif
 
-    menu->addSeparator();
     menu->addAction("Assign Materials...", this, SLOT(slot_open_material_assignment_editor()));
 
     add_material_assignment_menu_actions(menu);
@@ -139,23 +140,15 @@ QMenu* ObjectInstanceItem::get_single_item_context_menu() const
 
 namespace
 {
-    QList<ObjectInstanceItem*> items_to_object_instance_items(const QList<ItemBase*>& items)
+    bool are_in_same_assembly(
+        const QList<ItemBase*>& items,
+        const UniqueID          assembly_uid)
     {
-        QList<ObjectInstanceItem*> object_instance_items;
-
         for (int i = 0; i < items.size(); ++i)
-            object_instance_items.append(static_cast<ObjectInstanceItem*>(items[i]));
-
-        return object_instance_items;
-    }
-
-    bool are_in_assembly(
-        const QList<ObjectInstanceItem*>&   object_instance_items,
-        const UniqueID                      assembly_uid)
-    {
-        for (int i = 0; i < object_instance_items.size(); ++i)
         {
-            if (object_instance_items[i]->get_assembly().get_uid() != assembly_uid)
+            const ObjectInstanceItem* object_instance_item = static_cast<ObjectInstanceItem*>(items[i]);
+
+            if (object_instance_item->get_assembly().get_uid() != assembly_uid)
                 return false;
         }
 
@@ -165,13 +158,14 @@ namespace
 
 QMenu* ObjectInstanceItem::get_multiple_items_context_menu(const QList<ItemBase*>& items) const
 {
-    if (!are_in_assembly(items_to_object_instance_items(items), m_parent.get_uid()))
+    if (!are_in_same_assembly(items, m_parent.get_uid()))
         return 0;
 
     QMenu* menu = ItemBase::get_multiple_items_context_menu(items);
 
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
     menu->addSeparator();
+
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
     menu->addAction("Assign New Disney Material", this, SLOT(slot_assign_new_disney_material()))
         ->setData(QVariant::fromValue(items));
 #endif
@@ -182,14 +176,15 @@ QMenu* ObjectInstanceItem::get_multiple_items_context_menu(const QList<ItemBase*
 }
 
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
+
 // Friend of ObjectInstanceItem class, thus cannot be placed in anonymous namespace.
 class AssignNewDisneyMaterialAction
   : public RenderingManager::IScheduledAction
 {
   public:
     AssignNewDisneyMaterialAction(
-        EntityEditorContext&    editor_context,
-        const QList<ItemBase*>& items)
+        EntityEditorContext&                editor_context,
+        const QList<ObjectInstanceItem*>&   items)
       : m_editor_context(editor_context)
       , m_items(items)
     {
@@ -200,8 +195,7 @@ class AssignNewDisneyMaterialAction
         for (int i = 0; i < m_items.size(); ++i)
         {
             // Create a new Disney material and assign it to the object instance.
-            const Material& material =
-                create_and_assign_new_material(static_cast<ObjectInstanceItem*>(m_items[i]));
+            const Material& material = create_and_assign_new_material(m_items[i]);
 
             // Select the last added material.
             if (i == m_items.size() - 1)
@@ -257,9 +251,10 @@ class AssignNewDisneyMaterialAction
     }
 
   private:
-    EntityEditorContext&    m_editor_context;
-    const QList<ItemBase*>  m_items;
+    EntityEditorContext&                m_editor_context;
+    const QList<ObjectInstanceItem*>    m_items;
 };
+
 #endif // APPLESEED_WITH_DISNEY_MATERIAL
 
 void ObjectInstanceItem::slot_assign_new_disney_material()
@@ -267,7 +262,9 @@ void ObjectInstanceItem::slot_assign_new_disney_material()
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
     m_editor_context.m_rendering_manager.schedule_or_execute(
         auto_ptr<RenderingManager::IScheduledAction>(
-            new AssignNewDisneyMaterialAction(m_editor_context, get_action_items())));
+            new AssignNewDisneyMaterialAction(
+                m_editor_context,
+                get_action_items<ObjectInstanceItem>())));
 #endif
 }
 
@@ -471,11 +468,12 @@ void ObjectInstanceItem::clear_material(const QVariant& untyped_data)
     }
 }
 
-void ObjectInstanceItem::slot_delete()
+void ObjectInstanceItem::delete_multiple(const QList<ItemBase*>& items)
 {
     m_editor_context.m_rendering_manager.schedule_or_execute(
         auto_ptr<RenderingManager::IScheduledAction>(
-            new EntityDeletionAction<ObjectInstanceItem>(this)));
+            new EntityDeletionAction<ObjectInstanceItem>(
+                qlist_static_cast<ObjectInstanceItem*>(items))));
 }
 
 void ObjectInstanceItem::do_delete()
@@ -509,8 +507,6 @@ void ObjectInstanceItem::add_material_assignment_menu_actions(
 
     if (!object)
         return;
-
-    menu->addSeparator();
 
     QMenu* slots_menu = menu->addMenu("Material Slots");
 

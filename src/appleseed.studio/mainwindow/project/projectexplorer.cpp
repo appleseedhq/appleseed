@@ -34,6 +34,7 @@
 #include "mainwindow/project/attributeeditor.h"
 #include "mainwindow/project/itembase.h"
 #include "mainwindow/project/projectitem.h"
+#include "utility/miscellaneous.h"
 
 // Qt headers.
 #include <QKeySequence>
@@ -97,7 +98,7 @@ ProjectExplorer::ProjectExplorer(
 
     connect(
         m_delete_shortcut.get(), SIGNAL(activated()),
-        SLOT(slot_delete_item()));
+        SLOT(slot_delete_items()));
 
     connect(
         &m_project_builder, SIGNAL(signal_project_modified()),
@@ -182,16 +183,6 @@ QMenu* ProjectExplorer::build_single_item_context_menu(QTreeWidgetItem* item) co
 
 namespace
 {
-    QList<ItemBase*> item_widgets_to_items(const QList<QTreeWidgetItem*>& item_widgets)
-    {
-        QList<ItemBase*> items;
-
-        for (int i = 0; i < item_widgets.size(); ++i)
-            items.append(static_cast<ItemBase*>(item_widgets[i]));
-
-        return items;
-    }
-
     bool are_same_class_uid(const QList<ItemBase*>& items)
     {
         assert(!items.empty());
@@ -212,7 +203,7 @@ QMenu* ProjectExplorer::build_multiple_items_context_menu(const QList<QTreeWidge
 {
     assert(item_widgets.size() > 1);
 
-    const QList<ItemBase*> items = item_widgets_to_items(item_widgets);
+    const QList<ItemBase*> items = qlist_static_cast<ItemBase*>(item_widgets);
 
     return
         are_same_class_uid(items)
@@ -254,7 +245,7 @@ void ProjectExplorer::slot_edit_item(QTreeWidgetItem* item, int column)
     static_cast<ItemBase*>(item)->slot_edit();
 }
 
-void ProjectExplorer::slot_delete_item()
+void ProjectExplorer::slot_delete_items()
 {
     if (!m_tree_widget->hasFocus())
         return;
@@ -264,7 +255,7 @@ void ProjectExplorer::slot_delete_item()
     if (selected_items.empty())
         return;
 
-    const QList<ItemBase*> items = item_widgets_to_items(selected_items);
+    const QList<ItemBase*> items = qlist_static_cast<ItemBase*>(selected_items);
 
     if (!are_same_class_uid(items))
         return;

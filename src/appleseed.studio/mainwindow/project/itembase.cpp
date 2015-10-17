@@ -31,12 +31,10 @@
 #include "itembase.h"
 
 // Qt headers.
-#include <QAction>
 #include <QKeySequence>
 #include <QMenu>
 #include <QString>
 #include <Qt>
-#include <QVariant>
 
 using namespace foundation;
 
@@ -108,7 +106,10 @@ QMenu* ItemBase::get_single_item_context_menu() const
         menu->addAction("Edit...", this, SLOT(slot_edit()));
 
     if (m_allow_deletion)
-        menu->addAction("Delete", this, SLOT(slot_delete()), QKeySequence(Qt::Key_Delete));
+    {
+        menu->addAction("Delete", this, SLOT(slot_delete_multiple()), QKeySequence(Qt::Key_Delete))
+            ->setData(QVariant::fromValue(make_qlist(this)));
+    }
 
     return menu;
 }
@@ -139,8 +140,6 @@ QMenu* ItemBase::get_multiple_items_context_menu(const QList<ItemBase*>& items) 
 
 void ItemBase::delete_multiple(const QList<ItemBase*>& items)
 {
-    for (int i = 0; i < items.size(); ++i)
-        items[i]->slot_delete();
 }
 
 void ItemBase::slot_edit(AttributeEditor* attribute_editor)
@@ -151,26 +150,9 @@ void ItemBase::slot_instantiate()
 {
 }
 
-void ItemBase::slot_delete()
-{
-}
-
 void ItemBase::slot_delete_multiple()
 {
-    delete_multiple(get_action_items());
-}
-
-QList<ItemBase*> ItemBase::get_action_items()
-{
-    QAction* action = qobject_cast<QAction*>(sender());
-
-    if (action && !action->data().isNull())
-        return action->data().value<QList<ItemBase*> >();
-
-    QList<ItemBase*> items;
-    items.append(this);
-
-    return items;
+    delete_multiple(get_action_items<ItemBase>());
 }
 
 }   // namespace studio

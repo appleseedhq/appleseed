@@ -32,6 +32,7 @@
 
 // Qt headers.
 #include <QFileDialog>
+#include <QList>
 
 // Forward declarations.
 namespace renderer  { class ParamArray; }
@@ -91,6 +92,39 @@ QShortcut* create_window_local_shortcut(QWidget* parent, const int key);
 
 // Remove all widgets and sub-layouts from a layout.
 void clear_layout(QLayout* layout);
+
+// Create a QList from a single item (workaround for pre-C++11 compilers).
+template <typename T>
+QList<T> make_qlist(const T& item);
+
+// Convert a QList<FromType> to a QList<ToType> by static_cast<>'ing items to type ToType.
+template <typename ToType, typename FromType>
+QList<ToType> qlist_static_cast(const QList<FromType>& list);
+
+
+//
+// Implementation.
+//
+
+template <typename T>
+QList<T> make_qlist(const T& item)
+{
+    QList<T> result;
+    result.append(item);
+    return result;
+}
+
+template <typename ToType, typename FromType>
+QList<ToType> qlist_static_cast(const QList<FromType>& list)
+{
+    QList<ToType> result;
+    result.reserve(list.size());
+
+    for (int i = 0, e = list.size(); i < e; ++i)
+        result.append(static_cast<ToType>(list[i]));
+
+    return result;
+}
 
 }       // namespace studio
 }       // namespace appleseed
