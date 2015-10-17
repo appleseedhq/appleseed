@@ -107,8 +107,6 @@ class ShadingContext
         const ShaderGroup&  shader_group,
         const ShadingPoint& shading_point) const;
 
-    // Execute the OSL shader group, use s to choose
-    // one of the closures and set its shading basis in shading point.
     void execute_osl_subsurface(
         const ShaderGroup&  shader_group,
         const ShadingPoint& shading_point) const;

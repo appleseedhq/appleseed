@@ -169,7 +169,7 @@ T exponential_distribution_pdf(
     const T a);
 
 
-// Equi-angular sampling along a ray with respect to a point.
+// Equiangular sampling along a ray with respect to a point.
 //
 // Reference:
 //
@@ -178,18 +178,18 @@ T exponential_distribution_pdf(
 //   https://www.solidangle.com/research/egsr2012_volume.pdf
 
 template <typename T>
-T sample_equi_angular_distribution(
+T sample_equiangular_distribution(
     const T u,                      // uniform random sample in [0,1)
     const T theta_a,                // start angle
     const T theta_b,                // end angle
-    const T D);                     // distance from point to the ray
+    const T distance);              // distance from point to the ray
 
 template <typename T>
-T equi_angular_distribution_pdf(
+T equiangular_distribution_pdf(
     const T t,
     const T theta_a,                // start angle
     const T theta_b,                // end angle
-    const T D);                     // distance from point to the ray
+    const T distance);              // distance from point to the ray
 
 
 //
@@ -472,23 +472,23 @@ inline T exponential_distribution_pdf(
 }
 
 template <typename T>
-T sample_equi_angular_distribution(
+T sample_equiangular_distribution(
     const T u,
     const T theta_a,
     const T theta_b,
-    const T D)
+    const T distance)
 {
-    return D * std::tan(lerp(theta_a, theta_b, u));
+    return distance * std::tan(lerp(theta_a, theta_b, u));
 }
 
 template <typename T>
-T equi_angular_distribution_pdf(
+T equiangular_distribution_pdf(
     const T t,
     const T theta_a,
     const T theta_b,
-    const T D)
+    const T distance)
 {
-    return D / ((theta_b - theta_a) * (square(D) + square(t)));
+    return distance / ((theta_b - theta_a) * (square(distance) + square(t)));
 }
 
 }       // namespace foundation

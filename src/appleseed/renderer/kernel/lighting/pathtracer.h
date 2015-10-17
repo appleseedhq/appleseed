@@ -358,9 +358,9 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             vertex.m_incoming_point_prob = subsurf_visitor.m_probabilities[i] / subsurf_visitor.m_sample_count;
 
             // Here, when tracing rays from the camera we should "jump" to the sampled
-            // point, which is the point the light arrives to, evaluate the bssrdf there
-            // and use the bssrdf parameters for the following lighting calculations.
-            // This has the side effect of blurring the textures used in bssrdfs and makes
+            // point, which is the point the light arrives to, evaluate the BSSRDF there
+            // and use the BSSRDF parameters for the following lighting calculations.
+            // This has the side effect of blurring the textures used in BSSRDFs and makes
             // it impossible to have detailed textures for highly translucent materials.
             // It's probably not what most users want, so we use the bssrdf parameters
             // at the outgoing point for lighting calculations.

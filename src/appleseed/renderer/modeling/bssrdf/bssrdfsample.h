@@ -30,8 +30,8 @@
 #define APPLESEED_RENDERER_MODELING_BSSRDF_BSSRDFSAMPLE_H
 
 // appleseed.foundation headers.
-#include "foundation/math/vector.h"
 #include "foundation/math/basis.h"
+#include "foundation/math/vector.h"
 
 // Standard headers
 #include <cstddef>
