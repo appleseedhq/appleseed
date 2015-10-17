@@ -181,7 +181,7 @@ void EntityItem<Entity, ParentEntity, CollectionItem>::edit(const foundation::Di
 template <typename Entity, typename ParentEntity, typename CollectionItem>
 void EntityItem<Entity, ParentEntity, CollectionItem>::delete_multiple(const QList<ItemBase*>& items)
 {
-    m_editor_context.m_rendering_manager.schedule_or_execute(
+    Base::m_editor_context.m_rendering_manager.schedule_or_execute(
         std::auto_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<EntityItem>(
                 qlist_static_cast<EntityItem*>(items))));
