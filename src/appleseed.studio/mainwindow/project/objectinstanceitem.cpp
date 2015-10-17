@@ -125,12 +125,12 @@ QMenu* ObjectInstanceItem::get_single_item_context_menu() const
 {
     QMenu* menu = ItemBase::get_single_item_context_menu();
 
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
     menu->addSeparator();
+
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
     menu->addAction("Assign New Disney Material", this, SLOT(slot_assign_new_disney_material()));
 #endif
 
-    menu->addSeparator();
     menu->addAction("Assign Materials...", this, SLOT(slot_open_material_assignment_editor()));
 
     add_material_assignment_menu_actions(menu);
@@ -163,8 +163,9 @@ QMenu* ObjectInstanceItem::get_multiple_items_context_menu(const QList<ItemBase*
 
     QMenu* menu = ItemBase::get_multiple_items_context_menu(items);
 
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
     menu->addSeparator();
+
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
     menu->addAction("Assign New Disney Material", this, SLOT(slot_assign_new_disney_material()))
         ->setData(QVariant::fromValue(items));
 #endif
@@ -506,8 +507,6 @@ void ObjectInstanceItem::add_material_assignment_menu_actions(
 
     if (!object)
         return;
-
-    menu->addSeparator();
 
     QMenu* slots_menu = menu->addMenu("Material Slots");
 
