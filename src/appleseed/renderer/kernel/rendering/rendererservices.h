@@ -42,7 +42,10 @@ BEGIN_OSL_INCLUDES
 END_OSL_INCLUDES
 
 // OpenImageIO headers.
+#include "foundation/platform/oiioheaderguards.h"
+BEGIN_OIIO_INCLUDES
 #include "OpenImageIO/texture.h"
+END_OIIO_INCLUDES
 
 // Boost headers.
 #include "boost/unordered_map.hpp"

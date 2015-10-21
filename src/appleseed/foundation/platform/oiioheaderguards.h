@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,35 +26,26 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_OIIOERRORHANDLER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_OIIOERRORHANDLER_H
+#ifndef APPLESEED_FOUNDATION_PLATFORM_OIIOHEADERGUARDS_H
+#define APPLESEED_FOUNDATION_PLATFORM_OIIOHEADERGUARDS_H
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+#if defined _MSC_VER
 
-// OpenImageIO headers.
-#include "foundation/platform/oiioheaderguards.h"
-BEGIN_OIIO_INCLUDES
-#include "OpenImageIO/errorhandler.h"
-END_OIIO_INCLUDES
+    // C4305: truncation from 'double' to 'float', possible loss of data
+    // C4244: conversion from 'double' to 'float', possible loss of data
+    #define BEGIN_OIIO_INCLUDES             \
+        __pragma(warning(push))             \
+        __pragma(warning(disable: 4244))    \
+        __pragma(warning(disable: 4305))
 
-// Standard headers.
-#include <string>
+    #define END_OIIO_INCLUDES               \
+        __pragma(warning(pop))
 
-namespace renderer
-{
+#else
 
-//
-// An OpenImageIO-to-appleseed error handler adapter.
-//
+    #define BEGIN_OIIO_INCLUDES
+    #define END_OIIO_INCLUDES
 
-class OIIOErrorHandler
-  : public OIIO::ErrorHandler
-{
-  public:
-    virtual void operator()(int errcode, const std::string& msg) APPLESEED_OVERRIDE;
-};
+#endif
 
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_OIIOERRORHANDLER_H
+#endif  // !APPLESEED_FOUNDATION_PLATFORM_OIIOHEADERGUARDS_H

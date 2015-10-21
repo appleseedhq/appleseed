@@ -35,8 +35,8 @@
     // C4800: forcing value to bool 'true' or 'false'
     #define BEGIN_EXR_INCLUDES              \
         __pragma(warning(push))             \
-        __pragma(warning(disable: 4800))    \
-        __pragma(warning(disable: 4244))
+        __pragma(warning(disable: 4244))    \
+        __pragma(warning(disable: 4800))
 
     #define END_EXR_INCLUDES                \
         __pragma(warning(pop))

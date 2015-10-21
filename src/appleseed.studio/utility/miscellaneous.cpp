@@ -43,7 +43,10 @@
 
 // OpenImageIO headers.
 #ifdef APPLESEED_WITH_OIIO
-#include "OpenImageIO/imageio.h"
+#include "foundation/platform/oiioheaderguards.h"
+BEGIN_OIIO_INCLUDES
+#include "OpenImageIO/texture.h"
+END_OIIO_INCLUDES
 #endif
 
 // Qt headers.
