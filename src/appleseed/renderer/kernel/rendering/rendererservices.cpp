@@ -88,8 +88,8 @@ namespace
 }
 
 RendererServices::RendererServices(
-    const Project&          project,
-    OIIO::TextureSystem&    texture_sys)
+    const Project&              project,
+    OIIO::TextureSystem&        texture_sys)
   : OSL::RendererServices()
   , m_project(project)
   , m_texture_sys(texture_sys)
@@ -142,21 +142,21 @@ OIIO::TextureSystem* RendererServices::texturesys() const
 }
 
 bool RendererServices::texture(
-    OSL::ustring        filename,
-    TextureHandle*      texture_handle,
-    TexturePerthread*   texture_thread_info,
-    OSL::TextureOpt&    options,
-    OSL::ShaderGlobals* sg,
-    float               s,
-    float               t,
-    float               dsdx,
-    float               dtdx,
-    float               dsdy,
-    float               dtdy,
-    int                 nchannels,
-    float*              result,
-    float*              dresultds,
-    float*              dresultdt)
+    OSL::ustring                filename,
+    TextureHandle*              texture_handle,
+    TexturePerthread*           texture_thread_info,
+    OSL::TextureOpt&            options,
+    OSL::ShaderGlobals*         sg,
+    float                       s,
+    float                       t,
+    float                       dsdx,
+    float                       dtdx,
+    float                       dsdy,
+    float                       dtdy,
+    int                         nchannels,
+    float*                      result,
+    float*                      dresultds,
+    float*                      dresultdt)
 {
     return OSL::RendererServices::texture(
         filename,
@@ -177,10 +177,10 @@ bool RendererServices::texture(
 }
 
 bool RendererServices::get_matrix(
-    OSL::ShaderGlobals*     sg,
-    OSL::Matrix44&          result,
-    OSL::TransformationPtr  xform,
-    float                   time)
+    OSL::ShaderGlobals*         sg,
+    OSL::Matrix44&              result,
+    OSL::TransformationPtr      xform,
+    float                       time)
 {
     if (!xform)
         return false;
@@ -193,10 +193,10 @@ bool RendererServices::get_matrix(
 }
 
 bool RendererServices::get_inverse_matrix(
-    OSL::ShaderGlobals*     sg,
-    OSL::Matrix44&          result,
-    OSL::TransformationPtr  xform,
-    float                   time)
+    OSL::ShaderGlobals*         sg,
+    OSL::Matrix44&              result,
+    OSL::TransformationPtr      xform,
+    float                       time)
 {
     if (!xform)
         return false;
@@ -209,9 +209,9 @@ bool RendererServices::get_inverse_matrix(
 }
 
 bool RendererServices::get_matrix(
-    OSL::ShaderGlobals*     sg,
-    OSL::Matrix44&          result,
-    OSL::TransformationPtr  xform)
+    OSL::ShaderGlobals*         sg,
+    OSL::Matrix44&              result,
+    OSL::TransformationPtr      xform)
 {
     if (!xform)
         return false;
@@ -227,9 +227,9 @@ bool RendererServices::get_matrix(
 }
 
 bool RendererServices::get_inverse_matrix(
-    OSL::ShaderGlobals*     sg,
-    OSL::Matrix44&          result,
-    OSL::TransformationPtr  xform)
+    OSL::ShaderGlobals*         sg,
+    OSL::Matrix44&              result,
+    OSL::TransformationPtr      xform)
 {
     if (!xform)
         return false;
@@ -245,10 +245,10 @@ bool RendererServices::get_inverse_matrix(
 }
 
 bool RendererServices::get_matrix(
-    OSL::ShaderGlobals*     sg,
-    OSL::Matrix44&          result,
-    OIIO::ustring           from,
-    float                   time)
+    OSL::ShaderGlobals*         sg,
+    OSL::Matrix44&              result,
+    OIIO::ustring               from,
+    float                       time)
 {
     if (from == g_camera_ustr)
     {
@@ -263,10 +263,10 @@ bool RendererServices::get_matrix(
 }
 
 bool RendererServices::get_inverse_matrix(
-    OSL::ShaderGlobals*     sg,
-    OSL::Matrix44&          result,
-    OSL::ustring            to,
-    float                   time)
+    OSL::ShaderGlobals*         sg,
+    OSL::Matrix44&              result,
+    OSL::ustring                to,
+    float                       time)
 {
     if (to == g_camera_ustr)
     {
@@ -285,9 +285,9 @@ bool RendererServices::get_inverse_matrix(
 }
 
 bool RendererServices::get_matrix(
-    OSL::ShaderGlobals*     sg,
-    OSL::Matrix44&          result,
-    OIIO::ustring           from)
+    OSL::ShaderGlobals*         sg,
+    OSL::Matrix44&              result,
+    OIIO::ustring               from)
 {
     if (from == g_camera_ustr)
     {
@@ -304,9 +304,9 @@ bool RendererServices::get_matrix(
 }
 
 bool RendererServices::get_inverse_matrix(
-    OSL::ShaderGlobals*     sg,
-    OSL::Matrix44&          result,
-    OSL::ustring            to)
+    OSL::ShaderGlobals*         sg,
+    OSL::Matrix44&              result,
+    OSL::ustring                to)
 {
     if (to == g_camera_ustr)
     {
@@ -339,14 +339,14 @@ bool RendererServices::transform_points(
 }
 
 bool RendererServices::trace(
-    TraceOpt&               options,
-    OSL::ShaderGlobals*     sg,
-    const OSL::Vec3&        P,
-    const OSL::Vec3&        dPdx,
-    const OSL::Vec3&        dPdy,
-    const OSL::Vec3&        R,
-    const OSL::Vec3&        dRdx,
-    const OSL::Vec3&        dRdy)
+    TraceOpt&                   options,
+    OSL::ShaderGlobals*         sg,
+    const OSL::Vec3&            P,
+    const OSL::Vec3&            dPdx,
+    const OSL::Vec3&            dPdy,
+    const OSL::Vec3&            R,
+    const OSL::Vec3&            dRdx,
+    const OSL::Vec3&            dRdy)
 {
     assert(m_texture_store);
 
@@ -413,12 +413,12 @@ bool RendererServices::trace(
 }
 
 bool RendererServices::getmessage(
-    OSL::ShaderGlobals*     sg,
-    OIIO::ustring           source,
-    OIIO::ustring           name,
-    OIIO::TypeDesc          type,
-    void*                   val,
-    bool                    derivatives)
+    OSL::ShaderGlobals*         sg,
+    OIIO::ustring               source,
+    OIIO::ustring               name,
+    OIIO::TypeDesc              type,
+    void*                       val,
+    bool                        derivatives)
 {
     const ShadingPoint::OSLTraceData* trace_data =
         reinterpret_cast<ShadingPoint::OSLTraceData*>(sg->tracedata);
@@ -456,12 +456,12 @@ bool RendererServices::getmessage(
 }
 
 bool RendererServices::get_attribute(
-    OSL::ShaderGlobals*     sg,
-    bool                    derivatives,
-    OIIO::ustring           object,
-    OIIO::TypeDesc          type,
-    OIIO::ustring           name,
-    void*                   val)
+    OSL::ShaderGlobals*         sg,
+    bool                        derivatives,
+    OIIO::ustring               object,
+    OIIO::TypeDesc              type,
+    OIIO::ustring               name,
+    void*                       val)
 {
     // We don't support getting attributes from named objects, yet.
     if (object != g_empty_ustr)
@@ -483,44 +483,43 @@ bool RendererServices::get_attribute(
 }
 
 bool RendererServices::get_array_attribute(
-    OSL::ShaderGlobals*     sg,
-    bool                    derivatives,
-    OIIO::ustring           object,
-    OIIO::TypeDesc          type,
-    OIIO::ustring           name,
-    int                     index,
-    void*                   val)
+    OSL::ShaderGlobals*         sg,
+    bool                        derivatives,
+    OIIO::ustring               object,
+    OIIO::TypeDesc              type,
+    OIIO::ustring               name,
+    int                         index,
+    void*                       val)
 {
     return false;
 }
 
 bool RendererServices::get_userdata(
-    bool                    derivatives,
-    OIIO::ustring           name,
-    OIIO::TypeDesc          type,
-    OSL::ShaderGlobals*     sg,
-    void*                   val)
+    bool                        derivatives,
+    OIIO::ustring               name,
+    OIIO::TypeDesc              type,
+    OSL::ShaderGlobals*         sg,
+    void*                       val)
 {
     return false;
 }
 
 bool RendererServices::has_userdata(
-    OIIO::ustring           name,
-    OIIO::TypeDesc          type,
-    OSL::ShaderGlobals*     sg)
+    OIIO::ustring               name,
+    OIIO::TypeDesc              type,
+    OSL::ShaderGlobals*         sg)
 {
     return false;
 }
 
-// Attribute getters.
-#define IMPLEMENT_ATTR_GETTER(name) \
-bool RendererServices::get_##name(  \
-    OSL::ShaderGlobals* sg,         \
-    bool                derivs,     \
-    OIIO::ustring       object,     \
-    OIIO::TypeDesc      type,       \
-    OIIO::ustring       name,       \
-    void                *val) const
+#define IMPLEMENT_ATTR_GETTER(name)         \
+    bool RendererServices::get_##name(      \
+        OSL::ShaderGlobals*     sg,         \
+        bool                    derivs,     \
+        OIIO::ustring           object,     \
+        OIIO::TypeDesc          type,       \
+        OIIO::ustring           name,       \
+        void*                   val) const
 
 IMPLEMENT_ATTR_GETTER(object_instance_id)
 {
@@ -813,9 +812,9 @@ IMPLEMENT_ATTR_GETTER(appleseed_version)
 #undef IMPLEMENT_ATTR_GETTER
 
 void RendererServices::clear_attr_derivatives(
-    bool                    derivs,
-    const OIIO::TypeDesc&   type,
-    void*                   val)
+    bool                        derivs,
+    const OIIO::TypeDesc&       type,
+    void*                       val)
 {
     if (derivs)
     {

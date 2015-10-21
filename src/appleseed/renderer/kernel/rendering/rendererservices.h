@@ -72,8 +72,8 @@ class RendererServices
   public:
     // Constructor.
     RendererServices(
-        const Project&          project,
-        OIIO::TextureSystem&    texture_sys);
+        const Project&              project,
+        OIIO::TextureSystem&        texture_sys);
 
     // Initialize before rendering starts.
     void initialize(TextureStore& texture_store);
@@ -101,30 +101,30 @@ class RendererServices
     // Return true if the file is found and could be opened, otherwise
     // return false.
     virtual bool texture(
-        OSL::ustring        filename,
-        TextureHandle*      texture_handle,
-        TexturePerthread*   texture_thread_info,
-        OSL::TextureOpt&    options,
-        OSL::ShaderGlobals* sg,
-        float               s,
-        float               t,
-        float               dsdx,
-        float               dtdx,
-        float               dsdy,
-        float               dtdy,
-        int                 nchannels,
-        float*              result,
-        float*              dresultds,
-        float*              dresultdt) APPLESEED_OVERRIDE;
+        OSL::ustring                filename,
+        TextureHandle*              texture_handle,
+        TexturePerthread*           texture_thread_info,
+        OSL::TextureOpt&            options,
+        OSL::ShaderGlobals*         sg,
+        float                       s,
+        float                       t,
+        float                       dsdx,
+        float                       dtdx,
+        float                       dsdy,
+        float                       dtdy,
+        int                         nchannels,
+        float*                      result,
+        float*                      dresultds,
+        float*                      dresultdt) APPLESEED_OVERRIDE;
 
     // Get the 4x4 matrix that transforms by the specified
     // transformation at the given time.  Return true if ok, false
     // on error.
     virtual bool get_matrix(
-        OSL::ShaderGlobals*     sg,
-        OSL::Matrix44&          result,
-        OSL::TransformationPtr  xform,
-        float                   time) APPLESEED_OVERRIDE;
+        OSL::ShaderGlobals*         sg,
+        OSL::Matrix44&              result,
+        OSL::TransformationPtr      xform,
+        float                       time) APPLESEED_OVERRIDE;
 
     // Get the 4x4 matrix that transforms by the specified
     // transformation at the given time.  Return true if ok, false on
@@ -132,19 +132,19 @@ class RendererServices
     // invert it, but a particular renderer may have a better technique
     // and overload the implementation.
     virtual bool get_inverse_matrix(
-        OSL::ShaderGlobals*     sg,
-        OSL::Matrix44&          result,
-        OSL::TransformationPtr  xform,
-        float                   time) APPLESEED_OVERRIDE;
+        OSL::ShaderGlobals*         sg,
+        OSL::Matrix44&              result,
+        OSL::TransformationPtr      xform,
+        float                       time) APPLESEED_OVERRIDE;
 
     // Get the 4x4 matrix that transforms by the specified
     // transformation.  Return true if ok, false on error.  Since no
     // time value is given, also return false if the transformation may
     // be time-varying.
     virtual bool get_matrix(
-        OSL::ShaderGlobals*     sg,
-        OSL::Matrix44&          result,
-        OSL::TransformationPtr  xform) APPLESEED_OVERRIDE;
+        OSL::ShaderGlobals*         sg,
+        OSL::Matrix44&              result,
+        OSL::TransformationPtr      xform) APPLESEED_OVERRIDE;
 
     // Get the 4x4 matrix that transforms by the specified
     // transformation.  Return true if ok, false on error.  Since no
@@ -153,18 +153,18 @@ class RendererServices
     // get_matrix and invert it, but a particular renderer may have a
     // better technique and overload the implementation.
     virtual bool get_inverse_matrix(
-        OSL::ShaderGlobals*     sg,
-        OSL::Matrix44&          result,
-        OSL::TransformationPtr  xform) APPLESEED_OVERRIDE;
+        OSL::ShaderGlobals*         sg,
+        OSL::Matrix44&              result,
+        OSL::TransformationPtr      xform) APPLESEED_OVERRIDE;
 
     // Get the 4x4 matrix that transforms points from the named
     // 'from' coordinate system to "common" space at the given time.
     // Returns true if ok, false if the named matrix is not known.
     virtual bool get_matrix(
-        OSL::ShaderGlobals*     sg,
-        OSL::Matrix44&          result,
-        OIIO::ustring           from,
-        float                   time) APPLESEED_OVERRIDE;
+        OSL::ShaderGlobals*         sg,
+        OSL::Matrix44&              result,
+        OIIO::ustring               from,
+        float                       time) APPLESEED_OVERRIDE;
 
     // Get the 4x4 matrix that transforms points from "common" space to
     // the named 'to' coordinate system to at the given time.  The
@@ -172,19 +172,19 @@ class RendererServices
     // particular renderer may have a better technique and overload the
     // implementation.
     virtual bool get_inverse_matrix(
-        OSL::ShaderGlobals*     sg,
-        OSL::Matrix44&          result,
-        OSL::ustring            to,
-        float                   time) APPLESEED_OVERRIDE;
+        OSL::ShaderGlobals*         sg,
+        OSL::Matrix44&              result,
+        OSL::ustring                to,
+        float                       time) APPLESEED_OVERRIDE;
 
     // Get the 4x4 matrix that transforms 'from' to "common" space.
     // Since there is no time value passed, return false if the
     // transformation may be time-varying(as well as if it's not found
     // at all).
     virtual bool get_matrix(
-        OSL::ShaderGlobals*     sg,
-        OSL::Matrix44&          result,
-        OIIO::ustring           from) APPLESEED_OVERRIDE;
+        OSL::ShaderGlobals*         sg,
+        OSL::Matrix44&              result,
+        OIIO::ustring               from) APPLESEED_OVERRIDE;
 
     // Get the 4x4 matrix that transforms points from "common" space to
     // the named 'to' coordinate system.  Since there is no time value
@@ -194,9 +194,9 @@ class RendererServices
     // particular renderer may have a better technique and overload the
     // implementation.
     virtual bool get_inverse_matrix(
-        OSL::ShaderGlobals*     sg,
-        OSL::Matrix44&          result,
-        OSL::ustring            to) APPLESEED_OVERRIDE;
+        OSL::ShaderGlobals*         sg,
+        OSL::Matrix44&              result,
+        OSL::ustring                to) APPLESEED_OVERRIDE;
 
     // Transform points Pin[0..npoints-1] in named coordinate system
     // 'from' into 'to' coordinates, storing the result in Pout[] using
@@ -234,25 +234,25 @@ class RendererServices
     // Immediately trace a ray from P in the direction R.  Return true
     // if anything hit, otherwise false.
     bool trace(
-        TraceOpt&               options,
-        OSL::ShaderGlobals*     sg,
-        const OSL::Vec3&        P,
-        const OSL::Vec3&        dPdx,
-        const OSL::Vec3&        dPdy,
-        const OSL::Vec3&        R,
-        const OSL::Vec3&        dRdx,
-        const OSL::Vec3&        dRdy) APPLESEED_OVERRIDE;
+        TraceOpt&                   options,
+        OSL::ShaderGlobals*         sg,
+        const OSL::Vec3&            P,
+        const OSL::Vec3&            dPdx,
+        const OSL::Vec3&            dPdy,
+        const OSL::Vec3&            R,
+        const OSL::Vec3&            dRdx,
+        const OSL::Vec3&            dRdy) APPLESEED_OVERRIDE;
 
     // Get the named message from the renderer and if found then
     // write it into 'val'.  Otherwise, return false.  This is only
     // called for "sourced" messages, not ordinary intra-group messages.
     bool getmessage(
-        OSL::ShaderGlobals*     sg,
-        OIIO::ustring           source,
-        OIIO::ustring           name,
-        OIIO::TypeDesc          type,
-        void*                   val,
-        bool                    derivatives) APPLESEED_OVERRIDE;
+        OSL::ShaderGlobals*         sg,
+        OIIO::ustring               source,
+        OIIO::ustring               name,
+        OIIO::TypeDesc              type,
+        void*                       val,
+        bool                        derivatives) APPLESEED_OVERRIDE;
 
     // Get the named attribute from the renderer and if found then
     // write it into 'val'.  Otherwise, return false.  If no object is
@@ -267,60 +267,69 @@ class RendererServices
     // attribute) if you can (known object and attribute name), but
     // otherwise just fail by returning 'false'.
     virtual bool get_attribute(
-        OSL::ShaderGlobals*     sg,
-        bool                    derivatives,
-        OIIO::ustring           object,
-        OIIO::TypeDesc          type,
-        OIIO::ustring           name,
-        void*                   val) APPLESEED_OVERRIDE;
+        OSL::ShaderGlobals*         sg,
+        bool                        derivatives,
+        OIIO::ustring               object,
+        OIIO::TypeDesc              type,
+        OIIO::ustring               name,
+        void*                       val) APPLESEED_OVERRIDE;
 
     // Similar to get_attribute();  this method will return the 'index'
     // element of an attribute array.
     virtual bool get_array_attribute(
-        OSL::ShaderGlobals*     sg,
-        bool                    derivatives,
-        OIIO::ustring           object,
-        OIIO::TypeDesc          type,
-        OIIO::ustring           name,
-        int                     index,
-        void*                   val) APPLESEED_OVERRIDE;
+        OSL::ShaderGlobals*         sg,
+        bool                        derivatives,
+        OIIO::ustring               object,
+        OIIO::TypeDesc              type,
+        OIIO::ustring               name,
+        int                         index,
+        void*                       val) APPLESEED_OVERRIDE;
 
     // Get the named user-data from the current object and write it into
     // 'val'. If derivatives is true, the derivatives should be written into val
     // as well. Return false if no user-data with the given name and type was found.
     virtual bool get_userdata(
-        bool                    derivatives,
-        OIIO::ustring           name,
-        OIIO::TypeDesc          type,
-        OSL::ShaderGlobals*     sg,
-        void*                   val) APPLESEED_OVERRIDE;
+        bool                        derivatives,
+        OIIO::ustring               name,
+        OIIO::TypeDesc              type,
+        OSL::ShaderGlobals*         sg,
+        void*                       val) APPLESEED_OVERRIDE;
 
     // Does the current object have the named user-data associated with it?
     virtual bool has_userdata(
-        OIIO::ustring           name,
-        OIIO::TypeDesc          type,
-        OSL::ShaderGlobals*     sg) APPLESEED_OVERRIDE;
+        OIIO::ustring               name,
+        OIIO::TypeDesc              type,
+        OSL::ShaderGlobals*         sg) APPLESEED_OVERRIDE;
 
   private:
     // This code based on OSL's test renderer.
     typedef bool (RendererServices::*AttrGetterFun)(
-        OSL::ShaderGlobals*     sg,
-        bool                    derivs,
-        OIIO::ustring           object,
-        OIIO::TypeDesc          type,
-        OIIO::ustring           name,
-        void*                   val) const;
+        OSL::ShaderGlobals*         sg,
+        bool                        derivs,
+        OIIO::ustring               object,
+        OIIO::TypeDesc              type,
+        OIIO::ustring               name,
+        void*                       val) const;
 
     typedef boost::unordered_map<OIIO::ustring, AttrGetterFun, OIIO::ustringHash> AttrGetterMapType;
 
-    #define DECLARE_ATTR_GETTER(name)       \
-        bool get_##name(                    \
-            OSL::ShaderGlobals* sg,         \
-            bool                derivs,     \
-            OIIO::ustring       object,     \
-            OIIO::TypeDesc      type,       \
-            OIIO::ustring       name,       \
-            void*               val) const
+    const Project&                  m_project;
+    OIIO::TextureSystem&            m_texture_sys;
+    AttrGetterMapType               m_global_attr_getters;
+    const Camera*                   m_camera;
+    TextureStore*                   m_texture_store;
+    OIIO::ustring                   m_cam_projection_str;
+    float                           m_shutter[2];
+    float                           m_shutter_interval;
+
+    #define DECLARE_ATTR_GETTER(name)           \
+        bool get_##name(                        \
+            OSL::ShaderGlobals*     sg,         \
+            bool                    derivs,     \
+            OIIO::ustring           object,     \
+            OIIO::TypeDesc          type,       \
+            OIIO::ustring           name,       \
+            void*                   val) const
 
     // Object attributes.
     DECLARE_ATTR_GETTER(object_instance_id);
@@ -355,20 +364,11 @@ class RendererServices
     #undef DECLARE_ATTR_GETTER
 
     static void clear_attr_derivatives(
-        bool                    derivs,
-        const OIIO::TypeDesc&   type,
-        void*                   val);
+        bool                        derivs,
+        const OIIO::TypeDesc&       type,
+        void*                       val);
 
     static void log_error(const std::string& message);
-
-    const Project&              m_project;
-    OIIO::TextureSystem&        m_texture_sys;
-    AttrGetterMapType           m_global_attr_getters;
-    const Camera*               m_camera;
-    TextureStore*               m_texture_store;
-    OIIO::ustring               m_cam_projection_str;
-    float                       m_shutter[2];
-    float                       m_shutter_interval;
 };
 
 }       // namespace renderer
