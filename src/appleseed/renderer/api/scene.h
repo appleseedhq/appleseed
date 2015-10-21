@@ -41,5 +41,6 @@
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/scene/textureinstancetraits.h"
+#include "renderer/modeling/scene/visibilityflags.h"
 
 #endif  // !APPLESEED_RENDERER_API_SCENE_H

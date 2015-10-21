@@ -38,12 +38,14 @@
 #include "foundation/platform/compiler.h"
 
 // Qt headers.
+#include <QList>
 #include <QObject>
 
 // Forward declarations.
 namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename ParentItem> class CollectionItem; } }
 namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { template <typename Entity, typename EntityItem, typename ParentEntity> class InstanceCollectionItem; } }
+namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class MaterialCollectionItem; } }
 namespace appleseed { namespace studio { class ObjectCollectionItem; } }
 namespace appleseed { namespace studio { class ObjectInstanceItem; } }
@@ -119,7 +121,7 @@ class AssemblyItem
     virtual void slot_instantiate() APPLESEED_OVERRIDE;
     void do_instantiate(const std::string& name);
 
-    virtual void slot_delete() APPLESEED_OVERRIDE;
+    virtual void delete_multiple(const QList<ItemBase*>& items) APPLESEED_OVERRIDE;
     void do_delete();
 
     template <typename Entity, typename EntityContainer>

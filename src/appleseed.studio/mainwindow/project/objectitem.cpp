@@ -40,6 +40,7 @@
 #include "mainwindow/project/objectinstanceitem.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/rendering/renderingmanager.h"
+#include "utility/miscellaneous.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/object.h"
@@ -171,11 +172,12 @@ void ObjectItem::do_instantiate(const string& name)
     m_editor_context.m_project_builder.notify_project_modification();
 }
 
-void ObjectItem::slot_delete()
+void ObjectItem::delete_multiple(const QList<ItemBase*>& items)
 {
     m_editor_context.m_rendering_manager.schedule_or_execute(
         auto_ptr<RenderingManager::IScheduledAction>(
-            new EntityDeletionAction<ObjectItem>(this)));
+            new EntityDeletionAction<ObjectItem>(
+                qlist_static_cast<ObjectItem*>(items))));
 }
 
 void ObjectItem::do_delete()

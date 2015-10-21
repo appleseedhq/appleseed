@@ -212,6 +212,7 @@ class PackageBuilder:
         self.add_local_schema_files_to_stage()
         self.add_text_files_to_stage()
         self.add_dummy_files_into_empty_directories()
+        self.disable_system_qt_plugins()
         self.alterate_stage()
         self.build_final_zip_file()
         self.remove_stage()
@@ -294,6 +295,11 @@ class PackageBuilder:
         for dirpath, dirnames, filenames in os.walk("."):
             if len(dirnames) == 0 and len(filenames) == 0:
                 self.create_preserve_file(dirpath)
+
+    def disable_system_qt_plugins(self):
+        progress("Disabling system's Qt plugins")
+        with open("appleseed/bin/qt.conf", "w") as f:
+            pass
 
     def create_preserve_file(self, path):
         with open(os.path.join(path, "preserve.txt"), "w") as f:

@@ -77,14 +77,15 @@ MaterialItem::MaterialItem(
 
 QMenu* MaterialItem::get_single_item_context_menu() const
 {
-    QMenu* menu = new QMenu(treeWidget());
+    QMenu* menu = ItemBase::get_single_item_context_menu();
 
-    menu->addAction("Edit...", this, SLOT(slot_edit()));
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
     if (strcmp(m_entity->get_model(), "disney_material") == 0)
+    {
+        menu->addSeparator();
         menu->addAction("Export...", this, SLOT(slot_export()));
+    }
 #endif
-    menu->addAction("Delete", this, SLOT(slot_delete()), QKeySequence(Qt::Key_Delete));
 
     return menu;
 }

@@ -86,3 +86,47 @@ macro (QT4_WRAP_CPP_CPLUSPLUS_FILES outfiles)
         set_source_files_properties (${it} PROPERTIES OBJECT_DEPENDS ${outfile})
     endforeach (it)
 endmacro ()
+
+#
+# Use the compiler in a smart way to try to figure the target architecture.
+# Works when cross-compiling.
+#
+# Based on:
+#
+#   https://github.com/petroules/solar-cmake/blob/master/TargetArch.cmake
+#
+
+function (detect_target_arch output_var)
+    set (archdetect_c_code
+        "#if defined(__arm__) || defined(__TARGET_ARCH_ARM)
+             #error cmake_ARCH ARM
+         #elif defined(__i386) || defined(__i386__) || defined(_M_IX86)
+             #error cmake_ARCH i386
+         #elif defined(__x86_64) || defined(__x86_64__) || defined(__amd64) || defined(_M_X64)
+             #error cmake_ARCH x86_64
+         #elif defined(__ppc__) || defined(__ppc) || defined(__powerpc__) \\
+             || defined(_ARCH_COM) || defined(_ARCH_PWR) || defined(_ARCH_PPC) \\
+             || defined(_M_MPPC) || defined(_M_PPC)
+             #error cmake_ARCH PPC
+         #endif
+         #error cmake_ARCH unknown"
+    )
+
+    file (WRITE "${CMAKE_BINARY_DIR}/arch.c" "${archdetect_c_code}")
+    enable_language (C)
+
+    try_run(
+        run_result_unused
+        compile_result_unused
+        "${CMAKE_BINARY_DIR}"
+        "${CMAKE_BINARY_DIR}/arch.c"
+        COMPILE_OUTPUT_VARIABLE ARCH)
+
+    # Parse the architecture name from the compiler output.
+    string (REGEX MATCH "cmake_ARCH ([a-zA-Z0-9_]+)" ARCH "${ARCH}")
+
+    # Get rid of the value marker leaving just the architecture name.
+    string (REPLACE "cmake_ARCH " "" ARCH "${ARCH}")
+
+    set (${output_var} "${ARCH}" PARENT_SCOPE)
+endfunction ()

@@ -38,6 +38,7 @@
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/rendering/renderingmanager.h"
+#include "utility/miscellaneous.h"
 #include "utility/treewidget.h"
 
 // appleseed.renderer headers.
@@ -48,6 +49,7 @@
 #include "foundation/utility/uid.h"
 
 // Qt headers.
+#include <QList>
 #include <QObject>
 #include <QWidget>
 
@@ -57,6 +59,7 @@
 
 // Forward declarations.
 namespace appleseed     { namespace studio { class EntityEditorContext; } }
+namespace appleseed     { namespace studio { class ItemBase; } }
 namespace foundation    { class Dictionary; }
 
 namespace appleseed {
@@ -86,7 +89,7 @@ class EntityItem
     virtual void slot_edit_accepted(foundation::Dictionary values) APPLESEED_OVERRIDE;
     void edit(const foundation::Dictionary& values);
 
-    virtual void slot_delete() APPLESEED_OVERRIDE;
+    virtual void delete_multiple(const QList<ItemBase*>& items) APPLESEED_OVERRIDE;
     void do_delete();
 
   private:
@@ -176,11 +179,12 @@ void EntityItem<Entity, ParentEntity, CollectionItem>::edit(const foundation::Di
 }
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
-void EntityItem<Entity, ParentEntity, CollectionItem>::slot_delete()
+void EntityItem<Entity, ParentEntity, CollectionItem>::delete_multiple(const QList<ItemBase*>& items)
 {
     Base::m_editor_context.m_rendering_manager.schedule_or_execute(
         std::auto_ptr<RenderingManager::IScheduledAction>(
-            new EntityDeletionAction<EntityItem>(this)));
+            new EntityDeletionAction<EntityItem>(
+                qlist_static_cast<EntityItem*>(items))));
 }
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
