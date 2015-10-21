@@ -41,7 +41,10 @@
 
 // OpenImageIO headers.
 #ifdef APPLESEED_WITH_OIIO
+#include "foundation/platform/oiioheaderguards.h"
+BEGIN_OIIO_INCLUDES
 #include "OpenImageIO/texture.h"
+END_OIIO_INCLUDES
 #endif
 
 // Standard headers.

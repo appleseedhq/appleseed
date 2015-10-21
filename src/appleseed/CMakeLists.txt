@@ -489,6 +489,7 @@ set (foundation_platform_sources
     foundation/platform/defaulttimers.cpp
     foundation/platform/defaulttimers.h
     foundation/platform/exrheaderguards.h
+    foundation/platform/oiioheaderguards.h
     foundation/platform/opengl.h
     foundation/platform/oslheaderguards.h
     foundation/platform/path.cpp

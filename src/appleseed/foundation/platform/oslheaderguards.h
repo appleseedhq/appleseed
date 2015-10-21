@@ -31,9 +31,11 @@
 
 #if defined _MSC_VER
 
-    // C4305: truncation from 'double' to 'float'
+    // C4305: truncation from 'double' to 'float', possible loss of data
+    // C4244: conversion from 'double' to 'float', possible loss of data
     #define BEGIN_OSL_INCLUDES              \
         __pragma(warning(push))             \
+        __pragma(warning(disable: 4244))    \
         __pragma(warning(disable: 4305))
 
     #define END_OSL_INCLUDES                \

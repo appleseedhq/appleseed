@@ -43,7 +43,10 @@
 #include "main/dllsymbol.h"
 
 // OpenImageIO headers.
+#include "foundation/platform/oiioheaderguards.h"
+BEGIN_OIIO_INCLUDES
 #include "OpenImageIO/texture.h"
+END_OIIO_INCLUDES
 
 // Forward declarations.
 namespace foundation    { class Dictionary; }
