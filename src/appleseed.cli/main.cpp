@@ -105,7 +105,7 @@ namespace
                     schema_file_path.string().c_str(),
                     g_settings))
             {
-                RENDERER_LOG_INFO("successfully loaded settings from %s.", user_settings_file_path.string().c_str());
+                LOG_INFO(g_logger, "successfully loaded settings from %s.", user_settings_file_path.string().c_str());
                 return;
             }
         }
@@ -118,7 +118,7 @@ namespace
                 schema_file_path.string().c_str(),
                 g_settings))
         {
-            RENDERER_LOG_INFO("successfully loaded settings from %s.", settings_file_path.string().c_str());
+            LOG_INFO(g_logger, "successfully loaded settings from %s.", settings_file_path.string().c_str());
         }
     }
 
