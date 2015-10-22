@@ -326,6 +326,7 @@ class PackageBuilder:
         out, err = p.communicate()
         return out, err
 
+
 #--------------------------------------------------------------------------------------------------
 # Windows package builder.
 #--------------------------------------------------------------------------------------------------
@@ -456,24 +457,24 @@ class LinuxPackageBuilder(PackageBuilder):
     def add_dependencies_to_stage(self):
         progress("Linux-specific: adding dependencies to staging directory")
 
-        # get shared libs needed by binaries.
+        # Get shared libs needed by binaries.
         bin_libs = set()
         for dirpath, dirnames, filenames in os.walk("appleseed/bin"):
             for f in filenames:
                 if not f.endswith(".py"):
                     bin_libs = bin_libs.union(self.get_dependencies_for_file(os.path.join("appleseed/bin", f)))
 
-        # get shared libs needed by appleseed.python.
+        # Get shared libs needed by appleseed.python.
         for dirpath, dirnames, filenames in os.walk("appleseed/lib"):
             if '_appleseedpython.so' in filenames:
                 bin_libs = bin_libs.union(self.get_dependencies_for_file(os.path.join(dirpath, "_appleseedpython.so")))
 
-        # get shared libs needed by libraries.
+        # Get shared libs needed by libraries.
         lib_libs = set()
         for l in bin_libs:
             lib_libs = lib_libs.union(self.get_dependencies_for_file(l))
 
-        # copy needed libs to lib dir.
+        # Copy needed libs to lib dir.
         dest_path = os.path.join("appleseed", "lib")
         all_libs = bin_libs.union(lib_libs)
         for l in all_libs:
@@ -517,21 +518,22 @@ class LinuxPackageBuilder(PackageBuilder):
         for l in lines:
             l = l.strip()
 
-            # ignore empty lines.
+            # Ignore empty lines.
             if len(l) == 0:
                 continue
 
-            # ignore system libs.
+            # Ignore system libs.
             if self.is_system_lib(l):
                 continue
 
-            # ignore appleseed libs.
+            # Ignore appleseed libs.
             if l.startswith("libappleseed"):
                 continue
 
             libs.add(l.split()[2])
 
         return libs
+
 
 #--------------------------------------------------------------------------------------------------
 # Entry point.

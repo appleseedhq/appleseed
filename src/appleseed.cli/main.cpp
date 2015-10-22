@@ -100,12 +100,13 @@ namespace
             const filesystem::path user_settings_path(p);
             const filesystem::path user_settings_file_path = user_settings_path / "appleseed.cli.xml";
 
-            if (reader.read(
+            if (boost::filesystem::exists(user_settings_file_path) &&
+                reader.read(
                     user_settings_file_path.string().c_str(),
                     schema_file_path.string().c_str(),
                     g_settings))
             {
-                RENDERER_LOG_INFO("successfully loaded settings from %s.", user_settings_file_path.string().c_str());
+                LOG_INFO(g_logger, "successfully loaded settings from %s.", user_settings_file_path.string().c_str());
                 return;
             }
         }
@@ -118,7 +119,7 @@ namespace
                 schema_file_path.string().c_str(),
                 g_settings))
         {
-            RENDERER_LOG_INFO("successfully loaded settings from %s.", settings_file_path.string().c_str());
+            LOG_INFO(g_logger, "successfully loaded settings from %s.", settings_file_path.string().c_str());
         }
     }
 
