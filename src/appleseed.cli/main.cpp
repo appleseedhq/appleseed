@@ -100,7 +100,8 @@ namespace
             const filesystem::path user_settings_path(p);
             const filesystem::path user_settings_file_path = user_settings_path / "appleseed.cli.xml";
 
-            if (reader.read(
+            if (boost::filesystem::exists(user_settings_file_path) &&
+                reader.read(
                     user_settings_file_path.string().c_str(),
                     schema_file_path.string().c_str(),
                     g_settings))
