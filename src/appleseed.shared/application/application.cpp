@@ -154,12 +154,14 @@ const char* Application::get_user_settings_path()
 
         return 0;
 
+// Other Unices.
 #elif defined __linux__ || defined __FreeBSD__
 
         filesystem::path p(get_home_directory());
         p /= ".appleseed/settings";
         copy_directory_path_to_buffer(p, user_settings_buffer);
 
+// Other platforms.
 #else
 
         #error Unsupported platform.
