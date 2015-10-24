@@ -34,16 +34,23 @@ using namespace foundation;
 
 TEST_SUITE(Foundation_Platform_SharedLibrary)
 {
-#ifdef _WIN32
 
-    // Not sure how to test this...
-
+#if defined _WIN32
+    const char* TestLibraryName = "kernel32.dll";
+    const char* TestSymbolName = "LoadLibraryA";
+#elif defined __APPLE__
+    const char* TestLibraryName = "libc.dylib";
+    const char* TestSymbolName = "printf";
 #else
+    const char* TestLibraryName = "libc.so";
+    const char* TestSymbolName = "printf";
+#endif
 
     TEST_CASE(LoadSystemLibAndGetSymbol)
     {
-        SharedLibrary sh_lib("libdl.so");
-        void* symbol = sh_lib.get_symbol("dlopen", false);
+        const SharedLibrary lib(TestLibraryName);
+
+        void* symbol = lib.get_symbol(TestSymbolName, false);
 
         EXPECT_NEQ(0, symbol);
     }
@@ -52,25 +59,24 @@ TEST_SUITE(Foundation_Platform_SharedLibrary)
     {
         EXPECT_EXCEPTION(
             ExceptionCannotLoadSharedLib,
-            SharedLibrary("libdlXX.so"));
+            SharedLibrary("LibraryDoesNotExist"));
     }
 
     TEST_CASE(CannotGetSymbol_ThrowExceptionIsTrue)
     {
-        SharedLibrary sh_lib("libdl.so");
+        const SharedLibrary lib(TestLibraryName);
 
         EXPECT_EXCEPTION(
             ExceptionSharedLibCannotGetSymbol,
-            sh_lib.get_symbol("XdlopenXX", false));
+            lib.get_symbol("SymbolDoesNotExist", false));
     }
 
     TEST_CASE(CannotGetSymbol_ThrowExceptionIsFalse)
     {
-        SharedLibrary sh_lib("libdl.so");
-        void* symbol = sh_lib.get_symbol("XdlopenXX");
+        const SharedLibrary lib(TestLibraryName);
+
+        void* symbol = lib.get_symbol("SymbolDoesNotExist");
 
         EXPECT_EQ(0, symbol);
     }
-
-#endif
 }
