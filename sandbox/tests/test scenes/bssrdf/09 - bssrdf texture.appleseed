@@ -52,7 +52,7 @@
                 <parameter name="outside_ior" value="1.0" />
                 <parameter name="reflectance" value="UVCheckerMap01-512_inst" />
                 <parameter name="reflectance_multiplier" value="1.0" />
-                <parameter name="weight" value="1" />
+                <parameter name="weight" value="1.0" />
             </bssrdf>
             <bssrdf name="color_grid_nd" model="normalized_diffusion_bssrdf">
                 <parameter name="dmfp" value="7.5" />
@@ -61,11 +61,11 @@
                 <parameter name="outside_ior" value="1" />
                 <parameter name="reflectance" value="UVCheckerMap01-512_inst" />
                 <parameter name="reflectance_multiplier" value="1.0" />
-                <parameter name="weight" value="1" />
+                <parameter name="weight" value="1.0" />
             </bssrdf>
             <bssrdf name="color_grid_std" model="standard_dipole_bssrdf">
                 <parameter name="anisotropy" value="0.0" />
-                <parameter name="dmfp" value="0.5" />
+                <parameter name="dmfp" value="7.5" />
                 <parameter name="dmfp_multiplier" value="0.01" />
                 <parameter name="inside_ior" value="1.3" />
                 <parameter name="outside_ior" value="1.0" />
