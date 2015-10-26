@@ -48,7 +48,7 @@ import zipfile
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.3.12"
+VERSION = "2.3.13"
 SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 
 
@@ -143,7 +143,8 @@ class Settings:
         print("  Path to appleseed:         " + self.appleseed_path)
         print("  Path to appleseed headers: " + self.headers_path)
         print("  Path to Qt runtime:        " + self.qt_runtime_path)
-        print("  Path to platform runtime:  " + self.platform_runtime_path)
+        if os.name == "nt":
+            print("  Path to platform runtime:  " + self.platform_runtime_path)
         print("  Output directory:          " + self.package_output_path)
         print("")
 
@@ -371,30 +372,30 @@ class MacPackageBuilder(PackageBuilder):
         self.fixup_qt_frameworks()
 
     def fixup_libappleseed(self):
-        self.fixup_id("libappleseed.dylib", "libappleseed.dylib")
+        self.fixup_id("lib/libappleseed.dylib", "libappleseed.dylib")
 
     def fixup_libappleseed_shared(self):
-        self.fixup_id("libappleseed.shared.dylib", "libappleseed.shared.dylib")
-        self.fixup_change("libappleseed.shared.dylib", os.path.join(self.build_path, "appleseed/libappleseed.dylib"), "libappleseed.dylib")
+        self.fixup_id("lib/libappleseed.shared.dylib", "libappleseed.shared.dylib")
+        self.fixup_change("lib/libappleseed.shared.dylib", os.path.join(self.build_path, "appleseed/libappleseed.dylib"), "libappleseed.dylib")
 
     def fixup_appleseed_cli(self):
-        self.fixup_change("appleseed.cli", os.path.join(self.build_path, "appleseed/libappleseed.dylib"), "libappleseed.dylib")
-        self.fixup_change("appleseed.cli", os.path.join(self.build_path, "appleseed.shared/libappleseed.shared.dylib"), "libappleseed.shared.dylib")
+        self.fixup_change("bin/appleseed.cli", os.path.join(self.build_path, "appleseed/libappleseed.dylib"), "libappleseed.dylib")
+        self.fixup_change("bin/appleseed.cli", os.path.join(self.build_path, "appleseed.shared/libappleseed.shared.dylib"), "libappleseed.shared.dylib")
 
     def fixup_appleseed_studio(self):
-        self.fixup_change("appleseed.studio", os.path.join(self.build_path, "appleseed/libappleseed.dylib"), "libappleseed.dylib")
-        self.fixup_change("appleseed.studio", os.path.join(self.build_path, "appleseed.shared/libappleseed.shared.dylib"), "libappleseed.shared.dylib")
-        self.fixup_change("appleseed.studio", self.get_qt_framework_path("QtCore"), "QtCore.framework/Versions/4/QtCore")
-        self.fixup_change("appleseed.studio", self.get_qt_framework_path("QtGui"), "QtGui.framework/Versions/4/QtGui")
-        self.fixup_change("appleseed.studio", self.get_qt_framework_path("QtOpenGL"), "QtOpenGL.framework/Versions/4/QtOpenGL")
+        self.fixup_change("bin/appleseed.studio", os.path.join(self.build_path, "appleseed/libappleseed.dylib"), "libappleseed.dylib")
+        self.fixup_change("bin/appleseed.studio", os.path.join(self.build_path, "appleseed.shared/libappleseed.shared.dylib"), "libappleseed.shared.dylib")
+        self.fixup_change("bin/appleseed.studio", self.get_qt_framework_path("QtCore"), "QtCore.framework/Versions/4/QtCore")
+        self.fixup_change("bin/appleseed.studio", self.get_qt_framework_path("QtGui"), "QtGui.framework/Versions/4/QtGui")
+        self.fixup_change("bin/appleseed.studio", self.get_qt_framework_path("QtOpenGL"), "QtOpenGL.framework/Versions/4/QtOpenGL")
 
     def fixup_qt_frameworks(self):
-        self.fixup_id("QtCore.framework/Versions/4/QtCore", "QtCore.framework/Versions/4/QtCore")
-        self.fixup_id("QtGui.framework/Versions/4/QtGui", "QtGui.framework/Versions/4/QtGui")
-        self.fixup_id("QtOpenGL.framework/Versions/4/QtOpenGL", "QtOpenGL.framework/Versions/4/QtOpenGL")
-        self.fixup_change("QtGui.framework/Versions/4/QtGui", self.get_qt_framework_path("QtCore"), "QtCore.framework/Versions/4/QtCore")
-        self.fixup_change("QtOpenGL.framework/Versions/4/QtOpenGL", self.get_qt_framework_path("QtCore"), "QtCore.framework/Versions/4/QtCore")
-        self.fixup_change("QtOpenGL.framework/Versions/4/QtOpenGL", self.get_qt_framework_path("QtGui"), "QtGui.framework/Versions/4/QtGui")
+        self.fixup_id("bin/QtCore.framework/Versions/4/QtCore", "QtCore.framework/Versions/4/QtCore")
+        self.fixup_id("bin/QtGui.framework/Versions/4/QtGui", "QtGui.framework/Versions/4/QtGui")
+        self.fixup_id("bin/QtOpenGL.framework/Versions/4/QtOpenGL", "QtOpenGL.framework/Versions/4/QtOpenGL")
+        self.fixup_change("bin/QtGui.framework/Versions/4/QtGui", self.get_qt_framework_path("QtCore"), "QtCore.framework/Versions/4/QtCore")
+        self.fixup_change("bin/QtOpenGL.framework/Versions/4/QtOpenGL", self.get_qt_framework_path("QtCore"), "QtCore.framework/Versions/4/QtCore")
+        self.fixup_change("bin/QtOpenGL.framework/Versions/4/QtOpenGL", self.get_qt_framework_path("QtGui"), "QtGui.framework/Versions/4/QtGui")
 
     def fixup_id(self, target, name):
         self.fixup(target, '-id @"' + name + '"')
@@ -403,7 +404,7 @@ class MacPackageBuilder(PackageBuilder):
         self.fixup(target, '-change "' + old + '" "' + new + '"')
 
     def fixup(self, target, args):
-        self.run("install_name_tool " + args + " " + os.path.join("appleseed/bin/", target))
+        self.run("install_name_tool " + args + " " + os.path.join("appleseed/", target))
 
     def add_dependencies_to_stage(self):
         progress("Mac-specific: adding dependencies to staging directory")
