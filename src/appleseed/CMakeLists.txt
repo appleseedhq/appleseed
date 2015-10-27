@@ -1093,10 +1093,14 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/timedrenderercontroller.cpp
     renderer/kernel/rendering/timedrenderercontroller.h
 )
-if (WITH_OSL)
+if (WITH_OIIO)
     list (APPEND renderer_kernel_rendering_sources
         renderer/kernel/rendering/oiioerrorhandler.cpp
         renderer/kernel/rendering/oiioerrorhandler.h
+    )
+endif ()
+if (WITH_OSL)
+    list (APPEND renderer_kernel_rendering_sources
         renderer/kernel/rendering/rendererservices.cpp
         renderer/kernel/rendering/rendererservices.h
     )
