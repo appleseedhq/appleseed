@@ -76,6 +76,7 @@ APPLESEED_DECLARE_INPUT_VALUES(DipoleBSSRDFInputValues)
     Spectrum    m_channel_cdf;
     double      m_rmax2;
     double      m_eta;
+    Spectrum    m_dirpole_reparam_weight;
 };
 
 
