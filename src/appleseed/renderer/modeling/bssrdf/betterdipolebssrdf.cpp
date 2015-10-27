@@ -114,7 +114,9 @@ namespace
                     values->m_anisotropy,
                     values->m_sigma_a,
                     values->m_sigma_s);
-                values->m_sigma_tr = Spectrum(static_cast<float>(1.0 / values->m_dmfp));
+
+                values->m_sigma_tr.resize(values->m_sigma_a.size());
+                values->m_sigma_tr.set(static_cast<float>(1.0 / values->m_dmfp));
             }
             else
             {
