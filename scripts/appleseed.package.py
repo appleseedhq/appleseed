@@ -48,7 +48,7 @@ import zipfile
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.3.13"
+VERSION = "2.3.14"
 SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 
 
@@ -361,6 +361,7 @@ class MacPackageBuilder(PackageBuilder):
         self.add_dependencies_to_stage()
         self.fixup_binaries()
         self.create_qt_conf_file()
+        os.rename("appleseed/bin/appleseed.studio", "appleseed/bin/appleseed-studio")
         safe_delete_file("appleseed/bin/.DS_Store")
 
     def fixup_binaries(self):
