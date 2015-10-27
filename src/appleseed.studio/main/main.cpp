@@ -56,7 +56,9 @@
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.
+#include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <locale>
 #include <sstream>
@@ -220,6 +222,49 @@ namespace
 
         set_default_stylesheet(application);
     }
+
+    QtMsgHandler g_previous_message_handler = 0;
+
+    void message_handler(QtMsgType type, const char* msg)
+    {
+#ifdef __APPLE__
+        // Under certain circumstances (under an OS X virtual machine?), a bogus warning
+        // message is repeatedly printed to the console. Disable this warning message.
+        // See https://github.com/appleseedhq/appleseed/issues/254 for details.
+        if (type == QtWarningMsg &&
+            strcmp(msg, "QCocoaView handleTabletEvent: This tablet device is unknown (received no proximity event for it). Discarding event.") == 0)
+        {
+            // Absorb the message.
+            return;
+        }
+#endif
+
+        // On Windows, there is a default message handler.
+        if (g_previous_message_handler != 0)
+        {
+            g_previous_message_handler(type, msg);
+            return;
+        }
+
+        switch (type)
+        {
+          case QtDebugMsg:
+            fprintf(stderr, "Debug: %s\n", msg);
+            break;
+
+          case QtWarningMsg:
+            fprintf(stderr, "Warning: %s\n", msg);
+            break;
+
+          case QtCriticalMsg:
+            fprintf(stderr, "Critical: %s\n", msg);
+            break;
+
+          case QtFatalMsg:
+            fprintf(stderr, "Fatal: %s\n", msg);
+            abort();
+        }
+    }
 }
 
 
@@ -230,6 +275,9 @@ namespace
 int main(int argc, char* argv[])
 {
     start_memory_tracking();
+
+    // Our message handler must be set before the construction of QApplication.
+    g_previous_message_handler = qInstallMsgHandler(message_handler);
 
     QApplication application(argc, argv);
     QApplication::setOrganizationName("appleseedhq");
@@ -244,11 +292,11 @@ int main(int argc, char* argv[])
 
     check_installation();
 
+    // Parse the command line.
     SuperLogger logger;
 #ifdef _WIN32
     logger.set_log_target(create_string_log_target());
 #endif
-
     CommandLineHandler cl;
     cl.parse(argc, const_cast<const char**>(argv), logger);
 
