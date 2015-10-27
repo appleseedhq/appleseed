@@ -466,7 +466,7 @@ if (WIN32)
     )
 endif ()
 
-if (USE_RPATH_ORIGIN)
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set_target_properties (appleseed.studio PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"
     )
