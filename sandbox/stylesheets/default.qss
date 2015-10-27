@@ -50,16 +50,16 @@
 #define SELECTED_TEXT_COLOR                 rgb(255, 255, 255)
 
 #ifdef _WIN32
-    #define FIXED_WIDTH_FONT_FAMILY         "Consolas"
+    #define FIXED_WIDTH_FONT                "Consolas"
 #endif
 #ifdef __APPLE__
-    #define FIXED_WIDTH_FONT_FAMILY         "Monaco"
+    #define FIXED_WIDTH_FONT                10px "Monaco"
 #endif
 #ifdef __linux__
-    #define FIXED_WIDTH_FONT_FAMILY         "Courier New"
+    #define FIXED_WIDTH_FONT                "Courier New"
 #endif
 #ifdef __FreeBSD__
-    #define FIXED_WIDTH_FONT_FAMILY         "Courier New"
+    #define FIXED_WIDTH_FONT                "Courier New"
 #endif
 
 
@@ -74,6 +74,9 @@ QWidget
     border: 0px;
     selection-color: SELECTED_TEXT_COLOR;
     selection-background-color: SELECTED_BACKGROUND_COLOR;
+#ifdef __APPLE__
+    font: 12px "Lucida Grande";
+#endif
 }
 
 QWidget:disabled
@@ -528,13 +531,8 @@ QPushButton
     background-color: ACTIVE_BACKGROUND_COLOR;
     border: BORDER_STYLE;
     border-radius: 5px;
+    min-width: 50px;
     padding: 2px 11px 3px 11px;
-#ifdef __APPLE__
-    qproperty-flat: true;   /* prevent push buttons from overlapping on Mac OS X */
-#endif
-#ifdef _WIN32
-    min-width: 50px;        /* causes push buttons in QMessageBox to overlap on Mac OS X */
-#endif
 }
 
 QPushButton:hover
@@ -1073,7 +1071,7 @@ QLabel#g_label,
 QLabel#b_label,
 QLabel#a_label
 {
-    font-family: FIXED_WIDTH_FONT_FAMILY;
+    font: FIXED_WIDTH_FONT;
 }
 
 QLabel#info_label
@@ -1120,7 +1118,7 @@ QLabel#a_label
 
 QWidget#textedit_log
 {
-    font-family: FIXED_WIDTH_FONT_FAMILY;
+    font: FIXED_WIDTH_FONT;
 }
 
 QPushButton#bind_entity_button
