@@ -138,6 +138,10 @@ namespace
                 values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
 
                 // Compute sigma_a, sigma_s and sigma_tr from the reflectance and dmfp parameters.
+
+                // Currently, we don't have a reparameterization for this BSSRDF model.
+                // We reuse the standard dipole reparameterization method and apply a
+                // "correction" weight in evaluate() to try to match the results of other models.
                 const ComputeRdStandardDipole rd_fun(values->m_eta);
                 compute_absorption_and_scattering(
                     rd_fun,
@@ -146,7 +150,9 @@ namespace
                     values->m_anisotropy,
                     values->m_sigma_a,
                     values->m_sigma_s);
-                values->m_sigma_tr = Spectrum(static_cast<float>(1.0 / values->m_dmfp));
+
+                values->m_sigma_tr.resize(values->m_sigma_a.size());
+                values->m_sigma_tr.set(static_cast<float>(1.0 / values->m_dmfp));
             }
             else
             {
@@ -163,6 +169,14 @@ namespace
             values->m_sigma_s_prime = values->m_sigma_s * static_cast<float>(1.0 - values->m_anisotropy);
             values->m_sigma_t_prime = values->m_sigma_s_prime + values->m_sigma_a;
             values->m_alpha_prime = values->m_sigma_s_prime / values->m_sigma_t_prime;
+
+            if (m_inputs.source("sigma_a") == 0 || m_inputs.source("sigma_s") == 0)
+            {
+                // Reparamerization weight to match the other BSSRDF models.
+                values->m_dirpole_reparam_weight = values->m_alpha_prime * 0.75f;
+            }
+            else
+                values->m_dirpole_reparam_weight.set(1.0f);
 
             // Build a CDF for channel sampling.
             values->m_channel_pdf = values->m_alpha_prime;
@@ -268,6 +282,8 @@ namespace
 
             const double radius = norm(incoming_point.get_point() - outgoing_point.get_point());
             value *= static_cast<float>(radius * fo * fi * values->m_weight);
+
+            value *= values->m_dirpole_reparam_weight;
         }
 
         virtual double evaluate_pdf(
@@ -338,10 +354,7 @@ namespace
 
             for (size_t i = 0, e = value.size(); i < e; ++i)
             {
-                const double sigma_a = values->m_sigma_a[i];                            // absorption coefficient
-                const double sigma_s = values->m_sigma_s[i];                            // scattering coefficient
                 const double sigma_t = values->m_sigma_t[i];                            // extinction coefficient
-                const double sigma_s_prime = values->m_sigma_s_prime[i];                // reduced scattering coefficient
                 const double sigma_t_prime = values->m_sigma_t_prime[i];                // reduced extinction coefficient
                 const double alpha_prime = values->m_alpha_prime[i];                    // reduced scattering albedo
                 const double sigma_tr = values->m_sigma_tr[i];                          // effective transport coefficient
