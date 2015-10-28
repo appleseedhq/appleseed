@@ -296,4 +296,29 @@ TEST_SUITE(Foundation_Math_Fresnel)
 
         plotfile.write("unit tests/outputs/test_fresnel_internal_diffuse_reflectance.gnuplot");
     }
+
+    TEST_CASE(FresnelReflectanceDielectric_Limits)
+    {
+        const double Eta = 1.0;
+        const double Eps = 1.0e-14;
+        double fr;
+
+        fresnel_reflectance_dielectric(fr, Eta, 0.0, 0.0); EXPECT_EQ(1.0, fr);
+        fresnel_reflectance_dielectric(fr, Eta, 0.0, Eps); EXPECT_FEQ(1.0, fr);
+        fresnel_reflectance_dielectric(fr, Eta, 0.0, 1.0); EXPECT_EQ(1.0, fr);
+        fresnel_reflectance_dielectric(fr, Eta, Eps, 0.0); EXPECT_FEQ(1.0, fr);
+        fresnel_reflectance_dielectric(fr, Eta, 1.0, 0.0); EXPECT_EQ(1.0, fr);
+        fresnel_reflectance_dielectric(fr, Eta, 1.0, 1.0); EXPECT_EQ(0.0, fr);
+    }
+
+    TEST_CASE(FresnelTransmittanceDielectric_Limits)
+    {
+        const double Eta = 1.0;
+        const double Eps = 1.0e-14;
+        double tr;
+
+        fresnel_transmittance_dielectric(tr, Eta, 0.0); EXPECT_EQ(0.0, tr);
+        fresnel_transmittance_dielectric(tr, Eta, Eps); EXPECT_FEQ(1.0, tr);
+        fresnel_transmittance_dielectric(tr, Eta, 1.0); EXPECT_EQ(0.0, tr);
+    }
 }

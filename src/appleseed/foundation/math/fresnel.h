@@ -192,6 +192,7 @@ void fresnel_reflectance_dielectric_p(
 
     assert(cos_theta_i >= T(0.0) && cos_theta_i <= T(1.0));
     assert(cos_theta_t >= T(0.0) && cos_theta_t <= T(1.0));
+    assert(cos_theta_i >  T(0.0) || cos_theta_t >  T(0.0));
 
     SpectrumType k(eta);
     k *= static_cast<ValueType>(cos_theta_t);
@@ -229,6 +230,7 @@ void fresnel_reflectance_dielectric_s(
 
     assert(cos_theta_i >= T(0.0) && cos_theta_i <= T(1.0));
     assert(cos_theta_t >= T(0.0) && cos_theta_t <= T(1.0));
+    assert(cos_theta_i >  T(0.0) || cos_theta_t >  T(0.0));
 
     SpectrumType k(eta);
     k *= static_cast<ValueType>(cos_theta_i);
@@ -252,6 +254,12 @@ void fresnel_reflectance_dielectric(
 
     assert(cos_theta_i >= T(0.0) && cos_theta_i <= T(1.0));
     assert(cos_theta_t >= T(0.0) && cos_theta_t <= T(1.0));
+
+    if (cos_theta_i == T(0.0) && cos_theta_t == T(0.0))
+    {
+        reflectance = SpectrumType(1.0);
+        return;
+    }
 
     fresnel_reflectance_dielectric_p(
         reflectance,
