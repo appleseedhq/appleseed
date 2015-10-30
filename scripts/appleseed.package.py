@@ -595,7 +595,8 @@ class LinuxPackageBuilder(PackageBuilder):
                                      "libICE", "libSM", "libdl", "libm.so", "libgcc", "libc.so",
                                      "/lib64/ld-linux-", "libstdc++", "libxcb", "libdrm", "libnsl",
                                      "libuuid", "libgthread", "libglib", "libgobject", "libglapi",
-                                     "libffi", "libfontconfig", "libutil", "libpython"]
+                                     "libffi", "libfontconfig", "libutil", "libpython",
+                                     "libxshmfence.so"]
 
     def alter_stage(self):
         self.make_executable(os.path.join("appleseed/bin", "maketx"))
