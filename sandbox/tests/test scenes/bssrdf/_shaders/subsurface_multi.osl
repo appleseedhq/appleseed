@@ -1,0 +1,19 @@
+
+surface subsurface_multi()
+{
+    int depth;
+    getattribute("path:ray_depth", depth);
+
+    if (depth == 0)
+    {
+        Ci = 
+            0.3 * as_subsurface("directional_dipole", N, color(0.5, 0.0, 0.0) , 0.25, 1.3) +
+            0.2 * as_subsurface("directional_dipole", N, color(0.5, 0.3, 0.05), 0.10, 1.3) +
+            0.5 * as_subsurface("directional_dipole", N, color(0.0, 0.5, 0.77), 0.05, 1.3);
+    }
+    else
+    {
+        Ci = 
+            (0.3 * color(0.5, 0.0, 0.0) + 0.2 * color(0.5, 0.3, 0.05) + 0.5 * color(0.0, 0.5, 0.77)) * diffuse(N);
+    }
+}

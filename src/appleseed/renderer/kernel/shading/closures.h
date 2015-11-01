@@ -42,7 +42,6 @@
 #include "renderer/modeling/bsdf/velvetbrdf.h"
 #include "renderer/modeling/bssrdf/dipolebssrdf.h"
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
-#include "renderer/modeling/bssrdf/gaussianbssrdf.h"
 #ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
 #endif
@@ -108,12 +107,11 @@ enum ClosureID
     MicrofacetGGXRefractionID,
 
     // BSSRDF closures.
-    SubsurfaceDipoleID,
+    SubsurfaceID,
     SubsurfaceBetterDipoleID,
     SubsurfaceStandardDipoleID,
     SubsurfaceDirectionalDipoleID,
-    SubsurfaceGaussianID,
-    SubsurfaceNormalizedID,
+    SubsurfaceNormalizedDiffusionID,
 
     // Special closures.
     BackgroundID,
@@ -148,7 +146,6 @@ class APPLESEED_ALIGN(16) CompositeClosure
         DiffuseBTDFInputValues,
         DipoleBSSRDFInputValues,
         DisneyBRDFInputValues,
-        GaussianBSSRDFInputValues,
         LambertianBRDFInputValues,
 #ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
         NormalizedDiffusionBSSRDFInputValues,
@@ -199,6 +196,14 @@ class APPLESEED_ALIGN(16) CompositeReflectionClosure
 
   protected:
     foundation::Basis3d m_bases[MaxClosureEntries];
+
+    void compute_closure_shading_basis(
+        const foundation::Vector3d& normal,
+        const foundation::Basis3d&  original_shading_basis);
+    void compute_closure_shading_basis(
+        const foundation::Vector3d& normal,
+        const foundation::Vector3d& tangent,
+        const foundation::Basis3d&  original_shading_basis);
 };
 
 

@@ -1,0 +1,42 @@
+
+surface subsurface_multi2()
+{
+    int depth;
+    getattribute("path:ray_depth", depth);
+
+    closure color diff = 0;
+
+    if (depth == 0)
+    {
+        diff = 
+            0.3 * as_subsurface("standard_dipole", N, color(0.5, 0.0, 0.0) , 0.25, 1.3) +
+            0.2 * as_subsurface("better_dipole", N, color(0.5, 0.3, 0.05), 0.10, 1.3) +
+            0.5 * as_subsurface("directional_dipole", N, color(0.0, 0.5, 0.77), 0.05, 1.3);
+    }
+    else
+    {
+        diff = 
+            (0.3 * color(0.5, 0.0, 0.0) + 0.2 * color(0.5, 0.3, 0.05) + 0.5 * color(0.0, 0.5, 0.77)) * diffuse(N);
+    }
+
+
+    float from_ior;
+    float to_ior;
+
+    if (backfacing())
+    {
+        from_ior = 1.3;
+        to_ior = 1.0;
+    }
+    else
+    {
+        from_ior = 1.0;
+        to_ior = 1.3;
+    }
+
+    float eta = from_ior / to_ior;
+    float Kr, Kt;
+    fresnel(I, N, eta, Kr, Kt);
+
+    Ci = diff + 0.5 * Kr * microfacet("beckmann", N, 0.15, 1.3, 0);
+}

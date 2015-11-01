@@ -1,0 +1,31 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.8
+surface subsurface
+param	string	profile	"directional_dipole"		%read{3,3} %write{2147483647,-1}
+param	color	Rd	0.5 0.5 0.5		%read{3,5} %write{2147483647,-1}
+param	color	dmfp	0.1 0.1 0.1		%read{3,3} %write{2147483647,-1}
+global	normal	N	%read{3,4} %write{2147483647,-1}
+global	closure color	Ci	%read{2147483647,-1} %write{3,5}
+temp	int	$tmp1	%read{1,1} %write{0,0}
+const	string	$const1	"camera"		%read{0,0} %write{2147483647,-1}
+const	float	$const2	1.3		%read{3,3} %write{2147483647,-1}
+const	string	$const3	"as_subsurface"		%read{2,3} %write{2147483647,-1}
+const	float	$const4	0		%read{3,3} %write{2147483647,-1}
+temp	closure color	$tmp2	%read{5,5} %write{4,4}
+const	string	$const5	"diffuse"		%read{4,4} %write{2147483647,-1}
+code ___main___
+# subsurface.osl:4
+#     if (raytype("camera"))
+	raytype		$tmp1 $const1 	%filename{"subsurface.osl"} %line{4} %argrw{"wr"}
+	if		$tmp1 4 6 	%argrw{"r"}
+# subsurface.osl:5
+#         Ci = as_subsurface(profile, N, Rd, dmfp, 1.3);
+	functioncall	$const3 4 	%line{5} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:528
+#     normal  N,
+	closure		Ci $const3 profile N Rd dmfp $const2 $const4 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{528} %argrw{"wrrrrrrr"}
+# subsurface.osl:7
+#         Ci = Rd * diffuse(N);
+	closure		$tmp2 $const5 N 	%filename{"subsurface.osl"} %line{7} %argrw{"wrr"}
+	mul		Ci $tmp2 Rd 	%argrw{"wrr"}
+	end
