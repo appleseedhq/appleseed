@@ -154,10 +154,13 @@ namespace
                     tile_bbox);
             assert(framebuffer);
 
-            // Seed the RNG with the tile index.
-            m_rng = SamplingContext::RNGType(
-                hash_uint32(
-                    static_cast<uint32>(pass_hash + tile_y * frame_properties.m_tile_count_x + tile_x)));
+            // Seed the RNG with the tile index and the pass hash.
+            // Seeding the RNG per tile instead of per pixel has potential consequences on
+            // debugging: rendering a subset of a tile may lead to different computations
+            // than rendering the full tile, e.g. if the sampling context switches to random
+            // sampling because the number of dimensions becomes too high.
+            const size_t tile_index = tile_y * frame_properties.m_tile_count_x + tile_x;
+            m_rng = SamplingContext::RNGType(hash_uint32(static_cast<uint32>(pass_hash + tile_index)));
 
             // Loop over tile pixels.
             const size_t tile_pixel_count = m_pixel_ordering.size();
