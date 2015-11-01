@@ -180,9 +180,9 @@ namespace
                 values->m_dirpole_reparam_weight.resize(values->m_alpha_prime.size());
                 for (size_t i = 0, e = values->m_dirpole_reparam_weight.size(); i < e; ++i)
                 {
-                    const double a = values->m_alpha_prime[i];
-                    const double w = (0.2605589 * square(a)) + (0.2622902 * a) + 0.007895145;
-                    values->m_dirpole_reparam_weight[i] = w * 1.44773351;
+                    const float a = values->m_alpha_prime[i];
+                    const float w = 0.2605589f * square(a) + 0.2622902f * a + 0.007895145f;
+                    values->m_dirpole_reparam_weight[i] = w * 1.44773351f;
                 }
             }
             else
