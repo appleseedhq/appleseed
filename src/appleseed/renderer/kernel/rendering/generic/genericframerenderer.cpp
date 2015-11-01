@@ -422,6 +422,7 @@ IFrameRenderer* GenericFrameRendererFactory::create(
 Dictionary GenericFrameRendererFactory::get_params_metadata()
 {
     Dictionary metadata;
+
     metadata.dictionaries().insert(
         "passes",
         Dictionary()
@@ -441,28 +442,16 @@ Dictionary GenericFrameRendererFactory::get_params_metadata()
                 Dictionary()
                     .insert(
                         "linear",
-                        Dictionary()
-                            .insert(
-                                "help",
-                                "Linear tile ordering"))
+                        Dictionary().insert("help", "Linear tile ordering"))
                     .insert(
                         "spiral",
-                        Dictionary()
-                            .insert(
-                                "help",
-                                "Spiral tile ordering"))
+                        Dictionary().insert("help", "Spiral tile ordering"))
                     .insert(
                         "hilbert",
-                        Dictionary()
-                            .insert(
-                                "help",
-                                "Hilbert tile ordering"))
+                        Dictionary().insert("help", "Hilbert tile ordering"))
                     .insert(
                         "random",
-                        Dictionary()
-                            .insert(
-                                "help",
-                                "Random tile ordering"))));
+                        Dictionary().insert("help", "Random tile ordering"))));
 
     return metadata;
 }
