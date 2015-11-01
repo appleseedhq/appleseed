@@ -343,6 +343,12 @@ namespace
             const Vector3d&     outgoing,
             Spectrum&           value) const
         {
+            if (m_uniform_values.m_luminance_multiplier == 0.0)
+            {
+                value.set(0.0f);
+                return;
+            }
+
             const double rcp_cos_theta = 1.0 / outgoing.y;
             const double cos_gamma = dot(outgoing, m_sun_dir);
             const double gamma = acos(cos_gamma);

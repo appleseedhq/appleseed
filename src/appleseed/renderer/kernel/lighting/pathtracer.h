@@ -302,8 +302,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             sampling_context.split_in_place(1, 1);
             if (sampling_context.next_double2() < 0.5)
                 vertex.m_bsdf = 0;
-            else
-                vertex.m_bssrdf = 0;
+            else vertex.m_bssrdf = 0;
 
             vertex.m_throughput *= 2.0f;
         }
