@@ -166,7 +166,7 @@ endif ()
 #--------------------------------------------------------------------------------------------------
 
 set (appleseed_version_major    1)
-set (appleseed_version_minor    2)
+set (appleseed_version_minor    3)
 set (appleseed_version_patch    0)
 set (appleseed_version_maturity beta)
 
