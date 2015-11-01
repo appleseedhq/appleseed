@@ -531,8 +531,18 @@ QPushButton
     background-color: ACTIVE_BACKGROUND_COLOR;
     border: BORDER_STYLE;
     border-radius: 5px;
-    min-width: 50px;
     padding: 2px 11px 3px 11px;
+
+    /*
+        min-width causes push buttons in QMessageBox to overlap on Linux.
+        if defined(X) || defined(Y) is not supported by our preprocessor at this time.
+    */
+#ifdef __APPLE__
+    min-width: 50px;
+#endif
+#ifdef _WIN32
+    min-width: 50px;
+#endif
 }
 
 QPushButton:hover

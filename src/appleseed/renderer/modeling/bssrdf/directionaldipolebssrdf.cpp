@@ -141,7 +141,8 @@ namespace
 
                 // Currently, we don't have a reparameterization for this BSSRDF model.
                 // We reuse the standard dipole reparameterization method and apply a
-                // "correction" weight in evaluate() to try to match the results of other models.
+                // "correction" weight in evaluate() to try to match the reflectance of
+                // the standard dipole model.
                 const ComputeRdStandardDipole rd_fun(values->m_eta);
                 compute_absorption_and_scattering(
                     rd_fun,
@@ -172,8 +173,17 @@ namespace
 
             if (m_inputs.source("sigma_a") == 0 || m_inputs.source("sigma_s") == 0)
             {
-                // Reparamerization weight to match the other BSSRDF models.
-                values->m_dirpole_reparam_weight = values->m_alpha_prime * 0.75f;
+                // Reparamerization weight to match the standard dipole reflectance.
+                // This was derived by numerically integrating both models for different alpha_prime values,
+                // comparing the resulting Rd curves, fitting a quadratic to the difference between them
+                // and scaling by an empirical magic factor.
+                values->m_dirpole_reparam_weight.resize(values->m_alpha_prime.size());
+                for (size_t i = 0, e = values->m_dirpole_reparam_weight.size(); i < e; ++i)
+                {
+                    const double a = values->m_alpha_prime[i];
+                    const double w = (0.2605589 * square(a)) + (0.2622902 * a) + 0.007895145;
+                    values->m_dirpole_reparam_weight[i] = w * 1.44773351;
+                }
             }
             else
                 values->m_dirpole_reparam_weight.set(1.0f);

@@ -510,25 +510,23 @@ closure color as_disney(
 
 closure color as_velvet(normal N, float alpha) BUILTIN;
 
-closure color as_subsurface_dipole(
-    normal  N,
+closure color as_subsurface(
     string  profile,
-    color   rd,
-    float   dmfp,
-    float   g,
-    float   eta) BUILTIN;
-
-closure color as_subsurface_gaussian(
     normal  N,
     color   rd,
-    float   radius,
-    float   eta) BUILTIN;
+    color   dmfp,
+    float   eta,
+    float   g) BUILTIN;
 
-closure color as_subsurface_normalized(
+closure color as_subsurface(
+    string  profile,
     normal  N,
     color   rd,
-    float   dmfp,
-    float   eta) BUILTIN;
+    color   dmfp,
+    float   eta)
+{
+    return as_subsurface(profile, N, rd, dmfp, eta, 0.0);
+}
 
 closure color background() BUILTIN;
 
