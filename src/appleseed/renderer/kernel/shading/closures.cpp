@@ -108,23 +108,16 @@ namespace
     OSL::ustring standard_dipole_profile_name("standard_dipole");
     OSL::ustring better_dipole_profile_name("better_dipole");
     OSL::ustring directional_dipole_profile_name("directional_dipole");
+    OSL::ustring normalized_diffusion_profile_name("normalized_diffusion");
 
-    struct DipoleSubsurfaceClosureParams
+    struct SubsurfaceClosureParams
     {
-        OSL::Vec3       N;
         OSL::ustring    profile;
-        OSL::Color3     rd;
-        float           dmfp;
-        float           g;
-        float           eta;
-    };
-
-    struct GaussianSubsurfaceClosureParams
-    {
         OSL::Vec3       N;
         OSL::Color3     rd;
-        float           radius;
+        OSL::Color3     dmfp;
         float           eta;
+        float           g;
     };
 
     OSL::ustring beckmann_mdf_name("beckmann");
@@ -140,14 +133,6 @@ namespace
         float           yalpha;
         float           eta;
         int             refract;
-    };
-
-    struct NormalizedSubsurfaceClosureParams
-    {
-        OSL::Vec3       N;
-        OSL::Color3     rd;
-        float           dmfp;
-        float           eta;
     };
 
     struct OrenNayarBRDFClosureParams
@@ -214,6 +199,45 @@ void CompositeClosure::compute_cdf()
 size_t CompositeClosure::choose_closure(const double w) const
 {
     return sample_cdf(m_cdf, m_cdf + get_num_closures(), w);
+}
+
+
+//
+// CompositeReflectionClosure class implementation.
+//
+
+void CompositeReflectionClosure::compute_closure_shading_basis(
+    const Vector3d& normal,
+    const Basis3d&  original_shading_basis)
+{
+    // The normalization of the normal shouldn't be needed here,
+    // because the spec says that normals passed to closures
+    // must be normalized. But, since OSL uses floats, the normals are
+    // only normalized to float precision and not double precision.
+    m_bases[m_num_closures] =
+        Basis3d(
+            normalize(normal),
+            original_shading_basis.get_tangent_u());
+}
+
+void CompositeReflectionClosure::compute_closure_shading_basis(
+    const Vector3d& normal,
+    const Vector3d& tangent,
+    const Basis3d&  original_shading_basis)
+{
+    if (square_norm(tangent) != 0.0)
+    {
+        m_bases[m_num_closures] =
+            Basis3d(
+                normalize(normal),
+                normalize(tangent));
+    }
+    else
+    {
+        // If the tangent is zero, ignore it.
+        // This can happen when using the isotropic microfacet closure overloads, for example.
+        compute_closure_shading_basis(normal, original_shading_basis);
+    }
 }
 
 
@@ -613,17 +637,10 @@ void CompositeSurfaceClosure::do_add_closure(
     m_pdf_weights[m_num_closures] = w;
     m_weights[m_num_closures] = weight;
 
-    // If the tangent is zero, ignore it.
-    // This can happen when using the isotropic microfacet closure overloads, for example.
-    if (square_norm(tangent) == 0.0)
-        has_tangent = false;
-
-    m_bases[m_num_closures] =
-        Basis3d(
-            normalize(normal),
-            has_tangent
-                ? normalize(tangent)
-                : original_shading_basis.get_tangent_u());
+    if (!has_tangent)
+        compute_closure_shading_basis(normal, original_shading_basis);
+    else
+        compute_closure_shading_basis(normal, tangent, original_shading_basis);
 
     m_closure_types[m_num_closures] = closure_type;
 
@@ -678,16 +695,36 @@ void CompositeSubsurfaceClosure::process_closure_tree(
             const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
             const Color3f w = weight * Color3f(c->w);
 
-            if (c->id == SubsurfaceDipoleID)
-            {
-                const DipoleSubsurfaceClosureParams* p =
-                    reinterpret_cast<const DipoleSubsurfaceClosureParams*>(c->data());
+            const SubsurfaceClosureParams* p =
+                reinterpret_cast<const SubsurfaceClosureParams*>(c->data());
 
+            if (p->profile == normalized_diffusion_profile_name)
+            {
+#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
+                NormalizedDiffusionBSSRDFInputValues values;
+                values.m_weight = 1.0;
+                values.m_reflectance = Color3f(p->rd);
+                values.m_reflectance_multiplier = 1.0;
+                values.m_dmfp = luminance(Color3f(p->dmfp));
+                values.m_dmfp_multiplier = 1.0;
+                values.m_inside_ior = p->eta;
+                values.m_outside_ior = 1.0;
+
+                add_closure<NormalizedDiffusionBSSRDFInputValues>(
+                    SubsurfaceNormalizedDiffusionID,
+                    original_shading_basis,
+                    w,
+                    Vector3d(p->N),
+                    values);
+#endif
+            }
+            else
+            {
                 DipoleBSSRDFInputValues values;
                 values.m_weight = 1.0;
                 values.m_reflectance = Color3f(p->rd);
                 values.m_reflectance_multiplier = 1.0;
-                values.m_dmfp = p->dmfp;
+                values.m_dmfp = luminance(Color3f(p->dmfp));
                 values.m_dmfp_multiplier = 1.0;
                 values.m_anisotropy = p->g;
                 values.m_inside_ior = p->eta;
@@ -705,7 +742,7 @@ void CompositeSubsurfaceClosure::process_closure_tree(
                 else if (p->profile == standard_dipole_profile_name)
                 {
                     add_closure<DipoleBSSRDFInputValues>(
-                        SubsurfaceDipoleID,
+                        SubsurfaceStandardDipoleID,
                         original_shading_basis,
                         w,
                         Vector3d(p->N),
@@ -720,48 +757,6 @@ void CompositeSubsurfaceClosure::process_closure_tree(
                         Vector3d(p->N),
                         values);
                 }
-            }
-            else if (c->id == SubsurfaceGaussianID)
-            {
-                const GaussianSubsurfaceClosureParams* p =
-                    reinterpret_cast<const GaussianSubsurfaceClosureParams*>(c->data());
-
-                GaussianBSSRDFInputValues values;
-                values.m_reflectance = Color3f(p->rd);
-                values.m_reflectance_multiplier = 1.0;
-                values.m_v = p->radius;
-                values.m_inside_ior = p->eta;
-                values.m_outside_ior = 1.0;
-
-                add_closure<GaussianBSSRDFInputValues>(
-                    SubsurfaceGaussianID,
-                    original_shading_basis,
-                    w,
-                    Vector3d(p->N),
-                    values);
-            }
-            else if (c->id == SubsurfaceNormalizedID)
-            {
-#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
-                const NormalizedSubsurfaceClosureParams* p =
-                    reinterpret_cast<const NormalizedSubsurfaceClosureParams*>(c->data());
-
-                NormalizedDiffusionBSSRDFInputValues values;
-                values.m_weight = 1.0;
-                values.m_reflectance = Color3f(p->rd);
-                values.m_reflectance_multiplier = 1.0;
-                values.m_dmfp = p->dmfp;
-                values.m_dmfp_multiplier = 1.0;
-                values.m_inside_ior = p->eta;
-                values.m_outside_ior = 1.0;
-
-                add_closure<NormalizedDiffusionBSSRDFInputValues>(
-                    SubsurfaceNormalizedID,
-                    original_shading_basis,
-                    w,
-                    Vector3d(p->N),
-                    values);
-#endif
             }
         }
         break;
@@ -802,10 +797,7 @@ void CompositeSubsurfaceClosure::add_closure(
     m_weights[m_num_closures] = weight;
     m_closure_types[m_num_closures] = closure_type;
 
-    m_bases[m_num_closures] =
-        Basis3d(
-            normalize(normal),
-            original_shading_basis.get_tangent_u());
+    compute_closure_shading_basis(normal, original_shading_basis);
 
     char* values_ptr = m_pool + m_num_bytes;
     assert(is_aligned(values_ptr, InputValuesAlignment));
@@ -985,25 +977,13 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                    CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, clearcoat_gloss),
                                    CLOSURE_FINISH_PARAM(DisneyBRDFClosureParams) } },
 
-        { "as_subsurface_dipole", SubsurfaceDipoleID, { CLOSURE_VECTOR_PARAM(DipoleSubsurfaceClosureParams, N),
-                                                        CLOSURE_STRING_PARAM(DipoleSubsurfaceClosureParams, profile),
-                                                        CLOSURE_COLOR_PARAM(DipoleSubsurfaceClosureParams, rd),
-                                                        CLOSURE_FLOAT_PARAM(DipoleSubsurfaceClosureParams, dmfp),
-                                                        CLOSURE_FLOAT_PARAM(DipoleSubsurfaceClosureParams, g),
-                                                        CLOSURE_FLOAT_PARAM(DipoleSubsurfaceClosureParams, eta),
-                                                        CLOSURE_FINISH_PARAM(DipoleSubsurfaceClosureParams) } },
-
-        { "as_subsurface_gaussian", SubsurfaceGaussianID, { CLOSURE_VECTOR_PARAM(GaussianSubsurfaceClosureParams, N),
-                                                            CLOSURE_COLOR_PARAM(GaussianSubsurfaceClosureParams, rd),
-                                                            CLOSURE_FLOAT_PARAM(GaussianSubsurfaceClosureParams, radius),
-                                                            CLOSURE_FLOAT_PARAM(GaussianSubsurfaceClosureParams, eta),
-                                                            CLOSURE_FINISH_PARAM(GaussianSubsurfaceClosureParams) } },
-
-        { "as_subsurface_normalized", SubsurfaceNormalizedID, { CLOSURE_VECTOR_PARAM(NormalizedSubsurfaceClosureParams, N),
-                                                                CLOSURE_COLOR_PARAM(NormalizedSubsurfaceClosureParams, rd),
-                                                                CLOSURE_FLOAT_PARAM(NormalizedSubsurfaceClosureParams, dmfp),
-                                                                CLOSURE_FLOAT_PARAM(NormalizedSubsurfaceClosureParams, eta),
-                                                                CLOSURE_FINISH_PARAM(NormalizedSubsurfaceClosureParams) } },
+        { "as_subsurface", SubsurfaceID, { CLOSURE_STRING_PARAM(SubsurfaceClosureParams, profile),
+                                           CLOSURE_VECTOR_PARAM(SubsurfaceClosureParams, N),
+                                           CLOSURE_COLOR_PARAM(SubsurfaceClosureParams, rd),
+                                           CLOSURE_COLOR_PARAM(SubsurfaceClosureParams, dmfp),
+                                           CLOSURE_FLOAT_PARAM(SubsurfaceClosureParams, eta),
+                                           CLOSURE_FLOAT_PARAM(SubsurfaceClosureParams, g),
+                                           CLOSURE_FINISH_PARAM(SubsurfaceClosureParams) } },
 
         { "as_velvet", VelvetID, { CLOSURE_VECTOR_PARAM(VelvetBRDFClosureParams, N),
                                    CLOSURE_FLOAT_PARAM(VelvetBRDFClosureParams, alpha),

@@ -1,0 +1,83 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.8
+surface subsurface_bump
+param	string	profile	"directional_dipole"		%read{15,15} %write{2147483647,-1}
+param	color	Rd	0.5 0.5 0.5		%read{15,22} %write{2147483647,-1}
+param	color	dmfp	0.050000001 0.050000001 0.050000001		%read{15,15} %write{2147483647,-1}
+param	string	bumptx	"bump.exr"		%read{2,2} %write{2147483647,-1} %derivs
+param	float	Kbump	0.5		%read{4,4} %write{2147483647,-1} %derivs
+global	point	P	%read{5,5} %write{2147483647,-1} %derivs
+global	normal	N	%read{3,8} %write{2147483647,-1} %derivs
+global	float	u	%read{0,0} %write{2147483647,-1} %derivs
+global	float	v	%read{1,1} %write{2147483647,-1} %derivs
+global	closure color	Ci	%read{2147483647,-1} %write{20,22}
+local	float	height	%read{3,3} %write{2,2} %derivs
+local	normal	Normal	%read{8,21} %write{7,11}
+const	float	$const1	1.5		%read{0,1} %write{2147483647,-1}
+temp	float	$tmp1	%read{2,2} %write{0,0} %derivs
+temp	float	$tmp2	%read{2,2} %write{1,1} %derivs
+const	string	$const2	"wrap"		%read{2,2} %write{2147483647,-1}
+const	string	$const3	"periodic"		%read{2,2} %write{2147483647,-1}
+temp	vector	$tmp3	%read{7,7} %write{6,6}
+temp	normal	$tmp4	%read{4,4} %write{3,3} %derivs
+temp	normal	$tmp5	%read{5,5} %write{4,4} %derivs
+temp	point	$tmp6	%read{6,6} %write{5,5} %derivs
+temp	float	$tmp7	%read{9,9} %write{8,8}
+const	float	$const4	0		%read{9,15} %write{2147483647,-1}
+temp	int	$tmp8	%read{10,10} %write{9,9}
+temp	int	$tmp9	%read{13,13} %write{12,12}
+const	string	$const5	"camera"		%read{12,12} %write{2147483647,-1}
+temp	closure color	$tmp10	%read{16,16} %write{15,15}
+const	float	$const6	1.3		%read{15,15} %write{2147483647,-1}
+const	string	$const7	"as_subsurface"		%read{14,15} %write{2147483647,-1}
+const	float	$const8	0.80000001		%read{16,16} %write{2147483647,-1}
+temp	closure color	$tmp11	%read{20,20} %write{16,16}
+temp	closure color	$tmp12	%read{19,19} %write{17,17}
+const	string	$const9	"diffuse"		%read{17,21} %write{2147483647,-1}
+const	float	$const10	0.2		%read{18,18} %write{2147483647,-1}
+temp	color	$tmp13	%read{19,19} %write{18,18}
+temp	closure color	$tmp14	%read{20,20} %write{19,19}
+temp	closure color	$tmp15	%read{22,22} %write{21,21}
+code ___main___
+# subsurface_bump.osl:4
+#     float height = texture( bumptx, 1.5 * u, 1.5 * v, "wrap", "periodic");
+	mul		$tmp1 $const1 u 	%filename{"subsurface_bump.osl"} %line{4} %argrw{"wrr"}
+	mul		$tmp2 $const1 v 	%argrw{"wrr"}
+	texture		height bumptx $tmp1 $tmp2 $const2 $const3 	%argrw{"wrrrrr"} %argderivs{2,3}
+# subsurface_bump.osl:5
+#     normal Normal = normalize(calculatenormal(P + (N * height * Kbump)));
+	mul		$tmp4 N height 	%line{5} %argrw{"wrr"}
+	mul		$tmp5 $tmp4 Kbump 	%argrw{"wrr"}
+	add		$tmp6 P $tmp5 	%argrw{"wrr"}
+	calculatenormal	$tmp3 $tmp6 	%argrw{"wr"} %argderivs{1}
+	normalize	Normal $tmp3 	%argrw{"wr"}
+# subsurface_bump.osl:7
+#     if (dot(Normal, N) < 0.0)
+	dot		$tmp7 Normal N 	%line{7} %argrw{"wrr"}
+	lt		$tmp8 $tmp7 $const4 	%argrw{"wrr"}
+	if		$tmp8 12 12 	%argrw{"r"}
+# subsurface_bump.osl:8
+#         Normal = -Normal;
+	neg		Normal Normal 	%line{8} %argrw{"wr"}
+# subsurface_bump.osl:10
+#     if (raytype("camera"))
+	raytype		$tmp9 $const5 	%line{10} %argrw{"wr"}
+	if		$tmp9 21 23 	%argrw{"r"}
+# subsurface_bump.osl:11
+#         Ci = 0.8 * as_subsurface(profile, Normal, Rd, dmfp, 1.3) + 0.2 * Rd * diffuse(Normal);
+	functioncall	$const7 16 	%line{11} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:528
+#     color   dmfp,
+	closure		$tmp10 $const7 profile Normal Rd dmfp $const6 $const4 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{528} %argrw{"wrrrrrrr"}
+# subsurface_bump.osl:11
+#         Ci = 0.8 * as_subsurface(profile, Normal, Rd, dmfp, 1.3) + 0.2 * Rd * diffuse(Normal);
+	mul		$tmp11 $tmp10 $const8 	%filename{"subsurface_bump.osl"} %line{11} %argrw{"wrr"}
+	closure		$tmp12 $const9 Normal 	%argrw{"wrr"}
+	mul		$tmp13 $const10 Rd 	%argrw{"wrr"}
+	mul		$tmp14 $tmp12 $tmp13 	%argrw{"wrr"}
+	add		Ci $tmp11 $tmp14 	%argrw{"wrr"}
+# subsurface_bump.osl:13
+#         Ci = Rd * diffuse(Normal);
+	closure		$tmp15 $const9 Normal 	%line{13} %argrw{"wrr"}
+	mul		Ci $tmp15 Rd 	%argrw{"wrr"}
+	end

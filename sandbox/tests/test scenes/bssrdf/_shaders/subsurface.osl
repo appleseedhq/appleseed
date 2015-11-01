@@ -1,0 +1,8 @@
+
+surface subsurface(string profile = "directional_dipole", color Rd = 0.5, color dmfp = 0.1)
+{
+    if (raytype("camera"))
+        Ci = as_subsurface(profile, N, Rd, dmfp, 1.3);
+    else
+        Ci = Rd * diffuse(N);
+}
