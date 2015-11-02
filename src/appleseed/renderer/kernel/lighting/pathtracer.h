@@ -407,7 +407,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         const ShadingPoint* parent_shading_point;
         foundation::Dual3d incoming;
         Spectrum value;
-        ScatteringMode::Mode mode;
 
         if (vertex.m_bsdf)
         {
@@ -437,14 +436,13 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             vertex.m_prev_mode = sample.m_mode;
             vertex.m_prev_prob = sample.m_probability;
 
-            // Origin, direction and scattering mode of the next ray.
+            // Origin and direction of the scattered ray.
             parent_shading_point = vertex.m_shading_point;
             incoming = sample.m_incoming;
-            mode = sample.m_mode;
         }
         else if (vertex.m_bssrdf)
         {
-            // Pick an incoming direction at random.
+            // Pick the direction of the scattered ray at random.
             sampling_context.split_in_place(2, 1);
             const foundation::Vector2d s = sampling_context.next_vector2<2>();
             foundation::Vector3d incoming_vector =
@@ -472,9 +470,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             vertex.m_prev_mode = ScatteringMode::Diffuse;
             vertex.m_prev_prob = incoming_prob;
 
-            // Origin and scattering mode of the next ray.
+            // Origin of the scattered ray.
             parent_shading_point = vertex.m_incoming_point;
-            mode = ScatteringMode::Diffuse;
         }
         else
         {
@@ -515,7 +512,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             parent_shading_point->get_biased_point(incoming.get_value()),
             incoming.get_value(),
             ray.m_time,
-            ScatteringMode::get_vis_flags(mode),
+            ScatteringMode::get_vis_flags(vertex.m_prev_mode),
             ray.m_depth + 1);
 
         // Compute scattered ray differentials.
