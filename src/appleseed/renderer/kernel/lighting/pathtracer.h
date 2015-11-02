@@ -356,20 +356,24 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             vertex.m_incoming_point = &subsurf_visitor.m_incoming_points[i];
             vertex.m_incoming_point_prob = subsurf_visitor.m_probabilities[i] / subsurf_visitor.m_sample_count;
 
+#if 0
+            //
             // Here, when tracing rays from the camera we should "jump" to the sampled
             // point, which is the point the light arrives to, evaluate the BSSRDF there
             // and use the BSSRDF parameters for the following lighting calculations.
             // This has the side effect of blurring the textures used in BSSRDFs and makes
             // it impossible to have detailed textures for highly translucent materials.
-            // It's probably not what most users want, so we use the bssrdf parameters
+            // It's probably not what most users want, so we use the BSSRDF parameters
             // at the outgoing point for lighting calculations.
+            //
             // Maybe this could be exposed as an option later.
             //
             // Interesting reference:
             //
             //   http://renderman.pixar.com/resources/current/RenderMan/subsurface.html#varying-albedo-and-diffuse-mean-free-path-length
             //   section 2.6: Where to apply the surface albedo
-#if 0
+            //
+
             if (!Adjoint)
             {
                 if (material->has_osl_surface())
@@ -387,11 +391,10 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 if (material->has_osl_surface())
                 {
                     sampling_context.split_in_place(1, 1);
-                    const double s = sampling_context.next_double2();
                     shading_context.choose_osl_subsurface_normal(
                         *vertex.m_incoming_point,
                         vertex.m_bssrdf_data,
-                        s);
+                        sampling_context.next_double2());
                 }
             }
 #endif
