@@ -356,20 +356,24 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             vertex.m_incoming_point = &subsurf_visitor.m_incoming_points[i];
             vertex.m_incoming_point_prob = subsurf_visitor.m_probabilities[i] / subsurf_visitor.m_sample_count;
 
+#if 0
+            //
             // Here, when tracing rays from the camera we should "jump" to the sampled
             // point, which is the point the light arrives to, evaluate the BSSRDF there
             // and use the BSSRDF parameters for the following lighting calculations.
             // This has the side effect of blurring the textures used in BSSRDFs and makes
             // it impossible to have detailed textures for highly translucent materials.
-            // It's probably not what most users want, so we use the bssrdf parameters
+            // It's probably not what most users want, so we use the BSSRDF parameters
             // at the outgoing point for lighting calculations.
+            //
             // Maybe this could be exposed as an option later.
             //
             // Interesting reference:
             //
             //   http://renderman.pixar.com/resources/current/RenderMan/subsurface.html#varying-albedo-and-diffuse-mean-free-path-length
             //   section 2.6: Where to apply the surface albedo
-#if 0
+            //
+
             if (!Adjoint)
             {
                 if (material->has_osl_surface())
@@ -387,11 +391,10 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 if (material->has_osl_surface())
                 {
                     sampling_context.split_in_place(1, 1);
-                    const double s = sampling_context.next_double2();
                     shading_context.choose_osl_subsurface_normal(
                         *vertex.m_incoming_point,
                         vertex.m_bssrdf_data,
-                        s);
+                        sampling_context.next_double2());
                 }
             }
 #endif
@@ -407,7 +410,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         const ShadingPoint* parent_shading_point;
         foundation::Dual3d incoming;
         Spectrum value;
-        ScatteringMode::Mode mode;
 
         if (vertex.m_bsdf)
         {
@@ -437,14 +439,13 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             vertex.m_prev_mode = sample.m_mode;
             vertex.m_prev_prob = sample.m_probability;
 
-            // Origin, direction and scattering mode of the next ray.
+            // Origin and direction of the scattered ray.
             parent_shading_point = vertex.m_shading_point;
             incoming = sample.m_incoming;
-            mode = sample.m_mode;
         }
         else if (vertex.m_bssrdf)
         {
-            // Pick an incoming direction at random.
+            // Pick the direction of the scattered ray at random.
             sampling_context.split_in_place(2, 1);
             const foundation::Vector2d s = sampling_context.next_vector2<2>();
             foundation::Vector3d incoming_vector =
@@ -472,9 +473,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             vertex.m_prev_mode = ScatteringMode::Diffuse;
             vertex.m_prev_prob = incoming_prob;
 
-            // Origin and scattering mode of the next ray.
+            // Origin of the scattered ray.
             parent_shading_point = vertex.m_incoming_point;
-            mode = ScatteringMode::Diffuse;
         }
         else
         {
@@ -515,7 +515,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             parent_shading_point->get_biased_point(incoming.get_value()),
             incoming.get_value(),
             ray.m_time,
-            ScatteringMode::get_vis_flags(mode),
+            ScatteringMode::get_vis_flags(vertex.m_prev_mode),
             ray.m_depth + 1);
 
         // Compute scattered ray differentials.
