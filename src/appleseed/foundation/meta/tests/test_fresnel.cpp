@@ -318,7 +318,7 @@ TEST_SUITE(Foundation_Math_Fresnel)
         double tr;
 
         fresnel_transmittance_dielectric(tr, Eta, 0.0); EXPECT_EQ(0.0, tr);
-        fresnel_transmittance_dielectric(tr, Eta, Eps); EXPECT_FEQ(1.0, tr);
-        fresnel_transmittance_dielectric(tr, Eta, 1.0); EXPECT_EQ(0.0, tr);
+        fresnel_transmittance_dielectric(tr, Eta, Eps); EXPECT_FEQ(0.0, tr);
+        fresnel_transmittance_dielectric(tr, Eta, 1.0); EXPECT_EQ(1.0, tr);
     }
 }
