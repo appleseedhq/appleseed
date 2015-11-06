@@ -70,6 +70,16 @@ template <typename T>
 T radical_inverse_base2(
     size_t              input);         // input digits
 
+// Radical inverse in base 2, 32-bit version.
+template <typename T>
+T radical_inverse_base2_32(
+    uint32              input);         // input digits
+
+// Radical inverse in base 2, 64-bit version.
+template <typename T>
+T radical_inverse_base2_64(
+    uint64              input);         // input digits
+
 // Folded radical inverse in base 2.
 template <typename T>
 T folded_radical_inverse_base2(
@@ -201,13 +211,36 @@ template <typename T>
 inline T radical_inverse_base2(
     size_t              input)
 {
-    input = (input >> 16) | (input << 16);                                  // 16-bit swap
-    input = ((input & 0xFF00FF00) >> 8) | ((input & 0x00FF00FF) << 8);      // 8-bit swap
-    input = ((input & 0xF0F0F0F0) >> 4) | ((input & 0x0F0F0F0F) << 4);      // 4-bit swap
-    input = ((input & 0xCCCCCCCC) >> 2) | ((input & 0x33333333) << 2);      // 2-bit swap
-    input = ((input & 0xAAAAAAAA) >> 1) | ((input & 0x55555555) << 1);      // 1-bit swap
+#ifdef APPLESEED_ARCH64
+    return radical_inverse_base2_64<T>(input);
+#else
+    return radical_inverse_base2_32<T>(input);
+#endif
+}
 
-    return static_cast<T>(input) / static_cast<T>(0x100000000LL);
+template <typename T>
+inline T radical_inverse_base2_32(
+    uint32              input)
+{
+    input = (input >> 16) | (input << 16);                                                      // 16-bit swap
+    input = ((input & 0xFF00FF00UL) >> 8) | ((input & 0x00FF00FFUL) << 8);                      // 8-bit swap
+    input = ((input & 0xF0F0F0F0UL) >> 4) | ((input & 0x0F0F0F0FUL) << 4);                      // 4-bit swap
+    input = ((input & 0xCCCCCCCCUL) >> 2) | ((input & 0x33333333UL) << 2);                      // 2-bit swap
+    input = ((input & 0xAAAAAAAAUL) >> 1) | ((input & 0x55555555UL) << 1);                      // 1-bit swap
+    return static_cast<T>(input / 4294967296.0);
+}
+
+template <typename T>
+inline T radical_inverse_base2_64(
+    uint64              input)
+{
+    input = (input >> 32) | (input << 32);                                                      // 32-bit swap
+    input = ((input & 0xFFFF0000FFFF0000ULL) >> 16) | ((input & 0x0000FFFF0000FFFFULL) << 16);  // 16-bit swap
+    input = ((input & 0xFF00FF00FF00FF00ULL) >> 8)  | ((input & 0x00FF00FF00FF00FFULL) << 8);   // 8-bit swap
+    input = ((input & 0xF0F0F0F0F0F0F0F0ULL) >> 4)  | ((input & 0x0F0F0F0F0F0F0F0FULL) << 4);   // 4-bit swap
+    input = ((input & 0xCCCCCCCCCCCCCCCCULL) >> 2)  | ((input & 0x3333333333333333ULL) << 2);   // 2-bit swap
+    input = ((input & 0xAAAAAAAAAAAAAAAAULL) >> 1)  | ((input & 0x5555555555555555ULL) << 1);   // 1-bit swap
+    return static_cast<T>(input / 18446744073709551616.0);
 }
 
 template <typename T>

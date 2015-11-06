@@ -342,7 +342,7 @@ TEST_SUITE(Foundation_Math_QMC)
         GenericImageFileWriter().write("unit tests/outputs/test_qmc_sampleimageplanewithhaltonsequence.png", image);
     }
 
-    TEST_CASE(SampleImagePlaneWithHaltonSequenceUniform)
+    TEST_CASE(SampleImagePlaneWithHaltonSequence_Uniformized)
     {
         //
         // This test builds on the observation that the first W*H points of the Halton sequence
@@ -360,7 +360,7 @@ TEST_SUITE(Foundation_Math_QMC)
         Image image(Width, Height, 32, 32, 3, PixelFormatFloat);
         image.clear(Color3f(0.0f));
 
-        for (size_t k = 0, n = 0; n < PixelCount; ++k)
+        for (size_t k = 0, n = 0; n < PixelCount * 10; ++k)
         {
             const size_t Bases[] = { 2, 3 };    // can't change these
             const Vector2d s = halton_sequence<double, 2>(Bases, k);
@@ -376,14 +376,58 @@ TEST_SUITE(Foundation_Math_QMC)
             Color3f c;
             image.get_pixel(x, y, c);
 
-            c += Color3f(0.2f);
-            c = saturate(c);
+            c += Color3f(0.02f);
 
             image.set_pixel(x, y, c);
         }
 
-        GenericImageFileWriter().write("unit tests/outputs/test_qmc_sampleimageplanewithhaltonsequenceuniform.png", image);
+        GenericImageFileWriter().write("unit tests/outputs/test_qmc_sampleimageplanewithhaltonsequence_uniformized.png", image);
     }
+
+#ifdef APPLESEED_ARCH64
+
+    TEST_CASE(SampleImagePlaneWithHaltonSequence_Uniformized_64BitOffset)
+    {
+        //
+        // The same test as above, but this time the Halton sequence is offset by a value larger than 2^32.
+        //
+
+        const size_t Width = 640;
+        const size_t Height = 480;
+        const size_t PixelCount = Width * Height;
+
+        const double NextWidth = next_power(static_cast<double>(Width), 2.0);
+        const double NextHeight = next_power(static_cast<double>(Height), 3.0);
+        const size_t StartOffset = 10000000000ULL;
+
+        Image image(Width, Height, 32, 32, 3, PixelFormatFloat);
+        image.clear(Color3f(0.0f));
+
+        for (size_t k = StartOffset, n = StartOffset; n < StartOffset + PixelCount * 10; ++k)
+        {
+            const size_t Bases[] = { 2, 3 };    // can't change these
+            const Vector2d s = halton_sequence<double, 2>(Bases, k);
+
+            const size_t x = truncate<size_t>(s[0] * NextWidth);
+            const size_t y = truncate<size_t>(s[1] * NextHeight);
+
+            if (x >= Width || y >= Height)
+                continue;
+
+            ++n;
+
+            Color3f c;
+            image.get_pixel(x, y, c);
+
+            c += Color3f(0.02f);
+
+            image.set_pixel(x, y, c);
+        }
+
+        GenericImageFileWriter().write("unit tests/outputs/test_qmc_sampleimageplanewithhaltonsequence_uniformized_64bitoffset.png", image);
+    }
+
+#endif
 
     TEST_CASE(Integrate1DFunction)
     {
