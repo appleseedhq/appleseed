@@ -301,24 +301,6 @@ void CompositeSurfaceClosure::process_closure_tree(
                 }
                 break;
 
-              case LambertID:
-                {
-                    const DiffuseBSDFClosureParams* p =
-                        reinterpret_cast<const DiffuseBSDFClosureParams*>(c->data());
-
-                    LambertianBRDFInputValues values;
-                    values.m_reflectance.set(1.0f);
-                    values.m_reflectance_multiplier = 1.0;
-
-                    add_closure<LambertianBRDFInputValues>(
-                        static_cast<ClosureID>(c->id),
-                        original_shading_basis,
-                        w,
-                        Vector3d(p->N),
-                        values);
-                }
-                break;
-
               case MicrofacetID:
                 {
                     const MicrofacetClosureParams* p =
@@ -921,9 +903,6 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
 
         { "debug", DebugID, { CLOSURE_STRING_PARAM(DebugClosureParams, tag),
                               CLOSURE_FINISH_PARAM(DebugClosureParams) } },
-
-        { "diffuse", LambertID, { CLOSURE_VECTOR_PARAM(DiffuseBSDFClosureParams, N),
-                                  CLOSURE_FINISH_PARAM(DiffuseBSDFClosureParams) } },
 
         { "emission", EmissionID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
 

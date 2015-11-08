@@ -34,6 +34,7 @@
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
+#include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/sampling/mappings.h"
@@ -167,7 +168,11 @@ namespace
         }
 
       private:
-        typedef LambertianBRDFInputValues InputValues;
+        APPLESEED_DECLARE_INPUT_VALUES(InputValues)
+        {
+            Spectrum    m_reflectance;              // diffuse reflectance (albedo, technically)
+            double      m_reflectance_multiplier;
+        };
     };
 
     typedef BSDFWrapper<LambertianBRDFImpl> LambertianBRDF;

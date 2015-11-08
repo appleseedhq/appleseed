@@ -34,7 +34,6 @@
 #include "renderer/modeling/bsdf/osl/oslmicrofacetbtdf.h"
 #include "renderer/modeling/bsdf/diffusebtdf.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
-#include "renderer/modeling/bsdf/lambertianbrdf.h"
 #include "renderer/modeling/bsdf/orennayarbrdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
@@ -89,7 +88,6 @@ enum ClosureID
 {
     // BSDF closures.
     DisneyID,
-    LambertID,
     OrenNayarID,
     ReflectionID,
     RefractionID,
@@ -141,7 +139,6 @@ class APPLESEED_ALIGN(16) CompositeClosure
         DiffuseBTDFInputValues,
         DipoleBSSRDFInputValues,
         DisneyBRDFInputValues,
-        LambertianBRDFInputValues,
 #ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
         NormalizedDiffusionBSSRDFInputValues,
 #endif
