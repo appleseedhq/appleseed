@@ -484,15 +484,6 @@ string concat (string a, string b, string c, string d, string e, string f) {
 // Closures
 /*************************************************************/
 
-closure color as_ashikhmin_shirley(
-    normal  N,
-    vector  T,
-    color   rd,
-    color   rg,
-    float   nu,
-    float   nv,
-    float   fr) BUILTIN;
-
 closure color as_disney(
     normal  N,
     vector  T,
@@ -558,11 +549,6 @@ closure color microfacet(
 }
 
 closure color oren_nayar(normal N, float roughness) BUILTIN;
-
-closure color phong(normal N, float exponent)
-{
-    return as_ashikhmin_shirley(N, vector(0), color(0), color(1), exponent, exponent, 1.0);
-}
 
 closure color reflection(normal N) BUILTIN;
 

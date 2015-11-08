@@ -36,7 +36,6 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/osl/oslmicrofacetbrdf.h"
 #include "renderer/modeling/bsdf/osl/oslmicrofacetbtdf.h"
-#include "renderer/modeling/bsdf/ashikhminbrdf.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
@@ -84,13 +83,6 @@ namespace
           : BSDF(name, AllBSDFTypes, ScatteringMode::All, params)
         {
             memset(m_all_bsdfs, 0, sizeof(BSDF*) * NumClosuresIDs);
-
-            m_ashikhmin_shirley_brdf =
-                AshikhminBRDFFactory().create(
-                    "ashikhmin_brdf",
-                    ParamArray());
-
-            m_all_bsdfs[AshikhminShirleyID] = m_ashikhmin_shirley_brdf.get();
 
             m_diffuse_btdf =
                 create_and_register_bsdf(
@@ -334,7 +326,6 @@ namespace
         }
 
       private:
-        auto_release_ptr<BSDF>      m_ashikhmin_shirley_brdf;
         auto_release_ptr<BSDF>      m_diffuse_btdf;
         auto_release_ptr<BSDF>      m_disney_brdf;
         auto_release_ptr<BSDF>      m_lambertian_brdf;
