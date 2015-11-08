@@ -101,6 +101,12 @@ namespace
                     "orennayar_brdf",
                     "osl_orennayar");
 
+            m_sheen_brdf =
+                create_and_register_bsdf(
+                    SheenID,
+                    "sheen_brdf",
+                    "osl_sheen");
+
             m_specular_brdf =
                 create_and_register_bsdf(
                     ReflectionID,
@@ -321,6 +327,7 @@ namespace
         auto_release_ptr<BSDF>      m_microfacet_ggx_brdf;
         auto_release_ptr<BSDF>      m_microfacet_ggx_btdf;
         auto_release_ptr<BSDF>      m_orennayar_brdf;
+        auto_release_ptr<BSDF>      m_sheen_brdf;
         auto_release_ptr<BSDF>      m_specular_brdf;
         auto_release_ptr<BSDF>      m_specular_btdf;
         BSDF*                       m_all_bsdfs[NumClosuresIDs];

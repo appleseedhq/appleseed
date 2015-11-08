@@ -490,6 +490,8 @@ closure color oren_nayar(normal N, float roughness) BUILTIN;
 
 closure color translucent(normal N) BUILTIN;
 
+closure color as_sheen(normal N) BUILTIN;
+
 // for compat with the spec.
 closure color diffuse(normal N)
 {

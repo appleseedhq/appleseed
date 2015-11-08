@@ -461,6 +461,24 @@ void CompositeSurfaceClosure::process_closure_tree(
                 }
                 break;
 
+              case SheenID:
+                {
+                    const DiffuseBSDFClosureParams* p =
+                        reinterpret_cast<const DiffuseBSDFClosureParams*>(c->data());
+
+                      SheenBRDFInputValues values;
+                      values.m_reflectance.set(1.0f);
+                      values.m_reflectance_multiplier = 1.0;
+
+                      add_closure<SheenBRDFInputValues>(
+                          static_cast<ClosureID>(c->id),
+                          original_shading_basis,
+                          w,
+                          Vector3d(p->N),
+                          values);
+                }
+                break;
+
               case TranslucentID:
                 {
                     const DiffuseBSDFClosureParams* p =
@@ -886,6 +904,9 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                    CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, clearcoat),
                                    CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, clearcoat_gloss),
                                    CLOSURE_FINISH_PARAM(DisneyBRDFClosureParams) } },
+
+        { "as_sheen", SheenID, { CLOSURE_VECTOR_PARAM(DiffuseBSDFClosureParams, N),
+                                 CLOSURE_FINISH_PARAM(DiffuseBSDFClosureParams) } },
 
         { "as_subsurface", SubsurfaceID, { CLOSURE_STRING_PARAM(SubsurfaceClosureParams, profile),
                                            CLOSURE_VECTOR_PARAM(SubsurfaceClosureParams, N),

@@ -41,6 +41,7 @@
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
 #include "renderer/modeling/bsdf/microfacetbrdf.h"
 #include "renderer/modeling/bsdf/orennayarbrdf.h"
+#include "renderer/modeling/bsdf/sheenbrdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
 #include "renderer/modeling/bsdf/velvetbrdf.h"
@@ -78,6 +79,7 @@ BSDFFactoryRegistrar::BSDFFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new LambertianBRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new MicrofacetBRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new OrenNayarBRDFFactory()));
+    register_factory(auto_ptr<FactoryType>(new SheenBRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new SpecularBRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new SpecularBTDFFactory()));
     register_factory(auto_ptr<FactoryType>(new VelvetBRDFFactory()));

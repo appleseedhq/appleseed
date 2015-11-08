@@ -35,6 +35,7 @@
 #include "renderer/modeling/bsdf/diffusebtdf.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/bsdf/orennayarbrdf.h"
+#include "renderer/modeling/bsdf/sheenbrdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
 #include "renderer/modeling/bssrdf/dipolebssrdf.h"
@@ -91,6 +92,7 @@ enum ClosureID
     OrenNayarID,
     ReflectionID,
     RefractionID,
+    SheenID,
     TranslucentID,
 
     MicrofacetID,
@@ -145,6 +147,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
         OSLMicrofacetBRDFInputValues,
         OSLMicrofacetBTDFInputValues,
         OrenNayarBRDFInputValues,
+        SheenBRDFInputValues,
         SpecularBRDFInputValues,
         SpecularBTDFInputValues
     > InputValuesTypeList;
