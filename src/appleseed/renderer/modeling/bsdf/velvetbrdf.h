@@ -32,7 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
-#include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -49,21 +48,6 @@ namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
-
-//
-// Velvet BRDF input values.
-//
-
-APPLESEED_DECLARE_INPUT_VALUES(VelvetBRDFInputValues)
-{
-    double      m_roughness;
-    double      m_roughness_multiplier;
-    Spectrum    m_reflectance;
-    double      m_reflectance_multiplier;
-    double      m_fresnel_normal_reflectance;
-    double      m_fresnel_multiplier;
-};
-
 
 //
 // Velvet BRDF factory.

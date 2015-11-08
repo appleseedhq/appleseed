@@ -38,7 +38,6 @@
 #include "renderer/modeling/bsdf/orennayarbrdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
-#include "renderer/modeling/bsdf/velvetbrdf.h"
 #include "renderer/modeling/bssrdf/dipolebssrdf.h"
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
@@ -95,7 +94,6 @@ enum ClosureID
     ReflectionID,
     RefractionID,
     TranslucentID,
-    VelvetID,
 
     MicrofacetID,
     MicrofacetBeckmannReflectionID,
@@ -151,8 +149,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
         OSLMicrofacetBTDFInputValues,
         OrenNayarBRDFInputValues,
         SpecularBRDFInputValues,
-        SpecularBTDFInputValues,
-        VelvetBRDFInputValues
+        SpecularBTDFInputValues
     > InputValuesTypeList;
 
     // Find the biggest InputValues type.

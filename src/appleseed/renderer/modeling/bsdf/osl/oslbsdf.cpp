@@ -40,7 +40,6 @@
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
-#include "renderer/modeling/bsdf/velvetbrdf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/utility/paramarray.h"
@@ -119,12 +118,6 @@ namespace
                     RefractionID,
                     "specular_btdf",
                     "osl_refraction");
-
-            m_velvet_brdf =
-                create_and_register_bsdf(
-                    VelvetID,
-                    "velvet_brdf",
-                    "osl_velvet");
 
             // OSL Microfacet models.
             m_microfacet_beckmann_brdf =
@@ -337,7 +330,6 @@ namespace
         auto_release_ptr<BSDF>      m_orennayar_brdf;
         auto_release_ptr<BSDF>      m_specular_brdf;
         auto_release_ptr<BSDF>      m_specular_btdf;
-        auto_release_ptr<BSDF>      m_velvet_brdf;
         BSDF*                       m_all_bsdfs[NumClosuresIDs];
 
         auto_release_ptr<BSDF> create_and_register_bsdf(

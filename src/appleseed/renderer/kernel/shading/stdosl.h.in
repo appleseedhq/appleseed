@@ -499,8 +499,6 @@ closure color as_disney(
     float   clearcoat,
     float   clearcoat_gloss) BUILTIN;
 
-closure color as_velvet(normal N, float alpha) BUILTIN;
-
 closure color as_subsurface(
     string  profile,
     normal  N,
