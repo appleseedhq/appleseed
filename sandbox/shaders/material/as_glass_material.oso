@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.4dev
+# Compiled by oslc 1.6.8
 surface as_glass_material	%meta{string,help,"Glass material"} 
 param	vector	Normal	0 0 0		%read{19,108} %write{0,0} %initexpr
 param	vector	Tangent	0 0 0		%read{104,108} %write{1,1} %initexpr
@@ -25,18 +25,18 @@ local	float	___219_beta	%read{41,49} %write{37,37}
 local	float	___219_F	%read{45,53} %write{43,52}
 local	vector	___221_R	%read{2147483647,-1} %write{27,27}
 local	vector	___221_T	%read{2147483647,-1} %write{66,76}
-local	float	___300_aspect	%read{95,97} %write{93,93}
-local	float	___300_r2	%read{95,97} %write{94,94}
-local	float	___301_tmp	%read{103,103} %write{101,101}
+local	float	___297_aspect	%read{95,97} %write{93,93}
+local	float	___297_r2	%read{95,97} %write{94,94}
+local	float	___298_tmp	%read{103,103} %write{101,101}
 local	float	from_ior	%read{16,16} %write{5,14}
 local	float	to_ior	%read{16,16} %write{6,15}
 local	color	Cabs	%read{88,113} %write{2,13}
-local	float	___303_length	%read{12,12} %write{9,9}
+local	float	___300_length	%read{12,12} %write{9,9}
 local	float	eta	%read{29,108} %write{16,16}
 local	float	Kr	%read{54,105} %write{53,74}
 local	float	Kt	%read{84,109} %write{56,75}
-local	float	___306_ax	%read{101,108} %write{96,102}
-local	float	___306_ay	%read{102,108} %write{98,103}
+local	float	___303_ax	%read{101,108} %write{96,102}
+local	float	___303_ay	%read{102,108} %write{98,103}
 const	float	$const1	1		%read{2,92} %write{2147483647,-1}
 temp	int	$tmp1	%read{4,4} %write{3,3}
 const	float	$const2	0		%read{7,75} %write{2147483647,-1}
@@ -146,12 +146,12 @@ code ___main___
 	if		$tmp2 14 14 	%argrw{"r"}
 # as_glass_material.osl:101
 #             getattribute("path:ray_length", length);
-	getattribute	$tmp3 $const3 ___303_length 	%line{101} %argrw{"wrw"}
+	getattribute	$tmp3 $const3 ___300_length 	%line{101} %argrw{"wrw"}
 # as_glass_material.osl:102
 #             Cabs = exp(-Absorption * AbsorptionColor * length);
 	neg		$tmp4 Absorption 	%line{102} %argrw{"wr"}
 	mul		$tmp5 $tmp4 AbsorptionColor 	%argrw{"wrr"}
-	mul		$tmp6 $tmp5 ___303_length 	%argrw{"wrr"}
+	mul		$tmp6 $tmp5 ___300_length 	%argrw{"wrr"}
 	exp		Cabs $tmp6 	%argrw{"wr"}
 # as_glass_material.osl:107
 #         from_ior = 1.0;
@@ -306,40 +306,40 @@ code ___main___
 	fabs		$tmp48 Anisotropy 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h"} %line{55} %argrw{"wr"}
 	mul		$tmp49 $tmp48 $const18 	%argrw{"wrr"}
 	sub		$tmp50 $const1 $tmp49 	%argrw{"wrr"}
-	sqrt		___300_aspect $tmp50 	%argrw{"wr"}
+	sqrt		___297_aspect $tmp50 	%argrw{"wr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:56
 #     float r2 = roughness * roughness;
-	mul		___300_r2 Roughness Roughness 	%line{56} %argrw{"wrr"}
+	mul		___297_r2 Roughness Roughness 	%line{56} %argrw{"wrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:58
 #     ax = max(0.001, r2 / aspect);
-	div		$tmp51 ___300_r2 ___300_aspect 	%line{58} %argrw{"wrr"}
-	max		___306_ax $const19 $tmp51 	%argrw{"wrr"}
+	div		$tmp51 ___297_r2 ___297_aspect 	%line{58} %argrw{"wrr"}
+	max		___303_ax $const19 $tmp51 	%argrw{"wrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:59
 #     ay = max(0.001, r2 * aspect);
-	mul		$tmp52 ___300_r2 ___300_aspect 	%line{59} %argrw{"wrr"}
-	max		___306_ay $const19 $tmp52 	%argrw{"wrr"}
+	mul		$tmp52 ___297_r2 ___297_aspect 	%line{59} %argrw{"wrr"}
+	max		___303_ay $const19 $tmp52 	%argrw{"wrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:61
 #     if (anisotropy < 0)
 	lt		$tmp53 Anisotropy $const5 	%line{61} %argrw{"wrr"}
 	if		$tmp53 104 104 	%argrw{"r"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:64
 #         float tmp = ax;
-	assign		___301_tmp ___306_ax 	%line{64} %argrw{"wr"}
+	assign		___298_tmp ___303_ax 	%line{64} %argrw{"wr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:65
 #         ax = ay;
-	assign		___306_ax ___306_ay 	%line{65} %argrw{"wr"}
+	assign		___303_ax ___303_ay 	%line{65} %argrw{"wr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:66
 #         ay = tmp;
-	assign		___306_ay ___301_tmp 	%line{66} %argrw{"wr"}
+	assign		___303_ay ___298_tmp 	%line{66} %argrw{"wr"}
 # as_glass_material.osl:128
 #     color ReflectionColor = 1,
-	closure		$tmp54 $const20 Distribution Normal Tangent ___306_ax ___306_ay eta $const5 	%filename{"as_glass_material.osl"} %line{128} %argrw{"wrrrrrrrr"}
+	closure		$tmp54 $const20 Distribution Normal Tangent ___303_ax ___303_ay eta $const5 	%filename{"as_glass_material.osl"} %line{128} %argrw{"wrrrrrrrr"}
 	mul		$tmp55 Kr Reflection 	%argrw{"wrr"}
 	mul		$tmp56 $tmp55 ReflectionColor 	%argrw{"wrr"}
 	mul		$tmp57 $tmp54 $tmp56 	%argrw{"wrr"}
 # as_glass_material.osl:129
 # 
-	closure		$tmp58 $const20 Distribution Normal Tangent ___306_ax ___306_ay eta $const12 	%line{129} %argrw{"wrrrrrrrr"}
+	closure		$tmp58 $const20 Distribution Normal Tangent ___303_ax ___303_ay eta $const12 	%line{129} %argrw{"wrrrrrrrr"}
 	mul		$tmp59 Kt Refraction 	%argrw{"wrr"}
 	mul		$tmp60 $tmp59 RefractionColor 	%argrw{"wrr"}
 	mul		$tmp61 $tmp58 $tmp60 	%argrw{"wrr"}

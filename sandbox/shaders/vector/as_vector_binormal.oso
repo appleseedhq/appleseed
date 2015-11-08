@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.4dev
+# Compiled by oslc 1.6.8
 shader as_vector_binormal
 param	vector	Normal	0 0 0		%read{2,2} %write{0,0} %initexpr
 param	vector	Tangent	0 0 0		%read{2,2} %write{1,1} %initexpr

@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.4dev
+# Compiled by oslc 1.6.8
 shader as_transform
 param	vector	In	0 0 0		%read{2,6} %write{2147483647,-1}
 param	string	InType	"Point"		%meta{string,widget,"popup"} %meta{string,options,"Point|Vector|Normal"}  %read{0,3} %write{2147483647,-1}

@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.2dev
+# Compiled by oslc 1.6.8
 surface glass
 param	float	eta	1.5		%read{2,5} %write{2147483647,-1}
 global	vector	I	%read{9,57} %write{2147483647,-1}
@@ -79,10 +79,10 @@ code ___main___
 # 		from_ior = eta;
 	assign		from_ior eta 	%line{8} %argrw{"wr"}
 # glass.osl:9
-#         getattribute("path:ray_ior", to_ior);
+# 		getattribute("path:ray_ior", to_ior);
 	getattribute	$tmp2 $const1 to_ior 	%line{9} %argrw{"wrw"}
 # glass.osl:13
-#         getattribute("path:ray_ior", from_ior);
+# 		getattribute("path:ray_ior", from_ior);
 	getattribute	$tmp3 $const1 from_ior 	%line{13} %argrw{"wrw"}
 # glass.osl:14
 # 		to_ior = eta;
@@ -91,103 +91,103 @@ code ___main___
 # 	fresnel( I, N, from_ior / to_ior, Kr, Kt);
 	div		$tmp4 from_ior to_ior 	%line{18} %argrw{"wrr"}
 	functioncall	$const2 67 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:239
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:244
 #         F *= sqr (beta / (g+c));
-	functioncall	$const2 67 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{239} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:211
+	functioncall	$const2 67 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{244} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:216
 #     float c = dot(I, N);
-	dot		___217_c I N 	%line{211} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:212
+	dot		___217_c I N 	%line{216} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:217
 #     if (c < 0)
-	lt		$tmp5 ___217_c $const3 	%line{212} %argrw{"wrr"}
+	lt		$tmp5 ___217_c $const3 	%line{217} %argrw{"wrr"}
 	if		$tmp5 13 13 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:213
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:218
 #         c = -c;
-	neg		___217_c ___217_c 	%line{213} %argrw{"wr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:214
+	neg		___217_c ___217_c 	%line{218} %argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:219
 #     R = reflect(I, N);
-	functioncall	$const4 18 	%line{214} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:200
+	functioncall	$const4 18 	%line{219} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:205
 # vector reflect (vector I, vector N) { return I - 2*dot(N,I)*N; }
-	dot		$tmp6 N I 	%line{200} %argrw{"wrr"}
+	dot		$tmp6 N I 	%line{205} %argrw{"wrr"}
 	mul		$tmp7 $const6 $tmp6 	%argrw{"wrr"}
 	mul		$tmp8 $tmp7 N 	%argrw{"wrr"}
 	sub		___221_R I $tmp8 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:215
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:220
 #     float g = 1.0 / sqr(eta) - 1.0 + c * c;
-	functioncall	$const8 20 	%line{215} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:210
+	functioncall	$const8 20 	%line{220} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:215
 #     float sqr(float x) { return x*x; }
-	mul		$tmp9 $tmp4 $tmp4 	%line{210} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:215
+	mul		$tmp9 $tmp4 $tmp4 	%line{215} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:220
 #     float g = 1.0 / sqr(eta) - 1.0 + c * c;
-	div		$tmp10 $const7 $tmp9 	%line{215} %argrw{"wrr"}
+	div		$tmp10 $const7 $tmp9 	%line{220} %argrw{"wrr"}
 	sub		$tmp11 $tmp10 $const7 	%argrw{"wrr"}
 	mul		$tmp12 ___217_c ___217_c 	%argrw{"wrr"}
 	add		___217_g $tmp11 $tmp12 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:216
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:221
 #     if (g >= 0.0) {
-	ge		$tmp13 ___217_g $const9 	%line{216} %argrw{"wrr"}
+	ge		$tmp13 ___217_g $const9 	%line{221} %argrw{"wrr"}
 	if		$tmp13 64 67 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:217
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:222
 #         g = sqrt (g);
-	sqrt		___217_g ___217_g 	%line{217} %argrw{"wr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:218
+	sqrt		___217_g ___217_g 	%line{222} %argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:223
 #         float beta = g - c;
-	sub		___219_beta ___217_g ___217_c 	%line{218} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:219
+	sub		___219_beta ___217_g ___217_c 	%line{223} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:224
 #         float F = (c * (g+c) - 1.0) / (c * beta + 1.0);
-	add		$tmp14 ___217_g ___217_c 	%line{219} %argrw{"wrr"}
+	add		$tmp14 ___217_g ___217_c 	%line{224} %argrw{"wrr"}
 	mul		$tmp15 ___217_c $tmp14 	%argrw{"wrr"}
 	sub		$tmp16 $tmp15 $const7 	%argrw{"wrr"}
 	mul		$tmp17 ___217_c ___219_beta 	%argrw{"wrr"}
 	add		$tmp18 $tmp17 $const7 	%argrw{"wrr"}
 	div		___219_F $tmp16 $tmp18 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:220
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:225
 #         F = 0.5 * (1.0 + sqr(F));
-	functioncall	$const8 36 	%line{220} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:210
+	functioncall	$const8 36 	%line{225} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:215
 #     float sqr(float x) { return x*x; }
-	mul		$tmp19 ___219_F ___219_F 	%line{210} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:220
+	mul		$tmp19 ___219_F ___219_F 	%line{215} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:225
 #         F = 0.5 * (1.0 + sqr(F));
-	add		$tmp20 $const7 $tmp19 	%line{220} %argrw{"wrr"}
+	add		$tmp20 $const7 $tmp19 	%line{225} %argrw{"wrr"}
 	mul		___219_F $const10 $tmp20 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:221
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:226
 #         F *= sqr (beta / (g+c));
-	add		$tmp22 ___217_g ___217_c 	%line{221} %argrw{"wrr"}
+	add		$tmp22 ___217_g ___217_c 	%line{226} %argrw{"wrr"}
 	div		$tmp23 ___219_beta $tmp22 	%argrw{"wrr"}
 	functioncall	$const8 42 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:210
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:215
 #     float sqr(float x) { return x*x; }
-	mul		$tmp21 $tmp23 $tmp23 	%line{210} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:221
+	mul		$tmp21 $tmp23 $tmp23 	%line{215} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:226
 #         F *= sqr (beta / (g+c));
-	mul		___219_F ___219_F $tmp21 	%line{221} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:222
+	mul		___219_F ___219_F $tmp21 	%line{226} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:227
 #         Kr = F;
-	assign		Kr ___219_F 	%line{222} %argrw{"wr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:223
+	assign		Kr ___219_F 	%line{227} %argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:228
 #         Kt = (1.0 - Kr) * eta*eta;
-	sub		$tmp24 $const7 Kr 	%line{223} %argrw{"wrr"}
+	sub		$tmp24 $const7 Kr 	%line{228} %argrw{"wrr"}
 	mul		$tmp25 $tmp24 $tmp4 	%argrw{"wrr"}
 	mul		Kt $tmp25 $tmp4 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:226
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:231
 #         T = refract(I, N, eta);
-	functioncall	$const11 64 	%line{226} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:202
+	functioncall	$const11 64 	%line{231} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:207
 #     float IdotN = dot (I, N);
-	dot		___216_IdotN I N 	%line{202} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:203
+	dot		___216_IdotN I N 	%line{207} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:208
 #     float k = 1 - eta*eta * (1 - IdotN*IdotN);
-	mul		$tmp26 $tmp4 $tmp4 	%line{203} %argrw{"wrr"}
+	mul		$tmp26 $tmp4 $tmp4 	%line{208} %argrw{"wrr"}
 	mul		$tmp27 ___216_IdotN ___216_IdotN 	%argrw{"wrr"}
 	sub		$tmp28 $const7 $tmp27 	%argrw{"wrr"}
 	mul		$tmp29 $tmp26 $tmp28 	%argrw{"wrr"}
 	sub		___216_k $const7 $tmp29 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:204
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:209
 #     return (k < 0) ? vector(0,0,0) : (eta*I - N * (eta*IdotN + sqrt(k)));
-	lt		$tmp30 ___216_k $const3 	%line{204} %argrw{"wrr"}
+	lt		$tmp30 ___216_k $const3 	%line{209} %argrw{"wrr"}
 	if		$tmp30 57 63 	%argrw{"r"}
 	assign		___221_T $const13 	%argrw{"wr"}
 	mul		$tmp31 $tmp4 I 	%argrw{"wrr"}
@@ -197,15 +197,15 @@ code ___main___
 	mul		$tmp35 N $tmp34 	%argrw{"wrr"}
 	sub		___221_T $tmp31 $tmp35 	%argrw{"wrr"}
 	return
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:229
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:234
 #         Kr = 1.0;
-	assign		Kr $const7 	%line{229} %argrw{"wr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:230
+	assign		Kr $const7 	%line{234} %argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:235
 #         Kt = 0.0;
-	assign		Kt $const9 	%line{230} %argrw{"wr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:231
+	assign		Kt $const9 	%line{235} %argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:236
 #         T = vector (0,0,0);
-	assign		___221_T $const13 	%line{231} %argrw{"wr"}
+	assign		___221_T $const13 	%line{236} %argrw{"wr"}
 # glass.osl:19
 #  	Ci = (Kr * reflection(N)) + (Kt * refraction(N, from_ior / to_ior));
 	closure		$tmp36 $const14 N 	%filename{"glass.osl"} %line{19} %argrw{"wrr"}

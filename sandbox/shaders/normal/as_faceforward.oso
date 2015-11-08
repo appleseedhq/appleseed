@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.4dev
+# Compiled by oslc 1.6.8
 shader as_faceforward
 param	vector	Normal	0 0 0		%read{6,7} %write{0,0} %initexpr
 param	vector	Incident	0 0 0		%read{3,3} %write{1,1} %initexpr

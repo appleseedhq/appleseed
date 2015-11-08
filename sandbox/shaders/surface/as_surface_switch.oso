@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.4dev
+# Compiled by oslc 1.6.8
 shader as_surface_switch	%meta{string,help,"Chooses between two surface shaders depending on a condition."} 
 param	closure color	BSDF1			%read{1,1} %write{2147483647,-1}
 param	closure color	BSDF2			%read{2,2} %write{2147483647,-1}

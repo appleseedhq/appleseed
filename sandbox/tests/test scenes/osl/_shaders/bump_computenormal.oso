@@ -1,15 +1,15 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.7.0dev
+# Compiled by oslc 1.6.8
 surface bump_computenormal
-param	float	Kd	1		%read{9,9} %write{2147483647,-1}
+param	float	Kd	1		%read{10,10} %write{2147483647,-1}
 param	string	texfile	""		%read{2,2} %write{2147483647,-1} %derivs
 global	point	P	%read{5,5} %write{2147483647,-1} %derivs
 global	normal	N	%read{3,3} %write{2147483647,-1} %derivs
 global	float	u	%read{0,0} %write{2147483647,-1} %derivs
 global	float	v	%read{1,1} %write{2147483647,-1} %derivs
-global	closure color	Ci	%read{2147483647,-1} %write{9,9}
+global	closure color	Ci	%read{2147483647,-1} %write{10,10}
 local	float	height	%read{3,3} %write{2,2} %derivs
-local	normal	Normal	%read{8,8} %write{7,7}
+local	normal	Normal	%read{9,9} %write{7,7}
 temp	float	$tmp1	%read{2,2} %write{0,0} %derivs
 const	float	$const2	2		%read{0,1} %write{2147483647,-1}
 temp	float	$tmp2	%read{2,2} %write{1,1} %derivs
@@ -20,8 +20,10 @@ temp	normal	$tmp4	%read{4,4} %write{3,3} %derivs
 const	float	$const5	0.5		%read{4,4} %write{2147483647,-1}
 temp	normal	$tmp5	%read{5,5} %write{4,4} %derivs
 temp	point	$tmp6	%read{6,6} %write{5,5} %derivs
-temp	closure color	$tmp7	%read{9,9} %write{8,8}
+temp	closure color	$tmp7	%read{10,10} %write{9,9}
 const	string	$const6	"diffuse"		%read{8,8} %write{2147483647,-1}
+const	float	$const8	0		%read{9,9} %write{2147483647,-1}
+const	string	$const9	"oren_nayar"		%read{9,9} %write{2147483647,-1}
 code ___main___
 # bump_computenormal.osl:6
 #     float height = texture( texfile, 2 * u, 2 * v, "wrap", "periodic");
@@ -37,6 +39,11 @@ code ___main___
 	normalize	Normal $tmp3 	%argrw{"wr"}
 # bump_computenormal.osl:8
 #     Ci = Kd * diffuse(Normal);
-	closure		$tmp7 $const6 Normal 	%line{8} %argrw{"wrr"}
-	mul		Ci $tmp7 Kd 	%argrw{"wrr"}
+	functioncall	$const6 10 	%line{8} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:496
+# 
+	closure		$tmp7 $const9 Normal $const8 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{496} %argrw{"wrrr"}
+# bump_computenormal.osl:8
+#     Ci = Kd * diffuse(Normal);
+	mul		Ci $tmp7 Kd 	%filename{"bump_computenormal.osl"} %line{8} %argrw{"wrr"}
 	end

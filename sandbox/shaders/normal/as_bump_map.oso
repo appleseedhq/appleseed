@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.4dev
+# Compiled by oslc 1.6.8
 shader as_bump_map
 param	vector	Position	0 0 0		%read{9,10} %write{0,0} %derivs %initexpr
 param	vector	Normal	0 0 0		%read{8,29} %write{1,1} %initexpr
@@ -10,15 +10,15 @@ global	point	P	%read{0,0} %write{2147483647,-1} %derivs
 global	normal	N	%read{1,1} %write{2147483647,-1}
 local	int	has_diffs	%read{5,5} %write{2,2}
 local	int	get_attr_ok	%read{3,3} %write{2,2}
-local	vector	___299_n	%read{11,22} %write{8,8}
-local	vector	___299_dpdx	%read{12,15} %write{9,9}
-local	vector	___299_dpdy	%read{11,11} %write{10,10}
-local	vector	___299_rx	%read{15,17} %write{11,11}
-local	vector	___299_ry	%read{18,18} %write{12,12}
-local	float	___299_dhx	%read{17,17} %write{13,13}
-local	float	___299_dhy	%read{18,18} %write{14,14}
-local	float	___299_det	%read{16,21} %write{15,15}
-local	vector	___299_surf_grad	%read{23,23} %write{20,20}
+local	vector	___296_n	%read{11,22} %write{8,8}
+local	vector	___296_dpdx	%read{12,15} %write{9,9}
+local	vector	___296_dpdy	%read{11,11} %write{10,10}
+local	vector	___296_rx	%read{15,17} %write{11,11}
+local	vector	___296_ry	%read{18,18} %write{12,12}
+local	float	___296_dhx	%read{17,17} %write{13,13}
+local	float	___296_dhy	%read{18,18} %write{14,14}
+local	float	___296_det	%read{16,21} %write{15,15}
+local	vector	___296_surf_grad	%read{23,23} %write{20,20}
 const	string	$const1	"path:ray_has_differentials"		%read{2,2} %write{2147483647,-1}
 temp	int	$tmp1	%read{4,7} %write{3,6}
 const	int	$const2	0		%read{3,5} %write{2147483647,-1}
@@ -54,40 +54,40 @@ code ___main___
 	if		$tmp1 29 30 	%argrw{"r"}
 # as_bump_map.osl:57
 #         vector n = normalize(Normal);
-	normalize	___299_n Normal 	%line{57} %argrw{"wr"}
+	normalize	___296_n Normal 	%line{57} %argrw{"wr"}
 # as_bump_map.osl:58
 #         vector dpdx = Dx(Position);
-	Dx		___299_dpdx Position 	%line{58} %argrw{"wr"} %argderivs{1}
+	Dx		___296_dpdx Position 	%line{58} %argrw{"wr"} %argderivs{1}
 # as_bump_map.osl:59
 #         vector dpdy = Dy(Position);
-	Dy		___299_dpdy Position 	%line{59} %argrw{"wr"} %argderivs{1}
+	Dy		___296_dpdy Position 	%line{59} %argrw{"wr"} %argderivs{1}
 # as_bump_map.osl:61
 #         vector rx = cross(dpdy, n);
-	cross		___299_rx ___299_dpdy ___299_n 	%line{61} %argrw{"wrr"}
+	cross		___296_rx ___296_dpdy ___296_n 	%line{61} %argrw{"wrr"}
 # as_bump_map.osl:62
 #         vector ry = cross(n, dpdx);
-	cross		___299_ry ___299_n ___299_dpdx 	%line{62} %argrw{"wrr"}
+	cross		___296_ry ___296_n ___296_dpdx 	%line{62} %argrw{"wrr"}
 # as_bump_map.osl:64
 #         float dhx = Dx(Height);
-	Dx		___299_dhx Height 	%line{64} %argrw{"wr"} %argderivs{1}
+	Dx		___296_dhx Height 	%line{64} %argrw{"wr"} %argderivs{1}
 # as_bump_map.osl:65
 #         float dhy = Dy(Height);
-	Dy		___299_dhy Height 	%line{65} %argrw{"wr"} %argderivs{1}
+	Dy		___296_dhy Height 	%line{65} %argrw{"wr"} %argderivs{1}
 # as_bump_map.osl:67
 #         float det = dot(dpdx, rx);
-	dot		___299_det ___299_dpdx ___299_rx 	%line{67} %argrw{"wrr"}
+	dot		___296_det ___296_dpdx ___296_rx 	%line{67} %argrw{"wrr"}
 # as_bump_map.osl:69
 #         vector surf_grad = sign(det) * (dhx * rx + dhy * ry);
-	sign		$tmp3 ___299_det 	%line{69} %argrw{"wr"}
-	mul		$tmp4 ___299_dhx ___299_rx 	%argrw{"wrr"}
-	mul		$tmp5 ___299_dhy ___299_ry 	%argrw{"wrr"}
+	sign		$tmp3 ___296_det 	%line{69} %argrw{"wr"}
+	mul		$tmp4 ___296_dhx ___296_rx 	%argrw{"wrr"}
+	mul		$tmp5 ___296_dhy ___296_ry 	%argrw{"wrr"}
 	add		$tmp6 $tmp4 $tmp5 	%argrw{"wrr"}
-	mul		___299_surf_grad $tmp3 $tmp6 	%argrw{"wrr"}
+	mul		___296_surf_grad $tmp3 $tmp6 	%argrw{"wrr"}
 # as_bump_map.osl:70
 #         NormalOut = normalize(abs(det) * n - surf_grad);
-	abs		$tmp7 ___299_det 	%line{70} %argrw{"wr"}
-	mul		$tmp8 $tmp7 ___299_n 	%argrw{"wrr"}
-	sub		$tmp9 $tmp8 ___299_surf_grad 	%argrw{"wrr"}
+	abs		$tmp7 ___296_det 	%line{70} %argrw{"wr"}
+	mul		$tmp8 $tmp7 ___296_n 	%argrw{"wrr"}
+	sub		$tmp9 $tmp8 ___296_surf_grad 	%argrw{"wrr"}
 	normalize	NormalOut $tmp9 	%argrw{"wr"}
 # as_bump_map.osl:72
 #         if (Amount != 1.0)
