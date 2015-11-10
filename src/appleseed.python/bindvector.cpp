@@ -82,6 +82,21 @@ namespace
         {
             return new VectorType(x, y);
         }
+
+        static T norm(const VectorType& v)
+        {
+            return foundation::norm(v);
+        }
+
+        static VectorType normalize(const VectorType& v)
+        {
+            return foundation::normalize(v);
+        }
+
+        static T dot(const VectorType& lhs, const VectorType& rhs)
+        {
+            return foundation::dot(lhs, rhs);
+        }
     };
 
     template <class T>
@@ -93,6 +108,26 @@ namespace
         {
             return new VectorType(x, y, z);
         }
+
+        static T norm(const VectorType& v)
+        {
+            return foundation::norm(v);
+        }
+
+        static VectorType normalize(const VectorType& v)
+        {
+            return foundation::normalize(v);
+        }
+
+        static T dot(const VectorType& lhs, const VectorType& rhs)
+        {
+            return foundation::dot(lhs, rhs);
+        }
+
+        static VectorType cross(const VectorType& lhs, const VectorType& rhs)
+        {
+            return foundation::cross(lhs, rhs);
+        }
     };
 
     template <class T>
@@ -103,6 +138,21 @@ namespace
         static VectorType* construct(const T x, const T y, const T z, const T w)
         {
             return new VectorType(x, y, z, w);
+        }
+
+        static T norm(const VectorType& v)
+        {
+            return foundation::norm(v);
+        }
+
+        static VectorType normalize(const VectorType& v)
+        {
+            return foundation::normalize(v);
+        }
+
+        static T dot(const VectorType& lhs, const VectorType& rhs)
+        {
+            return foundation::dot(lhs, rhs);
         }
     };
 
@@ -174,6 +224,10 @@ namespace
             .def(bpy::self_ns::str(bpy::self))
             .def(bpy::self_ns::repr(bpy::self))
             ;
+
+        bpy::def("norm", &vector_helper<T, N>::norm);
+        bpy::def("normalize", &vector_helper<T, N>::normalize);
+        bpy::def("dot", &vector_helper<T, N>::dot);
     }
 }
 
@@ -186,6 +240,9 @@ void bind_vector()
     do_bind_vector<int, 3>("Vector3i");
     do_bind_vector<float, 3>("Vector3f");
     do_bind_vector<double, 3>("Vector3d");
+
+    bpy::def("cross", &vector_helper<float, 3>::cross);
+    bpy::def("cross", &vector_helper<double, 3>::cross);
 
     do_bind_vector<int, 4>("Vector4i");
 

@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.4dev
+# Compiled by oslc 1.6.8
 shader as_fresnel	%meta{string,help,"Fresnel dielectric"} 
 param	vector	Normal	0 0 0		%read{10,62} %write{0,0} %initexpr
 param	float	Ior	1.5		%meta{string,help,"Index of refraction"} %meta{float,min,1} %meta{float,max,20}  %read{3,6} %write{2147483647,-1}

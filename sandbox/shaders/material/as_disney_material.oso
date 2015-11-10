@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.4dev
+# Compiled by oslc 1.6.8
 surface as_disney_material	%meta{string,help,"Material based on the Disney BRDF"} 
 param	vector	Normal	0 0 0		%read{2,2} %write{0,0} %initexpr
 param	vector	Tangent	0 0 0		%read{2,2} %write{1,1} %initexpr

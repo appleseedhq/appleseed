@@ -1,17 +1,24 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.2dev
+# Compiled by oslc 1.6.8
 surface matte
-param	float	Kd	1		 %read{1,1} %write{2147483647,-1}
-param	color	Cs	0 0 0		 %read{1,1} %write{2147483647,-1}
-global	normal	N	 %read{0,0} %write{2147483647,-1}
-global	closure color	Ci	 %read{2147483647,-1} %write{2,2}
-temp	closure color	$tmp1	 %read{2,2} %write{0,0}
-const	string	$const1	"diffuse"		 %read{0,0} %write{2147483647,-1}
-temp	color	$tmp2	 %read{2,2} %write{1,1}
+param	float	Kd	1		%read{2,2} %write{2147483647,-1}
+param	color	Cs	0 0 0		%read{2,2} %write{2147483647,-1}
+global	normal	N	%read{1,1} %write{2147483647,-1}
+global	closure color	Ci	%read{2147483647,-1} %write{3,3}
+temp	closure color	$tmp1	%read{3,3} %write{1,1}
+const	string	$const1	"diffuse"		%read{0,0} %write{2147483647,-1}
+const	float	$const3	0		%read{1,1} %write{2147483647,-1}
+const	string	$const4	"oren_nayar"		%read{1,1} %write{2147483647,-1}
+temp	color	$tmp2	%read{3,3} %write{2,2}
 code ___main___
 # matte.osl:4
 #     Ci = Kd * Cs * diffuse(N);
-	closure		$tmp1 $const1 N 	%filename{"matte.osl"} %line{4} %argrw{"wrr"}
-	mul		$tmp2 Kd Cs 	%argrw{"wrr"}
+	functioncall	$const1 2 	%filename{"matte.osl"} %line{4} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:496
+# 
+	closure		$tmp1 $const4 N $const3 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{496} %argrw{"wrrr"}
+# matte.osl:4
+#     Ci = Kd * Cs * diffuse(N);
+	mul		$tmp2 Kd Cs 	%filename{"matte.osl"} %line{4} %argrw{"wrr"}
 	mul		Ci $tmp1 $tmp2 	%argrw{"wrr"}
 	end

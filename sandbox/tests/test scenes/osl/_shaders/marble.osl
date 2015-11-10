@@ -12,10 +12,7 @@
 #define NNOISE 4
 
 surface marble(
-    color Cd = color(0.5),
-    float Kd = 0.8,
-    color Cs = color(0.8),
-    float Ks = 0.2,
+    color Color = color(0.5),
     int object_space = 1,
     float texturescale = 2.5,
     float exponent = 1000)
@@ -54,6 +51,18 @@ surface marble(
         };
 
     Ci = 
-        Kd * Cd * spline("catmull-rom", clamp(2 * marble + .75, 0, 1), marble_ramp) * diffuse(N) +
-        Ks * Cs * phong(N, exponent);
+        as_disney(
+            N,
+            normalize(dPdu),
+            Color * spline("catmull-rom", clamp(2 * marble + .75, 0, 1), marble_ramp),
+            1,
+            0,
+            0.75,
+            0,
+            0,
+            0.25,
+            0,
+            0,
+            0,
+            0);
 }

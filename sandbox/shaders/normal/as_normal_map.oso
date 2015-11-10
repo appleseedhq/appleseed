@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.4dev
+# Compiled by oslc 1.6.8
 shader as_normal_map
 param	color	Color	0 0 0		%read{8,8} %write{0,0} %initexpr
 param	vector	Normal	0 0 0		%read{18,34} %write{1,1} %initexpr
@@ -12,7 +12,7 @@ oparam	vector	TangentOut	0 0 0		%read{2147483647,-1} %write{38,38}
 global	normal	N	%read{1,1} %write{2147483647,-1}
 global	vector	dPdu	%read{2,2} %write{2147483647,-1}
 local	normal	n	%read{13,36} %write{10,31}
-local	float	___299_tmp	%read{16,16} %write{13,13}
+local	float	___296_tmp	%read{16,16} %write{13,13}
 local	vector	t	%read{18,25} %write{17,17}
 local	vector	b	%read{27,37} %write{18,18}
 const	color	$const1	0 0 0		%read{0,0} %write{2147483647,-1}
@@ -81,14 +81,14 @@ code ___main___
 	if		$tmp7 17 17 	%argrw{"r"}
 # as_normal_map.osl:60
 #         float tmp = n[2];
-	compref		___299_tmp n $const10 	%line{60} %argrw{"wrr"}
+	compref		___296_tmp n $const10 	%line{60} %argrw{"wrr"}
 # as_normal_map.osl:61
 #         n[2] = n[1];
 	compref		$tmp8 n $const4 	%line{61} %argrw{"wrr"}
 	compassign	n $const10 $tmp8 	%argrw{"wrr"}
 # as_normal_map.osl:62
 #         n[1] = tmp;
-	compassign	n $const4 ___299_tmp 	%line{62} %argrw{"wrr"}
+	compassign	n $const4 ___296_tmp 	%line{62} %argrw{"wrr"}
 # as_normal_map.osl:65
 #     vector t = Tangent;
 	assign		t Tangent 	%line{65} %argrw{"wr"}

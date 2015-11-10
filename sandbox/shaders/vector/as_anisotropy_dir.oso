@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.4dev
+# Compiled by oslc 1.6.8
 shader as_anisotropy_dir
 param	color	Color	1 0 0		%read{2,7} %write{2147483647,-1}
 param	vector	Normal	0 0 0		%read{29,29} %write{0,0} %initexpr
@@ -8,11 +8,11 @@ param	float	AngleOffset	0		%read{13,17} %write{2147483647,-1}
 oparam	vector	TangentOut	0 0 0		%read{2147483647,-1} %write{33,33}
 global	normal	N	%read{0,0} %write{2147483647,-1}
 global	vector	dPdu	%read{1,1} %write{2147483647,-1}
-local	float	___300_angle_in_rad	%read{18,18} %write{17,17}
-local	float	___300_c	%read{19,23} %write{18,18}
-local	float	___300_s	%read{20,22} %write{18,18}
-local	float	___300_xx	%read{25,25} %write{21,21}
-local	float	___300_yy	%read{26,26} %write{24,24}
+local	float	___297_angle_in_rad	%read{18,18} %write{17,17}
+local	float	___297_c	%read{19,23} %write{18,18}
+local	float	___297_s	%read{20,22} %write{18,18}
+local	float	___297_xx	%read{25,25} %write{21,21}
+local	float	___297_yy	%read{26,26} %write{24,24}
 local	float	x	%read{19,30} %write{6,27}
 local	float	z	%read{20,31} %write{11,28}
 local	vector	Bitangent	%read{31,31} %write{29,29}
@@ -85,26 +85,26 @@ code ___main___
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:101
 # #define M_LN10     2.3025850929940457        /* ln(10) */
 	div		$tmp8 $const11 $const12 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{101} %argrw{"wrr"}
-	mul		___300_angle_in_rad AngleOffset $tmp8 	%argrw{"wrr"}
+	mul		___297_angle_in_rad AngleOffset $tmp8 	%argrw{"wrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/transform.h:47
 #         sincos(angle_in_rad, s, c);
-	sincos		___300_angle_in_rad ___300_s ___300_c 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/transform.h"} %line{47} %argrw{"rww"}
+	sincos		___297_angle_in_rad ___297_s ___297_c 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/transform.h"} %line{47} %argrw{"rww"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/transform.h:48
 #         float xx = x * c - s * y;
-	mul		$tmp9 x ___300_c 	%line{48} %argrw{"wrr"}
-	mul		$tmp10 ___300_s z 	%argrw{"wrr"}
-	sub		___300_xx $tmp9 $tmp10 	%argrw{"wrr"}
+	mul		$tmp9 x ___297_c 	%line{48} %argrw{"wrr"}
+	mul		$tmp10 ___297_s z 	%argrw{"wrr"}
+	sub		___297_xx $tmp9 $tmp10 	%argrw{"wrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/transform.h:49
 #         float yy = x * s + c * y;
-	mul		$tmp11 x ___300_s 	%line{49} %argrw{"wrr"}
-	mul		$tmp12 ___300_c z 	%argrw{"wrr"}
-	add		___300_yy $tmp11 $tmp12 	%argrw{"wrr"}
+	mul		$tmp11 x ___297_s 	%line{49} %argrw{"wrr"}
+	mul		$tmp12 ___297_c z 	%argrw{"wrr"}
+	add		___297_yy $tmp11 $tmp12 	%argrw{"wrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/transform.h:50
 #         rx = xx;
-	assign		x ___300_xx 	%line{50} %argrw{"wr"}
+	assign		x ___297_xx 	%line{50} %argrw{"wr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/transform.h:51
 #         ry = yy;
-	assign		z ___300_yy 	%line{51} %argrw{"wr"}
+	assign		z ___297_yy 	%line{51} %argrw{"wr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/transform.h:55
 #         rx = x;
 	assign		x x 	%line{55} %argrw{"wr"}
