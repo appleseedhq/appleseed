@@ -482,9 +482,9 @@ string concat (string a, string b, string c, string d, string e, string f) {
 // Closures
 /*************************************************************/
 
-/******************/
+/***************************************/
 // diffuse
-/******************/
+/***************************************/
 
 closure color oren_nayar(normal N, float roughness) BUILTIN;
 
@@ -492,24 +492,18 @@ closure color translucent(normal N) BUILTIN;
 
 closure color as_sheen(normal N) BUILTIN;
 
-// for compat with the spec.
-closure color diffuse(normal N)
-{
-    return oren_nayar(N, 0);
-}
 
-
-/******************/
+/***************************************/
 // specular
-/******************/
+/***************************************/
 
 closure color reflection(normal N) BUILTIN;
 closure color refraction(normal N, float eta) BUILTIN;
 
 
-/******************/
+/***************************************/
 // glossy
-/******************/
+/***************************************/
 
 closure color microfacet(
     string  distribution,
@@ -531,9 +525,9 @@ closure color microfacet(
 }
 
 
-/******************/
+/***************************************/
 // subsurface
-/******************/
+/***************************************/
 
 closure color as_subsurface(
     string  profile,
@@ -553,16 +547,20 @@ closure color as_subsurface(
     return as_subsurface(profile, N, rd, dmfp, eta, 0.0);
 }
 
-// for compat with the spec.
-closure color subsurface(float eta, float g, color mfp, color albedo)
-{
-    return as_subsurface("better_dipole", N, albedo, mfp, eta, g);
-}
 
+/***************************************/
+// composite closures
+/***************************************/
 
-/******************/
-// uber-closures
-/******************/
+closure color as_ashikhmin_shirley(
+    normal  N,      // normal
+    vector  T,      // tangent
+    color   rd,     // diffuse reflectance of the substrate
+    color   rg,     // glossy reflectance at normal incidence
+    float   nu,     // Phong-like exponent in first tangent direction
+    float   nv,     // Phong-like exponent in second tangent direction
+    float   fr      // Fresnel multiplier
+    ) BUILTIN;
 
 closure color as_disney(
     normal  N,
@@ -580,24 +578,51 @@ closure color as_disney(
     float   clearcoat_gloss) BUILTIN;
 
 
-/******************/
+/***************************************/
 // emission
-/******************/
+/***************************************/
 
 closure color emission() BUILTIN;
 
 
-/******************/
+/***************************************/
+// compatibility with the OSL spec
+/***************************************/
+
+closure color diffuse(normal N)
+{
+    return oren_nayar(N, 0);
+}
+
+closure color phong(normal N, float exponent)
+{
+    return as_ashikhmin_shirley(
+        N,
+        vector(0),
+        color(0),
+        color(1),
+        exponent,
+        exponent,
+        1.0);
+}
+
+closure color subsurface(float eta, float g, color mfp, color albedo)
+{
+    return as_subsurface("better_dipole", N, albedo, mfp, eta, g);
+}
+
+
+/***************************************/
 // misc
-/******************/
+/***************************************/
 
 closure color background() BUILTIN;
 closure color transparent() BUILTIN;
 
 
-/******************/
+/***************************************/
 // unsupported
-/******************/
+/***************************************/
 
 closure color debug(string tag) BUILTIN;
 closure color holdout() BUILTIN;

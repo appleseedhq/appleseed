@@ -83,6 +83,13 @@ namespace
         {
             memset(m_all_bsdfs, 0, sizeof(BSDF*) * NumClosuresIDs);
 
+            m_ashikhmin_shirley_brdf =
+                AshikhminBRDFFactory().create(
+                    "ashikhmin_brdf",
+                    ParamArray());
+
+            m_all_bsdfs[AshikhminShirleyID] = m_ashikhmin_shirley_brdf.get();
+
             m_diffuse_btdf =
                 create_and_register_bsdf(
                     TranslucentID,
@@ -319,6 +326,7 @@ namespace
         }
 
       private:
+        auto_release_ptr<BSDF>      m_ashikhmin_shirley_brdf;
         auto_release_ptr<BSDF>      m_diffuse_btdf;
         auto_release_ptr<BSDF>      m_disney_brdf;
         auto_release_ptr<BSDF>      m_microfacet_beckmann_brdf;

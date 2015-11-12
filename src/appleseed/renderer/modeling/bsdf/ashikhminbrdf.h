@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
+#include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -49,6 +50,22 @@ namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
+
+//
+// Ashikhmin-Shirley BRDF input values.
+//
+
+APPLESEED_DECLARE_INPUT_VALUES(AshikhminBRDFInputValues)
+{
+    Spectrum    m_rd;               // diffuse reflectance of the substrate
+    double      m_rd_multiplier;    // diffuse reflectance multiplier
+    Spectrum    m_rg;               // glossy reflectance at normal incidence
+    double      m_rg_multiplier;    // glossy reflectance multiplier
+    double      m_fr_multiplier;    // Fresnel multiplier
+    double      m_nu;               // Phong-like exponent in first tangent direction
+    double      m_nv;               // Phong-like exponent in second tangent direction
+};
+
 
 //
 // Ashikhmin-Shirley BRDF factory.
