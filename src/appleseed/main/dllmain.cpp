@@ -76,27 +76,16 @@ namespace
 //
 
 BOOL APIENTRY DllMain(
-    HANDLE  /*module*/,
-    DWORD   reason_for_call,
-    LPVOID  /*reserved*/)
+    HINSTANCE   module,
+    DWORD       reason,
+    LPVOID      /*reserved*/)
 {
-    switch (reason_for_call)
+    if (reason == DLL_PROCESS_ATTACH)
     {
-      case DLL_PROCESS_ATTACH:
 #ifndef SHIP
         // Open a console.
         // open_console();
 #endif
-        break;
-
-      case DLL_THREAD_ATTACH:
-        break;
-
-      case DLL_THREAD_DETACH:
-        break;
-
-      case DLL_PROCESS_DETACH:
-        break;
     }
 
     return TRUE;
