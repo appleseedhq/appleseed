@@ -542,10 +542,11 @@ namespace
           , m_pass_hash(pass_hash)
           , m_abort_switch(abort_switch)
         {
-            const GAABB3 scene_bbox = m_scene.compute_bbox();
-            m_scene_center = scene_bbox.center();
-            m_scene_radius = scene_bbox.radius();
-            m_safe_scene_diameter = 1.01 * (2.0 * m_scene_radius);
+            const Scene::CachedInfo* scene_info = m_scene.get_cached_info();
+            assert(scene_info);
+            m_scene_center = scene_info->m_center;
+            m_scene_radius = scene_info->m_radius;
+            m_safe_scene_diameter = scene_info->m_safe_diameter;
 
             const Camera* camera = scene.get_camera();
             m_shutter_open_time = camera->get_shutter_open_time();

@@ -206,10 +206,11 @@ namespace
           , m_light_sample_count(0)
           , m_path_count(0)
         {
-            const GAABB3 scene_bbox = m_scene.compute_bbox();
-            m_scene_center = scene_bbox.center();
-            m_scene_radius = scene_bbox.radius();
-            m_safe_scene_diameter = 1.01 * (2.0 * m_scene_radius);
+            const Scene::CachedInfo* scene_info = m_scene.get_cached_info();
+            assert(scene_info);
+            m_scene_center = scene_info->m_center;
+            m_scene_radius = scene_info->m_radius;
+            m_safe_scene_diameter = scene_info->m_safe_diameter;
             m_disk_point_prob = 1.0 / (Pi * m_scene_radius * m_scene_radius);
 
             const Camera* camera = scene.get_camera();
@@ -788,7 +789,7 @@ namespace
             const Basis3d basis(-outgoing);
             const Vector3d ray_origin =
                   m_scene_center
-                - m_safe_scene_diameter * basis.get_normal()
+                - m_safe_scene_diameter * basis.get_normal()    // a safe radius would have been sufficient
                 + p[0] * basis.get_tangent_u() +
                 + p[1] * basis.get_tangent_v();
 
