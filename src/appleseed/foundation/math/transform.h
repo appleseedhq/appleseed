@@ -119,6 +119,9 @@ class Transform
     VectorType get_parent_y() const;
     VectorType get_parent_z() const;
 
+    // Returns true if the transform swaps the handedness.
+    bool swaps_handedness() const;
+
   private:
     template <typename>
     friend class TransformInterpolator;
@@ -557,6 +560,16 @@ inline typename Transform<T>::VectorType Transform<T>::get_parent_z() const
             m_local_to_parent[ 2],
             m_local_to_parent[ 6],
             m_local_to_parent[10]);
+}
+
+template <typename T>
+inline bool Transform<T>::swaps_handedness() const
+{
+    // We can test any of the matrices because the
+    // inverse of a matrix that swaps the handedness
+    // swaps it too.
+    // gcc 4.8 needs the extra foundation qualifier.
+    return foundation::swaps_handedness(m_local_to_parent);
 }
 
 template <typename T>

@@ -97,6 +97,16 @@ class APPLESEED_DLLSYMBOL TransformSequence
     // Returns true on success, false otherwise.
     bool prepare();
 
+    // Return true if at least one of the transforms in the sequence swaps the handedness.
+    // This method can only be called after prepare() has been called.
+    bool can_swap_handedness() const;
+
+    // Return true if the transform swaps the handedness.
+    // This method can only be called after prepare() has been called
+    // and it assumes xform is the result of evaluating this transform
+    // sequence at some time.
+    bool swaps_handedness(const foundation::Transformd& xform) const;
+
     // Compute the transform for any time value.
     foundation::Transformd evaluate(const double time) const;
 
@@ -129,6 +139,8 @@ class APPLESEED_DLLSYMBOL TransformSequence
     size_t                              m_size;
     TransformKey*                       m_keys;
     foundation::TransformInterpolatord* m_interpolators;
+    bool                                m_can_swap_handedness;
+    bool                                m_all_swap_handedness;
 
     void copy_from(const TransformSequence& rhs);
 
@@ -155,6 +167,11 @@ inline bool TransformSequence::empty() const
 inline size_t TransformSequence::size() const
 {
     return m_size;
+}
+
+inline bool TransformSequence::can_swap_handedness() const
+{
+    return m_can_swap_handedness;
 }
 
 inline foundation::Transformd TransformSequence::evaluate(const double time) const

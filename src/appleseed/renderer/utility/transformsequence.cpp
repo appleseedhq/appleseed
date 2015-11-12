@@ -55,6 +55,8 @@ TransformSequence::TransformSequence()
   , m_size(0)
   , m_keys(0)
   , m_interpolators(0)
+  , m_can_swap_handedness(false)
+  , m_all_swap_handedness(false)
 {
 }
 
@@ -84,6 +86,9 @@ void TransformSequence::clear()
 
     delete [] m_interpolators;
     m_interpolators = 0;
+
+    m_can_swap_handedness = false;
+    m_all_swap_handedness = false;
 }
 
 void TransformSequence::set_transform(
@@ -198,7 +203,34 @@ bool TransformSequence::prepare()
         }
     }
 
+    m_can_swap_handedness = false;
+    m_all_swap_handedness = true;
+
+    for (size_t i = 0; i < m_size; ++i)
+    {
+        const bool swaps = m_keys[i].m_transform.swaps_handedness();
+
+        if (swaps)
+            m_can_swap_handedness = true;
+
+        m_all_swap_handedness = m_all_swap_handedness && swaps;
+
+        if (m_can_swap_handedness && !m_all_swap_handedness)
+            break;
+    }
+
     return success;
+}
+
+bool TransformSequence::swaps_handedness(const Transformd& xform) const
+{
+    if (!m_can_swap_handedness)
+        return false;
+
+    if (m_all_swap_handedness)
+        return true;
+
+    return xform.swaps_handedness();
 }
 
 TransformSequence TransformSequence::operator*(const TransformSequence& rhs) const
@@ -270,6 +302,9 @@ void TransformSequence::copy_from(const TransformSequence& rhs)
             m_interpolators[i] = rhs.m_interpolators[i];
     }
     else m_interpolators = 0;
+
+    m_can_swap_handedness = rhs.m_can_swap_handedness;
+    m_all_swap_handedness = rhs.m_all_swap_handedness;
 }
 
 void TransformSequence::interpolate(

@@ -426,6 +426,8 @@ bool ObjectInstance::on_frame_begin(
     const Assembly&         assembly,
     IAbortSwitch*           abort_switch)
 {
+    m_transform_swaps_handedness = get_transform().swaps_handedness();
+
     const EntityDefMessageContext context("object instance", this);
 
     if (uses_alpha_mapping())
