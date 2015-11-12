@@ -148,8 +148,8 @@ void InputBinder::build_scene_symbol_table(
 #ifdef APPLESEED_WITH_OSL
         insert_entities(symbols, scene.shader_groups(), SymbolTable::SymbolShaderGroup);
 #endif
-        if (scene.get_environment())
-            symbols.insert(scene.get_environment()->get_name(), SymbolTable::SymbolEnvironment);
+
+        symbols.insert(scene.get_environment()->get_name(), SymbolTable::SymbolEnvironment);
 
         insert_entities(symbols, scene.assemblies(), SymbolTable::SymbolAssembly);
         insert_entities(symbols, scene.assembly_instances(), SymbolTable::SymbolAssemblyInstance);
