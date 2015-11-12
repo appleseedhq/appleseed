@@ -95,6 +95,7 @@ Scene::Scene()
   : Entity(g_class_uid)
   , BaseGroup(this)
   , impl(new Impl(this))
+  , m_has_cached_info(false)
 {
     set_name("scene");
 }
@@ -244,6 +245,8 @@ bool Scene::on_frame_begin(
     const Project&          project,
     IAbortSwitch*           abort_switch)
 {
+    cache_scene_info();
+
     bool success = true;
 
     if (impl->m_camera.get())
@@ -279,6 +282,32 @@ void Scene::on_frame_end(const Project& project)
 
     if (impl->m_camera.get())
         impl->m_camera->on_frame_end(project);
+
+    m_has_cached_info = false;
+}
+
+void Scene::cache_scene_info()
+{
+    assert(!m_has_cached_info);
+
+    m_cached_info.m_bbox = compute_bbox();
+
+    if (m_cached_info.m_bbox.is_valid())
+    {
+        m_cached_info.m_center = m_cached_info.m_bbox.center();
+        m_cached_info.m_radius = m_cached_info.m_bbox.radius();
+        m_cached_info.m_diameter = m_cached_info.m_bbox.diameter();
+        m_cached_info.m_safe_diameter = m_cached_info.m_diameter * GScalar(1.01);
+    }
+    else
+    {
+        m_cached_info.m_center = GVector3(0.0);
+        m_cached_info.m_radius = GScalar(0.0);
+        m_cached_info.m_diameter = GScalar(0.0);
+        m_cached_info.m_safe_diameter = GScalar(0.0);
+    }
+
+    m_has_cached_info = true;
 }
 
 

@@ -36,6 +36,7 @@
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/project/project.h"
+#include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
@@ -103,6 +104,11 @@ namespace
 
             // Extract the abscissa of the near plane from the camera parameters.
             m_near_z = extract_near_z();
+
+            // Retrieve the scene diameter that will be used to position the camera.
+            const Scene::CachedInfo* scene_info = project.get_scene()->get_cached_info();
+            assert(scene_info);
+            m_safe_scene_diameter = scene_info->m_safe_diameter;
 
             // Precompute reciprocals of film dimensions.
             m_rcp_film_width = 1.0 / m_film_dimensions[0];
@@ -232,6 +238,7 @@ namespace
         double      m_near_z;               // Z value of the near plane in camera space, in meters
 
         // Precomputed values.
+        double      m_safe_scene_diameter;  // scene diameter plus a safety margin
         double      m_rcp_film_width;       // film width reciprocal in camera space
         double      m_rcp_film_height;      // film height reciprocal in camera space
         double      m_rcp_pixel_area;       // reciprocal of pixel area in camera space
@@ -260,7 +267,7 @@ namespace
                 Vector3d(
                     (point.x - 0.5) * m_film_dimensions[0],
                     (0.5 - point.y) * m_film_dimensions[1],
-                    0.0);
+                    m_safe_scene_diameter);
         }
 
         Vector2d camera_to_ndc(const Vector3d& point) const

@@ -127,10 +127,11 @@ namespace
             // Apply turbidity bias.
             m_values.m_turbidity += BaseTurbidity;
 
-            const GAABB3 scene_bbox = project.get_scene()->compute_bbox();
-            m_scene_center = scene_bbox.center();
-            m_scene_radius = scene_bbox.radius();
-            m_safe_scene_diameter = 1.01 * (2.0 * m_scene_radius);
+            const Scene::CachedInfo* scene_info = project.get_scene()->get_cached_info();
+            assert(scene_info);
+            m_scene_center = scene_info->m_center;
+            m_scene_radius = scene_info->m_radius;
+            m_safe_scene_diameter = scene_info->m_safe_diameter;
 
             precompute_constants();
 

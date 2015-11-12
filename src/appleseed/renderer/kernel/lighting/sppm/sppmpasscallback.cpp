@@ -83,13 +83,14 @@ SPPMPassCallback::SPPMPassCallback(
   , m_pass_number(0)
 {
     // Compute the initial lookup radius.
-    const GAABB3 scene_bbox = scene.compute_bbox();
-    const float scene_diameter =
-        scene_bbox.is_valid()
-            ? static_cast<float>(scene_bbox.diameter())
-            : 0.0f;
+    const Scene::CachedInfo* scene_info = scene.get_cached_info();
+    assert(scene_info);
+    const float diameter = static_cast<float>(scene_info->m_diameter);
     const float diameter_factor = m_params.m_initial_radius_percents / 100.0f;
-    m_initial_lookup_radius = m_lookup_radius = scene_diameter * diameter_factor;
+    m_initial_lookup_radius = diameter * diameter_factor;
+
+    // Start with the initial lookup radius.
+    m_lookup_radius = m_initial_lookup_radius;
 }
 
 void SPPMPassCallback::release()

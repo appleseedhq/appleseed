@@ -52,7 +52,7 @@ namespace renderer
 namespace
 {
     //
-    // OSL Material.
+    // OSL material.
     //
 
     const char* Model = "osl_material";
@@ -62,8 +62,8 @@ namespace
     {
       public:
         OSLMaterial(
-            const char*                 name,
-            const ParamArray&           params)
+            const char*             name,
+            const ParamArray&       params)
           : Material(name, params)
         {
             m_inputs.declare("osl_surface", InputFormatEntity, "");
@@ -85,9 +85,9 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&              project,
-            const Assembly&             assembly,
-            foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE
+            const Project&          project,
+            const Assembly&         assembly,
+            IAbortSwitch*           abort_switch = 0) APPLESEED_OVERRIDE
         {
             if (!Material::on_frame_begin(project, assembly, abort_switch))
                 return false;
@@ -116,8 +116,8 @@ namespace
         }
 
         virtual void on_frame_end(
-            const Project&              project,
-            const Assembly&             assembly) APPLESEED_OVERRIDE
+            const Project&          project,
+            const Assembly&         assembly) APPLESEED_OVERRIDE
         {
             m_osl_bsdf->on_frame_end(project, assembly);
 

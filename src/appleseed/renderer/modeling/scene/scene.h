@@ -107,22 +107,41 @@ class APPLESEED_DLLSYMBOL Scene
     // Perform post-frame rendering actions.
     void on_frame_end(const Project& project);
 
+    struct CachedInfo
+    {
+        GAABB3      m_bbox;
+        GVector3    m_center;
+        GScalar     m_radius;
+        GScalar     m_diameter;
+        GScalar     m_safe_diameter;
+    };
+
+    // Return information cached by on_frame_begin(), or 0 if they are not available.
+    // Cached info are created by on_frame_begin() and destroyed by on_frame_end().
+    const CachedInfo* get_cached_info() const;
+
   private:
     friend class SceneFactory;
 
     struct Impl;
     Impl* impl;
 
+    bool        m_has_cached_info;
+    CachedInfo  m_cached_info;
+
     // Constructor. Initially, the scene is empty.
     Scene();
 
     // Destructor.
     ~Scene();
+
+    // Cache scene information, which are then available through get_cached_info().
+    void cache_scene_info();
 };
 
 
 //
-// SceneFactory.
+// Scene factory.
 //
 
 class APPLESEED_DLLSYMBOL SceneFactory
@@ -131,6 +150,16 @@ class APPLESEED_DLLSYMBOL SceneFactory
     // Create a new scene.
     static foundation::auto_release_ptr<Scene> create();
 };
+
+
+//
+// Scene class implementation.
+//
+
+inline const Scene::CachedInfo* Scene::get_cached_info() const
+{
+    return m_has_cached_info ? &m_cached_info : 0;
+}
 
 }       // namespace renderer
 
