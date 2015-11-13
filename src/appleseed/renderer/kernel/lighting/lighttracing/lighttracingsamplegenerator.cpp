@@ -582,7 +582,7 @@ namespace
                     light_sample.m_shading_normal);
 
             const Material* material = light_sample.m_triangle->m_material;
-            const EDF* edf = material->get_edf();
+            const Material::RenderData& material_data = material->get_render_data();
 
             // Build a shading point on the light source.
             ShadingPoint light_shading_point;
@@ -592,20 +592,24 @@ namespace
                 m_shading_context.get_intersector());
 
 #ifdef APPLESEED_WITH_OSL
-            if (const ShaderGroup* sg = material->get_osl_surface())
-                m_shading_context.execute_osl_emission(*sg, light_shading_point);
+            if (material_data.m_shader_group)
+            {
+                m_shading_context.execute_osl_emission(
+                    *material_data.m_shader_group,
+                    light_shading_point);
+            }
 #endif
 
             // Evaluate the EDF inputs.
             InputEvaluator input_evaluator(m_texture_cache);
-            edf->evaluate_inputs(input_evaluator, light_shading_point);
+            material_data.m_edf->evaluate_inputs(input_evaluator, light_shading_point);
 
             // Sample the EDF.
             sampling_context.split_in_place(2, 1);
             Vector3d emission_direction;
             Spectrum edf_value;
             double edf_prob;
-            edf->sample(
+            material_data.m_edf->sample(
                 sampling_context,
                 input_evaluator.data(),
                 light_sample.m_geometric_normal,
@@ -657,7 +661,7 @@ namespace
                 m_params.m_rr_min_path_length,
                 m_params.m_max_path_length,
                 m_params.m_max_iterations,
-                edf->get_light_near_start());               // don't illuminate points closer than the light near start value
+                material_data.m_edf->get_light_near_start());   // don't illuminate points closer than the light near start value
 
             // Handle the light vertex separately.
             Spectrum light_particle_flux = edf_value;       // todo: only works for diffuse EDF? What we need is the light exitance

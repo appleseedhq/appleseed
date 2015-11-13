@@ -216,27 +216,28 @@ void DiagnosticSurfaceShader::evaluate(
             const Material* material = shading_point.get_material();
             if (material)
             {
+                const Material::RenderData& material_data = material->get_render_data();
+
 #ifdef APPLESEED_WITH_OSL
                 // Execute the OSL shader if there is one.
-                if (material->get_osl_surface())
+                if (material_data.m_shader_group)
                 {
                     shading_context.execute_osl_shading(
-                        *material->get_osl_surface(),
+                        *material_data.m_shader_group,
                         shading_point);
                 }
 #endif
 
-                const BSDF* bsdf = material->get_bsdf();
-                if (bsdf)
+                if (material_data.m_bsdf)
                 {
                     InputEvaluator input_evaluator(shading_context.get_texture_cache());
-                    bsdf->evaluate_inputs(
+                    material_data.m_bsdf->evaluate_inputs(
                         shading_context,
                         input_evaluator,
                         shading_point);
 
                     const Vector3d direction = -normalize(shading_point.get_ray().m_dir);
-                    bsdf->evaluate(
+                    material_data.m_bsdf->evaluate(
                         input_evaluator.data(),
                         false,
                         false,
@@ -275,12 +276,14 @@ void DiagnosticSurfaceShader::evaluate(
             const Material* material = shading_point.get_material();
             if (material)
             {
+                const Material::RenderData& material_data = material->get_render_data();
+
                 // Execute the OSL shader if there is one.
-                if (material->get_osl_surface())
+                if (material_data.m_shader_group)
                 {
                     sampling_context.split_in_place(2, 1);
                     shading_context.execute_osl_bump(
-                        *material->get_osl_surface(),
+                        *material_data.m_shader_group,
                         shading_point,
                         sampling_context.next_vector2<2>());
                 }
@@ -292,8 +295,7 @@ void DiagnosticSurfaceShader::evaluate(
                 m_shading_mode == Tangent ? shading_point.get_shading_basis().get_tangent_u() :
                 shading_point.get_shading_basis().get_tangent_v();
 
-            shading_result.set_main_to_linear_rgb(
-                vector3_to_color(normalize(v)));
+            shading_result.set_main_to_linear_rgb(vector3_to_color(v));
         }
         break;
 
@@ -487,21 +489,22 @@ void DiagnosticSurfaceShader::evaluate(
             const Material* material = shading_point.get_material();
             if (material)
             {
+                const Material::RenderData& material_data = material->get_render_data();
+
 #ifdef APPLESEED_WITH_OSL
                 // Execute the OSL shader if there is one.
-                if (material->get_osl_surface())
+                if (material_data.m_shader_group)
                 {
                     shading_context.execute_osl_shading(
-                        *material->get_osl_surface(),
+                        *material_data.m_shader_group,
                         shading_point);
                 }
 #endif
 
-                const BSDF* bsdf = material->get_bsdf();
-                if (bsdf)
+                if (material_data.m_bsdf)
                 {
                     InputEvaluator input_evaluator(shading_context.get_texture_cache());
-                    bsdf->evaluate_inputs(
+                    material_data.m_bsdf->evaluate_inputs(
                         shading_context,
                         input_evaluator,
                         shading_point);
@@ -512,7 +515,7 @@ void DiagnosticSurfaceShader::evaluate(
                         ray.m_dir - ray.m_ry.m_dir);
 
                     BSDFSample sample(shading_point, outgoing);
-                    bsdf->sample(
+                    material_data.m_bsdf->sample(
                         sampling_context,
                         input_evaluator.data(),
                         false,

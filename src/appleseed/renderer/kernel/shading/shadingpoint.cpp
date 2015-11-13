@@ -646,11 +646,11 @@ void ShadingPoint::compute_shading_basis() const
         const Material* material = get_material();
         if (material)
         {
-            const IBasisModifier* modifier = material->get_basis_modifier();
-            if (modifier)
+            const Material::RenderData& material_data = material->get_render_data();
+            if (material_data.m_basis_modifier)
             {
                 m_shading_basis =
-                    modifier->modify(
+                    material_data.m_basis_modifier->modify(
                         *m_texture_cache,
                         get_uv(0),
                         m_shading_basis);
@@ -767,22 +767,17 @@ void ShadingPoint::compute_alpha() const
         if (const Source* alpha_map = get_object().get_alpha_map())
         {
             Alpha a;
-            alpha_map->evaluate(
-                *m_texture_cache,
-                get_uv(0),
-                a);
+            alpha_map->evaluate(*m_texture_cache, get_uv(0), a);
             m_alpha *= a;
         }
 
         if (const Material* material = get_material())
         {
-            if (const Source* alpha_map = material->get_alpha_map())
+            const Material::RenderData& material_data = material->get_render_data();
+            if (material_data.m_alpha_map)
             {
                 Alpha a;
-                alpha_map->evaluate(
-                    *m_texture_cache,
-                    get_uv(0),
-                    a);
+                material_data.m_alpha_map->evaluate(*m_texture_cache, get_uv(0), a);
                 m_alpha *= a;
             }
         }

@@ -46,6 +46,9 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// Standard headers.
+#include <cassert>
+
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Project; }

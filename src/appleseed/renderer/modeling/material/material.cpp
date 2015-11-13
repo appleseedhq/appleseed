@@ -54,7 +54,6 @@
 #include "foundation/utility/string.h"
 
 // Standard headers.
-#include <cassert>
 #include <string>
 
 using namespace foundation;
@@ -81,16 +80,8 @@ Material::Material(
     const char*         name,
     const ParamArray&   params)
   : ConnectableEntity(g_class_uid, params)
-  , m_shade_alpha_cutouts(false)
-  , m_surface_shader(0)
-  , m_bsdf(0)
-  , m_bssrdf(0)
-  , m_edf(0)
-  , m_alpha_map(0)
-  , m_basis_modifier(0)
-#ifdef APPLESEED_WITH_OSL
-  , m_shader_group(0)
-#endif
+  , m_shade_alpha_cutouts(params.get_optional<bool>("shade_alpha_cutouts", false))
+  , m_has_render_data(false)
 {
     set_name(name);
 
@@ -122,37 +113,6 @@ const char* Material::get_edf_name() const
     return get_non_empty(m_params, "edf");
 }
 
-bool Material::on_frame_begin(
-    const Project&      project,
-    const Assembly&     assembly,
-    IAbortSwitch*       abort_switch)
-{
-    m_shade_alpha_cutouts = m_params.get_optional<bool>("shade_alpha_cutouts", false);
-
-    m_surface_shader = get_uncached_surface_shader();
-
-    if (m_surface_shader == 0)
-        m_surface_shader = project.get_scene()->get_default_surface_shader();
-
-    m_alpha_map = get_uncached_alpha_map();
-
-    return true;
-}
-
-void Material::on_frame_end(
-    const Project&      project,
-    const Assembly&     assembly)
-{
-    m_surface_shader = 0;
-    m_bsdf = 0;
-    m_bssrdf = 0;
-    m_edf = 0;
-    m_alpha_map = 0;
-
-    delete m_basis_modifier;
-    m_basis_modifier = 0;
-}
-
 const SurfaceShader* Material::get_uncached_surface_shader() const
 {
     return static_cast<const SurfaceShader*>(m_inputs.get_entity("surface_shader"));
@@ -178,17 +138,7 @@ const Source* Material::get_uncached_alpha_map() const
     return m_inputs.source("alpha_map");
 }
 
-bool Material::has_emission() const
-{
-    return get_uncached_edf() != 0;
-}
-
 #ifdef APPLESEED_WITH_OSL
-
-bool Material::has_osl_surface() const
-{
-    return false;
-}
 
 const ShaderGroup* Material::get_uncached_osl_surface() const
 {
@@ -196,6 +146,41 @@ const ShaderGroup* Material::get_uncached_osl_surface() const
 }
 
 #endif
+
+bool Material::on_frame_begin(
+    const Project&      project,
+    const Assembly&     assembly,
+    IAbortSwitch*       abort_switch)
+{
+    m_render_data.m_surface_shader = get_uncached_surface_shader();
+    if (m_render_data.m_surface_shader == 0)
+        m_render_data.m_surface_shader = project.get_scene()->get_default_surface_shader();
+    m_render_data.m_bsdf = 0;
+    m_render_data.m_bssrdf = 0;
+    m_render_data.m_edf = 0;
+    m_render_data.m_alpha_map = get_uncached_alpha_map();
+#ifdef APPLESEED_WITH_OSL
+    m_render_data.m_shader_group = 0;
+#endif
+    m_render_data.m_basis_modifier = 0;
+    m_has_render_data = true;
+
+    return true;
+}
+
+void Material::on_frame_end(
+    const Project&      project,
+    const Assembly&     assembly)
+{
+    delete m_render_data.m_basis_modifier;
+
+    m_has_render_data = false;
+}
+
+bool Material::has_emission() const
+{
+    return get_uncached_edf() != 0;
+}
 
 const char* Material::get_non_empty(const ParamArray& params, const char* name) const
 {
@@ -207,16 +192,14 @@ const char* Material::get_non_empty(const ParamArray& params, const char* name) 
     return is_empty_string(value) ? 0 : value;
 }
 
-bool Material::create_basis_modifier(const MessageContext& context)
+IBasisModifier* Material::create_basis_modifier(const MessageContext& context) const
 {
-    assert(m_basis_modifier == 0);
-
     // Retrieve the source bound to the displacement map input.
     const Source* displacement_source = m_inputs.source("displacement_map");
 
     // Nothing to do if there is no displacement source.
     if (displacement_source == 0)
-        return true;
+        return 0;
 
     // Only texture instances can be bound to the displacement map input.
     if (dynamic_cast<const TextureSource*>(displacement_source) == 0)
@@ -224,7 +207,7 @@ bool Material::create_basis_modifier(const MessageContext& context)
         RENDERER_LOG_ERROR(
             "%s: a texture instance must be bound to the \"displacement_map\" input.",
             context.get());
-        return false;
+        return 0;
     }
 
     // Retrieve the displacement texture.
@@ -256,7 +239,7 @@ bool Material::create_basis_modifier(const MessageContext& context)
     {
         const double offset = m_params.get_optional<double>("bump_offset", 2.0);
         const double amplitude = m_params.get_optional<double>("bump_amplitude", 1.0);
-        m_basis_modifier = new BumpMappingModifier(displacement_map, offset, amplitude);
+        return new BumpMappingModifier(displacement_map, offset, amplitude);
     }
     else
     {
@@ -264,10 +247,8 @@ bool Material::create_basis_modifier(const MessageContext& context)
             m_params.get_optional<string>("normal_map_up", "z", make_vector("y", "z"), context) == "y"
                 ? NormalMappingModifier::UpVectorY
                 : NormalMappingModifier::UpVectorZ;
-        m_basis_modifier = new NormalMappingModifier(displacement_map, up_vector);
+        return new NormalMappingModifier(displacement_map, up_vector);
     }
-
-    return true;
 }
 
 }   // namespace renderer

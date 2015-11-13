@@ -41,6 +41,9 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// Standard headers.
+#include <cassert>
+
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Assembly; }
@@ -74,6 +77,9 @@ class APPLESEED_DLLSYMBOL Material
     // Return a string identifying the model of this material.
     virtual const char* get_model() const = 0;
 
+    // Return whether surface shaders should be invoked for fully transparent shading points.
+    bool shade_alpha_cutouts() const;
+
     // Return true if this material has an alpha map.
     bool has_alpha_map() const;
 
@@ -89,6 +95,29 @@ class APPLESEED_DLLSYMBOL Material
     // Return the name the EDF bound to this material, or 0 if the material doesn't have one.
     const char* get_edf_name() const;
 
+    // Return the surface shader of the material, or 0 if the material doesn't have one.
+    const SurfaceShader* get_uncached_surface_shader() const;
+
+    // Return the BSDF of the material, or 0 if the material doesn't have one.
+    const BSDF* get_uncached_bsdf() const;
+
+    // Return the BSSRDF of the material, or 0 if the material doesn't have one.
+    const BSSRDF* get_uncached_bssrdf() const;
+
+    // Return the EDF of the material, or 0 if the material doesn't have one.
+    const EDF* get_uncached_edf() const;
+
+    // Return the source bound to the alpha map input, or 0 if the material doesn't have an alpha map.
+    const Source* get_uncached_alpha_map() const;
+
+#ifdef APPLESEED_WITH_OSL
+    // Return the OSL surface shader of the material, or 0 if the material doesn't have one.
+    virtual const ShaderGroup* get_uncached_osl_surface() const;
+#endif
+
+    // Return true if the material emits light.
+    virtual bool has_emission() const;
+
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
@@ -101,58 +130,27 @@ class APPLESEED_DLLSYMBOL Material
         const Project&              project,
         const Assembly&             assembly);
 
-    // Return whether surface shaders should be invoked for fully transparent shading points.
-    bool shade_alpha_cutouts() const;
-
-    //
-    // The get_*() methods below retrieve entities that were cached by on_frame_begin().
-    // To retrieve the entities before on_frame_begin() or after on_frame_end() is called,
-    // use the get_uncached_*() variants.
-    //
-
-    // Return the surface shader of the material, or 0 if the material doesn't have one.
-    const SurfaceShader* get_surface_shader() const;
-    const SurfaceShader* get_uncached_surface_shader() const;
-
-    // Return the BSDF of the material, or 0 if the material doesn't have one.
-    const BSDF* get_bsdf() const;
-    const BSDF* get_uncached_bsdf() const;
-
-    // Return the BSSRDF of the material, or 0 if the material doesn't have one.
-    const BSSRDF* get_bssrdf() const;
-    const BSSRDF* get_uncached_bssrdf() const;
-
-    // Return the EDF of the material, or 0 if the material doesn't have one.
-    const EDF* get_edf() const;
-    const EDF* get_uncached_edf() const;
-
-    // Return the source bound to the alpha map input, or 0 if the material doesn't have an alpha map.
-    const Source* get_alpha_map() const;
-    const Source* get_uncached_alpha_map() const;
-
-    // Return the basis modifier of the material, or 0 if the material doesn't have one.
-    const IBasisModifier* get_basis_modifier() const;
-
-    // Return true if the material emits light.
-    virtual bool has_emission() const;
-
+    struct RenderData
+    {
+        const SurfaceShader*    m_surface_shader;
+        const BSDF*             m_bsdf;
+        const BSSRDF*           m_bssrdf;
+        const EDF*              m_edf;
+        const Source*           m_alpha_map;
 #ifdef APPLESEED_WITH_OSL
-    virtual bool has_osl_surface() const;
-    const ShaderGroup* get_osl_surface() const;
-    virtual const ShaderGroup* get_uncached_osl_surface() const;
+        const ShaderGroup*      m_shader_group;
 #endif
+        const IBasisModifier*   m_basis_modifier;   // owned by RenderData
+    };
+
+    // Return render-time data of this entity.
+    // Render-time data are available between on_frame_begin() and on_frame_end() calls.
+    const RenderData& get_render_data() const;
 
   protected:
-    bool                            m_shade_alpha_cutouts;
-    const SurfaceShader*            m_surface_shader;
-    const BSDF*                     m_bsdf;
-    const BSSRDF*                   m_bssrdf;
-    const EDF*                      m_edf;
-    const Source*                   m_alpha_map;
-    const IBasisModifier*           m_basis_modifier;
-#ifdef APPLESEED_WITH_OSL
-    const ShaderGroup*              m_shader_group;
-#endif
+    bool        m_shade_alpha_cutouts;
+    bool        m_has_render_data;
+    RenderData  m_render_data;
 
     // Constructor.
     Material(
@@ -161,7 +159,7 @@ class APPLESEED_DLLSYMBOL Material
 
     const char* get_non_empty(const ParamArray& params, const char* name) const;
 
-    bool create_basis_modifier(const MessageContext& context);
+    IBasisModifier* create_basis_modifier(const MessageContext& context) const;
 };
 
 
@@ -174,44 +172,11 @@ inline bool Material::shade_alpha_cutouts() const
     return m_shade_alpha_cutouts;
 }
 
-inline const SurfaceShader* Material::get_surface_shader() const
+inline const Material::RenderData& Material::get_render_data() const
 {
-    return m_surface_shader;
+    assert(m_has_render_data);
+    return m_render_data;
 }
-
-inline const BSDF* Material::get_bsdf() const
-{
-    return m_bsdf;
-}
-
-inline const BSSRDF* Material::get_bssrdf() const
-{
-    return m_bssrdf;
-}
-
-inline const EDF* Material::get_edf() const
-{
-    return m_edf;
-}
-
-inline const Source* Material::get_alpha_map() const
-{
-    return m_alpha_map;
-}
-
-inline const IBasisModifier* Material::get_basis_modifier() const
-{
-    return m_basis_modifier;
-}
-
-#ifdef APPLESEED_WITH_OSL
-
-inline const ShaderGroup* Material::get_osl_surface() const
-{
-    return m_shader_group;
-}
-
-#endif
 
 }       // namespace renderer
 

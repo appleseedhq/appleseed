@@ -343,7 +343,8 @@ namespace
                     light_sample.m_shading_normal);
 
             const Material* material = light_sample.m_triangle->m_material;
-            const EDF* edf = material->get_edf();
+            const Material::RenderData& material_data = material->get_render_data();
+            const EDF* edf = material_data.m_edf;
 
             // Build a shading point on the light source.
             ShadingPoint light_shading_point;
@@ -353,8 +354,12 @@ namespace
                 shading_context.get_intersector());
 
 #ifdef APPLESEED_WITH_OSL
-            if (const ShaderGroup* sg = material->get_osl_surface())
-                shading_context.execute_osl_emission(*sg, light_shading_point);
+            if (material_data.m_shader_group)
+            {
+                shading_context.execute_osl_emission(
+                    *material_data.m_shader_group,
+                    light_shading_point);
+            }
 #endif
 
             // Evaluate the EDF inputs.

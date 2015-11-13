@@ -86,14 +86,12 @@ namespace
 
             const EntityDefMessageContext context("material", this);
 
-            m_bsdf = get_uncached_bsdf();
-            m_bssrdf = get_uncached_bssrdf();
-            m_edf = get_uncached_edf();
+            m_render_data.m_bsdf = get_uncached_bsdf();
+            m_render_data.m_bssrdf = get_uncached_bssrdf();
+            m_render_data.m_edf = get_uncached_edf();
+            m_render_data.m_basis_modifier = create_basis_modifier(context);
 
-            if (!create_basis_modifier(context))
-                return false;
-
-            if (m_edf && m_alpha_map)
+            if (m_render_data.m_edf && m_render_data.m_alpha_map)
             {
                 RENDERER_LOG_WARNING(
                     "%s: material is emitting light but may be partially or entirely transparent; "

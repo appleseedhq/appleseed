@@ -224,6 +224,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         if (material == 0)
             break;
 
+        const Material::RenderData& material_data = material->get_render_data();
+
         // Handle alpha mapping.
         if (vertex.m_path_length > 1)
         {
@@ -231,11 +233,12 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
 #ifdef APPLESEED_WITH_OSL
             // Apply OSL transparency if needed.
-            if (material->get_osl_surface() && material->get_osl_surface()->has_transparency())
+            if (material_data.m_shader_group &&
+                material_data.m_shader_group->has_transparency())
             {
                 Alpha a;
                 shading_context.execute_osl_transparency(
-                    *material->get_osl_surface(),
+                    *material_data.m_shader_group,
                     *vertex.m_shading_point,
                     a);
                 alpha *= a;
@@ -281,19 +284,19 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
 #ifdef APPLESEED_WITH_OSL
         // Execute the OSL shader if there is one.
-        if (material->get_osl_surface())
+        if (material_data.m_shader_group)
         {
             shading_context.execute_osl_shading(
-                *material->get_osl_surface(),
+                *material_data.m_shader_group,
                 *vertex.m_shading_point);
         }
 #endif
 
         // Retrieve the EDF, the BSDF and the BSSRDF.
         vertex.m_edf =
-            vertex.m_shading_point->is_curve_primitive() ? 0 : material->get_edf();
-        vertex.m_bsdf = material->get_bsdf();
-        vertex.m_bssrdf = material->get_bssrdf();
+            vertex.m_shading_point->is_curve_primitive() ? 0 : material_data.m_edf;
+        vertex.m_bsdf = material_data.m_bsdf;
+        vertex.m_bssrdf = material_data.m_bssrdf;
 
         // If there is both a BSDF and a BSSRDF, pick one to extend the path.
         if (vertex.m_bsdf && vertex.m_bssrdf)
@@ -375,10 +378,10 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
             if (!Adjoint)
             {
-                if (material->has_osl_surface())
+                if (material_data.m_shader_group)
                 {
                     shading_context.execute_osl_subsurface(
-                        *material->get_osl_surface(),
+                        *material_data.m_shader_group,
                         *vertex.m_incoming_point);
                 }
 
@@ -387,7 +390,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                     bssrdf_input_evaluator,
                     *vertex.m_incoming_point);
 
-                if (material->has_osl_surface())
+                if (material_data.m_shader_group)
                 {
                     sampling_context.split_in_place(1, 1);
                     shading_context.choose_osl_subsurface_normal(
