@@ -107,7 +107,7 @@ class APPLESEED_DLLSYMBOL Scene
     // Perform post-frame rendering actions.
     void on_frame_end(const Project& project);
 
-    struct CachedInfo
+    struct RenderData
     {
         GAABB3      m_bbox;
         GVector3    m_center;
@@ -116,9 +116,9 @@ class APPLESEED_DLLSYMBOL Scene
         GScalar     m_safe_diameter;
     };
 
-    // Return information cached by on_frame_begin(), or 0 if they are not available.
-    // Cached info are created by on_frame_begin() and destroyed by on_frame_end().
-    const CachedInfo* get_cached_info() const;
+    // Return render-time data of this entity.
+    // Render-time data are available between on_frame_begin() and on_frame_end() calls.
+    const RenderData& get_render_data() const;
 
   private:
     friend class SceneFactory;
@@ -126,8 +126,8 @@ class APPLESEED_DLLSYMBOL Scene
     struct Impl;
     Impl* impl;
 
-    bool        m_has_cached_info;
-    CachedInfo  m_cached_info;
+    bool        m_has_render_data;
+    RenderData  m_render_data;
 
     // Constructor. Initially, the scene is empty.
     Scene();
@@ -135,8 +135,8 @@ class APPLESEED_DLLSYMBOL Scene
     // Destructor.
     ~Scene();
 
-    // Cache scene information, which are then available through get_cached_info().
-    void cache_scene_info();
+    // Create render data, which are then available through get_render_data().
+    void create_render_data();
 };
 
 
@@ -156,9 +156,10 @@ class APPLESEED_DLLSYMBOL SceneFactory
 // Scene class implementation.
 //
 
-inline const Scene::CachedInfo* Scene::get_cached_info() const
+inline const Scene::RenderData& Scene::get_render_data() const
 {
-    return m_has_cached_info ? &m_cached_info : 0;
+    assert(m_has_render_data);
+    return m_render_data;
 }
 
 }       // namespace renderer

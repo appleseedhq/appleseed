@@ -83,9 +83,7 @@ SPPMPassCallback::SPPMPassCallback(
   , m_pass_number(0)
 {
     // Compute the initial lookup radius.
-    const Scene::CachedInfo* scene_info = scene.get_cached_info();
-    assert(scene_info);
-    const float diameter = static_cast<float>(scene_info->m_diameter);
+    const float diameter = static_cast<float>(scene.get_render_data().m_diameter);
     const float diameter_factor = m_params.m_initial_radius_percents / 100.0f;
     m_initial_lookup_radius = diameter * diameter_factor;
 
