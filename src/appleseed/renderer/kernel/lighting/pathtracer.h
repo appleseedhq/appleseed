@@ -238,7 +238,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                     *material->get_osl_surface(),
                     *vertex.m_shading_point,
                     a);
-
                 alpha *= a;
             }
 #endif

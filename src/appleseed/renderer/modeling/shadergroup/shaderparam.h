@@ -83,17 +83,17 @@ class APPLESEED_DLLSYMBOL ShaderParam
     // Delete this instance.
     virtual void release() APPLESEED_OVERRIDE;
 
-    // Fix me: std classes cannot be used in DLL-exported classes. (est.)
+    // TODO: std classes cannot be used in DLL-exported classes.
     std::string get_value_as_string() const;
 
   private:
     friend class Shader;
 
     struct Impl;
-    Impl *impl;
+    Impl* impl;
 
     // Constructor.
-    explicit ShaderParam(const char *name);
+    explicit ShaderParam(const char* name);
 
     // Destructor.
     ~ShaderParam();

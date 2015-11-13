@@ -45,7 +45,7 @@ namespace renderer
 namespace
 {
     //
-    // Generic Material.
+    // Generic material.
     //
 
     const char* Model = "generic_material";
@@ -55,8 +55,8 @@ namespace
     {
       public:
         GenericMaterial(
-            const char*                 name,
-            const ParamArray&           params)
+            const char*         name,
+            const ParamArray&   params)
           : Material(name, params)
         {
             m_inputs.declare("bsdf", InputFormatEntity, "");
@@ -77,9 +77,9 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&              project,
-            const Assembly&             assembly,
-            foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE
+            const Project&      project,
+            const Assembly&     assembly,
+            IAbortSwitch*       abort_switch = 0) APPLESEED_OVERRIDE
         {
             if (!Material::on_frame_begin(project, assembly, abort_switch))
                 return false;
@@ -105,8 +105,8 @@ namespace
         }
 
         virtual void on_frame_end(
-            const Project&              project,
-            const Assembly&             assembly) APPLESEED_OVERRIDE
+            const Project&      project,
+            const Assembly&     assembly) APPLESEED_OVERRIDE
         {
             Material::on_frame_end(project, assembly);
         }

@@ -259,7 +259,6 @@ void Tracer::evaluate_alpha(
                 *sg,
                 shading_point,
                 a);
-
             alpha *= a;
         }
     }

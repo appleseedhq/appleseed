@@ -236,7 +236,6 @@ void DiagnosticSurfaceShader::evaluate(
                         shading_point);
 
                     const Vector3d direction = -normalize(shading_point.get_ray().m_dir);
-
                     bsdf->evaluate(
                         input_evaluator.data(),
                         false,
@@ -287,14 +286,11 @@ void DiagnosticSurfaceShader::evaluate(
                 }
             }
 #endif
-            Vector3d v;
 
-            if (m_shading_mode == ShadingNormal)
-                v = shading_point.get_shading_basis().get_normal();
-            else if (m_shading_mode == Tangent)
-                v = shading_point.get_shading_basis().get_tangent_u();
-            else
-                v = shading_point.get_shading_basis().get_tangent_v();
+            const Vector3d v =
+                m_shading_mode == ShadingNormal ? shading_point.get_shading_basis().get_normal() :
+                m_shading_mode == Tangent ? shading_point.get_shading_basis().get_tangent_u() :
+                shading_point.get_shading_basis().get_tangent_v();
 
             shading_result.set_main_to_linear_rgb(
                 vector3_to_color(normalize(v)));

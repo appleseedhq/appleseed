@@ -61,7 +61,7 @@ namespace renderer
 {
 
 //
-// Material.
+// Base class for materials.
 //
 
 class APPLESEED_DLLSYMBOL Material

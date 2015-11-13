@@ -771,7 +771,6 @@ void ShadingPoint::compute_alpha() const
                 *m_texture_cache,
                 get_uv(0),
                 a);
-
             m_alpha *= a;
         }
 
@@ -784,7 +783,6 @@ void ShadingPoint::compute_alpha() const
                     *m_texture_cache,
                     get_uv(0),
                     a);
-
                 m_alpha *= a;
             }
         }
