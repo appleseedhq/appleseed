@@ -168,6 +168,7 @@ void bind_renderer_controller()
 {
     bpy::enum_<IRendererController::Status>("IRenderControllerStatus")
         .value("ContinueRendering", IRendererController::ContinueRendering)
+        .value("PauseRendering", IRendererController::PauseRendering)
         .value("TerminateRendering", IRendererController::TerminateRendering)
         .value("AbortRendering", IRendererController::AbortRendering)
         .value("RestartRendering", IRendererController::RestartRendering)
