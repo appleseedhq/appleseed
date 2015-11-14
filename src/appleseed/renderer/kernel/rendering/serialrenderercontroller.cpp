@@ -58,6 +58,9 @@ void SerialRendererController::on_rendering_begin()
 
 void SerialRendererController::on_rendering_success()
 {
+    // Execute any pending callback since the
+    // last time on_progress was called.
+    exec_callbacks();
     m_controller->on_rendering_success();
 }
 
@@ -78,16 +81,7 @@ void SerialRendererController::on_frame_end()
 
 void SerialRendererController::on_progress()
 {
-    {
-        boost::mutex::scoped_lock lock(m_mutex);
-
-        while (!m_pending_callbacks.empty())
-        {
-            exec_callback(m_pending_callbacks.front());
-            m_pending_callbacks.pop_front();
-        }
-    }
-
+    exec_callbacks();
     m_controller->on_progress();
 }
 
@@ -165,6 +159,17 @@ void SerialRendererController::exec_callback(const PendingTileCallback& call)
         break;
 
       assert_otherwise;
+    }
+}
+
+void SerialRendererController::exec_callbacks()
+{
+    boost::mutex::scoped_lock lock(m_mutex);
+
+    while (!m_pending_callbacks.empty())
+    {
+        exec_callback(m_pending_callbacks.front());
+        m_pending_callbacks.pop_front();
     }
 }
 
