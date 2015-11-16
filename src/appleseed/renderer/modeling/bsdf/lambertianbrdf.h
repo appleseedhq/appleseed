@@ -33,7 +33,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
-#include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -50,17 +49,6 @@ namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
-
-//
-// Lambertian BRDF input values.
-//
-
-APPLESEED_DECLARE_INPUT_VALUES(LambertianBRDFInputValues)
-{
-    Spectrum    m_reflectance;              // diffuse reflectance (albedo, technically)
-    double      m_reflectance_multiplier;
-};
-
 
 //
 // Lambertian BRDF factory.

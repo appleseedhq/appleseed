@@ -32,14 +32,12 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/osl/oslmicrofacetbrdf.h"
 #include "renderer/modeling/bsdf/osl/oslmicrofacetbtdf.h"
-#include "renderer/modeling/bsdf/ashikhminbrdf.h"
 #include "renderer/modeling/bsdf/diffusebtdf.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
-#include "renderer/modeling/bsdf/lambertianbrdf.h"
 #include "renderer/modeling/bsdf/orennayarbrdf.h"
+#include "renderer/modeling/bsdf/sheenbrdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
-#include "renderer/modeling/bsdf/velvetbrdf.h"
 #include "renderer/modeling/bssrdf/dipolebssrdf.h"
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
@@ -90,14 +88,12 @@ namespace renderer
 enum ClosureID
 {
     // BSDF closures.
-    AshikhminShirleyID,
     DisneyID,
-    LambertID,
     OrenNayarID,
     ReflectionID,
     RefractionID,
+    SheenID,
     TranslucentID,
-    VelvetID,
 
     MicrofacetID,
     MicrofacetBeckmannReflectionID,
@@ -142,20 +138,18 @@ class APPLESEED_ALIGN(16) CompositeClosure
 
   protected:
     typedef boost::mpl::vector<
-        AshikhminBRDFInputValues,
         DiffuseBTDFInputValues,
         DipoleBSSRDFInputValues,
         DisneyBRDFInputValues,
-        LambertianBRDFInputValues,
 #ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
         NormalizedDiffusionBSSRDFInputValues,
 #endif
         OSLMicrofacetBRDFInputValues,
         OSLMicrofacetBTDFInputValues,
         OrenNayarBRDFInputValues,
+        SheenBRDFInputValues,
         SpecularBRDFInputValues,
-        SpecularBTDFInputValues,
-        VelvetBRDFInputValues
+        SpecularBTDFInputValues
     > InputValuesTypeList;
 
     // Find the biggest InputValues type.

@@ -478,65 +478,38 @@ string concat (string a, string b, string c, string d, string e, string f) {
 }
 
 
-// Texture
-
 /*************************************************************/
 // Closures
 /*************************************************************/
 
-closure color as_ashikhmin_shirley(
-    normal  N,
-    vector  T,
-    color   rd,
-    color   rg,
-    float   nu,
-    float   nv,
-    float   fr) BUILTIN;
+/******************/
+// diffuse
+/******************/
 
-closure color as_disney(
-    normal  N,
-    vector  T,
-    color   base_color,
-    float   subsurface,
-    float   metallic,
-    float   specular,
-    float   specular_tint,
-    float   anisotropic,
-    float   roughness,
-    float   sheen,
-    float   sheen_tint,
-    float   clearcoat,
-    float   clearcoat_gloss) BUILTIN;
+closure color oren_nayar(normal N, float roughness) BUILTIN;
 
-closure color as_velvet(normal N, float alpha) BUILTIN;
+closure color translucent(normal N) BUILTIN;
 
-closure color as_subsurface(
-    string  profile,
-    normal  N,
-    color   rd,
-    color   dmfp,
-    float   eta,
-    float   g) BUILTIN;
+closure color as_sheen(normal N) BUILTIN;
 
-closure color as_subsurface(
-    string  profile,
-    normal  N,
-    color   rd,
-    color   dmfp,
-    float   eta)
+// for compat with the spec.
+closure color diffuse(normal N)
 {
-    return as_subsurface(profile, N, rd, dmfp, eta, 0.0);
+    return oren_nayar(N, 0);
 }
 
-closure color background() BUILTIN;
 
-closure color debug(string tag) BUILTIN;
+/******************/
+// specular
+/******************/
 
-closure color diffuse(normal N) BUILTIN;
+closure color reflection(normal N) BUILTIN;
+closure color refraction(normal N, float eta) BUILTIN;
 
-closure color emission() BUILTIN;
 
-closure color holdout() BUILTIN;
+/******************/
+// glossy
+/******************/
 
 closure color microfacet(
     string  distribution,
@@ -557,20 +530,80 @@ closure color microfacet(
     return microfacet(distribution, N, vector(0), alpha, alpha, eta, refract);
 }
 
-closure color oren_nayar(normal N, float roughness) BUILTIN;
 
-closure color phong(normal N, float exponent)
+/******************/
+// subsurface
+/******************/
+
+closure color as_subsurface(
+    string  profile,
+    normal  N,
+    color   rd,
+    color   dmfp,
+    float   eta,
+    float   g) BUILTIN;
+
+closure color as_subsurface(
+    string  profile,
+    normal  N,
+    color   rd,
+    color   dmfp,
+    float   eta)
 {
-    return as_ashikhmin_shirley(N, vector(0), color(0), color(1), exponent, exponent, 1.0);
+    return as_subsurface(profile, N, rd, dmfp, eta, 0.0);
 }
 
-closure color reflection(normal N) BUILTIN;
+// for compat with the spec.
+closure color subsurface(float eta, float g, color mfp, color albedo)
+{
+    return as_subsurface("better_dipole", N, albedo, mfp, eta, g);
+}
 
-closure color refraction(normal N, float eta) BUILTIN;
 
-closure color translucent(normal N) BUILTIN;
+/******************/
+// uber-closures
+/******************/
 
+closure color as_disney(
+    normal  N,
+    vector  T,
+    color   base_color,
+    float   subsurface,
+    float   metallic,
+    float   specular,
+    float   specular_tint,
+    float   anisotropic,
+    float   roughness,
+    float   sheen,
+    float   sheen_tint,
+    float   clearcoat,
+    float   clearcoat_gloss) BUILTIN;
+
+
+/******************/
+// emission
+/******************/
+
+closure color emission() BUILTIN;
+
+
+/******************/
+// misc
+/******************/
+
+closure color background() BUILTIN;
 closure color transparent() BUILTIN;
+
+
+/******************/
+// unsupported
+/******************/
+
+closure color debug(string tag) BUILTIN;
+closure color holdout() BUILTIN;
+
+/*************************************************************/
+
 
 // Renderer state
 int backfacing () BUILTIN;

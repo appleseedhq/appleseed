@@ -1,23 +1,23 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.2dev
+# Compiled by oslc 1.6.8
 shader gabor_noise
-param	point	Pos	0 0 0		 %read{1,1} %write{0,0} %derivs
-param	float	frequency	1		 %read{1,1} %write{2147483647,-1} %derivs
-param	int	anisotropic	0		 %read{2,2} %write{2147483647,-1}
-param	vector	direction	1 0 0		 %read{2,2} %write{2147483647,-1}
-param	int	do_filter	1		 %read{2,2} %write{2147483647,-1}
-param	float	bandwidth	1		 %read{2,2} %write{2147483647,-1}
-param	float	impulses	16		 %read{2,2} %write{2147483647,-1}
-param	int	do_abs	0		 %read{3,3} %write{2147483647,-1}
-oparam	float	Noise	0		 %read{4,4} %write{2,4}
-global	point	P	 %read{0,0} %write{2147483647,-1} %derivs
-const	string	$const1	"gabor"		 %read{2,2} %write{2147483647,-1}
-temp	point	$tmp1	 %read{2,2} %write{1,1} %derivs
-const	string	$const2	"anisotropic"		 %read{2,2} %write{2147483647,-1}
-const	string	$const3	"direction"		 %read{2,2} %write{2147483647,-1}
-const	string	$const4	"do_filter"		 %read{2,2} %write{2147483647,-1}
-const	string	$const5	"bandwidth"		 %read{2,2} %write{2147483647,-1}
-const	string	$const6	"impulses"		 %read{2,2} %write{2147483647,-1}
+param	point	Pos	0 0 0		%read{1,1} %write{0,0} %derivs %initexpr
+param	float	frequency	1		%read{1,1} %write{2147483647,-1} %derivs
+param	int	anisotropic	0		%read{2,2} %write{2147483647,-1}
+param	vector	direction	1 0 0		%read{2,2} %write{2147483647,-1}
+param	int	do_filter	1		%read{2,2} %write{2147483647,-1}
+param	float	bandwidth	1		%read{2,2} %write{2147483647,-1}
+param	float	impulses	16		%read{2,2} %write{2147483647,-1}
+param	int	do_abs	0		%read{3,3} %write{2147483647,-1}
+oparam	float	Noise	0		%read{4,4} %write{2,4}
+global	point	P	%read{0,0} %write{2147483647,-1} %derivs
+const	string	$const1	"gabor"		%read{2,2} %write{2147483647,-1}
+temp	point	$tmp1	%read{2,2} %write{1,1} %derivs
+const	string	$const2	"anisotropic"		%read{2,2} %write{2147483647,-1}
+const	string	$const3	"direction"		%read{2,2} %write{2147483647,-1}
+const	string	$const4	"do_filter"		%read{2,2} %write{2147483647,-1}
+const	string	$const5	"bandwidth"		%read{2,2} %write{2147483647,-1}
+const	string	$const6	"impulses"		%read{2,2} %write{2147483647,-1}
 code Pos
 # gabor_noise.osl:3
 #     point           Pos         = P,

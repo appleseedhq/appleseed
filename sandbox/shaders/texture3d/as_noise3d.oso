@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.4dev
+# Compiled by oslc 1.6.8
 shader as_noise3d
 param	vector	In	0 0 0		%read{1,1} %write{0,0} %derivs %initexpr
 param	string	NoiseType	"perlin"		%meta{string,widget,"popup"} %meta{string,options,"perlin|uperlin|cell|simplex|usimplex|gabor"}  %read{4,7} %write{2147483647,-1}

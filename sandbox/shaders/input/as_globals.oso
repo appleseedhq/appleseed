@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.4dev
+# Compiled by oslc 1.6.8
 shader as_globals
 oparam	vector	Point	0 0 0		%read{2147483647,-1} %write{0,0} %initexpr
 oparam	vector	Normal	0 0 0		%read{2147483647,-1} %write{1,1} %initexpr

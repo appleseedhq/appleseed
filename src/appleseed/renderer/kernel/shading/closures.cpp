@@ -67,17 +67,6 @@ namespace
 
     struct EmptyClosureParams {};
 
-    struct AshikhminShirleyBRDFClosureParams
-    {
-        OSL::Vec3       N;
-        OSL::Vec3       T;
-        OSL::Color3     rd;
-        OSL::Color3     rg;
-        float           nu;
-        float           nv;
-        float           fr;
-    };
-
     struct DebugClosureParams
     {
         OSL::ustring    tag;
@@ -150,12 +139,6 @@ namespace
     {
         OSL::Vec3       N;
         float           eta;
-    };
-
-    struct VelvetBRDFClosureParams
-    {
-        OSL::Vec3       N;
-        float           alpha;
     };
 }
 
@@ -290,30 +273,6 @@ void CompositeSurfaceClosure::process_closure_tree(
 
             switch (c->id)
             {
-              case AshikhminShirleyID:
-                {
-                    const AshikhminShirleyBRDFClosureParams* p =
-                        reinterpret_cast<const AshikhminShirleyBRDFClosureParams*>(c->data());
-
-                    AshikhminBRDFInputValues values;
-                    values.m_rd = Color3f(p->rd);
-                    values.m_rd_multiplier = 1.0;
-                    values.m_rg = Color3f(p->rg);
-                    values.m_rg_multiplier = 1.0;
-                    values.m_nu = max(p->nu, 0.01f);
-                    values.m_nv = max(p->nv, 0.01f);
-                    values.m_fr_multiplier = p->fr;
-
-                    add_closure<AshikhminBRDFInputValues>(
-                        static_cast<ClosureID>(c->id),
-                        original_shading_basis,
-                        w,
-                        Vector3d(p->N),
-                        Vector3d(p->T),
-                        values);
-                }
-                break;
-
               case DisneyID:
                 {
                     const DisneyBRDFClosureParams* p =
@@ -338,24 +297,6 @@ void CompositeSurfaceClosure::process_closure_tree(
                         w,
                         Vector3d(p->N),
                         Vector3d(p->T),
-                        values);
-                }
-                break;
-
-              case LambertID:
-                {
-                    const DiffuseBSDFClosureParams* p =
-                        reinterpret_cast<const DiffuseBSDFClosureParams*>(c->data());
-
-                    LambertianBRDFInputValues values;
-                    values.m_reflectance.set(1.0f);
-                    values.m_reflectance_multiplier = 1.0;
-
-                    add_closure<LambertianBRDFInputValues>(
-                        static_cast<ClosureID>(c->id),
-                        original_shading_basis,
-                        w,
-                        Vector3d(p->N),
                         values);
                 }
                 break;
@@ -520,6 +461,24 @@ void CompositeSurfaceClosure::process_closure_tree(
                 }
                 break;
 
+              case SheenID:
+                {
+                    const DiffuseBSDFClosureParams* p =
+                        reinterpret_cast<const DiffuseBSDFClosureParams*>(c->data());
+
+                      SheenBRDFInputValues values;
+                      values.m_reflectance.set(1.0f);
+                      values.m_reflectance_multiplier = 1.0;
+
+                      add_closure<SheenBRDFInputValues>(
+                          static_cast<ClosureID>(c->id),
+                          original_shading_basis,
+                          w,
+                          Vector3d(p->N),
+                          values);
+                }
+                break;
+
               case TranslucentID:
                 {
                     const DiffuseBSDFClosureParams* p =
@@ -537,28 +496,6 @@ void CompositeSurfaceClosure::process_closure_tree(
                         values);
                 }
                 break;
-
-              case VelvetID:
-              {
-                  const VelvetBRDFClosureParams* p =
-                      reinterpret_cast<const VelvetBRDFClosureParams*>(c->data());
-
-                  VelvetBRDFInputValues values;
-                  values.m_roughness = p->alpha;
-                  values.m_roughness_multiplier = 1.0;
-                  values.m_reflectance.set(1.0f);
-                  values.m_reflectance_multiplier = 1.0;
-                  values.m_fresnel_normal_reflectance = 1.0;
-                  values.m_fresnel_multiplier = 1.0;
-
-                  add_closure<VelvetBRDFInputValues>(
-                      static_cast<ClosureID>(c->id),
-                      original_shading_basis,
-                      w,
-                      Vector3d(p->N),
-                      values);
-              }
-              break;
             }
         }
         break;
@@ -953,15 +890,6 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
 
     static const BuiltinClosures builtins[] =
     {
-        { "as_ashikhmin_shirley", AshikhminShirleyID, { CLOSURE_VECTOR_PARAM(AshikhminShirleyBRDFClosureParams, N),
-                                                        CLOSURE_VECTOR_PARAM(AshikhminShirleyBRDFClosureParams, T),
-                                                        CLOSURE_COLOR_PARAM(AshikhminShirleyBRDFClosureParams, rd),
-                                                        CLOSURE_COLOR_PARAM(AshikhminShirleyBRDFClosureParams, rg),
-                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyBRDFClosureParams, nu),
-                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyBRDFClosureParams, nv),
-                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyBRDFClosureParams, fr),
-                                                        CLOSURE_FINISH_PARAM(AshikhminShirleyBRDFClosureParams) } },
-
         { "as_disney", DisneyID, { CLOSURE_VECTOR_PARAM(DisneyBRDFClosureParams, N),
                                    CLOSURE_VECTOR_PARAM(DisneyBRDFClosureParams, T),
                                    CLOSURE_COLOR_PARAM(DisneyBRDFClosureParams, base_color),
@@ -977,6 +905,9 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                    CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, clearcoat_gloss),
                                    CLOSURE_FINISH_PARAM(DisneyBRDFClosureParams) } },
 
+        { "as_sheen", SheenID, { CLOSURE_VECTOR_PARAM(DiffuseBSDFClosureParams, N),
+                                 CLOSURE_FINISH_PARAM(DiffuseBSDFClosureParams) } },
+
         { "as_subsurface", SubsurfaceID, { CLOSURE_STRING_PARAM(SubsurfaceClosureParams, profile),
                                            CLOSURE_VECTOR_PARAM(SubsurfaceClosureParams, N),
                                            CLOSURE_COLOR_PARAM(SubsurfaceClosureParams, rd),
@@ -984,10 +915,6 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                            CLOSURE_FLOAT_PARAM(SubsurfaceClosureParams, eta),
                                            CLOSURE_FLOAT_PARAM(SubsurfaceClosureParams, g),
                                            CLOSURE_FINISH_PARAM(SubsurfaceClosureParams) } },
-
-        { "as_velvet", VelvetID, { CLOSURE_VECTOR_PARAM(VelvetBRDFClosureParams, N),
-                                   CLOSURE_FLOAT_PARAM(VelvetBRDFClosureParams, alpha),
-                                   CLOSURE_FINISH_PARAM(VelvetBRDFClosureParams) } },
 
         { "oren_nayar", OrenNayarID, { CLOSURE_VECTOR_PARAM(OrenNayarBRDFClosureParams, N),
                                        CLOSURE_FLOAT_PARAM(OrenNayarBRDFClosureParams, roughness),
@@ -997,9 +924,6 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
 
         { "debug", DebugID, { CLOSURE_STRING_PARAM(DebugClosureParams, tag),
                               CLOSURE_FINISH_PARAM(DebugClosureParams) } },
-
-        { "diffuse", LambertID, { CLOSURE_VECTOR_PARAM(DiffuseBSDFClosureParams, N),
-                                  CLOSURE_FINISH_PARAM(DiffuseBSDFClosureParams) } },
 
         { "emission", EmissionID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
 

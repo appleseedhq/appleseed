@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.4dev
+# Compiled by oslc 1.6.8
 shader as_metal_surface	%meta{string,help,"Metal surface shader"} 
 param	vector	Normal	0 0 0		%read{63,105} %write{0,0} %initexpr
 param	vector	Tangent	0 0 0		%read{105,105} %write{1,1} %initexpr
@@ -14,29 +14,29 @@ oparam	closure color	BRDF			%read{2147483647,-1} %write{89,107}
 global	vector	I	%read{63,63} %write{2147483647,-1}
 global	normal	N	%read{0,0} %write{2147483647,-1}
 global	vector	dPdu	%read{1,1} %write{2147483647,-1}
-local	float	___299_CosTheta	%read{68,70} %write{64,64}
-local	color	___299_n2	%read{67,67} %write{65,65}
-local	color	___299_k2	%read{67,67} %write{66,66}
-local	color	___299_N2PlusK2	%read{71,80} %write{67,67}
-local	float	___299_CosTheta2	%read{71,81} %write{68,68}
-local	color	___299_NCosTheta	%read{72,80} %write{70,70}
-local	color	___299_RPar	%read{83,83} %write{77,77}
-local	color	___299_RPerp	%read{83,83} %write{82,82}
-local	color	___300_rr	%read{42,59} %write{41,41}
-local	color	___300_NMin	%read{50,50} %write{44,44}
-local	color	___300_NMax	%read{50,50} %write{49,49}
-local	color	___300_n	%read{51,69} %write{50,50}
-local	color	___300_DoubleNPlusOne	%read{57,57} %write{53,53}
-local	color	___300_DoubleNMinusOne	%read{58,58} %write{56,56}
-local	color	___300_k	%read{66,66} %write{61,61}
-local	float	___301_aspect	%read{96,98} %write{94,94}
-local	float	___301_r2	%read{96,98} %write{95,95}
-local	float	___302_tmp	%read{104,104} %write{102,102}
+local	float	___296_CosTheta	%read{68,70} %write{64,64}
+local	color	___296_n2	%read{67,67} %write{65,65}
+local	color	___296_k2	%read{67,67} %write{66,66}
+local	color	___296_N2PlusK2	%read{71,80} %write{67,67}
+local	float	___296_CosTheta2	%read{71,81} %write{68,68}
+local	color	___296_NCosTheta	%read{72,80} %write{70,70}
+local	color	___296_RPar	%read{83,83} %write{77,77}
+local	color	___296_RPerp	%read{83,83} %write{82,82}
+local	color	___297_rr	%read{42,59} %write{41,41}
+local	color	___297_NMin	%read{50,50} %write{44,44}
+local	color	___297_NMax	%read{50,50} %write{49,49}
+local	color	___297_n	%read{51,69} %write{50,50}
+local	color	___297_DoubleNPlusOne	%read{57,57} %write{53,53}
+local	color	___297_DoubleNMinusOne	%read{58,58} %write{56,56}
+local	color	___297_k	%read{66,66} %write{61,61}
+local	float	___298_aspect	%read{96,98} %write{94,94}
+local	float	___298_r2	%read{96,98} %write{95,95}
+local	float	___299_tmp	%read{104,104} %write{102,102}
 local	color	r	%read{40,40} %write{4,36}
 local	color	g	%read{50,50} %write{5,37}
 local	color	Kf	%read{88,106} %write{84,84}
-local	float	___312_ax	%read{102,105} %write{97,103}
-local	float	___312_ay	%read{103,105} %write{99,104}
+local	float	___309_ax	%read{102,105} %write{97,103}
+local	float	___309_ay	%read{103,105} %write{99,104}
 const	string	$const1	"Custom"		%read{2,2} %write{2147483647,-1}
 temp	int	$tmp1	%read{3,3} %write{2,2}
 const	string	$const2	"Aluminium"		%read{6,6} %write{2147483647,-1}
@@ -233,85 +233,85 @@ code ___main___
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:156
 # point  degrees (point x)  { return x*(180.0/M_PI); }
 	min		$tmp12 r $const28 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{156} %argrw{"wrr"}
-	max		___300_rr $tmp12 $const27 	%argrw{"wrr"}
+	max		___297_rr $tmp12 $const27 	%argrw{"wrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:63
 #     color NMin = (color(1.0) - rr) / (color(1.0) + rr);
-	sub		$tmp14 $const30 ___300_rr 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h"} %line{63} %argrw{"wrr"}
-	add		$tmp16 $const30 ___300_rr 	%argrw{"wrr"}
-	div		___300_NMin $tmp14 $tmp16 	%argrw{"wrr"}
+	sub		$tmp14 $const30 ___297_rr 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h"} %line{63} %argrw{"wrr"}
+	add		$tmp16 $const30 ___297_rr 	%argrw{"wrr"}
+	div		___297_NMin $tmp14 $tmp16 	%argrw{"wrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:64
 #     color NMax = (color(1.0) + sqrt(rr)) / (color(1.0) - sqrt(rr));
-	sqrt		$tmp18 ___300_rr 	%line{64} %argrw{"wr"}
+	sqrt		$tmp18 ___297_rr 	%line{64} %argrw{"wr"}
 	add		$tmp19 $const30 $tmp18 	%argrw{"wrr"}
-	sqrt		$tmp21 ___300_rr 	%argrw{"wr"}
+	sqrt		$tmp21 ___297_rr 	%argrw{"wr"}
 	sub		$tmp22 $const30 $tmp21 	%argrw{"wrr"}
-	div		___300_NMax $tmp19 $tmp22 	%argrw{"wrr"}
+	div		___297_NMax $tmp19 $tmp22 	%argrw{"wrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:65
 #     color n = mix(NMax, NMin, g);
-	mix		___300_n ___300_NMax ___300_NMin g 	%line{65} %argrw{"wrrr"}
+	mix		___297_n ___297_NMax ___297_NMin g 	%line{65} %argrw{"wrrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:67
 #     color DoubleNPlusOne  = (n + color(1.0)) * (n + color(1.0));
-	add		$tmp24 ___300_n $const30 	%line{67} %argrw{"wrr"}
-	add		$tmp26 ___300_n $const30 	%argrw{"wrr"}
-	mul		___300_DoubleNPlusOne $tmp24 $tmp26 	%argrw{"wrr"}
+	add		$tmp24 ___297_n $const30 	%line{67} %argrw{"wrr"}
+	add		$tmp26 ___297_n $const30 	%argrw{"wrr"}
+	mul		___297_DoubleNPlusOne $tmp24 $tmp26 	%argrw{"wrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:68
 #     color DoubleNMinusOne = (n - color(1.0)) * (n - color(1.0));
-	sub		$tmp28 ___300_n $const30 	%line{68} %argrw{"wrr"}
-	sub		$tmp30 ___300_n $const30 	%argrw{"wrr"}
-	mul		___300_DoubleNMinusOne $tmp28 $tmp30 	%argrw{"wrr"}
+	sub		$tmp28 ___297_n $const30 	%line{68} %argrw{"wrr"}
+	sub		$tmp30 ___297_n $const30 	%argrw{"wrr"}
+	mul		___297_DoubleNMinusOne $tmp28 $tmp30 	%argrw{"wrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:70
 #     color k = sqrt((DoubleNPlusOne * rr - DoubleNMinusOne) / (color(1.0) - rr));
-	mul		$tmp31 ___300_DoubleNPlusOne ___300_rr 	%line{70} %argrw{"wrr"}
-	sub		$tmp32 $tmp31 ___300_DoubleNMinusOne 	%argrw{"wrr"}
-	sub		$tmp34 $const30 ___300_rr 	%argrw{"wrr"}
+	mul		$tmp31 ___297_DoubleNPlusOne ___297_rr 	%line{70} %argrw{"wrr"}
+	sub		$tmp32 $tmp31 ___297_DoubleNMinusOne 	%argrw{"wrr"}
+	sub		$tmp34 $const30 ___297_rr 	%argrw{"wrr"}
 	div		$tmp35 $tmp32 $tmp34 	%argrw{"wrr"}
-	sqrt		___300_k $tmp35 	%argrw{"wr"}
+	sqrt		___297_k $tmp35 	%argrw{"wr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:72
 #     return fresnel_conductor(I, N, n, k);
 	functioncall	$const31 85 	%line{72} %argrw{"r"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:34
 #     float CosTheta = abs(dot(I, N));
 	dot		$tmp36 I Normal 	%line{34} %argrw{"wrr"}
-	abs		___299_CosTheta $tmp36 	%argrw{"wr"}
+	abs		___296_CosTheta $tmp36 	%argrw{"wr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:36
 #     color n2 = n * n;
-	mul		___299_n2 ___300_n ___300_n 	%line{36} %argrw{"wrr"}
+	mul		___296_n2 ___297_n ___297_n 	%line{36} %argrw{"wrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:37
 #     color k2 = k * k;
-	mul		___299_k2 ___300_k ___300_k 	%line{37} %argrw{"wrr"}
+	mul		___296_k2 ___297_k ___297_k 	%line{37} %argrw{"wrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:38
 #     color N2PlusK2 = n2 + k2;
-	add		___299_N2PlusK2 ___299_n2 ___299_k2 	%line{38} %argrw{"wrr"}
+	add		___296_N2PlusK2 ___296_n2 ___296_k2 	%line{38} %argrw{"wrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:40
 #     float CosTheta2 = CosTheta * CosTheta;
-	mul		___299_CosTheta2 ___299_CosTheta ___299_CosTheta 	%line{40} %argrw{"wrr"}
+	mul		___296_CosTheta2 ___296_CosTheta ___296_CosTheta 	%line{40} %argrw{"wrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:41
 #     color NCosTheta = n * 2.0 * CosTheta;
-	mul		$tmp37 ___300_n $const32 	%line{41} %argrw{"wrr"}
-	mul		___299_NCosTheta $tmp37 ___299_CosTheta 	%argrw{"wrr"}
+	mul		$tmp37 ___297_n $const32 	%line{41} %argrw{"wrr"}
+	mul		___296_NCosTheta $tmp37 ___296_CosTheta 	%argrw{"wrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:44
 #         ((N2PlusK2 * CosTheta2) - NCosTheta + 1) /
-	mul		$tmp38 ___299_N2PlusK2 ___299_CosTheta2 	%line{44} %argrw{"wrr"}
-	sub		$tmp39 $tmp38 ___299_NCosTheta 	%argrw{"wrr"}
+	mul		$tmp38 ___296_N2PlusK2 ___296_CosTheta2 	%line{44} %argrw{"wrr"}
+	sub		$tmp39 $tmp38 ___296_NCosTheta 	%argrw{"wrr"}
 	add		$tmp40 $tmp39 $const34 	%argrw{"wrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:45
 #         ((N2PlusK2 * CosTheta2) + NCosTheta + 1);
-	mul		$tmp41 ___299_N2PlusK2 ___299_CosTheta2 	%line{45} %argrw{"wrr"}
-	add		$tmp42 $tmp41 ___299_NCosTheta 	%argrw{"wrr"}
+	mul		$tmp41 ___296_N2PlusK2 ___296_CosTheta2 	%line{45} %argrw{"wrr"}
+	add		$tmp42 $tmp41 ___296_NCosTheta 	%argrw{"wrr"}
 	add		$tmp43 $tmp42 $const34 	%argrw{"wrr"}
-	div		___299_RPar $tmp40 $tmp43 	%argrw{"wrr"}
+	div		___296_RPar $tmp40 $tmp43 	%argrw{"wrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:48
 #         (N2PlusK2 - NCosTheta + CosTheta2) / 
-	sub		$tmp44 ___299_N2PlusK2 ___299_NCosTheta 	%line{48} %argrw{"wrr"}
-	add		$tmp45 $tmp44 ___299_CosTheta2 	%argrw{"wrr"}
+	sub		$tmp44 ___296_N2PlusK2 ___296_NCosTheta 	%line{48} %argrw{"wrr"}
+	add		$tmp45 $tmp44 ___296_CosTheta2 	%argrw{"wrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:49
 #         (N2PlusK2 + NCosTheta + CosTheta2);
-	add		$tmp46 ___299_N2PlusK2 ___299_NCosTheta 	%line{49} %argrw{"wrr"}
-	add		$tmp47 $tmp46 ___299_CosTheta2 	%argrw{"wrr"}
-	div		___299_RPerp $tmp45 $tmp47 	%argrw{"wrr"}
+	add		$tmp46 ___296_N2PlusK2 ___296_NCosTheta 	%line{49} %argrw{"wrr"}
+	add		$tmp47 $tmp46 ___296_CosTheta2 	%argrw{"wrr"}
+	div		___296_RPerp $tmp45 $tmp47 	%argrw{"wrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:51
 #     return (RPar + RPerp) / 2.0;        
-	add		$tmp48 ___299_RPar ___299_RPerp 	%line{51} %argrw{"wrr"}
+	add		$tmp48 ___296_RPar ___296_RPerp 	%line{51} %argrw{"wrr"}
 	div		Kf $tmp48 $const32 	%argrw{"wrr"}
 # as_metal_surface.osl:127
 # {
@@ -330,34 +330,34 @@ code ___main___
 	fabs		$tmp52 Anisotropy 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h"} %line{55} %argrw{"wr"}
 	mul		$tmp53 $tmp52 $const38 	%argrw{"wrr"}
 	sub		$tmp54 $const34 $tmp53 	%argrw{"wrr"}
-	sqrt		___301_aspect $tmp54 	%argrw{"wr"}
+	sqrt		___298_aspect $tmp54 	%argrw{"wr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:56
 #     float r2 = roughness * roughness;
-	mul		___301_r2 Roughness Roughness 	%line{56} %argrw{"wrr"}
+	mul		___298_r2 Roughness Roughness 	%line{56} %argrw{"wrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:58
 #     ax = max(0.001, r2 / aspect);
-	div		$tmp55 ___301_r2 ___301_aspect 	%line{58} %argrw{"wrr"}
-	max		___312_ax $const39 $tmp55 	%argrw{"wrr"}
+	div		$tmp55 ___298_r2 ___298_aspect 	%line{58} %argrw{"wrr"}
+	max		___309_ax $const39 $tmp55 	%argrw{"wrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:59
 #     ay = max(0.001, r2 * aspect);
-	mul		$tmp56 ___301_r2 ___301_aspect 	%line{59} %argrw{"wrr"}
-	max		___312_ay $const39 $tmp56 	%argrw{"wrr"}
+	mul		$tmp56 ___298_r2 ___298_aspect 	%line{59} %argrw{"wrr"}
+	max		___309_ay $const39 $tmp56 	%argrw{"wrr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:61
 #     if (anisotropy < 0)
 	lt		$tmp57 Anisotropy $const40 	%line{61} %argrw{"wrr"}
 	if		$tmp57 105 105 	%argrw{"r"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:64
 #         float tmp = ax;
-	assign		___302_tmp ___312_ax 	%line{64} %argrw{"wr"}
+	assign		___299_tmp ___309_ax 	%line{64} %argrw{"wr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:65
 #         ax = ay;
-	assign		___312_ax ___312_ay 	%line{65} %argrw{"wr"}
+	assign		___309_ax ___309_ay 	%line{65} %argrw{"wr"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:66
 #         ay = tmp;
-	assign		___312_ay ___302_tmp 	%line{66} %argrw{"wr"}
+	assign		___309_ay ___299_tmp 	%line{66} %argrw{"wr"}
 # as_metal_surface.osl:133
 #     ]],
-	closure		$tmp58 $const41 Distribution Normal Tangent ___312_ax ___312_ay $const34 $const40 	%filename{"as_metal_surface.osl"} %line{133} %argrw{"wrrrrrrrr"}
+	closure		$tmp58 $const41 Distribution Normal Tangent ___309_ax ___309_ay $const34 $const40 	%filename{"as_metal_surface.osl"} %line{133} %argrw{"wrrrrrrrr"}
 	mul		$tmp59 Specular Kf 	%argrw{"wrr"}
 	mul		BRDF $tmp58 $tmp59 	%argrw{"wrr"}
 	end

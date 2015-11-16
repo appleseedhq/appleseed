@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,13 +27,12 @@
 //
 
 // Interface header.
-#include "lambertianbrdf.h"
+#include "sheenbrdf.h"
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
-#include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/sampling/mappings.h"
@@ -60,16 +58,16 @@ namespace renderer
 namespace
 {
     //
-    // Lambertian BRDF.
+    // Sheen BRDF.
     //
 
-    const char* Model = "lambertian_brdf";
+    const char* Model = "sheen_brdf";
 
-    class LambertianBRDFImpl
+    class SheenBRDFImpl
       : public BSDF
     {
       public:
-        LambertianBRDFImpl(
+        SheenBRDFImpl(
             const char*         name,
             const ParamArray&   params)
           : BSDF(name, Reflective, ScatteringMode::Diffuse, params)
@@ -95,26 +93,33 @@ namespace
             const bool          cosine_mult,
             BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
+            // No reflection below the shading surface.
+            const Vector3d& n = sample.get_shading_normal();
+            const double cos_on = dot(sample.m_outgoing.get_value(), n);
+            if (cos_on < 0.0)
+                return;
+
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);
             const Vector2d s = sampling_context.next_vector2<2>();
-            const Vector3d wi = sample_hemisphere_cosine(s);
+            const Vector3d wi = sample_hemisphere_uniform(s);
 
             // Transform the incoming direction to parent space.
-            sample.m_incoming = Dual3d(sample.get_shading_basis().transform_to_parent(wi));
+            const Vector3d incoming =
+                sample.get_shading_basis().transform_to_parent(wi);
 
-            // Compute the BRDF value.
+            const Vector3d h = normalize(incoming + sample.m_outgoing.get_value());
+            const double cos_ih = dot(incoming, h);
+            const double fh = pow_int<5>(saturate(1.0 - cos_ih));
+
             const InputValues* values = static_cast<const InputValues*>(data);
             sample.m_value = values->m_reflectance;
-            sample.m_value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
+            sample.m_value *= static_cast<float>(fh * values->m_reflectance_multiplier);
 
-            // Compute the probability density of the sampled direction.
-            sample.m_probability = wi.y * RcpPi;
-            assert(sample.m_probability > 0.0);
+            sample.m_probability = RcpTwoPi;
 
-            // Set the scattering mode.
             sample.m_mode = ScatteringMode::Diffuse;
-
+            sample.m_incoming = Dual3d(incoming);
             sample.compute_reflected_differentials();
         }
 
@@ -135,16 +140,20 @@ namespace
             // No reflection below the shading surface.
             const Vector3d& n = shading_basis.get_normal();
             const double cos_in = dot(incoming, n);
-            if (cos_in < 0.0)
+            const double cos_on = dot(outgoing, n);
+            if (cos_in < 0.0 || cos_on < 0.0)
                 return 0.0;
 
-            // Compute the BRDF value.
+            const Vector3d h = normalize(incoming + outgoing);
+
+            const double cos_ih = dot(incoming, h);
+            const double fh = pow_int<5>(saturate(1.0 - cos_ih));
+
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_reflectance;
-            value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
+            value *= static_cast<float>(fh * values->m_reflectance_multiplier);
 
-            // Return the probability density of the sampled direction.
-            return cos_in * RcpPi;
+            return RcpTwoPi;
         }
 
         FORCE_INLINE virtual double evaluate_pdf(
@@ -161,42 +170,39 @@ namespace
             // No reflection below the shading surface.
             const Vector3d& n = shading_basis.get_normal();
             const double cos_in = dot(incoming, n);
-            if (cos_in < 0.0)
+            const double cos_on = dot(outgoing, n);
+            if (cos_in < 0.0 || cos_on < 0.0)
                 return 0.0;
 
-            return cos_in * RcpPi;
+            return RcpTwoPi;
         }
 
       private:
-        APPLESEED_DECLARE_INPUT_VALUES(InputValues)
-        {
-            Spectrum    m_reflectance;              // diffuse reflectance (albedo, technically)
-            double      m_reflectance_multiplier;
-        };
+        typedef SheenBRDFInputValues InputValues;
     };
 
-    typedef BSDFWrapper<LambertianBRDFImpl> LambertianBRDF;
+    typedef BSDFWrapper<SheenBRDFImpl> SheenBRDF;
 }
 
 
 //
-// LambertianBRDFFactory class implementation.
+// SheenBRDFFactory class implementation.
 //
 
-const char* LambertianBRDFFactory::get_model() const
+const char* SheenBRDFFactory::get_model() const
 {
     return Model;
 }
 
-Dictionary LambertianBRDFFactory::get_model_metadata() const
+Dictionary SheenBRDFFactory::get_model_metadata() const
 {
     return
         Dictionary()
             .insert("name", Model)
-            .insert("label", "Lambertian BRDF");
+            .insert("label", "Sheen BRDF");
 }
 
-DictionaryArray LambertianBRDFFactory::get_input_metadata() const
+DictionaryArray SheenBRDFFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
 
@@ -225,11 +231,11 @@ DictionaryArray LambertianBRDFFactory::get_input_metadata() const
     return metadata;
 }
 
-auto_release_ptr<BSDF> LambertianBRDFFactory::create(
+auto_release_ptr<BSDF> SheenBRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<BSDF>(new LambertianBRDF(name, params));
+    return auto_release_ptr<BSDF>(new SheenBRDF(name, params));
 }
 
 }   // namespace renderer

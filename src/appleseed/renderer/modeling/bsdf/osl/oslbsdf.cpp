@@ -36,12 +36,10 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/osl/oslmicrofacetbrdf.h"
 #include "renderer/modeling/bsdf/osl/oslmicrofacetbtdf.h"
-#include "renderer/modeling/bsdf/ashikhminbrdf.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
-#include "renderer/modeling/bsdf/velvetbrdf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/utility/paramarray.h"
@@ -85,13 +83,6 @@ namespace
         {
             memset(m_all_bsdfs, 0, sizeof(BSDF*) * NumClosuresIDs);
 
-            m_ashikhmin_shirley_brdf =
-                AshikhminBRDFFactory().create(
-                    "ashikhmin_brdf",
-                    ParamArray());
-
-            m_all_bsdfs[AshikhminShirleyID] = m_ashikhmin_shirley_brdf.get();
-
             m_diffuse_btdf =
                 create_and_register_bsdf(
                     TranslucentID,
@@ -104,17 +95,17 @@ namespace
                     "disney_brdf",
                     "osl_disney_brdf");
 
-            m_lambertian_brdf =
-                create_and_register_bsdf(
-                    LambertID,
-                    "lambertian_brdf",
-                    "osl_lambert");
-
             m_orennayar_brdf =
                 create_and_register_bsdf(
                     OrenNayarID,
                     "orennayar_brdf",
                     "osl_orennayar");
+
+            m_sheen_brdf =
+                create_and_register_bsdf(
+                    SheenID,
+                    "sheen_brdf",
+                    "osl_sheen");
 
             m_specular_brdf =
                 create_and_register_bsdf(
@@ -127,12 +118,6 @@ namespace
                     RefractionID,
                     "specular_btdf",
                     "osl_refraction");
-
-            m_velvet_brdf =
-                create_and_register_bsdf(
-                    VelvetID,
-                    "velvet_brdf",
-                    "osl_velvet");
 
             // OSL Microfacet models.
             m_microfacet_beckmann_brdf =
@@ -334,19 +319,17 @@ namespace
         }
 
       private:
-        auto_release_ptr<BSDF>      m_ashikhmin_shirley_brdf;
         auto_release_ptr<BSDF>      m_diffuse_btdf;
         auto_release_ptr<BSDF>      m_disney_brdf;
-        auto_release_ptr<BSDF>      m_lambertian_brdf;
         auto_release_ptr<BSDF>      m_microfacet_beckmann_brdf;
         auto_release_ptr<BSDF>      m_microfacet_beckmann_btdf;
         auto_release_ptr<BSDF>      m_microfacet_blinn_brdf;
         auto_release_ptr<BSDF>      m_microfacet_ggx_brdf;
         auto_release_ptr<BSDF>      m_microfacet_ggx_btdf;
         auto_release_ptr<BSDF>      m_orennayar_brdf;
+        auto_release_ptr<BSDF>      m_sheen_brdf;
         auto_release_ptr<BSDF>      m_specular_brdf;
         auto_release_ptr<BSDF>      m_specular_btdf;
-        auto_release_ptr<BSDF>      m_velvet_brdf;
         BSDF*                       m_all_bsdfs[NumClosuresIDs];
 
         auto_release_ptr<BSDF> create_and_register_bsdf(

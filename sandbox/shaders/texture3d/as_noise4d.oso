@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.4dev
+# Compiled by oslc 1.6.8
 shader as_noise4d
 param	vector	In	0 0 0		%read{0,0} %write{2147483647,-1} %derivs
 param	float	Time	0		%read{4,12} %write{2147483647,-1} %derivs

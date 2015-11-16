@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.4dev
+# Compiled by oslc 1.6.8
 shader as_vector_build
 param	float	X	0		%read{0,0} %write{2147483647,-1}
 param	float	Y	0		%read{0,0} %write{2147483647,-1}

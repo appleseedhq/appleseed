@@ -26,12 +26,13 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_VELVETBRDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_VELVETBRDF_H
+#ifndef APPLESEED_RENDERER_MODELING_BSDF_SHEENBRDF_H
+#define APPLESEED_RENDERER_MODELING_BSDF_SHEENBRDF_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
+#include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -50,10 +51,21 @@ namespace renderer
 {
 
 //
-// Velvet BRDF factory.
+// Sheen BRDF input values.
 //
 
-class APPLESEED_DLLSYMBOL VelvetBRDFFactory
+APPLESEED_DECLARE_INPUT_VALUES(SheenBRDFInputValues)
+{
+    Spectrum    m_reflectance;              // diffuse reflectance (albedo, technically)
+    double      m_reflectance_multiplier;
+};
+
+
+//
+// Sheen BRDF factory.
+//
+
+class APPLESEED_DLLSYMBOL SheenBRDFFactory
   : public IBSDFFactory
 {
   public:
@@ -74,4 +86,4 @@ class APPLESEED_DLLSYMBOL VelvetBRDFFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_VELVETBRDF_H
+#endif  // !APPLESEED_RENDERER_MODELING_BSDF_SHEENBRDF_H

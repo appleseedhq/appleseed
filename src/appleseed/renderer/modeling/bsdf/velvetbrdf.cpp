@@ -33,6 +33,7 @@
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
+#include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -198,7 +199,15 @@ namespace
         }
 
       private:
-        typedef VelvetBRDFInputValues InputValues;
+        APPLESEED_DECLARE_INPUT_VALUES(InputValues)
+        {
+            double      m_roughness;
+            double      m_roughness_multiplier;
+            Spectrum    m_reflectance;
+            double      m_reflectance_multiplier;
+            double      m_fresnel_normal_reflectance;
+            double      m_fresnel_multiplier;
+        };
 
         void eval_velvet(
             const InputValues*  values,

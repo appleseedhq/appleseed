@@ -103,9 +103,6 @@ namespace
         {
             // No reflection below the shading surface.
             const Vector3d& n = sample.get_shading_normal();
-            const double cos_on = dot(sample.m_outgoing.get_value(), n);
-            if (cos_on < 0.0)
-                return;
 
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);
@@ -115,15 +112,19 @@ namespace
             // Transform the incoming direction to parent space.
             const Vector3d incoming = sample.get_shading_basis().transform_to_parent(wi);
 
-            // No reflection below the shading surface.
-            const double cos_in = dot(incoming, n);
-            if (cos_in < 0.0)
-                return;
-
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
             if (values->m_roughness != 0.0)
             {
+                const double cos_on = dot(sample.m_outgoing.get_value(), n);
+                if (cos_on < 0.0)
+                    return;
+
+                // No reflection below the shading surface.
+                const double cos_in = dot(incoming, n);
+                if (cos_in < 0.0)
+                    return;
+
                 oren_nayar_qualitative(
                     cos_on,
                     cos_in,
@@ -170,14 +171,18 @@ namespace
             // No reflection below the shading surface.
             const Vector3d& n = shading_basis.get_normal();
             const double cos_in = dot(incoming, n);
-            const double cos_on = dot(outgoing, n);
-            if (cos_in < 0.0 || cos_on < 0.0)
+            if (cos_in < 0.0)
                 return 0.0;
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
             if (values->m_roughness != 0.0)
             {
+                // No reflection below the shading surface.
+                const double cos_on = dot(outgoing, n);
+                if (cos_on < 0.0)
+                    return 0.0;
+
                 oren_nayar_qualitative(
                     cos_on,
                     cos_in,
@@ -214,9 +219,17 @@ namespace
             // No reflection below the shading surface.
             const Vector3d& n = shading_basis.get_normal();
             const double cos_in = dot(incoming, n);
-            const double cos_on = dot(outgoing, n);
-            if (cos_in < 0.0 || cos_on < 0.0)
+            if (cos_in < 0.0)
                 return 0.0;
+
+            const InputValues* values = static_cast<const InputValues*>(data);
+            if (values->m_roughness != 0.0)
+            {
+                // No reflection below the shading surface.
+                const double cos_on = dot(outgoing, n);
+                if (cos_on < 0.0)
+                    return 0.0;
+            }
 
             return cos_in * RcpPi;
         }

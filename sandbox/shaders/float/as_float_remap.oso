@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.4dev
+# Compiled by oslc 1.6.8
 shader as_float_remap
 param	float	Float	0		%read{0,0} %write{2147483647,-1}
 param	float	FromLow	0		%read{0,1} %write{2147483647,-1}

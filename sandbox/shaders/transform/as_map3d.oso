@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.4dev
+# Compiled by oslc 1.6.8
 shader as_map3d
 param	vector	Point	0 0 0		%read{0,0} %write{2147483647,-1}
 param	vector	Center	0.5 0.5 0.5		%read{0,176} %write{2147483647,-1}
