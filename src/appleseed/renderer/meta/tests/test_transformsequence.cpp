@@ -869,4 +869,79 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
             sequence,
             bbox);
     }
+
+    TEST_CASE(TestSwapsHandednessNegativeScale1Axis)
+    {
+        TransformSequence sequence;
+
+        Matrix4d m =
+              Matrix4d::rotation_x(Pi / 4.0)
+            * Matrix4d::scaling(Vector3d(1.0, 1.0, 0.5));
+        sequence.set_transform(
+            0.0,
+            Transformd::from_local_to_parent(m));
+
+        m =
+              Matrix4d::rotation_x(Pi / 2.0)
+            * Matrix4d::scaling(Vector3d(2.0, -3.0, 0.5));
+        sequence.set_transform(
+            1.0,
+            Transformd::from_local_to_parent(m));
+
+        sequence.prepare();
+        EXPECT_TRUE(sequence.can_swap_handedness());
+
+        const Transformd xform = sequence.evaluate(0.5);
+        EXPECT_EQ(xform.swaps_handedness(), sequence.swaps_handedness(xform));
+    }
+
+    TEST_CASE(TestSwapsHandednessNegativeScale2Axes)
+    {
+        TransformSequence sequence;
+
+        Matrix4d m =
+              Matrix4d::rotation_y(Pi / 2.0)
+            * Matrix4d::scaling(Vector3d(-1.0, -2.0, 0.5));
+        sequence.set_transform(
+            0.0,
+            Transformd::from_local_to_parent(m));
+
+        m =
+              Matrix4d::rotation_z(Pi / 3.0)
+            * Matrix4d::scaling(Vector3d(-1.0, -1.0, 1.5));
+        sequence.set_transform(
+            1.0,
+            Transformd::from_local_to_parent(m));
+
+        sequence.prepare();
+        EXPECT_FALSE(sequence.can_swap_handedness());
+
+        const Transformd xform = sequence.evaluate(0.5);
+        EXPECT_EQ(xform.swaps_handedness(), sequence.swaps_handedness(xform));
+    }
+
+    TEST_CASE(TestSwapsHandednessPositiveAndNegativeScales)
+    {
+        TransformSequence sequence;
+
+        Matrix4d m =
+              Matrix4d::rotation_y(Pi / 2.0)
+            * Matrix4d::scaling(Vector3d(1.0, 2.0, 0.5));
+        sequence.set_transform(
+            0.0,
+            Transformd::from_local_to_parent(m));
+
+        m =
+              Matrix4d::rotation_z(Pi / 3.0)
+            * Matrix4d::scaling(Vector3d(-1.0, 1.0, 1.5));
+        sequence.set_transform(
+            1.0,
+            Transformd::from_local_to_parent(m));
+
+        sequence.prepare();
+        EXPECT_TRUE(sequence.can_swap_handedness());
+
+        const Transformd xform = sequence.evaluate(0.5);
+        EXPECT_EQ(xform.swaps_handedness(), sequence.swaps_handedness(xform));
+    }
 }
