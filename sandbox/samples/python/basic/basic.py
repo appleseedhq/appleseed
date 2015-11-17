@@ -49,7 +49,7 @@ def build_project():
     # of samples, the smoother the image but the longer the rendering time.
     # todo: fix.
     conf = project.configurations()['final']
-    params = {'uniform_pixel_renderer' : {'samples' :  25}}
+    conf.insert_path('uniform_pixel_renderer.samples', 25)
 
     # Create a scene.
     scene = asr.Scene()

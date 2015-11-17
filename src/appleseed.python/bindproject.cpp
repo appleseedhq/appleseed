@@ -149,6 +149,68 @@ namespace
         return param_array_to_bpy_dict(params);
     }
 
+    void config_insert_path(Configuration* config, const char* path, const bpy::object& value)
+    {
+        // string
+        {
+            bpy::extract<const char*> extractor(value);
+            if (extractor.check())
+            {
+                config->get_parameters().insert_path(path, extractor());
+                return;
+            }
+        }
+
+        if (PyBool_Check(value.ptr()))
+        {
+            bpy::extract<bool> extractor(value);
+            if (extractor.check())
+            {
+                config->get_parameters().insert_path(path, extractor());
+                return;
+            }
+        }
+
+#if PY_MAJOR_VERSION == 2
+        if (PyInt_Check(value.ptr()))
+        {
+            bpy::extract<int> extractor(value);
+            if (extractor.check())
+            {
+                config->get_parameters().insert_path(path, extractor());
+                return;
+            }
+        }
+#endif
+        if (PyLong_Check(value.ptr()))
+        {
+            bpy::extract<int> extractor(value);
+            if (extractor.check())
+            {
+                config->get_parameters().insert_path(path, extractor());
+                return;
+            }
+        }
+
+        if (PyFloat_Check(value.ptr()))
+        {
+            bpy::extract<double> extractor(value);
+            if (extractor.check())
+            {
+                config->get_parameters().insert_path(path, extractor());
+                return;
+            }
+        }
+
+        PyErr_SetString(PyExc_TypeError, "Unsupported value type.");
+        bpy::throw_error_already_set();
+    }
+
+    void config_remove_path(Configuration* config, const char* path)
+    {
+        config->get_parameters().remove_path(path);
+    }
+
     bpy::dict config_get_metadata()
     {
         return dictionary_to_bpy_dict(Configuration::get_metadata());
@@ -192,6 +254,10 @@ void bind_project()
         .def("set_base", &Configuration::set_base)
         .def("get_base", &Configuration::get_base, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("get_inherited_parameters", config_get_inherited_parameters)
+
+        .def("insert_path", config_insert_path)
+        .def("remove_path", config_remove_path)
+
         .def("get_metadata", config_get_metadata).staticmethod("get_metadata")
         ;
 

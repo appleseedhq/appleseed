@@ -106,6 +106,7 @@ class SerialRendererController
     std::deque<PendingTileCallback>     m_pending_callbacks;
 
     void exec_callback(const PendingTileCallback& call);
+    void exec_callbacks();
 };
 
 }       // namespace renderer

@@ -91,7 +91,29 @@ namespace
                 }
             }
 
-            // int
+            if (PyBool_Check(value.ptr()))
+            {
+                bpy::extract<bool> extractor(value);
+                if (extractor.check())
+                {
+                    result.insert(key_extractor(), extractor());
+                    continue;
+                }
+            }
+
+#if PY_MAJOR_VERSION == 2
+            if (PyInt_Check(value.ptr()))
+            {
+                bpy::extract<int> extractor(value);
+                if (extractor.check())
+                {
+                    result.insert(key_extractor(), extractor());
+                    continue;
+                }
+            }
+#endif
+
+            if (PyLong_Check(value.ptr()))
             {
                 bpy::extract<int> extractor(value);
                 if (extractor.check())
@@ -101,7 +123,7 @@ namespace
                 }
             }
 
-            // double
+            if (PyFloat_Check(value.ptr()))
             {
                 bpy::extract<double> extractor(value);
                 if (extractor.check())

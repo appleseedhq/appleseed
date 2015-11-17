@@ -63,7 +63,7 @@ namespace
         return new Tile(*source);
     }
 
-    void copy_tile_data_to_py_array(const Tile& tile, bpy::object& buffer)
+    void copy_tile_data_to_py_buffer(const Tile& tile, bpy::object& buffer)
     {
         void* array = 0;
         Py_ssize_t len;
@@ -83,6 +83,30 @@ namespace
             tile.get_storage(),
             tile.get_storage() + tile.get_size(),
             reinterpret_cast<uint8*>(array));
+    }
+
+    bpy::list blender_tile_data(const Tile& tile)
+    {
+        bpy::list pixels;
+
+        for (size_t y = 0, height = tile.get_height(); y < height; ++y)
+        {
+            for (size_t x = 0, width = tile.get_width(); x < width; ++x)
+            {
+                // Blender's image coordinate system is y up.
+                Color4f linear_rgba;
+                tile.get_pixel(x, height - y - 1, linear_rgba);
+
+                bpy::list p;
+                p.append(linear_rgba[0]);
+                p.append(linear_rgba[1]);
+                p.append(linear_rgba[2]);
+                p.append(linear_rgba[3]);
+                pixels.append(p);
+            }
+        }
+
+        return pixels;
     }
 
     Image* copy_image(const Image* source)
@@ -142,7 +166,9 @@ void bind_image()
         .def("get_channel_count", &Tile::get_channel_count)
         .def("get_pixel_count", &Tile::get_pixel_count)
         .def("get_size", &Tile::get_size)
-        .def("copy_data_to", copy_tile_data_to_py_array)   // todo: maybe this needs a better name
+        .def("copy_data_to", copy_tile_data_to_py_buffer)   // todo: maybe this needs a better name
+
+        .def("blender_tile_data", blender_tile_data)
         ;
 
     const Tile& (Image::*image_get_tile)(const size_t, const size_t) const = &Image::tile;

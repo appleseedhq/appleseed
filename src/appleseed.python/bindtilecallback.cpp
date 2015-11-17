@@ -60,14 +60,12 @@ namespace
             // it was released in MasterRenderer.render.
             ScopedGILLock lock;
 
-            try
-            {
-                this->get_override("pre_render")(x, y, width, height);
-            }
-            catch (bpy::error_already_set)
-            {
-                PyErr_Print();
-            }
+            if (bpy::override f = this->get_override("pre_render"))
+                f(x, y, width, height);
+        }
+
+        void default_pre_render(const size_t x, const size_t y, const size_t width, const size_t height)
+        {
         }
 
         virtual void post_render_tile(const Frame* frame, const size_t tile_x, const size_t tile_y) APPLESEED_OVERRIDE
@@ -76,14 +74,12 @@ namespace
             // it was released in MasterRenderer.render.
             ScopedGILLock lock;
 
-            try
-            {
-                this->get_override("post_render_tile")(bpy::ptr(frame), tile_x, tile_y);
-            }
-            catch (bpy::error_already_set)
-            {
-                PyErr_Print();
-            }
+            if (bpy::override f = this->get_override("post_render_tile"))
+                f(bpy::ptr(frame), tile_x, tile_y);
+        }
+
+        void default_post_render_tile(const Frame* frame, const size_t tile_x, const size_t tile_y)
+        {
         }
 
         virtual void post_render(const Frame* frame) APPLESEED_OVERRIDE
@@ -92,14 +88,12 @@ namespace
             // it was released in MasterRenderer.render.
             ScopedGILLock lock;
 
-            try
-            {
-                this->get_override("post_render")(bpy::ptr(frame));
-            }
-            catch (bpy::error_already_set)
-            {
-                PyErr_Print();
-            }
+            if (bpy::override f = this->get_override("post_render"))
+                f(bpy::ptr(frame));
+        }
+
+        void default_post_render(const Frame* frame)
+        {
         }
     };
 }
@@ -107,8 +101,8 @@ namespace
 void bind_tile_callback()
 {
     bpy::class_<ITileCallbackWrapper, boost::noncopyable>("ITileCallback")
-        .def("pre_render", bpy::pure_virtual(&ITileCallback::pre_render))
-        .def("post_render_tile", bpy::pure_virtual(&ITileCallback::post_render_tile))
-        .def("post_render", bpy::pure_virtual(&ITileCallback::post_render))
+        .def("pre_render", &ITileCallback::pre_render, &ITileCallbackWrapper::default_pre_render)
+        .def("post_render_tile", &ITileCallback::post_render_tile, &ITileCallbackWrapper::default_post_render_tile)
+        .def("post_render", &ITileCallback::post_render, &ITileCallbackWrapper::default_post_render)
         ;
 }
