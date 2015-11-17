@@ -229,6 +229,7 @@ void LightSampler::collect_emitting_triangles(
 }
 
 #ifdef APPLESEED_WITH_OSL
+
 void LightSampler::store_object_area_in_shadergroups(
     const AssemblyInstance* assembly_instance,
     const ObjectInstance*   object_instance,

@@ -343,7 +343,8 @@ namespace
                     light_sample.m_shading_normal);
 
             const Material* material = light_sample.m_triangle->m_material;
-            const EDF* edf = material->get_edf();
+            const Material::RenderData& material_data = material->get_render_data();
+            const EDF* edf = material_data.m_edf;
 
             // Build a shading point on the light source.
             ShadingPoint light_shading_point;
@@ -353,8 +354,12 @@ namespace
                 shading_context.get_intersector());
 
 #ifdef APPLESEED_WITH_OSL
-            if (const ShaderGroup* sg = material->get_osl_surface())
-                shading_context.execute_osl_emission(*sg, light_shading_point);
+            if (material_data.m_shader_group)
+            {
+                shading_context.execute_osl_emission(
+                    *material_data.m_shader_group,
+                    light_shading_point);
+            }
 #endif
 
             // Evaluate the EDF inputs.
@@ -542,11 +547,10 @@ namespace
           , m_pass_hash(pass_hash)
           , m_abort_switch(abort_switch)
         {
-            const Scene::CachedInfo* scene_info = m_scene.get_cached_info();
-            assert(scene_info);
-            m_scene_center = scene_info->m_center;
-            m_scene_radius = scene_info->m_radius;
-            m_safe_scene_diameter = scene_info->m_safe_diameter;
+            const Scene::RenderData& scene_data = m_scene.get_render_data();
+            m_scene_center = scene_data.m_center;
+            m_scene_radius = scene_data.m_radius;
+            m_safe_scene_diameter = scene_data.m_safe_diameter;
 
             const Camera* camera = scene.get_camera();
             m_shutter_open_time = camera->get_shutter_open_time();

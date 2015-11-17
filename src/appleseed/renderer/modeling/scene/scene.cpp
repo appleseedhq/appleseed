@@ -95,7 +95,7 @@ Scene::Scene()
   : Entity(g_class_uid)
   , BaseGroup(this)
   , impl(new Impl(this))
-  , m_has_cached_info(false)
+  , m_has_render_data(false)
 {
     set_name("scene");
 }
@@ -245,7 +245,7 @@ bool Scene::on_frame_begin(
     const Project&          project,
     IAbortSwitch*           abort_switch)
 {
-    cache_scene_info();
+    create_render_data();
 
     bool success = true;
 
@@ -283,31 +283,31 @@ void Scene::on_frame_end(const Project& project)
     if (impl->m_camera.get())
         impl->m_camera->on_frame_end(project);
 
-    m_has_cached_info = false;
+    m_has_render_data = false;
 }
 
-void Scene::cache_scene_info()
+void Scene::create_render_data()
 {
-    assert(!m_has_cached_info);
+    assert(!m_has_render_data);
 
-    m_cached_info.m_bbox = compute_bbox();
+    m_render_data.m_bbox = compute_bbox();
 
-    if (m_cached_info.m_bbox.is_valid())
+    if (m_render_data.m_bbox.is_valid())
     {
-        m_cached_info.m_center = m_cached_info.m_bbox.center();
-        m_cached_info.m_radius = m_cached_info.m_bbox.radius();
-        m_cached_info.m_diameter = m_cached_info.m_bbox.diameter();
-        m_cached_info.m_safe_diameter = m_cached_info.m_diameter * GScalar(1.01);
+        m_render_data.m_center = m_render_data.m_bbox.center();
+        m_render_data.m_radius = m_render_data.m_bbox.radius();
+        m_render_data.m_diameter = m_render_data.m_bbox.diameter();
+        m_render_data.m_safe_diameter = m_render_data.m_diameter * GScalar(1.01);
     }
     else
     {
-        m_cached_info.m_center = GVector3(0.0);
-        m_cached_info.m_radius = GScalar(0.0);
-        m_cached_info.m_diameter = GScalar(0.0);
-        m_cached_info.m_safe_diameter = GScalar(0.0);
+        m_render_data.m_center = GVector3(0.0);
+        m_render_data.m_radius = GScalar(0.0);
+        m_render_data.m_diameter = GScalar(0.0);
+        m_render_data.m_safe_diameter = GScalar(0.0);
     }
 
-    m_has_cached_info = true;
+    m_has_render_data = true;
 }
 
 

@@ -149,7 +149,8 @@ void InputBinder::build_scene_symbol_table(
         insert_entities(symbols, scene.shader_groups(), SymbolTable::SymbolShaderGroup);
 #endif
 
-        symbols.insert(scene.get_environment()->get_name(), SymbolTable::SymbolEnvironment);
+        if (scene.get_environment())
+            symbols.insert(scene.get_environment()->get_name(), SymbolTable::SymbolEnvironment);
 
         insert_entities(symbols, scene.assemblies(), SymbolTable::SymbolAssembly);
         insert_entities(symbols, scene.assembly_instances(), SymbolTable::SymbolAssemblyInstance);

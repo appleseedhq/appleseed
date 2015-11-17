@@ -106,9 +106,7 @@ namespace
             m_near_z = extract_near_z();
 
             // Retrieve the scene diameter that will be used to position the camera.
-            const Scene::CachedInfo* scene_info = project.get_scene()->get_cached_info();
-            assert(scene_info);
-            m_safe_scene_diameter = scene_info->m_safe_diameter;
+            m_safe_scene_diameter = project.get_scene()->get_render_data().m_safe_diameter;
 
             // Precompute reciprocals of film dimensions.
             m_rcp_film_width = 1.0 / m_film_dimensions[0];

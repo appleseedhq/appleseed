@@ -83,8 +83,8 @@ bool uses_alpha_mapping(const MaterialArray& materials)
                 return true;
 
 #ifdef APPLESEED_WITH_OSL
-            if (materials[i]->has_osl_surface())
-                return materials[i]->get_uncached_osl_surface()->has_transparency();
+            if (const ShaderGroup* sg = materials[i]->get_uncached_osl_surface())
+                return sg->has_transparency();
 #endif
         }
     }

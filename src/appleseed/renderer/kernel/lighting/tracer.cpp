@@ -250,16 +250,12 @@ void Tracer::evaluate_alpha(
 
 #ifdef APPLESEED_WITH_OSL
     // Apply OSL transparency if needed.
-    if (const ShaderGroup* sg = material.get_osl_surface())
+    if (const ShaderGroup* sg = material.get_render_data().m_shader_group)
     {
         if (sg->has_transparency())
         {
             Alpha a;
-            m_shadergroup_exec.execute_shadow(
-                *sg,
-                shading_point,
-                a);
-
+            m_shadergroup_exec.execute_shadow(*sg, shading_point, a);
             alpha *= a;
         }
     }
