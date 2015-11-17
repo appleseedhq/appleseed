@@ -112,6 +112,7 @@ namespace
                 }
             }
 #endif
+
             if (PyLong_Check(value.ptr()))
             {
                 bpy::extract<int> extractor(value);

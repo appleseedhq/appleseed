@@ -42,7 +42,6 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-
 namespace
 {
     class ITileCallbackWrapper

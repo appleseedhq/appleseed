@@ -91,7 +91,7 @@ namespace
 
         for (size_t y = 0, height = tile.get_height(); y < height; ++y)
         {
-            for (size_t x = 0, xe = tile.get_width(); x < xe; ++x)
+            for (size_t x = 0, width = tile.get_width(); x < width; ++x)
             {
                 // Blender's image coordinate system is y up.
                 Color4f linear_rgba;

@@ -172,15 +172,15 @@ namespace
         }
 
 #if PY_MAJOR_VERSION == 2
-            if (PyInt_Check(value.ptr()))
+        if (PyInt_Check(value.ptr()))
+        {
+            bpy::extract<int> extractor(value);
+            if (extractor.check())
             {
-                bpy::extract<int> extractor(value);
-                if (extractor.check())
-                {
-                    config->get_parameters().insert_path(path, extractor());
-                    return;
-                }
+                config->get_parameters().insert_path(path, extractor());
+                return;
             }
+        }
 #endif
         if (PyLong_Check(value.ptr()))
         {
