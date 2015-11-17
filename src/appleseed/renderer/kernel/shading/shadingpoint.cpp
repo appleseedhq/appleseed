@@ -646,11 +646,11 @@ void ShadingPoint::compute_shading_basis() const
         const Material* material = get_material();
         if (material)
         {
-            const IBasisModifier* modifier = material->get_basis_modifier();
-            if (modifier)
+            const Material::RenderData& material_data = material->get_render_data();
+            if (material_data.m_basis_modifier)
             {
                 m_shading_basis =
-                    modifier->modify(
+                    material_data.m_basis_modifier->modify(
                         *m_texture_cache,
                         get_uv(0),
                         m_shading_basis);
@@ -767,24 +767,17 @@ void ShadingPoint::compute_alpha() const
         if (const Source* alpha_map = get_object().get_alpha_map())
         {
             Alpha a;
-            alpha_map->evaluate(
-                *m_texture_cache,
-                get_uv(0),
-                a);
-
+            alpha_map->evaluate(*m_texture_cache, get_uv(0), a);
             m_alpha *= a;
         }
 
         if (const Material* material = get_material())
         {
-            if (const Source* alpha_map = material->get_alpha_map())
+            const Material::RenderData& material_data = material->get_render_data();
+            if (material_data.m_alpha_map)
             {
                 Alpha a;
-                alpha_map->evaluate(
-                    *m_texture_cache,
-                    get_uv(0),
-                    a);
-
+                material_data.m_alpha_map->evaluate(*m_texture_cache, get_uv(0), a);
                 m_alpha *= a;
             }
         }
@@ -823,6 +816,16 @@ void ShadingPoint::initialize_osl_shader_globals(
             : -Vector3f(get_original_shading_normal());
 
         m_shader_globals.Ng = Vector3f(get_geometric_normal());
+
+        const bool ass_inst_swaps_handedness =
+            m_assembly_instance_transform_seq->swaps_handedness(
+                m_assembly_instance_transform);
+
+        const bool obj_inst_swaps_handedness =
+            m_object_instance->transform_swaps_handedness();
+
+        m_shader_globals.flipHandedness =
+            ass_inst_swaps_handedness != obj_inst_swaps_handedness ? 1 : 0;
 
         const Vector2d& uv = get_uv(0);
 

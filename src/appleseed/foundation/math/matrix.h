@@ -444,6 +444,9 @@ class Matrix<T, 4, 4>
     static const MatrixType m_identity;
 };
 
+// Return true if the matrix swaps the handedness.
+template <typename T>
+bool swaps_handedness(const Matrix<T, 4, 4>& mat);
 
 //
 // Full specializations for 2x2, 3x3 and 4x4 matrices of type int, float and double.
@@ -2025,6 +2028,20 @@ inline void Matrix<T, 4, 4>::decompose(
     Matrix<T, 3, 3> matrix3(extract_matrix3());
     matrix3.decompose(scaling, rotation);
     translation = extract_translation();
+}
+
+template <typename T>
+inline bool swaps_handedness(const Matrix<T, 4, 4>& mat)
+{
+    const T d =
+        mat[0] * mat[5] * mat[10] +
+        mat[1] * mat[6] * mat[ 8] +
+        mat[2] * mat[4] * mat[ 9] -
+        mat[2] * mat[5] * mat[ 8] -
+        mat[1] * mat[4] * mat[10] -
+        mat[0] * mat[6] * mat[ 9];
+
+    return d < T(0.0);
 }
 
 template <typename T>

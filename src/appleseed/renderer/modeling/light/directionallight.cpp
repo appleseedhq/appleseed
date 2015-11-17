@@ -104,11 +104,10 @@ namespace
 
             check_non_zero_emission("irradiance", "irradiance_multiplier");
 
-            const Scene::CachedInfo* scene_info = project.get_scene()->get_cached_info();
-            assert(scene_info);
-            m_scene_center = scene_info->m_center;
-            m_scene_radius = scene_info->m_radius;
-            m_safe_scene_diameter = scene_info->m_safe_diameter;
+            const Scene::RenderData& scene_data = project.get_scene()->get_render_data();
+            m_scene_center = scene_data.m_center;
+            m_scene_radius = scene_data.m_radius;
+            m_safe_scene_diameter = scene_data.m_safe_diameter;
 
             m_inputs.evaluate_uniforms(&m_values);
             m_values.m_irradiance *= static_cast<float>(m_values.m_irradiance_multiplier);

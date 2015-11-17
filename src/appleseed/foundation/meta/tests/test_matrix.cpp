@@ -854,4 +854,23 @@ TEST_SUITE(Foundation_Math_Matrix44)
         EXPECT_FEQ(Quaterniond::rotation(Vector3d(1.0, 0.0, 0.0), Pi / 4.0), q);
         EXPECT_FEQ(Vector3d(-4.0, 5.0, 0.7), t);
     }
+
+    TEST_CASE(TestSwapsHandedness)
+    {
+        Matrix4d m =
+              Matrix4d::rotation_x(Pi / 4.0)
+            * Matrix4d::scaling(Vector3d(2.0, 3.0, 0.5));
+
+        EXPECT_FALSE(swaps_handedness(m));
+
+        m =
+              Matrix4d::rotation_x(Pi / 2.0)
+            * Matrix4d::scaling(Vector3d(2.0, -3.0, 0.5));
+
+        EXPECT_TRUE(swaps_handedness(m));
+
+        m = Matrix4d::scaling(Vector3d(-2.0, -3.0, 0.5));
+
+        EXPECT_FALSE(swaps_handedness(m));
+    }
 }

@@ -385,7 +385,8 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
     if (sample.m_triangle)
     {
         const Material* material = sample.m_triangle->m_material;
-        const EDF* edf = material->get_edf();
+        const Material::RenderData& material_data = material->get_render_data();
+        const EDF* edf = material_data.m_edf;
 
         // No contribution if we are computing indirect lighting but this light does not cast indirect light.
         if (m_indirect && !(edf->get_flags() & EDF::CastIndirectLight))
@@ -429,8 +430,12 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
             m_shading_context.get_intersector());
 
 #ifdef APPLESEED_WITH_OSL
-        if (const ShaderGroup* sg = material->get_osl_surface())
-            m_shading_context.execute_osl_emission(*sg, light_shading_point);
+        if (material_data.m_shader_group)
+        {
+            m_shading_context.execute_osl_emission(
+                *material_data.m_shader_group,
+                light_shading_point);
+        }
 #endif
 
         // Evaluate the EDF inputs.
@@ -534,9 +539,10 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     const Material* material = light_shading_point.get_material();
     if (material == 0)
         return;
+    const Material::RenderData& material_data = material->get_render_data();
 
     // Retrieve the EDF at the intersection point.
-    const EDF* edf = material->get_edf();
+    const EDF* edf = material_data.m_edf;
     if (edf == 0)
         return;
 
@@ -550,8 +556,12 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
         return;
 
 #ifdef APPLESEED_WITH_OSL
-    if (const ShaderGroup* sg = material->get_osl_surface())
-        m_shading_context.execute_osl_emission(*sg, light_shading_point);
+    if (material_data.m_shader_group)
+    {
+        m_shading_context.execute_osl_emission(
+            *material_data.m_shader_group,
+            light_shading_point);
+    }
 #endif
 
     // Evaluate the EDF inputs.
@@ -647,7 +657,8 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     SpectrumStack&              aovs) const
 {
     const Material* material = sample.m_triangle->m_material;
-    const EDF* edf = material->get_edf();
+    const Material::RenderData& material_data = material->get_render_data();
+    const EDF* edf = material_data.m_edf;
 
     // No contribution if we are computing indirect lighting but this light does not cast indirect light.
     if (m_indirect && !(edf->get_flags() & EDF::CastIndirectLight))
@@ -720,8 +731,12 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
         m_shading_context.get_intersector());
 
 #ifdef APPLESEED_WITH_OSL
-    if (const ShaderGroup* sg = material->get_osl_surface())
-        m_shading_context.execute_osl_emission(*sg, light_shading_point);
+    if (material_data.m_shader_group)
+    {
+        m_shading_context.execute_osl_emission(
+            *material_data.m_shader_group,
+            light_shading_point);
+    }
 #endif
 
     // Evaluate the EDF inputs.

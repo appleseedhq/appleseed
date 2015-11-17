@@ -97,11 +97,13 @@ void ShadingEngine::shade_hit_point(
 
 #ifdef APPLESEED_WITH_OSL
     // Apply OSL transparency if needed.
-    if (material && material->get_osl_surface() && material->get_osl_surface()->has_transparency())
+    if (material &&
+        material->get_render_data().m_shader_group &&
+        material->get_render_data().m_shader_group->has_transparency())
     {
         Alpha alpha;
         shading_context.execute_osl_transparency(
-            *material->get_osl_surface(),
+            *material->get_render_data().m_shader_group,
             shading_point,
             alpha);
         shading_result.m_main.m_alpha *= alpha;
@@ -125,7 +127,7 @@ void ShadingEngine::shade_hit_point(
             }
 
             // Use the surface shader of the intersected surface.
-            surface_shader = material->get_surface_shader();
+            surface_shader = material->get_render_data().m_surface_shader;
 
             if (surface_shader == 0)
             {

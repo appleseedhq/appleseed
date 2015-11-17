@@ -166,7 +166,7 @@ namespace
             // TODO: add conversions from bpy::tuple to Vector<T, N>.
             // ...
 
-            // TODO: check more types here if needed... (est.)
+            // TODO: check more types here if needed...
 
             // dict
             {
@@ -211,7 +211,7 @@ namespace
         }
         catch (ExceptionStringConversionError&) {}
 
-        // TODO: check more types here if needed... (est.)
+        // TODO: check more types here if needed...
 
         // as a fallback, return a string
         return bpy::object(str);

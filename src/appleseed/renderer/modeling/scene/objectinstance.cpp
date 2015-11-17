@@ -83,8 +83,8 @@ bool uses_alpha_mapping(const MaterialArray& materials)
                 return true;
 
 #ifdef APPLESEED_WITH_OSL
-            if (materials[i]->has_osl_surface())
-                return materials[i]->get_uncached_osl_surface()->has_transparency();
+            if (const ShaderGroup* sg = materials[i]->get_uncached_osl_surface())
+                return sg->has_transparency();
 #endif
         }
     }
@@ -426,6 +426,8 @@ bool ObjectInstance::on_frame_begin(
     const Assembly&         assembly,
     IAbortSwitch*           abort_switch)
 {
+    m_transform_swaps_handedness = get_transform().swaps_handedness();
+
     const EntityDefMessageContext context("object instance", this);
 
     if (uses_alpha_mapping())

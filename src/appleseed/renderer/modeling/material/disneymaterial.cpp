@@ -905,15 +905,10 @@ bool DisneyMaterial::on_frame_begin(
 
     const EntityDefMessageContext context("material", this);
 
-    m_bsdf = impl->m_brdf.get();
+    m_render_data.m_bsdf = impl->m_brdf.get();
+    m_render_data.m_basis_modifier = create_basis_modifier(context);
 
-    if (!create_basis_modifier(context))
-        return false;
-
-    if (!prepare_layers(context))
-        return false;
-
-    return true;
+    return prepare_layers(context);
 }
 
 void DisneyMaterial::on_frame_end(
