@@ -57,7 +57,7 @@ namespace
             bpy::extract<T> ex(l[i]);
             if (!ex.check())
             {
-                PyErr_SetString(PyExc_TypeError, "Incompatible type. Only floats.");
+                PyErr_SetString(PyExc_TypeError, "Incompatible type.");
                 bpy::throw_error_already_set();
             }
 
