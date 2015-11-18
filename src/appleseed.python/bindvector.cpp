@@ -70,10 +70,10 @@ namespace
         return r.release();
     }
 
-    template <class T, size_t N>
+    template <typename T, size_t N>
     struct vector_helper {};
 
-    template <class T>
+    template <typename T>
     struct vector_helper<T, 2>
     {
         typedef Vector<T, 2> VectorType;
@@ -99,7 +99,7 @@ namespace
         }
     };
 
-    template <class T>
+    template <typename T>
     struct vector_helper<T, 3>
     {
         typedef Vector<T, 3> VectorType;
@@ -130,7 +130,7 @@ namespace
         }
     };
 
-    template <class T>
+    template <typename T>
     struct vector_helper<T, 4>
     {
         typedef Vector<T, 4> VectorType;
@@ -225,8 +225,6 @@ namespace
             .def(bpy::self_ns::repr(bpy::self))
             ;
 
-        bpy::def("norm", &vector_helper<T, N>::norm);
-        bpy::def("normalize", &vector_helper<T, N>::normalize);
         bpy::def("dot", &vector_helper<T, N>::dot);
     }
 }
@@ -241,10 +239,26 @@ void bind_vector()
     do_bind_vector<float, 3>("Vector3f");
     do_bind_vector<double, 3>("Vector3d");
 
+    do_bind_vector<int, 4>("Vector4i");
+    do_bind_vector<float, 4>("Vector4f");
+    do_bind_vector<double, 4>("Vector4d");
+
+    bpy::def("norm", &vector_helper<float,  2>::norm);
+    bpy::def("norm", &vector_helper<double, 2>::norm);
+    bpy::def("norm", &vector_helper<float,  3>::norm);
+    bpy::def("norm", &vector_helper<double, 3>::norm);
+    bpy::def("norm", &vector_helper<float,  4>::norm);
+    bpy::def("norm", &vector_helper<double, 4>::norm);
+
+    bpy::def("normalize", &vector_helper<float,  2>::normalize);
+    bpy::def("normalize", &vector_helper<double, 2>::normalize);
+    bpy::def("normalize", &vector_helper<float,  3>::normalize);
+    bpy::def("normalize", &vector_helper<double, 3>::normalize);
+    bpy::def("normalize", &vector_helper<float,  4>::normalize);
+    bpy::def("normalize", &vector_helper<double, 4>::normalize);
+
     bpy::def("cross", &vector_helper<float, 3>::cross);
     bpy::def("cross", &vector_helper<double, 3>::cross);
-
-    do_bind_vector<int, 4>("Vector4i");
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
     bpy::implicitly_convertible<Vector2i, Imath::V2i>();
