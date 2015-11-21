@@ -537,183 +537,184 @@ namespace
             // Descriptor decode values from the Intel manual, Table 2-7.
             switch ((regs[i / 4] >> (i % 4) * 8) & 0xFF)
             {
-            case 0x0A:
+              case 0x0A:
                 caches[L1D].size = 8;
                 caches[L1D].linesize = 32;
                 break;
-            case 0x0C:
+              case 0x0C:
                 caches[L1D].size = 16;
                 caches[L1D].linesize = 32;
                 break;
-            case 0x0D:
-            case 0x60:
-            case 0x67:
+              case 0x0D:
+              case 0x60:
+              case 0x67:
                 caches[L1D].size = 16;
                 caches[L1D].linesize = 64;
                 break;
-            case 0x21:
-            case 0x3C:
-            case 0x7A:
+              case 0x21:
+              case 0x3C:
+              case 0x7A:
                 caches[L2].size = 256;
                 caches[L2].linesize = 64;
                 break;
-            case 0x22:
-            case 0xD0:
+              case 0x22:
+              case 0xD0:
                 caches[L3].size = 512;
                 caches[L3].linesize = 64;
                 break;
-            case 0x23:
-            case 0xD1:
-            case 0xD6:
+              case 0x23:
+              case 0xD1:
+              case 0xD6:
                 caches[L3].size = 1024;
                 caches[L3].linesize = 64;
                 break;
-            case 0x25:
-            case 0xD2:
-            case 0xD7:
-            case 0xE2:
+              case 0x25:
+              case 0xD2:
+              case 0xD7:
+              case 0xE2:
                 caches[L3].size = 2048;
                 caches[L3].linesize = 64;
                 break;
-            case 0x29:
-            case 0x46:
-            case 0xD8:
-            case 0xE3:
+              case 0x29:
+              case 0x46:
+              case 0xD8:
+              case 0xE3:
                 caches[L3].size = 4096;
                 caches[L3].linesize = 64;
                 break;
-            case 0x2C:
+              case 0x2C:
                 caches[L1D].size = 32;
                 caches[L1D].linesize = 64;
                 break;
-            case 0x39:
-            case 0x3B:
-            case 0x79:
+              case 0x39:
+              case 0x3B:
+              case 0x79:
                 caches[L2].size = 128;
                 caches[L2].linesize = 64;
                 break;
-            case 0x3A:
+              case 0x3A:
                 caches[L2].size = 192;
                 caches[L2].linesize = 64;
                 break;
-            case 0x3D:
+              case 0x3D:
                 caches[L2].size = 384;
                 caches[L2].linesize = 64;
                 break;
-            case 0x3E:
-            case 0x7B:
-            case 0x7F:
-            case 0x86:
+              case 0x3E:
+              case 0x7B:
+              case 0x7F:
+              case 0x86:
                 caches[L2].size = 512;
                 caches[L2].linesize = 64;
                 break;
-            case 0x40:
+              case 0x40:
                 no_higher_level_cache = 1;
                 break;
-            case 0x41:
+              case 0x41:
                 caches[L2].size = 128;
                 caches[L2].linesize = 32;
                 break;
-            case 0x42:
-            case 0x82:
+              case 0x42:
+              case 0x82:
                 caches[L2].size = 256;
                 caches[L2].linesize = 32;
                 break;
-            case 0x43:
-            case 0x83:
+              case 0x43:
+              case 0x83:
                 caches[L2].size = 512;
                 caches[L2].linesize = 32;
                 break;
-            case 0x44:
+              case 0x44:
                 caches[L2].size = 1024;
                 caches[L2].linesize = 32;
                 break;
-            case 0x45:
+              case 0x45:
                 caches[L2].size = 2048;
                 caches[L2].linesize = 32;
                 break;
-            case 0x47:
-            case 0x4B:
-            case 0xE4:
+              case 0x47:
+              case 0x4B:
+              case 0xE4:
                 caches[L3].size = 8192;
                 caches[L3].linesize = 64;
                 break;
-            case 0x48:
+              case 0x48:
                 caches[L2].size = 3072;
                 caches[L2].linesize = 64;
                 break;
-            case 0x49:
+              case 0x49:
                 // TODO: check for Intel Xeon processor MP, Family 0Fh,
                 // Model 06h, because 0x49 means L3 cache (4MB, 16-way,
                 // 64-byte linesize) for this CPU.
                 caches[L2].size = 4096;
                 caches[L2].linesize = 64;
                 break;
-            case 0x4A:
-            case 0xDE:
+              case 0x4A:
+              case 0xDE:
                 caches[L3].size = 6 * 1024;
                 caches[L3].linesize = 64;
                 break;
-            case 0x4C:
-            case 0xEA:
+              case 0x4C:
+              case 0xEA:
                 caches[L3].size = 12 * 1024;
                 caches[L3].linesize = 64;
                 break;
-            case 0x4D:
+              case 0x4D:
                 caches[L3].size = 16 * 1024;
                 caches[L3].linesize = 64;
                 break;
-            case 0x4E:
+              case 0x4E:
                 caches[L2].size = 6 * 1024;
                 caches[L2].linesize = 64;
                 break;
-            case 0x66:
+              case 0x66:
                 caches[L1D].size = 8;
                 caches[L1D].linesize = 64;
                 break;
-            case 0x68:
+              case 0x68:
                 caches[L1D].size = 32;
                 caches[L1D].linesize = 64;
                 break;
-            case 0x78:
-            case 0x7C:
+              case 0x78:
+              case 0x7C:
                 caches[L2].size = 1024;
                 caches[L2].linesize = 64;
                 break;
-            case 0x7D:
+              case 0x7D:
                 caches[L2].size = 2048;
                 caches[L2].linesize = 64;
                 break;
-            case 0x84:
+              case 0x84:
                 caches[L2].size = 1024;
                 caches[L2].linesize = 32;
                 break;
-            case 0x85:
+              case 0x85:
                 caches[L2].size = 2048;
                 caches[L2].linesize = 32;
                 break;
-            case 0x87:
+              case 0x87:
                 caches[L2].size = 1024;
                 caches[L2].linesize = 64;
                 break;
-            case 0xDC:
+              case 0xDC:
                 caches[L3].size = 1536;
                 caches[L3].linesize = 64;
                 break;
-            case 0xDD:
+              case 0xDD:
                 caches[L3].size = 3 * 1024;
                 caches[L3].linesize = 64;
                 break;
-            case 0xEB:
+              case 0xEB:
                 caches[L3].size = 18 * 1024;
                 caches[L3].linesize = 64;
                 break;
-            case 0xEC:
+              case 0xEC:
                 caches[L3].size = 24 * 1024;
                 caches[L3].linesize = 64;
                 break;
             }
         }
+
         // Convert Kbytes to bytes.
         caches[L1D].size *= 1024;
         caches[L2].size *= 1024;
