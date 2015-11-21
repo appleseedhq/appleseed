@@ -66,6 +66,9 @@ void SerialRendererController::on_rendering_success()
 
 void SerialRendererController::on_rendering_abort()
 {
+    // Execute any pending callback since the last time on_progress() was called.
+    exec_callbacks();
+
     m_controller->on_rendering_abort();
 }
 
