@@ -95,15 +95,15 @@ MaterialCollectionItem::MaterialCollectionItem(
 }
 
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
+
 const Material& MaterialCollectionItem::create_default_disney_material(const string& material_name)
 {
     auto_release_ptr<Material> material =
         DisneyMaterialFactory().create(material_name.c_str(), ParamArray());
+
+    static_cast<DisneyMaterial*>(material.get())->add_new_default_layer();
+
     Material* material_ptr = material.get();
-
-    const Dictionary layer_values = static_cast<DisneyMaterial*>(material.get())->get_new_layer_values();
-    material->get_parameters().insert(layer_values.get("layer_name"), layer_values);
-
     add_item(material_ptr);
 
     EntityTraits<Material>::insert_entity(material, m_parent);
@@ -111,6 +111,7 @@ const Material& MaterialCollectionItem::create_default_disney_material(const str
 
     return *material_ptr;
 }
+
 #endif // APPLESEED_WITH_DISNEY_MATERIAL
 
 QMenu* MaterialCollectionItem::get_single_item_context_menu() const

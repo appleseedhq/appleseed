@@ -203,8 +203,8 @@ void RenderWidget::highlight_region(
     uint8* dest = get_image_pointer(m_image, x, y);
 
     // Draw a bracket around the tile.
-    const uint8 BracketColor[3] = { 255, 255, 255 };
     const size_t BracketExtent = 5;
+    const uint8 BracketColor[3] = { 255, 255, 255 };
     draw_bracket(
         dest,
         width,
@@ -235,10 +235,10 @@ void RenderWidget::blit_frame(const Frame& frame)
 
     allocate_working_storage(frame_props);
 
-    for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
+    for (size_t y = 0; y < frame_props.m_tile_count_y; ++y)
     {
-        for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
-            blit_tile_no_lock(frame, tx, ty);
+        for (size_t x = 0; x < frame_props.m_tile_count_x; ++x)
+            blit_tile_no_lock(frame, x, y);
     }
 }
 
