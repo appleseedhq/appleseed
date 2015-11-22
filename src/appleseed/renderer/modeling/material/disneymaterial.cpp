@@ -921,7 +921,7 @@ void DisneyMaterial::on_frame_end(
     Material::on_frame_end(project, assembly);
 }
 
-string DisneyMaterial::add_layer(Dictionary layer_values)
+void DisneyMaterial::add_layer(Dictionary layer_values)
 {
     // Assign a name to the layer if there isn't one already.
     if (!layer_values.strings().exist("layer_name"))
@@ -942,13 +942,11 @@ string DisneyMaterial::add_layer(Dictionary layer_values)
     // Insert the layer into the material.
     const string& layer_name = layer_values.get<string>("layer_name");
     m_params.insert(layer_name, layer_values);
-
-    return layer_name;
 }
 
-string DisneyMaterial::add_new_default_layer()
+void DisneyMaterial::add_new_default_layer()
 {
-    return add_layer(DisneyMaterialLayer::get_default_values());
+    add_layer(DisneyMaterialLayer::get_default_values());
 }
 
 size_t DisneyMaterial::get_layer_count() const
