@@ -921,20 +921,34 @@ void DisneyMaterial::on_frame_end(
     Material::on_frame_end(project, assembly);
 }
 
-void DisneyMaterial::add_new_layer()
+string DisneyMaterial::add_layer(Dictionary layer_values)
 {
-    const string layer_name = make_unique_name("layer", impl->m_layers);
+    // Assign a name to the layer if there isn't one already.
+    if (!layer_values.strings().exist("layer_name"))
+    {
+        const string layer_name = make_unique_name("layer", impl->m_layers);
+        layer_values.insert("layer_name", layer_name);
+    }
 
-    int layer_number = 0;
-    for (const_each<Impl::DisneyMaterialLayerContainer> i = impl->m_layers; i; ++i)
-        layer_number = max(layer_number, i->get_layer_number());
+    // Assign a number to the layer if there isn't one already.
+    if (!layer_values.strings().exist("layer_number"))
+    {
+        int layer_number = 0;
+        for (const_each<Impl::DisneyMaterialLayerContainer> i = impl->m_layers; i; ++i)
+            layer_number = max(layer_number, i->get_layer_number());
+        layer_values.insert("layer_number", layer_number);
+    }
 
-    const Dictionary layer_values =
-        DisneyMaterialLayer::get_default_values()
-            .insert("layer_name", layer_name)
-            .insert("layer_number", layer_number);
-
+    // Insert the layer into the material.
+    const string& layer_name = layer_values.get<string>("layer_name");
     m_params.insert(layer_name, layer_values);
+
+    return layer_name;
+}
+
+string DisneyMaterial::add_new_default_layer()
+{
+    return add_layer(DisneyMaterialLayer::get_default_values());
 }
 
 size_t DisneyMaterial::get_layer_count() const

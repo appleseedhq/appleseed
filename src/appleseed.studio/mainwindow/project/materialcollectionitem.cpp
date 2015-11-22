@@ -101,7 +101,7 @@ const Material& MaterialCollectionItem::create_default_disney_material(const str
     auto_release_ptr<Material> material =
         DisneyMaterialFactory().create(material_name.c_str(), ParamArray());
 
-    static_cast<DisneyMaterial*>(material.get())->add_new_layer();
+    static_cast<DisneyMaterial*>(material.get())->add_new_default_layer();
 
     Material* material_ptr = material.get();
     add_item(material_ptr);

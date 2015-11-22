@@ -159,8 +159,15 @@ class APPLESEED_DLLSYMBOL DisneyMaterial
         const Project&              project,
         const Assembly&             assembly) APPLESEED_OVERRIDE;
 
+    // Add a new layer with given values to the material.
+    // A name and a number will be automatically assigned
+    // to the layer if it lacks them.
+    // Returns the name of the layer.
+    std::string add_layer(
+        foundation::Dictionary      layer_values);
+
     // Add a new layer using default values to the material.
-    void add_new_layer();
+    std::string add_new_default_layer();
 
     // Retrieve the number of layers in the material.
     size_t get_layer_count() const;
