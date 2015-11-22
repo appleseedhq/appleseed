@@ -159,13 +159,22 @@ class APPLESEED_DLLSYMBOL DisneyMaterial
         const Project&              project,
         const Assembly&             assembly) APPLESEED_OVERRIDE;
 
+    // Add a new layer with given values to the material.
+    // A name and a number will be automatically assigned
+    // to the layer if it lacks them.
+    void add_layer(
+        foundation::Dictionary      layer_values);
+
+    // Add a new layer using default values to the material.
+    void add_new_default_layer();
+
+    // Retrieve the number of layers in the material.
     size_t get_layer_count() const;
 
+    // Retrieve a given layer of the material.
     const DisneyMaterialLayer& get_layer(
         const size_t                index,
         const size_t                thread_index = ~0) const;
-
-    foundation::Dictionary get_new_layer_values() const;
 
   private:
     friend class DisneyMaterialFactory;
@@ -181,6 +190,7 @@ class APPLESEED_DLLSYMBOL DisneyMaterial
     // Destructor.
     ~DisneyMaterial();
 
+    // Prepare all layers for rendering. Returns true on success.
     bool prepare_layers(const MessageContext& context);
 };
 

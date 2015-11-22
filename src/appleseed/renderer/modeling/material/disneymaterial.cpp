@@ -921,6 +921,34 @@ void DisneyMaterial::on_frame_end(
     Material::on_frame_end(project, assembly);
 }
 
+void DisneyMaterial::add_layer(Dictionary layer_values)
+{
+    // Assign a name to the layer if there isn't one already.
+    if (!layer_values.strings().exist("layer_name"))
+    {
+        const string layer_name = make_unique_name("layer", impl->m_layers);
+        layer_values.insert("layer_name", layer_name);
+    }
+
+    // Assign a number to the layer if there isn't one already.
+    if (!layer_values.strings().exist("layer_number"))
+    {
+        int layer_number = 0;
+        for (const_each<Impl::DisneyMaterialLayerContainer> i = impl->m_layers; i; ++i)
+            layer_number = max(layer_number, i->get_layer_number());
+        layer_values.insert("layer_number", layer_number);
+    }
+
+    // Insert the layer into the material.
+    const string& layer_name = layer_values.get<string>("layer_name");
+    m_params.insert(layer_name, layer_values);
+}
+
+void DisneyMaterial::add_new_default_layer()
+{
+    add_layer(DisneyMaterialLayer::get_default_values());
+}
+
 size_t DisneyMaterial::get_layer_count() const
 {
     return impl->m_layers.size();
@@ -940,33 +968,20 @@ const DisneyMaterialLayer& DisneyMaterial::get_layer(
     vector<DisneyMaterialLayer>* layers =
         impl->m_per_thread_layers[thread_index];
 
-    if (layers)
-        return (*layers)[index];
-
-    layers = new vector<DisneyMaterialLayer>(impl->m_layers);
-
-    for (const_each<vector<DisneyMaterialLayer> > it = *layers; it; ++it)
+    if (layers == 0)
     {
-        const bool ok = it->prepare_expressions();
-        assert(ok);
+        layers = new vector<DisneyMaterialLayer>(impl->m_layers);
+
+        for (const_each<vector<DisneyMaterialLayer> > it = *layers; it; ++it)
+        {
+            const bool ok = it->prepare_expressions();
+            assert(ok);
+        }
+
+        impl->m_per_thread_layers[thread_index] = layers;
     }
 
-    impl->m_per_thread_layers[thread_index] = layers;
-
     return (*layers)[index];
-}
-
-Dictionary DisneyMaterial::get_new_layer_values() const
-{
-    int layer_number = 0;
-
-    for (const_each<Impl::DisneyMaterialLayerContainer> i = impl->m_layers; i; ++i)
-        layer_number = max(layer_number, i->get_layer_number());
-
-    return
-        DisneyMaterialLayer::get_default_values()
-            .insert("layer_name", make_unique_name("layer", impl->m_layers))
-            .insert("layer_number", layer_number);
 }
 
 bool DisneyMaterial::prepare_layers(const MessageContext& context)

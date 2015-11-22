@@ -58,14 +58,17 @@ void SerialRendererController::on_rendering_begin()
 
 void SerialRendererController::on_rendering_success()
 {
-    // Execute any pending callback since the
-    // last time on_progress was called.
+    // Execute any pending callback since the last time on_progress() was called.
     exec_callbacks();
+
     m_controller->on_rendering_success();
 }
 
 void SerialRendererController::on_rendering_abort()
 {
+    // Execute any pending callback since the last time on_progress() was called.
+    exec_callbacks();
+
     m_controller->on_rendering_abort();
 }
 
@@ -142,20 +145,20 @@ void SerialRendererController::add_post_render_tile_callback(const Frame* frame)
     m_pending_callbacks.push_back(callback);
 }
 
-void SerialRendererController::exec_callback(const PendingTileCallback& call)
+void SerialRendererController::exec_callback(const PendingTileCallback& cb)
 {
-    switch (call.m_type)
+    switch (cb.m_type)
     {
       case PendingTileCallback::PreRender:
-        m_tile_callback->pre_render(call.m_x, call.m_y, call.m_width, call.m_height);
+        m_tile_callback->pre_render(cb.m_x, cb.m_y, cb.m_width, cb.m_height);
         break;
 
       case PendingTileCallback::PostRenderTile:
-        m_tile_callback->post_render_tile(call.m_frame, call.m_x, call.m_y);
+        m_tile_callback->post_render_tile(cb.m_frame, cb.m_x, cb.m_y);
         break;
 
       case PendingTileCallback::PostRender:
-        m_tile_callback->post_render(call.m_frame);
+        m_tile_callback->post_render(cb.m_frame);
         break;
 
       assert_otherwise;

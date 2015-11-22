@@ -88,6 +88,9 @@ class Color
 template <typename T, size_t N> bool operator!=(const Color<T, N>& lhs, const Color<T, N>& rhs);
 template <typename T, size_t N> bool operator==(const Color<T, N>& lhs, const Color<T, N>& rhs);
 
+// Return whether all components of a color are exactly zero.
+template <typename T, size_t N> bool is_zero(const Color<T, N>& c);
+
 // Approximate equality tests.
 template <typename T, size_t N> bool feq(const Color<T, N>& lhs, const Color<T, N>& rhs);
 template <typename T, size_t N> bool feq(const Color<T, N>& lhs, const Color<T, N>& rhs, const T eps);
@@ -336,6 +339,18 @@ template <typename T, size_t N>
 inline bool operator==(const Color<T, N>& lhs, const Color<T, N>& rhs)
 {
     return !(lhs != rhs);
+}
+
+template <typename T, size_t N>
+inline bool is_zero(const Color<T, N>& c)
+{
+    for (size_t i = 0; i < N; ++i)
+    {
+        if (c[i] != T(0.0))
+            return false;
+    }
+
+    return true;
 }
 
 template <typename T, size_t N>

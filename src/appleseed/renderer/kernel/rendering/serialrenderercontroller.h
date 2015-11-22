@@ -105,7 +105,7 @@ class SerialRendererController
     boost::mutex                        m_mutex;
     std::deque<PendingTileCallback>     m_pending_callbacks;
 
-    void exec_callback(const PendingTileCallback& call);
+    void exec_callback(const PendingTileCallback& cb);
     void exec_callbacks();
 };
 
