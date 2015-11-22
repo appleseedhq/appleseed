@@ -199,7 +199,7 @@ find_package (Boost 1.47 REQUIRED ${BOOST_NEEDED_LIBS})
 
 add_definitions (-DBOOST_FILESYSTEM_VERSION=3 -DBOOST_FILESYSTEM_NO_DEPRECATED)
 
-include_directories (${Boost_INCLUDE_DIRS})
+include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 link_directories (${Boost_LIBRARY_DIRS})
 
 
