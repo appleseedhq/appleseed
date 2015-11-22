@@ -259,18 +259,26 @@ namespace
         for (size_t i = 0; i < pixel_count; ++i)
         {
             // Load the pixel color.
+#ifdef APPLESEED_USE_SSE
             SSE_ALIGN Color4f color;
+#else
+            Color4f color;
+#endif
             tile.get_pixel(i, color);
 
             // Apply color space conversion.
             switch (ColorSpace)
             {
               case ColorSpaceSRGB:
+#ifdef APPLESEED_USE_SSE
                 {
                     const float old_alpha = color[3];
                     _mm_store_ps(&color[0], fast_linear_rgb_to_srgb(_mm_load_ps(&color[0])));
                     color[3] = old_alpha;
                 }
+#else
+                color.rgb() = fast_linear_rgb_to_srgb(color.rgb());
+#endif
                 break;
 
               case ColorSpaceCIEXYZ:
