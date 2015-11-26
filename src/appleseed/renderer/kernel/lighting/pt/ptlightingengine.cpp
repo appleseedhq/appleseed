@@ -885,6 +885,7 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
         Dictionary()
             .insert("type", "bool")
             .insert("default", "false")
+            .insert("label", "Enable Caustics")
             .insert("help", "Enable caustics"));
 
     metadata.dictionaries().insert(
@@ -894,6 +895,7 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("default", "8")
             .insert("unlimited", "true")
             .insert("min", "1")
+            .insert("label", "Max Path Length")
             .insert("help", "Maximum number of path bounces"));
 
     metadata.dictionaries().insert(
@@ -911,6 +913,7 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("default", "1.0")
             .insert("unlimited", "true")
             .insert("min", "0.0")
+            .insert("label", "Max Ray Intensity")
             .insert("help", "Clamp intensity of rays (after the first bounce) to this value to reduce fireflies"));
 
     return metadata;

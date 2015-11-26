@@ -284,6 +284,7 @@ Dictionary UniformPixelRendererFactory::get_params_metadata()
         Dictionary()
             .insert("type", "int")
             .insert("default", "64")
+            .insert("label", "Samples")
             .insert("help", "Number of anti-aliasing samples"));
 
     metadata.dictionaries().insert(
@@ -291,6 +292,7 @@ Dictionary UniformPixelRendererFactory::get_params_metadata()
         Dictionary()
             .insert("type", "bool")
             .insert("default", "false")
+            .insert("label", "Force Anti-aliasing")
             .insert(
                 "help",
                 "When using 1 sample/pixel and force_antialiasing is disabled, samples are placed in the middle of the pixels"));

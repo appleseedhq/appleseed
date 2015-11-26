@@ -666,12 +666,14 @@ Dictionary ProgressiveFrameRendererFactory::get_params_metadata()
         Dictionary()
             .insert("type", "float")
             .insert("default", "30.0")
+            .insert("label", "Max FPS")
             .insert("help", "Maximum progressive rendering update rate in frames per second"));
 
     metadata.dictionaries().insert(
         "max_samples",
         Dictionary()
             .insert("type", "int")
+            .insert("label", "Max Samples")
             .insert("help", "Maximum number of samples per pixel"));
 
     return metadata;

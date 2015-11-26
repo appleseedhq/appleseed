@@ -677,6 +677,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
         Dictionary()
             .insert("type", "bool")
             .insert("default", "false")
+            .insert("label", "Enable Caustics")
             .insert("help", "Enable caustics"));
 
     metadata.dictionaries().insert(
@@ -685,22 +686,21 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
             .insert("type", "enum")
             .insert("values", "mono|poly")
             .insert("default", "poly")
-            .insert("help", "TODO: Not documented yet")
+            .insert("label", "Photon Type")
+            .insert("help", "Photon Type")
             .insert(
                 "options",
                 Dictionary()
                     .insert(
                         "mono",
                         Dictionary()
-                            .insert(
-                                "help",
-                                "TODO: Not documented yet"))
+                            .insert("label", "Mono")
+                            .insert("help", "Monochromatic photons"))
                     .insert(
                         "poly",
                         Dictionary()
-                            .insert(
-                                "help",
-                                "TODO: Not documented yet"))));
+                            .insert("label", "Poly")
+                            .insert("help", "Polychromatic photons"))));
 
     metadata.dictionaries().insert(
         "dl_type",
@@ -708,6 +708,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
             .insert("type", "enum")
             .insert("values", "rt|sppm|off")
             .insert("default", "rt")
+            .insert("label", "Direct Lighting")
             .insert("help", "Method used to estimate direct lighting")
             .insert(
                 "options",
@@ -715,21 +716,18 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
                     .insert(
                         "rt",
                         Dictionary()
-                            .insert(
-                                "help",
-                                "Use ray tracing to estimate direct lighting"))
+                            .insert("label", "Ray Tracing")
+                            .insert("help","Use ray tracing to estimate direct lighting"))
                     .insert(
                         "sppm",
                         Dictionary()
-                            .insert(
-                                "help",
-                                "Use photon maps to estimate direct lighting"))
+                            .insert("label", "Photon Maps")
+                            .insert("help", "Use photon maps to estimate direct lighting"))
                     .insert(
                         "off",
                         Dictionary()
-                            .insert(
-                                "help",
-                                "Do not estimate direct lighting"))));
+                            .insert("label", "Disabled")
+                            .insert("help","Do not estimate direct lighting"))));
 
     metadata.dictionaries().insert(
         "photon_tracing_max_path_length",
@@ -737,6 +735,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
             .insert("type", "int")
             .insert("default", "8")
             .insert("unlimited", "true")
+            .insert("label", "Max Photon Path Length")
             .insert("help", "Maximum number of photon bounces"));
 
     metadata.dictionaries().insert(
@@ -752,6 +751,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
             .insert("type", "int")
             .insert("default", "8")
             .insert("unlimited", "true")
+            .insert("label", "Max Path Length")
             .insert("help", "Maximum number of path bounces"));
 
     metadata.dictionaries().insert(
@@ -766,6 +766,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
         Dictionary()
             .insert("type", "int")
             .insert("default", "1000000")
+            .insert("label", "Light Photons Per Pass")
             .insert("help", "Number of photons per render pass"));
 
     metadata.dictionaries().insert(
@@ -773,6 +774,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
         Dictionary()
             .insert("type", "int")
             .insert("default", "1000000")
+            .insert("label", "IBL Photons Per Pass")
             .insert("help", "Number of environment photons per render pass"));
 
     metadata.dictionaries().insert(
@@ -783,6 +785,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
             .insert("unit", "percent")
             .insert("min", "0.0")
             .insert("max", "100.0")
+            .insert("label", "Initial Radius")
             .insert("help", "Initial photon gathering radius in percent of the scene diameter."));
 
     metadata.dictionaries().insert(
@@ -791,6 +794,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
             .insert("type", "int")
             .insert("default", "100")
             .insert("min", "1")
+            .insert("label", "Max Photons Per Estimate")
             .insert("help", "Maximum number of photons used to estimate radiance"));
 
     metadata.dictionaries().insert(
@@ -798,6 +802,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
         Dictionary()
             .insert("type", "float")
             .insert("default", "0.7")
+            .insert("label", "Alpha")
             .insert("help", "Evolution rate of photon gathering radius"));
 
     return metadata;

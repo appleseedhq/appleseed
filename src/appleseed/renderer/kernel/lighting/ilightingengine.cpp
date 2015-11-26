@@ -46,6 +46,7 @@ void ILightingEngineFactory::add_common_params_metadata(
         Dictionary()
             .insert("type", "bool")
             .insert("default", "on")
+            .insert("label", "Enable IBL")
             .insert("help", "Enable image-based lighting"));
 
     if (add_lighting_samples)
@@ -55,6 +56,7 @@ void ILightingEngineFactory::add_common_params_metadata(
             Dictionary()
                 .insert("type", "float")
                 .insert("default", "1.0")
+                .insert("label", "Light Samples")
                 .insert("help", "Number of samples used to estimate direct lighting"));
 
         metadata.dictionaries().insert(
@@ -62,6 +64,7 @@ void ILightingEngineFactory::add_common_params_metadata(
             Dictionary()
                 .insert("type", "float")
                 .insert("default", "1.0")
+                .insert("label", "IBL Samples")
                 .insert("help", "Number of samples used to estimate environment lighting"));
     }
 }

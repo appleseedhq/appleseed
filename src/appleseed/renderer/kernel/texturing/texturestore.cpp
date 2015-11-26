@@ -88,6 +88,7 @@ Dictionary TextureStore::get_params_metadata()
         Dictionary()
             .insert("type", "int")
             .insert("default", DefaultTextureStoreSizeMB * 1024 * 1024)
+            .insert("label", "Texture Cache Size")
             .insert("help", "Texture cache size in bytes"));
 
     return metadata;
