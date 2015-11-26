@@ -428,6 +428,7 @@ Dictionary GenericFrameRendererFactory::get_params_metadata()
         Dictionary()
             .insert("type", "int")
             .insert("default", "1")
+            .insert("label", "Passes")
             .insert("help", "Number of render passes"));
 
     metadata.dictionaries().insert(
@@ -436,22 +437,31 @@ Dictionary GenericFrameRendererFactory::get_params_metadata()
             .insert("type", "enum")
             .insert("values", "linear|spiral|hilbert|random")
             .insert("default", "hilbert")
+            .insert("label", "Tile Order")
             .insert("help", "Tile rendering order")
             .insert(
                 "options",
                 Dictionary()
                     .insert(
                         "linear",
-                        Dictionary().insert("help", "Linear tile ordering"))
+                        Dictionary()
+                            .insert("label", "Linear")
+                            .insert("help", "Linear tile ordering"))
                     .insert(
                         "spiral",
-                        Dictionary().insert("help", "Spiral tile ordering"))
+                        Dictionary()
+                            .insert("label", "Spiral")
+                            .insert("help", "Spiral tile ordering"))
                     .insert(
                         "hilbert",
-                        Dictionary().insert("help", "Hilbert tile ordering"))
+                        Dictionary()
+                            .insert("label", "Hilbert")
+                            .insert("help", "Hilbert tile ordering"))
                     .insert(
                         "random",
-                        Dictionary().insert("help", "Random tile ordering"))));
+                        Dictionary()
+                            .insert("label", "Random")
+                            .insert("help", "Random tile ordering"))));
 
     return metadata;
 }

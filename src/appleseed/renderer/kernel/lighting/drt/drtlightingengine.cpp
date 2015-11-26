@@ -479,6 +479,7 @@ Dictionary DRTLightingEngineFactory::get_params_metadata()
             .insert("default", "8")
             .insert("unlimited", "true")
             .insert("min", "1")
+            .insert("label", "Max Path Length")
             .insert("help", "Maximum ray trace depth"));
 
     metadata.dictionaries().insert(
