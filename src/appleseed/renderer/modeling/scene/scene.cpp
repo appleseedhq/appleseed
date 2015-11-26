@@ -256,10 +256,7 @@ bool Scene::on_frame_begin(
     success = success && invoke_on_frame_begin(project, environment_edfs(), abort_switch);
     success = success && invoke_on_frame_begin(project, environment_shaders(), abort_switch);
 
-    if (is_aborted(abort_switch))
-        return success;
-
-    if (impl->m_environment.get())
+    if (!is_aborted(abort_switch) && impl->m_environment.get())
         success = success && impl->m_environment->on_frame_begin(project, abort_switch);
 
     success = success && invoke_on_frame_begin(project, assemblies(), abort_switch);
