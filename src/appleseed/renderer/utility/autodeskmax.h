@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,19 +26,31 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_LIGHT_H
-#define APPLESEED_RENDERER_API_LIGHT_H
+#ifndef APPLESEED_RENDERER_UTILITY_AUTODESKMAX_H
+#define APPLESEED_RENDERER_UTILITY_AUTODESKMAX_H
 
-// API headers.
-#include "renderer/modeling/light/directionallight.h"
-#include "renderer/modeling/light/ilightfactory.h"
-#include "renderer/modeling/light/light.h"
-#include "renderer/modeling/light/lightfactoryregistrar.h"
-#include "renderer/modeling/light/lighttraits.h"
-#include "renderer/modeling/light/maxomnilight.h"
-#include "renderer/modeling/light/maxspotlight.h"
-#include "renderer/modeling/light/pointlight.h"
-#include "renderer/modeling/light/spotlight.h"
-#include "renderer/modeling/light/sunlight.h"
+// Standard headers.
+#include <cmath>
 
-#endif  // !APPLESEED_RENDERER_API_LIGHT_H
+namespace renderer
+{
+
+inline double autodesk_max_decay(
+    const double    distance,
+    const double    decay_start,
+    const double    decay_exponent)
+{
+    if (distance < decay_start || decay_exponent == 0.0)
+        return 1.0;
+
+    const double s = decay_start / distance;
+
+    return
+        decay_exponent == 1.0 ? s :
+        decay_exponent == 2.0 ? s * s :
+        std::pow(s, decay_exponent);
+}
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_UTILITY_AUTODESKMAX_H

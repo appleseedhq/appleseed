@@ -1549,6 +1549,10 @@ set (renderer_modeling_light_sources
     renderer/modeling/light/lighttarget.cpp
     renderer/modeling/light/lighttarget.h
     renderer/modeling/light/lighttraits.h
+    renderer/modeling/light/maxomnilight.cpp
+    renderer/modeling/light/maxomnilight.h
+    renderer/modeling/light/maxspotlight.cpp
+    renderer/modeling/light/maxspotlight.h
     renderer/modeling/light/pointlight.cpp
     renderer/modeling/light/pointlight.h
     renderer/modeling/light/spotlight.cpp
@@ -1766,6 +1770,7 @@ source_group ("renderer\\modeling\\texture" FILES
 )
 
 set (renderer_utility_sources
+    renderer/utility/autodeskmax.h
     renderer/utility/bbox.h
     renderer/utility/dynamicspectrum.h
     renderer/utility/iostreamop.h
