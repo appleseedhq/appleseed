@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_LIGHT_MAXOMNILIGHT_H
-#define APPLESEED_RENDERER_MODELING_LIGHT_MAXOMNILIGHT_H
+#ifndef APPLESEED_RENDERER_MODELING_LIGHT_MAXSPOTLIGHT_H
+#define APPLESEED_RENDERER_MODELING_LIGHT_MAXSPOTLIGHT_H
 
 // appleseed.renderer headers.
 #include "renderer/modeling/light/ilightfactory.h"
@@ -49,10 +49,10 @@ namespace renderer
 {
 
 //
-// Factory for Autodesk 3ds Max-compatible omni lights.
+// Factory for Autodesk 3ds Max-compatible spot lights.
 //
 
-class APPLESEED_DLLSYMBOL MaxOmniLightFactory
+class APPLESEED_DLLSYMBOL MaxSpotLightFactory
   : public ILightFactory
 {
   public:
@@ -73,4 +73,4 @@ class APPLESEED_DLLSYMBOL MaxOmniLightFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_LIGHT_MAXOMNILIGHT_H
+#endif  // !APPLESEED_RENDERER_MODELING_LIGHT_MAXSPOTLIGHT_H

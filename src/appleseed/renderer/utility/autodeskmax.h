@@ -26,51 +26,31 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_LIGHT_MAXOMNILIGHT_H
-#define APPLESEED_RENDERER_MODELING_LIGHT_MAXOMNILIGHT_H
+#ifndef APPLESEED_RENDERER_UTILITY_AUTODESKMAX_H
+#define APPLESEED_RENDERER_UTILITY_AUTODESKMAX_H
 
-// appleseed.renderer headers.
-#include "renderer/modeling/light/ilightfactory.h"
-#include "renderer/modeling/light/light.h"
-
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-#include "foundation/utility/autoreleaseptr.h"
-
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
-// Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace foundation    { class DictionaryArray; }
-namespace renderer      { class ParamArray; }
+// Standard headers.
+#include <cmath>
 
 namespace renderer
 {
 
-//
-// Factory for Autodesk 3ds Max-compatible omni lights.
-//
-
-class APPLESEED_DLLSYMBOL MaxOmniLightFactory
-  : public ILightFactory
+inline double autodesk_max_decay(
+    const double    distance,
+    const double    decay_start,
+    const double    decay_exponent)
 {
-  public:
-    // Return a string identifying this light model.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
+    if (distance < decay_start || decay_exponent == 0.0)
+        return 1.0;
 
-    // Return metadata for this light model.
-    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
+    const double s = decay_start / distance;
 
-    // Return metadata for the inputs of this light model.
-    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
-
-    // Create a new light instance.
-    virtual foundation::auto_release_ptr<Light> create(
-        const char*         name,
-        const ParamArray&   params) const APPLESEED_OVERRIDE;
-};
+    return
+        decay_exponent == 1.0 ? s :
+        decay_exponent == 2.0 ? s * s :
+        std::pow(s, decay_exponent);
+}
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_LIGHT_MAXOMNILIGHT_H
+#endif  // !APPLESEED_RENDERER_UTILITY_AUTODESKMAX_H

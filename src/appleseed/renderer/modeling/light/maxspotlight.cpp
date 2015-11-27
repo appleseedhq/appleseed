@@ -27,19 +27,22 @@
 //
 
 // Interface header.
-#include "maxomnilight.h"
+#include "maxspotlight.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/input/source.h"
 #include "renderer/utility/autodeskmax.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/distance.h"
+#include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
@@ -61,16 +64,16 @@ namespace renderer
 namespace
 {
     //
-    // A light source compatible with the Omni light of Autodesk 3ds Max.
+    // A light source compatible with the Spot light of Autodesk 3ds Max.
     //
 
-    const char* Model = "max_omni_light";
+    const char* Model = "max_spot_light";
 
-    class MaxOmniLight
+    class MaxSpotLight
       : public Light
     {
       public:
-        MaxOmniLight(
+        MaxSpotLight(
             const char*         name,
             const ParamArray&   params)
           : Light(name, params)
@@ -97,13 +100,18 @@ namespace
             if (!Light::on_frame_begin(project, assembly, abort_switch))
                 return false;
 
-            if (!check_uniform("intensity") || !check_uniform("intensity_multiplier"))
-                return false;
+            m_intensity_source = m_inputs.source("intensity");
+            m_intensity_multiplier_source = m_inputs.source("intensity_multiplier");
+            check_non_zero_emission(m_intensity_source, m_intensity_multiplier_source);
 
-            check_non_zero_emission("intensity", "intensity_multiplier");
+            const double inner_half_angle = deg_to_rad(m_params.get_required<double>("inner_angle", 20.0) / 2.0);
+            const double outer_half_angle = deg_to_rad(m_params.get_required<double>("outer_angle", 30.0) / 2.0);
+            const double tilt_angle = deg_to_rad(m_params.get_optional<double>("tilt_angle", 0.0));
 
-            m_inputs.evaluate_uniforms(&m_values);
-            m_values.m_intensity *= static_cast<float>(m_values.m_intensity_multiplier);
+            m_cos_inner_half_angle = cos(inner_half_angle);
+            m_cos_outer_half_angle = cos(outer_half_angle);
+            m_rcp_screen_half_size = 1.0 / tan(outer_half_angle);
+            m_up = Vector3d(sin(tilt_angle), cos(tilt_angle), 0.0);
 
             m_decay_start = m_params.get_optional<double>("decay_start", 0.0);
             m_decay_exponent = m_params.get_optional<double>("decay_exponent", 2.0);
@@ -121,9 +129,12 @@ namespace
             double&             probability) const APPLESEED_OVERRIDE
         {
             position = light_transform.get_parent_origin();
-            outgoing = sample_sphere_uniform(s);
-            value = m_values.m_intensity;
-            probability = RcpFourPi;
+            outgoing = light_transform.vector_to_parent(rotate_minus_pi_around_x(sample_cone_uniform(s, m_cos_outer_half_angle)));
+            probability = sample_cone_uniform_pdf(m_cos_outer_half_angle);
+
+            const Vector3d axis = -normalize(light_transform.get_parent_z());
+
+            compute_radiance(input_evaluator, light_transform, axis, outgoing, value);
         }
 
         virtual void evaluate(
@@ -136,7 +147,12 @@ namespace
         {
             position = light_transform.get_parent_origin();
             outgoing = normalize(target - position);
-            value = m_values.m_intensity;
+
+            const Vector3d axis = -normalize(light_transform.get_parent_z());
+
+            if (dot(outgoing, axis) > m_cos_outer_half_angle)
+                compute_radiance(input_evaluator, light_transform, axis, outgoing, value);
+            else value.set(0.0f);
         }
 
         double compute_distance_attenuation(
@@ -157,33 +173,77 @@ namespace
             double      m_intensity_multiplier;     // emitted intensity multiplier
         };
 
-        InputValues     m_values;
+        const Source*   m_intensity_source;
+        const Source*   m_intensity_multiplier_source;
+
+        double          m_cos_inner_half_angle;
+        double          m_cos_outer_half_angle;
+        double          m_rcp_screen_half_size;
+
+        Vector3d        m_up;                       // light space
 
         double          m_decay_start;              // distance at which light decay starts
         double          m_decay_exponent;           // exponent of the light decay function
+
+        static Vector3d rotate_minus_pi_around_x(const Vector3d& v)
+        {
+            return Vector3d(v[0], v[2], -v[1]);
+        }
+
+        void compute_radiance(
+            InputEvaluator&     input_evaluator,
+            const Transformd&   light_transform,
+            const Vector3d&     axis,
+            const Vector3d&     outgoing,
+            Spectrum&           radiance) const
+        {
+            const Vector3d up = light_transform.vector_to_parent(m_up);
+            const Vector3d v = -axis;
+            const Vector3d u = normalize(cross(up, v));
+            const Vector3d n = cross(v, u);
+
+            const double cos_theta = dot(outgoing, axis);
+            assert(cos_theta > m_cos_outer_half_angle);
+
+            const Vector3d d = outgoing / cos_theta - axis;
+            const double x = dot(d, u) * m_rcp_screen_half_size;
+            const double y = dot(d, n) * m_rcp_screen_half_size;
+            const Vector2d uv(0.5 * (x + 1.0), 0.5 * (y + 1.0));
+
+            const InputValues* values = input_evaluator.evaluate<InputValues>(m_inputs, uv);
+            radiance = values->m_intensity;
+            radiance *= static_cast<float>(values->m_intensity_multiplier);
+
+            if (cos_theta < m_cos_inner_half_angle)
+            {
+                radiance *=
+                    static_cast<float>(
+                        smoothstep(m_cos_outer_half_angle, m_cos_inner_half_angle, cos_theta));
+            }
+        }
     };
 }
 
 
 //
-// MaxOmniLightFactory class implementation.
+// MaxSpotLightFactory class implementation.
 //
 
-const char* MaxOmniLightFactory::get_model() const
+const char* MaxSpotLightFactory::get_model() const
 {
     return Model;
 }
 
-Dictionary MaxOmniLightFactory::get_model_metadata() const
+Dictionary MaxSpotLightFactory::get_model_metadata() const
 {
     return
         Dictionary()
             .insert("name", Model)
-            .insert("label", "Autodesk 3ds Max Omni Light")
-            .insert("help", "A light source compatible with the Omni light of Autodesk 3ds Max");
+            .insert("label", "Autodesk 3ds Max Spot Light")
+            .insert("help", "A light source compatible with the Spot light of Autodesk 3ds Max");
 }
 
-DictionaryArray MaxOmniLightFactory::get_input_metadata() const
+DictionaryArray MaxSpotLightFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
 
@@ -194,7 +254,8 @@ DictionaryArray MaxOmniLightFactory::get_input_metadata() const
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
-                    .insert("color", "Colors"))
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", "1.0")
             .insert("help", "Light intensity"));
@@ -203,12 +264,45 @@ DictionaryArray MaxOmniLightFactory::get_input_metadata() const
         Dictionary()
             .insert("name", "intensity_multiplier")
             .insert("label", "Intensity Multiplier")
-            .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "10.0")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("help", "Light intensity multiplier"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "inner_angle")
+            .insert("label", "Inner Angle")
+            .insert("type", "numeric")
+            .insert("min_value", "-180.0")
+            .insert("max_value", "180.0")
+            .insert("use", "required")
+            .insert("default", "20.0")
+            .insert("help", "Cone distribution inner angle"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "outer_angle")
+            .insert("label", "Outer Angle")
+            .insert("type", "numeric")
+            .insert("min_value", "-180.0")
+            .insert("max_value", "180.0")
+            .insert("use", "required")
+            .insert("default", "30.0")
+            .insert("help", "Cone distribution outer angle"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "tilt_angle")
+            .insert("label", "Tilt Angle")
+            .insert("type", "numeric")
+            .insert("min_value", "-360.0")
+            .insert("max_value", "360.0")
+            .insert("use", "optional")
+            .insert("default", "0.0")
+            .insert("help", "Rotate the spot light around its axis; only useful when using the light intensity is textured (gobo)"));
 
     metadata.push_back(
         Dictionary()
@@ -237,11 +331,11 @@ DictionaryArray MaxOmniLightFactory::get_input_metadata() const
     return metadata;
 }
 
-auto_release_ptr<Light> MaxOmniLightFactory::create(
+auto_release_ptr<Light> MaxSpotLightFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<Light>(new MaxOmniLight(name, params));
+    return auto_release_ptr<Light>(new MaxSpotLight(name, params));
 }
 
 }   // namespace renderer

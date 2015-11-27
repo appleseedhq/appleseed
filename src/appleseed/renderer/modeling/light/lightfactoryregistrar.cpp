@@ -34,6 +34,7 @@
 #include "renderer/modeling/light/directionallight.h"
 #include "renderer/modeling/light/ilightfactory.h"
 #include "renderer/modeling/light/maxomnilight.h"
+#include "renderer/modeling/light/maxspotlight.h"
 #include "renderer/modeling/light/pointlight.h"
 #include "renderer/modeling/light/spotlight.h"
 #include "renderer/modeling/light/sunlight.h"
@@ -64,6 +65,7 @@ LightFactoryRegistrar::LightFactoryRegistrar()
 {
     register_factory(auto_ptr<FactoryType>(new DirectionalLightFactory()));
     register_factory(auto_ptr<FactoryType>(new MaxOmniLightFactory()));
+    register_factory(auto_ptr<FactoryType>(new MaxSpotLightFactory()));
     register_factory(auto_ptr<FactoryType>(new PointLightFactory()));
     register_factory(auto_ptr<FactoryType>(new SpotLightFactory()));
     register_factory(auto_ptr<FactoryType>(new SunLightFactory()));
