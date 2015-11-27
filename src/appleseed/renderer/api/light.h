@@ -36,6 +36,7 @@
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/light/lightfactoryregistrar.h"
 #include "renderer/modeling/light/lighttraits.h"
+#include "renderer/modeling/light/maxomnilight.h"
 #include "renderer/modeling/light/pointlight.h"
 #include "renderer/modeling/light/spotlight.h"
 #include "renderer/modeling/light/sunlight.h"

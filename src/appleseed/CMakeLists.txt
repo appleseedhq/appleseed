@@ -1549,6 +1549,8 @@ set (renderer_modeling_light_sources
     renderer/modeling/light/lighttarget.cpp
     renderer/modeling/light/lighttarget.h
     renderer/modeling/light/lighttraits.h
+    renderer/modeling/light/maxomnilight.cpp
+    renderer/modeling/light/maxomnilight.h
     renderer/modeling/light/pointlight.cpp
     renderer/modeling/light/pointlight.h
     renderer/modeling/light/spotlight.cpp
