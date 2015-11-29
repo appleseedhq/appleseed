@@ -124,7 +124,7 @@ struct ShaderQuery::Impl
         if (param.isstruct)
             dictionary.insert("structname", param.structname);
 
-        bool is_array = (param.type.arraylen != 0);
+        const bool is_array = (param.type.arraylen != 0);
         dictionary.insert("isarray", is_array);
         if (is_array)
             dictionary.insert("arraylen", param.type.arraylen);
@@ -167,8 +167,7 @@ struct ShaderQuery::Impl
     }
 };
 
-ShaderQuery::ShaderQuery(
-    const SearchPaths& search_paths)
+ShaderQuery::ShaderQuery(const SearchPaths& search_paths)
   : impl(new Impl())
 {
     impl->m_search_path = search_paths.to_string();
@@ -186,10 +185,7 @@ void ShaderQuery::release()
 
 bool ShaderQuery::open(const char* shader_name)
 {
-    if (impl->m_query.open(shader_name, impl->m_search_path))
-        return true;
-
-    return false;
+    return impl->m_query.open(shader_name, impl->m_search_path);
 }
 
 const char* ShaderQuery::get_shader_name() const
@@ -227,6 +223,7 @@ DictionaryArray ShaderQuery::get_metadata() const
 
     return metadata;
 }
+
 
 //
 // ShaderQueryFactory class implementation.

@@ -46,7 +46,7 @@ boost::python::dict param_array_to_bpy_dict(const renderer::ParamArray& array);
 
 // Convert a DictionaryArray into a Python dictionary.
 // Use key, which must be present in all dictionaries in the array
-// as the key for the python dictionary.
+// as the key for the Python dictionary.
 boost::python::dict dictionary_array_to_bpy_dict(
     const foundation::DictionaryArray&  array,
     const char*                         key);

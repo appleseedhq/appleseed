@@ -29,14 +29,15 @@
 #ifndef APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERQUERY_H
 #define APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERQUERY_H
 
-// appleseed.renderer headers.
-
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace foundation    { class Dictionary; }
