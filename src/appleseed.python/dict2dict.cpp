@@ -190,6 +190,13 @@ namespace
     {
         // try to guess the type of the value represented by str.
 
+        try // Vector3
+        {
+            Vector3d v = from_string<Vector3d>(str);
+            return bpy::object(v);
+        }
+        catch (ExceptionStringConversionError&) {}
+
         try // Vector2
         {
             Vector2d v = from_string<Vector2d>(str);

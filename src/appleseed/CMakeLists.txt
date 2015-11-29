@@ -1716,6 +1716,8 @@ if (WITH_OSL)
         renderer/modeling/shadergroup/shadergroup.h
         renderer/modeling/shadergroup/shaderparam.cpp
         renderer/modeling/shadergroup/shaderparam.h
+        renderer/modeling/shadergroup/shaderquery.cpp
+        renderer/modeling/shadergroup/shaderquery.h
         renderer/modeling/shadergroup/shaderparamparser.cpp
         renderer/modeling/shadergroup/shaderparamparser.h
     )
