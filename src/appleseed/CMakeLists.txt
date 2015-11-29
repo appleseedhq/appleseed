@@ -1859,7 +1859,7 @@ if (WITH_OIIO)
 endif ()
 
 if (WITH_OSL)
-    link_against_oslexec (appleseed)
+    link_against_osl (appleseed)
 endif ()
 
 if (WITH_DISNEY_MATERIAL)

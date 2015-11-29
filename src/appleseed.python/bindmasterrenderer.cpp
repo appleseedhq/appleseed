@@ -45,9 +45,9 @@ using namespace renderer;
 
 namespace
 {
-    // A class that wraps MasterRenderer and keeps a python
+    // A class that wraps MasterRenderer and keeps a Python
     // reference to the project object to prevent it being
-    // destroyed by python before the MasterRenderer is destroyed.
+    // destroyed by Python before the MasterRenderer is destroyed.
     struct MasterRendererWrapper
     {
         MasterRendererWrapper(

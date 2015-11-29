@@ -276,7 +276,7 @@ macro (link_against_oiio target)
     endif ()
 endmacro ()
 
-macro (link_against_oslexec target)
+macro (link_against_osl target)
     set (LLVM_LIBS
         LLVMLTO LLVMLinker LLVMipo LLVMVectorize LLVMBitWriter LLVMTableGen LLVMDebugInfo LLVMOption LLVMX86Disassembler LLVMX86AsmParser
         LLVMX86CodeGen LLVMSelectionDAG LLVMAsmPrinter LLVMX86Desc LLVMX86Info LLVMX86AsmPrinter LLVMX86Utils LLVMIRReader LLVMBitReader
@@ -288,17 +288,20 @@ macro (link_against_oslexec target)
     if (USE_EXTERNAL_OSL)
         target_link_libraries (${target}
             ${OSL_EXEC_LIBRARY}
-            ${OSL_COMP_LIBRARY}
+            ${OSL_QUERY_LIBRARY}
+            ${OSL_COMP_LIBRARY}     # required on Windows
         )
         foreach (lib ${LLVM_LIBS})
             target_link_libraries (${target} "${LLVM_LIBS_DIR}/${lib}.lib")
         endforeach ()
     else ()
         target_link_libraries (${target}
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/osl-debug/lib/oslcomp.lib
             debug       ${APPLESEED_DEPS_STAGE_DIR}/osl-debug/lib/oslexec.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/osl-release/lib/oslcomp.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/osl-debug/lib/oslquery.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/osl-debug/lib/oslcomp.lib
             optimized   ${APPLESEED_DEPS_STAGE_DIR}/osl-release/lib/oslexec.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/osl-release/lib/oslquery.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/osl-release/lib/oslcomp.lib
         )
         foreach (lib ${LLVM_LIBS})
             target_link_libraries (${target}

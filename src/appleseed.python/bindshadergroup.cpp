@@ -66,7 +66,8 @@ namespace
     }
 
     // A wrapper class that contains a ShaderQuery and a SearchPaths.
-    class ShaderQueryWrapper : boost::noncopyable
+    class ShaderQueryWrapper
+      : public boost::noncopyable
     {
       public:
         explicit ShaderQueryWrapper(bpy::list search_paths)
@@ -114,7 +115,7 @@ namespace
 
         bpy::dict get_metadata() const
         {
-            DictionaryArray metadata = m_shader_query->get_metadata();
+            const DictionaryArray metadata = m_shader_query->get_metadata();
             return dictionary_array_to_bpy_dict(metadata, "name");
         }
 

@@ -68,8 +68,8 @@ namespace
             const char*                 header,
             const char*                 message) APPLESEED_OVERRIDE
         {
-            // because this can be called from multiple threads
-            // we need to lock python here.
+            // Because this can be called from multiple threads
+            // we need to lock Python here.
             ScopedGILLock lock;
 
             try
