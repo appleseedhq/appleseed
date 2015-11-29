@@ -31,5 +31,6 @@
 
 // API headers.
 #include "renderer/modeling/shadergroup/shadergroup.h"
+#include "renderer/modeling/shadergroup/shaderquery.h"
 
 #endif  // !APPLESEED_RENDERER_API_SHADERGROUP_H
