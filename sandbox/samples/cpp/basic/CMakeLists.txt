@@ -43,14 +43,14 @@ set (CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../../../share/cmake/Modules;${PROJ
 # Build options.
 #--------------------------------------------------------------------------------------------------
 
-option (USE_EXTERNAL_OIIO       "Use external OpenImageIO library"                      OFF)
-option (USE_EXTERNAL_OSL        "Use external OpenShadingLanguage library"              OFF)
+option (USE_EXTERNAL_OIIO                   "Use external OpenImageIO library"                      OFF)
+option (USE_EXTERNAL_OSL                    "Use external OpenShadingLanguage library"              OFF)
+            
+option (WITH_OSL                            "Build OSL support"                                     OFF)
 
-option (WITH_OSL                "Build OSL support"                                     OFF)
-
-option (USE_STATIC_BOOST        "Use static Boost libraries"                            ON)
-option (USE_STATIC_OIIO         "Use static OpenImageIO libraries"                      ON)
-option (USE_STATIC_OSL          "Use static OpenShadingLanguage libraries"              ON)
+option (USE_STATIC_BOOST                    "Use static Boost libraries"                            ON)
+option (USE_STATIC_OIIO                     "Use static OpenImageIO libraries"                      ON)
+option (USE_STATIC_OSL                      "Use static OpenShadingLanguage libraries"              ON)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -62,6 +62,8 @@ set (Boost_MULTITHREADED TRUE)
 if (USE_STATIC_BOOST)
     set (Boost_USE_STATIC_LIBS TRUE)
 endif ()
+
+set (BOOST_NEEDED_LIBS )
 
 find_package (Boost 1.47 REQUIRED ${BOOST_NEEDED_LIBS})
 
@@ -135,6 +137,7 @@ endif ()
 
 if (MSVC)
     add_definitions (/D "_CRT_SECURE_NO_WARNINGS")
+    add_definitions (/D "_SCL_SECURE_NO_WARNINGS")
 endif ()
 
 
