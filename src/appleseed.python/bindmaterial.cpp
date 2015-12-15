@@ -47,10 +47,22 @@ using namespace std;
 namespace
 {
     auto_release_ptr<Material> create_material(
-        const string&   name,
-        const bpy::dict& params)
+        const string&       model,
+        const string&       name,
+        const bpy::dict&    params)
     {
-        return GenericMaterialFactory().create(name.c_str(), bpy_dict_to_param_array(params));
+        MaterialFactoryRegistrar factories;
+        const IMaterialFactory* factory = factories.lookup(model.c_str());
+
+        if (factory)
+            return factory->create(name.c_str(), bpy_dict_to_param_array(params));
+        else
+        {
+            PyErr_SetString(PyExc_RuntimeError, "Material model not found");
+            bpy::throw_error_already_set();
+        }
+
+        return auto_release_ptr<Material>();
     }
 }
 

@@ -44,17 +44,18 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace
 {
     auto_release_ptr<Texture> create_texture(
-        const std::string&              texture_type,
-        const std::string&              name,
-        const bpy::dict&                params,
-        const bpy::list&                search_paths)
+        const string&              model,
+        const string&              name,
+        const bpy::dict&           params,
+        const bpy::list&           search_paths)
     {
         TextureFactoryRegistrar factories;
-        const ITextureFactory* factory = factories.lookup(texture_type.c_str());
+        const ITextureFactory* factory = factories.lookup(model.c_str());
 
         if (factory)
         {
@@ -76,7 +77,7 @@ namespace
         }
         else
         {
-            PyErr_SetString(PyExc_RuntimeError, "EDF type not found");
+            PyErr_SetString(PyExc_RuntimeError, "Texture model not found");
             bpy::throw_error_already_set();
         }
 
@@ -84,9 +85,9 @@ namespace
     }
 
     auto_release_ptr<TextureInstance> create_texture_instance(
-        const std::string&              name,
+        const string&                   name,
         const bpy::dict&                params,
-        const std::string&              texture_name,
+        const string&                   texture_name,
         const UnalignedTransformd44&    transform)
     {
         return
@@ -102,7 +103,7 @@ namespace
         return UnalignedTransformd44(tx->get_transform());
     }
 
-    std::string texture_inst_get_texture_name(const TextureInstance* tx)
+    string texture_inst_get_texture_name(const TextureInstance* tx)
     {
         return tx->get_texture_name();
     }
