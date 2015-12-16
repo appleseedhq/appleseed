@@ -39,12 +39,13 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace
 {
     auto_release_ptr<SurfaceShader> create_surface_shader(
-        const std::string& model,
-        const std::string& name)
+        const string& model,
+        const string& name)
     {
         SurfaceShaderFactoryRegistrar factories;
         const ISurfaceShaderFactory* factory = factories.lookup(model.c_str());
@@ -53,7 +54,7 @@ namespace
             return factory->create(name.c_str(), ParamArray());
         else
         {
-            PyErr_SetString(PyExc_RuntimeError, "SurfaceShader type not found");
+            PyErr_SetString(PyExc_RuntimeError, "SurfaceShader model not found");
             bpy::throw_error_already_set();
         }
 
@@ -61,9 +62,9 @@ namespace
     }
 
     auto_release_ptr<SurfaceShader> create_surface_shader_with_params(
-        const std::string&    model,
-        const std::string&    name,
-        const bpy::dict&      params)
+        const string&        model,
+        const string&        name,
+        const bpy::dict&     params)
     {
         SurfaceShaderFactoryRegistrar factories;
         const ISurfaceShaderFactory* factory = factories.lookup(model.c_str());
@@ -72,7 +73,7 @@ namespace
             return factory->create(name.c_str(), bpy_dict_to_param_array(params));
         else
         {
-            PyErr_SetString(PyExc_RuntimeError, "SurfaceShader type not found");
+            PyErr_SetString(PyExc_RuntimeError, "SurfaceShader model not found");
             bpy::throw_error_already_set();
         }
 

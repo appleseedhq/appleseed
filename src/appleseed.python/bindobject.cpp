@@ -43,6 +43,7 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace
 {
@@ -74,9 +75,9 @@ namespace
     }
 
     auto_release_ptr<ObjectInstance> create_obj_instance_with_back_mat(
-        const std::string&              name,
+        const string&                   name,
         const bpy::dict&                params,
-        const std::string&              object_name,
+        const string&                   object_name,
         const UnalignedTransformd44&    transform,
         const bpy::dict&                front_material_mappings,
         const bpy::dict&                back_material_mappings)
@@ -92,9 +93,9 @@ namespace
     }
 
     auto_release_ptr<ObjectInstance> create_obj_instance(
-        const std::string&              name,
+        const string&                   name,
         const bpy::dict&                params,
-        const std::string&              object_name,
+        const string&                   object_name,
         const UnalignedTransformd44&    transform,
         const bpy::dict&                front_material_mappings)
     {
@@ -113,7 +114,7 @@ namespace
         return UnalignedTransformd44(obj->get_transform());
     }
 
-    std::string obj_inst_get_obj_name(const ObjectInstance* obj)
+    string obj_inst_get_obj_name(const ObjectInstance* obj)
     {
         return obj->get_object_name();
     }

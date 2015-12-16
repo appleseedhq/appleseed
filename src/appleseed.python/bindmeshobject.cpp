@@ -45,11 +45,12 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace
 {
     auto_release_ptr<MeshObject> create_mesh_obj(
-        const std::string&  name,
+        const string&       name,
         const bpy::dict&    params)
     {
         return MeshObjectFactory::create(name.c_str(), bpy_dict_to_param_array(params));
@@ -57,7 +58,7 @@ namespace
 
     bpy::list read_mesh_objects(
         const bpy::list&    search_paths,
-        const std::string&  base_object_name,
+        const string&       base_object_name,
         const bpy::dict&    params)
     {
         SearchPaths paths;
@@ -97,8 +98,8 @@ namespace
 
     bool write_mesh_object(
         const MeshObject*   object,
-        const std::string&  object_name,
-        const std::string&  filename)
+        const string&       object_name,
+        const string&       filename)
     {
         return MeshObjectWriter::write(*object, object_name.c_str(), filename.c_str());
     }
