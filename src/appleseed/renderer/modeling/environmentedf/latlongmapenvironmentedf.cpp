@@ -102,11 +102,13 @@ namespace
             TextureCache&   texture_cache,
             const Source*   radiance_source,
             const Source*   multiplier_source,
+            const Source*   exposure_source,
             const size_t    width,
             const size_t    height)
           : m_texture_cache(texture_cache)
           , m_radiance_source(radiance_source)
           , m_multiplier_source(multiplier_source)
+          , m_exposure_source(exposure_source)
           , m_rcp_width(1.0 / width)
           , m_rcp_height(1.0 / height)
         {
@@ -131,7 +133,9 @@ namespace
 
             double multiplier;
             m_multiplier_source->evaluate(m_texture_cache, uv, multiplier);
-            payload.m_color *= static_cast<float>(multiplier);
+            double exposure;
+            m_exposure_source->evaluate(m_texture_cache, uv, exposure);
+            payload.m_color *= static_cast<float>(multiplier * pow(2.0, exposure));
 
             importance = static_cast<double>(luminance(payload.m_color));
         }
@@ -140,6 +144,7 @@ namespace
         TextureCache&   m_texture_cache;
         const Source*   m_radiance_source;
         const Source*   m_multiplier_source;
+        const Source*   m_exposure_source;
         const double    m_rcp_width;
         const double    m_rcp_height;
     };
@@ -160,6 +165,7 @@ namespace
         {
             m_inputs.declare("radiance", InputFormatSpectralIlluminance);
             m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("exposure", InputFormatScalar, "0.0");
 
             m_phi_shift = deg_to_rad(m_params.get_optional<double>("horizontal_shift", 0.0));
             m_theta_shift = deg_to_rad(m_params.get_optional<double>("vertical_shift", 0.0));
@@ -295,6 +301,7 @@ namespace
         {
             Spectrum    m_radiance;                 // emitted radiance in W.m^-2.sr^-1
             double      m_radiance_multiplier;      // emitted radiance multiplier
+            double      m_exposure;                 // emitted radiance multiplier in f-stops
         };
 
         double  m_phi_shift;                        // horizontal shift in radians
@@ -346,6 +353,7 @@ namespace
                 texture_cache,
                 radiance_source,
                 m_inputs.source("radiance_multiplier"),
+                m_inputs.source("exposure"),
                 m_importance_map_width,
                 m_importance_map_height);
 
@@ -386,7 +394,8 @@ namespace
                 input_evaluator.evaluate<InputValues>(m_inputs, Vector2d(u, 1.0 - v));
 
             value = values->m_radiance;
-            value *= static_cast<float>(values->m_radiance_multiplier);
+            value *=
+                static_cast<float>(values->m_radiance_multiplier * pow(2.0, values->m_exposure));
         }
 
         double compute_pdf(
@@ -453,6 +462,17 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("help", "Environment texture radiance multiplier"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "exposure")
+            .insert("label", "Exposure")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "0.0")
+            .insert("help", "Environment exposure"));
 
     metadata.push_back(
         Dictionary()

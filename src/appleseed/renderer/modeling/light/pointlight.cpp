@@ -43,12 +43,16 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
+// Standard headers.
+#include <cmath>
+
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class Project; }
 
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
@@ -72,6 +76,7 @@ namespace
         {
             m_inputs.declare("intensity", InputFormatSpectralIlluminance);
             m_inputs.declare("intensity_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("exposure", InputFormatScalar, "0.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -92,13 +97,20 @@ namespace
             if (!Light::on_frame_begin(project, assembly, abort_switch))
                 return false;
 
-            if (!check_uniform("intensity") || !check_uniform("intensity_multiplier"))
+            if (
+                !check_uniform("intensity") ||
+                !check_uniform("intensity_multiplier") ||
+                !check_uniform("exposure"))
+            {
                 return false;
+            }
 
             check_non_zero_emission("intensity", "intensity_multiplier");
 
             m_inputs.evaluate_uniforms(&m_values);
-            m_values.m_intensity *= static_cast<float>(m_values.m_intensity_multiplier);
+            m_values.m_intensity *=
+                static_cast<float>(
+                    m_values.m_intensity_multiplier * pow(2.0, m_values.m_exposure));
 
             return true;
         }
@@ -143,6 +155,7 @@ namespace
         {
             Spectrum    m_intensity;                // emitted intensity in W.sr^-1
             double      m_intensity_multiplier;     // emitted intensity multiplier
+            double      m_exposure;                 // emitted intensity multiplier in f-stops
         };
 
         InputValues     m_values;
@@ -195,6 +208,17 @@ DictionaryArray PointLightFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("help", "Light intensity multiplier"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "exposure")
+            .insert("label", "Exposure")
+            .insert("type", "numeric")
+            .insert("use", "optional")
+            .insert("default", "0.0")
+            .insert("min_value", "-64.0")
+            .insert("max_value", "64.0")
+            .insert("help", "Light exposure"));
 
     add_common_input_metadata(metadata);
 
