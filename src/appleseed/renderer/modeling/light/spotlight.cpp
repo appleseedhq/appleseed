@@ -270,11 +270,11 @@ DictionaryArray SpotLightFactory::get_input_metadata() const
         Dictionary()
             .insert("name", "exposure")
             .insert("label", "Exposure")
-            .insert("type", "numeric")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
             .insert("default", "0.0")
-            .insert("min_value", "-64.0")
-            .insert("max_value", "64.0")
             .insert("help", "Light exposure"));
 
     metadata.push_back(
