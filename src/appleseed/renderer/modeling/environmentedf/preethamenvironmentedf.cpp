@@ -452,7 +452,7 @@ Dictionary PreethamEnvironmentEDFFactory::get_model_metadata() const
         Dictionary()
             .insert("name", Model)
             .insert("label", "Preetham Environment EDF")
-            .insert("help", "Sky dome environment");
+            .insert("help", "Physical sky environment");
 }
 
 DictionaryArray PreethamEnvironmentEDFFactory::get_input_metadata() const
