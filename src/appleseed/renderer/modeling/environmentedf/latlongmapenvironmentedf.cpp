@@ -433,7 +433,7 @@ Dictionary LatLongMapEnvironmentEDFFactory::get_model_metadata() const
         Dictionary()
             .insert("name", Model)
             .insert("label", "Latitude-Longitude Map Environment EDF")
-            .insert("help", "Lat-Long image-based lighting environment");
+            .insert("help", "Sky dome environment");
 }
 
 DictionaryArray LatLongMapEnvironmentEDFFactory::get_input_metadata() const
