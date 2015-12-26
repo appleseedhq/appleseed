@@ -72,7 +72,7 @@ def build_project():
     assembly.surface_shaders().insert(asr.SurfaceShader("physical_surface_shader", "physical_surface_shader"))
 
     # Create a material called "gray_material" and insert it into the assembly.
-    assembly.materials().insert(asr.Material("gray_material", { "surface_shader" : "physical_surface_shader",
+    assembly.materials().insert(asr.Material("generic_material", "gray_material", { "surface_shader" : "physical_surface_shader",
                                                                 "bsdf" : "diffuse_gray_brdf" }))
 
     #------------------------------------------------------------------------

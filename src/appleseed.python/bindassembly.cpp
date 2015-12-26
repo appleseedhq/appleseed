@@ -44,24 +44,25 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace
 {
-    auto_release_ptr<Assembly> create_assembly(const std::string& name)
+    auto_release_ptr<Assembly> create_assembly(const string& name)
     {
         return AssemblyFactory().create(name.c_str(), ParamArray());
     }
 
     auto_release_ptr<Assembly> create_assembly_with_params(
-        const std::string&  name,
+        const string&       name,
         const bpy::dict&    params)
     {
         return AssemblyFactory().create(name.c_str(), bpy_dict_to_param_array(params));
     }
 
     auto_release_ptr<Assembly> create_assembly_with_model_and_params(
-        const std::string&  model,
-        const std::string&  name,
+        const string&       model,
+        const string&       name,
         const bpy::dict&    params)
     {
         AssemblyFactoryRegistrar factories;
@@ -79,9 +80,9 @@ namespace
     }
 
     auto_release_ptr<AssemblyInstance> create_assembly_instance(
-        const std::string&  name,
+        const string&       name,
         const bpy::dict&    params,
-        const std::string&  assembly_name)
+        const string&       assembly_name)
     {
         return
             AssemblyInstanceFactory::create(
@@ -95,7 +96,7 @@ namespace
         return instance->transform_sequence();
     }
 
-    std::string get_assembly_name(AssemblyInstance* instance)
+    string get_assembly_name(AssemblyInstance* instance)
     {
         return instance->get_assembly_name();
     }

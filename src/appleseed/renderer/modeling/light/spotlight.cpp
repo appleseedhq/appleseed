@@ -80,6 +80,7 @@ namespace
         {
             m_inputs.declare("intensity", InputFormatSpectralIlluminance);
             m_inputs.declare("intensity_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("exposure", InputFormatScalar, "0.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -102,6 +103,7 @@ namespace
 
             m_intensity_source = m_inputs.source("intensity");
             m_intensity_multiplier_source = m_inputs.source("intensity_multiplier");
+            m_exposure_source = m_inputs.source("exposure");
             check_non_zero_emission(m_intensity_source, m_intensity_multiplier_source);
 
             const double inner_half_angle = deg_to_rad(m_params.get_required<double>("inner_angle", 20.0) / 2.0);
@@ -164,10 +166,12 @@ namespace
         {
             Spectrum    m_intensity;                // emitted intensity in W.sr^-1
             double      m_intensity_multiplier;     // emitted intensity multiplier
+            double      m_exposure;                 // emitted intensity multiplier in f-stops
         };
 
         const Source*   m_intensity_source;
         const Source*   m_intensity_multiplier_source;
+        const Source*   m_exposure_source;
 
         double          m_cos_inner_half_angle;
         double          m_cos_outer_half_angle;
@@ -202,7 +206,8 @@ namespace
 
             const InputValues* values = input_evaluator.evaluate<InputValues>(m_inputs, uv);
             radiance = values->m_intensity;
-            radiance *= static_cast<float>(values->m_intensity_multiplier);
+            radiance *=
+                static_cast<float>(values->m_intensity_multiplier * pow(2.0, values->m_exposure));
 
             if (cos_theta < m_cos_inner_half_angle)
             {
@@ -260,6 +265,17 @@ DictionaryArray SpotLightFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("help", "Light intensity multiplier"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "exposure")
+            .insert("label", "Exposure")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "0.0")
+            .insert("help", "Light exposure"));
 
     metadata.push_back(
         Dictionary()

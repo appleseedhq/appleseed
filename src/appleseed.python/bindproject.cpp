@@ -48,10 +48,11 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace
 {
-    auto_release_ptr<Project> create_project(const std::string& name)
+    auto_release_ptr<Project> create_project(const string& name)
     {
         return ProjectFactory::create(name.c_str());
     }
@@ -119,13 +120,13 @@ namespace
         return ProjectFileWriter::write(*project, filepath, opts);
     }
 
-    auto_release_ptr<Configuration> create_config(const std::string& name)
+    auto_release_ptr<Configuration> create_config(const string& name)
     {
         return ConfigurationFactory::create(name.c_str());
     }
 
     auto_release_ptr<Configuration> create_config_with_params(
-        const std::string&                  name,
+        const string&                       name,
         const bpy::dict&                    params)
     {
         return ConfigurationFactory::create(name.c_str(), bpy_dict_to_param_array(params));

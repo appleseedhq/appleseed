@@ -42,11 +42,12 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace
 {
     auto_release_ptr<Frame> create_frame(
-        const std::string&  name,
+        const string&       name,
         const bpy::dict&    params)
     {
         return FrameFactory::create(name.c_str(), bpy_dict_to_param_array(params));

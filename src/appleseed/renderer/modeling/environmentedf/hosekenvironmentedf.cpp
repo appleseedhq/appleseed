@@ -465,7 +465,7 @@ Dictionary HosekEnvironmentEDFFactory::get_model_metadata() const
             .insert("name", Model)
             .insert("label", "Hosek-Wilkie Environment EDF")
             .insert("default_model", "true")
-            .insert("help", "Sky dome environment");
+            .insert("help", "Physical sky environment");
 }
 
 DictionaryArray HosekEnvironmentEDFFactory::get_input_metadata() const

@@ -41,21 +41,22 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace
 {
-    auto_release_ptr<BSSRDF> create_bssrdf(const std::string&   bssrdf_type,
-                                           const std::string&   name,
-                                           const bpy::dict&     params)
+    auto_release_ptr<BSSRDF> create_bssrdf(const string&    model,
+                                           const string&    name,
+                                           const bpy::dict& params)
     {
         BSSRDFFactoryRegistrar factories;
-        const IBSSRDFFactory* factory = factories.lookup(bssrdf_type.c_str());
+        const IBSSRDFFactory* factory = factories.lookup(model.c_str());
 
         if (factory)
             return factory->create(name.c_str(), bpy_dict_to_param_array(params));
         else
         {
-            PyErr_SetString(PyExc_RuntimeError, "BSSRDF type not found");
+            PyErr_SetString(PyExc_RuntimeError, "BSSRDF model not found");
             bpy::throw_error_already_set();
         }
 

@@ -47,6 +47,7 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace
 {
@@ -65,7 +66,7 @@ namespace
         return vec.get_by_index(index);
     }
 
-    Entity* get_entity_map_item(EntityMap& map, const std::string& key)
+    Entity* get_entity_map_item(EntityMap& map, const string& key)
     {
         return map.get_by_name(key.c_str());
     }
