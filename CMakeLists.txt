@@ -129,11 +129,11 @@ if (is_x86)
        option (USE_AVX                      "Use AVX instruction set"                               OFF)
     endif ()
 elseif (TARGET_ARCH MATCHES "ARM")
-   option (USE_NEON                         "Use NEON instruction set"                              OFF)
+    option (USE_NEON                        "Use NEON instruction set"                              OFF)
 elseif (TARGET_ARCH MATCHES "PPC")
-   option (USE_ALTIVEC                      "Use Altivec instruction set"                           OFF)
+    option (USE_ALTIVEC                     "Use Altivec instruction set"                           OFF)
 else ()
-   # Unknown architecture: No SIMD.
+    # Unknown architecture: No SIMD.
 endif ()
 
 
