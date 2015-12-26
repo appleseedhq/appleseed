@@ -135,6 +135,12 @@ if (CMAKE_SIZEOF_VOID_P EQUAL 4)
         )
     endif ()
 endif ()
+if (USE_AVX)
+    set (c_compiler_flags_release
+        ${c_compiler_flags_release}
+        /arch:AVX                           # Advanced Vector Extensions
+    )
+endif ()
 set (exe_linker_flags_release
     /DEBUG                                  # Generate Debug Info
     /OPT:REF                                # Eliminate Unreferenced Data

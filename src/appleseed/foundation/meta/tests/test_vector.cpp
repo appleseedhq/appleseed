@@ -145,7 +145,7 @@ TEST_SUITE(Foundation_Math_Vector)
         EXPECT_FEQ(Vector3d(5.0, 7.0, 9.0), Vector3d(1.0, 2.0, 3.0) + Vector3d(4.0, 5.0, 6.0));
     }
 
-    TEST_CASE(TestSubstraction)
+    TEST_CASE(TestSubtraction)
     {
         EXPECT_FEQ(Vector3d(1.0, 3.0, 5.0), Vector3d(4.0, 5.0, 6.0) - Vector3d(3.0, 2.0, 1.0));
     }
@@ -186,7 +186,7 @@ TEST_SUITE(Foundation_Math_Vector)
         EXPECT_FEQ(Vector3d(5.0, 7.0, 9.0), v);
     }
 
-    TEST_CASE(TestInPlaceSubstraction)
+    TEST_CASE(TestInPlaceSubtraction)
     {
         Vector3d v(4.0, 5.0, 6.0); v -= Vector3d(3.0, 2.0, 1.0);
         EXPECT_FEQ(Vector3d(1.0, 3.0, 5.0), v);

@@ -156,7 +156,7 @@ TEST_SUITE(Foundation_Math_MatrixMN)
         EXPECT_FEQ(Mat23d(ExpectedValues), Mat23d(Values) + Mat23d(OtherValues));
     }
 
-    TEST_CASE(TestSubstraction)
+    TEST_CASE(TestSubtraction)
     {
         static const double OtherValues[] =
         {
@@ -237,7 +237,7 @@ TEST_SUITE(Foundation_Math_MatrixMN)
         EXPECT_FEQ(Mat23d(ExpectedValues), m);
     }
 
-    TEST_CASE(TestInPlaceSubstraction)
+    TEST_CASE(TestInPlaceSubtraction)
     {
         static const double OtherValues[] =
         {
