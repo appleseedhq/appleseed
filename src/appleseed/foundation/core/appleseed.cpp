@@ -67,7 +67,9 @@ const char* Appleseed::get_lib_name()
 
 const char* Appleseed::get_lib_version()
 {
-#if defined APPLESEED_USE_SSE42
+#if defined APPLESEED_USE_AVX
+    return APPLESEED_VERSION_STRING " (AVX)";
+#elif defined APPLESEED_USE_SSE42
     return APPLESEED_VERSION_STRING " (SSE 4.2)";
 #elif defined APPLESEED_USE_SSE
     return APPLESEED_VERSION_STRING " (SSE 2)";
