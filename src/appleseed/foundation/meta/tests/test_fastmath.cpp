@@ -94,15 +94,15 @@ TEST_SUITE(Foundation_Math_FastMath)
 
         for (size_t i = 0; i < step_count; i += 4)
         {
-            SSE_ALIGN T x[4];
+            APPLESEED_SSE_ALIGN T x[4];
 
             for (size_t j = 0; j < 4; ++j)
                 x[j] = fit<size_t, T>(i + j, 0, step_count - 1, low, high);
 
-            SSE_ALIGN T ref_values[4] = { x[0], x[1], x[2], x[3] };
+            APPLESEED_SSE_ALIGN T ref_values[4] = { x[0], x[1], x[2], x[3] };
             ref(ref_values);
 
-            SSE_ALIGN T values[4] = { x[0], x[1], x[2], x[3] };
+            APPLESEED_SSE_ALIGN T values[4] = { x[0], x[1], x[2], x[3] };
             func(values);
 
             for (size_t j = 0; j < 4; ++j)

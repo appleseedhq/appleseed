@@ -78,7 +78,7 @@ namespace
             return "Empty";
         }
 
-        NO_INLINE virtual void run() APPLESEED_OVERRIDE
+        APPLESEED_NO_INLINE virtual void run() APPLESEED_OVERRIDE
         {
         }
     };

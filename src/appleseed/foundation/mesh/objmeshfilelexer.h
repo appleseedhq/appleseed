@@ -111,7 +111,7 @@ class OBJMeshFileLexer
     }
 
     // Return the current character in the line.
-    FORCE_INLINE unsigned char get_char() const
+    APPLESEED_FORCE_INLINE unsigned char get_char() const
     {
         assert(m_file.is_open());
 
@@ -119,7 +119,7 @@ class OBJMeshFileLexer
     }
 
     // Advance to the next character in the line.
-    FORCE_INLINE void next_char()
+    APPLESEED_FORCE_INLINE void next_char()
     {
         assert(m_file.is_open());
 
@@ -133,13 +133,13 @@ class OBJMeshFileLexer
     }
 
     // Return true if a given character is a blank character, similarly to std::isspace().
-    FORCE_INLINE bool is_space(const unsigned char c) const
+    APPLESEED_FORCE_INLINE bool is_space(const unsigned char c) const
     {
         return m_is_space[c];
     }
 
     // Return true if the end of the line has been reached.
-    FORCE_INLINE bool is_eol() const
+    APPLESEED_FORCE_INLINE bool is_eol() const
     {
         assert(m_file.is_open());
 
@@ -147,7 +147,7 @@ class OBJMeshFileLexer
     }
 
     // Return true if the end of the file has been reached.
-    FORCE_INLINE bool is_eof() const
+    APPLESEED_FORCE_INLINE bool is_eof() const
     {
         assert(m_file.is_open());
 
@@ -234,7 +234,7 @@ class OBJMeshFileLexer
     }
 
     // Accept a long integer, or generate a parse error.
-    FORCE_INLINE long accept_long()
+    APPLESEED_FORCE_INLINE long accept_long()
     {
         assert(m_file.is_open());
 
@@ -253,7 +253,7 @@ class OBJMeshFileLexer
     }
 
     // Accept a double-precision floating point number, or generate a parse error.
-    FORCE_INLINE double accept_double()
+    APPLESEED_FORCE_INLINE double accept_double()
     {
         assert(m_file.is_open());
 

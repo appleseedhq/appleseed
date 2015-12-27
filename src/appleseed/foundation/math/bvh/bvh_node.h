@@ -101,14 +101,14 @@ class APPLESEED_ALIGN(64) Node
     typedef typename AABBType::ValueType ValueType;
     static const size_t Dimension = AABBType::Dimension;
 
-    uint32                  m_item_count;
-    uint32                  m_index;
-    uint32                  m_left_bbox_index;
-    uint32                  m_left_bbox_count;
-    uint32                  m_right_bbox_index;
-    uint32                  m_right_bbox_count;
+    uint32                          m_item_count;
+    uint32                          m_index;
+    uint32                          m_left_bbox_index;
+    uint32                          m_left_bbox_count;
+    uint32                          m_right_bbox_index;
+    uint32                          m_right_bbox_count;
 
-    SSE_ALIGN ValueType     m_bbox_data[4 * Dimension];
+    APPLESEED_SSE_ALIGN ValueType   m_bbox_data[4 * Dimension];
 };
 
 

@@ -180,7 +180,7 @@ inline foundation::Transformd TransformSequence::evaluate(const double time) con
     return evaluate(time, tmp);
 }
 
-FORCE_INLINE const foundation::Transformd& TransformSequence::evaluate(
+APPLESEED_FORCE_INLINE const foundation::Transformd& TransformSequence::evaluate(
     const double            time,
     foundation::Transformd& tmp) const
 {

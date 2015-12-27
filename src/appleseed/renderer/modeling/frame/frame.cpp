@@ -260,7 +260,7 @@ namespace
         {
             // Load the pixel color.
 #ifdef APPLESEED_USE_SSE
-            SSE_ALIGN Color4f color;
+            APPLESEED_SSE_ALIGN Color4f color;
 #else
             Color4f color;
 #endif

@@ -157,12 +157,12 @@ class RayInfo<double, 3>
     static const size_t Dimension = 3;
 
     // Reciprocal of the ray direction.
-    SSE_ALIGN VectorType m_rcp_dir;
+    APPLESEED_SSE_ALIGN VectorType m_rcp_dir;
 
     // Sign of the ray direction (for the i'th component, the sign value
     // is 1 if the component is positive or null, and 0 if the component
     // is strictly negative).
-    SSE_ALIGN Vector<uint32, 4> m_sgn_dir;
+    APPLESEED_SSE_ALIGN Vector<uint32, 4> m_sgn_dir;
 
     // Constructors.
     RayInfo();                              // leave all fields uninitialized
@@ -297,7 +297,7 @@ inline RayInfo<double, 3>::RayInfo()
 {
 }
 
-FORCE_INLINE RayInfo<double, 3>::RayInfo(const RayType& ray)
+APPLESEED_FORCE_INLINE RayInfo<double, 3>::RayInfo(const RayType& ray)
 {
     const __m128d one = _mm_set1_pd(1.0);
     const __m128d rcp_dir0 = _mm_div_pd(one, _mm_loadu_pd(&ray.m_dir[0]));

@@ -52,14 +52,14 @@ class APPLESEED_DLLSYMBOL TestListenerHelper
   public:
     // Write a message with formatting to a test listener.
     static void write(
-        ITestListener&          test_listener,
-        const TestSuite&        test_suite,
-        const char*             test_case_name,
-        const char*             file,
-        const size_t            line,
-        const TestMessage::Type message_type,
-        PRINTF_FMT const char*  format, ...)
-        PRINTF_FMT_ATTR(7, 8);
+        ITestListener&                      test_listener,
+        const TestSuite&                    test_suite,
+        const char*                         test_case_name,
+        const char*                         file,
+        const size_t                        line,
+        const TestMessage::Type             message_type,
+        APPLESEED_PRINTF_FMT const char*    format, ...)
+        APPLESEED_PRINTF_FMT_ATTR(7, 8);
 };
 
 }       // namespace foundation

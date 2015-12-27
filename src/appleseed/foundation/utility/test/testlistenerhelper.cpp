@@ -47,13 +47,13 @@ namespace foundation
 //
 
 void TestListenerHelper::write(
-    ITestListener&          test_listener,
-    const TestSuite&        test_suite,
-    const char*             test_case_name,
-    const char*             file,
-    const size_t            line,
-    const TestMessage::Type message_type,
-    PRINTF_FMT const char*  format, ...)
+    ITestListener&                      test_listener,
+    const TestSuite&                    test_suite,
+    const char*                         test_case_name,
+    const char*                         file,
+    const size_t                        line,
+    const TestMessage::Type             message_type,
+    APPLESEED_PRINTF_FMT const char*    format, ...)
 {
     // Size in bytes of the temporary message buffer.
     const size_t BufferSize = 4096;

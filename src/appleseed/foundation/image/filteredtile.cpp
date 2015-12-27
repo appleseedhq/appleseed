@@ -110,7 +110,7 @@ void FilteredTile::add(
 
     for (int ry = footprint.min.y; ry <= footprint.max.y; ++ry)
     {
-        float* RESTRICT ptr = reinterpret_cast<float*>(pixel(footprint.min.x, ry));
+        float* APPLESEED_RESTRICT ptr = reinterpret_cast<float*>(pixel(footprint.min.x, ry));
 
         for (int rx = footprint.min.x; rx <= footprint.max.x; ++rx)
         {

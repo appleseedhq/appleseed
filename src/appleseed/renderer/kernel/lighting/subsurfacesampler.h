@@ -319,7 +319,7 @@ inline double SubsurfaceSampler::compute_mis_weight(
       }
     }
 
-    UNREACHABLE;
+    APPLESEED_UNREACHABLE;
     return -1.0;
 }
 

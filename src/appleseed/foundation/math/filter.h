@@ -312,7 +312,7 @@ inline T GaussianFilter2<T>::evaluate(const T x, const T y) const
 }
 
 template <typename T>
-FORCE_INLINE T GaussianFilter2<T>::gaussian(const T x, const T alpha)
+APPLESEED_FORCE_INLINE T GaussianFilter2<T>::gaussian(const T x, const T alpha)
 {
     return
         static_cast<T>(
@@ -370,7 +370,7 @@ inline T MitchellFilter2<T>::evaluate(const T x, const T y) const
 }
 
 template <typename T>
-FORCE_INLINE T MitchellFilter2<T>::mitchell(const T x, const T b, const T c)
+APPLESEED_FORCE_INLINE T MitchellFilter2<T>::mitchell(const T x, const T b, const T c)
 {
     const T x1 = std::abs(x + x);
     const T x2 = x1 * x1;
@@ -415,14 +415,14 @@ inline T LanczosFilter2<T>::evaluate(const T x, const T y) const
 }
 
 template <typename T>
-FORCE_INLINE T LanczosFilter2<T>::lanczos(const T x, const T rcp_tau)
+APPLESEED_FORCE_INLINE T LanczosFilter2<T>::lanczos(const T x, const T rcp_tau)
 {
     const T theta = T(Pi) * x;
     return theta == T(0.0) ? T(1.0) : sinc(theta * rcp_tau) * sinc(theta);
 }
 
 template <typename T>
-FORCE_INLINE T LanczosFilter2<T>::sinc(const T x)
+APPLESEED_FORCE_INLINE T LanczosFilter2<T>::sinc(const T x)
 {
     return std::sin(x) / x;
 }
@@ -447,7 +447,7 @@ inline T BlackmanHarrisFilter2<T>::evaluate(const T x, const T y) const
 }
 
 template <typename T>
-FORCE_INLINE T BlackmanHarrisFilter2<T>::blackman(const T x)
+APPLESEED_FORCE_INLINE T BlackmanHarrisFilter2<T>::blackman(const T x)
 {
     return
           T(0.35875)

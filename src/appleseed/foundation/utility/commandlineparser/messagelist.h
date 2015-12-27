@@ -57,9 +57,9 @@ class APPLESEED_DLLSYMBOL MessageList
 
     // Add a message to the list.
     void add(
-        const LogMessage::Category  category,
-        PRINTF_FMT const char*      format, ...)
-        PRINTF_FMT_ATTR(3, 4);
+        const LogMessage::Category          category,
+        APPLESEED_PRINTF_FMT const char*    format, ...)
+        APPLESEED_PRINTF_FMT_ATTR(3, 4);
 
     // Print the messages.
     void print(Logger& logger) const;

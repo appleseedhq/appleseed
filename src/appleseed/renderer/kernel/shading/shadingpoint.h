@@ -390,7 +390,7 @@ class ShadingPoint
 // ShadingPoint class implementation.
 //
 
-FORCE_INLINE ShadingPoint::ShadingPoint()
+APPLESEED_FORCE_INLINE ShadingPoint::ShadingPoint()
 {
     clear();
 }
@@ -434,7 +434,7 @@ inline ShadingPoint& ShadingPoint::operator=(const ShadingPoint& rhs)
     return *this;
 }
 
-FORCE_INLINE void ShadingPoint::clear()
+APPLESEED_FORCE_INLINE void ShadingPoint::clear()
 {
     m_region_kit_cache = 0;
     m_tess_cache = 0;

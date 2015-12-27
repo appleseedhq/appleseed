@@ -82,7 +82,7 @@ namespace foundation
               case ProcessPriorityHigh:     return ABOVE_NORMAL_PRIORITY_CLASS;
               case ProcessPriorityHighest:  return HIGH_PRIORITY_CLASS;
               default:
-                UNREACHABLE;
+                APPLESEED_UNREACHABLE;
                 return NORMAL_PRIORITY_CLASS;
             }
         }
@@ -168,7 +168,7 @@ namespace foundation
               case ProcessPriorityHigh:     return THREAD_PRIORITY_ABOVE_NORMAL;
               case ProcessPriorityHighest:  return THREAD_PRIORITY_HIGHEST;
               default:
-                UNREACHABLE;
+                APPLESEED_UNREACHABLE;
                 return THREAD_PRIORITY_NORMAL;
             }
         }

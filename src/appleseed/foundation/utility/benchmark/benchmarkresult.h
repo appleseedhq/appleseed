@@ -104,12 +104,12 @@ class APPLESEED_DLLSYMBOL BenchmarkResult
 
     // Write a message.
     void write(
-        const BenchmarkSuite&   benchmark_suite,
-        const IBenchmarkCase&   benchmark_case,
-        const char*             file,
-        const size_t            line,
-        PRINTF_FMT const char*  format, ...)
-        PRINTF_FMT_ATTR(6, 7);
+        const BenchmarkSuite&             benchmark_suite,
+        const IBenchmarkCase&             benchmark_case,
+        const char*                       file,
+        const size_t                      line,
+        APPLESEED_PRINTF_FMT const char*  format, ...)
+        APPLESEED_PRINTF_FMT_ATTR(6, 7);
 
     // Write a timing result.
     void write(
