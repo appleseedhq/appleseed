@@ -323,10 +323,10 @@ namespace
 }
 
 void Logger::write(
-    const LogMessage::Category  category,
-    const char*                 file,
-    const size_t                line,
-    PRINTF_FMT const char*      format, ...)
+    const LogMessage::Category          category,
+    const char*                         file,
+    const size_t                        line,
+    APPLESEED_PRINTF_FMT const char*    format, ...)
 {
     boost::mutex::scoped_lock lock(impl->m_mutex);
 

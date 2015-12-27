@@ -59,7 +59,7 @@ class SwitchException
 #ifdef NDEBUG
     #define assert_otherwise                                    \
         default:                                                \
-          UNREACHABLE;                                          \
+          APPLESEED_UNREACHABLE;                                \
           break
 #else
     #define assert_otherwise                                    \

@@ -61,19 +61,19 @@ const char* Compiler::get_compiler_version()
 {
 // Visual C++.
 #if defined _MSC_VER
-    return TO_STRING_EVAL(_MSC_VER);
+    return APPLESEED_TO_STRING_EVAL(_MSC_VER);
 
 // Clang.
 #elif defined __clang__
-    return TO_STRING_EVAL(__clang_major__) "."
-           TO_STRING_EVAL(__clang_minor__) "."
-           TO_STRING_EVAL(__clang_patchlevel__);
+    return APPLESEED_TO_STRING_EVAL(__clang_major__) "."
+           APPLESEED_TO_STRING_EVAL(__clang_minor__) "."
+           APPLESEED_TO_STRING_EVAL(__clang_patchlevel__);
 
 // gcc.
 #elif defined __GNUC__
-    return TO_STRING_EVAL(__GNUC__) "."
-           TO_STRING_EVAL(__GNUC_MINOR__) "."
-           TO_STRING_EVAL(__GNUC_PATCHLEVEL__);
+    return APPLESEED_TO_STRING_EVAL(__GNUC__) "."
+           APPLESEED_TO_STRING_EVAL(__GNUC_MINOR__) "."
+           APPLESEED_TO_STRING_EVAL(__GNUC_PATCHLEVEL__);
 
 // Other compilers.
 #else

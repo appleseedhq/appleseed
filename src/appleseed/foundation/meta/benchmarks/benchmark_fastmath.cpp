@@ -48,8 +48,8 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
 
     struct Fixture
     {
-        SSE_ALIGN float m_values[N];
-        SSE_ALIGN float m_output[N];
+        APPLESEED_SSE_ALIGN float m_values[N];
+        APPLESEED_SSE_ALIGN float m_output[N];
 
         Fixture()
         {

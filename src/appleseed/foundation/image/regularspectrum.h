@@ -78,7 +78,7 @@ class RegularSpectrum
     const ValueType& operator[](const size_t i) const;
 
   private:
-    SSE_ALIGN ValueType m_samples[StoredSamples];
+    APPLESEED_SSE_ALIGN ValueType m_samples[StoredSamples];
 };
 
 // Exact inequality and equality tests.
@@ -211,7 +211,7 @@ inline void RegularSpectrum<T, N>::set(const ValueType val)
 #ifdef APPLESEED_USE_SSE
 
 template <>
-FORCE_INLINE void RegularSpectrum<float, 31>::set(const float val)
+APPLESEED_FORCE_INLINE void RegularSpectrum<float, 31>::set(const float val)
 {
     const __m128 mval = _mm_set1_ps(val);
 
@@ -432,7 +432,7 @@ inline RegularSpectrum<T, N>& operator+=(RegularSpectrum<T, N>& lhs, const Regul
 #ifdef APPLESEED_USE_SSE
 
 template <>
-FORCE_INLINE RegularSpectrum<float, 31>& operator+=(RegularSpectrum<float, 31>& lhs, const RegularSpectrum<float, 31>& rhs)
+APPLESEED_FORCE_INLINE RegularSpectrum<float, 31>& operator+=(RegularSpectrum<float, 31>& lhs, const RegularSpectrum<float, 31>& rhs)
 {
     _mm_store_ps(&lhs[ 0], _mm_add_ps(_mm_load_ps(&lhs[ 0]), _mm_load_ps(&rhs[ 0])));
     _mm_store_ps(&lhs[ 4], _mm_add_ps(_mm_load_ps(&lhs[ 4]), _mm_load_ps(&rhs[ 4])));
@@ -469,7 +469,7 @@ inline RegularSpectrum<T, N>& operator*=(RegularSpectrum<T, N>& lhs, const T rhs
 #ifdef APPLESEED_USE_SSE
 
 template <>
-FORCE_INLINE RegularSpectrum<float, 31>& operator*=(RegularSpectrum<float, 31>& lhs, const float rhs)
+APPLESEED_FORCE_INLINE RegularSpectrum<float, 31>& operator*=(RegularSpectrum<float, 31>& lhs, const float rhs)
 {
     const __m128 mrhs = _mm_set1_ps(rhs);
 
@@ -499,7 +499,7 @@ inline RegularSpectrum<T, N>& operator*=(RegularSpectrum<T, N>& lhs, const Regul
 #ifdef APPLESEED_USE_SSE
 
 template <>
-FORCE_INLINE RegularSpectrum<float, 31>& operator*=(RegularSpectrum<float, 31>& lhs, const RegularSpectrum<float, 31>& rhs)
+APPLESEED_FORCE_INLINE RegularSpectrum<float, 31>& operator*=(RegularSpectrum<float, 31>& lhs, const RegularSpectrum<float, 31>& rhs)
 {
     _mm_store_ps(&lhs[ 0], _mm_mul_ps(_mm_load_ps(&lhs[ 0]), _mm_load_ps(&rhs[ 0])));
     _mm_store_ps(&lhs[ 4], _mm_mul_ps(_mm_load_ps(&lhs[ 4]), _mm_load_ps(&rhs[ 4])));

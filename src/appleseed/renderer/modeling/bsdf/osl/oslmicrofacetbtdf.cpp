@@ -120,7 +120,7 @@ namespace
             return true;
         }
 
-        FORCE_INLINE virtual void sample(
+        APPLESEED_FORCE_INLINE virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -188,7 +188,7 @@ namespace
             sample.compute_transmitted_differentials(eta);
         }
 
-        FORCE_INLINE virtual double evaluate(
+        APPLESEED_FORCE_INLINE virtual double evaluate(
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
@@ -258,7 +258,7 @@ namespace
             return m_mdf->pdf(wo, m, values->m_ax, values->m_ay) * dwh_dwo;
         }
 
-        FORCE_INLINE virtual double evaluate_pdf(
+        APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
             const void*         data,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,

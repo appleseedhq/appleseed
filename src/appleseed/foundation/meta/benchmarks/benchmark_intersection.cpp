@@ -240,7 +240,7 @@ namespace
             return TriangleType(v0, v1, v2);
         }
 
-        FORCE_INLINE void payload()
+        APPLESEED_FORCE_INLINE void payload()
         {
             for (size_t i = 0; i < RayCount; ++i)
                 m_hit ^= m_triangle.intersect(m_ray[i], m_t, m_u, m_v);

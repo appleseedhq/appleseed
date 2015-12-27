@@ -97,11 +97,11 @@ class APPLESEED_DLLSYMBOL Logger
     // this function will not return and the program will
     // be terminated.
     void write(
-        const LogMessage::Category  category,
-        const char*                 file,
-        const size_t                line,
-        PRINTF_FMT const char*      format, ...)
-        PRINTF_FMT_ATTR(5, 6);
+        const LogMessage::Category          category,
+        const char*                         file,
+        const size_t                        line,
+        APPLESEED_PRINTF_FMT const char*    format, ...)
+        APPLESEED_PRINTF_FMT_ATTR(5, 6);
 
   private:
     struct Impl;

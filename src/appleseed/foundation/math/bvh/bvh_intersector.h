@@ -715,7 +715,7 @@ void Intersector<Tree, Visitor, Ray3d, StackSize, 3>::intersect_motion(
             }
             else
             {
-                SSE_ALIGN double bbox_data[12];
+                APPLESEED_SSE_ALIGN double bbox_data[12];
 
                 // Fetch the left bounding box.
                 if (left_motion_segment_count > 0)

@@ -113,7 +113,7 @@ class DynamicSpectrum
         DynamicSpectrum&        dest);
 
   private:
-    SSE_ALIGN ValueType m_samples[StoredSamples];
+    APPLESEED_SSE_ALIGN ValueType m_samples[StoredSamples];
     foundation::uint32  m_size;
 };
 
@@ -331,7 +331,7 @@ inline void DynamicSpectrum<T, N>::set(const ValueType val)
 #ifdef APPLESEED_USE_SSE
 
 template <>
-FORCE_INLINE void DynamicSpectrum<float, 31>::set(const float val)
+APPLESEED_FORCE_INLINE void DynamicSpectrum<float, 31>::set(const float val)
 {
     const __m128 mval = _mm_set1_ps(val);
 
@@ -620,7 +620,7 @@ inline DynamicSpectrum<T, N>& operator+=(DynamicSpectrum<T, N>& lhs, const Dynam
 #ifdef APPLESEED_USE_SSE
 
 template <>
-FORCE_INLINE DynamicSpectrum<float, 31>& operator+=(DynamicSpectrum<float, 31>& lhs, const DynamicSpectrum<float, 31>& rhs)
+APPLESEED_FORCE_INLINE DynamicSpectrum<float, 31>& operator+=(DynamicSpectrum<float, 31>& lhs, const DynamicSpectrum<float, 31>& rhs)
 {
     if (lhs.size() <= rhs.size())
     {
@@ -695,7 +695,7 @@ inline DynamicSpectrum<T, N>& operator*=(DynamicSpectrum<T, N>& lhs, const T rhs
 #ifdef APPLESEED_USE_SSE
 
 template <>
-FORCE_INLINE DynamicSpectrum<float, 31>& operator*=(DynamicSpectrum<float, 31>& lhs, const float rhs)
+APPLESEED_FORCE_INLINE DynamicSpectrum<float, 31>& operator*=(DynamicSpectrum<float, 31>& lhs, const float rhs)
 {
     const __m128 mrhs = _mm_set1_ps(rhs);
 
@@ -743,7 +743,7 @@ inline DynamicSpectrum<T, N>& operator*=(DynamicSpectrum<T, N>& lhs, const Dynam
 #ifdef APPLESEED_USE_SSE
 
 template <>
-FORCE_INLINE DynamicSpectrum<float, 31>& operator*=(DynamicSpectrum<float, 31>& lhs, const DynamicSpectrum<float, 31>& rhs)
+APPLESEED_FORCE_INLINE DynamicSpectrum<float, 31>& operator*=(DynamicSpectrum<float, 31>& lhs, const DynamicSpectrum<float, 31>& rhs)
 {
     if (lhs.size() <= rhs.size())
     {

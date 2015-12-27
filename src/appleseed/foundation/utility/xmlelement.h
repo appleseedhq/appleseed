@@ -196,7 +196,7 @@ inline void XMLElement::close()
         switch (m_content_type)
         {
           case HasNoContent:
-            UNREACHABLE;
+            APPLESEED_UNREACHABLE;
             break;
 
           case HasChildElements:

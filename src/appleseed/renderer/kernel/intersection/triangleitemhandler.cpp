@@ -87,9 +87,9 @@ AABB3d TriangleItemHandler::clip(
 
 #ifdef APPLESEED_USE_SSE
 
-    SSE_ALIGN const Vector3d v0(m_triangle_vertices[vertex_info.m_vertex_index + 0]);
-    SSE_ALIGN const Vector3d v1(m_triangle_vertices[vertex_info.m_vertex_index + 1]);
-    SSE_ALIGN const Vector3d v2(m_triangle_vertices[vertex_info.m_vertex_index + 2]);
+    APPLESEED_SSE_ALIGN const Vector3d v0(m_triangle_vertices[vertex_info.m_vertex_index + 0]);
+    APPLESEED_SSE_ALIGN const Vector3d v1(m_triangle_vertices[vertex_info.m_vertex_index + 1]);
+    APPLESEED_SSE_ALIGN const Vector3d v2(m_triangle_vertices[vertex_info.m_vertex_index + 2]);
 
     const double v0d = v0[dimension];
     const double v1d = v1[dimension];
@@ -256,7 +256,7 @@ AABB3d TriangleItemHandler::clip(
         }
     }
 
-    SSE_ALIGN AABB3d bbox;
+    APPLESEED_SSE_ALIGN AABB3d bbox;
 
     _mm_store_pd(&bbox.min.x, bbox_min_xy);
     _mm_store_sd(&bbox.min.z, bbox_min_zz);

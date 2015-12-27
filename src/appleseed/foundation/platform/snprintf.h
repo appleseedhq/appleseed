@@ -45,10 +45,10 @@ namespace foundation
 //
 
 int portable_snprintf(
-    char*                   str,
-    size_t                  str_m,
-    PRINTF_FMT const char*  fmt, ...)
-    PRINTF_FMT_ATTR(3, 4);
+    char*                             str,
+    size_t                            str_m,
+    APPLESEED_PRINTF_FMT const char*  fmt, ...)
+    APPLESEED_PRINTF_FMT_ATTR(3, 4);
 
 int portable_vsnprintf(
     char*                   str,

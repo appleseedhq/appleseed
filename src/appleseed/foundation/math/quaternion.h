@@ -474,7 +474,7 @@ inline bool is_normalized(const Quaternion<T>& q, const T eps)
 }
 
 template <typename T>
-FORCE_INLINE Quaternion<T> slerp(const Quaternion<T>& p, const Quaternion<T>& q, const T t)
+APPLESEED_FORCE_INLINE Quaternion<T> slerp(const Quaternion<T>& p, const Quaternion<T>& q, const T t)
 {
     const T Eps = make_eps<T>(1.0e-4f, 1.0e-6);
 

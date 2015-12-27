@@ -163,7 +163,7 @@ inline void FilteredTile::get_pixel(
     const size_t            i,
     T                       components[]) const
 {
-    const float* RESTRICT ptr = pixel(i);
+    const float* APPLESEED_RESTRICT ptr = pixel(i);
 
     const float weight = *ptr++;
     const float rcp_weight = weight == 0.0f ? 0.0f : 1.0f / weight;

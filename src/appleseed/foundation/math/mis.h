@@ -235,7 +235,7 @@ inline T mis(const MISHeuristic heuristic, const T q1, const T q2)
       case MISMaximum:  return mis_maximum(q1, q2);
     }
 
-    UNREACHABLE;
+    APPLESEED_UNREACHABLE;
     return T(-1.0);
 }
 

@@ -107,7 +107,7 @@ APPLESEED_DLLSYMBOL char* duplicate_string(const char* s);
 APPLESEED_DLLSYMBOL void free_string(const char* s);
 
 // Convert a C string allocated by duplicate_string() to an std::string, and dellocate the C string.
-FORCE_INLINE std::string convert_to_std_string(const char* s);
+APPLESEED_FORCE_INLINE std::string convert_to_std_string(const char* s);
 
 
 //
@@ -498,7 +498,7 @@ inline bool is_empty_string(const char* s)
 // C++ strings manipulation functions implementation.
 //
 
-FORCE_INLINE std::string convert_to_std_string(const char* s)
+APPLESEED_FORCE_INLINE std::string convert_to_std_string(const char* s)
 {
     const std::string result = s;
     free_string(s);
