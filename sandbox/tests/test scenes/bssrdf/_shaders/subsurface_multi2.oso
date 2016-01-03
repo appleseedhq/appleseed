@@ -116,9 +116,9 @@ code ___main___
 #             0.3 * as_subsurface("standard_dipole", N, color(0.5, 0.0, 0.0) , 0.25, 1.3) +
 	assign		$tmp5 $const5 	%line{12} %argrw{"wr"}
 	functioncall	$const7 7 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:551
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:547
 #     color   rd,
-	closure		$tmp3 $const7 $const3 N $const4 $tmp5 $const6 $const8 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{551} %argrw{"wrrrrrrr"}
+	closure		$tmp3 $const7 $const3 N $const4 $tmp5 $const6 $const8 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{547} %argrw{"wrrrrrrr"}
 # subsurface_multi2.osl:12
 #             0.3 * as_subsurface("standard_dipole", N, color(0.5, 0.0, 0.0) , 0.25, 1.3) +
 	mul		$tmp6 $tmp3 $const9 	%filename{"subsurface_multi2.osl"} %line{12} %argrw{"wrr"}
@@ -126,9 +126,9 @@ code ___main___
 #             0.2 * as_subsurface("better_dipole", N, color(0.5, 0.3, 0.05), 0.10, 1.3) +
 	assign		$tmp9 $const12 	%line{13} %argrw{"wr"}
 	functioncall	$const7 11 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:551
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:547
 #     normal  N,
-	closure		$tmp7 $const7 $const10 N $const11 $tmp9 $const6 $const8 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{551} %argrw{"wrrrrrrr"}
+	closure		$tmp7 $const7 $const10 N $const11 $tmp9 $const6 $const8 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{547} %argrw{"wrrrrrrr"}
 # subsurface_multi2.osl:13
 #             0.2 * as_subsurface("better_dipole", N, color(0.5, 0.3, 0.05), 0.10, 1.3) +
 	mul		$tmp10 $tmp7 $const13 	%filename{"subsurface_multi2.osl"} %line{13} %argrw{"wrr"}
@@ -137,9 +137,9 @@ code ___main___
 #             0.5 * as_subsurface("directional_dipole", N, color(0.0, 0.5, 0.77), 0.05, 1.3);
 	assign		$tmp14 $const16 	%line{14} %argrw{"wr"}
 	functioncall	$const7 16 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:551
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:547
 #     string  profile,
-	closure		$tmp12 $const7 $const14 N $const15 $tmp14 $const6 $const8 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{551} %argrw{"wrrrrrrr"}
+	closure		$tmp12 $const7 $const14 N $const15 $tmp14 $const6 $const8 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{547} %argrw{"wrrrrrrr"}
 # subsurface_multi2.osl:14
 #             0.5 * as_subsurface("directional_dipole", N, color(0.0, 0.5, 0.77), 0.05, 1.3);
 	mul		$tmp15 $tmp12 $const17 	%filename{"subsurface_multi2.osl"} %line{14} %argrw{"wrr"}
@@ -147,9 +147,9 @@ code ___main___
 # subsurface_multi2.osl:19
 #             (0.3 * color(0.5, 0.0, 0.0) + 0.2 * color(0.5, 0.3, 0.05) + 0.5 * color(0.0, 0.5, 0.77)) * diffuse(N);
 	functioncall	$const18 20 	%line{19} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:496
-#     return concat(concat(a,b,c,d,e), f);
-	closure		$tmp16 $const19 N $const8 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{496} %argrw{"wrrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:594
+#     float   sheen,
+	closure		$tmp16 $const19 N $const8 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{594} %argrw{"wrrr"}
 # subsurface_multi2.osl:19
 #             (0.3 * color(0.5, 0.0, 0.0) + 0.2 * color(0.5, 0.3, 0.05) + 0.5 * color(0.0, 0.5, 0.77)) * diffuse(N);
 	mul		$tmp18 $const9 $const4 	%filename{"subsurface_multi2.osl"} %line{19} %argrw{"wrr"}
@@ -298,9 +298,9 @@ code ___main___
 # subsurface_multi2.osl:41
 #     Ci = diff + 0.5 * Kr * microfacet("beckmann", N, 0.15, 1.3, 0);
 	functioncall	$const31 95 	%filename{"subsurface_multi2.osl"} %line{41} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:528
-# /******************/
-	closure		$tmp57 $const31 $const29 N $const28 $const30 $const30 $const6 $const2 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{528} %argrw{"wrrrrrrrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:524
+# /*************************************************************/
+	closure		$tmp57 $const31 $const29 N $const28 $const30 $const30 $const6 $const2 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{524} %argrw{"wrrrrrrrr"}
 # subsurface_multi2.osl:41
 #     Ci = diff + 0.5 * Kr * microfacet("beckmann", N, 0.15, 1.3, 0);
 	mul		$tmp59 $const17 Kr 	%filename{"subsurface_multi2.osl"} %line{41} %argrw{"wrr"}

@@ -21,9 +21,9 @@ code ___main___
 # velocity_matte.osl:5
 #     Ci = Cs * diffuse(N);
 	functioncall	$const2 5 	%line{5} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:496
-# closure color translucent(normal N) BUILTIN;
-	closure		$tmp3 $const5 N $const4 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{496} %argrw{"wrrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:594
+# // compatibility with the OSL spec
+	closure		$tmp3 $const5 N $const4 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{594} %argrw{"wrrr"}
 # velocity_matte.osl:5
 #     Ci = Cs * diffuse(N);
 	mul		Ci $tmp3 Cs 	%filename{"velocity_matte.osl"} %line{5} %argrw{"wrr"}

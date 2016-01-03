@@ -215,7 +215,6 @@ namespace
         {
             CompositeSurfaceClosure* c = reinterpret_cast<CompositeSurfaceClosure*>(input_evaluator.data());
             new (c) CompositeSurfaceClosure(
-                this,
                 shading_point.get_shading_basis(),
                 shading_point.get_osl_shader_globals().Ci);
 

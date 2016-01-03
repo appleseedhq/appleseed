@@ -20,9 +20,9 @@ code ___main___
 # simple_tex.osl:7
 #     Ci = Kd * Cs * diffuse(N);
 	functioncall	$const1 3 	%line{7} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:496
-# closure color oren_nayar(normal N, float roughness) BUILTIN;
-	closure		$tmp1 $const4 N $const3 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{496} %argrw{"wrrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:594
+# 
+	closure		$tmp1 $const4 N $const3 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{594} %argrw{"wrrr"}
 # simple_tex.osl:7
 #     Ci = Kd * Cs * diffuse(N);
 	mul		$tmp2 Kd Cs 	%filename{"simple_tex.osl"} %line{7} %argrw{"wrr"}

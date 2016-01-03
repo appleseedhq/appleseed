@@ -40,9 +40,9 @@ code ___main___
 # bump_computenormal.osl:8
 #     Ci = Kd * diffuse(Normal);
 	functioncall	$const6 10 	%line{8} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:496
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:594
 # 
-	closure		$tmp7 $const9 Normal $const8 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{496} %argrw{"wrrr"}
+	closure		$tmp7 $const9 Normal $const8 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{594} %argrw{"wrrr"}
 # bump_computenormal.osl:8
 #     Ci = Kd * diffuse(Normal);
 	mul		Ci $tmp7 Kd 	%filename{"bump_computenormal.osl"} %line{8} %argrw{"wrr"}

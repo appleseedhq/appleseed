@@ -650,12 +650,7 @@ size_t CompositeClosure::choose_closure(const double w) const
     return sample_cdf(m_cdf, m_cdf + get_num_closures(), w);
 }
 
-
-//
-// CompositeReflectionClosure class implementation.
-//
-
-void CompositeReflectionClosure::compute_closure_shading_basis(
+void CompositeClosure::compute_closure_shading_basis(
     const Vector3d& normal,
     const Basis3d&  original_shading_basis)
 {
@@ -669,7 +664,7 @@ void CompositeReflectionClosure::compute_closure_shading_basis(
             original_shading_basis.get_tangent_u());
 }
 
-void CompositeReflectionClosure::compute_closure_shading_basis(
+void CompositeClosure::compute_closure_shading_basis(
     const Vector3d& normal,
     const Vector3d& tangent,
     const Basis3d&  original_shading_basis)
@@ -689,6 +684,88 @@ void CompositeReflectionClosure::compute_closure_shading_basis(
     }
 }
 
+template <typename InputValues>
+InputValues* CompositeClosure::add_closure(
+    const ClosureID             closure_type,
+    const Basis3d&              original_shading_basis,
+    const Color3f&              weight,
+    const Vector3d&             normal)
+{
+    return do_add_closure<InputValues>(
+        closure_type,
+        original_shading_basis,
+        weight,
+        normal,
+        false,
+        Vector3d(0.0));
+}
+
+template <typename InputValues>
+InputValues* CompositeClosure::add_closure(
+    const ClosureID             closure_type,
+    const Basis3d&              original_shading_basis,
+    const Color3f&              weight,
+    const Vector3d&             normal,
+    const Vector3d&             tangent)
+{
+    return do_add_closure<InputValues>(
+        closure_type,
+        original_shading_basis,
+        weight,
+        normal,
+        true,
+        tangent);
+}
+
+template <typename InputValues>
+InputValues* CompositeClosure::do_add_closure(
+    const ClosureID             closure_type,
+    const Basis3d&              original_shading_basis,
+    const Color3f&              weight,
+    const Vector3d&             normal,
+    bool                        has_tangent,
+    const Vector3d&             tangent)
+{
+    // Check that InputValues is included in our type list.
+    typedef typename boost::mpl::contains<InputValuesTypeList, InputValues>::type value_in_list;
+    BOOST_STATIC_ASSERT(value_in_list::value);
+
+    // Make sure we have enough space.
+    if (get_num_closures() >= MaxClosureEntries)
+    {
+        RENDERER_LOG_WARNING("maximum number of closures in osl shader group exceeded; ignoring closure.");
+        return 0;
+    }
+
+    assert(m_num_bytes + sizeof(InputValues) <= MaxPoolSize);
+
+    // We use the luminance of the weight as the BSDF weight.
+    const double w = luminance(weight);
+
+    // Ignore zero or negative weights.
+    if (w <= 0.0)
+        return 0;
+
+    m_pdf_weights[m_num_closures] = w;
+    m_weights[m_num_closures] = weight;
+
+    if (!has_tangent)
+        compute_closure_shading_basis(normal, original_shading_basis);
+    else
+        compute_closure_shading_basis(normal, tangent, original_shading_basis);
+
+    m_closure_types[m_num_closures] = closure_type;
+
+    char* values_ptr = m_pool + m_num_bytes;
+    assert(is_aligned(values_ptr, InputValuesAlignment));
+    new (values_ptr) InputValues();
+    m_input_values[m_num_closures] = values_ptr;
+    m_num_bytes += align(sizeof(InputValues), InputValuesAlignment);
+    ++m_num_closures;
+
+    return reinterpret_cast<InputValues*>(values_ptr);
+}
+
 
 //
 // CompositeSurfaceClosure class implementation.
@@ -697,10 +774,8 @@ void CompositeReflectionClosure::compute_closure_shading_basis(
 BOOST_STATIC_ASSERT(sizeof(CompositeSurfaceClosure) <= InputEvaluator::DataSize);
 
 CompositeSurfaceClosure::CompositeSurfaceClosure(
-    const BSDF*                 osl_bsdf,
     const Basis3d&              original_shading_basis,
     const OSL::ClosureColor*    ci)
-  : m_osl_bsdf(osl_bsdf)
 {
     process_closure_tree(ci, original_shading_basis, Color3f(1.0f));
     compute_cdf();
@@ -744,22 +819,24 @@ void CompositeSurfaceClosure::process_closure_tree(
                     const AshikhminShirleyClosure::Params* p =
                         reinterpret_cast<const AshikhminShirleyClosure::Params*>(c->data());
 
-                    AshikhminBRDFInputValues values;
-                    values.m_rd = Color3f(p->rd);
-                    values.m_rd_multiplier = 1.0;
-                    values.m_rg = Color3f(p->rg);
-                    values.m_rg_multiplier = 1.0;
-                    values.m_nu = max(p->nu, 0.01f);
-                    values.m_nv = max(p->nv, 0.01f);
-                    values.m_fr_multiplier = p->fr;
+                    AshikhminBRDFInputValues* values =
+                        add_closure<AshikhminBRDFInputValues>(
+                            static_cast<ClosureID>(c->id),
+                            original_shading_basis,
+                            w,
+                            Vector3d(p->N),
+                            Vector3d(p->T));
 
-                    add_closure<AshikhminBRDFInputValues>(
-                        static_cast<ClosureID>(c->id),
-                        original_shading_basis,
-                        w,
-                        Vector3d(p->N),
-                        Vector3d(p->T),
-                        values);
+                    if (values)
+                    {
+                        values->m_rd = Color3f(p->rd);
+                        values->m_rd_multiplier = 1.0;
+                        values->m_rg = Color3f(p->rg);
+                        values->m_rg_multiplier = 1.0;
+                        values->m_nu = max(p->nu, 0.01f);
+                        values->m_nv = max(p->nv, 0.01f);
+                        values->m_fr_multiplier = p->fr;
+                    }
                 }
                 break;
 
@@ -768,26 +845,28 @@ void CompositeSurfaceClosure::process_closure_tree(
                     const DisneyClosure::Params* p =
                         reinterpret_cast<const DisneyClosure::Params*>(c->data());
 
-                    DisneyBRDFInputValues values;
-                    values.m_base_color = Color3f(p->base_color);
-                    values.m_subsurface = saturate(p->subsurface);
-                    values.m_metallic = saturate(p->metallic);
-                    values.m_specular = max(p->specular, 0.0f);
-                    values.m_specular_tint = saturate(p->specular_tint);
-                    values.m_anisotropic = saturate(p->anisotropic);
-                    values.m_roughness = clamp(p->roughness, 0.0001f, 1.0f);
-                    values.m_sheen = saturate(p->sheen);
-                    values.m_sheen_tint = saturate(p->sheen_tint);
-                    values.m_clearcoat = max(p->clearcoat, 0.0f);
-                    values.m_clearcoat_gloss = clamp(p->clearcoat_gloss, 0.0001f, 1.0f);
+                    DisneyBRDFInputValues* values =
+                        add_closure<DisneyBRDFInputValues>(
+                            static_cast<ClosureID>(c->id),
+                            original_shading_basis,
+                            w,
+                            Vector3d(p->N),
+                            Vector3d(p->T));
 
-                    add_closure<DisneyBRDFInputValues>(
-                        static_cast<ClosureID>(c->id),
-                        original_shading_basis,
-                        w,
-                        Vector3d(p->N),
-                        Vector3d(p->T),
-                        values);
+                    if (values)
+                    {
+                        values->m_base_color = Color3f(p->base_color);
+                        values->m_subsurface = saturate(p->subsurface);
+                        values->m_metallic = saturate(p->metallic);
+                        values->m_specular = max(p->specular, 0.0f);
+                        values->m_specular_tint = saturate(p->specular_tint);
+                        values->m_anisotropic = saturate(p->anisotropic);
+                        values->m_roughness = clamp(p->roughness, 0.0001f, 1.0f);
+                        values->m_sheen = saturate(p->sheen);
+                        values->m_sheen_tint = saturate(p->sheen_tint);
+                        values->m_clearcoat = max(p->clearcoat, 0.0f);
+                        values->m_clearcoat_gloss = clamp(p->clearcoat_gloss, 0.0001f, 1.0f);
+                    }
                 }
                 break;
 
@@ -798,39 +877,40 @@ void CompositeSurfaceClosure::process_closure_tree(
 
                     if (!p->refract)
                     {
-                        OSLMicrofacetBRDFInputValues values;
-                        values.m_ax = max(p->xalpha, 0.0001f);
-                        values.m_ay = max(p->yalpha, 0.0001f);
+                        OSLMicrofacetBRDFInputValues* values = 0;
 
                         if (p->dist == blinn_mdf_name)
                         {
-                            add_closure<OSLMicrofacetBRDFInputValues>(
+                            values = add_closure<OSLMicrofacetBRDFInputValues>(
                                 MicrofacetBlinnReflectionID,
                                 original_shading_basis,
                                 w,
                                 Vector3d(p->N),
-                                Vector3d(p->T),
-                                values);
+                                Vector3d(p->T));
                         }
                         else if (p->dist == ggx_mdf_name)
                         {
-                            add_closure<OSLMicrofacetBRDFInputValues>(
+                            values = add_closure<OSLMicrofacetBRDFInputValues>(
                                 MicrofacetGGXReflectionID,
                                 original_shading_basis,
                                 w,
                                 Vector3d(p->N),
-                                Vector3d(p->T),
-                                values);
+                                Vector3d(p->T));
                         }
-                        else    // Beckmann by default
+                        else if(p->dist == beckmann_mdf_name)
                         {
-                            add_closure<OSLMicrofacetBRDFInputValues>(
+                            values = add_closure<OSLMicrofacetBRDFInputValues>(
                                 MicrofacetBeckmannReflectionID,
                                 original_shading_basis,
                                 w,
                                 Vector3d(p->N),
-                                Vector3d(p->T),
-                                values);
+                                Vector3d(p->T));
+                        }
+
+                        if (values)
+                        {
+                            values->m_ax = max(p->xalpha, 0.0001f);
+                            values->m_ay = max(p->yalpha, 0.0001f);
                         }
                     }
                     else
@@ -848,31 +928,33 @@ void CompositeSurfaceClosure::process_closure_tree(
                             to_ior = 1.0;
                         }
 
-                        OSLMicrofacetBTDFInputValues values;
-                        values.m_ax = max(p->xalpha, 0.0001f);
-                        values.m_ay = max(p->yalpha, 0.0001f);
-                        values.m_from_ior = from_ior;
-                        values.m_to_ior = to_ior;
+                        OSLMicrofacetBTDFInputValues* values = 0;
 
                         if (p->dist == ggx_mdf_name)
                         {
-                            add_closure<OSLMicrofacetBTDFInputValues>(
+                            values = add_closure<OSLMicrofacetBTDFInputValues>(
                                 MicrofacetGGXRefractionID,
                                 original_shading_basis,
                                 w,
                                 Vector3d(p->N),
-                                Vector3d(p->T),
-                                values);
+                                Vector3d(p->T));
                         }
-                        else    // Beckmann by default
+                        else if(p->dist == beckmann_mdf_name)
                         {
-                            add_closure<OSLMicrofacetBTDFInputValues>(
+                            values = add_closure<OSLMicrofacetBTDFInputValues>(
                                 MicrofacetBeckmannRefractionID,
                                 original_shading_basis,
                                 w,
                                 Vector3d(p->N),
-                                Vector3d(p->T),
-                                values);
+                                Vector3d(p->T));
+                        }
+
+                        if (values)
+                        {
+                            values->m_ax = max(p->xalpha, 0.0001f);
+                            values->m_ay = max(p->yalpha, 0.0001f);
+                            values->m_from_ior = from_ior;
+                            values->m_to_ior = to_ior;
                         }
                     }
                 }
@@ -883,17 +965,19 @@ void CompositeSurfaceClosure::process_closure_tree(
                     const OrenNayarClosure::Params* p =
                         reinterpret_cast<const OrenNayarClosure::Params*>(c->data());
 
-                    OrenNayarBRDFInputValues values;
-                    values.m_reflectance.set(1.0f);
-                    values.m_reflectance_multiplier = 1.0;
-                    values.m_roughness = max(p->roughness, 0.0f);
+                    OrenNayarBRDFInputValues* values =
+                        add_closure<OrenNayarBRDFInputValues>(
+                            static_cast<ClosureID>(c->id),
+                            original_shading_basis,
+                            w,
+                            Vector3d(p->N));
 
-                    add_closure<OrenNayarBRDFInputValues>(
-                        static_cast<ClosureID>(c->id),
-                        original_shading_basis,
-                        w,
-                        Vector3d(p->N),
-                        values);
+                    if (values)
+                    {
+                        values->m_reflectance.set(1.0f);
+                        values->m_reflectance_multiplier = 1.0;
+                        values->m_roughness = max(p->roughness, 0.0f);
+                    }
                 }
                 break;
 
@@ -902,16 +986,18 @@ void CompositeSurfaceClosure::process_closure_tree(
                     const ReflectionClosure::Params* p =
                         reinterpret_cast<const ReflectionClosure::Params*>(c->data());
 
-                    SpecularBRDFInputValues values;
-                    values.m_reflectance.set(1.0f);
-                    values.m_reflectance_multiplier = 1.0;
+                    SpecularBRDFInputValues* values =
+                        add_closure<SpecularBRDFInputValues>(
+                            static_cast<ClosureID>(c->id),
+                            original_shading_basis,
+                            w,
+                            Vector3d(p->N));
 
-                    add_closure<SpecularBRDFInputValues>(
-                        static_cast<ClosureID>(c->id),
-                        original_shading_basis,
-                        w,
-                        Vector3d(p->N),
-                        values);
+                    if (values)
+                    {
+                        values->m_reflectance.set(1.0f);
+                        values->m_reflectance_multiplier = 1.0;
+                    }
                 }
                 break;
 
@@ -933,21 +1019,23 @@ void CompositeSurfaceClosure::process_closure_tree(
                         to_ior = 1.0;
                     }
 
-                    SpecularBTDFInputValues values;
-                    values.m_reflectance.set(0.0f);
-                    values.m_reflectance_multiplier = 0.0;
-                    values.m_transmittance.set(1.0f);
-                    values.m_transmittance_multiplier = 1.0;
-                    values.m_fresnel_multiplier = 0.0;
-                    values.m_from_ior = from_ior;
-                    values.m_to_ior = to_ior;
+                    SpecularBTDFInputValues* values =
+                        add_closure<SpecularBTDFInputValues>(
+                            static_cast<ClosureID>(c->id),
+                            original_shading_basis,
+                            w,
+                            Vector3d(p->N));
 
-                    add_closure<SpecularBTDFInputValues>(
-                        static_cast<ClosureID>(c->id),
-                        original_shading_basis,
-                        w,
-                        Vector3d(p->N),
-                        values);
+                    if (values)
+                    {
+                        values->m_reflectance.set(0.0f);
+                        values->m_reflectance_multiplier = 0.0;
+                        values->m_transmittance.set(1.0f);
+                        values->m_transmittance_multiplier = 1.0;
+                        values->m_fresnel_multiplier = 0.0;
+                        values->m_from_ior = from_ior;
+                        values->m_to_ior = to_ior;
+                    }
                 }
                 break;
 
@@ -956,16 +1044,18 @@ void CompositeSurfaceClosure::process_closure_tree(
                     const SheenClosure::Params* p =
                         reinterpret_cast<const SheenClosure::Params*>(c->data());
 
-                      SheenBRDFInputValues values;
-                      values.m_reflectance.set(1.0f);
-                      values.m_reflectance_multiplier = 1.0;
+                    SheenBRDFInputValues* values =
+                        add_closure<SheenBRDFInputValues>(
+                            static_cast<ClosureID>(c->id),
+                            original_shading_basis,
+                            w,
+                            Vector3d(p->N));
 
-                      add_closure<SheenBRDFInputValues>(
-                          static_cast<ClosureID>(c->id),
-                          original_shading_basis,
-                          w,
-                          Vector3d(p->N),
-                          values);
+                    if (values)
+                    {
+                          values->m_reflectance.set(1.0f);
+                          values->m_reflectance_multiplier = 1.0;
+                    }
                 }
                 break;
 
@@ -974,16 +1064,18 @@ void CompositeSurfaceClosure::process_closure_tree(
                     const TranslucentClosure::Params* p =
                         reinterpret_cast<const TranslucentClosure::Params*>(c->data());
 
-                    DiffuseBTDFInputValues values;
-                    values.m_transmittance.set(1.0f);
-                    values.m_transmittance_multiplier = 1.0;
+                    DiffuseBTDFInputValues* values =
+                        add_closure<DiffuseBTDFInputValues>(
+                            static_cast<ClosureID>(c->id),
+                            original_shading_basis,
+                            w,
+                            Vector3d(p->N));
 
-                    add_closure<DiffuseBTDFInputValues>(
-                        static_cast<ClosureID>(c->id),
-                        original_shading_basis,
-                        w,
-                        Vector3d(p->N),
-                        values);
+                    if (values)
+                    {
+                        values->m_transmittance.set(1.0f);
+                        values->m_transmittance_multiplier = 1.0;
+                    }
                 }
                 break;
             }
@@ -992,91 +1084,6 @@ void CompositeSurfaceClosure::process_closure_tree(
 
       assert_otherwise;
     }
-}
-
-template <typename InputValues>
-void CompositeSurfaceClosure::add_closure(
-    const ClosureID             closure_type,
-    const Basis3d&              original_shading_basis,
-    const Color3f&              weight,
-    const Vector3d&             normal,
-    const InputValues&          params)
-{
-    do_add_closure<InputValues>(
-        closure_type,
-        original_shading_basis,
-        weight,
-        normal,
-        false,
-        Vector3d(0.0),
-        params);
-}
-
-template <typename InputValues>
-void CompositeSurfaceClosure::add_closure(
-    const ClosureID             closure_type,
-    const Basis3d&              original_shading_basis,
-    const Color3f&              weight,
-    const Vector3d&             normal,
-    const Vector3d&             tangent,
-    const InputValues&          params)
-{
-    do_add_closure<InputValues>(
-        closure_type,
-        original_shading_basis,
-        weight,
-        normal,
-        true,
-        tangent,
-        params);
-}
-
-template <typename InputValues>
-void CompositeSurfaceClosure::do_add_closure(
-    const ClosureID             closure_type,
-    const Basis3d&              original_shading_basis,
-    const Color3f&              weight,
-    const Vector3d&             normal,
-    bool                        has_tangent,
-    const Vector3d&             tangent,
-    const InputValues&          params)
-{
-    // Check that InputValues is included in our type list.
-    typedef typename boost::mpl::contains<InputValuesTypeList, InputValues>::type value_in_list;
-    BOOST_STATIC_ASSERT(value_in_list::value);
-
-    // Make sure we have enough space.
-    if (get_num_closures() >= MaxClosureEntries)
-    {
-        RENDERER_LOG_WARNING("maximum number of closures in osl shader group exceeded; ignoring closure.");
-        return;
-    }
-
-    assert(m_num_bytes + sizeof(InputValues) <= MaxPoolSize);
-
-    // We use the luminance of the weight as the BSDF weight.
-    const double w = luminance(weight);
-
-    // Ignore zero or negative weights.
-    if (w <= 0.0)
-        return;
-
-    m_pdf_weights[m_num_closures] = w;
-    m_weights[m_num_closures] = weight;
-
-    if (!has_tangent)
-        compute_closure_shading_basis(normal, original_shading_basis);
-    else
-        compute_closure_shading_basis(normal, tangent, original_shading_basis);
-
-    m_closure_types[m_num_closures] = closure_type;
-
-    char* values_ptr = m_pool + m_num_bytes;
-    assert(is_aligned(values_ptr, InputValuesAlignment));
-    new (values_ptr) InputValues(params);
-    m_input_values[m_num_closures] = values_ptr;
-    m_num_bytes += align(sizeof(InputValues), InputValuesAlignment);
-    ++m_num_closures;
 }
 
 
@@ -1128,61 +1135,64 @@ void CompositeSubsurfaceClosure::process_closure_tree(
             if (p->profile == normalized_diffusion_profile_name)
             {
 #ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
-                NormalizedDiffusionBSSRDFInputValues values;
-                values.m_weight = 1.0;
-                values.m_reflectance = Color3f(p->rd);
-                values.m_reflectance_multiplier = 1.0;
-                values.m_dmfp = luminance(Color3f(p->dmfp));
-                values.m_dmfp_multiplier = 1.0;
-                values.m_inside_ior = p->eta;
-                values.m_outside_ior = 1.0;
+                NormalizedDiffusionBSSRDFInputValues* values =
+                    add_closure<NormalizedDiffusionBSSRDFInputValues>(
+                        SubsurfaceNormalizedDiffusionID,
+                        original_shading_basis,
+                        w,
+                        Vector3d(p->N));
 
-                add_closure<NormalizedDiffusionBSSRDFInputValues>(
-                    SubsurfaceNormalizedDiffusionID,
-                    original_shading_basis,
-                    w,
-                    Vector3d(p->N),
-                    values);
+                if (values)
+                {
+                    values->m_weight = 1.0;
+                    values->m_reflectance = Color3f(p->rd);
+                    values->m_reflectance_multiplier = 1.0;
+                    values->m_dmfp = luminance(Color3f(p->dmfp));
+                    values->m_dmfp_multiplier = 1.0;
+                    values->m_inside_ior = p->eta;
+                    values->m_outside_ior = 1.0;
+                }
 #endif
             }
             else
             {
-                DipoleBSSRDFInputValues values;
-                values.m_weight = 1.0;
-                values.m_reflectance = Color3f(p->rd);
-                values.m_reflectance_multiplier = 1.0;
-                values.m_dmfp = luminance(Color3f(p->dmfp));
-                values.m_dmfp_multiplier = 1.0;
-                values.m_anisotropy = p->g;
-                values.m_inside_ior = p->eta;
-                values.m_outside_ior = 1.0;
+                DipoleBSSRDFInputValues* values = 0;
 
                 if (p->profile == better_dipole_profile_name)
                 {
-                    add_closure<DipoleBSSRDFInputValues>(
+                    values = add_closure<DipoleBSSRDFInputValues>(
                         SubsurfaceBetterDipoleID,
                         original_shading_basis,
                         w,
-                        Vector3d(p->N),
-                        values);
+                        Vector3d(p->N));
                 }
                 else if (p->profile == standard_dipole_profile_name)
                 {
-                    add_closure<DipoleBSSRDFInputValues>(
+                    values = add_closure<DipoleBSSRDFInputValues>(
                         SubsurfaceStandardDipoleID,
                         original_shading_basis,
                         w,
-                        Vector3d(p->N),
-                        values);
+                        Vector3d(p->N));
                 }
                 else if (p->profile == directional_dipole_profile_name)
                 {
-                    add_closure<DipoleBSSRDFInputValues>(
+                    values = add_closure<DipoleBSSRDFInputValues>(
                         SubsurfaceDirectionalDipoleID,
                         original_shading_basis,
                         w,
-                        Vector3d(p->N),
-                        values);
+                        Vector3d(p->N));
+                }
+
+                if (values)
+                {
+                    values->m_weight = 1.0;
+                    values->m_reflectance = Color3f(p->rd);
+                    values->m_reflectance_multiplier = 1.0;
+                    values->m_dmfp = luminance(Color3f(p->dmfp));
+                    values->m_dmfp_multiplier = 1.0;
+                    values->m_anisotropy = p->g;
+                    values->m_inside_ior = p->eta;
+                    values->m_outside_ior = 1.0;
                 }
             }
         }
@@ -1190,48 +1200,6 @@ void CompositeSubsurfaceClosure::process_closure_tree(
 
       assert_otherwise;
     }
-}
-
-template <typename InputValues>
-void CompositeSubsurfaceClosure::add_closure(
-    const ClosureID             closure_type,
-    const Basis3d&              original_shading_basis,
-    const Color3f&              weight,
-    const Vector3d&             normal,
-    const InputValues&          params)
-{
-    // Check that InputValues is included in our type list.
-    typedef typename boost::mpl::contains<InputValuesTypeList, InputValues>::type value_in_list;
-    BOOST_STATIC_ASSERT(value_in_list::value);
-
-    // Make sure we have enough space.
-    if (get_num_closures() >= MaxClosureEntries)
-    {
-        RENDERER_LOG_WARNING("maximum number of subsurface closures in osl shader group exceeded; ignoring closure.");
-        return;
-    }
-
-    assert(m_num_bytes + sizeof(InputValues) <= MaxPoolSize);
-
-    // We use the luminance of the weight as the BSSRDF weight.
-    const double w = luminance(weight);
-
-    // Ignore zero or negative weights.
-    if (w <= 0.0)
-        return;
-
-    m_pdf_weights[m_num_closures] = w;
-    m_weights[m_num_closures] = weight;
-    m_closure_types[m_num_closures] = closure_type;
-
-    compute_closure_shading_basis(normal, original_shading_basis);
-
-    char* values_ptr = m_pool + m_num_bytes;
-    assert(is_aligned(values_ptr, InputValuesAlignment));
-    new (values_ptr) InputValues(params);
-    m_input_values[m_num_closures] = values_ptr;
-    m_num_bytes += align(sizeof(InputValues), InputValuesAlignment);
-    ++m_num_closures;
 }
 
 
