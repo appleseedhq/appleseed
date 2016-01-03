@@ -57,52 +57,439 @@ using namespace foundation;
 using namespace renderer;
 using namespace std;
 
+using OSL::TypeDesc;
+
 namespace renderer
 {
 namespace
 {
+
     //
-    // Closure parameters.
+    // Closures
     //
 
-    struct EmptyClosureParams {};
-
-    struct AshikhminShirleyBRDFClosureParams
+    struct AshikhminShirleyClosure
     {
-        OSL::Vec3       N;
-        OSL::Vec3       T;
-        OSL::Color3     rd;
-        OSL::Color3     rg;
-        float           nu;
-        float           nv;
-        float           fr;
+        struct Params
+        {
+            OSL::Vec3   N;
+            OSL::Vec3   T;
+            OSL::Color3 rd;
+            OSL::Color3 rg;
+            float       nu;
+            float       nv;
+            float       fr;
+        };
+
+        static const char* name()
+        {
+            return "as_ashikhmin_shirley";
+        }
+
+        static ClosureID id()
+        {
+            return AshikhminShirleyID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            OSL::ClosureParam params[] =
+            {
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_VECTOR_PARAM(Params, T),
+                CLOSURE_COLOR_PARAM(Params, rd),
+                CLOSURE_COLOR_PARAM(Params, rg),
+                CLOSURE_FLOAT_PARAM(Params, nu),
+                CLOSURE_FLOAT_PARAM(Params, nv),
+                CLOSURE_FLOAT_PARAM(Params, fr),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(
+                name(),
+                id(),
+                params,
+                0,
+                0);
+        }
     };
 
-    struct DebugClosureParams
+    struct BackgroundClosure
     {
-        OSL::ustring    tag;
+        struct Params
+        {
+        };
+
+        static const char* name()
+        {
+            return "background";
+        }
+
+        static ClosureID id()
+        {
+            return BackgroundID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            OSL::ClosureParam params[] =
+            {
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(
+                name(),
+                id(),
+                params,
+                0,
+                0);
+        }
     };
 
-    struct DiffuseBSDFClosureParams
+    struct DebugClosure
     {
-        OSL::Vec3       N;
+        struct Params
+        {
+            OSL::ustring tag;
+        };
+
+        static const char* name()
+        {
+            return "debug";
+        }
+
+        static ClosureID id()
+        {
+            return DebugID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            OSL::ClosureParam params[] =
+            {
+                CLOSURE_STRING_PARAM(Params, tag),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(
+                name(),
+                id(),
+                params,
+                0,
+                0);
+        }
     };
 
-    struct DisneyBRDFClosureParams
+    struct DisneyClosure
     {
-        OSL::Vec3       N;
-        OSL::Vec3       T;
-        OSL::Color3     base_color;
-        float           subsurface;
-        float           metallic;
-        float           specular;
-        float           specular_tint;
-        float           anisotropic;
-        float           roughness;
-        float           sheen;
-        float           sheen_tint;
-        float           clearcoat;
-        float           clearcoat_gloss;
+        struct Params
+        {
+            OSL::Vec3   N;
+            OSL::Vec3   T;
+            OSL::Color3 base_color;
+            float       subsurface;
+            float       metallic;
+            float       specular;
+            float       specular_tint;
+            float       anisotropic;
+            float       roughness;
+            float       sheen;
+            float       sheen_tint;
+            float       clearcoat;
+            float       clearcoat_gloss;
+        };
+
+        static const char* name()
+        {
+            return "as_disney";
+        }
+
+        static ClosureID id()
+        {
+            return DisneyID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            OSL::ClosureParam params[] =
+            {
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_VECTOR_PARAM(Params, T),
+                CLOSURE_COLOR_PARAM(Params, base_color),
+                CLOSURE_FLOAT_PARAM(Params, subsurface),
+                CLOSURE_FLOAT_PARAM(Params, metallic),
+                CLOSURE_FLOAT_PARAM(Params, specular),
+                CLOSURE_FLOAT_PARAM(Params, specular_tint),
+                CLOSURE_FLOAT_PARAM(Params, anisotropic),
+                CLOSURE_FLOAT_PARAM(Params, roughness),
+                CLOSURE_FLOAT_PARAM(Params, sheen),
+                CLOSURE_FLOAT_PARAM(Params, sheen_tint),
+                CLOSURE_FLOAT_PARAM(Params, clearcoat),
+                CLOSURE_FLOAT_PARAM(Params, clearcoat_gloss),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(
+                name(),
+                id(),
+                params,
+                0,
+                0);
+        }
+    };
+
+    struct EmissionClosure
+    {
+        struct Params
+        {
+        };
+
+        static const char* name()
+        {
+            return "emission";
+        }
+
+        static ClosureID id()
+        {
+            return EmissionID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            OSL::ClosureParam params[] =
+            {
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(
+                name(),
+                id(),
+                params,
+                0,
+                0);
+        }
+    };
+
+    struct HoldoutClosure
+    {
+        struct Params
+        {
+        };
+
+        static const char* name()
+        {
+            return "holdout";
+        }
+
+        static ClosureID id()
+        {
+            return HoldoutID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            OSL::ClosureParam params[] =
+            {
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(
+                name(),
+                id(),
+                params,
+                0,
+                0);
+        }
+    };
+
+    OSL::ustring beckmann_mdf_name("beckmann");
+    OSL::ustring blinn_mdf_name("blinn");
+    OSL::ustring ggx_mdf_name("ggx");
+
+    struct MicrofacetClosure
+    {
+        struct Params
+        {
+            OSL::ustring    dist;
+            OSL::Vec3       N;
+            OSL::Vec3       T;
+            float           xalpha;
+            float           yalpha;
+            float           eta;
+            int             refract;
+        };
+
+        static const char* name()
+        {
+            return "microfacet";
+        }
+
+        static ClosureID id()
+        {
+            return MicrofacetID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            OSL::ClosureParam params[] =
+            {
+                CLOSURE_STRING_PARAM(Params, dist),
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_VECTOR_PARAM(Params, T),
+                CLOSURE_FLOAT_PARAM(Params, xalpha),
+                CLOSURE_FLOAT_PARAM(Params, yalpha),
+                CLOSURE_FLOAT_PARAM(Params, eta),
+                CLOSURE_INT_PARAM(Params, refract),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(
+                name(),
+                id(),
+                params,
+                0,
+                0);
+        }
+    };
+
+    struct OrenNayarClosure
+    {
+        struct Params
+        {
+            OSL::Vec3   N;
+            float       roughness;
+        };
+
+        static const char* name()
+        {
+            return "oren_nayar";
+        }
+
+        static ClosureID id()
+        {
+            return OrenNayarID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            OSL::ClosureParam params[] =
+            {
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_FLOAT_PARAM(Params, roughness),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(
+                name(),
+                id(),
+                params,
+                0,
+                0);
+        }
+    };
+
+    struct ReflectionClosure
+    {
+        struct Params
+        {
+            OSL::Vec3 N;
+        };
+
+        static const char* name()
+        {
+            return "reflection";
+        }
+
+        static ClosureID id()
+        {
+            return ReflectionID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            OSL::ClosureParam params[] =
+            {
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(
+                name(),
+                id(),
+                params,
+                0,
+                0);
+        }
+    };
+
+    struct RefractionClosure
+    {
+        struct Params
+        {
+            OSL::Vec3 N;
+            float     eta;
+        };
+
+        static const char* name()
+        {
+            return "refraction";
+        }
+
+        static ClosureID id()
+        {
+            return RefractionID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            OSL::ClosureParam params[] =
+            {
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_FLOAT_PARAM(Params, eta),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(
+                name(),
+                id(),
+                params,
+                0,
+                0);
+        }
+    };
+
+    struct SheenClosure
+    {
+        struct Params
+        {
+            OSL::Vec3 N;
+        };
+
+        static const char* name()
+        {
+            return "as_sheen";
+        }
+
+        static ClosureID id()
+        {
+            return SheenID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            OSL::ClosureParam params[] =
+            {
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(
+                name(),
+                id(),
+                params,
+                0,
+                0);
+        }
     };
 
     OSL::ustring standard_dipole_profile_name("standard_dipole");
@@ -110,46 +497,114 @@ namespace
     OSL::ustring directional_dipole_profile_name("directional_dipole");
     OSL::ustring normalized_diffusion_profile_name("normalized_diffusion");
 
-    struct SubsurfaceClosureParams
+    struct SubsurfaceClosure
     {
-        OSL::ustring    profile;
-        OSL::Vec3       N;
-        OSL::Color3     rd;
-        OSL::Color3     dmfp;
-        float           eta;
-        float           g;
+        struct Params
+        {
+            OSL::ustring    profile;
+            OSL::Vec3       N;
+            OSL::Color3     rd;
+            OSL::Color3     dmfp;
+            float           eta;
+            float           g;
+        };
+
+        static const char* name()
+        {
+            return "as_subsurface";
+        }
+
+        static ClosureID id()
+        {
+            return SubsurfaceID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            OSL::ClosureParam params[] =
+            {
+                CLOSURE_STRING_PARAM(Params, profile),
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_COLOR_PARAM(Params, rd),
+                CLOSURE_COLOR_PARAM(Params, dmfp),
+                CLOSURE_FLOAT_PARAM(Params, eta),
+                CLOSURE_FLOAT_PARAM(Params, g),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(
+                name(),
+                id(),
+                params,
+                0,
+                0);
+        }
     };
 
-    OSL::ustring beckmann_mdf_name("beckmann");
-    OSL::ustring blinn_mdf_name("blinn");
-    OSL::ustring ggx_mdf_name("ggx");
-
-    struct MicrofacetClosureParams
+    struct TranslucentClosure
     {
-        OSL::ustring    dist;
-        OSL::Vec3       N;
-        OSL::Vec3       T;
-        float           xalpha;
-        float           yalpha;
-        float           eta;
-        int             refract;
+        struct Params
+        {
+            OSL::Vec3 N;
+        };
+
+        static const char* name()
+        {
+            return "translucent";
+        }
+
+        static ClosureID id()
+        {
+            return TranslucentID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            OSL::ClosureParam params[] =
+            {
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(
+                name(),
+                id(),
+                params,
+                0,
+                0);
+        }
     };
 
-    struct OrenNayarBRDFClosureParams
+    struct TransparentClosure
     {
-        OSL::Vec3       N;
-        float           roughness;
-    };
+        struct Params
+        {
+        };
 
-    struct ReflectionBRDFClosureParams
-    {
-        OSL::Vec3       N;
-    };
+        static const char* name()
+        {
+            return "transparent";
+        }
 
-    struct RefractionBTDFClosureParams
-    {
-        OSL::Vec3       N;
-        float           eta;
+        static ClosureID id()
+        {
+            return TransparentID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            OSL::ClosureParam params[] =
+            {
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(
+                name(),
+                id(),
+                params,
+                0,
+                0);
+        }
     };
 }
 
@@ -286,8 +741,8 @@ void CompositeSurfaceClosure::process_closure_tree(
             {
               case AshikhminShirleyID:
                 {
-                    const AshikhminShirleyBRDFClosureParams* p =
-                        reinterpret_cast<const AshikhminShirleyBRDFClosureParams*>(c->data());
+                    const AshikhminShirleyClosure::Params* p =
+                        reinterpret_cast<const AshikhminShirleyClosure::Params*>(c->data());
 
                     AshikhminBRDFInputValues values;
                     values.m_rd = Color3f(p->rd);
@@ -310,8 +765,8 @@ void CompositeSurfaceClosure::process_closure_tree(
 
               case DisneyID:
                 {
-                    const DisneyBRDFClosureParams* p =
-                        reinterpret_cast<const DisneyBRDFClosureParams*>(c->data());
+                    const DisneyClosure::Params* p =
+                        reinterpret_cast<const DisneyClosure::Params*>(c->data());
 
                     DisneyBRDFInputValues values;
                     values.m_base_color = Color3f(p->base_color);
@@ -338,8 +793,8 @@ void CompositeSurfaceClosure::process_closure_tree(
 
               case MicrofacetID:
                 {
-                    const MicrofacetClosureParams* p =
-                        reinterpret_cast<const MicrofacetClosureParams*>(c->data());
+                    const MicrofacetClosure::Params* p =
+                        reinterpret_cast<const MicrofacetClosure::Params*>(c->data());
 
                     if (!p->refract)
                     {
@@ -425,8 +880,8 @@ void CompositeSurfaceClosure::process_closure_tree(
 
               case OrenNayarID:
                 {
-                    const OrenNayarBRDFClosureParams* p =
-                        reinterpret_cast<const OrenNayarBRDFClosureParams*>(c->data());
+                    const OrenNayarClosure::Params* p =
+                        reinterpret_cast<const OrenNayarClosure::Params*>(c->data());
 
                     OrenNayarBRDFInputValues values;
                     values.m_reflectance.set(1.0f);
@@ -444,8 +899,8 @@ void CompositeSurfaceClosure::process_closure_tree(
 
               case ReflectionID:
                 {
-                    const ReflectionBRDFClosureParams* p =
-                        reinterpret_cast<const ReflectionBRDFClosureParams*>(c->data());
+                    const ReflectionClosure::Params* p =
+                        reinterpret_cast<const ReflectionClosure::Params*>(c->data());
 
                     SpecularBRDFInputValues values;
                     values.m_reflectance.set(1.0f);
@@ -462,8 +917,8 @@ void CompositeSurfaceClosure::process_closure_tree(
 
               case RefractionID:
                 {
-                    const RefractionBTDFClosureParams* p =
-                        reinterpret_cast<const RefractionBTDFClosureParams*>(c->data());
+                    const RefractionClosure::Params* p =
+                        reinterpret_cast<const RefractionClosure::Params*>(c->data());
 
                     // Assume on of the mediums is air.
                     double from_ior, to_ior;
@@ -498,8 +953,8 @@ void CompositeSurfaceClosure::process_closure_tree(
 
               case SheenID:
                 {
-                    const DiffuseBSDFClosureParams* p =
-                        reinterpret_cast<const DiffuseBSDFClosureParams*>(c->data());
+                    const SheenClosure::Params* p =
+                        reinterpret_cast<const SheenClosure::Params*>(c->data());
 
                       SheenBRDFInputValues values;
                       values.m_reflectance.set(1.0f);
@@ -516,8 +971,8 @@ void CompositeSurfaceClosure::process_closure_tree(
 
               case TranslucentID:
                 {
-                    const DiffuseBSDFClosureParams* p =
-                        reinterpret_cast<const DiffuseBSDFClosureParams*>(c->data());
+                    const TranslucentClosure::Params* p =
+                        reinterpret_cast<const TranslucentClosure::Params*>(c->data());
 
                     DiffuseBTDFInputValues values;
                     values.m_transmittance.set(1.0f);
@@ -667,8 +1122,8 @@ void CompositeSubsurfaceClosure::process_closure_tree(
             const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
             const Color3f w = weight * Color3f(c->w);
 
-            const SubsurfaceClosureParams* p =
-                reinterpret_cast<const SubsurfaceClosureParams*>(c->data());
+            const SubsurfaceClosure::Params* p =
+                reinterpret_cast<const SubsurfaceClosure::Params*>(c->data());
 
             if (p->profile == normalized_diffusion_profile_name)
             {
@@ -906,118 +1361,29 @@ Color3f process_background_tree(const OSL::ClosureColor* ci)
     return do_process_closure_id_tree(ci, BackgroundID);
 }
 
-}   // namespace renderer
-
-// We want to reuse OSL macros to declare closure params and register the closures.
-// We can use them only inside the OSL namespace.
-OSL_NAMESPACE_ENTER
-
-void register_appleseed_closures(OSL::ShadingSystem& shading_system)
+template <typename ClosureType>
+void register_closure(OSL::ShadingSystem& shading_system)
 {
-    // Describe the memory layout of each closure type to the OSL runtime.
-    const size_t MaxParams = 32;
-    struct BuiltinClosures
-    {
-        const char*     name;
-        int             id;
-        ClosureParam    params[MaxParams];
-    };
-
-    static const BuiltinClosures builtins[] =
-    {
-        { "as_ashikhmin_shirley", AshikhminShirleyID, { CLOSURE_VECTOR_PARAM(AshikhminShirleyBRDFClosureParams, N),
-                                                        CLOSURE_VECTOR_PARAM(AshikhminShirleyBRDFClosureParams, T),
-                                                        CLOSURE_COLOR_PARAM(AshikhminShirleyBRDFClosureParams, rd),
-                                                        CLOSURE_COLOR_PARAM(AshikhminShirleyBRDFClosureParams, rg),
-                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyBRDFClosureParams, nu),
-                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyBRDFClosureParams, nv),
-                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyBRDFClosureParams, fr),
-                                                        CLOSURE_FINISH_PARAM(AshikhminShirleyBRDFClosureParams) } },
-
-        { "as_disney", DisneyID, { CLOSURE_VECTOR_PARAM(DisneyBRDFClosureParams, N),
-                                   CLOSURE_VECTOR_PARAM(DisneyBRDFClosureParams, T),
-                                   CLOSURE_COLOR_PARAM(DisneyBRDFClosureParams, base_color),
-                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, subsurface),
-                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, metallic),
-                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, specular),
-                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, specular_tint),
-                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, anisotropic),
-                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, roughness),
-                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, sheen),
-                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, sheen_tint),
-                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, clearcoat),
-                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, clearcoat_gloss),
-                                   CLOSURE_FINISH_PARAM(DisneyBRDFClosureParams) } },
-
-        { "as_sheen", SheenID, { CLOSURE_VECTOR_PARAM(DiffuseBSDFClosureParams, N),
-                                 CLOSURE_FINISH_PARAM(DiffuseBSDFClosureParams) } },
-
-        { "as_subsurface", SubsurfaceID, { CLOSURE_STRING_PARAM(SubsurfaceClosureParams, profile),
-                                           CLOSURE_VECTOR_PARAM(SubsurfaceClosureParams, N),
-                                           CLOSURE_COLOR_PARAM(SubsurfaceClosureParams, rd),
-                                           CLOSURE_COLOR_PARAM(SubsurfaceClosureParams, dmfp),
-                                           CLOSURE_FLOAT_PARAM(SubsurfaceClosureParams, eta),
-                                           CLOSURE_FLOAT_PARAM(SubsurfaceClosureParams, g),
-                                           CLOSURE_FINISH_PARAM(SubsurfaceClosureParams) } },
-
-        { "oren_nayar", OrenNayarID, { CLOSURE_VECTOR_PARAM(OrenNayarBRDFClosureParams, N),
-                                       CLOSURE_FLOAT_PARAM(OrenNayarBRDFClosureParams, roughness),
-                                       CLOSURE_FINISH_PARAM(OrenNayarBRDFClosureParams) } },
-
-        { "background", BackgroundID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
-
-        { "debug", DebugID, { CLOSURE_STRING_PARAM(DebugClosureParams, tag),
-                              CLOSURE_FINISH_PARAM(DebugClosureParams) } },
-
-        { "emission", EmissionID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
-
-        { "holdout", HoldoutID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
-
-        { "microfacet", MicrofacetID, { CLOSURE_STRING_PARAM(MicrofacetClosureParams, dist),
-                                        CLOSURE_VECTOR_PARAM(MicrofacetClosureParams, N),
-                                        CLOSURE_VECTOR_PARAM(MicrofacetClosureParams, T),
-                                        CLOSURE_FLOAT_PARAM(MicrofacetClosureParams, xalpha),
-                                        CLOSURE_FLOAT_PARAM(MicrofacetClosureParams, yalpha),
-                                        CLOSURE_FLOAT_PARAM(MicrofacetClosureParams, eta),
-                                        CLOSURE_INT_PARAM(MicrofacetClosureParams, refract),
-                                        CLOSURE_FINISH_PARAM(MicrofacetClosureParams) } },
-
-        { "reflection", ReflectionID, { CLOSURE_VECTOR_PARAM(ReflectionBRDFClosureParams, N),
-                                        CLOSURE_FINISH_PARAM(ReflectionBRDFClosureParams) } },
-
-        { "refraction", RefractionID, { CLOSURE_VECTOR_PARAM(RefractionBTDFClosureParams, N),
-                                        CLOSURE_FLOAT_PARAM(RefractionBTDFClosureParams, eta),
-                                        CLOSURE_FINISH_PARAM(RefractionBTDFClosureParams) } },
-
-        { "translucent", TranslucentID, { CLOSURE_VECTOR_PARAM(DiffuseBSDFClosureParams, N),
-                                          CLOSURE_FINISH_PARAM(DiffuseBSDFClosureParams) } },
-
-        { "transparent", TransparentID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
-
-        { 0, 0, {} }    // mark end of the array
-    };
-
-    for (size_t i = 0; builtins[i].name != 0; ++i)
-    {
-        shading_system.register_closure(
-            builtins[i].name,
-            builtins[i].id,
-            builtins[i].params,
-            0,
-            0);
-
-        RENDERER_LOG_INFO("registered osl closure %s.", builtins[i].name);
-    }
+    ClosureType::register_closure(shading_system);
+    RENDERER_LOG_INFO("registered osl closure %s.", ClosureType::name());
 }
-
-OSL_NAMESPACE_EXIT
-
-namespace renderer
-{
 
 void register_closures(OSL::ShadingSystem& shading_system)
 {
-    OSL::register_appleseed_closures(shading_system);
+    register_closure<AshikhminShirleyClosure>(shading_system);
+    register_closure<BackgroundClosure>(shading_system);
+    register_closure<DebugClosure>(shading_system);
+    register_closure<DisneyClosure>(shading_system);
+    register_closure<EmissionClosure>(shading_system);
+    register_closure<HoldoutClosure>(shading_system);
+    register_closure<MicrofacetClosure>(shading_system);
+    register_closure<OrenNayarClosure>(shading_system);
+    register_closure<ReflectionClosure>(shading_system);
+    register_closure<RefractionClosure>(shading_system);
+    register_closure<SheenClosure>(shading_system);
+    register_closure<SubsurfaceClosure>(shading_system);
+    register_closure<TranslucentClosure>(shading_system);
+    register_closure<TransparentClosure>(shading_system);
 }
 
 }   // namespace renderer
