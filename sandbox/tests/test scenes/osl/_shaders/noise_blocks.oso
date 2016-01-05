@@ -24,9 +24,9 @@ code ___main___
 # noise_blocks.osl:8
 #     Ci = Cs * Kd * diffuse(N);
 	functioncall	$const2 4 	%line{8} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:496
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:594
 # 
-	closure		$tmp1 $const5 N $const4 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{496} %argrw{"wrrr"}
+	closure		$tmp1 $const5 N $const4 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{594} %argrw{"wrrr"}
 # noise_blocks.osl:8
 #     Ci = Cs * Kd * diffuse(N);
 	mul		$tmp2 Cs Kd 	%filename{"noise_blocks.osl"} %line{8} %argrw{"wrr"}

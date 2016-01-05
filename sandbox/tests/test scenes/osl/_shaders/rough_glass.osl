@@ -1,5 +1,5 @@
 
-surface glass(
+surface rough_glass(
     string distribution = "specular",
     float roughness = 0.025,
     float ior = 1.5)

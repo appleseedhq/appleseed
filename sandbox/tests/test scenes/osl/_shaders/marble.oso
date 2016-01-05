@@ -12,7 +12,7 @@ global	closure color	Ci	%read{2147483647,-1} %write{27,27}
 local	point	q	%read{6,12} %write{4,6}
 local	float	marble	%read{11,20} %write{7,17}
 local	float	f	%read{11,17} %write{8,17}
-local	int	___296_i	%read{11,17} %write{10,17}
+local	int	___299_i	%read{11,17} %write{10,17}
 local	float[13]	marble_ramp	%read{25,25} %write{18,18}
 const	color	$const1	0.5 0.5 0.5		%read{0,0} %write{2147483647,-1}
 const	int	$const2	1		%read{1,17} %write{2147483647,-1}
@@ -73,8 +73,8 @@ code ___main___
 # marble.osl:31
 #     for (int i = 0; i < NNOISE; i += 1)
 	for		$tmp2 11 12 17 18 	%line{31} %argrw{"r"}
-	assign		___296_i $const6 	%argrw{"wr"}
-	lt		$tmp2 ___296_i $const7 	%argrw{"wrr"}
+	assign		___299_i $const6 	%argrw{"wr"}
+	lt		$tmp2 ___299_i $const7 	%argrw{"wrr"}
 # marble.osl:33
 #         marble += snoise(q * f) / f;
 	mul		$tmp4 q f 	%line{33} %argrw{"wrr"}
@@ -86,7 +86,7 @@ code ___main___
 	mul		f f $const8 	%line{34} %argrw{"wrr"}
 # marble.osl:31
 #     for (int i = 0; i < NNOISE; i += 1)
-	add		___296_i ___296_i $const2 	%line{31} %argrw{"wrr"}
+	add		___299_i ___299_i $const2 	%line{31} %argrw{"wrr"}
 # marble.osl:51
 #         };
 	assign		marble_ramp $const9 	%line{51} %argrw{"wr"}
