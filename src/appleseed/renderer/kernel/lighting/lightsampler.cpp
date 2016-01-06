@@ -108,10 +108,6 @@ LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
   : m_params(params)
   , m_emitting_triangle_hash_table(m_triangle_key_hasher)
 {
-    const Camera* camera = scene.get_camera();
-    m_shutter_open_time = camera->get_shutter_open_time();
-    m_shutter_close_time = camera->get_shutter_close_time();
-
     RENDERER_LOG_INFO("collecting light emitters...");
 
     // Collect all non-physical lights.

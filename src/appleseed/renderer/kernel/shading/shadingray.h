@@ -64,26 +64,27 @@ class ShadingRay
     typedef foundation::RayInfo3d   RayInfoType;
     typedef foundation::uint16      DepthType;
 
-    struct Time
+    class Time
     {
-        Time();
+      public:
+        double                      m_absolute;          // absolute time of the ray
+        double                      m_normalized;        // time of the ray, relative to shutter open / close times
+        double                      m_shutter_open;      // shutter open time
+        double                      m_shutter_close;     // shutter close time
 
         static Time create_with_normalized_time(
-            const double time,
-            const double shutter_open,
-            const double shutter_close);
+            const double            time,
+            const double            shutter_open,
+            const double            shutter_close);
 
-        double m_absolute;          // absolute time of the ray
-        double m_normalized;        // time of the ray, relative to shutter open / close times
-        double m_shutter_open;      // shutter open time
-        double m_shutter_close;     // shutter close time
+        Time();                     // leave all fields uninitialized
 
       private:
         Time(
-            const double absolute,
-            const double normalized,
-            const double shutter_open,
-            const double shutter_close);
+            const double            absolute,
+            const double            normalized,
+            const double            shutter_open,
+            const double            shutter_close);
     };
 
     // Public members.
@@ -263,19 +264,28 @@ inline ShadingRay transform_to_parent(
 // ShadingRay::Time class implementation.
 //
 
+inline ShadingRay::Time ShadingRay::Time::create_with_normalized_time(
+    const double                    time,
+    const double                    shutter_open,
+    const double                    shutter_close)
+{
+    return
+        Time(
+            foundation::lerp(shutter_open, shutter_close, time),
+            time,
+            shutter_open,
+            shutter_close);
+}
+
 inline ShadingRay::Time::Time()
-  : m_absolute(0.0)
-  , m_normalized(0.0)
-  , m_shutter_open(0.0)
-  , m_shutter_close(0.0)
 {
 }
 
 inline ShadingRay::Time::Time(
-    const double absolute,
-    const double normalized,
-    const double shutter_open,
-    const double shutter_close)
+    const double                    absolute,
+    const double                    normalized,
+    const double                    shutter_open,
+    const double                    shutter_close)
   : m_absolute(absolute)
   , m_normalized(normalized)
   , m_shutter_open(shutter_open)
@@ -285,19 +295,6 @@ inline ShadingRay::Time::Time(
     assert(m_normalized < 1.0);
     assert(m_absolute >= m_shutter_open);
     assert(m_absolute <= m_shutter_close);
-}
-
-inline ShadingRay::Time ShadingRay::Time::create_with_normalized_time(
-    const double time,
-    const double shutter_open,
-    const double shutter_close)
-{
-    return
-        Time(
-            foundation::lerp(shutter_open, shutter_close, time),
-            time,
-            shutter_open,
-            shutter_close);
 }
 
 }       // namespace renderer

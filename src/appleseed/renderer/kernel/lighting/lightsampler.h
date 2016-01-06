@@ -216,9 +216,6 @@ class LightSampler
         const ShadingRay::Time&             time,
         const foundation::Vector3d&         s,
         LightSample&                        light_sample) const;
-    void sample(
-        const foundation::Vector4d&         s,
-        LightSample&                        light_sample) const;
 
     // Compute the probability density in area measure of a given light sample.
     double evaluate_pdf(const ShadingPoint& shading_point) const;
@@ -247,9 +244,6 @@ class LightSampler
 
     EmittingTriangleKeyHasher   m_triangle_key_hasher;
     EmittingTriangleHashTable   m_emitting_triangle_hash_table;
-
-    double                      m_shutter_open_time;
-    double                      m_shutter_close_time;
 
     // Recursively collect non-physical lights from a given set of assembly instances.
     void collect_non_physical_lights(
@@ -372,17 +366,6 @@ inline void LightSampler::sample_non_physical_light(
     LightSample&                            sample) const
 {
     sample_non_physical_light(time, s, light_index, 1.0, sample);
-}
-
-inline void LightSampler::sample(
-    const foundation::Vector4d&             s,
-    LightSample&                            light_sample) const
-{
-    ShadingRay::Time time = ShadingRay::Time::create_with_normalized_time(
-        s[0],
-        m_shutter_open_time,
-        m_shutter_close_time);
-    sample(time, foundation::Vector3d(s[1], s[2], s[3]), light_sample);
 }
 
 }       // namespace renderer
