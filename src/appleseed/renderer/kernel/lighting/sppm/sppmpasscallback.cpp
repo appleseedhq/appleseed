@@ -83,9 +83,13 @@ SPPMPassCallback::SPPMPassCallback(
   , m_pass_number(0)
 {
     // Compute the initial lookup radius.
-    const float diameter = static_cast<float>(scene.get_render_data().m_diameter);
+    const GAABB3 scene_bbox = scene.compute_bbox();
+    const float scene_diameter =
+        scene_bbox.is_valid()
+            ? static_cast<float>(scene_bbox.diameter())
+            : 0.0f;
     const float diameter_factor = m_params.m_initial_radius_percents / 100.0f;
-    m_initial_lookup_radius = diameter * diameter_factor;
+    m_initial_lookup_radius = scene_diameter * diameter_factor;
 
     // Start with the initial lookup radius.
     m_lookup_radius = m_initial_lookup_radius;
