@@ -122,6 +122,20 @@ enum ClosureID
 };
 
 //
+// Exception class thrown in case of an OSL runtime error.
+//
+
+struct ExceptionOSLRuntimeError
+  : public foundation::Exception
+{
+    explicit ExceptionOSLRuntimeError(const char* what)
+      :  foundation::Exception(what)
+    {
+    }
+};
+
+
+//
 // Composite OSL closure.
 //
 
@@ -147,6 +161,21 @@ class APPLESEED_ALIGN(16) CompositeClosure
         const foundation::Vector3d& normal,
         const foundation::Vector3d& tangent,
         const foundation::Basis3d&  original_shading_basis);
+
+    template <typename InputValues>
+    InputValues* add_closure(
+        const ClosureID             closure_type,
+        const foundation::Basis3d&  original_shading_basis,
+        const foundation::Color3f&  weight,
+        const foundation::Vector3d& normal);
+
+    template <typename InputValues>
+    InputValues* add_closure(
+        const ClosureID             closure_type,
+        const foundation::Basis3d&  original_shading_basis,
+        const foundation::Color3f&  weight,
+        const foundation::Vector3d& normal,
+        const foundation::Vector3d& tangent);
 
   protected:
     typedef boost::mpl::vector<
@@ -189,21 +218,6 @@ class APPLESEED_ALIGN(16) CompositeClosure
     CompositeClosure();
 
     void compute_cdf();
-
-    template <typename InputValues>
-    InputValues* add_closure(
-        const ClosureID             closure_type,
-        const foundation::Basis3d&  original_shading_basis,
-        const foundation::Color3f&  weight,
-        const foundation::Vector3d& normal);
-
-    template <typename InputValues>
-    InputValues* add_closure(
-        const ClosureID             closure_type,
-        const foundation::Basis3d&  original_shading_basis,
-        const foundation::Color3f&  weight,
-        const foundation::Vector3d& normal,
-        const foundation::Vector3d& tangent);
 
     template <typename InputValues>
     InputValues* do_add_closure(
