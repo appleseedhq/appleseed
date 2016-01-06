@@ -312,8 +312,15 @@ namespace
             const ShadingContext&   shading_context,
             SamplingContext&        sampling_context)
         {
+            const Vector4d s = sampling_context.next_vector2<4>();
             LightSample light_sample;
-            m_light_sampler.sample(sampling_context.next_vector2<4>(), light_sample);
+            m_light_sampler.sample(
+                ShadingRay::Time::create_with_normalized_time(
+                    s[0],
+                    m_shutter_open_time,
+                    m_shutter_close_time),
+                Vector3d(s[1], s[2], s[3]),
+                light_sample);
 
             if (light_sample.m_triangle)
             {
