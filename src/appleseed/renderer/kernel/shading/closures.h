@@ -48,6 +48,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/core/exceptions/exception.h"
 #include "foundation/image/color.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
@@ -121,15 +122,16 @@ enum ClosureID
     NumClosuresIDs
 };
 
+
 //
-// Exception class thrown in case of an OSL runtime error.
+// Exception thrown in case of an OSL runtime error.
 //
 
 struct ExceptionOSLRuntimeError
   : public foundation::Exception
 {
     explicit ExceptionOSLRuntimeError(const char* what)
-      :  foundation::Exception(what)
+      : foundation::Exception(what)
     {
     }
 };

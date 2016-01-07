@@ -142,7 +142,7 @@ struct Shader::Impl
 
                   default:
                     RENDERER_LOG_ERROR(
-                        "error adding osl param %s, of unknown type %s; will use the default value.",
+                        "error adding OSL param %s, of unknown type %s; will use the default value.",
                         i.it().name(),
                         i.it().value());
                     break;
@@ -151,7 +151,7 @@ struct Shader::Impl
             catch (const ExceptionOSLParamParseError&)
             {
                 RENDERER_LOG_ERROR(
-                    "error parsing osl param value, param = %s, value = %s; will use the default value.",
+                    "error parsing OSL param value, param = %s, value = %s; will use the default value.",
                     i.it().name(),
                     i.it().value());
             }

@@ -63,24 +63,23 @@ namespace renderer
 {
 namespace
 {
-
     //
-    // Closures
+    // Closures.
     //
 
     typedef void(*convert_closure_fun)(
-        CompositeSurfaceClosure&,
-        const Basis3d&,
-        const void*,
-        const Color3f&);
+        CompositeSurfaceClosure&    composite_closure,
+        const Basis3d&              shading_basis,
+        const void*                 osl_params,
+        const Color3f&              weight);
 
     convert_closure_fun g_closure_convert_funs[NumClosuresIDs];
 
     void convert_closure_nop(
-        CompositeSurfaceClosure&,
-        const Basis3d&,
-        const void*,
-        const Color3f&)
+        CompositeSurfaceClosure&    composite_closure,
+        const Basis3d&              shading_basis,
+        const void*                 osl_params,
+        const Color3f&              weight)
     {
     }
 
@@ -111,7 +110,7 @@ namespace
 
         static void register_closure(OSL::ShadingSystem& shading_system)
         {
-            OSL::ClosureParam params[] =
+            const OSL::ClosureParam params[] =
             {
                 CLOSURE_VECTOR_PARAM(Params, N),
                 CLOSURE_VECTOR_PARAM(Params, T),
@@ -123,12 +122,7 @@ namespace
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(
-                name(),
-                id(),
-                params,
-                0,
-                0);
+            shading_system.register_closure(name(), id(), params, 0, 0);
 
             g_closure_convert_funs[id()] = &convert_closure;
         }
@@ -176,17 +170,12 @@ namespace
 
         static void register_closure(OSL::ShadingSystem& shading_system)
         {
-            OSL::ClosureParam params[] =
+            const OSL::ClosureParam params[] =
             {
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(
-                name(),
-                id(),
-                params,
-                0,
-                0);
+            shading_system.register_closure(name(), id(), params, 0, 0);
         }
     };
 
@@ -209,18 +198,13 @@ namespace
 
         static void register_closure(OSL::ShadingSystem& shading_system)
         {
-            OSL::ClosureParam params[] =
+            const OSL::ClosureParam params[] =
             {
                 CLOSURE_STRING_PARAM(Params, tag),
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(
-                name(),
-                id(),
-                params,
-                0,
-                0);
+            shading_system.register_closure(name(), id(), params, 0, 0);
         }
     };
 
@@ -257,7 +241,7 @@ namespace
 
         static void register_closure(OSL::ShadingSystem& shading_system)
         {
-            OSL::ClosureParam params[] =
+            const OSL::ClosureParam params[] =
             {
                 CLOSURE_VECTOR_PARAM(Params, N),
                 CLOSURE_VECTOR_PARAM(Params, T),
@@ -275,12 +259,7 @@ namespace
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(
-                name(),
-                id(),
-                params,
-                0,
-                0);
+            shading_system.register_closure(name(), id(), params, 0, 0);
 
             g_closure_convert_funs[id()] = &convert_closure;
         }
@@ -332,17 +311,12 @@ namespace
 
         static void register_closure(OSL::ShadingSystem& shading_system)
         {
-            OSL::ClosureParam params[] =
+            const OSL::ClosureParam params[] =
             {
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(
-                name(),
-                id(),
-                params,
-                0,
-                0);
+            shading_system.register_closure(name(), id(), params, 0, 0);
         }
     };
 
@@ -364,17 +338,12 @@ namespace
 
         static void register_closure(OSL::ShadingSystem& shading_system)
         {
-            OSL::ClosureParam params[] =
+            const OSL::ClosureParam params[] =
             {
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(
-                name(),
-                id(),
-                params,
-                0,
-                0);
+            shading_system.register_closure(name(), id(), params, 0, 0);
         }
     };
 
@@ -407,7 +376,7 @@ namespace
 
         static void register_closure(OSL::ShadingSystem& shading_system)
         {
-            OSL::ClosureParam params[] =
+            const OSL::ClosureParam params[] =
             {
                 CLOSURE_STRING_PARAM(Params, dist),
                 CLOSURE_VECTOR_PARAM(Params, N),
@@ -419,12 +388,7 @@ namespace
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(
-                name(),
-                id(),
-                params,
-                0,
-                0);
+            shading_system.register_closure(name(), id(), params, 0, 0);
 
             g_closure_convert_funs[id()] = &convert_closure;
         }
@@ -473,7 +437,7 @@ namespace
                 }
                 else
                 {
-                    string msg("Invalid microfacet distribution function ");
+                    string msg("invalid microfacet distribution function: ");
                     msg += p->dist.c_str();
                     throw ExceptionOSLRuntimeError(msg.c_str());
                 }
@@ -520,7 +484,7 @@ namespace
                 }
                 else
                 {
-                    string msg("Invalid microfacet distribution function ");
+                    string msg("invalid microfacet distribution function: ");
                     msg += p->dist.c_str();
                     throw ExceptionOSLRuntimeError(msg.c_str());
                 }
@@ -531,7 +495,9 @@ namespace
                 values->m_to_ior = to_ior;
             }
             else
-                throw ExceptionOSLRuntimeError("Invalid microfacet refraction mode");
+            {
+                throw ExceptionOSLRuntimeError("invalid microfacet refraction mode.");
+            }
         }
     };
 
@@ -557,19 +523,14 @@ namespace
 
         static void register_closure(OSL::ShadingSystem& shading_system)
         {
-            OSL::ClosureParam params[] =
+            const OSL::ClosureParam params[] =
             {
                 CLOSURE_VECTOR_PARAM(Params, N),
                 CLOSURE_FLOAT_PARAM(Params, roughness),
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(
-                name(),
-                id(),
-                params,
-                0,
-                0);
+            shading_system.register_closure(name(), id(), params, 0, 0);
 
             g_closure_convert_funs[id()] = &convert_closure;
         }
@@ -615,18 +576,13 @@ namespace
 
         static void register_closure(OSL::ShadingSystem& shading_system)
         {
-            OSL::ClosureParam params[] =
+            const OSL::ClosureParam params[] =
             {
                 CLOSURE_VECTOR_PARAM(Params, N),
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(
-                name(),
-                id(),
-                params,
-                0,
-                0);
+            shading_system.register_closure(name(), id(), params, 0, 0);
 
             g_closure_convert_funs[id()] = &convert_closure;
         }
@@ -672,19 +628,14 @@ namespace
 
         static void register_closure(OSL::ShadingSystem& shading_system)
         {
-            OSL::ClosureParam params[] =
+            const OSL::ClosureParam params[] =
             {
                 CLOSURE_VECTOR_PARAM(Params, N),
                 CLOSURE_FLOAT_PARAM(Params, eta),
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(
-                name(),
-                id(),
-                params,
-                0,
-                0);
+            shading_system.register_closure(name(), id(), params, 0, 0);
 
             g_closure_convert_funs[id()] = &convert_closure;
         }
@@ -748,18 +699,13 @@ namespace
 
         static void register_closure(OSL::ShadingSystem& shading_system)
         {
-            OSL::ClosureParam params[] =
+            const OSL::ClosureParam params[] =
             {
                 CLOSURE_VECTOR_PARAM(Params, N),
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(
-                name(),
-                id(),
-                params,
-                0,
-                0);
+            shading_system.register_closure(name(), id(), params, 0, 0);
 
             g_closure_convert_funs[id()] = &convert_closure;
         }
@@ -812,7 +758,7 @@ namespace
 
         static void register_closure(OSL::ShadingSystem& shading_system)
         {
-            OSL::ClosureParam params[] =
+            const OSL::ClosureParam params[] =
             {
                 CLOSURE_STRING_PARAM(Params, profile),
                 CLOSURE_VECTOR_PARAM(Params, N),
@@ -823,12 +769,7 @@ namespace
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(
-                name(),
-                id(),
-                params,
-                0,
-                0);
+            shading_system.register_closure(name(), id(), params, 0, 0);
         }
 
         static void convert_closure(
@@ -857,7 +798,7 @@ namespace
                 values->m_inside_ior = p->eta;
                 values->m_outside_ior = 1.0;
 #else
-                throw ExceptionOSLRuntimeError("Unknown subsurface profile normalized_diffusion");
+                throw ExceptionOSLRuntimeError("unknown subsurface profile: normalized_diffusion");
 #endif
             }
             else
@@ -893,7 +834,7 @@ namespace
                 }
                 else
                 {
-                    string msg = "Unknown subsurface profile ";
+                    string msg = "unknown subsurface profile: ";
                     msg += p->profile.c_str();
                     throw ExceptionOSLRuntimeError(msg.c_str());
                 }
@@ -931,18 +872,13 @@ namespace
 
         static void register_closure(OSL::ShadingSystem& shading_system)
         {
-            OSL::ClosureParam params[] =
+            const OSL::ClosureParam params[] =
             {
                 CLOSURE_VECTOR_PARAM(Params, N),
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(
-                name(),
-                id(),
-                params,
-                0,
-                0);
+            shading_system.register_closure(name(), id(), params, 0, 0);
 
             g_closure_convert_funs[id()] = &convert_closure;
         }
@@ -984,17 +920,12 @@ namespace
 
         static void register_closure(OSL::ShadingSystem& shading_system)
         {
-            OSL::ClosureParam params[] =
+            const OSL::ClosureParam params[] =
             {
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(
-                name(),
-                id(),
-                params,
-                0,
-                0);
+            shading_system.register_closure(name(), id(), params, 0, 0);
         }
     };
 }
@@ -1009,7 +940,6 @@ CompositeClosure::CompositeClosure()
   , m_num_bytes(0)
 {
     assert(is_aligned(m_pool, InputValuesAlignment));
-
 }
 
 void CompositeClosure::compute_cdf()
@@ -1125,7 +1055,7 @@ InputValues* CompositeClosure::do_add_closure(
     if (get_num_closures() >= MaxClosureEntries)
     {
         throw ExceptionOSLRuntimeError(
-            "Maximum number of closures in OSL shader group exceeded");
+            "maximum number of closures in OSL shader group exceeded.");
     }
 
     assert(m_num_bytes + sizeof(InputValues) <= MaxPoolSize);
@@ -1278,7 +1208,7 @@ void CompositeSubsurfaceClosure::process_closure_tree(
 BOOST_STATIC_ASSERT(sizeof(CompositeEmissionClosure) <= InputEvaluator::DataSize);
 
 CompositeEmissionClosure::CompositeEmissionClosure(
-    const OSL::ClosureColor* ci)
+    const OSL::ClosureColor*    ci)
 {
     m_total_weight = Color3f(0.0f);
     process_closure_tree(ci, Color3f(1.0f));
@@ -1397,11 +1327,14 @@ Color3f process_background_tree(const OSL::ClosureColor* ci)
     return do_process_closure_id_tree(ci, BackgroundID);
 }
 
-template <typename ClosureType>
-void register_closure(OSL::ShadingSystem& shading_system)
+namespace
 {
-    ClosureType::register_closure(shading_system);
-    RENDERER_LOG_INFO("registered osl closure %s.", ClosureType::name());
+    template <typename ClosureType>
+    void register_closure(OSL::ShadingSystem& shading_system)
+    {
+        ClosureType::register_closure(shading_system);
+        RENDERER_LOG_INFO("registered OSL closure %s.", ClosureType::name());
+    }
 }
 
 void register_closures(OSL::ShadingSystem& shading_system)
