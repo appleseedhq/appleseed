@@ -1055,7 +1055,7 @@ InputValues* CompositeClosure::do_add_closure(
     if (get_num_closures() >= MaxClosureEntries)
     {
         throw ExceptionOSLRuntimeError(
-            "maximum number of closures in osl shader group exceeded.");
+            "maximum number of closures in OSL shader group exceeded.");
     }
 
     assert(m_num_bytes + sizeof(InputValues) <= MaxPoolSize);
@@ -1333,7 +1333,7 @@ namespace
     void register_closure(OSL::ShadingSystem& shading_system)
     {
         ClosureType::register_closure(shading_system);
-        RENDERER_LOG_INFO("registered osl closure %s.", ClosureType::name());
+        RENDERER_LOG_INFO("registered OSL closure %s.", ClosureType::name());
     }
 }
 
