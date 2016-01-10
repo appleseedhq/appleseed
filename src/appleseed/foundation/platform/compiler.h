@@ -175,6 +175,22 @@ namespace foundation
 
 
 //
+//  A macro to provide the compiler with branch prediction information.
+//  Usage: replace if (cond) with if (APPLESEED_LIKELY(cond))
+//  Warning: programmers are notoriously bad at guessing this.
+//  It should only be used after profiling.
+//
+
+#if defined(__GNUC__)
+    #define APPLESEED_LIKELY(x)   (__builtin_expect(bool(x), true))
+    #define APPLESEED_UNLIKELY(x) (__builtin_expect(bool(x), false))
+#else
+    #define APPLESEED_LIKELY(x)   (x)
+    #define APPLESEED_UNLIKELY(x) (x)
+#endif
+
+
+//
 // Utility macros converting their argument to a string literal:
 //   APPLESEED_TO_STRING_EVAL first expands the argument definition.
 //   APPLESEED_TO_STRING_NOEVAL does not expand the argument definition.
