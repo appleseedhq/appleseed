@@ -79,6 +79,13 @@ void fresnel_reflectance_dielectric(
     const T                 cos_theta_i,
     const T                 cos_theta_t);
 
+// Compute the Fresnel reflectance for a dielectric for unpolarized light.
+template <typename SpectrumType, typename T>
+void fresnel_reflectance_dielectric(
+    SpectrumType&           reflectance,
+    const SpectrumType&     eta,
+    const T                 cos_theta_i);
+
 // Compute the Fresnel transmittance for a dielectric for unpolarized light.
 template <typename SpectrumType, typename T>
 void fresnel_transmittance_dielectric(
@@ -130,7 +137,7 @@ void normal_reflectance_dielectric(
 //   Light Transport in Tissue (appendix A2, page 167)
 //   http://omlc.org/~prahl/pubs/pdf/prahl88.pdf
 //
-//   Fresnel Reflection of Diffusely Incident Light 
+//   Fresnel Reflection of Diffusely Incident Light
 //   http://nvlpubs.nist.gov/nistpubs/jres/29/jresv29n5p329_A1b.pdf
 //
 //   Towards Realistic Image Synthesis of Scattering Materials (eq. 5.27 page 41)
@@ -279,6 +286,30 @@ void fresnel_reflectance_dielectric(
 }
 
 template <typename SpectrumType, typename T>
+void fresnel_reflectance_dielectric(
+    SpectrumType&           reflectance,
+    const SpectrumType&     eta,
+    const T                 cos_theta_i)
+{
+    typedef typename impl::GetValueType<SpectrumType>::ValueType ValueType;
+
+    const T sin_theta_i2 = T(1.0) - square(cos_theta_i);
+    const T sin_theta_t2 = sin_theta_i2 * square(eta);
+    const T cos_theta_t2 = T(1.0) - sin_theta_t2;
+
+    if (cos_theta_t2 < T(0.0))
+    {
+        // Total internal reflection.
+        reflectance = ValueType(1.0);
+    }
+    else
+    {
+        const T cos_theta_t = std::sqrt(cos_theta_t2);
+        fresnel_reflectance_dielectric(reflectance, eta, cos_theta_i, cos_theta_t);
+    }
+}
+
+template <typename SpectrumType, typename T>
 void fresnel_transmittance_dielectric(
     SpectrumType&           transmittance,
     const SpectrumType&     eta,
@@ -338,8 +369,8 @@ void normal_reflectance_dielectric(
 {
     //
     //                        /  ior_i - ior_t  \ 2     /  eta - 1  \ 2     /  1 - eta  \ 2
-    // normal_reflectance  =  |  -------------  |    =  |  -------  |    =  |  -------  |  
-    //                        \  ior_i + ior_t  /       \  eta + 1  /       \  1 + eta  /  
+    // normal_reflectance  =  |  -------------  |    =  |  -------  |    =  |  -------  |
+    //                        \  ior_i + ior_t  /       \  eta + 1  /       \  1 + eta  /
     //
 
     typedef typename impl::GetValueType<SpectrumType>::ValueType ValueType;
