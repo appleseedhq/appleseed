@@ -1317,7 +1317,7 @@ auto_ptr<TriangleTree> TriangleTreeFactory::create()
 // has the desired precision and can be used in-place.
 //
 
-namespace impl
+namespace
 {
     template <bool CompatibleTypes> struct TriangleReaderImpl;
 
@@ -1398,7 +1398,7 @@ bool TriangleLeafVisitor::visit(
 
             // Read the triangle, converting it to the right format if necessary.
             const GTriangleType& triangle = reader.read<GTriangleType>();
-            const impl::TriangleReader triangle_reader(triangle);
+            const TriangleReader triangle_reader(triangle);
 
             // Intersect the triangle.
             double t, u, v;
@@ -1453,7 +1453,7 @@ bool TriangleLeafVisitor::visit(
 
             // Build the triangle and convert it to the right format if necessary.
             const GTriangleType triangle(v0, v1, v2);
-            const impl::TriangleReader reader(triangle);
+            const TriangleReader reader(triangle);
 
             // Intersect the triangle.
             double t, u, v;
@@ -1498,7 +1498,7 @@ void TriangleLeafVisitor::read_hit_triangle_data() const
         m_shading_point.m_primitive_index = triangle_key.get_triangle_index();
 
         // Compute and store the support plane of the hit triangle.
-        const impl::TriangleReader reader(*m_hit_triangle);
+        const TriangleReader reader(*m_hit_triangle);
         m_shading_point.m_triangle_support_plane.initialize(reader.m_triangle);
     }
 }
@@ -1550,7 +1550,7 @@ bool TriangleLeafProbeVisitor::visit(
 
             // Read the triangle, converting it to the right format if necessary.
             const GTriangleType& triangle = reader.read<GTriangleType>();
-            const impl::TriangleReader triangle_reader(triangle);
+            const TriangleReader triangle_reader(triangle);
 
             // Intersect the triangle.
             if (triangle_reader.m_triangle.intersect(ray))
@@ -1591,7 +1591,7 @@ bool TriangleLeafProbeVisitor::visit(
 
             // Build the triangle and convert it to the right format if necessary.
             const GTriangleType triangle(v0, v1, v2);
-            const impl::TriangleReader reader(triangle);
+            const TriangleReader reader(triangle);
 
             // Intersect the triangle.
             if (reader.m_triangle.intersect(ray))

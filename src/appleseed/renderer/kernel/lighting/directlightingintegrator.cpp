@@ -520,7 +520,6 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     // Filter scattering modes.
     if (!(m_bsdf_sampling_modes & sample.m_mode))
         return;
-    assert(sample.m_probability != BSDF::DiracDelta);
 
     // Trace a ray in the direction of the reflection.
     double weight;
