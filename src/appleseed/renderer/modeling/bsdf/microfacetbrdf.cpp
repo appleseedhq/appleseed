@@ -34,7 +34,7 @@
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
-#include "renderer/modeling/bsdf/microfacetbrdfhelper.h"
+#include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
@@ -176,8 +176,6 @@ namespace
                         blinn_mdf,
                         e,
                         e,
-                        e,
-                        e,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
                         sample);
                 }
@@ -190,8 +188,6 @@ namespace
                     MicrofacetBRDFHelper<double>::sample(
                         sampling_context,
                         beckmann_mdf,
-                        a,
-                        a,
                         a,
                         a,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
@@ -208,8 +204,6 @@ namespace
                         ward_mdf,
                         a,
                         a,
-                        a,
-                        a,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
                         sample);
                 }
@@ -222,8 +216,6 @@ namespace
                     MicrofacetBRDFHelper<double>::sample(
                         sampling_context,
                         ggx_mdf,
-                        a,
-                        a,
                         a,
                         a,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
@@ -263,8 +255,6 @@ namespace
                         blinn_mdf,
                         e,
                         e,
-                        e,
-                        e,
                         shading_basis,
                         outgoing,
                         incoming,
@@ -280,8 +270,6 @@ namespace
                     const BeckmannMDF<double> beckman_mdf;
                     pdf = MicrofacetBRDFHelper<double>::evaluate(
                         beckman_mdf,
-                        a,
-                        a,
                         a,
                         a,
                         shading_basis,
@@ -301,8 +289,6 @@ namespace
                         ward_mdf,
                         a,
                         a,
-                        a,
-                        a,
                         shading_basis,
                         outgoing,
                         incoming,
@@ -318,8 +304,6 @@ namespace
                     const GGXMDF<double> ggx_mdf;
                     pdf =  MicrofacetBRDFHelper<double>::evaluate(
                         ggx_mdf,
-                        a,
-                        a,
                         a,
                         a,
                         shading_basis,

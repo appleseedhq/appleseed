@@ -32,7 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
-#include "renderer/modeling/bsdf/microfacetbrdfhelper.h"
+#include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/color/wavelengths.h"
 #include "renderer/modeling/input/inputevaluator.h"
@@ -411,13 +411,16 @@ namespace
             else if (s < cdf[SpecularComponent])
             {
                 double alpha_x, alpha_y;
-                specular_roughness(values, alpha_x, alpha_y);
+                microfacet_alpha_from_roughness(
+                    values->m_roughness,
+                    values->m_anisotropic,
+                    alpha_x,
+                    alpha_y);
+
                 const GGXMDF<double> ggx_mdf;
                 MicrofacetBRDFHelper<double>::sample(
                     sampling_context,
                     ggx_mdf,
-                    alpha_x,
-                    alpha_y,
                     alpha_x,
                     alpha_y,
                     DisneySpecularFresnelFun(*values),
@@ -497,12 +500,15 @@ namespace
                 {
                     Spectrum spec;
                     double alpha_x, alpha_y;
-                    specular_roughness(values, alpha_x, alpha_y);
+                    microfacet_alpha_from_roughness(
+                        values->m_roughness,
+                        values->m_anisotropic,
+                        alpha_x,
+                        alpha_y);
+
                     const GGXMDF<double> ggx_mdf;
                     pdf += MicrofacetBRDFHelper<double>::evaluate(
                         ggx_mdf,
-                        alpha_x,
-                        alpha_y,
                         alpha_x,
                         alpha_y,
                         shading_basis,
@@ -576,7 +582,12 @@ namespace
                 if (weights[SpecularComponent] != 0.0)
                 {
                     double alpha_x, alpha_y;
-                    specular_roughness(values, alpha_x, alpha_y);
+                    microfacet_alpha_from_roughness(
+                        values->m_roughness,
+                        values->m_anisotropic,
+                        alpha_x,
+                        alpha_y);
+
                     const GGXMDF<double> ggx_mdf;
                     pdf += MicrofacetBRDFHelper<double>::pdf(
                         ggx_mdf,
@@ -646,16 +657,6 @@ namespace
             cdf[SheenComponent]     += cdf[DiffuseComponent];
             cdf[SpecularComponent]  += cdf[SheenComponent];
             cdf[CleatcoatComponent] += cdf[SpecularComponent];
-        }
-
-        void specular_roughness(
-            const DisneyBRDFInputValues*    values,
-            double&                         alpha_x,
-            double&                         alpha_y) const
-        {
-            const double aspect = sqrt(1.0 - values->m_anisotropic * 0.9);
-            alpha_x = max(0.001, square(values->m_roughness) / aspect);
-            alpha_y = max(0.001, square(values->m_roughness) * aspect);
         }
 
         double clearcoat_roughness(const DisneyBRDFInputValues* values) const
