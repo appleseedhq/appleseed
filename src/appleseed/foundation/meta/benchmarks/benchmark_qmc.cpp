@@ -61,12 +61,7 @@ BENCHMARK_SUITE(Foundation_Math_QMC)
             for (size_t s = 0, d = 1; d <= 32; ++d)
             {
                 for (size_t i = 0; i < 4; ++i, ++s)
-                {
-                    m_x +=
-                        radical_inverse<T>(
-                            Primes[d],
-                            s);
-                }
+                    m_x += radical_inverse<T>(Primes[d], s);
             }
         }
 
@@ -77,12 +72,7 @@ BENCHMARK_SUITE(Foundation_Math_QMC)
             for (size_t s = 0, d = 1; d <= 32; ++d)
             {
                 for (size_t i = 0; i < 4; ++i, ++s)
-                {
-                    m_x +=
-                        fast_radical_inverse<T>(
-                            d,
-                            s);
-                }
+                    m_x += fast_radical_inverse<T>(d, s);
             }
         }
 
@@ -93,13 +83,7 @@ BENCHMARK_SUITE(Foundation_Math_QMC)
             for (size_t s = 0, d = 1; d <= 32; ++d)
             {
                 for (size_t i = 0; i < 4; ++i, ++s)
-                {
-                    m_x +=
-                        permuted_radical_inverse<T>(
-                            Primes[d],
-                            FaurePermutations[d],
-                            s);
-                }
+                    m_x += permuted_radical_inverse<T>(Primes[d], FaurePermutations[d], s);
             }
         }
 
@@ -110,13 +94,7 @@ BENCHMARK_SUITE(Foundation_Math_QMC)
             for (size_t s = 0, d = 1; d <= 32; ++d)
             {
                 for (size_t i = 0; i < 4; ++i, ++s)
-                {
-                    m_x +=
-                        fast_permuted_radical_inverse<T>(
-                            d,
-                            FaurePermutations[d],
-                            s);
-                }
+                    m_x += fast_permuted_radical_inverse<T>(d, FaurePermutations[d], s);
             }
         }
     };
