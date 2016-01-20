@@ -81,6 +81,58 @@ TEST_SUITE(Foundation_Math_QMC)
         EXPECT_FEQ(0.875,   radical_inverse<double>(2, 7));
     }
 
+    TEST_CASE(PermutedRadicalInverse_Base2_IdentityPermutation)
+    {
+        static const size_t Perm[] = { 0, 1 };
+        EXPECT_FEQ(0.0,     permuted_radical_inverse<double>(2, Perm, 0));
+        EXPECT_FEQ(0.5,     permuted_radical_inverse<double>(2, Perm, 1));
+        EXPECT_FEQ(0.25,    permuted_radical_inverse<double>(2, Perm, 2));
+        EXPECT_FEQ(0.75,    permuted_radical_inverse<double>(2, Perm, 3));
+        EXPECT_FEQ(0.125,   permuted_radical_inverse<double>(2, Perm, 4));
+        EXPECT_FEQ(0.625,   permuted_radical_inverse<double>(2, Perm, 5));
+        EXPECT_FEQ(0.375,   permuted_radical_inverse<double>(2, Perm, 6));
+        EXPECT_FEQ(0.875,   permuted_radical_inverse<double>(2, Perm, 7));
+    }
+
+    TEST_CASE(PermutedRadicalInverse_Base2_ReversePermutation)
+    {
+        static const size_t Perm[] = { 1, 0 };
+        EXPECT_FEQ(1.0,     permuted_radical_inverse<double>(2, Perm, 0));
+        EXPECT_FEQ(0.5,     permuted_radical_inverse<double>(2, Perm, 1));
+        EXPECT_FEQ(0.75,    permuted_radical_inverse<double>(2, Perm, 2));
+        EXPECT_FEQ(0.25,    permuted_radical_inverse<double>(2, Perm, 3));
+        EXPECT_FEQ(0.875,   permuted_radical_inverse<double>(2, Perm, 4));
+        EXPECT_FEQ(0.375,   permuted_radical_inverse<double>(2, Perm, 5));
+        EXPECT_FEQ(0.625,   permuted_radical_inverse<double>(2, Perm, 6));
+        EXPECT_FEQ(0.125,   permuted_radical_inverse<double>(2, Perm, 7));
+    }
+
+    TEST_CASE(FastPermutedRadicalInverse_Base2_IdentityPermutation)
+    {
+        static const size_t Perm[] = { 0, 1 };
+        EXPECT_FEQ(0.0,     fast_permuted_radical_inverse<double>(0, Perm, 0));
+        EXPECT_FEQ(0.5,     fast_permuted_radical_inverse<double>(0, Perm, 1));
+        EXPECT_FEQ(0.25,    fast_permuted_radical_inverse<double>(0, Perm, 2));
+        EXPECT_FEQ(0.75,    fast_permuted_radical_inverse<double>(0, Perm, 3));
+        EXPECT_FEQ(0.125,   fast_permuted_radical_inverse<double>(0, Perm, 4));
+        EXPECT_FEQ(0.625,   fast_permuted_radical_inverse<double>(0, Perm, 5));
+        EXPECT_FEQ(0.375,   fast_permuted_radical_inverse<double>(0, Perm, 6));
+        EXPECT_FEQ(0.875,   fast_permuted_radical_inverse<double>(0, Perm, 7));
+    }
+
+    TEST_CASE(FastPermutedRadicalInverse_Base2_ReversePermutation)
+    {
+        static const size_t Perm[] = { 1, 0 };
+        EXPECT_FEQ(1.0,     fast_permuted_radical_inverse<double>(0, Perm, 0));
+        EXPECT_FEQ(0.5,     fast_permuted_radical_inverse<double>(0, Perm, 1));
+        EXPECT_FEQ(0.75,    fast_permuted_radical_inverse<double>(0, Perm, 2));
+        EXPECT_FEQ(0.25,    fast_permuted_radical_inverse<double>(0, Perm, 3));
+        EXPECT_FEQ(0.875,   fast_permuted_radical_inverse<double>(0, Perm, 4));
+        EXPECT_FEQ(0.375,   fast_permuted_radical_inverse<double>(0, Perm, 5));
+        EXPECT_FEQ(0.625,   fast_permuted_radical_inverse<double>(0, Perm, 6));
+        EXPECT_FEQ(0.125,   fast_permuted_radical_inverse<double>(0, Perm, 7));
+    }
+
     TEST_CASE(RadicalInverse_Base3)
     {
         EXPECT_FEQ(0.0,     radical_inverse<double>(3, 0));
@@ -218,7 +270,7 @@ TEST_SUITE(Foundation_Math_QMC)
         vector<Vector2d> points;
 
         for (size_t i = 0; i < PointCount; ++i)
-            points.push_back(hammersley_sequence<double, 2>(bases, perms, i, PointCount));
+            points.push_back(hammersley_sequence<double, 2>(bases, perms, PointCount, i));
 
         write_point_cloud_image(
             "unit tests/outputs/test_qmc_hammersley_" + permutation + "_permuted_" + to_string(b) + ".png",
@@ -278,8 +330,8 @@ TEST_SUITE(Foundation_Math_QMC)
     template <typename T>
     inline Vector<T, 2> hammersley_sequence(
         const size_t    r,
-        size_t          n,
-        size_t          count)
+        size_t          count,
+        size_t          n)
     {
         Vector<T, 2> p;
         p[0] = static_cast<T>(n) / count;
@@ -299,7 +351,7 @@ TEST_SUITE(Foundation_Math_QMC)
         for (size_t i = 0; i < PointCount; ++i)
         {
             const size_t r = rand_int31(rng);
-            points.push_back(hammersley_sequence<double>(r, i, PointCount));
+            points.push_back(hammersley_sequence<double>(r, PointCount, i));
         }
 
         write_point_cloud_image(

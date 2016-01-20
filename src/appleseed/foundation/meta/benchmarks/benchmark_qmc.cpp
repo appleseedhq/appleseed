@@ -121,7 +121,7 @@ BENCHMARK_SUITE(Foundation_Math_QMC)
             m_x = Vector<T, 2>(0.0f);
 
             for (size_t i = 0; i < 64; ++i)
-                m_x += hammersley_sequence<T, 2>(Bases, i, 64);
+                m_x += hammersley_sequence<T, 2>(Bases, 64, i);
         }
     };
 

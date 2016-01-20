@@ -55,7 +55,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
         for (size_t i = 0; i < sample_count; ++i)
         {
             static const size_t Bases[] = { 2 };
-            const Vector2d s = hammersley_sequence<double, 2>(Bases, i, sample_count);
+            const Vector2d s = hammersley_sequence<double, 2>(Bases, sample_count, i);
 
             const Vector<typename MDF::ValueType, 3> h = sample_hemisphere_uniform(s);
             const double value = mdf.D(h, alpha_x, alpha_y);
@@ -128,7 +128,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
         for (size_t i = 0; i < num_runs; ++i)
         {
             static const size_t Bases[] = { 2 };
-            const Vector2d s = hammersley_sequence<double, 2>(Bases, i, num_runs);
+            const Vector2d s = hammersley_sequence<double, 2>(Bases, num_runs, i);
             const Vector3d v = sample_hemisphere_uniform(s);
             const double G1 = mdf.G1(v, Vector3d(0.0, 1.0, 0.0), alpha_x, alpha_y);
 

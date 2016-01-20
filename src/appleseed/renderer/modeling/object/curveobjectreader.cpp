@@ -153,7 +153,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_furry_ball(
         GScalar widths[ControlPointCount];
 
         static const size_t Bases[] = { 2 };
-        const GVector2 s = hammersley_sequence<GScalar, 2>(Bases, c, curve_count);
+        const GVector2 s = hammersley_sequence<GScalar, 2>(Bases, curve_count, c);
         const GVector3 d = sample_sphere_uniform(s);
 
         points[0] = d;

@@ -550,7 +550,7 @@ namespace
             {
                 // Generate a uniform sample in [0,1)^2.
                 static const size_t Bases[] = { 2 };
-                const Vector2d s = hammersley_sequence<double, 2>(Bases, i, AlbedoSampleCount);
+                const Vector2d s = hammersley_sequence<double, 2>(Bases, AlbedoSampleCount, i);
 
                 // Sample the microfacet distribution to get an halfway vector H.
                 const Vector3d H = mdf.sample(s);
