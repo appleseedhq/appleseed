@@ -202,7 +202,7 @@ namespace
         for (size_t i = 0; i < params.m_curve_count; ++i)
         {
             static const size_t Bases[] = { 2, 3 };
-            const GVector3 s = hammersley_sequence<double, 3>(Bases, i, params.m_curve_count);
+            const GVector3 s = hammersley_sequence<double, 3>(Bases, params.m_curve_count, i);
 
             const size_t triangle_index = cdf.sample(s[0]).first;
             const SupportTriangle& st = support_triangles[triangle_index];

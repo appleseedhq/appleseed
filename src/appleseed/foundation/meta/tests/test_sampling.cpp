@@ -263,7 +263,7 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
         for (size_t i = 0; i < point_count; ++i)
         {
             const size_t Bases[] = { 2 };
-            const Vector2d s = hammersley_sequence<double, 2>(Bases, i, point_count);
+            const Vector2d s = hammersley_sequence<double, 2>(Bases, point_count, i);
             points[i] = to_unit_square(sampling_function(s));
         }
 
@@ -281,7 +281,7 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
         for (size_t i = 0; i < point_count; ++i)
         {
             const size_t Bases[] = { 2 };
-            const Vector2d s = hammersley_sequence<double, 2>(Bases, i, point_count);
+            const Vector2d s = hammersley_sequence<double, 2>(Bases, point_count, i);
             points[i] = sampling_function(s);
         }
 
@@ -366,7 +366,7 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
         for (size_t i = 0; i < PointCount; ++i)
         {
             const size_t Bases[] = { 2, 3 };
-            const Vector3d s = hammersley_sequence<double, 3>(Bases, i, PointCount);
+            const Vector3d s = hammersley_sequence<double, 3>(Bases, PointCount, i);
             const Vector2d p = sample_regular_polygon_uniform(s, VertexCount, vertices);
             points[i] = to_unit_square(p);
         }

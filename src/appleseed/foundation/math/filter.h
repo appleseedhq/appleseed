@@ -478,7 +478,7 @@ typename Filter::ValueType compute_normalization_factor(
         static const size_t Bases[1] = { 2 };
 
         const Vector<ValueType, 2> s =
-            hammersley_sequence<ValueType, 2>(Bases, i, sample_count);
+            hammersley_sequence<ValueType, 2>(Bases, sample_count, i);
 
         const Vector<ValueType, 2> p(
             xradius * (ValueType(2.0) * s.x - ValueType(1.0)),

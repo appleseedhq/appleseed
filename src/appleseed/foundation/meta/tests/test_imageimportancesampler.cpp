@@ -127,7 +127,7 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
         for (size_t i = 0; i < sample_count; ++i)
         {
             const size_t Bases[1] = { 2 };
-            const Vector2f s = hammersley_sequence<float, 2>(Bases, i, sample_count);
+            const Vector2f s = hammersley_sequence<float, 2>(Bases, sample_count, i);
 
             size_t x, y;
             float prob_xy;
