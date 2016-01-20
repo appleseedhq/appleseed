@@ -34,7 +34,7 @@
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
-#include "renderer/modeling/bsdf/microfacetbrdfhelper.h"
+#include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
@@ -145,8 +145,6 @@ namespace
                 *m_mdf,
                 values->m_ax,
                 values->m_ay,
-                values->m_ax,
-                values->m_ay,
                 NoFresnel(),
                 sample);
         }
@@ -165,8 +163,6 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
             return MicrofacetBRDFHelper<double>::evaluate(
                 *m_mdf,
-                values->m_ax,
-                values->m_ay,
                 values->m_ax,
                 values->m_ay,
                 shading_basis,
