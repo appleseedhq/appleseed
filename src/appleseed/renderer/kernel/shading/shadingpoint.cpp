@@ -411,7 +411,7 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
             m_dpdu = (dv1 * dp0 - dv0 * dp1) * rcp_det;
             m_dpdv = (du0 * dp1 - du1 * dp0) * rcp_det;
 
-            // Make sure dPdv x dPdu point in the same direction as N.
+            // Make sure dPdv x dPdu points in the same direction as N.
             if (dot(get_original_shading_normal(), cross(m_dpdv, m_dpdu)) < 0.0)
                 m_dpdu = -m_dpdu;
 
@@ -471,7 +471,7 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
         const Vector3d py = ray.m_ry.point_at(ty);
         m_dpdy = py - p;
 
-        // Make sure dPdy x dPdx point in the same direction as N.
+        // Make sure dPdy x dPdx points in the same direction as N.
         if (dot(get_original_shading_normal(), cross(m_dpdy, m_dpdx)) < 0.0)
             m_dpdx = -m_dpdx;
 
@@ -925,8 +925,7 @@ void ShadingPoint::initialize_osl_shader_globals(
             ? static_cast<float>(sg.get_surface_area(&get_assembly_instance(), &get_object_instance()))
             : 0.0f;
 
-    // Context and output closure.
-    m_shader_globals.context = 0;
+    // Output closure.
     m_shader_globals.Ci = 0;
 }
 
