@@ -28,6 +28,9 @@
 // THE SOFTWARE.
 //
 
+#ifndef APPLESEED_RENDERER_MODELING_BSDF_MICROFACETHELPER_H
+#define APPLESEED_RENDERER_MODELING_BSDF_MICROFACETHELPER_H
+
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
@@ -35,6 +38,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 
 // Standard headers.
@@ -45,11 +49,121 @@ namespace renderer
 {
 
 template <typename T>
+inline T microfacet_alpha_from_roughness(const T& roughness)
+{
+    return std::max(T(0.001), foundation::square(roughness));
+}
+
+template <typename T>
+inline void microfacet_alpha_from_roughness(
+    const T&   roughness,
+    const T&   anisotropic,
+    T&         alpha_x,
+    T&         alpha_y)
+{
+    if (anisotropic >= 0.0)
+    {
+        const T aspect = std::sqrt(T(1.0) - anisotropic * T(0.9));
+        alpha_x = std::max(T(0.001), foundation::square(roughness) / aspect);
+        alpha_y = std::max(T(0.001), foundation::square(roughness) * aspect);
+    }
+    else
+    {
+        const T aspect = std::sqrt(T(1.0) + anisotropic * T(0.9));
+        alpha_x = std::max(T(0.001), foundation::square(roughness) * aspect);
+        alpha_y = std::max(T(0.001), foundation::square(roughness) / aspect);
+    }
+}
+
+template <typename T>
 class MicrofacetBRDFHelper
 {
   public:
     typedef foundation::Vector<T, 3> VectorType;
     typedef foundation::Basis3<T> BasisType;
+
+    template <typename MDF, typename FresnelFun>
+    static void sample(
+        SamplingContext&    sampling_context,
+        const MDF&          mdf,
+        const T             alpha_x,
+        const T             alpha_y,
+        FresnelFun          f,
+        BSDFSample&         sample)
+    {
+        // gcc needs the qualifier, otherwise
+        // it complains about missing operator() for BSDFSample.
+        MicrofacetBRDFHelper<T>::sample(
+            sampling_context,
+            mdf,
+            alpha_x,
+            alpha_y,
+            alpha_x,
+            alpha_y,
+            f,
+            sample);
+    }
+
+    template <typename MDF, typename FresnelFun>
+    static T evaluate(
+        const MDF&          mdf,
+        const T             alpha_x,
+        const T             alpha_y,
+        const BasisType&    shading_basis,
+        const VectorType&   outgoing,
+        const VectorType&   incoming,
+        const int           modes,
+        FresnelFun          f,
+        Spectrum&           value)
+    {
+        return evaluate(
+            mdf,
+            alpha_x,
+            alpha_y,
+            alpha_x,
+            alpha_y,
+            shading_basis,
+            outgoing,
+            incoming,
+            modes,
+            f,
+            value);
+    }
+
+    template <typename MDF>
+    static T pdf(
+        const MDF&          mdf,
+        const T             alpha_x,
+        const T             alpha_y,
+        const BasisType&    shading_basis,
+        const VectorType&   outgoing,
+        const VectorType&   incoming,
+        const int           modes)
+    {
+        if (!ScatteringMode::has_glossy(modes))
+            return T(0.0);
+
+        // No reflection below the shading surface.
+        const VectorType& n = shading_basis.get_normal();
+        const T cos_in = foundation::dot(incoming, n);
+        const T cos_on = std::min(foundation::dot(outgoing, n), T(1.0));
+        if (cos_in < T(0.0) || cos_on < T(0.0))
+            return T(0.0);
+
+        const VectorType h = foundation::normalize(incoming + outgoing);
+        const T cos_oh = foundation::dot(outgoing, h);
+        return
+            mdf.pdf(
+                shading_basis.transform_to_local(outgoing),
+                shading_basis.transform_to_local(h),
+                alpha_x,
+                alpha_y) / (T(4.0) * cos_oh);
+    }
+
+    //
+    // Decoupled distribution and shadowing alpha parameters.
+    // They are used in the Disney BRDF implementation.
+    //
 
     template <typename MDF, typename FresnelFun>
     static void sample(
@@ -141,36 +255,8 @@ class MicrofacetBRDFHelper
         value *= static_cast<float>(D * G / (T(4.0) * cos_on * cos_in));
         return mdf.pdf(wo, m, alpha_x, alpha_y) / (T(4.0) * cos_oh);
     }
-
-    template <typename MDF>
-    static T pdf(
-        const MDF&          mdf,
-        const T             alpha_x,
-        const T             alpha_y,
-        const BasisType&    shading_basis,
-        const VectorType&   outgoing,
-        const VectorType&   incoming,
-        const int           modes)
-    {
-        if (!ScatteringMode::has_glossy(modes))
-            return T(0.0);
-
-        // No reflection below the shading surface.
-        const VectorType& n = shading_basis.get_normal();
-        const T cos_in = foundation::dot(incoming, n);
-        const T cos_on = std::min(foundation::dot(outgoing, n), T(1.0));
-        if (cos_in < T(0.0) || cos_on < T(0.0))
-            return T(0.0);
-
-        const VectorType h = foundation::normalize(incoming + outgoing);
-        const T cos_oh = foundation::dot(outgoing, h);
-        return
-            mdf.pdf(
-                shading_basis.transform_to_local(outgoing),
-                shading_basis.transform_to_local(h),
-                alpha_x,
-                alpha_y) / (T(4.0) * cos_oh);
-    }
 };
+
+#endif
 
 }   // namespace renderer

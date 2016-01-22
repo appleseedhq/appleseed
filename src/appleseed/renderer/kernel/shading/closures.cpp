@@ -975,14 +975,20 @@ void CompositeClosure::compute_closure_shading_basis(
     const Vector3d& normal,
     const Basis3d&  original_shading_basis)
 {
-    // The normalization of the normal shouldn't be needed here,
-    // because the spec says that normals passed to closures
-    // must be normalized. But, since OSL uses floats, the normals are
-    // only normalized to float precision and not double precision.
-    m_bases[m_num_closures] =
-        Basis3d(
-            normalize(normal),
-            original_shading_basis.get_tangent_u());
+    const double normal_square_norm = square_norm(normal);
+    if (normal_square_norm != 0.0)
+    {
+        const double rcp_normal_norm = 1.0 / sqrt(normal_square_norm);
+        m_bases[m_num_closures] =
+            Basis3d(
+                normal * rcp_normal_norm,
+                original_shading_basis.get_tangent_u());
+    }
+    else
+    {
+        // Fallback to the original shading basis if the normal is zero.
+        m_bases[m_num_closures] = original_shading_basis;
+    }
 }
 
 void CompositeClosure::compute_closure_shading_basis(
@@ -990,12 +996,24 @@ void CompositeClosure::compute_closure_shading_basis(
     const Vector3d& tangent,
     const Basis3d&  original_shading_basis)
 {
-    if (square_norm(tangent) != 0.0)
+    const double tangent_square_norm = square_norm(tangent);
+    if (tangent_square_norm != 0.0)
     {
-        m_bases[m_num_closures] =
-            Basis3d(
-                normalize(normal),
-                normalize(tangent));
+        const double normal_square_norm = square_norm(normal);
+        if (normal_square_norm != 0.0)
+        {
+            const double rcp_normal_norm = 1.0 / sqrt(normal_square_norm);
+            const double rcp_tangent_norm = 1.0 / sqrt(tangent_square_norm);
+            m_bases[m_num_closures] =
+                Basis3d(
+                    normal * rcp_normal_norm,
+                    tangent * rcp_tangent_norm);
+        }
+        else
+        {
+            // Fallback to the original shading basis if the normal is zero.
+            m_bases[m_num_closures] = original_shading_basis;
+        }
     }
     else
     {

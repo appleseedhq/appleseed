@@ -66,6 +66,7 @@ endif ()
 set (sources
     __init__.py
     bindassembly.cpp
+    bindbasis.cpp
     bindbbox.cpp
     bindbsdf.cpp
     bindbssrdf.cpp

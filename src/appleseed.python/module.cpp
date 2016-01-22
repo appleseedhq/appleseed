@@ -35,6 +35,7 @@
 
 // Forward declarations.
 void bind_assembly();
+void bind_basis();
 void bind_bbox();
 void bind_bsdf();
 void bind_bssrdf();
@@ -80,6 +81,7 @@ BOOST_PYTHON_MODULE(_appleseedpython)
     bind_logger();
 
     bind_vector();
+    bind_basis();
     bind_quaternion();
     bind_bbox();
     bind_matrix();
