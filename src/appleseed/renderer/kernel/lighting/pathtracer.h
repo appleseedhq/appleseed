@@ -45,6 +45,7 @@
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
+#include "renderer/modeling/scene/objectinstance.h"
 #ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #endif
@@ -217,6 +218,59 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             break;
         }
 
+        // Retrieve the object instance at the shading point.
+        const ObjectInstance* object_instance = &vertex.m_shading_point->get_object_instance();
+
+        // Determine whether the ray is entering or leaving a volume.
+        const bool entering = vertex.m_shading_point->get_side() == ObjectInstance::FrontSide;
+
+        // Handle false intersections.
+        if (ray.get_highest_volume_priority() > object_instance->get_volume_priority())
+        {
+            // Construct a ray that continues in the same direction as the incoming ray.
+            ShadingRay next_ray(
+                vertex.get_point(),
+                ray.m_dir,
+                ray.m_time,
+                ray.m_flags,
+                ray.m_depth);   // ray depth does not increase when passing through an alpha-mapped surface
+
+            // Advance the differentials if the ray has them.
+            if (ray.m_has_differentials)
+            {
+                next_ray.m_rx = ray.m_rx;
+                next_ray.m_rx.m_org = ray.m_rx.point_at(ray.m_tmax);
+                next_ray.m_ry = ray.m_ry;
+                next_ray.m_ry.m_org = ray.m_ry.point_at(ray.m_tmax);
+                next_ray.m_has_differentials = true;
+            }
+
+            // Initialize the ray's volume list.
+            if (entering)
+            {
+                // Ray entering a volume: add the volume to the ray's list.
+                next_ray.add_volume(ray, object_instance);
+            }
+            else
+            {
+                // Ray leaving a volume: remove the volume from the ray's list.
+                next_ray.remove_volume(ray, object_instance);
+            }
+
+            // Trace the ray.
+            shading_points[shading_point_index].clear();
+            shading_context.get_intersector().trace(
+                next_ray,
+                shading_points[shading_point_index],
+                vertex.m_shading_point);
+
+            // Update the pointers to the shading points.
+            vertex.m_shading_point = &shading_points[shading_point_index];
+            shading_point_index = 1 - shading_point_index;
+
+            continue;
+        }
+
         // Retrieve the material at the shading point.
         const Material* material = vertex.get_material();
 
@@ -248,7 +302,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             if (pass_through(sampling_context, alpha))
             {
                 // Construct a ray that continues in the same direction as the incoming ray.
-                ShadingRay cutoff_ray(
+                ShadingRay next_ray(
                     vertex.get_point(),
                     ray.m_dir,
                     ray.m_time,
@@ -258,17 +312,20 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 // Advance the differentials if the ray has them.
                 if (ray.m_has_differentials)
                 {
-                    cutoff_ray.m_rx = ray.m_rx;
-                    cutoff_ray.m_rx.m_org = ray.m_rx.point_at(ray.m_tmax);
-                    cutoff_ray.m_ry = ray.m_ry;
-                    cutoff_ray.m_ry.m_org = ray.m_ry.point_at(ray.m_tmax);
-                    cutoff_ray.m_has_differentials = true;
+                    next_ray.m_rx = ray.m_rx;
+                    next_ray.m_rx.m_org = ray.m_rx.point_at(ray.m_tmax);
+                    next_ray.m_ry = ray.m_ry;
+                    next_ray.m_ry.m_org = ray.m_ry.point_at(ray.m_tmax);
+                    next_ray.m_has_differentials = true;
                 }
+
+                // Inherit the volume list from the parent ray.
+                next_ray.copy_volumes_from(ray);
 
                 // Trace the ray.
                 shading_points[shading_point_index].clear();
                 shading_context.get_intersector().trace(
-                    cutoff_ray,
+                    next_ray,
                     shading_points[shading_point_index],
                     vertex.m_shading_point);
 
@@ -513,7 +570,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         ++vertex.m_path_length;
 
         // Construct the scattered ray.
-        ShadingRay scattered_ray(
+        ShadingRay next_ray(
             parent_shading_point->get_biased_point(incoming.get_value()),
             incoming.get_value(),
             ray.m_time,
@@ -523,17 +580,38 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         // Compute scattered ray differentials.
         if (incoming.has_derivatives())
         {
-            scattered_ray.m_rx.m_org = scattered_ray.m_org + vertex.m_shading_point->get_dpdx();
-            scattered_ray.m_ry.m_org = scattered_ray.m_org + vertex.m_shading_point->get_dpdy();
-            scattered_ray.m_rx.m_dir = scattered_ray.m_dir + incoming.get_dx();
-            scattered_ray.m_ry.m_dir = scattered_ray.m_dir + incoming.get_dy();
-            scattered_ray.m_has_differentials = true;
+            next_ray.m_rx.m_org = next_ray.m_org + vertex.m_shading_point->get_dpdx();
+            next_ray.m_ry.m_org = next_ray.m_org + vertex.m_shading_point->get_dpdy();
+            next_ray.m_rx.m_dir = next_ray.m_dir + incoming.get_dx();
+            next_ray.m_ry.m_dir = next_ray.m_dir + incoming.get_dy();
+            next_ray.m_has_differentials = true;
+        }
+
+        // Initialize the ray's volume list.
+        const foundation::Vector3d& sn = vertex.get_shading_normal();
+        if (foundation::dot(ray.m_dir, sn) * foundation::dot(next_ray.m_dir, sn) > 0.0)
+        {
+            if (entering)
+            {
+                // Refracted ray entering a volume: add the volume to the ray's list.
+                next_ray.add_volume(ray, object_instance);
+            }
+            else
+            {
+                // Refracted ray leaving a volume: remove the volume from the ray's list.
+                next_ray.remove_volume(ray, object_instance);
+            }
+        }
+        else
+        {
+            // Reflected ray: inherit the volume list from the parent ray.
+            next_ray.copy_volumes_from(ray);
         }
 
         // Trace the ray.
         shading_points[shading_point_index].clear();
         shading_context.get_intersector().trace(
-            scattered_ray,
+            next_ray,
             shading_points[shading_point_index],
             parent_shading_point);
 
@@ -578,16 +656,18 @@ bool PathTracer<PathVisitor, Adjoint>::SubsurfaceSampleVisitor::visit(
     const ShadingPoint&         incoming_point,
     const double                probability)
 {
-    if (m_sample_count < MaxSampleCount)
+    if (m_sample_count >= MaxSampleCount)
     {
-        m_incoming_points[m_sample_count] = incoming_point;
-        m_probabilities[m_sample_count] = probability;
-        ++m_sample_count;
-
-        // Continue visiting samples.
-        return true;
+        // Stop visiting samples.
+        return false;
     }
-    else return false;
+
+    m_incoming_points[m_sample_count] = incoming_point;
+    m_probabilities[m_sample_count] = probability;
+    ++m_sample_count;
+
+    // Continue visiting samples.
+    return true;
 }
 
 }       // namespace renderer

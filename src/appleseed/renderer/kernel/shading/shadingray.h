@@ -31,6 +31,7 @@
 #define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRAY_H
 
 // appleseed.renderer headers.
+#include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
@@ -42,6 +43,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstddef>
 
 namespace renderer
 {
@@ -82,13 +84,17 @@ class ShadingRay
             const double            normalized);
     };
 
-    // Public members.
-    Time                            m_time;
-    VisibilityFlags::Type           m_flags;
-    DepthType                       m_depth;
-    bool                            m_has_differentials;
+    enum { MaxVolumeCount = 8 };
+
+    // Public members, in an order that optimizes packing.
     RayType                         m_rx;
     RayType                         m_ry;
+    Time                            m_time;
+    const ObjectInstance*           m_volumes[MaxVolumeCount];
+    VisibilityFlags::Type           m_flags;
+    DepthType                       m_depth;
+    foundation::uint8               m_volume_count;
+    bool                            m_has_differentials;
 
     // Constructors.
     ShadingRay();                   // leave all fields uninitialized
@@ -118,6 +124,18 @@ class ShadingRay
         const Time&                 time,
         const VisibilityFlags::Type flags,
         const DepthType             depth);
+
+    // Copy all volumes from the source ray.
+    void copy_volumes_from(const ShadingRay& source);
+
+    // Copy all volumes from the source ray and add an additional volume.
+    void add_volume(const ShadingRay& source, const ObjectInstance* volume);
+
+    // Copy all volumes from the source ray except a given volume.
+    void remove_volume(const ShadingRay& source, const ObjectInstance* volume);
+
+    // Return the highest volume priority from the ray.
+    foundation::uint8 get_highest_volume_priority() const;
 };
 
 // Transform a ShadingRay.
@@ -136,7 +154,8 @@ ShadingRay transform_to_parent(
 //
 
 inline ShadingRay::ShadingRay()
-  : m_has_differentials(false)
+  : m_volume_count(0)
+  , m_has_differentials(false)
 {
 }
 
@@ -149,6 +168,7 @@ inline ShadingRay::ShadingRay(
   , m_time(time)
   , m_flags(flags)
   , m_depth(depth)
+  , m_volume_count(0)
   , m_has_differentials(false)
 {
 }
@@ -164,6 +184,7 @@ inline ShadingRay::ShadingRay(
   , m_time(time)
   , m_flags(flags)
   , m_depth(depth)
+  , m_volume_count(0)
   , m_has_differentials(true)
   , m_rx(rx)
   , m_ry(ry)
@@ -180,6 +201,7 @@ inline ShadingRay::ShadingRay(
   , m_time(time)
   , m_flags(flags)
   , m_depth(depth)
+  , m_volume_count(0)
   , m_has_differentials(false)
 {
 }
@@ -196,6 +218,7 @@ inline ShadingRay::ShadingRay(
   , m_time(time)
   , m_flags(flags)
   , m_depth(depth)
+  , m_volume_count(0)
   , m_has_differentials(false)
 {
 }
@@ -252,6 +275,48 @@ inline ShadingRay transform_to_parent(
                 ray.m_flags,
                 ray.m_depth);
     }
+}
+
+inline void ShadingRay::copy_volumes_from(const ShadingRay& source)
+{
+    m_volume_count = source.m_volume_count;
+
+    for (size_t i = 0; i < source.m_volume_count; ++i)
+        m_volumes[i] = source.m_volumes[i];
+}
+
+inline void ShadingRay::add_volume(const ShadingRay& source, const ObjectInstance* volume)
+{
+    copy_volumes_from(source);
+
+    if (m_volume_count < MaxVolumeCount)
+        m_volumes[m_volume_count++] = volume;
+}
+
+inline void ShadingRay::remove_volume(const ShadingRay& source, const ObjectInstance* volume)
+{
+    assert(m_volume_count == 0);
+
+    for (size_t i = 0; i < source.m_volume_count; ++i)
+    {
+        if (source.m_volumes[i] != volume)
+            m_volumes[m_volume_count++] = source.m_volumes[i];
+    }
+}
+
+inline foundation::uint8 ShadingRay::get_highest_volume_priority() const
+{
+    foundation::uint8 highest_priority = 0;
+
+    for (size_t i = 0; i < m_volume_count; ++i)
+    {
+        const foundation::uint8 priority = m_volumes[i]->get_volume_priority();
+
+        if (highest_priority < priority)
+            highest_priority = priority;
+    }
+
+    return highest_priority;
 }
 
 
