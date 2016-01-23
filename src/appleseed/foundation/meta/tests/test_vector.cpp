@@ -248,6 +248,16 @@ TEST_SUITE(Foundation_Math_Vector)
         EXPECT_FEQ(Vector3d(1.0, 0.0, 0.0), safe_normalize(Vector3d(0.0, 0.0, 0.0)));
     }
 
+    TEST_CASE(TestImproveNormalization)
+    {
+        Vector3d v(-0.48859909517572381, 0.021669236596684682, -0.87223928390023286);
+        ASSERT_FALSE(is_normalized(v));
+
+        v = improve_normalization(v);
+
+        EXPECT_TRUE(is_normalized(v));
+    }
+
     TEST_CASE(TestIsNormalized)
     {
         const Vector3d v(3.0, -5.0, 7.0);

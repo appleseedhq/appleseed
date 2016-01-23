@@ -121,6 +121,9 @@ template <typename T, size_t N> Vector<T, N> normalize(const Vector<T, N>& v);
 template <typename T, size_t N> Vector<T, N> safe_normalize(const Vector<T, N>& v, const Vector<T, N>& fallback);
 template <typename T, size_t N> Vector<T, N> safe_normalize(const Vector<T, N>& v);
 
+// Bring the norm of a nearly-unit vector closer to 1.
+template <typename T, size_t N> Vector<T, N> improve_normalization(const Vector<T, N>& v);
+
 // Return true if a vector is normalized (unit-length), false otherwise.
 template <typename T, size_t N> bool is_normalized(const Vector<T, N>& v);
 template <typename T, size_t N> bool is_normalized(const Vector<T, N>& v, const T eps);
@@ -749,6 +752,12 @@ inline Vector<T, N> safe_normalize(const Vector<T, N>& v)
     assert(is_normalized(result));
 
     return result;
+}
+
+template <typename T, size_t N>
+inline Vector<T, N> improve_normalization(const Vector<T, N>& v)
+{
+    return v * (T(3.0) - square_norm(v)) * T(0.5);
 }
 
 template <typename T, size_t N>
