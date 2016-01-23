@@ -233,7 +233,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 ray.m_dir,
                 ray.m_time,
                 ray.m_flags,
-                ray.m_depth);   // ray depth does not increase when passing through an alpha-mapped surface
+                ray.m_depth);
 
             // Advance the differentials if the ray has them.
             if (ray.m_has_differentials)
