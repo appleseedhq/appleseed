@@ -138,6 +138,9 @@ ObjectInstance::ObjectInstance(
     // Retrieve visibility flags.
     m_vis_flags = VisibilityFlags::parse(params.child("visibility"), message_context);
 
+    // Retrieve volume priority.
+    m_volume_priority = params.get_optional<uint8>("volume_priority", 0);
+
     // Retrieve ray bias method.
     const string ray_bias_method =
         params.get_optional<string>(
@@ -456,6 +459,16 @@ void ObjectInstance::on_frame_end(const Project& project)
 DictionaryArray ObjectInstanceFactory::get_input_metadata()
 {
     DictionaryArray metadata;
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "volume_priority")
+            .insert("label", "Volume Priority")
+            .insert("type", "numeric")
+            .insert("min_value", "0")
+            .insert("max_value", "255")
+            .insert("use", "optional")
+            .insert("default", "0"));
 
     metadata.push_back(
         Dictionary()
