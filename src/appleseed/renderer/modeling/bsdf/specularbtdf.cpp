@@ -146,6 +146,9 @@ namespace
                             ? (eta * cos_theta_i - cos_theta_t) * shading_normal - eta * sample.m_outgoing.get_value()
                             : (eta * cos_theta_i + cos_theta_t) * shading_normal - eta * sample.m_outgoing.get_value();
 
+                    // Fix numerical inaccuracies.
+                    incoming = normalize(incoming);
+
                     // Compute the refracted radiance.
                     sample.m_value = values->m_transmittance;
                     sample.m_value *=
