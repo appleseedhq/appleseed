@@ -247,15 +247,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
             // Initialize the ray's volume list.
             if (entering)
-            {
-                // Ray entering a volume: add the volume to the ray's list.
                 next_ray.add_volume(ray, object_instance);
-            }
-            else
-            {
-                // Ray leaving a volume: remove the volume from the ray's list.
-                next_ray.remove_volume(ray, object_instance);
-            }
+            else next_ray.remove_volume(ray, object_instance);
 
             // Trace the ray.
             shading_points[shading_point_index].clear();
@@ -588,19 +581,12 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         }
 
         // Initialize the ray's volume list.
-        const foundation::Vector3d& sn = vertex.get_shading_normal();
-        if (foundation::dot(ray.m_dir, sn) * foundation::dot(next_ray.m_dir, sn) > 0.0)
+        if (vertex.m_cos_on * foundation::dot(next_ray.m_dir, vertex.get_shading_normal()) < 0.0)
         {
+            // Refracted ray (interface crossing): update the volume list.
             if (entering)
-            {
-                // Refracted ray entering a volume: add the volume to the ray's list.
                 next_ray.add_volume(ray, object_instance);
-            }
-            else
-            {
-                // Refracted ray leaving a volume: remove the volume from the ray's list.
-                next_ray.remove_volume(ray, object_instance);
-            }
+            else next_ray.remove_volume(ray, object_instance);
         }
         else
         {

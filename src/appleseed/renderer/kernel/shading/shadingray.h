@@ -43,7 +43,6 @@
 
 // Standard headers.
 #include <cassert>
-#include <cstddef>
 
 namespace renderer
 {
@@ -68,8 +67,8 @@ class ShadingRay
     class Time
     {
       public:
-        double                      m_absolute;          // absolute time of the ray
-        double                      m_normalized;        // time of the ray, relative to shutter open / close times
+        double                      m_absolute;                     // absolute time of the ray
+        double                      m_normalized;                   // time of the ray, relative to shutter open / close times
 
         static Time create_with_normalized_time(
             const double            time,
@@ -90,7 +89,7 @@ class ShadingRay
     RayType                         m_rx;
     RayType                         m_ry;
     Time                            m_time;
-    const ObjectInstance*           m_volumes[MaxVolumeCount];
+    const ObjectInstance*           m_volumes[MaxVolumeCount];      // always sorted from highest to lowest priority
     VisibilityFlags::Type           m_flags;
     DepthType                       m_depth;
     foundation::uint8               m_volume_count;
@@ -277,46 +276,9 @@ inline ShadingRay transform_to_parent(
     }
 }
 
-inline void ShadingRay::copy_volumes_from(const ShadingRay& source)
-{
-    m_volume_count = source.m_volume_count;
-
-    for (size_t i = 0; i < source.m_volume_count; ++i)
-        m_volumes[i] = source.m_volumes[i];
-}
-
-inline void ShadingRay::add_volume(const ShadingRay& source, const ObjectInstance* volume)
-{
-    copy_volumes_from(source);
-
-    if (m_volume_count < MaxVolumeCount)
-        m_volumes[m_volume_count++] = volume;
-}
-
-inline void ShadingRay::remove_volume(const ShadingRay& source, const ObjectInstance* volume)
-{
-    assert(m_volume_count == 0);
-
-    for (size_t i = 0; i < source.m_volume_count; ++i)
-    {
-        if (source.m_volumes[i] != volume)
-            m_volumes[m_volume_count++] = source.m_volumes[i];
-    }
-}
-
 inline foundation::uint8 ShadingRay::get_highest_volume_priority() const
 {
-    foundation::uint8 highest_priority = 0;
-
-    for (size_t i = 0; i < m_volume_count; ++i)
-    {
-        const foundation::uint8 priority = m_volumes[i]->get_volume_priority();
-
-        if (highest_priority < priority)
-            highest_priority = priority;
-    }
-
-    return highest_priority;
+    return m_volume_count == 0 ? 0 : m_volumes[0]->get_volume_priority();
 }
 
 

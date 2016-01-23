@@ -555,7 +555,7 @@
             </parameters>
         </configuration>
         <configuration name="interactive" base="base_interactive">
-            <parameter name="lighting_engine" value="pt" />
+            <parameter name="lighting_engine" value="drt" />
             <parameters name="drt">
                 <parameter name="dl_light_samples" value="1.000000" />
                 <parameter name="enable_ibl" value="true" />
