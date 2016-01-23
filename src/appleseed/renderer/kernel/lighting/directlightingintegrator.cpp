@@ -513,8 +513,8 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     m_bsdf.sample(
         sampling_context,
         m_bsdf_data,
-        false,                      // not adjoint
-        true,                       // multiply by |cos(incoming, normal)|
+        false,                  // not adjoint
+        true,                   // multiply by |cos(incoming, normal)|
         sample);
 
     // Filter scattering modes.
@@ -711,8 +711,8 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     const double bsdf_prob =
         m_bsdf.evaluate(
             m_bsdf_data,
-            false,                          // not adjoint
-            true,                           // multiply by |cos(incoming, normal)|
+            false,              // not adjoint
+            true,               // multiply by |cos(incoming, normal)|
             m_geometric_normal,
             m_shading_basis,
             outgoing.get_value(),
@@ -822,8 +822,8 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     const double bsdf_prob =
         m_bsdf.evaluate(
             m_bsdf_data,
-            false,                          // not adjoint
-            true,                           // multiply by |cos(incoming, normal)|
+            false,              // not adjoint
+            true,               // multiply by |cos(incoming, normal)|
             m_geometric_normal,
             m_shading_basis,
             outgoing.get_value(),

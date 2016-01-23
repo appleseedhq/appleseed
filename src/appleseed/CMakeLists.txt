@@ -1125,6 +1125,7 @@ set (renderer_kernel_shading_sources
     renderer/kernel/shading/shadingpoint.h
     renderer/kernel/shading/shadingpointbuilder.cpp
     renderer/kernel/shading/shadingpointbuilder.h
+    renderer/kernel/shading/shadingray.cpp
     renderer/kernel/shading/shadingray.h
     renderer/kernel/shading/shadingresult.cpp
     renderer/kernel/shading/shadingresult.h
