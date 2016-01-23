@@ -39,12 +39,12 @@
 // Standard headers.
 #include <string>
 
+using namespace appleseed::studio;
+using namespace renderer;
+using namespace std;
+
 TEST_SUITE(Studio_ProjectManager)
 {
-    using namespace appleseed::studio;
-    using namespace renderer;
-    using namespace std;
-
     TEST_CASE(GetProject_GivenProjectManagerInDefaultState_ReturnsNull)
     {
         ProjectManager manager;

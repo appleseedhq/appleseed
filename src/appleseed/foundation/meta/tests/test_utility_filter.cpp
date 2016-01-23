@@ -31,10 +31,10 @@
 #include "foundation/utility/filter.h"
 #include "foundation/utility/test.h"
 
+using namespace foundation;
+
 TEST_SUITE(Foundation_Utility_Filter_RegExFilter)
 {
-    using namespace foundation;
-
     TEST_CASE(IsValid_GivenEmptyRegularExpression_ReturnsTrue)
     {
         const RegExFilter filter("");

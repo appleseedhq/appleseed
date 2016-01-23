@@ -36,11 +36,11 @@
 #include <cstddef>
 #include <memory>
 
+using namespace foundation;
+using namespace std;
+
 BENCHMARK_SUITE(Foundation_Utility_PoolAllocator)
 {
-    using namespace foundation;
-    using namespace std;
-
     const size_t N = 100;
 
     template <typename Allocator>

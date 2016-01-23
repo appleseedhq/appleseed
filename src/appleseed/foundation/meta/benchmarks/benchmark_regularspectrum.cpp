@@ -31,10 +31,10 @@
 #include "foundation/image/regularspectrum.h"
 #include "foundation/utility/benchmark.h"
 
+using namespace foundation;
+
 BENCHMARK_SUITE(Foundation_Image_RegularSpectrum31f)
 {
-    using namespace foundation;
-
     struct Fixture
     {
         RegularSpectrum31f  m_spectrum1;

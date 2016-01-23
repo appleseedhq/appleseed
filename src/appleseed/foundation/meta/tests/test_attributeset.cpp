@@ -37,10 +37,10 @@
 // Standard headers.
 #include <cstddef>
 
+using namespace foundation;
+
 TEST_SUITE(Foundation_Utility_AttributeSet)
 {
-    using namespace foundation;
-
     struct FixtureTestAttributeSet
     {
         AttributeSet                attributes;

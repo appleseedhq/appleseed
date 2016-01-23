@@ -31,10 +31,10 @@
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/test.h"
 
+using namespace foundation;
+
 TEST_SUITE(Foundation_Utility_Otherwise)
 {
-    using namespace foundation;
-
     TEST_CASE(TestThrowOtherwiseMacro)
     {
         EXPECT_EXCEPTION(SwitchException,
