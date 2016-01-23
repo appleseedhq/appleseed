@@ -239,8 +239,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             if (ray.m_has_differentials)
             {
                 next_ray.m_rx = ray.m_rx;
-                next_ray.m_rx.m_org = ray.m_rx.point_at(ray.m_tmax);
                 next_ray.m_ry = ray.m_ry;
+                next_ray.m_rx.m_org = ray.m_rx.point_at(ray.m_tmax);
                 next_ray.m_ry.m_org = ray.m_ry.point_at(ray.m_tmax);
                 next_ray.m_has_differentials = true;
             }
@@ -257,10 +257,9 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 shading_points[shading_point_index],
                 vertex.m_shading_point);
 
-            // Update the pointers to the shading points.
+            // Update the pointers to the shading points and loop.
             vertex.m_shading_point = &shading_points[shading_point_index];
             shading_point_index = 1 - shading_point_index;
-
             continue;
         }
 
@@ -306,8 +305,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 if (ray.m_has_differentials)
                 {
                     next_ray.m_rx = ray.m_rx;
-                    next_ray.m_rx.m_org = ray.m_rx.point_at(ray.m_tmax);
                     next_ray.m_ry = ray.m_ry;
+                    next_ray.m_rx.m_org = ray.m_rx.point_at(ray.m_tmax);
                     next_ray.m_ry.m_org = ray.m_ry.point_at(ray.m_tmax);
                     next_ray.m_has_differentials = true;
                 }
@@ -322,15 +321,12 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                     shading_points[shading_point_index],
                     vertex.m_shading_point);
 
-                // Update the pointers to the shading points.
+                // Update the pointers to the shading points and loop.
                 vertex.m_shading_point = &shading_points[shading_point_index];
                 shading_point_index = 1 - shading_point_index;
-
                 continue;
             }
         }
-
-        vertex.m_cos_on = foundation::dot(vertex.m_outgoing.get_value(), vertex.get_shading_normal());
 
 #ifdef APPLESEED_WITH_OSL
         // Execute the OSL shader if there is one.
@@ -355,7 +351,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             if (sampling_context.next_double2() < 0.5)
                 vertex.m_bsdf = 0;
             else vertex.m_bssrdf = 0;
-
             vertex.m_throughput *= 2.0f;
         }
 
@@ -407,52 +402,10 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             const size_t i = foundation::truncate<size_t>(s * subsurf_visitor.m_sample_count);
             vertex.m_incoming_point = &subsurf_visitor.m_incoming_points[i];
             vertex.m_incoming_point_prob = subsurf_visitor.m_probabilities[i] / subsurf_visitor.m_sample_count;
-
-#if 0
-            //
-            // Here, when tracing rays from the camera we should "jump" to the sampled
-            // point, which is the point the light arrives to, evaluate the BSSRDF there
-            // and use the BSSRDF parameters for the following lighting calculations.
-            // This has the side effect of blurring the textures used in BSSRDFs and makes
-            // it impossible to have detailed textures for highly translucent materials.
-            // It's probably not what most users want, so we use the BSSRDF parameters
-            // at the outgoing point for lighting calculations.
-            //
-            // Maybe this could be exposed as an option later.
-            //
-            // Interesting reference:
-            //
-            //   http://renderman.pixar.com/resources/current/RenderMan/subsurface.html#varying-albedo-and-diffuse-mean-free-path-length
-            //   section 2.6: Where to apply the surface albedo
-            //
-
-            if (!Adjoint)
-            {
-                if (material_data.m_shader_group)
-                {
-                    shading_context.execute_osl_subsurface(
-                        *material_data.m_shader_group,
-                        *vertex.m_incoming_point);
-                }
-
-                vertex.m_bssrdf->evaluate_inputs(
-                    shading_context,
-                    bssrdf_input_evaluator,
-                    *vertex.m_incoming_point);
-
-                if (material_data.m_shader_group)
-                {
-                    sampling_context.split_in_place(1, 1);
-                    shading_context.choose_osl_subsurface_normal(
-                        *vertex.m_incoming_point,
-                        vertex.m_bssrdf_data,
-                        sampling_context.next_double2());
-                }
-            }
-#endif
         }
 
         // Pass this vertex to the path visitor.
+        vertex.m_cos_on = foundation::dot(vertex.m_outgoing.get_value(), vertex.get_shading_normal());
         m_path_visitor.visit_vertex(vertex);
 
         // Honor the user bounce limit.

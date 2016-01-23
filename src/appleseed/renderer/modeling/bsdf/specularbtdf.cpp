@@ -168,8 +168,7 @@ namespace
 
             if (refract_differentials)
                 sample.compute_transmitted_differentials(eta);
-            else
-                sample.compute_reflected_differentials();
+            else sample.compute_reflected_differentials();
         }
 
         APPLESEED_FORCE_INLINE virtual double evaluate(
