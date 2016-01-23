@@ -303,7 +303,12 @@ namespace
 
 
     //
-    // Disney BRDF implementation.
+    // Disney BRDF.
+    //
+    // References:
+    //
+    //   [1] Physically-Based Shading at Disney
+    //       https://disney-animation.s3.amazonaws.com/library/s2012_pbs_disney_brdf_notes_v2.pdf
     //
 
     namespace
@@ -408,37 +413,47 @@ namespace
                     values,
                     sample);
             }
-            else if (s < cdf[SpecularComponent])
-            {
-                double alpha_x, alpha_y;
-                microfacet_alpha_from_roughness(
-                    values->m_roughness,
-                    values->m_anisotropic,
-                    alpha_x,
-                    alpha_y);
-
-                const GGXMDF<double> ggx_mdf;
-                MicrofacetBRDFHelper<double>::sample(
-                    sampling_context,
-                    ggx_mdf,
-                    alpha_x,
-                    alpha_y,
-                    DisneySpecularFresnelFun(*values),
-                    sample);
-            }
             else
             {
-                const double alpha = clearcoat_roughness(values);
-                const BerryMDF<double> berry_mdf;
-                MicrofacetBRDFHelper<double>::sample(
-                    sampling_context,
-                    berry_mdf,
-                    alpha,
-                    alpha,
-                    0.25,
-                    0.25,
-                    DisneyClearcoatFresnelFun(*values),
-                    sample);
+                const Vector3d& n = sample.get_shading_basis().get_normal();
+                const double cos_on = std::min(dot(sample.m_outgoing.get_value(), n), 1.0);
+                if (cos_on < 0.0)
+                    return;
+
+                if (s < cdf[SpecularComponent])
+                {
+                    double alpha_x, alpha_y;
+                    microfacet_alpha_from_roughness(
+                        values->m_roughness,
+                        values->m_anisotropic,
+                        alpha_x,
+                        alpha_y);
+
+                    const GGXMDF<double> ggx_mdf;
+                    MicrofacetBRDFHelper<double>::sample(
+                        sampling_context,
+                        ggx_mdf,
+                        alpha_x,
+                        alpha_y,
+                        DisneySpecularFresnelFun(*values),
+                        cos_on,
+                        sample);
+                }
+                else
+                {
+                    const double alpha = clearcoat_roughness(values);
+                    const BerryMDF<double> berry_mdf;
+                    MicrofacetBRDFHelper<double>::sample(
+                        sampling_context,
+                        berry_mdf,
+                        alpha,
+                        alpha,
+                        0.25,
+                        0.25,
+                        DisneyClearcoatFresnelFun(*values),
+                        cos_on,
+                        sample);
+                }
             }
         }
 
@@ -514,8 +529,9 @@ namespace
                         shading_basis,
                         outgoing,
                         incoming,
-                        modes,
                         DisneySpecularFresnelFun(*values),
+                        cos_in,
+                        cos_on,
                         spec) * weights[SpecularComponent];
                     value += spec;
                 }
@@ -534,8 +550,9 @@ namespace
                         shading_basis,
                         outgoing,
                         incoming,
-                        modes,
                         DisneyClearcoatFresnelFun(*values),
+                        cos_in,
+                        cos_on,
                         clear) * weights[CleatcoatComponent];
                     value += clear;
                 }
@@ -552,6 +569,13 @@ namespace
             const Vector3d&         incoming,
             const int               modes) const APPLESEED_OVERRIDE
         {
+            // No reflection below the shading surface.
+            const Vector3d& n = shading_basis.get_normal();
+            const double cos_in = dot(incoming, n);
+            const double cos_on = dot(outgoing, n);
+            if (cos_in < 0.0 || cos_on < 0.0)
+                return 0.0;
+
             const DisneyBRDFInputValues* values =
                 reinterpret_cast<const DisneyBRDFInputValues*>(data);
 
@@ -595,8 +619,7 @@ namespace
                         alpha_y,
                         shading_basis,
                         outgoing,
-                        incoming,
-                        modes) * weights[SpecularComponent];
+                        incoming) * weights[SpecularComponent];
                 }
 
                 if (weights[CleatcoatComponent] != 0.0)
@@ -609,8 +632,7 @@ namespace
                         alpha,
                         shading_basis,
                         outgoing,
-                        incoming,
-                        modes) * weights[CleatcoatComponent];
+                        incoming) * weights[CleatcoatComponent];
                 }
             }
 
