@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,42 +27,43 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/image/regularspectrum.h"
+#include "foundation/math/vector.h"
 #include "foundation/utility/benchmark.h"
 
 using namespace foundation;
 
-BENCHMARK_SUITE(Foundation_Image_RegularSpectrum31f)
+BENCHMARK_SUITE(Foundation_Math_Vector)
 {
+    template <typename T>
     struct Fixture
     {
-        RegularSpectrum31f  m_spectrum1;
-        RegularSpectrum31f  m_spectrum2;
+        Vector<T, 3> m_v;
+        Vector<T, 3> m_dummy;
 
         Fixture()
-          : m_spectrum1(42.0f)
-          , m_spectrum2(1.1f)
+          : m_v(normalize(Vector<T, 3>(T(3.0), T(-5.0), T(7.0))))
+          , m_dummy(T(0.0))
         {
         }
     };
 
-    BENCHMARK_CASE_F(Set, Fixture)
+    BENCHMARK_CASE_F(Normalize_SinglePrecision, Fixture<float>)
     {
-        m_spectrum1.set(0.0f);
+        m_dummy += normalize(m_v);
     }
 
-    BENCHMARK_CASE_F(InPlaceAddition, Fixture)
+    BENCHMARK_CASE_F(ImproveNormalization_SinglePrecision, Fixture<float>)
     {
-        m_spectrum1 += m_spectrum2;
+        m_dummy += improve_normalization(m_v);
     }
 
-    BENCHMARK_CASE_F(InPlaceMultiplicationByScalar, Fixture)
+    BENCHMARK_CASE_F(Normalize_DoublePrecision, Fixture<double>)
     {
-        m_spectrum1 *= 1.1f;
+        m_dummy += normalize(m_v);
     }
 
-    BENCHMARK_CASE_F(InPlaceMultiplicationBySpectrum, Fixture)
+    BENCHMARK_CASE_F(ImproveNormalization_DoublePrecision, Fixture<double>)
     {
-        m_spectrum1 *= m_spectrum2;
+        m_dummy += improve_normalization(m_v);
     }
 }

@@ -36,11 +36,11 @@
 #include <cstddef>
 #include <string>
 
+using namespace foundation;
+using namespace std;
+
 TEST_SUITE(Foundation_Utility_BufferedFile)
 {
-    using namespace foundation;
-    using namespace std;
-
     const char* Filename = "unit tests/outputs/test_bufferedfile.tmp";
     const size_t BufferSize = 4;
     const string DataString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";

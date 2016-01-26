@@ -364,6 +364,7 @@ set (foundation_meta_benchmarks_sources
     foundation/meta/benchmarks/benchmark_sampling.cpp
     foundation/meta/benchmarks/benchmark_string.cpp
     foundation/meta/benchmarks/benchmark_transform.cpp
+    foundation/meta/benchmarks/benchmark_vector.cpp
     foundation/meta/benchmarks/benchmark_voxelgrid.cpp
 )
 list (APPEND appleseed_sources

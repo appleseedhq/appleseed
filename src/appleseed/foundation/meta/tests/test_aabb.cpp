@@ -41,10 +41,10 @@ BEGIN_EXR_INCLUDES
 END_EXR_INCLUDES
 #endif
 
+using namespace foundation;
+
 TEST_SUITE(Foundation_Math_AABB)
 {
-    using namespace foundation;
-
     TEST_CASE(ConstructWithMinMax)
     {
         const AABB3d bbox(

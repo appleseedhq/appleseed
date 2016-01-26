@@ -32,10 +32,10 @@
 #include "foundation/utility/casts.h"
 #include "foundation/utility/test.h"
 
+using namespace foundation;
+
 TEST_SUITE(Foundation_Utility_Casts)
 {
-    using namespace foundation;
-
     const uint32 OnePattern = 0x3F800000UL;
 
     TEST_CASE(TestBinaryCastFloatToUInt32)

@@ -31,10 +31,10 @@
 #include "foundation/utility/test.h"
 #include "foundation/utility/typetraits.h"
 
+using namespace foundation;
+
 TEST_SUITE(Foundation_Core_TypeTraits)
 {
-    using namespace foundation;
-
     struct Base {};
 
     struct NotDerived {};
