@@ -32,10 +32,10 @@
 #include "foundation/math/vector.h"
 #include "foundation/utility/benchmark.h"
 
+using namespace foundation;
+
 BENCHMARK_SUITE(Foundation_Math_Matrix44)
 {
-    using namespace foundation;
-
     template <typename T>
     struct Fixture
     {
