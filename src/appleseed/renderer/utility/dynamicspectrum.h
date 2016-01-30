@@ -197,6 +197,17 @@ template <typename T, size_t N> T average_value(const renderer::DynamicSpectrum<
 // Return true if a spectrum contains at least one NaN value.
 template <typename T, size_t N> bool has_nan(const renderer::DynamicSpectrum<T, N>& s);
 
+// Return the square root of a spectrum.
+template <typename T, size_t N> renderer::DynamicSpectrum<T, N> sqrt(const renderer::DynamicSpectrum<T, N>& s);
+
+// Return the pow of a spectrum.
+template <typename T, size_t N> renderer::DynamicSpectrum<T, N> pow(const renderer::DynamicSpectrum<T, N>& x, const T y);
+
+// Return the component-wise pow of a spectrum.
+template <typename T, size_t N> renderer::DynamicSpectrum<T, N> pow(
+    const renderer::DynamicSpectrum<T, N>& x,
+    const renderer::DynamicSpectrum<T, N>& y);
+
 }   // namespace foundation
 
 
@@ -1100,6 +1111,73 @@ inline bool has_nan(const renderer::DynamicSpectrum<T, N>& s)
 
     return false;
 }
+
+template <typename T, size_t N>
+inline renderer::DynamicSpectrum<T, N> sqrt(const renderer::DynamicSpectrum<T, N>& s)
+{
+    renderer::DynamicSpectrum<T, N> result;
+    result.resize(s.size());
+
+    for (size_t i = 0, e = s.size(); i < e; ++i)
+        result[i] = std::sqrt(s[i]);
+
+    return result;
+}
+
+#ifdef APPLESEED_USE_SSE
+
+template <>
+APPLESEED_FORCE_INLINE renderer::DynamicSpectrum<float, 31> sqrt(const renderer::DynamicSpectrum<float, 31>& s)
+{
+    renderer::DynamicSpectrum<float, 31> result;
+    result.resize(s.size());
+
+    _mm_store1_ps(&result[ 0], _mm_sqrt_ps(_mm_load_ps(&s[ 0])));
+
+    if (s.size() > 3)
+    {
+        _mm_store1_ps(&result[ 4], _mm_sqrt_ps(_mm_load_ps(&s[ 4])));
+        _mm_store1_ps(&result[ 8], _mm_sqrt_ps(_mm_load_ps(&s[ 8])));
+        _mm_store1_ps(&result[12], _mm_sqrt_ps(_mm_load_ps(&s[12])));
+        _mm_store1_ps(&result[16], _mm_sqrt_ps(_mm_load_ps(&s[16])));
+        _mm_store1_ps(&result[20], _mm_sqrt_ps(_mm_load_ps(&s[20])));
+        _mm_store1_ps(&result[24], _mm_sqrt_ps(_mm_load_ps(&s[24])));
+        _mm_store1_ps(&result[28], _mm_sqrt_ps(_mm_load_ps(&s[28])));
+    }
+
+    return result;
+}
+
+#endif  // APPLESEED_USE_SSE
+
+template <typename T, size_t N>
+inline renderer::DynamicSpectrum<T, N> pow(const renderer::DynamicSpectrum<T, N>& x, const T y)
+{
+    renderer::DynamicSpectrum<T, N> result;
+    result.resize(x.size());
+
+    for (size_t i = 0, e = x.size(); i < e; ++i)
+        result[i] = std::pow(x[i], y);
+
+    return result;
+}
+
+template <typename T, size_t N>
+inline renderer::DynamicSpectrum<T, N> pow(
+    const renderer::DynamicSpectrum<T, N>& x,
+    const renderer::DynamicSpectrum<T, N>& y)
+{
+    assert(x.size() == y.size());
+
+    renderer::DynamicSpectrum<T, N> result;
+    result.resize(x.size());
+
+    for (size_t i = 0, e = x.size(); i < e; ++i)
+        result[i] = std::pow(x[i], y[i]);
+
+    return result;
+}
+
 
 }       // namespace foundation
 

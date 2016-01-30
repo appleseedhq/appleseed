@@ -99,6 +99,13 @@ void generate_wavelengths(
     }
 }
 
+void generate_rgb_wavelengths(float wavelengths[3])
+{
+    wavelengths[0] = 645.0f;
+    wavelengths[1] = 526.0f;
+    wavelengths[2] = 444.0f;
+}
+
 void spectral_values_to_spectrum(
     const float     low_wavelength,
     const float     high_wavelength,

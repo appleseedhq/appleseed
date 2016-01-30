@@ -63,6 +63,9 @@ APPLESEED_DLLSYMBOL void generate_wavelengths(
     const size_t    count,
     float           wavelengths[]);
 
+// Generate wavelengths for red, green and blue.
+APPLESEED_DLLSYMBOL void generate_rgb_wavelengths(float wavelengths[]);
+
 // Convert a set of regularly spaced spectral values to the internal spectrum format.
 APPLESEED_DLLSYMBOL void spectral_values_to_spectrum(
     const float     low_wavelength,
