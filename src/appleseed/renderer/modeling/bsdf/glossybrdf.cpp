@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,6 @@
 // appleseed.foundation headers.
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/basis.h"
-#include "foundation/math/fresnel.h"
 #include "foundation/math/microfacet.h"
 #include "foundation/math/minmax.h"
 #include "foundation/math/vector.h"
@@ -68,44 +67,20 @@ namespace renderer
 namespace
 {
 
-    struct FresnelDielectric
-    {
-        FresnelDielectric(
-            const Spectrum& reflectance,
-            const double    reflectance_multiplier,
-            const double    eta)
-          : m_reflectance(reflectance)
-          , m_reflectance_multiplier(reflectance_multiplier)
-          , m_eta(eta)
-        {
-        }
-
-        void operator()(
-            const Vector3d& o,
-            const Vector3d& h,
-            const Vector3d& n,
-            Spectrum&       value) const
-        {
-            value = m_reflectance;
-            double f;
-            fresnel_reflectance_dielectric(f, m_eta, dot(o, h));
-            value *= static_cast<float>(f * m_reflectance_multiplier);
-        }
-
-      private:
-        const Spectrum& m_reflectance;
-        const double    m_reflectance_multiplier;
-        const double    m_eta;
-    };
-
-
     //
     // Glossy BRDF.
+    //
+    //    A future version of this BRDF will support multiple-scattering.
+    //    For that reason, the only available microfacet distribution functions
+    //    are those that support it (Beckmann and GGX).
     //
     // References:
     //
     //   [1] Microfacet Models for Refraction through Rough Surfaces
     //       http://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.pdf
+    //
+    //   [2] Physically-Based Shading at Disney
+    //       https://disney-animation.s3.amazonaws.com/library/s2012_pbs_disney_brdf_notes_v2.pdf
     //
 
     const char* Model = "glossy_brdf";
@@ -121,9 +96,9 @@ namespace
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("roughness", InputFormatScalar, "0.3");
+            m_inputs.declare("roughness", InputFormatScalar, "0.15");
             m_inputs.declare("anisotropic", InputFormatScalar, "0.0");
-            m_inputs.declare("ior", InputFormatScalar);
+            m_inputs.declare("ior", InputFormatScalar, "1.5");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -181,7 +156,7 @@ namespace
                 alpha_x,
                 alpha_y);
 
-            FresnelDielectric f(
+            FresnelDielectricFun<double> f(
                 values->m_reflectance,
                 values->m_reflectance_multiplier,
                 1.0 / values->m_ior);
@@ -240,7 +215,7 @@ namespace
                 alpha_x,
                 alpha_y);
 
-            FresnelDielectric f(
+            FresnelDielectricFun<double> f(
                 values->m_reflectance,
                 values->m_reflectance_multiplier,
                 1.0 / values->m_ior);
@@ -383,7 +358,7 @@ DictionaryArray GlossyBRDFFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", "0.5"));
+            .insert("default", "0.75"));
 
     metadata.push_back(
         Dictionary()
