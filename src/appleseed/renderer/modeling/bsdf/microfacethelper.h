@@ -38,6 +38,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 
@@ -47,6 +48,11 @@
 
 namespace renderer
 {
+
+//
+// Perceptually linear map from roughness to microfacet distribution function
+// alpha parameters. Refactored from the Disney BRDF implementation.
+//
 
 template <typename T>
 inline T microfacet_alpha_from_roughness(const T& roughness)
@@ -74,6 +80,39 @@ inline void microfacet_alpha_from_roughness(
         alpha_y = std::max(T(0.001), foundation::square(roughness) / aspect);
     }
 }
+
+
+template <typename T>
+struct FresnelDielectricFun
+{
+    FresnelDielectricFun(
+        const Spectrum& reflectance,
+        const T         reflectance_multiplier,
+        const T         eta)
+      : m_reflectance(reflectance)
+      , m_reflectance_multiplier(reflectance_multiplier)
+      , m_eta(eta)
+    {
+    }
+
+    void operator()(
+        const foundation::Vector<T,3>&  o,
+        const foundation::Vector<T,3>&  h,
+        const foundation::Vector<T,3>&  n,
+        Spectrum&                       value) const
+    {
+        value = m_reflectance;
+        double f;
+        foundation::fresnel_reflectance_dielectric(f, m_eta, foundation::dot(o, h));
+        value *= static_cast<float>(f * m_reflectance_multiplier);
+    }
+
+  private:
+    const Spectrum& m_reflectance;
+    const T         m_reflectance_multiplier;
+    const T         m_eta;
+};
+
 
 template <typename T>
 class MicrofacetBRDFHelper
