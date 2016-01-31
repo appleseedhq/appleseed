@@ -418,7 +418,6 @@ QToolButton
 
 QToolButton:hover
 {
-    background-color: HOVER_BACKGROUND_COLOR;
     color: HOVER_TEXT_COLOR;
 }
 

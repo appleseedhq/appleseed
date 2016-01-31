@@ -440,48 +440,71 @@ void MainWindow::update_recent_files_menu(const QStringList& files)
         m_recently_opened[i]->setVisible(false);
 }
 
+namespace
+{
+    QString make_icon_filepath(const QString& filepath)
+    {
+        QString result(Application::get_root_path());
+
+        if (!result.endsWith(QDir::separator()))
+            result.append(QDir::separator());
+
+        result.append(filepath);
+
+        return QDir::toNativeSeparators(result);
+    }
+}
+
 void MainWindow::build_toolbar()
 {
-    QIcon page_white = QIcon(":/icons/page_white.png");
-    page_white.addPixmap(QPixmap(":/icons/page_white_disable.png"), QIcon::Disabled);
-    m_action_new_project = new QAction(page_white, "New", this);
+    QIcon project_new_icon = QIcon(make_icon_filepath("icons/project_new.png"));
+    project_new_icon.addPixmap(QPixmap(make_icon_filepath("icons/project_new_hover.png")), QIcon::Active);
+    project_new_icon.addPixmap(QPixmap(make_icon_filepath("icons/project_new_disabled.png")), QIcon::Disabled);
+    m_action_new_project = new QAction(project_new_icon, "New", this);
     connect(m_action_new_project, SIGNAL(triggered()), SLOT(slot_new_project()));
     m_ui->main_toolbar->addAction(m_action_new_project);
 
-    QIcon folder = QIcon(":/icons/folder.png");
-    folder.addPixmap(QPixmap(":/icons/folder_disable.png"), QIcon::Disabled);
-    m_action_open_project = new QAction(folder, "Open", this);
+    QIcon project_load_icon = QIcon(make_icon_filepath("icons/project_load.png"));
+    project_load_icon.addPixmap(QPixmap(make_icon_filepath("icons/project_load_hover.png")), QIcon::Active);
+    project_load_icon.addPixmap(QPixmap(make_icon_filepath("icons/project_load_disabled.png")), QIcon::Disabled);
+    m_action_open_project = new QAction(project_load_icon, "Open", this);
     connect(m_action_open_project, SIGNAL(triggered()), SLOT(slot_open_project()));
     m_ui->main_toolbar->addAction(m_action_open_project);
 
-    QIcon disk = QIcon(":/icons/disk.png");
-    disk.addPixmap(QPixmap(":/icons/disk_disable.png"), QIcon::Disabled);
-    m_action_save_project = new QAction(disk , "Save", this);
+    QIcon project_save_icon = QIcon(make_icon_filepath("icons/project_save.png"));
+    project_save_icon.addPixmap(QPixmap(make_icon_filepath("icons/project_save_hover.png")), QIcon::Active);
+    project_save_icon.addPixmap(QPixmap(make_icon_filepath("icons/project_save_disabled.png")), QIcon::Disabled);
+    m_action_save_project = new QAction(project_save_icon , "Save", this);
     connect(m_action_save_project, SIGNAL(triggered()), SLOT(slot_save_project()));
     m_ui->main_toolbar->addAction(m_action_save_project);
 
-    m_action_toggle_project_watcher = new QAction(QIcon(":/icons/file_toggle.png"), "Toggle Project Watcher", this);
+    QIcon project_reopen_icon = QIcon(make_icon_filepath("icons/project_reopen.png"));
+    project_reopen_icon.addPixmap(QPixmap(make_icon_filepath("icons/project_reopen_hover.png")), QIcon::Active);
+    m_action_toggle_project_watcher = new QAction(project_reopen_icon, "Toggle Project Watcher", this);
     m_action_toggle_project_watcher->setCheckable(true);
     connect(m_action_toggle_project_watcher, SIGNAL(toggled(bool)), SLOT(slot_toggle_project_file_watcher(const bool)));
     m_ui->main_toolbar->addAction(m_action_toggle_project_watcher);
 
     m_ui->main_toolbar->addSeparator();
 
-    QIcon film = QIcon(":/icons/film_go.png");
-    film.addPixmap(QPixmap(":/icons/film_go_disable.png"), QIcon::Disabled);
-    m_action_start_interactive_rendering = new QAction(film, "Start Interactive Rendering", this);
+    QIcon rendering_start_interactive_icon = QIcon(make_icon_filepath("icons/rendering_start_interactive.png"));
+    rendering_start_interactive_icon.addPixmap(QPixmap(make_icon_filepath("icons/rendering_start_interactive_hover.png")), QIcon::Active);
+    rendering_start_interactive_icon.addPixmap(QPixmap(make_icon_filepath("icons/rendering_start_interactive_disabled.png")), QIcon::Disabled);
+    m_action_start_interactive_rendering = new QAction(rendering_start_interactive_icon, "Start Interactive Rendering", this);
     connect(m_action_start_interactive_rendering, SIGNAL(triggered()), SLOT(slot_start_interactive_rendering()));
     m_ui->main_toolbar->addAction(m_action_start_interactive_rendering);
 
-    QIcon cog = QIcon(":/icons/cog_go.png");
-    cog.addPixmap(QPixmap(":/icons/cog_go_disable.png"), QIcon::Disabled);
-    m_action_start_final_rendering = new QAction(cog, "Start Final Rendering", this);
+    QIcon rendering_start_final_icon = QIcon(make_icon_filepath("icons/rendering_start_final.png"));
+    rendering_start_final_icon.addPixmap(QPixmap(make_icon_filepath("icons/rendering_start_final_hover.png")), QIcon::Active);
+    rendering_start_final_icon.addPixmap(QPixmap(make_icon_filepath("icons/rendering_start_final_disabled.png")), QIcon::Disabled);
+    m_action_start_final_rendering = new QAction(rendering_start_final_icon, "Start Final Rendering", this);
     connect(m_action_start_final_rendering, SIGNAL(triggered()), SLOT(slot_start_final_rendering()));
     m_ui->main_toolbar->addAction(m_action_start_final_rendering);
 
-    QIcon cross = QIcon(":/icons/cross.png");
-    cross.addPixmap(QPixmap(":/icons/cross_disable.png"), QIcon::Disabled);
-    m_action_stop_rendering = new QAction(cross, "Stop Rendering", this);
+    QIcon rendering_stop_icon = QIcon(make_icon_filepath("icons/rendering_stop.png"));
+    rendering_stop_icon.addPixmap(QPixmap(make_icon_filepath("icons/rendering_stop_hover.png")), QIcon::Active);
+    rendering_stop_icon.addPixmap(QPixmap(make_icon_filepath("icons/rendering_stop_disabled.png")), QIcon::Disabled);
+    m_action_stop_rendering = new QAction(rendering_stop_icon, "Stop Rendering", this);
     connect(m_action_stop_rendering, SIGNAL(triggered()), &m_rendering_manager, SLOT(slot_abort_rendering()));
     m_ui->main_toolbar->addAction(m_action_stop_rendering);
 }
