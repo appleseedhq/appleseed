@@ -66,7 +66,6 @@ namespace renderer
 
 namespace
 {
-
     //
     // Glossy BRDF.
     //

@@ -50,8 +50,9 @@ namespace renderer
 {
 
 //
-// Perceptually linear map from roughness to microfacet distribution function
-// alpha parameters. Refactored from the Disney BRDF implementation.
+// Map roughness to microfacet distribution function's alpha parameter in a
+// perceptually linear fashion.
+// Refactored from the Disney BRDF implementation.
 //
 
 template <typename T>
@@ -83,8 +84,9 @@ inline void microfacet_alpha_from_roughness(
 
 
 template <typename T>
-struct FresnelDielectricFun
+class FresnelDielectricFun
 {
+  public:
     FresnelDielectricFun(
         const Spectrum& reflectance,
         const T         reflectance_multiplier,

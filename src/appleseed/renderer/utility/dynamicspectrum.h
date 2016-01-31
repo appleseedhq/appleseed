@@ -200,10 +200,10 @@ template <typename T, size_t N> bool has_nan(const renderer::DynamicSpectrum<T, 
 // Return the square root of a spectrum.
 template <typename T, size_t N> renderer::DynamicSpectrum<T, N> sqrt(const renderer::DynamicSpectrum<T, N>& s);
 
-// Return the pow of a spectrum.
+// Raise a spectrum to a given power.
 template <typename T, size_t N> renderer::DynamicSpectrum<T, N> pow(const renderer::DynamicSpectrum<T, N>& x, const T y);
 
-// Return the component-wise pow of a spectrum.
+// Raise a spectrum to a given power, component-wise.
 template <typename T, size_t N> renderer::DynamicSpectrum<T, N> pow(
     const renderer::DynamicSpectrum<T, N>& x,
     const renderer::DynamicSpectrum<T, N>& y);
