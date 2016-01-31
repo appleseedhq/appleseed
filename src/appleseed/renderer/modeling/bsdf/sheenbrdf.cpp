@@ -60,6 +60,11 @@ namespace
     //
     // Sheen BRDF.
     //
+    // References:
+    //
+    //   [1] Physically-Based Shading at Disney
+    //       https://disney-animation.s3.amazonaws.com/library/s2012_pbs_disney_brdf_notes_v2.pdf
+    //
 
     const char* Model = "sheen_brdf";
 
