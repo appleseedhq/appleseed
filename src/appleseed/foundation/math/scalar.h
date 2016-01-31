@@ -433,6 +433,8 @@ inline uint32 log2_int(const uint32 x)
     return static_cast<uint32>(index);
 }
 
+#ifdef APPLESEED_ARCH64
+
 template <>
 inline uint64 log2_int(const uint64 x)
 {
@@ -443,6 +445,8 @@ inline uint64 log2_int(const uint64 x)
 
     return static_cast<uint64>(index);
 }
+
+#endif
 
 // gcc.
 #elif defined __GNUC__
