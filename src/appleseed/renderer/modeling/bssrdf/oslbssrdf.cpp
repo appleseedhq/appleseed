@@ -221,7 +221,7 @@ namespace
                     incoming_dir,
                     s);
 
-                s *= static_cast<float>(c->get_closure_pdf_weight(i));
+                s *= c->get_closure_weight(i);
                 value += s;
             }
         }

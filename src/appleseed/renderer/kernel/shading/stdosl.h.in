@@ -482,6 +482,7 @@ string concat (string a, string b, string c, string d, string e, string f) {
 // Closures
 /*************************************************************/
 
+
 /***************************************/
 // diffuse
 /***************************************/
@@ -522,6 +523,23 @@ closure color microfacet(
     int     refract)
 {
     return microfacet(distribution, N, vector(0), alpha, alpha, eta, refract);
+}
+
+closure color glossy(
+    string  distribution,
+    normal  N,
+    vector  T,
+    float   roughness,
+    float   anisotropic,
+    float   eta) BUILTIN;
+
+closure color glossy(
+    string  distribution,
+    normal  N,
+    float   roughness,
+    float   eta)
+{
+    return glossy(distribution, N, vector(0), roughness, 0.0, eta);
 }
 
 
@@ -626,6 +644,7 @@ closure color transparent() BUILTIN;
 
 closure color debug(string tag) BUILTIN;
 closure color holdout() BUILTIN;
+
 
 /*************************************************************/
 

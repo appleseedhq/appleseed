@@ -35,6 +35,7 @@
 #include "foundation/utility/test.h"
 
 // Standard headers.
+#include <cmath>
 #include <cstddef>
 
 using namespace foundation;
@@ -188,5 +189,29 @@ TEST_SUITE(Renderer_Utility_DynamicSpectrum31f)
         const DynamicSpectrum31f result = lhs + rhs;
 
         EXPECT_EQ(31, result.size());
+    }
+
+    TEST_CASE(SpectrumSqrt)
+    {
+        static const float Values[31] =
+        {
+            33.7794576606f, 34.6017115499f, 10.8598925557f,
+            10.1564868071f, 2.12352584175f, 17.3759605036f,
+            6.23873436098f, 22.077745133f, 22.2779760462f,
+            36.9120118385f, 7.21339038295f, 10.6783551356f,
+            14.935931608f, 39.2048955192f, 14.1621055891f,
+            4.52243405258f, 30.0648763532f, 32.401711383f,
+            15.9086715908f, 0.975102075444f, 8.33461383584f,
+            41.0116977052f, 7.06685022531f, 27.8164731673f,
+            12.9754651075f, 39.8339872284f, 5.99074310976f,
+            20.1765086006f, 0.619432298957f, 8.978846717f,
+            25.1470816934f
+        };
+
+        const DynamicSpectrum31f x(Values);
+        const DynamicSpectrum31f result = sqrt(x);
+
+        for (size_t i = 0, e = x.size(); i < e; ++i)
+            EXPECT_FEQ(result[i], sqrt(Values[i]));
     }
 }

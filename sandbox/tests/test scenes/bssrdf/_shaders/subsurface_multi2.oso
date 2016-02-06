@@ -1,37 +1,23 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.8
+# Compiled by oslc 1.6.9
 surface subsurface_multi2
-global	vector	I	%read{35,83} %write{2147483647,-1}
-global	normal	N	%read{6,94} %write{2147483647,-1}
-global	closure color	Ci	%read{2147483647,-1} %write{97,97}
-local	float	___216_IdotN	%read{76,84} %write{74,74}
-local	float	___216_k	%read{80,85} %write{79,79}
-local	float	___217_c	%read{36,64} %write{35,38}
-local	float	___217_g	%read{50,64} %write{49,52}
-local	float	___219_beta	%read{57,65} %write{53,53}
-local	float	___219_F	%read{61,69} %write{59,68}
-local	vector	___221_R	%read{2147483647,-1} %write{43,43}
-local	vector	___221_T	%read{2147483647,-1} %write{82,92}
+global	normal	N	%read{6,28} %write{2147483647,-1}
+global	closure color	Ci	%read{2147483647,-1} %write{30,30}
 local	int	depth	%read{2,2} %write{0,0}
-local	closure color	diff	%read{97,97} %write{1,25}
-local	float	from_ior	%read{32,32} %write{28,30}
-local	float	to_ior	%read{32,32} %write{29,31}
-local	float	eta	%read{45,84} %write{32,32}
-local	float	Kr	%read{70,95} %write{69,90}
-local	float	Kt	%read{2147483647,-1} %write{72,91}
+local	closure color	diff	%read{26,26} %write{1,25}
 temp	int	$tmp1	%read{2147483647,-1} %write{0,0}
 const	string	$const1	"path:ray_depth"		%read{0,0} %write{2147483647,-1}
-const	int	$const2	0		%read{1,94} %write{2147483647,-1}
+const	int	$const2	0		%read{1,2} %write{2147483647,-1}
 temp	int	$tmp2	%read{3,3} %write{2,2}
 temp	closure color	$tmp3	%read{7,7} %write{6,6}
 const	string	$const3	"standard_dipole"		%read{6,6} %write{2147483647,-1}
 const	color	$const4	0.5 0 0		%read{6,20} %write{2147483647,-1}
 const	float	$const5	0.25		%read{4,4} %write{2147483647,-1}
 temp	color	$tmp5	%read{6,6} %write{4,4}
-const	float	$const6	1.3		%read{6,94} %write{2147483647,-1}
+const	float	$const6	1.3		%read{6,28} %write{2147483647,-1}
 const	string	$const7	"as_subsurface"		%read{5,15} %write{2147483647,-1}
-const	float	$const8	0		%read{6,91} %write{2147483647,-1}
-const	float	$const9	0.30000001		%read{7,20} %write{2147483647,-1}
+const	float	$const8	0		%read{6,28} %write{2147483647,-1}
+const	float	$const9	0.30000001		%read{7,28} %write{2147483647,-1}
 temp	closure color	$tmp6	%read{12,12} %write{7,7}
 temp	closure color	$tmp7	%read{11,11} %write{10,10}
 const	string	$const10	"better_dipole"		%read{10,10} %write{2147483647,-1}
@@ -46,7 +32,7 @@ const	string	$const14	"directional_dipole"		%read{15,15} %write{2147483647,-1}
 const	color	$const15	0 0.5 0.76999998		%read{15,23} %write{2147483647,-1}
 const	float	$const16	0.050000001		%read{13,13} %write{2147483647,-1}
 temp	color	$tmp14	%read{15,15} %write{13,13}
-const	float	$const17	0.5		%read{16,95} %write{2147483647,-1}
+const	float	$const17	0.5		%read{16,23} %write{2147483647,-1}
 temp	closure color	$tmp15	%read{17,17} %write{16,16}
 temp	closure color	$tmp16	%read{25,25} %write{19,19}
 const	string	$const18	"diffuse"		%read{18,18} %write{2147483647,-1}
@@ -56,51 +42,14 @@ temp	color	$tmp20	%read{22,22} %write{21,21}
 temp	color	$tmp21	%read{24,24} %write{22,22}
 temp	color	$tmp23	%read{24,24} %write{23,23}
 temp	color	$tmp24	%read{25,25} %write{24,24}
-temp	int	$tmp25	%read{27,27} %write{26,26}
-const	float	$const20	1		%read{29,90} %write{2147483647,-1}
-const	string	$const21	"fresnel"		%read{33,34} %write{2147483647,-1}
-temp	int	$tmp26	%read{37,37} %write{36,36}
-const	string	$const22	"reflect"		%read{39,39} %write{2147483647,-1}
-temp	float	$tmp27	%read{41,41} %write{40,40}
-temp	float	$tmp28	%read{42,42} %write{41,41}
-const	float	$const24	2		%read{41,41} %write{2147483647,-1}
-temp	vector	$tmp29	%read{43,43} %write{42,42}
-temp	float	$tmp30	%read{46,46} %write{45,45}
-const	string	$const25	"sqr"		%read{44,66} %write{2147483647,-1}
-temp	float	$tmp31	%read{47,47} %write{46,46}
-temp	float	$tmp32	%read{49,49} %write{47,47}
-temp	float	$tmp33	%read{49,49} %write{48,48}
-temp	int	$tmp34	%read{51,51} %write{50,50}
-temp	float	$tmp35	%read{55,55} %write{54,54}
-temp	float	$tmp36	%read{56,56} %write{55,55}
-temp	float	$tmp37	%read{59,59} %write{56,56}
-temp	float	$tmp38	%read{58,58} %write{57,57}
-temp	float	$tmp39	%read{59,59} %write{58,58}
-temp	float	$tmp40	%read{62,62} %write{61,61}
-temp	float	$tmp41	%read{63,63} %write{62,62}
-temp	float	$tmp42	%read{68,68} %write{67,67}
-temp	float	$tmp43	%read{65,65} %write{64,64}
-temp	float	$tmp44	%read{67,67} %write{65,65}
-temp	float	$tmp45	%read{71,71} %write{70,70}
-temp	float	$tmp46	%read{72,72} %write{71,71}
-const	string	$const26	"refract"		%read{73,73} %write{2147483647,-1}
-temp	float	$tmp47	%read{78,78} %write{75,75}
-temp	float	$tmp48	%read{77,77} %write{76,76}
-temp	float	$tmp49	%read{78,78} %write{77,77}
-temp	float	$tmp50	%read{79,79} %write{78,78}
-temp	int	$tmp51	%read{81,81} %write{80,80}
-const	vector	$const28	0 0 0		%read{82,94} %write{2147483647,-1}
-temp	vector	$tmp52	%read{88,88} %write{83,83}
-temp	float	$tmp53	%read{86,86} %write{84,84}
-temp	float	$tmp54	%read{86,86} %write{85,85}
-temp	float	$tmp55	%read{87,87} %write{86,86}
-temp	vector	$tmp56	%read{88,88} %write{87,87}
-temp	closure color	$tmp57	%read{96,96} %write{94,94}
-const	string	$const29	"beckmann"		%read{94,94} %write{2147483647,-1}
-const	float	$const30	0.15000001		%read{94,94} %write{2147483647,-1}
-const	string	$const31	"microfacet"		%read{93,94} %write{2147483647,-1}
-temp	float	$tmp59	%read{96,96} %write{95,95}
-temp	closure color	$tmp60	%read{97,97} %write{96,96}
+const	color	$const20	0.34999999 0.5 0.75		%read{26,26} %write{2147483647,-1}
+temp	closure color	$tmp26	%read{30,30} %write{26,26}
+temp	closure color	$tmp27	%read{29,29} %write{28,28}
+const	string	$const21	"ggx"		%read{28,28} %write{2147483647,-1}
+const	string	$const22	"glossy"		%read{27,28} %write{2147483647,-1}
+const	vector	$const23	0 0 0		%read{28,28} %write{2147483647,-1}
+const	float	$const24	0.64999998		%read{29,29} %write{2147483647,-1}
+temp	closure color	$tmp29	%read{30,30} %write{29,29}
 code ___main___
 # subsurface_multi2.osl:5
 #     getattribute("path:ray_depth", depth);
@@ -116,9 +65,9 @@ code ___main___
 #             0.3 * as_subsurface("standard_dipole", N, color(0.5, 0.0, 0.0) , 0.25, 1.3) +
 	assign		$tmp5 $const5 	%line{12} %argrw{"wr"}
 	functioncall	$const7 7 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:547
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:565
 #     color   rd,
-	closure		$tmp3 $const7 $const3 N $const4 $tmp5 $const6 $const8 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{547} %argrw{"wrrrrrrr"}
+	closure		$tmp3 $const7 $const3 N $const4 $tmp5 $const6 $const8 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{565} %argrw{"wrrrrrrr"}
 # subsurface_multi2.osl:12
 #             0.3 * as_subsurface("standard_dipole", N, color(0.5, 0.0, 0.0) , 0.25, 1.3) +
 	mul		$tmp6 $tmp3 $const9 	%filename{"subsurface_multi2.osl"} %line{12} %argrw{"wrr"}
@@ -126,9 +75,9 @@ code ___main___
 #             0.2 * as_subsurface("better_dipole", N, color(0.5, 0.3, 0.05), 0.10, 1.3) +
 	assign		$tmp9 $const12 	%line{13} %argrw{"wr"}
 	functioncall	$const7 11 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:547
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:565
 #     normal  N,
-	closure		$tmp7 $const7 $const10 N $const11 $tmp9 $const6 $const8 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{547} %argrw{"wrrrrrrr"}
+	closure		$tmp7 $const7 $const10 N $const11 $tmp9 $const6 $const8 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{565} %argrw{"wrrrrrrr"}
 # subsurface_multi2.osl:13
 #             0.2 * as_subsurface("better_dipole", N, color(0.5, 0.3, 0.05), 0.10, 1.3) +
 	mul		$tmp10 $tmp7 $const13 	%filename{"subsurface_multi2.osl"} %line{13} %argrw{"wrr"}
@@ -137,9 +86,9 @@ code ___main___
 #             0.5 * as_subsurface("directional_dipole", N, color(0.0, 0.5, 0.77), 0.05, 1.3);
 	assign		$tmp14 $const16 	%line{14} %argrw{"wr"}
 	functioncall	$const7 16 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:547
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:565
 #     string  profile,
-	closure		$tmp12 $const7 $const14 N $const15 $tmp14 $const6 $const8 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{547} %argrw{"wrrrrrrr"}
+	closure		$tmp12 $const7 $const14 N $const15 $tmp14 $const6 $const8 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{565} %argrw{"wrrrrrrr"}
 # subsurface_multi2.osl:14
 #             0.5 * as_subsurface("directional_dipole", N, color(0.0, 0.5, 0.77), 0.05, 1.3);
 	mul		$tmp15 $tmp12 $const17 	%filename{"subsurface_multi2.osl"} %line{14} %argrw{"wrr"}
@@ -147,9 +96,9 @@ code ___main___
 # subsurface_multi2.osl:19
 #             (0.3 * color(0.5, 0.0, 0.0) + 0.2 * color(0.5, 0.3, 0.05) + 0.5 * color(0.0, 0.5, 0.77)) * diffuse(N);
 	functioncall	$const18 20 	%line{19} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:594
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:612
 #     float   sheen,
-	closure		$tmp16 $const19 N $const8 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{594} %argrw{"wrrr"}
+	closure		$tmp16 $const19 N $const8 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{612} %argrw{"wrrr"}
 # subsurface_multi2.osl:19
 #             (0.3 * color(0.5, 0.0, 0.0) + 0.2 * color(0.5, 0.3, 0.05) + 0.5 * color(0.0, 0.5, 0.77)) * diffuse(N);
 	mul		$tmp18 $const9 $const4 	%filename{"subsurface_multi2.osl"} %line{19} %argrw{"wrr"}
@@ -158,152 +107,15 @@ code ___main___
 	mul		$tmp23 $const17 $const15 	%argrw{"wrr"}
 	add		$tmp24 $tmp21 $tmp23 	%argrw{"wrr"}
 	mul		diff $tmp16 $tmp24 	%argrw{"wrr"}
-# subsurface_multi2.osl:26
-#     if (backfacing())
-	backfacing	$tmp25 	%line{26} %argrw{"w"}
-	if		$tmp25 30 32 	%argrw{"r"}
-# subsurface_multi2.osl:28
-#         from_ior = 1.3;
-	assign		from_ior $const6 	%line{28} %argrw{"wr"}
-# subsurface_multi2.osl:29
-#         to_ior = 1.0;
-	assign		to_ior $const20 	%line{29} %argrw{"wr"}
-# subsurface_multi2.osl:33
-#         from_ior = 1.0;
-	assign		from_ior $const20 	%line{33} %argrw{"wr"}
-# subsurface_multi2.osl:34
-#         to_ior = 1.3;
-	assign		to_ior $const6 	%line{34} %argrw{"wr"}
-# subsurface_multi2.osl:37
-#     float eta = from_ior / to_ior;
-	div		eta from_ior to_ior 	%line{37} %argrw{"wrr"}
-# subsurface_multi2.osl:39
-#     fresnel(I, N, eta, Kr, Kt);
-	functioncall	$const21 93 	%line{39} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:244
-# vector reflect (vector I, vector N) { return I - 2*dot(N,I)*N; }
-	functioncall	$const21 93 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{244} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:216
-#     float c = dot(I, N);
-	dot		___217_c I N 	%line{216} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:217
-#     if (c < 0)
-	lt		$tmp26 ___217_c $const2 	%line{217} %argrw{"wrr"}
-	if		$tmp26 39 39 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:218
-#         c = -c;
-	neg		___217_c ___217_c 	%line{218} %argrw{"wr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:219
-#     R = reflect(I, N);
-	functioncall	$const22 44 	%line{219} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:205
-# vector reflect (vector I, vector N) { return I - 2*dot(N,I)*N; }
-	dot		$tmp27 N I 	%line{205} %argrw{"wrr"}
-	mul		$tmp28 $const24 $tmp27 	%argrw{"wrr"}
-	mul		$tmp29 $tmp28 N 	%argrw{"wrr"}
-	sub		___221_R I $tmp29 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:220
-#     float g = 1.0 / sqr(eta) - 1.0 + c * c;
-	functioncall	$const25 46 	%line{220} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:215
-#     float sqr(float x) { return x*x; }
-	mul		$tmp30 eta eta 	%line{215} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:220
-#     float g = 1.0 / sqr(eta) - 1.0 + c * c;
-	div		$tmp31 $const20 $tmp30 	%line{220} %argrw{"wrr"}
-	sub		$tmp32 $tmp31 $const20 	%argrw{"wrr"}
-	mul		$tmp33 ___217_c ___217_c 	%argrw{"wrr"}
-	add		___217_g $tmp32 $tmp33 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:221
-#     if (g >= 0.0) {
-	ge		$tmp34 ___217_g $const8 	%line{221} %argrw{"wrr"}
-	if		$tmp34 90 93 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:222
-#         g = sqrt (g);
-	sqrt		___217_g ___217_g 	%line{222} %argrw{"wr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:223
-#         float beta = g - c;
-	sub		___219_beta ___217_g ___217_c 	%line{223} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:224
-#         float F = (c * (g+c) - 1.0) / (c * beta + 1.0);
-	add		$tmp35 ___217_g ___217_c 	%line{224} %argrw{"wrr"}
-	mul		$tmp36 ___217_c $tmp35 	%argrw{"wrr"}
-	sub		$tmp37 $tmp36 $const20 	%argrw{"wrr"}
-	mul		$tmp38 ___217_c ___219_beta 	%argrw{"wrr"}
-	add		$tmp39 $tmp38 $const20 	%argrw{"wrr"}
-	div		___219_F $tmp37 $tmp39 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:225
-#         F = 0.5 * (1.0 + sqr(F));
-	functioncall	$const25 62 	%line{225} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:215
-#     float sqr(float x) { return x*x; }
-	mul		$tmp40 ___219_F ___219_F 	%line{215} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:225
-#         F = 0.5 * (1.0 + sqr(F));
-	add		$tmp41 $const20 $tmp40 	%line{225} %argrw{"wrr"}
-	mul		___219_F $const17 $tmp41 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:226
-#         F *= sqr (beta / (g+c));
-	add		$tmp43 ___217_g ___217_c 	%line{226} %argrw{"wrr"}
-	div		$tmp44 ___219_beta $tmp43 	%argrw{"wrr"}
-	functioncall	$const25 68 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:215
-#     float sqr(float x) { return x*x; }
-	mul		$tmp42 $tmp44 $tmp44 	%line{215} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:226
-#         F *= sqr (beta / (g+c));
-	mul		___219_F ___219_F $tmp42 	%line{226} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:227
-#         Kr = F;
-	assign		Kr ___219_F 	%line{227} %argrw{"wr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:228
-#         Kt = (1.0 - Kr) * eta*eta;
-	sub		$tmp45 $const20 Kr 	%line{228} %argrw{"wrr"}
-	mul		$tmp46 $tmp45 eta 	%argrw{"wrr"}
-	mul		Kt $tmp46 eta 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:231
-#         T = refract(I, N, eta);
-	functioncall	$const26 90 	%line{231} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:207
-#     float IdotN = dot (I, N);
-	dot		___216_IdotN I N 	%line{207} %argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:208
-#     float k = 1 - eta*eta * (1 - IdotN*IdotN);
-	mul		$tmp47 eta eta 	%line{208} %argrw{"wrr"}
-	mul		$tmp48 ___216_IdotN ___216_IdotN 	%argrw{"wrr"}
-	sub		$tmp49 $const20 $tmp48 	%argrw{"wrr"}
-	mul		$tmp50 $tmp47 $tmp49 	%argrw{"wrr"}
-	sub		___216_k $const20 $tmp50 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:209
-#     return (k < 0) ? vector(0,0,0) : (eta*I - N * (eta*IdotN + sqrt(k)));
-	lt		$tmp51 ___216_k $const2 	%line{209} %argrw{"wrr"}
-	if		$tmp51 83 89 	%argrw{"r"}
-	assign		___221_T $const28 	%argrw{"wr"}
-	mul		$tmp52 eta I 	%argrw{"wrr"}
-	mul		$tmp53 eta ___216_IdotN 	%argrw{"wrr"}
-	sqrt		$tmp54 ___216_k 	%argrw{"wr"}
-	add		$tmp55 $tmp53 $tmp54 	%argrw{"wrr"}
-	mul		$tmp56 N $tmp55 	%argrw{"wrr"}
-	sub		___221_T $tmp52 $tmp56 	%argrw{"wrr"}
-	return
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:234
-#         Kr = 1.0;
-	assign		Kr $const20 	%line{234} %argrw{"wr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:235
-#         Kt = 0.0;
-	assign		Kt $const8 	%line{235} %argrw{"wr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:236
-#         T = vector (0,0,0);
-	assign		___221_T $const28 	%line{236} %argrw{"wr"}
-# subsurface_multi2.osl:41
-#     Ci = diff + 0.5 * Kr * microfacet("beckmann", N, 0.15, 1.3, 0);
-	functioncall	$const31 95 	%filename{"subsurface_multi2.osl"} %line{41} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:524
-# /*************************************************************/
-	closure		$tmp57 $const31 $const29 N $const28 $const30 $const30 $const6 $const2 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{524} %argrw{"wrrrrrrrr"}
-# subsurface_multi2.osl:41
-#     Ci = diff + 0.5 * Kr * microfacet("beckmann", N, 0.15, 1.3, 0);
-	mul		$tmp59 $const17 Kr 	%filename{"subsurface_multi2.osl"} %line{41} %argrw{"wrr"}
-	mul		$tmp60 $tmp57 $tmp59 	%argrw{"wrr"}
-	add		Ci diff $tmp60 	%argrw{"wrr"}
+# subsurface_multi2.osl:22
+#     Ci = color(0.35, 0.5, 0.75) * diff + 0.65 * glossy("ggx", N, 0.3, 1.3);
+	mul		$tmp26 diff $const20 	%line{22} %argrw{"wrr"}
+	functioncall	$const22 29 	%argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:542
+#     normal  N,
+	closure		$tmp27 $const22 $const21 N $const23 $const9 $const8 $const6 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{542} %argrw{"wrrrrrrr"}
+# subsurface_multi2.osl:22
+#     Ci = color(0.35, 0.5, 0.75) * diff + 0.65 * glossy("ggx", N, 0.3, 1.3);
+	mul		$tmp29 $tmp27 $const24 	%filename{"subsurface_multi2.osl"} %line{22} %argrw{"wrr"}
+	add		Ci $tmp26 $tmp29 	%argrw{"wrr"}
 	end

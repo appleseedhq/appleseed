@@ -102,6 +102,18 @@ namespace
                     "disney_brdf",
                     "osl_disney_brdf");
 
+            m_glossy_beckmann_brdf =
+                create_and_register_glossy_brdf(
+                    GlossyBeckmannID,
+                    "beckmann",
+                    "osl_glossy_beckmann");
+
+            m_glossy_ggx_brdf =
+                create_and_register_glossy_brdf(
+                    GlossyGGXID,
+                    "ggx",
+                    "osl_glossy_ggx");
+
             m_orennayar_brdf =
                 create_and_register_bsdf(
                     OrenNayarID,
@@ -328,6 +340,8 @@ namespace
         auto_release_ptr<BSDF>      m_ashikhmin_shirley_brdf;
         auto_release_ptr<BSDF>      m_diffuse_btdf;
         auto_release_ptr<BSDF>      m_disney_brdf;
+        auto_release_ptr<BSDF>      m_glossy_beckmann_brdf;
+        auto_release_ptr<BSDF>      m_glossy_ggx_brdf;
         auto_release_ptr<BSDF>      m_microfacet_beckmann_brdf;
         auto_release_ptr<BSDF>      m_microfacet_beckmann_btdf;
         auto_release_ptr<BSDF>      m_microfacet_blinn_brdf;
@@ -350,6 +364,20 @@ namespace
 
             m_all_bsdfs[cid] = bsdf.get();
 
+            return bsdf;
+        }
+
+        auto_release_ptr<BSDF> create_and_register_glossy_brdf(
+            const ClosureID         cid,
+            const char*             mdf_name,
+            const char*             name)
+        {
+            auto_release_ptr<BSDF> bsdf =
+                GlossyBRDFFactory().create(
+                    name,
+                    ParamArray().insert("mdf", mdf_name));
+
+            m_all_bsdfs[cid] = bsdf.get();
             return bsdf;
         }
 
