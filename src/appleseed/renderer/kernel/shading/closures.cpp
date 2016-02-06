@@ -68,6 +68,16 @@ namespace
     // Closures.
     //
 
+    // Global ustrings.
+    const OIIO::ustring g_beckmann_str("beckmann");
+    const OIIO::ustring g_blinn_str("blinn");
+    const OIIO::ustring g_ggx_str("ggx");
+
+    const OIIO::ustring g_standard_dipole_profile_str("standard_dipole");
+    const OIIO::ustring g_better_dipole_profile_str("better_dipole");
+    const OIIO::ustring g_directional_dipole_profile_str("directional_dipole");
+    const OIIO::ustring g_normalized_diffusion_profile_str("normalized_diffusion");
+
     typedef void(*convert_closure_fun)(
         CompositeSurfaceClosure&    composite_closure,
         const Basis3d&              shading_basis,
@@ -321,6 +331,91 @@ namespace
         }
     };
 
+    struct GlossyClosure
+    {
+        struct Params
+        {
+            OSL::ustring    dist;
+            OSL::Vec3       N;
+            OSL::Vec3       T;
+            float           roughness;
+            float           anisotropic;
+            float           ior;
+        };
+
+        static const char* name()
+        {
+            return "glossy";
+        }
+
+        static ClosureID id()
+        {
+            return GlossyID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_STRING_PARAM(Params, dist),
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_VECTOR_PARAM(Params, T),
+                CLOSURE_FLOAT_PARAM(Params, roughness),
+                CLOSURE_FLOAT_PARAM(Params, anisotropic),
+                CLOSURE_FLOAT_PARAM(Params, ior),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, 0, 0);
+
+            g_closure_convert_funs[id()] = &convert_closure;
+        }
+
+        static void convert_closure(
+            CompositeSurfaceClosure&    composite_closure,
+            const Basis3d&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight)
+        {
+            const Params* p = reinterpret_cast<const Params*>(osl_params);
+
+            GlossyBRDFInputValues* values;
+
+            if (p->dist == g_ggx_str)
+            {
+                values =
+                    composite_closure.add_closure<GlossyBRDFInputValues>(
+                        GlossyGGXID,
+                        shading_basis,
+                        weight,
+                        Vector3d(p->N),
+                        Vector3d(p->T));
+            }
+            else if (p->dist == g_beckmann_str)
+            {
+                values =
+                    composite_closure.add_closure<GlossyBRDFInputValues>(
+                        GlossyBeckmannID,
+                        shading_basis,
+                        weight,
+                        Vector3d(p->N),
+                        Vector3d(p->T));
+            }
+            else
+            {
+                string msg("invalid microfacet distribution function: ");
+                msg += p->dist.c_str();
+                throw ExceptionOSLRuntimeError(msg.c_str());
+            }
+
+            values->m_reflectance.set(1.0f);
+            values->m_reflectance_multiplier = 1.0;
+            values->m_roughness = max(p->roughness, 0.0001f);
+            values->m_anisotropic = clamp(p->anisotropic, -1.0f, 1.0f);
+            values->m_ior = max(p->ior, 0.001f);
+        }
+    };
+
     struct HoldoutClosure
     {
         struct Params
@@ -347,10 +442,6 @@ namespace
             shading_system.register_closure(name(), id(), params, 0, 0);
         }
     };
-
-    OSL::ustring g_beckmann_mdf_str("beckmann");
-    OSL::ustring g_blinn_mdf_str("blinn");
-    OSL::ustring g_ggx_mdf_str("ggx");
 
     struct MicrofacetClosure
     {
@@ -406,7 +497,7 @@ namespace
             {
                 OSLMicrofacetBRDFInputValues* values;
 
-                if (p->dist == g_blinn_mdf_str)
+                if (p->dist == g_blinn_str)
                 {
                     values =
                         composite_closure.add_closure<OSLMicrofacetBRDFInputValues>(
@@ -416,7 +507,7 @@ namespace
                             Vector3d(p->N),
                             Vector3d(p->T));
                 }
-                else if (p->dist == g_ggx_mdf_str)
+                else if (p->dist == g_ggx_str)
                 {
                     values =
                         composite_closure.add_closure<OSLMicrofacetBRDFInputValues>(
@@ -426,7 +517,7 @@ namespace
                             Vector3d(p->N),
                             Vector3d(p->T));
                 }
-                else if(p->dist == g_beckmann_mdf_str)
+                else if (p->dist == g_beckmann_str)
                 {
                     values =
                         composite_closure.add_closure<OSLMicrofacetBRDFInputValues>(
@@ -463,7 +554,7 @@ namespace
 
                 OSLMicrofacetBTDFInputValues* values;
 
-                if (p->dist == g_ggx_mdf_str)
+                if (p->dist == g_ggx_str)
                 {
                     values =
                         composite_closure.add_closure<OSLMicrofacetBTDFInputValues>(
@@ -473,7 +564,7 @@ namespace
                             Vector3d(p->N),
                             Vector3d(p->T));
                 }
-                else if(p->dist == g_beckmann_mdf_str)
+                else if (p->dist == g_beckmann_str)
                 {
                     values =
                         composite_closure.add_closure<OSLMicrofacetBTDFInputValues>(
@@ -729,11 +820,6 @@ namespace
             values->m_reflectance_multiplier = 1.0;
         }
     };
-
-    OSL::ustring g_standard_dipole_profile_str("standard_dipole");
-    OSL::ustring g_better_dipole_profile_str("better_dipole");
-    OSL::ustring g_directional_dipole_profile_str("directional_dipole");
-    OSL::ustring g_normalized_diffusion_profile_str("normalized_diffusion");
 
     struct SubsurfaceClosure
     {
@@ -1374,6 +1460,7 @@ void register_closures(OSL::ShadingSystem& shading_system)
     register_closure<DebugClosure>(shading_system);
     register_closure<DisneyClosure>(shading_system);
     register_closure<EmissionClosure>(shading_system);
+    register_closure<GlossyClosure>(shading_system);
     register_closure<HoldoutClosure>(shading_system);
     register_closure<MicrofacetClosure>(shading_system);
     register_closure<OrenNayarClosure>(shading_system);
