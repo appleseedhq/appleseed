@@ -198,7 +198,8 @@ double normalized_diffusion_profile(
     const double    d)
 {
     // Equation 2.
-    return (exp(-r / d) + exp(-r / (3.0 * d))) / (8.0 * Pi * d * r);
+    const double exp_r3 = exp(-r / (3.0 * d));
+    return (cube(exp_r3) + exp_r3) / (8.0 * Pi * d * r);
 }
 
 double normalized_diffusion_profile(
@@ -313,7 +314,8 @@ double normalized_diffusion_cdf(
     const double    d)
 {
     // Equation 11.
-    return 1.0 - 0.25 * exp(-r / d) - 0.75 * exp(-r / (3.0 * d));
+    const double exp_r3 = exp(-r / (3.0 * d));
+    return 1.0 - 0.25 * cube(exp_r3) - 0.75 * exp_r3;
 }
 
 double normalized_diffusion_cdf(

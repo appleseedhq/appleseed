@@ -110,6 +110,10 @@ T abs(const T x);
 template <typename T>
 T square(const T x);
 
+// Return the cube of the argument.
+template <typename T>
+T cube(const T x);
+
 // Compile-time exponentiation of the form x^p where p >= 0.
 // Note: swapped template arguments to allow writing pow_int<3>(3.14).
 template <size_t P, typename T>
@@ -317,6 +321,12 @@ template <typename T>
 inline T square(const T x)
 {
     return x * x;
+}
+
+template <typename T>
+inline T cube(const T x)
+{
+    return x * x * x;
 }
 
 template <typename T, size_t P>
