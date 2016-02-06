@@ -685,7 +685,7 @@ inline DynamicSpectrum<T, N>& operator-=(DynamicSpectrum<T, N>& lhs, const Dynam
     else
     {
         DynamicSpectrum<T, N> up_rhs;
-        DynamicSpectrum<float, 31>::upgrade(rhs, up_rhs);
+        DynamicSpectrum<T, N>::upgrade(rhs, up_rhs);
 
         for (size_t i = 0; i < N; ++i)
             lhs[i] -= up_rhs[i];
@@ -742,7 +742,7 @@ inline DynamicSpectrum<T, N>& operator*=(DynamicSpectrum<T, N>& lhs, const Dynam
     else
     {
         DynamicSpectrum<T, N> up_rhs;
-        DynamicSpectrum<float, 31>::upgrade(rhs, up_rhs);
+        DynamicSpectrum<T, N>::upgrade(rhs, up_rhs);
 
         for (size_t i = 0; i < N; ++i)
             lhs[i] *= up_rhs[i];
@@ -835,7 +835,7 @@ inline DynamicSpectrum<T, N>& operator/=(DynamicSpectrum<T, N>& lhs, const Dynam
     else
     {
         DynamicSpectrum<T, N> up_rhs;
-        DynamicSpectrum<float, 31>::upgrade(rhs, up_rhs);
+        DynamicSpectrum<T, N>::upgrade(rhs, up_rhs);
 
         for (size_t i = 0; i < N; ++i)
             lhs[i] /= up_rhs[i];
@@ -1132,17 +1132,17 @@ APPLESEED_FORCE_INLINE renderer::DynamicSpectrum<float, 31> sqrt(const renderer:
     renderer::DynamicSpectrum<float, 31> result;
     result.resize(s.size());
 
-    _mm_store1_ps(&result[ 0], _mm_sqrt_ps(_mm_load_ps(&s[ 0])));
+    _mm_store_ps(&result[ 0], _mm_sqrt_ps(_mm_load_ps(&s[ 0])));
 
     if (s.size() > 3)
     {
-        _mm_store1_ps(&result[ 4], _mm_sqrt_ps(_mm_load_ps(&s[ 4])));
-        _mm_store1_ps(&result[ 8], _mm_sqrt_ps(_mm_load_ps(&s[ 8])));
-        _mm_store1_ps(&result[12], _mm_sqrt_ps(_mm_load_ps(&s[12])));
-        _mm_store1_ps(&result[16], _mm_sqrt_ps(_mm_load_ps(&s[16])));
-        _mm_store1_ps(&result[20], _mm_sqrt_ps(_mm_load_ps(&s[20])));
-        _mm_store1_ps(&result[24], _mm_sqrt_ps(_mm_load_ps(&s[24])));
-        _mm_store1_ps(&result[28], _mm_sqrt_ps(_mm_load_ps(&s[28])));
+        _mm_store_ps(&result[ 4], _mm_sqrt_ps(_mm_load_ps(&s[ 4])));
+        _mm_store_ps(&result[ 8], _mm_sqrt_ps(_mm_load_ps(&s[ 8])));
+        _mm_store_ps(&result[12], _mm_sqrt_ps(_mm_load_ps(&s[12])));
+        _mm_store_ps(&result[16], _mm_sqrt_ps(_mm_load_ps(&s[16])));
+        _mm_store_ps(&result[20], _mm_sqrt_ps(_mm_load_ps(&s[20])));
+        _mm_store_ps(&result[24], _mm_sqrt_ps(_mm_load_ps(&s[24])));
+        _mm_store_ps(&result[28], _mm_sqrt_ps(_mm_load_ps(&s[28])));
     }
 
     return result;
