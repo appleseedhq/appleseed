@@ -44,6 +44,7 @@
 BEGIN_OSL_INCLUDES
 #include "OSL/genclosure.h"
 #include "OSL/oslclosure.h"
+#include "OSL/oslversion.h"
 END_OSL_INCLUDES
 
 // Boost headers.
@@ -1125,7 +1126,11 @@ void CompositeSurfaceClosure::process_closure_tree(
     if (closure == 0)
         return;
 
+#if OSL_LIBRARY_VERSION_CODE >= 10700
+    switch (closure->id)
+#else
     switch (closure->type)
+#endif
     {
       case OSL::ClosureColor::MUL:
         {
@@ -1143,7 +1148,7 @@ void CompositeSurfaceClosure::process_closure_tree(
         }
         break;
 
-      case OSL::ClosureColor::COMPONENT:
+      default:
         {
             const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
             const Color3f w = weight * Color3f(c->w);
@@ -1152,8 +1157,6 @@ void CompositeSurfaceClosure::process_closure_tree(
                 g_closure_convert_funs[c->id](*this, original_shading_basis, c->data(), w);
         }
         break;
-
-      assert_otherwise;
     }
 }
 
@@ -1178,7 +1181,11 @@ void CompositeSubsurfaceClosure::process_closure_tree(
     if (closure == 0)
         return;
 
+#if OSL_LIBRARY_VERSION_CODE >= 10700
+    switch (closure->id)
+#else
     switch (closure->type)
+#endif
     {
       case OSL::ClosureColor::MUL:
         {
@@ -1195,7 +1202,7 @@ void CompositeSubsurfaceClosure::process_closure_tree(
         }
         break;
 
-      case OSL::ClosureColor::COMPONENT:
+      default:
         {
             const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
 
@@ -1213,8 +1220,6 @@ void CompositeSubsurfaceClosure::process_closure_tree(
             }
         }
         break;
-
-      assert_otherwise;
     }
 }
 
@@ -1253,7 +1258,11 @@ void CompositeEmissionClosure::process_closure_tree(
     if (closure == 0)
         return;
 
+#if OSL_LIBRARY_VERSION_CODE >= 10700
+    switch (closure->id)
+#else
     switch (closure->type)
+#endif
     {
       case OSL::ClosureColor::MUL:
         {
@@ -1270,7 +1279,7 @@ void CompositeEmissionClosure::process_closure_tree(
         }
         break;
 
-      case OSL::ClosureColor::COMPONENT:
+      default:
         {
             const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
 
@@ -1278,8 +1287,6 @@ void CompositeEmissionClosure::process_closure_tree(
                 m_total_weight += weight * Color3f(c->w);
         }
         break;
-
-      assert_otherwise;
     }
 }
 
@@ -1296,7 +1303,11 @@ namespace
     {
         if (closure)
         {
+#if OSL_LIBRARY_VERSION_CODE >= 10700
+            switch (closure->id)
+#else
             switch (closure->type)
+#endif
             {
               case OSL::ClosureColor::MUL:
                 {
@@ -1313,14 +1324,12 @@ namespace
                 }
                 break;
 
-              case OSL::ClosureColor::COMPONENT:
+              default:
                 {
                     const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
                     return c->id == closure_id ? Color3f(c->w) : Color3f(0.0f);
                 }
                 break;
-
-              assert_otherwise;
             }
         }
 

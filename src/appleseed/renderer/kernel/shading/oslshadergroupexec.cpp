@@ -199,7 +199,11 @@ Color3f OSLShaderGroupExec::execute_background(
     sg.raytype = VisibilityFlags::CameraRay;
 
     m_osl_shading_system.execute(
+#if OSL_LIBRARY_VERSION_CODE >= 10700
+        m_osl_shading_context,
+#else
         *m_osl_shading_context,
+#endif
         *shader_group.shader_group_ref(),
         sg);
 
@@ -220,7 +224,11 @@ void OSLShaderGroupExec::do_execute(
         m_osl_shading_system.renderer());
 
     m_osl_shading_system.execute(
+#if OSL_LIBRARY_VERSION_CODE >= 10700
+        m_osl_shading_context,
+#else
         *m_osl_shading_context,
+#endif
         *shader_group.shader_group_ref(),
         shading_point.get_osl_shader_globals());
 }
