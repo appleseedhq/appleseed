@@ -176,6 +176,12 @@ template <typename T, size_t N> renderer::DynamicSpectrum<T, N> clamp_low(const 
 // Clamp the argument to (-infinity, max].
 template <typename T, size_t N> renderer::DynamicSpectrum<T, N> clamp_high(const renderer::DynamicSpectrum<T, N>& s, const T max);
 
+// Component-wise linear interpolation between a and b.
+template <typename T, size_t N> renderer::DynamicSpectrum<T, N> lerp(
+    const renderer::DynamicSpectrum<T, N>& a,
+    const renderer::DynamicSpectrum<T, N>& b,
+    const renderer::DynamicSpectrum<T, N>& t);
+
 // Return the smallest or largest signed component of a spectrum.
 template <typename T, size_t N> T min_value(const renderer::DynamicSpectrum<T, N>& s);
 template <typename T, size_t N> T max_value(const renderer::DynamicSpectrum<T, N>& s);
@@ -971,6 +977,24 @@ inline renderer::DynamicSpectrum<T, N> clamp_high(const renderer::DynamicSpectru
 
     for (size_t i = 0, e = s.size(); i < e; ++i)
         result[i] = std::min(s[i], max);
+
+    return result;
+}
+
+template <typename T, size_t N>
+inline renderer::DynamicSpectrum<T, N> lerp(
+    const renderer::DynamicSpectrum<T, N>& a,
+    const renderer::DynamicSpectrum<T, N>& b,
+    const renderer::DynamicSpectrum<T, N>& t)
+{
+    assert(a.size() == b.size());
+    assert(a.size() == t.size());
+
+    renderer::DynamicSpectrum<T, N> result;
+    result.resize(a.size());
+
+    for (size_t i = 0, e = a.size(); i < e; ++i)
+        result[i] = (a[i] * (T(1) - t[i])) + (b[i] * t[i]);
 
     return result;
 }
