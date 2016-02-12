@@ -66,7 +66,6 @@ namespace renderer
 
 namespace
 {
-
     template <typename T>
     class FresnelFriendlyConductorFun
     {

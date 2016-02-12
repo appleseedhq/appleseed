@@ -323,7 +323,7 @@ TEST_SUITE(Foundation_Math_Fresnel)
     }
 
     // Source: http://refractiveindex.info
-    // Wavelenghts: 645, 526 and 444 nm.
+    // Wavelengths: 645, 526 and 444 nm.
     static const double CopperN[3] = {0.2804, 0.8541, 1.3284};
     static const double CopperK[3] = {3.5586, 2.4519, 2.2949};
 
