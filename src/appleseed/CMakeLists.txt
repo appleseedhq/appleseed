@@ -1261,6 +1261,8 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/kelemenbrdf.h
     renderer/modeling/bsdf/lambertianbrdf.cpp
     renderer/modeling/bsdf/lambertianbrdf.h
+    renderer/modeling/bsdf/metalbrdf.cpp
+    renderer/modeling/bsdf/metalbrdf.h
     renderer/modeling/bsdf/microfacetbrdf.cpp
     renderer/modeling/bsdf/microfacetbrdf.h
     renderer/modeling/bsdf/microfacethelper.h

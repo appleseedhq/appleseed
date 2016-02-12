@@ -345,7 +345,7 @@ namespace
 
         static const char* name()
         {
-            return "glossy";
+            return "as_glossy";
         }
 
         static ClosureID id()
@@ -590,6 +590,93 @@ namespace
             {
                 throw ExceptionOSLRuntimeError("invalid microfacet refraction mode.");
             }
+        }
+    };
+
+    struct MetalClosure
+    {
+        struct Params
+        {
+            OSL::ustring    dist;
+            OSL::Vec3       N;
+            OSL::Vec3       T;
+            OSL::Color3     normal_reflectance;
+            OSL::Color3     edge_tint;
+            float           roughness;
+            float           anisotropic;
+        };
+
+        static const char* name()
+        {
+            return "as_metal";
+        }
+
+        static ClosureID id()
+        {
+            return MetalID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_STRING_PARAM(Params, dist),
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_VECTOR_PARAM(Params, T),
+                CLOSURE_COLOR_PARAM(Params, normal_reflectance),
+                CLOSURE_COLOR_PARAM(Params, edge_tint),
+                CLOSURE_FLOAT_PARAM(Params, roughness),
+                CLOSURE_FLOAT_PARAM(Params, anisotropic),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, 0, 0);
+
+            g_closure_convert_funs[id()] = &convert_closure;
+        }
+
+        static void convert_closure(
+            CompositeSurfaceClosure&    composite_closure,
+            const Basis3d&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight)
+        {
+            const Params* p = reinterpret_cast<const Params*>(osl_params);
+
+            MetalBRDFInputValues* values;
+
+            if (p->dist == g_ggx_str)
+            {
+                values =
+                    composite_closure.add_closure<MetalBRDFInputValues>(
+                        MetalGGXID,
+                        shading_basis,
+                        weight,
+                        Vector3d(p->N),
+                        Vector3d(p->T));
+            }
+            else if (p->dist == g_beckmann_str)
+            {
+                values =
+                    composite_closure.add_closure<MetalBRDFInputValues>(
+                        MetalBeckmannID,
+                        shading_basis,
+                        weight,
+                        Vector3d(p->N),
+                        Vector3d(p->T));
+            }
+            else
+            {
+                string msg("invalid microfacet distribution function: ");
+                msg += p->dist.c_str();
+                throw ExceptionOSLRuntimeError(msg.c_str());
+            }
+
+            values->m_normal_reflectance = Color3f(p->normal_reflectance);
+            values->m_edge_tint = Color3f(p->edge_tint);
+            values->m_reflectance_multiplier = 1.0;
+            values->m_roughness = max(p->roughness, 0.0001f);
+            values->m_anisotropic = clamp(p->anisotropic, -1.0f, 1.0f);
         }
     };
 
@@ -1462,6 +1549,7 @@ void register_closures(OSL::ShadingSystem& shading_system)
     register_closure<EmissionClosure>(shading_system);
     register_closure<GlossyClosure>(shading_system);
     register_closure<HoldoutClosure>(shading_system);
+    register_closure<MetalClosure>(shading_system);
     register_closure<MicrofacetClosure>(shading_system);
     register_closure<OrenNayarClosure>(shading_system);
     register_closure<ReflectionClosure>(shading_system);

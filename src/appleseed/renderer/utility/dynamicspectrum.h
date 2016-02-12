@@ -176,6 +176,12 @@ template <typename T, size_t N> renderer::DynamicSpectrum<T, N> clamp_low(const 
 // Clamp the argument to (-infinity, max].
 template <typename T, size_t N> renderer::DynamicSpectrum<T, N> clamp_high(const renderer::DynamicSpectrum<T, N>& s, const T max);
 
+// Component-wise linear interpolation between a and b.
+template <typename T, size_t N> renderer::DynamicSpectrum<T, N> lerp(
+    const renderer::DynamicSpectrum<T, N>& a,
+    const renderer::DynamicSpectrum<T, N>& b,
+    const renderer::DynamicSpectrum<T, N>& t);
+
 // Return the smallest or largest signed component of a spectrum.
 template <typename T, size_t N> T min_value(const renderer::DynamicSpectrum<T, N>& s);
 template <typename T, size_t N> T max_value(const renderer::DynamicSpectrum<T, N>& s);
@@ -974,6 +980,63 @@ inline renderer::DynamicSpectrum<T, N> clamp_high(const renderer::DynamicSpectru
 
     return result;
 }
+
+template <typename T, size_t N>
+inline renderer::DynamicSpectrum<T, N> lerp(
+    const renderer::DynamicSpectrum<T, N>& a,
+    const renderer::DynamicSpectrum<T, N>& b,
+    const renderer::DynamicSpectrum<T, N>& t)
+{
+    assert(a.size() == b.size());
+    assert(a.size() == t.size());
+
+    renderer::DynamicSpectrum<T, N> result;
+    result.resize(a.size());
+
+    for (size_t i = 0, e = a.size(); i < e; ++i)
+        result[i] = foundation::lerp(a[i], b[i], t[i]);
+
+    return result;
+}
+
+#ifdef APPLESEED_USE_SSE
+
+template <>
+APPLESEED_FORCE_INLINE renderer::DynamicSpectrum<float, 31> lerp(
+    const renderer::DynamicSpectrum<float, 31>& a,
+    const renderer::DynamicSpectrum<float, 31>& b,
+    const renderer::DynamicSpectrum<float, 31>& t)
+{
+    assert(a.size() == b.size());
+    assert(a.size() == t.size());
+
+    renderer::DynamicSpectrum<float, 31> result;
+    result.resize(a.size());
+
+    __m128 one4 = _mm_set1_ps(1.0f);
+
+    __m128 t4 = _mm_load_ps(&t[0]);
+    __m128 one_minus_t4 = _mm_sub_ps(one4, t4);
+    __m128 x = _mm_mul_ps(_mm_load_ps(&a[0]), one_minus_t4);
+    __m128 y = _mm_mul_ps(_mm_load_ps(&b[0]), t4);
+    _mm_store_ps(&result[0], _mm_add_ps(x, y));
+
+    if (a.size() > 3)
+    {
+        for (size_t i = 4; i < a.StoredSamples; i += 4)
+        {
+            t4 = _mm_load_ps(&t[i]);
+            one_minus_t4 = _mm_sub_ps(one4, t4);
+            x = _mm_mul_ps(_mm_load_ps(&a[i]), one_minus_t4);
+            y = _mm_mul_ps(_mm_load_ps(&b[i]), t4);
+            _mm_store_ps(&result[i], _mm_add_ps(x, y));
+        }
+    }
+
+    return result;
+}
+
+#endif  // APPLESEED_USE_SSE
 
 template <typename T, size_t N>
 inline T min_value(const renderer::DynamicSpectrum<T, N>& s)

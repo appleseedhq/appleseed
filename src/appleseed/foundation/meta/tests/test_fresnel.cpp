@@ -321,4 +321,211 @@ TEST_SUITE(Foundation_Math_Fresnel)
         fresnel_transmittance_dielectric(tr, Eta, Eps); EXPECT_FEQ(0.0, tr);
         fresnel_transmittance_dielectric(tr, Eta, 1.0); EXPECT_EQ(1.0, tr);
     }
+
+    // Source: http://refractiveindex.info
+    // Wavelengths: 645, 526 and 444 nm.
+    static const double CopperN[3] = {0.2804, 0.8541, 1.3284};
+    static const double CopperK[3] = {3.5586, 2.4519, 2.2949};
+
+    TEST_CASE(FresnelReflectanceConductor_GivenCosThetaIsZero_ReturnsOne)
+    {
+        for (size_t i = 0; i < 3; ++i)
+        {
+            double result;
+            fresnel_reflectance_conductor(result, CopperN[i], CopperK[i], 0.0);
+            EXPECT_FEQ(1.0, result);
+        }
+    }
+
+    TEST_CASE(FresnelReflectanceConductor_GivenCosThetaIsZero_ReturnsNormalReflectance)
+    {
+        for (size_t i = 0; i < 3; ++i)
+        {
+            double result;
+            fresnel_reflectance_conductor(
+                result,
+                CopperN[i],
+                CopperK[i],
+                1.0);
+
+            const double expected =
+                    (square(CopperN[i] - 1.0) + square(CopperK[i])) /
+                    (square(CopperN[i] + 1.0) + square(CopperK[i]));
+            EXPECT_FEQ(expected, result);
+        }
+    }
+
+    TEST_CASE(PlotFresnelConductorReflectance)
+    {
+        GnuplotFile plotfile;
+        plotfile.set_title("Fresnel Reflectance for a Conductor (copper)");
+        plotfile.set_xlabel("Theta");
+        plotfile.set_ylabel("Reflectance");
+        plotfile.set_xrange(0.0, 90.0);
+        plotfile.set_yrange(0.3, 1.0);
+
+        const size_t PointCount = 256;
+        vector<Vector2d> red_points, green_points, blue_points;
+
+        for (size_t i = 0; i < PointCount; ++i)
+        {
+            const double theta_i = fit<size_t, double>(i, 0, PointCount - 1, 0.0, 90.0);
+            const double cos_theta_i = cos(deg_to_rad(theta_i));
+
+            double result;
+            fresnel_reflectance_conductor(
+                result,
+                CopperN[0],
+                CopperK[0],
+                cos_theta_i);
+            red_points.push_back(Vector2d(theta_i, result));
+
+            fresnel_reflectance_conductor(
+                result,
+                CopperN[1],
+                CopperK[1],
+                cos_theta_i);
+            green_points.push_back(Vector2d(theta_i, result));
+
+            fresnel_reflectance_conductor(
+                result,
+                CopperN[2],
+                CopperK[2],
+                cos_theta_i);
+            blue_points.push_back(Vector2d(theta_i, result));
+        }
+
+        plotfile
+            .new_plot()
+            .set_points(red_points)
+            .set_title("R")
+            .set_color("red");
+
+        plotfile
+            .new_plot()
+            .set_points(green_points)
+            .set_title("G")
+            .set_color("green");
+
+        plotfile
+            .new_plot()
+            .set_points(blue_points)
+            .set_title("B")
+            .set_color("blue");
+
+        plotfile.write("unit tests/outputs/test_fresnel_conductor_reflectance.gnuplot");
+    }
+
+    TEST_CASE(ArtistFriendlyFresnelConductorReparamRoundtrip)
+    {
+        // Presets from alShaders:
+        // https://bitbucket.org/anderslanglands/alshaders/
+        static const double R[24] =
+        {
+            0.914, 0.921, 0.921,
+            0.548, 0.549, 0.570,
+            0.985, 0.649, 0.546,
+            0.990, 0.791, 0.346,
+            0.679, 0.642, 0.582,
+            0.970, 0.959, 0.924,
+            0.550, 0.501, 0.447,
+            0.504, 0.495, 0.475
+        };
+
+        static const double G[24] =
+        {
+            0.971, 0.979, 0.989,
+            0.579, 0.598, 0.620,
+            0.996, 0.918, 0.859,
+            0.990, 0.980, 0.792,
+            0.785, 0.789, 0.783,
+            0.999, 0.999, 0.998,
+            0.689, 0.683, 0.693,
+            0.403, 0.419, 0.422
+        };
+
+        for (size_t i = 0; i < 24; ++i)
+        {
+            double n, k;
+            artist_friendly_fresnel_conductor_reparameterization(
+                R[i],
+                G[i],
+                n,
+                k);
+
+            double r, g;
+            artist_friendly_fresnel_conductor_inverse_reparameterization(
+                n,
+                k,
+                r,
+                g);
+
+            EXPECT_FEQ(R[i], r);
+            EXPECT_FEQ(G[i], g);
+        }
+    }
+
+    TEST_CASE(PlotArtistFriendlyFresnelConductor)
+    {
+        GnuplotFile plotfile;
+        plotfile.set_title("Fresnel Reflectance for a Conductor, Artist friendly reparameterization.");
+        plotfile.set_xlabel("Theta");
+        plotfile.set_ylabel("Reflectance");
+        plotfile.set_xrange(0.0, 90.0);
+        plotfile.set_yrange(0.3, 1.0);
+
+        const double normal_reflectance = 0.4;
+        static const double edge_tint[3] = {1.0, 0.5, 0.1};
+
+        const size_t PointCount = 256;
+        vector<Vector2d> red_points, green_points, blue_points;
+
+        for (size_t i = 0; i < PointCount; ++i)
+        {
+            const double theta_i = fit<size_t, double>(i, 0, PointCount - 1, 0.0, 90.0);
+            const double cos_theta_i = cos(deg_to_rad(theta_i));
+
+            double result;
+            artist_friendly_fresnel_reflectance_conductor(
+                result,
+                normal_reflectance,
+                edge_tint[0],
+                cos_theta_i);
+            red_points.push_back(Vector2d(theta_i, result));
+
+            artist_friendly_fresnel_reflectance_conductor(
+                result,
+                normal_reflectance,
+                edge_tint[1],
+                cos_theta_i);
+            green_points.push_back(Vector2d(theta_i, result));
+
+            artist_friendly_fresnel_reflectance_conductor(
+                result,
+                normal_reflectance,
+                edge_tint[2],
+                cos_theta_i);
+            blue_points.push_back(Vector2d(theta_i, result));
+        }
+
+        plotfile
+            .new_plot()
+            .set_points(red_points)
+            .set_title("R")
+            .set_color("red");
+
+        plotfile
+            .new_plot()
+            .set_points(green_points)
+            .set_title("G")
+            .set_color("green");
+
+        plotfile
+            .new_plot()
+            .set_points(blue_points)
+            .set_title("B")
+            .set_color("blue");
+
+        plotfile.write("unit tests/outputs/test_artist_friendly_fresnel_conductor_reflectance.gnuplot");
+    }
 }
