@@ -132,7 +132,6 @@ void normal_reflectance_dielectric(
 //
 // Fresnel equations for conductor materials.
 //
-//
 // References:
 //
 //   [1] Physically Based Rendering, first edition.
@@ -140,16 +139,14 @@ void normal_reflectance_dielectric(
 //       Ole Gulbrandsen
 //       http://jcgt.org/published/0003/04/03/paper.pdf
 //
-//
-
 
 // Compute the Fresnel reflectance for a conductor for unpolarized light.
 // This approximation assumes an air - conductor interface.
 template <typename SpectrumType, typename T>
 void fresnel_reflectance_conductor(
     SpectrumType&           reflectance,
-    const SpectrumType&     n,
-    const SpectrumType&     k,
+    const SpectrumType&     n,                  // refractive index.
+    const SpectrumType&     k,                  // extinction coefficient.
     const T                 cos_theta_i);
 
 // Compute the refractive index and extinction coefficients for a conductor
@@ -158,15 +155,15 @@ template <typename SpectrumType>
 inline void artist_friendly_fresnel_conductor_reparameterization(
     const SpectrumType&     normal_reflectance,
     const SpectrumType&     edge_tint,
-    SpectrumType&           n,
-    SpectrumType&           k);
+    SpectrumType&           n,                  // refractive index.
+    SpectrumType&           k);                 // extinction coefficient.
 
 // Compute the normal reflectivity and edge tint for a conductor
 // using the inverse of the reparameterization defined in [2].
 template <typename SpectrumType>
 inline void artist_friendly_fresnel_conductor_inverse_reparameterization(
-    const SpectrumType&     n,
-    const SpectrumType&     k,
+    const SpectrumType&     n,                  // refractive index.
+    const SpectrumType&     k,                  // extinction coefficient.
     SpectrumType&           normal_reflectance,
     SpectrumType&           edge_tint);
 
