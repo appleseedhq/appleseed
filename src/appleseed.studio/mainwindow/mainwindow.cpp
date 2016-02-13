@@ -111,13 +111,16 @@ namespace studio {
 
 namespace
 {
-    const int UserInterfaceVersion = 1;
+    const char* SettingsOrganization = "com.appleseed.studio";
+
+    const char* SettingsRecentFilesEntry = "appleseed.studio Recent Files";
+    const char* SettingsRecentFileList = "recent_file_list";
     const int MaxRecentlyOpenedFiles = 15;
-    const char* SettingsOrgString = "com.appleseed.studio";
-    const char* SettingsRecentFilesEntryString = "appleseed.studio Recent Files";
-    const char* SettingsRecentFileListString = "recent_file_list";
-    const char* SettingsUiStateEntryString = "appleseed.studio UI State";
-    const char* SettingsUiStateSavedString = "ui_state";
+
+    const char* SettingsUIStateEntry = "appleseed.studio UI State";
+    const char* SettingsWindowGeometry = "window_geometry";
+    const char* SettingsUIState = "ui_state";
+    const int SettingsUIStateVersion = 1;
 }
 
 MainWindow::MainWindow(QWidget* parent)
@@ -149,7 +152,6 @@ MainWindow::MainWindow(QWidget* parent)
     update_workspace();
 
     build_minimize_buttons();
-    showMaximized();
 
     setAcceptDrops(true);
 }
@@ -397,8 +399,8 @@ void MainWindow::build_recent_files_menu()
         m_recently_opened.push_back(action);
     }
 
-    QSettings settings(SettingsOrgString, SettingsRecentFilesEntryString);
-    QStringList files = settings.value(SettingsRecentFileListString).toStringList();
+    QSettings settings(SettingsOrganization, SettingsRecentFilesEntry);
+    QStringList files = settings.value(SettingsRecentFileList).toStringList();
     update_recent_files_menu(files);
 
     m_ui->menu_open_recent->addSeparator();
@@ -410,15 +412,15 @@ void MainWindow::build_recent_files_menu()
 
 void MainWindow::update_recent_files_menu(const QString& filepath)
 {
-    QSettings settings(SettingsOrgString, SettingsRecentFilesEntryString);
-    QStringList files = settings.value(SettingsRecentFileListString).toStringList();
+    QSettings settings(SettingsOrganization, SettingsRecentFilesEntry);
+    QStringList files = settings.value(SettingsRecentFileList).toStringList();
     files.removeAll(filepath);
     files.prepend(filepath);
 
     while (files.size() > MaxRecentlyOpenedFiles)
         files.removeLast();
 
-    settings.setValue(SettingsRecentFileListString, files);
+    settings.setValue(SettingsRecentFileList, files);
     update_recent_files_menu(files);
 }
 
@@ -721,14 +723,16 @@ void MainWindow::restore_state_after_project_open()
 
 void MainWindow::save_ui_state()
 {
-    QSettings settings(SettingsOrgString, SettingsUiStateEntryString);
-    settings.setValue(SettingsUiStateSavedString, saveState(UserInterfaceVersion));
+    QSettings settings(SettingsOrganization, SettingsUIStateEntry);
+    settings.setValue(SettingsWindowGeometry, saveGeometry());
+    settings.setValue(SettingsUIState, saveState(SettingsUIStateVersion));
 }
 
 void MainWindow::restore_ui_state()
 {
-    const QSettings settings(SettingsOrgString, SettingsUiStateEntryString);
-    restoreState(settings.value(SettingsUiStateSavedString).toByteArray(), UserInterfaceVersion);
+    const QSettings settings(SettingsOrganization, SettingsUIStateEntry);
+    restoreGeometry(settings.value(SettingsWindowGeometry).toByteArray());
+    restoreState(settings.value(SettingsUIState).toByteArray(), SettingsUIStateVersion);
 }
 
 void MainWindow::recreate_render_widgets()
@@ -1112,9 +1116,9 @@ void MainWindow::slot_open_recent()
 
 void MainWindow::slot_clear_open_recent_files_menu()
 {
-    QSettings settings(SettingsOrgString, SettingsRecentFilesEntryString);
+    QSettings settings(SettingsOrganization, SettingsRecentFilesEntry);
     QStringList files;
-    settings.setValue(SettingsRecentFileListString, files);
+    settings.setValue(SettingsRecentFileList, files);
     update_recent_files_menu(files);
 }
 

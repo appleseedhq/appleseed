@@ -462,17 +462,17 @@ inline void fresnel_reflectance_conductor(
     const SpectrumType n2 = n * n;
     const SpectrumType k2 = k * k;
     const SpectrumType n2_plus_k2 = n2 + k2;
-    const SpectrumType n_2cos_theta = n * ValueType(2.0 * cos_theta);
+    const SpectrumType n_2cos_theta = n * ValueType(2.0) * static_cast<ValueType>(cos_theta);
 
     // Parallel.
-    const SpectrumType n2_plus_k2_cos_theta2 = n2_plus_k2 * ValueType(cos_theta2);
+    const SpectrumType n2_plus_k2_cos_theta2 = n2_plus_k2 * static_cast<ValueType>(cos_theta2);
     const SpectrumType one(1.0);
     reflectance =
         (n2_plus_k2_cos_theta2 - n_2cos_theta + one) /
         (n2_plus_k2_cos_theta2 + n_2cos_theta + one);
 
     // Perpendicular.
-    const SpectrumType cos_t(cos_theta);
+    const SpectrumType cos_t(static_cast<ValueType>(cos_theta));
     reflectance +=
         (n2_plus_k2 - n_2cos_theta + cos_t) /
         (n2_plus_k2 + n_2cos_theta + cos_t);
