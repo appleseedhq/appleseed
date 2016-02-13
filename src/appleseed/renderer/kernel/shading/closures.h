@@ -35,6 +35,8 @@
 #include "renderer/modeling/bsdf/ashikhminbrdf.h"
 #include "renderer/modeling/bsdf/diffusebtdf.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
+#include "renderer/modeling/bsdf/glossybrdf.h"
+#include "renderer/modeling/bsdf/metalbrdf.h"
 #include "renderer/modeling/bsdf/orennayarbrdf.h"
 #include "renderer/modeling/bsdf/sheenbrdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
@@ -104,6 +106,14 @@ enum ClosureID
     MicrofacetGGXReflectionID,
     MicrofacetBeckmannRefractionID,
     MicrofacetGGXRefractionID,
+
+    GlossyID,
+    GlossyBeckmannID,
+    GlossyGGXID,
+
+    MetalID,
+    MetalBeckmannID,
+    MetalGGXID,
 
     // BSSRDF closures.
     SubsurfaceID,
@@ -185,6 +195,8 @@ class APPLESEED_ALIGN(16) CompositeClosure
         DiffuseBTDFInputValues,
         DipoleBSSRDFInputValues,
         DisneyBRDFInputValues,
+        GlossyBRDFInputValues,
+        MetalBRDFInputValues,
 #ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
         NormalizedDiffusionBSSRDFInputValues,
 #endif

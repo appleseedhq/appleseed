@@ -42,6 +42,7 @@
 #include "foundation/platform/oslheaderguards.h"
 BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
+#include "OSL/oslversion.h"
 END_OSL_INCLUDES
 
 // Forward declarations.

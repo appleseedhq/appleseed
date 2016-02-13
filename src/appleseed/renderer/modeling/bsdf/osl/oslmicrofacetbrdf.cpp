@@ -139,6 +139,11 @@ namespace
             const bool          cosine_mult,
             BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
+            const Vector3d& n = sample.get_shading_basis().get_normal();
+            const double cos_on = std::min(dot(sample.m_outgoing.get_value(), n), 1.0);
+            if (cos_on < 0.0)
+                return;
+
             const InputValues* values = static_cast<const InputValues*>(data);
             MicrofacetBRDFHelper<double>::sample(
                 sampling_context,
@@ -146,6 +151,7 @@ namespace
                 values->m_ax,
                 values->m_ay,
                 NoFresnel(),
+                cos_on,
                 sample);
         }
 
@@ -160,6 +166,16 @@ namespace
             const int           modes,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
+            if (!ScatteringMode::has_glossy(modes))
+                return 0.0;
+
+            // No reflection below the shading surface.
+            const Vector3d& n = shading_basis.get_normal();
+            const double cos_in = dot(incoming, n);
+            const double cos_on = dot(outgoing, n);
+            if (cos_in < 0.0 || cos_on < 0.0)
+                return 0.0;
+
             const InputValues* values = static_cast<const InputValues*>(data);
             return MicrofacetBRDFHelper<double>::evaluate(
                 *m_mdf,
@@ -168,8 +184,9 @@ namespace
                 shading_basis,
                 outgoing,
                 incoming,
-                modes,
                 NoFresnel(),
+                cos_in,
+                cos_on,
                 value);
         }
 
@@ -181,6 +198,16 @@ namespace
             const Vector3d&     incoming,
             const int           modes) const APPLESEED_OVERRIDE
         {
+            if (!ScatteringMode::has_glossy(modes))
+                return 0.0;
+
+            // No reflection below the shading surface.
+            const Vector3d& n = shading_basis.get_normal();
+            const double cos_in = dot(incoming, n);
+            const double cos_on = dot(outgoing, n);
+            if (cos_in < 0.0 || cos_on < 0.0)
+                return 0.0;
+
             const InputValues* values = static_cast<const InputValues*>(data);
             return MicrofacetBRDFHelper<double>::pdf(
                 *m_mdf,
@@ -188,8 +215,7 @@ namespace
                 values->m_ay,
                 shading_basis,
                 outgoing,
-                incoming,
-                modes);
+                incoming);
         }
 
       private:

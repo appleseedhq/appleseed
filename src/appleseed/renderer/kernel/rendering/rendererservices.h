@@ -295,11 +295,12 @@ class RendererServices
         OSL::ShaderGlobals*         sg,
         void*                       val) APPLESEED_OVERRIDE;
 
-    // Does the current object have the named user-data associated with it?
+#if OSL_LIBRARY_VERSION_CODE < 10700
     virtual bool has_userdata(
-        OIIO::ustring               name,
-        OIIO::TypeDesc              type,
-        OSL::ShaderGlobals*         sg) APPLESEED_OVERRIDE;
+        OIIO::ustring       name,
+        OIIO::TypeDesc      type,
+        OSL::ShaderGlobals* sg) APPLESEED_OVERRIDE;
+#endif
 
   private:
     // This code based on OSL's test renderer.

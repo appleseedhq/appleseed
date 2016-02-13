@@ -162,6 +162,11 @@ namespace
             const bool          cosine_mult,
             BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
+            const Vector3d& n = sample.get_shading_basis().get_normal();
+            const double cos_on = std::min(dot(sample.m_outgoing.get_value(), n), 1.0);
+            if (cos_on < 0.0)
+                return;
+
             const InputValues* values = static_cast<const InputValues*>(data);
             const double glossiness = values->m_glossiness * values->m_glossiness_multiplier;
 
@@ -177,6 +182,7 @@ namespace
                         e,
                         e,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        cos_on,
                         sample);
                 }
                 break;
@@ -191,6 +197,7 @@ namespace
                         a,
                         a,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        cos_on,
                         sample);
                 }
                 break;
@@ -205,6 +212,7 @@ namespace
                         a,
                         a,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        cos_on,
                         sample);
                 }
                 break;
@@ -219,6 +227,7 @@ namespace
                         a,
                         a,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        cos_on,
                         sample);
                 }
                 break;
@@ -240,6 +249,16 @@ namespace
             const int           modes,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
+            if (!ScatteringMode::has_glossy(modes))
+                return 0.0;
+
+            // No reflection below the shading surface.
+            const Vector3d& n = shading_basis.get_normal();
+            const double cos_in = dot(incoming, n);
+            const double cos_on = dot(outgoing, n);
+            if (cos_in < 0.0 || cos_on < 0.0)
+                return 0.0;
+
             const InputValues* values = static_cast<const InputValues*>(data);
             const double glossiness = values->m_glossiness * values->m_glossiness_multiplier;
 
@@ -258,8 +277,9 @@ namespace
                         shading_basis,
                         outgoing,
                         incoming,
-                        modes,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        cos_in,
+                        cos_on,
                         value);
                 }
                 break;
@@ -275,8 +295,9 @@ namespace
                         shading_basis,
                         outgoing,
                         incoming,
-                        modes,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        cos_in,
+                        cos_on,
                         value);
                 }
                 break;
@@ -292,8 +313,9 @@ namespace
                         shading_basis,
                         outgoing,
                         incoming,
-                        modes,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        cos_in,
+                        cos_on,
                         value);
                 }
                 break;
@@ -309,8 +331,9 @@ namespace
                         shading_basis,
                         outgoing,
                         incoming,
-                        modes,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        cos_in,
+                        cos_on,
                         value);
                 }
                 break;
@@ -330,6 +353,16 @@ namespace
             const Vector3d&     incoming,
             const int           modes) const APPLESEED_OVERRIDE
         {
+            if (!ScatteringMode::has_glossy(modes))
+                return 0.0;
+
+            // No reflection below the shading surface.
+            const Vector3d& n = shading_basis.get_normal();
+            const double cos_in = dot(incoming, n);
+            const double cos_on = dot(outgoing, n);
+            if (cos_in < 0.0 || cos_on < 0.0)
+                return 0.0;
+
             const InputValues* values = static_cast<const InputValues*>(data);
             const double glossiness = values->m_glossiness * values->m_glossiness_multiplier;
 
@@ -345,8 +378,7 @@ namespace
                         e,
                         shading_basis,
                         outgoing,
-                        incoming,
-                        modes);
+                        incoming);
                 }
                 break;
 
@@ -360,8 +392,7 @@ namespace
                         a,
                         shading_basis,
                         outgoing,
-                        incoming,
-                        modes);
+                        incoming);
                 }
                 break;
 
@@ -375,8 +406,7 @@ namespace
                         a,
                         shading_basis,
                         outgoing,
-                        incoming,
-                        modes);
+                        incoming);
                 }
                 break;
 
@@ -390,8 +420,7 @@ namespace
                         a,
                         shading_basis,
                         outgoing,
-                        incoming,
-                        modes);
+                        incoming);
                 }
                 break;
 

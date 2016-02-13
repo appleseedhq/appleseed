@@ -130,6 +130,54 @@ void normal_reflectance_dielectric(
 
 
 //
+// Fresnel equations for conductor materials.
+//
+// References:
+//
+//   [1] Physically Based Rendering, first edition.
+//   [2] Artist Friendly Metallic Fresnel.
+//       Ole Gulbrandsen
+//       http://jcgt.org/published/0003/04/03/paper.pdf
+//
+
+// Compute the Fresnel reflectance for a conductor for unpolarized light.
+// This approximation assumes an air - conductor interface.
+template <typename SpectrumType, typename T>
+void fresnel_reflectance_conductor(
+    SpectrumType&           reflectance,
+    const SpectrumType&     n,                  // refractive index.
+    const SpectrumType&     k,                  // extinction coefficient.
+    const T                 cos_theta_i);
+
+// Compute the refractive index and extinction coefficients for a conductor
+// using the reparameterization defined in [2].
+template <typename SpectrumType>
+inline void artist_friendly_fresnel_conductor_reparameterization(
+    const SpectrumType&     normal_reflectance,
+    const SpectrumType&     edge_tint,
+    SpectrumType&           n,                  // refractive index.
+    SpectrumType&           k);                 // extinction coefficient.
+
+// Compute the normal reflectivity and edge tint for a conductor
+// using the inverse of the reparameterization defined in [2].
+template <typename SpectrumType>
+inline void artist_friendly_fresnel_conductor_inverse_reparameterization(
+    const SpectrumType&     n,                  // refractive index.
+    const SpectrumType&     k,                  // extinction coefficient.
+    SpectrumType&           normal_reflectance,
+    SpectrumType&           edge_tint);
+
+// Compute the Fresnel reflectance for a conductor for unpolarized light.
+// This approximation assumes an air - conductor interface.
+template <typename SpectrumType, typename T>
+void artist_friendly_fresnel_reflectance_conductor(
+    SpectrumType&           reflectance,
+    const SpectrumType&     normal_reflectance,
+    const SpectrumType&     edge_tint,
+    const T                 cos_theta_i);
+
+
+//
 // Fresnel integrals.
 //
 // References:
@@ -381,6 +429,138 @@ void normal_reflectance_dielectric(
     den += eta;
     normal_reflectance /= den;
     normal_reflectance *= normal_reflectance;
+}
+
+template <typename SpectrumType, typename T>
+inline void fresnel_reflectance_conductor(
+    SpectrumType&           reflectance,
+    const SpectrumType&     n,
+    const SpectrumType&     k,
+    const T                 cos_theta_i)
+{
+    //
+    //      (n^2 + k^2) cos_theta^2 - 2n cos_theta + 1
+    // Rp = ------------------------------------------
+    //      (n^2 + k^2) cos_theta^2 + 2n cos_theta + 1
+    //
+
+    //
+    //      (n^2 + k^2) - 2n cos_theta + cos_theta^2
+    // Rs = ----------------------------------------
+    //      (n^2 + k^2) + 2n cos_theta + cos_theta^2
+    //
+
+    //               Rp + Rs
+    // reflectance = -------
+    //                  2
+
+    typedef typename impl::GetValueType<SpectrumType>::ValueType ValueType;
+
+    const T cos_theta = std::abs(cos_theta_i);
+    const T cos_theta2 = square(cos_theta);
+
+    const SpectrumType n2 = n * n;
+    const SpectrumType k2 = k * k;
+    const SpectrumType n2_plus_k2 = n2 + k2;
+    const SpectrumType n_2cos_theta = n * ValueType(2.0) * static_cast<ValueType>(cos_theta);
+
+    // Parallel.
+    const SpectrumType n2_plus_k2_cos_theta2 = n2_plus_k2 * static_cast<ValueType>(cos_theta2);
+    const SpectrumType one(1.0);
+    reflectance =
+        (n2_plus_k2_cos_theta2 - n_2cos_theta + one) /
+        (n2_plus_k2_cos_theta2 + n_2cos_theta + one);
+
+    // Perpendicular.
+    const SpectrumType cos_t(static_cast<ValueType>(cos_theta));
+    reflectance +=
+        (n2_plus_k2 - n_2cos_theta + cos_t) /
+        (n2_plus_k2 + n_2cos_theta + cos_t);
+
+    reflectance *= ValueType(0.5);
+}
+
+template <typename SpectrumType>
+inline void artist_friendly_fresnel_conductor_reparameterization(
+    const SpectrumType&     normal_reflectance,
+    const SpectrumType&     edge_tint,
+    SpectrumType&           n,
+    SpectrumType&           k)
+{
+    typedef typename impl::GetValueType<SpectrumType>::ValueType ValueType;
+
+    const SpectrumType one(1.0);
+    const SpectrumType r = clamp(normal_reflectance, ValueType(0.0), ValueType(0.99));
+    const SpectrumType sqrt_r = sqrt(r);
+
+    const SpectrumType one_minus_r = one - r;
+
+    const SpectrumType nmin = one_minus_r / (one + r);
+    const SpectrumType nmax = (one + sqrt_r) / (one - sqrt_r);
+
+    const SpectrumType g = clamp(edge_tint, ValueType(0.0), ValueType(1.0));
+    n = lerp(nmax, nmin, g);
+
+    SpectrumType square_n_plus_one(n + one);
+    square_n_plus_one *= square_n_plus_one;
+
+    SpectrumType square_n_minus_one(n - one);
+    square_n_minus_one *= square_n_minus_one;
+
+    k = (square_n_plus_one * r - square_n_minus_one);
+    k /= one_minus_r;
+    k = sqrt(k);
+}
+
+template <typename SpectrumType>
+inline void artist_friendly_fresnel_conductor_inverse_reparameterization(
+    const SpectrumType&     n,
+    const SpectrumType&     k,
+    SpectrumType&           normal_reflectance,
+    SpectrumType&           edge_tint)
+{
+    typedef typename impl::GetValueType<SpectrumType>::ValueType ValueType;
+
+    const SpectrumType one(1.0);
+
+    SpectrumType square_n_plus_one(n + one);
+    square_n_plus_one *= square_n_plus_one;
+
+    SpectrumType square_n_minus_one(n - one);
+    square_n_minus_one *= square_n_minus_one;
+
+    const SpectrumType k2 = k * k;
+
+    normal_reflectance =
+        (square_n_minus_one + k2) /
+        (square_n_plus_one + k2);
+
+    const SpectrumType one_plus_r(one + normal_reflectance);
+    const SpectrumType one_minus_r(one - normal_reflectance);
+
+    const SpectrumType sqrt_r = sqrt(normal_reflectance);
+    const SpectrumType one_plus_sqrt_r(one + sqrt_r);
+    const SpectrumType one_minus_sqrt_r(one - sqrt_r);
+
+    const SpectrumType tmp(one_plus_sqrt_r / one_minus_sqrt_r);
+    edge_tint = (tmp - n) / (tmp - (one_minus_r / one_plus_r));
+}
+
+template <typename SpectrumType, typename T>
+inline void artist_friendly_fresnel_reflectance_conductor(
+    SpectrumType&           reflectance,
+    const SpectrumType&     normal_reflectance,
+    const SpectrumType&     edge_tint,
+    const T                 cos_theta_i)
+{
+    SpectrumType n, k;
+    artist_friendly_fresnel_conductor_reparameterization(
+        normal_reflectance,
+        edge_tint,
+        n,
+        k);
+
+    fresnel_reflectance_conductor(reflectance, n, k, cos_theta_i);
 }
 
 template <typename T>
