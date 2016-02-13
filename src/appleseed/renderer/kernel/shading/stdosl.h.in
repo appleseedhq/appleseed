@@ -482,6 +482,7 @@ string concat (string a, string b, string c, string d, string e, string f) {
 // Closures
 /*************************************************************/
 
+
 /***************************************/
 // diffuse
 /***************************************/
@@ -524,6 +525,54 @@ closure color microfacet(
     return microfacet(distribution, N, vector(0), alpha, alpha, eta, refract);
 }
 
+closure color as_glossy(
+    string  distribution,
+    normal  N,
+    vector  T,
+    float   roughness,
+    float   anisotropic,
+    float   eta) BUILTIN;
+
+closure color as_glossy(
+    string  distribution,
+    normal  N,
+    float   roughness,
+    float   eta)
+{
+    return as_glossy(distribution, N, vector(0), roughness, 0.0, eta);
+}
+
+
+/***************************************/
+// metal
+/***************************************/
+
+closure color as_metal(
+    string  distribution,
+    normal  N,
+    vector  T,
+    color   normal_reflectance,
+    color   edge_tint,
+    float   roughness,
+    float   anisotropic) BUILTIN;
+
+closure color as_metal(
+    string  distribution,
+    normal  N,
+    color   normal_reflectance,
+    color   edge_tint,
+    float   roughness)
+{
+    return as_metal(
+        distribution,
+        N,
+        vector(0),
+        normal_reflectance,
+        edge_tint,
+        roughness,
+        0.0);
+}
+
 
 /***************************************/
 // subsurface
@@ -553,14 +602,13 @@ closure color as_subsurface(
 /***************************************/
 
 closure color as_ashikhmin_shirley(
-    normal  N,      // normal
-    vector  T,      // tangent
-    color   rd,     // diffuse reflectance of the substrate
-    color   rg,     // glossy reflectance at normal incidence
-    float   nu,     // Phong-like exponent in first tangent direction
-    float   nv,     // Phong-like exponent in second tangent direction
-    float   fr      // Fresnel multiplier
-    ) BUILTIN;
+    normal  N,              // normal
+    vector  T,              // tangent
+    color   rd,             // diffuse reflectance of the substrate
+    color   rg,             // glossy reflectance at normal incidence
+    float   nu,             // Phong-like exponent in first tangent direction
+    float   nv,             // Phong-like exponent in second tangent direction
+    float   fr) BUILTIN;    // Fresnel multiplier
 
 closure color as_disney(
     normal  N,
@@ -626,6 +674,7 @@ closure color transparent() BUILTIN;
 
 closure color debug(string tag) BUILTIN;
 closure color holdout() BUILTIN;
+
 
 /*************************************************************/
 

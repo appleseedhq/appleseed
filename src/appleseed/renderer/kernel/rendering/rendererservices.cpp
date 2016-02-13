@@ -504,6 +504,7 @@ bool RendererServices::get_userdata(
     return false;
 }
 
+#if OSL_LIBRARY_VERSION_CODE < 10700
 bool RendererServices::has_userdata(
     OIIO::ustring               name,
     OIIO::TypeDesc              type,
@@ -511,6 +512,7 @@ bool RendererServices::has_userdata(
 {
     return false;
 }
+#endif
 
 #define IMPLEMENT_ATTR_GETTER(name)         \
     bool RendererServices::get_##name(      \

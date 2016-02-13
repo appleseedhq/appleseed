@@ -38,6 +38,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 
@@ -47,6 +48,12 @@
 
 namespace renderer
 {
+
+//
+// Map roughness to microfacet distribution function's alpha parameter in a
+// perceptually linear fashion.
+// Refactored from the Disney BRDF implementation.
+//
 
 template <typename T>
 inline T microfacet_alpha_from_roughness(const T& roughness)
@@ -75,6 +82,40 @@ inline void microfacet_alpha_from_roughness(
     }
 }
 
+
+template <typename T>
+class FresnelDielectricFun
+{
+  public:
+    FresnelDielectricFun(
+        const Spectrum& reflectance,
+        const T         reflectance_multiplier,
+        const T         eta)
+      : m_reflectance(reflectance)
+      , m_reflectance_multiplier(reflectance_multiplier)
+      , m_eta(eta)
+    {
+    }
+
+    void operator()(
+        const foundation::Vector<T,3>&  o,
+        const foundation::Vector<T,3>&  h,
+        const foundation::Vector<T,3>&  n,
+        Spectrum&                       value) const
+    {
+        value = m_reflectance;
+        double f;
+        foundation::fresnel_reflectance_dielectric(f, m_eta, foundation::dot(o, h));
+        value *= static_cast<float>(f * m_reflectance_multiplier);
+    }
+
+  private:
+    const Spectrum& m_reflectance;
+    const T         m_reflectance_multiplier;
+    const T         m_eta;
+};
+
+
 template <typename T>
 class MicrofacetBRDFHelper
 {
@@ -89,6 +130,7 @@ class MicrofacetBRDFHelper
         const T             alpha_x,
         const T             alpha_y,
         FresnelFun          f,
+        const T             cos_on,
         BSDFSample&         sample)
     {
         // gcc needs the qualifier, otherwise
@@ -101,6 +143,7 @@ class MicrofacetBRDFHelper
             alpha_x,
             alpha_y,
             f,
+            cos_on,
             sample);
     }
 
@@ -112,8 +155,9 @@ class MicrofacetBRDFHelper
         const BasisType&    shading_basis,
         const VectorType&   outgoing,
         const VectorType&   incoming,
-        const int           modes,
         FresnelFun          f,
+        const T             cos_in,
+        const T             cos_on,
         Spectrum&           value)
     {
         return evaluate(
@@ -125,8 +169,9 @@ class MicrofacetBRDFHelper
             shading_basis,
             outgoing,
             incoming,
-            modes,
             f,
+            cos_in,
+            cos_on,
             value);
     }
 
@@ -137,19 +182,8 @@ class MicrofacetBRDFHelper
         const T             alpha_y,
         const BasisType&    shading_basis,
         const VectorType&   outgoing,
-        const VectorType&   incoming,
-        const int           modes)
+        const VectorType&   incoming)
     {
-        if (!ScatteringMode::has_glossy(modes))
-            return T(0.0);
-
-        // No reflection below the shading surface.
-        const VectorType& n = shading_basis.get_normal();
-        const T cos_in = foundation::dot(incoming, n);
-        const T cos_on = std::min(foundation::dot(outgoing, n), T(1.0));
-        if (cos_in < T(0.0) || cos_on < T(0.0))
-            return T(0.0);
-
         const VectorType h = foundation::normalize(incoming + outgoing);
         const T cos_oh = foundation::dot(outgoing, h);
         return
@@ -174,13 +208,9 @@ class MicrofacetBRDFHelper
         const T             g_alpha_x,
         const T             g_alpha_y,
         FresnelFun          f,
+        const T             cos_on,
         BSDFSample&         sample)
     {
-        const VectorType& n = sample.get_shading_normal();
-        const T cos_on = std::min(foundation::dot(sample.m_outgoing.get_value(), n), T(1.0));
-        if (cos_on < T(0.0))
-            return;
-
         // Compute the incoming direction by sampling the MDF.
         sampling_context.split_in_place(3, 1);
         const VectorType s = sampling_context.next_vector2<3>();
@@ -191,6 +221,7 @@ class MicrofacetBRDFHelper
         const T cos_oh = foundation::dot(sample.m_outgoing.get_value(), h);
 
         // No reflection below the shading surface.
+        const VectorType& n = sample.get_shading_normal();
         const T cos_in = foundation::dot(incoming, n);
         if (cos_in < T(0.0))
             return;
@@ -223,20 +254,11 @@ class MicrofacetBRDFHelper
         const BasisType&    shading_basis,
         const VectorType&   outgoing,
         const VectorType&   incoming,
-        const int           modes,
         FresnelFun          f,
+        const T             cos_in,
+        const T             cos_on,
         Spectrum&           value)
     {
-        if (!ScatteringMode::has_glossy(modes))
-            return 0.0;
-
-        // No reflection below the shading surface.
-        const VectorType& n = shading_basis.get_normal();
-        const T cos_in = foundation::dot(incoming, n);
-        const T cos_on = std::min(foundation::dot(outgoing, n), T(1.0));
-        if (cos_in < T(0.0) || cos_on < T(0.0))
-            return T(0.0);
-
         const VectorType h = foundation::normalize(incoming + outgoing);
         const VectorType m = shading_basis.transform_to_local(h);
         const T D = mdf.D(m, alpha_x, alpha_y);

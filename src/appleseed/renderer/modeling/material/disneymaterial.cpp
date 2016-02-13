@@ -632,7 +632,7 @@ void DisneyMaterialLayer::evaluate_expressions(
     values.m_anisotropic =
         lerp(
             values.m_anisotropic,
-            saturate(impl->m_anisotropic.evaluate(shading_point, texture_system)[0]),
+            clamp(impl->m_anisotropic.evaluate(shading_point, texture_system)[0], -1.0, 1.0),
             mask);
 
     values.m_roughness =
