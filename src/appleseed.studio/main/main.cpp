@@ -30,6 +30,7 @@
 // appleseed.studio headers.
 #include "commandlinehandler.h"
 #include "mainwindow/mainwindow.h"
+#include "utility/miscellaneous.h"
 
 // appleseed.shared headers.
 #include "application/application.h"
@@ -284,7 +285,7 @@ int main(int argc, char* argv[])
     QApplication::setOrganizationDomain("appleseedhq.net");
     QApplication::setApplicationName("appleseed.studio");
     QApplication::setApplicationVersion(Appleseed::get_lib_version());
-    QApplication::setWindowIcon(QIcon(":/icons/application_icon.png"));
+    QApplication::setWindowIcon(QIcon(make_app_path("icons/appleseed.png")));
 
     // The locale must be set after the construction of QApplication.
     QLocale::setDefault(QLocale::C);

@@ -56,6 +56,12 @@ QString compute_oiio_files_filter();
 
 #endif
 
+// Combine two filesystem paths and convert the result to native separators.
+QString combine_paths(const QString& lhs, const QString& rhs);
+
+// Combine the application's base path and a given relative path.
+QString make_app_path(const QString& path);
+
 QString get_open_filename(
     QWidget*                parent,
     const QString&          caption,

@@ -1,16 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>icons/application_icon.png</file>
-        <file>icons/disney_expr.png</file>
-        <file>icons/disney_texture.png</file>
-        <file>icons/picture_empty.png</file>
-        <file>icons/picture_empty_disable.png</file>
-        <file>icons/pixel_inspector.png</file>
-        <file>icons/quick_save_aovs.png</file>
-        <file>icons/reset_zoom.png</file>
-        <file>icons/save_image.png</file>
-        <file>icons/selection-blue.png</file>
-        <file>icons/selection-crossed.png</file>
         <file>images/appleseed-logo-256.png</file>
         <file>patterns/texture.png</file>
         <file>widgets/checkbox_checked_disabled.png</file>

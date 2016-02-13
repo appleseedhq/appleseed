@@ -41,6 +41,9 @@
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
 
+// appleseed.shared headers.
+#include "application/application.h"
+
 // OpenImageIO headers.
 #ifdef APPLESEED_WITH_OIIO
 #include "foundation/platform/oiioheaderguards.h"
@@ -69,6 +72,7 @@ END_OIIO_INCLUDES
 #include <string>
 #include <vector>
 
+using namespace appleseed::shared;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
@@ -117,6 +121,23 @@ QString compute_oiio_files_filter()
 }
 
 #endif
+
+QString combine_paths(const QString& lhs, const QString& rhs)
+{
+    QString result(lhs);
+
+    if (!result.endsWith(QDir::separator()))
+        result.append(QDir::separator());
+
+    result.append(rhs);
+
+    return QDir::toNativeSeparators(result);
+}
+
+QString make_app_path(const QString& path)
+{
+    return combine_paths(Application::get_root_path(), path);
+}
 
 namespace
 {
