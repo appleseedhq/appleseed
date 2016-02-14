@@ -72,7 +72,7 @@
     <addaction name="menu_file_open_builtin_project"/>
     <addaction name="action_file_reload_project"/>
     <addaction name="separator"/>
-    <addaction name="action_watch_project_changes"/>
+    <addaction name="action_monitor_project_file"/>
     <addaction name="separator"/>
     <addaction name="action_file_save_project"/>
     <addaction name="action_file_save_project_as"/>
@@ -444,12 +444,12 @@
     <string>Watch File Changes</string>
    </property>
   </action>
-  <action name="action_watch_project_changes">
+  <action name="action_monitor_project_file">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Watch Project Changes</string>
+    <string>Monitor Project File</string>
    </property>
   </action>
  </widget>

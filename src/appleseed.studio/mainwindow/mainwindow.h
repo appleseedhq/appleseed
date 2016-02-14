@@ -99,10 +99,11 @@ class MainWindow
     QAction*                                m_action_open_project;
     QAction*                                m_clear_open_recent_menu;
     QAction*                                m_action_save_project;
+    QAction*                                m_action_monitor_project_file;
+
     QAction*                                m_action_start_interactive_rendering;
     QAction*                                m_action_start_final_rendering;
     QAction*                                m_action_stop_rendering;
-    QAction*                                m_action_toggle_project_watcher;
 
     std::vector<QAction*>                   m_recently_opened;
     std::vector<MinimizeButton*>            m_minimize_buttons;
@@ -175,11 +176,11 @@ class MainWindow
     bool can_close_project();
     void on_project_change();
 
-    // Project file watcher.
-    void enable_project_file_watcher();
-    void disable_project_file_watcher();
-    void start_watching_project_file();
-    void stop_watching_project_file();
+    // Project file monitoring.
+    void enable_project_file_monitoring();
+    void disable_project_file_monitoring();
+    void start_monitoring_project_file();
+    void stop_monitoring_project_file();
 
     // Drag-and-drop.
     void dragEnterEvent(QDragEnterEvent* event);
@@ -205,8 +206,8 @@ class MainWindow
     void slot_save_project_as();
     void slot_project_modified();
 
-    // Project file watcher.
-    void slot_toggle_project_file_watcher(const bool checked);
+    // Project file monitoring.
+    void slot_toggle_project_file_monitoring(const bool checked);
     void slot_project_file_changed(const QString& filepath);
 
     // Settings I/O.

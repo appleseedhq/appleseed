@@ -247,7 +247,7 @@ void MainWindow::build_menus()
     m_ui->action_file_save_project_as->setShortcut(QKeySequence::SaveAs);
     connect(m_ui->action_file_save_project_as, SIGNAL(triggered()), SLOT(slot_save_project_as()));
 
-    connect(m_ui->action_watch_project_changes, SIGNAL(toggled(bool)), SLOT(slot_toggle_project_file_watcher(const bool)));
+    connect(m_ui->action_monitor_project_file, SIGNAL(toggled(bool)), SLOT(slot_toggle_project_file_monitoring(const bool)));
 
     m_ui->action_file_exit->setShortcut(QKeySequence::Quit);
     connect(m_ui->action_file_exit, SIGNAL(triggered()), SLOT(close()));
@@ -456,10 +456,10 @@ void MainWindow::build_toolbar()
     connect(m_action_save_project, SIGNAL(triggered()), SLOT(slot_save_project()));
     m_ui->main_toolbar->addAction(m_action_save_project);
 
-    m_action_toggle_project_watcher = new QAction(load_icons("project_reopen"), "Toggle Project Watcher", this);
-    m_action_toggle_project_watcher->setCheckable(true);
-    connect(m_action_toggle_project_watcher, SIGNAL(toggled(bool)), SLOT(slot_toggle_project_file_watcher(const bool)));
-    m_ui->main_toolbar->addAction(m_action_toggle_project_watcher);
+    m_action_monitor_project_file = new QAction(load_icons("project_reopen"), "Toggle Project File Monitoring", this);
+    m_action_monitor_project_file->setCheckable(true);
+    connect(m_action_monitor_project_file, SIGNAL(toggled(bool)), SLOT(slot_toggle_project_file_monitoring(const bool)));
+    m_ui->main_toolbar->addAction(m_action_monitor_project_file);
 
     m_ui->main_toolbar->addSeparator();
 
@@ -527,12 +527,12 @@ void MainWindow::build_minimize_buttons()
 void MainWindow::build_connections()
 {
     connect(
-        m_action_toggle_project_watcher, SIGNAL(toggled(bool)),
-        m_ui->action_watch_project_changes, SLOT(setChecked(bool)));
+        m_action_monitor_project_file, SIGNAL(toggled(bool)),
+        m_ui->action_monitor_project_file, SLOT(setChecked(bool)));
 
     connect(
-        m_ui->action_watch_project_changes, SIGNAL(toggled(bool)),
-        m_action_toggle_project_watcher, SLOT(setChecked(bool)));
+        m_ui->action_monitor_project_file, SIGNAL(toggled(bool)),
+        m_action_monitor_project_file, SLOT(setChecked(bool)));
 
     connect(
         &m_project_manager, SIGNAL(signal_load_project_async_complete(const QString&, const bool)),
@@ -879,10 +879,10 @@ void MainWindow::on_project_change()
     restore_state_after_project_open();
 
     if (m_project_file_watcher)
-        start_watching_project_file();
+        start_monitoring_project_file();
 }
 
-void MainWindow::enable_project_file_watcher()
+void MainWindow::enable_project_file_monitoring()
 {
     if (m_project_file_watcher == 0)
     {
@@ -893,24 +893,24 @@ void MainWindow::enable_project_file_watcher()
             SIGNAL(fileChanged(const QString&)),
             SLOT(slot_project_file_changed(const QString&)));
 
-        RENDERER_LOG_INFO("the project file watcher is now enabled.");
+        RENDERER_LOG_INFO("project file monitoring is now enabled.");
 
-        start_watching_project_file();
+        start_monitoring_project_file();
     }
 }
 
-void MainWindow::disable_project_file_watcher()
+void MainWindow::disable_project_file_monitoring()
 {
     if (m_project_file_watcher)
     {
         delete m_project_file_watcher;
         m_project_file_watcher = 0;
 
-        RENDERER_LOG_INFO("the project file watcher is now disabled.");
+        RENDERER_LOG_INFO("project file monitoring is now disabled.");
     }
 }
 
-void MainWindow::start_watching_project_file()
+void MainWindow::start_monitoring_project_file()
 {
     assert(m_project_file_watcher);
 
@@ -921,7 +921,7 @@ void MainWindow::start_watching_project_file()
     }
 }
 
-void MainWindow::stop_watching_project_file()
+void MainWindow::stop_monitoring_project_file()
 {
     assert(m_project_file_watcher);
 
@@ -1172,12 +1172,12 @@ void MainWindow::slot_save_project()
     }
 
     if (m_project_file_watcher)
-        stop_watching_project_file();
+        stop_monitoring_project_file();
 
     m_project_manager.save_project();
 
     if (m_project_file_watcher)
-        start_watching_project_file();
+        start_monitoring_project_file();
 
     update_workspace();
 }
@@ -1202,12 +1202,12 @@ void MainWindow::slot_save_project_as()
         filepath = QDir::toNativeSeparators(filepath);
 
         if (m_project_file_watcher)
-            stop_watching_project_file();
+            stop_monitoring_project_file();
 
         m_project_manager.save_project_as(filepath.toAscii().constData());
 
         if (m_project_file_watcher)
-            start_watching_project_file();
+            start_monitoring_project_file();
 
         update_recent_files_menu(filepath);
         update_workspace();
@@ -1223,11 +1223,11 @@ void MainWindow::slot_project_modified()
     update_window_title();
 }
 
-void MainWindow::slot_toggle_project_file_watcher(const bool checked)
+void MainWindow::slot_toggle_project_file_monitoring(const bool checked)
 {
     if (checked)
-        enable_project_file_watcher();
-    else disable_project_file_watcher();
+        enable_project_file_monitoring();
+    else disable_project_file_monitoring();
 
     m_settings.insert_path(
         SETTINGS_WATCH_FILE_CHANGES,
@@ -1291,13 +1291,13 @@ void MainWindow::slot_load_settings()
 
         if (m_settings.get_optional<bool>(SETTINGS_WATCH_FILE_CHANGES))
         {
-            m_action_toggle_project_watcher->setChecked(true);
-            enable_project_file_watcher();
+            m_action_monitor_project_file->setChecked(true);
+            enable_project_file_monitoring();
         }
         else
         {
-            m_action_toggle_project_watcher->setChecked(false);
-            disable_project_file_watcher();
+            m_action_monitor_project_file->setChecked(false);
+            disable_project_file_monitoring();
         }
     }
     else
