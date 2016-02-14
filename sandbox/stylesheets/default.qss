@@ -1086,8 +1086,8 @@ QLabel#a_label
 QLabel#info_label
 {
     color: INFO_TEXT_COLOR;
-    min-width: 250px;
-    max-width: 250px;
+    min-width: 290px;
+    max-width: 290px;
 #ifdef __APPLE__
     min-width: 278px;
     max-width: 278px;
