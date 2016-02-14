@@ -457,7 +457,7 @@ void MainWindow::build_toolbar()
     connect(m_action_save_project, SIGNAL(triggered()), SLOT(slot_save_project()));
     m_ui->main_toolbar->addAction(m_action_save_project);
 
-    m_action_monitor_project_file = new QAction(load_icons("project_reopen"), "Toggle Project File Monitoring", this);
+    m_action_monitor_project_file = new QAction(load_icons("project_monitor"), "Toggle Project File Monitoring", this);
     m_action_monitor_project_file->setCheckable(true);
     connect(m_action_monitor_project_file, SIGNAL(toggled(bool)), SLOT(slot_toggle_project_file_monitoring(const bool)));
     m_ui->main_toolbar->addAction(m_action_monitor_project_file);
