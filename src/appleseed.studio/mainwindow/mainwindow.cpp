@@ -404,10 +404,11 @@ void MainWindow::build_recent_files_menu()
     update_recent_files_menu(files);
 
     m_ui->menu_open_recent->addSeparator();
-    m_clear_open_recent_menu = new QAction(this);
-    m_clear_open_recent_menu->setText("&Clear Menu");
-    connect(m_clear_open_recent_menu, SIGNAL(triggered()), SLOT(slot_clear_open_recent_files_menu()));
-    m_ui->menu_open_recent->addAction(m_clear_open_recent_menu);
+
+    QAction* clear_open_recent_menu = new QAction(this);
+    clear_open_recent_menu->setText("&Clear Menu");
+    connect(clear_open_recent_menu, SIGNAL(triggered()), SLOT(slot_clear_open_recent_files_menu()));
+    m_ui->menu_open_recent->addAction(clear_open_recent_menu);
 }
 
 void MainWindow::update_recent_files_menu(const QString& filepath)

@@ -97,7 +97,6 @@ class MainWindow
 
     QAction*                                m_action_new_project;
     QAction*                                m_action_open_project;
-    QAction*                                m_clear_open_recent_menu;
     QAction*                                m_action_save_project;
     QAction*                                m_action_monitor_project_file;
 
