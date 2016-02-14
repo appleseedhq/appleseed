@@ -444,15 +444,15 @@ void MainWindow::update_recent_files_menu(const QStringList& files)
 
 void MainWindow::build_toolbar()
 {
-    m_action_new_project = new QAction(load_icons("project_new"), "New", this);
+    m_action_new_project = new QAction(load_icons("project_new"), "New Project", this);
     connect(m_action_new_project, SIGNAL(triggered()), SLOT(slot_new_project()));
     m_ui->main_toolbar->addAction(m_action_new_project);
 
-    m_action_open_project = new QAction(load_icons("project_load"), "Open", this);
+    m_action_open_project = new QAction(load_icons("project_load"), "Open Project...", this);
     connect(m_action_open_project, SIGNAL(triggered()), SLOT(slot_open_project()));
     m_ui->main_toolbar->addAction(m_action_open_project);
 
-    m_action_save_project = new QAction(load_icons("project_save") , "Save", this);
+    m_action_save_project = new QAction(load_icons("project_save") , "Save Project", this);
     connect(m_action_save_project, SIGNAL(triggered()), SLOT(slot_save_project()));
     m_ui->main_toolbar->addAction(m_action_save_project);
 
