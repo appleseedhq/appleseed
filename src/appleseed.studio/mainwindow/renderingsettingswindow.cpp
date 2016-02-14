@@ -28,10 +28,10 @@
 //
 
 // Interface header.
-#include "rendersettingswindow.h"
+#include "renderingsettingswindow.h"
 
 // UI definition header.
-#include "ui_rendersettingswindow.h"
+#include "ui_renderingsettingswindow.h"
 
 // appleseed.studio headers.
 #include "mainwindow/project/projectmanager.h"
@@ -1120,12 +1120,12 @@ namespace
 
 
 //
-// RenderSettingsWindow class implementation.
+// RenderingSettingsWindow class implementation.
 //
 
-RenderSettingsWindow::RenderSettingsWindow(ProjectManager& project_manager, QWidget* parent)
+RenderingSettingsWindow::RenderingSettingsWindow(ProjectManager& project_manager, QWidget* parent)
   : QWidget(parent)
-  , m_ui(new Ui::RenderSettingsWindow())
+  , m_ui(new Ui::RenderingSettingsWindow())
   , m_project_manager(project_manager)
 {
     m_ui->setupUi(this);
@@ -1140,12 +1140,12 @@ RenderSettingsWindow::RenderSettingsWindow(ProjectManager& project_manager, QWid
     reload();
 }
 
-RenderSettingsWindow::~RenderSettingsWindow()
+RenderingSettingsWindow::~RenderingSettingsWindow()
 {
     delete m_ui;
 }
 
-void RenderSettingsWindow::reload()
+void RenderingSettingsWindow::reload()
 {
     vector<QString> configs;
 
@@ -1166,7 +1166,7 @@ void RenderSettingsWindow::reload()
         m_ui->combobox_configurations->addItem(configs[i]);
 }
 
-void RenderSettingsWindow::create_connections()
+void RenderingSettingsWindow::create_connections()
 {
     connect(m_ui->pushbutton_manage, SIGNAL(clicked()), SLOT(slot_open_configuration_manager_window()));
 
@@ -1206,7 +1206,7 @@ namespace
     }
 }
 
-void RenderSettingsWindow::create_panels(const Configuration& config)
+void RenderingSettingsWindow::create_panels(const Configuration& config)
 {
     const bool interactive = is_interactive_configuration(config);
 
@@ -1228,7 +1228,7 @@ void RenderSettingsWindow::create_panels(const Configuration& config)
     m_panels.push_back(new SystemPanel(config));
 }
 
-void RenderSettingsWindow::create_layout()
+void RenderingSettingsWindow::create_layout()
 {
     QLayout* root_layout = m_ui->scrollareawidget->layout();
     assert(root_layout);
@@ -1241,13 +1241,13 @@ void RenderSettingsWindow::create_layout()
         root_layout->addWidget(*i);
 }
 
-void RenderSettingsWindow::set_panels_enabled(const bool enabled)
+void RenderingSettingsWindow::set_panels_enabled(const bool enabled)
 {
     for (const_each<PanelCollection> i = m_panels; i; ++i)
         (*i)->container()->setEnabled(enabled);
 }
 
-void RenderSettingsWindow::load_configuration(const QString& name)
+void RenderingSettingsWindow::load_configuration(const QString& name)
 {
     assert(!name.isEmpty());
 
@@ -1264,7 +1264,7 @@ void RenderSettingsWindow::load_configuration(const QString& name)
     m_initial_values = get_widget_values();
 }
 
-void RenderSettingsWindow::save_current_configuration()
+void RenderingSettingsWindow::save_current_configuration()
 {
     if (m_current_configuration_name.isEmpty())
         return;
@@ -1282,7 +1282,7 @@ void RenderSettingsWindow::save_current_configuration()
     emit signal_settings_modified();
 }
 
-Configuration& RenderSettingsWindow::get_configuration(const QString& name) const
+Configuration& RenderingSettingsWindow::get_configuration(const QString& name) const
 {
     Configuration* configuration =
         m_project_manager.get_project()->configurations().get_by_name(name.toAscii().constData());
@@ -1292,7 +1292,7 @@ Configuration& RenderSettingsWindow::get_configuration(const QString& name) cons
     return *configuration;
 }
 
-map<string, string> RenderSettingsWindow::get_widget_values() const
+map<string, string> RenderingSettingsWindow::get_widget_values() const
 {
     map<string, string> values;
 
@@ -1305,7 +1305,7 @@ map<string, string> RenderSettingsWindow::get_widget_values() const
     return values;
 }
 
-void RenderSettingsWindow::slot_open_configuration_manager_window()
+void RenderingSettingsWindow::slot_open_configuration_manager_window()
 {
     ConfigurationManagerWindow* config_manager_window = new ConfigurationManagerWindow(this);
 
@@ -1328,7 +1328,7 @@ namespace
     }
 }
 
-void RenderSettingsWindow::slot_change_active_configuration(const QString& configuration_name)
+void RenderingSettingsWindow::slot_change_active_configuration(const QString& configuration_name)
 {
     if (!m_current_configuration_name.isEmpty())
     {
@@ -1352,13 +1352,13 @@ void RenderSettingsWindow::slot_change_active_configuration(const QString& confi
     m_ui->scrollareawidget->show();
 }
 
-void RenderSettingsWindow::slot_save_configuration_and_close()
+void RenderingSettingsWindow::slot_save_configuration_and_close()
 {
     save_current_configuration();
     close();
 }
 
-void RenderSettingsWindow::slot_restore_configuration_and_close()
+void RenderingSettingsWindow::slot_restore_configuration_and_close()
 {
     load_configuration(m_current_configuration_name);
     close();
@@ -1367,4 +1367,4 @@ void RenderSettingsWindow::slot_restore_configuration_and_close()
 }   // namespace studio
 }   // namespace appleseed
 
-#include "mainwindow/moc_cpp_rendersettingswindow.cxx"
+#include "mainwindow/moc_cpp_renderingsettingswindow.cxx"

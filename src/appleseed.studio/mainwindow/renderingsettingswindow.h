@@ -27,8 +27,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERSETTINGSWINDOW_H
-#define APPLESEED_STUDIO_MAINWINDOW_RENDERSETTINGSWINDOW_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERINGSETTINGSWINDOW_H
+#define APPLESEED_STUDIO_MAINWINDOW_RENDERINGSETTINGSWINDOW_H
 
 // Qt headers.
 #include <QObject>
@@ -44,28 +44,28 @@
 namespace appleseed { namespace studio { class ProjectManager; } }
 namespace appleseed { namespace studio { class RenderSettingsPanel; } }
 namespace renderer  { class Configuration; }
-namespace Ui        { class RenderSettingsWindow; }
+namespace Ui        { class RenderingSettingsWindow; }
 
 namespace appleseed {
 namespace studio {
 
 //
-// Render settings window.
+// Rendering settings window.
 //
 
-class RenderSettingsWindow
+class RenderingSettingsWindow
   : public QWidget
 {
     Q_OBJECT
 
   public:
     // Constructor.
-    RenderSettingsWindow(
+    RenderingSettingsWindow(
         ProjectManager&                 project_manager,
         QWidget*                        parent = 0);
 
     // Destructor.
-    ~RenderSettingsWindow();
+    ~RenderingSettingsWindow();
 
     // Load the configurations of the currently open project.
     void reload();
@@ -77,7 +77,7 @@ class RenderSettingsWindow
     typedef std::vector<RenderSettingsPanel*> PanelCollection;
 
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
-    Ui::RenderSettingsWindow*           m_ui;
+    Ui::RenderingSettingsWindow*        m_ui;
 
     ProjectManager&                     m_project_manager;
     PanelCollection                     m_panels;
@@ -106,4 +106,4 @@ class RenderSettingsWindow
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERSETTINGSWINDOW_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERINGSETTINGSWINDOW_H

@@ -37,7 +37,7 @@
 #include "mainwindow/rendering/renderingmanager.h"
 #include "mainwindow/rendering/rendertab.h"
 #include "mainwindow/qtlogtarget.h"
-#include "mainwindow/rendersettingswindow.h"
+#include "mainwindow/renderingsettingswindow.h"
 #include "mainwindow/statusbar.h"
 
 // appleseed.renderer headers.
@@ -112,7 +112,7 @@ class MainWindow
 
     renderer::ParamArray                    m_settings;
 
-    std::auto_ptr<RenderSettingsWindow>     m_render_settings_window;
+    std::auto_ptr<RenderingSettingsWindow>  m_rendering_settings_window;
     std::auto_ptr<TestWindow>               m_test_window;
     std::auto_ptr<BenchmarkWindow>          m_benchmark_window;
 
@@ -248,7 +248,7 @@ class MainWindow
     void slot_fullscreen();
 
     // Child windows.
-    void slot_show_render_settings_window();
+    void slot_show_rendering_settings_window();
     void slot_show_test_window();
     void slot_show_benchmark_window();
     void slot_show_about_window();

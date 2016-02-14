@@ -272,7 +272,7 @@ void MainWindow::build_menus()
     connect(m_ui->action_rendering_start_interactive_rendering, SIGNAL(triggered()), SLOT(slot_start_interactive_rendering()));
     connect(m_ui->action_rendering_start_final_rendering, SIGNAL(triggered()), SLOT(slot_start_final_rendering()));
     connect(m_ui->action_rendering_stop_rendering, SIGNAL(triggered()), &m_rendering_manager, SLOT(slot_abort_rendering()));
-    connect(m_ui->action_rendering_render_settings, SIGNAL(triggered()), SLOT(slot_show_render_settings_window()));
+    connect(m_ui->action_rendering_rendering_settings, SIGNAL(triggered()), SLOT(slot_show_rendering_settings_window()));
 
     //
     // Diagnostics menu.
@@ -670,7 +670,7 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const bool
     m_action_stop_rendering->setEnabled(allow_stopping_rendering);
 
     // Rendering -> Render Settings.
-    m_ui->action_rendering_render_settings->setEnabled(allow_starting_rendering);
+    m_ui->action_rendering_rendering_settings->setEnabled(allow_starting_rendering);
 
     // Rendering -> Clear Frame.
     if (is_project_open)
@@ -869,8 +869,8 @@ void MainWindow::on_project_change()
 
     update_override_shading_menu_item();
 
-    if (m_render_settings_window.get())
-        m_render_settings_window->reload();
+    if (m_rendering_settings_window.get())
+        m_rendering_settings_window->reload();
 
     m_status_bar.clear();
 
@@ -1679,21 +1679,21 @@ void MainWindow::slot_fullscreen()
         (*button)->set_fullscreen(m_fullscreen);
 }
 
-void MainWindow::slot_show_render_settings_window()
+void MainWindow::slot_show_rendering_settings_window()
 {
     assert(m_project_manager.is_project_open());
 
-    if (m_render_settings_window.get() == 0)
+    if (m_rendering_settings_window.get() == 0)
     {
-        m_render_settings_window.reset(new RenderSettingsWindow(m_project_manager, this));
+        m_rendering_settings_window.reset(new RenderingSettingsWindow(m_project_manager, this));
 
         connect(
-            m_render_settings_window.get(), SIGNAL(signal_settings_modified()),
+            m_rendering_settings_window.get(), SIGNAL(signal_settings_modified()),
             SLOT(slot_project_modified()));
     }
 
-    m_render_settings_window->showNormal();
-    m_render_settings_window->activateWindow();
+    m_rendering_settings_window->showNormal();
+    m_rendering_settings_window->activateWindow();
 }
 
 void MainWindow::slot_show_test_window()
