@@ -444,54 +444,34 @@ void MainWindow::update_recent_files_menu(const QStringList& files)
 
 void MainWindow::build_toolbar()
 {
-    QIcon project_new_icon = QIcon(make_app_path("icons/project_new.png"));
-    project_new_icon.addPixmap(QPixmap(make_app_path("icons/project_new_hover.png")), QIcon::Active);
-    project_new_icon.addPixmap(QPixmap(make_app_path("icons/project_new_disabled.png")), QIcon::Disabled);
-    m_action_new_project = new QAction(project_new_icon, "New", this);
+    m_action_new_project = new QAction(load_icons("project_new"), "New", this);
     connect(m_action_new_project, SIGNAL(triggered()), SLOT(slot_new_project()));
     m_ui->main_toolbar->addAction(m_action_new_project);
 
-    QIcon project_load_icon = QIcon(make_app_path("icons/project_load.png"));
-    project_load_icon.addPixmap(QPixmap(make_app_path("icons/project_load_hover.png")), QIcon::Active);
-    project_load_icon.addPixmap(QPixmap(make_app_path("icons/project_load_disabled.png")), QIcon::Disabled);
-    m_action_open_project = new QAction(project_load_icon, "Open", this);
+    m_action_open_project = new QAction(load_icons("project_load"), "Open", this);
     connect(m_action_open_project, SIGNAL(triggered()), SLOT(slot_open_project()));
     m_ui->main_toolbar->addAction(m_action_open_project);
 
-    QIcon project_save_icon = QIcon(make_app_path("icons/project_save.png"));
-    project_save_icon.addPixmap(QPixmap(make_app_path("icons/project_save_hover.png")), QIcon::Active);
-    project_save_icon.addPixmap(QPixmap(make_app_path("icons/project_save_disabled.png")), QIcon::Disabled);
-    m_action_save_project = new QAction(project_save_icon , "Save", this);
+    m_action_save_project = new QAction(load_icons("project_save") , "Save", this);
     connect(m_action_save_project, SIGNAL(triggered()), SLOT(slot_save_project()));
     m_ui->main_toolbar->addAction(m_action_save_project);
 
-    QIcon project_reopen_icon = QIcon(make_app_path("icons/project_reopen.png"));
-    project_reopen_icon.addPixmap(QPixmap(make_app_path("icons/project_reopen_hover.png")), QIcon::Active);
-    m_action_toggle_project_watcher = new QAction(project_reopen_icon, "Toggle Project Watcher", this);
+    m_action_toggle_project_watcher = new QAction(load_icons("project_reopen"), "Toggle Project Watcher", this);
     m_action_toggle_project_watcher->setCheckable(true);
     connect(m_action_toggle_project_watcher, SIGNAL(toggled(bool)), SLOT(slot_toggle_project_file_watcher(const bool)));
     m_ui->main_toolbar->addAction(m_action_toggle_project_watcher);
 
     m_ui->main_toolbar->addSeparator();
 
-    QIcon rendering_start_interactive_icon = QIcon(make_app_path("icons/rendering_start_interactive.png"));
-    rendering_start_interactive_icon.addPixmap(QPixmap(make_app_path("icons/rendering_start_interactive_hover.png")), QIcon::Active);
-    rendering_start_interactive_icon.addPixmap(QPixmap(make_app_path("icons/rendering_start_interactive_disabled.png")), QIcon::Disabled);
-    m_action_start_interactive_rendering = new QAction(rendering_start_interactive_icon, "Start Interactive Rendering", this);
+    m_action_start_interactive_rendering = new QAction(load_icons("rendering_start_interactive"), "Start Interactive Rendering", this);
     connect(m_action_start_interactive_rendering, SIGNAL(triggered()), SLOT(slot_start_interactive_rendering()));
     m_ui->main_toolbar->addAction(m_action_start_interactive_rendering);
 
-    QIcon rendering_start_final_icon = QIcon(make_app_path("icons/rendering_start_final.png"));
-    rendering_start_final_icon.addPixmap(QPixmap(make_app_path("icons/rendering_start_final_hover.png")), QIcon::Active);
-    rendering_start_final_icon.addPixmap(QPixmap(make_app_path("icons/rendering_start_final_disabled.png")), QIcon::Disabled);
-    m_action_start_final_rendering = new QAction(rendering_start_final_icon, "Start Final Rendering", this);
+    m_action_start_final_rendering = new QAction(load_icons("rendering_start_final"), "Start Final Rendering", this);
     connect(m_action_start_final_rendering, SIGNAL(triggered()), SLOT(slot_start_final_rendering()));
     m_ui->main_toolbar->addAction(m_action_start_final_rendering);
 
-    QIcon rendering_stop_icon = QIcon(make_app_path("icons/rendering_stop.png"));
-    rendering_stop_icon.addPixmap(QPixmap(make_app_path("icons/rendering_stop_hover.png")), QIcon::Active);
-    rendering_stop_icon.addPixmap(QPixmap(make_app_path("icons/rendering_stop_disabled.png")), QIcon::Disabled);
-    m_action_stop_rendering = new QAction(rendering_stop_icon, "Stop Rendering", this);
+    m_action_stop_rendering = new QAction(load_icons("rendering_stop"), "Stop Rendering", this);
     connect(m_action_stop_rendering, SIGNAL(triggered()), &m_rendering_manager, SLOT(slot_abort_rendering()));
     m_ui->main_toolbar->addAction(m_action_stop_rendering);
 }

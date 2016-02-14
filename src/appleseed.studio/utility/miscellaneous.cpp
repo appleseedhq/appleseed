@@ -56,10 +56,12 @@ END_OIIO_INCLUDES
 #include <QDir>
 #include <QFileInfo>
 #include <QGridLayout>
+#include <QIcon>
 #include <QKeySequence>
 #include <QLayout>
 #include <QLayoutItem>
 #include <QMessageBox>
+#include <QPixmap>
 #include <QShortcut>
 #include <QSpacerItem>
 #include <QString>
@@ -137,6 +139,29 @@ QString combine_paths(const QString& lhs, const QString& rhs)
 QString make_app_path(const QString& path)
 {
     return combine_paths(Application::get_root_path(), path);
+}
+
+bool file_exists(const QString& path)
+{
+    const QFileInfo info(path);
+    return info.exists() && info.isFile();
+}
+
+QIcon load_icons(const QString& base_name)
+{
+    const QString base_icon_filepath(make_app_path("icons/%1.png").arg(base_name));
+    const QString hover_icon_filepath(make_app_path("icons/%1_hover.png").arg(base_name));
+    const QString disabled_icon_filepath(make_app_path("icons/%1_disabled.png").arg(base_name));
+
+    QIcon icon(base_icon_filepath);
+
+    if (file_exists(hover_icon_filepath))
+        icon.addPixmap(QPixmap(hover_icon_filepath), QIcon::Active);
+
+    if (file_exists(disabled_icon_filepath))
+        icon.addPixmap(QPixmap(disabled_icon_filepath), QIcon::Disabled);
+
+    return icon;
 }
 
 namespace

@@ -194,7 +194,7 @@ void RenderTab::create_toolbar()
 
     // Create the Save All AOVs button in the render toolbar.
     m_save_aovs_button = new QToolButton();
-    m_save_aovs_button->setIcon(QIcon(make_app_path("icons/renderwidget_save_all_aovs.png")));
+    m_save_aovs_button->setIcon(load_icons("renderwidget_save_all_aovs"));
     m_save_aovs_button->setToolTip("Save All AOVs...");
     connect(
         m_save_aovs_button, SIGNAL(clicked()),
@@ -203,7 +203,7 @@ void RenderTab::create_toolbar()
 
     // Create the Quicksave All AOVs button in the render toolbar.
     m_quick_save_aovs_button = new QToolButton();
-    m_quick_save_aovs_button->setIcon(QIcon(make_app_path("icons/renderwidget_quicksave_all_aovs.png")));
+    m_quick_save_aovs_button->setIcon(load_icons("renderwidget_quicksave_all_aovs"));
     m_quick_save_aovs_button->setToolTip("Quicksave All AOVs");
     connect(
         m_quick_save_aovs_button, SIGNAL(clicked()),
@@ -214,7 +214,7 @@ void RenderTab::create_toolbar()
 
     // Create the Set Render Region button in the render toolbar.
     m_set_render_region_button = new QToolButton();
-    m_set_render_region_button->setIcon(QIcon(make_app_path("icons/renderwidget_set_render_region.png")));
+    m_set_render_region_button->setIcon(load_icons("renderwidget_set_render_region"));
     m_set_render_region_button->setToolTip("Set Render Region");
     m_set_render_region_button->setShortcut(Qt::Key_R);
     m_set_render_region_button->setCheckable(true);
@@ -225,7 +225,7 @@ void RenderTab::create_toolbar()
 
     // Create the Clear Render Region button in the render toolbar.
     m_clear_render_region_button = new QToolButton();
-    m_clear_render_region_button->setIcon(QIcon(make_app_path("icons/renderwidget_clear_render_region.png")));
+    m_clear_render_region_button->setIcon(load_icons("renderwidget_clear_render_region"));
     m_clear_render_region_button->setToolTip("Clear Render Region");
     m_clear_render_region_button->setShortcut(Qt::Key_C);
     connect(
@@ -235,9 +235,7 @@ void RenderTab::create_toolbar()
 
     // Create the Clear Frame button in the render toolbar.
     m_clear_frame_button = new QToolButton();
-    QIcon picture_empty = QIcon(make_app_path("icons/renderwidget_clear_frame.png"));
-    picture_empty.addPixmap(QPixmap(make_app_path("icons/renderwidget_clear_frame_disabled.png")), QIcon::Disabled);
-    m_clear_frame_button->setIcon(picture_empty);
+    m_clear_frame_button->setIcon(load_icons("renderwidget_clear_frame"));
     m_clear_frame_button->setToolTip("Clear Frame");
     m_clear_frame_button->setShortcut(Qt::Key_X);
     connect(
@@ -249,7 +247,7 @@ void RenderTab::create_toolbar()
 
     // Create the Reset Zoom button in the render toolbar.
     m_reset_zoom_button = new QToolButton();
-    m_reset_zoom_button->setIcon(QIcon(make_app_path("icons/renderwidget_reset_zoom.png")));
+    m_reset_zoom_button->setIcon(load_icons("renderwidget_reset_zoom"));
     m_reset_zoom_button->setToolTip("Reset Zoom");
     m_reset_zoom_button->setShortcut(Qt::Key_Asterisk);
     connect(
@@ -261,7 +259,7 @@ void RenderTab::create_toolbar()
 
     // Create the Pixel Inspector button in the render toolbar.
     m_pixel_inspector_button = new QToolButton();
-    m_pixel_inspector_button->setIcon(QIcon(make_app_path("icons/renderwidget_toggle_pixel_inspector.png")));
+    m_pixel_inspector_button->setIcon(load_icons("renderwidget_toggle_pixel_inspector"));
     m_pixel_inspector_button->setToolTip("Toggle Pixel Inspector");
     m_pixel_inspector_button->setShortcut(Qt::Key_I);
     m_pixel_inspector_button->setCheckable(true);
@@ -292,7 +290,6 @@ void RenderTab::create_toolbar()
 
     // Create a label to display various information such as mouse coordinates, etc.
     m_info_label = new QLabel();
-    m_info_label->setScaledContents(true);
     m_info_label->setObjectName("info_label");
     m_toolbar->addWidget(m_info_label);
 
