@@ -449,7 +449,7 @@ void MainWindow::build_toolbar()
     connect(m_action_new_project, SIGNAL(triggered()), SLOT(slot_new_project()));
     m_ui->main_toolbar->addAction(m_action_new_project);
 
-    m_action_open_project = new QAction(load_icons("project_load"), "Open Project...", this);
+    m_action_open_project = new QAction(load_icons("project_open"), "Open Project...", this);
     connect(m_action_open_project, SIGNAL(triggered()), SLOT(slot_open_project()));
     m_ui->main_toolbar->addAction(m_action_open_project);
 
