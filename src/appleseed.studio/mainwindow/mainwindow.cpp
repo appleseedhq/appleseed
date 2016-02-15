@@ -457,6 +457,10 @@ void MainWindow::build_toolbar()
     connect(m_action_save_project, SIGNAL(triggered()), SLOT(slot_save_project()));
     m_ui->main_toolbar->addAction(m_action_save_project);
 
+    m_action_reload_project = new QAction(load_icons("project_reload"), "Reload Project", this);
+    connect(m_action_reload_project, SIGNAL(triggered()), SLOT(slot_reload_project()));
+    m_ui->main_toolbar->addAction(m_action_reload_project);
+
     m_action_monitor_project_file = new QAction(load_icons("project_monitor"), "Toggle Project File Monitoring", this);
     m_action_monitor_project_file->setCheckable(true);
     connect(m_action_monitor_project_file, SIGNAL(toggled(bool)), SLOT(slot_toggle_project_file_monitoring(const bool)));
@@ -475,6 +479,10 @@ void MainWindow::build_toolbar()
     m_action_stop_rendering = new QAction(load_icons("rendering_stop"), "Stop Rendering", this);
     connect(m_action_stop_rendering, SIGNAL(triggered()), &m_rendering_manager, SLOT(slot_abort_rendering()));
     m_ui->main_toolbar->addAction(m_action_stop_rendering);
+
+    m_action_rendering_settings = new QAction(load_icons("rendering_settings"), "Rendering Settings...", this);
+    connect(m_action_rendering_settings, SIGNAL(triggered()), SLOT(slot_show_rendering_settings_window()));
+    m_ui->main_toolbar->addAction(m_action_rendering_settings);
 }
 
 void MainWindow::build_log_panel()
@@ -632,6 +640,10 @@ void MainWindow::set_file_widgets_enabled(const bool is_enabled)
         is_enabled &&
         is_project_open &&
         m_project_manager.get_project()->has_path());
+    m_action_reload_project->setEnabled(
+        is_enabled &&
+        is_project_open &&
+        m_project_manager.get_project()->has_path());
 
     // File -> Save Project and Save Project As.
     m_ui->action_file_save_project->setEnabled(is_enabled && is_project_open);
@@ -657,6 +669,10 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const bool
     const bool is_project_open = is_enabled && m_project_manager.is_project_open();
     const bool allow_starting_rendering = is_project_open && !is_rendering;
     const bool allow_stopping_rendering = is_project_open && is_rendering;
+
+    // Rendering -> Rendering Settings.
+    m_ui->action_rendering_rendering_settings->setEnabled(allow_starting_rendering);
+    m_action_rendering_settings->setEnabled(allow_starting_rendering);
 
     // Rendering -> Start Interactive Rendering.
     m_ui->action_rendering_start_interactive_rendering->setEnabled(allow_starting_rendering);

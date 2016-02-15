@@ -98,11 +98,13 @@ class MainWindow
     QAction*                                m_action_new_project;
     QAction*                                m_action_open_project;
     QAction*                                m_action_save_project;
+    QAction*                                m_action_reload_project;
     QAction*                                m_action_monitor_project_file;
 
     QAction*                                m_action_start_interactive_rendering;
     QAction*                                m_action_start_final_rendering;
     QAction*                                m_action_stop_rendering;
+    QAction*                                m_action_rendering_settings;
 
     std::vector<QAction*>                   m_recently_opened;
     std::vector<MinimizeButton*>            m_minimize_buttons;
