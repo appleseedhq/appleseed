@@ -516,7 +516,7 @@ auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_colormap_input_widgets
 QWidget* DisneyMaterialLayerUI::create_texture_button(const string& name)
 {
     QToolButton* texture_button = new QToolButton(m_content_widget);
-    texture_button->setIcon(QIcon(make_app_path("icons/disney_texture.png")));
+    texture_button->setIcon(load_icons("disney_texture"));
     texture_button->setToolTip("Bind Texture...");
 
     connect(texture_button, SIGNAL(clicked()), m_file_picker_signal_mapper, SLOT(map()));
@@ -528,7 +528,7 @@ QWidget* DisneyMaterialLayerUI::create_texture_button(const string& name)
 QWidget* DisneyMaterialLayerUI::create_expression_button(const string& name)
 {
     QToolButton* expression_button = new QToolButton(m_content_widget);
-    expression_button->setIcon(QIcon(make_app_path("icons/disney_expression.png")));
+    expression_button->setIcon(load_icons("disney_expression"));
     expression_button->setToolTip("Bind Expression...");
 
     connect(expression_button, SIGNAL(clicked()), m_expression_editor_signal_mapper, SLOT(map()));
