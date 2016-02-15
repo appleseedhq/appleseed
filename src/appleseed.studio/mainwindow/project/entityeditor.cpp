@@ -448,7 +448,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_color_input_widgets(const Dicti
     QLineEdit* line_edit = new QLineEdit(m_parent);
 
     QToolButton* picker_button = new QToolButton(m_parent);
-    picker_button->setObjectName("ColorPicker");
+    picker_button->setObjectName("color_picker");
     connect(picker_button, SIGNAL(clicked()), m_color_picker_signal_mapper, SLOT(map()));
 
     const string name = metadata.get<string>("name");

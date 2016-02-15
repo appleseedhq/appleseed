@@ -428,7 +428,7 @@ QToolButton:checked
     color: SELECTED_TEXT_COLOR;
 }
 
-QToolButton#ColorPicker
+QToolButton#color_picker
 {
     border: BORDER_STYLE;
 }
@@ -1044,7 +1044,7 @@ QLabel#error
 
 
 /*
- * Other Specific Styles.
+ * One-off Styles.
  */
 
 QWidget#TestWindow QSplitter::handle
