@@ -130,6 +130,7 @@ void DisneyMaterialLayerUI::create_layer_ui()
 
     // Fold button.
     m_fold_unfold_button = new QToolButton(button_box);
+    m_fold_unfold_button->setObjectName("widget");
     m_fold_unfold_button->setIcon(m_fold_icon);
     button_box_layout->addWidget(m_fold_unfold_button);
     connect(m_fold_unfold_button, SIGNAL(clicked()), this, SLOT(slot_fold_unfold_layer()));
@@ -143,18 +144,21 @@ void DisneyMaterialLayerUI::create_layer_ui()
 
     // Move Up button.
     QToolButton* up_button = new QToolButton(button_box);
+    up_button->setObjectName("widget");
     up_button->setIcon(QIcon(":widgets/layer_move_up.png"));
     button_box_layout->addWidget(up_button);
     connect(up_button, SIGNAL(clicked()), this, SLOT(slot_move_layer_up()));
 
     // Move Down button.
     QToolButton* down_button = new QToolButton(button_box);
+    down_button->setObjectName("widget");
     down_button->setIcon(QIcon(":widgets/layer_move_down.png"));
     button_box_layout->addWidget(down_button);
     connect(down_button, SIGNAL(clicked()), this, SLOT(slot_move_layer_down()));
 
     // Remove button.
     QToolButton* remove_button = new QToolButton(button_box);
+    remove_button->setObjectName("widget");
     remove_button->setIcon(QIcon(":/widgets/layer_remove.png"));
     button_box_layout->addWidget(remove_button);
     connect(remove_button, SIGNAL(clicked()), this, SLOT(slot_delete_layer()));

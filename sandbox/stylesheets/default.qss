@@ -362,7 +362,6 @@ QMenu::tearoff:selected
 
 /*
  * QToolBar.
- * QToolButton.
  */
 
 QToolBar
@@ -410,6 +409,11 @@ QToolBar::handle:vertical
     margin-bottom: 4px;
 }
 
+
+/*
+ * QToolButton.
+ */
+
 QToolButton
 {
     margin-left: 2px;
@@ -419,6 +423,11 @@ QToolButton
 QToolButton:hover
 {
     color: HOVER_TEXT_COLOR;
+}
+
+QToolButton#widget:hover
+{
+    background-color: HOVER_BACKGROUND_COLOR;
 }
 
 QToolButton:pressed,
