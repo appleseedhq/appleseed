@@ -138,7 +138,6 @@ namespace
             if (normal_norm == GScalar(0.0))
                 continue;
             const GScalar rcp_normal_norm = GScalar(1.0) / normal_norm;
-            const GScalar rcp_area = GScalar(2.0) * rcp_normal_norm;
             const GScalar area = GScalar(0.5) * normal_norm;
             normal *= rcp_normal_norm;
             assert(is_normalized(normal));
@@ -235,8 +234,6 @@ namespace
 
     void make_fluffy(const Assembly& assembly, const FluffParams& params)
     {
-        const ObjectContainer& objects = assembly.objects();
-
         typedef vector<const ObjectInstance*> ObjectInstanceVector;
         typedef map<const MeshObject*, ObjectInstanceVector> ObjectToInstanceMap;
 

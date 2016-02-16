@@ -227,9 +227,6 @@ void WidgetZoomHandler::apply_scale_factor()
     if (m_scroll_area->widget()->layout())
         m_scroll_area->widget()->layout()->activate();
 
-    const int new_widget_width = m_scroll_area->widget()->width();
-    const int new_widget_height = m_scroll_area->widget()->height();
-
     const double actual_h_multiplier = static_cast<double>(m_scroll_area->widget()->width()) / old_widget_width;
     const double actual_v_multiplier = static_cast<double>(m_scroll_area->widget()->height()) / old_widget_height;
 

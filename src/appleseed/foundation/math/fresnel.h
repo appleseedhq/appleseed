@@ -519,8 +519,6 @@ inline void artist_friendly_fresnel_conductor_inverse_reparameterization(
     SpectrumType&           normal_reflectance,
     SpectrumType&           edge_tint)
 {
-    typedef typename impl::GetValueType<SpectrumType>::ValueType ValueType;
-
     const SpectrumType one(1.0);
 
     SpectrumType square_n_plus_one(n + one);

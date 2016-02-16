@@ -110,7 +110,6 @@ namespace renderer
 namespace
 {
     // Floating-point formatting settings.
-    const char* VectorFormat     = "%.15f";
     const char* MatrixFormat     = "%.15f";
     const char* ColorValueFormat = "%.6f";
 

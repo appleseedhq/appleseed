@@ -60,8 +60,13 @@ set (git_command "git")
 
 # Flags common to all configurations.
 set (c_compiler_flags_common
-    -Werror                                             # Treat Warnings As Errors
+    -Wall
     -Wno-switch                                         # don't complain about unhandled enumeration values in switch
+    -Wno-unknown-pragmas
+    -Wno-sign-compare
+    -Wno-unused-function
+    -Wno-reorder
+    -Werror                                             # treat Warnings As Errors
     -fno-math-errno                                     # ignore errno when calling math functions
     -fPIC                                               # emit position-independent code
 )

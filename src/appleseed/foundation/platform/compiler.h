@@ -191,6 +191,17 @@ namespace foundation
 
 
 //
+//  A macro to mark a variable as unused. Useful in unit tests.
+//
+
+#if defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)))
+    #define APPLESEED_UNUSED   __attribute__((unused))
+#else
+    #define APPLESEED_UNUSED
+#endif
+
+
+//
 // Utility macros converting their argument to a string literal:
 //   APPLESEED_TO_STRING_EVAL first expands the argument definition.
 //   APPLESEED_TO_STRING_NOEVAL does not expand the argument definition.
