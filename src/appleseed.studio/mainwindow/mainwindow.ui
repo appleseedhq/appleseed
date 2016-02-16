@@ -185,6 +185,9 @@
     <layout class="QGridLayout" name="gridLayout_2">
      <item row="2" column="0">
       <widget class="QTreeWidget" name="treewidget_project_explorer_scene">
+       <property name="alternatingRowColors">
+        <bool>true</bool>
+       </property>
        <property name="selectionMode">
         <enum>QAbstractItemView::ExtendedSelection</enum>
        </property>

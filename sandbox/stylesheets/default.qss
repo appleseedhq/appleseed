@@ -627,6 +627,7 @@ QTreeView,
 QListView
 {
     border: BORDER_STYLE;
+	alternate-background-color: rgb(33, 33, 33);
 }
 
 QTabWidget QTreeView,
