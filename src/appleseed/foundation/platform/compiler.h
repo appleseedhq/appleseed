@@ -196,6 +196,8 @@ namespace foundation
 
 #if defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)))
     #define APPLESEED_UNUSED   __attribute__((unused))
+#elif defined(__clang__)
+    #define APPLESEED_UNUSED   __attribute__((unused))
 #else
     #define APPLESEED_UNUSED
 #endif
