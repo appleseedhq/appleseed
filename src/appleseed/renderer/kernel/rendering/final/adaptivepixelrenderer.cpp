@@ -260,8 +260,6 @@ namespace
 
             // Merge the scratch framebuffer into the output framebuffer.
             const float rcp_sample_count = 1.0f / trackers[0].get_size();
-            const size_t width = m_scratch_fb->get_width();
-            const size_t height = m_scratch_fb->get_height();
             for (int y = -m_scratch_fb_half_height; y <= m_scratch_fb_half_height; ++y)
             {
                 for (int x = -m_scratch_fb_half_width; x <= m_scratch_fb_half_width; ++x)

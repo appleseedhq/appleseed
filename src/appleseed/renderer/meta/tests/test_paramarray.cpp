@@ -130,7 +130,7 @@ TEST_SUITE(Renderer_Utility_ParamArray)
 
         EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
         {
-            const char* value = params.get_path("y");
+            APPLESEED_UNUSED const char* value = params.get_path("y");
         });
     }
 
@@ -141,7 +141,7 @@ TEST_SUITE(Renderer_Utility_ParamArray)
 
         EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
         {
-            const char* value = params.get_path("other.x");
+            APPLESEED_UNUSED const char* value = params.get_path("other.x");
         });
     }
 

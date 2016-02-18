@@ -99,7 +99,7 @@ TEST_SUITE(Foundation_Platform_Snprintf)
     TEST_CASE(PortableSnprintf_GivenLargeSizeTValue_UsingC99FormatString_ReturnsProperlyFormattedString)
     {
         char buf[100];
-        const int result = portable_snprintf(buf, sizeof(buf), "%zu", MaxSizeTValue);
+        portable_snprintf(buf, sizeof(buf), "%zu", MaxSizeTValue);
 
         EXPECT_EQ(MaxSizeTValueString, string(buf));
     }

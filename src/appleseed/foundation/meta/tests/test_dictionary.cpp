@@ -110,7 +110,7 @@ TEST_SUITE(Foundation_Utility_StringDictionary)
 
         EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
         {
-            const char* item = sd.get("key");
+            APPLESEED_UNUSED const char* item = sd.get("key");
         });
     }
 
@@ -120,7 +120,7 @@ TEST_SUITE(Foundation_Utility_StringDictionary)
 
         EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
         {
-            const int item = sd.get<int>("key");
+            APPLESEED_UNUSED const int item = sd.get<int>("key");
         });
     }
 
@@ -130,7 +130,7 @@ TEST_SUITE(Foundation_Utility_StringDictionary)
 
         EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
         {
-            const int item = sd.get<int>(string("key"));
+            APPLESEED_UNUSED const int item = sd.get<int>(string("key"));
         });
     }
 
@@ -358,7 +358,7 @@ TEST_SUITE(Foundation_Utility_Dictionary)
 
         EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
         {
-            const int item = dic.get<int>("key");
+            APPLESEED_UNUSED const int item = dic.get<int>("key");
         });
     }
 
@@ -368,7 +368,7 @@ TEST_SUITE(Foundation_Utility_Dictionary)
 
         EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
         {
-            const int item = dic.get<int>(string("key"));
+            APPLESEED_UNUSED const int item = dic.get<int>(string("key"));
         });
     }
 

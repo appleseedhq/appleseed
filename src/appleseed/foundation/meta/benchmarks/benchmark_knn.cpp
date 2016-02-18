@@ -135,8 +135,8 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
         vector<Vector3f>    m_query_points;
 
         FixtureBase(const string& name)
-          : m_accumulator(0)
-          , m_answer(AnswerSize)
+          : m_answer(AnswerSize)
+          , m_accumulator(0)
         {
             configure_logger(name);
         }

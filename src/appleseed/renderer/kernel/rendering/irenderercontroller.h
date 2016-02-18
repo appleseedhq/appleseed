@@ -47,6 +47,9 @@ class APPLESEED_DLLSYMBOL IRendererController
   : public foundation::NonCopyable
 {
   public:
+    // Destructor.
+    virtual ~IRendererController() {}
+
     // This method is called before rendering begins.
     virtual void on_rendering_begin() = 0;
 
