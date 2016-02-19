@@ -72,7 +72,7 @@
     <addaction name="menu_file_open_builtin_project"/>
     <addaction name="action_file_reload_project"/>
     <addaction name="separator"/>
-    <addaction name="action_watch_project_changes"/>
+    <addaction name="action_monitor_project_file"/>
     <addaction name="separator"/>
     <addaction name="action_file_save_project"/>
     <addaction name="action_file_save_project_as"/>
@@ -87,7 +87,7 @@
     <addaction name="action_rendering_start_final_rendering"/>
     <addaction name="action_rendering_stop_rendering"/>
     <addaction name="separator"/>
-    <addaction name="action_rendering_render_settings"/>
+    <addaction name="action_rendering_rendering_settings"/>
    </widget>
    <widget class="QMenu" name="menu_diagnostics">
     <property name="title">
@@ -185,6 +185,9 @@
     <layout class="QGridLayout" name="gridLayout_2">
      <item row="2" column="0">
       <widget class="QTreeWidget" name="treewidget_project_explorer_scene">
+       <property name="alternatingRowColors">
+        <bool>true</bool>
+       </property>
        <property name="selectionMode">
         <enum>QAbstractItemView::ExtendedSelection</enum>
        </property>
@@ -399,9 +402,9 @@
     <string>Shift+F5</string>
    </property>
   </action>
-  <action name="action_rendering_render_settings">
+  <action name="action_rendering_rendering_settings">
    <property name="text">
-    <string>&amp;Render Settings...</string>
+    <string>&amp;Rendering Settings...</string>
    </property>
    <property name="shortcut">
     <string>F7</string>
@@ -444,12 +447,12 @@
     <string>Watch File Changes</string>
    </property>
   </action>
-  <action name="action_watch_project_changes">
+  <action name="action_monitor_project_file">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Watch Project Changes</string>
+    <string>Monitor Project File</string>
    </property>
   </action>
  </widget>
