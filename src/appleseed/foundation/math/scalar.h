@@ -81,6 +81,7 @@ static const double SqrtTwo         =  1.4142135623730950;      // sqrt(2)
 static const double RcpSqrtTwo      =  0.7071067811865475;      // 1 / sqrt(2) = sqrt(2) / 2
 static const double SqrtThree       =  1.7320508075688773;      // sqrt(3)
 static const double GoldenRatio     =  1.6180339887498948;      // (1 + sqrt(5)) / 2
+static const double Ln10            =  2.3025850929940457;      // ln(10)
 
 
 //

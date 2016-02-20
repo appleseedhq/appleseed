@@ -2058,12 +2058,12 @@ namespace
             m_materials.clear();
             m_objects.clear();
             m_object_instances.clear();
-            m_surface_shaders.clear();
-            m_textures.clear();
-            m_texture_instances.clear();
 #ifdef APPLESEED_WITH_OSL
             m_shader_groups.clear();
 #endif
+            m_surface_shaders.clear();
+            m_textures.clear();
+            m_texture_instances.clear();
 
             m_name = get_value(attrs, "name");
             m_model = get_value(attrs, "model", AssemblyFactory().get_model());
@@ -2090,12 +2090,12 @@ namespace
                 m_assembly->materials().swap(m_materials);
                 m_assembly->objects().swap(m_objects);
                 m_assembly->object_instances().swap(m_object_instances);
-                m_assembly->surface_shaders().swap(m_surface_shaders);
-                m_assembly->textures().swap(m_textures);
-                m_assembly->texture_instances().swap(m_texture_instances);
 #ifdef APPLESEED_WITH_OSL
                 m_assembly->shader_groups().swap(m_shader_groups);
 #endif
+                m_assembly->surface_shaders().swap(m_surface_shaders);
+                m_assembly->textures().swap(m_textures);
+                m_assembly->texture_instances().swap(m_texture_instances);
             }
             else
             {

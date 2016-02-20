@@ -953,7 +953,7 @@ namespace
         }
 
 #ifdef APPLESEED_WITH_OSL
-        // Write a <shader> parameter.
+        // Write a shader's <parameter> element.
         void write(const ShaderParam& param)
         {
             XMLElement element("parameter", m_file, m_indenter);
@@ -975,7 +975,7 @@ namespace
                 write(*i);
         }
 
-        // Write a <shader_connection> element.
+        // Write a <connect_shaders> element.
         void write(const ShaderConnection& connection)
         {
             XMLElement element("connect_shaders", m_file, m_indenter);
