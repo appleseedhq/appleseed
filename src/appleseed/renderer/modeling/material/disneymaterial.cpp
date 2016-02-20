@@ -974,7 +974,7 @@ const DisneyMaterialLayer& DisneyMaterial::get_layer(
 
         for (const_each<vector<DisneyMaterialLayer> > it = *layers; it; ++it)
         {
-            const bool ok = it->prepare_expressions();
+            APPLESEED_UNUSED const bool ok = it->prepare_expressions();
             assert(ok);
         }
 

@@ -362,7 +362,6 @@ QMenu::tearoff:selected
 
 /*
  * QToolBar.
- * QToolButton.
  */
 
 QToolBar
@@ -410,6 +409,11 @@ QToolBar::handle:vertical
     margin-bottom: 4px;
 }
 
+
+/*
+ * QToolButton.
+ */
+
 QToolButton
 {
     margin-left: 2px;
@@ -418,8 +422,12 @@ QToolButton
 
 QToolButton:hover
 {
-    background-color: HOVER_BACKGROUND_COLOR;
     color: HOVER_TEXT_COLOR;
+}
+
+QToolButton#widget:hover
+{
+    background-color: HOVER_BACKGROUND_COLOR;
 }
 
 QToolButton:pressed,
@@ -429,7 +437,7 @@ QToolButton:checked
     color: SELECTED_TEXT_COLOR;
 }
 
-QToolButton#ColorPicker
+QToolButton#color_picker
 {
     border: BORDER_STYLE;
 }
@@ -619,6 +627,7 @@ QTreeView,
 QListView
 {
     border: BORDER_STYLE;
+	alternate-background-color: rgb(33, 33, 33);
 }
 
 QTabWidget QTreeView,
@@ -1045,7 +1054,7 @@ QLabel#error
 
 
 /*
- * Other Specific Styles.
+ * One-off Styles.
  */
 
 QWidget#TestWindow QSplitter::handle
@@ -1087,8 +1096,8 @@ QLabel#a_label
 QLabel#info_label
 {
     color: INFO_TEXT_COLOR;
-    min-width: 250px;
-    max-width: 250px;
+    min-width: 290px;
+    max-width: 290px;
 #ifdef __APPLE__
     min-width: 278px;
     max-width: 278px;

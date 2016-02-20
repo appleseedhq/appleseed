@@ -66,6 +66,7 @@ set (c_compiler_flags_common
     -Wno-sign-compare
     -Wno-unused-function
     -Wno-reorder
+    -Wno-strict-aliasing
     -Werror                                             # treat Warnings As Errors
     -fno-math-errno                                     # ignore errno when calling math functions
     -fPIC                                               # emit position-independent code

@@ -347,7 +347,7 @@ namespace
 
             // Compute direction of real ray source.
             Vector3d wr;
-            const bool successful = refract(wi, ni, values->m_eta, wr);
+            APPLESEED_UNUSED const bool successful = refract(wi, ni, values->m_eta, wr);
             assert(successful);
             assert(is_normalized(wr));
 

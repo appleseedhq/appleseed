@@ -393,7 +393,7 @@ namespace
         struct SVal
         {
             double      m_kg;               // constant factor of glossy component
-            double      m_k;                // constant factor needed during hemisphere (isotropic case only)
+            double      m_k;                // constant factor needed during hemisphere (anisotropic case only)
             bool        m_isotropic;        // true if the U and V shininess values are the same
         };
 
@@ -450,6 +450,8 @@ namespace
                 // Precompute constant factor needed during hemisphere sampling.
                 sval.m_k = sqrt((nu + 1.0) / (nv + 1.0));
             }
+            else
+                sval.m_k = 0.0;
         }
 
         static double sample_anisotropic_glossy(const double k, const double s)

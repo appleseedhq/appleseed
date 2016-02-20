@@ -36,6 +36,7 @@
 
 // Forward declarations.
 namespace renderer  { class ParamArray; }
+class QIcon;
 class QLayout;
 class QMessageBox;
 class QShortcut;
@@ -55,6 +56,18 @@ extern const QString g_bitmap_files_filter;
 QString compute_oiio_files_filter();
 
 #endif
+
+// Combine two filesystem paths and convert the result to native separators.
+QString combine_paths(const QString& lhs, const QString& rhs);
+
+// Combine the application's base path and a given relative path.
+QString make_app_path(const QString& path);
+
+// Check whether a file exists.
+bool file_exists(const QString& path);
+
+// Load an icon and its variants (hover, disabled...) from the application's icons directory.
+QIcon load_icons(const QString& base_name);
 
 QString get_open_filename(
     QWidget*                parent,
