@@ -1132,7 +1132,7 @@ void MainWindow::slot_open_cornellbox_builtin_project()
     if (!can_close_project())
         return;
 
-    const bool successful = m_project_manager.load_builtin_project("cornell_box");
+    APPLESEED_UNUSED const bool successful = m_project_manager.load_builtin_project("cornell_box");
     assert(successful);
 
     on_project_change();

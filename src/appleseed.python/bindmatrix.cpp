@@ -78,7 +78,7 @@ namespace
                 bpy::throw_error_already_set();
             }
 
-            int i, j;
+            int i = 0, j = 0;
 
             bpy::extract<int> ex0(indices[0]);
             if (!ex0.check())
@@ -120,7 +120,7 @@ namespace
                 bpy::throw_error_already_set();
             }
 
-            int i, j;
+            int i = 0, j = 0;
 
             bpy::extract<int> ex0(indices[0]);
             if (!ex0.check())

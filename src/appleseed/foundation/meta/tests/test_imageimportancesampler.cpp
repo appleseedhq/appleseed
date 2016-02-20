@@ -133,7 +133,7 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
             float prob_xy;
             importance_sampler.sample(s, x, y, prob_xy);
 
-            const float pdf = importance_sampler.get_pdf(x, y);
+            APPLESEED_UNUSED const float pdf = importance_sampler.get_pdf(x, y);
             assert(pdf == prob_xy);
 
             // Compute the coordinates of the center of the pixel.

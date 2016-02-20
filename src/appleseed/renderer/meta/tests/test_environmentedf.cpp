@@ -184,7 +184,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
         {
             bind_inputs();
 
-            const bool success = env_edf.on_frame_begin(m_project);
+            APPLESEED_UNUSED const bool success = env_edf.on_frame_begin(m_project);
             assert(success);
 
             TextureStore texture_store(m_scene);

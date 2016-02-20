@@ -63,7 +63,7 @@ ProjectManager::ProjectManager()
 
 void ProjectManager::create_project()
 {
-    const bool result = load_builtin_project("default");
+    APPLESEED_UNUSED const bool result = load_builtin_project("default");
     assert(result);
 }
 
