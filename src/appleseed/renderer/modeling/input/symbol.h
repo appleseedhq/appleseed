@@ -67,12 +67,12 @@ class SymbolTable
         SymbolLight,
         SymbolObject,
         SymbolObjectInstance,
+#ifdef APPLESEED_WITH_OSL
+        SymbolShaderGroup,
+#endif
         SymbolSurfaceShader,
         SymbolTexture,
         SymbolTextureInstance
-#ifdef APPLESEED_WITH_OSL
-        , SymbolShaderGroup
-#endif
     };
 
     // Exception thrown when attempting to insert a symbol
@@ -127,12 +127,12 @@ inline const char* SymbolTable::symbol_name(const SymbolID symbol_id)
         { SymbolLight,              "light" },
         { SymbolObject,             "object" },
         { SymbolObjectInstance,     "object instance" },
+#ifdef APPLESEED_WITH_OSL
+        { SymbolShaderGroup,        "shader group" },
+#endif
         { SymbolSurfaceShader,      "surface shader" },
         { SymbolTexture,            "texture" },
-        { SymbolTextureInstance,    "texture instance" },
-#ifdef APPLESEED_WITH_OSL
-        { SymbolShaderGroup,        "shader group" }
-#endif
+        { SymbolTextureInstance,    "texture instance" }
     };
 
     const SymbolNameEntry* symbol = LOOKUP_KVPAIR_ARRAY(SymbolNames, symbol_id);

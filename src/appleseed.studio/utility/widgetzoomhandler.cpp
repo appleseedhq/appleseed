@@ -227,8 +227,11 @@ void WidgetZoomHandler::apply_scale_factor()
     if (m_scroll_area->widget()->layout())
         m_scroll_area->widget()->layout()->activate();
 
-    const double actual_h_multiplier = static_cast<double>(m_scroll_area->widget()->width()) / old_widget_width;
-    const double actual_v_multiplier = static_cast<double>(m_scroll_area->widget()->height()) / old_widget_height;
+    const int new_widget_width = m_scroll_area->widget()->width();
+    const int new_widget_height = m_scroll_area->widget()->height();
+
+    const double actual_h_multiplier = static_cast<double>(new_widget_width) / old_widget_width;
+    const double actual_v_multiplier = static_cast<double>(new_widget_height) / old_widget_height;
 
     set_slider_center(m_scroll_area->horizontalScrollBar(), actual_h_multiplier * h_slider_center);
     set_slider_center(m_scroll_area->verticalScrollBar(), actual_v_multiplier * v_slider_center);
