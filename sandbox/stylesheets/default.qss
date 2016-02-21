@@ -313,10 +313,16 @@ QMenu
     border: BORDER_STYLE;
 }
 
+QMenu::icon,
+QMenu::indicator
+{
+    margin-left: 5px;
+}
+
 QMenu::item
 {
     background-color: transparent;
-    padding: 3px 20px 3px 20px;
+    padding: 3px 20px 3px 24px;
 }
 
 QMenu::item:selected
@@ -697,6 +703,7 @@ QAbstractItemView::item
  * QCheckBox.
  * QAbstractItemView.
  * QGroupBox.
+ * QMenu::indicator.
  */
 
 QCheckBox::indicator,
@@ -716,42 +723,48 @@ QGroupBox::indicator:hover
 
 QCheckBox::indicator:checked:enabled,
 QAbstractItemView::indicator:checked:enabled,
-QGroupBox::indicator:checked:enabled
+QGroupBox::indicator:checked:enabled,
+QMenu::indicator:checked:enabled
 {
     image: url(":/widgets/checkbox_checked_enabled.png");
 }
 
 QCheckBox::indicator:unchecked:enabled,
 QAbstractItemView::indicator:unchecked:enabled,
-QGroupBox::indicator:unchecked:enabled
+QGroupBox::indicator:unchecked:enabled,
+QMenu::indicator:unchecked:enabled
 {
     image: url(":/widgets/checkbox_unchecked_enabled.png");
 }
 
 QCheckBox::indicator:indeterminate:enabled,
 QAbstractItemView::indicator:indeterminate:enabled,
-QGroupBox::indicator:indeterminate:enabled
+QGroupBox::indicator:indeterminate:enabled,
+QMenu::indicator:indeterminate:enabled
 {
     image: url(":/widgets/checkbox_indeterminate_enabled.png");
 }
 
 QCheckBox::indicator:checked:disabled,
 QAbstractItemView::indicator:checked:disabled,
-QGroupBox::indicator:checked:disabled
+QGroupBox::indicator:checked:disabled,
+QMenu::indicator:checked:disabled
 {
     image: url(":/widgets/checkbox_checked_disabled.png");
 }
 
 QCheckBox::indicator:unchecked:disabled,
 QAbstractItemView::indicator:unchecked:disabled,
-QGroupBox::indicator:unchecked:disabled
+QGroupBox::indicator:unchecked:disabled,
+QMenu::indicator:unchecked:disabled
 {
     image: url(":/widgets/checkbox_unchecked_disabled.png");
 }
 
 QCheckBox::indicator:indeterminate:disabled,
 QAbstractItemView::indicator:indeterminate:disabled,
-QGroupBox::indicator:indeterminate:disabled
+QGroupBox::indicator:indeterminate:disabled,
+QMenu::indicator:indeterminate:disabled
 {
     image: url(":/widgets/checkbox_indeterminate_disabled.png");
 }
