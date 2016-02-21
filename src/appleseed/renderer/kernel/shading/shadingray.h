@@ -98,18 +98,6 @@ class ShadingRay
     // Constructors.
     ShadingRay();                   // leave all fields uninitialized
     ShadingRay(
-        const RayType&              ray,
-        const Time&                 time,
-        const VisibilityFlags::Type flags,
-        const DepthType             depth);
-    ShadingRay(
-        const RayType&              ray,
-        const Time&                 time,
-        const VisibilityFlags::Type flags,
-        const DepthType             depth,
-        const RayType&              rx,
-        const RayType&              ry);
-    ShadingRay(
         const VectorType&           org,
         const VectorType&           dir,
         const Time&                 time,
@@ -137,16 +125,6 @@ class ShadingRay
     foundation::uint8 get_highest_volume_priority() const;
 };
 
-// Transform a ShadingRay.
-template <typename U>
-ShadingRay transform_to_local(
-    const foundation::Transform<U>& transform,
-    const ShadingRay&               ray);
-template <typename U>
-ShadingRay transform_to_parent(
-    const foundation::Transform<U>& transform,
-    const ShadingRay&               ray);
-
 
 //
 // ShadingRay class implementation.
@@ -155,38 +133,6 @@ ShadingRay transform_to_parent(
 inline ShadingRay::ShadingRay()
   : m_volume_count(0)
   , m_has_differentials(false)
-{
-}
-
-inline ShadingRay::ShadingRay(
-    const RayType&                  ray,
-    const Time&                     time,
-    const VisibilityFlags::Type     flags,
-    const DepthType                 depth)
-  : RayType(ray)
-  , m_time(time)
-  , m_flags(flags)
-  , m_depth(depth)
-  , m_volume_count(0)
-  , m_has_differentials(false)
-{
-}
-
-inline ShadingRay::ShadingRay(
-    const RayType&                  ray,
-    const Time&                     time,
-    const VisibilityFlags::Type     flags,
-    const DepthType                 depth,
-    const RayType&                  rx,
-    const RayType&                  ry)
-  : RayType(ray)
-  , m_time(time)
-  , m_flags(flags)
-  , m_depth(depth)
-  , m_volume_count(0)
-  , m_has_differentials(true)
-  , m_rx(rx)
-  , m_ry(ry)
 {
 }
 
@@ -220,60 +166,6 @@ inline ShadingRay::ShadingRay(
   , m_volume_count(0)
   , m_has_differentials(false)
 {
-}
-
-template <typename U>
-inline ShadingRay transform_to_local(
-    const foundation::Transform<U>& transform,
-    const ShadingRay&               ray)
-{
-    if (ray.m_has_differentials)
-    {
-        return
-            ShadingRay(
-                transform.transform_to_local(ray),
-                ray.m_time,
-                ray.m_flags,
-                ray.m_depth,
-                transform.transform_to_local(ray.m_rx),
-                transform.transform_to_local(ray.m_ry));
-    }
-    else
-    {
-        return
-            ShadingRay(
-                transform.transform_to_local(ray),
-                ray.m_time,
-                ray.m_flags,
-                ray.m_depth);
-    }
-}
-
-template <typename U>
-inline ShadingRay transform_to_parent(
-    const foundation::Transform<U>& transform,
-    const ShadingRay&               ray)
-{
-    if (ray.m_has_differentials)
-    {
-        return
-            ShadingRay(
-                transform.transform_to_parent(ray),
-                ray.m_time,
-                ray.m_flags,
-                ray.m_depth,
-                transform.transform_to_parent(ray.m_rx),
-                transform.transform_to_parent(ray.m_ry));
-    }
-    else
-    {
-        return
-            ShadingRay(
-                transform.transform_to_parent(ray),
-                ray.m_time,
-                ray.m_flags,
-                ray.m_depth);
-    }
 }
 
 inline foundation::uint8 ShadingRay::get_highest_volume_priority() const
