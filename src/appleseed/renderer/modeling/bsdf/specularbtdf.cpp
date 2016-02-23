@@ -74,8 +74,8 @@ namespace
             m_inputs.declare("transmittance", InputFormatSpectralReflectance);
             m_inputs.declare("transmittance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("fresnel_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("from_ior", InputFormatScalar);
-            m_inputs.declare("to_ior", InputFormatScalar);
+            m_inputs.declare("density", InputFormatScalar);
+            m_inputs.declare("scale", InputFormatScalar);
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -98,7 +98,7 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
 
             const Vector3d& shading_normal = sample.get_shading_normal();
-            const double eta = values->m_from_ior / values->m_to_ior;
+            const double eta = sample.m_from_ior / sample.m_to_ior;
             const double cos_theta_i = dot(sample.m_outgoing.get_value(), shading_normal);
             const double sin_theta_i2 = 1.0 - square(cos_theta_i);
             const double sin_theta_t2 = sin_theta_i2 * square(eta);
@@ -168,6 +168,7 @@ namespace
             incoming = improve_normalization(incoming);
             sample.m_incoming = Dual3d(incoming);
 
+            // Compute the ray differentials.
             if (refract_differentials)
                 sample.compute_transmitted_differentials(eta);
             else sample.compute_reflected_differentials();
@@ -196,6 +197,32 @@ namespace
             const int           modes) const APPLESEED_OVERRIDE
         {
             return 0.0;
+        }
+
+        void apply_absorption(
+            const void*         data,
+            const double        distance,
+            Spectrum&           transmittance) const APPLESEED_OVERRIDE
+        {
+            const InputValues* values = static_cast<const InputValues*>(data);
+            const float density = static_cast<float>(values->m_density);
+            const float scale = static_cast<float>(values->m_scale);
+            const float fdistance = static_cast<float>(distance);
+
+            for (size_t i = 0, e = transmittance.size(); i < e; ++i)
+            {
+                //
+                // Reference:
+                //
+                //   Beer-Lambert law:
+                //   https://en.wikipedia.org/wiki/Beer%E2%80%93Lambert_law
+                //
+
+                const float btdf_transmittance = static_cast<float>(values->m_transmittance[i] * values->m_transmittance_multiplier);
+                const float absorption = (1.0f - btdf_transmittance) * density;
+                const float optical_depth = absorption * scale * fdistance;
+                transmittance[i] *= exp(-optical_depth);
+            }
         }
 
       private:
@@ -283,23 +310,23 @@ DictionaryArray SpecularBTDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "from_ior")
-            .insert("label", "From Index of Refraction")
+            .insert("name", "density")
+            .insert("label", "Density")
             .insert("type", "numeric")
             .insert("min_value", "0.0")
-            .insert("max_value", "5.0")
+            .insert("max_value", "10.0")
             .insert("use", "required")
             .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "to_ior")
-            .insert("label", "To Index of Refraction")
+            .insert("name", "scale")
+            .insert("label", "Scale")
             .insert("type", "numeric")
             .insert("min_value", "0.0")
-            .insert("max_value", "5.0")
+            .insert("max_value", "10.0")
             .insert("use", "required")
-            .insert("default", "1.5"));
+            .insert("default", "1.0"));
 
     return metadata;
 }

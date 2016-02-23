@@ -852,8 +852,10 @@ namespace
             values->m_transmittance.set(1.0f);
             values->m_transmittance_multiplier = 1.0;
             values->m_fresnel_multiplier = 0.0;
-            values->m_from_ior = from_ior;
-            values->m_to_ior = to_ior;
+
+            // todo
+            // values->m_from_ior = from_ior;
+            // values->m_to_ior = to_ior;
         }
     };
 

@@ -62,8 +62,8 @@ APPLESEED_DECLARE_INPUT_VALUES(SpecularBTDFInputValues)
     Spectrum    m_transmittance;                // specular transmittance
     double      m_transmittance_multiplier;     // specular transmittance multiplier
     double      m_fresnel_multiplier;           // Fresnel multiplier
-    double      m_from_ior;                     // from this index of refraction
-    double      m_to_ior;                       // to this index of refraction
+    double      m_density;                      // medium density
+    double      m_scale;                        // distance scaling factor
 };
 
 

@@ -187,6 +187,12 @@ class APPLESEED_DLLSYMBOL BSDF
         const foundation::Vector3d& incoming,                   // world space incoming direction, unit-length
         const int                   modes) const = 0;           // selected scattering modes
 
+    // Modulate transmittance by medium absorption over the given distance.
+    virtual void apply_absorption(
+        const void*                 data,
+        const double                distance,
+        Spectrum&                   transmittance) const;
+
   protected:
     // Force a given direction to lie above a surface described by its normal vector.
     static foundation::Vector3d force_above_surface(

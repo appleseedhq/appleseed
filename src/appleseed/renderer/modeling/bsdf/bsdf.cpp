@@ -101,4 +101,11 @@ void BSDF::prepare_inputs(void* data) const
 {
 }
 
+void BSDF::apply_absorption(
+    const void*             data,
+    const double            distance,
+    Spectrum&               transmittance) const
+{
+}
+
 }   // namespace renderer

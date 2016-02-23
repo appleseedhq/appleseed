@@ -44,6 +44,9 @@
 // Standard headers.
 #include <cassert>
 
+// Forward declarations.
+namespace renderer  { class BSDF; }
+
 namespace renderer
 {
 
@@ -85,11 +88,18 @@ class ShadingRay
 
     enum { MaxVolumeCount = 8 };
 
+    struct Volume
+    {
+        const ObjectInstance*       m_object_instance;
+        const BSDF*                 m_bsdf;
+        double                      m_ior;
+    };
+
     // Public members, in an order that optimizes packing.
     RayType                         m_rx;
     RayType                         m_ry;
     Time                            m_time;
-    const ObjectInstance*           m_volumes[MaxVolumeCount];      // always sorted from highest to lowest priority
+    Volume                          m_volumes[MaxVolumeCount];      // always sorted from highest to lowest priority
     VisibilityFlags::Type           m_flags;
     DepthType                       m_depth;
     foundation::uint8               m_volume_count;
@@ -116,13 +126,28 @@ class ShadingRay
     void copy_volumes_from(const ShadingRay& source);
 
     // Copy all volumes from the source ray and add an additional volume.
-    void add_volume(const ShadingRay& source, const ObjectInstance* volume);
+    void add_volume(
+        const ShadingRay&           source,
+        const ObjectInstance*       object_instance,
+        const BSDF*                 bsdf,
+        const double                ior);
 
     // Copy all volumes from the source ray except a given volume.
-    void remove_volume(const ShadingRay& source, const ObjectInstance* volume);
+    void remove_volume(
+        const ShadingRay&           source,
+        const ObjectInstance*       object_instance);
 
-    // Return the highest volume priority from the ray.
-    foundation::uint8 get_highest_volume_priority() const;
+    // Return the currently active volume.
+    const ShadingRay::Volume* get_current_volume() const;
+
+    // Return the volume that would be active if we removed the currently active one.
+    const ShadingRay::Volume* get_previous_volume() const;
+
+    // Return the IOR of the medium the ray is currently in.
+    double get_current_ior() const;
+
+    // Return the IOR of the medium the ray would be in if it would leave the currently active volume.
+    double get_previous_ior() const;
 };
 
 
@@ -168,9 +193,24 @@ inline ShadingRay::ShadingRay(
 {
 }
 
-inline foundation::uint8 ShadingRay::get_highest_volume_priority() const
+inline const ShadingRay::Volume* ShadingRay::get_current_volume() const
 {
-    return m_volume_count == 0 ? 0 : m_volumes[0]->get_volume_priority();
+    return m_volume_count > 0 ? &m_volumes[0] : 0;
+}
+
+inline const ShadingRay::Volume* ShadingRay::get_previous_volume() const
+{
+    return m_volume_count > 1 ? &m_volumes[1] : 0;
+}
+
+inline double ShadingRay::get_current_ior() const
+{
+    return m_volume_count > 0 ? m_volumes[0].m_ior : 1.0;
+}
+
+inline double ShadingRay::get_previous_ior() const
+{
+    return m_volume_count > 1 ? m_volumes[1].m_ior : 1.0;
 }
 
 

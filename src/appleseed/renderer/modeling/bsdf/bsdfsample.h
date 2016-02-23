@@ -33,6 +33,8 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/shading/shadingray.h"
+#include "renderer/modeling/material/material.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -45,8 +47,13 @@ namespace renderer
 class BSDFSample
 {
   public:
+    // Inputs.
     const ShadingPoint&             m_shading_point;        // shading point at which the sampling is done
     const foundation::Dual3d        m_outgoing;             // world space outgoing direction, unit-length
+    const double                    m_from_ior;             // traveling from a medium with this index of refraction...
+    const double                    m_to_ior;               // ...to another medium with this index of refraction
+
+    // Outputs.
     foundation::Dual3d              m_incoming;             // world space incoming direction, unit-length
     ScatteringMode::Mode            m_mode;                 // scattering mode
     double                          m_probability;          // PDF value
@@ -60,7 +67,6 @@ class BSDFSample
     const foundation::Vector3d& get_geometric_normal() const;
     const foundation::Vector3d& get_shading_normal() const;
     const foundation::Basis3d& get_shading_basis() const;
-
     void set_shading_basis(const foundation::Basis3d& basis);
 
     void compute_reflected_differentials();
@@ -86,6 +92,11 @@ inline BSDFSample::BSDFSample(
     const foundation::Dual3d&       outgoing)
   : m_shading_point(shading_point)
   , m_outgoing(outgoing)
+  , m_from_ior(shading_point.get_ray().get_current_ior())
+  , m_to_ior(
+        shading_point.is_entering()
+            ? shading_point.get_material()->get_render_data().m_ior
+            : shading_point.get_ray().get_previous_ior())
   , m_mode(ScatteringMode::Absorption)
   , m_probability(0.0)
 {
