@@ -513,11 +513,18 @@ void DiagnosticSurfaceShader::evaluate(
                         shading_context,
                         input_evaluator,
                         shading_point);
+                    const void* bsdf_data = input_evaluator.data();
 
-                    BSDFSample sample(shading_point, outgoing);
+                    BSDFSample sample(
+                        shading_point,
+                        outgoing,
+                        shading_point.get_ray().get_current_ior(),
+                        shading_point.is_entering()
+                            ? material_data.m_bsdf->sample_ior(sampling_context, bsdf_data)
+                            : shading_point.get_ray().get_previous_ior());
                     material_data.m_bsdf->sample(
                         sampling_context,
-                        input_evaluator.data(),
+                        bsdf_data,
                         false,
                         false,
                         sample);

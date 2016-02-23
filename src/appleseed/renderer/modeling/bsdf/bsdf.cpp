@@ -101,6 +101,13 @@ void BSDF::prepare_inputs(void* data) const
 {
 }
 
+double BSDF::sample_ior(
+    SamplingContext&        sampling_context,
+    const void*             data) const
+{
+    return 1.0;
+}
+
 void BSDF::apply_absorption(
     const void*             data,
     const double            distance,

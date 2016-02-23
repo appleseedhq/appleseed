@@ -133,19 +133,6 @@ const EDF* Material::get_uncached_edf() const
     return static_cast<const EDF*>(m_inputs.get_entity("edf"));
 }
 
-double Material::get_uncached_ior() const
-{
-    const Source* source = m_inputs.source("ior");
-
-    if (source == 0)
-        return 1.0;
-
-    double ior;
-    source->evaluate_uniform(ior);
-
-    return ior;
-}
-
 const Source* Material::get_uncached_alpha_map() const
 {
     return m_inputs.source("alpha_map");
@@ -173,7 +160,6 @@ bool Material::on_frame_begin(
     m_render_data.m_bsdf = 0;
     m_render_data.m_bssrdf = 0;
     m_render_data.m_edf = 0;
-    m_render_data.m_ior = get_uncached_ior();
     m_render_data.m_alpha_map = get_uncached_alpha_map();
 #ifdef APPLESEED_WITH_OSL
     m_render_data.m_shader_group = 0;

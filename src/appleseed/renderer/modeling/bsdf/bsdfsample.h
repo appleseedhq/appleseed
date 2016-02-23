@@ -33,8 +33,6 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/kernel/shading/shadingray.h"
-#include "renderer/modeling/material/material.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -62,7 +60,9 @@ class BSDFSample
     // Constructor.
     BSDFSample(
         const ShadingPoint&         shading_point,
-        const foundation::Dual3d&   outgoing);
+        const foundation::Dual3d&   outgoing,
+        const double                from_ior,
+        const double                to_ior);
 
     const foundation::Vector3d& get_geometric_normal() const;
     const foundation::Vector3d& get_shading_normal() const;
@@ -89,14 +89,13 @@ class BSDFSample
 
 inline BSDFSample::BSDFSample(
     const ShadingPoint&             shading_point,
-    const foundation::Dual3d&       outgoing)
+    const foundation::Dual3d&       outgoing,
+    const double                    from_ior,
+    const double                    to_ior)
   : m_shading_point(shading_point)
   , m_outgoing(outgoing)
-  , m_from_ior(shading_point.get_ray().get_current_ior())
-  , m_to_ior(
-        shading_point.is_entering()
-            ? shading_point.get_material()->get_render_data().m_ior
-            : shading_point.get_ray().get_previous_ior())
+  , m_from_ior(from_ior)
+  , m_to_ior(to_ior)
   , m_mode(ScatteringMode::Absorption)
   , m_probability(0.0)
 {

@@ -107,9 +107,6 @@ class APPLESEED_DLLSYMBOL Material
     // Return the EDF of the material, or 0 if the material doesn't have one.
     const EDF* get_uncached_edf() const;
 
-    // Return the index of refraction of the material.
-    double get_uncached_ior() const;
-
     // Return the source bound to the alpha map input, or 0 if the material doesn't have an alpha map.
     const Source* get_uncached_alpha_map() const;
 
@@ -139,7 +136,6 @@ class APPLESEED_DLLSYMBOL Material
         const BSDF*             m_bsdf;
         const BSSRDF*           m_bssrdf;
         const EDF*              m_edf;
-        double                  m_ior;
         const Source*           m_alpha_map;
 #ifdef APPLESEED_WITH_OSL
         const ShaderGroup*      m_shader_group;

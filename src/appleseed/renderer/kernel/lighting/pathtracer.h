@@ -238,7 +238,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
         // Handle false intersections.
         if (ray.get_current_volume() &&
-            ray.get_current_volume()->m_object_instance->get_volume_priority() > object_instance.get_volume_priority())
+            ray.get_current_volume()->m_object_instance->get_volume_priority() > object_instance.get_volume_priority() &&
+            material_data.m_bsdf != 0)
         {
             // Construct a ray that continues in the same direction as the incoming ray.
             ShadingRay next_ray(
@@ -260,7 +261,18 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
             // Initialize the ray's volume list.
             if (entering)
-                next_ray.add_volume(ray, &object_instance, material_data.m_bsdf, material_data.m_ior);
+            {
+                InputEvaluator input_evaluator(shading_context.get_texture_cache());
+                material_data.m_bsdf->evaluate_inputs(
+                    shading_context,
+                    input_evaluator,
+                    *vertex.m_shading_point);
+                const double ior =
+                    material_data.m_bsdf->sample_ior(
+                        sampling_context,
+                        input_evaluator.data());
+                next_ray.add_volume(ray, &object_instance, material_data.m_bsdf, ior);
+            }
             else next_ray.remove_volume(ray, &object_instance);
 
             // Trace the ray.
@@ -423,7 +435,13 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         if (vertex.m_bsdf)
         {
             // Sample the BSDF.
-            BSDFSample sample(*vertex.m_shading_point, vertex.m_outgoing);
+            BSDFSample sample(
+                *vertex.m_shading_point,
+                vertex.m_outgoing,
+                ray.get_current_ior(),
+                entering
+                    ? vertex.m_bsdf->sample_ior(sampling_context, vertex.m_bsdf_data)
+                    : ray.get_previous_ior());
             vertex.m_bsdf->sample(
                 sampling_context,
                 vertex.m_bsdf_data,
@@ -538,13 +556,20 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         }
 
         // Build the volume list of the scattered ray.
-        if (vertex.m_cos_on * foundation::dot(next_ray.m_dir, vertex.get_shading_normal()) < 0.0)
+        if (vertex.m_cos_on * foundation::dot(next_ray.m_dir, vertex.get_shading_normal()) < 0.0 &&
+            material_data.m_bsdf != 0)
         {
             const ShadingRay::Volume* prev_volume = ray.get_current_volume();
 
             // Refracted ray: inherit the volume list of the parent ray and add/remove the current volume.
             if (entering)
-                next_ray.add_volume(ray, &object_instance, material_data.m_bsdf, material_data.m_ior);
+            {
+                const double ior =
+                    material_data.m_bsdf->sample_ior(
+                        sampling_context,
+                        bsdf_input_evaluator.data());
+                next_ray.add_volume(ray, &object_instance, material_data.m_bsdf, ior);
+            }
             else next_ray.remove_volume(ray, &object_instance);
 
             // Compute absorption for the segment inside the volume the path is leaving.
@@ -552,14 +577,13 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 prev_volume != next_ray.get_current_volume() &&
                 prev_volume->m_bsdf != 0)
             {
-                InputEvaluator input_evaluator(shading_context.get_texture_cache());
                 prev_volume->m_bsdf->evaluate_inputs(
                     shading_context,
-                    input_evaluator,
+                    bsdf_input_evaluator,
                     *vertex.m_shading_point);
                 const double distance = norm(vertex.get_point() - volume_start);
                 prev_volume->m_bsdf->apply_absorption(
-                    input_evaluator.data(),
+                    bsdf_input_evaluator.data(),
                     distance,
                     vertex.m_throughput);
             }

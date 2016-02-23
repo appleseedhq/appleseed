@@ -74,6 +74,7 @@ namespace
             m_inputs.declare("transmittance", InputFormatSpectralReflectance);
             m_inputs.declare("transmittance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("fresnel_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("ior", InputFormatScalar);
             m_inputs.declare("density", InputFormatScalar);
             m_inputs.declare("scale", InputFormatScalar);
         }
@@ -199,6 +200,13 @@ namespace
             return 0.0;
         }
 
+        double sample_ior(
+            SamplingContext&    sampling_context,
+            const void*         data) const APPLESEED_OVERRIDE
+        {
+            return static_cast<const InputValues*>(data)->m_ior;
+        }
+
         void apply_absorption(
             const void*         data,
             const double        distance,
@@ -306,6 +314,16 @@ DictionaryArray SpecularBTDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
+            .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "ior")
+            .insert("label", "Index of Refraction")
+            .insert("type", "numeric")
+            .insert("min_value", "0.5")
+            .insert("max_value", "2.0")
+            .insert("use", "required")
             .insert("default", "1.0"));
 
     metadata.push_back(

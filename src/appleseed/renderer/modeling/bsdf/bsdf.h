@@ -187,6 +187,10 @@ class APPLESEED_DLLSYMBOL BSDF
         const foundation::Vector3d& incoming,                   // world space incoming direction, unit-length
         const int                   modes) const = 0;           // selected scattering modes
 
+    virtual double sample_ior(
+        SamplingContext&            sampling_context,
+        const void*                 data) const;
+
     // Modulate transmittance by medium absorption over the given distance.
     virtual void apply_absorption(
         const void*                 data,

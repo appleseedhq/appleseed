@@ -62,7 +62,6 @@ namespace
             m_inputs.declare("bsdf", InputFormatEntity, "");
             m_inputs.declare("bssrdf", InputFormatEntity, "");
             m_inputs.declare("edf", InputFormatEntity, "");
-            m_inputs.declare("ior", InputFormatScalar, "");
             m_inputs.declare("alpha_map", InputFormatScalar, "");
             m_inputs.declare("displacement_map", InputFormatSpectralReflectance, "");
         }
@@ -159,16 +158,6 @@ DictionaryArray GenericMaterialFactory::get_input_metadata() const
             .insert("type", "entity")
             .insert("entity_types", Dictionary().insert("edf", "EDF"))
             .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "ior")
-            .insert("label", "Index Of Refraction")
-            .insert("type", "numeric")
-            .insert("min_value", "0.5")
-            .insert("max_value", "2.0")
-            .insert("use", "optional")
-            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()
