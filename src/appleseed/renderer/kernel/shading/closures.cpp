@@ -827,18 +827,19 @@ namespace
         {
             const Params* p = reinterpret_cast<const Params*>(osl_params);
 
+            // todo: reimplement.
             // Assume one of the media is air.
-            double from_ior, to_ior;
-            if (p->eta > 1.0f)
-            {
-                from_ior = 1.0;
-                to_ior = 1.0f / p->eta;
-            }
-            else
-            {
-                from_ior = p->eta;
-                to_ior = 1.0;
-            }
+            // double from_ior, to_ior;
+            // if (p->eta > 1.0f)
+            // {
+            //     from_ior = 1.0;
+            //     to_ior = 1.0f / p->eta;
+            // }
+            // else
+            // {
+            //     from_ior = p->eta;
+            //     to_ior = 1.0;
+            // }
 
             InputValues* values =
                 composite_closure.add_closure<InputValues>(
@@ -853,7 +854,7 @@ namespace
             values->m_transmittance_multiplier = 1.0;
             values->m_fresnel_multiplier = 0.0;
 
-            // todo
+            // todo: reimplement.
             // values->m_from_ior = from_ior;
             // values->m_to_ior = to_ior;
         }
