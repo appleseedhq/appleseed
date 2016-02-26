@@ -181,7 +181,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
     vertex.m_prev_mode = ScatteringMode::Specular;
     vertex.m_prev_prob = BSDF::DiracDelta;
 
-    foundation::Vector3d volume_start;
+    foundation::Vector3d medium_start;
 
     size_t iterations = 0;
 
@@ -233,12 +233,12 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         // Retrieve the object instance at the shading point.
         const ObjectInstance& object_instance = vertex.m_shading_point->get_object_instance();
 
-        // Determine whether the ray is entering or leaving a volume.
+        // Determine whether the ray is entering or leaving a medium.
         const bool entering = vertex.m_shading_point->is_entering();
 
         // Handle false intersections.
-        if (ray.get_current_volume() &&
-            ray.get_current_volume()->m_object_instance->get_volume_priority() > object_instance.get_volume_priority() &&
+        if (ray.get_current_medium() &&
+            ray.get_current_medium()->m_object_instance->get_medium_priority() > object_instance.get_medium_priority() &&
             material_data.m_bsdf != 0)
         {
             // Construct a ray that continues in the same direction as the incoming ray.
@@ -259,7 +259,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 next_ray.m_has_differentials = true;
             }
 
-            // Initialize the ray's volume list.
+            // Initialize the ray's medium list.
             if (entering)
             {
                 InputEvaluator input_evaluator(shading_context.get_texture_cache());
@@ -271,9 +271,9 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                     material_data.m_bsdf->sample_ior(
                         sampling_context,
                         input_evaluator.data());
-                next_ray.add_volume(ray, &object_instance, material_data.m_bsdf, ior);
+                next_ray.add_medium(ray, &object_instance, material_data.m_bsdf, ior);
             }
-            else next_ray.remove_volume(ray, &object_instance);
+            else next_ray.remove_medium(ray, &object_instance);
 
             // Trace the ray.
             shading_points[shading_point_index].clear();
@@ -327,8 +327,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                     next_ray.m_has_differentials = true;
                 }
 
-                // Inherit the volume list from the parent ray.
-                next_ray.copy_volumes_from(ray);
+                // Inherit the medium list from the parent ray.
+                next_ray.copy_media_from(ray);
 
                 // Trace the ray.
                 shading_points[shading_point_index].clear();
@@ -555,45 +555,45 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             next_ray.m_has_differentials = true;
         }
 
-        // Build the volume list of the scattered ray.
+        // Build the medium list of the scattered ray.
         if (vertex.m_cos_on * foundation::dot(next_ray.m_dir, vertex.get_shading_normal()) < 0.0 &&
             material_data.m_bsdf != 0)
         {
-            const ShadingRay::Volume* prev_volume = ray.get_current_volume();
+            const ShadingRay::Medium* prev_medium = ray.get_current_medium();
 
-            // Refracted ray: inherit the volume list of the parent ray and add/remove the current volume.
+            // Refracted ray: inherit the medium list of the parent ray and add/remove the current medium.
             if (entering)
             {
                 const double ior =
                     material_data.m_bsdf->sample_ior(
                         sampling_context,
                         bsdf_input_evaluator.data());
-                next_ray.add_volume(ray, &object_instance, material_data.m_bsdf, ior);
+                next_ray.add_medium(ray, &object_instance, material_data.m_bsdf, ior);
             }
-            else next_ray.remove_volume(ray, &object_instance);
+            else next_ray.remove_medium(ray, &object_instance);
 
-            // Compute absorption for the segment inside the volume the path is leaving.
-            if (prev_volume != 0 &&
-                prev_volume != next_ray.get_current_volume() &&
-                prev_volume->m_bsdf != 0)
+            // Compute absorption for the segment inside the medium the path is leaving.
+            if (prev_medium != 0 &&
+                prev_medium != next_ray.get_current_medium() &&
+                prev_medium->m_bsdf != 0)
             {
-                prev_volume->m_bsdf->evaluate_inputs(
+                prev_medium->m_bsdf->evaluate_inputs(
                     shading_context,
                     bsdf_input_evaluator,
                     *vertex.m_shading_point);
-                const double distance = norm(vertex.get_point() - volume_start);
-                prev_volume->m_bsdf->apply_absorption(
+                const double distance = norm(vertex.get_point() - medium_start);
+                prev_medium->m_bsdf->apply_absorption(
                     bsdf_input_evaluator.data(),
                     distance,
                     vertex.m_throughput);
             }
 
-            volume_start = vertex.get_point();
+            medium_start = vertex.get_point();
         }
         else
         {
-            // Reflected ray: inherit the volume list of the parent ray.
-            next_ray.copy_volumes_from(ray);
+            // Reflected ray: inherit the medium list of the parent ray.
+            next_ray.copy_media_from(ray);
         }
 
         // Trace the ray.

@@ -105,8 +105,8 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     // Return the visibility flags of this instance.
     foundation::uint32 get_vis_flags() const;
 
-    // Return the volume priority of this instance.
-    foundation::uint8 get_volume_priority() const;
+    // Return the medium priority of this instance.
+    foundation::uint8 get_medium_priority() const;
 
     enum RayBiasMethod
     {
@@ -191,7 +191,7 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     Impl* impl;
 
     foundation::uint32  m_vis_flags;
-    foundation::uint8   m_volume_priority;
+    foundation::uint8   m_medium_priority;
     RayBiasMethod       m_ray_bias_method;
     double              m_ray_bias_distance;
     bool                m_transform_swaps_handedness;
@@ -249,9 +249,9 @@ inline foundation::uint32 ObjectInstance::get_vis_flags() const
     return m_vis_flags;
 }
 
-inline foundation::uint8 ObjectInstance::get_volume_priority() const
+inline foundation::uint8 ObjectInstance::get_medium_priority() const
 {
-    return m_volume_priority;
+    return m_medium_priority;
 }
 
 inline ObjectInstance::RayBiasMethod ObjectInstance::get_ray_bias_method() const
