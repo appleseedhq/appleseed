@@ -214,6 +214,12 @@ template <typename T, size_t N> renderer::DynamicSpectrum<T, N> pow(
     const renderer::DynamicSpectrum<T, N>& x,
     const renderer::DynamicSpectrum<T, N>& y);
 
+// Compute the logarithm of a spectrum.
+template <typename T, size_t N> renderer::DynamicSpectrum<T, N> log(const renderer::DynamicSpectrum<T, N>& x);
+
+// Compute the exponential of a spectrum.
+template <typename T, size_t N> renderer::DynamicSpectrum<T, N> exp(const renderer::DynamicSpectrum<T, N>& x);
+
 }   // namespace foundation
 
 
@@ -1241,6 +1247,29 @@ inline renderer::DynamicSpectrum<T, N> pow(
     return result;
 }
 
+template <typename T, size_t N>
+inline renderer::DynamicSpectrum<T, N> log(const renderer::DynamicSpectrum<T, N>& x)
+{
+    renderer::DynamicSpectrum<T, N> result;
+    result.resize(x.size());
+
+    for (size_t i = 0, e = x.size(); i < e; ++i)
+        result[i] = std::log(x[i]);
+
+    return result;
+}
+
+template <typename T, size_t N>
+inline renderer::DynamicSpectrum<T, N> exp(const renderer::DynamicSpectrum<T, N>& x)
+{
+    renderer::DynamicSpectrum<T, N> result;
+    result.resize(x.size());
+
+    for (size_t i = 0, e = x.size(); i < e; ++i)
+        result[i] = std::exp(x[i]);
+
+    return result;
+}
 
 }       // namespace foundation
 

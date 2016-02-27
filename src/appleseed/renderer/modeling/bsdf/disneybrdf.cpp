@@ -364,7 +364,9 @@ namespace
             return align(sizeof(DisneyBRDFInputValues), 16);
         }
 
-        void prepare_inputs(void* data) const APPLESEED_OVERRIDE
+        void prepare_inputs(
+            const ShadingPoint&     shading_point,
+            void*                   data) const APPLESEED_OVERRIDE
         {
             DisneyBRDFInputValues* values =
                 reinterpret_cast<DisneyBRDFInputValues*>(data);
