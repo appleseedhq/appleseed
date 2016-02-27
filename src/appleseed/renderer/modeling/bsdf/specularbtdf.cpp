@@ -89,6 +89,32 @@ namespace
             return Model;
         }
 
+        virtual size_t compute_input_data_size(
+            const Assembly&     assembly) const APPLESEED_OVERRIDE
+        {
+            return align(sizeof(InputValues), 16);
+        }
+
+        virtual void prepare_inputs(
+            const ShadingPoint& shading_point,
+            void*               data) const APPLESEED_OVERRIDE
+        {
+            InputValues *values = reinterpret_cast<InputValues*>(data);
+
+            if (shading_point.is_entering())
+            {
+                values->m_from_ior =
+                    shading_point.get_ray().get_current_ior();
+                values->m_to_ior = values->m_ior;
+            }
+            else
+            {
+                values->m_to_ior =
+                    shading_point.get_ray().get_previous_ior();
+                values->m_from_ior = values->m_ior;
+            }
+        }
+
         APPLESEED_FORCE_INLINE virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
@@ -99,7 +125,7 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
 
             const Vector3d& shading_normal = sample.get_shading_normal();
-            const double eta = sample.m_from_ior / sample.m_to_ior;
+            const double eta = values->m_from_ior / values->m_to_ior;
             const double cos_theta_i = dot(sample.m_outgoing.get_value(), shading_normal);
             const double sin_theta_i2 = 1.0 - square(cos_theta_i);
             const double sin_theta_t2 = sin_theta_i2 * square(eta);
@@ -210,14 +236,14 @@ namespace
         void apply_absorption(
             const void*         data,
             const double        distance,
-            Spectrum&           transmittance) const APPLESEED_OVERRIDE
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
             const InputValues* values = static_cast<const InputValues*>(data);
             const float density = static_cast<float>(values->m_density);
             const float scale = static_cast<float>(values->m_scale);
             const float fdistance = static_cast<float>(distance);
 
-            for (size_t i = 0, e = transmittance.size(); i < e; ++i)
+            for (size_t i = 0, e = value.size(); i < e; ++i)
             {
                 //
                 // Reference:
@@ -229,7 +255,7 @@ namespace
                 const float btdf_transmittance = static_cast<float>(values->m_transmittance[i] * values->m_transmittance_multiplier);
                 const float absorption = (1.0f - btdf_transmittance) * density;
                 const float optical_depth = absorption * scale * fdistance;
-                transmittance[i] *= exp(-optical_depth);
+                value[i] *= exp(-optical_depth);
             }
         }
 

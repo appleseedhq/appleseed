@@ -193,11 +193,11 @@ class APPLESEED_DLLSYMBOL BSDF
         SamplingContext&            sampling_context,
         const void*                 data) const;
 
-    // Modulate transmittance by medium absorption over the given distance.
+    // Modulate value by medium absorption over the given distance.
     virtual void apply_absorption(
         const void*                 data,
         const double                distance,
-        Spectrum&                   transmittance) const;
+        Spectrum&                   value) const;
 
   protected:
     // Force a given direction to lie above a surface described by its normal vector.

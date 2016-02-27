@@ -511,11 +511,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     // Sample the BSDF.
     BSDFSample sample(
         m_shading_point,
-        outgoing,
-        m_shading_point.get_ray().get_current_ior(),
-        m_shading_point.is_entering()
-            ? m_bsdf.sample_ior(sampling_context, m_bsdf_data)
-            : m_shading_point.get_ray().get_previous_ior());
+        outgoing);
     m_bsdf.sample(
         sampling_context,
         m_bsdf_data,

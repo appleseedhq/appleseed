@@ -437,11 +437,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             // Sample the BSDF.
             BSDFSample sample(
                 *vertex.m_shading_point,
-                vertex.m_outgoing,
-                ray.get_current_ior(),
-                entering
-                    ? vertex.m_bsdf->sample_ior(sampling_context, vertex.m_bsdf_data)
-                    : ray.get_previous_ior());
+                vertex.m_outgoing);
             vertex.m_bsdf->sample(
                 sampling_context,
                 vertex.m_bsdf_data,
