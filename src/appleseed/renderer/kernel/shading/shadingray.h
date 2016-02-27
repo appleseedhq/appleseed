@@ -44,6 +44,9 @@
 // Standard headers.
 #include <cassert>
 
+// Forward declarations.
+namespace renderer  { class BSDF; }
+
 namespace renderer
 {
 
@@ -83,16 +86,23 @@ class ShadingRay
             const double            normalized);
     };
 
-    enum { MaxVolumeCount = 8 };
+    enum { MaxMediumCount = 8 };
+
+    struct Medium
+    {
+        const ObjectInstance*       m_object_instance;
+        const BSDF*                 m_bsdf;
+        double                      m_ior;
+    };
 
     // Public members, in an order that optimizes packing.
     RayType                         m_rx;
     RayType                         m_ry;
     Time                            m_time;
-    const ObjectInstance*           m_volumes[MaxVolumeCount];      // always sorted from highest to lowest priority
+    Medium                          m_media[MaxMediumCount];        // always sorted from highest to lowest priority
     VisibilityFlags::Type           m_flags;
     DepthType                       m_depth;
-    foundation::uint8               m_volume_count;
+    foundation::uint8               m_medium_count;
     bool                            m_has_differentials;
 
     // Constructors.
@@ -112,17 +122,32 @@ class ShadingRay
         const VisibilityFlags::Type flags,
         const DepthType             depth);
 
-    // Copy all volumes from the source ray.
-    void copy_volumes_from(const ShadingRay& source);
+    // Copy all media from the source ray.
+    void copy_media_from(const ShadingRay& source);
 
-    // Copy all volumes from the source ray and add an additional volume.
-    void add_volume(const ShadingRay& source, const ObjectInstance* volume);
+    // Copy all media from the source ray and add an additional medium.
+    void add_medium(
+        const ShadingRay&           source,
+        const ObjectInstance*       object_instance,
+        const BSDF*                 bsdf,
+        const double                ior);
 
-    // Copy all volumes from the source ray except a given volume.
-    void remove_volume(const ShadingRay& source, const ObjectInstance* volume);
+    // Copy all media from the source ray except a given medium.
+    void remove_medium(
+        const ShadingRay&           source,
+        const ObjectInstance*       object_instance);
 
-    // Return the highest volume priority from the ray.
-    foundation::uint8 get_highest_volume_priority() const;
+    // Return the currently active medium.
+    const ShadingRay::Medium* get_current_medium() const;
+
+    // Return the medium that would be active if we removed the currently active one.
+    const ShadingRay::Medium* get_previous_medium() const;
+
+    // Return the IOR of the medium the ray is currently in.
+    double get_current_ior() const;
+
+    // Return the IOR of the medium the ray would be in if it would leave the currently active medium.
+    double get_previous_ior() const;
 };
 
 
@@ -131,7 +156,7 @@ class ShadingRay
 //
 
 inline ShadingRay::ShadingRay()
-  : m_volume_count(0)
+  : m_medium_count(0)
   , m_has_differentials(false)
 {
 }
@@ -146,7 +171,7 @@ inline ShadingRay::ShadingRay(
   , m_time(time)
   , m_flags(flags)
   , m_depth(depth)
-  , m_volume_count(0)
+  , m_medium_count(0)
   , m_has_differentials(false)
 {
 }
@@ -163,14 +188,29 @@ inline ShadingRay::ShadingRay(
   , m_time(time)
   , m_flags(flags)
   , m_depth(depth)
-  , m_volume_count(0)
+  , m_medium_count(0)
   , m_has_differentials(false)
 {
 }
 
-inline foundation::uint8 ShadingRay::get_highest_volume_priority() const
+inline const ShadingRay::Medium* ShadingRay::get_current_medium() const
 {
-    return m_volume_count == 0 ? 0 : m_volumes[0]->get_volume_priority();
+    return m_medium_count > 0 ? &m_media[0] : 0;
+}
+
+inline const ShadingRay::Medium* ShadingRay::get_previous_medium() const
+{
+    return m_medium_count > 1 ? &m_media[1] : 0;
+}
+
+inline double ShadingRay::get_current_ior() const
+{
+    return m_medium_count > 0 ? m_media[0].m_ior : 1.0;
+}
+
+inline double ShadingRay::get_previous_ior() const
+{
+    return m_medium_count > 1 ? m_media[1].m_ior : 1.0;
 }
 
 

@@ -484,7 +484,7 @@ void DiagnosticSurfaceShader::evaluate(
         {
             const ShadingRay& ray = shading_point.get_ray();
             if (!ray.m_has_differentials)
-                return;
+                break;
 
             const Material* material = shading_point.get_material();
             if (material)
@@ -503,30 +503,36 @@ void DiagnosticSurfaceShader::evaluate(
 
                 if (material_data.m_bsdf)
                 {
-                    InputEvaluator input_evaluator(shading_context.get_texture_cache());
-                    material_data.m_bsdf->evaluate_inputs(
-                        shading_context,
-                        input_evaluator,
-                        shading_point);
-
                     const Dual3d outgoing(
                         -ray.m_dir,
                         ray.m_dir - ray.m_rx.m_dir,
                         ray.m_dir - ray.m_ry.m_dir);
 
-                    BSDFSample sample(shading_point, outgoing);
+                    InputEvaluator input_evaluator(shading_context.get_texture_cache());
+                    material_data.m_bsdf->evaluate_inputs(
+                        shading_context,
+                        input_evaluator,
+                        shading_point);
+                    const void* bsdf_data = input_evaluator.data();
+
+                    BSDFSample sample(
+                        shading_point,
+                        outgoing,
+                        shading_point.get_ray().get_current_ior(),
+                        shading_point.is_entering()
+                            ? material_data.m_bsdf->sample_ior(sampling_context, bsdf_data)
+                            : shading_point.get_ray().get_previous_ior());
                     material_data.m_bsdf->sample(
                         sampling_context,
-                        input_evaluator.data(),
+                        bsdf_data,
                         false,
                         false,
                         sample);
 
                     if (!sample.m_incoming.has_derivatives())
-                        return;
+                        break;
 
-                    // The 3.0 factor is choosen so that ray spread
-                    // from lambertian BRDFs is approximately 1.
+                    // The 3.0 factor is chosen so that ray spread from Lambertian BRDFs is approximately 1.
                     const double spread =
                         max(
                             norm(sample.m_incoming.get_dx()),

@@ -170,7 +170,13 @@ void compute_ibl_bsdf_sampling(
         // includes the contribution of a specular component since these are explicitly rejected
         // afterward. We need a mechanism to indicate that we want the contribution of some of
         // the components only.
-        BSDFSample sample(shading_point, outgoing);
+        BSDFSample sample(
+            shading_point,
+            outgoing,
+            shading_point.get_ray().get_current_ior(),
+            shading_point.is_entering()
+                ? bsdf.sample_ior(sampling_context, bsdf_data)
+                : shading_point.get_ray().get_previous_ior());
         bsdf.sample(
             sampling_context,
             bsdf_data,

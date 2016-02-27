@@ -43,6 +43,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/version.h"
+#include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 
 // Standard headers.
@@ -65,6 +66,7 @@ namespace
     OIIO::TypeDesc g_int_array2_typedesc(OIIO::TypeDesc::INT, 2);
 
     OIIO::ustring g_empty_ustr;
+
     OIIO::ustring g_perspective_ustr("perspective");
     OIIO::ustring g_spherical_ustr("spherical");
     OIIO::ustring g_unknown_proj_ustr("unknown");
@@ -319,10 +321,7 @@ bool RendererServices::get_inverse_matrix(
         return true;
     }
 
-    return OSL::RendererServices::get_inverse_matrix(
-        sg,
-        result,
-        to);
+    return OSL::RendererServices::get_inverse_matrix(sg, result, to);
 }
 
 bool RendererServices::transform_points(
@@ -350,29 +349,30 @@ bool RendererServices::trace(
 {
     assert(m_texture_store);
 
-    TextureCache texture_cache(*m_texture_store);
-    Intersector intersector(m_project.get_trace_context(), texture_cache);
-
     const ShadingPoint* parent =
         reinterpret_cast<const ShadingPoint*>(sg->renderstate);
-    const ShadingPoint* origin_shading_point = 0;
 
-    Vector3d pos = Vector3f(P);
+    Vector3d pos;
+    const ShadingPoint* origin_shading_point;
 
     if (P == sg->P)
     {
         Vector3d front = Vector3f(P);
         Vector3d back = front;
 
-        intersector.fixed_offset(
+        Intersector::fixed_offset(
             parent->get_point(),
             parent->get_geometric_normal(),
             front,
             back);
 
         pos = sg->N.dot(R) >= 0.0f ? front : back;
-
         origin_shading_point = parent;
+    }
+    else
+    {
+        pos = Vector3f(P);
+        origin_shading_point = 0;
     }
 
     const Vector3d dir = Vector3f(R);
@@ -384,6 +384,10 @@ bool RendererServices::trace(
         parent->get_ray().m_time,
         VisibilityFlags::ProbeRay,
         parent->get_ray().m_depth + 1);
+
+    // todo: move this out of the hot code path (but it must remain thread-local).
+    TextureCache texture_cache(*m_texture_store);
+    Intersector intersector(m_project.get_trace_context(), texture_cache);
 
     ShadingPoint shading_point;
     intersector.trace(
@@ -505,6 +509,7 @@ bool RendererServices::get_userdata(
 }
 
 #if OSL_LIBRARY_VERSION_CODE < 10700
+
 bool RendererServices::has_userdata(
     OIIO::ustring               name,
     OIIO::TypeDesc              type,
@@ -512,6 +517,7 @@ bool RendererServices::has_userdata(
 {
     return false;
 }
+
 #endif
 
 #define IMPLEMENT_ATTR_GETTER(name)         \
@@ -529,7 +535,6 @@ IMPLEMENT_ATTR_GETTER(object_instance_id)
     {
         const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
-
         reinterpret_cast<int*>(val)[0] =
             static_cast<int>(shading_point->get_object_instance().get_uid());
         clear_attr_derivatives(derivs, type, val);
@@ -545,7 +550,6 @@ IMPLEMENT_ATTR_GETTER(object_instance_index)
     {
         const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
-
         reinterpret_cast<int*>(val)[0] =
             static_cast<int>(shading_point->get_object_instance_index());
         clear_attr_derivatives(derivs, type, val);
@@ -561,7 +565,6 @@ IMPLEMENT_ATTR_GETTER(assembly_instance_id)
     {
         const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
-
         reinterpret_cast<int*>(val)[0] =
             static_cast<int>(shading_point->get_assembly_instance().get_uid());
         clear_attr_derivatives(derivs, type, val);
@@ -575,9 +578,9 @@ IMPLEMENT_ATTR_GETTER(camera_resolution)
 {
     if (type == g_int_array2_typedesc)
     {
-        Image& img = m_project.get_frame()->image();
-        reinterpret_cast<int*>(val)[0] = static_cast<int>(img.properties().m_canvas_width);
-        reinterpret_cast<int*>(val)[1] = static_cast<int>(img.properties().m_canvas_height);
+        const CanvasProperties& props = m_project.get_frame()->image().properties();
+        reinterpret_cast<int*>(val)[0] = static_cast<int>(props.m_canvas_width);
+        reinterpret_cast<int*>(val)[1] = static_cast<int>(props.m_canvas_height);
         return true;
     }
 
@@ -690,10 +693,8 @@ IMPLEMENT_ATTR_GETTER(camera_screen_window)
 {
     if (type == g_float_array4_typedesc)
     {
-        Image& img = m_project.get_frame()->image();
-        const float aspect =
-            static_cast<float>(img.properties().m_canvas_width) / img.properties().m_canvas_height;
-
+        const CanvasProperties& props = m_project.get_frame()->image().properties();
+        const float aspect = static_cast<float>(props.m_canvas_width) / props.m_canvas_height;
         reinterpret_cast<float*>(val)[0] = -aspect;
         reinterpret_cast<float*>(val)[1] = -1.0f;
         reinterpret_cast<float*>(val)[2] =  aspect;
@@ -711,7 +712,6 @@ IMPLEMENT_ATTR_GETTER(ray_depth)
     {
         const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
-
         reinterpret_cast<int*>(val)[0] = static_cast<int>(shading_point->get_ray().m_depth);
         clear_attr_derivatives(derivs, type, val);
         return true;
@@ -726,9 +726,7 @@ IMPLEMENT_ATTR_GETTER(ray_length)
     {
         const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
-
-        reinterpret_cast<float*>(val)[0] =
-            static_cast<float>(norm(shading_point->get_ray().m_org - shading_point->get_point()));
+        reinterpret_cast<float*>(val)[0] = static_cast<float>(shading_point->get_distance());
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
@@ -740,7 +738,9 @@ IMPLEMENT_ATTR_GETTER(ray_ior)
 {
     if (type == OIIO::TypeDesc::TypeFloat)
     {
-        reinterpret_cast<float*>(val)[0] = 1.0f;
+        const ShadingPoint* shading_point =
+            reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+        reinterpret_cast<float*>(val)[0] = static_cast<float>(shading_point->get_ray().get_current_ior());
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
@@ -754,7 +754,6 @@ IMPLEMENT_ATTR_GETTER(ray_has_differentials)
     {
         const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
-
         reinterpret_cast<int*>(val)[0] = static_cast<int>(shading_point->get_ray().m_has_differentials);
         clear_attr_derivatives(derivs, type, val);
         return true;
@@ -825,8 +824,7 @@ void RendererServices::clear_attr_derivatives(
             reinterpret_cast<OIIO::ustring*>(val)[1] = g_empty_ustr;
             reinterpret_cast<OIIO::ustring*>(val)[2] = g_empty_ustr;
         }
-        else
-            memset(reinterpret_cast<char*>(val) + type.size(), 0, 2 * type.size());
+        else memset(reinterpret_cast<char*>(val) + type.size(), 0, 2 * type.size());
     }
 }
 

@@ -37,52 +37,63 @@ using namespace foundation;
 namespace renderer
 {
 
-void ShadingRay::copy_volumes_from(const ShadingRay& source)
+void ShadingRay::copy_media_from(const ShadingRay& source)
 {
-    assert(m_volume_count == 0);
+    assert(m_medium_count == 0);
 
-    const uint8 n = source.m_volume_count;
+    const uint8 n = source.m_medium_count;
 
-    m_volume_count = n;
+    m_medium_count = n;
 
     for (uint8 i = 0; i < n; ++i)
-        m_volumes[i] = source.m_volumes[i];
+        m_media[i] = source.m_media[i];
 }
 
-void ShadingRay::add_volume(const ShadingRay& source, const ObjectInstance* volume)
+void ShadingRay::add_medium(
+    const ShadingRay&       source,
+    const ObjectInstance*   object_instance,
+    const BSDF*             bsdf,
+    const double            ior)
 {
-    assert(m_volume_count == 0);
+    assert(m_medium_count == 0);
 
-    const uint8 volume_priority = volume->get_volume_priority();
-    const uint8 n = source.m_volume_count;
+    const uint8 medium_priority = object_instance->get_medium_priority();
+    const uint8 n = source.m_medium_count;
     uint8 i = 0, j = 0;
 
-    while (i < n && source.m_volumes[i]->get_volume_priority() >= volume_priority)
-        m_volumes[j++] = source.m_volumes[i++];
+    while (i < n && source.m_media[i].m_object_instance->get_medium_priority() >= medium_priority)
+        m_media[j++] = source.m_media[i++];
 
-    if (j < MaxVolumeCount)
-        m_volumes[j++] = volume;
+    if (j < MaxMediumCount)
+    {
+        m_media[j].m_object_instance = object_instance;
+        m_media[j].m_bsdf = bsdf;
+        m_media[j].m_ior = ior;
+        ++j;
+    }
 
-    while (i < n && j < MaxVolumeCount)
-        m_volumes[j++] = source.m_volumes[i++];
+    while (i < n && j < MaxMediumCount)
+        m_media[j++] = source.m_media[i++];
 
-    m_volume_count = j;
+    m_medium_count = j;
 }
 
-void ShadingRay::remove_volume(const ShadingRay& source, const ObjectInstance* volume)
+void ShadingRay::remove_medium(
+    const ShadingRay&       source,
+    const ObjectInstance*   object_instance)
 {
-    assert(m_volume_count == 0);
+    assert(m_medium_count == 0);
 
-    const uint8 n = source.m_volume_count;
+    const uint8 n = source.m_medium_count;
     uint8 j = 0;
 
     for (uint8 i = 0; i < n; ++i)
     {
-        if (source.m_volumes[i] != volume)
-            m_volumes[j++] = source.m_volumes[i];
+        if (source.m_media[i].m_object_instance != object_instance)
+            m_media[j++] = source.m_media[i];
     }
 
-    m_volume_count = j;
+    m_medium_count = j;
 }
 
 }   // namespace renderer
