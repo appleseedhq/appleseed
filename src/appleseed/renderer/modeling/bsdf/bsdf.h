@@ -151,7 +151,9 @@ class APPLESEED_DLLSYMBOL BSDF
         const size_t                offset = 0) const;
 
     // Perform any precomputation needed for this BSDF's input values.
-    virtual void prepare_inputs(void* data) const;
+    virtual void prepare_inputs(
+        const ShadingPoint&         shading_point,
+        void*                       data) const;
 
     // Given an outgoing direction, sample the BSDF and compute the incoming
     // direction, its probability density and the value of the BSDF for this
