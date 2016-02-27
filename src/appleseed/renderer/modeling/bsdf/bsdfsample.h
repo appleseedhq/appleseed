@@ -48,8 +48,6 @@ class BSDFSample
     // Inputs.
     const ShadingPoint&             m_shading_point;        // shading point at which the sampling is done
     const foundation::Dual3d        m_outgoing;             // world space outgoing direction, unit-length
-    const double                    m_from_ior;             // traveling from a medium with this index of refraction...
-    const double                    m_to_ior;               // ...to another medium with this index of refraction
 
     // Outputs.
     foundation::Dual3d              m_incoming;             // world space incoming direction, unit-length
@@ -60,9 +58,7 @@ class BSDFSample
     // Constructor.
     BSDFSample(
         const ShadingPoint&         shading_point,
-        const foundation::Dual3d&   outgoing,
-        const double                from_ior,
-        const double                to_ior);
+        const foundation::Dual3d&   outgoing);
 
     const foundation::Vector3d& get_geometric_normal() const;
     const foundation::Vector3d& get_shading_normal() const;
@@ -89,13 +85,9 @@ class BSDFSample
 
 inline BSDFSample::BSDFSample(
     const ShadingPoint&             shading_point,
-    const foundation::Dual3d&       outgoing,
-    const double                    from_ior,
-    const double                    to_ior)
+    const foundation::Dual3d&       outgoing)
   : m_shading_point(shading_point)
   , m_outgoing(outgoing)
-  , m_from_ior(from_ior)
-  , m_to_ior(to_ior)
   , m_mode(ScatteringMode::Absorption)
   , m_probability(0.0)
 {

@@ -65,6 +65,10 @@ APPLESEED_DECLARE_INPUT_VALUES(SpecularBTDFInputValues)
     double      m_ior;                          // index of refraction inside the medium
     double      m_density;                      // medium density
     double      m_scale;                        // distance scaling factor
+
+    // Precomputed values.
+    double      m_from_ior;
+    double      m_to_ior;
 };
 
 

@@ -113,7 +113,7 @@ double BSDF::sample_ior(
 void BSDF::apply_absorption(
     const void*             data,
     const double            distance,
-    Spectrum&               transmittance) const
+    Spectrum&               value) const
 {
 }
 
