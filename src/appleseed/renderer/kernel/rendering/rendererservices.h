@@ -314,9 +314,19 @@ class RendererServices
 
     typedef boost::unordered_map<OIIO::ustring, AttrGetterFun, OIIO::ustringHash> AttrGetterMapType;
 
+    typedef bool (RendererServices::*UserDataGetterFun)(
+        bool                        derivatives,
+        OIIO::ustring               name,
+        OIIO::TypeDesc              type,
+        OSL::ShaderGlobals*         sg,
+        void*                       val) const;
+
+    typedef boost::unordered_map<OIIO::ustring, UserDataGetterFun, OIIO::ustringHash> UserDataGetterMapType;
+
     const Project&                  m_project;
     OIIO::TextureSystem&            m_texture_sys;
     AttrGetterMapType               m_global_attr_getters;
+    UserDataGetterMapType           m_global_user_data_getters;
     const Camera*                   m_camera;
     TextureStore*                   m_texture_store;
     OIIO::ustring                   m_cam_projection_str;
@@ -324,7 +334,7 @@ class RendererServices
     float                           m_shutter_interval;
 
     #define DECLARE_ATTR_GETTER(name)           \
-        bool get_##name(                        \
+        bool get_attr_##name(                   \
             OSL::ShaderGlobals*     sg,         \
             bool                    derivs,     \
             OIIO::ustring           object,     \
@@ -364,8 +374,20 @@ class RendererServices
 
     #undef DECLARE_ATTR_GETTER
 
-    static void clear_attr_derivatives(
-        bool                        derivs,
+    #define DECLARE_USER_DATA_GETTER(name)      \
+        bool get_user_data_##name(              \
+            bool                    derivatives,\
+            OIIO::ustring           name,       \
+            OIIO::TypeDesc          type,       \
+            OSL::ShaderGlobals*     sg,         \
+            void*                   val) const
+
+    DECLARE_USER_DATA_GETTER(dndu);
+    DECLARE_USER_DATA_GETTER(dndv);
+
+    #undef DECLARE_USER_DATA_GETTER
+
+    static void clear_derivatives(
         const OIIO::TypeDesc&       type,
         void*                       val);
 
