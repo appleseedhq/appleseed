@@ -738,7 +738,9 @@ IMPLEMENT_ATTR_GETTER(ray_ior)
 {
     if (type == OIIO::TypeDesc::TypeFloat)
     {
-        reinterpret_cast<float*>(val)[0] = 1.0f;
+        const ShadingPoint* shading_point =
+            reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+        reinterpret_cast<float*>(val)[0] = static_cast<float>(shading_point->get_ray().get_current_ior());
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
