@@ -76,10 +76,15 @@ set (preprocessor_definitions_release
 
 # Flags common to all configurations.
 set (c_compiler_flags_common
-    /WX                                     # Treat Warnings As Errors
     /MP                                     # Multi-processor Compilation
     /GF                                     # Enable String Pooling
 )
+if (WARNINGS_AS_ERRORS)
+    set (c_compiler_flags_common
+         ${c_compiler_flags_common}
+         /WX                                # Treat Warnings As Errors
+    )
+endif ()
 set (cxx_compiler_flags_common
     /wd4290                                 # Disable warning C4290: C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
     /wd4355                                 # Disable warning C4355: 'this' : used in base member initializer list
