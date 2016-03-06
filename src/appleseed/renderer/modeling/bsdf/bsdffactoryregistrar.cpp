@@ -36,6 +36,7 @@
 #include "renderer/modeling/bsdf/bsdfmix.h"
 #include "renderer/modeling/bsdf/diffusebtdf.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
+#include "renderer/modeling/bsdf/glassbsdf.h"
 #include "renderer/modeling/bsdf/glossybrdf.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
 #include "renderer/modeling/bsdf/kelemenbrdf.h"
@@ -77,6 +78,7 @@ BSDFFactoryRegistrar::BSDFFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new BSDFMixFactory()));
     register_factory(auto_ptr<FactoryType>(new DiffuseBTDFFactory()));
     register_factory(auto_ptr<FactoryType>(new DisneyBRDFFactory()));
+    register_factory(auto_ptr<FactoryType>(new GlassBSDFFactory()));
     register_factory(auto_ptr<FactoryType>(new GlossyBRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new KelemenBRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new LambertianBRDFFactory()));

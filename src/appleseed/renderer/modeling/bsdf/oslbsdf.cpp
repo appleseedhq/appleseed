@@ -34,8 +34,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/bsdf/osl/oslmicrofacetbrdf.h"
-#include "renderer/modeling/bsdf/osl/oslmicrofacetbtdf.h"
+#include "renderer/modeling/bsdf/glassbsdf.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
@@ -108,6 +107,18 @@ namespace
                     "beckmann",
                     "osl_glossy_beckmann");
 
+            m_glass_ggx_bsdf =
+                create_and_register_glass_bsdf(
+                    GlassGGXID,
+                    "ggx",
+                    "osl_glass_ggx");
+
+            m_glass_beckmann_bsdf =
+                create_and_register_glass_bsdf(
+                    GlassBeckmannID,
+                    "beckmann",
+                    "osl_glass_beckmann");
+
             m_glossy_ggx_brdf =
                 create_and_register_glossy_brdf(
                     GlossyGGXID,
@@ -137,49 +148,6 @@ namespace
                     SheenID,
                     "sheen_brdf",
                     "osl_sheen");
-
-            m_specular_brdf =
-                create_and_register_bsdf(
-                    ReflectionID,
-                    "specular_brdf",
-                    "osl_reflection");
-
-            m_specular_btdf =
-                create_and_register_bsdf(
-                    RefractionID,
-                    "specular_btdf",
-                    "osl_refraction");
-
-            // OSL Microfacet models.
-            m_microfacet_beckmann_brdf =
-                create_and_register_microfacet_brdf(
-                    MicrofacetBeckmannReflectionID,
-                    "beckmann",
-                    "osl_beckmann_brdf");
-
-            m_microfacet_blinn_brdf =
-                create_and_register_microfacet_brdf(
-                    MicrofacetBlinnReflectionID,
-                    "blinn",
-                    "osl_blinn_brdf");
-
-            m_microfacet_ggx_brdf =
-                create_and_register_microfacet_brdf(
-                    MicrofacetGGXReflectionID,
-                    "ggx",
-                    "osl_ggx_brdf");
-
-            m_microfacet_beckmann_btdf =
-                create_and_register_microfacet_btdf(
-                    MicrofacetBeckmannRefractionID,
-                    "beckmann",
-                    "osl_beckmann_btdf");
-
-            m_microfacet_ggx_btdf =
-                create_and_register_microfacet_btdf(
-                    MicrofacetGGXRefractionID,
-                    "ggx",
-                    "osl_ggx_btdf");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -349,23 +317,41 @@ namespace
             return prob;
         }
 
+        virtual double sample_ior(
+            SamplingContext&            sampling_context,
+            const void*                 data) const APPLESEED_OVERRIDE
+        {
+            const CompositeSurfaceClosure* c = reinterpret_cast<const CompositeSurfaceClosure*>(data);
+            return c->choose_ior(sampling_context.next_double2());
+        }
+
+        virtual void apply_absorption(
+            const void*                 data,
+            const double                distance,
+            Spectrum&                   value) const APPLESEED_OVERRIDE
+        {
+            const CompositeSurfaceClosure* c = reinterpret_cast<const CompositeSurfaceClosure*>(data);
+            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
+            {
+                bsdf_from_closure_id(c->get_closure_type(i)).apply_absorption(
+                    c->get_closure_input_values(i),
+                    distance,
+                    value);
+            }
+        }
+
       private:
         auto_release_ptr<BSDF>      m_ashikhmin_shirley_brdf;
         auto_release_ptr<BSDF>      m_diffuse_btdf;
         auto_release_ptr<BSDF>      m_disney_brdf;
+        auto_release_ptr<BSDF>      m_glass_beckmann_bsdf;
+        auto_release_ptr<BSDF>      m_glass_ggx_bsdf;
         auto_release_ptr<BSDF>      m_glossy_beckmann_brdf;
         auto_release_ptr<BSDF>      m_glossy_ggx_brdf;
         auto_release_ptr<BSDF>      m_metal_beckmann_brdf;
         auto_release_ptr<BSDF>      m_metal_ggx_brdf;
-        auto_release_ptr<BSDF>      m_microfacet_beckmann_brdf;
-        auto_release_ptr<BSDF>      m_microfacet_beckmann_btdf;
-        auto_release_ptr<BSDF>      m_microfacet_blinn_brdf;
-        auto_release_ptr<BSDF>      m_microfacet_ggx_brdf;
-        auto_release_ptr<BSDF>      m_microfacet_ggx_btdf;
         auto_release_ptr<BSDF>      m_orennayar_brdf;
         auto_release_ptr<BSDF>      m_sheen_brdf;
-        auto_release_ptr<BSDF>      m_specular_brdf;
-        auto_release_ptr<BSDF>      m_specular_btdf;
         BSDF*                       m_all_bsdfs[NumClosuresIDs];
 
         auto_release_ptr<BSDF> create_and_register_bsdf(
@@ -379,6 +365,20 @@ namespace
 
             m_all_bsdfs[cid] = bsdf.get();
 
+            return bsdf;
+        }
+
+        auto_release_ptr<BSDF> create_and_register_glass_bsdf(
+            const ClosureID         cid,
+            const char*             mdf_name,
+            const char*             name)
+        {
+            auto_release_ptr<BSDF> bsdf =
+                GlassBSDFFactory().create_osl(
+                    name,
+                    ParamArray().insert("mdf", mdf_name));
+
+            m_all_bsdfs[cid] = bsdf.get();
             return bsdf;
         }
 
@@ -403,34 +403,6 @@ namespace
         {
             auto_release_ptr<BSDF> bsdf =
                 MetalBRDFFactory().create(
-                    name,
-                    ParamArray().insert("mdf", mdf_name));
-
-            m_all_bsdfs[cid] = bsdf.get();
-            return bsdf;
-        }
-
-        auto_release_ptr<BSDF> create_and_register_microfacet_brdf(
-            const ClosureID         cid,
-            const char*             mdf_name,
-            const char*             name)
-        {
-            auto_release_ptr<BSDF> bsdf =
-                OSLMicrofacetBRDFFactory().create(
-                    name,
-                    ParamArray().insert("mdf", mdf_name));
-
-            m_all_bsdfs[cid] = bsdf.get();
-            return bsdf;
-        }
-
-        auto_release_ptr<BSDF> create_and_register_microfacet_btdf(
-            const ClosureID         cid,
-            const char*             mdf_name,
-            const char*             name)
-        {
-            auto_release_ptr<BSDF> bsdf =
-                OSLMicrofacetBTDFFactory().create(
                     name,
                     ParamArray().insert("mdf", mdf_name));
 
