@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.8
+# Compiled by oslc 1.6.9
 surface noise_blocks
 param	float	Kd	0.80000001		%read{4,4} %write{2147483647,-1}
 param	matrix	Xform	1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1		%read{0,0} %write{2147483647,-1}
@@ -24,9 +24,9 @@ code ___main___
 # noise_blocks.osl:8
 #     Ci = Cs * Kd * diffuse(N);
 	functioncall	$const2 4 	%line{8} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:594
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:658
 # 
-	closure		$tmp1 $const5 N $const4 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{594} %argrw{"wrrr"}
+	closure		$tmp1 $const5 N $const4 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{658} %argrw{"wrrr"}
 # noise_blocks.osl:8
 #     Ci = Cs * Kd * diffuse(N);
 	mul		$tmp2 Cs Kd 	%filename{"noise_blocks.osl"} %line{8} %argrw{"wrr"}

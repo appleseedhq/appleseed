@@ -79,7 +79,7 @@
                 <shader type="surface" name="rough_glass" layer="rough_glass1">
                     <parameter name="distribution" value="string beckmann" />
                     <parameter name="ior" value="float 1.5" />
-                    <parameter name="roughness" value="float 0.025" />
+                    <parameter name="roughness" value="float 0.25" />
                 </shader>
             </shader_group>
             <surface_shader name="physical_surface_shader" model="physical_surface_shader" />
