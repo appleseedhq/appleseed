@@ -66,7 +66,7 @@ APPLESEED_DECLARE_INPUT_VALUES(GlassBSDFInputValues)
     Spectrum    m_volume_transmittance;
     double      m_volume_transmittance_distance;
 
-    // precomputed values.
+    // Precomputed values.
     bool        m_backfacing;
     double      m_from_ior;
     double      m_to_ior;

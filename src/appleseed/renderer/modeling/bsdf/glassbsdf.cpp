@@ -222,14 +222,14 @@ namespace
         }
 
         virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const APPLESEED_OVERRIDE
+            const Assembly&     assembly) const APPLESEED_OVERRIDE
         {
             return align(sizeof(InputValues), 16);
         }
 
         APPLESEED_FORCE_INLINE virtual void prepare_inputs(
-            const ShadingPoint&     shading_point,
-            void*                   data) const APPLESEED_OVERRIDE
+            const ShadingPoint& shading_point,
+            void*               data) const APPLESEED_OVERRIDE
         {
             InputValues *values = reinterpret_cast<InputValues*>(data);
 
@@ -271,8 +271,8 @@ namespace
         }
 
         virtual double sample_ior(
-            SamplingContext&            sampling_context,
-            const void*                 data) const APPLESEED_OVERRIDE
+            SamplingContext&    sampling_context,
+            const void*         data) const APPLESEED_OVERRIDE
         {
             const InputValues *values = reinterpret_cast<const InputValues*>(data);
             return values->m_ior;
@@ -287,7 +287,7 @@ namespace
         {
             const InputValues *values = reinterpret_cast<const InputValues*>(data);
 
-            BackfacingPolicy backfacing_policy(
+            const BackfacingPolicy backfacing_policy(
                 sample.get_shading_basis(),
                 values->m_backfacing);
 
@@ -396,6 +396,10 @@ namespace
                 }
             }
 
+            sample.m_probability = m_mdf->pdf(wo, m, alpha_x, alpha_y) * jacobian * F;
+            if (sample.m_probability == 0.0)
+                return;
+
             sample.m_mode = ScatteringMode::Glossy;
             sample.m_incoming = Dual3d(incoming);
 
@@ -409,7 +413,6 @@ namespace
 
             const double D = m_mdf->D(m, alpha_x, alpha_y);
             sample.m_value *= static_cast<float>(F * D * G * term);
-            sample.m_probability = m_mdf->pdf(wo, m, alpha_x, alpha_y) * jacobian * F;
 
             if (is_refraction)
                 sample.compute_transmitted_differentials(eta);
@@ -433,7 +436,7 @@ namespace
 
             const InputValues *values = reinterpret_cast<const InputValues*>(data);
 
-            BackfacingPolicy backfacing_policy(
+            const BackfacingPolicy backfacing_policy(
                 shading_basis,
                 values->m_backfacing);
 
@@ -551,7 +554,7 @@ namespace
 
             const InputValues *values = reinterpret_cast<const InputValues*>(data);
 
-            BackfacingPolicy backfacing_policy(
+            const BackfacingPolicy backfacing_policy(
                 shading_basis,
                 values->m_backfacing);
 
@@ -628,9 +631,9 @@ namespace
 
         // Modulate value by medium absorption over the given distance.
         virtual void apply_absorption(
-            const void*                 data,
-            const double                distance,
-            Spectrum&                   value) const APPLESEED_OVERRIDE
+            const void*         data,
+            const double        distance,
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
             const InputValues *values = reinterpret_cast<const InputValues*>(data);
 
@@ -783,7 +786,7 @@ namespace
 
             return
                 abs((cos_ih * cos_oh) / (cos_in * cos_on)) *
-                (square(ior_o) / square(sqrt_denom));
+                square(ior_o / sqrt_denom);
         }
 
         static double refraction_jacobian(
@@ -801,7 +804,7 @@ namespace
             if (sqrt_denom == 0.0)
                 return 0.0;
 
-            return (abs(cos_oh) * square(ior_o)) / square(sqrt_denom);
+            return abs(cos_oh) * square(ior_o / sqrt_denom);
         }
     };
 

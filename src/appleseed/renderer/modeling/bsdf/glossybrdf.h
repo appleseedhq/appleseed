@@ -62,7 +62,7 @@ APPLESEED_DECLARE_INPUT_VALUES(GlossyBRDFInputValues)
     double      m_anisotropic;
     double      m_ior;
 
-    // precomputed values.
+    // Precomputed values.
     double      m_outside_ior;
 };
 

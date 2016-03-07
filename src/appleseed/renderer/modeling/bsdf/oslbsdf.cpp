@@ -322,6 +322,7 @@ namespace
             const void*                 data) const APPLESEED_OVERRIDE
         {
             const CompositeSurfaceClosure* c = reinterpret_cast<const CompositeSurfaceClosure*>(data);
+            sampling_context.split_in_place(1, 1);
             return c->choose_ior(sampling_context.next_double2());
         }
 

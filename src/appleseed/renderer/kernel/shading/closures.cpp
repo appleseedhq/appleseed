@@ -1120,7 +1120,6 @@ CompositeSurfaceClosure::CompositeSurfaceClosure(
     process_closure_tree(ci, original_shading_basis, Color3f(1.0f));
     compute_cdf();
 
-    // Build the IOR CDF in place if needed.
     if (m_num_iors == 0)
     {
         m_num_iors = 1;
@@ -1128,6 +1127,7 @@ CompositeSurfaceClosure::CompositeSurfaceClosure(
         return;
     }
 
+    // Build the IOR CDF in place if needed.
     if (m_num_iors > 1)
     {
         double total_weight = m_ior_cdf[0];
@@ -1150,12 +1150,13 @@ void CompositeSurfaceClosure::add_ior(
     const foundation::Color3f&  weight,
     const double                ior)
 {
-    // We use the luminance of the weight as the ior weight.
+    // We use the luminance of the weight as the IOR weight.
     const double w = luminance(weight);
     assert(w > 0.0);
 
-    m_iors[m_num_closures] = ior;
-    m_ior_cdf[m_num_closures] = w;
+    m_iors[m_num_iors] = ior;
+    m_ior_cdf[m_num_iors] = w;
+    ++m_num_iors;
 }
 
 double CompositeSurfaceClosure::choose_ior(const double w) const
