@@ -495,35 +495,8 @@ closure color as_sheen(normal N) BUILTIN;
 
 
 /***************************************/
-// specular
-/***************************************/
-
-closure color reflection(normal N) BUILTIN;
-closure color refraction(normal N, float eta) BUILTIN;
-
-
-/***************************************/
 // glossy
 /***************************************/
-
-closure color microfacet(
-    string  distribution,
-    normal  N,
-    vector  T,
-    float   xalpha,
-    float   yalpha,
-    float   eta,
-    int     refract) BUILTIN;
-
-closure color microfacet(
-    string  distribution,
-    normal  N,
-    float   alpha,
-    float   eta,
-    int     refract)
-{
-    return microfacet(distribution, N, vector(0), alpha, alpha, eta, refract);
-}
 
 closure color as_glossy(
     string  distribution,
@@ -531,15 +504,15 @@ closure color as_glossy(
     vector  T,
     float   roughness,
     float   anisotropic,
-    float   eta) BUILTIN;
+    float   ior) BUILTIN;
 
 closure color as_glossy(
     string  distribution,
     normal  N,
     float   roughness,
-    float   eta)
+    float   ior)
 {
-    return as_glossy(distribution, N, vector(0), roughness, 0.0, eta);
+    return as_glossy(distribution, N, vector(0), roughness, 0.0, ior);
 }
 
 
@@ -571,6 +544,49 @@ closure color as_metal(
         edge_tint,
         roughness,
         0.0);
+}
+
+
+/***************************************/
+// glass
+/***************************************/
+
+closure color as_glass(
+    string  distribution,
+    normal  N,
+    vector  T,
+    color   surface_transmittance,
+    color   reflection_tint,
+    color   refraction_tint,
+    float   roughness,
+    float   anisotropic,
+    float   ior,
+    color   volume_transmittance,
+    float   volume_transmittance_distance) BUILTIN;
+
+closure color as_glass(
+    string  distribution,
+    normal  N,
+    color   surface_transmittance,
+    color   reflection_tint,
+    color   refraction_tint,
+    float   roughness,
+    float   ior,
+    color   volume_transmittance,
+    float   volume_transmittance_distance)
+{
+    return as_glass(
+        distribution,
+        N,
+        vector(0),
+        surface_transmittance,
+        reflection_tint,
+        refraction_tint,
+        roughness,
+        0.0,
+        ior,
+        volume_transmittance,
+        volume_transmittance_distance);
 }
 
 

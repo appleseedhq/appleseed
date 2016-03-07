@@ -6,11 +6,11 @@ surface diffuse_mirror_mix(float Kd = 1, color Cs = 1, float Kr = 0)
     if (P[2] < 0.0)
     {
 	    if (P[0] < 0.0)
-	    	Ci += Kr * reflection(N);
+	    	Ci += Kr * as_glossy("ggx", N, 0.1, 1.5);
 	}
     else
     {
 	    if (P[0] > 0.0)
-	    	Ci += Kr * reflection(N);
+	    	Ci += Kr * as_glossy("ggx", N, 0.1, 1.5);
 	}
 }

@@ -30,17 +30,14 @@
 #define APPLESEED_RENDERER_KERNEL_SHADING_CLOSURES_H
 
 // appleseed.renderer headers.
-#include "renderer/modeling/bsdf/osl/oslmicrofacetbrdf.h"
-#include "renderer/modeling/bsdf/osl/oslmicrofacetbtdf.h"
 #include "renderer/modeling/bsdf/ashikhminbrdf.h"
 #include "renderer/modeling/bsdf/diffusebtdf.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
+#include "renderer/modeling/bsdf/glassbsdf.h"
 #include "renderer/modeling/bsdf/glossybrdf.h"
 #include "renderer/modeling/bsdf/metalbrdf.h"
 #include "renderer/modeling/bsdf/orennayarbrdf.h"
 #include "renderer/modeling/bsdf/sheenbrdf.h"
-#include "renderer/modeling/bsdf/specularbrdf.h"
-#include "renderer/modeling/bsdf/specularbtdf.h"
 #include "renderer/modeling/bssrdf/dipolebssrdf.h"
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
@@ -95,17 +92,12 @@ enum ClosureID
     AshikhminShirleyID,
     DisneyID,
     OrenNayarID,
-    ReflectionID,
-    RefractionID,
     SheenID,
     TranslucentID,
 
-    MicrofacetID,
-    MicrofacetBeckmannReflectionID,
-    MicrofacetBlinnReflectionID,
-    MicrofacetGGXReflectionID,
-    MicrofacetBeckmannRefractionID,
-    MicrofacetGGXRefractionID,
+    GlassID,
+    GlassBeckmannID,
+    GlassGGXID,
 
     GlossyID,
     GlossyBeckmannID,
@@ -195,17 +187,14 @@ class APPLESEED_ALIGN(16) CompositeClosure
         DiffuseBTDFInputValues,
         DipoleBSSRDFInputValues,
         DisneyBRDFInputValues,
+        GlassBSDFInputValues,
         GlossyBRDFInputValues,
         MetalBRDFInputValues,
 #ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
         NormalizedDiffusionBSSRDFInputValues,
 #endif
-        OSLMicrofacetBRDFInputValues,
-        OSLMicrofacetBTDFInputValues,
         OrenNayarBRDFInputValues,
-        SheenBRDFInputValues,
-        SpecularBRDFInputValues,
-        SpecularBTDFInputValues
+        SheenBRDFInputValues
     > InputValuesTypeList;
 
     // Find the biggest InputValues type.
@@ -256,7 +245,17 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
         const foundation::Basis3d&  original_shading_basis,
         const OSL::ClosureColor*    ci);
 
+    void add_ior(
+        const foundation::Color3f&  weight,
+        const double                ior);
+
+    double choose_ior(const double w) const;
+
   private:
+    size_t                          m_num_iors;
+    double                          m_iors[MaxClosureEntries];
+    double                          m_ior_cdf[MaxClosureEntries];
+
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
         const foundation::Basis3d&  original_shading_basis,

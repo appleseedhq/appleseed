@@ -1,23 +1,22 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.8
+# Compiled by oslc 1.6.9
 surface tangents_test
-param	int	flip_handedness	0		%read{60,60} %write{2147483647,-1}
-global	point	P	%read{28,45} %write{2147483647,-1} %derivs
+param	int	flip_handedness	0		%read{43,43} %write{2147483647,-1}
+global	point	P	%read{28,28} %write{2147483647,-1} %derivs
 global	normal	N	%read{15,19} %write{2147483647,-1}
 global	float	v	%read{0,0} %write{2147483647,-1}
-global	vector	dPdu	%read{61,63} %write{2147483647,-1}
-global	vector	dPdv	%read{61,63} %write{2147483647,-1}
-global	closure color	Ci	%read{2147483647,-1} %write{6,75}
-local	float	vv	%read{1,58} %write{0,0}
-local	normal	___304_Normal	%read{32,36} %write{29,29}
-local	normal	___306_Normal	%read{49,53} %write{46,46}
-local	normal	___308_Normal	%read{67,71} %write{62,64}
-const	float	$const1	1		%read{0,72} %write{2147483647,-1}
+global	vector	dPdu	%read{44,46} %write{2147483647,-1}
+global	vector	dPdv	%read{44,46} %write{2147483647,-1}
+global	closure color	Ci	%read{2147483647,-1} %write{6,58}
+local	float	vv	%read{1,41} %write{0,0}
+local	normal	___306_Normal	%read{32,36} %write{29,29}
+local	normal	___308_Normal	%read{50,54} %write{45,47}
+const	float	$const1	1		%read{0,55} %write{2147483647,-1}
 const	float	$const2	0.2		%read{1,1} %write{2147483647,-1}
 temp	int	$tmp1	%read{2,2} %write{1,1}
 temp	int	$tmp2	%read{4,4} %write{3,3}
 temp	closure color	$tmp3	%read{6,6} %write{5,5}
-const	string	$const3	"emission"		%read{5,65} %write{2147483647,-1}
+const	string	$const3	"emission"		%read{5,48} %write{2147483647,-1}
 const	color	$const4	1 0.25 0		%read{6,6} %write{2147483647,-1}
 temp	closure color	$tmp5	%read{8,8} %write{7,7}
 const	color	$const5	0 0.25 1		%read{8,8} %write{2147483647,-1}
@@ -27,20 +26,20 @@ const	float	$const7	0.44999999		%read{11,11} %write{2147483647,-1}
 temp	int	$tmp8	%read{12,12} %write{11,11}
 temp	closure color	$tmp9	%read{23,23} %write{13,13}
 temp	color	$tmp10	%read{23,23} %write{22,22}
-const	string	$const8	"normal_to_color"		%read{14,66} %write{2147483647,-1}
+const	string	$const8	"normal_to_color"		%read{14,49} %write{2147483647,-1}
 temp	color	$tmp11	%read{22,22} %write{21,21}
-const	int	$const9	0		%read{15,67} %write{2147483647,-1}
+const	int	$const9	0		%read{15,50} %write{2147483647,-1}
 temp	float	$tmp12	%read{16,16} %write{15,15}
 temp	float	$tmp13	%read{21,21} %write{16,16}
-const	int	$const10	1		%read{17,69} %write{2147483647,-1}
+const	int	$const10	1		%read{17,52} %write{2147483647,-1}
 temp	float	$tmp14	%read{18,18} %write{17,17}
 temp	float	$tmp15	%read{21,21} %write{18,18}
-const	int	$const11	2		%read{19,71} %write{2147483647,-1}
+const	int	$const11	2		%read{19,54} %write{2147483647,-1}
 temp	float	$tmp16	%read{20,20} %write{19,19}
 temp	float	$tmp17	%read{21,21} %write{20,20}
-const	float	$const12	0.5		%read{22,74} %write{2147483647,-1}
+const	float	$const12	0.5		%read{22,57} %write{2147483647,-1}
 temp	int	$tmp18	%read{25,25} %write{24,24}
-const	float	$const13	0.69999999		%read{26,43} %write{2147483647,-1}
+const	float	$const13	0.69999999		%read{26,26} %write{2147483647,-1}
 temp	int	$tmp19	%read{27,27} %write{26,26}
 temp	vector	$tmp20	%read{29,29} %write{28,28}
 temp	closure color	$tmp21	%read{40,40} %write{30,30}
@@ -52,31 +51,19 @@ temp	float	$tmp26	%read{35,35} %write{34,34}
 temp	float	$tmp27	%read{38,38} %write{35,35}
 temp	float	$tmp28	%read{37,37} %write{36,36}
 temp	float	$tmp29	%read{38,38} %write{37,37}
-const	float	$const14	0.75		%read{41,58} %write{2147483647,-1}
+const	float	$const14	0.75		%read{41,41} %write{2147483647,-1}
 temp	int	$tmp30	%read{42,42} %write{41,41}
-temp	int	$tmp31	%read{44,44} %write{43,43}
-temp	vector	$tmp32	%read{46,46} %write{45,45}
-temp	closure color	$tmp33	%read{57,57} %write{47,47}
-temp	color	$tmp34	%read{57,57} %write{56,56}
-temp	color	$tmp35	%read{56,56} %write{55,55}
-temp	float	$tmp36	%read{50,50} %write{49,49}
-temp	float	$tmp37	%read{55,55} %write{50,50}
-temp	float	$tmp38	%read{52,52} %write{51,51}
-temp	float	$tmp39	%read{55,55} %write{52,52}
-temp	float	$tmp40	%read{54,54} %write{53,53}
-temp	float	$tmp41	%read{55,55} %write{54,54}
-temp	int	$tmp42	%read{59,59} %write{58,58}
-temp	vector	$tmp43	%read{62,62} %write{61,61}
-temp	vector	$tmp44	%read{64,64} %write{63,63}
-temp	closure color	$tmp45	%read{75,75} %write{65,65}
-temp	color	$tmp46	%read{75,75} %write{74,74}
-temp	color	$tmp47	%read{74,74} %write{73,73}
-temp	float	$tmp48	%read{68,68} %write{67,67}
-temp	float	$tmp49	%read{73,73} %write{68,68}
-temp	float	$tmp50	%read{70,70} %write{69,69}
-temp	float	$tmp51	%read{73,73} %write{70,70}
-temp	float	$tmp52	%read{72,72} %write{71,71}
-temp	float	$tmp53	%read{73,73} %write{72,72}
+temp	vector	$tmp31	%read{45,45} %write{44,44}
+temp	vector	$tmp32	%read{47,47} %write{46,46}
+temp	closure color	$tmp33	%read{58,58} %write{48,48}
+temp	color	$tmp34	%read{58,58} %write{57,57}
+temp	color	$tmp35	%read{57,57} %write{56,56}
+temp	float	$tmp36	%read{51,51} %write{50,50}
+temp	float	$tmp37	%read{56,56} %write{51,51}
+temp	float	$tmp38	%read{53,53} %write{52,52}
+temp	float	$tmp39	%read{56,56} %write{53,53}
+temp	float	$tmp40	%read{55,55} %write{54,54}
+temp	float	$tmp41	%read{56,56} %write{55,55}
 code ___main___
 # tangents_test.osl:11
 #     float vv = 1.0 - v;
@@ -84,7 +71,7 @@ code ___main___
 # tangents_test.osl:13
 #     if (vv < 0.2)
 	lt		$tmp1 vv $const2 	%line{13} %argrw{"wrr"}
-	if		$tmp1 9 76 	%argrw{"r"}
+	if		$tmp1 9 59 	%argrw{"r"}
 # tangents_test.osl:16
 #         if (backfacing())
 	backfacing	$tmp2 	%line{16} %argrw{"w"}
@@ -100,11 +87,11 @@ code ___main___
 # tangents_test.osl:21
 #     else if (vv < 0.25)
 	lt		$tmp7 vv $const6 	%line{21} %argrw{"wrr"}
-	if		$tmp7 11 76 	%argrw{"r"}
+	if		$tmp7 11 59 	%argrw{"r"}
 # tangents_test.osl:25
 #     else if (vv < 0.45)
 	lt		$tmp8 vv $const7 	%line{25} %argrw{"wrr"}
-	if		$tmp8 24 76 	%argrw{"r"}
+	if		$tmp8 24 59 	%argrw{"r"}
 # tangents_test.osl:28
 #         Ci = normal_to_color(N) * emission();
 	closure		$tmp9 $const3 	%line{28} %argrw{"wr"}
@@ -125,26 +112,26 @@ code ___main___
 # tangents_test.osl:30
 #     else if (vv < 0.5)
 	lt		$tmp18 vv $const12 	%line{30} %argrw{"wrr"}
-	if		$tmp18 26 76 	%argrw{"r"}
+	if		$tmp18 26 59 	%argrw{"r"}
 # tangents_test.osl:34
 #     else if (vv < 0.70)
 	lt		$tmp19 vv $const13 	%line{34} %argrw{"wrr"}
-	if		$tmp19 41 76 	%argrw{"r"}
+	if		$tmp19 41 59 	%argrw{"r"}
 # tangents_test.osl:37
 #         normal Normal = normalize(calculatenormal(P));
 	calculatenormal	$tmp20 P 	%line{37} %argrw{"wr"} %argderivs{1}
-	normalize	___304_Normal $tmp20 	%argrw{"wr"}
+	normalize	___306_Normal $tmp20 	%argrw{"wr"}
 # tangents_test.osl:38
 #         Ci = normal_to_color(Normal) * emission();
 	closure		$tmp21 $const3 	%line{38} %argrw{"wr"}
 	functioncall	$const8 40 	%argrw{"r"}
 # tangents_test.osl:4
 #     return color(Normal[0] + 1.0, Normal[1] + 1.0, Normal[2] + 1.0) * 0.5;
-	compref		$tmp24 ___304_Normal $const9 	%line{4} %argrw{"wrr"}
+	compref		$tmp24 ___306_Normal $const9 	%line{4} %argrw{"wrr"}
 	add		$tmp25 $tmp24 $const1 	%argrw{"wrr"}
-	compref		$tmp26 ___304_Normal $const10 	%argrw{"wrr"}
+	compref		$tmp26 ___306_Normal $const10 	%argrw{"wrr"}
 	add		$tmp27 $tmp26 $const1 	%argrw{"wrr"}
-	compref		$tmp28 ___304_Normal $const11 	%argrw{"wrr"}
+	compref		$tmp28 ___306_Normal $const11 	%argrw{"wrr"}
 	add		$tmp29 $tmp28 $const1 	%argrw{"wrr"}
 	color		$tmp23 $tmp25 $tmp27 $tmp29 	%argrw{"wrrr"}
 	mul		$tmp22 $tmp23 $const12 	%argrw{"wrr"}
@@ -154,62 +141,33 @@ code ___main___
 # tangents_test.osl:40
 #     else if (vv < 0.75)
 	lt		$tmp30 vv $const14 	%line{40} %argrw{"wrr"}
-	if		$tmp30 43 76 	%argrw{"r"}
-# tangents_test.osl:45
-#     else if (vv < 0.70)
-	lt		$tmp31 vv $const13 	%line{45} %argrw{"wrr"}
-	if		$tmp31 58 76 	%argrw{"r"}
-# tangents_test.osl:48
-#         normal Normal = normalize(calculatenormal(P));
-	calculatenormal	$tmp32 P 	%line{48} %argrw{"wr"} %argderivs{1}
-	normalize	___306_Normal $tmp32 	%argrw{"wr"}
+	if		$tmp30 43 59 	%argrw{"r"}
 # tangents_test.osl:49
+#         if (flip_handedness)
+	if		flip_handedness 46 48 	%line{49} %argrw{"r"}
+# tangents_test.osl:50
+#             Normal = normalize(cross(dPdv, dPdu));
+	cross		$tmp31 dPdv dPdu 	%line{50} %argrw{"wrr"}
+	normalize	___308_Normal $tmp31 	%argrw{"wr"}
+# tangents_test.osl:52
+#             Normal = normalize(cross(dPdu, dPdv));
+	cross		$tmp32 dPdu dPdv 	%line{52} %argrw{"wrr"}
+	normalize	___308_Normal $tmp32 	%argrw{"wr"}
+# tangents_test.osl:54
 #         Ci = normal_to_color(Normal) * emission();
-	closure		$tmp33 $const3 	%line{49} %argrw{"wr"}
-	functioncall	$const8 57 	%argrw{"r"}
+	closure		$tmp33 $const3 	%line{54} %argrw{"wr"}
+	functioncall	$const8 58 	%argrw{"r"}
 # tangents_test.osl:4
 #     return color(Normal[0] + 1.0, Normal[1] + 1.0, Normal[2] + 1.0) * 0.5;
-	compref		$tmp36 ___306_Normal $const9 	%line{4} %argrw{"wrr"}
+	compref		$tmp36 ___308_Normal $const9 	%line{4} %argrw{"wrr"}
 	add		$tmp37 $tmp36 $const1 	%argrw{"wrr"}
-	compref		$tmp38 ___306_Normal $const10 	%argrw{"wrr"}
+	compref		$tmp38 ___308_Normal $const10 	%argrw{"wrr"}
 	add		$tmp39 $tmp38 $const1 	%argrw{"wrr"}
-	compref		$tmp40 ___306_Normal $const11 	%argrw{"wrr"}
+	compref		$tmp40 ___308_Normal $const11 	%argrw{"wrr"}
 	add		$tmp41 $tmp40 $const1 	%argrw{"wrr"}
 	color		$tmp35 $tmp37 $tmp39 $tmp41 	%argrw{"wrrr"}
 	mul		$tmp34 $tmp35 $const12 	%argrw{"wrr"}
-# tangents_test.osl:49
+# tangents_test.osl:54
 #         Ci = normal_to_color(Normal) * emission();
-	mul		Ci $tmp33 $tmp34 	%line{49} %argrw{"wrr"}
-# tangents_test.osl:51
-#     else if (vv < 0.75)
-	lt		$tmp42 vv $const14 	%line{51} %argrw{"wrr"}
-	if		$tmp42 60 76 	%argrw{"r"}
-# tangents_test.osl:60
-#         if (flip_handedness)
-	if		flip_handedness 63 65 	%line{60} %argrw{"r"}
-# tangents_test.osl:61
-#             Normal = normalize(cross(dPdv, dPdu));
-	cross		$tmp43 dPdv dPdu 	%line{61} %argrw{"wrr"}
-	normalize	___308_Normal $tmp43 	%argrw{"wr"}
-# tangents_test.osl:63
-#             Normal = normalize(cross(dPdu, dPdv));
-	cross		$tmp44 dPdu dPdv 	%line{63} %argrw{"wrr"}
-	normalize	___308_Normal $tmp44 	%argrw{"wr"}
-# tangents_test.osl:65
-#         Ci = normal_to_color(Normal) * emission();
-	closure		$tmp45 $const3 	%line{65} %argrw{"wr"}
-	functioncall	$const8 75 	%argrw{"r"}
-# tangents_test.osl:4
-#     return color(Normal[0] + 1.0, Normal[1] + 1.0, Normal[2] + 1.0) * 0.5;
-	compref		$tmp48 ___308_Normal $const9 	%line{4} %argrw{"wrr"}
-	add		$tmp49 $tmp48 $const1 	%argrw{"wrr"}
-	compref		$tmp50 ___308_Normal $const10 	%argrw{"wrr"}
-	add		$tmp51 $tmp50 $const1 	%argrw{"wrr"}
-	compref		$tmp52 ___308_Normal $const11 	%argrw{"wrr"}
-	add		$tmp53 $tmp52 $const1 	%argrw{"wrr"}
-	color		$tmp47 $tmp49 $tmp51 $tmp53 	%argrw{"wrrr"}
-	mul		$tmp46 $tmp47 $const12 	%argrw{"wrr"}
-# tangents_test.osl:65
-#         Ci = normal_to_color(Normal) * emission();
-	mul		Ci $tmp45 $tmp46 	%line{65} %argrw{"wrr"}
+	mul		Ci $tmp33 $tmp34 	%line{54} %argrw{"wrr"}
 	end

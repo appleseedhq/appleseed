@@ -112,6 +112,14 @@ namespace
     //   [1] Microfacet Models for Refraction through Rough Surfaces
     //       http://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.pdf
     //
+    // Todo:
+    //
+    //  This BRDF currently assumes an air | metal interface and will not
+    //  produce correct results when that's not the case, for example
+    //  a metallic object inside a liquid.
+    //  Reference for the correct Fresnel equation to use:
+    //  https://seblagarde.wordpress.com/2013/04/29/memo-on-fresnel-equations/
+    //
 
     const char* Model = "metal_brdf";
 

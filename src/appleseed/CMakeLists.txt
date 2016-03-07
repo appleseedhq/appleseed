@@ -1254,6 +1254,8 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/diffusebtdf.h
     renderer/modeling/bsdf/disneybrdf.cpp
     renderer/modeling/bsdf/disneybrdf.h
+    renderer/modeling/bsdf/glassbsdf.cpp
+    renderer/modeling/bsdf/glassbsdf.h
     renderer/modeling/bsdf/glossybrdf.cpp
     renderer/modeling/bsdf/glossybrdf.h
     renderer/modeling/bsdf/ibsdffactory.h
@@ -1293,12 +1295,8 @@ source_group ("renderer\\modeling\\bsdf" FILES
 
 if (WITH_OSL)
     set (renderer_modeling_bsdf_osl_sources
-        renderer/modeling/bsdf/osl/oslbsdf.cpp
-        renderer/modeling/bsdf/osl/oslbsdf.h
-        renderer/modeling/bsdf/osl/oslmicrofacetbrdf.cpp
-        renderer/modeling/bsdf/osl/oslmicrofacetbrdf.h
-        renderer/modeling/bsdf/osl/oslmicrofacetbtdf.cpp
-        renderer/modeling/bsdf/osl/oslmicrofacetbtdf.h
+        renderer/modeling/bsdf/oslbsdf.cpp
+        renderer/modeling/bsdf/oslbsdf.h
     )
     list (APPEND appleseed_sources
         ${renderer_modeling_bsdf_osl_sources}

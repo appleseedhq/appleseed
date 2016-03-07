@@ -110,6 +110,21 @@ namespace
             return Model;
         }
 
+        virtual size_t compute_input_data_size(
+            const Assembly&         assembly) const APPLESEED_OVERRIDE
+        {
+            return align(sizeof(InputValues), 16);
+        }
+
+        APPLESEED_FORCE_INLINE virtual void prepare_inputs(
+            const ShadingPoint&     shading_point,
+            void*                   data) const APPLESEED_OVERRIDE
+        {
+            InputValues *values = reinterpret_cast<InputValues*>(data);
+            values->m_outside_ior =
+                shading_point.get_ray().get_current_ior();
+        }
+
         virtual bool on_frame_begin(
             const Project&      project,
             const Assembly&     assembly,
@@ -158,7 +173,7 @@ namespace
             FresnelDielectricFun<double> f(
                 values->m_reflectance,
                 values->m_reflectance_multiplier,
-                1.0 / values->m_ior);
+                values->m_outside_ior / values->m_ior);
 
             if (m_mdf == GGX)
             {
@@ -217,7 +232,7 @@ namespace
             FresnelDielectricFun<double> f(
                 values->m_reflectance,
                 values->m_reflectance_multiplier,
-                1.0 / values->m_ior);
+                values->m_outside_ior / values->m_ior);
 
             if (m_mdf == GGX)
             {
