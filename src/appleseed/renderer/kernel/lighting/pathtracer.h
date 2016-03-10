@@ -550,8 +550,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         }
 
         // Build the medium list of the scattered ray.
-        if (vertex.m_cos_on * foundation::dot(next_ray.m_dir, vertex.get_shading_normal()) < 0.0 &&
-            material_data.m_bsdf != 0)
+        const double next_cos_on = foundation::dot(next_ray.m_dir, vertex.get_shading_normal());
+        if (vertex.m_cos_on * next_cos_on < 0.0 && material_data.m_bsdf != 0)
         {
             const ShadingRay::Medium* prev_medium = ray.get_current_medium();
 
