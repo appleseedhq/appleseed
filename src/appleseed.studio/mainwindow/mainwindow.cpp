@@ -445,6 +445,10 @@ void MainWindow::update_recent_files_menu(const QStringList& files)
 
 void MainWindow::build_toolbar()
 {
+    //
+    // File actions.
+    //
+
     m_action_new_project = new QAction(load_icons("project_new"), "New Project", this);
     connect(m_action_new_project, SIGNAL(triggered()), SLOT(slot_new_project()));
     m_ui->main_toolbar->addAction(m_action_new_project);
@@ -467,6 +471,10 @@ void MainWindow::build_toolbar()
     m_ui->main_toolbar->addAction(m_action_monitor_project_file);
 
     m_ui->main_toolbar->addSeparator();
+
+    //
+    // Rendering actions.
+    //
 
     m_action_start_interactive_rendering = new QAction(load_icons("rendering_start_interactive"), "Start Interactive Rendering", this);
     connect(m_action_start_interactive_rendering, SIGNAL(triggered()), SLOT(slot_start_interactive_rendering()));

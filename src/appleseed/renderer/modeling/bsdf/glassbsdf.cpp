@@ -231,7 +231,7 @@ namespace
             const ShadingPoint& shading_point,
             void*               data) const APPLESEED_OVERRIDE
         {
-            InputValues *values = reinterpret_cast<InputValues*>(data);
+            InputValues* values = reinterpret_cast<InputValues*>(data);
 
             if (shading_point.is_entering())
             {
@@ -242,21 +242,10 @@ namespace
             }
             else
             {
+                values->m_from_ior = values->m_ior;
                 values->m_to_ior =
                     shading_point.get_ray().get_previous_ior();
-                values->m_from_ior = values->m_ior;
                 values->m_backfacing = true;
-
-                if (values->m_volume_transmittance_distance > 0.0)
-                {
-                    // [2] Volumetric absorption reparameterization, page 5.
-                    values->m_absorption.resize(values->m_volume_transmittance.size());
-                    for (size_t i = 0, e = values->m_absorption.size(); i < e; ++i)
-                    {
-                        values->m_absorption[i] =
-                            log(max(values->m_volume_transmittance[i], 0.01f));
-                    }
-                }
             }
 
             values->m_reflection_color  = values->m_surface_transmittance;
@@ -274,7 +263,7 @@ namespace
             SamplingContext&    sampling_context,
             const void*         data) const APPLESEED_OVERRIDE
         {
-            const InputValues *values = reinterpret_cast<const InputValues*>(data);
+            const InputValues* values = reinterpret_cast<const InputValues*>(data);
             return values->m_ior;
         }
 
@@ -285,7 +274,7 @@ namespace
             const bool          cosine_mult,
             BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
-            const InputValues *values = reinterpret_cast<const InputValues*>(data);
+            const InputValues* values = reinterpret_cast<const InputValues*>(data);
 
             const BackfacingPolicy backfacing_policy(
                 sample.get_shading_basis(),
@@ -434,7 +423,7 @@ namespace
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0;
 
-            const InputValues *values = reinterpret_cast<const InputValues*>(data);
+            const InputValues* values = reinterpret_cast<const InputValues*>(data);
 
             const BackfacingPolicy backfacing_policy(
                 shading_basis,
@@ -552,7 +541,7 @@ namespace
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0;
 
-            const InputValues *values = reinterpret_cast<const InputValues*>(data);
+            const InputValues* values = reinterpret_cast<const InputValues*>(data);
 
             const BackfacingPolicy backfacing_policy(
                 shading_basis,
@@ -635,18 +624,21 @@ namespace
             const double        distance,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
-            const InputValues *values = reinterpret_cast<const InputValues*>(data);
+            const InputValues* values = reinterpret_cast<const InputValues*>(data);
 
+            // [2] Volumetric absorption reparameterization, page 5.
             if (values->m_volume_transmittance_distance != 0.0)
             {
-                const float d =
-                    static_cast<float>(distance / values->m_volume_transmittance_distance);
+                const float d = static_cast<float>(distance / values->m_volume_transmittance_distance);
 
                 Spectrum tmp;
-                tmp.resize(values->m_absorption.size());
+                tmp.resize(values->m_volume_transmittance.size());
 
-                for (size_t i = 0, e = tmp.size(); i < e; ++i)
-                    tmp[i] = exp(values->m_absorption[i] * d);
+                for (size_t i = 0, e = value.size(); i < e; ++i)
+                {
+                    const float absorption = log(max(values->m_volume_transmittance[i], 0.01f));
+                    tmp[i] = exp(absorption * d);
+                }
 
                 value *= tmp;
             }

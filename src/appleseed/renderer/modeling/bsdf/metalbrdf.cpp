@@ -185,7 +185,7 @@ namespace
             if (cos_on < 0.0)
                 return;
 
-            const InputValues *values = reinterpret_cast<const InputValues*>(data);
+            const InputValues* values = reinterpret_cast<const InputValues*>(data);
 
             double alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
@@ -244,7 +244,7 @@ namespace
             if (cos_in < 0.0 || cos_on < 0.0)
                 return 0.0;
 
-            const InputValues *values = reinterpret_cast<const InputValues*>(data);
+            const InputValues* values = reinterpret_cast<const InputValues*>(data);
 
             double alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
@@ -306,7 +306,7 @@ namespace
             if (cos_in < 0.0 || cos_on < 0.0)
                 return 0.0;
 
-            const InputValues *values = reinterpret_cast<const InputValues*>(data);
+            const InputValues* values = reinterpret_cast<const InputValues*>(data);
 
             double alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
