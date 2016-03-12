@@ -32,12 +32,12 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
-#include "foundation/mesh/binarymeshfilereader.h"
-#include "foundation/mesh/objmeshfilereader.h"
-#include "foundation/utility/string.h"
 #ifdef APPLESEED_WITH_ALEMBIC
 #include "foundation/mesh/alembicmeshfilereader.h"
 #endif
+#include "foundation/mesh/binarymeshfilereader.h"
+#include "foundation/mesh/objmeshfilereader.h"
+#include "foundation/utility/string.h"
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"
@@ -89,13 +89,13 @@ void GenericMeshFileReader::read(IMeshBuilder& builder)
         OBJMeshFileReader reader(impl->m_filename, impl->m_obj_options);
         reader.read(builder);
     }
-    #ifdef APPLESEED_WITH_ALEMBIC
-        else if (extension == ".abc")
-        {
-            AlembicMeshFileReader reader(impl->m_filename);
-            reader.read(builder);
-        }
-    #endif
+#ifdef APPLESEED_WITH_ALEMBIC
+    else if (extension == ".abc")
+    {
+        AlembicMeshFileReader reader(impl->m_filename);
+        reader.read(builder);
+    }
+#endif
     else if (extension == ".binarymesh")
     {
         BinaryMeshFileReader reader(impl->m_filename);
