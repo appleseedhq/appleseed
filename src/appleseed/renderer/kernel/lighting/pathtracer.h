@@ -554,7 +554,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         const bool crossing_interface =
             foundation::dot(vertex.m_outgoing.get_value(), geometric_normal) *
             foundation::dot(next_ray.m_dir, geometric_normal) < 0.0;
-        if (crossing_interface && material_data.m_bsdf != 0)
+        if (vertex.m_bsdf != 0 && crossing_interface)
         {
             const ShadingRay::Medium* prev_medium = ray.get_current_medium();
 
@@ -562,10 +562,10 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             if (entering)
             {
                 const double ior =
-                    material_data.m_bsdf->sample_ior(
+                    vertex.m_bsdf->sample_ior(
                         sampling_context,
                         bsdf_input_evaluator.data());
-                next_ray.add_medium(ray, &object_instance, material_data.m_bsdf, ior);
+                next_ray.add_medium(ray, &object_instance, vertex.m_bsdf, ior);
             }
             else next_ray.remove_medium(ray, &object_instance);
 
