@@ -88,7 +88,7 @@ def read_png_file(filepath):
     data = png.Reader(filename=filepath).asRGBA8()
     width = data[0]
     height = data[1]
-    rows = data[2]
+    rows = list(data[2])
     return width, height, rows
 
 def write_rgba_png_file(filepath, rows):
@@ -294,7 +294,10 @@ def transform_to_false_color(rows):
                 row[i + 3] = 255
                 continue
 
-            fm = int(fit(m, image_min, image_max, 0, 255))
+            if image_min != image_max:
+                fm = int(fit(m, image_min, image_max, 0, 255))
+            else:
+                fm = m
 
             row[i + 0] = fm
             row[i + 1] = 0
