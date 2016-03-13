@@ -147,7 +147,6 @@ class APPLESEED_ALIGN(16) CompositeClosure
   : public foundation::NonCopyable
 {
   public:
-
     size_t get_num_closures() const;
     ClosureID get_closure_type(const size_t index) const;
     const Spectrum& get_closure_weight(const size_t index) const;
@@ -161,6 +160,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
     void compute_closure_shading_basis(
         const foundation::Vector3d& normal,
         const foundation::Basis3d&  original_shading_basis);
+
     void compute_closure_shading_basis(
         const foundation::Vector3d& normal,
         const foundation::Vector3d& tangent,
