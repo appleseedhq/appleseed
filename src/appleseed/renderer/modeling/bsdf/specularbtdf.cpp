@@ -99,7 +99,7 @@ namespace
             const ShadingPoint& shading_point,
             void*               data) const APPLESEED_OVERRIDE
         {
-            InputValues* values = reinterpret_cast<InputValues*>(data);
+            InputValues* values = static_cast<InputValues*>(data);
 
             if (shading_point.is_entering())
             {

@@ -231,7 +231,7 @@ namespace
             const ShadingPoint& shading_point,
             void*               data) const APPLESEED_OVERRIDE
         {
-            InputValues* values = reinterpret_cast<InputValues*>(data);
+            InputValues* values = static_cast<InputValues*>(data);
 
             if (shading_point.is_entering())
             {
@@ -274,7 +274,7 @@ namespace
             const bool          cosine_mult,
             BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
-            const InputValues* values = reinterpret_cast<const InputValues*>(data);
+            const InputValues* values = static_cast<const InputValues*>(data);
 
             const BackfacingPolicy backfacing_policy(
                 sample.get_shading_basis(),
@@ -423,7 +423,7 @@ namespace
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0;
 
-            const InputValues* values = reinterpret_cast<const InputValues*>(data);
+            const InputValues* values = static_cast<const InputValues*>(data);
 
             const BackfacingPolicy backfacing_policy(
                 shading_basis,
@@ -541,7 +541,7 @@ namespace
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0;
 
-            const InputValues* values = reinterpret_cast<const InputValues*>(data);
+            const InputValues* values = static_cast<const InputValues*>(data);
 
             const BackfacingPolicy backfacing_policy(
                 shading_basis,
@@ -624,7 +624,7 @@ namespace
             const double        distance,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
-            const InputValues* values = reinterpret_cast<const InputValues*>(data);
+            const InputValues* values = static_cast<const InputValues*>(data);
 
             // [2] Volumetric absorption reparameterization, page 5.
             if (values->m_volume_transmittance_distance != 0.0)

@@ -225,7 +225,7 @@ namespace
             const bool              cosine_mult,
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
-            const CompositeSurfaceClosure* c = reinterpret_cast<const CompositeSurfaceClosure*>(data);
+            const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
 
             if (c->get_num_closures() > 0)
             {
@@ -260,7 +260,7 @@ namespace
             double prob = 0.0;
             value.set(0.0f);
 
-            const CompositeSurfaceClosure* c = reinterpret_cast<const CompositeSurfaceClosure*>(data);
+            const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
 
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
@@ -296,7 +296,7 @@ namespace
             const Vector3d&         incoming,
             const int               modes) const APPLESEED_OVERRIDE
         {
-            const CompositeSurfaceClosure* c = reinterpret_cast<const CompositeSurfaceClosure*>(data);
+            const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
             double prob = 0.0;
 
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
@@ -321,7 +321,7 @@ namespace
             SamplingContext&            sampling_context,
             const void*                 data) const APPLESEED_OVERRIDE
         {
-            const CompositeSurfaceClosure* c = reinterpret_cast<const CompositeSurfaceClosure*>(data);
+            const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
             sampling_context.split_in_place(1, 1);
             return c->choose_ior(sampling_context.next_double2());
         }
@@ -331,7 +331,7 @@ namespace
             const double                distance,
             Spectrum&                   value) const APPLESEED_OVERRIDE
         {
-            const CompositeSurfaceClosure* c = reinterpret_cast<const CompositeSurfaceClosure*>(data);
+            const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
                 bsdf_from_closure_id(c->get_closure_type(i)).apply_absorption(
