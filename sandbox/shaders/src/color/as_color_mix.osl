@@ -28,10 +28,14 @@
 
 shader as_color_mix
 (
-    color Color1 = 0,
-    color Color2 = 0,
-    float Factor = 0.5,
-    output color ColorOut = 0
+    color         Color1 = 0,
+    color         Color2 = 0,
+    float         Factor = 0.5
+    [[
+        float min = 0,
+        float max = 1
+    ]],
+    output color  ColorOut = 0
 )
 {
     ColorOut = mix(Color1, Color2, Factor);

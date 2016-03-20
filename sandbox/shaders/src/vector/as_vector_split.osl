@@ -28,7 +28,7 @@
 
 shader as_vector_split
 (
-    vector Vector = 0,
+    vector       Vector = 0,
     output float X = 0,
     output float Y = 0,
     output float Z = 0

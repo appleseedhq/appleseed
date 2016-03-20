@@ -26,13 +26,11 @@
 // THE SOFTWARE.
 //
 
-shader as_color_build
+shader as_float_cast
 (
-    float         R = 0,
-    float         G = 0,
-    float         B = 0,
-    output color  ColorOut = 0
+    int           Int = 0,
+    output float  FloatOut = 0
 )
 {
-    ColorOut = color(R, G, B);
+    FloatOut = Int;
 }

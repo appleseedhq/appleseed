@@ -28,9 +28,9 @@
 
 shader as_float_add
 (
-    float Float1 = 0,
-    float Float2 = 0,
-    output float FloatOut = 0
+    float         Float1 = 0,
+    float         Float2 = 0,
+    output float  FloatOut = 0
 )
 {
     FloatOut = Float1 + Float2;

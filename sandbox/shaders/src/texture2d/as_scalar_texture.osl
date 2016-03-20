@@ -26,18 +26,39 @@
 // THE SOFTWARE.
 //
 
-#include "appleseed/texture.h"
-
 shader as_scalar_texture
 (
-    APPLESEED_DECLARE_TEXTURE_FILENAME_PARAM,
-    APPLESEED_DECLARE_TEXTURE_UV_PARAMS,
-    APPLESEED_DECLARE_TEXTURE_WRAP_PARAMS,
-    APPLESEED_DECLARE_TEXTURE_FILTER_PARAM,
-    APPLESEED_DECLARE_TEXTURE_WIDTH_PARAMS,
-    APPLESEED_DECLARE_TEXTURE_BLUR_PARAMS,
-    int Channel = 0,
-    int Invert = 0
+    float        U = u,
+    float        V = v,
+    string       Filename = ""
+    [[
+        string widget = "filename"
+    ]],
+    string       UWrap = "periodic"          
+    [[                                                     
+        string widget = "popup",
+        string options = "default|black|periodic|clamp|mirror"
+    ]],
+    string       VWrap = "periodic"
+    [[
+        string widget = "popup",
+        string options = "default|black|periodic|clamp|mirror"
+    ]],
+    string       Filter = "smartcubic"
+    [[
+        string widget = "popup",
+        string options = "smartcubic|cubic|linear|closest",
+        int    divider = 1
+    ]],
+    float        UWidth = 1.0,
+    float        VWidth = 1.0,
+    float        UBlur = 0.0,
+    float        VBlur = 0.0
+    [[
+        int    divider = 1
+    ]],
+    int          Channel = 0,
+    int          Invert = 0
     [[
         string help = "invert",
         string widget = "checkBox"
@@ -45,18 +66,20 @@ shader as_scalar_texture
     output float FloatOut = 0
 )
 {
-    FloatOut = texture(
+    color c = texture(
         Filename,
-        U, 
-        V, 
-        "swidth", UWidth, 
-        "twidth", VWidth, 
-        "sblur", UBlur, 
-        "tblur", VBlur, 
-        "swrap", UWrap, 
-        "twrap", VWrap, 
+        U,
+        V,
+        "swidth", UWidth,
+        "twidth", VWidth,
+        "sblur", UBlur,
+        "tblur", VBlur,
+        "swrap", UWrap,
+        "twrap", VWrap,
         "firstchannel", Channel);
 
     if (Invert)
-        FloatOut = 1.0 - FloatOut;
+        FloatOut = 1.0 - c[0];
+    else
+        FloatOut = c[0];
 }

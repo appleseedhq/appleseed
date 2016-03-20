@@ -26,18 +26,39 @@
 // THE SOFTWARE.
 //
 
-#include "appleseed/texture.h"
-
 shader as_color_texture
 (
-    APPLESEED_DECLARE_TEXTURE_FILENAME_PARAM,
-    APPLESEED_DECLARE_TEXTURE_UV_PARAMS,
-    APPLESEED_DECLARE_TEXTURE_WRAP_PARAMS,
-    APPLESEED_DECLARE_TEXTURE_FILTER_PARAM,
-    APPLESEED_DECLARE_TEXTURE_WIDTH_PARAMS,
-    APPLESEED_DECLARE_TEXTURE_BLUR_PARAMS,
-    int FirstChannel = 0,
-    float Fill = 0.0,
+    float        U = u,
+    float        V = v,
+    string       Filename = ""
+    [[
+        string widget = "filename"
+    ]],
+    string       UWrap = "periodic"          
+    [[                                                     
+        string widget = "popup",
+        string options = "default|black|periodic|clamp|mirror"
+    ]],
+    string       VWrap = "periodic"
+    [[
+        string widget = "popup",
+        string options = "default|black|periodic|clamp|mirror"
+    ]],
+    string       Filter = "smartcubic"
+    [[
+        string widget = "popup",
+        string options = "smartcubic|cubic|linear|closest",
+        int    divider = 1
+    ]],
+    float        UWidth = 1.0,
+    float        VWidth = 1.0,
+    float        UBlur = 0.0,
+    float        VBlur = 0.0
+    [[
+        int    divider = 1
+    ]],
+    int          FirstChannel = 0,
+    float        Fill = 0.0,
     output color ColorOut = 0,
     output float AlphaOut = 1.0
 )

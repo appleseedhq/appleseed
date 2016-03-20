@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014 The masked shader writer, The appleseedhq Organization
+// Copyright (c) 2016 The masked shader writer, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,13 +26,21 @@
 // THE SOFTWARE.
 //
 
-shader as_color_build
-(
-    float         R = 0,
-    float         G = 0,
-    float         B = 0,
-    output color  ColorOut = 0
-)
+#ifndef APPLESEED_SHADERS_MICROFACET_H
+#define APPLESEED_SHADERS_MICROFACET_H
+
+float microfacet_roughness(float Roughness, float DepthScale)
 {
-    ColorOut = color(R, G, B);
+    if (DepthScale > 1.0)
+    {
+        int RayDepth;
+        getattribute("path:ray_depth", RayDepth);
+
+        if (RayDepth != 0)
+            return Roughness * DepthScale * RayDepth;
+    }
+
+    return Roughness;
 }
+
+#endif

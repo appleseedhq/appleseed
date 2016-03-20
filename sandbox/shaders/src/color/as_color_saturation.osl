@@ -30,9 +30,13 @@
 
 shader as_color_saturation
 (
-    color Color = 0,
-    float Factor = 1,
-    output color ColorOut = 0
+    color         Color = 0,
+    float         Factor = 1
+    [[
+        float min = 0,
+        float max = 1
+    ]],
+    output color  ColorOut = 0
 )
 {
     ColorOut = saturate(Color, Factor);

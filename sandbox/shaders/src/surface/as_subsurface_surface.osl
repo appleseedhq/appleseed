@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014 The masked shader writer, The appleseedhq Organization
+// Copyright (c) 2016 The masked shader writer, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,13 +26,44 @@
 // THE SOFTWARE.
 //
 
-shader as_color_build
+shader as_subsurface_surface
+[[
+    string help = "Subsurface surface shader"
+]]
 (
-    float         R = 0,
-    float         G = 0,
-    float         B = 0,
-    output color  ColorOut = 0
+    vector               Normal = N,
+    float                Reflectance = 0.8
+    [[
+        float  min = 0
+    ]],
+    color                Color = 1.0,
+    string               Profile = "normalized_diffusion"
+    [[
+        string widget = "popup",
+        string options = "normalized_diffusion|standard_dipole|better_dipole|directional_dipole"
+    ]],
+    float                Radius = 0.1,
+    float                RadiusScale = 1.0,
+    float                Ior = 1.3,
+    int                  MaxSubsurfaceRayDepth = 2
+    [[
+        string help = "Replace subsurface by diffuse when ray depth is greater.",
+        int    min = 0,
+    ]],
+    output closure color BSSRDF = 0
 )
 {
-    ColorOut = color(R, G, B);
+    int RayDepth;
+    getattribute("path:ray_depth", RayDepth);
+    if (RayDepth <= MaxSubsurfaceRayDepth)
+    {
+        BSSRDF = Reflectance * as_subsurface(
+            Profile,
+            N,
+            Color,
+            Radius * RadiusScale,
+            Ior);
+    }
+    else
+        BSSRDF = Reflectance * Color * diffuse(N);
 }

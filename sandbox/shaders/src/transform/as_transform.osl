@@ -26,35 +26,31 @@
 // THE SOFTWARE.
 //
 
-#include "appleseed/transform.h"
-
 shader as_transform
 (
-    vector In = 0,
-
-    string InType = "Point"
+    vector        Input = 0,
+    string        InType = "Point"
     [[
         string widget = "popup",
         string options = "Point|Vector|Normal"
     ]],
-
-    string FromSpace = "world"
+    string        FromSpace = "world"
     [[
-        APPLESEED_TRANSFORM_SPACE_METADATA
+        string widget = "popup",
+        string options = "object|world|camera"
     ]],
-
-    string ToSpace = "object"
+    string        ToSpace = "object"
     [[
-        APPLESEED_TRANSFORM_SPACE_METADATA
+        string widget = "popup",
+        string options = "object|world|camera"
     ]],
-
-    output vector Out = 0
+    output vector Output = 0
 )
 {
     if (InType == "Point")
-        Out = transform(FromSpace, ToSpace, (point) In);
+        Output = transform(FromSpace, ToSpace, (point) Input);
     else if (InType == "Normal")
-        Out = transform(FromSpace, ToSpace, (normal) In);
+        Output = transform(FromSpace, ToSpace, (normal) Input);
     else
-        Out = transform(FromSpace, ToSpace, In);
+        Output = transform(FromSpace, ToSpace, Input);
 }

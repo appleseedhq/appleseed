@@ -28,18 +28,18 @@
 
 shader as_vector_cross
 (
-    vector Vector1 = 0,
-    vector Vector2 = 0,
-    int Normalize = 0
+    vector        Vector1 = 0,
+    vector        Vector2 = 0,
+    int           Normalize = 0
     [[
-        string help = "normalize result vector",
+        string help = "Normalize result vector",
         string widget = "checkBox"
     ]],
     output vector VectorOut = 0
 )
 {
+    VectorOut = cross(Vector1, Vector2);
+
     if (Normalize)
-        VectorOut = normalize(cross(Vector1, Vector2));
-    else
-        VectorOut = cross(Vector1, Vector2);
+        VectorOut = normalize(VectorOut);
 }

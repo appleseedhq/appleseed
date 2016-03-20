@@ -26,13 +26,22 @@
 // THE SOFTWARE.
 //
 
-shader as_color_build
+shader as_sheen_surface
+[[
+    string help = "Sheen surface shader"
+]]
 (
-    float         R = 0,
-    float         G = 0,
-    float         B = 0,
-    output color  ColorOut = 0
+    vector               Normal = N,
+    float                Reflectance = 0.8
+    [[
+        float  min = 0
+    ]],
+    color                Color = 1.0
+    [[
+        string help = "Color"
+    ]],
+    output closure color BRDF = 0
 )
 {
-    ColorOut = color(R, G, B);
+    BRDF = Reflectance * Color * as_sheen(Normal);
 }

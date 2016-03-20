@@ -28,9 +28,9 @@
 
 shader as_color_multiply
 (
-    color Color = 0,
-    float Factor = 1,
-    output color ColorOut = 0
+    color         Color = 0,
+    float         Factor = 1,
+    output color  ColorOut = 0
 )
 {
     ColorOut = Color * Factor;

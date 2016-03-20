@@ -28,8 +28,8 @@
 
 shader as_wavelength
 (
-    float Wavelength = 400,
-    output color ColorOut = 0
+    float         Wavelength = 400,
+    output color  ColorOut = 0
 )
 {
     ColorOut = wavelength_color(Wavelength);

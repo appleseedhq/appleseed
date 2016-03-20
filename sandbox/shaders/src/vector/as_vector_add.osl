@@ -28,9 +28,9 @@
 
 shader as_vector_add
 (
-    vector Vector1 = 0,
-    vector Vector2 = 0,
-    output vector VectorOut = 0
+    vector         Vector1 = 0,
+    vector         Vector2 = 0,
+    output vector  VectorOut = 0
 )
 {
     VectorOut = Vector1 + Vector2;

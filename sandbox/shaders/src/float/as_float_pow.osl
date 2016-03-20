@@ -28,9 +28,9 @@
 
 shader as_float_pow
 (
-    float Float = 0.0,
-    float Exponent = 1.0,
-    output float Result = 0.0
+    float         Float = 0.0,
+    float         Exponent = 1.0,
+    output float  Result = 0.0
 )
 {
     Result = pow(Float, Exponent);
