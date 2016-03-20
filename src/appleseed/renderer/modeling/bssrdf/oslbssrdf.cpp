@@ -155,14 +155,6 @@ namespace
                 shading_point.get_shading_basis(),
                 shading_point.get_osl_shader_globals().Ci);
 
-            prepare_inputs(input_evaluator.data());
-        }
-
-        virtual void prepare_inputs(void* data) const APPLESEED_OVERRIDE
-        {
-            const CompositeSubsurfaceClosure* c =
-                reinterpret_cast<const CompositeSubsurfaceClosure*>(data);
-
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
                 bssrdf_from_closure_id(c->get_closure_type(i)).prepare_inputs(
