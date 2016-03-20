@@ -36,7 +36,7 @@
                 <connect_shaders src_layer="1_as_diffuse_surface" src_param="BRDF" dst_layer="appleseedRenderer:surface" dst_param="BSDF" />
             </shader_group>
             <shader_group name="/scene/spheres/sphere_shader_group">
-                <shader type="shader" name="emission/as_emission" layer="1_as_emission">
+                <shader type="shader" name="surface/as_emission_surface" layer="1_as_emission">
                     <parameter name="Color" value="color 1 1 1" />
                     <parameter name="Emission" value="float 20" />
                     <parameter name="Normalize" value="int 1" />
