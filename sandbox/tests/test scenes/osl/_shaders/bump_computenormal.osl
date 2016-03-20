@@ -1,9 +1,0 @@
-
-surface bump_computenormal(
-    float     Kd = 1, 
-    string    texfile = "")
-{
-    float height = texture( texfile, 2 * u, 2 * v, "wrap", "periodic");
-    normal Normal = normalize(calculatenormal(P + (N * height * 0.5)));
-    Ci = Kd * diffuse(Normal);
-}
