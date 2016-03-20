@@ -597,19 +597,19 @@ closure color as_glass(
 closure color as_subsurface(
     string  profile,
     normal  N,
-    color   rd,
-    color   dmfp,
-    float   eta,
-    float   g) BUILTIN;
+    color   reflectance,
+    color   diffuse_mean_free_path,
+    float   ior,
+    float   scattering_anisotropy) BUILTIN;
 
 closure color as_subsurface(
     string  profile,
     normal  N,
-    color   rd,
-    color   dmfp,
-    float   eta)
+    color   reflectance,
+    color   diffuse_mean_free_path,
+    float   ior)
 {
-    return as_subsurface(profile, N, rd, dmfp, eta, 0.0);
+    return as_subsurface(profile, N, reflectance, diffuse_mean_free_path, ior, 0.0);
 }
 
 
@@ -618,13 +618,13 @@ closure color as_subsurface(
 /***************************************/
 
 closure color as_ashikhmin_shirley(
-    normal  N,              // normal
-    vector  T,              // tangent
-    color   rd,             // diffuse reflectance of the substrate
-    color   rg,             // glossy reflectance at normal incidence
-    float   nu,             // Phong-like exponent in first tangent direction
-    float   nv,             // Phong-like exponent in second tangent direction
-    float   fr) BUILTIN;    // Fresnel multiplier
+    normal  N,
+    vector  T,
+    color   diffuse_reflectance,
+    color   glossy_reflectance,
+    float   exponent_u,                     // Phong-like exponent in first tangent direction
+    float   exponent_v,                     // Phong-like exponent in second tangent direction
+    float   fresnel_multiplier) BUILTIN;    // Fresnel multiplier
 
 closure color as_disney(
     normal  N,
