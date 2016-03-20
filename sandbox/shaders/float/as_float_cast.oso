@@ -1,0 +1,10 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.9
+shader as_float_cast
+param	int	Int	0		%read{0,0} %write{2147483647,-1}
+oparam	float	FloatOut	0		%read{2147483647,-1} %write{0,0}
+code ___main___
+# ./float/as_float_cast.osl:35
+#     FloatOut = Int;
+	assign		FloatOut Int 	%filename{"./float/as_float_cast.osl"} %line{35} %argrw{"wr"}
+	end

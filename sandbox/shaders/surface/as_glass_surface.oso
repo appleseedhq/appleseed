@@ -1,0 +1,29 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.9
+shader as_glass_surface	%meta{string,help,"Glass surface shader"} 
+param	vector	Normal	0 0 0		%read{1,1} %write{0,0} %initexpr
+param	vector	Tn	0 0 0		%meta{int,lockgeom,0} %meta{string,help,"Tangent"} %meta{string,label,"Tangent"}  %read{1,1} %write{2147483647,-1}
+param	float	Transmittance	0.80000001		%meta{float,min,0}  %read{2,2} %write{2147483647,-1}
+param	color	SurfaceTransmittance	1 1 1		%read{1,1} %write{2147483647,-1}
+param	color	ReflectionTint	1 1 1		%read{1,1} %write{2147483647,-1}
+param	color	RefractionTint	1 1 1		%read{1,1} %write{2147483647,-1}
+param	float	Ior	1.5		%meta{string,help,"Index of refraction"} %meta{int,divider,1}  %read{1,1} %write{2147483647,-1}
+param	string	Distribution	"ggx"		%meta{string,help,"Microfacet distribution to use"} %meta{string,widget,"popup"} %meta{string,options,"beckmann|ggx"}  %read{1,1} %write{2147483647,-1}
+param	float	Roughness	0.1		%meta{string,help,"Surface roughness"} %meta{float,min,0.001} %meta{float,max,1}  %read{1,1} %write{2147483647,-1}
+param	float	Anisotropic	0		%meta{string,help,"Anisotropy"} %meta{float,min,-1} %meta{float,max,1} %meta{int,divider,1}  %read{1,1} %write{2147483647,-1}
+param	color	VolumeTransmittance	1 1 1		%read{1,1} %write{2147483647,-1}
+param	float	VolumeTransmittanceDistance	0		%read{1,1} %write{2147483647,-1}
+oparam	closure color	BSDF			%read{2147483647,-1} %write{2,2}
+global	normal	N	%read{0,0} %write{2147483647,-1}
+temp	closure color	$tmp1	%read{2,2} %write{1,1}
+const	string	$const1	"as_glass"		%read{1,1} %write{2147483647,-1}
+code Normal
+# ./surface/as_glass_surface.osl:34
+#     vector               Normal = N,
+	assign		Normal N 	%filename{"./surface/as_glass_surface.osl"} %line{34} %argrw{"wr"}
+code ___main___
+# ./surface/as_glass_surface.osl:88
+#         VolumeTransmittanceDistance);
+	closure		$tmp1 $const1 Distribution Normal Tn SurfaceTransmittance ReflectionTint RefractionTint Roughness Anisotropic Ior VolumeTransmittance VolumeTransmittanceDistance 	%filename{"./surface/as_glass_surface.osl"} %line{88} %argrw{"wrrrrrrrrrrrr"}
+	mul		BSDF $tmp1 Transmittance 	%argrw{"wrr"}
+	end

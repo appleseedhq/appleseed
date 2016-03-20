@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.8
+# Compiled by oslc 1.6.9
 shader as_map2d
 param	float	U	0		%read{2,2} %write{0,0} %initexpr
 param	float	V	0		%read{3,3} %write{1,1} %initexpr
@@ -12,11 +12,11 @@ oparam	float	UOut	0		%read{2147483647,-1} %write{42,42}
 oparam	float	VOut	0		%read{2147483647,-1} %write{46,46}
 global	float	u	%read{0,0} %write{2147483647,-1}
 global	float	v	%read{1,1} %write{2147483647,-1}
-local	float	___297_angle_in_rad	%read{28,28} %write{27,27}
-local	float	___297_c	%read{29,33} %write{28,28}
-local	float	___297_s	%read{30,32} %write{28,28}
-local	float	___297_xx	%read{35,35} %write{31,31}
-local	float	___297_yy	%read{36,36} %write{34,34}
+local	float	___302_angle_in_rad	%read{28,28} %write{27,27}
+local	float	___302_c	%read{29,33} %write{28,28}
+local	float	___302_s	%read{30,32} %write{28,28}
+local	float	___302_xx	%read{35,35} %write{31,31}
+local	float	___302_yy	%read{36,36} %write{34,34}
 local	float	uu	%read{6,40} %write{2,37}
 local	float	vv	%read{9,44} %write{3,38}
 const	string	$const1	"U"		%read{4,4} %write{2147483647,-1}
@@ -51,103 +51,103 @@ temp	float	$tmp19	%read{44,44} %write{43,43}
 temp	float	$tmp20	%read{46,46} %write{44,44}
 temp	float	$tmp21	%read{46,46} %write{45,45}
 code U
-# as_map2d.osl:34
-#     APPLESEED_DECLARE_TEXTURE_UV_PARAMS,
-	assign		U u 	%filename{"as_map2d.osl"} %line{34} %argrw{"wr"}
+# ./transform/as_map2d.osl:33
+#     float        U = u,
+	assign		U u 	%filename{"./transform/as_map2d.osl"} %line{33} %argrw{"wr"}
 code V
-# as_map2d.osl:34
-#     APPLESEED_DECLARE_TEXTURE_UV_PARAMS,
-	assign		V v 	%filename{"as_map2d.osl"} %line{34} %argrw{"wr"}
+# ./transform/as_map2d.osl:34
+#     float        V = v,
+	assign		V v 	%filename{"./transform/as_map2d.osl"} %line{34} %argrw{"wr"}
 code ___main___
-# as_map2d.osl:48
+# ./transform/as_map2d.osl:48
 #     float uu = U;
-	assign		uu U 	%filename{"as_map2d.osl"} %line{48} %argrw{"wr"}
-# as_map2d.osl:49
+	assign		uu U 	%filename{"./transform/as_map2d.osl"} %line{48} %argrw{"wr"}
+# ./transform/as_map2d.osl:49
 #     float vv = V;
 	assign		vv V 	%line{49} %argrw{"wr"}
-# as_map2d.osl:51
+# ./transform/as_map2d.osl:51
 #     if (Flip == "U")
 	eq		$tmp1 Flip $const1 	%line{51} %argrw{"wrr"}
 	if		$tmp1 7 14 	%argrw{"r"}
-# as_map2d.osl:52
+# ./transform/as_map2d.osl:52
 #         uu = 1.0 - uu;
 	sub		uu $const2 uu 	%line{52} %argrw{"wrr"}
-# as_map2d.osl:53
+# ./transform/as_map2d.osl:53
 #     else if (Flip == "V")
 	eq		$tmp2 Flip $const3 	%line{53} %argrw{"wrr"}
 	if		$tmp2 10 14 	%argrw{"r"}
-# as_map2d.osl:54
+# ./transform/as_map2d.osl:54
 #         vv = 1.0 - vv;
 	sub		vv $const2 vv 	%line{54} %argrw{"wrr"}
-# as_map2d.osl:55
+# ./transform/as_map2d.osl:55
 #     else if (Flip == "Both")
 	eq		$tmp3 Flip $const4 	%line{55} %argrw{"wrr"}
 	if		$tmp3 14 14 	%argrw{"r"}
-# as_map2d.osl:57
+# ./transform/as_map2d.osl:57
 #         uu = 1.0 - uu;
 	sub		uu $const2 uu 	%line{57} %argrw{"wrr"}
-# as_map2d.osl:58
+# ./transform/as_map2d.osl:58
 #         vv = 1.0 - vv;
 	sub		vv $const2 vv 	%line{58} %argrw{"wrr"}
-# as_map2d.osl:61
+# ./transform/as_map2d.osl:61
 #     uu = (uu - Center[0]) * Repeat[0];
 	compref		$tmp4 Center $const5 	%line{61} %argrw{"wrr"}
 	sub		$tmp5 uu $tmp4 	%argrw{"wrr"}
 	compref		$tmp6 Repeat $const5 	%argrw{"wrr"}
 	mul		uu $tmp5 $tmp6 	%argrw{"wrr"}
-# as_map2d.osl:62
+# ./transform/as_map2d.osl:62
 #     vv = (vv - Center[1]) * Repeat[1];
 	compref		$tmp7 Center $const6 	%line{62} %argrw{"wrr"}
 	sub		$tmp8 vv $tmp7 	%argrw{"wrr"}
 	compref		$tmp9 Repeat $const6 	%argrw{"wrr"}
 	mul		vv $tmp8 $tmp9 	%argrw{"wrr"}
-# as_map2d.osl:64
+# ./transform/as_map2d.osl:64
 #     rotate2d(uu, vv, Rotate, uu, vv);
 	functioncall	$const7 39 	%line{64} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/transform.h:43
+# include/appleseed/transform.h:39
 #     if (angle_in_degrees != 0)
-	neq		$tmp10 Rotate $const5 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/transform.h"} %line{43} %argrw{"wrr"}
+	neq		$tmp10 Rotate $const5 	%filename{"include/appleseed/transform.h"} %line{39} %argrw{"wrr"}
 	if		$tmp10 37 39 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/transform.h:45
+# include/appleseed/transform.h:41
 #         float angle_in_rad = radians(angle_in_degrees);
-	functioncall	$const8 28 	%line{45} %argrw{"r"}
+	functioncall	$const8 28 	%line{41} %argrw{"r"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:101
-# #define M_LN10     2.3025850929940457        /* ln(10) */
+# #define M_SQRT1_2  0.7071067811865475        /* 1/sqrt(2) */
 	div		$tmp11 $const9 $const10 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{101} %argrw{"wrr"}
-	mul		___297_angle_in_rad Rotate $tmp11 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/transform.h:47
+	mul		___302_angle_in_rad Rotate $tmp11 	%argrw{"wrr"}
+# include/appleseed/transform.h:43
 #         sincos(angle_in_rad, s, c);
-	sincos		___297_angle_in_rad ___297_s ___297_c 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/transform.h"} %line{47} %argrw{"rww"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/transform.h:48
+	sincos		___302_angle_in_rad ___302_s ___302_c 	%filename{"include/appleseed/transform.h"} %line{43} %argrw{"rww"}
+# include/appleseed/transform.h:44
 #         float xx = x * c - s * y;
-	mul		$tmp12 uu ___297_c 	%line{48} %argrw{"wrr"}
-	mul		$tmp13 ___297_s vv 	%argrw{"wrr"}
-	sub		___297_xx $tmp12 $tmp13 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/transform.h:49
+	mul		$tmp12 uu ___302_c 	%line{44} %argrw{"wrr"}
+	mul		$tmp13 ___302_s vv 	%argrw{"wrr"}
+	sub		___302_xx $tmp12 $tmp13 	%argrw{"wrr"}
+# include/appleseed/transform.h:45
 #         float yy = x * s + c * y;
-	mul		$tmp14 uu ___297_s 	%line{49} %argrw{"wrr"}
-	mul		$tmp15 ___297_c vv 	%argrw{"wrr"}
-	add		___297_yy $tmp14 $tmp15 	%argrw{"wrr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/transform.h:50
+	mul		$tmp14 uu ___302_s 	%line{45} %argrw{"wrr"}
+	mul		$tmp15 ___302_c vv 	%argrw{"wrr"}
+	add		___302_yy $tmp14 $tmp15 	%argrw{"wrr"}
+# include/appleseed/transform.h:46
 #         rx = xx;
-	assign		uu ___297_xx 	%line{50} %argrw{"wr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/transform.h:51
+	assign		uu ___302_xx 	%line{46} %argrw{"wr"}
+# include/appleseed/transform.h:47
 #         ry = yy;
-	assign		vv ___297_yy 	%line{51} %argrw{"wr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/transform.h:55
+	assign		vv ___302_yy 	%line{47} %argrw{"wr"}
+# include/appleseed/transform.h:51
 #         rx = x;
-	assign		uu uu 	%line{55} %argrw{"wr"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/transform.h:56
+	assign		uu uu 	%line{51} %argrw{"wr"}
+# include/appleseed/transform.h:52
 #         ry = y;
-	assign		vv vv 	%line{56} %argrw{"wr"}
-# as_map2d.osl:66
-# // Permission is hereby granted, free of charge, to any person obtaining a copy
-	compref		$tmp16 Center $const5 	%filename{"as_map2d.osl"} %line{66} %argrw{"wrr"}
+	assign		vv vv 	%line{52} %argrw{"wr"}
+# ./transform/as_map2d.osl:66
+# // copies of the Software, and to permit persons to whom the Software is
+	compref		$tmp16 Center $const5 	%filename{"./transform/as_map2d.osl"} %line{66} %argrw{"wrr"}
 	add		$tmp17 uu $tmp16 	%argrw{"wrr"}
 	compref		$tmp18 Offset $const5 	%argrw{"wrr"}
 	add		UOut $tmp17 $tmp18 	%argrw{"wrr"}
-# as_map2d.osl:67
-# // of this software and associated documentation files (the "Software"), to deal
+# ./transform/as_map2d.osl:67
+# // furnished to do so, subject to the following conditions:
 	compref		$tmp19 Center $const6 	%line{67} %argrw{"wrr"}
 	add		$tmp20 vv $tmp19 	%argrw{"wrr"}
 	compref		$tmp21 Offset $const6 	%argrw{"wrr"}

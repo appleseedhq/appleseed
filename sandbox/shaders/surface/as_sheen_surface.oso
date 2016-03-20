@@ -1,0 +1,22 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.9
+shader as_sheen_surface	%meta{string,help,"Sheen surface shader"} 
+param	vector	Normal	0 0 0		%read{1,1} %write{0,0} %initexpr
+param	float	Reflectance	0.80000001		%meta{float,min,0}  %read{2,2} %write{2147483647,-1}
+param	color	Color	1 1 1		%meta{string,help,"Color"}  %read{2,2} %write{2147483647,-1}
+oparam	closure color	BRDF			%read{2147483647,-1} %write{3,3}
+global	normal	N	%read{0,0} %write{2147483647,-1}
+temp	closure color	$tmp1	%read{3,3} %write{1,1}
+const	string	$const1	"as_sheen"		%read{1,1} %write{2147483647,-1}
+temp	color	$tmp2	%read{3,3} %write{2,2}
+code Normal
+# ./surface/as_sheen_surface.osl:34
+#     vector               Normal = N,
+	assign		Normal N 	%filename{"./surface/as_sheen_surface.osl"} %line{34} %argrw{"wr"}
+code ___main___
+# ./surface/as_sheen_surface.osl:46
+#     BRDF = Reflectance * Color * as_sheen(Normal);
+	closure		$tmp1 $const1 Normal 	%filename{"./surface/as_sheen_surface.osl"} %line{46} %argrw{"wrr"}
+	mul		$tmp2 Reflectance Color 	%argrw{"wrr"}
+	mul		BRDF $tmp1 $tmp2 	%argrw{"wrr"}
+	end
