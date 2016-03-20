@@ -59,11 +59,11 @@ shader as_subsurface_surface
     {
         BSSRDF = Reflectance * as_subsurface(
             Profile,
-            N,
+            Normal,
             Color,
             Radius * RadiusScale,
             Ior);
     }
     else
-        BSSRDF = Reflectance * Color * diffuse(N);
+        BSSRDF = Reflectance * Color * diffuse(Normal);
 }

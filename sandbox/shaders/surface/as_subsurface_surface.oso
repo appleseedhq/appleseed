@@ -1,7 +1,7 @@
 OpenShadingLanguage 1.00
 # Compiled by oslc 1.6.9
 shader as_subsurface_surface	%meta{string,help,"Subsurface surface shader"} 
-param	vector	Normal	0 0 0		%read{2147483647,-1} %write{0,0} %initexpr
+param	vector	Normal	0 0 0		%read{7,10} %write{0,0} %initexpr
 param	float	Reflectance	0.80000001		%meta{float,min,0}  %read{8,11} %write{2147483647,-1}
 param	color	Color	1 1 1		%read{7,11} %write{2147483647,-1}
 param	string	Profile	"normalized_diffusion"		%meta{string,widget,"popup"} %meta{string,options,"normalized_diffusion|standard_dipole|better_dipole|directional_dipole"}  %read{7,7} %write{2147483647,-1}
@@ -10,7 +10,7 @@ param	float	RadiusScale	1		%read{4,4} %write{2147483647,-1}
 param	float	Ior	1.3		%read{7,7} %write{2147483647,-1}
 param	int	MaxSubsurfaceRayDepth	2		%meta{string,help,"Replace subsurface by diffuse when ray depth is greater."} %meta{int,min,0}  %read{2,2} %write{2147483647,-1}
 oparam	closure color	BSSRDF			%read{2147483647,-1} %write{8,12}
-global	normal	N	%read{0,10} %write{2147483647,-1}
+global	normal	N	%read{0,0} %write{2147483647,-1}
 local	int	RayDepth	%read{2,2} %write{1,1}
 temp	int	$tmp1	%read{2147483647,-1} %write{1,1}
 const	string	$const1	"path:ray_depth"		%read{1,1} %write{2147483647,-1}
@@ -45,18 +45,18 @@ code ___main___
 	functioncall	$const2 8 	%argrw{"r"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:612
 # }
-	closure		$tmp3 $const2 Profile N Color $tmp5 Ior $const3 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{612} %argrw{"wrrrrrrr"}
+	closure		$tmp3 $const2 Profile Normal Color $tmp5 Ior $const3 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{612} %argrw{"wrrrrrrr"}
 # ./surface/as_subsurface_surface.osl:65
 #             Ior);
 	mul		BSSRDF $tmp3 Reflectance 	%filename{"./surface/as_subsurface_surface.osl"} %line{65} %argrw{"wrr"}
 # ./surface/as_subsurface_surface.osl:68
-#         BSSRDF = Reflectance * Color * diffuse(N);
+#         BSSRDF = Reflectance * Color * diffuse(Normal);
 	functioncall	$const4 11 	%line{68} %argrw{"r"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:658
 # }
-	closure		$tmp6 $const6 N $const3 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{658} %argrw{"wrrr"}
+	closure		$tmp6 $const6 Normal $const3 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{658} %argrw{"wrrr"}
 # ./surface/as_subsurface_surface.osl:68
-#         BSSRDF = Reflectance * Color * diffuse(N);
+#         BSSRDF = Reflectance * Color * diffuse(Normal);
 	mul		$tmp7 Reflectance Color 	%filename{"./surface/as_subsurface_surface.osl"} %line{68} %argrw{"wrr"}
 	mul		BSSRDF $tmp6 $tmp7 	%argrw{"wrr"}
 	end
