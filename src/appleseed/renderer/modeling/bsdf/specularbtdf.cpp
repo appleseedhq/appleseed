@@ -243,7 +243,10 @@ namespace
             const float scale = static_cast<float>(values->m_scale);
             const float fdistance = static_cast<float>(distance);
 
-            for (size_t i = 0, e = value.size(); i < e; ++i)
+            Spectrum tmp;
+            tmp.resize(values->m_transmittance.size());
+
+            for (size_t i = 0, e = values->m_transmittance.size(); i < e; ++i)
             {
                 //
                 // Reference:
@@ -255,8 +258,10 @@ namespace
                 const float btdf_transmittance = static_cast<float>(values->m_transmittance[i] * values->m_transmittance_multiplier);
                 const float absorption = (1.0f - btdf_transmittance) * density;
                 const float optical_depth = absorption * scale * fdistance;
-                value[i] *= exp(-optical_depth);
+                tmp[i] = exp(-optical_depth);
             }
+
+            value *= tmp;
         }
 
       private:
