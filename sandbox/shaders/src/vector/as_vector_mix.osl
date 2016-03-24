@@ -28,12 +28,16 @@
 
 shader as_vector_mix
 (
-    vector Vector1 = 0,
-    vector Vector2 = 0,
-    float Factor = 0.5,
-    int Normalize = 0
+    vector        Vector1 = 0,
+    vector        Vector2 = 0,
+    float         Factor = 0.5
     [[
-        string help = "invert",
+        float  min = 0,
+        float  max = 1
+    ]],
+    int           Normalize = 0
+    [[
+        string help = "Normalize result vector",
         string widget = "checkBox"
     ]],
     output vector VectorOut = 0

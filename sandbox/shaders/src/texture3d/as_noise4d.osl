@@ -26,30 +26,64 @@
 // THE SOFTWARE.
 //
 
-#include"appleseed/noise.h"
+
+float do_noise4d(string NoiseType, vector P, float Time, int Periodic, vector Period, float TimePeriod)
+{
+    if (Periodic)
+    {
+        return pnoise(
+            NoiseType,
+            P,
+            Time,
+            Period,
+            TimePeriod);
+    }
+    else
+    {
+        return noise(
+            NoiseType,
+            P,
+            Time);
+    }
+}
+
+vector do_noise4d(string NoiseType, vector P, float Time, int Periodic, vector Period, float TimePeriod)
+{
+    if (Periodic)
+    {
+        return pnoise(
+            NoiseType,
+            P,
+            Time,
+            Period,
+            TimePeriod);
+    }
+    else
+    {
+        return noise(
+            NoiseType,
+            P,
+            Time);
+    }
+}
 
 shader as_noise4d
 (
-    vector In = 0,
-    float Time = 0,
-
-    string NoiseType = "perlin"
+    vector        In = 0,
+    float         Time = 0,
+    string        NoiseType = "perlin"
     [[
         string widget = "popup",
         string options = "perlin|uperlin|cell|simplex|usimplex"
     ]],
-
-    int Periodic = 0
+    int           Periodic = 0
     [[
         string widget = "checkBox"
     ]],
-
-    vector Period = 1,
-    float TimePeriod = 1,
-
-    vector Frequency = 1,
-    vector Offset = 0,
-
+    vector        Period = 1,
+    float         TimePeriod = 1,
+    vector        Frequency = 1,
+    vector        Offset = 0,
     output float  FloatOut = 0,
     output vector VectorOut = 0,
     output color  ColorOut = 0

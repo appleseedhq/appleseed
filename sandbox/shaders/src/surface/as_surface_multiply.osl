@@ -31,9 +31,12 @@ shader as_surface_multiply
     string help = "Multiply a surface shader by a scalar."
 ]]
 (
-    closure color BSDF1 = 0,
-    float Factor = 1,
-    color Color = 1,
+    closure color        BSDF1 = 0,
+    float                Factor = 1
+    [[
+        float min = 0
+    ]],
+    color                Color = 1,
     output closure color BSDF = 0
 )
 {

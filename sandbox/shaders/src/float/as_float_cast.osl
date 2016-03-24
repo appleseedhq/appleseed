@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 The masked shader writer, The appleseedhq Organization
+// Copyright (c) 2014 The masked shader writer, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,44 +26,11 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_SHADERS_IOR_H
-#define APPLESEED_SHADERS_IOR_H
-
-#define APPLESEED_DEFAULT_IOR 1.5
-
-#define APPLESEED_IOR_METADATA             \
-    string help = "Index of refraction",   \
-    float min = 1.0,                       \
-    float max = 20.0
-
-#define APPLESEED_IOR_PRESET_DEFAULT "Glass"
-
-#define APPLESEED_IOR_PRESET_METADATA      \
-    string help = "Index of Refraction",   \
-    string widget = "popup",               \
-    string options = "Vacuum|Air|Water|Ice|Glass|Diamond|Custom"
-
-#define APPLESEED_IOR_PRESET_NO_CUSTOM_METADATA \
-    string help = "Index of Refraction",        \
-    string widget = "popup",                    \
-    string options = "Vacuum|Air|Water|Ice|Glass|Diamond"
-
-float ior_from_preset(string Preset, float Ior)
+shader as_float_cast
+(
+    int           Int = 0,
+    output float  FloatOut = 0
+)
 {
-    if (Preset == "Vacuum")
-        return 1.0;
-    else if (Preset == "Air")
-        return 1.000293;
-    else if (Preset == "Water")
-        return 1.333;
-    else if (Preset == "Ice")
-        return 1.309;
-    else if (Preset == "Glass")
-        return 1.5;
-    else if (Preset == "Diamond")
-        return 2.3927;
-    else
-        return Ior;
+    FloatOut = Int;
 }
-
-#endif

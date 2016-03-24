@@ -26,12 +26,15 @@
 // THE SOFTWARE.
 //
 
-shader as_emission
+shader as_emission_surface
 (
-    closure color BSDF1 = 0,
-    float Emission = 1.0,
-    color Color = 1.0,
-    int Normalize = 0
+    closure color        BSDF1 = 0,
+    float                Emission = 1.0
+    [[
+        float  min = 0.0
+    ]],
+    color                Color = 1.0,
+    int                  Normalize = 0
     [[
         string help = "normalize light emission",
         string widget = "checkBox"

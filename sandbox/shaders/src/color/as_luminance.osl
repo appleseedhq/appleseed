@@ -28,8 +28,8 @@
 
 shader as_luminance
 (
-    color Color = 0,
-    output float FloatOut = 0
+    color         Color = 0,
+    output float  FloatOut = 0
 )
 {
     FloatOut = luminance(Color);

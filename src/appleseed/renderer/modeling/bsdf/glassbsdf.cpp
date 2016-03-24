@@ -634,7 +634,7 @@ namespace
                 Spectrum tmp;
                 tmp.resize(values->m_volume_transmittance.size());
 
-                for (size_t i = 0, e = value.size(); i < e; ++i)
+                for (size_t i = 0, e = values->m_volume_transmittance.size(); i < e; ++i)
                 {
                     const float absorption = log(max(values->m_volume_transmittance[i], 0.01f));
                     tmp[i] = exp(absorption * d);

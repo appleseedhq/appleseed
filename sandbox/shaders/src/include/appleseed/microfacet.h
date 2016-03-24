@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 The masked shader writer, The appleseedhq Organization
+// Copyright (c) 2016 The masked shader writer, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,42 +29,18 @@
 #ifndef APPLESEED_SHADERS_MICROFACET_H
 #define APPLESEED_SHADERS_MICROFACET_H
 
-#define APPLESEED_DEFAULT_MDF_DISTRIBUTION "sharp"
-#define APPLESEED_DEFAULT_MDF_ROUGHNESS 0.1
-
-#define APPLESEED_MDF_DISTRIBUTION_METADATA                                       \
-    string help = "Microfacet distribution to use: Specular, Beckmann or GGX.",   \
-    string widget = "popup",                                                      \
-    string options = "sharp|beckmann|ggx"
-
-#define APPLESEED_MDF_ROUGHNESS_METADATA     \
-    string help = "Roughness",               \
-    float min = 0.001,                       \
-    float max = 1.0
-
-#define APPLESEED_DEFAULT_ANISOTROPY 0.0
-
-#define APPLESEED_ANISOTROPY_METADATA        \
-    string help = "Anisotropy",              \
-    float min = -1.0,                        \
-    float max = 1.0
-
-// TODO: This needs a better name...
-void mdf_roughness(float roughness, float anisotropy, output float ax, output float ay)
+float microfacet_roughness(float Roughness, float DepthScale)
 {
-    float aspect = sqrt(1.0 - fabs(anisotropy) * 0.9);
-    float r2 = roughness * roughness;
-
-    ax = max(0.001, r2 / aspect);
-    ay = max(0.001, r2 * aspect);
-
-    if (anisotropy < 0)
+    if (DepthScale > 1.0)
     {
-        // Swap ax and ay.
-        float tmp = ax;
-        ax = ay;
-        ay = tmp;
+        int RayDepth;
+        getattribute("path:ray_depth", RayDepth);
+
+        if (RayDepth != 0)
+            return Roughness * DepthScale * RayDepth;
     }
+
+    return Roughness;
 }
 
 #endif

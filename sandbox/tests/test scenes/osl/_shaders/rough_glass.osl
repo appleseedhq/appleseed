@@ -1,8 +1,0 @@
-
-surface rough_glass(
-    string distribution = "ggx",
-    float roughness = 0.2,
-    float ior = 1.5)
-{
-    Ci = as_glass(distribution, N, 1.0, 1.0, 1.0, roughness, ior, 1.0, 0.0);
-}

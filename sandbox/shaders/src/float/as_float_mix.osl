@@ -28,10 +28,14 @@
 
 shader as_float_mix
 (
-    float Float1 = 0,
-    float Float2 = 0,
-    float Factor = 0.5,
-    output float FloatOut = 0
+    float         Float1 = 0,
+    float         Float2 = 0,
+    float         Factor = 0.5
+    [[
+        float min = 0,
+        float max = 1
+    ]],
+    output float  FloatOut = 0
 )
 {
     FloatOut = mix(Float1, Float2, Factor);

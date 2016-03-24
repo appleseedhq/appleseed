@@ -411,10 +411,6 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
             m_dpdu = (dv1 * dp0 - dv0 * dp1) * rcp_det;
             m_dpdv = (du0 * dp1 - du1 * dp0) * rcp_det;
 
-            // Make sure dPdv x dPdu points in the same direction as N.
-            if (dot(get_original_shading_normal(), cross(m_dpdv, m_dpdu)) < 0.0)
-                m_dpdu = -m_dpdu;
-
             const Vector3d dn0 = m_n0 - m_n2;
             const Vector3d dn1 = m_n1 - m_n2;
 
@@ -470,10 +466,6 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
         const double ty = intersect(ray.m_ry, p, n);
         const Vector3d py = ray.m_ry.point_at(ty);
         m_dpdy = py - p;
-
-        // Make sure dPdy x dPdx points in the same direction as N.
-        if (dot(get_original_shading_normal(), cross(m_dpdy, m_dpdx)) < 0.0)
-            m_dpdx = -m_dpdx;
 
         // Select the two smallest axes.
         const size_t max_index = max_abs_index(n);
@@ -821,18 +813,18 @@ void ShadingPoint::initialize_osl_shader_globals(
         m_shader_globals.I = Vector3f(ray.m_dir);
 
         // Handedness flip flag.
+        // Currently it is unused, but we might want to enable it in the future.
+        /*
         m_shader_globals.flipHandedness =
             m_assembly_instance_transform_seq->swaps_handedness(m_assembly_instance_transform) !=
             get_object_instance().transform_swaps_handedness() ? 1 : 0;
+        */
+        m_shader_globals.flipHandedness = 0;
 
         // Surface position and incident ray direction differentials.
         if (ray.m_has_differentials)
         {
-            m_shader_globals.dPdx =
-                m_shader_globals.flipHandedness
-                    ?  Vector3f(get_dpdx())
-                    : -Vector3f(get_dpdx());
-
+            m_shader_globals.dPdx = Vector3f(get_dpdx());
             m_shader_globals.dPdy = Vector3f(get_dpdy());
             m_shader_globals.dPdz = Vector3f(0.0);
             m_shader_globals.dIdx = Vector3f(ray.m_rx.m_dir);
@@ -876,11 +868,7 @@ void ShadingPoint::initialize_osl_shader_globals(
         }
 
         // Surface tangents.
-        m_shader_globals.dPdu =
-            m_shader_globals.flipHandedness
-                ?  Vector3f(get_dpdu(0))
-                : -Vector3f(get_dpdu(0));
-
+        m_shader_globals.dPdu = Vector3f(get_dpdu(0));
         m_shader_globals.dPdv = Vector3f(get_dpdv(0));
 
         // Time and its derivative.

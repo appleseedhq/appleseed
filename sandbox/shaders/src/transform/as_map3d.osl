@@ -28,11 +28,11 @@
 
 shader as_map3d
 (
-    vector Point = 0,
-    vector Center = 0.5,
-    vector Scale = 1.0,
-    vector Rotate = 0.0,
-    vector Translate = 0.0,
+    vector        Point = 0,
+    vector        Center = 0.5,
+    vector        Scale = 1.0,
+    vector        Rotate = 0.0,
+    vector        Translate = 0.0,
     output vector Pout = 0
 )
 {

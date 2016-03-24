@@ -28,10 +28,10 @@
 
 shader as_color_split
 (
-    color Color = 0,
-    output float R = 0,
-    output float G = 0,
-    output float B = 0
+    color         Color = 0,
+    output float  R = 0,
+    output float  G = 0,
+    output float  B = 0
 )
 {
     R = Color[0];

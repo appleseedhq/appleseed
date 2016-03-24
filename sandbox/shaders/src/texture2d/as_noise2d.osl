@@ -26,31 +26,30 @@
 // THE SOFTWARE.
 //
 
-#include"appleseed/noise.h"
-#include"appleseed/texture.h"
-
 shader as_noise2d
 (
-    APPLESEED_DECLARE_TEXTURE_UV_PARAMS,
-
-    string NoiseType = "perlin"
+    float         U = u,
+    float         V = v,
+    string        NoiseType = "perlin"
     [[
         string widget = "popup",
         string options = "perlin|uperlin|cell|simplex|usimplex|gabor"
     ]],
-
-    int Periodic = 0
+    int           Periodic = 0
     [[
         string widget = "checkBox"
     ]],
-
-    vector Period = 1,
-
-    vector Frequency = 1,
-    vector Offset = 0,
-
-    APPLESEED_DECLARE_GABOR_NOISE_PARAMS,
-
+    vector        Period = 1,
+    vector        Frequency = 1,
+    vector        Offset = 0,
+    int           AnisotropyMode = 0                                     
+    [[                                                         
+        string widget = "mapper",                              
+        string options = "Isotropic:0|Anisotropic:1|Hybrid:2"  
+    ]],                                                        
+    vector        Direction = 0,                                      
+    float         Bandwidth = 1.0,                                     
+    float         Impulses = 16,
     output float  FloatOut = 0,
     output vector VectorOut = 0,
     output color  ColorOut = 0
@@ -67,7 +66,10 @@ shader as_noise2d
             vv,
             Period[0],
             Period[1],
-            APPLESEED_GABOR_NOISE_PARAMS);
+            "anisotropic", AnisotropyMode,
+            "direction", Direction,
+            "bandwidth", Bandwidth,
+            "impulses", Impulses);
 
         VectorOut = pnoise(
             NoiseType,
@@ -75,7 +77,10 @@ shader as_noise2d
             vv,
             Period[0],
             Period[1],
-            APPLESEED_GABOR_NOISE_PARAMS);
+            "anisotropic", AnisotropyMode,
+            "direction", Direction,
+            "bandwidth", Bandwidth,
+            "impulses", Impulses);
     }
     else
     {
@@ -83,13 +88,19 @@ shader as_noise2d
             NoiseType,
             uu,
             vv,
-            APPLESEED_GABOR_NOISE_PARAMS);
+            "anisotropic", AnisotropyMode,
+            "direction", Direction,
+            "bandwidth", Bandwidth,
+            "impulses", Impulses);
 
         VectorOut = noise(
             NoiseType,
             uu,
             vv,
-            APPLESEED_GABOR_NOISE_PARAMS);
+            "anisotropic", AnisotropyMode,
+            "direction", Direction,
+            "bandwidth", Bandwidth,
+            "impulses", Impulses);
     }
 
     ColorOut = color(VectorOut);

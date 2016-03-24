@@ -28,8 +28,8 @@
 
 shader as_vector_multiply
 (
-    vector Vector1 = 0,
-    float Factor = 1,
+    vector        Vector1 = 0,
+    float         Factor = 1,
     output vector VectorOut = 0
 )
 {

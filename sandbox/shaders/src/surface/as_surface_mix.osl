@@ -31,9 +31,13 @@ shader as_surface_mix
     string help = "Mixes two surface shaders."
 ]]
 (
-    closure color BSDF1 = 0,
-    closure color BSDF2 = 0,
-    float Factor = 0.5,
+    closure color        BSDF1 = 0,
+    closure color        BSDF2 = 0,
+    float                Factor = 0.5
+    [[
+        float min = 0,
+        float max = 1
+    ]],
     output closure color BSDF = 0
 )
 {

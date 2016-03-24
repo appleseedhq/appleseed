@@ -29,13 +29,13 @@
 
 shader as_condition
 (
-    string Cond = "Equal"
+    string     Cond = "Equal"
     [[
         string widget = "popup",
         string options = "Equal|NotEqual|Less|LessEqual|Greater|GreaterEqual"
     ]],
-    float Float1 = 0.0,
-    float Float2 = 0.0,
+    float      Float1 = 0.0,
+    float      Float2 = 0.0,
     output int Result = 0
 )
 {

@@ -6,7 +6,7 @@
             _textures
         </search_path>
         <search_path>
-            _shaders
+            ../../../shaders
         </search_path>
     </search_paths>
     <scene>
@@ -95,10 +95,29 @@
                 <parameter name="radiance_multiplier" value="100" />
             </edf>
             <shader_group name="subsurface">
-                <shader type="surface" name="subsurface_bump" layer="sss1">
-                    <parameter name="Rd" value="color 0.2 0.15 0.37" />
-                    <parameter name="profile" value="string directional_dipole" />
+                <shader type="shader" name="transform/as_map2d" layer="map1">
+                    <parameter name="Repeat" value="vector 1.5 1.5 1.5" />
                 </shader>
+                <shader type="shader" name="texture2d/as_scalar_texture" layer="tex1">
+                    <parameter name="Filename" value="string bump.exr" />
+                </shader>
+                <shader type="shader" name="normal/as_bump_map" layer="bump1">
+                    <parameter name="Amount" value="float 0.075" />
+                </shader>
+                <shader type="shader" name="surface/as_subsurface_surface" layer="as_sss_surface1">
+                    <parameter name="Color" value="color 0.2 0.15 0.37" />
+                    <parameter name="Profile" value="string directional_dipole" />
+                    <parameter name="Radius" value="float 0.05" />
+                    <parameter name="MaxSubsurfaceRayDepth" value="int 0" />
+                </shader>
+                <shader type="surface" name="material/as_material_builder" layer="appleseedRenderer:surface">
+                </shader>
+                <connect_shaders src_layer="map1" src_param="UOut" dst_layer="tex1" dst_param="U" />
+                <connect_shaders src_layer="map1" src_param="VOut" dst_layer="tex1" dst_param="V" />
+                <connect_shaders src_layer="tex1" src_param="FloatOut" dst_layer="bump1" dst_param="Height" />
+                <connect_shaders src_layer="bump1" src_param="NormalOut" dst_layer="as_sss_surface1" dst_param="Normal" />
+                <connect_shaders src_layer="as_sss_surface1" src_param="BSSRDF" dst_layer="appleseedRenderer:surface" dst_param="BSDF" />
+
             </shader_group>
             <surface_shader name="physical_surface_shader" model="physical_surface_shader" />
             <material name="Material" model="generic_material">

@@ -26,15 +26,19 @@
 // THE SOFTWARE.
 //
 
-shader as_transparency
+shader as_transparency_surface
 [[
     string help = "Transparent surface shader."
 ]]
 (
-    closure color BSDF1 = 0,
-    float Transparency = 1.0,
-    color Color = 1.0,
-    output closure color BSDF = 0
+    closure color         BSDF1 = 0,
+    float                 Transparency = 0.5
+    [[
+        float min = 0,
+        float max = 1
+    ]],
+    color                 Color = 1.0,
+    output closure color  BSDF = 0
 )
 {
     if (raytype("shadow") || raytype("transparency"))

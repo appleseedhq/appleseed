@@ -26,19 +26,31 @@
 // THE SOFTWARE.
 //
 
-#include "appleseed/defaults.h"
-
 shader as_globals
 (
     output vector Point = P,
     output vector Normal = N,
     output vector GeometricNormal = Ng,
-    output vector Tangent = APPLESEED_DEFAULT_TANGENT,
-    output vector Incident = I,
-    output float U = u,
-    output float V = v,
-    output float Time = time,
-    output float Backfacing = 0,
+    output vector Tn = 0
+    [[
+        string  help = "Tangent",
+        string  label = "Tangent",
+        int     lockgeom = 0
+    ]],
+    output vector Bn = 0
+    [[
+        string  help = "Bitangent",
+        string  label = "Bitangent",
+        int     lockgeom = 0
+    ]],
+    output float  U = u,
+    output float  V = v,
+    output vector DPDU = dPdu,
+    output vector DPDV = dPdv,
+    output vector DPDX = Dx(P),
+    output vector DPDY = Dy(P),
+    output float  Time = time,
+    output float  Backfacing = 0,
 )
 {
     Backfacing = backfacing();

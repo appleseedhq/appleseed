@@ -26,9 +26,22 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_SHADERS_DEFAULTS_H
-#define APPLESEED_SHADERS_DEFAULTS_H
-
-#define APPLESEED_DEFAULT_TANGENT normalize(dPdu)
-
-#endif
+shader as_sheen_surface
+[[
+    string help = "Sheen surface shader"
+]]
+(
+    vector               Normal = N,
+    float                Reflectance = 0.8
+    [[
+        float  min = 0
+    ]],
+    color                Color = 1.0
+    [[
+        string help = "Color"
+    ]],
+    output closure color BRDF = 0
+)
+{
+    BRDF = Reflectance * Color * as_sheen(Normal);
+}
