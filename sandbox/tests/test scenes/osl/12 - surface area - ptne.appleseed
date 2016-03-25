@@ -27,9 +27,7 @@
             <shader_group name="/scene/floor_shader_group">
                 <shader type="shader" name="surface/as_diffuse_surface" layer="1_as_diffuse_surface">
                     <parameter name="Color" value="color 1 1 1" />
-                    <parameter name="Diffuse" value="float 0.8" />
-                    <parameter name="Normal" value="vector 0 0 0" />
-                    <parameter name="Roughness" value="float 0" />
+                    <parameter name="Reflectance" value="float 0.8" />
                 </shader>
                 <shader type="surface" name="material/as_material_builder" layer="appleseedRenderer:surface">
                 </shader>

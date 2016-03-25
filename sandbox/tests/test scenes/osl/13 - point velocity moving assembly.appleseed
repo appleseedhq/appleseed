@@ -34,7 +34,6 @@
         <assembly name="assembly">
             <shader_group name="velocity_matte">
                 <shader type="surface" name="velocity_matte" layer="velocity_matte1">
-                    <parameter name="Kd" value="float 0.77" />
                 </shader>
             </shader_group>
             <surface_shader name="physical_surface_shader" model="physical_surface_shader" />
