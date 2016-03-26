@@ -903,9 +903,18 @@ IMPLEMENT_USER_DATA_GETTER(tn)
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
         const Vector3d& tn = shading_point->get_shading_basis().get_tangent_u();
-        reinterpret_cast<float*>(val)[0] = static_cast<float>(tn.x);
-        reinterpret_cast<float*>(val)[1] = static_cast<float>(tn.y);
-        reinterpret_cast<float*>(val)[2] = static_cast<float>(tn.z);
+        OSL::Vec3 v(
+            static_cast<float>(tn.x),
+            static_cast<float>(tn.y),
+            static_cast<float>(tn.z));
+
+        // Make sure Tn points in the same direction as dPdu.
+        if (v.dot(sg->dPdu) < 0.0f)
+            v = -v;
+
+        reinterpret_cast<float*>(val)[0] = v.x;
+        reinterpret_cast<float*>(val)[1] = v.y;
+        reinterpret_cast<float*>(val)[2] = v.z;
 
         if (derivatives)
             clear_derivatives(type, val);
@@ -924,9 +933,19 @@ IMPLEMENT_USER_DATA_GETTER(bn)
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
         const Vector3d& bn = shading_point->get_shading_basis().get_tangent_v();
-        reinterpret_cast<float*>(val)[0] = static_cast<float>(bn.x);
-        reinterpret_cast<float*>(val)[1] = static_cast<float>(bn.y);
-        reinterpret_cast<float*>(val)[2] = static_cast<float>(bn.z);
+
+        OSL::Vec3 v(
+            static_cast<float>(bn.x),
+            static_cast<float>(bn.y),
+            static_cast<float>(bn.z));
+
+        // Make sure Bn points in the same direction as dPdv.
+        if (v.dot(sg->dPdv) < 0.0f)
+            v = -v;
+
+        reinterpret_cast<float*>(val)[0] = v.x;
+        reinterpret_cast<float*>(val)[1] = v.y;
+        reinterpret_cast<float*>(val)[2] = v.z;
 
         if (derivatives)
             clear_derivatives(type, val);
