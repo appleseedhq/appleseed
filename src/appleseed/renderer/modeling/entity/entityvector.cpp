@@ -294,7 +294,7 @@ size_t EntityVector::insert(auto_release_ptr<Entity> entity)
     return entity_index;
 }
 
-void EntityVector::remove(Entity* entity)
+auto_release_ptr<Entity> EntityVector::remove(Entity* entity)
 {
     assert(entity);
 
@@ -324,8 +324,7 @@ void EntityVector::remove(Entity* entity)
     impl->m_id_index.erase(id_it);
     impl->m_name_index.erase(name_it);
 
-    // Delete the entity.
-    entity->release();
+    return auto_release_ptr<Entity>(entity);
 }
 
 size_t EntityVector::get_index(const UniqueID id) const
