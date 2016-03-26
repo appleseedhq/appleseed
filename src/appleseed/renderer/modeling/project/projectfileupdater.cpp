@@ -336,7 +336,7 @@ namespace
         }
 
       private:
-        void rename_exitance_inputs(AssemblyContainer& assemblies)
+        static void rename_exitance_inputs(AssemblyContainer& assemblies)
         {
             for (each<AssemblyContainer> i = assemblies; i; ++i)
             {
@@ -345,7 +345,7 @@ namespace
             }
         }
 
-        void rename_exitance_inputs(Assembly& assembly)
+        static void rename_exitance_inputs(Assembly& assembly)
         {
             for (each<EDFContainer> i = assembly.edfs(); i; ++i)
                 rename_exitance_inputs(*i);
@@ -354,7 +354,7 @@ namespace
                 rename_exitance_inputs(*i);
         }
 
-        void rename_exitance_inputs(EDF& edf)
+        static void rename_exitance_inputs(EDF& edf)
         {
             if (strcmp(edf.get_model(), DiffuseEDFFactory().get_model()) == 0)
             {
@@ -363,7 +363,7 @@ namespace
             }
         }
 
-        void rename_exitance_inputs(Light& light)
+        static void rename_exitance_inputs(Light& light)
         {
             if (strcmp(light.get_model(), DirectionalLightFactory().get_model()) == 0 ||
                 strcmp(light.get_model(), PointLightFactory().get_model()) == 0 ||
@@ -378,7 +378,7 @@ namespace
             }
         }
 
-        void rename_exitance_inputs(EnvironmentEDF& edf)
+        static void rename_exitance_inputs(EnvironmentEDF& edf)
         {
             if (strcmp(edf.get_model(), ConstantEnvironmentEDFFactory().get_model()) == 0)
             {
@@ -657,6 +657,18 @@ namespace
                 update_entity(*i);
         }
 
+        void update_entity(Assembly& assembly)
+        {
+            update_collection(assembly.edfs());
+            update_collection(assembly.lights());
+            update_collection(assembly.materials());
+            update_collection(assembly.objects());
+            update_collection(assembly.object_instances());
+            update_collection(assembly.surface_shaders());
+            update_collection(assembly.assemblies());
+            update_collection(assembly.assembly_instances());
+        }
+
         template <typename Entity>
         void update_entity(Entity& entity)
         {
@@ -685,18 +697,6 @@ namespace
                 string_params.remove("render_layer");
             }
         }
-
-        void update_entity(Assembly& assembly)
-        {
-            update_collection(assembly.edfs());
-            update_collection(assembly.lights());
-            update_collection(assembly.materials());
-            update_collection(assembly.objects());
-            update_collection(assembly.object_instances());
-            update_collection(assembly.surface_shaders());
-            update_collection(assembly.assemblies());
-            update_collection(assembly.assembly_instances());
-        }
     };
 
 
@@ -723,19 +723,19 @@ namespace
 
       private:
         template <typename Collection>
-        void update_collection(Collection& collection)
+        static void update_collection(Collection& collection)
         {
             for (each<Collection> i = collection; i; ++i)
                 update_entity(*i);
         }
 
-        void update_entity(Assembly& assembly)
+        static void update_entity(Assembly& assembly)
         {
             update_collection(assembly.object_instances());
             update_collection(assembly.assemblies());
         }
 
-        void update_entity(ObjectInstance& object_instance)
+        static void update_entity(ObjectInstance& object_instance)
         {
             const Object* object = object_instance.find_object();
 
@@ -748,7 +748,7 @@ namespace
             }
         }
 
-        void rebuild_material_mappings(StringDictionary& mappings, const string& slot_name)
+        static void rebuild_material_mappings(StringDictionary& mappings, const string& slot_name)
         {
             if (!mappings.empty())
             {
@@ -783,7 +783,7 @@ namespace
         }
 
       private:
-        void rename_radiance_inputs(AssemblyContainer& assemblies)
+        static void rename_radiance_inputs(AssemblyContainer& assemblies)
         {
             for (each<AssemblyContainer> i = assemblies; i; ++i)
             {
@@ -792,13 +792,13 @@ namespace
             }
         }
 
-        void rename_radiance_inputs(Assembly& assembly)
+        static void rename_radiance_inputs(Assembly& assembly)
         {
             for (each<LightContainer> i = assembly.lights(); i; ++i)
                 rename_radiance_inputs(*i);
         }
 
-        void rename_radiance_inputs(Light& light)
+        static void rename_radiance_inputs(Light& light)
         {
             if (strcmp(light.get_model(), DirectionalLightFactory().get_model()) == 0)
             {
