@@ -119,9 +119,8 @@
                 </alpha>
             </color>
             <bsdf name="Material.001_back|transparent" model="specular_btdf">
-                <parameter name="from_ior" value="1.0" />
+                <parameter name="ior" value="1.0" />
                 <parameter name="reflectance" value="Material.001_back|transparent_reflectance" />
-                <parameter name="to_ior" value="1.0" />
                 <parameter name="transmittance" value="Material.001_back|transparent_transmittance" />
             </bsdf>
             <bsdf name="Material.001_front|diffuseglossy" model="kelemen_brdf">
@@ -132,9 +131,8 @@
                 <parameter name="specular_reflectance_multiplier" value="1.0" />
             </bsdf>
             <bsdf name="Material.001_front|transparent" model="specular_btdf">
-                <parameter name="from_ior" value="1.0" />
+                <parameter name="ior" value="1.0" />
                 <parameter name="reflectance" value="Material.001_front|transparent_reflectance" />
-                <parameter name="to_ior" value="1.0" />
                 <parameter name="transmittance" value="Material.001_front|transparent_transmittance" />
             </bsdf>
             <bsdf name="Material.001_front|transparent+Material.001_front|diffuseglossy" model="bsdf_mix">
