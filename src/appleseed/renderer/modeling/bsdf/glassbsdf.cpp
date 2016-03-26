@@ -259,14 +259,6 @@ namespace
             values->m_refraction_color  = sqrt(values->m_refraction_color);
         }
 
-        virtual double sample_ior(
-            SamplingContext&    sampling_context,
-            const void*         data) const APPLESEED_OVERRIDE
-        {
-            const InputValues* values = reinterpret_cast<const InputValues*>(data);
-            return values->m_ior;
-        }
-
         APPLESEED_FORCE_INLINE virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
@@ -618,29 +610,34 @@ namespace
                     alpha_y) * jacobian * F;
         }
 
-        // Modulate value by medium absorption over the given distance.
-        virtual void apply_absorption(
+        virtual double sample_ior(
+            SamplingContext&    sampling_context,
+            const void*         data) const APPLESEED_OVERRIDE
+        {
+            return static_cast<const InputValues*>(data)->m_ior;
+        }
+
+        virtual void compute_absorption(
             const void*         data,
             const double        distance,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+            Spectrum&           absorption) const APPLESEED_OVERRIDE
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            // [2] Volumetric absorption reparameterization, page 5.
             if (values->m_volume_transmittance_distance != 0.0)
             {
+                // [2] Volumetric absorption reparameterization, page 5.
+                absorption.resize(values->m_volume_transmittance.size());
                 const float d = static_cast<float>(distance / values->m_volume_transmittance_distance);
-
-                Spectrum tmp;
-                tmp.resize(values->m_volume_transmittance.size());
-
-                for (size_t i = 0, e = value.size(); i < e; ++i)
+                for (size_t i = 0, e = absorption.size(); i < e; ++i)
                 {
-                    const float absorption = log(max(values->m_volume_transmittance[i], 0.01f));
-                    tmp[i] = exp(absorption * d);
+                    const float a = log(max(values->m_volume_transmittance[i], 0.01f));
+                    absorption[i] = exp(a * d);
                 }
-
-                value *= tmp;
+            }
+            else
+            {
+                absorption.set(1.0f);
             }
         }
 

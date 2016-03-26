@@ -326,18 +326,27 @@ namespace
             return c->choose_ior(sampling_context.next_double2());
         }
 
-        virtual void apply_absorption(
+        virtual void compute_absorption(
             const void*                 data,
             const double                distance,
-            Spectrum&                   value) const APPLESEED_OVERRIDE
+            Spectrum&                   absorption) const APPLESEED_OVERRIDE
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
+            absorption.set(0.0f);
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
-                bsdf_from_closure_id(c->get_closure_type(i)).apply_absorption(
+                Spectrum a;
+                bsdf_from_closure_id(c->get_closure_type(i)).compute_absorption(
                     c->get_closure_input_values(i),
                     distance,
-                    value);
+                    a);
+                const float w = static_cast<float>(c->get_closure_pdf_weight(i));
+
+                // absorption += lerp(1.0, a, w)
+                a *= w;
+                absorption += a;
+                a.set(1.0f - w);
+                absorption += a;
             }
         }
 
