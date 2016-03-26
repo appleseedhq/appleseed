@@ -44,7 +44,7 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityMap)
 {
     TEST_CASE(Insert_SetsParentPointerOnEntity)
     {
-        auto_release_ptr<Entity> entity(DummyEntityFactory::create("entity"));
+        auto_release_ptr<Entity> entity(new DummyEntity("entity"));
         const Entity* entity_ptr = entity.get();
 
         Entity* parent = (Entity*)0x123;
@@ -57,7 +57,7 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityMap)
     TEST_CASE(Swap_GivenEntityMapWithOneItemAndAnotherEmptyEntityMap_MovesItemToOtherContainer)
     {
         EntityMap m1;
-        m1.insert(auto_release_ptr<Entity>(DummyEntityFactory::create("entity")));
+        m1.insert(auto_release_ptr<Entity>(new DummyEntity("entity")));
 
         EntityMap m2;
         m2.swap(m1);
@@ -70,11 +70,11 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityMap)
     {
         Entity* parent1 = (Entity*)0x123;
         EntityMap m1(parent1);
-        m1.insert(auto_release_ptr<Entity>(DummyEntityFactory::create("entity1")));
+        m1.insert(auto_release_ptr<Entity>(new DummyEntity("entity1")));
 
         Entity* parent2 = (Entity*)0x456;
         EntityMap m2(parent2);
-        m2.insert(auto_release_ptr<Entity>(DummyEntityFactory::create("entity2")));
+        m2.insert(auto_release_ptr<Entity>(new DummyEntity("entity2")));
 
         m2.swap(m1);
 
@@ -84,7 +84,7 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityMap)
 
     TEST_CASE(Remove_GivenUID_RemovesEntity)
     {
-        auto_release_ptr<Entity> entity(DummyEntityFactory::create("entity"));
+        auto_release_ptr<Entity> entity(new DummyEntity("entity"));
         const UniqueID entity_id = entity->get_uid();
 
         EntityMap m;
@@ -97,8 +97,8 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityMap)
 
     TEST_CASE(GetByUID_GivenUID_ReturnsEntity)
     {
-        auto_release_ptr<Entity> entity1(DummyEntityFactory::create("entity1"));
-        auto_release_ptr<Entity> entity2(DummyEntityFactory::create("entity2"));
+        auto_release_ptr<Entity> entity1(new DummyEntity("entity1"));
+        auto_release_ptr<Entity> entity2(new DummyEntity("entity2"));
         const UniqueID entity2_id = entity2->get_uid();
         const Entity* entity2_ptr = entity2.get();
 
@@ -111,8 +111,8 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityMap)
 
     TEST_CASE(GetByName_GivenName_ReturnsEntity)
     {
-        auto_release_ptr<Entity> entity1(DummyEntityFactory::create("entity1"));
-        auto_release_ptr<Entity> entity2(DummyEntityFactory::create("entity2"));
+        auto_release_ptr<Entity> entity1(new DummyEntity("entity1"));
+        auto_release_ptr<Entity> entity2(new DummyEntity("entity2"));
         const Entity* entity2_ptr = entity2.get();
 
         EntityMap m;

@@ -33,11 +33,13 @@
 #include "renderer/utility/testutils.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
 #include <string>
 
+using namespace foundation;
 using namespace renderer;
 using namespace std;
 
@@ -57,8 +59,8 @@ TEST_SUITE(Renderer_Modeling_Scene_Containers)
     TEST_CASE(MakeUniqueName_GivenTwoEntitiesWithMatchingPrefixes_ReturnsNameWithNextSuffix)
     {
         DummyEntityVector entities;
-        entities.insert(DummyEntityFactory::create("assembly3"));
-        entities.insert(DummyEntityFactory::create("assembly1"));
+        entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("assembly3")));
+        entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("assembly1")));
 
         const string result = make_unique_name("assembly", entities);
 
@@ -68,7 +70,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Containers)
     TEST_CASE(MakeUniqueName_GivenEntityWithNegativeSuffix_ReturnsNameWithFirstSuffix)
     {
         DummyEntityVector entities;
-        entities.insert(DummyEntityFactory::create("assembly-5"));
+        entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("assembly-5")));
 
         const string result = make_unique_name("assembly", entities);
 
@@ -78,7 +80,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Containers)
     TEST_CASE(MakeUniqueName_GivenOneEntityWithNonMatchingPrefix_ReturnsNameWithFirstSuffix)
     {
         DummyEntityVector entities;
-        entities.insert(DummyEntityFactory::create("object"));
+        entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("object")));
 
         const string result = make_unique_name("assembly", entities);
 
@@ -88,7 +90,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Containers)
     TEST_CASE(MakeUniqueName_GivenOneEntityWithNonNumericSuffix_ReturnsNameWithFirstSuffix)
     {
         DummyEntityVector entities;
-        entities.insert(DummyEntityFactory::create("assembly_instance"));
+        entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("assembly_instance")));
 
         const string result = make_unique_name("assembly", entities);
 

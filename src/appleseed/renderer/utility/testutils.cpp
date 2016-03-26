@@ -140,12 +140,22 @@ void DummyEntity::release()
 
 
 //
-// DummyEntityFactory class implementation.
+// DummyEntityReleaseCheck class implementation.
 //
 
-auto_release_ptr<DummyEntity> DummyEntityFactory::create(const char* name)
+DummyEntityReleaseCheck::DummyEntityReleaseCheck(
+    const char* name,
+    bool&       release_was_called)
+  : Entity(0)
+  , m_release_was_called(release_was_called)
 {
-    return auto_release_ptr<DummyEntity>(new DummyEntity(name));
+    set_name(name);
+}
+
+void DummyEntityReleaseCheck::release()
+{
+    m_release_was_called = true;
+    delete this;
 }
 
 
