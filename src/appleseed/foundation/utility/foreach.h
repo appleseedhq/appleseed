@@ -60,9 +60,11 @@ class const_each
     operator bool() const;
 
     // Preincrement operator.
-    void operator++();
+    const_each& operator++();
 
     // Iterator comparison.
+    bool operator==(const const_iterator& rhs) const;
+    bool operator!=(const const_iterator& rhs) const;
     bool operator<(const const_iterator& rhs) const;
     bool operator>(const const_iterator& rhs) const;
 
@@ -93,9 +95,11 @@ class each
     operator bool() const;
 
     // Preincrement operator.
-    void operator++();
+    each& operator++();
 
     // Iterator comparison.
+    bool operator==(const iterator& rhs) const;
+    bool operator!=(const iterator& rhs) const;
     bool operator<(const iterator& rhs) const;
     bool operator>(const iterator& rhs) const;
 
@@ -129,9 +133,22 @@ inline const_each<C>::operator bool() const
 }
 
 template <typename C>
-inline void const_each<C>::operator++()
+inline const_each<C>& const_each<C>::operator++()
 {
     ++i;
+    return *this;
+}
+
+template <typename C>
+inline bool const_each<C>::operator==(const const_iterator& rhs) const
+{
+    return i == rhs;
+}
+
+template <typename C>
+inline bool const_each<C>::operator!=(const const_iterator& rhs) const
+{
+    return i != rhs;
 }
 
 template <typename C>
@@ -183,9 +200,22 @@ inline each<C>::operator bool() const
 }
 
 template <typename C>
-inline void each<C>::operator++()
+inline each<C>& each<C>::operator++()
 {
     ++i;
+    return *this;
+}
+
+template <typename C>
+inline bool each<C>::operator==(const iterator& rhs) const
+{
+    return i == rhs;
+}
+
+template <typename C>
+inline bool each<C>::operator!=(const iterator& rhs) const
+{
+    return i != rhs;
 }
 
 template <typename C>
