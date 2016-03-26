@@ -95,6 +95,20 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityMap)
         EXPECT_TRUE(m.empty());
     }
 
+    TEST_CASE(Remove_GivenUID_ReleasesEntity)
+    {
+        bool release_was_called = false;
+        auto_release_ptr<Entity> entity(new DummyEntityReleaseCheck("entity", release_was_called));
+        const UniqueID entity_id = entity->get_uid();
+
+        EntityMap m;
+        m.insert(entity);
+
+        m.remove(entity_id);
+
+        EXPECT_TRUE(release_was_called);
+    }
+
     TEST_CASE(GetByUID_GivenUID_ReturnsEntity)
     {
         auto_release_ptr<Entity> entity1(new DummyEntity("entity1"));
