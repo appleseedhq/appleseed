@@ -262,6 +262,15 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             // Initialize the ray's medium list.
             if (entering)
             {
+#ifdef APPLESEED_WITH_OSL
+                // Execute the OSL shader if there is one.
+                if (material_data.m_shader_group)
+                {
+                    shading_context.execute_osl_shading(
+                        *material_data.m_shader_group,
+                        *vertex.m_shading_point);
+                }
+#endif
                 InputEvaluator input_evaluator(shading_context.get_texture_cache());
                 material_data.m_bsdf->evaluate_inputs(
                     shading_context,

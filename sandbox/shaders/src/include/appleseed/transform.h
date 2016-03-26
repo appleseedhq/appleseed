@@ -29,16 +29,12 @@
 #ifndef APPLESEED_SHADERS_TRANSFORM_H
 #define APPLESEED_SHADERS_TRANSFORM_H
 
-#define APPLESEED_TRANSFORM_SPACE_METADATA  \
-    string widget = "popup",                \
-    string options = "object|world|camera"
-
 void rotate2d(
-    float x, 
-    float y, 
-    float angle_in_degrees,
-    output float rx,
-    output float ry)
+    float         x, 
+    float         y, 
+    float         angle_in_degrees,
+    output float  rx,
+    output float  ry)
 {
     if (angle_in_degrees != 0)
     {

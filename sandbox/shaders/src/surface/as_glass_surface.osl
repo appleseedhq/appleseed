@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014 The masked shader writer, The appleseedhq Organization
+// Copyright (c) 2015 The masked shader writer, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,11 +26,9 @@
 // THE SOFTWARE.
 //
 
-#include "appleseed/microfacet.h"
-
-shader as_glossy_surface
+shader as_glass_surface
 [[
-    string help = "Glossy surface shader"
+    string help = "Glass surface shader"
 ]]
 (
     vector               Normal = N,
@@ -40,15 +38,13 @@ shader as_glossy_surface
         string help = "Tangent",
         string label = "Tangent"
     ]],
-    float                Reflectance = 0.8
+    float                Transmittance = 0.8
     [[
-        float  min = 0,
-        float  max = 1
+        float  min = 0
     ]],
-    color                Color = 1.0
-    [[
-        string help = "Color"
-    ]],
+    color                SurfaceTransmittance = 1.0,
+    color                ReflectionTint = 1.0,
+    color                RefractionTint = 1.0,
     float                Ior = 1.5
     [[
         string help = "Index of refraction",
@@ -66,24 +62,28 @@ shader as_glossy_surface
         float  min = 0.001,
         float  max = 1.0
     ]],
-    float                RoughnessDepthScale = 1.0
-    [[
-        float min = 1.0
-    ]],
     float                Anisotropic = 0.0
     [[
         string help = "Anisotropy",
         float  min = -1.0,
-        float  max = 1.0
+        float  max = 1.0,
+        int    divider = 1
     ]],
-    output closure color BRDF = 0
+    color                VolumeTransmittance = 1.0,
+    float                VolumeTransmittanceDistance = 0.0,
+    output closure color BSDF = 0
 )
 {
-    BRDF = Color * Reflectance * as_glossy(
-        Distribution, 
-        Normal, 
+    BSDF = Transmittance * as_glass(
+        Distribution,
+        Normal,
         Tn,
-        microfacet_roughness(Roughness, RoughnessDepthScale),
-        Anisotropic, 
-        Ior);
+        SurfaceTransmittance,
+        ReflectionTint,
+        RefractionTint,
+        Roughness,
+        Anisotropic,
+        Ior,
+        VolumeTransmittance,
+        VolumeTransmittanceDistance);
 }

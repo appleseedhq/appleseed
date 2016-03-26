@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.8
+# Compiled by oslc 1.6.9
 shader as_map3d
 param	vector	Point	0 0 0		%read{0,0} %write{2147483647,-1}
 param	vector	Center	0.5 0.5 0.5		%read{0,176} %write{2147483647,-1}
@@ -173,16 +173,16 @@ temp	vector	$tmp147	%read{175,175} %write{174,174}
 temp	vector	$tmp148	%read{174,174} %write{173,173}
 temp	point	$tmp149	%read{177,177} %write{176,176}
 code ___main___
-# as_map3d.osl:39
+# ./transform/as_map3d.osl:39
 #     point p = (Point - Center) * Scale;
-	sub		$tmp1 Point Center 	%filename{"as_map3d.osl"} %line{39} %argrw{"wrr"}
+	sub		$tmp1 Point Center 	%filename{"./transform/as_map3d.osl"} %line{39} %argrw{"wrr"}
 	mul		p $tmp1 Scale 	%argrw{"wrr"}
-# as_map3d.osl:41
+# ./transform/as_map3d.osl:41
 #     if (Rotate[0] != 0.0)
 	compref		$tmp2 Rotate $const1 	%line{41} %argrw{"wrr"}
 	neq		$tmp3 $tmp2 $const2 	%argrw{"wrr"}
 	if		$tmp3 60 60 	%argrw{"r"}
-# as_map3d.osl:42
+# ./transform/as_map3d.osl:42
 #         p = rotate(p, radians(Rotate[0]), point(0), point(1, 0, 0));
 	compref		$tmp5 Rotate $const1 	%line{42} %argrw{"wrr"}
 	functioncall	$const3 9 	%argrw{"r"}
@@ -190,9 +190,9 @@ code ___main___
 # #define M_SQRT2    1.4142135623730950        /* sqrt(2) */
 	div		$tmp6 $const4 $const5 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{101} %argrw{"wrr"}
 	mul		$tmp4 $tmp5 $tmp6 	%argrw{"wrr"}
-# as_map3d.osl:42
+# ./transform/as_map3d.osl:42
 #         p = rotate(p, radians(Rotate[0]), point(0), point(1, 0, 0));
-	functioncall	$const8 60 	%filename{"as_map3d.osl"} %line{42} %argrw{"r"}
+	functioncall	$const8 60 	%filename{"./transform/as_map3d.osl"} %line{42} %argrw{"r"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:263
 #     if (g >= 0.0) {
 	sub		$tmp9 $const7 $const6 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{263} %argrw{"wrr"}
@@ -273,12 +273,12 @@ code ___main___
 	sub		$tmp50 p $const6 	%line{281} %argrw{"wrr"}
 	transformv	$tmp49 ___233_M $tmp50 	%argrw{"wrr"}
 	add		p $tmp49 $const6 	%argrw{"wrr"}
-# as_map3d.osl:44
+# ./transform/as_map3d.osl:44
 #     if (Rotate[1] != 0.0)
-	compref		$tmp51 Rotate $const10 	%filename{"as_map3d.osl"} %line{44} %argrw{"wrr"}
+	compref		$tmp51 Rotate $const10 	%filename{"./transform/as_map3d.osl"} %line{44} %argrw{"wrr"}
 	neq		$tmp52 $tmp51 $const2 	%argrw{"wrr"}
 	if		$tmp52 118 118 	%argrw{"r"}
-# as_map3d.osl:45
+# ./transform/as_map3d.osl:45
 #         p = rotate(p, radians(Rotate[1]), point(0), point(0, 1, 0));
 	compref		$tmp54 Rotate $const10 	%line{45} %argrw{"wrr"}
 	functioncall	$const3 67 	%argrw{"r"}
@@ -286,9 +286,9 @@ code ___main___
 # #define M_LN10     2.3025850929940457        /* ln(10) */
 	div		$tmp55 $const4 $const5 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{101} %argrw{"wrr"}
 	mul		$tmp53 $tmp54 $tmp55 	%argrw{"wrr"}
-# as_map3d.osl:45
+# ./transform/as_map3d.osl:45
 #         p = rotate(p, radians(Rotate[1]), point(0), point(0, 1, 0));
-	functioncall	$const8 118 	%filename{"as_map3d.osl"} %line{45} %argrw{"r"}
+	functioncall	$const8 118 	%filename{"./transform/as_map3d.osl"} %line{45} %argrw{"r"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:263
 #         c = -c;
 	sub		$tmp58 $const12 $const6 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{263} %argrw{"wrr"}
@@ -369,12 +369,12 @@ code ___main___
 	sub		$tmp99 p $const6 	%line{281} %argrw{"wrr"}
 	transformv	$tmp98 ___233_M $tmp99 	%argrw{"wrr"}
 	add		p $tmp98 $const6 	%argrw{"wrr"}
-# as_map3d.osl:47
+# ./transform/as_map3d.osl:47
 #     if (Rotate[2] != 0.0)
-	compref		$tmp100 Rotate $const11 	%filename{"as_map3d.osl"} %line{47} %argrw{"wrr"}
+	compref		$tmp100 Rotate $const11 	%filename{"./transform/as_map3d.osl"} %line{47} %argrw{"wrr"}
 	neq		$tmp101 $tmp100 $const2 	%argrw{"wrr"}
 	if		$tmp101 176 176 	%argrw{"r"}
-# as_map3d.osl:48
+# ./transform/as_map3d.osl:48
 #         p = rotate(p, radians(Rotate[2]), point(0), point(0, 0, 1));
 	compref		$tmp103 Rotate $const11 	%line{48} %argrw{"wrr"}
 	functioncall	$const3 125 	%argrw{"r"}
@@ -382,9 +382,9 @@ code ___main___
 # #define M_2_SQRTPI 1.1283791670955126        /* 2/sqrt(pi) */
 	div		$tmp104 $const4 $const5 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{101} %argrw{"wrr"}
 	mul		$tmp102 $tmp103 $tmp104 	%argrw{"wrr"}
-# as_map3d.osl:48
+# ./transform/as_map3d.osl:48
 #         p = rotate(p, radians(Rotate[2]), point(0), point(0, 0, 1));
-	functioncall	$const8 176 	%filename{"as_map3d.osl"} %line{48} %argrw{"r"}
+	functioncall	$const8 176 	%filename{"./transform/as_map3d.osl"} %line{48} %argrw{"r"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:263
 #     float sqr(float x) { return x*x; }
 	sub		$tmp107 $const13 $const6 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{263} %argrw{"wrr"}
@@ -465,8 +465,8 @@ code ___main___
 	sub		$tmp148 p $const6 	%line{281} %argrw{"wrr"}
 	transformv	$tmp147 ___233_M $tmp148 	%argrw{"wrr"}
 	add		p $tmp147 $const6 	%argrw{"wrr"}
-# as_map3d.osl:50
+# ./transform/as_map3d.osl:50
 #     Pout = p + Center + Translate;
-	add		$tmp149 p Center 	%filename{"as_map3d.osl"} %line{50} %argrw{"wrr"}
+	add		$tmp149 p Center 	%filename{"./transform/as_map3d.osl"} %line{50} %argrw{"wrr"}
 	add		Pout $tmp149 Translate 	%argrw{"wrr"}
 	end

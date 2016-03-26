@@ -28,9 +28,10 @@
 
 shader as_color_add
 (
-    color Color1 = 0,
-    color Color2 = 0,
-    output color ColorOut = 0)
+    color         Color1 = 0,
+    color         Color2 = 0,
+    output color  ColorOut = 0
+)
 {
     ColorOut = Color1 + Color2;    
 }

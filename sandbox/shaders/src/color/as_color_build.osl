@@ -28,10 +28,10 @@
 
 shader as_color_build
 (
-    float R = 0,
-    float G = 0,
-    float B = 0,
-    output color ColorOut = 0
+    float         R = 0,
+    float         G = 0,
+    float         B = 0,
+    output color  ColorOut = 0
 )
 {
     ColorOut = color(R, G, B);

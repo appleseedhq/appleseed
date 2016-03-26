@@ -26,26 +26,30 @@
 // THE SOFTWARE.
 //
 
-#include "appleseed/defaults.h"
-#include "appleseed/metadata.h"
-
 //
 // Reference:
 //
 //     Bump Mapping Unparametrized Surfaces on the GPU
 //     Morten S. Mikkelsen
+//     https://dl.dropbox.com/u/55891920/papers/mm_sfgrad_bump.pdf
 //
 
 shader as_bump_map
 (
-    vector Position = P,
-    vector Normal = N,
-    float Height = 0,
-    float Amount = 1
+    vector        Position = P,
+    vector        Normal = N,
+    vector        Tn = 0
     [[
-        APPLESEED_01_LIMIT_METADATA
+        string help = "Tangent",
+        string label = "Tangent",    
+        int    lockgeom = 0
     ]],
-    output vector NormalOut = 0
+    float         Height = 0,
+    float         Amount = 1
+    [[
+        float  min = 0
+    ]],
+    output vector NormalOut = Normal
 )
 {
     int has_diffs;
@@ -61,17 +65,15 @@ shader as_bump_map
         vector rx = cross(dpdy, n);
         vector ry = cross(n, dpdx);
 
-        float dhx = Dx(Height);
-        float dhy = Dy(Height);
+        float dhx = Dx(Height) * Amount;
+        float dhy = Dy(Height) * Amount;
 
         float det = dot(dpdx, rx);
 
         vector surf_grad = sign(det) * (dhx * rx + dhy * ry);
         NormalOut = normalize(abs(det) * n - surf_grad);
-
-        if (Amount != 1.0)
-            NormalOut = normalize(mix(Normal, NormalOut, Amount));
     }
-    else
-        NormalOut = normalize(Normal);
+
+    if (dot(Normal, NormalOut) < 0.0)
+        NormalOut = -NormalOut;
 }

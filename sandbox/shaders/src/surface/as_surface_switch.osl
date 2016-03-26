@@ -31,9 +31,9 @@ shader as_surface_switch
     string help = "Chooses between two surface shaders depending on a condition."
 ]]
 (
-    closure color BSDF1 = 0,
-    closure color BSDF2 = 0,
-    int Cond = 1,
+    closure color        BSDF1 = 0,
+    closure color        BSDF2 = 0,
+    int                  Cond = 1,
     output closure color BSDF = 0
 )
 {

@@ -31,8 +31,8 @@ shader as_surface_add
     string help = "Adds two surface shaders."
 ]]
 (
-    closure color BSDF1 = 0,
-    closure color BSDF2 = 0,
+    closure color        BSDF1 = 0,
+    closure color        BSDF2 = 0,
     output closure color BSDF = 0
 )
 {

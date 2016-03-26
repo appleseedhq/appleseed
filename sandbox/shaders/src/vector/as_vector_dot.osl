@@ -28,9 +28,9 @@
 
 shader as_vector_dot
 (
-    vector Vector1 = 0,
-    vector Vector2 = 0,
-    output float FloatOut = 0
+    vector         Vector1 = 0,
+    vector         Vector2 = 0,
+    output float   FloatOut = 0
 )
 {
     FloatOut = dot(Vector1, Vector2);

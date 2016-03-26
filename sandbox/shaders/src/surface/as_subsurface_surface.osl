@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 The masked shader writer, The appleseedhq Organization
+// Copyright (c) 2016 The masked shader writer, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,18 +26,44 @@
 // THE SOFTWARE.
 //
 
-#include "appleseed/defaults.h"
-#include "appleseed/metadata.h"
-
-shader as_facing_ratio
+shader as_subsurface_surface
 [[
-    string help = "Facing Ratio"
+    string help = "Subsurface surface shader"
 ]]
 (
-    vector Normal = N,
-    vector Incident = I,
-    output float FacingRatio = 0
+    vector               Normal = N,
+    float                Reflectance = 0.8
+    [[
+        float  min = 0
+    ]],
+    color                Color = 1.0,
+    string               Profile = "normalized_diffusion"
+    [[
+        string widget = "popup",
+        string options = "normalized_diffusion|standard_dipole|better_dipole|directional_dipole"
+    ]],
+    float                Radius = 0.1,
+    float                RadiusScale = 1.0,
+    float                Ior = 1.3,
+    int                  MaxSubsurfaceRayDepth = 2
+    [[
+        string help = "Replace subsurface by diffuse when ray depth is greater.",
+        int    min = 0,
+    ]],
+    output closure color BSSRDF = 0
 )
 {
-    FacingRatio = fabs(dot(I, N));
+    int RayDepth;
+    getattribute("path:ray_depth", RayDepth);
+    if (RayDepth <= MaxSubsurfaceRayDepth)
+    {
+        BSSRDF = Reflectance * as_subsurface(
+            Profile,
+            Normal,
+            Color,
+            Radius * RadiusScale,
+            Ior);
+    }
+    else
+        BSSRDF = Reflectance * Color * diffuse(Normal);
 }

@@ -26,28 +26,32 @@
 // THE SOFTWARE.
 //
 
-#include "appleseed/defaults.h"
-#include "appleseed/metadata.h"
 
 shader as_normal_map
 (
-    color Color = color(0),
-    vector Normal = N,
-    vector Tangent = APPLESEED_DEFAULT_TANGENT,
-    string UpVector = "Blue"
+    color         Color = color(0),
+    vector        Normal = N,
+    vector        Tn = 0
+    [[
+        string help = "Tangent",
+        string label = "Tangent",
+        int    lockgeom = 0
+    ]],
+    string        UpVector = "Blue"
     [[
         string help = "Color channel to use as up direction",
         string widget = "popup",
         string options = "Green|Blue"
     ]],
-    string Space = "Tangent"
+    string        Space = "Tangent"
     [[
         string widget = "popup",
         string options = "Tangent|Object|World"
     ]],
-    float Amount = 1
+    float         Amount = 1
     [[
-        APPLESEED_01_LIMIT_METADATA
+        float  min = 0,
+        float  max = 1
     ]],
     output vector NormalOut = 0,
     output vector TangentOut = 0
@@ -62,8 +66,7 @@ shader as_normal_map
         n[1] = tmp;
     }
 
-    vector t = Tangent;
-    vector b = cross(t, Normal);
+    vector bn = cross(Tn, Normal);
 
     if (Space == "Object")
     {
@@ -71,7 +74,7 @@ shader as_normal_map
     }
     else if (Space == "Tangent")
     {
-        n = n[0] * t + n[1] * b + n[2] * Normal;
+        n = n[0] * Tn + n[1] * bn + n[2] * Normal;
     }
 
     if (Amount != 1.0)
@@ -79,5 +82,5 @@ shader as_normal_map
     else
         NormalOut = normalize(n);
 
-    TangentOut = normalize(cross(NormalOut, b));
+    TangentOut = normalize(cross(NormalOut, bn));
 }

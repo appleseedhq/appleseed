@@ -28,9 +28,9 @@
 
 shader as_float_multiply
 (
-    float Float = 0,
-    float Factor = 1,
-    output float FloatOut = 0
+    float         Float = 0,
+    float         Factor = 1,
+    output float  FloatOut = 0
 )
 {
     FloatOut = Float * Factor;

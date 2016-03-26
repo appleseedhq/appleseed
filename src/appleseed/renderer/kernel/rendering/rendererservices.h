@@ -78,7 +78,7 @@ class RendererServices
     // Initialize before rendering starts.
     void initialize(TextureStore& texture_store);
 
-    // Return a pointer to the texture system (if available).
+    // Return a pointer to the texture system.
     virtual OIIO::TextureSystem* texturesys() const APPLESEED_OVERRIDE;
 
     // Filtered 2D texture lookup for a single point.
@@ -303,7 +303,7 @@ class RendererServices
 #endif
 
   private:
-    // This code based on OSL's test renderer.
+    // This code is based on OSL's test renderer.
     typedef bool (RendererServices::*AttrGetterFun)(
         OSL::ShaderGlobals*         sg,
         bool                        derivs,
@@ -323,8 +323,8 @@ class RendererServices
 
     typedef boost::unordered_map<OIIO::ustring, UserDataGetterFun, OIIO::ustringHash> UserDataGetterMapType;
 
-    const Project&                  m_project;
     OIIO::TextureSystem&            m_texture_sys;
+    const Project&                  m_project;
     AttrGetterMapType               m_global_attr_getters;
     UserDataGetterMapType           m_global_user_data_getters;
     const Camera*                   m_camera;
@@ -382,6 +382,8 @@ class RendererServices
             OSL::ShaderGlobals*     sg,         \
             void*                   val) const
 
+    DECLARE_USER_DATA_GETTER(tn);
+    DECLARE_USER_DATA_GETTER(bn);
     DECLARE_USER_DATA_GETTER(dndu);
     DECLARE_USER_DATA_GETTER(dndv);
 
@@ -390,8 +392,6 @@ class RendererServices
     static void clear_derivatives(
         const OIIO::TypeDesc&       type,
         void*                       val);
-
-    static void log_error(const std::string& message);
 };
 
 }       // namespace renderer

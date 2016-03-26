@@ -26,33 +26,25 @@
 // THE SOFTWARE.
 //
 
-#include "appleseed/metadata.h"
-
 shader as_diffuse_surface
 [[
     string help = "Diffuse surface shader"
 ]]
 (
-    vector Normal = N,
-    float Diffuse = 0.8
+    vector               Normal = N,
+    float                Reflectance = 0.8
     [[
-        string help = "Reflectivity",
-        APPLESEED_01_LIMIT_METADATA
+        float min = 0
     ]],
-    color Color = 1.0
+    color                Color = 1.0,
+    float                Roughness = 0.0
     [[
-        string help = "Color"
+        string help = "Surface roughness.",
+        float  min = 0,
+        float  max = 1
     ]],
-    float Roughness = 0.0
-    [[
-        string help = "Surface roughness."
-    ]],
-
     output closure color BRDF = 0
 )
 {
-    if (Roughness != 0.0)
-        BRDF = Diffuse * Color * oren_nayar(Normal, Roughness);
-    else
-        BRDF = Diffuse * Color * diffuse(Normal);
+    BRDF = Reflectance * Color * oren_nayar(Normal, Roughness);
 }

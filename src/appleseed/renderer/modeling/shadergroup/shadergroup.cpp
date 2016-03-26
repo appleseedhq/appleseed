@@ -65,6 +65,7 @@ namespace
     const OIIO::ustring g_emission_str("emission");
     const OIIO::ustring g_transparent_str("transparent");
     const OIIO::ustring g_subsurface_str("as_subsurface");
+    const OIIO::ustring g_glass_str("as_glass");
     const OIIO::ustring g_holdout_str("holdout");
     const OIIO::ustring g_debug_str("debug");
     const OIIO::ustring g_dPdtime_str("dPdtime");
@@ -109,13 +110,7 @@ void ShaderGroup::clear()
     impl->m_shaders.clear();
     impl->m_connections.clear();
     impl->m_shader_group_ref.reset();
-
-    m_has_emission = false;
-    m_has_transparency = false;
-    m_has_subsurface = false;
-    m_has_holdout = false;
-    m_has_debug = false;
-    m_uses_dPdtime = false;
+    m_flags = 0;
 }
 
 void ShaderGroup::add_shader(
@@ -211,14 +206,15 @@ bool ShaderGroup::create_optimized_osl_shader_group(
         impl->m_shader_group_ref = shader_group_ref;
 
         get_shadergroup_closures_info(shading_system);
-        report_has_closure("emission", m_has_emission);
-        report_has_closure("transparent", m_has_transparency);
-        report_has_closure("subsurface", m_has_subsurface);
-        report_has_closure("holdout", m_has_holdout);
-        report_has_closure("debug", m_has_debug);
+        report_has_closure("emission", HasEmission);
+        report_has_closure("transparent", HasTransparency);
+        report_has_closure("subsurface", HasSubsurface);
+        report_has_closure("refraction", HasRefraction);
+        report_has_closure("holdout", HasHoldout);
+        report_has_closure("debug", HasDebug);
 
         get_shadergroup_globals_info(shading_system);
-        report_uses_global("dPdtime", m_uses_dPdtime);
+        report_uses_global("dPdtime", UsesdPdTime);
 
         return true;
     }
@@ -251,7 +247,7 @@ bool ShaderGroup::is_valid() const
 
 double ShaderGroup::get_surface_area(const AssemblyInstance* ass, const ObjectInstance* obj) const
 {
-    assert(m_has_emission);
+    assert(has_emission());
 
     return impl->m_surface_areas[Impl::SurfaceAreaKey(ass, obj)];
 }
@@ -263,11 +259,8 @@ OSL::ShaderGroupRef& ShaderGroup::shader_group_ref() const
 
 void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_system)
 {
-    m_has_emission = true;
-    m_has_transparency = true;
-    m_has_subsurface = true;
-    m_has_holdout = true;
-    m_has_debug = true;
+    // Assume the shader group has all closure types.
+    m_flags |= HasAllClosures;
 
     int num_unknown_closures = 0;
     if (!shading_system.getattribute(
@@ -319,35 +312,41 @@ void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_syst
             return;
         }
 
-        m_has_emission = false;
-        m_has_transparency = false;
-        m_has_subsurface = false;
-        m_has_holdout = false;
-        m_has_debug = false;
+        // Clear all closure flags.
+        m_flags &= ~HasAllClosures;
 
+        // Set the closure flags.
         for (int i = 0; i < num_closures; ++i)
         {
             if (closures[i] == g_emission_str)
-                m_has_emission = true;
+                m_flags |= HasEmission;
 
             if (closures[i] == g_transparent_str)
-                m_has_transparency = true;
+                m_flags |= HasTransparency;
 
             if (closures[i] == g_subsurface_str)
-                m_has_subsurface = true;
+                m_flags |= HasSubsurface;
+
+            if (closures[i] == g_glass_str)
+                m_flags |= HasRefraction;
 
             if (closures[i] == g_holdout_str)
-                m_has_holdout = true;
+                m_flags |= HasHoldout;
 
             if (closures[i] == g_debug_str)
-                m_has_debug = true;
+                m_flags |= HasDebug;
         }
+    }
+    else
+    {
+        // Shader group uses no closures.
+        m_flags &= ~HasAllClosures;
     }
 }
 
-void ShaderGroup::report_has_closure(const char* closure_name, const bool has_closure) const
+void ShaderGroup::report_has_closure(const char* closure_name, const Flags flag) const
 {
-    if (has_closure)
+    if (m_flags & flag)
     {
         RENDERER_LOG_INFO(
             "shader group %s has %s closures.",
@@ -365,7 +364,8 @@ void ShaderGroup::report_has_closure(const char* closure_name, const bool has_cl
 
 void ShaderGroup::get_shadergroup_globals_info(OSL::ShadingSystem& shading_system)
 {
-    m_uses_dPdtime = true;
+    // Assume the shader group uses all globals.
+    m_flags |= UsesAllGlobals;
 
     int num_globals = 0;
     if (!shading_system.getattribute(
@@ -396,19 +396,26 @@ void ShaderGroup::get_shadergroup_globals_info(OSL::ShadingSystem& shading_syste
             return;
         }
 
-        m_uses_dPdtime = false;
+        // Clear all globals flags.
+        m_flags &= ~UsesAllGlobals;
 
+        // Set the globals flags.
         for (int i = 0; i < num_globals; ++i)
         {
             if (globals[i] == g_dPdtime_str)
-                m_uses_dPdtime = true;
+                m_flags |= UsesdPdTime;
         }
+    }
+    else
+    {
+        // The shader group uses no globals.
+        m_flags &= ~UsesAllGlobals;
     }
 }
 
-void ShaderGroup::report_uses_global(const char* global_name, const bool uses_global) const
+void ShaderGroup::report_uses_global(const char* global_name, const Flags flag) const
 {
-    if (uses_global)
+    if (m_flags & flag)
     {
         RENDERER_LOG_INFO(
             "shader group %s uses the %s global.",
@@ -429,7 +436,7 @@ void ShaderGroup::set_surface_area(
     const ObjectInstance*   obj,
     const double            area) const
 {
-    assert (m_has_emission);
+    assert(has_emission());
 
     impl->m_surface_areas[Impl::SurfaceAreaKey(ass, obj)] = area;
 }

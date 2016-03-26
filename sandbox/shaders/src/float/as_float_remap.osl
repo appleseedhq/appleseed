@@ -29,12 +29,12 @@
 
 shader as_float_remap
 (
-    float Float = 0.0,
-    float FromLow  = 0.0,
-    float FromHigh = 1.0,
-    float ToLow  = 0.0,
-    float ToHigh = 1.0,
-    output float Result = 0.0
+    float         Float = 0.0,
+    float         FromLow  = 0.0,
+    float         FromHigh = 1.0,
+    float         ToLow  = 0.0,
+    float         ToHigh = 1.0,
+    output float  Result = 0.0
 )
 {
     float t = clamp((Float - FromLow) / (FromHigh - FromLow), 0.0, 1.0);

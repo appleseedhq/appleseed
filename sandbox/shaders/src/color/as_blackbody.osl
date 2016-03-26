@@ -28,8 +28,8 @@
 
 shader as_blackbody
 (
-    float Temperature = 1500,
-    output color ColorOut = 0
+    float         Temperature = 1500,
+    output color  ColorOut = 0
 )
 {
     ColorOut = blackbody(Temperature);

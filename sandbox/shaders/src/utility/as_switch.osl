@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014 The masked shader writer, The appleseedhq Organization
+// Copyright (c) 2016 The masked shader writer, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,20 +26,35 @@
 // THE SOFTWARE.
 //
 
-shader as_absorption
+
+shader as_switch
 (
-    float Absorption = 1
+    int     Index = 0
     [[
-        string help = "Absorption cross section",
-        float min = 0.0
+        int min = 0,
+        int max = 1
     ]],
-    output float FloatOut = 1
+    float         Float1 = 0.0,
+    float         Float2 = 0.0,
+    vector        Vector1 = 0.0,
+    vector        Vector2 = 0.0,
+    color         Color1 = 0.0,
+    color         Color2 = 0.0,
+    output float  FloatResult = 0,
+    output vector VectorResult = 0,
+    output color  ColorResult = 0
 )
 {
-    if(backfacing())
+    if (Index == 0)
     {
-        float length;
-        getattribute("path:ray_length", length);
-        FloatOut = exp(-Absorption * length);
+        FloatResult = Float1;
+        VectorResult = Vector1;
+        ColorResult = Color1;
+    }
+    else if (Index == 1)
+    {
+        FloatResult = Float2;
+        VectorResult = Vector2;
+        ColorResult = Color2;
     }
 }

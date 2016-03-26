@@ -102,11 +102,11 @@ namespace
         {
             OSL::Vec3   N;
             OSL::Vec3   T;
-            OSL::Color3 rd;
-            OSL::Color3 rg;
-            float       nu;
-            float       nv;
-            float       fr;
+            OSL::Color3 diffuse_reflectance;
+            OSL::Color3 glossy_reflectance;
+            float       exponent_u;
+            float       exponent_v;
+            float       fresnel_multiplier;
         };
 
         static const char* name()
@@ -125,11 +125,11 @@ namespace
             {
                 CLOSURE_VECTOR_PARAM(Params, N),
                 CLOSURE_VECTOR_PARAM(Params, T),
-                CLOSURE_COLOR_PARAM(Params, rd),
-                CLOSURE_COLOR_PARAM(Params, rg),
-                CLOSURE_FLOAT_PARAM(Params, nu),
-                CLOSURE_FLOAT_PARAM(Params, nv),
-                CLOSURE_FLOAT_PARAM(Params, fr),
+                CLOSURE_COLOR_PARAM(Params, diffuse_reflectance),
+                CLOSURE_COLOR_PARAM(Params, glossy_reflectance),
+                CLOSURE_FLOAT_PARAM(Params, exponent_u),
+                CLOSURE_FLOAT_PARAM(Params, exponent_v),
+                CLOSURE_FLOAT_PARAM(Params, fresnel_multiplier),
                 CLOSURE_FINISH_PARAM(Params)
             };
 
@@ -153,13 +153,13 @@ namespace
                     Vector3d(p->N),
                     Vector3d(p->T));
 
-            values->m_rd = Color3f(p->rd);
+            values->m_rd = Color3f(p->diffuse_reflectance);
             values->m_rd_multiplier = 1.0;
-            values->m_rg = Color3f(p->rg);
+            values->m_rg = Color3f(p->glossy_reflectance);
             values->m_rg_multiplier = 1.0;
-            values->m_nu = max(p->nu, 0.01f);
-            values->m_nv = max(p->nv, 0.01f);
-            values->m_fr_multiplier = p->fr;
+            values->m_nu = max(p->exponent_u, 0.01f);
+            values->m_nv = max(p->exponent_v, 0.01f);
+            values->m_fr_multiplier = p->fresnel_multiplier;
         }
     };
 
@@ -427,7 +427,6 @@ namespace
             values->m_ior = max(p->ior, 0.001f);
             values->m_volume_transmittance = Color3f(p->volume_transmittance);
             values->m_volume_transmittance_distance = p->volume_transmittance_distance;
-
             composite_closure.add_ior(weight, values->m_ior);
         }
     };
@@ -742,10 +741,10 @@ namespace
         {
             OSL::ustring    profile;
             OSL::Vec3       N;
-            OSL::Color3     rd;
-            OSL::Color3     dmfp;
-            float           eta;
-            float           g;
+            OSL::Color3     reflectance;
+            OSL::Color3     diffuse_mean_free_path;
+            float           ior;
+            float           scattering_anisotropy;
         };
 
         static const char* name()
@@ -764,10 +763,10 @@ namespace
             {
                 CLOSURE_STRING_PARAM(Params, profile),
                 CLOSURE_VECTOR_PARAM(Params, N),
-                CLOSURE_COLOR_PARAM(Params, rd),
-                CLOSURE_COLOR_PARAM(Params, dmfp),
-                CLOSURE_FLOAT_PARAM(Params, eta),
-                CLOSURE_FLOAT_PARAM(Params, g),
+                CLOSURE_COLOR_PARAM(Params, reflectance),
+                CLOSURE_COLOR_PARAM(Params, diffuse_mean_free_path),
+                CLOSURE_FLOAT_PARAM(Params, ior),
+                CLOSURE_FLOAT_PARAM(Params, scattering_anisotropy),
                 CLOSURE_FINISH_PARAM(Params)
             };
 
@@ -793,11 +792,11 @@ namespace
                         Vector3d(p->N));
 
                 values->m_weight = 1.0;
-                values->m_reflectance = Color3f(p->rd);
+                values->m_reflectance = Color3f(p->reflectance);
                 values->m_reflectance_multiplier = 1.0;
-                values->m_dmfp = luminance(Color3f(p->dmfp));
+                values->m_dmfp = luminance(Color3f(p->diffuse_mean_free_path));
                 values->m_dmfp_multiplier = 1.0;
-                values->m_inside_ior = p->eta;
+                values->m_inside_ior = p->ior;
                 values->m_outside_ior = 1.0;
 #else
                 throw ExceptionOSLRuntimeError("unknown subsurface profile: normalized_diffusion");
@@ -842,12 +841,12 @@ namespace
                 }
 
                 values->m_weight = 1.0;
-                values->m_reflectance = Color3f(p->rd);
+                values->m_reflectance = Color3f(p->reflectance);
                 values->m_reflectance_multiplier = 1.0;
-                values->m_dmfp = luminance(Color3f(p->dmfp));
+                values->m_dmfp = luminance(Color3f(p->diffuse_mean_free_path));
                 values->m_dmfp_multiplier = 1.0;
-                values->m_anisotropy = p->g;
-                values->m_inside_ior = p->eta;
+                values->m_anisotropy = p->scattering_anisotropy;
+                values->m_inside_ior = p->ior;
                 values->m_outside_ior = 1.0;
             }
         }

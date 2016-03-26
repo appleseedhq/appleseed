@@ -28,9 +28,9 @@
 
 shader as_vector_normalize
 (
-    vector Vector = 0,
+    vector        Vector = 0,
     output vector VectorOut = 0,
-    output float Length = 0
+    output float  Length = 0
 )
 {
     Length = length(Vector);

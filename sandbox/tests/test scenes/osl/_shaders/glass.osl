@@ -1,5 +1,0 @@
-
-surface glass(float eta = 1.5)
-{
- 	Ci = as_glass("beckmann", N, 1.0, 1.0, 1.0, 0.1, eta, 1.0, 0.0);
-}

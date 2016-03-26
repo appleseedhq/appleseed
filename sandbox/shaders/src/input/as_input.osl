@@ -28,12 +28,12 @@
 
 shader as_input
 (
-    float Float = 0,
-    vector Vector = 0,
-    color  Color = 0,
-    output float FloatOut = 0,
-    output vector VectorOut = 0,
-    output color ColorOut = 0
+    float          Float = 0,
+    vector         Vector = 0,
+    color          Color = 0,
+    output float   FloatOut = 0,
+    output vector  VectorOut = 0,
+    output color   ColorOut = 0
 )
 {
     FloatOut = Float;
