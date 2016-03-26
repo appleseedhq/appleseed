@@ -53,8 +53,8 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer      { class Assembly; }
-namespace renderer      { class Scene; }
+namespace renderer  { class Assembly; }
+namespace renderer  { class Scene; }
 
 namespace renderer
 {
@@ -109,23 +109,22 @@ class BindInputs
     }
 };
 
-class APPLESEED_DLLSYMBOL DummyEntity
+class DummyEntity
   : public Entity
 {
   public:
-    virtual void release() APPLESEED_OVERRIDE;
-
-  private:
-    friend class DummyEntityFactory;
-
     explicit DummyEntity(const char* name);
+    virtual void release() APPLESEED_OVERRIDE;
 };
 
-class APPLESEED_DLLSYMBOL DummyEntityFactory
-  : public foundation::NonCopyable
+class DummyEntityReleaseCheck
+  : public Entity
 {
   public:
-    static foundation::auto_release_ptr<DummyEntity> create(const char* name);
+    bool& m_release_was_called;
+
+    DummyEntityReleaseCheck(const char* name, bool& release_was_called);
+    virtual void release() APPLESEED_OVERRIDE;
 };
 
 class BoundingBoxObject

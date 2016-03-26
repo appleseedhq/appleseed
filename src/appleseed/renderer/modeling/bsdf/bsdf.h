@@ -189,15 +189,16 @@ class APPLESEED_DLLSYMBOL BSDF
         const foundation::Vector3d& incoming,                   // world space incoming direction, unit-length
         const int                   modes) const = 0;           // selected scattering modes
 
+    // Compute the index of refraction of the interior medium.
     virtual double sample_ior(
         SamplingContext&            sampling_context,
         const void*                 data) const;
 
-    // Modulate value by medium absorption over the given distance.
-    virtual void apply_absorption(
+    // Compute absorption of the interior medium over a given distance.
+    virtual void compute_absorption(
         const void*                 data,
         const double                distance,
-        Spectrum&                   value) const;
+        Spectrum&                   absorption) const;
 
   protected:
     // Force a given direction to lie above a surface described by its normal vector.

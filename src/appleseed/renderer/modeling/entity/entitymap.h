@@ -169,7 +169,8 @@ class APPLESEED_DLLSYMBOL EntityMap
     void insert(foundation::auto_release_ptr<Entity> entity);
 
     // Remove an entity from the container.
-    void remove(const foundation::UniqueID id);
+    // Note that if nothing is done with the return value, the entity will be deleted.
+    foundation::auto_release_ptr<Entity> remove(const foundation::UniqueID id);
 
     // Return a given entity.
     // Return 0 if the requested entity does not exist.
@@ -252,6 +253,10 @@ class TypedEntityMap
     // Insert an entity into the container and return its index.
     void insert(foundation::auto_release_ptr<T> entity);
 
+    // Remove an entity from the container.
+    // Note that if nothing is done with the return value, the entity will be deleted.
+    foundation::auto_release_ptr<T> remove(const foundation::UniqueID id);
+
     // Return a given entity.
     // Return 0 if the requested entity does not exist.
     T* get_by_uid(const foundation::UniqueID id) const;
@@ -328,6 +333,14 @@ inline void TypedEntityMap<T>::insert(foundation::auto_release_ptr<T> entity)
 {
     EntityMap::insert(
         foundation::auto_release_ptr<Entity>(entity.release()));
+}
+
+template <typename T>
+inline foundation::auto_release_ptr<T> TypedEntityMap<T>::remove(const foundation::UniqueID id)
+{
+    return
+        foundation::auto_release_ptr<T>(
+            reinterpret_cast<T*>(EntityMap::remove(id).release()));
 }
 
 template <typename T>

@@ -74,7 +74,6 @@ namespace renderer
 
 namespace
 {
-
     template <typename T>
     class WardMDFAdapter
     {
@@ -86,28 +85,31 @@ namespace
 
         Vector<T, 3> sample(const Vector<T, 2>& s) const
         {
-            return WardMDF<T>().sample(
-                Vector<T, 3>(0.0, 0.0, 0.0),
-                Vector<T, 3>(s[0], s[1], 0.0),
-                m_alpha,
-                m_alpha);
+            return
+                WardMDF<T>().sample(
+                    Vector<T, 3>(0.0, 0.0, 0.0),
+                    Vector<T, 3>(s[0], s[1], 0.0),
+                    m_alpha,
+                    m_alpha);
         }
 
         T evaluate(const T cos_alpha) const
         {
-            return WardMDF<T>().D(
-                Vector<T, 3>(0.0, cos_alpha, 0.0),
-                m_alpha,
-                m_alpha);
+            return
+                WardMDF<T>().D(
+                    Vector<T, 3>(0.0, cos_alpha, 0.0),
+                    m_alpha,
+                    m_alpha);
         }
 
         T evaluate_pdf(const T cos_alpha) const
         {
-            return WardMDF<T>().pdf(
-                Vector<T, 3>(0.0, 0.0, 0.0),
-                Vector<T, 3>(0.0, cos_alpha, 0.0),
-                m_alpha,
-                m_alpha);
+            return
+                WardMDF<T>().pdf(
+                    Vector<T, 3>(0.0, 0.0, 0.0),
+                    Vector<T, 3>(0.0, cos_alpha, 0.0),
+                    m_alpha,
+                    m_alpha);
         }
 
       private:

@@ -145,7 +145,6 @@ class MDF
         const T              alpha_y) const
     {
         // Preconditions.
-        assert(is_normalized(v));
         assert(cos_theta(h) >= T(0.0));
         assert(alpha_x > T(0.0));
         assert(alpha_y > T(0.0));
@@ -343,6 +342,8 @@ class MDF
         const T              alpha_x,
         const T              alpha_y)
     {
+        assert(is_normalized(v));
+
         if (cos_theta(v) == T(0.0))
             return T(0.0);
 

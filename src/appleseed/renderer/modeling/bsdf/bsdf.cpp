@@ -110,11 +110,12 @@ double BSDF::sample_ior(
     return 1.0;
 }
 
-void BSDF::apply_absorption(
+void BSDF::compute_absorption(
     const void*             data,
     const double            distance,
-    Spectrum&               value) const
+    Spectrum&               absorption) const
 {
+    absorption.set(1.0f);
 }
 
 }   // namespace renderer

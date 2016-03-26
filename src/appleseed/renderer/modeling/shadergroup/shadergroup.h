@@ -203,37 +203,37 @@ class APPLESEED_DLLSYMBOL ShaderGroupFactory
 
 inline bool ShaderGroup::has_emission() const
 {
-    return m_flags & HasEmission;
+    return (m_flags & HasEmission) != 0;
 }
 
 inline bool ShaderGroup::has_transparency() const
 {
-    return m_flags & HasTransparency;
+    return (m_flags & HasTransparency) != 0;
 }
 
 inline bool ShaderGroup::has_subsurface() const
 {
-    return m_flags & HasSubsurface;
+    return (m_flags & HasSubsurface) != 0;
 }
 
 inline bool ShaderGroup::has_refraction() const
 {
-    return m_flags & HasRefraction;
+    return (m_flags & HasRefraction) != 0;
 }
 
 inline bool ShaderGroup::has_holdout() const
 {
-    return m_flags & HasHoldout;
+    return (m_flags & HasHoldout) != 0;
 }
 
 inline bool ShaderGroup::has_debug() const
 {
-    return m_flags & HasDebug;
+    return (m_flags & HasDebug) != 0;
 }
 
 inline bool ShaderGroup::uses_dPdtime() const
 {
-    return m_flags & UsesdPdTime;
+    return (m_flags & UsesdPdTime) != 0;
 }
 
 }       // namespace renderer

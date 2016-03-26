@@ -285,12 +285,11 @@ void EntityMap::insert(auto_release_ptr<Entity> entity)
     entity_ptr->set_parent(m_parent);
 }
 
-void EntityMap::remove(const UniqueID id)
+auto_release_ptr<Entity> EntityMap::remove(const UniqueID id)
 {
     // Locate the entity.
     const EntityMap::Impl::Storage::iterator it = impl->m_storage.find(id);
-    if (it == impl->m_storage.end())
-        return;
+    assert(it != impl->m_storage.end());
 
     // Retrieve the entity.
     Entity* entity_ptr = it->second;
@@ -300,8 +299,7 @@ void EntityMap::remove(const UniqueID id)
     impl->m_index.erase(entity_ptr->get_name());
     impl->m_storage.erase(it);
 
-    // Delete the entity.
-    entity_ptr->release();
+    return auto_release_ptr<Entity>(entity_ptr);
 }
 
 Entity* EntityMap::get_by_uid(const UniqueID id) const

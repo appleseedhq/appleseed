@@ -588,10 +588,12 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                     bsdf_input_evaluator,
                     *vertex.m_shading_point);
                 const double distance = norm(vertex.get_point() - medium_start);
-                prev_medium->m_bsdf->apply_absorption(
+                Spectrum absorption;
+                prev_medium->m_bsdf->compute_absorption(
                     bsdf_input_evaluator.data(),
                     distance,
-                    vertex.m_throughput);
+                    absorption);
+                vertex.m_throughput *= absorption;
             }
 
             medium_start = vertex.get_point();
