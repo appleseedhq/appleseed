@@ -14,14 +14,14 @@
     </search_paths>
     <scene>
         <camera name="camera" model="pinhole_camera">
-            <parameter name="controller_target" value="-0.0350222 0.19995 -0.0100387" />
+            <parameter name="controller_target" value="0 0.2 0" />
             <parameter name="film_dimensions" value="0.024892 0.018669" />
             <parameter name="focal_length" value="0.035" />
             <transform time="0">
                 <matrix>
-                    -0.932800530314948 -0.135351622151612 0.334010642083569 0.259106982271400
-                    0.000000000000000 0.926795386778239 0.375566653267532 0.530673332421089
-                    -0.360393077963702 0.350328773336564 -0.864515228280189 -0.771329285141308
+                    -0.599603435629080 -0.464101930577879 0.651985519789888 0.629563544429377
+                    0.000000000000000 0.814679175385910 0.579911925375340 0.759968582298913
+                    -0.800297269757809 0.347717182817328 -0.488484432496857 -0.471685308011750
                     0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                 </matrix>
             </transform>
@@ -79,38 +79,46 @@
                 <parameter name="reflectance_multiplier" value="1.0" />
             </bsdf>
             <shader_group name="bump_test">
-                <shader type="shader" name="transform/as_map2d" layer="map1">
-                    <parameter name="Repeat" value="vector 3 3 3" />
-                </shader>
-                <shader type="shader" name="texture2d/as_scalar_texture" layer="tex1">
-                    <parameter name="Filename" value="string ../texture/UVCheckerMap11-512.exr" />
+                <shader type="shader" name="texture3d/as_noise3d" layer="noise1">
+                    <parameter name="AnisotropyMode" value="int 0" />
+                    <parameter name="Bandwidth" value="float 1" />
+                    <parameter name="Direction" value="vector 0 0 0" />
+                    <parameter name="Frequency" value="vector 85 85 85" />
+                    <parameter name="Impulses" value="float 16" />
+                    <parameter name="NoiseType" value="string uperlin" />
+                    <parameter name="Offset" value="vector 0 0 0" />
+                    <parameter name="Period" value="vector 1 1 1" />
+                    <parameter name="Periodic" value="int 0" />
                 </shader>
                 <shader type="shader" name="normal/as_bump_map" layer="bump1">
-                    <parameter name="Amount" value="float 0.025" />
+                    <parameter name="Amount" value="float 0.01" />
                     <parameter name="Method" value="string classic" />
                 </shader>
                 <shader type="shader" name="surface/as_diffuse_surface" layer="diffuse1">
-                    <parameter name="Color" value="color 0.3 0.2 1" />
+                    <parameter name="Color" value="color 0.8 0.2 0.6" />
                     <parameter name="Reflectance" value="float 0.8" />
                 </shader>
                 <shader type="shader" name="surface/as_glossy_surface" layer="glossy1">
                     <parameter name="Color" value="color 1 1 1" />
                     <parameter name="Reflectance" value="float 0.8" />
-                    <parameter name="Roughness" value="float 0.25" />
+                    <parameter name="Roughness" value="float 0.2" />
+                </shader>
+                <shader type="shader" name="surface/as_metal_surface" layer="metal1">
+                    <parameter name="Reflectance" value="float 0.6" />
+                    <parameter name="Roughness" value="float 0.3" />
                 </shader>
                 <shader type="shader" name="surface/as_surface_mix" layer="mix1">
-                    <parameter name="Factor" value="float 0.25" />
+                    <parameter name="Factor" value="float 0.2" />
                 </shader>
                 <shader type="surface" name="material/as_material_builder" layer="surface1">
                 </shader>
-                <connect_shaders src_layer="map1" src_param="UOut" dst_layer="tex1" dst_param="U" />
-                <connect_shaders src_layer="map1" src_param="VOut" dst_layer="tex1" dst_param="V" />
-                <connect_shaders src_layer="tex1" src_param="FloatOut" dst_layer="bump1" dst_param="Height" />
+                <connect_shaders src_layer="noise1" src_param="FloatOut" dst_layer="bump1" dst_param="Height" />
                 <connect_shaders src_layer="bump1" src_param="NormalOut" dst_layer="diffuse1" dst_param="Normal" />
                 <connect_shaders src_layer="bump1" src_param="NormalOut" dst_layer="glossy1" dst_param="Normal" />
+                <connect_shaders src_layer="bump1" src_param="NormalOut" dst_layer="metal1" dst_param="Normal" />
                 <connect_shaders src_layer="diffuse1" src_param="BRDF" dst_layer="mix1" dst_param="BSDF1" />
                 <connect_shaders src_layer="glossy1" src_param="BRDF" dst_layer="mix1" dst_param="BSDF2" />
-                <connect_shaders src_layer="mix1" src_param="BSDF" dst_layer="surface1" dst_param="BSDF" />
+                <connect_shaders src_layer="metal1" src_param="BRDF" dst_layer="surface1" dst_param="BSDF" />
             </shader_group>
             <surface_shader name="physical_surface_shader" model="physical_surface_shader" />
             <material name="plane_material" model="generic_material">
