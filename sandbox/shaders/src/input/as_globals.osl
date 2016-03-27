@@ -49,6 +49,16 @@ shader as_globals
     output vector DPDV = dPdv,
     output vector DPDX = Dx(P),
     output vector DPDY = Dy(P),
+    output vector dNdu = 0
+    [[
+        string  help = "Normal derivative in the u direction.",
+        int     lockgeom = 0
+    ]],
+    output vector dNdv = 0
+    [[
+        string  help = "Normal derivative in the v direction.",
+        int     lockgeom = 0
+    ]],
     output float  Time = time,
     output float  Backfacing = 0,
 )
