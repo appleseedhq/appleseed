@@ -181,7 +181,10 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
     vertex.m_prev_mode = ScatteringMode::Specular;
     vertex.m_prev_prob = BSDF::DiracDelta;
 
-    foundation::Vector3d medium_start;
+    // This variable tracks the beginning of the path segment inside the current medium.
+    // While it is properly initialized when entering a medium, we also initialize it
+    // here to silence a gcc warning.
+    foundation::Vector3d medium_start = vertex.get_point();
 
     size_t iterations = 0;
 
