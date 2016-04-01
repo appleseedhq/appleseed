@@ -66,9 +66,19 @@ namespace
         return vec.get_by_index(index);
     }
 
+    void remove_entity_vec_item(EntityVector& vec, Entity* e)
+    {
+        vec.remove(e);
+    }
+
     Entity* get_entity_map_item(EntityMap& map, const string& key)
     {
         return map.get_by_name(key.c_str());
+    }
+
+    void remove_entity_map_item(EntityMap& map, Entity* e)
+    {
+        map.remove(e->get_uid());
     }
 
     bpy::dict entity_get_parameters(const Entity* e)
@@ -110,7 +120,7 @@ void bind_entity()
         .def("__getitem__", get_entity_vec_item, bpy::return_value_policy<bpy::reference_existing_object>())
 
         .def("insert", &EntityVector::insert)
-        .def("remove", &EntityVector::remove)
+        .def("remove", &remove_entity_vec_item)
 
         .def("__iter__", bpy::iterator<EntityVector>())
         ;
@@ -121,7 +131,7 @@ void bind_entity()
         .def("__getitem__", get_entity_map_item, bpy::return_value_policy<bpy::reference_existing_object>())
 
         .def("insert", &EntityMap::insert)
-        .def("remove", &EntityMap::remove)
+        .def("remove", &remove_entity_map_item)
 
         .def("get_by_uid", &EntityMap::get_by_uid, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("get_by_name", &EntityMap::get_by_name, bpy::return_value_policy<bpy::reference_existing_object>())

@@ -177,9 +177,10 @@ namespace
 
             if (m_mdf == GGX)
             {
+                const GGXMDF<double> mdf;
                 MicrofacetBRDFHelper<double>::sample(
                     sampling_context,
-                    GGXMDF<double>(),
+                    mdf,
                     alpha_x,
                     alpha_y,
                     f,
@@ -188,9 +189,10 @@ namespace
             }
             else
             {
+                const BeckmannMDF<double> mdf;
                 MicrofacetBRDFHelper<double>::sample(
                     sampling_context,
-                    BeckmannMDF<double>(),
+                    mdf,
                     alpha_x,
                     alpha_y,
                     f,
@@ -236,8 +238,9 @@ namespace
 
             if (m_mdf == GGX)
             {
+                const GGXMDF<double> mdf;
                 return MicrofacetBRDFHelper<double>::evaluate(
-                    GGXMDF<double>(),
+                    mdf,
                     alpha_x,
                     alpha_y,
                     shading_basis,
@@ -250,8 +253,9 @@ namespace
             }
             else
             {
+                const BeckmannMDF<double> mdf;
                 return MicrofacetBRDFHelper<double>::evaluate(
-                    BeckmannMDF<double>(),
+                    mdf,
                     alpha_x,
                     alpha_y,
                     shading_basis,
@@ -293,8 +297,9 @@ namespace
 
             if (m_mdf == GGX)
             {
+                const GGXMDF<double> mdf;
                 return MicrofacetBRDFHelper<double>::pdf(
-                    GGXMDF<double>(),
+                    mdf,
                     alpha_x,
                     alpha_y,
                     shading_basis,
@@ -303,8 +308,9 @@ namespace
             }
             else
             {
+                const BeckmannMDF<double> mdf;
                 return MicrofacetBRDFHelper<double>::pdf(
-                    BeckmannMDF<double>(),
+                    mdf,
                     alpha_x,
                     alpha_y,
                     shading_basis,
