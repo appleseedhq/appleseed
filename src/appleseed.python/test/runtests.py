@@ -29,5 +29,7 @@
 import unittest
 
 from testdict2dict import *
+from testentitymap import *
+from testentityvector import *
 
 unittest.TestProgram(testRunner = unittest.TextTestRunner())

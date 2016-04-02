@@ -51,36 +51,6 @@ using namespace std;
 
 namespace
 {
-    Entity* get_entity_vec_item(EntityVector& vec, const int relative_index)
-    {
-        const size_t index =
-            static_cast<size_t>(
-                relative_index >= 0 ? relative_index : vec.size() + relative_index);
-
-        if (index >= vec.size())
-        {
-            PyErr_SetString(PyExc_IndexError, "Invalid index in appleseed.EntityVector");
-            bpy::throw_error_already_set();
-        }
-
-        return vec.get_by_index(index);
-    }
-
-    void remove_entity_vec_item(EntityVector& vec, Entity* e)
-    {
-        vec.remove(e);
-    }
-
-    Entity* get_entity_map_item(EntityMap& map, const string& key)
-    {
-        return map.get_by_name(key.c_str());
-    }
-
-    void remove_entity_map_item(EntityMap& map, Entity* e)
-    {
-        map.remove(e->get_uid());
-    }
-
     bpy::dict entity_get_parameters(const Entity* e)
     {
         return param_array_to_bpy_dict(e->get_parameters());
@@ -117,23 +87,10 @@ void bind_entity()
     bpy::class_<EntityVector, boost::noncopyable>("EntityVector")
         .def("clear", &EntityVector::clear)
         .def("__len__", &EntityVector::size)
-        .def("__getitem__", get_entity_vec_item, bpy::return_value_policy<bpy::reference_existing_object>())
-
-        .def("insert", &EntityVector::insert)
-        .def("remove", &remove_entity_vec_item)
-
-        .def("__iter__", bpy::iterator<EntityVector>())
         ;
 
     bpy::class_<EntityMap, boost::noncopyable>("EntityMap")
         .def("clear", &EntityMap::clear)
         .def("__len__", &EntityMap::size)
-        .def("__getitem__", get_entity_map_item, bpy::return_value_policy<bpy::reference_existing_object>())
-
-        .def("insert", &EntityMap::insert)
-        .def("remove", &remove_entity_map_item)
-
-        .def("get_by_uid", &EntityMap::get_by_uid, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def("get_by_name", &EntityMap::get_by_name, bpy::return_value_policy<bpy::reference_existing_object>())
         ;
 }
