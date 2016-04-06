@@ -76,3 +76,8 @@ echo "-------------------------------"
 
 export PYTHONPATH=$PYTHONPATH:../sandbox/lib/Debug/python2.7
 python ../sandbox/lib/Debug/python2.7/appleseed/test/runtests.py
+
+
+# OSL shader lib
+cd ../sandbox/shaders/src
+python compile_shaders.py ../../bin/oslc
