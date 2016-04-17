@@ -27,7 +27,7 @@
 #
 
 import unittest
-import appleseed
+import appleseed as asr
 
 class TestDict2Dict(unittest.TestCase):
     """
@@ -45,7 +45,7 @@ class TestDict2Dict(unittest.TestCase):
             'string': 'string'
         }
 
-        light = appleseed.Light('point_light', 'light', src_params)
+        light = asr.Light('point_light', 'light', src_params)
         dst_params = light.get_parameters()
 
         self.assertEqual(src_params, dst_params)

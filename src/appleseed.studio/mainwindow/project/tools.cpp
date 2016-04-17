@@ -192,6 +192,17 @@ LineEditDoubleSliderAdaptor::LineEditDoubleSliderAdaptor(
   , m_slider(slider)
 {
     slot_set_slider_value(m_line_edit->text());
+
+    // Connect the line edit and the slider together.
+    connect(
+        m_slider, SIGNAL(valueChanged(const double)),
+        SLOT(slot_set_line_edit_value(const double)));
+    connect(
+        m_line_edit, SIGNAL(textChanged(const QString&)),
+        SLOT(slot_set_slider_value(const QString&)));
+    connect(
+        m_line_edit, SIGNAL(editingFinished()),
+        SLOT(slot_apply_slider_value()));
 }
 
 void LineEditDoubleSliderAdaptor::slot_set_line_edit_value(const double value)

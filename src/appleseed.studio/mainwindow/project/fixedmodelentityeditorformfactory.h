@@ -99,7 +99,7 @@ void FixedModelEntityEditorFormFactory<FactoryRegistrar>::update(
             .insert("type", "enumeration")
             .insert("items", model_items)
             .insert("use", "required")
-            .insert("default", m_model)
+            .insert("value", m_model)
             .insert("on_change", "rebuild_form"));
 
     add_input_metadata(

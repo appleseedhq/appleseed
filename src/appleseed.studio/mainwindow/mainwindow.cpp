@@ -1182,6 +1182,7 @@ void MainWindow::slot_open_project_complete(const QString& filepath, const bool 
     else
     {
         show_project_file_loading_failed_message_box(this, filepath);
+        recreate_render_widgets();
         update_workspace();
     }
 }

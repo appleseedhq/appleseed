@@ -224,34 +224,6 @@ void LightSampler::collect_emitting_triangles(
     }
 }
 
-#ifdef APPLESEED_WITH_OSL
-
-void LightSampler::store_object_area_in_shadergroups(
-    const AssemblyInstance* assembly_instance,
-    const ObjectInstance*   object_instance,
-    const double            object_area,
-    const MaterialArray&    materials)
-{
-    for (size_t i = 0, e = materials.size(); i < e; ++i)
-    {
-        if (const Material* m = materials[i])
-        {
-            if (const ShaderGroup* sg = m->get_uncached_osl_surface())
-            {
-                if (sg->has_emission())
-                {
-                    sg->set_surface_area(
-                        assembly_instance,
-                        object_instance,
-                        object_area);
-                }
-            }
-        }
-    }
-}
-
-#endif
-
 void LightSampler::collect_emitting_triangles(
     const Assembly&                     assembly,
     const AssemblyInstance&             assembly_instance,
@@ -606,6 +578,34 @@ void LightSampler::sample_emitting_triangle(
     // Compute the probability density of this sample.
     light_sample.m_probability = triangle_prob * emitting_triangle.m_rcp_area;
 }
+
+#ifdef APPLESEED_WITH_OSL
+
+void LightSampler::store_object_area_in_shadergroups(
+    const AssemblyInstance*             assembly_instance,
+    const ObjectInstance*               object_instance,
+    const double                        object_area,
+    const MaterialArray&                materials)
+{
+    for (size_t i = 0, e = materials.size(); i < e; ++i)
+    {
+        if (const Material* m = materials[i])
+        {
+            if (const ShaderGroup* sg = m->get_uncached_osl_surface())
+            {
+                if (sg->has_emission())
+                {
+                    sg->set_surface_area(
+                        assembly_instance,
+                        object_instance,
+                        object_area);
+                }
+            }
+        }
+    }
+}
+
+#endif
 
 
 //

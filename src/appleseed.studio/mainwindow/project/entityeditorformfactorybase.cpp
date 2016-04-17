@@ -63,7 +63,7 @@ void EntityEditorFormFactoryBase::add_name_input_metadata(
             .insert("label", "Name")
             .insert("type", "text")
             .insert("use", "required")
-            .insert("default", name)
+            .insert("value", name)
             .insert("focus", "true"));
 }
 
@@ -75,10 +75,12 @@ void EntityEditorFormFactoryBase::add_input_metadata(
     for (size_t i = 0; i < input_metadata.size(); ++i)
     {
         Dictionary im = input_metadata[i];
+        const string input_name = im.get<string>("name");
 
-        const string widget_name = im.get<string>("name");
-        if (input_values.strings().exist(widget_name))
-            im.insert("default", input_values.get<string>(widget_name));
+        im.insert("value",
+            input_values.strings().exist(input_name) ? input_values.get<string>(input_name) :
+            im.strings().exist("default") ? im.get<string>("default") :
+            "");
 
         metadata.push_back(im);
     }

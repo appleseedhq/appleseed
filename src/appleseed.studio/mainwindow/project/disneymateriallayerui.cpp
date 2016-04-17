@@ -174,15 +174,16 @@ void DisneyMaterialLayerUI::create_layer_ui()
 
 void DisneyMaterialLayerUI::create_input_widgets(const Dictionary& values)
 {
-    for (size_t i = 0; i < m_input_metadata.size(); ++i)
+    for (size_t i = 0, e = m_input_metadata.size(); i < e; ++i)
     {
         Dictionary im = m_input_metadata[i];
-
         const string input_name = im.get<string>("name");
         const string input_type = im.get<string>("type");
 
-        if (values.strings().exist(input_name))
-            im.insert("default", values.get(input_name.c_str()));
+        im.insert("value",
+            values.strings().exist(input_name) ? values.get<string>(input_name) :
+            im.strings().exist("default") ? im.get<string>("default") :
+            "");
 
         auto_ptr<IInputWidgetProxy> widget_proxy =
             input_type == "colormap" ?
@@ -194,7 +195,6 @@ void DisneyMaterialLayerUI::create_input_widgets(const Dictionary& values)
             auto_ptr<IInputWidgetProxy>(0);
 
         assert(widget_proxy.get());
-
         connect(widget_proxy.get(), SIGNAL(signal_changed()), SIGNAL(signal_apply()));
 
         m_widget_proxies.insert(input_name, widget_proxy);
@@ -424,9 +424,7 @@ auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_text_input_widgets(con
     m_content_layout->addRow(create_label(metadata), line_edit);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
-
-    if (metadata.strings().exist("default"))
-        widget_proxy->set(metadata.strings().get<string>("default"));
+    widget_proxy->set(metadata.strings().get<string>("value"));
 
     return widget_proxy;
 }
@@ -457,9 +455,7 @@ auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_color_input_widgets(co
     m_content_layout->addRow(create_label(metadata), layout);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new ColorExpressionProxy(line_edit, picker_button));
-
-    if (metadata.strings().exist("default"))
-        widget_proxy->set(metadata.strings().get<string>("default"));
+    widget_proxy->set(metadata.strings().get<string>("value"));
 
     return widget_proxy;
 }
@@ -469,28 +465,11 @@ auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_colormap_input_widgets
     QLineEdit* line_edit = new QLineEdit(m_content_widget);
     line_edit->setMaximumWidth(120);
 
-    const double MinValue = 0.0;
-    const double MaxValue = 1.0;
-
     DoubleSlider* slider = new DoubleSlider(Qt::Horizontal, m_content_widget);
-    slider->setRange(MinValue, MaxValue);
-    slider->setPageStep((MaxValue - MinValue) / 10.0);
-
+    slider->setRange(0.0, 1.0);
+    slider->setPageStep(0.1);
     new MouseWheelFocusEventFilter(slider);
-
-    // Connect the line edit and the slider together.
-    LineEditDoubleSliderAdaptor* adaptor =
-        new LineEditDoubleSliderAdaptor(line_edit, slider);
-    connect(
-        slider, SIGNAL(valueChanged(const double)),
-        adaptor, SLOT(slot_set_line_edit_value(const double)));
-    connect(
-        line_edit, SIGNAL(textChanged(const QString&)),
-        adaptor, SLOT(slot_set_slider_value(const QString&)));
-    connect(
-        line_edit, SIGNAL(editingFinished()),
-        adaptor, SLOT(slot_apply_slider_value()));
-
+    new LineEditDoubleSliderAdaptor(line_edit, slider);
     connect(slider, SIGNAL(valueChanged(int)), SIGNAL(signal_apply()));
 
     if (should_be_focused(metadata))
@@ -510,9 +489,7 @@ auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_colormap_input_widgets
     m_content_layout->addRow(create_label(metadata), layout);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
-
-    if (metadata.strings().exist("default"))
-        widget_proxy->set(metadata.strings().get<string>("default"));
+    widget_proxy->set(metadata.strings().get<string>("value"));
 
     return widget_proxy;
 }
@@ -574,7 +551,7 @@ void DisneyMaterialLayerUI::fold()
         QString::fromStdString(layer_name_proxy->get()));
     connect(
         name_line_edit, SIGNAL(textChanged(const QString&)),
-        layer_name_proxy->get_widget(), SLOT(setText(const QString&)));
+        layer_name_proxy, SLOT(slot_set(const QString)));
     m_header_layout->addRow(
         get_layer_name_label(m_input_metadata),
         name_line_edit);

@@ -136,6 +136,8 @@ set (mainwindow_project_sources
     mainwindow/project/entityeditorwindow.cpp
     mainwindow/project/entityeditorwindow.h
     mainwindow/project/entityeditorwindow.ui
+    mainwindow/project/entityinputwidget.cpp
+    mainwindow/project/entityinputwidget.h
     mainwindow/project/entityitem.h
     mainwindow/project/entityitembase.h
     mainwindow/project/exceptioninvalidentityname.h

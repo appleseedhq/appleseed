@@ -148,6 +148,12 @@ inline std::string to_string(const QString& s)
     return s.toStdString();
 }
 
+template <typename T>
+T from_string(const QString& s)
+{
+    return from_string<T>(s.toStdString());
+}
+
 template <>
 inline QString from_string(const std::string& s)
 {
