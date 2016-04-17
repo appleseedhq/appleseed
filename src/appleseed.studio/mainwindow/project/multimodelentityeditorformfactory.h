@@ -137,7 +137,7 @@ std::string MultiModelEntityEditorFormFactory<FactoryRegistrar>::add_model_widge
             .insert("type", "enumeration")
             .insert("items", model_items)
             .insert("use", "required")
-            .insert("default", model)
+            .insert("value", model)
             .insert("on_change", "rebuild_form"));
 
     return model;

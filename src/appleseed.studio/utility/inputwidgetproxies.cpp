@@ -75,6 +75,11 @@ void IInputWidgetProxy::emit_signal_changed()
     emit signal_changed();
 }
 
+void IInputWidgetProxy::slot_set(const QString& value)
+{
+    set(value.toStdString());
+}
+
 
 //
 // LineEditProxy class implementation.
@@ -84,11 +89,6 @@ LineEditProxy::LineEditProxy(QLineEdit* line_edit)
   : m_line_edit(line_edit)
 {
     connect(m_line_edit, SIGNAL(returnPressed()), SIGNAL(signal_changed()));
-}
-
-QLineEdit* LineEditProxy::get_widget() const
-{
-    return m_line_edit;
 }
 
 void LineEditProxy::set(const string& value)
@@ -112,11 +112,6 @@ SpinBoxProxy::SpinBoxProxy(QSpinBox* spinbox)
     connect(m_spinbox, SIGNAL(valueChanged(int)), SIGNAL(signal_changed()));
 }
 
-QSpinBox* SpinBoxProxy::get_widget() const
-{
-    return m_spinbox;
-}
-
 void SpinBoxProxy::set(const string& value)
 {
     m_spinbox->setValue(from_string<int>(value));
@@ -136,11 +131,6 @@ DoubleSpinBoxProxy::DoubleSpinBoxProxy(QDoubleSpinBox* spinbox)
   : m_spinbox(spinbox)
 {
     connect(m_spinbox, SIGNAL(valueChanged(double)), SIGNAL(signal_changed()));
-}
-
-QDoubleSpinBox* DoubleSpinBoxProxy::get_widget() const
-{
-    return m_spinbox;
 }
 
 void DoubleSpinBoxProxy::set(const string& value)
@@ -164,11 +154,6 @@ CheckBoxProxy::CheckBoxProxy(QCheckBox* checkbox)
     connect(m_checkbox, SIGNAL(stateChanged(int)), SIGNAL(signal_changed()));
 }
 
-QCheckBox* CheckBoxProxy::get_widget() const
-{
-    return m_checkbox;
-}
-
 void CheckBoxProxy::set(const string& value)
 {
     m_checkbox->setChecked(from_string<bool>(value));
@@ -188,11 +173,6 @@ GroupBoxProxy::GroupBoxProxy(QGroupBox* groupbox)
   : m_groupbox(groupbox)
 {
     connect(m_groupbox, SIGNAL(clicked(bool)), SIGNAL(signal_changed()));
-}
-
-QGroupBox* GroupBoxProxy::get_widget() const
-{
-    return m_groupbox;
 }
 
 void GroupBoxProxy::set(const string& value)
@@ -216,11 +196,6 @@ RadioButtonProxy::RadioButtonProxy(QRadioButton* radio_button)
     connect(m_radio_button, SIGNAL(toggled(bool)), SIGNAL(signal_changed()));
 }
 
-QRadioButton* RadioButtonProxy::get_widget() const
-{
-    return m_radio_button;
-}
-
 void RadioButtonProxy::set(const string& value)
 {
     m_radio_button->setChecked(from_string<bool>(value));
@@ -240,11 +215,6 @@ ComboBoxProxy::ComboBoxProxy(QComboBox* combobox)
   : m_combobox(combobox)
 {
     connect(m_combobox, SIGNAL(currentIndexChanged(int)), SIGNAL(signal_changed()));
-}
-
-QComboBox* ComboBoxProxy::get_widget() const
-{
-    return m_combobox;
 }
 
 void ComboBoxProxy::set(const string& value)
@@ -268,16 +238,6 @@ ColorPickerProxy::ColorPickerProxy(QLineEdit* line_edit, QToolButton* picker_but
   , m_picker_button(picker_button)
 {
     connect(m_line_edit, SIGNAL(returnPressed()), SIGNAL(signal_changed()));
-}
-
-QLineEdit* ColorPickerProxy::get_line_edit() const
-{
-    return m_line_edit;
-}
-
-QToolButton* ColorPickerProxy::get_picker_button() const
-{
-    return m_picker_button;
 }
 
 namespace
@@ -389,16 +349,6 @@ ColorExpressionProxy::ColorExpressionProxy(QLineEdit* line_edit, QToolButton* pi
   , m_picker_button(picker_button)
 {
     connect(m_line_edit, SIGNAL(returnPressed()), SIGNAL(signal_changed()));
-}
-
-QLineEdit* ColorExpressionProxy::get_line_edit() const
-{
-    return m_line_edit;
-}
-
-QToolButton* ColorExpressionProxy::get_picker_button() const
-{
-    return m_picker_button;
 }
 
 void ColorExpressionProxy::set(const string& value)
