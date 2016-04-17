@@ -1153,7 +1153,8 @@ QWidget#textedit_log
     FIXED_WIDTH_FONT_STYLE;
 }
 
-QPushButton#bind_entity_button
+QPushButton#bind_entity_button,
+QPushButton#unbind_entity_button
 {
     min-width: 30px;
 }
