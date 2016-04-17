@@ -30,8 +30,8 @@
 #define APPLESEED_SHADERS_TRANSFORM_H
 
 void rotate2d(
-    float         x, 
-    float         y, 
+    float         x,
+    float         y,
     float         angle_in_degrees,
     output float  rx,
     output float  ry)

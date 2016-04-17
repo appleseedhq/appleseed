@@ -33,5 +33,5 @@ shader as_color_add
     output color  ColorOut = 0
 )
 {
-    ColorOut = Color1 + Color2;    
+    ColorOut = Color1 + Color2;
 }

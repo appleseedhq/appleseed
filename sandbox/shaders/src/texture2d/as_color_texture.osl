@@ -34,8 +34,8 @@ shader as_color_texture
     [[
         string widget = "filename"
     ]],
-    string       UWrap = "periodic"          
-    [[                                                     
+    string       UWrap = "periodic"
+    [[
         string widget = "popup",
         string options = "default|black|periodic|clamp|mirror"
     ]],
@@ -64,7 +64,7 @@ shader as_color_texture
 )
 {
     ColorOut = texture(
-        Filename, 
+        Filename,
         U,
         V,
         "swidth", UWidth,
