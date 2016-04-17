@@ -68,7 +68,7 @@ ProjectItem::ProjectItem(EntityEditorContext& editor_context)
 
     ItemBase* rules_item =
         new ItemBase(
-            editor_context,    
+            editor_context,
             g_rules_class_uid,
             "Rules");
     rules_item->set_allow_deletion(false);
