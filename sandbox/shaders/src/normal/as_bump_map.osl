@@ -75,7 +75,7 @@ shader as_bump_map
     {
         //
         // Classic Blinn algorithm.
-        // 
+        //
         // Reference:
         //
         //    Physically Based Rendering, 2nd edition, page 490.

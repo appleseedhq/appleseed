@@ -41,13 +41,13 @@ shader as_noise3d
     vector        Period = 1,
     vector        Frequency = 1,
     vector        Offset = 0,
-    int           AnisotropyMode = 0                                     
-    [[                                                         
-        string widget = "mapper",                              
-        string options = "Isotropic:0|Anisotropic:1|Hybrid:2"  
-    ]],                                                        
-    vector        Direction = 0,                                      
-    float         Bandwidth = 1.0,                                     
+    int           AnisotropyMode = 0
+    [[
+        string widget = "mapper",
+        string options = "Isotropic:0|Anisotropic:1|Hybrid:2"
+    ]],
+    vector        Direction = 0,
+    float         Bandwidth = 1.0,
     float         Impulses = 16,
     output float  FloatOut = 0,
     output vector VectorOut = 0,

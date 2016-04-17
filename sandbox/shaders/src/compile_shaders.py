@@ -1,3 +1,4 @@
+
 #!/usr/bin/python
 
 #
@@ -46,7 +47,7 @@ for dirpath, dirnames, filenames in os.walk("."):
             dest_dir = os.path.join("..", dirpath)
             dst_filename = filename.replace(".osl", ".oso")
             dst_filepath = os.path.join(dest_dir, dst_filename)
-            
+
             if not os.path.exists(dest_dir):
                 os.makedirs(dest_dir)
 

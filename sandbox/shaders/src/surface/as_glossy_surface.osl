@@ -80,10 +80,10 @@ shader as_glossy_surface
 )
 {
     BRDF = Color * Reflectance * as_glossy(
-        Distribution, 
-        Normal, 
+        Distribution,
+        Normal,
         Tn,
         microfacet_roughness(Roughness, RoughnessDepthScale),
-        Anisotropic, 
+        Anisotropic,
         Ior);
 }

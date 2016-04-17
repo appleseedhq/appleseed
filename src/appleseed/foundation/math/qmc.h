@@ -265,7 +265,7 @@ inline T radical_inverse(
         value /= base;
         b *= rcp_base;
     }
-    
+
     return inverse;
 }
 
