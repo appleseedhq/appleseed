@@ -491,6 +491,34 @@ TEST_SUITE(Foundation_Utility_String)
         EXPECT_EQ("xyzbbb", result);
     }
 
+    TEST_CASE(Format_GivenStringWithoutPlaceholders_ReturnsString)
+    {
+        const string result = format("hello", "world");
+
+        EXPECT_EQ("hello", result);
+    }
+
+    TEST_CASE(Format_GivenStringWithSinglePlaceholder_ReturnsFormattedString)
+    {
+        const string result = format("hello {0}", "world");
+
+        EXPECT_EQ("hello world", result);
+    }
+
+    TEST_CASE(Format_GivenStringWithSinglePlaceholderRepeatedTwice_ReturnsFormattedString)
+    {
+        const string result = format("{0} hello {0}", "yay");
+
+        EXPECT_EQ("yay hello yay", result);
+    }
+
+    TEST_CASE(Format_GivenStringWithFourPlaceholders_ReturnsFormattedString)
+    {
+        const string result = format("{3} {2} {1} {0} {1} {2} {3}", "a", "b", "c", "d");
+
+        EXPECT_EQ("d c b a b c d", result);
+    }
+
     TEST_CASE(GetNumberedStringMaxValue_GivenEmptyPattern_ReturnsZero)
     {
         const size_t max_value = get_numbered_string_max_value("");

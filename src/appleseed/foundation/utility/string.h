@@ -185,6 +185,18 @@ std::string replace(
     const std::string&      old_string,
     const std::string&      new_string);
 
+// Formatting functions, similar to the .NET String.Format() method.
+// Placeholders are of the form {n} with n starting at 0, e.g. {0}, {1}, etc.
+// Example: format("Hello {0}", "World") will return "Hello World".
+template <typename T1>
+std::string format(const std::string& fmt, const T1& arg1);
+template <typename T1, typename T2>
+std::string format(const std::string& fmt, const T1& arg1, const T2& arg2);
+template <typename T1, typename T2, typename T3>
+std::string format(const std::string& fmt, const T1& arg1, const T2& arg2, const T3& arg3);
+template <typename T1, typename T2, typename T3, typename T4>
+std::string format(const std::string& fmt, const T1& arg1, const T2& arg2, const T3& arg3, const T4& arg4);
+
 // Return a copy of the input pattern where consecutive '#' characters have
 // been replaced by 'value', with leading zeroes added as necessary.
 std::string get_numbered_string(
@@ -714,6 +726,30 @@ inline std::string replace(
     } while ((pos = result.find(old_string, pos)) != std::string::npos);
 
     return result;
+}
+
+template <typename T1>
+std::string format(const std::string& fmt, const T1& arg1)
+{
+    return replace(fmt, "{0}", to_string(arg1));
+}
+
+template <typename T1, typename T2>
+std::string format(const std::string& fmt, const T1& arg1, const T2& arg2)
+{
+    return replace(format(fmt, arg1), "{1}", to_string(arg2));
+}
+
+template <typename T1, typename T2, typename T3>
+std::string format(const std::string& fmt, const T1& arg1, const T2& arg2, const T3& arg3)
+{
+    return replace(format(fmt, arg1, arg2), "{2}", to_string(arg3));
+}
+
+template <typename T1, typename T2, typename T3, typename T4>
+std::string format(const std::string& fmt, const T1& arg1, const T2& arg2, const T3& arg3, const T4& arg4)
+{
+    return replace(format(fmt, arg1, arg2, arg3), "{3}", to_string(arg4));
 }
 
 inline std::string get_numbered_string(
