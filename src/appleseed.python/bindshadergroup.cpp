@@ -71,6 +71,16 @@ namespace
       : public boost::noncopyable
     {
       public:
+        ShaderQueryWrapper()
+        {
+            m_shader_query = ShaderQueryFactory::create();
+        }
+
+        explicit ShaderQueryWrapper(const char* search_path)
+        {
+            m_shader_query = ShaderQueryFactory::create(search_path);
+        }
+
         explicit ShaderQueryWrapper(bpy::list search_paths)
         {
             for (bpy::ssize_t i = 0, e = bpy::len(search_paths); i < e; ++i)
@@ -116,8 +126,8 @@ namespace
 
         bpy::dict get_metadata() const
         {
-            const DictionaryArray metadata = m_shader_query->get_metadata();
-            return dictionary_array_to_bpy_dict(metadata, "name");
+            return dictionary_to_bpy_dict(
+                m_shader_query->get_metadata());
         }
 
       private:
@@ -135,7 +145,9 @@ void bind_shader_group()
         .def("clear", &ShaderGroup::clear)
         ;
 
-    bpy::class_<ShaderQueryWrapper, boost::noncopyable>("ShaderQuery", bpy::init<bpy::list>())
+    bpy::class_<ShaderQueryWrapper, boost::noncopyable>("ShaderQuery")
+        .def(bpy::init<const char*>())
+        .def(bpy::init<bpy::list>())
         .def("open", &ShaderQueryWrapper::open)
         .def("get_shader_name", &ShaderQueryWrapper::get_shader_name)
         .def("get_shader_type", &ShaderQueryWrapper::get_shader_type)
