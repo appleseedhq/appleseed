@@ -35,7 +35,6 @@
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/searchpaths.h"
 
@@ -167,6 +166,13 @@ struct ShaderQuery::Impl
     }
 };
 
+ShaderQuery::ShaderQuery(const char* search_path)
+  : impl(new Impl())
+{
+    if (search_path)
+        impl->m_search_path = search_path;
+}
+
 ShaderQuery::ShaderQuery(const SearchPaths& search_paths)
   : impl(new Impl())
 {
@@ -211,13 +217,14 @@ Dictionary ShaderQuery::get_param_info(const size_t param_index) const
                 *impl->m_query.getparam(param_index));
 }
 
-DictionaryArray ShaderQuery::get_metadata() const
+Dictionary ShaderQuery::get_metadata() const
 {
-    DictionaryArray metadata;
+    Dictionary metadata;
 
     for (size_t i = 0, e = impl->m_query.metadata().size(); i < e; ++i)
     {
-        metadata.push_back(
+        metadata.insert(
+            impl->m_query.metadata()[i].name.c_str(),
             Impl::metadata_param_to_dict(impl->m_query.metadata()[i]));
     }
 
@@ -228,6 +235,12 @@ DictionaryArray ShaderQuery::get_metadata() const
 //
 // ShaderQueryFactory class implementation.
 //
+
+auto_release_ptr<ShaderQuery> ShaderQueryFactory::create(
+    const char* search_path)
+{
+    return auto_release_ptr<ShaderQuery>(new ShaderQuery(search_path));
+}
 
 auto_release_ptr<ShaderQuery> ShaderQueryFactory::create(
     const SearchPaths& search_paths)
