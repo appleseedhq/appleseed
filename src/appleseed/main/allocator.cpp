@@ -425,6 +425,9 @@ void start_memory_tracking()
 {
     recursive_mutex::scoped_lock lock(s_mutex);
 
+    if (s_tracking_enabled)
+        return;
+
     s_tracking_enabled = false;
 
     atexit(stop_memory_tracking);
