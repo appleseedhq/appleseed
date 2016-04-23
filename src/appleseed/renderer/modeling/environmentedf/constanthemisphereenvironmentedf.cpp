@@ -226,4 +226,13 @@ auto_release_ptr<EnvironmentEDF> ConstantHemisphereEnvironmentEDFFactory::create
             new ConstantHemisphereEnvironmentEDF(name, params));
 }
 
+auto_release_ptr<EnvironmentEDF> ConstantHemisphereEnvironmentEDFFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return
+        auto_release_ptr<EnvironmentEDF>(
+            new ConstantHemisphereEnvironmentEDF(name, params));
+}
+
 }   // namespace renderer

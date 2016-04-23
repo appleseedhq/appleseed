@@ -254,4 +254,11 @@ auto_release_ptr<EDF> DiffuseEDFFactory::create(
     return auto_release_ptr<EDF>(new DiffuseEDF(name, params));
 }
 
+auto_release_ptr<EDF> DiffuseEDFFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return auto_release_ptr<EDF>(new DiffuseEDF(name, params));
+}
+
 }   // namespace renderer

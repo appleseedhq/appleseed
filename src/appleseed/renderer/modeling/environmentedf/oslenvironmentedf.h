@@ -69,6 +69,11 @@ class APPLESEED_DLLSYMBOL OSLEnvironmentEDFFactory
     virtual foundation::auto_release_ptr<EnvironmentEDF> create(
         const char*         name,
         const ParamArray&   params) const APPLESEED_OVERRIDE;
+
+    // Static variant of the create() method above.
+    static foundation::auto_release_ptr<EnvironmentEDF> static_create(
+        const char*         name,
+        const ParamArray&   params);
 };
 
 }       // namespace renderer

@@ -142,4 +142,13 @@ auto_release_ptr<RenderLayerRule> RegExRenderLayerRuleFactory::create(
             new RegExRenderLayerRule(name, params));
 }
 
+auto_release_ptr<RenderLayerRule> RegExRenderLayerRuleFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return
+        auto_release_ptr<RenderLayerRule>(
+            new RegExRenderLayerRule(name, params));
+}
+
 }   // namespace renderer

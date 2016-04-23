@@ -622,4 +622,11 @@ auto_release_ptr<SurfaceShader> DiagnosticSurfaceShaderFactory::create(
     return auto_release_ptr<SurfaceShader>(new DiagnosticSurfaceShader(name, params));
 }
 
+auto_release_ptr<SurfaceShader> DiagnosticSurfaceShaderFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return auto_release_ptr<SurfaceShader>(new DiagnosticSurfaceShader(name, params));
+}
+
 }   // namespace renderer

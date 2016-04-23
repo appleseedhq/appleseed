@@ -70,6 +70,11 @@ class APPLESEED_DLLSYMBOL PointLightFactory
     virtual foundation::auto_release_ptr<Light> create(
         const char*         name,
         const ParamArray&   params) const APPLESEED_OVERRIDE;
+
+    // Static variant of the create() method above.
+    static foundation::auto_release_ptr<Light> static_create(
+        const char*         name,
+        const ParamArray&   params);
 };
 
 }       // namespace renderer

@@ -85,6 +85,11 @@ class APPLESEED_DLLSYMBOL MetalBRDFFactory
     virtual foundation::auto_release_ptr<BSDF> create(
         const char*         name,
         const ParamArray&   params) const APPLESEED_OVERRIDE;
+
+    // Static variant of the create() method above.
+    static foundation::auto_release_ptr<BSDF> static_create(
+        const char*         name,
+        const ParamArray&   params);
 };
 
 }       // namespace renderer

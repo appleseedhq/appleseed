@@ -69,6 +69,11 @@ class APPLESEED_DLLSYMBOL OSLMaterialFactory
     virtual foundation::auto_release_ptr<Material> create(
         const char*         name,
         const ParamArray&   params) const APPLESEED_OVERRIDE;
+
+    // Static variant of the create() method above.
+    static foundation::auto_release_ptr<Material> static_create(
+        const char*         name,
+        const ParamArray&   params);
 };
 
 }       // namespace renderer

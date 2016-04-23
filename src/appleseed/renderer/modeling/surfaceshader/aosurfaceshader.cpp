@@ -209,4 +209,11 @@ auto_release_ptr<SurfaceShader> AOSurfaceShaderFactory::create(
     return auto_release_ptr<SurfaceShader>(new AOSurfaceShader(name, params));
 }
 
+auto_release_ptr<SurfaceShader> AOSurfaceShaderFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return auto_release_ptr<SurfaceShader>(new AOSurfaceShader(name, params));
+}
+
 }   // namespace renderer

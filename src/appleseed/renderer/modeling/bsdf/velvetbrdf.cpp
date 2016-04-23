@@ -360,4 +360,11 @@ auto_release_ptr<BSDF> VelvetBRDFFactory::create(
     return auto_release_ptr<BSDF>(new VelvetBRDF(name, params));
 }
 
+auto_release_ptr<BSDF> VelvetBRDFFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return auto_release_ptr<BSDF>(new VelvetBRDF(name, params));
+}
+
 }   // namespace renderer

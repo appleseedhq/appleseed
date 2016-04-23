@@ -232,4 +232,11 @@ auto_release_ptr<Light> PointLightFactory::create(
     return auto_release_ptr<Light>(new PointLight(name, params));
 }
 
+auto_release_ptr<Light> PointLightFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return auto_release_ptr<Light>(new PointLight(name, params));
+}
+
 }   // namespace renderer

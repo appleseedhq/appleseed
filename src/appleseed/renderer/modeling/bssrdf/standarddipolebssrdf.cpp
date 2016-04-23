@@ -271,4 +271,11 @@ auto_release_ptr<BSSRDF> StandardDipoleBSSRDFFactory::create(
     return auto_release_ptr<BSSRDF>(new StandardDipoleBSSRDF(name, params));
 }
 
+auto_release_ptr<BSSRDF> StandardDipoleBSSRDFFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return auto_release_ptr<BSSRDF>(new StandardDipoleBSSRDF(name, params));
+}
+
 }   // namespace renderer
