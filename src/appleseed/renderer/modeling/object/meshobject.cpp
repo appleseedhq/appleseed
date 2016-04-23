@@ -392,9 +392,7 @@ auto_release_ptr<MeshObject> MeshObjectFactory::create(
     const char*         name,
     const ParamArray&   params)
 {
-    return
-        auto_release_ptr<MeshObject>(
-            new MeshObject(name, params));
+    return auto_release_ptr<MeshObject>(new MeshObject(name, params));
 }
 
 }   // namespace renderer

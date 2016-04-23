@@ -60,8 +60,8 @@ namespace renderer
 
 struct ShaderQuery::Impl
 {
-    std::string m_search_path;
-    OSL::OSLQuery m_query;
+    std::string     m_search_path;
+    OSL::OSLQuery   m_query;
 
     static bool copy_value_to_dict(
         const OSL::OSLQuery::Parameter& param,
@@ -87,8 +87,7 @@ struct ShaderQuery::Impl
                     param.fdefault[1],
                     param.fdefault[2]));
         }
-        else
-            return false;
+        else return false;
 
         return true;
    }
@@ -206,9 +205,7 @@ size_t ShaderQuery::get_num_params() const
 Dictionary ShaderQuery::get_param_info(const size_t param_index) const
 {
     assert(param_index < get_num_params());
-
-    return Impl::param_to_dict(
-                *impl->m_query.getparam(param_index));
+    return Impl::param_to_dict(*impl->m_query.getparam(param_index));
 }
 
 DictionaryArray ShaderQuery::get_metadata() const

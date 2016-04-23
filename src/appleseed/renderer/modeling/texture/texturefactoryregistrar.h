@@ -41,7 +41,7 @@
 #include <memory>
 
 // Forward declarations.
-namespace renderer      { class ITextureFactory; }
+namespace renderer  { class ITextureFactory; }
 
 namespace renderer
 {

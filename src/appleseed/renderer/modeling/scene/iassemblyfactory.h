@@ -54,10 +54,10 @@ class APPLESEED_DLLSYMBOL IAssemblyFactory
     // Destructor.
     virtual ~IAssemblyFactory() {}
 
-    // Return a string identifying this environment EDF model.
+    // Return a string identifying this assembly model.
     virtual const char* get_model() const = 0;
 
-    // Create a new assembly instance.
+    // Create a new assembly.
     virtual foundation::auto_release_ptr<Assembly> create(
         const char*         name,
         const ParamArray&   params = ParamArray()) const = 0;

@@ -619,9 +619,7 @@ auto_release_ptr<SurfaceShader> DiagnosticSurfaceShaderFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return
-        auto_release_ptr<SurfaceShader>(
-            new DiagnosticSurfaceShader(name, params));
+    return auto_release_ptr<SurfaceShader>(new DiagnosticSurfaceShader(name, params));
 }
 
 }   // namespace renderer

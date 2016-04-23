@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_OSL_OSLBSDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_OSL_OSLBSDF_H
+#ifndef APPLESEED_RENDERER_MODELING_BSDF_OSLBSDF_H
+#define APPLESEED_RENDERER_MODELING_BSDF_OSLBSDF_H
 
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
@@ -51,4 +51,4 @@ class OSLBSDFFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_OSL_OSLBSDF_H
+#endif  // !APPLESEED_RENDERER_MODELING_BSDF_OSLBSDF_H

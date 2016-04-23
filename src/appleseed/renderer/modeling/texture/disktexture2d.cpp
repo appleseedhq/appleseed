@@ -215,9 +215,7 @@ auto_release_ptr<Texture> DiskTexture2dFactory::create(
     const ParamArray&   params,
     const SearchPaths&  search_paths) const
 {
-    return
-        auto_release_ptr<Texture>(
-            new DiskTexture2d(name, params, search_paths));
+    return auto_release_ptr<Texture>(new DiskTexture2d(name, params, search_paths));
 }
 
 }   // namespace renderer
