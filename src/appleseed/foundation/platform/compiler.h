@@ -96,6 +96,9 @@ namespace foundation
 //
 // APPLESEED_SSE_ALIGN aligns on a 16-byte boundary as required by SSE load/store instructions.
 //
+// Note that APPLESEED_SSE_ALIGN *always* performs the alignment, regardless of whether or not
+// SSE is enabled in the build configuration.
+//
 
 // Visual C++.
 #if defined _MSC_VER
