@@ -41,7 +41,6 @@
 
 // Forward declarations.
 namespace foundation    { class Dictionary; }
-namespace foundation    { class DictionaryArray; }
 namespace foundation    { class SearchPaths; }
 
 namespace renderer
@@ -75,10 +74,10 @@ class APPLESEED_DLLSYMBOL ShaderQuery
     size_t get_num_params() const;
 
     // Return shader parameter information.
-    foundation::Dictionary get_param_info(const size_t param_index) const;
+    const foundation::Dictionary& get_param_info(const size_t param_index) const;
 
     // Return the shader metadata.
-    foundation::DictionaryArray get_metadata() const;
+    const foundation::Dictionary& get_metadata() const;
 
   private:
     friend class ShaderQueryFactory;
@@ -86,6 +85,8 @@ class APPLESEED_DLLSYMBOL ShaderQuery
     struct Impl;
     Impl* impl;
 
+    explicit ShaderQuery();
+    explicit ShaderQuery(const char* search_path);
     explicit ShaderQuery(const foundation::SearchPaths& search_paths);
 
     ~ShaderQuery();
@@ -99,7 +100,14 @@ class APPLESEED_DLLSYMBOL ShaderQuery
 class APPLESEED_DLLSYMBOL ShaderQueryFactory
 {
   public:
-    // Create a new shader query.
+    // Create a new shader query without a search path.
+    // Shaders can only be queried using absolute paths.
+    static foundation::auto_release_ptr<ShaderQuery> create();
+
+    // Create a new shader query with a single search path.
+    static foundation::auto_release_ptr<ShaderQuery> create(const char* search_path);
+
+    // Create a new shader query with multiple search paths.
     static foundation::auto_release_ptr<ShaderQuery> create(
         const foundation::SearchPaths& search_paths);
 };

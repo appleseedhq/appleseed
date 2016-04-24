@@ -257,7 +257,7 @@ bpy::dict param_array_to_bpy_dict(const ParamArray& array)
     return dictionary_to_bpy_dict(array);
 }
 
-boost::python::dict dictionary_array_to_bpy_dict(
+bpy::dict dictionary_array_to_bpy_dict(
     const DictionaryArray&  array,
     const char*             key)
 {

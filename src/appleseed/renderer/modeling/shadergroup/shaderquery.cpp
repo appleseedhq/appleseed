@@ -35,7 +35,6 @@
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/searchpaths.h"
 
@@ -45,8 +44,12 @@ BEGIN_OSL_INCLUDES
 #include "OSL/oslquery.h"
 END_OSL_INCLUDES
 
+// Boost headers.
+#include "boost/optional.hpp"
+
 // Standard headers.
 #include <string>
+#include <vector>
 
 using namespace foundation;
 using namespace std;
@@ -60,8 +63,12 @@ namespace renderer
 
 struct ShaderQuery::Impl
 {
-    std::string     m_search_path;
-    OSL::OSLQuery   m_query;
+    typedef boost::optional<Dictionary> OptionalDictionary;
+
+    std::string                              m_search_path;
+    OSL::OSLQuery                            m_query;
+    mutable OptionalDictionary               m_metadata;
+    mutable std::vector<OptionalDictionary>  m_param_info;
 
     static bool copy_value_to_dict(
         const OSL::OSLQuery::Parameter& param,
@@ -164,7 +171,34 @@ struct ShaderQuery::Impl
 
         return dictionary;
     }
+
+    bool open(const char* shader_name)
+    {
+        m_metadata = OptionalDictionary();
+        m_param_info.clear();
+
+        m_query = OSL::OSLQuery();
+        const bool ok = m_query.open(shader_name, m_search_path);
+
+        if (ok)
+            m_param_info.assign(m_query.nparams(), OptionalDictionary());
+
+        return ok;
+    }
 };
+
+ShaderQuery::ShaderQuery()
+  : impl(new Impl())
+{
+}
+
+ShaderQuery::ShaderQuery(const char* search_path)
+  : impl(new Impl())
+{
+    assert(search_path);
+
+    impl->m_search_path = search_path;
+}
 
 ShaderQuery::ShaderQuery(const SearchPaths& search_paths)
   : impl(new Impl())
@@ -184,7 +218,7 @@ void ShaderQuery::release()
 
 bool ShaderQuery::open(const char* shader_name)
 {
-    return impl->m_query.open(shader_name, impl->m_search_path);
+    return impl->open(shader_name);
 }
 
 const char* ShaderQuery::get_shader_name() const
@@ -202,29 +236,52 @@ size_t ShaderQuery::get_num_params() const
     return impl->m_query.nparams();
 }
 
-Dictionary ShaderQuery::get_param_info(const size_t param_index) const
+const Dictionary& ShaderQuery::get_param_info(const size_t param_index) const
 {
     assert(param_index < get_num_params());
-    return Impl::param_to_dict(*impl->m_query.getparam(param_index));
-}
 
-DictionaryArray ShaderQuery::get_metadata() const
-{
-    DictionaryArray metadata;
-
-    for (size_t i = 0, e = impl->m_query.metadata().size(); i < e; ++i)
+    if (!impl->m_param_info[param_index])
     {
-        metadata.push_back(
-            Impl::metadata_param_to_dict(impl->m_query.metadata()[i]));
+        impl->m_param_info[param_index] =
+            Impl::param_to_dict(*impl->m_query.getparam(param_index));
     }
 
-    return metadata;
+    return impl->m_param_info[param_index].get();
+}
+
+const Dictionary& ShaderQuery::get_metadata() const
+{
+    if (!impl->m_metadata)
+    {
+        Dictionary metadata;
+
+        for (size_t i = 0, e = impl->m_query.metadata().size(); i < e; ++i)
+        {
+            metadata.insert(
+                impl->m_query.metadata()[i].name.c_str(),
+                Impl::metadata_param_to_dict(impl->m_query.metadata()[i]));
+        }
+
+        impl->m_metadata = metadata;
+    }
+
+    return impl->m_metadata.get();
 }
 
 
 //
 // ShaderQueryFactory class implementation.
 //
+
+auto_release_ptr<ShaderQuery> ShaderQueryFactory::create()
+{
+    return auto_release_ptr<ShaderQuery>(new ShaderQuery());
+}
+
+auto_release_ptr<ShaderQuery> ShaderQueryFactory::create(const char* search_path)
+{
+    return auto_release_ptr<ShaderQuery>(new ShaderQuery(search_path));
+}
 
 auto_release_ptr<ShaderQuery> ShaderQueryFactory::create(
     const SearchPaths& search_paths)
