@@ -244,4 +244,11 @@ auto_release_ptr<Light> MaxOmniLightFactory::create(
     return auto_release_ptr<Light>(new MaxOmniLight(name, params));
 }
 
+auto_release_ptr<Light> MaxOmniLightFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return auto_release_ptr<Light>(new MaxOmniLight(name, params));
+}
+
 }   // namespace renderer

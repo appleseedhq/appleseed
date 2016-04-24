@@ -41,7 +41,7 @@
 #include <memory>
 
 // Forward declarations.
-namespace renderer      { class ILightFactory; }
+namespace renderer  { class ILightFactory; }
 
 namespace renderer
 {

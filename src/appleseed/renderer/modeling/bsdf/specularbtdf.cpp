@@ -381,4 +381,11 @@ auto_release_ptr<BSDF> SpecularBTDFFactory::create(
     return auto_release_ptr<BSDF>(new SpecularBTDF(name, params));
 }
 
+auto_release_ptr<BSDF> SpecularBTDFFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return auto_release_ptr<BSDF>(new SpecularBTDF(name, params));
+}
+
 }   // namespace renderer

@@ -220,9 +220,14 @@ auto_release_ptr<SurfaceShader> SurfaceShaderCollectionFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return
-        auto_release_ptr<SurfaceShader>(
-            new SurfaceShaderCollection(name, params));
+    return auto_release_ptr<SurfaceShader>(new SurfaceShaderCollection(name, params));
+}
+
+auto_release_ptr<SurfaceShader> SurfaceShaderCollectionFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return auto_release_ptr<SurfaceShader>(new SurfaceShaderCollection(name, params));
 }
 
 }   // namespace renderer

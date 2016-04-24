@@ -562,4 +562,11 @@ auto_release_ptr<BSDF> MicrofacetBRDFFactory::create(
     return auto_release_ptr<BSDF>(new MicrofacetBRDF(name, params));
 }
 
+auto_release_ptr<BSDF> MicrofacetBRDFFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return auto_release_ptr<BSDF>(new MicrofacetBRDF(name, params));
+}
+
 }   // namespace renderer

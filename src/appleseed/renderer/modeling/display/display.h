@@ -83,6 +83,7 @@ class APPLESEED_DLLSYMBOL Display
     ~Display();
 };
 
+
 //
 // Display factory.
 //

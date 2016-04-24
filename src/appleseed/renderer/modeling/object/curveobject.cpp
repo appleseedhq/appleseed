@@ -178,9 +178,7 @@ auto_release_ptr<CurveObject> CurveObjectFactory::create(
     const char*         name,
     const ParamArray&   params)
 {
-    return
-        auto_release_ptr<CurveObject>(
-            new CurveObject(name, params));
+    return auto_release_ptr<CurveObject>(new CurveObject(name, params));
 }
 
 }   // namespace renderer

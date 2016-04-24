@@ -39,13 +39,13 @@ namespace renderer
 {
 
 //
-// OSL EDF factory.
+// OSLEDF factory.
 //
 
 class OSLEDFFactory
 {
   public:
-    // Create a new EDF instance.
+    // Create a new OSLEDF instance.
     foundation::auto_release_ptr<EDF> create() const;
 };
 

@@ -93,6 +93,11 @@ class APPLESEED_DLLSYMBOL NormalizedDiffusionBSSRDFFactory
     virtual foundation::auto_release_ptr<BSSRDF> create(
         const char*         name,
         const ParamArray&   params) const APPLESEED_OVERRIDE;
+
+    // Static variant of the create() method above.
+    static foundation::auto_release_ptr<BSSRDF> static_create(
+        const char*         name,
+        const ParamArray&   params);
 };
 
 }       // namespace renderer

@@ -448,6 +448,7 @@ class Matrix<T, 4, 4>
 template <typename T>
 bool swaps_handedness(const Matrix<T, 4, 4>& mat);
 
+
 //
 // Full specializations for 2x2, 3x3 and 4x4 matrices of type int, float and double.
 //

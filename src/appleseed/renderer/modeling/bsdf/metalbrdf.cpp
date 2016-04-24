@@ -464,4 +464,11 @@ auto_release_ptr<BSDF> MetalBRDFFactory::create(
     return auto_release_ptr<BSDF>(new MetalBRDF(name, params));
 }
 
+auto_release_ptr<BSDF> MetalBRDFFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return auto_release_ptr<BSDF>(new MetalBRDF(name, params));
+}
+
 }   // namespace renderer

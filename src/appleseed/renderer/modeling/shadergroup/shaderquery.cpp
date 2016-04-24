@@ -94,8 +94,7 @@ struct ShaderQuery::Impl
                     param.fdefault[1],
                     param.fdefault[2]));
         }
-        else
-            return false;
+        else return false;
 
         return true;
    }

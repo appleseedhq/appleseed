@@ -207,9 +207,14 @@ auto_release_ptr<Material> OSLMaterialFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return
-        auto_release_ptr<Material>(
-            new OSLMaterial(name, params));
+    return auto_release_ptr<Material>(new OSLMaterial(name, params));
+}
+
+auto_release_ptr<Material> OSLMaterialFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return auto_release_ptr<Material>(new OSLMaterial(name, params));
 }
 
 }   // namespace renderer

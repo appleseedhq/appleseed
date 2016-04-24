@@ -966,4 +966,11 @@ auto_release_ptr<BSDF> GlassBSDFFactory::create_osl(
     return auto_release_ptr<BSDF>(new OSLGlassBSDF(name, params));
 }
 
+auto_release_ptr<BSDF> GlassBSDFFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return auto_release_ptr<BSDF>(new AppleseedGlassBSDF(name, params));
+}
+
 }   // namespace renderer

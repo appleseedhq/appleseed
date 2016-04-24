@@ -438,4 +438,11 @@ auto_release_ptr<BSDF> GlossyBRDFFactory::create(
     return auto_release_ptr<BSDF>(new GlossyBRDF(name, params));
 }
 
+auto_release_ptr<BSDF> GlossyBRDFFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return auto_release_ptr<BSDF>(new GlossyBRDF(name, params));
+}
+
 }   // namespace renderer

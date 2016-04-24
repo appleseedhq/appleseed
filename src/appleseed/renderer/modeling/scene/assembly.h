@@ -151,6 +151,11 @@ class APPLESEED_DLLSYMBOL AssemblyFactory
     virtual foundation::auto_release_ptr<Assembly> create(
         const char*         name,
         const ParamArray&   params = ParamArray()) const APPLESEED_OVERRIDE;
+
+    // Static variant of the create() method above.
+    static foundation::auto_release_ptr<Assembly> static_create(
+        const char*         name,
+        const ParamArray&   params = ParamArray());
 };
 
 

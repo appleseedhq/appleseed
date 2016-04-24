@@ -67,11 +67,17 @@ class APPLESEED_DLLSYMBOL DiskTexture2dFactory
     // Return metadata for the inputs of this texture model.
     virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 
-    // Create a new texture instance.
+    // Create a new texture.
     virtual foundation::auto_release_ptr<Texture> create(
         const char*                     name,
         const ParamArray&               params,
         const foundation::SearchPaths&  search_paths) const APPLESEED_OVERRIDE;
+
+    // Static variant of the create() method above.
+    static foundation::auto_release_ptr<Texture> static_create(
+        const char*                     name,
+        const ParamArray&               params,
+        const foundation::SearchPaths&  search_paths);
 };
 
 }       // namespace renderer
