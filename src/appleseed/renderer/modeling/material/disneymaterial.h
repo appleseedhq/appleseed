@@ -51,7 +51,6 @@ END_OIIO_INCLUDES
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
-namespace renderer      { class DisneyMaterial; }
 namespace renderer      { class MessageContext; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class ShadingContext; }
@@ -85,13 +84,12 @@ class APPLESEED_DLLSYMBOL DisneyMaterialLayer
     bool prepare_expressions() const;
 
     void evaluate_expressions(
-        const ShadingPoint&     shading_point,
-        OIIO::TextureSystem&    texture_system,
-        foundation::Color3d&    base_color,
-        DisneyBRDFInputValues&  values) const;
+        const ShadingPoint&             shading_point,
+        OIIO::TextureSystem&            texture_system,
+        foundation::Color3d&            base_color,
+        DisneyBRDFInputValues&          values) const;
 
     static foundation::DictionaryArray get_input_metadata();
-
     static foundation::Dictionary get_default_values();
 
   private:
@@ -104,8 +102,6 @@ class APPLESEED_DLLSYMBOL DisneyMaterialLayer
     DisneyMaterialLayer(
         const char*                     name,
         const foundation::Dictionary&   params);
-
-    void swap(DisneyMaterialLayer& other);
 };
 
 
