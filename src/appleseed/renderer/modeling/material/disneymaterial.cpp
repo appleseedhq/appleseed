@@ -70,10 +70,6 @@ using namespace std;
 namespace renderer
 {
 
-//
-// DisneyParamExpression class implementation.
-//
-
 namespace
 {
     bool texture_is_srgb(const OIIO::ustring& filename)
@@ -280,46 +276,6 @@ namespace
                 RENDERER_LOG_ERROR("%s", e->c_str());
         }
     }
-}
-
-struct DisneyParamExpression::Impl
-{
-    SeAppleseedExpr m_expr;
-
-    explicit Impl(const char* expr)
-      : m_expr(expr)
-    {
-    }
-};
-
-DisneyParamExpression::DisneyParamExpression(const char* expr)
-  : impl(new Impl(expr))
-{
-}
-
-DisneyParamExpression::~DisneyParamExpression()
-{
-    delete impl;
-}
-
-bool DisneyParamExpression::is_valid() const
-{
-    return impl->m_expr.isValid();
-}
-
-const char* DisneyParamExpression::parse_error() const
-{
-    return impl->m_expr.parseError().c_str();
-}
-
-void DisneyParamExpression::report_error(const char* message) const
-{
-    report_expression_error(message, 0, impl->m_expr);
-}
-
-bool DisneyParamExpression::is_constant() const
-{
-    return impl->m_expr.isConstant();
 }
 
 

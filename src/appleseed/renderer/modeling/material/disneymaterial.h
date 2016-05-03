@@ -59,30 +59,6 @@ namespace renderer      { class ShadingContext; }
 namespace renderer
 {
 
-class APPLESEED_DLLSYMBOL DisneyParamExpression
-  : public foundation::NonCopyable
-{
-  public:
-    // Constructor.
-    explicit DisneyParamExpression(const char* expr);
-
-    // Destructor.
-    ~DisneyParamExpression();
-
-    bool is_valid() const;
-
-    const char* parse_error() const;
-
-    void report_error(const char* message) const;
-
-    bool is_constant() const;
-
-  private:
-    struct Impl;
-    Impl* impl;
-};
-
-
 //
 // A layer in the Disney material.
 //

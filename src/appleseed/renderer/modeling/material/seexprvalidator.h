@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,21 +26,35 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_MATERIAL_H
-#define APPLESEED_RENDERER_API_MATERIAL_H
+#ifndef APPLESEED_RENDERER_MODELING_MATERIAL_SEEXPRVALIDATOR_H
+#define APPLESEED_RENDERER_MODELING_MATERIAL_SEEXPRVALIDATOR_H
 
-// API headers.
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-#include "renderer/modeling/material/disneymaterial.h"
-#include "renderer/modeling/material/seexprvalidator.h"
-#endif
-#include "renderer/modeling/material/genericmaterial.h"
-#include "renderer/modeling/material/imaterialfactory.h"
-#include "renderer/modeling/material/material.h"
-#include "renderer/modeling/material/materialfactoryregistrar.h"
-#include "renderer/modeling/material/materialtraits.h"
-#ifdef APPLESEED_WITH_OSL
-#include "renderer/modeling/material/oslmaterial.h"
-#endif
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 
-#endif  // !APPLESEED_RENDERER_API_MATERIAL_H
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+namespace renderer
+{
+
+class APPLESEED_DLLSYMBOL SeExprValidator
+  : public foundation::NonCopyable
+{
+  public:
+    explicit SeExprValidator(const char* expression);
+
+    ~SeExprValidator();
+
+    bool is_valid() const;
+
+    const char* get_parse_error() const;
+
+  private:
+    struct Impl;
+    Impl* impl;
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_MATERIAL_SEEXPRVALIDATOR_H

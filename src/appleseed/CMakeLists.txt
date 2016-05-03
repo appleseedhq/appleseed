@@ -1597,6 +1597,8 @@ if (WITH_DISNEY_MATERIAL)
     list (APPEND renderer_modeling_material_sources
         renderer/modeling/material/disneymaterial.cpp
         renderer/modeling/material/disneymaterial.h
+        renderer/modeling/material/seexprvalidator.cpp
+        renderer/modeling/material/seexprvalidator.h
     )
 endif ()
 list (APPEND appleseed_sources
