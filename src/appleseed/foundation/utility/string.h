@@ -150,6 +150,12 @@ std::string trim_both(
     const std::string&      s,
     const std::string&      delimiters = Blanks);
 
+// Return true if a given string starts with a given prefix.
+bool starts_with(const std::string& s, const std::string& prefix);
+
+// Return true if a given string ends with a given suffix.
+bool ends_with(const std::string& s, const std::string& suffix);
+
 // Split a given string into multiple individual tokens of a given
 // type, according to a set of delimiting characters.
 template <typename Vec>
@@ -604,6 +610,24 @@ inline std::string trim_both(
     const std::string::size_type begin = s.find_first_not_of(delimiters);
     const std::string::size_type end = s.find_last_not_of(delimiters);
     return begin == std::string::npos ? "" : s.substr(begin, end - begin + 1);
+}
+
+inline bool starts_with(const std::string& s, const std::string& prefix)
+{
+    assert(!prefix.empty());
+    return
+        s.size() < prefix.size()
+            ? false
+            : s.compare(0, prefix.size(), prefix) == 0;
+}
+
+inline bool ends_with(const std::string& s, const std::string& suffix)
+{
+    assert(!suffix.empty());
+    return
+        s.size() < suffix.size()
+            ? false
+            : s.compare(s.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
 template <typename Vec>
