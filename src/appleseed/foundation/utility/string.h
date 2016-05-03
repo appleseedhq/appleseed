@@ -564,9 +564,10 @@ inline std::string pad_left(
     const char              padding,
     const size_t            length)
 {
-    if (s.size() >= length)
-         return s;
-    else return std::string(length - s.size(), padding) + s;
+    return
+        s.size() < length
+            ? std::string(length - s.size(), padding) + s
+            : s;
 }
 
 inline std::string pad_right(
@@ -574,9 +575,10 @@ inline std::string pad_right(
     const char              padding,
     const size_t            length)
 {
-    if (s.size() >= length)
-         return s;
-    else return s + std::string(length - s.size(), padding);
+    return
+        s.size() < length
+            ? s + std::string(length - s.size(), padding)
+            : s;
 }
 
 inline std::string trim_left(
