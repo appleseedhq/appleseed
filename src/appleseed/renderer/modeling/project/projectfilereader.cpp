@@ -3044,7 +3044,7 @@ namespace
     {
         const string BuiltInPrefix = "builtin:";
 
-        if (project_filepath.substr(0, BuiltInPrefix.size()) == BuiltInPrefix)
+        if (starts_with(project_filepath, BuiltInPrefix))
         {
             project_name = project_filepath.substr(BuiltInPrefix.size());
             return true;

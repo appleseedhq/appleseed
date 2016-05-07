@@ -313,7 +313,7 @@ DictionaryArray NormalizedDiffusionBSSRDFFactory::get_input_metadata() const
                 Dictionary()
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", "5"));
+            .insert("default", "5.0"));
 
     metadata.push_back(
         Dictionary()

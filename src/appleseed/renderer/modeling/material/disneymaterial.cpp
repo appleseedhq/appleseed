@@ -70,12 +70,12 @@ using namespace std;
 namespace renderer
 {
 
-//
-// DisneyParamExpression class implementation.
-//
-
 namespace
 {
+    //
+    // SeExpr utilities.
+    //
+
     bool texture_is_srgb(const OIIO::ustring& filename)
     {
         if (filename.rfind(".exr") == filename.length() - 4)
@@ -179,24 +179,6 @@ namespace
       : public SeExpression
     {
       public:
-        struct Var
-          : public SeExprScalarVarRef
-        {
-            double m_val;
-
-            Var() {}
-
-            explicit Var(const double val)
-              : m_val(val)
-            {
-            }
-
-            virtual void eval(const SeExprVarNode* /*node*/, SeVec3d& result) APPLESEED_OVERRIDE
-            {
-                result[0] = m_val;
-            }
-        };
-
         SeAppleseedExpr()
         {
         }
@@ -254,81 +236,34 @@ namespace
         }
 
       private:
+        struct Var
+          : public SeExprScalarVarRef
+        {
+            double m_val;
+
+            Var() {}
+
+            explicit Var(const double val)
+              : m_val(val)
+            {
+            }
+
+            virtual void eval(const SeExprVarNode* /*node*/, SeVec3d& result) APPLESEED_OVERRIDE
+            {
+                result[0] = m_val;
+            }
+        };
+
         mutable map<string, Var>                m_vars;
         mutable ptr_vector<TextureSeExprFunc>   m_functions_x;
         mutable ptr_vector<SeExprFunc>          m_functions;
     };
 
-    void report_expression_error(
-        const char*             message1,
-        const char*             message2,
-        const SeAppleseedExpr&  expr)
-    {
-        if (message2)
-            RENDERER_LOG_ERROR("%s%s", message1, message2);
-        else
-            RENDERER_LOG_ERROR("%s:", message1);
 
-        const string error = expr.parseError();
+    //
+    // DisneyLayerParam class implementation.
+    //
 
-        vector<string> errors;
-        split(errors, error, is_any_of("\n"));
-
-        for (const_each<vector<string> > e = errors; e; ++e)
-        {
-            if (!e->empty())
-                RENDERER_LOG_ERROR("%s", e->c_str());
-        }
-    }
-}
-
-struct DisneyParamExpression::Impl
-{
-    SeAppleseedExpr m_expr;
-
-    explicit Impl(const char* expr)
-      : m_expr(expr)
-    {
-    }
-};
-
-DisneyParamExpression::DisneyParamExpression(const char* expr)
-  : impl(new Impl(expr))
-{
-}
-
-DisneyParamExpression::~DisneyParamExpression()
-{
-    delete impl;
-}
-
-bool DisneyParamExpression::is_valid() const
-{
-    return impl->m_expr.isValid();
-}
-
-const char* DisneyParamExpression::parse_error() const
-{
-    return impl->m_expr.parseError().c_str();
-}
-
-void DisneyParamExpression::report_error(const char* message) const
-{
-    report_expression_error(message, 0, impl->m_expr);
-}
-
-bool DisneyParamExpression::is_constant() const
-{
-    return impl->m_expr.isConstant();
-}
-
-
-//
-// DisneyMaterialLayer class implementation.
-//
-
-namespace
-{
     class DisneyLayerParam
     {
       public:
@@ -356,25 +291,6 @@ namespace
         {
         }
 
-        void swap(DisneyLayerParam& other)
-        {
-            std::swap(m_param_name, other.m_param_name);
-            std::swap(m_expr, other.m_expr);
-            std::swap(m_is_vector, other.m_is_vector);
-            std::swap(m_is_constant, other.m_is_constant);
-            std::swap(m_constant_value, other.m_constant_value);
-            std::swap(m_texture_filename, other.m_texture_filename);
-            std::swap(m_texture_options, other.m_texture_options);
-            std::swap(m_texture_is_srgb, other.m_texture_is_srgb);
-        }
-
-        DisneyLayerParam& operator=(const DisneyLayerParam& other)
-        {
-            DisneyLayerParam tmp(other);
-            swap(tmp);
-            return *this;
-        }
-
         bool prepare()
         {
             m_expression.setWantVec(m_is_vector);
@@ -382,7 +298,7 @@ namespace
 
             if (!m_expression.isValid())
             {
-                report_expression_error("Expression error: ", m_param_name, m_expression);
+                RENDERER_LOG_ERROR("expression error: %s\n%s", m_param_name, m_expression.parseError().c_str());
                 return false;
             }
 
@@ -395,7 +311,7 @@ namespace
                 return true;
             }
 
-            // Case of a simple texture lookup.
+            // Case of a simple texture lookup of the form texture("path/to/texture", $u, $v).
             {
                 const string expression = trim_both(m_expression.getExpr(), " \r\n");
                 vector<string> tokens;
@@ -487,7 +403,15 @@ namespace
         bool                        m_texture_is_srgb;
         mutable SeAppleseedExpr     m_expression;
     };
+}
 
+
+//
+// DisneyMaterialLayer class implementation.
+//
+
+namespace
+{
     const UniqueID g_disney_material_layer_class_uid = new_guid();
 }
 
@@ -556,13 +480,8 @@ void DisneyMaterialLayer::release()
 DisneyMaterialLayer& DisneyMaterialLayer::operator=(const DisneyMaterialLayer& other)
 {
     DisneyMaterialLayer tmp(other);
-    swap(tmp);
+    std::swap(impl, tmp.impl);
     return *this;
-}
-
-void DisneyMaterialLayer::swap(DisneyMaterialLayer& other)
-{
-    std::swap(impl, other.impl);
 }
 
 bool DisneyMaterialLayer::operator<(const DisneyMaterialLayer& other) const

@@ -241,9 +241,8 @@ inline std::string make_unique_name(
     for (size_t i = 0; i < entity_names.size(); ++i)
     {
         const std::string& entity_name = entity_names[i];
-        const std::string entity_name_prefix = entity_name.substr(0, prefix.size());
 
-        if (entity_name_prefix == prefix)
+        if (foundation::starts_with(entity_name, prefix))
         {
             try
             {

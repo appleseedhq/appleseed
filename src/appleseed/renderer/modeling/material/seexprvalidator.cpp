@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,21 +26,40 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_MATERIAL_H
-#define APPLESEED_RENDERER_API_MATERIAL_H
+// Interface header.
+#include "seexprvalidator.h"
 
-// API headers.
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-#include "renderer/modeling/material/disneymaterial.h"
-#include "renderer/modeling/material/seexprvalidator.h"
-#endif
-#include "renderer/modeling/material/genericmaterial.h"
-#include "renderer/modeling/material/imaterialfactory.h"
-#include "renderer/modeling/material/material.h"
-#include "renderer/modeling/material/materialfactoryregistrar.h"
-#include "renderer/modeling/material/materialtraits.h"
-#ifdef APPLESEED_WITH_OSL
-#include "renderer/modeling/material/oslmaterial.h"
-#endif
+// SeExpr headers.
+#include "SeExpression.h"
 
-#endif  // !APPLESEED_RENDERER_API_MATERIAL_H
+namespace renderer
+{
+
+struct SeExprValidator::Impl
+{
+    SeExpression m_expr;
+};
+
+SeExprValidator::SeExprValidator(const char* expression)
+  : impl(new Impl())
+{
+    impl->m_expr.setExpr(expression);
+}
+
+SeExprValidator::~SeExprValidator()
+{
+    delete impl;
+}
+
+bool SeExprValidator::is_valid() const
+{
+    return impl->m_expr.isValid();
+}
+
+const char* SeExprValidator::get_parse_error() const
+{
+    is_valid();
+    return impl->m_expr.parseError().c_str();
+}
+
+}   // namespace renderer

@@ -794,8 +794,7 @@ namespace
             if (params.strings().exist("filepath"))
             {
                 const string filepath = params.get<string>("filepath");
-                const string BuiltInPrefix = "builtin:";
-                if (filepath.substr(0, BuiltInPrefix.size()) != BuiltInPrefix)
+                if (!starts_with(filepath, "builtin:"))
                     handle_link_to_asset(params, "filepath");
             }
             else if (!(m_options & ProjectFileWriter::OmitWritingGeometryFiles))

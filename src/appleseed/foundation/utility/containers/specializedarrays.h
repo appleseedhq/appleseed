@@ -55,6 +55,9 @@ APPLESEED_DECLARE_ARRAY(DictionaryArray, Dictionary);
 //
 // An array of strings that can be passed safely across DLL boundaries.
 //
+// The interface and implementation of this class both differ slightly
+// from what APPLESEED_DECLARE_ARRAY and APPLESEED_DEFINE_ARRAY offer.
+//
 
 class APPLESEED_DLLSYMBOL StringArray
 {

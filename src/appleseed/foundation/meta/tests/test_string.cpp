@@ -380,6 +380,24 @@ TEST_SUITE(Foundation_Utility_String)
         EXPECT_EQ("hello", trim_both(" \t\n\v\f\r hello \t\n\v\f\r "));
     }
 
+    TEST_CASE(StartsWith)
+    {
+        EXPECT_FALSE(starts_with("", "h"));
+        EXPECT_FALSE(starts_with("world", "he"));
+        EXPECT_FALSE(starts_with("world hello", "he"));
+        EXPECT_TRUE(starts_with("hello", "he"));
+        EXPECT_TRUE(starts_with("hello", "hello"));
+    }
+
+    TEST_CASE(EndsWith)
+    {
+        EXPECT_FALSE(ends_with("", "ld"));
+        EXPECT_FALSE(ends_with("hello", "ld"));
+        EXPECT_FALSE(ends_with("world hello", "ld"));
+        EXPECT_TRUE(ends_with("world", "ld"));
+        EXPECT_TRUE(ends_with("world", "world"));
+    }
+
     vector<string> tokenize_wrapper(
         const string&   s,
         const string&   delimiters)
