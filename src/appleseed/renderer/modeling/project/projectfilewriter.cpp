@@ -777,6 +777,17 @@ namespace
         {
             ParamArray& params = object.get_parameters();
 
+            // If the object is a mesh primitive, do not write geometry to disk.
+            if (params.strings().exist("primitive"))
+            {
+                XMLElement element("object", m_file, m_indenter);
+                element.add_attribute("name", object.get_name());
+                element.add_attribute("model", MeshObjectFactory::get_model());
+                element.write(XMLElement::HasChildElements);
+                write_params(params);
+                return;
+            }
+
             if (params.strings().exist("__base_object_name"))
             {
                 // This object belongs to a group of objects.

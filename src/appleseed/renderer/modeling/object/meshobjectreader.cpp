@@ -35,6 +35,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/meshobjectoperations.h"
+#include "renderer/modeling/object/meshobjectprimitives.h"
 #include "renderer/modeling/object/triangle.h"
 #include "renderer/utility/paramarray.h"
 
@@ -802,6 +803,17 @@ bool MeshObjectReader::read(
     const ParamArray&   params,
     MeshObjectArray&    objects)
 {
+    // Check if it is a built-in primitive type.
+    if (params.strings().exist("primitive"))
+    {
+        auto_release_ptr<MeshObject> mesh = create_primitive_mesh(base_object_name, params);
+        if (mesh.get() == 0)
+            return false;
+
+        objects.push_back(mesh.release());
+        return true;
+    }
+
     assert(base_object_name);
 
     // Tag objects with the name of their parent.
