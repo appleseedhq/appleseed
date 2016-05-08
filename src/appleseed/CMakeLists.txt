@@ -462,6 +462,11 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_voxelgrid.cpp
     foundation/meta/tests/test_windows.cpp
 )
+if (WITH_DISNEY_MATERIAL)
+    list (APPEND foundation_meta_tests_sources
+        foundation/meta/tests/test_seexpr.cpp
+    )
+endif ()
 list (APPEND appleseed_sources
     ${foundation_meta_tests_sources}
 )
@@ -749,6 +754,12 @@ set (foundation_utility_sources
     foundation/utility/xercesc.h
     foundation/utility/xmlelement.h
 )
+if (WITH_DISNEY_MATERIAL)
+    list (APPEND foundation_utility_sources
+        foundation/utility/seexpr.cpp
+        foundation/utility/seexpr.h
+    )
+endif ()
 if (WITH_PARTIO)
     list (APPEND foundation_utility_sources
         foundation/utility/partiofile.cpp
@@ -1597,8 +1608,6 @@ if (WITH_DISNEY_MATERIAL)
     list (APPEND renderer_modeling_material_sources
         renderer/modeling/material/disneymaterial.cpp
         renderer/modeling/material/disneymaterial.h
-        renderer/modeling/material/seexprvalidator.cpp
-        renderer/modeling/material/seexprvalidator.h
     )
 endif ()
 list (APPEND appleseed_sources

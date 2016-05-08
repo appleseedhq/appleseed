@@ -231,7 +231,6 @@ namespace
             m_vars["v"] = Var(uv[1]);
 
             const SeVec3d result = evaluate();
-
             return Color3d(result[0], result[1], result[2]);
         }
 
@@ -254,14 +253,15 @@ namespace
             }
         };
 
-        mutable map<string, Var>                m_vars;
+        mutable map<string, Var>                m_vars;         // todo: use a hash table
         mutable ptr_vector<TextureSeExprFunc>   m_functions_x;
         mutable ptr_vector<SeExprFunc>          m_functions;
     };
 
 
     //
-    // DisneyLayerParam class implementation.
+    // The DisneyLayerParam class wraps an SeAppleseedExpr to add basic optimizations
+    // for straightforward expressions such as a single scalar or a simple texture lookup.
     //
 
     class DisneyLayerParam
@@ -272,7 +272,7 @@ namespace
             const Dictionary&       params,
             const bool              is_vector)
           : m_param_name(name)
-          , m_expr(params.get<string>(m_param_name))
+          , m_expr(params.get<string>(name))
           , m_is_vector(is_vector)
           , m_is_constant(false)
           , m_texture_is_srgb(true)
@@ -298,7 +298,8 @@ namespace
 
             if (!m_expression.isValid())
             {
-                RENDERER_LOG_ERROR("expression error: %s\n%s", m_param_name, m_expression.parseError().c_str());
+                RENDERER_LOG_ERROR("expression error for \"%s\" parameter: %s",
+                    m_param_name, m_expression.parseError().c_str());
                 return false;
             }
 

@@ -27,13 +27,20 @@
 //
 
 // Interface header.
-#include "seexprvalidator.h"
+#include "seexpr.h"
 
 // SeExpr headers.
 #include "SeExpression.h"
 
-namespace renderer
+using namespace boost;
+using namespace std;
+
+namespace foundation
 {
+
+//
+// SeExprValidator class implementation.
+//
 
 struct SeExprValidator::Impl
 {
@@ -62,4 +69,59 @@ const char* SeExprValidator::get_parse_error() const
     return impl->m_expr.parseError().c_str();
 }
 
-}   // namespace renderer
+
+//
+// SeExprFilePathExtractor class implementation.
+//
+
+SeExprFilePathExtractor::SeExprFilePathExtractor()
+  : m_regex("(?<prefix>\\btexture\\(\\s*\")(?<path>[^\"]+)(?<suffix>\")")
+{
+}
+
+void SeExprFilePathExtractor::extract_paths(
+    const string&               expression,
+    PathCollection&             paths) const
+{
+    string::const_iterator start = expression.begin();
+    string::const_iterator end = expression.end();
+    smatch matches;
+
+    while (regex_search(start, end, matches, m_regex))
+    {
+        sub_match<string::const_iterator> submatch = matches["path"];
+        paths.push_back(submatch.str());
+        start = submatch.second;
+    }
+}
+
+namespace
+{
+    struct Formatter
+    {
+        const SeExprFilePathExtractor::MappingCollection& m_mappings;
+
+        explicit Formatter(const SeExprFilePathExtractor::MappingCollection& mappings)
+          : m_mappings(mappings)
+        {
+        }
+
+        string operator()(const smatch& matches) const
+        {
+            string result = matches["prefix"].str();
+            result += m_mappings.find(matches["path"].str())->second;
+            result += matches["suffix"].str();
+            return result;
+        }
+    };
+}
+
+string SeExprFilePathExtractor::replace_paths(
+    const string&               expression,
+    const MappingCollection&    mappings) const
+{
+    const Formatter formatter(mappings);
+    return regex_replace(expression, m_regex, formatter);
+}
+
+}   // namespace foundation

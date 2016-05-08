@@ -33,7 +33,6 @@
 // API headers.
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
 #include "renderer/modeling/material/disneymaterial.h"
-#include "renderer/modeling/material/seexprvalidator.h"
 #endif
 #include "renderer/modeling/material/genericmaterial.h"
 #include "renderer/modeling/material/imaterialfactory.h"
