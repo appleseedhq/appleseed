@@ -221,7 +221,7 @@ inline void write_dictionary(
     for (const_each<StringDictionary> i = dictionary.strings(); i; ++i)
     {
         XMLElement element("parameter", file, indenter);
-        element.add_attribute("name", i->name());
+        element.add_attribute("name", i->key());
 
         const std::string value = i->value<std::string>();
 
@@ -240,7 +240,7 @@ inline void write_dictionary(
     for (const_each<DictionaryDictionary> i = dictionary.dictionaries(); i; ++i)
     {
         XMLElement element("parameters", file, indenter);
-        element.add_attribute("name", i->name());
+        element.add_attribute("name", i->key());
         element.write(XMLElement::HasChildElements);
         write_dictionary(i->value(), file, indenter);
     }

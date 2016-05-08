@@ -111,7 +111,7 @@ bool Display::open(const Project& project)
         plugin += Plugin::get_default_file_extension();
         plugin = project.search_paths().qualify(plugin);
     }
-    catch (const ExceptionDictionaryItemNotFound&)
+    catch (const ExceptionDictionaryKeyNotFound&)
     {
         RENDERER_LOG_ERROR("%s", "cannot open display: missing plugin_name parameter.");
         return false;

@@ -71,7 +71,7 @@ namespace
     void merge_dictionary(StringDictionary& dest, const StringDictionary& other)
     {
         for (const_each<StringDictionary> i = other; i; ++i)
-            dest.insert(i->name(), i->value());
+            dest.insert(i->key(), i->value());
     }
 
     const Scene* get_parent_scene(const Entity* entity)

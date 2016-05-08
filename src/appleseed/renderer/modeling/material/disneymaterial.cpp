@@ -911,7 +911,7 @@ bool DisneyMaterial::prepare_layers(const MessageContext& context)
     {
         for (const_each<DictionaryDictionary> it = m_params.dictionaries(); it; ++it)
         {
-            DisneyMaterialLayer layer(it->name(), it->value());
+            DisneyMaterialLayer layer(it->key(), it->value());
 
             if (!layer.prepare_expressions())
                 return false;

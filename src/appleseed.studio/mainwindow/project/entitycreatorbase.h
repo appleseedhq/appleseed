@@ -81,7 +81,7 @@ void EntityCreatorBase::catch_entity_creation_errors(
             entity_name,
             "A valid name is required.");
     }
-    catch (const foundation::ExceptionDictionaryItemNotFound& e)
+    catch (const foundation::ExceptionDictionaryKeyNotFound& e)
     {
         display_entity_creation_error(
             entity_name,

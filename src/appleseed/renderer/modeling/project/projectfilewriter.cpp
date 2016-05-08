@@ -517,7 +517,7 @@ namespace
             const string side_string = side == ObjectInstance::FrontSide ? "front" : "back";
 
             for (const_each<StringDictionary> i = material_mappings; i; ++i)
-                write_assign_material(i->name(), side_string, i->value<string>());
+                write_assign_material(i->key(), side_string, i->value<string>());
         }
 
         // Write a <bsdf> element.
@@ -732,7 +732,7 @@ namespace
                 Dictionary& filepaths = params.dictionaries().get("filename");
 
                 for (const_each<StringDictionary> i = filepaths.strings(); i; ++i)
-                    handle_link_to_asset(filepaths, i->name());
+                    handle_link_to_asset(filepaths, i->key());
             }
 
             // Write an <object> element.

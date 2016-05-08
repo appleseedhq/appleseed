@@ -343,7 +343,7 @@ namespace
                 context.get_event_counters().signal_error();
             }
         }
-        catch (const ExceptionDictionaryItemNotFound& e)
+        catch (const ExceptionDictionaryKeyNotFound& e)
         {
             RENDERER_LOG_ERROR(
                 "while defining %s \"%s\": required parameter \"%s\" missing.",
@@ -1046,7 +1046,7 @@ namespace
                             m_values,
                             m_alpha);
             }
-            catch (const ExceptionDictionaryItemNotFound& e)
+            catch (const ExceptionDictionaryKeyNotFound& e)
             {
                 RENDERER_LOG_ERROR(
                     "while defining color \"%s\": required parameter \"%s\" missing.",
@@ -1193,7 +1193,7 @@ namespace
                     m_context.get_event_counters().signal_error();
                 }
             }
-            catch (const ExceptionDictionaryItemNotFound& e)
+            catch (const ExceptionDictionaryKeyNotFound& e)
             {
                 RENDERER_LOG_ERROR(
                     "while defining texture \"%s\": required parameter \"%s\" missing.",
@@ -1253,7 +1253,7 @@ namespace
                         m_texture.c_str(),
                         get_earliest_transform());
             }
-            catch (const ExceptionDictionaryItemNotFound& e)
+            catch (const ExceptionDictionaryKeyNotFound& e)
             {
                 RENDERER_LOG_ERROR(
                     "while defining texture instance \"%s\": required parameter \"%s\" missing.",
@@ -1612,7 +1612,7 @@ namespace
                     m_context.get_event_counters().signal_error();
                 }
             }
-            catch (const ExceptionDictionaryItemNotFound& e)
+            catch (const ExceptionDictionaryKeyNotFound& e)
             {
                 RENDERER_LOG_ERROR(
                     "while defining object \"%s\": required parameter \"%s\" missing.",

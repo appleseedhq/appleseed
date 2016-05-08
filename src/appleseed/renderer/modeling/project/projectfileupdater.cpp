@@ -1045,16 +1045,11 @@ namespace
             const char*                 old_material_name,
             const char*                 new_material_name)
         {
-            StringDictionary new_mappings;
-
             for (const_each<StringDictionary> i = mappings; i; ++i)
             {
-                new_mappings.insert(
-                    i->name(),
-                    strcmp(i->value(), old_material_name) == 0 ? new_material_name : i->value());
+                if (strcmp(i->value(), old_material_name) == 0)
+                    mappings.set(i->key(), new_material_name);
             }
-
-            mappings = new_mappings;
         }
 
         static void update_bsdf(const MaterialInfo& info)

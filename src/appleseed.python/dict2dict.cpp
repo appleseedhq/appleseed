@@ -236,12 +236,12 @@ bpy::dict dictionary_to_bpy_dict(const Dictionary& dict)
     bpy::dict result;
 
     for (const_each<StringDictionary> it = dict.strings(); it; ++it)
-        result[it->name()] = obj_from_string(it->value());
+        result[it->key()] = obj_from_string(it->value());
 
     for (const_each<DictionaryDictionary> it = dict.dictionaries(); it; ++it)
     {
         // Recurse.
-        result[it->name()] = dictionary_to_bpy_dict(it->value());
+        result[it->key()] = dictionary_to_bpy_dict(it->value());
     }
 
     return result;
