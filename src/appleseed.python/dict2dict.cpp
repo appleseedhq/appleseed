@@ -189,7 +189,7 @@ namespace
 
     bpy::object obj_from_string(const string& str)
     {
-        // try to guess the type of the value represented by str.
+        // Try to guess the type of the value represented by str.
 
         try // Vector3
         {
@@ -221,7 +221,7 @@ namespace
 
         // TODO: check more types here if needed...
 
-        // as a fallback, return a string
+        // As a fallback, return a string.
         return bpy::object(str);
     }
 }
@@ -240,7 +240,7 @@ bpy::dict dictionary_to_bpy_dict(const Dictionary& dict)
 
     for (const_each<DictionaryDictionary> it = dict.dictionaries(); it; ++it)
     {
-        // recurse
+        // Recurse.
         result[it->name()] = dictionary_to_bpy_dict(it->value());
     }
 
