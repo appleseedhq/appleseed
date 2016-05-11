@@ -41,6 +41,7 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/seexpr.h"
 #include "foundation/utility/tls.h"
 
 // SeExpr headers.
@@ -289,6 +290,16 @@ namespace
           , m_texture_options(other.m_texture_options)
           , m_texture_is_srgb(other.m_texture_is_srgb)
         {
+        }
+
+        string& expression()
+        {
+            return m_expr;
+        }
+
+        const string& expression() const
+        {
+            return m_expr;
         }
 
         bool prepare()
@@ -813,6 +824,42 @@ void DisneyMaterial::release()
 const char* DisneyMaterial::get_model() const
 {
     return Model;
+}
+
+void DisneyMaterial::collect_asset_paths(StringArray& paths) const
+{
+    SeExprFilePathExtractor extractor;
+    SeExprFilePathExtractor::PathCollection paths_;
+
+    for (const_each<DictionaryDictionary> layer_it = m_params.dictionaries(); layer_it; ++layer_it)
+    {
+        const StringDictionary& layer_params = layer_it->value().strings();
+        for (const_each<StringDictionary> param_it = layer_params; param_it; ++param_it)
+            extractor.extract_paths(param_it->value(), paths_);
+    }
+
+    for (const_each<SeExprFilePathExtractor::PathCollection> i = paths_; i; ++i)
+        paths.push_back(i->c_str());
+}
+
+void DisneyMaterial::update_asset_paths(const StringDictionary& mappings)
+{
+    SeExprFilePathExtractor extractor;
+    SeExprFilePathExtractor::MappingCollection mappings_;
+
+    for (const_each<StringDictionary> i = mappings; i; ++i)
+        mappings_.insert(make_pair(i->key(), i->value()));
+
+    for (each<DictionaryDictionary> layer_it = m_params.dictionaries(); layer_it; ++layer_it)
+    {
+        StringDictionary& layer_params = layer_it->value().strings();
+        for (const_each<StringDictionary> param_it = layer_params; param_it; ++param_it)
+        {
+            layer_params.set(
+                param_it->key(),
+                extractor.replace_paths(param_it->value(), mappings_));
+        }
+    }
 }
 
 bool DisneyMaterial::on_frame_begin(

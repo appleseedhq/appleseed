@@ -51,6 +51,8 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
+namespace foundation    { class StringArray; }
+namespace foundation    { class StringDictionary; }
 namespace renderer      { class Project; }
 namespace renderer      { class SurfaceShader; }
 
@@ -100,6 +102,10 @@ class APPLESEED_DLLSYMBOL Scene
 
     // Return true if at least one of the object instance references a material with an alpha map set.
     bool uses_alpha_mapping() const;
+
+    // Expose asset file paths referenced by this entity to the outside.
+    virtual void collect_asset_paths(foundation::StringArray& paths) const APPLESEED_OVERRIDE;
+    virtual void update_asset_paths(const foundation::StringDictionary& mappings) APPLESEED_OVERRIDE;
 
     // Perform pre-frame rendering actions.
     // Returns true on success, false otherwise.

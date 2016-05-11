@@ -99,4 +99,12 @@ const char* Entity::get_name() const
     return impl->m_name.c_str();
 }
 
+void Entity::collect_asset_paths(StringArray& paths) const
+{
+}
+
+void Entity::update_asset_paths(const StringDictionary& mappings)
+{
+}
+
 }   // namespace renderer

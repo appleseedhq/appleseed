@@ -51,6 +51,8 @@ END_OIIO_INCLUDES
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
+namespace foundation    { class StringArray; }
+namespace foundation    { class StringDictionary; }
 namespace renderer      { class MessageContext; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class ShadingContext; }
@@ -118,6 +120,10 @@ class APPLESEED_DLLSYMBOL DisneyMaterial
 
     // Return a string identifying the model of this material.
     virtual const char* get_model() const APPLESEED_OVERRIDE;
+
+    // Expose asset file paths referenced by this entity to the outside.
+    virtual void collect_asset_paths(foundation::StringArray& paths) const APPLESEED_OVERRIDE;
+    virtual void update_asset_paths(const foundation::StringDictionary& mappings) APPLESEED_OVERRIDE;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.

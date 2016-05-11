@@ -47,6 +47,10 @@
 #include <cstddef>
 #include <string>
 
+// Forward declarations.
+namespace foundation    { class StringArray; }
+namespace foundation    { class StringDictionary; }
+
 namespace renderer
 {
 
@@ -99,6 +103,10 @@ class APPLESEED_DLLSYMBOL Entity
     // Return the parameters of this entity.
     ParamArray& get_parameters();
     const ParamArray& get_parameters() const;
+
+    // Expose asset file paths referenced by this entity to the outside.
+    virtual void collect_asset_paths(foundation::StringArray& paths) const;
+    virtual void update_asset_paths(const foundation::StringDictionary& mappings);
 
     // Set/get the index of the render layer for this entity.
     // Use ~0 to disable render layer assignment.

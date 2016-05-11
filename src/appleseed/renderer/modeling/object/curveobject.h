@@ -47,7 +47,9 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class ParamArray; }
+namespace foundation    { class StringArray; }
+namespace foundation    { class StringDictionary; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
@@ -85,6 +87,10 @@ class APPLESEED_DLLSYMBOL CurveObject
     // Insert and access material slots.
     virtual size_t get_material_slot_count() const APPLESEED_OVERRIDE;
     virtual const char* get_material_slot(const size_t index) const APPLESEED_OVERRIDE;
+
+    // Expose asset file paths referenced by this entity to the outside.
+    virtual void collect_asset_paths(foundation::StringArray& paths) const APPLESEED_OVERRIDE;
+    virtual void update_asset_paths(const foundation::StringDictionary& mappings) APPLESEED_OVERRIDE;
 
   private:
     friend class CurveObjectFactory;
