@@ -295,7 +295,7 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
         EXPECT_EQ(expected_filepath, get_texture_entity_filepath());
     }
 
-    TEST_CASE_F(Write_TexturePathIsLocal_AndBringAssetsIsFalse_AndOutputDirIsTheSame_FixesFilenameParam, Fixture)
+    TEST_CASE_F(Write_TexturePathIsLocal_AndBringAssetsIsFalse_AndOutputDirIsTheSame_LeavesFilenameParamUnchanged, Fixture)
     {
         create_project();
         create_texture_entity("tex/texture.png");
