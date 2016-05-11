@@ -68,12 +68,9 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
           : m_base_output(filesystem::absolute("unit tests/outputs/test_projectfilewriter/"))
           , m_alternate_output(filesystem::absolute("unit tests/outputs/test_projectfilewriter/alternate/"))
         {
-            recreate_directories();
-        }
-
-        void recreate_directories()
-        {
             filesystem::remove_all(m_base_output);
+            filesystem::remove_all(m_alternate_output);
+
             filesystem::create_directory(m_base_output);
             filesystem::create_directory(m_alternate_output);
         }
