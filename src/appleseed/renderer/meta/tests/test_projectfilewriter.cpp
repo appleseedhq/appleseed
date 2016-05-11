@@ -127,8 +127,8 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
     TEST_CASE_F(Write_TexturePathIsFilename_AndBringAssetsIsTrue_AndOutputDirIsTheSame_LeavesFilenameParamUnchanged, Fixture)
     {
         create_project();
-        create_texture_entity("texture.png");
         create_texture_file("texture.png");
+        create_texture_entity("texture.png");
 
         const bool success =
             ProjectFileWriter::write(
@@ -142,8 +142,8 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
     TEST_CASE_F(Write_TexturePathIsLocal_AndBringAssetsIsTrue_AndOutputDirIsTheSame_LeavesFilenameParamUnchanged, Fixture)
     {
         create_project();
-        create_texture_entity("tex/texture.png");
         create_texture_file("tex/texture.png");
+        create_texture_entity("tex/texture.png");
 
         const bool success =
             ProjectFileWriter::write(
@@ -157,8 +157,8 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
     TEST_CASE_F(Write_TexturePathIsAbsolute_AndBringAssetsIsTrue_AndOutputDirIsTheSame_CopiesTexture_AndFixesFilenameParam, Fixture)
     {
         create_project();
-        create_texture_entity((m_base_output / "tex" / "texture.png").string());
         create_texture_file("tex/texture.png");
+        create_texture_entity((m_base_output / "tex" / "texture.png").string());
 
         const bool success =
             ProjectFileWriter::write(
@@ -172,8 +172,8 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
     TEST_CASE_F(Write_TexturePathIsFilename_AndBringAssetsIsTrue_AndOutputDirIsDifferent_CopiesTexture_AndLeavesFilenameParamUnchanged, Fixture)
     {
         create_project();
-        create_texture_entity("texture.png");
         create_texture_file("texture.png");
+        create_texture_entity("texture.png");
 
         const bool success =
             ProjectFileWriter::write(
@@ -188,8 +188,8 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
     TEST_CASE_F(Write_TexturePathIsLocal_AndBringAssetsIsTrue_AndOutputDirIsDifferent_CopiesTexture_AndLeavesFilenameParamUnchanged, Fixture)
     {
         create_project();
-        create_texture_entity("tex/texture.png");
         create_texture_file("tex/texture.png");
+        create_texture_entity("tex/texture.png");
 
         const bool success =
             ProjectFileWriter::write(
@@ -204,8 +204,8 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
     TEST_CASE_F(Write_TexturePathIsAbsolute_AndBringAssetsIsTrue_AndOutputDirIsDifferent_CopiesTexture_AndFixesFilenameParam, Fixture)
     {
         create_project();
-        create_texture_entity((m_base_output / "tex" / "texture.png").string());
         create_texture_file("tex/texture.png");
+        create_texture_entity((m_base_output / "tex" / "texture.png").string());
 
         const bool success =
             ProjectFileWriter::write(
@@ -220,8 +220,8 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
     TEST_CASE_F(Write_TexturePathIsFilename_AndBringAssetsIsFalse_AndOutputDirIsDifferent_FixesFilenameParam, Fixture)
     {
         create_project();
-        create_texture_entity("texture.png");
         create_texture_file("texture.png");
+        create_texture_entity("texture.png");
 
         const bool success =
             ProjectFileWriter::write(
@@ -238,8 +238,8 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
     TEST_CASE_F(Write_TexturePathIsFilename_AndBringAssetsIsFalse_AndOutputDirIsDifferent_AndProjectHasNoPathSet_FixesFilenameParam, Fixture)
     {
         create_project();
-        create_texture_entity("texture.png");
         create_texture_file("texture.png");
+        create_texture_entity("texture.png");
 
         m_project->set_path("");
 
@@ -258,8 +258,8 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
     TEST_CASE_F(Write_TexturePathIsFilename_AndBringAssetsIsFalse_AndOutputDirIsDifferent_AndProjectHasNoSearchPathsSet_FixesFilenameParam, Fixture)
     {
         create_project();
-        create_texture_entity("texture.png");
         create_texture_file("texture.png");
+        create_texture_entity("texture.png");
 
         m_project->search_paths().clear();
 
@@ -278,8 +278,8 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
     TEST_CASE_F(Write_TexturePathIsLocal_AndBringAssetsIsFalse_AndOutputDirIsDifferent_FixesFilenameParam, Fixture)
     {
         create_project();
-        create_texture_entity("tex/texture.png");
         create_texture_file("tex/texture.png");
+        create_texture_entity("tex/texture.png");
 
         const bool success =
             ProjectFileWriter::write(
@@ -296,8 +296,8 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
     TEST_CASE_F(Write_TexturePathIsLocal_AndBringAssetsIsFalse_AndOutputDirIsTheSame_LeavesFilenameParamUnchanged, Fixture)
     {
         create_project();
-        create_texture_entity("tex/texture.png");
         create_texture_file("tex/texture.png");
+        create_texture_entity("tex/texture.png");
 
         const bool success =
             ProjectFileWriter::write(
@@ -312,8 +312,8 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
     TEST_CASE_F(Write_TexturePathIsAbsolute_AndBringAssetsIsFalse_AndOutputDirIsDifferent_LeavesFilenameParamUnchanged, Fixture)
     {
         create_project();
-        create_texture_entity((m_base_output / "tex" / "texture.png").string());
         create_texture_file("tex/texture.png");
+        create_texture_entity((m_base_output / "tex" / "texture.png").string());
 
         const bool success =
             ProjectFileWriter::write(
@@ -351,7 +351,6 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
                 (m_base_output / "multivaluefilenameobject.appleseed").string().c_str());
 
         ASSERT_TRUE(success);
-
         EXPECT_FALSE(
             m_project->get_scene()
                 ->assemblies().get_by_name("assembly")
