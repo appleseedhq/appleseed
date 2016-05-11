@@ -94,6 +94,17 @@ namespace
             return m_color_space;
         }
 
+        virtual void collect_asset_paths(StringArray& paths) const APPLESEED_OVERRIDE
+        {
+            if (m_params.strings().exist("filename"))
+                paths.push_back(m_params.get("filename"));
+        }
+
+        virtual void update_asset_paths(const StringDictionary& mappings) APPLESEED_OVERRIDE
+        {
+            m_params.set("filename", mappings.get(m_params.get("filename")));
+        }
+
         virtual const CanvasProperties& properties() APPLESEED_OVERRIDE
         {
             boost::mutex::scoped_lock lock(m_mutex);

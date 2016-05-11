@@ -149,7 +149,7 @@ namespace
             QTreeWidgetItem* item =
                 new QTreeWidgetItem(
                     parent,
-                    QStringList(i->name()));
+                    QStringList(i->key()));
 
             add_benchmarks(i->value(), item);
         }
@@ -159,7 +159,7 @@ namespace
             QTreeWidgetItem* item =
                 new QTreeWidgetItem(
                     parent,
-                    QStringList(i->name()));
+                    QStringList(i->key()));
 
             item->setData(0, Qt::UserRole, QVariant::fromValue(i->value<UniqueID>()));
         }

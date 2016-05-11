@@ -44,6 +44,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/seexpr.h"
 
 // appleseed.shared headers.
 #include "application/application.h"
@@ -185,7 +186,7 @@ ExpressionEditorWindow::ExpressionEditorWindow(
 void ExpressionEditorWindow::apply_expression()
 {
     const string expression = m_editor->getExpr();
-    SeExprValidator validator(expression.c_str());
+    const SeExprValidator validator(expression.c_str());
 
     if (validator.is_valid())
     {
@@ -239,7 +240,6 @@ void ExpressionEditorWindow::slot_save_script()
                 filepath += ".se";
 
             filepath = QDir::toNativeSeparators(filepath);
-
             m_script_filepath = filepath.toStdString();
         }
     }

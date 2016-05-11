@@ -47,6 +47,8 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
+namespace foundation    { class StringArray; }
+namespace foundation    { class StringDictionary; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 
@@ -106,6 +108,10 @@ class APPLESEED_DLLSYMBOL Assembly
     // Compute the local space bounding box of this assembly, excluding all child assemblies,
     // over the shutter interval.
     GAABB3 compute_non_hierarchical_local_bbox() const;
+
+    // Expose asset file paths referenced by this entity to the outside.
+    virtual void collect_asset_paths(foundation::StringArray& paths) const APPLESEED_OVERRIDE;
+    virtual void update_asset_paths(const foundation::StringDictionary& mappings) APPLESEED_OVERRIDE;
 
     // Perform pre-frame rendering actions.
     // Returns true on success, false otherwise.

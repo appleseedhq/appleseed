@@ -123,23 +123,23 @@ TEST_SUITE(Renderer_Utility_ParamArray)
         EXPECT_EQ("42", string(value));
     }
 
-    TEST_CASE(GetPath_GivenInvalidItemName_ThrowsExceptionDictionaryItemNotFound)
+    TEST_CASE(GetPath_GivenInvalidItemName_ThrowsExceptionDictionaryKeyNotFound)
     {
         ParamArray params;
         params.insert("x", 42);
 
-        EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
+        EXPECT_EXCEPTION(ExceptionDictionaryKeyNotFound,
         {
             APPLESEED_UNUSED const char* value = params.get_path("y");
         });
     }
 
-    TEST_CASE(GetPath_GivenInvalidParentName_ThrowsExceptionDictionaryItemNotFound)
+    TEST_CASE(GetPath_GivenInvalidParentName_ThrowsExceptionDictionaryKeyNotFound)
     {
         ParamArray params;
         params.push("parent").insert("x", 42);
 
-        EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
+        EXPECT_EXCEPTION(ExceptionDictionaryKeyNotFound,
         {
             APPLESEED_UNUSED const char* value = params.get_path("other.x");
         });

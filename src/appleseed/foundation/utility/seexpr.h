@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_MATERIAL_SEEXPRVALIDATOR_H
-#define APPLESEED_RENDERER_MODELING_MATERIAL_SEEXPRVALIDATOR_H
+#ifndef APPLESEED_FOUNDATION_UTILITY_SEEXPR_H
+#define APPLESEED_FOUNDATION_UTILITY_SEEXPR_H
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -35,11 +35,23 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-namespace renderer
+// Boost headers.
+#include "boost/regex.hpp"
+
+// Standard headers.
+#include <map>
+#include <string>
+#include <vector>
+
+namespace foundation
 {
 
+//
+// Checks the validity of a SeExpr expression.
+//
+
 class APPLESEED_DLLSYMBOL SeExprValidator
-  : public foundation::NonCopyable
+  : public NonCopyable
 {
   public:
     explicit SeExprValidator(const char* expression);
@@ -55,6 +67,32 @@ class APPLESEED_DLLSYMBOL SeExprValidator
     Impl* impl;
 };
 
-}       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_MATERIAL_SEEXPRVALIDATOR_H
+//
+// Extracts all file paths from a valid SeExpr expression.
+//
+
+class SeExprFilePathExtractor
+  : public NonCopyable
+{
+  public:
+    typedef std::vector<std::string> PathCollection;
+    typedef std::map<std::string, std::string> MappingCollection;
+
+    SeExprFilePathExtractor();
+
+    void extract_paths(
+        const std::string&          expression,
+        PathCollection&             paths) const;
+
+    std::string replace_paths(
+        const std::string&          expression,
+        const MappingCollection&    mappings) const;
+
+  private:
+    const boost::regex m_regex;
+};
+
+}       // namespace foundation
+
+#endif  // !APPLESEED_FOUNDATION_UTILITY_SEEXPR_H

@@ -31,13 +31,18 @@
 #include "basegroup.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/assemblyinstance.h"
+#include "renderer/modeling/scene/textureinstance.h"
 #ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #endif
+#include "renderer/modeling/texture/texture.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/job/abortswitch.h"
+#include "foundation/utility/foreach.h"
 
 using namespace foundation;
 
@@ -148,6 +153,51 @@ AssemblyContainer& BaseGroup::assemblies() const
 AssemblyInstanceContainer& BaseGroup::assembly_instances() const
 {
     return impl->m_assembly_instances;
+}
+
+namespace
+{
+    template <typename EntityCollection>
+    void do_collect_asset_paths(
+        StringArray&            paths,
+        const EntityCollection& entities)
+    {
+        for (const_each<EntityCollection> i = entities; i; ++i)
+            i->collect_asset_paths(paths);
+    }
+
+    template <typename EntityCollection>
+    void do_update_asset_paths(
+        const StringDictionary& mappings,
+        EntityCollection&       entities)
+    {
+        for (each<EntityCollection> i = entities; i; ++i)
+            i->update_asset_paths(mappings);
+    }
+}
+
+void BaseGroup::collect_asset_paths(StringArray& paths) const
+{
+    do_collect_asset_paths(paths, colors());
+    do_collect_asset_paths(paths, textures());
+    do_collect_asset_paths(paths, texture_instances());
+#ifdef APPLESEED_WITH_OSL
+    do_collect_asset_paths(paths, shader_groups());
+#endif
+    do_collect_asset_paths(paths, assemblies());
+    do_collect_asset_paths(paths, assembly_instances());
+}
+
+void BaseGroup::update_asset_paths(const StringDictionary& mappings)
+{
+    do_update_asset_paths(mappings, colors());
+    do_update_asset_paths(mappings, textures());
+    do_update_asset_paths(mappings, texture_instances());
+#ifdef APPLESEED_WITH_OSL
+    do_update_asset_paths(mappings, shader_groups());
+#endif
+    do_update_asset_paths(mappings, assemblies());
+    do_update_asset_paths(mappings, assembly_instances());
 }
 
 }   // namespace renderer

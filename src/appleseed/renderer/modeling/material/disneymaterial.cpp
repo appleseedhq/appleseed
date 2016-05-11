@@ -41,6 +41,7 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/seexpr.h"
 #include "foundation/utility/tls.h"
 
 // SeExpr headers.
@@ -231,7 +232,6 @@ namespace
             m_vars["v"] = Var(uv[1]);
 
             const SeVec3d result = evaluate();
-
             return Color3d(result[0], result[1], result[2]);
         }
 
@@ -254,14 +254,15 @@ namespace
             }
         };
 
-        mutable map<string, Var>                m_vars;
+        mutable map<string, Var>                m_vars;         // todo: use a hash table
         mutable ptr_vector<TextureSeExprFunc>   m_functions_x;
         mutable ptr_vector<SeExprFunc>          m_functions;
     };
 
 
     //
-    // DisneyLayerParam class implementation.
+    // The DisneyLayerParam class wraps an SeAppleseedExpr to add basic optimizations
+    // for straightforward expressions such as a single scalar or a simple texture lookup.
     //
 
     class DisneyLayerParam
@@ -272,7 +273,7 @@ namespace
             const Dictionary&       params,
             const bool              is_vector)
           : m_param_name(name)
-          , m_expr(params.get<string>(m_param_name))
+          , m_expr(params.get<string>(name))
           , m_is_vector(is_vector)
           , m_is_constant(false)
           , m_texture_is_srgb(true)
@@ -291,6 +292,16 @@ namespace
         {
         }
 
+        string& expression()
+        {
+            return m_expr;
+        }
+
+        const string& expression() const
+        {
+            return m_expr;
+        }
+
         bool prepare()
         {
             m_expression.setWantVec(m_is_vector);
@@ -298,7 +309,8 @@ namespace
 
             if (!m_expression.isValid())
             {
-                RENDERER_LOG_ERROR("expression error: %s\n%s", m_param_name, m_expression.parseError().c_str());
+                RENDERER_LOG_ERROR("expression error for \"%s\" parameter: %s",
+                    m_param_name, m_expression.parseError().c_str());
                 return false;
             }
 
@@ -814,6 +826,42 @@ const char* DisneyMaterial::get_model() const
     return Model;
 }
 
+void DisneyMaterial::collect_asset_paths(StringArray& paths) const
+{
+    SeExprFilePathExtractor extractor;
+    SeExprFilePathExtractor::PathCollection paths_;
+
+    for (const_each<DictionaryDictionary> layer_it = m_params.dictionaries(); layer_it; ++layer_it)
+    {
+        const StringDictionary& layer_params = layer_it->value().strings();
+        for (const_each<StringDictionary> param_it = layer_params; param_it; ++param_it)
+            extractor.extract_paths(param_it->value(), paths_);
+    }
+
+    for (const_each<SeExprFilePathExtractor::PathCollection> i = paths_; i; ++i)
+        paths.push_back(i->c_str());
+}
+
+void DisneyMaterial::update_asset_paths(const StringDictionary& mappings)
+{
+    SeExprFilePathExtractor extractor;
+    SeExprFilePathExtractor::MappingCollection mappings_;
+
+    for (const_each<StringDictionary> i = mappings; i; ++i)
+        mappings_.insert(make_pair(i->key(), i->value()));
+
+    for (each<DictionaryDictionary> layer_it = m_params.dictionaries(); layer_it; ++layer_it)
+    {
+        StringDictionary& layer_params = layer_it->value().strings();
+        for (const_each<StringDictionary> param_it = layer_params; param_it; ++param_it)
+        {
+            layer_params.set(
+                param_it->key(),
+                extractor.replace_paths(param_it->value(), mappings_));
+        }
+    }
+}
+
 bool DisneyMaterial::on_frame_begin(
     const Project&          project,
     const Assembly&         assembly,
@@ -911,7 +959,7 @@ bool DisneyMaterial::prepare_layers(const MessageContext& context)
     {
         for (const_each<DictionaryDictionary> it = m_params.dictionaries(); it; ++it)
         {
-            DisneyMaterialLayer layer(it->name(), it->value());
+            DisneyMaterialLayer layer(it->key(), it->value());
 
             if (!layer.prepare_expressions())
                 return false;

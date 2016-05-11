@@ -104,31 +104,31 @@ TEST_SUITE(Foundation_Utility_StringDictionary)
         EXPECT_EQ(&sd, result);
     }
 
-    TEST_CASE(Get_GivenCStringKeyOfNonExistingItem_ThrowsExceptionDictionaryItemNotFound)
+    TEST_CASE(Get_GivenCStringKeyOfNonExistingItem_ThrowsExceptionDictionaryKeyNotFound)
     {
         StringDictionary sd;
 
-        EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
+        EXPECT_EXCEPTION(ExceptionDictionaryKeyNotFound,
         {
             APPLESEED_UNUSED const char* item = sd.get("key");
         });
     }
 
-    TEST_CASE(GetAsInt_GivenCStringKeyOfNonExistingItem_ThrowsExceptionDictionaryItemNotFound)
+    TEST_CASE(GetAsInt_GivenCStringKeyOfNonExistingItem_ThrowsExceptionDictionaryKeyNotFound)
     {
         StringDictionary sd;
 
-        EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
+        EXPECT_EXCEPTION(ExceptionDictionaryKeyNotFound,
         {
             APPLESEED_UNUSED const int item = sd.get<int>("key");
         });
     }
 
-    TEST_CASE(GetAsInt_GivenStdStringKeyOfNonExistingItem_ThrowsExceptionDictionaryItemNotFound)
+    TEST_CASE(GetAsInt_GivenStdStringKeyOfNonExistingItem_ThrowsExceptionDictionaryKeyNotFound)
     {
         StringDictionary sd;
 
-        EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
+        EXPECT_EXCEPTION(ExceptionDictionaryKeyNotFound,
         {
             APPLESEED_UNUSED const int item = sd.get<int>(string("key"));
         });
@@ -352,21 +352,21 @@ TEST_SUITE(Foundation_Utility_Dictionary)
         EXPECT_EQ(&dic, result);
     }
 
-    TEST_CASE(GetAsInt_GivenCStringKeyOfNonExistingItem_ThrowsExceptionDictionaryItemNotFound)
+    TEST_CASE(GetAsInt_GivenCStringKeyOfNonExistingItem_ThrowsExceptionDictionaryKeyNotFound)
     {
         Dictionary dic;
 
-        EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
+        EXPECT_EXCEPTION(ExceptionDictionaryKeyNotFound,
         {
             APPLESEED_UNUSED const int item = dic.get<int>("key");
         });
     }
 
-    TEST_CASE(GetAsInt_GivenStdStringKeyOfNonExistingItem_ThrowsExceptionDictionaryItemNotFound)
+    TEST_CASE(GetAsInt_GivenStdStringKeyOfNonExistingItem_ThrowsExceptionDictionaryKeyNotFound)
     {
         Dictionary dic;
 
-        EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
+        EXPECT_EXCEPTION(ExceptionDictionaryKeyNotFound,
         {
             APPLESEED_UNUSED const int item = dic.get<int>(string("key"));
         });

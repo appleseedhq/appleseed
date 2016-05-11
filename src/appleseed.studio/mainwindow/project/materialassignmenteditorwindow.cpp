@@ -121,10 +121,10 @@ namespace
         set<string> slot_names;
 
         for (const_each<StringDictionary> i = object_instance.get_front_material_mappings(); i; ++i)
-            slot_names.insert(i->name());
+            slot_names.insert(i->key());
 
         for (const_each<StringDictionary> i = object_instance.get_back_material_mappings(); i; ++i)
-            slot_names.insert(i->name());
+            slot_names.insert(i->key());
 
         return slot_names;
     }

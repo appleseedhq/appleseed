@@ -721,7 +721,7 @@ namespace
 
         for (const_each<StringDictionary> i = filenames; i; ++i)
         {
-            const double key = from_string<double>(i->name());
+            const double key = from_string<double>(i->key());
             const string filename = i->value<string>();
             key_frames.push_back(MeshObjectKeyFrame(key, filename));
         }

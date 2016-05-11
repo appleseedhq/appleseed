@@ -44,6 +44,8 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/foreach.h"
 
@@ -178,6 +180,55 @@ GAABB3 Assembly::compute_non_hierarchical_local_bbox() const
         compute_parent_bbox<GAABB3>(
             impl->m_object_instances.begin(),
             impl->m_object_instances.end());
+}
+
+namespace
+{
+    template <typename EntityCollection>
+    void do_collect_asset_paths(
+        StringArray&            paths,
+        const EntityCollection& entities)
+    {
+        for (const_each<EntityCollection> i = entities; i; ++i)
+            i->collect_asset_paths(paths);
+    }
+
+    template <typename EntityCollection>
+    void do_update_asset_paths(
+        const StringDictionary& mappings,
+        EntityCollection&       entities)
+    {
+        for (each<EntityCollection> i = entities; i; ++i)
+            i->update_asset_paths(mappings);
+    }
+}
+
+void Assembly::collect_asset_paths(StringArray& paths) const
+{
+    BaseGroup::collect_asset_paths(paths);
+
+    do_collect_asset_paths(paths, bsdfs());
+    do_collect_asset_paths(paths, bssrdfs());
+    do_collect_asset_paths(paths, edfs());
+    do_collect_asset_paths(paths, surface_shaders());
+    do_collect_asset_paths(paths, materials());
+    do_collect_asset_paths(paths, lights());
+    do_collect_asset_paths(paths, objects());
+    do_collect_asset_paths(paths, object_instances());
+}
+
+void Assembly::update_asset_paths(const StringDictionary& mappings)
+{
+    BaseGroup::update_asset_paths(mappings);
+
+    do_update_asset_paths(mappings, bsdfs());
+    do_update_asset_paths(mappings, bssrdfs());
+    do_update_asset_paths(mappings, edfs());
+    do_update_asset_paths(mappings, surface_shaders());
+    do_update_asset_paths(mappings, materials());
+    do_update_asset_paths(mappings, lights());
+    do_update_asset_paths(mappings, objects());
+    do_update_asset_paths(mappings, object_instances());
 }
 
 namespace

@@ -124,7 +124,7 @@ namespace
         bpy::dict result;
 
         for (const_each<StringDictionary> it = mappings; it; ++it)
-            result[it->name()] = it->value();
+            result[it->key()] = it->value();
 
         return result;
     }

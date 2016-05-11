@@ -36,6 +36,9 @@
 #include "renderer/modeling/object/triangle.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -376,6 +379,30 @@ size_t MeshObject::get_material_slot_count() const
 const char* MeshObject::get_material_slot(const size_t index) const
 {
     return impl->m_material_slots[index].c_str();
+}
+
+void MeshObject::collect_asset_paths(StringArray& paths) const
+{
+    if (m_params.strings().exist("filename"))
+        paths.push_back(m_params.get("filename"));
+    else if (m_params.dictionaries().exist("filename"))
+    {
+        const StringDictionary& filepaths = m_params.dictionaries().get("filename").strings();
+        for (const_each<StringDictionary> i = filepaths; i; ++i)
+            paths.push_back(i->value());
+    }
+}
+
+void MeshObject::update_asset_paths(const StringDictionary& mappings)
+{
+    if (m_params.strings().exist("filename"))
+        m_params.set("filename", mappings.get(m_params.get("filename")));
+    else if (m_params.dictionaries().exist("filename"))
+    {
+        StringDictionary& filepaths = m_params.dictionaries().get("filename").strings();
+        for (const_each<StringDictionary> i = filepaths; i; ++i)
+            filepaths.set(i->key(), mappings.get(i->value()));
+    }
 }
 
 

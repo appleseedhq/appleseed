@@ -335,7 +335,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_enumeration_input_widgets(const
 
     const StringDictionary& items = metadata.dictionaries().get("items").strings();
     for (const_each<StringDictionary> i = items; i; ++i)
-        combo_box->addItem(i->name(), i->value<QString>());
+        combo_box->addItem(i->key(), i->value<QString>());
 
     const QString value = metadata.strings().get<QString>("value");
     combo_box->setCurrentIndex(combo_box->findData(QVariant::fromValue(value)));
@@ -490,7 +490,7 @@ void EntityEditor::slot_open_entity_browser(const QString& widget_name)
 
     for (const_each<StringDictionary> i = entity_types.strings(); i; ++i)
     {
-        const string entity_type = i->name();
+        const string entity_type = i->key();
         const string entity_label = i->value<string>();
         const StringDictionary entities = m_entity_browser->get_entities(entity_type);
         browser_window->add_items_page(entity_type, entity_label, entities);

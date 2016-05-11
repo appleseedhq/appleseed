@@ -46,6 +46,8 @@ END_OSL_INCLUDES
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
+namespace foundation    { class StringArray; }
+namespace foundation    { class StringDictionary; }
 namespace renderer      { class Entity; }
 
 namespace renderer
@@ -93,6 +95,10 @@ class APPLESEED_DLLSYMBOL BaseGroup
 
     // Access the assembly instances.
     AssemblyInstanceContainer& assembly_instances() const;
+
+    // Expose asset file paths referenced by this entity to the outside.
+    void collect_asset_paths(foundation::StringArray& paths) const;
+    void update_asset_paths(const foundation::StringDictionary& mappings);
 
   private:
     struct Impl;

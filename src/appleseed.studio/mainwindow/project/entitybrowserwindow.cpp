@@ -110,7 +110,7 @@ namespace
     {
         for (const_each<StringDictionary> i = items; i; ++i)
         {
-            const QString item_label = i->name();
+            const QString item_label = i->key();
             const QString item_value = i->value<QString>();
 
             QListWidgetItem* item = new QListWidgetItem(item_label, list_widget);

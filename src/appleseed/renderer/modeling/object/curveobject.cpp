@@ -29,6 +29,11 @@
 // Interface header.
 #include "curveobject.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/string.h"
+
 // Standard headers.
 #include <cassert>
 #include <string>
@@ -162,6 +167,21 @@ size_t CurveObject::get_material_slot_count() const
 const char* CurveObject::get_material_slot(const size_t index) const
 {
     return impl->m_material_slots[index].c_str();
+}
+
+void CurveObject::collect_asset_paths(StringArray& paths) const
+{
+    if (m_params.strings().exist("filepath"))
+    {
+        const string filepath = m_params.get<string>("filepath");
+        if (!starts_with(filepath, "builtin:"))
+            paths.push_back(filepath.c_str());
+    }
+}
+
+void CurveObject::update_asset_paths(const StringDictionary& mappings)
+{
+    m_params.set("filepath", mappings.get(m_params.get("filepath")));
 }
 
 

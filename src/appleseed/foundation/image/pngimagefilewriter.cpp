@@ -104,7 +104,7 @@ namespace
         for (const_each<ImageAttributes> i = image_attributes; i; ++i)
         {
             // Fetch the name and the value of the attribute.
-            const string attr_name = i->name();
+            const string attr_name = i->key();
             const string attr_value = i->value<string>();
 
             if (attr_name == "title")
