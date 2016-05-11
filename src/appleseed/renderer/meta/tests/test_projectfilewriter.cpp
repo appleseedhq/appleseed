@@ -322,7 +322,7 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
                 ProjectFileWriter::OmitBringingAssets);
 
         ASSERT_TRUE(success);
-        EXPECT_EQ("tex/texture.png", get_texture_entity_filepath());
+        EXPECT_EQ(m_base_output / "tex" / "texture.png", get_texture_entity_filepath());
     }
 
     TEST_CASE_F(Write_GivenMeshObjectWithMultiValueFilenameParameter_DoesNotAddAnotherFilenameParameter, Fixture)
