@@ -90,10 +90,11 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
             params.insert("filename", filepath);
             params.insert("color_space", "linear_rgb");
 
-            SearchPaths search_paths;
-
             m_project->get_scene()->textures().insert(
-                DiskTexture2dFactory().create("texture", params, search_paths));
+                DiskTexture2dFactory().create(
+                    "texture",
+                    params,
+                    m_project->search_paths()));
         }
 
         void create_texture_file(const filesystem::path& filepath)
