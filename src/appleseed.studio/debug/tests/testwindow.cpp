@@ -36,6 +36,7 @@
 // appleseed.studio headers.
 #include "debug/tests/testoutputitem.h"
 #include "utility/miscellaneous.h"
+#include "utility/settingskeys.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/test.h"
@@ -45,6 +46,7 @@
 #include <QKeySequence>
 #include <QMetaType>
 #include <QPushButton>
+#include <QSettings>
 #include <QShortcut>
 #include <QStringList>
 #include <Qt>
@@ -85,11 +87,18 @@ TestWindow::TestWindow(QWidget* parent)
 
     build_connections();
 
-    configure_tests_treeview();
+    m_ui->treewidget_tests->setHeaderLabels(QStringList() << "Test");
+    m_ui->treewidget_tests->sortItems(0, Qt::AscendingOrder);
+
     populate_tests_treeview();
     slot_check_all_tests();
 
-    configure_output_treeview();
+    m_ui->treewidget_output->setHeaderLabels(QStringList() << "Test" << "Status" << "Time");
+    m_ui->treewidget_output->header()->resizeSection(0, 500);
+    m_ui->treewidget_output->sortItems(0, Qt::AscendingOrder);
+
+    const QSettings settings(SETTINGS_ORGANISATION, SETTINGS_APPLICATION);
+    restoreGeometry(settings.value("test_window_geometry").toByteArray());
 
     create_test_runner_thread();
 }
@@ -97,6 +106,12 @@ TestWindow::TestWindow(QWidget* parent)
 TestWindow::~TestWindow()
 {
     delete m_ui;
+}
+
+void TestWindow::closeEvent(QCloseEvent* event)
+{
+    QSettings settings(SETTINGS_ORGANISATION, SETTINGS_APPLICATION);
+    settings.setValue("test_window_geometry", saveGeometry());
 }
 
 void TestWindow::create_test_runner_thread()
@@ -145,12 +160,6 @@ void TestWindow::build_connections()
     connect(
         m_ui->checkbox_show_all, SIGNAL(stateChanged(int)),
         this, SLOT(slot_filter_output_treeview()));
-}
-
-void TestWindow::configure_tests_treeview()
-{
-    m_ui->treewidget_tests->setHeaderLabels(QStringList() << "Test");
-    m_ui->treewidget_tests->sortItems(0, Qt::AscendingOrder);
 }
 
 namespace
@@ -255,13 +264,6 @@ void TestWindow::update_checked_tests_label()
             .arg(checked_test_case_count)
             .arg(test_case_count)
             .arg(test_case_count > 1 ? "s" : ""));
-}
-
-void TestWindow::configure_output_treeview()
-{
-    m_ui->treewidget_output->setHeaderLabels(QStringList() << "Test" << "Status" << "Time");
-    m_ui->treewidget_output->header()->resizeSection(0, 500);
-    m_ui->treewidget_output->sortItems(0, Qt::AscendingOrder);
 }
 
 namespace

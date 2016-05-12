@@ -32,6 +32,9 @@
 
 // Defines are sometimes more convenient than C++ constants...
 
+#define SETTINGS_ORGANISATION                       "appleseedhq"
+#define SETTINGS_APPLICATION                        "appleseed.studio"
+
 #define SETTINGS_LAST_DIRECTORY                     ".last_directory"
 #define SETTINGS_SELECTED_FILTER                    ".selected_filter"
 

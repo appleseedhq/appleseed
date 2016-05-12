@@ -33,6 +33,9 @@
 // UI definition header.
 #include "ui_benchmarkwindow.h"
 
+// appleseed.studio headers.
+#include "utility/settingskeys.h"
+
 // appleseed.shared headers.
 #include "application/application.h"
 
@@ -51,6 +54,7 @@
 #include <QKeySequence>
 #include <QList>
 #include <QPushButton>
+#include <QSettings>
 #include <QShortcut>
 #include <QStringList>
 #include <Qt>
@@ -86,19 +90,31 @@ BenchmarkWindow::BenchmarkWindow(QWidget* parent)
 
     build_connections();
 
-    configure_chart_widget();
+    m_chart_widget.setProperty("hasFrame", true);
+    m_ui->graphs_contents->layout()->addWidget(&m_chart_widget);
 
-    configure_benchmarks_treeview();
+    m_ui->treewidget_benchmarks->setHeaderLabels(QStringList() << "Benchmark");
+    m_ui->treewidget_benchmarks->sortItems(0, Qt::AscendingOrder);
+
     reload_benchmarks();
 
     connect(
         &m_benchmark_runner_thread, SIGNAL(signal_finished()),
         this, SLOT(slot_on_benchmarks_execution_complete()));
+
+    const QSettings settings(SETTINGS_ORGANISATION, SETTINGS_APPLICATION);
+    restoreGeometry(settings.value("benchmark_window_geometry").toByteArray());
 }
 
 BenchmarkWindow::~BenchmarkWindow()
 {
     delete m_ui;
+}
+
+void BenchmarkWindow::closeEvent(QCloseEvent* event)
+{
+    QSettings settings(SETTINGS_ORGANISATION, SETTINGS_APPLICATION);
+    settings.setValue("benchmark_window_geometry", saveGeometry());
 }
 
 void BenchmarkWindow::build_connections()
@@ -122,19 +138,6 @@ void BenchmarkWindow::build_connections()
     connect(
         m_ui->checkbox_equidistant, SIGNAL(stateChanged(int)),
         this, SLOT(slot_on_equidistant_checkbox_state_changed(int)));
-}
-
-void BenchmarkWindow::configure_chart_widget()
-{
-    m_chart_widget.setProperty("hasFrame", true);
-
-    m_ui->graphs_contents->layout()->addWidget(&m_chart_widget);
-}
-
-void BenchmarkWindow::configure_benchmarks_treeview()
-{
-    m_ui->treewidget_benchmarks->setHeaderLabels(QStringList() << "Benchmark");
-    m_ui->treewidget_benchmarks->sortItems(0, Qt::AscendingOrder);
 }
 
 namespace

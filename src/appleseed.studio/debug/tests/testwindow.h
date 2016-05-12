@@ -36,6 +36,9 @@
 #include "debug/tests/testresultwidgetdecorator.h"
 #include "debug/tests/testrunnerthread.h"
 
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
 // Qt headers.
 #include <QObject>
 #include <QWidget>
@@ -45,6 +48,7 @@
 
 // Forward declarations.
 namespace Ui    { class TestWindow; }
+class QCloseEvent;
 class QTreeWidgetItem;
 
 namespace appleseed {
@@ -66,6 +70,8 @@ class TestWindow
     // Destructor.
     ~TestWindow();
 
+    virtual void closeEvent(QCloseEvent* event) APPLESEED_OVERRIDE;
+
   private:
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
     Ui::TestWindow*                             m_ui;
@@ -80,11 +86,8 @@ class TestWindow
 
     void build_connections();
 
-    void configure_tests_treeview();
     void populate_tests_treeview();
     void update_checked_tests_label();
-
-    void configure_output_treeview();
 
     void enable_widgets(const bool enabled);
 

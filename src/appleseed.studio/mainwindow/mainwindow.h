@@ -164,8 +164,6 @@ class MainWindow
     void set_rendering_widgets_enabled(const bool is_enabled, const bool is_rendering);
     void save_state_before_project_open();
     void restore_state_after_project_open();
-    void save_ui_state();
-    void restore_ui_state();
 
     // Render widgets.
     void recreate_render_widgets();

@@ -35,6 +35,7 @@
 #include "utility/chartwidget.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/uid.h"
 
@@ -48,6 +49,7 @@
 
 // Forward declarations.
 namespace Ui    { class BenchmarkWindow; }
+class QCloseEvent;
 
 namespace appleseed {
 namespace studio {
@@ -64,6 +66,8 @@ class BenchmarkWindow
     // Destructor.
     ~BenchmarkWindow();
 
+    virtual void closeEvent(QCloseEvent* event) APPLESEED_OVERRIDE;
+
   private:
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
     Ui::BenchmarkWindow*                m_ui;
@@ -75,9 +79,6 @@ class BenchmarkWindow
 
     void build_connections();
 
-    void configure_chart_widget();
-
-    void configure_benchmarks_treeview();
     void populate_benchmarks_treeview();
 
     void reload_benchmarks();
