@@ -97,7 +97,7 @@ TestWindow::TestWindow(QWidget* parent)
     m_ui->treewidget_output->header()->resizeSection(0, 500);
     m_ui->treewidget_output->sortItems(0, Qt::AscendingOrder);
 
-    const QSettings settings(SETTINGS_ORGANISATION, SETTINGS_APPLICATION);
+    const QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
     restoreGeometry(settings.value("test_window_geometry").toByteArray());
 
     create_test_runner_thread();
@@ -110,7 +110,7 @@ TestWindow::~TestWindow()
 
 void TestWindow::closeEvent(QCloseEvent* event)
 {
-    QSettings settings(SETTINGS_ORGANISATION, SETTINGS_APPLICATION);
+    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
     settings.setValue("test_window_geometry", saveGeometry());
 }
 

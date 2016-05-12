@@ -102,7 +102,7 @@ BenchmarkWindow::BenchmarkWindow(QWidget* parent)
         &m_benchmark_runner_thread, SIGNAL(signal_finished()),
         this, SLOT(slot_on_benchmarks_execution_complete()));
 
-    const QSettings settings(SETTINGS_ORGANISATION, SETTINGS_APPLICATION);
+    const QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
     restoreGeometry(settings.value("benchmark_window_geometry").toByteArray());
 }
 
@@ -113,7 +113,7 @@ BenchmarkWindow::~BenchmarkWindow()
 
 void BenchmarkWindow::closeEvent(QCloseEvent* event)
 {
-    QSettings settings(SETTINGS_ORGANISATION, SETTINGS_APPLICATION);
+    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
     settings.setValue("benchmark_window_geometry", saveGeometry());
 }
 

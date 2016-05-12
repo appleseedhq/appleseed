@@ -133,7 +133,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     build_connections();
 
-    const QSettings settings(SETTINGS_ORGANISATION, SETTINGS_APPLICATION);
+    const QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
     restoreGeometry(settings.value("main_window_geometry").toByteArray());
     restoreState(settings.value("main_window_state").toByteArray());
 
@@ -392,7 +392,7 @@ void MainWindow::build_recent_files_menu()
         m_recently_opened.push_back(action);
     }
 
-    QSettings settings(SETTINGS_ORGANISATION, SETTINGS_APPLICATION);
+    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
     QStringList files = settings.value("recent_file_list").toStringList();
 
     update_recent_files_menu(files);
@@ -407,7 +407,7 @@ void MainWindow::build_recent_files_menu()
 
 void MainWindow::update_recent_files_menu(const QString& filepath)
 {
-    QSettings settings(SETTINGS_ORGANISATION, SETTINGS_APPLICATION);
+    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
     QStringList files = settings.value("recent_file_list").toStringList();
 
     files.removeAll(filepath);
@@ -1052,7 +1052,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
         return;
     }
 
-    QSettings settings(SETTINGS_ORGANISATION, SETTINGS_APPLICATION);
+    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
     settings.setValue("main_window_geometry", saveGeometry());
     settings.setValue("main_window_state", saveState());
 
@@ -1119,7 +1119,7 @@ void MainWindow::slot_open_recent()
 
 void MainWindow::slot_clear_open_recent_files_menu()
 {
-    QSettings settings(SETTINGS_ORGANISATION, SETTINGS_APPLICATION);
+    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
     settings.setValue("recent_file_list", QStringList());
 
     update_recent_files_menu(QStringList());
