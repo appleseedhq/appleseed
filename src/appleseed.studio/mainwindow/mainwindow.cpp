@@ -136,6 +136,10 @@ MainWindow::MainWindow(QWidget* parent)
     const QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
     restoreGeometry(settings.value("main_window_geometry").toByteArray());
     restoreState(settings.value("main_window_state").toByteArray());
+    m_ui->treewidget_project_explorer_scene->header()->restoreGeometry(
+        settings.value("main_window_project_explorer_geometry").toByteArray());
+    m_ui->treewidget_project_explorer_scene->header()->restoreState(
+        settings.value("main_window_project_explorer_state").toByteArray());
 
     print_startup_information();
     slot_load_settings();
@@ -1055,6 +1059,10 @@ void MainWindow::closeEvent(QCloseEvent* event)
     QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
     settings.setValue("main_window_geometry", saveGeometry());
     settings.setValue("main_window_state", saveState());
+    settings.setValue("main_window_project_explorer_geometry",
+        m_ui->treewidget_project_explorer_scene->header()->saveGeometry());
+    settings.setValue("main_window_project_explorer_state",
+        m_ui->treewidget_project_explorer_scene->header()->saveState());
 
     slot_save_settings();
 
