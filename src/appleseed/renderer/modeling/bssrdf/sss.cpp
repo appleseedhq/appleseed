@@ -243,6 +243,8 @@ namespace
 
     struct NDCDFFun
     {
+        const double m_d;
+
         explicit NDCDFFun(const double d)
           : m_d(d)
         {
@@ -252,12 +254,12 @@ namespace
         {
             return normalized_diffusion_cdf(r, m_d);
         }
-
-        const double m_d;
     };
 
     struct NDPDFFun
     {
+        const double m_d;
+
         explicit NDPDFFun(const double d)
           : m_d(d)
         {
@@ -267,8 +269,6 @@ namespace
         {
             return normalized_diffusion_pdf(r, m_d);
         }
-
-        const double m_d;
     };
 }
 
