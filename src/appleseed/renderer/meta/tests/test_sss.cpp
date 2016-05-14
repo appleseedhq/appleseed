@@ -159,11 +159,10 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
     template <typename BSSRDFEvaluator>
     double integrate_dipole(
+        MersenneTwister&        rng,
         const BSSRDFEvaluator&  bssrdf_eval,
         const size_t            sample_count)
     {
-        MersenneTwister rng;
-
         const double sigma_tr = bssrdf_eval.get_sigma_tr();
         double integral = 0.0;
 
@@ -185,6 +184,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
     template <typename BSSRDFFactory>
     double integrate_dipole_rd_dmfp(
+        MersenneTwister&        rng,
         const double            rd,
         const double            dmfp,
         const double            eta,
@@ -193,11 +193,12 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         DipoleBSSRDFEvaluator<BSSRDFFactory> bssrdf_eval;
         bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, eta, 0.0);
 
-        return integrate_dipole(bssrdf_eval, sample_count);
+        return integrate_dipole(rng, bssrdf_eval, sample_count);
     }
 
     template <typename BSSRDFFactory>
     double integrate_dipole_alpha_prime(
+        MersenneTwister&        rng,
         const double            alpha_prime,
         const double            eta,
         const size_t            sample_count)
@@ -208,7 +209,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         DipoleBSSRDFEvaluator<BSSRDFFactory> bssrdf_eval;
         bssrdf_eval.set_values_from_sigmas(sigma_a, sigma_s_prime, eta, 0.0);
 
-        return integrate_dipole(bssrdf_eval, sample_count);
+        return integrate_dipole(rng, bssrdf_eval, sample_count);
     }
 
     //
@@ -346,8 +347,11 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double alpha_prime = fit<size_t, double>(i, 0, TestCount - 1, 0.0 + Eps, 1.0 - Eps);
 
             const double rd_a = RcpPi * rd_fun(alpha_prime);
+
+            MersenneTwister rng;
             const double rd_n =
                 integrate_dipole_alpha_prime<StandardDipoleBSSRDFFactory>(
+                    rng,
                     alpha_prime,
                     Eta,
                     SampleCount);
@@ -369,6 +373,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         const size_t PointCount = 1000;
         const size_t SampleCount = 1000;
         vector<Vector2d> ai_points, ni_points;
+        MersenneTwister rng;
 
         for (size_t i = 0; i < PointCount; ++i)
         {
@@ -384,6 +389,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
                 Vector2d(
                     alpha_prime,
                     integrate_dipole_alpha_prime<StandardDipoleBSSRDFFactory>(
+                        rng,
                         alpha_prime,
                         Eta,
                         SampleCount)));
@@ -417,6 +423,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         const size_t PointCount = 1000;
         const size_t SampleCount = 1000;
         vector<Vector2d> ai_points, ni_points;
+        MersenneTwister rng;
 
         for (size_t i = 0; i < PointCount; ++i)
         {
@@ -432,6 +439,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
                 Vector2d(
                     alpha_prime,
                     integrate_dipole_alpha_prime<BetterDipoleBSSRDFFactory>(
+                        rng,
                         alpha_prime,
                         Eta,
                         SampleCount)));
@@ -741,7 +749,6 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         const double s = normalized_diffusion_s(A);
 
         const size_t SampleCount = 1000;
-
         MersenneTwister rng;
 
         PartioFile particles;
@@ -809,9 +816,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
     TEST_CASE(StdDipoleMaxRadius)
     {
-        MersenneTwister rng;
-
         DipoleBSSRDFEvaluator<StandardDipoleBSSRDFFactory> bssrdf_eval;
+        MersenneTwister rng;
 
         for (size_t i = 0; i < 1000; ++i)
         {
@@ -837,12 +843,14 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         const size_t N = 256;
         vector<Vector2d> points;
+        MersenneTwister rng;
 
         for (size_t i = 0; i < N; ++i)
         {
             const double rd = fit<size_t, double>(i, 0, N - 1, 0.01, 1.0);
             const double x =
                 integrate_dipole_rd_dmfp<StandardDipoleBSSRDFFactory>(
+                    rng,
                     rd,
                     1.0,
                     1.0,
@@ -920,9 +928,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
     TEST_CASE(DirpoleMaxRadius)
     {
-        MersenneTwister rng;
-
         DipoleBSSRDFEvaluator<DirectionalDipoleBSSRDFFactory> bssrdf_eval;
+        MersenneTwister rng;
 
         for (size_t i = 0; i < 1000; ++i)
         {
