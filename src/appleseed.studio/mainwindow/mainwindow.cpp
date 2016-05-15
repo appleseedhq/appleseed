@@ -111,16 +111,7 @@ namespace studio {
 
 namespace
 {
-    const char* SettingsOrganization = "com.appleseed.studio";
-
-    const char* SettingsRecentFilesEntry = "appleseed.studio Recent Files";
-    const char* SettingsRecentFileList = "recent_file_list";
     const int MaxRecentlyOpenedFiles = 15;
-
-    const char* SettingsUIStateEntry = "appleseed.studio UI State";
-    const char* SettingsWindowGeometry = "window_geometry";
-    const char* SettingsUIState = "ui_state";
-    const int SettingsUIStateVersion = 1;
 }
 
 MainWindow::MainWindow(QWidget* parent)
@@ -142,10 +133,16 @@ MainWindow::MainWindow(QWidget* parent)
 
     build_connections();
 
+    const QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
+    restoreGeometry(settings.value("main_window_geometry").toByteArray());
+    restoreState(settings.value("main_window_state").toByteArray());
+    m_ui->treewidget_project_explorer_scene->header()->restoreGeometry(
+        settings.value("main_window_project_explorer_geometry").toByteArray());
+    m_ui->treewidget_project_explorer_scene->header()->restoreState(
+        settings.value("main_window_project_explorer_state").toByteArray());
+
     print_startup_information();
     slot_load_settings();
-
-    restore_ui_state();
 
     update_project_explorer();
     remove_render_widgets();
@@ -399,8 +396,9 @@ void MainWindow::build_recent_files_menu()
         m_recently_opened.push_back(action);
     }
 
-    QSettings settings(SettingsOrganization, SettingsRecentFilesEntry);
-    QStringList files = settings.value(SettingsRecentFileList).toStringList();
+    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
+    QStringList files = settings.value("recent_file_list").toStringList();
+
     update_recent_files_menu(files);
 
     m_ui->menu_open_recent->addSeparator();
@@ -413,16 +411,18 @@ void MainWindow::build_recent_files_menu()
 
 void MainWindow::update_recent_files_menu(const QString& filepath)
 {
-    QSettings settings(SettingsOrganization, SettingsRecentFilesEntry);
-    QStringList files = settings.value(SettingsRecentFileList).toStringList();
+    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
+    QStringList files = settings.value("recent_file_list").toStringList();
+
     files.removeAll(filepath);
     files.prepend(filepath);
 
     while (files.size() > MaxRecentlyOpenedFiles)
         files.removeLast();
 
-    settings.setValue(SettingsRecentFileList, files);
     update_recent_files_menu(files);
+
+    settings.setValue("recent_file_list", files);
 }
 
 void MainWindow::update_recent_files_menu(const QStringList& files)
@@ -732,20 +732,6 @@ void MainWindow::restore_state_after_project_open()
         if (m_state_before_project_open->m_is_rendering)
             start_rendering(true);
     }
-}
-
-void MainWindow::save_ui_state()
-{
-    QSettings settings(SettingsOrganization, SettingsUIStateEntry);
-    settings.setValue(SettingsWindowGeometry, saveGeometry());
-    settings.setValue(SettingsUIState, saveState(SettingsUIStateVersion));
-}
-
-void MainWindow::restore_ui_state()
-{
-    const QSettings settings(SettingsOrganization, SettingsUIStateEntry);
-    restoreGeometry(settings.value(SettingsWindowGeometry).toByteArray());
-    restoreState(settings.value(SettingsUIState).toByteArray(), SettingsUIStateVersion);
 }
 
 void MainWindow::recreate_render_widgets()
@@ -1070,13 +1056,25 @@ void MainWindow::closeEvent(QCloseEvent* event)
         return;
     }
 
-    save_ui_state();
+    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
+    settings.setValue("main_window_geometry", saveGeometry());
+    settings.setValue("main_window_state", saveState());
+    settings.setValue("main_window_project_explorer_geometry",
+        m_ui->treewidget_project_explorer_scene->header()->saveGeometry());
+    settings.setValue("main_window_project_explorer_state",
+        m_ui->treewidget_project_explorer_scene->header()->saveState());
+
+    slot_save_settings();
+
+    if (m_test_window.get())
+        m_test_window->close();
+
+    if (m_benchmark_window.get())
+        m_benchmark_window->close();
 
     remove_render_widgets();
 
     m_project_manager.close_project();
-
-    slot_save_settings();
 
     event->accept();
 }
@@ -1129,10 +1127,10 @@ void MainWindow::slot_open_recent()
 
 void MainWindow::slot_clear_open_recent_files_menu()
 {
-    QSettings settings(SettingsOrganization, SettingsRecentFilesEntry);
-    QStringList files;
-    settings.setValue(SettingsRecentFileList, files);
-    update_recent_files_menu(files);
+    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
+    settings.setValue("recent_file_list", QStringList());
+
+    update_recent_files_menu(QStringList());
 }
 
 void MainWindow::slot_open_cornellbox_builtin_project()
