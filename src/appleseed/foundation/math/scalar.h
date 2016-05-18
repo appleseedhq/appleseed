@@ -137,14 +137,6 @@ bool is_pow2(const T x);
 template <typename T>
 T log2_int(T x);
 
-// Return the factorial of a given integer.
-template <typename T>
-T factorial(T x);
-
-// Return the binomial coefficient (n, k).
-template <typename T>
-T binomial(const T n, const T k);
-
 // Return the log in a given base of a given scalar.
 template <typename T>
 T log(const T x, const T base);
@@ -152,6 +144,14 @@ T log(const T x, const T base);
 // Return the next given power of a given scalar.
 template <typename T>
 T next_power(const T x, const T base);
+
+// Return the factorial of a given integer.
+template <typename T>
+T factorial(T x);
+
+// Return the binomial coefficient (n, k).
+template <typename T>
+T binomial(const T n, const T k);
 
 // Clamp the argument to [low, high].
 template <typename T>
@@ -481,6 +481,18 @@ inline unsigned long log2_int(const unsigned long x)
 #endif
 
 template <typename T>
+inline T log(const T x, const T base)
+{
+    return std::log(x) / std::log(base);
+}
+
+template <typename T>
+inline T next_power(const T x, const T base)
+{
+    return std::pow(base, fast_ceil(log(x, base)));
+}
+
+template <typename T>
 inline T factorial(T x)
 {
     assert(x >= 0);
@@ -501,18 +513,6 @@ inline T binomial(const T n, const T k)
 {
     assert(k <= n);
     return factorial(n) / (factorial(k) * factorial(n - k));
-}
-
-template <typename T>
-inline T log(const T x, const T base)
-{
-    return std::log(x) / std::log(base);
-}
-
-template <typename T>
-inline T next_power(const T x, const T base)
-{
-    return std::pow(base, fast_ceil(log(x, base)));
 }
 
 template <typename T>
