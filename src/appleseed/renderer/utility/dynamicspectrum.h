@@ -106,9 +106,9 @@ class DynamicSpectrum
     ValueType& operator[](const size_t i);
     const ValueType& operator[](const size_t i) const;
 
-    // Upgrade a spectrum from RGB to spectral.
+    // Upgrade a spectrum from RGB to spectral. Returns dest.
     // 'source' and 'dest' can reference the same instance.
-    static void upgrade(
+    static DynamicSpectrum& upgrade(
         const DynamicSpectrum&  source,
         DynamicSpectrum&        dest);
 
@@ -410,7 +410,7 @@ inline const T& DynamicSpectrum<T, N>::operator[](const size_t i) const
 }
 
 template <typename T, size_t N>
-inline void DynamicSpectrum<T, N>::upgrade(
+inline DynamicSpectrum<T, N>& DynamicSpectrum<T, N>::upgrade(
     const DynamicSpectrum&  source,
     DynamicSpectrum&        dest)
 {
@@ -426,6 +426,8 @@ inline void DynamicSpectrum<T, N>::upgrade(
     {
         dest = source;
     }
+
+    return dest;
 }
 
 template <typename T, size_t N>
