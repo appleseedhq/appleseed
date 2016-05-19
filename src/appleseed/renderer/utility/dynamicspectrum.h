@@ -112,6 +112,13 @@ class DynamicSpectrum
         const DynamicSpectrum&  source,
         DynamicSpectrum&        dest);
 
+    // Downgrade a spectrum from spectral to RGB.
+    // 'source' and 'dest' can reference the same instance.
+    static DynamicSpectrum& downgrade(
+        const foundation::LightingConditions&   lighting_conditions,
+        const DynamicSpectrum&                  source,
+        DynamicSpectrum&                        dest);
+
   private:
     APPLESEED_SSE_ALIGN ValueType m_samples[StoredSamples];
     foundation::uint32  m_size;
@@ -426,9 +433,24 @@ inline DynamicSpectrum<T, N>& DynamicSpectrum<T, N>::upgrade(
             reinterpret_cast<foundation::RegularSpectrum<ValueType, N>&>(dest[0]));
     }
     else
-    {
         dest = source;
+
+    return dest;
+}
+
+template <typename T, size_t N>
+inline DynamicSpectrum<T, N>& DynamicSpectrum<T, N>::downgrade(
+    const foundation::LightingConditions&   lighting_conditions,
+    const DynamicSpectrum&                  source,
+    DynamicSpectrum&                        dest)
+{
+    if (source.is_spectral())
+    {
+        const foundation::Color<T, 3> c = source.convert_to_rgb(lighting_conditions);
+        dest = DynamicSpectrum(c);
     }
+    else
+        dest = source;
 
     return dest;
 }

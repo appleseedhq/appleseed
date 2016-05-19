@@ -83,8 +83,8 @@ namespace
             m_inputs.declare("weight", InputFormatScalar, "1.0");
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("dmfp", InputFormatScalar, "5.0");
-            m_inputs.declare("dmfp_multiplier", InputFormatScalar, "0.1");
+            m_inputs.declare("dmfp", InputFormatSpectralReflectance);
+            m_inputs.declare("dmfp_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("outside_ior", InputFormatScalar);
             m_inputs.declare("inside_ior", InputFormatScalar);
         }
@@ -117,6 +117,27 @@ namespace
             values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
             values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
 
+            if (values->m_reflectance.size() != values->m_dmfp.size())
+            {
+                // Since it does not really make sense to convert a dmfp,
+                // a per channel distance, as if it were a color,
+                // we instead always convert the reflectance to match the
+                // size of the dmfp.
+                if (values->m_dmfp.is_spectral())
+                {
+                    Spectrum::upgrade(
+                        values->m_reflectance,
+                        values->m_reflectance);
+                }
+                else
+                {
+                    Spectrum::downgrade(
+                        m_lighting_conditions,
+                        values->m_reflectance,
+                        values->m_reflectance);
+                }
+            }
+
             // Clamp reflectance.
             values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
 
@@ -133,7 +154,7 @@ namespace
                 const double s = normalized_diffusion_s(a);
                 values->m_s[i] = static_cast<float>(s);
 
-                const double l = values->m_dmfp;
+                const double l = values->m_dmfp[i];
                 const float pdf = static_cast<float>(s / l);
                 values->m_channel_pdf[i] = pdf;
 
@@ -147,12 +168,17 @@ namespace
             values->m_channel_cdf[values->m_channel_cdf.size() - 1] = 1.0f;
 
             // Precompute the (square of the) max radius.
-            const size_t channel = min_index(values->m_reflectance);
-            values->m_rmax2 =
-                square(
-                    normalized_diffusion_max_radius(
-                        values->m_dmfp,
-                        values->m_s[channel]));
+            values->m_rmax2 = 0.0;
+            for (size_t i = 0, e = values->m_dmfp.size(); i < e; ++i)
+            {
+                const double l = values->m_dmfp[i];
+                values->m_rmax2 =
+                    max(
+                        normalized_diffusion_max_radius(l,values->m_s[i]),
+                        values->m_rmax2);
+            }
+
+            values->m_rmax2 *= values->m_rmax2;
         }
 
         virtual bool sample(
@@ -178,8 +204,9 @@ namespace
                     s[0]);
 
             // Sample a radius.
+            const double l = values->m_dmfp[channel];
             const double radius =
-                normalized_diffusion_sample(s[1], values->m_dmfp, values->m_s[channel]);
+                normalized_diffusion_sample(s[1], l, values->m_s[channel]);
 
             // Sample an angle.
             const double phi = TwoPi * s[2];
@@ -214,7 +241,8 @@ namespace
             {
                 const double a = values->m_reflectance[i];
                 const double s = values->m_s[i];
-                value[i] = static_cast<float>(normalized_diffusion_profile(radius, values->m_dmfp, s, a));
+                const double l = values->m_dmfp[i];
+                value[i] = static_cast<float>(normalized_diffusion_profile(radius, l, s, a));
             }
 
             // Return r * R(r) * weight.
@@ -233,10 +261,11 @@ namespace
             double pdf_radius = 0.0;
             for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
             {
+                const double l = values->m_dmfp[i];
                 pdf_radius +=
                     normalized_diffusion_pdf(
                         radius,
-                        values->m_dmfp,
+                        l,
                         values->m_s[i])
                     * values->m_channel_pdf[i];
             }
@@ -247,7 +276,13 @@ namespace
             // Compute and return the final PDF.
             return pdf_radius * pdf_angle;
         }
+
+        static const LightingConditions m_lighting_conditions;
     };
+
+    const LightingConditions NormalizedDiffusionBSSRDF::m_lighting_conditions(
+        IlluminantCIED65,
+        XYZCMFCIE196410Deg);
 }
 
 
@@ -311,9 +346,10 @@ DictionaryArray NormalizedDiffusionBSSRDFFactory::get_input_metadata() const
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
+                    .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", "5.0"));
+            .insert("default", "0.5"));
 
     metadata.push_back(
         Dictionary()
@@ -323,7 +359,7 @@ DictionaryArray NormalizedDiffusionBSSRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "0.1"));
+            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()
