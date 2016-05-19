@@ -843,7 +843,7 @@ namespace
                 values->m_weight = 1.0;
                 values->m_reflectance = Color3f(p->reflectance);
                 values->m_reflectance_multiplier = 1.0;
-                values->m_dmfp = luminance(Color3f(p->diffuse_mean_free_path));
+                values->m_dmfp = Color3f(p->diffuse_mean_free_path);
                 values->m_dmfp_multiplier = 1.0;
                 values->m_anisotropy = p->scattering_anisotropy;
                 values->m_inside_ior = p->ior;

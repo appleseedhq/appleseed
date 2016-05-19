@@ -204,7 +204,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
             boost::mpl::sizeof_<boost::mpl::_1> > >::type BiggestInputValueType;
 
     enum { InputValuesAlignment = 16 };
-    enum { MaxClosureEntries = 16 };
+    enum { MaxClosureEntries = 15 };
     enum { MaxPoolSize = MaxClosureEntries * (sizeof(boost::mpl::deref<BiggestInputValueType::base>::type) + InputValuesAlignment) };
 
     // m_pool has to be first, because it has to be aligned.

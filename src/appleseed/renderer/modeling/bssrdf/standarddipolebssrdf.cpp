@@ -108,7 +108,7 @@ namespace
 
                 // Apply multipliers to input values.
                 values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
-                values->m_dmfp *= values->m_dmfp_multiplier;
+                values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
 
                 // Clamp reflectance.
                 values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
@@ -124,8 +124,7 @@ namespace
                     values->m_sigma_s);
 
                 // Compute sigma_tr = 1 / dmfp.
-                values->m_sigma_tr.resize(values->m_sigma_a.size());
-                values->m_sigma_tr.set(static_cast<float>(1.0 / values->m_dmfp));
+                values->m_sigma_tr = rcp(values->m_dmfp);
             }
             else
             {

@@ -40,6 +40,7 @@
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/scalarsource.h"
+#include "renderer/utility/iostreamop.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -115,7 +116,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             m_values.m_weight = 1.0;
             m_values.m_reflectance.set(static_cast<float>(rd));
             m_values.m_reflectance_multiplier = 1.0;
-            m_values.m_dmfp = dmfp;
+            m_values.m_dmfp.set(static_cast<float>(dmfp));
             m_values.m_dmfp_multiplier = 1.0;
             m_values.m_anisotropy = g;
             m_values.m_outside_ior = 1.0;
@@ -261,19 +262,19 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         for (size_t i = 0; i < N; ++i)
         {
             const ComputeRdStandardDipole rd_fun(Eta);
-            const Spectrum rd(Color3f(static_cast<float>(rand_double1(rng))));
+            const Spectrum rd(rand_float1(rng));
 
             Spectrum sigma_a1, sigma_s1;
             compute_absorption_and_scattering(
                 rd_fun,
                 rd,
-                1.0,
+                Spectrum(1.0f),
                 Anisotropy,
                 sigma_a1,
                 sigma_s1);
 
+            const Spectrum dmfp(rand_float1(rng, 0.001f, 10.0f));
             Spectrum sigma_a, sigma_s;
-            const double dmfp = rand_double1(rng, 0.001, 10.0);
             compute_absorption_and_scattering(
                 rd_fun,
                 rd,
@@ -282,9 +283,65 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
                 sigma_a,
                 sigma_s);
 
-            EXPECT_FEQ_EPS(sigma_a1[0] / static_cast<float>(dmfp), sigma_a[0], 1.0e-6f);
-            EXPECT_FEQ_EPS(sigma_s1[0] / static_cast<float>(dmfp), sigma_s[0], 1.0e-6f);
+            EXPECT_FEQ_EPS(sigma_a1 / dmfp, sigma_a, 1.0e-6f);
+            EXPECT_FEQ_EPS(sigma_s1 / dmfp, sigma_s, 1.0e-6f);
         }
+    }
+
+    TEST_CASE(BSSRDFReparamStandardDipole_RoundTrip)
+    {
+        //
+        // 1. Start with sigma_a and sigma_s.
+        //    Compute diffuse surface reflectance and diffuse mean free path.
+        //
+        //    Using skin2 material parameters from
+        //
+        //      A Practical Model for Subsurface Light Transport
+        //      https://graphics.stanford.edu/papers/bssrdf/bssrdf.pdf
+        //
+
+        const Color3f sigma_a(0.013f, 0.070f, 0.145f);      // in mm^-1
+        const Color3f sigma_s(1.09f, 1.59f, 1.79f);         // in mm^-1
+
+        const Spectrum sigma_a_spectrum(sigma_a);
+        const Spectrum sigma_s_spectrum(sigma_s);
+
+        const Color3f alpha_prime = sigma_s / (sigma_a + sigma_s);
+        const double eta = 1.0;
+        const ComputeRdStandardDipole rd_fun(eta);
+        const Color3f rd(
+            static_cast<float>(rd_fun(alpha_prime[0])),
+            static_cast<float>(rd_fun(alpha_prime[1])),
+            static_cast<float>(rd_fun(alpha_prime[2])));
+
+        // rd = [185, 138, 112] in 8-bit linear RGB
+
+        Spectrum sigma_tr;
+        effective_extinction_coefficient(
+            sigma_a_spectrum,
+            sigma_s_spectrum,
+            0.0,        // anisotropy
+            sigma_tr);
+
+        const Spectrum dmfp = Spectrum(1.0f) / sigma_tr;
+
+        //
+        // 2. Start from diffuse surface reflectance and diffuse mean free path.
+        //    Compute sigma_a and sigma_s.
+        //
+
+        Spectrum new_sigma_a_spectrum, new_sigma_s_spectrum;
+        const Spectrum rd_spectrum(rd);
+        compute_absorption_and_scattering(
+            rd_fun,
+            rd_spectrum,
+            dmfp,
+            0.0,        // anisotropy
+            new_sigma_a_spectrum,
+            new_sigma_s_spectrum);
+
+        EXPECT_FEQ_EPS(sigma_a_spectrum, new_sigma_a_spectrum, 1.0e-5f);
+        EXPECT_FEQ_EPS(sigma_s_spectrum, new_sigma_s_spectrum, 1.0e-5f);
     }
 
     TEST_CASE(Plot_CompareStandardAndBetterDipolesReparameterizations)
