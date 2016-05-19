@@ -112,6 +112,9 @@ template <typename T, size_t N> RegularSpectrum<T, N>& operator*=(RegularSpectru
 template <typename T, size_t N> RegularSpectrum<T, N>& operator/=(RegularSpectrum<T, N>& lhs, const T rhs);
 template <typename T, size_t N> RegularSpectrum<T, N>& operator/=(RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs);
 
+// Component-wise reciprocal.
+template <typename T, size_t N> RegularSpectrum<T, N> rcp(const RegularSpectrum<T, N>& s);
+
 // Return whether all components of a spectrum are in [0,1].
 template <typename T, size_t N> bool is_saturated(const RegularSpectrum<T, N>& s);
 
@@ -549,6 +552,17 @@ inline RegularSpectrum<T, N>& operator/=(RegularSpectrum<T, N>& lhs, const Regul
         lhs[i] /= rhs[i];
 
     return lhs;
+}
+
+template <typename T, size_t N>
+inline RegularSpectrum<T, N> rcp(const RegularSpectrum<T, N>& s)
+{
+    RegularSpectrum<T, N> result;
+
+    for (size_t i = 0; i < N; ++i)
+        result[i] = T(1.0) / s[i];
+
+    return result;
 }
 
 template <typename T, size_t N>
