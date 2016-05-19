@@ -215,18 +215,17 @@ inline double compute_alpha_prime(
     const ComputeRdFun  rd_fun,
     const double        rd)
 {
-    double x0 = 0.0, x1 = 1.0, xmid;
+    double x0 = 0.0, x1 = 1.0;
 
-    // For now simple bisection.
-    // todo: switch to faster algorithm.
+    // Simple bisection.
     for (size_t i = 0; i < 20; ++i)
     {
-        xmid = 0.5 * (x0 + x1);
+        const double xmid = 0.5 * (x0 + x1);
         const double x = rd_fun(xmid);
         x < rd ? x0 = xmid : x1 = xmid;
     }
 
-    return xmid;
+    return 0.5 * (x0 + x1);
 }
 
 template <typename ComputeRdFun>
