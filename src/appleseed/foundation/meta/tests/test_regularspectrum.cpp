@@ -142,6 +142,32 @@ TEST_SUITE(Foundation_Image_RegularSpectrum31f)
         EXPECT_FEQ(Expected, s);
     }
 
+    TEST_CASE(Rcp)
+    {
+        static const float InputValues[31] =
+        {
+              1.0f,   2.0f,   3.0f,   4.0f,   5.0f,   6.0f,   7.0f,   8.0f,
+              9.0f,  10.0f,  11.0f,  12.0f,  13.0f,  14.0f,  15.0f,  16.0f,
+             17.0f,  18.0f,  19.0f,  20.0f,  21.0f,  22.0f,  23.0f,  24.0f,
+             25.0f,  26.0f,  27.0f,  28.0f,  29.0f,  30.0f,  31.0f
+        };
+
+        static const float ExpectedValues[31] =
+        {
+             1.0f / 1.0f,  1.0f / 2.0f,  1.0f / 3.0f,  1.0f / 4.0f,  1.0f / 5.0f,  1.0f / 6.0f,  1.0f / 7.0f,  1.0f / 8.0f,
+             1.0f / 9.0f,  1.0f / 10.0f, 1.0f / 11.0f, 1.0f / 12.0f, 1.0f / 13.0f, 1.0f / 14.0f, 1.0f / 15.0f, 1.0f / 16.0f,
+             1.0f / 17.0f, 1.0f / 18.0f, 1.0f / 19.0f, 1.0f / 20.0f, 1.0f / 21.0f, 1.0f / 22.0f, 1.0f / 23.0f, 1.0f / 24.0f,
+             1.0f / 25.0f, 1.0f / 26.0f, 1.0f / 27.0f, 1.0f / 28.0f, 1.0f / 29.0f, 1.0f / 30.0f, 1.0f / 31.0f
+        };
+
+        const RegularSpectrum31f Expected(ExpectedValues);
+        RegularSpectrum31f s(InputValues);
+
+        s = rcp(s);
+
+        EXPECT_FEQ(Expected, s);
+    }
+
     TEST_CASE(IsSaturated_GivenSpectrumWithAllComponentsSetToZero_ReturnsTrue)
     {
         const RegularSpectrum31f s(0.0f);

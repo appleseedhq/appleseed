@@ -98,14 +98,19 @@ namespace
 
             if (m_inputs.source("sigma_a") == 0 || m_inputs.source("sigma_s") == 0)
             {
-                // Apply multipliers.
+                //
+                // Compute sigma_a, sigma_s and sigma_tr from the diffuse surface reflectance
+                // and diffuse mean free path (dmfp).
+                //
+
+                // Apply multipliers to input values.
                 values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
-                values->m_dmfp *= values->m_dmfp_multiplier;
+                values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
 
                 // Clamp reflectance.
                 values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
 
-                // Compute sigma_a, sigma_s and sigma_tr from the reflectance and dmfp parameters.
+                // Compute sigma_a and sigma_s.
                 const ComputeRdBetterDipole rd_fun(values->m_eta);
                 compute_absorption_and_scattering(
                     rd_fun,
@@ -115,12 +120,21 @@ namespace
                     values->m_sigma_a,
                     values->m_sigma_s);
 
-                values->m_sigma_tr.resize(values->m_sigma_a.size());
-                values->m_sigma_tr.set(static_cast<float>(1.0 / values->m_dmfp));
+                // Compute sigma_tr = 1 / dmfp.
+                values->m_sigma_tr = rcp(values->m_dmfp);
             }
             else
             {
-                // Compute sigma_tr.
+                //
+                // Compute sigma_tr from sigma_a and sigma_s.
+                //
+                // If you want to use the sigma_a and sigma_s values provided in [1],
+                // and if your scene is modeled in meters, you will need to *multiply*
+                // them by 1000. If your scene is modeled in centimers (e.g. the "size"
+                // of the object is 4 units) then you will need to multiply the sigmas
+                // by 100.
+                //
+
                 effective_extinction_coefficient(
                     values->m_sigma_a,
                     values->m_sigma_s,

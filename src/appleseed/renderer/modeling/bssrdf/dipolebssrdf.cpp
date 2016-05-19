@@ -61,7 +61,7 @@ DipoleBSSRDF::DipoleBSSRDF(
     m_inputs.declare("weight", InputFormatScalar, "1.0");
     m_inputs.declare("reflectance", InputFormatSpectralReflectance);
     m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-    m_inputs.declare("dmfp", InputFormatScalar);
+    m_inputs.declare("dmfp", InputFormatSpectralReflectance);
     m_inputs.declare("dmfp_multiplier", InputFormatScalar, "1.0");
     m_inputs.declare("sigma_a", InputFormatSpectralReflectance, "");
     m_inputs.declare("sigma_s", InputFormatSpectralReflectance, "");
@@ -179,6 +179,7 @@ DictionaryArray DipoleBSSRDFFactory::get_input_metadata() const
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
+                    .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", "0.5"));

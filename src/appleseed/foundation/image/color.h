@@ -115,6 +115,9 @@ template <typename T, size_t N> Color<T, N>& operator*=(Color<T, N>& lhs, const 
 template <typename T, size_t N> Color<T, N>& operator/=(Color<T, N>& lhs, const T rhs);
 template <typename T, size_t N> Color<T, N>& operator/=(Color<T, N>& lhs, const Color<T, N>& rhs);
 
+// Component-wise reciprocal.
+template <typename T, size_t N> Color<T, N> rcp(const Color<T, N>& c);
+
 // Return whether all components of a color are in [0,1].
 template <typename T, size_t N> bool is_saturated(const Color<T, N>& c);
 
@@ -572,6 +575,17 @@ inline Color<T, N>& operator/=(Color<T, N>& lhs, const Color<T, N>& rhs)
         lhs[i] /= rhs[i];
 
     return lhs;
+}
+
+template <typename T, size_t N>
+inline Color<T, N> rcp(const Color<T, N>& c)
+{
+    Color<T, N> result;
+
+    for (size_t i = 0; i < N; ++i)
+        result[i] = T(1.0) / c[i];
+
+    return result;
 }
 
 template <typename T, size_t N>

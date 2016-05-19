@@ -106,9 +106,9 @@ class DynamicSpectrum
     ValueType& operator[](const size_t i);
     const ValueType& operator[](const size_t i) const;
 
-    // Upgrade a spectrum from RGB to spectral.
+    // Upgrade a spectrum from RGB to spectral. Returns dest.
     // 'source' and 'dest' can reference the same instance.
-    static void upgrade(
+    static DynamicSpectrum& upgrade(
         const DynamicSpectrum&  source,
         DynamicSpectrum&        dest);
 
@@ -160,6 +160,9 @@ template <typename T, size_t N> bool feq(const renderer::DynamicSpectrum<T, N>& 
 // Approximate zero tests.
 template <typename T, size_t N> bool fz(const renderer::DynamicSpectrum<T, N>& s);
 template <typename T, size_t N> bool fz(const renderer::DynamicSpectrum<T, N>& s, const T eps);
+
+// Component-wise reciprocal.
+template <typename T, size_t N> renderer::DynamicSpectrum<T, N> rcp(const renderer::DynamicSpectrum<T, N>& s);
 
 // Return whether all components of a spectrum are in [0,1].
 template <typename T, size_t N> bool is_saturated(const renderer::DynamicSpectrum<T, N>& s);
@@ -410,7 +413,7 @@ inline const T& DynamicSpectrum<T, N>::operator[](const size_t i) const
 }
 
 template <typename T, size_t N>
-inline void DynamicSpectrum<T, N>::upgrade(
+inline DynamicSpectrum<T, N>& DynamicSpectrum<T, N>::upgrade(
     const DynamicSpectrum&  source,
     DynamicSpectrum&        dest)
 {
@@ -426,6 +429,8 @@ inline void DynamicSpectrum<T, N>::upgrade(
     {
         dest = source;
     }
+
+    return dest;
 }
 
 template <typename T, size_t N>
@@ -925,6 +930,18 @@ inline bool fz(const renderer::DynamicSpectrum<T, N>& s, const T eps)
     }
 
     return true;
+}
+
+template <typename T, size_t N>
+inline renderer::DynamicSpectrum<T, N> rcp(const renderer::DynamicSpectrum<T, N>& s)
+{
+    renderer::DynamicSpectrum<T, N> result;
+    result.resize(s.size());
+
+    for (size_t i = 0, e = s.size(); i < e; ++i)
+        result[i] = T(1.0) / s[i];
+
+    return result;
 }
 
 template <typename T, size_t N>

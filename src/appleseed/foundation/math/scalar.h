@@ -115,6 +115,10 @@ T square(const T x);
 template <typename T>
 T cube(const T x);
 
+// Return 1 / x.
+template <typename T>
+T rcp(const T x);
+
 // Compile-time exponentiation of the form x^p where p >= 0.
 // Note: swapped template arguments to allow writing pow_int<3>(3.14).
 template <size_t P, typename T>
@@ -137,14 +141,6 @@ bool is_pow2(const T x);
 template <typename T>
 T log2_int(T x);
 
-// Return the factorial of a given integer.
-template <typename T>
-T factorial(T x);
-
-// Return the binomial coefficient (n, k).
-template <typename T>
-T binomial(const T n, const T k);
-
 // Return the log in a given base of a given scalar.
 template <typename T>
 T log(const T x, const T base);
@@ -152,6 +148,14 @@ T log(const T x, const T base);
 // Return the next given power of a given scalar.
 template <typename T>
 T next_power(const T x, const T base);
+
+// Return the factorial of a given integer.
+template <typename T>
+T factorial(T x);
+
+// Return the binomial coefficient (n, k).
+template <typename T>
+T binomial(const T n, const T k);
 
 // Clamp the argument to [low, high].
 template <typename T>
@@ -330,6 +334,12 @@ inline T cube(const T x)
     return x * x * x;
 }
 
+template <typename T>
+inline T rcp(const T x)
+{
+    return T(1.0) / x;
+}
+
 template <typename T, size_t P>
 struct PowIntHelper
 {
@@ -481,6 +491,18 @@ inline unsigned long log2_int(const unsigned long x)
 #endif
 
 template <typename T>
+inline T log(const T x, const T base)
+{
+    return std::log(x) / std::log(base);
+}
+
+template <typename T>
+inline T next_power(const T x, const T base)
+{
+    return std::pow(base, fast_ceil(log(x, base)));
+}
+
+template <typename T>
 inline T factorial(T x)
 {
     assert(x >= 0);
@@ -501,18 +523,6 @@ inline T binomial(const T n, const T k)
 {
     assert(k <= n);
     return factorial(n) / (factorial(k) * factorial(n - k));
-}
-
-template <typename T>
-inline T log(const T x, const T base)
-{
-    return std::log(x) / std::log(base);
-}
-
-template <typename T>
-inline T next_power(const T x, const T base)
-{
-    return std::pow(base, fast_ceil(log(x, base)));
 }
 
 template <typename T>
