@@ -112,7 +112,7 @@ class DynamicSpectrum
         const DynamicSpectrum&                  source,
         DynamicSpectrum&                        dest);
 
-    // Downgrade a spectrum from spectral to RGB.
+    // Downgrade a spectrum from spectral to RGB. Returns dest.
     // 'source' and 'dest' can reference the same instance.
     static DynamicSpectrum& downgrade(
         const foundation::LightingConditions&   lighting_conditions,
@@ -424,6 +424,8 @@ inline DynamicSpectrum<T, N>& DynamicSpectrum<T, N>::upgrade(
     const DynamicSpectrum&                  source,
     DynamicSpectrum&                        dest)
 {
+    // source and dest might be the same object.
+
     if (source.is_rgb())
     {
         dest.m_size = N;
@@ -444,6 +446,8 @@ inline DynamicSpectrum<T, N>& DynamicSpectrum<T, N>::downgrade(
     const DynamicSpectrum&                  source,
     DynamicSpectrum&                        dest)
 {
+    // source and dest might be the same object.
+
     if (source.is_spectral())
     {
         const foundation::Color<T, 3> c = source.convert_to_rgb(lighting_conditions);
