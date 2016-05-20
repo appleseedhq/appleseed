@@ -138,8 +138,9 @@ namespace
                 }
             }
 
-            // Clamp reflectance.
-            values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
+            // Clamp input values.
+            values->m_reflectance = clamp(values->m_reflectance, 0.001f, 0.999f);
+            values->m_dmfp = clamp_low(values->m_dmfp, 1.0e-5f);
 
             // Build a CDF for channel sampling.
 

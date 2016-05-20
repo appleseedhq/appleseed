@@ -139,8 +139,9 @@ namespace
                 values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
                 values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
 
-                // Clamp reflectance.
-                values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
+                // Clamp input values.
+                values->m_reflectance = clamp(values->m_reflectance, 0.001f, 0.999f);
+                values->m_dmfp = clamp_low(values->m_dmfp, 1.0e-5f);
 
                 // Compute sigma_a and sigma_s.
                 // Currently, we don't have a reparameterization for this BSSRDF model.
