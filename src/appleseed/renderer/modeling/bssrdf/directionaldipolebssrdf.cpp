@@ -32,7 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/bssrdf/dipolebssrdf.h"
 #include "renderer/modeling/bssrdf/sss.h"
@@ -81,24 +80,14 @@ namespace
     const char* Model = "directional_dipole_bssrdf";
 
     class DirectionalDipoleBSSRDF
-      : public BSSRDF
+      : public DipoleBSSRDF
     {
       public:
         DirectionalDipoleBSSRDF(
             const char*         name,
             const ParamArray&   params)
-          : BSSRDF(name, params)
+          : DipoleBSSRDF(name, params)
         {
-            m_inputs.declare("weight", InputFormatScalar, "1.0");
-            m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("dmfp", InputFormatScalar);
-            m_inputs.declare("dmfp_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("sigma_a", InputFormatSpectralReflectance, "");
-            m_inputs.declare("sigma_s", InputFormatSpectralReflectance, "");
-            m_inputs.declare("anisotropy", InputFormatScalar);
-            m_inputs.declare("outside_ior", InputFormatScalar);
-            m_inputs.declare("inside_ior", InputFormatScalar);
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -220,40 +209,12 @@ namespace
             values->m_rmax2 = square(dipole_max_radius(min_value(values->m_sigma_tr)));
         }
 
-        virtual bool sample(
-            SamplingContext&    sampling_context,
+        virtual void evaluate_profile(
             const void*         data,
-            BSSRDFSample&       sample) const APPLESEED_OVERRIDE
+            const double        square_radius,
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
-            const DipoleBSSRDFInputValues* values =
-                reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
-
-            if (values->m_weight == 0.0)
-                return false;
-
-            sampling_context.split_in_place(3, 1);
-            const Vector3d s = sampling_context.next_vector2<3>();
-
-            // Sample a channel.
-            const size_t channel =
-                sample_cdf(
-                    &values->m_channel_cdf[0],
-                    &values->m_channel_cdf[0] + values->m_channel_cdf.size(),
-                    s[0]);
-
-            // Sample a radius.
-            const double sigma_tr = values->m_sigma_tr[channel];
-            const double radius = sample_exponential_distribution(s[1], sigma_tr);
-
-            // Sample an angle.
-            const double phi = TwoPi * s[2];
-
-            sample.m_eta = values->m_eta;
-            sample.m_channel = channel;
-            sample.m_point = Vector2d(radius * cos(phi), radius * sin(phi));
-            sample.m_rmax2 = values->m_rmax2;
-
-            return true;
+            assert(!"Should never be called.");
         }
 
         virtual void evaluate(
@@ -308,31 +269,6 @@ namespace
             value *= static_cast<float>(radius * fo * fi * values->m_weight);
 
             value *= values->m_dirpole_reparam_weight;
-        }
-
-        virtual double evaluate_pdf(
-            const void*         data,
-            const size_t        channel,
-            const double        radius) const APPLESEED_OVERRIDE
-        {
-            const DipoleBSSRDFInputValues* values =
-                reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
-
-            // PDF of the sampled radius.
-            double pdf_radius = 0.0;
-            for (size_t i = 0, e = values->m_sigma_tr.size(); i < e; ++i)
-            {
-                const double sigma_tr = values->m_sigma_tr[i];
-                pdf_radius +=
-                      exponential_distribution_pdf(radius, sigma_tr)
-                    * values->m_channel_pdf[i];
-            }
-
-            // PDF of the sampled angle.
-            const double pdf_angle = RcpTwoPi;
-
-            // Compute and return the final PDF.
-            return pdf_radius * pdf_angle;
         }
 
       private:
