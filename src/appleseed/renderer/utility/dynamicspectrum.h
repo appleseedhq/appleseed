@@ -428,11 +428,10 @@ inline DynamicSpectrum<T, N>& DynamicSpectrum<T, N>::upgrade(
 
     if (source.is_rgb())
     {
-        dest.m_size = N;
-
         foundation::linear_rgb_illuminance_to_spectrum(
             reinterpret_cast<const foundation::Color<ValueType, 3>&>(source[0]),
             reinterpret_cast<foundation::RegularSpectrum<ValueType, N>&>(dest[0]));
+        dest.m_size = N;
     }
     else
         dest = source;
@@ -450,8 +449,12 @@ inline DynamicSpectrum<T, N>& DynamicSpectrum<T, N>::downgrade(
 
     if (source.is_spectral())
     {
-        const foundation::Color<T, 3> c = source.convert_to_rgb(lighting_conditions);
-        dest = DynamicSpectrum(c);
+        reinterpret_cast<foundation::Color<ValueType, 3>&>(dest[0]) =
+            foundation::ciexyz_to_linear_rgb(
+                foundation::spectrum_to_ciexyz<float>(
+                    lighting_conditions,
+                    reinterpret_cast<const foundation::RegularSpectrum<ValueType, N>&>(source[0])));
+        dest.m_size = 3;
     }
     else
         dest = source;
