@@ -80,6 +80,7 @@ namespace
             const char*         name,
             const ParamArray&   params)
           : SeparableBSSRDF(name, params)
+          , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
         {
             m_inputs.declare("weight", InputFormatScalar, "1.0");
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
@@ -280,12 +281,8 @@ namespace
         }
 
       private:
-        static const LightingConditions m_lighting_conditions;
+        const LightingConditions m_lighting_conditions;
     };
-
-    const LightingConditions NormalizedDiffusionBSSRDF::m_lighting_conditions(
-        IlluminantCIED65,
-        XYZCMFCIE196410Deg);
 }
 
 
