@@ -209,8 +209,8 @@ DictionaryArray DipoleBSSRDFFactory::get_input_metadata() const
             .insert("name", "outside_ior")
             .insert("label", "Outside Index of Refraction")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "5.0")
+            .insert("min_value", "1.0")
+            .insert("max_value", "2.5")
             .insert("use", "required")
             .insert("default", "1.0"));
 
@@ -219,8 +219,8 @@ DictionaryArray DipoleBSSRDFFactory::get_input_metadata() const
             .insert("name", "inside_ior")
             .insert("label", "Inside Index of Refraction")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "5.0")
+            .insert("min_value", "1.0")
+            .insert("max_value", "2.5")
             .insert("use", "required")
             .insert("default", "1.3"));
 
