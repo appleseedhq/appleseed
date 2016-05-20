@@ -32,6 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
+#include "foundation/image/colorspace.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
@@ -132,12 +133,47 @@ TEST_SUITE(Renderer_Utility_DynamicSpectrum31f)
 
     TEST_CASE(Upgrade_GivenRGB_MakesSpectrum)
     {
+        static const float ExpectedValues[31] =
+        {
+            0.530693471f, 0.531045496f, 0.531118512f, 0.531190515f,
+            0.531234503f, 0.531205475f, 0.531243503f, 0.531251013f,
+            0.531204522f, 0.531026006f, 0.530674517f, 0.530518472f,
+            0.530655980f, 0.530689478f, 0.530879974f, 0.531168520f,
+            0.531268001f, 0.531226516f, 0.531256020f, 0.531213522f,
+            0.531239510f, 0.531276524f, 0.531270504f, 0.531207979f,
+            0.531177998f, 0.531280994f, 0.530978501f, 0.530169487f,
+            0.529729486f, 0.530041993f, 0.530124009f
+        };
+        const DynamicSpectrum31f Expected(ExpectedValues);
+
         const DynamicSpectrum31f source(Color3f(0.5f));
         DynamicSpectrum31f dest;
 
         DynamicSpectrum31f::upgrade(source, dest);
 
-        EXPECT_EQ(31, dest.size());
+        EXPECT_EQ(Expected, dest);
+    }
+
+    TEST_CASE(Upgrade_GivenRGB_MakesSpectrum_InPlace)
+    {
+        static const float ExpectedValues[31] =
+        {
+            0.530693471f, 0.531045496f, 0.531118512f, 0.531190515f,
+            0.531234503f, 0.531205475f, 0.531243503f, 0.531251013f,
+            0.531204522f, 0.531026006f, 0.530674517f, 0.530518472f,
+            0.530655980f, 0.530689478f, 0.530879974f, 0.531168520f,
+            0.531268001f, 0.531226516f, 0.531256020f, 0.531213522f,
+            0.531239510f, 0.531276524f, 0.531270504f, 0.531207979f,
+            0.531177998f, 0.531280994f, 0.530978501f, 0.530169487f,
+            0.529729486f, 0.530041993f, 0.530124009f
+        };
+        const DynamicSpectrum31f Expected(ExpectedValues);
+
+        DynamicSpectrum31f s(Color3f(0.5f));
+
+        DynamicSpectrum31f::upgrade(s, s);
+
+        EXPECT_EQ(Expected, s);
     }
 
     TEST_CASE(Upgrade_GivenSpectrum_CopiesSpectrum)
@@ -146,6 +182,42 @@ TEST_SUITE(Renderer_Utility_DynamicSpectrum31f)
         DynamicSpectrum31f dest;
 
         DynamicSpectrum31f::upgrade(source, dest);
+
+        EXPECT_EQ(dest, source);
+    }
+
+    TEST_CASE(Downgrade_GivenSpectrum_MakesRGB)
+    {
+        const DynamicSpectrum31f Expected(Color3f(41.9590912f, 42.0810776f, 41.3171921f));
+
+        const DynamicSpectrum31f source(SpectrumValues);
+        DynamicSpectrum31f dest;
+
+        const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg);
+        DynamicSpectrum31f::downgrade(lighting_conditions, source, dest);
+
+        EXPECT_EQ(Expected, dest);
+    }
+
+    TEST_CASE(Downgrade_GivenSpectrum_MakesRGB_InPlace)
+    {
+        const DynamicSpectrum31f Expected(Color3f(41.9590912f, 42.0810776f, 41.3171921f));
+
+        DynamicSpectrum31f s(SpectrumValues);
+
+        const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg);
+        DynamicSpectrum31f::downgrade(lighting_conditions, s, s);
+
+        EXPECT_EQ(Expected, s);
+    }
+
+    TEST_CASE(Downgrade_GivenRGB_CopiesRGB)
+    {
+        const DynamicSpectrum31f source(Color3f(0.5f));
+        DynamicSpectrum31f dest;
+
+        const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg);
+        DynamicSpectrum31f::downgrade(lighting_conditions, source, dest);
 
         EXPECT_EQ(dest, source);
     }

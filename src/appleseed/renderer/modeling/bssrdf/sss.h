@@ -109,10 +109,11 @@ void effective_extinction_coefficient(
     const double        anisotropy,
     Spectrum&           sigma_tr);
 
+// rd and dmfp must have the same size (both RGB or both spectral).
 template <typename ComputeRdFun>
 void compute_absorption_and_scattering(
     const ComputeRdFun  rd_fun,
-    const Spectrum&     rd,                     // surface albedo
+    const Spectrum&     rd,                     // diffuse surface reflectance
     const Spectrum&     dmfp,                   // diffuse mean free path
     const double        g,                      // anisotropy
     Spectrum&           sigma_a,                // absorption coefficient
@@ -237,39 +238,28 @@ void compute_absorption_and_scattering(
     Spectrum&           sigma_a,
     Spectrum&           sigma_s)
 {
+    assert(rd.size() == dmfp.size());
     assert(g > -1.0);
     assert(g < 1.0);
 
-    Spectrum tmp_rd, tmp_dmfp;
-    const Spectrum& up_rd = rd.size() < dmfp.size() ? Spectrum::upgrade(rd, tmp_rd) : rd;
-    const Spectrum& up_dmfp = dmfp.size() < rd.size() ? Spectrum::upgrade(dmfp, tmp_dmfp) : dmfp;
-
-    sigma_a.resize(up_rd.size());
-    sigma_s.resize(up_rd.size());
+    sigma_a.resize(rd.size());
+    sigma_s.resize(rd.size());
 
     const double rcp_g_complement = 1.0 / (1.0 - g);
 
-    for (size_t i = 0, e = up_rd.size(); i < e; ++i)
+    for (size_t i = 0, e = rd.size(); i < e; ++i)
     {
-        assert(rd[i] >= 0.0f);
-        assert(rd[i] <= 1.0f);
-
-        if (up_rd[i] == 0.0f)
-        {
-            // rd == 0 -> alpha_prime == 0 -> sigma_s == 0
-            sigma_s[i] = 0.0f;
-            sigma_a[i] = 1.0f / (static_cast<float>(foundation::SqrtThree) * up_dmfp[i]);
-            continue;
-        }
+        assert(rd[i] > 0.0f);
+        assert(rd[i] < 1.0f);
 
         // Find alpha' by numerically inverting Rd(alpha').
-        const double alpha_prime = compute_alpha_prime(rd_fun, up_rd[i]);
+        const double alpha_prime = compute_alpha_prime(rd_fun, rd[i]);
         assert(alpha_prime > 0.0);
         assert(alpha_prime < 1.0);
 
         // Compute reduced extinction coefficient.
         const double sigma_t_prime =
-            reduced_extinction_coefficient(up_dmfp[i], alpha_prime);
+            reduced_extinction_coefficient(dmfp[i], alpha_prime);
 
         // Compute scattering coefficient.
         const double sigma_s_prime = alpha_prime * sigma_t_prime;

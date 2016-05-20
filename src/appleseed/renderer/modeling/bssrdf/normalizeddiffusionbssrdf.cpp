@@ -36,6 +36,7 @@
 #include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/colorspace.h"
 #include "foundation/math/cdf.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -79,6 +80,7 @@ namespace
             const char*         name,
             const ParamArray&   params)
           : SeparableBSSRDF(name, params)
+          , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
         {
             m_inputs.declare("weight", InputFormatScalar, "1.0");
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
@@ -113,10 +115,6 @@ namespace
             // Precompute the relative index of refraction.
             values->m_eta = values->m_outside_ior / values->m_inside_ior;
 
-            // Apply multipliers.
-            values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
-            values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
-
             if (values->m_reflectance.size() != values->m_dmfp.size())
             {
                 // Since it does not really make sense to convert a dmfp,
@@ -138,8 +136,13 @@ namespace
                 }
             }
 
-            // Clamp reflectance.
-            values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
+            // Apply multipliers to input values.
+            values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
+            values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
+
+            // Clamp input values.
+            values->m_reflectance = clamp(values->m_reflectance, 0.001f, 0.999f);
+            values->m_dmfp = clamp_low(values->m_dmfp, 1.0e-5f);
 
             // Build a CDF for channel sampling.
 
@@ -171,10 +174,10 @@ namespace
             values->m_rmax2 = 0.0;
             for (size_t i = 0, e = values->m_dmfp.size(); i < e; ++i)
             {
-                const double l = values->m_dmfp[i];
+                const double l = static_cast<double>(values->m_dmfp[i]);
                 values->m_rmax2 =
                     max(
-                        normalized_diffusion_max_radius(l,values->m_s[i]),
+                        normalized_diffusion_max_radius(l, values->m_s[i]),
                         values->m_rmax2);
             }
 
@@ -277,12 +280,9 @@ namespace
             return pdf_radius * pdf_angle;
         }
 
-        static const LightingConditions m_lighting_conditions;
+      private:
+        const LightingConditions m_lighting_conditions;
     };
-
-    const LightingConditions NormalizedDiffusionBSSRDF::m_lighting_conditions(
-        IlluminantCIED65,
-        XYZCMFCIE196410Deg);
 }
 
 
@@ -366,8 +366,8 @@ DictionaryArray NormalizedDiffusionBSSRDFFactory::get_input_metadata() const
             .insert("name", "outside_ior")
             .insert("label", "Outside Index of Refraction")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "5.0")
+            .insert("min_value", "1.0")
+            .insert("max_value", "2.5")
             .insert("use", "required")
             .insert("default", "1.0"));
 
@@ -376,8 +376,8 @@ DictionaryArray NormalizedDiffusionBSSRDFFactory::get_input_metadata() const
             .insert("name", "inside_ior")
             .insert("label", "Inside Index of Refraction")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "5.0")
+            .insert("min_value", "1.0")
+            .insert("max_value", "2.5")
             .insert("use", "required")
             .insert("default", "1.3"));
 

@@ -94,25 +94,25 @@ class DynamicSpectrum
     // Set all components to a given value.
     void set(const ValueType val);
 
+    // Unchecked array subscripting.
+    ValueType& operator[](const size_t i);
+    const ValueType& operator[](const size_t i) const;
+
     // Access the spectrum as a linear RGB color.
     foundation::Color<ValueType, 3>& rgb();
     const foundation::Color<ValueType, 3>& rgb() const;
 
     // Convert the spectrum to a linear RGB color.
     foundation::Color<ValueType, 3> convert_to_rgb(
-        const foundation::LightingConditions& lighting_conditions) const;
-
-    // Unchecked array subscripting.
-    ValueType& operator[](const size_t i);
-    const ValueType& operator[](const size_t i) const;
+        const foundation::LightingConditions&   lighting_conditions) const;
 
     // Upgrade a spectrum from RGB to spectral. Returns dest.
     // 'source' and 'dest' can reference the same instance.
     static DynamicSpectrum& upgrade(
-        const DynamicSpectrum&  source,
-        DynamicSpectrum&        dest);
+        const DynamicSpectrum&                  source,
+        DynamicSpectrum&                        dest);
 
-    // Downgrade a spectrum from spectral to RGB.
+    // Downgrade a spectrum from spectral to RGB. Returns dest.
     // 'source' and 'dest' can reference the same instance.
     static DynamicSpectrum& downgrade(
         const foundation::LightingConditions&   lighting_conditions,
@@ -120,8 +120,8 @@ class DynamicSpectrum
         DynamicSpectrum&                        dest);
 
   private:
-    APPLESEED_SSE_ALIGN ValueType m_samples[StoredSamples];
-    foundation::uint32  m_size;
+    APPLESEED_SSE_ALIGN ValueType   m_samples[StoredSamples];
+    foundation::uint32              m_size;
 };
 
 // Exact inequality and equality tests.
@@ -385,6 +385,20 @@ APPLESEED_FORCE_INLINE void DynamicSpectrum<float, 31>::set(const float val)
 #endif  // APPLESEED_USE_SSE
 
 template <typename T, size_t N>
+inline T& DynamicSpectrum<T, N>::operator[](const size_t i)
+{
+    assert(i < m_size);
+    return m_samples[i];
+}
+
+template <typename T, size_t N>
+inline const T& DynamicSpectrum<T, N>::operator[](const size_t i) const
+{
+    assert(i < m_size);
+    return m_samples[i];
+}
+
+template <typename T, size_t N>
 inline foundation::Color<T, 3>& DynamicSpectrum<T, N>::rgb()
 {
     return reinterpret_cast<foundation::Color<T, 3>&>(m_samples);
@@ -406,31 +420,18 @@ inline foundation::Color<T, 3> DynamicSpectrum<T, N>::convert_to_rgb(
 }
 
 template <typename T, size_t N>
-inline T& DynamicSpectrum<T, N>::operator[](const size_t i)
-{
-    assert(i < m_size);
-    return m_samples[i];
-}
-
-template <typename T, size_t N>
-inline const T& DynamicSpectrum<T, N>::operator[](const size_t i) const
-{
-    assert(i < m_size);
-    return m_samples[i];
-}
-
-template <typename T, size_t N>
 inline DynamicSpectrum<T, N>& DynamicSpectrum<T, N>::upgrade(
-    const DynamicSpectrum&  source,
-    DynamicSpectrum&        dest)
+    const DynamicSpectrum&                  source,
+    DynamicSpectrum&                        dest)
 {
+    // source and dest might be the same object.
+
     if (source.is_rgb())
     {
-        dest.m_size = N;
-
         foundation::linear_rgb_illuminance_to_spectrum(
             reinterpret_cast<const foundation::Color<ValueType, 3>&>(source[0]),
             reinterpret_cast<foundation::RegularSpectrum<ValueType, N>&>(dest[0]));
+        dest.m_size = N;
     }
     else
         dest = source;
@@ -444,10 +445,16 @@ inline DynamicSpectrum<T, N>& DynamicSpectrum<T, N>::downgrade(
     const DynamicSpectrum&                  source,
     DynamicSpectrum&                        dest)
 {
+    // source and dest might be the same object.
+
     if (source.is_spectral())
     {
-        const foundation::Color<T, 3> c = source.convert_to_rgb(lighting_conditions);
-        dest = DynamicSpectrum(c);
+        reinterpret_cast<foundation::Color<ValueType, 3>&>(dest[0]) =
+            foundation::ciexyz_to_linear_rgb(
+                foundation::spectrum_to_ciexyz<float>(
+                    lighting_conditions,
+                    reinterpret_cast<const foundation::RegularSpectrum<ValueType, N>&>(source[0])));
+        dest.m_size = 3;
     }
     else
         dest = source;
