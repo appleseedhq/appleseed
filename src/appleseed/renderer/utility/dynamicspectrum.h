@@ -104,13 +104,13 @@ class DynamicSpectrum
 
     // Convert the spectrum to a linear RGB color.
     foundation::Color<ValueType, 3> convert_to_rgb(
-        const foundation::LightingConditions& lighting_conditions) const;
+        const foundation::LightingConditions&   lighting_conditions) const;
 
     // Upgrade a spectrum from RGB to spectral. Returns dest.
     // 'source' and 'dest' can reference the same instance.
     static DynamicSpectrum& upgrade(
-        const DynamicSpectrum&  source,
-        DynamicSpectrum&        dest);
+        const DynamicSpectrum&                  source,
+        DynamicSpectrum&                        dest);
 
     // Downgrade a spectrum from spectral to RGB.
     // 'source' and 'dest' can reference the same instance.
@@ -120,8 +120,8 @@ class DynamicSpectrum
         DynamicSpectrum&                        dest);
 
   private:
-    APPLESEED_SSE_ALIGN ValueType m_samples[StoredSamples];
-    foundation::uint32  m_size;
+    APPLESEED_SSE_ALIGN ValueType   m_samples[StoredSamples];
+    foundation::uint32              m_size;
 };
 
 // Exact inequality and equality tests.
@@ -421,8 +421,8 @@ inline foundation::Color<T, 3> DynamicSpectrum<T, N>::convert_to_rgb(
 
 template <typename T, size_t N>
 inline DynamicSpectrum<T, N>& DynamicSpectrum<T, N>::upgrade(
-    const DynamicSpectrum&  source,
-    DynamicSpectrum&        dest)
+    const DynamicSpectrum&                  source,
+    DynamicSpectrum&                        dest)
 {
     if (source.is_rgb())
     {
