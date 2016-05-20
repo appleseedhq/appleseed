@@ -36,6 +36,7 @@
 #include "renderer/modeling/bssrdf/sss.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/colorspace.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -72,6 +73,7 @@ namespace
             const char*         name,
             const ParamArray&   params)
           : DipoleBSSRDF(name, params)
+          , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
         {
         }
 
@@ -102,6 +104,27 @@ namespace
                 // Compute sigma_a, sigma_s and sigma_tr from the diffuse surface reflectance
                 // and diffuse mean free path (dmfp).
                 //
+
+                if (values->m_reflectance.size() != values->m_dmfp.size())
+                {
+                    // Since it does not really make sense to convert a dmfp,
+                    // a per channel distance, as if it were a color,
+                    // we instead always convert the reflectance to match the
+                    // size of the dmfp.
+                    if (values->m_dmfp.is_spectral())
+                    {
+                        Spectrum::upgrade(
+                            values->m_reflectance,
+                            values->m_reflectance);
+                    }
+                    else
+                    {
+                        Spectrum::downgrade(
+                            m_lighting_conditions,
+                            values->m_reflectance,
+                            values->m_reflectance);
+                    }
+                }
 
                 // Apply multipliers to input values.
                 values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
@@ -214,6 +237,9 @@ namespace
             // Return r * R(r) * weight.
             value *= static_cast<float>(sqrt(square_radius) * values->m_weight);
         }
+
+      private:
+        const LightingConditions m_lighting_conditions;
     };
 }
 
