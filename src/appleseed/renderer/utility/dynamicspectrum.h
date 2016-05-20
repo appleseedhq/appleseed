@@ -94,6 +94,10 @@ class DynamicSpectrum
     // Set all components to a given value.
     void set(const ValueType val);
 
+    // Unchecked array subscripting.
+    ValueType& operator[](const size_t i);
+    const ValueType& operator[](const size_t i) const;
+
     // Access the spectrum as a linear RGB color.
     foundation::Color<ValueType, 3>& rgb();
     const foundation::Color<ValueType, 3>& rgb() const;
@@ -101,10 +105,6 @@ class DynamicSpectrum
     // Convert the spectrum to a linear RGB color.
     foundation::Color<ValueType, 3> convert_to_rgb(
         const foundation::LightingConditions& lighting_conditions) const;
-
-    // Unchecked array subscripting.
-    ValueType& operator[](const size_t i);
-    const ValueType& operator[](const size_t i) const;
 
     // Upgrade a spectrum from RGB to spectral. Returns dest.
     // 'source' and 'dest' can reference the same instance.
@@ -385,6 +385,20 @@ APPLESEED_FORCE_INLINE void DynamicSpectrum<float, 31>::set(const float val)
 #endif  // APPLESEED_USE_SSE
 
 template <typename T, size_t N>
+inline T& DynamicSpectrum<T, N>::operator[](const size_t i)
+{
+    assert(i < m_size);
+    return m_samples[i];
+}
+
+template <typename T, size_t N>
+inline const T& DynamicSpectrum<T, N>::operator[](const size_t i) const
+{
+    assert(i < m_size);
+    return m_samples[i];
+}
+
+template <typename T, size_t N>
 inline foundation::Color<T, 3>& DynamicSpectrum<T, N>::rgb()
 {
     return reinterpret_cast<foundation::Color<T, 3>&>(m_samples);
@@ -403,20 +417,6 @@ inline foundation::Color<T, 3> DynamicSpectrum<T, N>::convert_to_rgb(
     return
         foundation::ciexyz_to_linear_rgb(
             foundation::spectrum_to_ciexyz<float>(lighting_conditions, *this));
-}
-
-template <typename T, size_t N>
-inline T& DynamicSpectrum<T, N>::operator[](const size_t i)
-{
-    assert(i < m_size);
-    return m_samples[i];
-}
-
-template <typename T, size_t N>
-inline const T& DynamicSpectrum<T, N>::operator[](const size_t i) const
-{
-    assert(i < m_size);
-    return m_samples[i];
 }
 
 template <typename T, size_t N>
