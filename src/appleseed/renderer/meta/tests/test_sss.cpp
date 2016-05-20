@@ -262,7 +262,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         for (size_t i = 0; i < N; ++i)
         {
             const ComputeRdStandardDipole rd_fun(Eta);
-            const Spectrum rd(rand_float1(rng));
+            const Spectrum rd(rand_float1(rng, 0.001f, 0.999f));
 
             Spectrum sigma_a1, sigma_s1;
             compute_absorption_and_scattering(

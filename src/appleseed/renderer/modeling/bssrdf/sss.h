@@ -251,16 +251,8 @@ void compute_absorption_and_scattering(
 
     for (size_t i = 0, e = up_rd.size(); i < e; ++i)
     {
-        assert(rd[i] >= 0.0f);
-        assert(rd[i] <= 1.0f);
-
-        if (up_rd[i] == 0.0f)
-        {
-            // rd == 0 -> alpha_prime == 0 -> sigma_s == 0
-            sigma_s[i] = 0.0f;
-            sigma_a[i] = 1.0f / (static_cast<float>(foundation::SqrtThree) * up_dmfp[i]);
-            continue;
-        }
+        assert(up_rd[i] > 0.0f);
+        assert(up_rd[i] < 1.0f);
 
         // Find alpha' by numerically inverting Rd(alpha').
         const double alpha_prime = compute_alpha_prime(rd_fun, up_rd[i]);
