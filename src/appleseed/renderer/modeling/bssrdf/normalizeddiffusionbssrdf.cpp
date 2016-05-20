@@ -36,6 +36,7 @@
 #include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/colorspace.h"
 #include "foundation/math/cdf.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -172,10 +173,10 @@ namespace
             values->m_rmax2 = 0.0;
             for (size_t i = 0, e = values->m_dmfp.size(); i < e; ++i)
             {
-                const double l = values->m_dmfp[i];
+                const double l = static_cast<double>(values->m_dmfp[i]);
                 values->m_rmax2 =
                     max(
-                        normalized_diffusion_max_radius(l,values->m_s[i]),
+                        normalized_diffusion_max_radius(l, values->m_s[i]),
                         values->m_rmax2);
             }
 
@@ -278,6 +279,7 @@ namespace
             return pdf_radius * pdf_angle;
         }
 
+      private:
         static const LightingConditions m_lighting_conditions;
     };
 
