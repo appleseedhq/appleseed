@@ -115,10 +115,6 @@ namespace
             // Precompute the relative index of refraction.
             values->m_eta = values->m_outside_ior / values->m_inside_ior;
 
-            // Apply multipliers.
-            values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
-            values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
-
             if (values->m_reflectance.size() != values->m_dmfp.size())
             {
                 // Since it does not really make sense to convert a dmfp,
@@ -139,6 +135,10 @@ namespace
                         values->m_reflectance);
                 }
             }
+
+            // Apply multipliers to input values.
+            values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
+            values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
 
             // Clamp input values.
             values->m_reflectance = clamp(values->m_reflectance, 0.001f, 0.999f);
