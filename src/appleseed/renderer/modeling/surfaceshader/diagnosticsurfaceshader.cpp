@@ -165,6 +165,14 @@ namespace
         return Color3f(u, v, w);
     }
 
+    // Compute a color from uv coordinates.
+    inline Color3f uvs_to_color(const Vector2d& vec)
+    {
+        const float u = wrap1(static_cast<float>(vec[0]));
+        const float v = wrap1(static_cast<float>(vec[1]));
+        return Color3f(u, v, 0.0f);
+    }
+
     // Compute a color from a given unit-length 3D vector.
     inline Color3f vector3_to_color(const Vector3d& vec)
     {
@@ -265,7 +273,7 @@ void DiagnosticSurfaceShader::evaluate(
 
       case UV:
         shading_result.set_main_to_linear_rgb(
-            vector2_to_color(shading_point.get_uv(0)));
+            uvs_to_color(shading_point.get_uv(0)));
         break;
 
       case Tangent:
