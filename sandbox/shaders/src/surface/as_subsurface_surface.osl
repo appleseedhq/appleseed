@@ -42,8 +42,8 @@ shader as_subsurface_surface
         string widget = "popup",
         string options = "normalized_diffusion|standard_dipole|better_dipole|directional_dipole"
     ]],
-    float                Radius = 0.1,
-    float                RadiusScale = 1.0,
+    color                Radius = 1.0,
+    float                RadiusScale = 0.1,
     float                Ior = 1.3,
     int                  MaxSubsurfaceRayDepth = 2
     [[
