@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016 The masked shader writer, The appleseedhq Organization
+// Copyright (c) 2014-2016 The masked shader writer, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,44 +26,33 @@
 // THE SOFTWARE.
 //
 
-shader as_subsurface_surface
-[[
-    string help = "Subsurface surface shader"
-]]
-(
-    vector               Normal = N,
-    float                Reflectance = 0.8
-    [[
-        float  min = 0
-    ]],
-    color                Color = 1.0,
-    string               Profile = "better_dipole"
-    [[
-        string widget = "popup",
-        string options = "normalized_diffusion|standard_dipole|better_dipole|directional_dipole"
-    ]],
-    color                Radius = 1.0,
-    float                RadiusScale = 0.1,
-    float                Ior = 1.3,
-    int                  MaxSubsurfaceRayDepth = 2
-    [[
-        string help = "Replace subsurface by diffuse when ray depth is greater.",
-        int    min = 0,
-    ]],
-    output closure color BSSRDF = 0
-)
-{
-    int RayDepth;
-    getattribute("path:ray_depth", RayDepth);
-    if (RayDepth <= MaxSubsurfaceRayDepth)
-    {
-        BSSRDF = Reflectance * as_subsurface(
-            Profile,
-            Normal,
-            Color,
-            Radius * RadiusScale,
-            Ior);
-    }
-    else
-        BSSRDF = Reflectance * Color * diffuse(Normal);
-}
+#ifndef APPLESEED_SHADERS_UDIM_H
+#define APPLESEED_SHADERS_UDIM_H
+
+#define MARI_UDIM_NAME(i) format("%s%d%s", Filename, i + 1001, UDIMPrefix)
+
+#define TEN_MARI_UDIM_NAMES(j)  \
+    MARI_UDIM_NAME(10 * j + 0), \
+    MARI_UDIM_NAME(10 * j + 1), \
+    MARI_UDIM_NAME(10 * j + 2), \
+    MARI_UDIM_NAME(10 * j + 3), \
+    MARI_UDIM_NAME(10 * j + 4), \
+    MARI_UDIM_NAME(10 * j + 5), \
+    MARI_UDIM_NAME(10 * j + 6), \
+    MARI_UDIM_NAME(10 * j + 7), \
+    MARI_UDIM_NAME(10 * j + 8), \
+    MARI_UDIM_NAME(10 * j + 9)
+
+#define TEN_MARI_UDIM_ROWS  \
+    TEN_MARI_UDIM_NAMES(0), \
+    TEN_MARI_UDIM_NAMES(1), \
+    TEN_MARI_UDIM_NAMES(2), \
+    TEN_MARI_UDIM_NAMES(3), \
+    TEN_MARI_UDIM_NAMES(4), \
+    TEN_MARI_UDIM_NAMES(5), \
+    TEN_MARI_UDIM_NAMES(6), \
+    TEN_MARI_UDIM_NAMES(7), \
+    TEN_MARI_UDIM_NAMES(8), \
+    TEN_MARI_UDIM_NAMES(9) 
+
+#endif

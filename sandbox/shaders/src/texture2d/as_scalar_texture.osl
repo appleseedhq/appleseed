@@ -26,6 +26,8 @@
 // THE SOFTWARE.
 //
 
+#include "appleseed/udim.h"
+
 shader as_scalar_texture
 (
     float        U = u,
@@ -34,6 +36,12 @@ shader as_scalar_texture
     [[
         string widget = "filename"
     ]],
+    string       UDIM = "off"
+    [[
+        string widget = "popup",
+        string options = "off|mari"
+    ]],
+    string       UDIMPrefix = ".tx",
     string       UWrap = "periodic"
     [[
         string widget = "popup",
@@ -66,10 +74,32 @@ shader as_scalar_texture
     output float FloatOut = 0
 )
 {
+    string mari_filenames[100] = {TEN_MARI_UDIM_ROWS};
+
+    string tx_filename = "";
+    float uu;
+    float vv;
+
+    if (UDIM == "mari")
+    {
+        int utile  = int(U); 
+        int vtile  = int(V); 
+        int offset = 10 * vtile + utile;
+        tx_filename = mari_filenames[offset];
+        uu = U - utile;
+        vv = V - vtile;
+    }
+    else
+    {
+        tx_filename = Filename;
+        uu = U;
+        vv = V;
+    }
+
     color c = texture(
-        Filename,
-        U,
-        V,
+        tx_filename,
+        uu,
+        vv,
         "swidth", UWidth,
         "twidth", VWidth,
         "sblur", UBlur,
