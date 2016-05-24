@@ -37,7 +37,7 @@ shader as_subsurface_surface
         float  min = 0
     ]],
     color                Color = 1.0,
-    string               Profile = "normalized_diffusion"
+    string               Profile = "better_dipole"
     [[
         string widget = "popup",
         string options = "normalized_diffusion|standard_dipole|better_dipole|directional_dipole"
