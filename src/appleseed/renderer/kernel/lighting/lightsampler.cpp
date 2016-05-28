@@ -329,9 +329,9 @@ void LightSampler::collect_emitting_triangles(
                     triangle.m_n1 != Triangle::None &&
                     triangle.m_n2 != Triangle::None)
                 {
-                    n0_os = tess->m_vertex_normals[triangle.m_n0];
-                    n1_os = tess->m_vertex_normals[triangle.m_n1];
-                    n2_os = tess->m_vertex_normals[triangle.m_n2];
+                    n0_os = Vector3d(tess->m_vertex_normals[triangle.m_n0]);
+                    n1_os = Vector3d(tess->m_vertex_normals[triangle.m_n1]);
+                    n2_os = Vector3d(tess->m_vertex_normals[triangle.m_n2]);
                 }
                 else
                     n0_os = n1_os = n2_os = geometric_normal;

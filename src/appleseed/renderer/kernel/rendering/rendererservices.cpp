@@ -363,7 +363,7 @@ bool RendererServices::trace(
 
     if (P == sg->P)
     {
-        Vector3d front = Vector3f(P);
+        Vector3d front(P.x, P.y, P.z);
         Vector3d back = front;
 
         Intersector::fixed_offset(
@@ -377,11 +377,11 @@ bool RendererServices::trace(
     }
     else
     {
-        pos = Vector3f(P);
+        pos = Vector3d(P.x, P.y, P.z);
         origin_shading_point = 0;
     }
 
-    const Vector3d dir = Vector3f(R);
+    const Vector3d dir(R.x, R.y, R.z);
     const ShadingRay ray(
         pos,
         normalize(dir),

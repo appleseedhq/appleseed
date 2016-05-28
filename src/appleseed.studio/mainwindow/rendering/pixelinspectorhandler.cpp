@@ -110,8 +110,8 @@ void PixelInspectorHandler::show_tooltip()
         const QPoint global_point = QCursor::pos();
         const QPoint local_point = m_widget->mapFromGlobal(global_point);
 
-        const Vector2d pix = m_mouse_tracker.widget_to_pixel(local_point);
-        const Vector2d ndc = m_mouse_tracker.widget_to_ndc(local_point);
+        const Vector2d pix(m_mouse_tracker.widget_to_pixel(local_point));
+        const Vector2d ndc(m_mouse_tracker.widget_to_ndc(local_point));
 
         Color4f linear_rgba;
         m_project.get_frame()->image().get_pixel(

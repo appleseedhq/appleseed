@@ -112,7 +112,7 @@ namespace
             check_non_zero_emission("irradiance", "irradiance_multiplier");
 
             const Scene::RenderData& scene_data = project.get_scene()->get_render_data();
-            m_scene_center = scene_data.m_center;
+            m_scene_center = Vector3d(scene_data.m_center);
             m_scene_radius = scene_data.m_radius;
             m_safe_scene_diameter = scene_data.m_safe_diameter;
 

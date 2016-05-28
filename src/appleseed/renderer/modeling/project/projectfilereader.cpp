@@ -2263,7 +2263,7 @@ namespace
 
             if (scene_bbox.is_valid())
             {
-                const Vector3d scene_center = scene_bbox.center();
+                const Vector3d scene_center(scene_bbox.center());
 
                 RENDERER_LOG_INFO(
                     "scene bounding box: (%f, %f, %f)-(%f, %f, %f).\n"
