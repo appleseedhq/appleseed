@@ -170,7 +170,7 @@ namespace
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_intensity;                // emitted intensity in W.sr^-1
-            double      m_intensity_multiplier;     // emitted intensity multiplier
+            ScalarInput m_intensity_multiplier;     // emitted intensity multiplier
         };
 
         const Source*   m_intensity_source;

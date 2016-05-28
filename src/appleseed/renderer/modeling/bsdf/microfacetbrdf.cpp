@@ -433,11 +433,11 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            double      m_glossiness;
-            double      m_glossiness_multiplier;
+            ScalarInput m_glossiness;
+            ScalarInput m_glossiness_multiplier;
             Spectrum    m_reflectance;
-            double      m_reflectance_multiplier;
-            double      m_fr_multiplier;            // Fresnel multiplier
+            ScalarInput m_reflectance_multiplier;
+            ScalarInput m_fr_multiplier;            // Fresnel multiplier
         };
 
         enum MDF

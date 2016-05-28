@@ -296,7 +296,7 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            double  m_weight;
+            ScalarInput  m_weight;
         };
 
         const BSDF* m_bsdf[2];

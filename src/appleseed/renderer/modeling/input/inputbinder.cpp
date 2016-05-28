@@ -695,7 +695,7 @@ bool InputBinder::try_bind_scalar_to_input(
 {
     try
     {
-        const double value = from_string<double>(param_value);
+        const ScalarInput value = from_string<ScalarInput>(param_value);
         input.bind(new ScalarSource(value));
         return true;
     }

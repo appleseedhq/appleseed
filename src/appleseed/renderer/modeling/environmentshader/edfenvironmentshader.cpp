@@ -145,7 +145,7 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            double m_alpha_value;
+            ScalarInput m_alpha_value;
         };
 
         EnvironmentEDF*     m_env_edf;

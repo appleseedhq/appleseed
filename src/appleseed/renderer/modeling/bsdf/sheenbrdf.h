@@ -57,7 +57,7 @@ namespace renderer
 APPLESEED_DECLARE_INPUT_VALUES(SheenBRDFInputValues)
 {
     Spectrum    m_reflectance;              // diffuse reflectance (albedo, technically)
-    double      m_reflectance_multiplier;
+    ScalarInput m_reflectance_multiplier;
 };
 
 

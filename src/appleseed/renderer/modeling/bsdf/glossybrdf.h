@@ -57,10 +57,10 @@ namespace renderer
 APPLESEED_DECLARE_INPUT_VALUES(GlossyBRDFInputValues)
 {
     Spectrum    m_reflectance;
-    double      m_reflectance_multiplier;
-    double      m_roughness;
-    double      m_anisotropic;
-    double      m_ior;
+    ScalarInput m_reflectance_multiplier;
+    ScalarInput m_roughness;
+    ScalarInput m_anisotropic;
+    ScalarInput m_ior;
 
     // Precomputed values.
     double      m_outside_ior;

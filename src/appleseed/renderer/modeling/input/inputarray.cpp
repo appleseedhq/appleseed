@@ -94,8 +94,8 @@ namespace
             switch (m_format)
             {
               case InputFormatScalar:
-                size = align_to<double>(size);
-                size += sizeof(double);
+                size = align_to<ScalarInput>(size);
+                size += sizeof(ScalarInput);
                 break;
 
               case InputFormatSpectralReflectance:
@@ -130,14 +130,14 @@ namespace
             {
               case InputFormatScalar:
                 {
-                    ptr = align_to<double>(ptr);
-                    double* out_scalar = reinterpret_cast<double*>(ptr);
+                    ptr = align_to<ScalarInput>(ptr);
+                    ScalarInput* out_scalar = reinterpret_cast<ScalarInput*>(ptr);
 
                     if (m_source)
                         m_source->evaluate(texture_cache, uv, *out_scalar);
-                    else *out_scalar = 0.0;
+                    else *out_scalar = ScalarInput(0.0);
 
-                    ptr += sizeof(double);
+                    ptr += sizeof(ScalarInput);
                 }
                 break;
 
@@ -197,14 +197,14 @@ namespace
             {
               case InputFormatScalar:
                 {
-                    ptr = align_to<double>(ptr);
-                    double* out_scalar = reinterpret_cast<double*>(ptr);
+                    ptr = align_to<ScalarInput>(ptr);
+                    ScalarInput* out_scalar = reinterpret_cast<ScalarInput*>(ptr);
 
                     if (m_source && m_source->is_uniform())
                         m_source->evaluate_uniform(*out_scalar);
-                    else *out_scalar = 0.0;
+                    else *out_scalar = ScalarInput(0.0);
 
-                    ptr += sizeof(double);
+                    ptr += sizeof(ScalarInput);
                 }
                 break;
 

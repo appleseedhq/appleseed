@@ -83,13 +83,13 @@ void ColorSource::initialize_from_spectrum(const ColorEntity& color_entity)
 
     if (values.empty())
     {
-        m_scalar = 0.0;
+        m_scalar = ScalarInput(0.0);
         m_linear_rgb.set(0.0f);
         m_spectrum.set(0.0f);
         return;
     }
 
-    m_scalar = static_cast<double>(values[0]);
+    m_scalar = static_cast<ScalarInput>(values[0]);
 
     m_spectrum.resize(Spectrum::Samples);
     spectral_values_to_spectrum(
@@ -118,7 +118,7 @@ void ColorSource::initialize_from_color3(const ColorEntity& color_entity)
         color = Color3f(values[0], values[1], values[2]);
     else
     {
-        m_scalar = 0.0;
+        m_scalar = ScalarInput(0.0);
         m_linear_rgb.set(0.0f);
         m_spectrum.set(0.0f);
         return;

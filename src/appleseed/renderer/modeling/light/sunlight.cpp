@@ -230,8 +230,8 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            double      m_turbidity;                // atmosphere turbidity
-            double      m_radiance_multiplier;      // emitted radiance multiplier
+            ScalarInput m_turbidity;                // atmosphere turbidity
+            ScalarInput m_radiance_multiplier;      // emitted radiance multiplier
         };
 
         Vector3d        m_scene_center;             // world space

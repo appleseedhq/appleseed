@@ -56,10 +56,10 @@ namespace renderer
 APPLESEED_DECLARE_INPUT_VALUES(GaussianBSSRDFInputValues)
 {
     Spectrum    m_reflectance;
-    double      m_reflectance_multiplier;
-    double      m_v;
-    double      m_outside_ior;
-    double      m_inside_ior;
+    ScalarInput m_reflectance_multiplier;
+    ScalarInput m_v;
+    ScalarInput m_outside_ior;
+    ScalarInput m_inside_ior;
 
     // Precomputed values.
     double      m_rmax2;

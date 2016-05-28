@@ -58,7 +58,7 @@ namespace renderer
 APPLESEED_DECLARE_INPUT_VALUES(SpecularBRDFInputValues)
 {
     Spectrum    m_reflectance;              // specular reflectance
-    double      m_reflectance_multiplier;   // specular reflectance multiplier
+    ScalarInput m_reflectance_multiplier;   // specular reflectance multiplier
 };
 
 

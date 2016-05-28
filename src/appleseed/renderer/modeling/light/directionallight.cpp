@@ -211,8 +211,8 @@ namespace
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_irradiance;               // emitted irradiance in W.m^-2
-            double      m_irradiance_multiplier;    // emitted irradiance multiplier
-            double      m_exposure;                 // emitted irradiance multiplier in f-stops
+            ScalarInput m_irradiance_multiplier;    // emitted irradiance multiplier
+            ScalarInput m_exposure;                 // emitted irradiance multiplier in f-stops
         };
 
         Vector3d        m_scene_center;             // world space

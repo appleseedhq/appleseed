@@ -154,7 +154,7 @@ namespace
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
-            double      m_radiance_multiplier;  // emitted radiance multiplier
+            ScalarInput m_radiance_multiplier;  // emitted radiance multiplier
         };
 
         void lookup_envmap(

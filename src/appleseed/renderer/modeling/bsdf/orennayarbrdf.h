@@ -57,8 +57,8 @@ namespace renderer
 APPLESEED_DECLARE_INPUT_VALUES(OrenNayarBRDFInputValues)
 {
     Spectrum    m_reflectance;              // diffuse reflectance (albedo, technically)
-    double      m_reflectance_multiplier;
-    double      m_roughness;
+    ScalarInput m_reflectance_multiplier;
+    ScalarInput m_roughness;
 };
 
 

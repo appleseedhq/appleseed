@@ -217,8 +217,8 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            double      m_color_multiplier;
-            double      m_alpha_multiplier;
+            ScalarInput m_color_multiplier;
+            ScalarInput m_alpha_multiplier;
             Spectrum    m_translucency;
             Spectrum    m_aerial_persp_sky_color;
         };
