@@ -90,7 +90,7 @@ class Matrix
 
     // Construct a matrix from another matrix of a different type.
     template <typename U>
-    Matrix(const Matrix<U, M, N>& rhs);
+    explicit Matrix(const Matrix<U, M, N>& rhs);
 
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
