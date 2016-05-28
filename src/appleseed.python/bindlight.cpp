@@ -32,7 +32,7 @@
 #include "bindentitycontainers.h"
 #include "dict2dict.h"
 #include "metadata.h"
-#include "unalignedtransformd44.h"
+#include "unalignedtransform.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/light.h"
@@ -44,9 +44,10 @@ using namespace std;
 
 namespace
 {
-    auto_release_ptr<Light> create_light(const string&      model,
-                                         const string&      name,
-                                         const bpy::dict&   params)
+    auto_release_ptr<Light> create_light(
+        const string&      model,
+        const string&      name,
+        const bpy::dict&   params)
     {
         LightFactoryRegistrar factories;
         const ILightFactory* factory = factories.lookup(model.c_str());
@@ -62,12 +63,12 @@ namespace
         return auto_release_ptr<Light>();
     }
 
-    UnalignedTransformd44 light_get_transform(const Light* l)
+    UnalignedTransformd light_get_transform(const Light* l)
     {
-        return UnalignedTransformd44(l->get_transform());
+        return UnalignedTransformd(l->get_transform());
     }
 
-    void light_set_transform(Light* l, const UnalignedTransformd44& xform)
+    void light_set_transform(Light* l, const UnalignedTransformd& xform)
     {
         l->set_transform(xform.as_foundation_transform());
     }
