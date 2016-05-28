@@ -72,7 +72,7 @@ class Vector
 
     // Construct a vector from another vector of a different type.
     template <typename U>
-    Vector(const Vector<U, N>& rhs);
+    explicit Vector(const Vector<U, N>& rhs);
 
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
@@ -243,7 +243,7 @@ class Vector<T, 2>
 
     // Construct a vector from another vector of a different type.
     template <typename U>
-    Vector(const Vector<U, 2>& rhs);
+    explicit Vector(const Vector<U, 2>& rhs);
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
 
@@ -294,7 +294,7 @@ class Vector<T, 3>
 
     // Construct a vector from another vector of a different type.
     template <typename U>
-    Vector(const Vector<U, 3>& rhs);
+    explicit Vector(const Vector<U, 3>& rhs);
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
 
@@ -356,7 +356,7 @@ class Vector<T, 4>
 
     // Construct a vector from another vector of a different type.
     template <typename U>
-    Vector(const Vector<U, 4>& rhs);
+    explicit Vector(const Vector<U, 4>& rhs);
 
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
