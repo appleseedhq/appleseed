@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -177,7 +177,7 @@ inline TriangleSSK<T>::TriangleSSK(
 
 template <typename T>
 template <typename U>
-FORCE_INLINE TriangleSSK<T>::TriangleSSK(const TriangleSSK<U>& rhs)
+APPLESEED_FORCE_INLINE TriangleSSK<T>::TriangleSSK(const TriangleSSK<U>& rhs)
   : m_nu (static_cast<ValueType>(rhs.m_nu))
   , m_nv (static_cast<ValueType>(rhs.m_nv))
   , m_np (static_cast<ValueType>(rhs.m_np))
@@ -192,7 +192,7 @@ FORCE_INLINE TriangleSSK<T>::TriangleSSK(const TriangleSSK<U>& rhs)
 }
 
 template <>
-FORCE_INLINE bool TriangleSSK<float>::intersect(
+APPLESEED_FORCE_INLINE bool TriangleSSK<float>::intersect(
     const RayType&          ray,
     ValueType&              t,
     ValueType&              u,
@@ -222,7 +222,7 @@ FORCE_INLINE bool TriangleSSK<float>::intersect(
 
     // Check that the intersection point lies inside the triangle.
 #ifdef APPLESEED_USE_SSE
-    SSE_ALIGN float detarray[4] = { uprime, uprime, vprime, wprime };
+    APPLESEED_SSE_ALIGN float detarray[4] = { uprime, uprime, vprime, wprime };
     const __m128 mu = _mm_load_ps(detarray);
     const __m128 mv = _mm_shuffle_ps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));
     const __m128 product = _mm_mul_ps(mu, mv);
@@ -252,7 +252,7 @@ FORCE_INLINE bool TriangleSSK<float>::intersect(
 }
 
 template <>
-FORCE_INLINE bool TriangleSSK<double>::intersect(
+APPLESEED_FORCE_INLINE bool TriangleSSK<double>::intersect(
     const RayType&          ray,
     ValueType&              t,
     ValueType&              u,
@@ -312,7 +312,7 @@ FORCE_INLINE bool TriangleSSK<double>::intersect(
 }
 
 template <>
-FORCE_INLINE bool TriangleSSK<float>::intersect(const RayType& ray) const
+APPLESEED_FORCE_INLINE bool TriangleSSK<float>::intersect(const RayType& ray) const
 {
     // Retrieve indices.
     const size_t k = m_ci;
@@ -338,7 +338,7 @@ FORCE_INLINE bool TriangleSSK<float>::intersect(const RayType& ray) const
 
     // Check that the intersection point lies inside the triangle.
 #ifdef APPLESEED_USE_SSE
-    SSE_ALIGN float detarray[4] = { uprime, uprime, vprime, wprime };
+    APPLESEED_SSE_ALIGN float detarray[4] = { uprime, uprime, vprime, wprime };
     const __m128 mu = _mm_load_ps(detarray);
     const __m128 mv = _mm_shuffle_ps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));
     const __m128 product = _mm_mul_ps(mu, mv);
@@ -360,7 +360,7 @@ FORCE_INLINE bool TriangleSSK<float>::intersect(const RayType& ray) const
 }
 
 template <>
-FORCE_INLINE bool TriangleSSK<double>::intersect(const RayType& ray) const
+APPLESEED_FORCE_INLINE bool TriangleSSK<double>::intersect(const RayType& ray) const
 {
     // Retrieve indices.
     const size_t k = m_ci;

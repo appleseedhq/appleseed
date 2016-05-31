@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +44,8 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/foreach.h"
 
@@ -183,6 +185,55 @@ GAABB3 Assembly::compute_non_hierarchical_local_bbox() const
 namespace
 {
     template <typename EntityCollection>
+    void do_collect_asset_paths(
+        StringArray&            paths,
+        const EntityCollection& entities)
+    {
+        for (const_each<EntityCollection> i = entities; i; ++i)
+            i->collect_asset_paths(paths);
+    }
+
+    template <typename EntityCollection>
+    void do_update_asset_paths(
+        const StringDictionary& mappings,
+        EntityCollection&       entities)
+    {
+        for (each<EntityCollection> i = entities; i; ++i)
+            i->update_asset_paths(mappings);
+    }
+}
+
+void Assembly::collect_asset_paths(StringArray& paths) const
+{
+    BaseGroup::collect_asset_paths(paths);
+
+    do_collect_asset_paths(paths, bsdfs());
+    do_collect_asset_paths(paths, bssrdfs());
+    do_collect_asset_paths(paths, edfs());
+    do_collect_asset_paths(paths, surface_shaders());
+    do_collect_asset_paths(paths, materials());
+    do_collect_asset_paths(paths, lights());
+    do_collect_asset_paths(paths, objects());
+    do_collect_asset_paths(paths, object_instances());
+}
+
+void Assembly::update_asset_paths(const StringDictionary& mappings)
+{
+    BaseGroup::update_asset_paths(mappings);
+
+    do_update_asset_paths(mappings, bsdfs());
+    do_update_asset_paths(mappings, bssrdfs());
+    do_update_asset_paths(mappings, edfs());
+    do_update_asset_paths(mappings, surface_shaders());
+    do_update_asset_paths(mappings, materials());
+    do_update_asset_paths(mappings, lights());
+    do_update_asset_paths(mappings, objects());
+    do_update_asset_paths(mappings, object_instances());
+}
+
+namespace
+{
+    template <typename EntityCollection>
     bool invoke_on_frame_begin(
         const Project&          project,
         EntityCollection&       entities,
@@ -288,6 +339,13 @@ const char* AssemblyFactory::get_model() const
 auto_release_ptr<Assembly> AssemblyFactory::create(
     const char*         name,
     const ParamArray&   params) const
+{
+    return auto_release_ptr<Assembly>(new Assembly(name, params));
+}
+
+auto_release_ptr<Assembly> AssemblyFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
 {
     return auto_release_ptr<Assembly>(new Assembly(name, params));
 }

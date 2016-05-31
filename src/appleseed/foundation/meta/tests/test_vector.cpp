@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -145,7 +145,7 @@ TEST_SUITE(Foundation_Math_Vector)
         EXPECT_FEQ(Vector3d(5.0, 7.0, 9.0), Vector3d(1.0, 2.0, 3.0) + Vector3d(4.0, 5.0, 6.0));
     }
 
-    TEST_CASE(TestSubstraction)
+    TEST_CASE(TestSubtraction)
     {
         EXPECT_FEQ(Vector3d(1.0, 3.0, 5.0), Vector3d(4.0, 5.0, 6.0) - Vector3d(3.0, 2.0, 1.0));
     }
@@ -186,7 +186,7 @@ TEST_SUITE(Foundation_Math_Vector)
         EXPECT_FEQ(Vector3d(5.0, 7.0, 9.0), v);
     }
 
-    TEST_CASE(TestInPlaceSubstraction)
+    TEST_CASE(TestInPlaceSubtraction)
     {
         Vector3d v(4.0, 5.0, 6.0); v -= Vector3d(3.0, 2.0, 1.0);
         EXPECT_FEQ(Vector3d(1.0, 3.0, 5.0), v);
@@ -246,6 +246,16 @@ TEST_SUITE(Foundation_Math_Vector)
         EXPECT_FEQ(Vector3d(0.0, 1.0, 0.0), safe_normalize(Vector3d(0.0, 4.0, 0.0)));
         EXPECT_FEQ(Vector3d(0.0, 0.0, 1.0), safe_normalize(Vector3d(0.0, 0.0, 4.0)));
         EXPECT_FEQ(Vector3d(1.0, 0.0, 0.0), safe_normalize(Vector3d(0.0, 0.0, 0.0)));
+    }
+
+    TEST_CASE(TestImproveNormalization)
+    {
+        Vector3d v(-0.48859909517572381, 0.021669236596684682, -0.87223928390023286);
+        ASSERT_FALSE(is_normalized(v));
+
+        v = improve_normalization(v);
+
+        EXPECT_TRUE(is_normalized(v));
     }
 
     TEST_CASE(TestIsNormalized)

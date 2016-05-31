@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -284,6 +284,7 @@ Dictionary UniformPixelRendererFactory::get_params_metadata()
         Dictionary()
             .insert("type", "int")
             .insert("default", "64")
+            .insert("label", "Samples")
             .insert("help", "Number of anti-aliasing samples"));
 
     metadata.dictionaries().insert(
@@ -291,6 +292,7 @@ Dictionary UniformPixelRendererFactory::get_params_metadata()
         Dictionary()
             .insert("type", "bool")
             .insert("default", "false")
+            .insert("label", "Force Anti-aliasing")
             .insert(
                 "help",
                 "When using 1 sample/pixel and force_antialiasing is disabled, samples are placed in the middle of the pixels"));

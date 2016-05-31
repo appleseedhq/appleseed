@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 The masked shader writer, The appleseedhq Organization
+// Copyright (c) 2015-2016 The masked shader writer, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,30 +26,29 @@
 // THE SOFTWARE.
 //
 
-#include"appleseed/noise.h"
-
 shader as_noise3d
 (
-    vector In = P,
-
-    string NoiseType = "perlin"
+    vector        In = P,
+    string        NoiseType = "perlin"
     [[
         string widget = "popup",
         string options = "perlin|uperlin|cell|simplex|usimplex|gabor"
     ]],
-
-    int Periodic = 0
+    int           Periodic = 0
     [[
         string widget = "checkBox"
     ]],
-
-    vector Period = 1,
-
-    vector Frequency = 1,
-    vector Offset = 0,
-
-    APPLESEED_DECLARE_GABOR_NOISE_PARAMS,
-
+    vector        Period = 1,
+    vector        Frequency = 1,
+    vector        Offset = 0,
+    int           AnisotropyMode = 0
+    [[
+        string widget = "mapper",
+        string options = "Isotropic:0|Anisotropic:1|Hybrid:2"
+    ]],
+    vector        Direction = 0,
+    float         Bandwidth = 1.0,
+    float         Impulses = 16,
     output float  FloatOut = 0,
     output vector VectorOut = 0,
     output color  ColorOut = 0
@@ -63,25 +62,37 @@ shader as_noise3d
             NoiseType,
             p,
             Period,
-            APPLESEED_GABOR_NOISE_PARAMS);
+            "anisotropic", AnisotropyMode,
+            "direction", Direction,
+            "bandwidth", Bandwidth,
+            "impulses", Impulses);
 
         VectorOut = pnoise(
             NoiseType,
             p,
             Period,
-            APPLESEED_GABOR_NOISE_PARAMS);
+            "anisotropic", AnisotropyMode,
+            "direction", Direction,
+            "bandwidth", Bandwidth,
+            "impulses", Impulses);
     }
     else
     {
         FloatOut = noise(
             NoiseType,
             p,
-            APPLESEED_GABOR_NOISE_PARAMS);
+            "anisotropic", AnisotropyMode,
+            "direction", Direction,
+            "bandwidth", Bandwidth,
+            "impulses", Impulses);
 
         VectorOut = noise(
             NoiseType,
             p,
-            APPLESEED_GABOR_NOISE_PARAMS);
+            "anisotropic", AnisotropyMode,
+            "direction", Direction,
+            "bandwidth", Bandwidth,
+            "impulses", Impulses);
     }
 
     ColorOut = color(VectorOut);

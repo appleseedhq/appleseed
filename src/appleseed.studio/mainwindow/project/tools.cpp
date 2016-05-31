@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -192,6 +192,17 @@ LineEditDoubleSliderAdaptor::LineEditDoubleSliderAdaptor(
   , m_slider(slider)
 {
     slot_set_slider_value(m_line_edit->text());
+
+    // Connect the line edit and the slider together.
+    connect(
+        m_slider, SIGNAL(valueChanged(const double)),
+        SLOT(slot_set_line_edit_value(const double)));
+    connect(
+        m_line_edit, SIGNAL(textChanged(const QString&)),
+        SLOT(slot_set_slider_value(const QString&)));
+    connect(
+        m_line_edit, SIGNAL(editingFinished()),
+        SLOT(slot_apply_slider_value()));
 }
 
 void LineEditDoubleSliderAdaptor::slot_set_line_edit_value(const double value)

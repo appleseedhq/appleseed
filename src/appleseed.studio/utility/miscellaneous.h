@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,7 @@
 
 // Forward declarations.
 namespace renderer  { class ParamArray; }
+class QIcon;
 class QLayout;
 class QMessageBox;
 class QShortcut;
@@ -55,6 +56,18 @@ extern const QString g_bitmap_files_filter;
 QString compute_oiio_files_filter();
 
 #endif
+
+// Combine two filesystem paths and convert the result to native separators.
+QString combine_paths(const QString& lhs, const QString& rhs);
+
+// Combine the application's base path and a given relative path.
+QString make_app_path(const QString& path);
+
+// Check whether a file exists.
+bool file_exists(const QString& path);
+
+// Load an icon and its variants (hover, disabled...) from the application's icons directory.
+QIcon load_icons(const QString& base_name);
 
 QString get_open_filename(
     QWidget*                parent,

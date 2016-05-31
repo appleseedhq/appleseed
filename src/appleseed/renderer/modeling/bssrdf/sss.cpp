@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -198,7 +198,8 @@ double normalized_diffusion_profile(
     const double    d)
 {
     // Equation 2.
-    return (exp(-r / d) + exp(-r / (3.0 * d))) / (8.0 * Pi * d * r);
+    const double exp_r3 = exp(-r / (3.0 * d));
+    return (cube(exp_r3) + exp_r3) / (8.0 * Pi * d * r);
 }
 
 double normalized_diffusion_profile(
@@ -242,6 +243,8 @@ namespace
 
     struct NDCDFFun
     {
+        const double m_d;
+
         explicit NDCDFFun(const double d)
           : m_d(d)
         {
@@ -251,12 +254,12 @@ namespace
         {
             return normalized_diffusion_cdf(r, m_d);
         }
-
-        const double m_d;
     };
 
     struct NDPDFFun
     {
+        const double m_d;
+
         explicit NDPDFFun(const double d)
           : m_d(d)
         {
@@ -266,8 +269,6 @@ namespace
         {
             return normalized_diffusion_pdf(r, m_d);
         }
-
-        const double m_d;
     };
 }
 
@@ -313,7 +314,8 @@ double normalized_diffusion_cdf(
     const double    d)
 {
     // Equation 11.
-    return 1.0 - 0.25 * exp(-r / d) - 0.75 * exp(-r / (3.0 * d));
+    const double exp_r3 = exp(-r / (3.0 * d));
+    return 1.0 - 0.25 * cube(exp_r3) - 0.75 * exp_r3;
 }
 
 double normalized_diffusion_cdf(

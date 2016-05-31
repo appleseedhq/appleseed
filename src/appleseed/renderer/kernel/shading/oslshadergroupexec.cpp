@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -156,7 +156,6 @@ void OSLShaderGroupExec::execute_bump(
             VisibilityFlags::CameraRay);
 
         CompositeSurfaceClosure c(
-            0,
             shading_point.get_shading_basis(),
             shading_point.get_osl_shader_globals().Ci);
 
@@ -200,7 +199,11 @@ Color3f OSLShaderGroupExec::execute_background(
     sg.raytype = VisibilityFlags::CameraRay;
 
     m_osl_shading_system.execute(
+#if OSL_LIBRARY_VERSION_CODE >= 10700
+        m_osl_shading_context,
+#else
         *m_osl_shading_context,
+#endif
         *shader_group.shader_group_ref(),
         sg);
 
@@ -221,7 +224,11 @@ void OSLShaderGroupExec::do_execute(
         m_osl_shading_system.renderer());
 
     m_osl_shading_system.execute(
+#if OSL_LIBRARY_VERSION_CODE >= 10700
+        m_osl_shading_context,
+#else
         *m_osl_shading_context,
+#endif
         *shader_group.shader_group_ref(),
         shading_point.get_osl_shader_globals());
 }

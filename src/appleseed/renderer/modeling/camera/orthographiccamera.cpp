@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -342,6 +342,13 @@ DictionaryArray OrthographicCameraFactory::get_input_metadata() const
 auto_release_ptr<Camera> OrthographicCameraFactory::create(
     const char*         name,
     const ParamArray&   params) const
+{
+    return auto_release_ptr<Camera>(new OrthographicCamera(name, params));
+}
+
+auto_release_ptr<Camera> OrthographicCameraFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
 {
     return auto_release_ptr<Camera>(new OrthographicCamera(name, params));
 }

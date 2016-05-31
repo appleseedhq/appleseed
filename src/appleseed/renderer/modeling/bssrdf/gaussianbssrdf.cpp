@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -291,8 +291,8 @@ DictionaryArray GaussianBSSRDFFactory::get_input_metadata() const
             .insert("name", "outside_ior")
             .insert("label", "Outside Index of Refraction")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "5.0")
+            .insert("min_value", "1.0")
+            .insert("max_value", "2.5")
             .insert("use", "required")
             .insert("default", "1.0"));
 
@@ -301,8 +301,8 @@ DictionaryArray GaussianBSSRDFFactory::get_input_metadata() const
             .insert("name", "inside_ior")
             .insert("label", "Inside Index of Refraction")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "5.0")
+            .insert("min_value", "1.0")
+            .insert("max_value", "2.5")
             .insert("use", "required")
             .insert("default", "1.3"));
 
@@ -312,6 +312,13 @@ DictionaryArray GaussianBSSRDFFactory::get_input_metadata() const
 auto_release_ptr<BSSRDF> GaussianBSSRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
+{
+    return auto_release_ptr<BSSRDF>(new GaussianBSSRDF(name, params));
+}
+
+auto_release_ptr<BSSRDF> GaussianBSSRDFFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
 {
     return auto_release_ptr<BSSRDF>(new GaussianBSSRDF(name, params));
 }

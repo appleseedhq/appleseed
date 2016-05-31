@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,15 +30,14 @@
 #define APPLESEED_RENDERER_KERNEL_SHADING_CLOSURES_H
 
 // appleseed.renderer headers.
-#include "renderer/modeling/bsdf/osl/oslmicrofacetbrdf.h"
-#include "renderer/modeling/bsdf/osl/oslmicrofacetbtdf.h"
 #include "renderer/modeling/bsdf/ashikhminbrdf.h"
 #include "renderer/modeling/bsdf/diffusebtdf.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
+#include "renderer/modeling/bsdf/glassbsdf.h"
+#include "renderer/modeling/bsdf/glossybrdf.h"
+#include "renderer/modeling/bsdf/metalbrdf.h"
 #include "renderer/modeling/bsdf/orennayarbrdf.h"
 #include "renderer/modeling/bsdf/sheenbrdf.h"
-#include "renderer/modeling/bsdf/specularbrdf.h"
-#include "renderer/modeling/bsdf/specularbtdf.h"
 #include "renderer/modeling/bssrdf/dipolebssrdf.h"
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
@@ -48,6 +47,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/core/exceptions/exception.h"
 #include "foundation/image/color.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
@@ -92,17 +92,20 @@ enum ClosureID
     AshikhminShirleyID,
     DisneyID,
     OrenNayarID,
-    ReflectionID,
-    RefractionID,
     SheenID,
     TranslucentID,
 
-    MicrofacetID,
-    MicrofacetBeckmannReflectionID,
-    MicrofacetBlinnReflectionID,
-    MicrofacetGGXReflectionID,
-    MicrofacetBeckmannRefractionID,
-    MicrofacetGGXRefractionID,
+    GlassID,
+    GlassBeckmannID,
+    GlassGGXID,
+
+    GlossyID,
+    GlossyBeckmannID,
+    GlossyGGXID,
+
+    MetalID,
+    MetalBeckmannID,
+    MetalGGXID,
 
     // BSSRDF closures.
     SubsurfaceID,
@@ -121,6 +124,21 @@ enum ClosureID
     NumClosuresIDs
 };
 
+
+//
+// Exception thrown in case of an OSL runtime error.
+//
+
+struct ExceptionOSLRuntimeError
+  : public foundation::Exception
+{
+    explicit ExceptionOSLRuntimeError(const char* what)
+      : foundation::Exception(what)
+    {
+    }
+};
+
+
 //
 // Composite OSL closure.
 //
@@ -129,7 +147,6 @@ class APPLESEED_ALIGN(16) CompositeClosure
   : public foundation::NonCopyable
 {
   public:
-
     size_t get_num_closures() const;
     ClosureID get_closure_type(const size_t index) const;
     const Spectrum& get_closure_weight(const size_t index) const;
@@ -138,21 +155,46 @@ class APPLESEED_ALIGN(16) CompositeClosure
 
     size_t choose_closure(const double w) const;
 
+    const foundation::Basis3d& get_closure_shading_basis(const size_t index) const;
+
+    void compute_closure_shading_basis(
+        const foundation::Vector3d& normal,
+        const foundation::Basis3d&  original_shading_basis);
+
+    void compute_closure_shading_basis(
+        const foundation::Vector3d& normal,
+        const foundation::Vector3d& tangent,
+        const foundation::Basis3d&  original_shading_basis);
+
+    template <typename InputValues>
+    InputValues* add_closure(
+        const ClosureID             closure_type,
+        const foundation::Basis3d&  original_shading_basis,
+        const foundation::Color3f&  weight,
+        const foundation::Vector3d& normal);
+
+    template <typename InputValues>
+    InputValues* add_closure(
+        const ClosureID             closure_type,
+        const foundation::Basis3d&  original_shading_basis,
+        const foundation::Color3f&  weight,
+        const foundation::Vector3d& normal,
+        const foundation::Vector3d& tangent);
+
   protected:
     typedef boost::mpl::vector<
         AshikhminBRDFInputValues,
         DiffuseBTDFInputValues,
         DipoleBSSRDFInputValues,
         DisneyBRDFInputValues,
+        GlassBSDFInputValues,
+        GlossyBRDFInputValues,
+        MetalBRDFInputValues,
 #ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
         NormalizedDiffusionBSSRDFInputValues,
 #endif
-        OSLMicrofacetBRDFInputValues,
-        OSLMicrofacetBTDFInputValues,
         OrenNayarBRDFInputValues,
-        SheenBRDFInputValues,
-        SpecularBRDFInputValues,
-        SpecularBTDFInputValues
+        SheenBRDFInputValues
     > InputValuesTypeList;
 
     // Find the biggest InputValues type.
@@ -162,7 +204,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
             boost::mpl::sizeof_<boost::mpl::_1> > >::type BiggestInputValueType;
 
     enum { InputValuesAlignment = 16 };
-    enum { MaxClosureEntries = 8 };
+    enum { MaxClosureEntries = 15 };
     enum { MaxPoolSize = MaxClosureEntries * (sizeof(boost::mpl::deref<BiggestInputValueType::base>::type) + InputValuesAlignment) };
 
     // m_pool has to be first, because it has to be aligned.
@@ -174,33 +216,20 @@ class APPLESEED_ALIGN(16) CompositeClosure
     Spectrum                        m_weights[MaxClosureEntries];
     double                          m_cdf[MaxClosureEntries];
     double                          m_pdf_weights[MaxClosureEntries];
+    foundation::Basis3d             m_bases[MaxClosureEntries];
 
     CompositeClosure();
 
     void compute_cdf();
-};
 
-
-//
-// Composite OSL reflection closure.
-//
-
-class APPLESEED_ALIGN(16) CompositeReflectionClosure
-  : public CompositeClosure
-{
-  public:
-    const foundation::Basis3d& get_closure_shading_basis(const size_t index) const;
-
-  protected:
-    foundation::Basis3d m_bases[MaxClosureEntries];
-
-    void compute_closure_shading_basis(
+    template <typename InputValues>
+    InputValues* do_add_closure(
+        const ClosureID             closure_type,
+        const foundation::Basis3d&  original_shading_basis,
+        const foundation::Color3f&  weight,
         const foundation::Vector3d& normal,
-        const foundation::Basis3d&  original_shading_basis);
-    void compute_closure_shading_basis(
-        const foundation::Vector3d& normal,
-        const foundation::Vector3d& tangent,
-        const foundation::Basis3d&  original_shading_basis);
+        bool                        has_tangent,
+        const foundation::Vector3d& tangent);
 };
 
 
@@ -209,51 +238,28 @@ class APPLESEED_ALIGN(16) CompositeReflectionClosure
 //
 
 class APPLESEED_ALIGN(16) CompositeSurfaceClosure
-  : public CompositeReflectionClosure
+  : public CompositeClosure
 {
   public:
     CompositeSurfaceClosure(
-        const BSDF*                 osl_bsdf,
         const foundation::Basis3d&  original_shading_basis,
         const OSL::ClosureColor*    ci);
 
-    // For future layered closures.
-    const BSDF& get_osl_bsdf() const;
+    void add_ior(
+        const foundation::Color3f&  weight,
+        const double                ior);
+
+    double choose_ior(const double w) const;
 
   private:
-    const BSDF*                     m_osl_bsdf;
+    size_t                          m_num_iors;
+    double                          m_iors[MaxClosureEntries];
+    double                          m_ior_cdf[MaxClosureEntries];
 
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
         const foundation::Basis3d&  original_shading_basis,
         const foundation::Color3f&  weight);
-
-    template <typename InputValues>
-    void add_closure(
-        const ClosureID             closure_type,
-        const foundation::Basis3d&  original_shading_basis,
-        const foundation::Color3f&  weight,
-        const foundation::Vector3d& normal,
-        const InputValues&          values);
-
-    template <typename InputValues>
-    void add_closure(
-        const ClosureID             closure_type,
-        const foundation::Basis3d&  original_shading_basis,
-        const foundation::Color3f&  weight,
-        const foundation::Vector3d& normal,
-        const foundation::Vector3d& tangent,
-        const InputValues&          values);
-
-    template <typename InputValues>
-    void do_add_closure(
-        const ClosureID             closure_type,
-        const foundation::Basis3d&  original_shading_basis,
-        const foundation::Color3f&  weight,
-        const foundation::Vector3d& normal,
-        bool                        has_tangent,
-        const foundation::Vector3d& tangent,
-        const InputValues&          values);
 };
 
 
@@ -262,26 +268,18 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
 //
 
 class APPLESEED_ALIGN(16) CompositeSubsurfaceClosure
-  : public CompositeReflectionClosure
+  : public CompositeClosure
 {
   public:
     CompositeSubsurfaceClosure(
         const foundation::Basis3d&  original_shading_basis,
-        const OSL::ClosureColor* ci);
+        const OSL::ClosureColor*    ci);
 
   private:
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
         const foundation::Basis3d&  original_shading_basis,
         const foundation::Color3f&  weight);
-
-    template <typename InputValues>
-    void add_closure(
-        const ClosureID             closure_type,
-        const foundation::Basis3d&  original_shading_basis,
-        const foundation::Color3f&  weight,
-        const foundation::Vector3d& normal,
-        const InputValues&          values);
 };
 
 
@@ -351,26 +349,12 @@ inline void* CompositeClosure::get_closure_input_values(const size_t index) cons
     return m_input_values[index];
 }
 
-
-//
-// CompositeReflectionClosure class implementation.
-//
-
-inline const foundation::Basis3d& CompositeReflectionClosure::get_closure_shading_basis(const size_t index) const
+inline const foundation::Basis3d& CompositeClosure::get_closure_shading_basis(const size_t index) const
 {
     assert(index < get_num_closures());
     return m_bases[index];
 }
 
-
-//
-// CompositeSurfaceClosure class implementation.
-//
-
-inline const BSDF& CompositeSurfaceClosure::get_osl_bsdf() const
-{
-    return *m_osl_bsdf;
-}
 
 //
 // CompositeEmissionClosure class implementation.

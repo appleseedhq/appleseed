@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.8
+# Compiled by oslc 1.6.9
 surface background
 global	vector	I	%read{0,0} %write{2147483647,-1}
 global	closure color	Ci	%read{2147483647,-1} %write{9,9}

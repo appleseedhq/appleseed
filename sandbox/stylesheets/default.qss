@@ -6,7 +6,7 @@
  * This software is released under the MIT license.
  *
  * Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
- * Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+ * Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -313,10 +313,16 @@ QMenu
     border: BORDER_STYLE;
 }
 
+QMenu::icon,
+QMenu::indicator
+{
+    margin-left: 5px;
+}
+
 QMenu::item
 {
     background-color: transparent;
-    padding: 3px 20px 3px 20px;
+    padding: 3px 20px 3px 24px;
 }
 
 QMenu::item:selected
@@ -362,7 +368,6 @@ QMenu::tearoff:selected
 
 /*
  * QToolBar.
- * QToolButton.
  */
 
 QToolBar
@@ -410,6 +415,11 @@ QToolBar::handle:vertical
     margin-bottom: 4px;
 }
 
+
+/*
+ * QToolButton.
+ */
+
 QToolButton
 {
     margin-left: 2px;
@@ -418,8 +428,12 @@ QToolButton
 
 QToolButton:hover
 {
-    background-color: HOVER_BACKGROUND_COLOR;
     color: HOVER_TEXT_COLOR;
+}
+
+QToolButton#widget:hover
+{
+    background-color: HOVER_BACKGROUND_COLOR;
 }
 
 QToolButton:pressed,
@@ -429,7 +443,7 @@ QToolButton:checked
     color: SELECTED_TEXT_COLOR;
 }
 
-QToolButton#ColorPicker
+QToolButton#color_picker
 {
     border: BORDER_STYLE;
 }
@@ -619,6 +633,7 @@ QTreeView,
 QListView
 {
     border: BORDER_STYLE;
+	alternate-background-color: rgb(33, 33, 33);
 }
 
 QTabWidget QTreeView,
@@ -688,6 +703,7 @@ QAbstractItemView::item
  * QCheckBox.
  * QAbstractItemView.
  * QGroupBox.
+ * QMenu::indicator.
  */
 
 QCheckBox::indicator,
@@ -707,42 +723,48 @@ QGroupBox::indicator:hover
 
 QCheckBox::indicator:checked:enabled,
 QAbstractItemView::indicator:checked:enabled,
-QGroupBox::indicator:checked:enabled
+QGroupBox::indicator:checked:enabled,
+QMenu::indicator:checked:enabled
 {
     image: url(":/widgets/checkbox_checked_enabled.png");
 }
 
 QCheckBox::indicator:unchecked:enabled,
 QAbstractItemView::indicator:unchecked:enabled,
-QGroupBox::indicator:unchecked:enabled
+QGroupBox::indicator:unchecked:enabled,
+QMenu::indicator:unchecked:enabled
 {
     image: url(":/widgets/checkbox_unchecked_enabled.png");
 }
 
 QCheckBox::indicator:indeterminate:enabled,
 QAbstractItemView::indicator:indeterminate:enabled,
-QGroupBox::indicator:indeterminate:enabled
+QGroupBox::indicator:indeterminate:enabled,
+QMenu::indicator:indeterminate:enabled
 {
     image: url(":/widgets/checkbox_indeterminate_enabled.png");
 }
 
 QCheckBox::indicator:checked:disabled,
 QAbstractItemView::indicator:checked:disabled,
-QGroupBox::indicator:checked:disabled
+QGroupBox::indicator:checked:disabled,
+QMenu::indicator:checked:disabled
 {
     image: url(":/widgets/checkbox_checked_disabled.png");
 }
 
 QCheckBox::indicator:unchecked:disabled,
 QAbstractItemView::indicator:unchecked:disabled,
-QGroupBox::indicator:unchecked:disabled
+QGroupBox::indicator:unchecked:disabled,
+QMenu::indicator:unchecked:disabled
 {
     image: url(":/widgets/checkbox_unchecked_disabled.png");
 }
 
 QCheckBox::indicator:indeterminate:disabled,
 QAbstractItemView::indicator:indeterminate:disabled,
-QGroupBox::indicator:indeterminate:disabled
+QGroupBox::indicator:indeterminate:disabled,
+QMenu::indicator:indeterminate:disabled
 {
     image: url(":/widgets/checkbox_indeterminate_disabled.png");
 }
@@ -1045,7 +1067,7 @@ QLabel#error
 
 
 /*
- * Other Specific Styles.
+ * One-off Styles.
  */
 
 QWidget#TestWindow QSplitter::handle
@@ -1087,8 +1109,8 @@ QLabel#a_label
 QLabel#info_label
 {
     color: INFO_TEXT_COLOR;
-    min-width: 250px;
-    max-width: 250px;
+    min-width: 290px;
+    max-width: 290px;
 #ifdef __APPLE__
     min-width: 278px;
     max-width: 278px;
@@ -1131,7 +1153,8 @@ QWidget#textedit_log
     FIXED_WIDTH_FONT_STYLE;
 }
 
-QPushButton#bind_entity_button
+QPushButton#bind_entity_button,
+QPushButton#unbind_entity_button
 {
     min-width: 30px;
 }

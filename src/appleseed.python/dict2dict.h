@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +44,9 @@ boost::python::dict dictionary_to_bpy_dict(const foundation::Dictionary& dict);
 renderer::ParamArray bpy_dict_to_param_array(const boost::python::dict& d);
 boost::python::dict param_array_to_bpy_dict(const renderer::ParamArray& array);
 
+// Convert a DictionaryArray into a Python dictionary.
+// Use key, which must be present in all dictionaries in the array
+// as the key for the Python dictionary.
 boost::python::dict dictionary_array_to_bpy_dict(
     const foundation::DictionaryArray&  array,
     const char*                         key);

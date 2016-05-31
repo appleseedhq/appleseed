@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -146,6 +146,12 @@ template <>
 inline std::string to_string(const QString& s)
 {
     return s.toStdString();
+}
+
+template <typename T>
+T from_string(const QString& s)
+{
+    return from_string<T>(s.toStdString());
 }
 
 template <>

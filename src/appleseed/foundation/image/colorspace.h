@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -165,7 +165,7 @@ extern const RegularSpectrum31f RGBToSpectrumBlueIlluminance;
 class LightingConditions
 {
   public:
-    SSE_ALIGN Color4f               m_cmf[32];                  // precomputed values of (cmf[0], cmf[1], cmf[2]) * illuminant
+    APPLESEED_SSE_ALIGN Color4f     m_cmf[32];                  // precomputed values of (cmf[0], cmf[1], cmf[2]) * illuminant
 
     LightingConditions();                                       // leaves the object uninitialized
 
@@ -697,7 +697,7 @@ inline __m128 fast_linear_rgb_to_srgb(const __m128 linear_rgb)
 
 inline Color3f fast_linear_rgb_to_srgb(const Color3f& linear_rgb)
 {
-    SSE_ALIGN float transfer[4] =
+    APPLESEED_SSE_ALIGN float transfer[4] =
     {
         linear_rgb[0],
         linear_rgb[1],
@@ -762,7 +762,7 @@ inline __m128 faster_linear_rgb_to_srgb(const __m128 linear_rgb)
 
 inline Color3f faster_linear_rgb_to_srgb(const Color3f& linear_rgb)
 {
-    SSE_ALIGN float transfer[4] =
+    APPLESEED_SSE_ALIGN float transfer[4] =
     {
         linear_rgb[0],
         linear_rgb[1],
@@ -860,7 +860,7 @@ inline Color3f spectrum_to_ciexyz<float, RegularSpectrum31f>(
     xyz3 = _mm_add_ps(xyz3, xyz4);
     xyz1 = _mm_add_ps(xyz1, xyz3);
 
-    SSE_ALIGN float transfer[4];
+    APPLESEED_SSE_ALIGN float transfer[4];
     _mm_store_ps(transfer, xyz1);
 
     return Color3f(transfer[0], transfer[1], transfer[2]);

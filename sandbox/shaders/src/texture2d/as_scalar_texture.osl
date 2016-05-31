@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014 The masked shader writer, The appleseedhq Organization
+// Copyright (c) 2014-2016 The masked shader writer, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,18 +26,47 @@
 // THE SOFTWARE.
 //
 
-#include "appleseed/texture.h"
+#include "appleseed/udim.h"
 
 shader as_scalar_texture
 (
-    APPLESEED_DECLARE_TEXTURE_FILENAME_PARAM,
-    APPLESEED_DECLARE_TEXTURE_UV_PARAMS,
-    APPLESEED_DECLARE_TEXTURE_WRAP_PARAMS,
-    APPLESEED_DECLARE_TEXTURE_FILTER_PARAM,
-    APPLESEED_DECLARE_TEXTURE_WIDTH_PARAMS,
-    APPLESEED_DECLARE_TEXTURE_BLUR_PARAMS,
-    int Channel = 0,
-    int Invert = 0
+    float        U = u,
+    float        V = v,
+    string       Filename = ""
+    [[
+        string widget = "filename"
+    ]],
+    string       UDIM = "off"
+    [[
+        string widget = "popup",
+        string options = "off|mari"
+    ]],
+    string       UDIMPrefix = ".tx",
+    string       UWrap = "periodic"
+    [[
+        string widget = "popup",
+        string options = "default|black|periodic|clamp|mirror"
+    ]],
+    string       VWrap = "periodic"
+    [[
+        string widget = "popup",
+        string options = "default|black|periodic|clamp|mirror"
+    ]],
+    string       Filter = "smartcubic"
+    [[
+        string widget = "popup",
+        string options = "smartcubic|cubic|linear|closest",
+        int    divider = 1
+    ]],
+    float        UWidth = 1.0,
+    float        VWidth = 1.0,
+    float        UBlur = 0.0,
+    float        VBlur = 0.0
+    [[
+        int    divider = 1
+    ]],
+    int          Channel = 0,
+    int          Invert = 0
     [[
         string help = "invert",
         string widget = "checkBox"
@@ -45,18 +74,42 @@ shader as_scalar_texture
     output float FloatOut = 0
 )
 {
-    FloatOut = texture(
-        Filename,
-        U, 
-        V, 
-        "swidth", UWidth, 
-        "twidth", VWidth, 
-        "sblur", UBlur, 
-        "tblur", VBlur, 
-        "swrap", UWrap, 
-        "twrap", VWrap, 
+    string mari_filenames[100] = {TEN_MARI_UDIM_ROWS};
+
+    string tx_filename = "";
+    float uu;
+    float vv;
+
+    if (UDIM == "mari")
+    {
+        int utile  = int(U); 
+        int vtile  = int(V); 
+        int offset = 10 * vtile + utile;
+        tx_filename = mari_filenames[offset];
+        uu = U - utile;
+        vv = V - vtile;
+    }
+    else
+    {
+        tx_filename = Filename;
+        uu = U;
+        vv = V;
+    }
+
+    color c = texture(
+        tx_filename,
+        uu,
+        vv,
+        "swidth", UWidth,
+        "twidth", VWidth,
+        "sblur", UBlur,
+        "tblur", VBlur,
+        "swrap", UWrap,
+        "twrap", VWrap,
         "firstchannel", Channel);
 
     if (Invert)
-        FloatOut = 1.0 - FloatOut;
+        FloatOut = 1.0 - c[0];
+    else
+        FloatOut = c[0];
 }

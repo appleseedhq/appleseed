@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +41,7 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/seexpr.h"
 #include "foundation/utility/tls.h"
 
 // SeExpr headers.
@@ -70,12 +71,12 @@ using namespace std;
 namespace renderer
 {
 
-//
-// DisneyParamExpression class implementation.
-//
-
 namespace
 {
+    //
+    // SeExpr utilities.
+    //
+
     bool texture_is_srgb(const OIIO::ustring& filename)
     {
         if (filename.rfind(".exr") == filename.length() - 4)
@@ -179,24 +180,6 @@ namespace
       : public SeExpression
     {
       public:
-        struct Var
-          : public SeExprScalarVarRef
-        {
-            double m_val;
-
-            Var() {}
-
-            explicit Var(const double val)
-              : m_val(val)
-            {
-            }
-
-            virtual void eval(const SeExprVarNode* /*node*/, SeVec3d& result) APPLESEED_OVERRIDE
-            {
-                result[0] = m_val;
-            }
-        };
-
         SeAppleseedExpr()
         {
         }
@@ -249,86 +232,39 @@ namespace
             m_vars["v"] = Var(uv[1]);
 
             const SeVec3d result = evaluate();
-
             return Color3d(result[0], result[1], result[2]);
         }
 
       private:
-        mutable map<string, Var>                m_vars;
+        struct Var
+          : public SeExprScalarVarRef
+        {
+            double m_val;
+
+            Var() {}
+
+            explicit Var(const double val)
+              : m_val(val)
+            {
+            }
+
+            virtual void eval(const SeExprVarNode* /*node*/, SeVec3d& result) APPLESEED_OVERRIDE
+            {
+                result[0] = m_val;
+            }
+        };
+
+        mutable map<string, Var>                m_vars;         // todo: use a hash table
         mutable ptr_vector<TextureSeExprFunc>   m_functions_x;
         mutable ptr_vector<SeExprFunc>          m_functions;
     };
 
-    void report_expression_error(
-        const char*             message1,
-        const char*             message2,
-        const SeAppleseedExpr&  expr)
-    {
-        if (message2)
-            RENDERER_LOG_ERROR("%s%s", message1, message2);
-        else
-            RENDERER_LOG_ERROR("%s:", message1);
 
-        const string error = expr.parseError();
+    //
+    // The DisneyLayerParam class wraps an SeAppleseedExpr to add basic optimizations
+    // for straightforward expressions such as a single scalar or a simple texture lookup.
+    //
 
-        vector<string> errors;
-        split(errors, error, is_any_of("\n"));
-
-        for (const_each<vector<string> > e = errors; e; ++e)
-        {
-            if (!e->empty())
-                RENDERER_LOG_ERROR("%s", e->c_str());
-        }
-    }
-}
-
-struct DisneyParamExpression::Impl
-{
-    SeAppleseedExpr m_expr;
-
-    explicit Impl(const char* expr)
-      : m_expr(expr)
-    {
-    }
-};
-
-DisneyParamExpression::DisneyParamExpression(const char* expr)
-  : impl(new Impl(expr))
-{
-}
-
-DisneyParamExpression::~DisneyParamExpression()
-{
-    delete impl;
-}
-
-bool DisneyParamExpression::is_valid() const
-{
-    return impl->m_expr.isValid();
-}
-
-const char* DisneyParamExpression::parse_error() const
-{
-    return impl->m_expr.parseError().c_str();
-}
-
-void DisneyParamExpression::report_error(const char* message) const
-{
-    report_expression_error(message, 0, impl->m_expr);
-}
-
-bool DisneyParamExpression::is_constant() const
-{
-    return impl->m_expr.isConstant();
-}
-
-
-//
-// DisneyMaterialLayer class implementation.
-//
-
-namespace
-{
     class DisneyLayerParam
     {
       public:
@@ -337,7 +273,7 @@ namespace
             const Dictionary&       params,
             const bool              is_vector)
           : m_param_name(name)
-          , m_expr(params.get<string>(m_param_name))
+          , m_expr(params.get<string>(name))
           , m_is_vector(is_vector)
           , m_is_constant(false)
           , m_texture_is_srgb(true)
@@ -356,23 +292,14 @@ namespace
         {
         }
 
-        void swap(DisneyLayerParam& other)
+        string& expression()
         {
-            std::swap(m_param_name, other.m_param_name);
-            std::swap(m_expr, other.m_expr);
-            std::swap(m_is_vector, other.m_is_vector);
-            std::swap(m_is_constant, other.m_is_constant);
-            std::swap(m_constant_value, other.m_constant_value);
-            std::swap(m_texture_filename, other.m_texture_filename);
-            std::swap(m_texture_options, other.m_texture_options);
-            std::swap(m_texture_is_srgb, other.m_texture_is_srgb);
+            return m_expr;
         }
 
-        DisneyLayerParam& operator=(const DisneyLayerParam& other)
+        const string& expression() const
         {
-            DisneyLayerParam tmp(other);
-            swap(tmp);
-            return *this;
+            return m_expr;
         }
 
         bool prepare()
@@ -382,7 +309,8 @@ namespace
 
             if (!m_expression.isValid())
             {
-                report_expression_error("Expression error: ", m_param_name, m_expression);
+                RENDERER_LOG_ERROR("expression error for \"%s\" parameter: %s",
+                    m_param_name, m_expression.parseError().c_str());
                 return false;
             }
 
@@ -395,7 +323,7 @@ namespace
                 return true;
             }
 
-            // Case of a simple texture lookup.
+            // Case of a simple texture lookup of the form texture("path/to/texture", $u, $v).
             {
                 const string expression = trim_both(m_expression.getExpr(), " \r\n");
                 vector<string> tokens;
@@ -487,7 +415,15 @@ namespace
         bool                        m_texture_is_srgb;
         mutable SeAppleseedExpr     m_expression;
     };
+}
 
+
+//
+// DisneyMaterialLayer class implementation.
+//
+
+namespace
+{
     const UniqueID g_disney_material_layer_class_uid = new_guid();
 }
 
@@ -556,13 +492,8 @@ void DisneyMaterialLayer::release()
 DisneyMaterialLayer& DisneyMaterialLayer::operator=(const DisneyMaterialLayer& other)
 {
     DisneyMaterialLayer tmp(other);
-    swap(tmp);
+    std::swap(impl, tmp.impl);
     return *this;
-}
-
-void DisneyMaterialLayer::swap(DisneyMaterialLayer& other)
-{
-    std::swap(impl, other.impl);
 }
 
 bool DisneyMaterialLayer::operator<(const DisneyMaterialLayer& other) const
@@ -632,7 +563,7 @@ void DisneyMaterialLayer::evaluate_expressions(
     values.m_anisotropic =
         lerp(
             values.m_anisotropic,
-            saturate(impl->m_anisotropic.evaluate(shading_point, texture_system)[0]),
+            clamp(impl->m_anisotropic.evaluate(shading_point, texture_system)[0], -1.0, 1.0),
             mask);
 
     values.m_roughness =
@@ -895,6 +826,42 @@ const char* DisneyMaterial::get_model() const
     return Model;
 }
 
+void DisneyMaterial::collect_asset_paths(StringArray& paths) const
+{
+    SeExprFilePathExtractor extractor;
+    SeExprFilePathExtractor::PathCollection paths_;
+
+    for (const_each<DictionaryDictionary> layer_it = m_params.dictionaries(); layer_it; ++layer_it)
+    {
+        const StringDictionary& layer_params = layer_it->value().strings();
+        for (const_each<StringDictionary> param_it = layer_params; param_it; ++param_it)
+            extractor.extract_paths(param_it->value(), paths_);
+    }
+
+    for (const_each<SeExprFilePathExtractor::PathCollection> i = paths_; i; ++i)
+        paths.push_back(i->c_str());
+}
+
+void DisneyMaterial::update_asset_paths(const StringDictionary& mappings)
+{
+    SeExprFilePathExtractor extractor;
+    SeExprFilePathExtractor::MappingCollection mappings_;
+
+    for (const_each<StringDictionary> i = mappings; i; ++i)
+        mappings_.insert(make_pair(i->key(), i->value()));
+
+    for (each<DictionaryDictionary> layer_it = m_params.dictionaries(); layer_it; ++layer_it)
+    {
+        StringDictionary& layer_params = layer_it->value().strings();
+        for (const_each<StringDictionary> param_it = layer_params; param_it; ++param_it)
+        {
+            layer_params.set(
+                param_it->key(),
+                extractor.replace_paths(param_it->value(), mappings_));
+        }
+    }
+}
+
 bool DisneyMaterial::on_frame_begin(
     const Project&          project,
     const Assembly&         assembly,
@@ -974,7 +941,7 @@ const DisneyMaterialLayer& DisneyMaterial::get_layer(
 
         for (const_each<vector<DisneyMaterialLayer> > it = *layers; it; ++it)
         {
-            const bool ok = it->prepare_expressions();
+            APPLESEED_UNUSED const bool ok = it->prepare_expressions();
             assert(ok);
         }
 
@@ -992,7 +959,7 @@ bool DisneyMaterial::prepare_layers(const MessageContext& context)
     {
         for (const_each<DictionaryDictionary> it = m_params.dictionaries(); it; ++it)
         {
-            DisneyMaterialLayer layer(it->name(), it->value());
+            DisneyMaterialLayer layer(it->key(), it->value());
 
             if (!layer.prepare_expressions())
                 return false;
@@ -1103,9 +1070,14 @@ auto_release_ptr<Material> DisneyMaterialFactory::create(
     const char*             name,
     const ParamArray&       params) const
 {
-    return
-        auto_release_ptr<Material>(
-            new DisneyMaterial(name, params));
+    return auto_release_ptr<Material>(new DisneyMaterial(name, params));
+}
+
+auto_release_ptr<Material> DisneyMaterialFactory::static_create(
+    const char*             name,
+    const ParamArray&       params)
+{
+    return auto_release_ptr<Material>(new DisneyMaterial(name, params));
 }
 
 }   // namespace renderer

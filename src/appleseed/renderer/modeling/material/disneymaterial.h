@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -51,37 +51,14 @@ END_OIIO_INCLUDES
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
-namespace renderer      { class DisneyMaterial; }
+namespace foundation    { class StringArray; }
+namespace foundation    { class StringDictionary; }
 namespace renderer      { class MessageContext; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class ShadingContext; }
 
 namespace renderer
 {
-
-class APPLESEED_DLLSYMBOL DisneyParamExpression
-  : public foundation::NonCopyable
-{
-  public:
-    // Constructor.
-    explicit DisneyParamExpression(const char* expr);
-
-    // Destructor.
-    ~DisneyParamExpression();
-
-    bool is_valid() const;
-
-    const char* parse_error() const;
-
-    void report_error(const char* message) const;
-
-    bool is_constant() const;
-
-  private:
-    struct Impl;
-    Impl* impl;
-};
-
 
 //
 // A layer in the Disney material.
@@ -109,13 +86,12 @@ class APPLESEED_DLLSYMBOL DisneyMaterialLayer
     bool prepare_expressions() const;
 
     void evaluate_expressions(
-        const ShadingPoint&     shading_point,
-        OIIO::TextureSystem&    texture_system,
-        foundation::Color3d&    base_color,
-        DisneyBRDFInputValues&  values) const;
+        const ShadingPoint&             shading_point,
+        OIIO::TextureSystem&            texture_system,
+        foundation::Color3d&            base_color,
+        DisneyBRDFInputValues&          values) const;
 
     static foundation::DictionaryArray get_input_metadata();
-
     static foundation::Dictionary get_default_values();
 
   private:
@@ -128,8 +104,6 @@ class APPLESEED_DLLSYMBOL DisneyMaterialLayer
     DisneyMaterialLayer(
         const char*                     name,
         const foundation::Dictionary&   params);
-
-    void swap(DisneyMaterialLayer& other);
 };
 
 
@@ -146,6 +120,10 @@ class APPLESEED_DLLSYMBOL DisneyMaterial
 
     // Return a string identifying the model of this material.
     virtual const char* get_model() const APPLESEED_OVERRIDE;
+
+    // Expose asset file paths referenced by this entity to the outside.
+    virtual void collect_asset_paths(foundation::StringArray& paths) const APPLESEED_OVERRIDE;
+    virtual void update_asset_paths(const foundation::StringDictionary& mappings) APPLESEED_OVERRIDE;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
@@ -216,6 +194,11 @@ class APPLESEED_DLLSYMBOL DisneyMaterialFactory
     virtual foundation::auto_release_ptr<Material> create(
         const char*         name,
         const ParamArray&   params) const APPLESEED_OVERRIDE;
+
+    // Static variant of the create() method above.
+    static foundation::auto_release_ptr<Material> static_create(
+        const char*         name,
+        const ParamArray&   params);
 };
 
 }       // namespace renderer

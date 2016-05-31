@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,7 @@
 // appleseed.studio headers.
 #include "commandlinehandler.h"
 #include "mainwindow/mainwindow.h"
+#include "utility/miscellaneous.h"
 
 // appleseed.shared headers.
 #include "application/application.h"
@@ -284,7 +285,7 @@ int main(int argc, char* argv[])
     QApplication::setOrganizationDomain("appleseedhq.net");
     QApplication::setApplicationName("appleseed.studio");
     QApplication::setApplicationVersion(Appleseed::get_lib_version());
-    QApplication::setWindowIcon(QIcon(":/icons/application_icon.png"));
+    QApplication::setWindowIcon(QIcon(make_app_path("icons/appleseed.png")));
 
     // The locale must be set after the construction of QApplication.
     QLocale::setDefault(QLocale::C);

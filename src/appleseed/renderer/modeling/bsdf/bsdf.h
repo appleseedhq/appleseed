@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -151,7 +151,9 @@ class APPLESEED_DLLSYMBOL BSDF
         const size_t                offset = 0) const;
 
     // Perform any precomputation needed for this BSDF's input values.
-    virtual void prepare_inputs(void* data) const;
+    virtual void prepare_inputs(
+        const ShadingPoint&         shading_point,
+        void*                       data) const;
 
     // Given an outgoing direction, sample the BSDF and compute the incoming
     // direction, its probability density and the value of the BSDF for this
@@ -186,6 +188,17 @@ class APPLESEED_DLLSYMBOL BSDF
         const foundation::Vector3d& outgoing,                   // world space outgoing direction, unit-length
         const foundation::Vector3d& incoming,                   // world space incoming direction, unit-length
         const int                   modes) const = 0;           // selected scattering modes
+
+    // Compute the index of refraction of the interior medium.
+    virtual double sample_ior(
+        SamplingContext&            sampling_context,
+        const void*                 data) const;
+
+    // Compute absorption of the interior medium over a given distance.
+    virtual void compute_absorption(
+        const void*                 data,
+        const double                distance,
+        Spectrum&                   absorption) const;
 
   protected:
     // Force a given direction to lie above a surface described by its normal vector.

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -127,6 +127,7 @@ class APPLESEED_DLLSYMBOL InputArray
         // Get the source bound to this input, or 0 if no source is bound to this input.
         Source* source() const;
 
+        // Get the entity bound to this input, or 0 if no entity is bound to this input.
         Entity* get_entity() const;
 
       protected:
@@ -162,9 +163,12 @@ class APPLESEED_DLLSYMBOL InputArray
 
         // Bind a source to this input, unbinding any previously bound source.
         // The ownership of the source is passed to renderer::InputArray.
-        // 'source' may be 0, in which case the input is unbound.
+        // 'source' may be 0, in which case the source is unbound.
         void bind(Source* source);
 
+        // Bind an entity to this input, unbinding any previously bound entity.
+        // The ownership of the entity is NOT passed to renderer::InputArray.
+        // 'entity' may be 0, in which case the entity is unbound.
         void bind(Entity* entity);
 
       private:

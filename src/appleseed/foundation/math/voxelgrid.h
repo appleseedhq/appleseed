@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -145,31 +145,31 @@ VoxelGrid3<ValueType, CoordType>::VoxelGrid3(
 }
 
 template <typename ValueType, typename CoordType>
-FORCE_INLINE size_t VoxelGrid3<ValueType, CoordType>::get_xres() const
+APPLESEED_FORCE_INLINE size_t VoxelGrid3<ValueType, CoordType>::get_xres() const
 {
     return m_nx;
 }
 
 template <typename ValueType, typename CoordType>
-FORCE_INLINE size_t VoxelGrid3<ValueType, CoordType>::get_yres() const
+APPLESEED_FORCE_INLINE size_t VoxelGrid3<ValueType, CoordType>::get_yres() const
 {
     return m_ny;
 }
 
 template <typename ValueType, typename CoordType>
-FORCE_INLINE size_t VoxelGrid3<ValueType, CoordType>::get_zres() const
+APPLESEED_FORCE_INLINE size_t VoxelGrid3<ValueType, CoordType>::get_zres() const
 {
     return m_nz;
 }
 
 template <typename ValueType, typename CoordType>
-FORCE_INLINE size_t VoxelGrid3<ValueType, CoordType>::get_channel_count() const
+APPLESEED_FORCE_INLINE size_t VoxelGrid3<ValueType, CoordType>::get_channel_count() const
 {
     return m_channel_count;
 }
 
 template <typename ValueType, typename CoordType>
-FORCE_INLINE ValueType* VoxelGrid3<ValueType, CoordType>::voxel(
+APPLESEED_FORCE_INLINE ValueType* VoxelGrid3<ValueType, CoordType>::voxel(
     const size_t            x,
     const size_t            y,
     const size_t            z)
@@ -181,7 +181,7 @@ FORCE_INLINE ValueType* VoxelGrid3<ValueType, CoordType>::voxel(
 }
 
 template <typename ValueType, typename CoordType>
-FORCE_INLINE const ValueType* VoxelGrid3<ValueType, CoordType>::voxel(
+APPLESEED_FORCE_INLINE const ValueType* VoxelGrid3<ValueType, CoordType>::voxel(
     const size_t            x,
     const size_t            y,
     const size_t            z) const
@@ -194,8 +194,8 @@ FORCE_INLINE const ValueType* VoxelGrid3<ValueType, CoordType>::voxel(
 
 template <typename ValueType, typename CoordType>
 void VoxelGrid3<ValueType, CoordType>::nearest_lookup(
-    const PointType&        point,
-    ValueType* RESTRICT     values) const
+    const PointType&                point,
+    ValueType* APPLESEED_RESTRICT   values) const
 {
     // Compute the coordinates of the voxel containing the lookup point.
     const CoordType x = clamp(point.x * m_scalar_nx, CoordType(0.0), m_max_x);
@@ -206,15 +206,15 @@ void VoxelGrid3<ValueType, CoordType>::nearest_lookup(
     const size_t iz = truncate<size_t>(z);
 
     // Return the values of that voxel.
-    const ValueType* RESTRICT source = voxel(ix, iy, iz);
+    const ValueType* APPLESEED_RESTRICT source = voxel(ix, iy, iz);
     for (size_t i = 0; i < m_channel_count; ++i)
         *values++ = *source++;
 }
 
 template <typename ValueType, typename CoordType>
 void VoxelGrid3<ValueType, CoordType>::linear_lookup(
-    const PointType&        point,
-    ValueType* RESTRICT     values) const
+    const PointType&                point,
+    ValueType* APPLESEED_RESTRICT   values) const
 {
     // Compute the coordinates of the voxel containing the lookup point.
     const CoordType x = saturate(point.x) * m_max_x;
@@ -248,15 +248,15 @@ void VoxelGrid3<ValueType, CoordType>::linear_lookup(
     const size_t dx = ix == m_nx - 1 ? 0 : m_channel_count;
     const size_t dy = iy == m_ny - 1 ? 0 : m_row_size;
     const size_t dz = iz == m_nz - 1 ? 0 : m_slice_size;
-    const ValueType* RESTRICT src = voxel(ix, iy, iz);
-    const ValueType* RESTRICT src000 = src;
-    const ValueType* RESTRICT src100 = src + dx;
-    const ValueType* RESTRICT src010 = src + dy;
-    const ValueType* RESTRICT src001 = src + dz;
-    const ValueType* RESTRICT src110 = src100 + dy;
-    const ValueType* RESTRICT src101 = src100 + dz;
-    const ValueType* RESTRICT src011 = src010 + dz;
-    const ValueType* RESTRICT src111 = src110 + dz;
+    const ValueType* APPLESEED_RESTRICT src = voxel(ix, iy, iz);
+    const ValueType* APPLESEED_RESTRICT src000 = src;
+    const ValueType* APPLESEED_RESTRICT src100 = src + dx;
+    const ValueType* APPLESEED_RESTRICT src010 = src + dy;
+    const ValueType* APPLESEED_RESTRICT src001 = src + dz;
+    const ValueType* APPLESEED_RESTRICT src110 = src100 + dy;
+    const ValueType* APPLESEED_RESTRICT src101 = src100 + dz;
+    const ValueType* APPLESEED_RESTRICT src011 = src010 + dz;
+    const ValueType* APPLESEED_RESTRICT src111 = src110 + dz;
 
     // Blend.
     for (size_t i = 0; i < m_channel_count; ++i)
@@ -275,8 +275,8 @@ void VoxelGrid3<ValueType, CoordType>::linear_lookup(
 
 template <typename ValueType, typename CoordType>
 void VoxelGrid3<ValueType, CoordType>::quadratic_lookup(
-    const PointType&        point,
-    ValueType* RESTRICT     values) const
+    const PointType&                point,
+    ValueType* APPLESEED_RESTRICT   values) const
 {
     //
     // The quadratic interpolation polynomial used here is defined as follow:
@@ -344,34 +344,34 @@ void VoxelGrid3<ValueType, CoordType>::quadratic_lookup(
     const size_t dxp = ix == m_nx - 1 ? 0 : m_channel_count;
     const size_t dyp = iy == m_ny - 1 ? 0 : m_row_size;
     const size_t dzp = iz == m_nz - 1 ? 0 : m_slice_size;
-    const ValueType* RESTRICT src = voxel(ix, iy, iz);
-    const ValueType* RESTRICT src111 = src;
-    const ValueType* RESTRICT src011 = src111 - dxn;
-    const ValueType* RESTRICT src211 = src111 + dxp;
-    const ValueType* RESTRICT src101 = src111 - dyn;
-    const ValueType* RESTRICT src001 = src011 - dyn;
-    const ValueType* RESTRICT src201 = src211 - dyn;
-    const ValueType* RESTRICT src121 = src111 + dyp;
-    const ValueType* RESTRICT src021 = src011 + dyp;
-    const ValueType* RESTRICT src221 = src211 + dyp;
-    const ValueType* RESTRICT src110 = src111 - dzn;
-    const ValueType* RESTRICT src010 = src011 - dzn;
-    const ValueType* RESTRICT src210 = src211 - dzn;
-    const ValueType* RESTRICT src100 = src101 - dzn;
-    const ValueType* RESTRICT src000 = src001 - dzn;
-    const ValueType* RESTRICT src200 = src201 - dzn;
-    const ValueType* RESTRICT src120 = src121 - dzn;
-    const ValueType* RESTRICT src020 = src021 - dzn;
-    const ValueType* RESTRICT src220 = src221 - dzn;
-    const ValueType* RESTRICT src112 = src111 + dzp;
-    const ValueType* RESTRICT src012 = src011 + dzp;
-    const ValueType* RESTRICT src212 = src211 + dzp;
-    const ValueType* RESTRICT src102 = src101 + dzp;
-    const ValueType* RESTRICT src002 = src001 + dzp;
-    const ValueType* RESTRICT src202 = src201 + dzp;
-    const ValueType* RESTRICT src122 = src121 + dzp;
-    const ValueType* RESTRICT src022 = src021 + dzp;
-    const ValueType* RESTRICT src222 = src221 + dzp;
+    const ValueType* APPLESEED_RESTRICT src = voxel(ix, iy, iz);
+    const ValueType* APPLESEED_RESTRICT src111 = src;
+    const ValueType* APPLESEED_RESTRICT src011 = src111 - dxn;
+    const ValueType* APPLESEED_RESTRICT src211 = src111 + dxp;
+    const ValueType* APPLESEED_RESTRICT src101 = src111 - dyn;
+    const ValueType* APPLESEED_RESTRICT src001 = src011 - dyn;
+    const ValueType* APPLESEED_RESTRICT src201 = src211 - dyn;
+    const ValueType* APPLESEED_RESTRICT src121 = src111 + dyp;
+    const ValueType* APPLESEED_RESTRICT src021 = src011 + dyp;
+    const ValueType* APPLESEED_RESTRICT src221 = src211 + dyp;
+    const ValueType* APPLESEED_RESTRICT src110 = src111 - dzn;
+    const ValueType* APPLESEED_RESTRICT src010 = src011 - dzn;
+    const ValueType* APPLESEED_RESTRICT src210 = src211 - dzn;
+    const ValueType* APPLESEED_RESTRICT src100 = src101 - dzn;
+    const ValueType* APPLESEED_RESTRICT src000 = src001 - dzn;
+    const ValueType* APPLESEED_RESTRICT src200 = src201 - dzn;
+    const ValueType* APPLESEED_RESTRICT src120 = src121 - dzn;
+    const ValueType* APPLESEED_RESTRICT src020 = src021 - dzn;
+    const ValueType* APPLESEED_RESTRICT src220 = src221 - dzn;
+    const ValueType* APPLESEED_RESTRICT src112 = src111 + dzp;
+    const ValueType* APPLESEED_RESTRICT src012 = src011 + dzp;
+    const ValueType* APPLESEED_RESTRICT src212 = src211 + dzp;
+    const ValueType* APPLESEED_RESTRICT src102 = src101 + dzp;
+    const ValueType* APPLESEED_RESTRICT src002 = src001 + dzp;
+    const ValueType* APPLESEED_RESTRICT src202 = src201 + dzp;
+    const ValueType* APPLESEED_RESTRICT src122 = src121 + dzp;
+    const ValueType* APPLESEED_RESTRICT src022 = src021 + dzp;
+    const ValueType* APPLESEED_RESTRICT src222 = src221 + dzp;
 
     // Blend.
     for (size_t i = 0; i < m_channel_count; ++i)

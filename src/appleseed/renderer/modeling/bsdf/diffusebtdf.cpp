@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -84,7 +84,7 @@ namespace
             return Model;
         }
 
-        FORCE_INLINE virtual void sample(
+        APPLESEED_FORCE_INLINE virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -112,7 +112,7 @@ namespace
             sample.m_mode = ScatteringMode::Diffuse;
         }
 
-        FORCE_INLINE virtual double evaluate(
+        APPLESEED_FORCE_INLINE virtual double evaluate(
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
@@ -138,7 +138,7 @@ namespace
             return cos_in * RcpPi;
         }
 
-        FORCE_INLINE virtual double evaluate_pdf(
+        APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
             const void*         data,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
@@ -212,6 +212,13 @@ DictionaryArray DiffuseBTDFFactory::get_input_metadata() const
 auto_release_ptr<BSDF> DiffuseBTDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
+{
+    return auto_release_ptr<BSDF>(new DiffuseBTDF(name, params));
+}
+
+auto_release_ptr<BSDF> DiffuseBTDFFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
 {
     return auto_release_ptr<BSDF>(new DiffuseBTDF(name, params));
 }

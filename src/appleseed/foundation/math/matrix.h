@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -438,7 +438,7 @@ class Matrix<T, 4, 4>
         Vector<T, 3>&           translation) const;
 
   private:
-    SSE_ALIGN ValueType m_comp[Components];
+    APPLESEED_SSE_ALIGN ValueType m_comp[Components];
 
     // The identity matrix returned by identity().
     static const MatrixType m_identity;
@@ -447,6 +447,7 @@ class Matrix<T, 4, 4>
 // Return true if the matrix swaps the handedness.
 template <typename T>
 bool swaps_handedness(const Matrix<T, 4, 4>& mat);
+
 
 //
 // Full specializations for 2x2, 3x3 and 4x4 matrices of type int, float and double.

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -111,13 +111,7 @@ namespace studio {
 
 namespace
 {
-    const int UserInterfaceVersion = 1;
     const int MaxRecentlyOpenedFiles = 15;
-    const char* SettingsOrgString = "com.appleseed.studio";
-    const char* SettingsRecentFilesEntryString = "appleseed.studio Recent Files";
-    const char* SettingsRecentFileListString = "recent_file_list";
-    const char* SettingsUiStateEntryString = "appleseed.studio UI State";
-    const char* SettingsUiStateSavedString = "ui_state";
 }
 
 MainWindow::MainWindow(QWidget* parent)
@@ -139,17 +133,22 @@ MainWindow::MainWindow(QWidget* parent)
 
     build_connections();
 
+    const QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
+    restoreGeometry(settings.value("main_window_geometry").toByteArray());
+    restoreState(settings.value("main_window_state").toByteArray());
+    m_ui->treewidget_project_explorer_scene->header()->restoreGeometry(
+        settings.value("main_window_project_explorer_geometry").toByteArray());
+    m_ui->treewidget_project_explorer_scene->header()->restoreState(
+        settings.value("main_window_project_explorer_state").toByteArray());
+
     print_startup_information();
     slot_load_settings();
-
-    restore_ui_state();
 
     update_project_explorer();
     remove_render_widgets();
     update_workspace();
 
     build_minimize_buttons();
-    showMaximized();
 
     setAcceptDrops(true);
 }
@@ -245,7 +244,7 @@ void MainWindow::build_menus()
     m_ui->action_file_save_project_as->setShortcut(QKeySequence::SaveAs);
     connect(m_ui->action_file_save_project_as, SIGNAL(triggered()), SLOT(slot_save_project_as()));
 
-    connect(m_ui->action_watch_project_changes, SIGNAL(toggled(bool)), SLOT(slot_toggle_project_file_watcher(const bool)));
+    connect(m_ui->action_monitor_project_file, SIGNAL(toggled(bool)), SLOT(slot_toggle_project_file_monitoring(const bool)));
 
     m_ui->action_file_exit->setShortcut(QKeySequence::Quit);
     connect(m_ui->action_file_exit, SIGNAL(triggered()), SLOT(close()));
@@ -270,7 +269,7 @@ void MainWindow::build_menus()
     connect(m_ui->action_rendering_start_interactive_rendering, SIGNAL(triggered()), SLOT(slot_start_interactive_rendering()));
     connect(m_ui->action_rendering_start_final_rendering, SIGNAL(triggered()), SLOT(slot_start_final_rendering()));
     connect(m_ui->action_rendering_stop_rendering, SIGNAL(triggered()), &m_rendering_manager, SLOT(slot_abort_rendering()));
-    connect(m_ui->action_rendering_render_settings, SIGNAL(triggered()), SLOT(slot_show_render_settings_window()));
+    connect(m_ui->action_rendering_rendering_settings, SIGNAL(triggered()), SLOT(slot_show_rendering_settings_window()));
 
     //
     // Diagnostics menu.
@@ -397,29 +396,33 @@ void MainWindow::build_recent_files_menu()
         m_recently_opened.push_back(action);
     }
 
-    QSettings settings(SettingsOrgString, SettingsRecentFilesEntryString);
-    QStringList files = settings.value(SettingsRecentFileListString).toStringList();
+    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
+    QStringList files = settings.value("recent_file_list").toStringList();
+
     update_recent_files_menu(files);
 
     m_ui->menu_open_recent->addSeparator();
-    m_clear_open_recent_menu = new QAction(this);
-    m_clear_open_recent_menu->setText("&Clear Menu");
-    connect(m_clear_open_recent_menu, SIGNAL(triggered()), SLOT(slot_clear_open_recent_files_menu()));
-    m_ui->menu_open_recent->addAction(m_clear_open_recent_menu);
+
+    QAction* clear_open_recent_menu = new QAction(this);
+    clear_open_recent_menu->setText("&Clear Menu");
+    connect(clear_open_recent_menu, SIGNAL(triggered()), SLOT(slot_clear_open_recent_files_menu()));
+    m_ui->menu_open_recent->addAction(clear_open_recent_menu);
 }
 
 void MainWindow::update_recent_files_menu(const QString& filepath)
 {
-    QSettings settings(SettingsOrgString, SettingsRecentFilesEntryString);
-    QStringList files = settings.value(SettingsRecentFileListString).toStringList();
+    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
+    QStringList files = settings.value("recent_file_list").toStringList();
+
     files.removeAll(filepath);
     files.prepend(filepath);
 
     while (files.size() > MaxRecentlyOpenedFiles)
         files.removeLast();
 
-    settings.setValue(SettingsRecentFileListString, files);
     update_recent_files_menu(files);
+
+    settings.setValue("recent_file_list", files);
 }
 
 void MainWindow::update_recent_files_menu(const QStringList& files)
@@ -442,48 +445,52 @@ void MainWindow::update_recent_files_menu(const QStringList& files)
 
 void MainWindow::build_toolbar()
 {
-    QIcon page_white = QIcon(":/icons/page_white.png");
-    page_white.addPixmap(QPixmap(":/icons/page_white_disable.png"), QIcon::Disabled);
-    m_action_new_project = new QAction(page_white, "New", this);
+    //
+    // File actions.
+    //
+
+    m_action_new_project = new QAction(load_icons("project_new"), "New Project", this);
     connect(m_action_new_project, SIGNAL(triggered()), SLOT(slot_new_project()));
     m_ui->main_toolbar->addAction(m_action_new_project);
 
-    QIcon folder = QIcon(":/icons/folder.png");
-    folder.addPixmap(QPixmap(":/icons/folder_disable.png"), QIcon::Disabled);
-    m_action_open_project = new QAction(folder, "Open", this);
+    m_action_open_project = new QAction(load_icons("project_open"), "Open Project...", this);
     connect(m_action_open_project, SIGNAL(triggered()), SLOT(slot_open_project()));
     m_ui->main_toolbar->addAction(m_action_open_project);
 
-    QIcon disk = QIcon(":/icons/disk.png");
-    disk.addPixmap(QPixmap(":/icons/disk_disable.png"), QIcon::Disabled);
-    m_action_save_project = new QAction(disk , "Save", this);
+    m_action_save_project = new QAction(load_icons("project_save") , "Save Project", this);
     connect(m_action_save_project, SIGNAL(triggered()), SLOT(slot_save_project()));
     m_ui->main_toolbar->addAction(m_action_save_project);
 
-    m_action_toggle_project_watcher = new QAction(QIcon(":/icons/file_toggle.png"), "Toggle Project Watcher", this);
-    m_action_toggle_project_watcher->setCheckable(true);
-    connect(m_action_toggle_project_watcher, SIGNAL(toggled(bool)), SLOT(slot_toggle_project_file_watcher(const bool)));
-    m_ui->main_toolbar->addAction(m_action_toggle_project_watcher);
+    m_action_reload_project = new QAction(load_icons("project_reload"), "Reload Project", this);
+    connect(m_action_reload_project, SIGNAL(triggered()), SLOT(slot_reload_project()));
+    m_ui->main_toolbar->addAction(m_action_reload_project);
+
+    m_action_monitor_project_file = new QAction(load_icons("project_monitor"), "Toggle Project File Monitoring", this);
+    m_action_monitor_project_file->setCheckable(true);
+    connect(m_action_monitor_project_file, SIGNAL(toggled(bool)), SLOT(slot_toggle_project_file_monitoring(const bool)));
+    m_ui->main_toolbar->addAction(m_action_monitor_project_file);
 
     m_ui->main_toolbar->addSeparator();
 
-    QIcon film = QIcon(":/icons/film_go.png");
-    film.addPixmap(QPixmap(":/icons/film_go_disable.png"), QIcon::Disabled);
-    m_action_start_interactive_rendering = new QAction(film, "Start Interactive Rendering", this);
+    //
+    // Rendering actions.
+    //
+
+    m_action_start_interactive_rendering = new QAction(load_icons("rendering_start_interactive"), "Start Interactive Rendering", this);
     connect(m_action_start_interactive_rendering, SIGNAL(triggered()), SLOT(slot_start_interactive_rendering()));
     m_ui->main_toolbar->addAction(m_action_start_interactive_rendering);
 
-    QIcon cog = QIcon(":/icons/cog_go.png");
-    cog.addPixmap(QPixmap(":/icons/cog_go_disable.png"), QIcon::Disabled);
-    m_action_start_final_rendering = new QAction(cog, "Start Final Rendering", this);
+    m_action_start_final_rendering = new QAction(load_icons("rendering_start_final"), "Start Final Rendering", this);
     connect(m_action_start_final_rendering, SIGNAL(triggered()), SLOT(slot_start_final_rendering()));
     m_ui->main_toolbar->addAction(m_action_start_final_rendering);
 
-    QIcon cross = QIcon(":/icons/cross.png");
-    cross.addPixmap(QPixmap(":/icons/cross_disable.png"), QIcon::Disabled);
-    m_action_stop_rendering = new QAction(cross, "Stop Rendering", this);
+    m_action_stop_rendering = new QAction(load_icons("rendering_stop"), "Stop Rendering", this);
     connect(m_action_stop_rendering, SIGNAL(triggered()), &m_rendering_manager, SLOT(slot_abort_rendering()));
     m_ui->main_toolbar->addAction(m_action_stop_rendering);
+
+    m_action_rendering_settings = new QAction(load_icons("rendering_settings"), "Rendering Settings...", this);
+    connect(m_action_rendering_settings, SIGNAL(triggered()), SLOT(slot_show_rendering_settings_window()));
+    m_ui->main_toolbar->addAction(m_action_rendering_settings);
 }
 
 void MainWindow::build_log_panel()
@@ -537,12 +544,12 @@ void MainWindow::build_minimize_buttons()
 void MainWindow::build_connections()
 {
     connect(
-        m_action_toggle_project_watcher, SIGNAL(toggled(bool)),
-        m_ui->action_watch_project_changes, SLOT(setChecked(bool)));
+        m_action_monitor_project_file, SIGNAL(toggled(bool)),
+        m_ui->action_monitor_project_file, SLOT(setChecked(bool)));
 
     connect(
-        m_ui->action_watch_project_changes, SIGNAL(toggled(bool)),
-        m_action_toggle_project_watcher, SLOT(setChecked(bool)));
+        m_ui->action_monitor_project_file, SIGNAL(toggled(bool)),
+        m_action_monitor_project_file, SLOT(setChecked(bool)));
 
     connect(
         &m_project_manager, SIGNAL(signal_load_project_async_complete(const QString&, const bool)),
@@ -641,6 +648,10 @@ void MainWindow::set_file_widgets_enabled(const bool is_enabled)
         is_enabled &&
         is_project_open &&
         m_project_manager.get_project()->has_path());
+    m_action_reload_project->setEnabled(
+        is_enabled &&
+        is_project_open &&
+        m_project_manager.get_project()->has_path());
 
     // File -> Save Project and Save Project As.
     m_ui->action_file_save_project->setEnabled(is_enabled && is_project_open);
@@ -667,6 +678,10 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const bool
     const bool allow_starting_rendering = is_project_open && !is_rendering;
     const bool allow_stopping_rendering = is_project_open && is_rendering;
 
+    // Rendering -> Rendering Settings.
+    m_ui->action_rendering_rendering_settings->setEnabled(allow_starting_rendering);
+    m_action_rendering_settings->setEnabled(allow_starting_rendering);
+
     // Rendering -> Start Interactive Rendering.
     m_ui->action_rendering_start_interactive_rendering->setEnabled(allow_starting_rendering);
     m_action_start_interactive_rendering->setEnabled(allow_starting_rendering);
@@ -680,7 +695,7 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const bool
     m_action_stop_rendering->setEnabled(allow_stopping_rendering);
 
     // Rendering -> Render Settings.
-    m_ui->action_rendering_render_settings->setEnabled(allow_starting_rendering);
+    m_ui->action_rendering_rendering_settings->setEnabled(allow_starting_rendering);
 
     // Rendering -> Clear Frame.
     if (is_project_open)
@@ -717,18 +732,6 @@ void MainWindow::restore_state_after_project_open()
         if (m_state_before_project_open->m_is_rendering)
             start_rendering(true);
     }
-}
-
-void MainWindow::save_ui_state()
-{
-    QSettings settings(SettingsOrgString, SettingsUiStateEntryString);
-    settings.setValue(SettingsUiStateSavedString, saveState(UserInterfaceVersion));
-}
-
-void MainWindow::restore_ui_state()
-{
-    const QSettings settings(SettingsOrgString, SettingsUiStateEntryString);
-    restoreState(settings.value(SettingsUiStateSavedString).toByteArray(), UserInterfaceVersion);
 }
 
 void MainWindow::recreate_render_widgets()
@@ -877,8 +880,8 @@ void MainWindow::on_project_change()
 
     update_override_shading_menu_item();
 
-    if (m_render_settings_window.get())
-        m_render_settings_window->reload();
+    if (m_rendering_settings_window.get())
+        m_rendering_settings_window->reload();
 
     m_status_bar.clear();
 
@@ -887,10 +890,10 @@ void MainWindow::on_project_change()
     restore_state_after_project_open();
 
     if (m_project_file_watcher)
-        start_watching_project_file();
+        start_monitoring_project_file();
 }
 
-void MainWindow::enable_project_file_watcher()
+void MainWindow::enable_project_file_monitoring()
 {
     if (m_project_file_watcher == 0)
     {
@@ -901,24 +904,24 @@ void MainWindow::enable_project_file_watcher()
             SIGNAL(fileChanged(const QString&)),
             SLOT(slot_project_file_changed(const QString&)));
 
-        RENDERER_LOG_INFO("the project file watcher is now enabled.");
+        RENDERER_LOG_INFO("project file monitoring is now enabled.");
 
-        start_watching_project_file();
+        start_monitoring_project_file();
     }
 }
 
-void MainWindow::disable_project_file_watcher()
+void MainWindow::disable_project_file_monitoring()
 {
     if (m_project_file_watcher)
     {
         delete m_project_file_watcher;
         m_project_file_watcher = 0;
 
-        RENDERER_LOG_INFO("the project file watcher is now disabled.");
+        RENDERER_LOG_INFO("project file monitoring is now disabled.");
     }
 }
 
-void MainWindow::start_watching_project_file()
+void MainWindow::start_monitoring_project_file()
 {
     assert(m_project_file_watcher);
 
@@ -929,7 +932,7 @@ void MainWindow::start_watching_project_file()
     }
 }
 
-void MainWindow::stop_watching_project_file()
+void MainWindow::stop_monitoring_project_file()
 {
     assert(m_project_file_watcher);
 
@@ -1053,13 +1056,25 @@ void MainWindow::closeEvent(QCloseEvent* event)
         return;
     }
 
-    save_ui_state();
+    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
+    settings.setValue("main_window_geometry", saveGeometry());
+    settings.setValue("main_window_state", saveState());
+    settings.setValue("main_window_project_explorer_geometry",
+        m_ui->treewidget_project_explorer_scene->header()->saveGeometry());
+    settings.setValue("main_window_project_explorer_state",
+        m_ui->treewidget_project_explorer_scene->header()->saveState());
+
+    slot_save_settings();
+
+    if (m_test_window.get())
+        m_test_window->close();
+
+    if (m_benchmark_window.get())
+        m_benchmark_window->close();
 
     remove_render_widgets();
 
     m_project_manager.close_project();
-
-    slot_save_settings();
 
     event->accept();
 }
@@ -1112,10 +1127,10 @@ void MainWindow::slot_open_recent()
 
 void MainWindow::slot_clear_open_recent_files_menu()
 {
-    QSettings settings(SettingsOrgString, SettingsRecentFilesEntryString);
-    QStringList files;
-    settings.setValue(SettingsRecentFileListString, files);
-    update_recent_files_menu(files);
+    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
+    settings.setValue("recent_file_list", QStringList());
+
+    update_recent_files_menu(QStringList());
 }
 
 void MainWindow::slot_open_cornellbox_builtin_project()
@@ -1123,7 +1138,7 @@ void MainWindow::slot_open_cornellbox_builtin_project()
     if (!can_close_project())
         return;
 
-    const bool successful = m_project_manager.load_builtin_project("cornell_box");
+    APPLESEED_UNUSED const bool successful = m_project_manager.load_builtin_project("cornell_box");
     assert(successful);
 
     on_project_change();
@@ -1165,6 +1180,7 @@ void MainWindow::slot_open_project_complete(const QString& filepath, const bool 
     else
     {
         show_project_file_loading_failed_message_box(this, filepath);
+        recreate_render_widgets();
         update_workspace();
     }
 }
@@ -1180,12 +1196,12 @@ void MainWindow::slot_save_project()
     }
 
     if (m_project_file_watcher)
-        stop_watching_project_file();
+        stop_monitoring_project_file();
 
     m_project_manager.save_project();
 
     if (m_project_file_watcher)
-        start_watching_project_file();
+        start_monitoring_project_file();
 
     update_workspace();
 }
@@ -1210,12 +1226,12 @@ void MainWindow::slot_save_project_as()
         filepath = QDir::toNativeSeparators(filepath);
 
         if (m_project_file_watcher)
-            stop_watching_project_file();
+            stop_monitoring_project_file();
 
         m_project_manager.save_project_as(filepath.toAscii().constData());
 
         if (m_project_file_watcher)
-            start_watching_project_file();
+            start_monitoring_project_file();
 
         update_recent_files_menu(filepath);
         update_workspace();
@@ -1231,11 +1247,11 @@ void MainWindow::slot_project_modified()
     update_window_title();
 }
 
-void MainWindow::slot_toggle_project_file_watcher(const bool checked)
+void MainWindow::slot_toggle_project_file_monitoring(const bool checked)
 {
     if (checked)
-        enable_project_file_watcher();
-    else disable_project_file_watcher();
+        enable_project_file_monitoring();
+    else disable_project_file_monitoring();
 
     m_settings.insert_path(
         SETTINGS_WATCH_FILE_CHANGES,
@@ -1299,13 +1315,13 @@ void MainWindow::slot_load_settings()
 
         if (m_settings.get_optional<bool>(SETTINGS_WATCH_FILE_CHANGES))
         {
-            m_action_toggle_project_watcher->setChecked(true);
-            enable_project_file_watcher();
+            m_action_monitor_project_file->setChecked(true);
+            enable_project_file_monitoring();
         }
         else
         {
-            m_action_toggle_project_watcher->setChecked(false);
-            disable_project_file_watcher();
+            m_action_monitor_project_file->setChecked(false);
+            disable_project_file_monitoring();
         }
     }
     else
@@ -1687,21 +1703,21 @@ void MainWindow::slot_fullscreen()
         (*button)->set_fullscreen(m_fullscreen);
 }
 
-void MainWindow::slot_show_render_settings_window()
+void MainWindow::slot_show_rendering_settings_window()
 {
     assert(m_project_manager.is_project_open());
 
-    if (m_render_settings_window.get() == 0)
+    if (m_rendering_settings_window.get() == 0)
     {
-        m_render_settings_window.reset(new RenderSettingsWindow(m_project_manager, this));
+        m_rendering_settings_window.reset(new RenderingSettingsWindow(m_project_manager, this));
 
         connect(
-            m_render_settings_window.get(), SIGNAL(signal_settings_modified()),
+            m_rendering_settings_window.get(), SIGNAL(signal_settings_modified()),
             SLOT(slot_project_modified()));
     }
 
-    m_render_settings_window->showNormal();
-    m_render_settings_window->activateWindow();
+    m_rendering_settings_window->showNormal();
+    m_rendering_settings_window->activateWindow();
 }
 
 void MainWindow::slot_show_test_window()

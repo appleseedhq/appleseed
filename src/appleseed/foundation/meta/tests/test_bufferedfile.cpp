@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -36,11 +36,11 @@
 #include <cstddef>
 #include <string>
 
+using namespace foundation;
+using namespace std;
+
 TEST_SUITE(Foundation_Utility_BufferedFile)
 {
-    using namespace foundation;
-    using namespace std;
-
     const char* Filename = "unit tests/outputs/test_bufferedfile.tmp";
     const size_t BufferSize = 4;
     const string DataString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -45,10 +45,10 @@ namespace foundation
 //
 
 int portable_snprintf(
-    char*                   str,
-    size_t                  str_m,
-    PRINTF_FMT const char*  fmt, ...)
-    PRINTF_FMT_ATTR(3, 4);
+    char*                             str,
+    size_t                            str_m,
+    APPLESEED_PRINTF_FMT const char*  fmt, ...)
+    APPLESEED_PRINTF_FMT_ATTR(3, 4);
 
 int portable_vsnprintf(
     char*                   str,

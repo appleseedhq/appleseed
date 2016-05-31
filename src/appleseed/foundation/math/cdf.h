@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -94,38 +94,34 @@ class CDF
     typedef std::vector<ItemWeightPair> ItemVector;
     typedef std::vector<Weight> DensityVector;
 
-    ItemVector      m_items;
-    Weight          m_weight_sum;
-    DensityVector   m_densities;
+    ItemVector          m_items;
+    Weight              m_weight_sum;
+    DensityVector       m_densities;
 };
 
 
 //
-// Sample CDF.
+// Sampling and inversion functions.
 //
 
 template <typename RandomAccessIter, typename Weight>
 size_t sample_cdf(
     RandomAccessIter    begin,
     RandomAccessIter    end,
-    Weight              x);
-
-//
-// Invert CDF.
-//
+    const Weight        x);
 
 // Numerically invert the CDF function cdf, with corresponding PDF pdf,
 // using a combination of bisection and Newton's method.
 template <typename CDF, typename PDF, typename T>
 T invert_cdf_function(
-    CDF             cdf,                // cdf function to invert
-    PDF             pdf,                // pdf function
-    const T         u,                  // uniform random sample in [0,1)
-    T               xmin,               // lower bound of the root search interval
-    T               xmax,               // upper bound of the root search interval
-    const T         guess,              // initial root guess
-    const T         eps,                // root precision
-    const size_t    max_iterations);    // max root refinement iterations
+    CDF                 cdf,                // CDF function to invert
+    PDF                 pdf,                // PDF function
+    const T             u,                  // uniform random sample in [0,1)
+    T                   xmin,               // lower bound of the root search interval
+    T                   xmax,               // upper bound of the root search interval
+    const T             guess,              // initial root guess
+    const T             eps,                // root precision
+    const size_t        max_iterations);    // max root refinement iterations
 
 
 //
@@ -219,15 +215,16 @@ inline const std::pair<Item, Weight>& CDF<Item, Weight>::sample(const Weight x) 
     return m_items[i];
 }
 
+
 //
-// Sample CDF implementation.
+// Functions implementation.
 //
 
 template <typename RandomAccessIter, typename Weight>
 inline size_t sample_cdf(
     RandomAccessIter    begin,
     RandomAccessIter    end,
-    Weight              x)
+    const Weight        x)
 {
     assert(begin != end);
     assert(x >= Weight(0.0));
@@ -239,20 +236,16 @@ inline size_t sample_cdf(
     return i - begin;
 }
 
-//
-// Invert CDF implementation.
-//
-
 template <typename CDF, typename PDF, typename T>
-inline T invert_cdf_function(
-    CDF             cdf,
-    PDF             pdf,
-    const T         u,
-    T               xmin,
-    T               xmax,
-    const T         guess,
-    const T         eps,
-    const size_t    max_iterations)
+T invert_cdf_function(
+    CDF                 cdf,
+    PDF                 pdf,
+    const T             u,
+    T                   xmin,
+    T                   xmax,
+    const T             guess,
+    const T             eps,
+    const size_t        max_iterations)
 {
     assert(cdf(xmin) < u);
     assert(cdf(xmax) > u);
@@ -262,7 +255,7 @@ inline T invert_cdf_function(
     {
         // Use bisection if we go out of bounds.
         if (x < xmin || x > xmax)
-            x = (xmax + xmin) * 0.5;
+            x = (xmax + xmin) * T(0.5);
 
         const T f = cdf(x) - u;
 

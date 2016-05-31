@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014 The masked shader writer, The appleseedhq Organization
+// Copyright (c) 2014-2016 The masked shader writer, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,23 +26,25 @@
 // THE SOFTWARE.
 //
 
-#include "appleseed/defaults.h"
 #include "appleseed/transform.h"
 
 shader as_anisotropy_dir
 (
-    color Color = color(1, 0, 0),
-    vector Normal = N,
-    vector Tangent = APPLESEED_DEFAULT_TANGENT,
-    float AngleOffset = 0,
+    vector        Normal = N,
+    vector        Tn = 0
+    [[
+        int    lockgeom = 0,
+        string help = "Tangent",
+        string label = "Tangent"
+    ]],
+    color         Color = color(1, 0, 0),
+    float         AngleOffset = 0,
     output vector TangentOut = 0
 )
 {
     float x = mix(-1, 1, clamp(Color[0], 0, 1));
     float z = mix(-1, 1, clamp(Color[2], 0, 1));
-
     rotate2d(x, z, AngleOffset, x, z);
-
-    vector Bitangent = cross(Tangent, Normal);
-    TangentOut = normalize(x * Tangent + z * Bitangent);
+    vector Bn = cross(Tn, Normal);
+    TangentOut = normalize(x * Tn + z * Bn);
 }

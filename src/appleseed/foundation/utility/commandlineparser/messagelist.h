@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -57,9 +57,9 @@ class APPLESEED_DLLSYMBOL MessageList
 
     // Add a message to the list.
     void add(
-        const LogMessage::Category  category,
-        PRINTF_FMT const char*      format, ...)
-        PRINTF_FMT_ATTR(3, 4);
+        const LogMessage::Category          category,
+        APPLESEED_PRINTF_FMT const char*    format, ...)
+        APPLESEED_PRINTF_FMT_ATTR(3, 4);
 
     // Print the messages.
     void print(Logger& logger) const;

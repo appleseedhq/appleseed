@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2015 Marius Avram, The appleseedhq Organization
+// Copyright (c) 2014-2016 Marius Avram, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +44,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/seexpr.h"
 
 // appleseed.shared headers.
 #include "application/application.h"
@@ -51,7 +52,6 @@
 // SeExpr headers.
 #pragma warning (push)
 #pragma warning (disable : 4267)    // conversion from 'size_t' to 'int', possible loss of data
-#include "SeExpression.h"
 #include "SeExprEditor/SeExprEditor.h"
 #include "SeExprEditor/SeExprEdBrowser.h"
 #include "SeExprEditor/SeExprEdControlCollection.h"
@@ -156,7 +156,7 @@ ExpressionEditorWindow::ExpressionEditorWindow(
     m_editor->setExpr(expression, true);
     left_layout->addWidget(m_editor);
 
-    m_error = new QLabel("Expression has errors. View log for details.");
+    m_error = new QLabel("Expression has errors. Check log for details.");
     m_error->setObjectName("error");
     m_error->hide();
     left_layout->addWidget(m_error);
@@ -186,19 +186,18 @@ ExpressionEditorWindow::ExpressionEditorWindow(
 void ExpressionEditorWindow::apply_expression()
 {
     const string expression = m_editor->getExpr();
-    const DisneyParamExpression se_expression(expression.c_str());
+    const SeExprValidator validator(expression.c_str());
 
-    if (se_expression.is_valid())
+    if (validator.is_valid())
     {
         m_error->hide();
-        RENDERER_LOG_INFO("Expression successfully applied.");
-        const QString q_expression = QString::fromStdString(expression);
-        emit signal_expression_applied(m_widget_name, q_expression);
+        RENDERER_LOG_INFO("expression successfully applied.");
+        emit signal_expression_applied(m_widget_name, QString::fromStdString(expression));
     }
     else
     {
         m_error->show();
-        se_expression.report_error("Expression has errors");
+        RENDERER_LOG_ERROR("expression error: %s", validator.get_parse_error());
     }
 }
 
@@ -241,7 +240,6 @@ void ExpressionEditorWindow::slot_save_script()
                 filepath += ".se";
 
             filepath = QDir::toNativeSeparators(filepath);
-
             m_script_filepath = filepath.toStdString();
         }
     }

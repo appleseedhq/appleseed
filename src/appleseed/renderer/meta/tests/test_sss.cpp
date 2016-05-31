@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,7 @@
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/scalarsource.h"
+#include "renderer/utility/iostreamop.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -115,7 +116,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             m_values.m_weight = 1.0;
             m_values.m_reflectance.set(static_cast<float>(rd));
             m_values.m_reflectance_multiplier = 1.0;
-            m_values.m_dmfp = dmfp;
+            m_values.m_dmfp.set(static_cast<float>(dmfp));
             m_values.m_dmfp_multiplier = 1.0;
             m_values.m_anisotropy = g;
             m_values.m_outside_ior = 1.0;
@@ -159,11 +160,10 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
     template <typename BSSRDFEvaluator>
     double integrate_dipole(
+        MersenneTwister&        rng,
         const BSSRDFEvaluator&  bssrdf_eval,
         const size_t            sample_count)
     {
-        MersenneTwister rng;
-
         const double sigma_tr = bssrdf_eval.get_sigma_tr();
         double integral = 0.0;
 
@@ -185,6 +185,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
     template <typename BSSRDFFactory>
     double integrate_dipole_rd_dmfp(
+        MersenneTwister&        rng,
         const double            rd,
         const double            dmfp,
         const double            eta,
@@ -193,11 +194,12 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         DipoleBSSRDFEvaluator<BSSRDFFactory> bssrdf_eval;
         bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, eta, 0.0);
 
-        return integrate_dipole(bssrdf_eval, sample_count);
+        return integrate_dipole(rng, bssrdf_eval, sample_count);
     }
 
     template <typename BSSRDFFactory>
     double integrate_dipole_alpha_prime(
+        MersenneTwister&        rng,
         const double            alpha_prime,
         const double            eta,
         const size_t            sample_count)
@@ -208,7 +210,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         DipoleBSSRDFEvaluator<BSSRDFFactory> bssrdf_eval;
         bssrdf_eval.set_values_from_sigmas(sigma_a, sigma_s_prime, eta, 0.0);
 
-        return integrate_dipole(bssrdf_eval, sample_count);
+        return integrate_dipole(rng, bssrdf_eval, sample_count);
     }
 
     //
@@ -260,19 +262,19 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         for (size_t i = 0; i < N; ++i)
         {
             const ComputeRdStandardDipole rd_fun(Eta);
-            const Spectrum rd(Color3f(static_cast<float>(rand_double1(rng))));
+            const Spectrum rd(rand_float1(rng, 0.001f, 0.999f));
 
             Spectrum sigma_a1, sigma_s1;
             compute_absorption_and_scattering(
                 rd_fun,
                 rd,
-                1.0,
+                Spectrum(1.0f),
                 Anisotropy,
                 sigma_a1,
                 sigma_s1);
 
+            const Spectrum dmfp(rand_float1(rng, 0.001f, 10.0f));
             Spectrum sigma_a, sigma_s;
-            const double dmfp = rand_double1(rng, 0.001, 10.0);
             compute_absorption_and_scattering(
                 rd_fun,
                 rd,
@@ -281,9 +283,65 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
                 sigma_a,
                 sigma_s);
 
-            EXPECT_FEQ_EPS(sigma_a1[0] / static_cast<float>(dmfp), sigma_a[0], 1.0e-6f);
-            EXPECT_FEQ_EPS(sigma_s1[0] / static_cast<float>(dmfp), sigma_s[0], 1.0e-6f);
+            EXPECT_FEQ_EPS(sigma_a1 / dmfp, sigma_a, 1.0e-6f);
+            EXPECT_FEQ_EPS(sigma_s1 / dmfp, sigma_s, 1.0e-6f);
         }
+    }
+
+    TEST_CASE(BSSRDFReparamStandardDipole_RoundTrip)
+    {
+        //
+        // 1. Start with sigma_a and sigma_s.
+        //    Compute diffuse surface reflectance and diffuse mean free path.
+        //
+        //    Using skin2 material parameters from
+        //
+        //      A Practical Model for Subsurface Light Transport
+        //      https://graphics.stanford.edu/papers/bssrdf/bssrdf.pdf
+        //
+
+        const Color3f sigma_a(0.013f, 0.070f, 0.145f);      // in mm^-1
+        const Color3f sigma_s(1.09f, 1.59f, 1.79f);         // in mm^-1
+
+        const Spectrum sigma_a_spectrum(sigma_a);
+        const Spectrum sigma_s_spectrum(sigma_s);
+
+        const Color3f alpha_prime = sigma_s / (sigma_a + sigma_s);
+        const double eta = 1.0;
+        const ComputeRdStandardDipole rd_fun(eta);
+        const Color3f rd(
+            static_cast<float>(rd_fun(alpha_prime[0])),
+            static_cast<float>(rd_fun(alpha_prime[1])),
+            static_cast<float>(rd_fun(alpha_prime[2])));
+
+        // rd = [185, 138, 112] in 8-bit linear RGB
+
+        Spectrum sigma_tr;
+        effective_extinction_coefficient(
+            sigma_a_spectrum,
+            sigma_s_spectrum,
+            0.0,        // anisotropy
+            sigma_tr);
+
+        const Spectrum dmfp = Spectrum(1.0f) / sigma_tr;
+
+        //
+        // 2. Start from diffuse surface reflectance and diffuse mean free path.
+        //    Compute sigma_a and sigma_s.
+        //
+
+        Spectrum new_sigma_a_spectrum, new_sigma_s_spectrum;
+        const Spectrum rd_spectrum(rd);
+        compute_absorption_and_scattering(
+            rd_fun,
+            rd_spectrum,
+            dmfp,
+            0.0,        // anisotropy
+            new_sigma_a_spectrum,
+            new_sigma_s_spectrum);
+
+        EXPECT_FEQ_EPS(sigma_a_spectrum, new_sigma_a_spectrum, 1.0e-5f);
+        EXPECT_FEQ_EPS(sigma_s_spectrum, new_sigma_s_spectrum, 1.0e-5f);
     }
 
     TEST_CASE(Plot_CompareStandardAndBetterDipolesReparameterizations)
@@ -346,8 +404,11 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double alpha_prime = fit<size_t, double>(i, 0, TestCount - 1, 0.0 + Eps, 1.0 - Eps);
 
             const double rd_a = RcpPi * rd_fun(alpha_prime);
+
+            MersenneTwister rng;
             const double rd_n =
                 integrate_dipole_alpha_prime<StandardDipoleBSSRDFFactory>(
+                    rng,
                     alpha_prime,
                     Eta,
                     SampleCount);
@@ -369,6 +430,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         const size_t PointCount = 1000;
         const size_t SampleCount = 1000;
         vector<Vector2d> ai_points, ni_points;
+        MersenneTwister rng;
 
         for (size_t i = 0; i < PointCount; ++i)
         {
@@ -384,6 +446,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
                 Vector2d(
                     alpha_prime,
                     integrate_dipole_alpha_prime<StandardDipoleBSSRDFFactory>(
+                        rng,
                         alpha_prime,
                         Eta,
                         SampleCount)));
@@ -417,6 +480,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         const size_t PointCount = 1000;
         const size_t SampleCount = 1000;
         vector<Vector2d> ai_points, ni_points;
+        MersenneTwister rng;
 
         for (size_t i = 0; i < PointCount; ++i)
         {
@@ -432,6 +496,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
                 Vector2d(
                     alpha_prime,
                     integrate_dipole_alpha_prime<BetterDipoleBSSRDFFactory>(
+                        rng,
                         alpha_prime,
                         Eta,
                         SampleCount)));
@@ -741,7 +806,6 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         const double s = normalized_diffusion_s(A);
 
         const size_t SampleCount = 1000;
-
         MersenneTwister rng;
 
         PartioFile particles;
@@ -809,9 +873,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
     TEST_CASE(StdDipoleMaxRadius)
     {
-        MersenneTwister rng;
-
         DipoleBSSRDFEvaluator<StandardDipoleBSSRDFFactory> bssrdf_eval;
+        MersenneTwister rng;
 
         for (size_t i = 0; i < 1000; ++i)
         {
@@ -837,12 +900,14 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         const size_t N = 256;
         vector<Vector2d> points;
+        MersenneTwister rng;
 
         for (size_t i = 0; i < N; ++i)
         {
             const double rd = fit<size_t, double>(i, 0, N - 1, 0.01, 1.0);
             const double x =
                 integrate_dipole_rd_dmfp<StandardDipoleBSSRDFFactory>(
+                    rng,
                     rd,
                     1.0,
                     1.0,
@@ -920,9 +985,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
     TEST_CASE(DirpoleMaxRadius)
     {
-        MersenneTwister rng;
-
         DipoleBSSRDFEvaluator<DirectionalDipoleBSSRDFFactory> bssrdf_eval;
+        MersenneTwister rng;
 
         for (size_t i = 0; i < 1000; ++i)
         {

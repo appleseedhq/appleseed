@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -48,10 +48,11 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace
 {
-    auto_release_ptr<Project> create_project(const std::string& name)
+    auto_release_ptr<Project> create_project(const string& name)
     {
         return ProjectFactory::create(name.c_str());
     }
@@ -119,13 +120,13 @@ namespace
         return ProjectFileWriter::write(*project, filepath, opts);
     }
 
-    auto_release_ptr<Configuration> create_config(const std::string& name)
+    auto_release_ptr<Configuration> create_config(const string& name)
     {
         return ConfigurationFactory::create(name.c_str());
     }
 
     auto_release_ptr<Configuration> create_config_with_params(
-        const std::string&                  name,
+        const string&                       name,
         const bpy::dict&                    params)
     {
         return ConfigurationFactory::create(name.c_str(), bpy_dict_to_param_array(params));

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -174,11 +174,11 @@ void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect_no_motion(
 
             // Intersect the left bounding box.
             const size_t hit_left =
-                (foundation::intersect(ray, ray_info, node_ptr->get_left_bbox(), tmin[0]) && tmin[0] < ray_tmax) ? 1 : 0;
+                foundation::intersect(ray, ray_info, node_ptr->get_left_bbox(), tmin[0]) && tmin[0] < ray_tmax ? 1 : 0;
 
             // Intersect the right bounding box.
             const size_t hit_right =
-                (foundation::intersect(ray, ray_info, node_ptr->get_right_bbox(), tmin[1]) && tmin[1] < ray_tmax) ? 1 : 0;
+                foundation::intersect(ray, ray_info, node_ptr->get_right_bbox(), tmin[1]) && tmin[1] < ray_tmax ? 1 : 0;
 
             node_ptr = &tree.m_nodes[node_ptr->get_child_node_index()];
             node_ptr += hit_right;
@@ -193,7 +193,10 @@ void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect_no_motion(
             if (hit_left | hit_right)
             {
                 // Push the far child node to the stack, continue with the near child node.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
                 const int far_index = tmin[0] < tmin[1] ? 1 : 0;
+#pragma GCC diagnostic pop
                 *stack_ptr++ = node_ptr + far_index - 1;
                 node_ptr -= far_index;
                 continue;
@@ -715,7 +718,7 @@ void Intersector<Tree, Visitor, Ray3d, StackSize, 3>::intersect_motion(
             }
             else
             {
-                SSE_ALIGN double bbox_data[12];
+                APPLESEED_SSE_ALIGN double bbox_data[12];
 
                 // Fetch the left bounding box.
                 if (left_motion_segment_count > 0)

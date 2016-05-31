@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@
 #include "mainwindow/rendering/renderingmanager.h"
 #include "mainwindow/rendering/rendertab.h"
 #include "mainwindow/qtlogtarget.h"
-#include "mainwindow/rendersettingswindow.h"
+#include "mainwindow/renderingsettingswindow.h"
 #include "mainwindow/statusbar.h"
 
 // appleseed.renderer headers.
@@ -97,12 +97,14 @@ class MainWindow
 
     QAction*                                m_action_new_project;
     QAction*                                m_action_open_project;
-    QAction*                                m_clear_open_recent_menu;
     QAction*                                m_action_save_project;
+    QAction*                                m_action_reload_project;
+    QAction*                                m_action_monitor_project_file;
+
     QAction*                                m_action_start_interactive_rendering;
     QAction*                                m_action_start_final_rendering;
     QAction*                                m_action_stop_rendering;
-    QAction*                                m_action_toggle_project_watcher;
+    QAction*                                m_action_rendering_settings;
 
     std::vector<QAction*>                   m_recently_opened;
     std::vector<MinimizeButton*>            m_minimize_buttons;
@@ -112,7 +114,7 @@ class MainWindow
 
     renderer::ParamArray                    m_settings;
 
-    std::auto_ptr<RenderSettingsWindow>     m_render_settings_window;
+    std::auto_ptr<RenderingSettingsWindow>  m_rendering_settings_window;
     std::auto_ptr<TestWindow>               m_test_window;
     std::auto_ptr<BenchmarkWindow>          m_benchmark_window;
 
@@ -162,8 +164,6 @@ class MainWindow
     void set_rendering_widgets_enabled(const bool is_enabled, const bool is_rendering);
     void save_state_before_project_open();
     void restore_state_after_project_open();
-    void save_ui_state();
-    void restore_ui_state();
 
     // Render widgets.
     void recreate_render_widgets();
@@ -175,11 +175,11 @@ class MainWindow
     bool can_close_project();
     void on_project_change();
 
-    // Project file watcher.
-    void enable_project_file_watcher();
-    void disable_project_file_watcher();
-    void start_watching_project_file();
-    void stop_watching_project_file();
+    // Project file monitoring.
+    void enable_project_file_monitoring();
+    void disable_project_file_monitoring();
+    void start_monitoring_project_file();
+    void stop_monitoring_project_file();
 
     // Drag-and-drop.
     void dragEnterEvent(QDragEnterEvent* event);
@@ -205,8 +205,8 @@ class MainWindow
     void slot_save_project_as();
     void slot_project_modified();
 
-    // Project file watcher.
-    void slot_toggle_project_file_watcher(const bool checked);
+    // Project file monitoring.
+    void slot_toggle_project_file_monitoring(const bool checked);
     void slot_project_file_changed(const QString& filepath);
 
     // Settings I/O.
@@ -248,7 +248,7 @@ class MainWindow
     void slot_fullscreen();
 
     // Child windows.
-    void slot_show_render_settings_window();
+    void slot_show_rendering_settings_window();
     void slot_show_test_window();
     void slot_show_benchmark_window();
     void slot_show_about_window();

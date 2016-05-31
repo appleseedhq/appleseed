@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -46,6 +46,10 @@
 // Standard headers.
 #include <cstddef>
 #include <string>
+
+// Forward declarations.
+namespace foundation    { class StringArray; }
+namespace foundation    { class StringDictionary; }
 
 namespace renderer
 {
@@ -99,6 +103,10 @@ class APPLESEED_DLLSYMBOL Entity
     // Return the parameters of this entity.
     ParamArray& get_parameters();
     const ParamArray& get_parameters() const;
+
+    // Expose asset file paths referenced by this entity to the outside.
+    virtual void collect_asset_paths(foundation::StringArray& paths) const;
+    virtual void update_asset_paths(const foundation::StringDictionary& mappings);
 
     // Set/get the index of the render layer for this entity.
     // Use ~0 to disable render layer assignment.

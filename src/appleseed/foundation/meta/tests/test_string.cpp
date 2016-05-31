@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -380,6 +380,24 @@ TEST_SUITE(Foundation_Utility_String)
         EXPECT_EQ("hello", trim_both(" \t\n\v\f\r hello \t\n\v\f\r "));
     }
 
+    TEST_CASE(StartsWith)
+    {
+        EXPECT_FALSE(starts_with("", "h"));
+        EXPECT_FALSE(starts_with("world", "he"));
+        EXPECT_FALSE(starts_with("world hello", "he"));
+        EXPECT_TRUE(starts_with("hello", "he"));
+        EXPECT_TRUE(starts_with("hello", "hello"));
+    }
+
+    TEST_CASE(EndsWith)
+    {
+        EXPECT_FALSE(ends_with("", "ld"));
+        EXPECT_FALSE(ends_with("hello", "ld"));
+        EXPECT_FALSE(ends_with("world hello", "ld"));
+        EXPECT_TRUE(ends_with("world", "ld"));
+        EXPECT_TRUE(ends_with("world", "world"));
+    }
+
     vector<string> tokenize_wrapper(
         const string&   s,
         const string&   delimiters)
@@ -489,6 +507,34 @@ TEST_SUITE(Foundation_Utility_String)
         const string result = replace("xyzaa", "aa", "bbb");
 
         EXPECT_EQ("xyzbbb", result);
+    }
+
+    TEST_CASE(Format_GivenStringWithoutPlaceholders_ReturnsString)
+    {
+        const string result = format("hello", "world");
+
+        EXPECT_EQ("hello", result);
+    }
+
+    TEST_CASE(Format_GivenStringWithSinglePlaceholder_ReturnsFormattedString)
+    {
+        const string result = format("hello {0}", "world");
+
+        EXPECT_EQ("hello world", result);
+    }
+
+    TEST_CASE(Format_GivenStringWithSinglePlaceholderRepeatedTwice_ReturnsFormattedString)
+    {
+        const string result = format("{0} hello {0}", "yay");
+
+        EXPECT_EQ("yay hello yay", result);
+    }
+
+    TEST_CASE(Format_GivenStringWithFourPlaceholders_ReturnsFormattedString)
+    {
+        const string result = format("{3} {2} {1} {0} {1} {2} {3}", "a", "b", "c", "d");
+
+        EXPECT_EQ("d c b a b c d", result);
     }
 
     TEST_CASE(GetNumberedStringMaxValue_GivenEmptyPattern_ReturnsZero)

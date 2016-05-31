@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -74,8 +74,9 @@ namespace
             m_inputs.declare("transmittance", InputFormatSpectralReflectance);
             m_inputs.declare("transmittance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("fresnel_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("from_ior", InputFormatScalar);
-            m_inputs.declare("to_ior", InputFormatScalar);
+            m_inputs.declare("ior", InputFormatScalar);
+            m_inputs.declare("density", InputFormatScalar, "0.0");
+            m_inputs.declare("scale", InputFormatScalar, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -88,7 +89,33 @@ namespace
             return Model;
         }
 
-        FORCE_INLINE virtual void sample(
+        virtual size_t compute_input_data_size(
+            const Assembly&     assembly) const APPLESEED_OVERRIDE
+        {
+            return align(sizeof(InputValues), 16);
+        }
+
+        virtual void prepare_inputs(
+            const ShadingPoint& shading_point,
+            void*               data) const APPLESEED_OVERRIDE
+        {
+            InputValues* values = static_cast<InputValues*>(data);
+
+            if (shading_point.is_entering())
+            {
+                values->m_from_ior =
+                    shading_point.get_ray().get_current_ior();
+                values->m_to_ior = values->m_ior;
+            }
+            else
+            {
+                values->m_to_ior =
+                    shading_point.get_ray().get_previous_ior();
+                values->m_from_ior = values->m_ior;
+            }
+        }
+
+        APPLESEED_FORCE_INLINE virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -164,15 +191,17 @@ namespace
             // Set the scattering mode.
             sample.m_mode = ScatteringMode::Specular;
 
+            // Set the incoming direction.
+            incoming = improve_normalization(incoming);
             sample.m_incoming = Dual3d(incoming);
 
+            // Compute the ray differentials.
             if (refract_differentials)
                 sample.compute_transmitted_differentials(eta);
-            else
-                sample.compute_reflected_differentials();
+            else sample.compute_reflected_differentials();
         }
 
-        FORCE_INLINE virtual double evaluate(
+        APPLESEED_FORCE_INLINE virtual double evaluate(
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
@@ -186,7 +215,7 @@ namespace
             return 0.0;
         }
 
-        FORCE_INLINE virtual double evaluate_pdf(
+        APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
             const void*         data,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
@@ -195,6 +224,38 @@ namespace
             const int           modes) const APPLESEED_OVERRIDE
         {
             return 0.0;
+        }
+
+        double sample_ior(
+            SamplingContext&    sampling_context,
+            const void*         data) const APPLESEED_OVERRIDE
+        {
+            return static_cast<const InputValues*>(data)->m_ior;
+        }
+
+        void compute_absorption(
+            const void*         data,
+            const double        distance,
+            Spectrum&           absorption) const APPLESEED_OVERRIDE
+        {
+            const InputValues* values = static_cast<const InputValues*>(data);
+            const float d = static_cast<float>(values->m_density * values->m_scale * distance);
+
+            absorption.resize(values->m_transmittance.size());
+
+            for (size_t i = 0, e = absorption.size(); i < e; ++i)
+            {
+                //
+                // Reference:
+                //
+                //   Beer-Lambert law:
+                //   https://en.wikipedia.org/wiki/Beer%E2%80%93Lambert_law
+                //
+
+                const float a = 1.0f - static_cast<float>(values->m_transmittance[i] * values->m_transmittance_multiplier);
+                const float optical_depth = a * d;
+                absorption[i] = exp(-optical_depth);
+            }
         }
 
       private:
@@ -282,23 +343,33 @@ DictionaryArray SpecularBTDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "from_ior")
-            .insert("label", "From Index of Refraction")
+            .insert("name", "ior")
+            .insert("label", "Index of Refraction")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "5.0")
+            .insert("min_value", "1.0")
+            .insert("max_value", "2.5")
             .insert("use", "required")
-            .insert("default", "1.0"));
+            .insert("default", "1.5"));
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "to_ior")
-            .insert("label", "To Index of Refraction")
+            .insert("name", "density")
+            .insert("label", "Density")
             .insert("type", "numeric")
             .insert("min_value", "0.0")
-            .insert("max_value", "5.0")
-            .insert("use", "required")
-            .insert("default", "1.5"));
+            .insert("max_value", "10.0")
+            .insert("use", "optional")
+            .insert("default", "0.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "scale")
+            .insert("label", "Scale")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "10.0")
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     return metadata;
 }
@@ -306,6 +377,13 @@ DictionaryArray SpecularBTDFFactory::get_input_metadata() const
 auto_release_ptr<BSDF> SpecularBTDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
+{
+    return auto_release_ptr<BSDF>(new SpecularBTDF(name, params));
+}
+
+auto_release_ptr<BSDF> SpecularBTDFFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
 {
     return auto_release_ptr<BSDF>(new SpecularBTDF(name, params));
 }

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -71,7 +71,7 @@ namespace
     void merge_dictionary(StringDictionary& dest, const StringDictionary& other)
     {
         for (const_each<StringDictionary> i = other; i; ++i)
-            dest.insert(i->name(), i->value());
+            dest.insert(i->key(), i->value());
     }
 
     const Scene* get_parent_scene(const Entity* entity)

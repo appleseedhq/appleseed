@@ -1,20 +1,18 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.8
+# Compiled by oslc 1.6.9
 shader as_vector_cross
-param	vector	Vector1	0 0 0		%read{1,3} %write{2147483647,-1}
-param	vector	Vector2	0 0 0		%read{1,3} %write{2147483647,-1}
-param	int	Normalize	0		%meta{string,help,"normalize result vector"} %meta{string,widget,"checkBox"}  %read{0,0} %write{2147483647,-1}
-oparam	vector	VectorOut	0 0 0		%read{2147483647,-1} %write{2,3}
-temp	vector	$tmp1	%read{2,2} %write{1,1}
+param	vector	Vector1	0 0 0		%read{0,0} %write{2147483647,-1}
+param	vector	Vector2	0 0 0		%read{0,0} %write{2147483647,-1}
+param	int	Normalize	0		%meta{string,help,"Normalize result vector"} %meta{string,widget,"checkBox"}  %read{1,1} %write{2147483647,-1}
+oparam	vector	VectorOut	0 0 0		%read{2,2} %write{0,2}
 code ___main___
-# as_vector_cross.osl:41
+# ./vector/as_vector_cross.osl:41
+#     VectorOut = cross(Vector1, Vector2);
+	cross		VectorOut Vector1 Vector2 	%filename{"./vector/as_vector_cross.osl"} %line{41} %argrw{"wrr"}
+# ./vector/as_vector_cross.osl:43
 #     if (Normalize)
-	if		Normalize 3 4 	%filename{"as_vector_cross.osl"} %line{41} %argrw{"r"}
-# as_vector_cross.osl:42
-#         VectorOut = normalize(cross(Vector1, Vector2));
-	cross		$tmp1 Vector1 Vector2 	%line{42} %argrw{"wrr"}
-	normalize	VectorOut $tmp1 	%argrw{"wr"}
-# as_vector_cross.osl:44
-#         VectorOut = cross(Vector1, Vector2);
-	cross		VectorOut Vector1 Vector2 	%line{44} %argrw{"wrr"}
+	if		Normalize 3 3 	%line{43} %argrw{"r"}
+# ./vector/as_vector_cross.osl:44
+#         VectorOut = normalize(VectorOut);
+	normalize	VectorOut VectorOut 	%line{44} %argrw{"wr"}
 	end

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -146,7 +146,7 @@ inline TriangleHH<T>::TriangleHH(
 
 template <typename T>
 template <typename U>
-FORCE_INLINE TriangleHH<T>::TriangleHH(const TriangleHH<U>& rhs)
+APPLESEED_FORCE_INLINE TriangleHH<T>::TriangleHH(const TriangleHH<U>& rhs)
   : m_n(VectorType(rhs.m_n))
   , m_d(static_cast<ValueType>(rhs.m_d))
   , m_n1(VectorType(rhs.m_n1))
@@ -157,7 +157,7 @@ FORCE_INLINE TriangleHH<T>::TriangleHH(const TriangleHH<U>& rhs)
 }
 
 template <typename T>
-FORCE_INLINE bool TriangleHH<T>::intersect(
+APPLESEED_FORCE_INLINE bool TriangleHH<T>::intersect(
     const RayType&          ray,
     ValueType&              t,
     ValueType&              u,
@@ -191,7 +191,7 @@ FORCE_INLINE bool TriangleHH<T>::intersect(
 }
 
 template <typename T>
-FORCE_INLINE bool TriangleHH<T>::intersect(const RayType& ray) const
+APPLESEED_FORCE_INLINE bool TriangleHH<T>::intersect(const RayType& ray) const
 {
     const ValueType det = dot(ray.m_dir, m_n);
     const ValueType tprime = m_d - dot(ray.m_org, m_n);

@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -109,11 +109,12 @@ void effective_extinction_coefficient(
     const double        anisotropy,
     Spectrum&           sigma_tr);
 
+// rd and dmfp must have the same size (both RGB or both spectral).
 template <typename ComputeRdFun>
 void compute_absorption_and_scattering(
     const ComputeRdFun  rd_fun,
-    const Spectrum&     rd,                     // surface albedo
-    const double        dmfp,                   // diffuse mean free path
+    const Spectrum&     rd,                     // diffuse surface reflectance
+    const Spectrum&     dmfp,                   // diffuse mean free path
     const double        g,                      // anisotropy
     Spectrum&           sigma_a,                // absorption coefficient
     Spectrum&           sigma_s);               // scattering coefficient
@@ -215,29 +216,29 @@ inline double compute_alpha_prime(
     const ComputeRdFun  rd_fun,
     const double        rd)
 {
-    double x0 = 0.0, x1 = 1.0, xmid;
+    double x0 = 0.0, x1 = 1.0;
 
-    // For now simple bisection.
-    // todo: switch to faster algorithm.
+    // Simple bisection.
     for (size_t i = 0; i < 20; ++i)
     {
-        xmid = 0.5 * (x0 + x1);
+        const double xmid = 0.5 * (x0 + x1);
         const double x = rd_fun(xmid);
         x < rd ? x0 = xmid : x1 = xmid;
     }
 
-    return xmid;
+    return 0.5 * (x0 + x1);
 }
 
 template <typename ComputeRdFun>
 void compute_absorption_and_scattering(
     const ComputeRdFun  rd_fun,
     const Spectrum&     rd,
-    const double        dmfp,
+    const Spectrum&     dmfp,
     const double        g,
     Spectrum&           sigma_a,
     Spectrum&           sigma_s)
 {
+    assert(rd.size() == dmfp.size());
     assert(g > -1.0);
     assert(g < 1.0);
 
@@ -248,16 +249,8 @@ void compute_absorption_and_scattering(
 
     for (size_t i = 0, e = rd.size(); i < e; ++i)
     {
-        assert(rd[i] >= 0.0f);
-        assert(rd[i] <= 1.0f);
-
-        if (rd[i] == 0.0f)
-        {
-            // rd == 0 -> alpha_prime == 0 -> sigma_s == 0
-            sigma_s[i] = 0.0f;
-            sigma_a[i] = static_cast<float>(1.0 / (foundation::SqrtThree * dmfp));
-            continue;
-        }
+        assert(rd[i] > 0.0f);
+        assert(rd[i] < 1.0f);
 
         // Find alpha' by numerically inverting Rd(alpha').
         const double alpha_prime = compute_alpha_prime(rd_fun, rd[i]);
@@ -266,7 +259,7 @@ void compute_absorption_and_scattering(
 
         // Compute reduced extinction coefficient.
         const double sigma_t_prime =
-            reduced_extinction_coefficient(dmfp, alpha_prime);
+            reduced_extinction_coefficient(dmfp[i], alpha_prime);
 
         // Compute scattering coefficient.
         const double sigma_s_prime = alpha_prime * sigma_t_prime;

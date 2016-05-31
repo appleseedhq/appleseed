@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -220,6 +220,15 @@ DictionaryArray ConstantHemisphereEnvironmentEDFFactory::get_input_metadata() co
 auto_release_ptr<EnvironmentEDF> ConstantHemisphereEnvironmentEDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
+{
+    return
+        auto_release_ptr<EnvironmentEDF>(
+            new ConstantHemisphereEnvironmentEDF(name, params));
+}
+
+auto_release_ptr<EnvironmentEDF> ConstantHemisphereEnvironmentEDFFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
 {
     return
         auto_release_ptr<EnvironmentEDF>(

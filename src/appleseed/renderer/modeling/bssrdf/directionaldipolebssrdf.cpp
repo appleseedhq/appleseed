@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,12 +32,12 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/bssrdf/dipolebssrdf.h"
 #include "renderer/modeling/bssrdf/sss.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/colorspace.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/cdf.h"
 #include "foundation/math/fresnel.h"
@@ -81,24 +81,15 @@ namespace
     const char* Model = "directional_dipole_bssrdf";
 
     class DirectionalDipoleBSSRDF
-      : public BSSRDF
+      : public DipoleBSSRDF
     {
       public:
         DirectionalDipoleBSSRDF(
             const char*         name,
             const ParamArray&   params)
-          : BSSRDF(name, params)
+          : DipoleBSSRDF(name, params)
+          , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
         {
-            m_inputs.declare("weight", InputFormatScalar, "1.0");
-            m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("dmfp", InputFormatScalar);
-            m_inputs.declare("dmfp_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("sigma_a", InputFormatSpectralReflectance, "");
-            m_inputs.declare("sigma_s", InputFormatSpectralReflectance, "");
-            m_inputs.declare("anisotropy", InputFormatScalar);
-            m_inputs.declare("outside_ior", InputFormatScalar);
-            m_inputs.declare("inside_ior", InputFormatScalar);
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -130,18 +121,44 @@ namespace
 
             if (m_inputs.source("sigma_a") == 0 || m_inputs.source("sigma_s") == 0)
             {
-                // Apply multipliers.
+                //
+                // Compute sigma_a, sigma_s and sigma_tr from the diffuse surface reflectance
+                // and diffuse mean free path (dmfp).
+                //
+
+                if (values->m_reflectance.size() != values->m_dmfp.size())
+                {
+                    // Since it does not really make sense to convert a dmfp,
+                    // a per channel distance, as if it were a color,
+                    // we instead always convert the reflectance to match the
+                    // size of the dmfp.
+                    if (values->m_dmfp.is_spectral())
+                    {
+                        Spectrum::upgrade(
+                            values->m_reflectance,
+                            values->m_reflectance);
+                    }
+                    else
+                    {
+                        Spectrum::downgrade(
+                            m_lighting_conditions,
+                            values->m_reflectance,
+                            values->m_reflectance);
+                    }
+                }
+
+                // Apply multipliers to input values.
                 values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
-                values->m_dmfp *= values->m_dmfp_multiplier;
+                values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
 
-                // Clamp reflectance.
-                values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
+                // Clamp input values.
+                values->m_reflectance = clamp(values->m_reflectance, 0.001f, 0.999f);
+                values->m_dmfp = clamp_low(values->m_dmfp, 1.0e-5f);
 
-                // Compute sigma_a, sigma_s and sigma_tr from the reflectance and dmfp parameters.
-
+                // Compute sigma_a and sigma_s.
                 // Currently, we don't have a reparameterization for this BSSRDF model.
                 // We reuse the standard dipole reparameterization method and apply a
-                // "correction" weight in evaluate() to try to match the reflectance of
+                // correction weight in evaluate() to try to match the reflectance of
                 // the standard dipole model.
                 const ComputeRdStandardDipole rd_fun(values->m_eta);
                 compute_absorption_and_scattering(
@@ -152,12 +169,21 @@ namespace
                     values->m_sigma_a,
                     values->m_sigma_s);
 
-                values->m_sigma_tr.resize(values->m_sigma_a.size());
-                values->m_sigma_tr.set(static_cast<float>(1.0 / values->m_dmfp));
+                // Compute sigma_tr = 1 / dmfp.
+                values->m_sigma_tr = rcp(values->m_dmfp);
             }
             else
             {
-                // Compute sigma_tr.
+                //
+                // Compute sigma_tr from sigma_a and sigma_s.
+                //
+                // If you want to use the sigma_a and sigma_s values provided in [1],
+                // and if your scene is modeled in meters, you will need to *multiply*
+                // them by 1000. If your scene is modeled in centimers (e.g. the "size"
+                // of the object is 4 units) then you will need to multiply the sigmas
+                // by 100.
+                //
+
                 effective_extinction_coefficient(
                     values->m_sigma_a,
                     values->m_sigma_s,
@@ -206,40 +232,12 @@ namespace
             values->m_rmax2 = square(dipole_max_radius(min_value(values->m_sigma_tr)));
         }
 
-        virtual bool sample(
-            SamplingContext&    sampling_context,
+        virtual void evaluate_profile(
             const void*         data,
-            BSSRDFSample&       sample) const APPLESEED_OVERRIDE
+            const double        square_radius,
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
-            const DipoleBSSRDFInputValues* values =
-                reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
-
-            if (values->m_weight == 0.0)
-                return false;
-
-            sampling_context.split_in_place(3, 1);
-            const Vector3d s = sampling_context.next_vector2<3>();
-
-            // Sample a channel.
-            const size_t channel =
-                sample_cdf(
-                    &values->m_channel_cdf[0],
-                    &values->m_channel_cdf[0] + values->m_channel_cdf.size(),
-                    s[0]);
-
-            // Sample a radius.
-            const double sigma_tr = values->m_sigma_tr[channel];
-            const double radius = sample_exponential_distribution(s[1], sigma_tr);
-
-            // Sample an angle.
-            const double phi = TwoPi * s[2];
-
-            sample.m_eta = values->m_eta;
-            sample.m_channel = channel;
-            sample.m_point = Vector2d(radius * cos(phi), radius * sin(phi));
-            sample.m_rmax2 = values->m_rmax2;
-
-            return true;
+            assert(!"Should never be called.");
         }
 
         virtual void evaluate(
@@ -296,31 +294,6 @@ namespace
             value *= values->m_dirpole_reparam_weight;
         }
 
-        virtual double evaluate_pdf(
-            const void*         data,
-            const size_t        channel,
-            const double        radius) const APPLESEED_OVERRIDE
-        {
-            const DipoleBSSRDFInputValues* values =
-                reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
-
-            // PDF of the sampled radius.
-            double pdf_radius = 0.0;
-            for (size_t i = 0, e = values->m_sigma_tr.size(); i < e; ++i)
-            {
-                const double sigma_tr = values->m_sigma_tr[i];
-                pdf_radius +=
-                      exponential_distribution_pdf(radius, sigma_tr)
-                    * values->m_channel_pdf[i];
-            }
-
-            // PDF of the sampled angle.
-            const double pdf_angle = RcpTwoPi;
-
-            // Compute and return the final PDF.
-            return pdf_radius * pdf_angle;
-        }
-
       private:
         // Evaluate the directional dipole BSSRDF.
         static void bssrdf(
@@ -347,7 +320,7 @@ namespace
 
             // Compute direction of real ray source.
             Vector3d wr;
-            const bool successful = refract(wi, ni, values->m_eta, wr);
+            APPLESEED_UNUSED const bool successful = refract(wi, ni, values->m_eta, wr);
             assert(successful);
             assert(is_normalized(wr));
 
@@ -390,7 +363,7 @@ namespace
 
                 // Compute distance to virtual source.
                 const double dv = norm(xoxv);                                           // distance to virtual ray source
-                assert(feq(dv, sqrt(r2 + square(2.0 * A * de))));                       // true because we computed xv using ni_star, not ni
+                assert(feq(dv, sqrt(r2 + square(2.0 * A * de)), 1.0e-9));               // true because we computed xv using ni_star, not ni
 
                 // Evaluate the BSSRDF.
                 const double sdr = sd_prime(cphi_eta, ce_eta, D, sigma_tr, dot_wr_xoxi, dot_wr_no, dot_xoxi_no, dr);
@@ -426,6 +399,9 @@ namespace
 
             return t0 * (cphi_eta * t1 - ce_eta * (t2 - t3));
         }
+
+      private:
+        const LightingConditions m_lighting_conditions;
     };
 }
 
@@ -450,6 +426,13 @@ Dictionary DirectionalDipoleBSSRDFFactory::get_model_metadata() const
 auto_release_ptr<BSSRDF> DirectionalDipoleBSSRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
+{
+    return auto_release_ptr<BSSRDF>(new DirectionalDipoleBSSRDF(name, params));
+}
+
+auto_release_ptr<BSSRDF> DirectionalDipoleBSSRDFFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
 {
     return auto_release_ptr<BSSRDF>(new DirectionalDipoleBSSRDF(name, params));
 }

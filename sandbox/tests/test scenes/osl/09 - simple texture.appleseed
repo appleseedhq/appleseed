@@ -6,7 +6,7 @@
             _geometry
         </search_path>
         <search_path>
-            _shaders
+            ../../../shaders
         </search_path>
         <search_path>
             ../texture
@@ -78,11 +78,28 @@
                 <parameter name="reflectance" value="uv_grid_mip_inst" />
                 <parameter name="reflectance_multiplier" value="1.0" />
             </bsdf>
+
+
+
             <shader_group name="simple_tex">
-                <shader type="surface" name="simple_tex" layer="simple_tex1">
-                    <parameter name="texfile" value="string UVCheckerMap03-512.exr" />
+                <shader type="shader" name="transform/as_map2d" layer="map1">
+                    <parameter name="Repeat" value="vector 2.0 2.0 2.0" />
                 </shader>
+                <shader type="shader" name="texture2d/as_color_texture" layer="tex1">
+                    <parameter name="Filename" value="string UVCheckerMap03-512.exr" />
+                </shader>
+                <shader type="shader" name="surface/as_diffuse_surface" layer="diffuse1">
+                    <parameter name="Reflectance" value="float 0.8" />
+                    <parameter name="Roughness" value="float 0" />
+                </shader>
+                <shader type="surface" name="material/as_material_builder" layer="surface1">
+                </shader>
+                <connect_shaders src_layer="map1" src_param="UOut" dst_layer="tex1" dst_param="U" />
+                <connect_shaders src_layer="map1" src_param="VOut" dst_layer="tex1" dst_param="V" />
+                <connect_shaders src_layer="tex1" src_param="ColorOut" dst_layer="diffuse1" dst_param="Color" />
+                <connect_shaders src_layer="diffuse1" src_param="BRDF" dst_layer="surface1" dst_param="BSDF" />
             </shader_group>
+
             <surface_shader name="physical_surface_shader" model="physical_surface_shader" />
             <material name="plane_material" model="generic_material">
                 <parameter name="bsdf" value="floor_brdf" />

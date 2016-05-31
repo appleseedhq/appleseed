@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -108,7 +108,7 @@ void MouseCoordinatesTracker::set_label_text(const QPoint& point) const
     const Vector2d ndc = widget_to_ndc(point);
 
     m_label->setText(
-        QString("Pixel: %1, %2 - NDC: %3, %4 ")
+        QString("Pixel: %1, %2 - NDC: %3, %4")
             .arg(QString::number(pix.x), 4, ' ')
             .arg(QString::number(pix.y), 4, ' ')
             .arg(QString::number(ndc.x, 'f', 5))

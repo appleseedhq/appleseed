@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -81,21 +81,21 @@ struct Shader::Impl
                     {
                         float r, g, b;
                         parser.parse_three_values<float>(r, g, b, true);
-                        m_params.insert(ShaderParam::create_color_param(i.it().name(), r, g, b));
+                        m_params.insert(ShaderParam::create_color_param(i.it().key(), r, g, b));
                     }
                     break;
 
                   case OSLParamTypeFloat:
                     {
                         const float val = parser.parse_one_value<float>();
-                        m_params.insert(ShaderParam::create_float_param(i.it().name(), val));
+                        m_params.insert(ShaderParam::create_float_param(i.it().key(), val));
                     }
                     break;
 
                   case OSLParamTypeInt:
                     {
                         const int val = parser.parse_one_value<int>();
-                        m_params.insert(ShaderParam::create_int_param(i.it().name(), val));
+                        m_params.insert(ShaderParam::create_int_param(i.it().key(), val));
                     }
                     break;
 
@@ -103,7 +103,7 @@ struct Shader::Impl
                     {
                         float val[16];
                         parser.parse_n_values(16, val);
-                        m_params.insert(ShaderParam::create_matrix_param(i.it().name(), val));
+                        m_params.insert(ShaderParam::create_matrix_param(i.it().key(), val));
                     }
                     break;
 
@@ -111,7 +111,7 @@ struct Shader::Impl
                     {
                         float x, y, z;
                         parser.parse_three_values<float>(x, y, z);
-                        m_params.insert(ShaderParam::create_normal_param(i.it().name(), x, y, z));
+                        m_params.insert(ShaderParam::create_normal_param(i.it().key(), x, y, z));
                     }
                     break;
 
@@ -119,7 +119,7 @@ struct Shader::Impl
                     {
                         float x, y, z;
                         parser.parse_three_values<float>(x, y, z);
-                        m_params.insert(ShaderParam::create_point_param(i.it().name(), x, y, z));
+                        m_params.insert(ShaderParam::create_point_param(i.it().key(), x, y, z));
                     }
                     break;
 
@@ -127,7 +127,7 @@ struct Shader::Impl
                     {
                         m_params.insert(
                             ShaderParam::create_string_param(
-                                i.it().name(),
+                                i.it().key(),
                                 parser.parse_string_value().c_str()));
                     }
                     break;
@@ -136,14 +136,14 @@ struct Shader::Impl
                     {
                         float x, y, z;
                         parser.parse_three_values<float>(x, y, z);
-                        m_params.insert(ShaderParam::create_vector_param(i.it().name(), x, y, z));
+                        m_params.insert(ShaderParam::create_vector_param(i.it().key(), x, y, z));
                     }
                     break;
 
                   default:
                     RENDERER_LOG_ERROR(
-                        "error adding osl param %s, of unknown type %s; will use the default value.",
-                        i.it().name(),
+                        "error adding OSL param %s, of unknown type %s; will use the default value.",
+                        i.it().key(),
                         i.it().value());
                     break;
                 }
@@ -151,8 +151,8 @@ struct Shader::Impl
             catch (const ExceptionOSLParamParseError&)
             {
                 RENDERER_LOG_ERROR(
-                    "error parsing osl param value, param = %s, value = %s; will use the default value.",
-                    i.it().name(),
+                    "error parsing OSL param value, param = %s, value = %s; will use the default value.",
+                    i.it().key(),
                     i.it().value());
             }
         }

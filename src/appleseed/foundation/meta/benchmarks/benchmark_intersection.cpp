@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -240,7 +240,7 @@ namespace
             return TriangleType(v0, v1, v2);
         }
 
-        FORCE_INLINE void payload()
+        APPLESEED_FORCE_INLINE void payload()
         {
             for (size_t i = 0; i < RayCount; ++i)
                 m_hit ^= m_triangle.intersect(m_ray[i], m_t, m_u, m_v);

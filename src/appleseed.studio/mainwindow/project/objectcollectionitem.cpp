@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -130,7 +130,11 @@ void ObjectCollectionItem::slot_import_objects()
         get_open_filenames(
             treeWidget(),
             "Import Objects...",
+#ifdef APPLESEED_WITH_ALEMBIC
             "Geometry Files (*.abc;*.binarymesh;*.obj);;All Files (*.*)",
+#else
+            "Geometry Files (*.binarymesh;*.obj);;All Files (*.*)",
+#endif
             m_editor_context.m_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 

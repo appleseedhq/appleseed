@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -94,11 +94,28 @@ void BSDF::evaluate_inputs(
     const size_t            offset) const
 {
     input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0), offset);
-    prepare_inputs(input_evaluator.data() + offset);
+    prepare_inputs(shading_point, input_evaluator.data() + offset);
 }
 
-void BSDF::prepare_inputs(void* data) const
+void BSDF::prepare_inputs(
+    const ShadingPoint&     shading_point,
+    void*                   data) const
 {
+}
+
+double BSDF::sample_ior(
+    SamplingContext&        sampling_context,
+    const void*             data) const
+{
+    return 1.0;
+}
+
+void BSDF::compute_absorption(
+    const void*             data,
+    const double            distance,
+    Spectrum&               absorption) const
+{
+    absorption.set(1.0f);
 }
 
 }   // namespace renderer

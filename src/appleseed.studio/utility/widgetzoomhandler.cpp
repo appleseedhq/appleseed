@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -230,8 +230,8 @@ void WidgetZoomHandler::apply_scale_factor()
     const int new_widget_width = m_scroll_area->widget()->width();
     const int new_widget_height = m_scroll_area->widget()->height();
 
-    const double actual_h_multiplier = static_cast<double>(m_scroll_area->widget()->width()) / old_widget_width;
-    const double actual_v_multiplier = static_cast<double>(m_scroll_area->widget()->height()) / old_widget_height;
+    const double actual_h_multiplier = static_cast<double>(new_widget_width) / old_widget_width;
+    const double actual_v_multiplier = static_cast<double>(new_widget_height) / old_widget_height;
 
     set_slider_center(m_scroll_area->horizontalScrollBar(), actual_h_multiplier * h_slider_center);
     set_slider_center(m_scroll_area->verticalScrollBar(), actual_v_multiplier * v_slider_center);

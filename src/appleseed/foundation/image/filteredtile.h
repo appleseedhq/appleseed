@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -163,7 +163,7 @@ inline void FilteredTile::get_pixel(
     const size_t            i,
     T                       components[]) const
 {
-    const float* RESTRICT ptr = pixel(i);
+    const float* APPLESEED_RESTRICT ptr = pixel(i);
 
     const float weight = *ptr++;
     const float rcp_weight = weight == 0.0f ? 0.0f : 1.0f / weight;

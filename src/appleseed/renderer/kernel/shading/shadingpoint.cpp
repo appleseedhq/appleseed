@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,7 @@
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/scene/scene.h"
 #ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #endif
@@ -410,6 +411,11 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
             m_dpdu = (dv1 * dp0 - dv0 * dp1) * rcp_det;
             m_dpdv = (du0 * dp1 - du1 * dp0) * rcp_det;
 
+            // Make sure dPdv x dPdu points in the same direction as
+            // the original shading normal.
+            if (dot(get_original_shading_normal(), cross(m_dpdv, m_dpdu)) < 0.0)
+                m_dpdu = -m_dpdu;
+
             const Vector3d dn0 = m_n0 - m_n2;
             const Vector3d dn1 = m_n1 - m_n2;
 
@@ -465,6 +471,11 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
         const double ty = intersect(ray.m_ry, p, n);
         const Vector3d py = ray.m_ry.point_at(ty);
         m_dpdy = py - p;
+
+        // Make sure dPdy x dPdx points in the same direction as
+        // the original shading normal.
+        if (dot(get_original_shading_normal(), cross(m_dpdy, m_dpdx)) < 0.0)
+            m_dpdx = -m_dpdx;
 
         // Select the two smallest axes.
         const size_t max_index = max_abs_index(n);
@@ -736,16 +747,18 @@ void ShadingPoint::compute_world_space_point_velocity() const
     // Transform positions to world space.
     if (m_assembly_instance_transform_seq->size() > 1)
     {
+        const Camera* camera = m_scene->get_camera();
         Transformd tmp;
+
         const Transformd& assembly_instance_transform0 =
             m_assembly_instance_transform_seq->evaluate(
-                get_ray().m_time.m_shutter_open,
+                camera->get_shutter_open_time(),
                 tmp);
         p0 = assembly_instance_transform0.point_to_parent(p0);
 
         const Transformd& assembly_instance_transform1 =
             m_assembly_instance_transform_seq->evaluate(
-                get_ray().m_time.m_shutter_close,
+                camera->get_shutter_close_time(),
                 tmp);
         p1 = assembly_instance_transform1.point_to_parent(p1);
     }
@@ -802,103 +815,122 @@ void ShadingPoint::initialize_osl_shader_globals(
 
     if (!(m_members & HasOSLShaderGlobals))
     {
-        memset(&m_shader_globals, 0, sizeof(OSL::ShaderGlobals));
-
-        const ShadingRay& ray(get_ray());
-
-        m_shader_globals.P = Vector3f(get_point());
-
+        const ShadingRay& ray = get_ray();
         assert(is_normalized(ray.m_dir));
+
+        // Surface position and incident ray direction.
+        m_shader_globals.P = Vector3f(get_point());
         m_shader_globals.I = Vector3f(ray.m_dir);
 
-        m_shader_globals.N = get_side() == ObjectInstance::FrontSide
-            ?  Vector3f(get_original_shading_normal())
-            : -Vector3f(get_original_shading_normal());
-
-        m_shader_globals.Ng = Vector3f(get_geometric_normal());
-
-        const bool ass_inst_swaps_handedness =
-            m_assembly_instance_transform_seq->swaps_handedness(
-                m_assembly_instance_transform);
-
-        const bool obj_inst_swaps_handedness =
-            m_object_instance->transform_swaps_handedness();
-
+        // Handedness flip flag.
+        // Currently it is unused, but we might want to enable it in the future.
         m_shader_globals.flipHandedness =
-            ass_inst_swaps_handedness != obj_inst_swaps_handedness ? 1 : 0;
+            m_assembly_instance_transform_seq->swaps_handedness(m_assembly_instance_transform) !=
+            get_object_instance().transform_swaps_handedness() ? 1 : 0;
 
-        const Vector2d& uv = get_uv(0);
-
-        m_shader_globals.u = static_cast<float>(uv[0]);
-        m_shader_globals.v = static_cast<float>(uv[1]);
-
-        m_shader_globals.dPdu = Vector3f(get_dpdu(0));
-        m_shader_globals.dPdv = Vector3f(get_dpdv(0));
-
+        // Surface position and incident ray direction differentials.
         if (ray.m_has_differentials)
         {
+            m_shader_globals.dPdx =
+                m_shader_globals.flipHandedness
+                    ?  Vector3f(get_dpdx())
+                    : -Vector3f(get_dpdx());
+            m_shader_globals.dPdy = Vector3f(get_dpdy());
+            m_shader_globals.dPdz = Vector3f(0.0);
             m_shader_globals.dIdx = Vector3f(ray.m_rx.m_dir);
             m_shader_globals.dIdy = Vector3f(ray.m_ry.m_dir);
-
-            m_shader_globals.dPdx = Vector3f(get_dpdx());
-            m_shader_globals.dPdy = Vector3f(get_dpdy());
-
-            const Vector2d& duvdx = get_duvdx(0);
-            m_shader_globals.dudx = static_cast<float>(duvdx[0]);
-            m_shader_globals.dvdx = static_cast<float>(duvdx[1]);
-
-            const Vector2d& duvdy = get_duvdy(0);
-            m_shader_globals.dudy = static_cast<float>(duvdy[0]);
-            m_shader_globals.dvdy = static_cast<float>(duvdy[1]);
+        }
+        else
+        {
+            m_shader_globals.dPdx = Vector3f(0.0f);
+            m_shader_globals.dPdy = Vector3f(0.0f);
+            m_shader_globals.dPdz = Vector3f(0.0);
+            m_shader_globals.dIdx = Vector3f(0.0f);
+            m_shader_globals.dIdy = Vector3f(0.0f);
         }
 
-        m_shader_globals.time = static_cast<float>(ray.m_time.m_absolute);
-        m_shader_globals.dtime = static_cast<float>(ray.m_time.m_shutter_close - ray.m_time.m_shutter_open);
+        // Shading and geometric normals and backfacing flag.
+        m_shader_globals.N = Vector3f(get_original_shading_normal());
+        m_shader_globals.Ng = Vector3f(get_geometric_normal());
 
+        m_shader_globals.backfacing =
+            get_side() == ObjectInstance::FrontSide ? 0 : 1;
+
+        // Surface parameters and their differentials.
+        const Vector2d& uv = get_uv(0);
+        m_shader_globals.u = static_cast<float>(uv[0]);
+        m_shader_globals.v = static_cast<float>(uv[1]);
+        if (ray.m_has_differentials)
+        {
+            const Vector2d& duvdx = get_duvdx(0);
+            const Vector2d& duvdy = get_duvdy(0);
+            m_shader_globals.dudx = static_cast<float>(duvdx[0]);
+            m_shader_globals.dudy = static_cast<float>(duvdy[0]);
+            m_shader_globals.dvdx = static_cast<float>(duvdx[1]);
+            m_shader_globals.dvdy = static_cast<float>(duvdy[1]);
+        }
+        else
+        {
+            m_shader_globals.dudx = 0.0f;
+            m_shader_globals.dudy = 0.0f;
+            m_shader_globals.dvdx = 0.0f;
+            m_shader_globals.dvdy = 0.0f;
+        }
+
+        // Surface tangents.
+        m_shader_globals.dPdu =
+            m_shader_globals.flipHandedness
+                ?  Vector3f(get_dpdu(0))
+                : -Vector3f(get_dpdu(0));
+
+        m_shader_globals.dPdv = Vector3f(get_dpdv(0));
+
+        // Time and its derivative.
+        m_shader_globals.time = static_cast<float>(ray.m_time.m_absolute);
+        m_shader_globals.dtime = static_cast<float>(m_scene->get_camera()->get_shutter_open_time_interval());
+
+        // Velocity vector.
         m_shader_globals.dPdtime =
             sg.uses_dPdtime()
                 ? Vector3f(get_world_space_point_velocity())
                 : Vector3f(0.0f);
 
-        m_shader_globals.renderer = renderer;
-        m_shader_globals.renderstate =
-            const_cast<void*>(reinterpret_cast<const void*>(this));
+        // Point being illuminated and its differentials.
+        m_shader_globals.Ps = Vector3f(0.0f);
+        m_shader_globals.dPsdx = Vector3f(0.0f);
+        m_shader_globals.dPsdy = Vector3f(0.0f);
 
+        // Opaque state pointers.
+        m_shader_globals.renderstate = const_cast<ShadingPoint*>(this);
         memset(&m_osl_trace_data, 0, sizeof(OSLTraceData));
         m_shader_globals.tracedata = &m_osl_trace_data;
+        m_shader_globals.objdata = 0;
 
-        m_obj_transform_info.m_assembly_instance_transform =
-            m_assembly_instance_transform_seq;
-        m_obj_transform_info.m_object_instance_transform =
-            &m_object_instance->get_transform();
+        // Pointer to the RendererServices object.
+        m_shader_globals.renderer = renderer;
 
+        // Transformations.
+        m_obj_transform_info.m_assembly_instance_transform = m_assembly_instance_transform_seq;
+        m_obj_transform_info.m_object_instance_transform = &m_object_instance->get_transform();
         m_shader_globals.object2common = reinterpret_cast<OSL::TransformationPtr>(&m_obj_transform_info);
-
-        m_shader_globals.backfacing = get_side() == ObjectInstance::FrontSide ? 0 : 1;
+        m_shader_globals.shader2common = 0;
 
         m_members |= HasOSLShaderGlobals;
     }
 
-    // Always update the ray type and surface area.
+    // Always update the ray type flags.
     m_shader_globals.raytype = static_cast<int>(ray_flags);
 
-    if (ray_flags == VisibilityFlags::LightRay && sg.has_emission())
-    {
-        m_shader_globals.surfacearea =
-            static_cast<float>(sg.get_surface_area(&get_assembly_instance(), &get_object_instance()));
-    }
-    else
-        m_shader_globals.surfacearea = 0.0f;
+    // Always update the surface area of emissive objects.
+    m_shader_globals.surfacearea =
+        ray_flags == VisibilityFlags::LightRay && sg.has_emission()
+            ? static_cast<float>(sg.get_surface_area(&get_assembly_instance(), &get_object_instance()))
+            : 0.0f;
 
-    // These are set by OSL when the shader is executed.
-    m_shader_globals.context = 0;
+    // Output closure.
     m_shader_globals.Ci = 0;
 }
 
-#endif
-
-
-#ifdef APPLESEED_WITH_OSL
 
 //
 // ShadingPoint::OSLObjectTransformInfo class implementation.
@@ -915,7 +947,8 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_transform() const
 
     const Transformd& assembly_xform = m_assembly_instance_transform->get_earliest_transform();
     const Transformd::MatrixType m(
-        m_object_instance_transform->get_local_to_parent() * assembly_xform.get_local_to_parent());
+        m_object_instance_transform->get_local_to_parent() *
+        assembly_xform.get_local_to_parent());
 
     return Matrix4f(m);
 }
@@ -924,7 +957,8 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_transform(const float t)
 {
     const Transformd assembly_xform = m_assembly_instance_transform->evaluate(t);
     const Transformd::MatrixType m(
-        m_object_instance_transform->get_local_to_parent() * assembly_xform.get_local_to_parent());
+        m_object_instance_transform->get_local_to_parent() *
+        assembly_xform.get_local_to_parent());
 
     return Matrix4f(m);
 }
@@ -935,7 +969,8 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform() cons
 
     const Transformd& assembly_xform = m_assembly_instance_transform->get_earliest_transform();
     const Transformd::MatrixType m(
-        m_object_instance_transform->get_parent_to_local() * assembly_xform.get_parent_to_local());
+        m_object_instance_transform->get_parent_to_local() *
+        assembly_xform.get_parent_to_local());
 
     return Matrix4f(m);
 }
@@ -944,7 +979,8 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform(const 
 {
     const Transformd assembly_xform = m_assembly_instance_transform->evaluate(t);
     const Transformd::MatrixType m(
-        m_object_instance_transform->get_parent_to_local() * assembly_xform.get_parent_to_local());
+        m_object_instance_transform->get_parent_to_local() *
+        assembly_xform.get_parent_to_local());
 
     return Matrix4f(m);
 }

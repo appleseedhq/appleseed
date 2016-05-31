@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -260,8 +260,6 @@ namespace
 
             // Merge the scratch framebuffer into the output framebuffer.
             const float rcp_sample_count = 1.0f / trackers[0].get_size();
-            const size_t width = m_scratch_fb->get_width();
-            const size_t height = m_scratch_fb->get_height();
             for (int y = -m_scratch_fb_half_height; y <= m_scratch_fb_half_height; ++y)
             {
                 for (int x = -m_scratch_fb_half_width; x <= m_scratch_fb_half_width; ++x)

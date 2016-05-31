@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -45,8 +45,11 @@ namespace renderer
 class BSDFSample
 {
   public:
+    // Inputs.
     const ShadingPoint&             m_shading_point;        // shading point at which the sampling is done
     const foundation::Dual3d        m_outgoing;             // world space outgoing direction, unit-length
+
+    // Outputs.
     foundation::Dual3d              m_incoming;             // world space incoming direction, unit-length
     ScatteringMode::Mode            m_mode;                 // scattering mode
     double                          m_probability;          // PDF value
@@ -60,7 +63,6 @@ class BSDFSample
     const foundation::Vector3d& get_geometric_normal() const;
     const foundation::Vector3d& get_shading_normal() const;
     const foundation::Basis3d& get_shading_basis() const;
-
     void set_shading_basis(const foundation::Basis3d& basis);
 
     void compute_reflected_differentials();

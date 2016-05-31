@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -134,7 +134,7 @@ void DisneyLayeredBRDF::evaluate_inputs(
     // Colors in SeExpr are always in the sRGB color space.
     base_color = srgb_to_linear_rgb(base_color);
     values->m_base_color = Color3f(base_color);
-    m_brdf->prepare_inputs(values);
+    m_brdf->prepare_inputs(shading_point, values);
 }
 
 void DisneyLayeredBRDF::sample(

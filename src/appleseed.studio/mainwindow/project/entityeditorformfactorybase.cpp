@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -63,7 +63,7 @@ void EntityEditorFormFactoryBase::add_name_input_metadata(
             .insert("label", "Name")
             .insert("type", "text")
             .insert("use", "required")
-            .insert("default", name)
+            .insert("value", name)
             .insert("focus", "true"));
 }
 
@@ -75,10 +75,12 @@ void EntityEditorFormFactoryBase::add_input_metadata(
     for (size_t i = 0; i < input_metadata.size(); ++i)
     {
         Dictionary im = input_metadata[i];
+        const string input_name = im.get<string>("name");
 
-        const string widget_name = im.get<string>("name");
-        if (input_values.strings().exist(widget_name))
-            im.insert("default", input_values.get<string>(widget_name));
+        im.insert("value",
+            input_values.strings().exist(input_name) ? input_values.get<string>(input_name) :
+            im.strings().exist("default") ? im.get<string>("default") :
+            "");
 
         metadata.push_back(im);
     }

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -312,7 +312,7 @@ inline T GaussianFilter2<T>::evaluate(const T x, const T y) const
 }
 
 template <typename T>
-FORCE_INLINE T GaussianFilter2<T>::gaussian(const T x, const T alpha)
+APPLESEED_FORCE_INLINE T GaussianFilter2<T>::gaussian(const T x, const T alpha)
 {
     return
         static_cast<T>(
@@ -370,7 +370,7 @@ inline T MitchellFilter2<T>::evaluate(const T x, const T y) const
 }
 
 template <typename T>
-FORCE_INLINE T MitchellFilter2<T>::mitchell(const T x, const T b, const T c)
+APPLESEED_FORCE_INLINE T MitchellFilter2<T>::mitchell(const T x, const T b, const T c)
 {
     const T x1 = std::abs(x + x);
     const T x2 = x1 * x1;
@@ -415,14 +415,14 @@ inline T LanczosFilter2<T>::evaluate(const T x, const T y) const
 }
 
 template <typename T>
-FORCE_INLINE T LanczosFilter2<T>::lanczos(const T x, const T rcp_tau)
+APPLESEED_FORCE_INLINE T LanczosFilter2<T>::lanczos(const T x, const T rcp_tau)
 {
     const T theta = T(Pi) * x;
     return theta == T(0.0) ? T(1.0) : sinc(theta * rcp_tau) * sinc(theta);
 }
 
 template <typename T>
-FORCE_INLINE T LanczosFilter2<T>::sinc(const T x)
+APPLESEED_FORCE_INLINE T LanczosFilter2<T>::sinc(const T x)
 {
     return std::sin(x) / x;
 }
@@ -447,7 +447,7 @@ inline T BlackmanHarrisFilter2<T>::evaluate(const T x, const T y) const
 }
 
 template <typename T>
-FORCE_INLINE T BlackmanHarrisFilter2<T>::blackman(const T x)
+APPLESEED_FORCE_INLINE T BlackmanHarrisFilter2<T>::blackman(const T x)
 {
     return
           T(0.35875)
@@ -478,7 +478,7 @@ typename Filter::ValueType compute_normalization_factor(
         static const size_t Bases[1] = { 2 };
 
         const Vector<ValueType, 2> s =
-            hammersley_sequence<ValueType, 2>(Bases, i, sample_count);
+            hammersley_sequence<ValueType, 2>(Bases, sample_count, i);
 
         const Vector<ValueType, 2> p(
             xradius * (ValueType(2.0) * s.x - ValueType(1.0)),

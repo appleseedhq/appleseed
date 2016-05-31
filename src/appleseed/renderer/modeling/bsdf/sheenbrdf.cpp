@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -60,6 +60,11 @@ namespace
     //
     // Sheen BRDF.
     //
+    // References:
+    //
+    //   [1] Physically-Based Shading at Disney
+    //       https://disney-animation.s3.amazonaws.com/library/s2012_pbs_disney_brdf_notes_v2.pdf
+    //
 
     const char* Model = "sheen_brdf";
 
@@ -86,7 +91,7 @@ namespace
             return Model;
         }
 
-        FORCE_INLINE virtual void sample(
+        APPLESEED_FORCE_INLINE virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -123,7 +128,7 @@ namespace
             sample.compute_reflected_differentials();
         }
 
-        FORCE_INLINE virtual double evaluate(
+        APPLESEED_FORCE_INLINE virtual double evaluate(
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
@@ -156,7 +161,7 @@ namespace
             return RcpTwoPi;
         }
 
-        FORCE_INLINE virtual double evaluate_pdf(
+        APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
             const void*         data,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
@@ -234,6 +239,13 @@ DictionaryArray SheenBRDFFactory::get_input_metadata() const
 auto_release_ptr<BSDF> SheenBRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
+{
+    return auto_release_ptr<BSDF>(new SheenBRDF(name, params));
+}
+
+auto_release_ptr<BSDF> SheenBRDFFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
 {
     return auto_release_ptr<BSDF>(new SheenBRDF(name, params));
 }

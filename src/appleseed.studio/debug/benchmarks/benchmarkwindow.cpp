@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,9 @@
 // UI definition header.
 #include "ui_benchmarkwindow.h"
 
+// appleseed.studio headers.
+#include "utility/settingskeys.h"
+
 // appleseed.shared headers.
 #include "application/application.h"
 
@@ -51,6 +54,7 @@
 #include <QKeySequence>
 #include <QList>
 #include <QPushButton>
+#include <QSettings>
 #include <QShortcut>
 #include <QStringList>
 #include <Qt>
@@ -86,19 +90,31 @@ BenchmarkWindow::BenchmarkWindow(QWidget* parent)
 
     build_connections();
 
-    configure_chart_widget();
+    m_chart_widget.setProperty("hasFrame", true);
+    m_ui->graphs_contents->layout()->addWidget(&m_chart_widget);
 
-    configure_benchmarks_treeview();
+    m_ui->treewidget_benchmarks->setHeaderLabels(QStringList() << "Benchmark");
+    m_ui->treewidget_benchmarks->sortItems(0, Qt::AscendingOrder);
+
     reload_benchmarks();
 
     connect(
         &m_benchmark_runner_thread, SIGNAL(signal_finished()),
         this, SLOT(slot_on_benchmarks_execution_complete()));
+
+    const QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
+    restoreGeometry(settings.value("benchmark_window_geometry").toByteArray());
 }
 
 BenchmarkWindow::~BenchmarkWindow()
 {
     delete m_ui;
+}
+
+void BenchmarkWindow::closeEvent(QCloseEvent* event)
+{
+    QSettings settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
+    settings.setValue("benchmark_window_geometry", saveGeometry());
 }
 
 void BenchmarkWindow::build_connections()
@@ -124,19 +140,6 @@ void BenchmarkWindow::build_connections()
         this, SLOT(slot_on_equidistant_checkbox_state_changed(int)));
 }
 
-void BenchmarkWindow::configure_chart_widget()
-{
-    m_chart_widget.setProperty("hasFrame", true);
-
-    m_ui->graphs_contents->layout()->addWidget(&m_chart_widget);
-}
-
-void BenchmarkWindow::configure_benchmarks_treeview()
-{
-    m_ui->treewidget_benchmarks->setHeaderLabels(QStringList() << "Benchmark");
-    m_ui->treewidget_benchmarks->sortItems(0, Qt::AscendingOrder);
-}
-
 namespace
 {
     template <typename ParentWidget>
@@ -149,7 +152,7 @@ namespace
             QTreeWidgetItem* item =
                 new QTreeWidgetItem(
                     parent,
-                    QStringList(i->name()));
+                    QStringList(i->key()));
 
             add_benchmarks(i->value(), item);
         }
@@ -159,7 +162,7 @@ namespace
             QTreeWidgetItem* item =
                 new QTreeWidgetItem(
                     parent,
-                    QStringList(i->name()));
+                    QStringList(i->key()));
 
             item->setData(0, Qt::UserRole, QVariant::fromValue(i->value<UniqueID>()));
         }

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -168,8 +168,9 @@ class APPLESEED_DLLSYMBOL EntityVector
     // Insert an entity into the container and return its index.
     size_t insert(foundation::auto_release_ptr<Entity> entity);
 
-    // Remove an entity from the container. The entity is deleted.
-    void remove(Entity* entity);
+    // Remove an entity from the container.
+    // Note that if nothing is done with the return value, the entity will be deleted.
+    foundation::auto_release_ptr<Entity> remove(Entity* entity);
 
     // Return the index of a given entity in the container.
     // Return ~0 if the requested entity does not exist.
@@ -253,6 +254,10 @@ class TypedEntityVector
     // Insert an entity into the container and return its index.
     size_t insert(foundation::auto_release_ptr<T> entity);
 
+    // Remove an entity from the container.
+    // Note that if nothing is done with the return value, the entity will be deleted.
+    foundation::auto_release_ptr<T> remove(T* entity);
+
     // Return a given entity.
     // Return 0 if the requested entity does not exist.
     T* get_by_index(const size_t index) const;
@@ -330,6 +335,14 @@ inline size_t TypedEntityVector<T>::insert(foundation::auto_release_ptr<T> entit
 {
     return EntityVector::insert(
         foundation::auto_release_ptr<Entity>(entity.release()));
+}
+
+template <typename T>
+inline foundation::auto_release_ptr<T> TypedEntityVector<T>::remove(T* entity)
+{
+    return
+        foundation::auto_release_ptr<T>(
+            reinterpret_cast<T*>(EntityVector::remove(entity).release()));
 }
 
 template <typename T>

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -101,14 +101,14 @@ class APPLESEED_ALIGN(64) Node
     typedef typename AABBType::ValueType ValueType;
     static const size_t Dimension = AABBType::Dimension;
 
-    uint32                  m_item_count;
-    uint32                  m_index;
-    uint32                  m_left_bbox_index;
-    uint32                  m_left_bbox_count;
-    uint32                  m_right_bbox_index;
-    uint32                  m_right_bbox_count;
+    uint32                          m_item_count;
+    uint32                          m_index;
+    uint32                          m_left_bbox_index;
+    uint32                          m_left_bbox_count;
+    uint32                          m_right_bbox_index;
+    uint32                          m_right_bbox_count;
 
-    SSE_ALIGN ValueType     m_bbox_data[4 * Dimension];
+    APPLESEED_SSE_ALIGN ValueType   m_bbox_data[4 * Dimension];
 };
 
 

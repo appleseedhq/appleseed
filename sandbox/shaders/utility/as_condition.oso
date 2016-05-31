@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.8
+# Compiled by oslc 1.6.9
 shader as_condition
 param	string	Cond	"Equal"		%meta{string,widget,"popup"} %meta{string,options,"Equal|NotEqual|Less|LessEqual|Greater|GreaterEqual"}  %read{0,15} %write{2147483647,-1}
 param	float	Float1	0		%read{2,17} %write{2147483647,-1}
@@ -18,46 +18,46 @@ temp	int	$tmp5	%read{13,13} %write{12,12}
 const	string	$const6	"GreaterEqual"		%read{15,15} %write{2147483647,-1}
 temp	int	$tmp6	%read{16,16} %write{15,15}
 code ___main___
-# as_condition.osl:42
+# ./utility/as_condition.osl:42
 #     if (Cond == "Equal")
-	eq		$tmp1 Cond $const1 	%filename{"as_condition.osl"} %line{42} %argrw{"wrr"}
+	eq		$tmp1 Cond $const1 	%filename{"./utility/as_condition.osl"} %line{42} %argrw{"wrr"}
 	if		$tmp1 3 18 	%argrw{"r"}
-# as_condition.osl:43
+# ./utility/as_condition.osl:43
 #         Result = Float1 > Float2;
 	gt		Result Float1 Float2 	%line{43} %argrw{"wrr"}
-# as_condition.osl:44
+# ./utility/as_condition.osl:44
 #     else if (Cond == "NotEqual")
 	eq		$tmp2 Cond $const2 	%line{44} %argrw{"wrr"}
 	if		$tmp2 6 18 	%argrw{"r"}
-# as_condition.osl:45
+# ./utility/as_condition.osl:45
 #         Result = Float1 != Float2;
 	neq		Result Float1 Float2 	%line{45} %argrw{"wrr"}
-# as_condition.osl:46
+# ./utility/as_condition.osl:46
 #     else if (Cond == "Less")
 	eq		$tmp3 Cond $const3 	%line{46} %argrw{"wrr"}
 	if		$tmp3 9 18 	%argrw{"r"}
-# as_condition.osl:47
+# ./utility/as_condition.osl:47
 #         Result = Float1 < Float2;
 	lt		Result Float1 Float2 	%line{47} %argrw{"wrr"}
-# as_condition.osl:48
+# ./utility/as_condition.osl:48
 #     else if (Cond == "LessEqual")
 	eq		$tmp4 Cond $const4 	%line{48} %argrw{"wrr"}
 	if		$tmp4 12 18 	%argrw{"r"}
-# as_condition.osl:49
+# ./utility/as_condition.osl:49
 #         Result = Float1 <= Float2;
 	le		Result Float1 Float2 	%line{49} %argrw{"wrr"}
-# as_condition.osl:50
+# ./utility/as_condition.osl:50
 #     else if (Cond == "Greater")
 	eq		$tmp5 Cond $const5 	%line{50} %argrw{"wrr"}
 	if		$tmp5 15 18 	%argrw{"r"}
-# as_condition.osl:51
+# ./utility/as_condition.osl:51
 #         Result = Float1 > Float2;
 	gt		Result Float1 Float2 	%line{51} %argrw{"wrr"}
-# as_condition.osl:52
+# ./utility/as_condition.osl:52
 #     else if (Cond == "GreaterEqual")
 	eq		$tmp6 Cond $const6 	%line{52} %argrw{"wrr"}
 	if		$tmp6 18 18 	%argrw{"r"}
-# as_condition.osl:53
+# ./utility/as_condition.osl:53
 #         Result = Float1 >= Float2;
 	ge		Result Float1 Float2 	%line{53} %argrw{"wrr"}
 	end

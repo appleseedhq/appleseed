@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -155,14 +155,6 @@ namespace
                 shading_point.get_shading_basis(),
                 shading_point.get_osl_shader_globals().Ci);
 
-            prepare_inputs(input_evaluator.data());
-        }
-
-        virtual void prepare_inputs(void* data) const APPLESEED_OVERRIDE
-        {
-            const CompositeSubsurfaceClosure* c =
-                reinterpret_cast<const CompositeSubsurfaceClosure*>(data);
-
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
                 bssrdf_from_closure_id(c->get_closure_type(i)).prepare_inputs(
@@ -221,7 +213,7 @@ namespace
                     incoming_dir,
                     s);
 
-                s *= static_cast<float>(c->get_closure_pdf_weight(i));
+                s *= c->get_closure_weight(i);
                 value += s;
             }
         }

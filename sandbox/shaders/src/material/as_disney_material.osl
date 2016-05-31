@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014 The masked shader writer, The appleseedhq Organization
+// Copyright (c) 2014-2016 The masked shader writer, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,31 +26,72 @@
 // THE SOFTWARE.
 //
 
-#include "appleseed/defaults.h"
-
 surface as_disney_material
 [[
     string help = "Material based on the Disney BRDF"
 ]]
 (
     vector Normal = N,
-    vector Tangent = APPLESEED_DEFAULT_TANGENT,
-    color BaseColor = 0.5,
-    float Subsurface = 0,
-    float Metallic = 0,
-    float Specular = 0.5,
-    float SpecularTint = 0,
-    float Anisotropic = 0,
-    float Roughness = 0.5,
-    float Sheen = 0,
-    float SheenTint = 0.5,
-    float Clearcoat = 0,
-    float ClearcoatGloss = 1
+    vector Tn = 0
+    [[
+        string help = "Tangent",
+        string label = "Tangent",
+        int    lockgeom = 0
+    ]],
+    color  BaseColor = 0.5,
+    float  Subsurface = 0
+    [[
+        float  min = 0,
+        float  max = 1
+    ]],
+    float  Metallic = 0
+    [[
+        float  min = 0,
+        float  max = 1
+    ]],
+    float  Specular = 0.5
+    [[
+        float  min = 0,
+        float  max = 1
+    ]],
+    float  SpecularTint = 0
+    [[
+        float  min = 0,
+        float  max = 1
+    ]],
+    float  Anisotropic = 0
+    [[
+        float  min = -1,
+        float  max =  1
+    ]],
+    float  Roughness = 0.5
+    [[
+        float  min = 0,
+        float  max = 1
+    ]],
+    float  Sheen = 0
+    [[
+        float min = 0
+    ]],
+    float  SheenTint = 0.5
+    [[
+        float min = 0,
+        float max = 1
+    ]],
+    float  Clearcoat = 0
+    [[
+        float min = 0
+    ]],
+    float  ClearcoatGloss = 1
+    [[
+        float min = 0,
+        float max = 1
+    ]]
 )
 {
     Ci = as_disney(
         Normal,
-        Tangent,
+        Tn,
         BaseColor,
         Subsurface,
         Metallic,

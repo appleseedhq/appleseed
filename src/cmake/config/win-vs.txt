@@ -6,7 +6,7 @@
 # This software is released under the MIT license.
 #
 # Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-# Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+# Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -76,14 +76,20 @@ set (preprocessor_definitions_release
 
 # Flags common to all configurations.
 set (c_compiler_flags_common
-    /WX                                     # Treat Warnings As Errors
     /MP                                     # Multi-processor Compilation
     /GF                                     # Enable String Pooling
 )
+if (WARNINGS_AS_ERRORS)
+    set (c_compiler_flags_common
+         ${c_compiler_flags_common}
+         /WX                                # Treat Warnings As Errors
+    )
+endif ()
 set (cxx_compiler_flags_common
     /wd4290                                 # Disable warning C4290: C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
     /wd4355                                 # Disable warning C4355: 'this' : used in base member initializer list
     /wd4503                                 # Disable warning C4503: decorated name length exceeded, name was truncated
+    /wd4068                                 # Disable warning C4068: unknown pragma
 )
 if (CMAKE_SIZEOF_VOID_P EQUAL 8)
     set (c_compiler_flags_common
@@ -134,6 +140,12 @@ if (CMAKE_SIZEOF_VOID_P EQUAL 4)
             /arch:SSE2                      # Streaming SIMD Extensions 2 (always enabled in 64-bit builds)
         )
     endif ()
+endif ()
+if (USE_AVX)
+    set (c_compiler_flags_release
+        ${c_compiler_flags_release}
+        /arch:AVX                           # Advanced Vector Extensions
+    )
 endif ()
 set (exe_linker_flags_release
     /DEBUG                                  # Generate Debug Info
@@ -276,7 +288,7 @@ macro (link_against_oiio target)
     endif ()
 endmacro ()
 
-macro (link_against_oslexec target)
+macro (link_against_osl target)
     set (LLVM_LIBS
         LLVMLTO LLVMLinker LLVMipo LLVMVectorize LLVMBitWriter LLVMTableGen LLVMDebugInfo LLVMOption LLVMX86Disassembler LLVMX86AsmParser
         LLVMX86CodeGen LLVMSelectionDAG LLVMAsmPrinter LLVMX86Desc LLVMX86Info LLVMX86AsmPrinter LLVMX86Utils LLVMIRReader LLVMBitReader
@@ -288,17 +300,20 @@ macro (link_against_oslexec target)
     if (USE_EXTERNAL_OSL)
         target_link_libraries (${target}
             ${OSL_EXEC_LIBRARY}
-            ${OSL_COMP_LIBRARY}
+            ${OSL_QUERY_LIBRARY}
+            ${OSL_COMP_LIBRARY}     # required on Windows
         )
         foreach (lib ${LLVM_LIBS})
             target_link_libraries (${target} "${LLVM_LIBS_DIR}/${lib}.lib")
         endforeach ()
     else ()
         target_link_libraries (${target}
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/osl-debug/lib/oslcomp.lib
             debug       ${APPLESEED_DEPS_STAGE_DIR}/osl-debug/lib/oslexec.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/osl-release/lib/oslcomp.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/osl-debug/lib/oslquery.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/osl-debug/lib/oslcomp.lib
             optimized   ${APPLESEED_DEPS_STAGE_DIR}/osl-release/lib/oslexec.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/osl-release/lib/oslquery.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/osl-release/lib/oslcomp.lib
         )
         foreach (lib ${LLVM_LIBS})
             target_link_libraries (${target}

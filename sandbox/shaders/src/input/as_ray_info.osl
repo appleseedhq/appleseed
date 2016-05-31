@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014 The masked shader writer, The appleseedhq Organization
+// Copyright (c) 2014-2016 The masked shader writer, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,20 +28,19 @@
 
 shader as_ray_info
 (
-    output vector Direction = I,
-    output float Length = 0.0,
-    output int Depth = 1,
-    output int IsCamera = raytype("camera"),
-    output int IsLight = raytype("light"),
-    output int IsShadow = raytype("shadow"),
-    output int IsTransparency = raytype("transparency"),
-    output int IsShadow_or_transp = IsShadow || IsTransparency,
-    output int IsProbe = raytype("probe"),
-    output int IsDiffuse = raytype("diffuse"),
-    output int IsSpecular = raytype("specular"),
-    output int IsGlossy = raytype("glossy")
+    output float  RayLength = 0.0,
+    output int    RayDepth = 1,
+    output int    IsCameraRay = raytype("camera"),
+    output int    IsLightRay = raytype("light"),
+    output int    IsShadowRay = raytype("shadow"),
+    output int    IsTransparencyRay = raytype("transparency"),
+    output int    IsShadowOrTranspRay = IsShadowRay || IsTransparencyRay,
+    output int    IsProbeRay = raytype("probe"),
+    output int    IsDiffuseRay = raytype("diffuse"),
+    output int    IsSpecularRay = raytype("specular"),
+    output int    IsGlossyRay = raytype("glossy")
 )
 {
-    getattribute("path:ray_length", Length);
-    getattribute("path:ray_depth", Depth);
+    getattribute("path:ray_length", RayLength);
+    getattribute("path:ray_depth", RayDepth);
 }

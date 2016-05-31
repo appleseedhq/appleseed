@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -479,6 +479,7 @@ Dictionary DRTLightingEngineFactory::get_params_metadata()
             .insert("default", "8")
             .insert("unlimited", "true")
             .insert("min", "1")
+            .insert("label", "Max Path Length")
             .insert("help", "Maximum ray trace depth"));
 
     metadata.dictionaries().insert(

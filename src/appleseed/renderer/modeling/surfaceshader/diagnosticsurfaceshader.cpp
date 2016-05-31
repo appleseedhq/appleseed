@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -165,6 +165,14 @@ namespace
         return Color3f(u, v, w);
     }
 
+    // Compute a color from uv coordinates.
+    inline Color3f uvs_to_color(const Vector2d& vec)
+    {
+        const float u = wrap1(static_cast<float>(vec[0]));
+        const float v = wrap1(static_cast<float>(vec[1]));
+        return Color3f(u, v, 0.0f);
+    }
+
     // Compute a color from a given unit-length 3D vector.
     inline Color3f vector3_to_color(const Vector3d& vec)
     {
@@ -265,7 +273,7 @@ void DiagnosticSurfaceShader::evaluate(
 
       case UV:
         shading_result.set_main_to_linear_rgb(
-            vector2_to_color(shading_point.get_uv(0)));
+            uvs_to_color(shading_point.get_uv(0)));
         break;
 
       case Tangent:
@@ -484,7 +492,7 @@ void DiagnosticSurfaceShader::evaluate(
         {
             const ShadingRay& ray = shading_point.get_ray();
             if (!ray.m_has_differentials)
-                return;
+                break;
 
             const Material* material = shading_point.get_material();
             if (material)
@@ -503,30 +511,30 @@ void DiagnosticSurfaceShader::evaluate(
 
                 if (material_data.m_bsdf)
                 {
-                    InputEvaluator input_evaluator(shading_context.get_texture_cache());
-                    material_data.m_bsdf->evaluate_inputs(
-                        shading_context,
-                        input_evaluator,
-                        shading_point);
-
                     const Dual3d outgoing(
                         -ray.m_dir,
                         ray.m_dir - ray.m_rx.m_dir,
                         ray.m_dir - ray.m_ry.m_dir);
 
+                    InputEvaluator input_evaluator(shading_context.get_texture_cache());
+                    material_data.m_bsdf->evaluate_inputs(
+                        shading_context,
+                        input_evaluator,
+                        shading_point);
+                    const void* bsdf_data = input_evaluator.data();
+
                     BSDFSample sample(shading_point, outgoing);
                     material_data.m_bsdf->sample(
                         sampling_context,
-                        input_evaluator.data(),
+                        bsdf_data,
                         false,
                         false,
                         sample);
 
                     if (!sample.m_incoming.has_derivatives())
-                        return;
+                        break;
 
-                    // The 3.0 factor is choosen so that ray spread
-                    // from lambertian BRDFs is approximately 1.
+                    // The 3.0 factor is chosen so that ray spread from Lambertian BRDFs is approximately 1.
                     const double spread =
                         max(
                             norm(sample.m_incoming.get_dx()),
@@ -619,9 +627,14 @@ auto_release_ptr<SurfaceShader> DiagnosticSurfaceShaderFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return
-        auto_release_ptr<SurfaceShader>(
-            new DiagnosticSurfaceShader(name, params));
+    return auto_release_ptr<SurfaceShader>(new DiagnosticSurfaceShader(name, params));
+}
+
+auto_release_ptr<SurfaceShader> DiagnosticSurfaceShaderFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return auto_release_ptr<SurfaceShader>(new DiagnosticSurfaceShader(name, params));
 }
 
 }   // namespace renderer

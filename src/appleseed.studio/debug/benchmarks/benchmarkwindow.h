@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,7 @@
 #include "utility/chartwidget.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/uid.h"
 
@@ -48,6 +49,7 @@
 
 // Forward declarations.
 namespace Ui    { class BenchmarkWindow; }
+class QCloseEvent;
 
 namespace appleseed {
 namespace studio {
@@ -64,6 +66,8 @@ class BenchmarkWindow
     // Destructor.
     ~BenchmarkWindow();
 
+    virtual void closeEvent(QCloseEvent* event) APPLESEED_OVERRIDE;
+
   private:
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
     Ui::BenchmarkWindow*                m_ui;
@@ -75,9 +79,6 @@ class BenchmarkWindow
 
     void build_connections();
 
-    void configure_chart_widget();
-
-    void configure_benchmarks_treeview();
     void populate_benchmarks_treeview();
 
     void reload_benchmarks();

@@ -6,7 +6,7 @@
 # This software is released under the MIT license.
 #
 # Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-# Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+# Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -364,6 +364,7 @@ set (foundation_meta_benchmarks_sources
     foundation/meta/benchmarks/benchmark_sampling.cpp
     foundation/meta/benchmarks/benchmark_string.cpp
     foundation/meta/benchmarks/benchmark_transform.cpp
+    foundation/meta/benchmarks/benchmark_vector.cpp
     foundation/meta/benchmarks/benchmark_voxelgrid.cpp
 )
 list (APPEND appleseed_sources
@@ -461,6 +462,11 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_voxelgrid.cpp
     foundation/meta/tests/test_windows.cpp
 )
+if (WITH_DISNEY_MATERIAL)
+    list (APPEND foundation_meta_tests_sources
+        foundation/meta/tests/test_seexpr.cpp
+    )
+endif ()
 list (APPEND appleseed_sources
     ${foundation_meta_tests_sources}
 )
@@ -748,6 +754,12 @@ set (foundation_utility_sources
     foundation/utility/xercesc.h
     foundation/utility/xmlelement.h
 )
+if (WITH_DISNEY_MATERIAL)
+    list (APPEND foundation_utility_sources
+        foundation/utility/seexpr.cpp
+        foundation/utility/seexpr.h
+    )
+endif ()
 if (WITH_PARTIO)
     list (APPEND foundation_utility_sources
         foundation/utility/partiofile.cpp
@@ -1125,6 +1137,7 @@ set (renderer_kernel_shading_sources
     renderer/kernel/shading/shadingpoint.h
     renderer/kernel/shading/shadingpointbuilder.cpp
     renderer/kernel/shading/shadingpointbuilder.h
+    renderer/kernel/shading/shadingray.cpp
     renderer/kernel/shading/shadingray.h
     renderer/kernel/shading/shadingresult.cpp
     renderer/kernel/shading/shadingresult.h
@@ -1252,14 +1265,20 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/diffusebtdf.h
     renderer/modeling/bsdf/disneybrdf.cpp
     renderer/modeling/bsdf/disneybrdf.h
+    renderer/modeling/bsdf/glassbsdf.cpp
+    renderer/modeling/bsdf/glassbsdf.h
+    renderer/modeling/bsdf/glossybrdf.cpp
+    renderer/modeling/bsdf/glossybrdf.h
     renderer/modeling/bsdf/ibsdffactory.h
     renderer/modeling/bsdf/kelemenbrdf.cpp
     renderer/modeling/bsdf/kelemenbrdf.h
     renderer/modeling/bsdf/lambertianbrdf.cpp
     renderer/modeling/bsdf/lambertianbrdf.h
+    renderer/modeling/bsdf/metalbrdf.cpp
+    renderer/modeling/bsdf/metalbrdf.h
     renderer/modeling/bsdf/microfacetbrdf.cpp
     renderer/modeling/bsdf/microfacetbrdf.h
-    renderer/modeling/bsdf/microfacetbrdfhelper.h
+    renderer/modeling/bsdf/microfacethelper.h
     renderer/modeling/bsdf/nullbsdf.h
     renderer/modeling/bsdf/orennayarbrdf.cpp
     renderer/modeling/bsdf/orennayarbrdf.h
@@ -1287,12 +1306,8 @@ source_group ("renderer\\modeling\\bsdf" FILES
 
 if (WITH_OSL)
     set (renderer_modeling_bsdf_osl_sources
-        renderer/modeling/bsdf/osl/oslbsdf.cpp
-        renderer/modeling/bsdf/osl/oslbsdf.h
-        renderer/modeling/bsdf/osl/oslmicrofacetbrdf.cpp
-        renderer/modeling/bsdf/osl/oslmicrofacetbrdf.h
-        renderer/modeling/bsdf/osl/oslmicrofacetbtdf.cpp
-        renderer/modeling/bsdf/osl/oslmicrofacetbtdf.h
+        renderer/modeling/bsdf/oslbsdf.cpp
+        renderer/modeling/bsdf/oslbsdf.h
     )
     list (APPEND appleseed_sources
         ${renderer_modeling_bsdf_osl_sources}
@@ -1549,6 +1564,10 @@ set (renderer_modeling_light_sources
     renderer/modeling/light/lighttarget.cpp
     renderer/modeling/light/lighttarget.h
     renderer/modeling/light/lighttraits.h
+    renderer/modeling/light/maxomnilight.cpp
+    renderer/modeling/light/maxomnilight.h
+    renderer/modeling/light/maxspotlight.cpp
+    renderer/modeling/light/maxspotlight.h
     renderer/modeling/light/pointlight.cpp
     renderer/modeling/light/pointlight.h
     renderer/modeling/light/spotlight.cpp
@@ -1712,6 +1731,8 @@ if (WITH_OSL)
         renderer/modeling/shadergroup/shadergroup.h
         renderer/modeling/shadergroup/shaderparam.cpp
         renderer/modeling/shadergroup/shaderparam.h
+        renderer/modeling/shadergroup/shaderquery.cpp
+        renderer/modeling/shadergroup/shaderquery.h
         renderer/modeling/shadergroup/shaderparamparser.cpp
         renderer/modeling/shadergroup/shaderparamparser.h
     )
@@ -1766,6 +1787,7 @@ source_group ("renderer\\modeling\\texture" FILES
 )
 
 set (renderer_utility_sources
+    renderer/utility/autodeskmax.h
     renderer/utility/bbox.h
     renderer/utility/dynamicspectrum.h
     renderer/utility/iostreamop.h
@@ -1852,7 +1874,7 @@ if (WITH_OIIO)
 endif ()
 
 if (WITH_OSL)
-    link_against_oslexec (appleseed)
+    link_against_osl (appleseed)
 endif ()
 
 if (WITH_DISNEY_MATERIAL)

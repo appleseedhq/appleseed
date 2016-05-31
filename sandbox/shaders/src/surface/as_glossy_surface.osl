@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014 The masked shader writer, The appleseedhq Organization
+// Copyright (c) 2014-2016 The masked shader writer, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,6 @@
 // THE SOFTWARE.
 //
 
-#include "appleseed/defaults.h"
-#include "appleseed/metadata.h"
 #include "appleseed/microfacet.h"
 
 shader as_glossy_surface
@@ -35,41 +33,57 @@ shader as_glossy_surface
     string help = "Glossy surface shader"
 ]]
 (
-    vector Normal = N,
-    vector Tangent = APPLESEED_DEFAULT_TANGENT,
-
-    float Specular = 1
+    vector               Normal = N,
+    vector               Tn = 0
     [[
-        string help = "Reflectivity",
-        APPLESEED_01_LIMIT_METADATA
+        int    lockgeom = 0,
+        string help = "Tangent",
+        string label = "Tangent"
     ]],
-
-    color Color = 0.8,
-
-    string Distribution = APPLESEED_DEFAULT_MDF_DISTRIBUTION
+    float                Reflectance = 0.8
     [[
-        APPLESEED_MDF_DISTRIBUTION_METADATA
+        float  min = 0,
+        float  max = 1
     ]],
-
-    float Roughness = APPLESEED_DEFAULT_MDF_ROUGHNESS
+    color                Color = 1.0
     [[
-        APPLESEED_MDF_ROUGHNESS_METADATA
+        string help = "Color"
     ]],
-
-    float Anisotropy = APPLESEED_DEFAULT_ANISOTROPY
+    float                Ior = 1.5
     [[
-        APPLESEED_ANISOTROPY_METADATA
+        string help = "Index of refraction",
+        int    divider = 1
     ]],
-
+    string               Distribution = "ggx"
+    [[
+        string help = "Microfacet distribution to use",
+        string widget = "popup",
+        string options = "beckmann|ggx"
+    ]],
+    float                Roughness = 0.1
+    [[
+        string help = "Surface roughness",
+        float  min = 0.001,
+        float  max = 1.0
+    ]],
+    float                RoughnessDepthScale = 1.0
+    [[
+        float min = 1.0
+    ]],
+    float                Anisotropic = 0.0
+    [[
+        string help = "Anisotropy",
+        float  min = -1.0,
+        float  max = 1.0
+    ]],
     output closure color BRDF = 0
 )
 {
-    if (Distribution == "sharp")
-        BRDF = Specular * Color * reflection(Normal);
-    else
-    {
-        float ax, ay;
-        mdf_roughness(Roughness, Anisotropy, ax, ay);
-        BRDF = Specular * Color * microfacet(Distribution, Normal, Tangent, ax, ay, 1, 0);
-    }
+    BRDF = Color * Reflectance * as_glossy(
+        Distribution,
+        Normal,
+        Tn,
+        microfacet_roughness(Roughness, RoughnessDepthScale),
+        Anisotropic,
+        Ior);
 }

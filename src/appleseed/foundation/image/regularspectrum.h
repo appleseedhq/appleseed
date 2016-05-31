@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -78,7 +78,7 @@ class RegularSpectrum
     const ValueType& operator[](const size_t i) const;
 
   private:
-    SSE_ALIGN ValueType m_samples[StoredSamples];
+    APPLESEED_SSE_ALIGN ValueType m_samples[StoredSamples];
 };
 
 // Exact inequality and equality tests.
@@ -111,6 +111,9 @@ template <typename T, size_t N> RegularSpectrum<T, N>& operator*=(RegularSpectru
 template <typename T, size_t N> RegularSpectrum<T, N>& operator*=(RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs);
 template <typename T, size_t N> RegularSpectrum<T, N>& operator/=(RegularSpectrum<T, N>& lhs, const T rhs);
 template <typename T, size_t N> RegularSpectrum<T, N>& operator/=(RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs);
+
+// Component-wise reciprocal.
+template <typename T, size_t N> RegularSpectrum<T, N> rcp(const RegularSpectrum<T, N>& s);
 
 // Return whether all components of a spectrum are in [0,1].
 template <typename T, size_t N> bool is_saturated(const RegularSpectrum<T, N>& s);
@@ -211,7 +214,7 @@ inline void RegularSpectrum<T, N>::set(const ValueType val)
 #ifdef APPLESEED_USE_SSE
 
 template <>
-FORCE_INLINE void RegularSpectrum<float, 31>::set(const float val)
+APPLESEED_FORCE_INLINE void RegularSpectrum<float, 31>::set(const float val)
 {
     const __m128 mval = _mm_set1_ps(val);
 
@@ -432,7 +435,7 @@ inline RegularSpectrum<T, N>& operator+=(RegularSpectrum<T, N>& lhs, const Regul
 #ifdef APPLESEED_USE_SSE
 
 template <>
-FORCE_INLINE RegularSpectrum<float, 31>& operator+=(RegularSpectrum<float, 31>& lhs, const RegularSpectrum<float, 31>& rhs)
+APPLESEED_FORCE_INLINE RegularSpectrum<float, 31>& operator+=(RegularSpectrum<float, 31>& lhs, const RegularSpectrum<float, 31>& rhs)
 {
     _mm_store_ps(&lhs[ 0], _mm_add_ps(_mm_load_ps(&lhs[ 0]), _mm_load_ps(&rhs[ 0])));
     _mm_store_ps(&lhs[ 4], _mm_add_ps(_mm_load_ps(&lhs[ 4]), _mm_load_ps(&rhs[ 4])));
@@ -469,7 +472,7 @@ inline RegularSpectrum<T, N>& operator*=(RegularSpectrum<T, N>& lhs, const T rhs
 #ifdef APPLESEED_USE_SSE
 
 template <>
-FORCE_INLINE RegularSpectrum<float, 31>& operator*=(RegularSpectrum<float, 31>& lhs, const float rhs)
+APPLESEED_FORCE_INLINE RegularSpectrum<float, 31>& operator*=(RegularSpectrum<float, 31>& lhs, const float rhs)
 {
     const __m128 mrhs = _mm_set1_ps(rhs);
 
@@ -499,7 +502,7 @@ inline RegularSpectrum<T, N>& operator*=(RegularSpectrum<T, N>& lhs, const Regul
 #ifdef APPLESEED_USE_SSE
 
 template <>
-FORCE_INLINE RegularSpectrum<float, 31>& operator*=(RegularSpectrum<float, 31>& lhs, const RegularSpectrum<float, 31>& rhs)
+APPLESEED_FORCE_INLINE RegularSpectrum<float, 31>& operator*=(RegularSpectrum<float, 31>& lhs, const RegularSpectrum<float, 31>& rhs)
 {
     _mm_store_ps(&lhs[ 0], _mm_mul_ps(_mm_load_ps(&lhs[ 0]), _mm_load_ps(&rhs[ 0])));
     _mm_store_ps(&lhs[ 4], _mm_mul_ps(_mm_load_ps(&lhs[ 4]), _mm_load_ps(&rhs[ 4])));
@@ -549,6 +552,17 @@ inline RegularSpectrum<T, N>& operator/=(RegularSpectrum<T, N>& lhs, const Regul
         lhs[i] /= rhs[i];
 
     return lhs;
+}
+
+template <typename T, size_t N>
+inline RegularSpectrum<T, N> rcp(const RegularSpectrum<T, N>& s)
+{
+    RegularSpectrum<T, N> result;
+
+    for (size_t i = 0; i < N; ++i)
+        result[i] = T(1.0) / s[i];
+
+    return result;
 }
 
 template <typename T, size_t N>

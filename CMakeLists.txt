@@ -6,7 +6,7 @@
 # This software is released under the MIT license.
 #
 # Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-# Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+# Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -118,22 +118,23 @@ option (USE_STATIC_BOOST                    "Use static Boost libraries"        
 option (USE_STATIC_OIIO                     "Use static OpenImageIO libraries"                      ON)
 option (USE_STATIC_OSL                      "Use static OpenShadingLanguage libraries"              ON)
 
+option (WARNINGS_AS_ERRORS                  "Treat compiler warnings as errors"                     ON)
 option (HIDE_SYMBOLS                        "When using gcc, hide symbols not on the public API"    ON)
 
 # SIMD options.
 if (is_x86)
     option (USE_SSE                         "Use SSE instruction sets up to version 2"              ON)
-    option (USE_SSE42                       "Use SSE instruction sets up to version 4.2"            OFF)
 
     if (TARGET_ARCH MATCHES "x86_64")
+       option (USE_SSE42                    "Use SSE instruction sets up to version 4.2"            OFF)
        option (USE_AVX                      "Use AVX instruction set"                               OFF)
     endif ()
 elseif (TARGET_ARCH MATCHES "ARM")
-   option (USE_NEON                         "Use NEON instruction set"                              OFF)
+    option (USE_NEON                        "Use NEON instruction set"                              OFF)
 elseif (TARGET_ARCH MATCHES "PPC")
-   option (USE_ALTIVEC                      "Use Altivec instruction set"                           OFF)
+    option (USE_ALTIVEC                     "Use Altivec instruction set"                           OFF)
 else ()
-   # Unknown architecture: No SIMD.
+    # Unknown architecture: No SIMD.
 endif ()
 
 
@@ -166,7 +167,7 @@ endif ()
 #--------------------------------------------------------------------------------------------------
 
 set (appleseed_version_major    1)
-set (appleseed_version_minor    3)
+set (appleseed_version_minor    4)
 set (appleseed_version_patch    0)
 set (appleseed_version_maturity beta)
 
@@ -385,9 +386,20 @@ if (UNIX AND NOT APPLE)
     set (USE_RPATH_ORIGIN TRUE)
 endif ()
 
-# SSE.
+# SIMD.
+if (USE_AVX)
+    set (USE_SSE42 TRUE)
+    set (preprocessor_definitions_common
+        ${preprocessor_definitions_common}
+        APPLESEED_USE_AVX
+    )
+endif ()
 if (USE_SSE42)
    set (USE_SSE TRUE)
+   set (preprocessor_definitions_common
+       ${preprocessor_definitions_common}
+       APPLESEED_USE_SSE42
+   )
 endif ()
 if (USE_SSE)
    if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SIZEOF_VOID_P MATCHES 4)
@@ -397,12 +409,6 @@ if (USE_SSE)
            ${preprocessor_definitions_common}
            APPLESEED_USE_SSE
        )
-       if (USE_SSE42)
-           set (preprocessor_definitions_common
-               ${preprocessor_definitions_common}
-               APPLESEED_USE_SSE42
-           )
-       endif ()
    endif ()
 endif ()
 

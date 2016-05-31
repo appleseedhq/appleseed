@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -183,8 +183,8 @@ inline void Query<T, N>::run(
     FOUNDATION_KNN_QUERY_STATS(size_t visited_leaf_count = 0);
     FOUNDATION_KNN_QUERY_STATS(size_t tested_point_count = 0);
 
-    const VectorType* RESTRICT points = &m_tree.m_points.front();
-    const NodeType* RESTRICT nodes = &m_tree.m_nodes.front();
+    const VectorType* APPLESEED_RESTRICT points = &m_tree.m_points.front();
+    const NodeType* APPLESEED_RESTRICT nodes = &m_tree.m_nodes.front();
     const size_t max_answer_size = m_answer.m_max_size;
 
     //
@@ -197,7 +197,7 @@ inline void Query<T, N>::run(
     //   the "real" search later on.
     //
 
-    const NodeType* RESTRICT node = nodes;
+    const NodeType* APPLESEED_RESTRICT node = nodes;
 
     FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
 
@@ -208,7 +208,7 @@ inline void Query<T, N>::run(
         const ValueType split_abs = node->get_split_abs();
         const ValueType split_dist = query_point[split_dim] - split_abs;
 
-        const NodeType* RESTRICT child_node = nodes + node->get_child_node_index();
+        const NodeType* APPLESEED_RESTRICT child_node = nodes + node->get_child_node_index();
 
         if (split_dist > ValueType(0.0))
             ++child_node;
@@ -242,8 +242,8 @@ inline void Query<T, N>::run(
         FOUNDATION_KNN_QUERY_STATS(++visited_leaf_count);
 
         size_t point_index = node->get_point_index();
-        const VectorType* RESTRICT point_ptr = points + point_index;
-        const VectorType* RESTRICT point_end = point_ptr + node->get_point_count();
+        const VectorType* APPLESEED_RESTRICT point_ptr = points + point_index;
+        const VectorType* APPLESEED_RESTRICT point_end = point_ptr + node->get_point_count();
 
         // First, we fill up the answer like an array.
         while (point_ptr < point_end)
@@ -329,9 +329,9 @@ inline void Query<T, N>::run(
 
         // Figure out which node to follow and which node to push.
         const int select = static_cast<int>(FP<ValueType>::sign(distance));
-        const NodeType* RESTRICT left_child_node = nodes + node->get_child_node_index();
-        const NodeType* RESTRICT follow_node = left_child_node + 1 - select;
-        const NodeType* RESTRICT queue_node = left_child_node + select;
+        const NodeType* APPLESEED_RESTRICT left_child_node = nodes + node->get_child_node_index();
+        const NodeType* APPLESEED_RESTRICT follow_node = left_child_node + 1 - select;
+        const NodeType* APPLESEED_RESTRICT queue_node = left_child_node + select;
 
         FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
 
@@ -395,9 +395,9 @@ inline void Query<T, N>::run(
 
             // Figure out which node to follow and which node to push.
             const int select = static_cast<int>(FP<ValueType>::sign(distance));
-            const NodeType* RESTRICT left_child_node = nodes + node->get_child_node_index();
-            const NodeType* RESTRICT follow_node = left_child_node + 1 - select;
-            const NodeType* RESTRICT queue_node = left_child_node + select;
+            const NodeType* APPLESEED_RESTRICT left_child_node = nodes + node->get_child_node_index();
+            const NodeType* APPLESEED_RESTRICT follow_node = left_child_node + 1 - select;
+            const NodeType* APPLESEED_RESTRICT queue_node = left_child_node + select;
 
             FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
 
@@ -432,8 +432,8 @@ inline void Query<T, N>::run(
         FOUNDATION_KNN_QUERY_STATS(++visited_leaf_count);
 
         size_t point_index = node->get_point_index();
-        const VectorType* RESTRICT point_ptr = points + point_index;
-        const VectorType* RESTRICT point_end = point_ptr + node->get_point_count();
+        const VectorType* APPLESEED_RESTRICT point_ptr = points + point_index;
+        const VectorType* APPLESEED_RESTRICT point_end = point_ptr + node->get_point_count();
 
         while (point_ptr < point_end)
         {

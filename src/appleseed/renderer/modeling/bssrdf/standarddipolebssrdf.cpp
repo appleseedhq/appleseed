@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,7 @@
 #include "renderer/modeling/bssrdf/sss.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/colorspace.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -75,6 +76,7 @@ namespace
             const char*         name,
             const ParamArray&   params)
           : DipoleBSSRDF(name, params)
+          , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
         {
         }
 
@@ -101,14 +103,41 @@ namespace
 
             if (m_inputs.source("sigma_a") == 0 || m_inputs.source("sigma_s") == 0)
             {
-                // Apply multipliers.
+                //
+                // Compute sigma_a, sigma_s and sigma_tr from the diffuse surface reflectance
+                // and diffuse mean free path (dmfp).
+                //
+
+                if (values->m_reflectance.size() != values->m_dmfp.size())
+                {
+                    // Since it does not really make sense to convert a dmfp,
+                    // a per channel distance, as if it were a color,
+                    // we instead always convert the reflectance to match the
+                    // size of the dmfp.
+                    if (values->m_dmfp.is_spectral())
+                    {
+                        Spectrum::upgrade(
+                            values->m_reflectance,
+                            values->m_reflectance);
+                    }
+                    else
+                    {
+                        Spectrum::downgrade(
+                            m_lighting_conditions,
+                            values->m_reflectance,
+                            values->m_reflectance);
+                    }
+                }
+
+                // Apply multipliers to input values.
                 values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
-                values->m_dmfp *= values->m_dmfp_multiplier;
+                values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
 
-                // Clamp reflectance.
-                values->m_reflectance = clamp(values->m_reflectance, 0.001f, 1.0f);
+                // Clamp input values.
+                values->m_reflectance = clamp(values->m_reflectance, 0.001f, 0.999f);
+                values->m_dmfp = clamp_low(values->m_dmfp, 1.0e-5f);
 
-                // Compute sigma_a, sigma_s and sigma_tr from the reflectance and dmfp parameters.
+                // Compute sigma_a and sigma_s.
                 const ComputeRdStandardDipole rd_fun(values->m_eta);
                 compute_absorption_and_scattering(
                     rd_fun,
@@ -118,12 +147,21 @@ namespace
                     values->m_sigma_a,
                     values->m_sigma_s);
 
-                values->m_sigma_tr.resize(values->m_sigma_a.size());
-                values->m_sigma_tr.set(static_cast<float>(1.0 / values->m_dmfp));
+                // Compute sigma_tr = 1 / dmfp.
+                values->m_sigma_tr = rcp(values->m_dmfp);
             }
             else
             {
-                // Compute sigma_tr.
+                //
+                // Compute sigma_tr from sigma_a and sigma_s.
+                //
+                // If you want to use the sigma_a and sigma_s values provided in [1],
+                // and if your scene is modeled in meters, you will need to *multiply*
+                // them by 1000. If your scene is modeled in centimers (e.g. the "size"
+                // of the object is 4 units) then you will need to multiply the sigmas
+                // by 100.
+                //
+
                 effective_extinction_coefficient(
                     values->m_sigma_a,
                     values->m_sigma_s,
@@ -169,9 +207,6 @@ namespace
 
             for (size_t i = 0, e = value.size(); i < e; ++i)
             {
-                const double sigma_a = values->m_sigma_a[i];
-                const double sigma_s = values->m_sigma_s[i];
-                const double sigma_s_prime = values->m_sigma_s_prime[i];
                 const double sigma_t_prime = values->m_sigma_t_prime[i];
                 const double alpha_prime = values->m_alpha_prime[i];
                 const double sigma_tr = values->m_sigma_tr[i];
@@ -246,6 +281,9 @@ namespace
             // Return r * R(r) * weight.
             value *= static_cast<float>(sqrt(square_radius) * values->m_weight);
         }
+
+      private:
+        const LightingConditions m_lighting_conditions;
     };
 }
 
@@ -270,6 +308,13 @@ Dictionary StandardDipoleBSSRDFFactory::get_model_metadata() const
 auto_release_ptr<BSSRDF> StandardDipoleBSSRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
+{
+    return auto_release_ptr<BSSRDF>(new StandardDipoleBSSRDF(name, params));
+}
+
+auto_release_ptr<BSSRDF> StandardDipoleBSSRDFFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
 {
     return auto_release_ptr<BSSRDF>(new StandardDipoleBSSRDF(name, params));
 }

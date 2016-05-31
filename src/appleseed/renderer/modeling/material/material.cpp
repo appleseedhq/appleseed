@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -152,6 +152,8 @@ bool Material::on_frame_begin(
     const Assembly&     assembly,
     IAbortSwitch*       abort_switch)
 {
+    assert(!m_has_render_data);
+
     m_render_data.m_surface_shader = get_uncached_surface_shader();
     if (m_render_data.m_surface_shader == 0)
         m_render_data.m_surface_shader = project.get_scene()->get_default_surface_shader();
@@ -172,9 +174,11 @@ void Material::on_frame_end(
     const Project&      project,
     const Assembly&     assembly)
 {
-    delete m_render_data.m_basis_modifier;
-
-    m_has_render_data = false;
+    if (m_has_render_data)
+    {
+        delete m_render_data.m_basis_modifier;
+        m_has_render_data = false;
+    }
 }
 
 bool Material::has_emission() const

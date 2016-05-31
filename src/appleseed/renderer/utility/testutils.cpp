@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -140,12 +140,22 @@ void DummyEntity::release()
 
 
 //
-// DummyEntityFactory class implementation.
+// DummyEntityReleaseCheck class implementation.
 //
 
-auto_release_ptr<DummyEntity> DummyEntityFactory::create(const char* name)
+DummyEntityReleaseCheck::DummyEntityReleaseCheck(
+    const char* name,
+    bool&       release_was_called)
+  : Entity(0)
+  , m_release_was_called(release_was_called)
 {
-    return auto_release_ptr<DummyEntity>(new DummyEntity(name));
+    set_name(name);
+}
+
+void DummyEntityReleaseCheck::release()
+{
+    m_release_was_called = true;
+    delete this;
 }
 
 

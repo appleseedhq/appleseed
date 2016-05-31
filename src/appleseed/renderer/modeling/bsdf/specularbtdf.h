@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -62,8 +62,13 @@ APPLESEED_DECLARE_INPUT_VALUES(SpecularBTDFInputValues)
     Spectrum    m_transmittance;                // specular transmittance
     double      m_transmittance_multiplier;     // specular transmittance multiplier
     double      m_fresnel_multiplier;           // Fresnel multiplier
-    double      m_from_ior;                     // from this index of refraction
-    double      m_to_ior;                       // to this index of refraction
+    double      m_ior;                          // index of refraction inside the medium
+    double      m_density;                      // medium density
+    double      m_scale;                        // distance scaling factor
+
+    // Precomputed values.
+    double      m_from_ior;
+    double      m_to_ior;
 };
 
 
@@ -88,6 +93,11 @@ class APPLESEED_DLLSYMBOL SpecularBTDFFactory
     virtual foundation::auto_release_ptr<BSDF> create(
         const char*         name,
         const ParamArray&   params) const APPLESEED_OVERRIDE;
+
+    // Static variant of the create() method above.
+    static foundation::auto_release_ptr<BSDF> static_create(
+        const char*         name,
+        const ParamArray&   params);
 };
 
 }       // namespace renderer

@@ -5,7 +5,7 @@
 #
 # This software is released under the MIT license.
 #
-# Copyright (c) 2015 Esteban Tovagliari, The appleseedhq Organization
+# Copyright (c) 2015-2016 Esteban Tovagliari, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 #
 
 import unittest
-import appleseed
+import appleseed as asr
 
 class TestDict2Dict(unittest.TestCase):
     """
@@ -45,7 +45,7 @@ class TestDict2Dict(unittest.TestCase):
             'string': 'string'
         }
 
-        light = appleseed.Light('point_light', 'light', src_params)
+        light = asr.Light('point_light', 'light', src_params)
         dst_params = light.get_parameters()
 
         self.assertEqual(src_params, dst_params)

@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -138,7 +138,6 @@ namespace
             if (normal_norm == GScalar(0.0))
                 continue;
             const GScalar rcp_normal_norm = GScalar(1.0) / normal_norm;
-            const GScalar rcp_area = GScalar(2.0) * rcp_normal_norm;
             const GScalar area = GScalar(0.5) * normal_norm;
             normal *= rcp_normal_norm;
             assert(is_normalized(normal));
@@ -202,7 +201,7 @@ namespace
         for (size_t i = 0; i < params.m_curve_count; ++i)
         {
             static const size_t Bases[] = { 2, 3 };
-            const GVector3 s = hammersley_sequence<double, 3>(Bases, i, params.m_curve_count);
+            const GVector3 s = hammersley_sequence<double, 3>(Bases, params.m_curve_count, i);
 
             const size_t triangle_index = cdf.sample(s[0]).first;
             const SupportTriangle& st = support_triangles[triangle_index];
@@ -235,8 +234,6 @@ namespace
 
     void make_fluffy(const Assembly& assembly, const FluffParams& params)
     {
-        const ObjectContainer& objects = assembly.objects();
-
         typedef vector<const ObjectInstance*> ObjectInstanceVector;
         typedef map<const MeshObject*, ObjectInstanceVector> ObjectToInstanceMap;
 

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -48,6 +48,8 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
+namespace foundation    { class StringArray; }
+namespace foundation    { class StringDictionary; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
@@ -178,6 +180,10 @@ class APPLESEED_DLLSYMBOL MeshObject
     size_t push_material_slot(const char* name);
     virtual size_t get_material_slot_count() const APPLESEED_OVERRIDE;
     virtual const char* get_material_slot(const size_t index) const APPLESEED_OVERRIDE;
+
+    // Expose asset file paths referenced by this entity to the outside.
+    virtual void collect_asset_paths(foundation::StringArray& paths) const APPLESEED_OVERRIDE;
+    virtual void update_asset_paths(const foundation::StringDictionary& mappings) APPLESEED_OVERRIDE;
 
   private:
     friend class MeshObjectFactory;

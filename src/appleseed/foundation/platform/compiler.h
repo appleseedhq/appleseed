@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -61,15 +61,15 @@ namespace foundation
 
 // Visual C++.
 #if defined _MSC_VER
-    #define FORCE_INLINE __forceinline
+    #define APPLESEED_FORCE_INLINE __forceinline
 
 // gcc.
 #elif defined __GNUC__
-    #define FORCE_INLINE inline __attribute__((always_inline))
+    #define APPLESEED_FORCE_INLINE inline __attribute__((always_inline))
 
 // Other compilers: fall back to standard inlining.
 #else
-    #define FORCE_INLINE inline
+    #define APPLESEED_FORCE_INLINE inline
 #endif
 
 
@@ -79,37 +79,38 @@ namespace foundation
 
 // Visual C++.
 #if defined _MSC_VER
-    #define NO_INLINE __declspec(noinline)
+    #define APPLESEED_NO_INLINE __declspec(noinline)
 
 // gcc.
 #elif defined __GNUC__
-    #define NO_INLINE __attribute__((noinline))
+    #define APPLESEED_NO_INLINE __attribute__((noinline))
 
 // Other compilers: ignore the qualifier.
 #else
-    #define NO_INLINE
+    #define APPLESEED_NO_INLINE
 #endif
 
 
 //
 // A qualifier to specify the alignment of a variable, a structure member or a structure.
-// Named APPLESEED_ALIGN instead of simply ALIGN to prevent a collision with the ALIGN
-// macro defined in /usr/include/i386/param.h on OS X (and possibly other platforms).
 //
-// SSE_ALIGN aligns on a 16-byte boundary as required by SSE load/store instructions.
+// APPLESEED_SSE_ALIGN aligns on a 16-byte boundary as required by SSE load/store instructions.
+//
+// Note that APPLESEED_SSE_ALIGN *always* performs the alignment, regardless of whether or not
+// SSE is enabled in the build configuration.
 //
 
 // Visual C++.
 #if defined _MSC_VER
     #define APPLESEED_ALIGN(n) __declspec(align(n))
-    #define SSE_ALIGN APPLESEED_ALIGN(16)
+    #define APPLESEED_SSE_ALIGN APPLESEED_ALIGN(16)
 
 // gcc.
 #elif defined __GNUC__
     #define APPLESEED_ALIGN(n) __attribute__((aligned(n)))
-    #define SSE_ALIGN APPLESEED_ALIGN(16)
+    #define APPLESEED_SSE_ALIGN APPLESEED_ALIGN(16)
 
-// Other compilers: ignore the qualifier, and leave SSE_ALIGN undefined.
+// Other compilers: ignore the qualifier, and leave APPLESEED_SSE_ALIGN undefined.
 #else
     #define APPLESEED_ALIGN(n)
 #endif
@@ -121,15 +122,15 @@ namespace foundation
 
 // Visual C++.
 #if defined _MSC_VER
-    #define ALIGNOF(t) __alignof(t)
+    #define APPLESEED_ALIGNOF(t) __alignof(t)
 
 // gcc.
 #elif defined __GNUC__
-    #define ALIGNOF(t) __alignof__(t)
+    #define APPLESEED_ALIGNOF(t) __alignof__(t)
 
 // Other compilers: abort compilation.
 #else
-    #error ALIGNOF is not defined for this compiler.
+    #error APPLESEED_ALIGNOF is not defined for this compiler.
 #endif
 
 
@@ -137,7 +138,7 @@ namespace foundation
 // A qualifier similar to the 'restrict' keyword in C99.
 //
 
-#define RESTRICT __restrict
+#define APPLESEED_RESTRICT __restrict
 
 
 //
@@ -146,15 +147,15 @@ namespace foundation
 
 // Visual C++.
 #if defined _MSC_VER
-    #define UNREACHABLE assert(!"This code was assumed to be unreachable."); __assume(0)
+    #define APPLESEED_UNREACHABLE assert(!"This code was assumed to be unreachable."); __assume(0)
 
 // gcc: supported since gcc 4.5.
 #elif __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)
-    #define UNREACHABLE assert(!"This code was assumed to be unreachable."); __builtin_unreachable()
+    #define APPLESEED_UNREACHABLE assert(!"This code was assumed to be unreachable."); __builtin_unreachable()
 
 // Other compilers: assert in debug, ignore in release.
 #else
-    #define UNREACHABLE assert(!"This code was assumed to be unreachable.")
+    #define APPLESEED_UNREACHABLE assert(!"This code was assumed to be unreachable.")
 #endif
 
 
@@ -177,13 +178,42 @@ namespace foundation
 
 
 //
-// Utility macros converting their argument to a string literal:
-//   TO_STRING_EVAL first expands the argument definition.
-//   TO_STRING_NOEVAL does not expand the argument definition.
+//  A macro to provide the compiler with branch prediction information.
+//  Usage: replace if (cond) with if (APPLESEED_LIKELY(cond))
+//  Warning: programmers are notoriously bad at guessing this.
+//  It should only be used after profiling.
 //
 
-#define TO_STRING_EVAL(x) TO_STRING_NOEVAL(x)
-#define TO_STRING_NOEVAL(x) #x
+#if defined(__GNUC__)
+    #define APPLESEED_LIKELY(x)   (__builtin_expect(bool(x), true))
+    #define APPLESEED_UNLIKELY(x) (__builtin_expect(bool(x), false))
+#else
+    #define APPLESEED_LIKELY(x)   (x)
+    #define APPLESEED_UNLIKELY(x) (x)
+#endif
+
+
+//
+//  A macro to mark a variable as unused. Useful in unit tests.
+//
+
+#if defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)))
+    #define APPLESEED_UNUSED   __attribute__((unused))
+#elif defined(__clang__)
+    #define APPLESEED_UNUSED   __attribute__((unused))
+#else
+    #define APPLESEED_UNUSED
+#endif
+
+
+//
+// Utility macros converting their argument to a string literal:
+//   APPLESEED_TO_STRING_EVAL first expands the argument definition.
+//   APPLESEED_TO_STRING_NOEVAL does not expand the argument definition.
+//
+
+#define APPLESEED_TO_STRING_EVAL(x) APPLESEED_TO_STRING_NOEVAL(x)
+#define APPLESEED_TO_STRING_NOEVAL(x) #x
 
 
 //
@@ -214,7 +244,7 @@ namespace foundation
 //
 // Source code annotations.
 //
-// About PRINTF_FMT and PRINTF_FMT_ATTR() usage:
+// About APPLESEED_PRINTF_FMT and APPLESEED_PRINTF_FMT_ATTR() usage:
 //
 //   From http://gcc.gnu.org/onlinedocs/gcc/Function-Attributes.html:
 //
@@ -231,23 +261,23 @@ namespace foundation
 
 // Visual C++: Visual Studio 2008+ annotations.
 #if _MSC_VER >= 1500
-    #define PRINTF_FMT _Printf_format_string_
-    #define PRINTF_FMT_ATTR(string_index, first_to_check)
+    #define APPLESEED_PRINTF_FMT _Printf_format_string_
+    #define APPLESEED_PRINTF_FMT_ATTR(string_index, first_to_check)
 
 // Visual C++: Visual Studio 2005 annotations.
 #elif _MSC_VER >= 1400
-    #define PRINTF_FMT __format_string
-    #define PRINTF_FMT_ATTR(string_index, first_to_check)
+    #define APPLESEED_PRINTF_FMT __format_string
+    #define APPLESEED_PRINTF_FMT_ATTR(string_index, first_to_check)
 
 // gcc.
 #elif defined __GNUC__
-    #define PRINTF_FMT
-    #define PRINTF_FMT_ATTR(string_index, first_to_check) __attribute__((format(printf, string_index, first_to_check)))
+    #define APPLESEED_PRINTF_FMT
+    #define APPLESEED_PRINTF_FMT_ATTR(string_index, first_to_check) __attribute__((format(printf, string_index, first_to_check)))
 
 // Other compilers: annotations have no effect.
 #else
-    #define PRINTF_FMT
-    #define PRINTF_FMT_ATTR(string_index, first_to_check)
+    #define APPLESEED_PRINTF_FMT
+    #define APPLESEED_PRINTF_FMT_ATTR(string_index, first_to_check)
 #endif
 
 

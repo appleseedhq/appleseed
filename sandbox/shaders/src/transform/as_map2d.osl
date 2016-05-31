@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014 The masked shader writer, The appleseedhq Organization
+// Copyright (c) 2014-2016 The masked shader writer, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,21 +26,21 @@
 // THE SOFTWARE.
 //
 
-#include "appleseed/texture.h"
 #include "appleseed/transform.h"
 
 shader as_map2d
 (
-    APPLESEED_DECLARE_TEXTURE_UV_PARAMS,
-    string Flip = "Off"
+    float        U = u,
+    float        V = v,
+    string       Flip = "Off"
     [[
         string widget = "popup",
         string options = "Off|U|V|Both"
     ]],
-    vector Center = 0.5,
-    vector Repeat = 1.0,
-    float Rotate = 0.0,
-    vector Offset = 0.0,
+    vector       Center = 0.5,
+    vector       Repeat = 1.0,
+    float        Rotate = 0.0,
+    vector       Offset = 0.0,
     output float UOut = 0,
     output float VOut = 0
 )

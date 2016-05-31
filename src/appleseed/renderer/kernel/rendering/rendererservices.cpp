@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/version.h"
+#include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 
 // Standard headers.
@@ -65,6 +66,7 @@ namespace
     OIIO::TypeDesc g_int_array2_typedesc(OIIO::TypeDesc::INT, 2);
 
     OIIO::ustring g_empty_ustr;
+
     OIIO::ustring g_perspective_ustr("perspective");
     OIIO::ustring g_spherical_ustr("spherical");
     OIIO::ustring g_unknown_proj_ustr("unknown");
@@ -90,34 +92,40 @@ namespace
 RendererServices::RendererServices(
     const Project&              project,
     OIIO::TextureSystem&        texture_sys)
-  : OSL::RendererServices()
-  , m_project(project)
+  : OSL::RendererServices(&texture_sys)
   , m_texture_sys(texture_sys)
+  , m_project(project)
   , m_texture_store(0)
 {
     // Set up attribute getters.
-    m_global_attr_getters[OIIO::ustring("object:object_instance_id")] = &RendererServices::get_object_instance_id;
-    m_global_attr_getters[OIIO::ustring("object:object_instance_index")] = &RendererServices::get_object_instance_index;
-    m_global_attr_getters[OIIO::ustring("object:assembly_instance_id")] = &RendererServices::get_assembly_instance_id;
-    m_global_attr_getters[OIIO::ustring("camera:resolution")] = &RendererServices::get_camera_resolution;
-    m_global_attr_getters[OIIO::ustring("camera:projection")] = &RendererServices::get_camera_projection;
-    m_global_attr_getters[OIIO::ustring("camera:pixelaspect")] = &RendererServices::get_camera_pixelaspect;
-    m_global_attr_getters[OIIO::ustring("camera:screen_window")] = &RendererServices::get_camera_screen_window;
-    m_global_attr_getters[OIIO::ustring("camera:fov")] = &RendererServices::get_camera_fov;
-    m_global_attr_getters[OIIO::ustring("camera:clip")] = &RendererServices::get_camera_clip;
-    m_global_attr_getters[OIIO::ustring("camera:clip_near")] = &RendererServices::get_camera_clip_near;
-    m_global_attr_getters[OIIO::ustring("camera:clip_far")] = &RendererServices::get_camera_clip_far;
-    m_global_attr_getters[OIIO::ustring("camera:shutter")] = &RendererServices::get_camera_shutter;
-    m_global_attr_getters[OIIO::ustring("camera:shutter_open")] = &RendererServices::get_camera_shutter_open;
-    m_global_attr_getters[OIIO::ustring("camera:shutter_close")] = &RendererServices::get_camera_shutter_close;
-    m_global_attr_getters[OIIO::ustring("path:ray_depth")] = &RendererServices::get_ray_depth;
-    m_global_attr_getters[OIIO::ustring("path:ray_length")] = &RendererServices::get_ray_length;
-    m_global_attr_getters[OIIO::ustring("path:ray_ior")] = &RendererServices::get_ray_ior;
-    m_global_attr_getters[OIIO::ustring("path:ray_has_differentials")] = &RendererServices::get_ray_has_differentials;
-    m_global_attr_getters[OIIO::ustring("appleseed:version_major")] = &RendererServices::get_appleseed_version_major;
-    m_global_attr_getters[OIIO::ustring("appleseed:version_minor")] = &RendererServices::get_appleseed_version_minor;
-    m_global_attr_getters[OIIO::ustring("appleseed:version_patch")] = &RendererServices::get_appleseed_version_patch;
-    m_global_attr_getters[OIIO::ustring("appleseed:version")] = &RendererServices::get_appleseed_version;
+    m_global_attr_getters[OIIO::ustring("object:object_instance_id")] = &RendererServices::get_attr_object_instance_id;
+    m_global_attr_getters[OIIO::ustring("object:object_instance_index")] = &RendererServices::get_attr_object_instance_index;
+    m_global_attr_getters[OIIO::ustring("object:assembly_instance_id")] = &RendererServices::get_attr_assembly_instance_id;
+    m_global_attr_getters[OIIO::ustring("camera:resolution")] = &RendererServices::get_attr_camera_resolution;
+    m_global_attr_getters[OIIO::ustring("camera:projection")] = &RendererServices::get_attr_camera_projection;
+    m_global_attr_getters[OIIO::ustring("camera:pixelaspect")] = &RendererServices::get_attr_camera_pixelaspect;
+    m_global_attr_getters[OIIO::ustring("camera:screen_window")] = &RendererServices::get_attr_camera_screen_window;
+    m_global_attr_getters[OIIO::ustring("camera:fov")] = &RendererServices::get_attr_camera_fov;
+    m_global_attr_getters[OIIO::ustring("camera:clip")] = &RendererServices::get_attr_camera_clip;
+    m_global_attr_getters[OIIO::ustring("camera:clip_near")] = &RendererServices::get_attr_camera_clip_near;
+    m_global_attr_getters[OIIO::ustring("camera:clip_far")] = &RendererServices::get_attr_camera_clip_far;
+    m_global_attr_getters[OIIO::ustring("camera:shutter")] = &RendererServices::get_attr_camera_shutter;
+    m_global_attr_getters[OIIO::ustring("camera:shutter_open")] = &RendererServices::get_attr_camera_shutter_open;
+    m_global_attr_getters[OIIO::ustring("camera:shutter_close")] = &RendererServices::get_attr_camera_shutter_close;
+    m_global_attr_getters[OIIO::ustring("path:ray_depth")] = &RendererServices::get_attr_ray_depth;
+    m_global_attr_getters[OIIO::ustring("path:ray_length")] = &RendererServices::get_attr_ray_length;
+    m_global_attr_getters[OIIO::ustring("path:ray_ior")] = &RendererServices::get_attr_ray_ior;
+    m_global_attr_getters[OIIO::ustring("path:ray_has_differentials")] = &RendererServices::get_attr_ray_has_differentials;
+    m_global_attr_getters[OIIO::ustring("appleseed:version_major")] = &RendererServices::get_attr_appleseed_version_major;
+    m_global_attr_getters[OIIO::ustring("appleseed:version_minor")] = &RendererServices::get_attr_appleseed_version_minor;
+    m_global_attr_getters[OIIO::ustring("appleseed:version_patch")] = &RendererServices::get_attr_appleseed_version_patch;
+    m_global_attr_getters[OIIO::ustring("appleseed:version")] = &RendererServices::get_attr_appleseed_version;
+
+    // Set up user data getters.
+    m_global_user_data_getters[OIIO::ustring("Tn")] = &RendererServices::get_user_data_tn;
+    m_global_user_data_getters[OIIO::ustring("Bn")] = &RendererServices::get_user_data_bn;
+    m_global_user_data_getters[OIIO::ustring("dNdu")] = &RendererServices::get_user_data_dndu;
+    m_global_user_data_getters[OIIO::ustring("dNdv")] = &RendererServices::get_user_data_dndv;
 }
 
 void RendererServices::initialize(TextureStore& texture_store)
@@ -319,10 +327,7 @@ bool RendererServices::get_inverse_matrix(
         return true;
     }
 
-    return OSL::RendererServices::get_inverse_matrix(
-        sg,
-        result,
-        to);
+    return OSL::RendererServices::get_inverse_matrix(sg, result, to);
 }
 
 bool RendererServices::transform_points(
@@ -350,29 +355,30 @@ bool RendererServices::trace(
 {
     assert(m_texture_store);
 
-    TextureCache texture_cache(*m_texture_store);
-    Intersector intersector(m_project.get_trace_context(), texture_cache);
-
     const ShadingPoint* parent =
         reinterpret_cast<const ShadingPoint*>(sg->renderstate);
-    const ShadingPoint* origin_shading_point = 0;
 
-    Vector3d pos = Vector3f(P);
+    Vector3d pos;
+    const ShadingPoint* origin_shading_point;
 
     if (P == sg->P)
     {
         Vector3d front = Vector3f(P);
         Vector3d back = front;
 
-        intersector.fixed_offset(
+        Intersector::fixed_offset(
             parent->get_point(),
             parent->get_geometric_normal(),
             front,
             back);
 
         pos = sg->N.dot(R) >= 0.0f ? front : back;
-
         origin_shading_point = parent;
+    }
+    else
+    {
+        pos = Vector3f(P);
+        origin_shading_point = 0;
     }
 
     const Vector3d dir = Vector3f(R);
@@ -384,6 +390,10 @@ bool RendererServices::trace(
         parent->get_ray().m_time,
         VisibilityFlags::ProbeRay,
         parent->get_ray().m_depth + 1);
+
+    // todo: move this out of the hot code path (but it must remain thread-local).
+    TextureCache texture_cache(*m_texture_store);
+    Intersector intersector(m_project.get_trace_context(), texture_cache);
 
     ShadingPoint shading_point;
     intersector.trace(
@@ -501,19 +511,31 @@ bool RendererServices::get_userdata(
     OSL::ShaderGlobals*         sg,
     void*                       val)
 {
+    UserDataGetterMapType::const_iterator i = m_global_user_data_getters.find(name);
+    if (i != m_global_user_data_getters.end())
+    {
+        UserDataGetterFun getter = i->second;
+        return (this->*(getter))(derivatives, name, type, sg, val);
+    }
+
     return false;
 }
+
+#if OSL_LIBRARY_VERSION_CODE < 10700
 
 bool RendererServices::has_userdata(
     OIIO::ustring               name,
     OIIO::TypeDesc              type,
     OSL::ShaderGlobals*         sg)
 {
-    return false;
+    UserDataGetterMapType::const_iterator i = m_global_user_data_getters.find(name);
+    return i != m_global_user_data_getters.end();
 }
 
+#endif
+
 #define IMPLEMENT_ATTR_GETTER(name)         \
-    bool RendererServices::get_##name(      \
+    bool RendererServices::get_attr_##name( \
         OSL::ShaderGlobals*     sg,         \
         bool                    derivs,     \
         OIIO::ustring           object,     \
@@ -527,10 +549,12 @@ IMPLEMENT_ATTR_GETTER(object_instance_id)
     {
         const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
-
         reinterpret_cast<int*>(val)[0] =
             static_cast<int>(shading_point->get_object_instance().get_uid());
-        clear_attr_derivatives(derivs, type, val);
+
+        if (derivs)
+            clear_derivatives(type, val);
+
         return true;
     }
 
@@ -543,10 +567,12 @@ IMPLEMENT_ATTR_GETTER(object_instance_index)
     {
         const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
-
         reinterpret_cast<int*>(val)[0] =
             static_cast<int>(shading_point->get_object_instance_index());
-        clear_attr_derivatives(derivs, type, val);
+
+        if (derivs)
+            clear_derivatives(type, val);
+
         return true;
     }
 
@@ -559,10 +585,12 @@ IMPLEMENT_ATTR_GETTER(assembly_instance_id)
     {
         const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
-
         reinterpret_cast<int*>(val)[0] =
             static_cast<int>(shading_point->get_assembly_instance().get_uid());
-        clear_attr_derivatives(derivs, type, val);
+
+        if (derivs)
+            clear_derivatives(type, val);
+
         return true;
     }
 
@@ -573,9 +601,13 @@ IMPLEMENT_ATTR_GETTER(camera_resolution)
 {
     if (type == g_int_array2_typedesc)
     {
-        Image& img = m_project.get_frame()->image();
-        reinterpret_cast<int*>(val)[0] = static_cast<int>(img.properties().m_canvas_width);
-        reinterpret_cast<int*>(val)[1] = static_cast<int>(img.properties().m_canvas_height);
+        const CanvasProperties& props = m_project.get_frame()->image().properties();
+        reinterpret_cast<int*>(val)[0] = static_cast<int>(props.m_canvas_width);
+        reinterpret_cast<int*>(val)[1] = static_cast<int>(props.m_canvas_height);
+
+        if (derivs)
+            clear_derivatives(type, val);
+
         return true;
     }
 
@@ -603,7 +635,10 @@ IMPLEMENT_ATTR_GETTER(camera_pixelaspect)
     if (type == OIIO::TypeDesc::TypeFloat)
     {
         reinterpret_cast<float*>(val)[0] = 1.0f;
-        clear_attr_derivatives(derivs, type, val);
+
+        if (derivs)
+            clear_derivatives(type, val);
+
         return true;
     }
 
@@ -616,7 +651,10 @@ IMPLEMENT_ATTR_GETTER(camera_clip)
     {
         reinterpret_cast<float*>(val)[0] = 0.0f;
         reinterpret_cast<float*>(val)[1] = numeric_limits<float>::max();
-        clear_attr_derivatives(derivs, type, val);
+
+        if (derivs)
+            clear_derivatives(type, val);
+
         return true;
     }
 
@@ -628,7 +666,10 @@ IMPLEMENT_ATTR_GETTER(camera_clip_near)
     if (type == OIIO::TypeDesc::TypeFloat)
     {
         reinterpret_cast<float*>(val)[0] = 0.0f;
-        clear_attr_derivatives(derivs, type, val);
+
+        if (derivs)
+            clear_derivatives(type, val);
+
         return true;
     }
 
@@ -640,7 +681,10 @@ IMPLEMENT_ATTR_GETTER(camera_clip_far)
     if (type == OIIO::TypeDesc::TypeFloat)
     {
         reinterpret_cast<float*>(val)[0] = numeric_limits<float>::max();
-        clear_attr_derivatives(derivs, type, val);
+
+        if (derivs)
+            clear_derivatives(type, val);
+
         return true;
     }
 
@@ -653,7 +697,10 @@ IMPLEMENT_ATTR_GETTER(camera_shutter)
     {
         reinterpret_cast<float*>(val)[0] = m_shutter[0];
         reinterpret_cast<float*>(val)[1] = m_shutter[1];
-        clear_attr_derivatives(derivs, type, val);
+
+        if (derivs)
+            clear_derivatives(type, val);
+
         return true;
     }
 
@@ -665,7 +712,10 @@ IMPLEMENT_ATTR_GETTER(camera_shutter_open)
     if (type == OIIO::TypeDesc::TypeFloat)
     {
         reinterpret_cast<float*>(val)[0] = m_shutter[0];
-        clear_attr_derivatives(derivs, type, val);
+
+        if (derivs)
+            clear_derivatives(type, val);
+
         return true;
     }
 
@@ -677,7 +727,10 @@ IMPLEMENT_ATTR_GETTER(camera_shutter_close)
     if (type == OIIO::TypeDesc::TypeFloat)
     {
         reinterpret_cast<float*>(val)[0] = m_shutter[1];
-        clear_attr_derivatives(derivs, type, val);
+
+        if (derivs)
+            clear_derivatives(type, val);
+
         return true;
     }
 
@@ -688,15 +741,16 @@ IMPLEMENT_ATTR_GETTER(camera_screen_window)
 {
     if (type == g_float_array4_typedesc)
     {
-        Image& img = m_project.get_frame()->image();
-        const float aspect =
-            static_cast<float>(img.properties().m_canvas_width) / img.properties().m_canvas_height;
-
+        const CanvasProperties& props = m_project.get_frame()->image().properties();
+        const float aspect = static_cast<float>(props.m_canvas_width) / props.m_canvas_height;
         reinterpret_cast<float*>(val)[0] = -aspect;
         reinterpret_cast<float*>(val)[1] = -1.0f;
         reinterpret_cast<float*>(val)[2] =  aspect;
         reinterpret_cast<float*>(val)[3] =  1.0f;
-        clear_attr_derivatives(derivs, type, val);
+
+        if (derivs)
+            clear_derivatives(type, val);
+
         return true;
     }
 
@@ -709,9 +763,11 @@ IMPLEMENT_ATTR_GETTER(ray_depth)
     {
         const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
-
         reinterpret_cast<int*>(val)[0] = static_cast<int>(shading_point->get_ray().m_depth);
-        clear_attr_derivatives(derivs, type, val);
+
+        if (derivs)
+            clear_derivatives(type, val);
+
         return true;
     }
 
@@ -724,10 +780,11 @@ IMPLEMENT_ATTR_GETTER(ray_length)
     {
         const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+        reinterpret_cast<float*>(val)[0] = static_cast<float>(shading_point->get_distance());
 
-        reinterpret_cast<float*>(val)[0] =
-            static_cast<float>(norm(shading_point->get_ray().m_org - shading_point->get_point()));
-        clear_attr_derivatives(derivs, type, val);
+        if (derivs)
+            clear_derivatives(type, val);
+
         return true;
     }
 
@@ -738,8 +795,13 @@ IMPLEMENT_ATTR_GETTER(ray_ior)
 {
     if (type == OIIO::TypeDesc::TypeFloat)
     {
-        reinterpret_cast<float*>(val)[0] = 1.0f;
-        clear_attr_derivatives(derivs, type, val);
+        const ShadingPoint* shading_point =
+            reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+        reinterpret_cast<float*>(val)[0] = static_cast<float>(shading_point->get_ray().get_current_ior());
+
+        if (derivs)
+            clear_derivatives(type, val);
+
         return true;
     }
 
@@ -752,9 +814,11 @@ IMPLEMENT_ATTR_GETTER(ray_has_differentials)
     {
         const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
-
         reinterpret_cast<int*>(val)[0] = static_cast<int>(shading_point->get_ray().m_has_differentials);
-        clear_attr_derivatives(derivs, type, val);
+
+        if (derivs)
+            clear_derivatives(type, val);
+
         return true;
     }
 
@@ -766,7 +830,10 @@ IMPLEMENT_ATTR_GETTER(appleseed_version_major)
     if (type == OIIO::TypeDesc::TypeInt)
     {
         reinterpret_cast<int*>(val)[0] = APPLESEED_VERSION_MAJOR;
-        clear_attr_derivatives(derivs, type, val);
+
+        if (derivs)
+            clear_derivatives(type, val);
+
         return true;
     }
 
@@ -778,7 +845,10 @@ IMPLEMENT_ATTR_GETTER(appleseed_version_minor)
     if (type == OIIO::TypeDesc::TypeInt)
     {
         reinterpret_cast<int*>(val)[0] = APPLESEED_VERSION_MINOR;
-        clear_attr_derivatives(derivs, type, val);
+
+        if (derivs)
+            clear_derivatives(type, val);
+
         return true;
     }
 
@@ -790,7 +860,10 @@ IMPLEMENT_ATTR_GETTER(appleseed_version_patch)
     if (type == OIIO::TypeDesc::TypeInt)
     {
         reinterpret_cast<int*>(val)[0] = APPLESEED_VERSION_PATCH;
-        clear_attr_derivatives(derivs, type, val);
+
+        if (derivs)
+            clear_derivatives(type, val);
+
         return true;
     }
 
@@ -802,7 +875,10 @@ IMPLEMENT_ATTR_GETTER(appleseed_version)
     if (type == OIIO::TypeDesc::TypeInt)
     {
         reinterpret_cast<int*>(val)[0] = APPLESEED_VERSION;
-        clear_attr_derivatives(derivs, type, val);
+
+        if (derivs)
+            clear_derivatives(type, val);
+
         return true;
     }
 
@@ -811,27 +887,125 @@ IMPLEMENT_ATTR_GETTER(appleseed_version)
 
 #undef IMPLEMENT_ATTR_GETTER
 
-void RendererServices::clear_attr_derivatives(
-    bool                        derivs,
+#define IMPLEMENT_USER_DATA_GETTER(name)         \
+    bool RendererServices::get_user_data_##name( \
+        bool                    derivatives,     \
+        OIIO::ustring           name,            \
+        OIIO::TypeDesc          type,            \
+        OSL::ShaderGlobals*     sg,              \
+        void*                   val) const
+
+IMPLEMENT_USER_DATA_GETTER(tn)
+{
+    if (type == OIIO::TypeDesc::TypeVector)
+    {
+        const ShadingPoint* shading_point =
+            reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+
+        const Vector3d& tn = shading_point->get_shading_basis().get_tangent_u();
+        OSL::Vec3 v(
+            static_cast<float>(tn.x),
+            static_cast<float>(tn.y),
+            static_cast<float>(tn.z));
+
+        // Make sure Tn points in the same direction as dPdu.
+        if (v.dot(sg->dPdu) < 0.0f)
+            v = -v;
+
+        reinterpret_cast<float*>(val)[0] = v.x;
+        reinterpret_cast<float*>(val)[1] = v.y;
+        reinterpret_cast<float*>(val)[2] = v.z;
+
+        if (derivatives)
+            clear_derivatives(type, val);
+
+        return true;
+    }
+
+    return false;
+}
+
+IMPLEMENT_USER_DATA_GETTER(bn)
+{
+    if (type == OIIO::TypeDesc::TypeVector)
+    {
+        const ShadingPoint* shading_point =
+            reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+
+        const Vector3d& bn = shading_point->get_shading_basis().get_tangent_v();
+
+        OSL::Vec3 v(
+            static_cast<float>(bn.x),
+            static_cast<float>(bn.y),
+            static_cast<float>(bn.z));
+
+        // Make sure Bn points in the same direction as dPdv.
+        if (v.dot(sg->dPdv) < 0.0f)
+            v = -v;
+
+        reinterpret_cast<float*>(val)[0] = v.x;
+        reinterpret_cast<float*>(val)[1] = v.y;
+        reinterpret_cast<float*>(val)[2] = v.z;
+
+        if (derivatives)
+            clear_derivatives(type, val);
+
+        return true;
+    }
+
+    return false;
+}
+
+IMPLEMENT_USER_DATA_GETTER(dndu)
+{
+    if (type == OIIO::TypeDesc::TypeVector)
+    {
+        const ShadingPoint* shading_point =
+            reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+
+        const Vector3d& dndu = shading_point->get_dndu(0);
+        reinterpret_cast<float*>(val)[0] = static_cast<float>(dndu.x);
+        reinterpret_cast<float*>(val)[1] = static_cast<float>(dndu.y);
+        reinterpret_cast<float*>(val)[2] = static_cast<float>(dndu.z);
+
+        if (derivatives)
+            clear_derivatives(type, val);
+
+        return true;
+    }
+
+    return false;
+}
+
+IMPLEMENT_USER_DATA_GETTER(dndv)
+{
+    if (type == OIIO::TypeDesc::TypeVector)
+    {
+        const ShadingPoint* shading_point =
+            reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+
+        const Vector3d& dndv = shading_point->get_dndv(0);
+        reinterpret_cast<float*>(val)[0] = static_cast<float>(dndv.x);
+        reinterpret_cast<float*>(val)[1] = static_cast<float>(dndv.y);
+        reinterpret_cast<float*>(val)[2] = static_cast<float>(dndv.z);
+
+        if (derivatives)
+            clear_derivatives(type, val);
+
+        return true;
+    }
+
+    return false;
+}
+
+#undef IMPLEMENT_USER_DATA_GETTER
+
+void RendererServices::clear_derivatives(
     const OIIO::TypeDesc&       type,
     void*                       val)
 {
-    if (derivs)
-    {
-        if (type == OIIO::TypeDesc::TypeString)
-        {
-            reinterpret_cast<OIIO::ustring*>(val)[1] = g_empty_ustr;
-            reinterpret_cast<OIIO::ustring*>(val)[2] = g_empty_ustr;
-        }
-        else
-            memset(reinterpret_cast<char*>(val) + type.size(), 0, 2 * type.size());
-    }
-}
-
-void RendererServices::log_error(const string& message)
-{
-    if (!message.empty())
-        RENDERER_LOG_ERROR("%s", message.c_str());
+    if (type != OIIO::TypeDesc::TypeString)
+        memset(reinterpret_cast<char*>(val) + type.size(), 0, 2 * type.size());
 }
 
 }   // namespace renderer

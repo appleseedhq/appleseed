@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2015 Srinath Ravichandran, The appleseedhq Organization
+// Copyright (c) 2014-2016 Srinath Ravichandran, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,11 @@
 
 // Interface header.
 #include "curveobject.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
@@ -164,6 +169,21 @@ const char* CurveObject::get_material_slot(const size_t index) const
     return impl->m_material_slots[index].c_str();
 }
 
+void CurveObject::collect_asset_paths(StringArray& paths) const
+{
+    if (m_params.strings().exist("filepath"))
+    {
+        const string filepath = m_params.get<string>("filepath");
+        if (!starts_with(filepath, "builtin:"))
+            paths.push_back(filepath.c_str());
+    }
+}
+
+void CurveObject::update_asset_paths(const StringDictionary& mappings)
+{
+    m_params.set("filepath", mappings.get(m_params.get("filepath")));
+}
+
 
 //
 // CurveObjectFactory class implementation.
@@ -178,9 +198,7 @@ auto_release_ptr<CurveObject> CurveObjectFactory::create(
     const char*         name,
     const ParamArray&   params)
 {
-    return
-        auto_release_ptr<CurveObject>(
-            new CurveObject(name, params));
+    return auto_release_ptr<CurveObject>(new CurveObject(name, params));
 }
 
 }   // namespace renderer

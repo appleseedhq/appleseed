@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -61,7 +61,7 @@ DipoleBSSRDF::DipoleBSSRDF(
     m_inputs.declare("weight", InputFormatScalar, "1.0");
     m_inputs.declare("reflectance", InputFormatSpectralReflectance);
     m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-    m_inputs.declare("dmfp", InputFormatScalar);
+    m_inputs.declare("dmfp", InputFormatSpectralReflectance);
     m_inputs.declare("dmfp_multiplier", InputFormatScalar, "1.0");
     m_inputs.declare("sigma_a", InputFormatSpectralReflectance, "");
     m_inputs.declare("sigma_s", InputFormatSpectralReflectance, "");
@@ -179,6 +179,7 @@ DictionaryArray DipoleBSSRDFFactory::get_input_metadata() const
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
+                    .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", "0.5"));
@@ -208,8 +209,8 @@ DictionaryArray DipoleBSSRDFFactory::get_input_metadata() const
             .insert("name", "outside_ior")
             .insert("label", "Outside Index of Refraction")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "5.0")
+            .insert("min_value", "1.0")
+            .insert("max_value", "2.5")
             .insert("use", "required")
             .insert("default", "1.0"));
 
@@ -218,8 +219,8 @@ DictionaryArray DipoleBSSRDFFactory::get_input_metadata() const
             .insert("name", "inside_ior")
             .insert("label", "Inside Index of Refraction")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "5.0")
+            .insert("min_value", "1.0")
+            .insert("max_value", "2.5")
             .insert("use", "required")
             .insert("default", "1.3"));
 

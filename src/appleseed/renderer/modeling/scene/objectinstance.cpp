@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -137,6 +137,9 @@ ObjectInstance::ObjectInstance(
 
     // Retrieve visibility flags.
     m_vis_flags = VisibilityFlags::parse(params.child("visibility"), message_context);
+
+    // Retrieve medium priority.
+    m_medium_priority = params.get_optional<uint8>("medium_priority", 0);
 
     // Retrieve ray bias method.
     const string ray_bias_method =
@@ -456,6 +459,16 @@ void ObjectInstance::on_frame_end(const Project& project)
 DictionaryArray ObjectInstanceFactory::get_input_metadata()
 {
     DictionaryArray metadata;
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "medium_priority")
+            .insert("label", "Medium Priority")
+            .insert("type", "numeric")
+            .insert("min_value", "0")
+            .insert("max_value", "255")
+            .insert("use", "optional")
+            .insert("default", "0"));
 
     metadata.push_back(
         Dictionary()

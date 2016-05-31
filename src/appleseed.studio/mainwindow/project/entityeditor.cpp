@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/entitybrowserwindow.h"
+#include "mainwindow/project/entityinputwidget.h"
 #include "mainwindow/project/tools.h"
 #include "utility/doubleslider.h"
 #include "utility/interop.h"
@@ -253,9 +254,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_text_input_widgets(const Dictio
     m_form_layout->addRow(create_label(metadata), line_edit);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
-
-    if (metadata.strings().exist("default"))
-        widget_proxy->set(metadata.strings().get<string>("default"));
+    widget_proxy->set(metadata.strings().get<string>("value"));
 
     return widget_proxy;
 }
@@ -265,28 +264,13 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dic
     QLineEdit* line_edit = new QLineEdit(m_parent);
     line_edit->setMaximumWidth(60);
 
+    DoubleSlider* slider = new DoubleSlider(Qt::Horizontal, m_parent);
     const double min_value = metadata.get<double>("min_value");
     const double max_value = metadata.get<double>("max_value");
-
-    DoubleSlider* slider = new DoubleSlider(Qt::Horizontal, m_parent);
     slider->setRange(min_value, max_value);
     slider->setPageStep((max_value - min_value) / 10.0);
-
     new MouseWheelFocusEventFilter(slider);
-
-    // Connect the line edit and the slider together.
-    LineEditDoubleSliderAdaptor* adaptor =
-        new LineEditDoubleSliderAdaptor(line_edit, slider);
-    connect(
-        slider, SIGNAL(valueChanged(const double)),
-        adaptor, SLOT(slot_set_line_edit_value(const double)));
-    connect(
-        line_edit, SIGNAL(textChanged(const QString&)),
-        adaptor, SLOT(slot_set_slider_value(const QString&)));
-    connect(
-        line_edit, SIGNAL(editingFinished()),
-        adaptor, SLOT(slot_apply_slider_value()));
-
+    new LineEditDoubleSliderAdaptor(line_edit, slider);
     connect(slider, SIGNAL(valueChanged(int)), SLOT(slot_apply()));
 
     if (should_be_focused(metadata))
@@ -299,70 +283,31 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dic
     layout->setSpacing(6);
     layout->addWidget(line_edit);
     layout->addWidget(slider);
+
     m_form_layout->addRow(create_label(metadata), layout);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
-
-    if (metadata.strings().exist("default"))
-        widget_proxy->set(metadata.strings().get<string>("default"));
+    widget_proxy->set(metadata.strings().get<string>("value"));
 
     return widget_proxy;
 }
 
 auto_ptr<IInputWidgetProxy> EntityEditor::create_colormap_input_widgets(const Dictionary& metadata)
 {
-    QLineEdit* line_edit = new QLineEdit(m_parent);
-    line_edit->setMaximumWidth(120);
-
-    const double min_value = 0.0;
-    const double max_value = 1.0;
-
-    DoubleSlider* slider = new DoubleSlider(Qt::Horizontal, m_parent);
-    slider->setRange(min_value, max_value);
-    slider->setPageStep((max_value - min_value) / 10.0);
-
-    new MouseWheelFocusEventFilter(slider);
-
-    // Connect the line edit and the slider together.
-    LineEditDoubleSliderAdaptor* adaptor =
-        new LineEditDoubleSliderAdaptor(line_edit, slider);
-    connect(
-        slider, SIGNAL(valueChanged(const double)),
-        adaptor, SLOT(slot_set_line_edit_value(const double)));
-    connect(
-        line_edit, SIGNAL(textChanged(const QString&)),
-        adaptor, SLOT(slot_set_slider_value(const QString&)));
-    connect(
-        line_edit, SIGNAL(editingFinished()),
-        adaptor, SLOT(slot_apply_slider_value()));
-
     const string name = metadata.get<string>("name");
 
-    QWidget* bind_button = new QPushButton("Bind", m_parent);
-    bind_button->setObjectName("bind_entity_button");
-    bind_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    connect(bind_button, SIGNAL(clicked()), m_entity_picker_bind_signal_mapper, SLOT(map()));
-    m_entity_picker_bind_signal_mapper->setMapping(bind_button, QString::fromStdString(name));
-
-    connect(slider, SIGNAL(valueChanged(int)), SLOT(slot_apply()));
+    ColorMapInputWidget* input_widget = new ColorMapInputWidget(m_parent);
+    input_widget->set_default_value(metadata.strings().exist("default") ? metadata.get<QString>("default") : "");
+    connect(input_widget, SIGNAL(signal_bind_button_clicked()), m_entity_picker_bind_signal_mapper, SLOT(map()));
+    m_entity_picker_bind_signal_mapper->setMapping(input_widget, QString::fromStdString(name));
 
     if (should_be_focused(metadata))
-    {
-        line_edit->selectAll();
-        line_edit->setFocus();
-    }
+        input_widget->set_focus();
 
-    QHBoxLayout* layout = new QHBoxLayout();
-    layout->setSpacing(6);
-    layout->addWidget(line_edit);
-    layout->addWidget(slider);
-    layout->addWidget(bind_button);
-    m_form_layout->addRow(create_label(metadata), layout);
+    m_form_layout->addRow(create_label(metadata), input_widget);
 
-    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
-
-    if (metadata.strings().exist("default"))
-        widget_proxy->set(metadata.strings().get<string>("default"));
+    auto_ptr<IInputWidgetProxy> widget_proxy(new ColorMapInputProxy(input_widget));
+    widget_proxy->set(metadata.strings().get<string>("value"));
 
     return widget_proxy;
 }
@@ -377,9 +322,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_boolean_input_widgets(const Dic
     m_form_layout->addRow(create_label(metadata), checkbox);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new CheckBoxProxy(checkbox));
-
-    if (metadata.strings().exist("default"))
-        widget_proxy->set(metadata.strings().get<string>("default"));
+    widget_proxy->set(metadata.strings().get<string>("value"));
 
     return widget_proxy;
 }
@@ -388,18 +331,14 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_enumeration_input_widgets(const
 {
     QComboBox* combo_box = new QComboBox(m_parent);
     combo_box->setEditable(false);
-
     new MouseWheelFocusEventFilter(combo_box);
 
     const StringDictionary& items = metadata.dictionaries().get("items").strings();
     for (const_each<StringDictionary> i = items; i; ++i)
-        combo_box->addItem(i->name(), i->value<QString>());
+        combo_box->addItem(i->key(), i->value<QString>());
 
-    if (metadata.strings().exist("default"))
-    {
-        const QString default_value = metadata.strings().get<QString>("default");
-        combo_box->setCurrentIndex(combo_box->findData(QVariant::fromValue(default_value)));
-    }
+    const QString value = metadata.strings().get<QString>("value");
+    combo_box->setCurrentIndex(combo_box->findData(QVariant::fromValue(value)));
 
     if (should_be_focused(metadata))
         combo_box->setFocus();
@@ -415,30 +354,17 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_entity_input_widgets(const Dict
 {
     const string name = metadata.get<string>("name");
 
-    QLineEdit* line_edit = new QLineEdit(m_parent);
-
-    QWidget* bind_button = new QPushButton("Bind", m_parent);
-    bind_button->setObjectName("bind_entity_button");
-    bind_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    connect(bind_button, SIGNAL(clicked()), m_entity_picker_bind_signal_mapper, SLOT(map()));
-    m_entity_picker_bind_signal_mapper->setMapping(bind_button, QString::fromStdString(name));
+    EntityInputWidget* input_widget = new EntityInputWidget(m_parent);
+    connect(input_widget, SIGNAL(signal_bind_button_clicked()), m_entity_picker_bind_signal_mapper, SLOT(map()));
+    m_entity_picker_bind_signal_mapper->setMapping(input_widget, QString::fromStdString(name));
 
     if (should_be_focused(metadata))
-    {
-        line_edit->selectAll();
-        line_edit->setFocus();
-    }
+        input_widget->set_focus();
 
-    QHBoxLayout* layout = new QHBoxLayout();
-    layout->setSpacing(6);
-    layout->addWidget(line_edit);
-    layout->addWidget(bind_button);
-    m_form_layout->addRow(create_label(metadata), layout);
+    m_form_layout->addRow(create_label(metadata), input_widget);
 
-    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
-
-    if (metadata.strings().exist("default"))
-        widget_proxy->set(metadata.strings().get<string>("default"));
+    auto_ptr<IInputWidgetProxy> widget_proxy(new EntityInputProxy(input_widget));
+    widget_proxy->set(metadata.strings().get<string>("value"));
 
     return widget_proxy;
 }
@@ -448,7 +374,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_color_input_widgets(const Dicti
     QLineEdit* line_edit = new QLineEdit(m_parent);
 
     QToolButton* picker_button = new QToolButton(m_parent);
-    picker_button->setObjectName("ColorPicker");
+    picker_button->setObjectName("color_picker");
     connect(picker_button, SIGNAL(clicked()), m_color_picker_signal_mapper, SLOT(map()));
 
     const string name = metadata.get<string>("name");
@@ -468,13 +394,13 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_color_input_widgets(const Dicti
 
     auto_ptr<ColorPickerProxy> widget_proxy(new ColorPickerProxy(line_edit, picker_button));
 
-    if (metadata.strings().exist("default") &&
+    if (metadata.strings().exist("value") &&
         metadata.strings().exist("wavelength_range_widget"))
     {
-        const string default_value = metadata.strings().get<string>("default");
+        const string value = metadata.strings().get<string>("value");
         const string wavelength_range_widget = metadata.get<string>("wavelength_range_widget");
         const string wavelength_range = m_widget_proxies.get(wavelength_range_widget)->get();
-        widget_proxy->set(default_value, wavelength_range);
+        widget_proxy->set(value, wavelength_range);
     }
     else widget_proxy->set("0.0 0.0 0.0");
 
@@ -506,9 +432,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_file_input_widgets(const Dictio
     m_form_layout->addRow(create_label(metadata), layout);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
-
-    if (metadata.strings().exist("default"))
-        widget_proxy->set(metadata.strings().get<string>("default"));
+    widget_proxy->set(metadata.strings().get<string>("value"));
 
     return widget_proxy;
 }
@@ -566,7 +490,7 @@ void EntityEditor::slot_open_entity_browser(const QString& widget_name)
 
     for (const_each<StringDictionary> i = entity_types.strings(); i; ++i)
     {
-        const string entity_type = i->name();
+        const string entity_type = i->key();
         const string entity_label = i->value<string>();
         const StringDictionary entities = m_entity_browser->get_entities(entity_type);
         browser_window->add_items_page(entity_type, entity_label, entities);

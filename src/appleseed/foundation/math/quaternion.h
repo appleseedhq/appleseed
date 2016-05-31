@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -474,7 +474,7 @@ inline bool is_normalized(const Quaternion<T>& q, const T eps)
 }
 
 template <typename T>
-FORCE_INLINE Quaternion<T> slerp(const Quaternion<T>& p, const Quaternion<T>& q, const T t)
+APPLESEED_FORCE_INLINE Quaternion<T> slerp(const Quaternion<T>& p, const Quaternion<T>& q, const T t)
 {
     const T Eps = make_eps<T>(1.0e-4f, 1.0e-6);
 

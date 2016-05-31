@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -128,8 +128,8 @@ void ShadingResultFrameBuffer::merge(
 {
     assert(m_channel_count == source.m_channel_count);
 
-    const float* RESTRICT source_ptr = source.pixel(source_x, source_y);
-    float* RESTRICT dest_ptr = pixel(dest_x, dest_y);
+    const float* APPLESEED_RESTRICT source_ptr = source.pixel(source_x, source_y);
+    float* APPLESEED_RESTRICT dest_ptr = pixel(dest_x, dest_y);
 
     for (size_t i = 0; i < m_channel_count; ++i)
         dest_ptr[i] += source_ptr[i] * scaling;

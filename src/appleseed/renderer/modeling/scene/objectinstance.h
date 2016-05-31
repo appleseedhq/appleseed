@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -105,11 +105,8 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     // Return the visibility flags of this instance.
     foundation::uint32 get_vis_flags() const;
 
-    // Find the object bound to this instance.
-    Object* find_object() const;
-
-    // Compute the parent space bounding box of the instance.
-    GAABB3 compute_parent_bbox() const;
+    // Return the medium priority of this instance.
+    foundation::uint8 get_medium_priority() const;
 
     enum RayBiasMethod
     {
@@ -119,9 +116,15 @@ class APPLESEED_DLLSYMBOL ObjectInstance
         RayBiasMethodOutgoingDirection      // shift the ray's origin along the outgoing ray's direction
     };
 
-    // Per-instance ray bias settings. The bias distance is expressed in world space.
+    // Return the ray bias settings. The bias distance is expressed in world space.
     RayBiasMethod get_ray_bias_method() const;
     double get_ray_bias_distance() const;
+
+    // Find the object bound to this instance.
+    Object* find_object() const;
+
+    // Compute the parent space bounding box of the instance.
+    GAABB3 compute_parent_bbox() const;
 
     enum Side
     {
@@ -188,6 +191,7 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     Impl* impl;
 
     foundation::uint32  m_vis_flags;
+    foundation::uint8   m_medium_priority;
     RayBiasMethod       m_ray_bias_method;
     double              m_ray_bias_distance;
     bool                m_transform_swaps_handedness;
@@ -243,6 +247,11 @@ inline bool ObjectInstance::transform_swaps_handedness() const
 inline foundation::uint32 ObjectInstance::get_vis_flags() const
 {
     return m_vis_flags;
+}
+
+inline foundation::uint8 ObjectInstance::get_medium_priority() const
+{
+    return m_medium_priority;
 }
 
 inline ObjectInstance::RayBiasMethod ObjectInstance::get_ray_bias_method() const

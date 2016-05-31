@@ -1,42 +1,23 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.8
+# Compiled by oslc 1.6.9
 shader as_diffuse_surface	%meta{string,help,"Diffuse surface shader"} 
-param	vector	Normal	0 0 0		%read{3,7} %write{0,0} %initexpr
-param	float	Diffuse	0.80000001		%meta{string,help,"Reflectivity"} %meta{float,min,0} %meta{float,max,1}  %read{4,8} %write{2147483647,-1}
-param	color	Color	1 1 1		%meta{string,help,"Color"}  %read{4,8} %write{2147483647,-1}
-param	float	Roughness	0		%meta{string,help,"Surface roughness."}  %read{1,3} %write{2147483647,-1}
-oparam	closure color	BRDF			%read{2147483647,-1} %write{5,9}
+param	vector	Normal	0 0 0		%read{1,1} %write{0,0} %initexpr
+param	float	Reflectance	0.80000001		%meta{float,min,0}  %read{2,2} %write{2147483647,-1}
+param	color	Color	1 1 1		%read{2,2} %write{2147483647,-1}
+param	float	Roughness	0		%meta{string,help,"Surface roughness."} %meta{float,min,0} %meta{float,max,1}  %read{1,1} %write{2147483647,-1}
+oparam	closure color	BRDF			%read{2147483647,-1} %write{3,3}
 global	normal	N	%read{0,0} %write{2147483647,-1}
-const	float	$const1	0		%read{1,7} %write{2147483647,-1}
-temp	int	$tmp1	%read{2,2} %write{1,1}
-temp	closure color	$tmp2	%read{5,5} %write{3,3}
-const	string	$const2	"oren_nayar"		%read{3,7} %write{2147483647,-1}
-temp	color	$tmp3	%read{5,5} %write{4,4}
-temp	closure color	$tmp4	%read{9,9} %write{7,7}
-const	string	$const3	"diffuse"		%read{6,6} %write{2147483647,-1}
-temp	color	$tmp5	%read{9,9} %write{8,8}
+temp	closure color	$tmp1	%read{3,3} %write{1,1}
+const	string	$const1	"oren_nayar"		%read{1,1} %write{2147483647,-1}
+temp	color	$tmp2	%read{3,3} %write{2,2}
 code Normal
-# as_diffuse_surface.osl:36
-#     vector Normal = N,
-	assign		Normal N 	%filename{"as_diffuse_surface.osl"} %line{36} %argrw{"wr"}
+# ./surface/as_diffuse_surface.osl:34
+#     vector               Normal = N,
+	assign		Normal N 	%filename{"./surface/as_diffuse_surface.osl"} %line{34} %argrw{"wr"}
 code ___main___
-# as_diffuse_surface.osl:54
-#     if (Roughness != 0.0)
-	neq		$tmp1 Roughness $const1 	%filename{"as_diffuse_surface.osl"} %line{54} %argrw{"wrr"}
-	if		$tmp1 6 10 	%argrw{"r"}
-# as_diffuse_surface.osl:55
-#         BRDF = Diffuse * Color * oren_nayar(Normal, Roughness);
-	closure		$tmp2 $const2 Normal Roughness 	%line{55} %argrw{"wrrr"}
-	mul		$tmp3 Diffuse Color 	%argrw{"wrr"}
-	mul		BRDF $tmp2 $tmp3 	%argrw{"wrr"}
-# as_diffuse_surface.osl:57
-#         BRDF = Diffuse * Color * diffuse(Normal);
-	functioncall	$const3 8 	%line{57} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:496
-#     float e1 = edge-halfwidth;
-	closure		$tmp4 $const2 Normal $const1 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{496} %argrw{"wrrr"}
-# as_diffuse_surface.osl:57
-#         BRDF = Diffuse * Color * diffuse(Normal);
-	mul		$tmp5 Diffuse Color 	%filename{"as_diffuse_surface.osl"} %line{57} %argrw{"wrr"}
-	mul		BRDF $tmp4 $tmp5 	%argrw{"wrr"}
+# ./surface/as_diffuse_surface.osl:49
+#     BRDF = Reflectance * Color * oren_nayar(Normal, Roughness);
+	closure		$tmp1 $const1 Normal Roughness 	%filename{"./surface/as_diffuse_surface.osl"} %line{49} %argrw{"wrrr"}
+	mul		$tmp2 Reflectance Color 	%argrw{"wrr"}
+	mul		BRDF $tmp1 $tmp2 	%argrw{"wrr"}
 	end

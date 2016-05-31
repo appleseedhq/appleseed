@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -189,8 +189,8 @@ void RenderWidget::highlight_region(
     QMutexLocker locker(&m_mutex);
 
     // Retrieve destination image information.
-    const size_t image_width = static_cast<size_t>(m_image.width());
-    const size_t image_height = static_cast<size_t>(m_image.height());
+    APPLESEED_UNUSED const size_t image_width = static_cast<size_t>(m_image.width());
+    APPLESEED_UNUSED const size_t image_height = static_cast<size_t>(m_image.height());
     const size_t dest_stride = static_cast<size_t>(m_image.bytesPerLine());
 
     // Clipping is not supported.
@@ -302,8 +302,8 @@ void RenderWidget::blit_tile_no_lock(
         m_uint8_tile_storage->get_storage());
 
     // Retrieve destination image information.
-    const size_t image_width = static_cast<size_t>(m_image.width());
-    const size_t image_height = static_cast<size_t>(m_image.height());
+    APPLESEED_UNUSED const size_t image_width = static_cast<size_t>(m_image.width());
+    APPLESEED_UNUSED const size_t image_height = static_cast<size_t>(m_image.height());
     const size_t dest_stride = static_cast<size_t>(m_image.bytesPerLine());
 
     // Compute the coordinates of the first destination pixel.

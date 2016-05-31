@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -45,6 +45,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/foreach.h"
 
@@ -213,6 +214,55 @@ bool Scene::uses_alpha_mapping() const
 namespace
 {
     template <typename EntityCollection>
+    void do_collect_asset_paths(
+        StringArray&            paths,
+        const EntityCollection& entities)
+    {
+        for (const_each<EntityCollection> i = entities; i; ++i)
+            i->collect_asset_paths(paths);
+    }
+
+    template <typename EntityCollection>
+    void do_update_asset_paths(
+        const StringDictionary& mappings,
+        EntityCollection&       entities)
+    {
+        for (each<EntityCollection> i = entities; i; ++i)
+            i->update_asset_paths(mappings);
+    }
+}
+
+void Scene::collect_asset_paths(StringArray& paths) const
+{
+    BaseGroup::collect_asset_paths(paths);
+
+    if (impl->m_camera.get())
+        impl->m_camera->collect_asset_paths(paths);
+
+    if (impl->m_environment.get())
+        impl->m_environment->collect_asset_paths(paths);
+
+    do_collect_asset_paths(paths, environment_edfs());
+    do_collect_asset_paths(paths, environment_shaders());
+}
+
+void Scene::update_asset_paths(const StringDictionary& mappings)
+{
+    BaseGroup::update_asset_paths(mappings);
+
+    if (impl->m_camera.get())
+        impl->m_camera->update_asset_paths(mappings);
+
+    if (impl->m_environment.get())
+        impl->m_environment->update_asset_paths(mappings);
+
+    do_update_asset_paths(mappings, environment_edfs());
+    do_update_asset_paths(mappings, environment_shaders());
+}
+
+namespace
+{
+    template <typename EntityCollection>
     bool invoke_on_frame_begin(
         const Project&      project,
         EntityCollection&   entities,
@@ -256,10 +306,7 @@ bool Scene::on_frame_begin(
     success = success && invoke_on_frame_begin(project, environment_edfs(), abort_switch);
     success = success && invoke_on_frame_begin(project, environment_shaders(), abort_switch);
 
-    if (is_aborted(abort_switch))
-        return success;
-
-    if (impl->m_environment.get())
+    if (!is_aborted(abort_switch) && impl->m_environment.get())
         success = success && impl->m_environment->on_frame_begin(project, abort_switch);
 
     success = success && invoke_on_frame_begin(project, assemblies(), abort_switch);

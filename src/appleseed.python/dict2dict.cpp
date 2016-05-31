@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +44,7 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace
 {
@@ -186,9 +187,16 @@ namespace
         return result;
     }
 
-    bpy::object obj_from_string(const std::string& str)
+    bpy::object obj_from_string(const string& str)
     {
-        // try to guess the type of the value represented by str.
+        // Try to guess the type of the value represented by str.
+
+        try // Vector3
+        {
+            Vector3d v = from_string<Vector3d>(str);
+            return bpy::object(v);
+        }
+        catch (ExceptionStringConversionError&) {}
 
         try // Vector2
         {
@@ -213,7 +221,7 @@ namespace
 
         // TODO: check more types here if needed...
 
-        // as a fallback, return a string
+        // As a fallback, return a string.
         return bpy::object(str);
     }
 }
@@ -228,12 +236,12 @@ bpy::dict dictionary_to_bpy_dict(const Dictionary& dict)
     bpy::dict result;
 
     for (const_each<StringDictionary> it = dict.strings(); it; ++it)
-        result[it->name()] = obj_from_string(it->value());
+        result[it->key()] = obj_from_string(it->value());
 
     for (const_each<DictionaryDictionary> it = dict.dictionaries(); it; ++it)
     {
-        // recurse
-        result[it->name()] = dictionary_to_bpy_dict(it->value());
+        // Recurse.
+        result[it->key()] = dictionary_to_bpy_dict(it->value());
     }
 
     return result;
@@ -249,7 +257,7 @@ bpy::dict param_array_to_bpy_dict(const ParamArray& array)
     return dictionary_to_bpy_dict(array);
 }
 
-boost::python::dict dictionary_array_to_bpy_dict(
+bpy::dict dictionary_array_to_bpy_dict(
     const DictionaryArray&  array,
     const char*             key)
 {

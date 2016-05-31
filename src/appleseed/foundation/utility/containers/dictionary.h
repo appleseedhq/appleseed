@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -48,14 +48,14 @@ namespace foundation
 {
 
 //
-// The exception thrown when accessing a dictionary item that does not exist.
+// The exception thrown when accessing a non-existing dictionary key.
 //
 
-struct ExceptionDictionaryItemNotFound
+struct ExceptionDictionaryKeyNotFound
   : public StringException
 {
-    explicit ExceptionDictionaryItemNotFound(const char* key)
-      : StringException("dictionary item not found", key)
+    explicit ExceptionDictionaryKeyNotFound(const char* key)
+      : StringException("dictionary key not found", key)
     {
     }
 };
@@ -95,8 +95,8 @@ class APPLESEED_DLLSYMBOL StringDictionary
         // Dereference operator.
         const value_type& operator*() const;
 
-        // Get the name of this item.
-        const char* name() const;
+        // Get the key of this item.
+        const char* key() const;
 
         // Get the value of this item.
         const char* value() const;
@@ -132,25 +132,35 @@ class APPLESEED_DLLSYMBOL StringDictionary
     // Remove all items from the dictionary.
     void clear();
 
-    // Insert an item into the dictionary.
+    // Insert an item into the dictionary, replacing the previous item if one exists for that key.
+    // Returns the dictionary itself to allow chaining of operations.
     StringDictionary& insert(const char* key, const char* value);
     template <typename T> StringDictionary& insert(const char* key, const T& value);
     template <typename T> StringDictionary& insert(const std::string& key, const T& value);
 
-    // Return true if an item with a given name exists in the dictionary.
-    bool exist(const char* key) const;
-    template <typename T> bool exist(const std::basic_string<T>& key) const;
+    // Set the value of an existing item.
+    // Returns the dictionary itself to allow chaining of operations.
+    // Throws a ExceptionDictionaryKeyNotFound exception if the item could not be found.
+    StringDictionary& set(const char* key, const char* value);
+    template <typename T> StringDictionary& set(const char* key, const T& value);
+    template <typename T> StringDictionary& set(const std::string& key, const T& value);
 
     // Retrieve an item from the dictionary.
-    // Throws a ExceptionDictionaryItemNotFound exception if the item could not be found.
+    // Throws a ExceptionDictionaryKeyNotFound exception if the item could not be found.
     const char* get(const char* key) const;
     template <typename T> T get(const char* key) const;
     template <typename T> T get(const std::string& key) const;
 
+    // Return true if an item with a given key exists in the dictionary.
+    bool exist(const char* key) const;
+    template <typename T> bool exist(const std::basic_string<T>& key) const;
+
     // Remove an item from the dictionary, if it exists.
+    // Returns the dictionary itself to allow chaining of operations.
     StringDictionary& remove(const char* key);
     template <typename T> StringDictionary& remove(const std::basic_string<T>& key);
 
+    // Return constant begin and end input iterators.
     const_iterator begin() const;
     const_iterator end() const;
 
@@ -167,6 +177,9 @@ class APPLESEED_DLLSYMBOL StringDictionary
 class APPLESEED_DLLSYMBOL DictionaryDictionary
 {
   public:
+    class iterator;
+
+    // Constant iterator.
     class APPLESEED_DLLSYMBOL const_iterator
     {
       public:
@@ -176,6 +189,7 @@ class APPLESEED_DLLSYMBOL DictionaryDictionary
         // Constructors.
         const_iterator();
         const_iterator(const const_iterator& rhs);
+        const_iterator(const iterator& rhs);
 
         // Destructor.
         ~const_iterator();
@@ -194,11 +208,52 @@ class APPLESEED_DLLSYMBOL DictionaryDictionary
         // Dereference operator.
         const value_type& operator*() const;
 
-        // Get the name of this item.
-        const char* name() const;
+        // Get the key of this item.
+        const char* key() const;
 
         // Get the value of this item.
         const Dictionary& value() const;
+
+      private:
+        friend class DictionaryDictionary;
+
+        struct Impl;
+        Impl* impl;
+    };
+
+    // Mutable iterator.
+    class APPLESEED_DLLSYMBOL iterator
+    {
+      public:
+        // Value type.
+        typedef iterator value_type;
+
+        // Constructors.
+        iterator();
+        iterator(const iterator& rhs);
+
+        // Destructor.
+        ~iterator();
+
+        // Assignment operator.
+        iterator& operator=(const iterator& rhs);
+
+        // Equality and inequality tests.
+        bool operator==(const iterator& rhs) const;
+        bool operator!=(const iterator& rhs) const;
+
+        // Preincrement and predecrement operators.
+        iterator& operator++();
+        iterator& operator--();
+
+        // Dereference operator.
+        value_type& operator*();
+
+        // Get the key of this item.
+        const char* key() const;
+
+        // Get the value of this item.
+        Dictionary& value();
 
       private:
         friend class DictionaryDictionary;
@@ -230,27 +285,42 @@ class APPLESEED_DLLSYMBOL DictionaryDictionary
     // Remove all items from the dictionary.
     void clear();
 
-    // Insert an item into the dictionary.
+    // Insert an item into the dictionary, replacing the previous item if one exists for that key.
+    // Returns the dictionary itself to allow chaining of operations.
     DictionaryDictionary& insert(const char* key, const Dictionary& value);
     template <typename T> DictionaryDictionary& insert(
         const std::basic_string<T>& key,
         const Dictionary&           value);
 
-    // Return true if an item with a given name exists in the dictionary.
-    bool exist(const char* key) const;
-    template <typename T> bool exist(const std::basic_string<T>& key) const;
+    // Set the value of an existing item.
+    // Returns the dictionary itself to allow chaining of operations.
+    // Throws a ExceptionDictionaryKeyNotFound exception if the item could not be found.
+    DictionaryDictionary& set(const char* key, const Dictionary& value);
+    template <typename T> DictionaryDictionary& set(
+        const std::basic_string<T>& key,
+        const Dictionary&           value);
 
     // Retrieve an item from the dictionary.
-    // Throws a ExceptionDictionaryItemNotFound exception if the item could not be found.
+    // Throws a ExceptionDictionaryKeyNotFound exception if the item could not be found.
     Dictionary& get(const char* key);
     const Dictionary& get(const char* key) const;
     template <typename T> Dictionary& get(const std::basic_string<T>& key);
     template <typename T> const Dictionary& get(const std::basic_string<T>& key) const;
 
+    // Return true if an item with a given key exists in the dictionary.
+    bool exist(const char* key) const;
+    template <typename T> bool exist(const std::basic_string<T>& key) const;
+
     // Remove an item from the dictionary, if it exists.
+    // Returns the dictionary itself to allow chaining of operations.
     DictionaryDictionary& remove(const char* key);
     template <typename T> DictionaryDictionary& remove(const std::basic_string<T>& key);
 
+    // Return mutable begin and end input iterators.
+    iterator begin();
+    iterator end();
+
+    // Return constant begin and end input iterators.
     const_iterator begin() const;
     const_iterator end() const;
 
@@ -280,19 +350,27 @@ class APPLESEED_DLLSYMBOL Dictionary
     // Remove all items from the dictionary.
     void clear();
 
-    // Insert an item into the dictionary.
+    // Insert an item into the dictionary, replacing the previous item if one exists for that key.
+    // Returns the dictionary itself to allow chaining of operations.
     Dictionary& insert(const char* key, const char* value);
     template <typename T> Dictionary& insert(const char* key, const T& value);
     template <typename T> Dictionary& insert(const std::string& key, const T& value);
 
+    // Set the value of an existing item.
+    // Returns the dictionary itself to allow chaining of operations.
+    // Throws a ExceptionDictionaryKeyNotFound exception if the item could not be found.
+    Dictionary& set(const char* key, const char* value);
+    template <typename T> Dictionary& set(const char* key, const T& value);
+    template <typename T> Dictionary& set(const std::string& key, const T& value);
+
     // Retrieve a string item from the dictionary.
-    // Throws a ExceptionDictionaryItemNotFound exception if the item could not be found.
+    // Throws a ExceptionDictionaryKeyNotFound exception if the item could not be found.
     const char* get(const char* key) const;
     template <typename T> T get(const char* key) const;
     template <typename T> T get(const std::string& key) const;
 
     // Access a child dictionary.
-    // Throws a ExceptionDictionaryItemNotFound exception if the item could not be found.
+    // Throws a ExceptionDictionaryKeyNotFound exception if the item could not be found.
     Dictionary& dictionary(const char* key);
     const Dictionary& dictionary(const char* key) const;
     template <typename T> Dictionary& dictionary(const std::basic_string<T>& key);
@@ -307,6 +385,7 @@ class APPLESEED_DLLSYMBOL Dictionary
     const DictionaryDictionary& dictionaries() const;
 
     // Merge another dictionary into this one.
+    // Returns the dictionary itself to allow chaining of operations.
     Dictionary& merge(const Dictionary& rhs);
 
   private:
@@ -343,9 +422,15 @@ inline StringDictionary& StringDictionary::insert(const std::string& key, const 
 }
 
 template <typename T>
-inline bool StringDictionary::exist(const std::basic_string<T>& key) const
+inline StringDictionary& StringDictionary::set(const char* key, const T& value)
 {
-    return exist(key.c_str());
+    return set(key, to_string(value).c_str());
+}
+
+template <typename T>
+inline StringDictionary& StringDictionary::set(const std::string& key, const T& value)
+{
+    return set(key.c_str(), value);
 }
 
 template <typename T>
@@ -358,6 +443,12 @@ template <typename T>
 inline T StringDictionary::get(const std::string& key) const
 {
     return get<T>(key.c_str());
+}
+
+template <typename T>
+inline bool StringDictionary::exist(const std::basic_string<T>& key) const
+{
+    return exist(key.c_str());
 }
 
 template <typename T>
@@ -380,9 +471,11 @@ inline DictionaryDictionary& DictionaryDictionary::insert(
 }
 
 template <typename T>
-inline bool DictionaryDictionary::exist(const std::basic_string<T>& key) const
+inline DictionaryDictionary& DictionaryDictionary::set(
+    const std::basic_string<T>& key,
+    const Dictionary&           value)
 {
-    return exist(key.c_str());
+    return set(key.c_str(), value);
 }
 
 template <typename T>
@@ -395,6 +488,12 @@ template <typename T>
 inline const Dictionary& DictionaryDictionary::get(const std::basic_string<T>& key) const
 {
     return get(key.c_str());
+}
+
+template <typename T>
+inline bool DictionaryDictionary::exist(const std::basic_string<T>& key) const
+{
+    return exist(key.c_str());
 }
 
 template <typename T>
@@ -457,6 +556,31 @@ template <typename T>
 inline Dictionary& Dictionary::insert(const std::string& key, const T& value)
 {
     return insert(key.c_str(), value);
+}
+
+inline Dictionary& Dictionary::set(const char* key, const char* value)
+{
+    m_strings.set(key, value);
+    return *this;
+}
+
+template <typename T>
+inline Dictionary& Dictionary::set(const char* key, const T& value)
+{
+    return set(key, to_string(value).c_str());
+}
+
+template <>
+inline Dictionary& Dictionary::set(const char* key, const Dictionary& value)
+{
+    m_dictionaries.set(key, value);
+    return *this;
+}
+
+template <typename T>
+inline Dictionary& Dictionary::set(const std::string& key, const T& value)
+{
+    return set(key.c_str(), value);
 }
 
 inline const char* Dictionary::get(const char* key) const

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -103,7 +103,7 @@ const StringDictionary::const_iterator::value_type& StringDictionary::const_iter
     return *this;
 }
 
-const char* StringDictionary::const_iterator::name() const
+const char* StringDictionary::const_iterator::key() const
 {
     return impl->m_it->first.c_str();
 }
@@ -191,11 +191,19 @@ StringDictionary& StringDictionary::insert(const char* key, const char* value)
     return *this;
 }
 
-bool StringDictionary::exist(const char* key) const
+StringDictionary& StringDictionary::set(const char* key, const char* value)
 {
     assert(key);
+    assert(value);
 
-    return impl->m_strings.find(key) != impl->m_strings.end();
+    const StringMap::iterator i = impl->m_strings.find(key);
+
+    if (i == impl->m_strings.end())
+        throw ExceptionDictionaryKeyNotFound(key);
+
+    i->second = value;
+
+    return *this;
 }
 
 const char* StringDictionary::get(const char* key) const
@@ -205,9 +213,16 @@ const char* StringDictionary::get(const char* key) const
     const StringMap::const_iterator i = impl->m_strings.find(key);
 
     if (i == impl->m_strings.end())
-        throw ExceptionDictionaryItemNotFound(key);
+        throw ExceptionDictionaryKeyNotFound(key);
 
     return i->second.c_str();
+}
+
+bool StringDictionary::exist(const char* key) const
+{
+    assert(key);
+
+    return impl->m_strings.find(key) != impl->m_strings.end();
 }
 
 StringDictionary& StringDictionary::remove(const char* key)
@@ -238,6 +253,74 @@ StringDictionary::const_iterator StringDictionary::end() const
 
 
 //
+// DictionaryDictionary::iterator class implementation.
+//
+
+struct DictionaryDictionary::iterator::Impl
+{
+    DictionaryMap::iterator m_it;
+};
+
+DictionaryDictionary::iterator::iterator()
+  : impl(new Impl())
+{
+}
+
+DictionaryDictionary::iterator::iterator(const iterator& rhs)
+  : impl(new Impl(*rhs.impl))
+{
+}
+
+DictionaryDictionary::iterator::~iterator()
+{
+    delete impl;
+}
+
+DictionaryDictionary::iterator& DictionaryDictionary::iterator::operator=(const iterator& rhs)
+{
+    *impl = *rhs.impl;
+    return *this;
+}
+
+bool DictionaryDictionary::iterator::operator==(const iterator& rhs) const
+{
+    return impl->m_it == rhs.impl->m_it;
+}
+
+bool DictionaryDictionary::iterator::operator!=(const iterator& rhs) const
+{
+    return impl->m_it != rhs.impl->m_it;
+}
+
+DictionaryDictionary::iterator& DictionaryDictionary::iterator::operator++()
+{
+    ++impl->m_it;
+    return *this;
+}
+
+DictionaryDictionary::iterator& DictionaryDictionary::iterator::operator--()
+{
+    --impl->m_it;
+    return *this;
+}
+
+DictionaryDictionary::iterator::value_type& DictionaryDictionary::iterator::operator*()
+{
+    return *this;
+}
+
+const char* DictionaryDictionary::iterator::key() const
+{
+    return impl->m_it->first.c_str();
+}
+
+Dictionary& DictionaryDictionary::iterator::value()
+{
+    return impl->m_it->second;
+}
+
+
+//
 // DictionaryDictionary::const_iterator class implementation.
 //
 
@@ -252,8 +335,15 @@ DictionaryDictionary::const_iterator::const_iterator()
 }
 
 DictionaryDictionary::const_iterator::const_iterator(const const_iterator& rhs)
-  : impl(new Impl(*rhs.impl))
+  : impl(new Impl())
 {
+    impl->m_it = rhs.impl->m_it;
+}
+
+DictionaryDictionary::const_iterator::const_iterator(const iterator& rhs)
+  : impl(new Impl())
+{
+    impl->m_it = rhs.impl->m_it;
 }
 
 DictionaryDictionary::const_iterator::~const_iterator()
@@ -294,7 +384,7 @@ const DictionaryDictionary::const_iterator::value_type& DictionaryDictionary::co
     return *this;
 }
 
-const char* DictionaryDictionary::const_iterator::name() const
+const char* DictionaryDictionary::const_iterator::key() const
 {
     return impl->m_it->first.c_str();
 }
@@ -381,11 +471,18 @@ DictionaryDictionary& DictionaryDictionary::insert(const char* key, const Dictio
     return *this;
 }
 
-bool DictionaryDictionary::exist(const char* key) const
+DictionaryDictionary& DictionaryDictionary::set(const char* key, const Dictionary& value)
 {
     assert(key);
 
-    return impl->m_dictionaries.find(key) != impl->m_dictionaries.end();
+    const DictionaryMap::iterator i = impl->m_dictionaries.find(key);
+
+    if (i == impl->m_dictionaries.end())
+        throw ExceptionDictionaryKeyNotFound(key);
+
+    i->second = value;
+
+    return *this;
 }
 
 Dictionary& DictionaryDictionary::get(const char* key)
@@ -395,7 +492,7 @@ Dictionary& DictionaryDictionary::get(const char* key)
     const DictionaryMap::iterator i = impl->m_dictionaries.find(key);
 
     if (i == impl->m_dictionaries.end())
-        throw ExceptionDictionaryItemNotFound(key);
+        throw ExceptionDictionaryKeyNotFound(key);
 
     return i->second;
 }
@@ -407,9 +504,16 @@ const Dictionary& DictionaryDictionary::get(const char* key) const
     const DictionaryMap::const_iterator i = impl->m_dictionaries.find(key);
 
     if (i == impl->m_dictionaries.end())
-        throw ExceptionDictionaryItemNotFound(key);
+        throw ExceptionDictionaryKeyNotFound(key);
 
     return i->second;
+}
+
+bool DictionaryDictionary::exist(const char* key) const
+{
+    assert(key);
+
+    return impl->m_dictionaries.find(key) != impl->m_dictionaries.end();
 }
 
 DictionaryDictionary& DictionaryDictionary::remove(const char* key)
@@ -422,6 +526,20 @@ DictionaryDictionary& DictionaryDictionary::remove(const char* key)
         impl->m_dictionaries.erase(i);
 
     return *this;
+}
+
+DictionaryDictionary::iterator DictionaryDictionary::begin()
+{
+    iterator it;
+    it.impl->m_it = impl->m_dictionaries.begin();
+    return it;
+}
+
+DictionaryDictionary::iterator DictionaryDictionary::end()
+{
+    iterator it;
+    it.impl->m_it = impl->m_dictionaries.end();
+    return it;
 }
 
 DictionaryDictionary::const_iterator DictionaryDictionary::begin() const
@@ -447,14 +565,14 @@ Dictionary& Dictionary::merge(const Dictionary& rhs)
 {
     // Merge strings.
     for (const_each<StringDictionary> i = rhs.strings(); i; ++i)
-        insert(i->name(), i->value());
+        insert(i->key(), i->value());
 
     // Recursively merge dictionaries.
     for (const_each<DictionaryDictionary> i = rhs.dictionaries(); i; ++i)
     {
-        if (dictionaries().exist(i->name()))
-            dictionary(i->name()).merge(i->value());
-        else insert(i->name(), i->value());
+        if (dictionaries().exist(i->key()))
+            dictionary(i->key()).merge(i->value());
+        else insert(i->key(), i->value());
     }
 
     return *this;

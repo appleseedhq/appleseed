@@ -6,7 +6,7 @@
 # This software is released under the MIT license.
 #
 # Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-# Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+# Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -60,11 +60,22 @@ set (git_command "git")
 
 # Flags common to all configurations.
 set (c_compiler_flags_common
-    -Werror                                             # Treat Warnings As Errors
+    -Wall
     -Wno-switch                                         # don't complain about unhandled enumeration values in switch
+    -Wno-unknown-pragmas
+    -Wno-sign-compare
+    -Wno-unused-function
+    -Wno-reorder
+    -Wno-strict-aliasing
     -fno-math-errno                                     # ignore errno when calling math functions
     -fPIC                                               # emit position-independent code
 )
+if (WARNINGS_AS_ERRORS)
+    set (c_compiler_flags_common
+         ${c_compiler_flags_common}
+        -Werror                                         # treat Warnings As Errors
+    )
+endif ()
 if (USE_SSE)
     set (c_compiler_flags_common
          ${c_compiler_flags_common}
@@ -75,6 +86,12 @@ if (USE_SSE42)
     set (c_compiler_flags_common
          ${c_compiler_flags_common}
         -msse4.2                                        # enable SSE instruction sets up to SSE 4.2
+    )
+endif ()
+if (USE_AVX)
+    set (c_compiler_flags_common
+         ${c_compiler_flags_common}
+        -mavx                                           # enable AVX instruction sets
     )
 endif ()
 set (exe_linker_flags_common
@@ -196,8 +213,8 @@ macro (link_against_oiio target)
     target_link_libraries (${target} ${OPENIMAGEIO_LIBRARIES})
 endmacro ()
 
-macro (link_against_oslexec target)
-    target_link_libraries (${target} ${OSL_EXEC_LIBRARY})
+macro (link_against_osl target)
+    target_link_libraries (${target} ${OSL_EXEC_LIBRARY} ${OSL_QUERY_LIBRARY})
 endmacro ()
 
 macro (link_against_seexpr target)

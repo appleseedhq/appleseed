@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +44,7 @@
 BEGIN_OSL_INCLUDES
 #include "OSL/genclosure.h"
 #include "OSL/oslclosure.h"
+#include "OSL/oslversion.h"
 END_OSL_INCLUDES
 
 // Boost headers.
@@ -57,99 +58,876 @@ using namespace foundation;
 using namespace renderer;
 using namespace std;
 
+using OSL::TypeDesc;
+
 namespace renderer
 {
 namespace
 {
     //
-    // Closure parameters.
+    // Closures.
     //
 
-    struct EmptyClosureParams {};
+    // Global ustrings.
+    const OIIO::ustring g_beckmann_str("beckmann");
+    const OIIO::ustring g_blinn_str("blinn");
+    const OIIO::ustring g_ggx_str("ggx");
 
-    struct AshikhminShirleyBRDFClosureParams
+    const OIIO::ustring g_standard_dipole_profile_str("standard_dipole");
+    const OIIO::ustring g_better_dipole_profile_str("better_dipole");
+    const OIIO::ustring g_directional_dipole_profile_str("directional_dipole");
+    const OIIO::ustring g_normalized_diffusion_profile_str("normalized_diffusion");
+
+    typedef void(*convert_closure_fun)(
+        CompositeSurfaceClosure&    composite_closure,
+        const Basis3d&              shading_basis,
+        const void*                 osl_params,
+        const Color3f&              weight);
+
+    convert_closure_fun g_closure_convert_funs[NumClosuresIDs];
+
+    void convert_closure_nop(
+        CompositeSurfaceClosure&    composite_closure,
+        const Basis3d&              shading_basis,
+        const void*                 osl_params,
+        const Color3f&              weight)
     {
-        OSL::Vec3       N;
-        OSL::Vec3       T;
-        OSL::Color3     rd;
-        OSL::Color3     rg;
-        float           nu;
-        float           nv;
-        float           fr;
+    }
+
+    struct AshikhminShirleyClosure
+    {
+        typedef AshikhminBRDFInputValues InputValues;
+
+        struct Params
+        {
+            OSL::Vec3   N;
+            OSL::Vec3   T;
+            OSL::Color3 diffuse_reflectance;
+            OSL::Color3 glossy_reflectance;
+            float       exponent_u;
+            float       exponent_v;
+            float       fresnel_multiplier;
+        };
+
+        static const char* name()
+        {
+            return "as_ashikhmin_shirley";
+        }
+
+        static ClosureID id()
+        {
+            return AshikhminShirleyID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_VECTOR_PARAM(Params, T),
+                CLOSURE_COLOR_PARAM(Params, diffuse_reflectance),
+                CLOSURE_COLOR_PARAM(Params, glossy_reflectance),
+                CLOSURE_FLOAT_PARAM(Params, exponent_u),
+                CLOSURE_FLOAT_PARAM(Params, exponent_v),
+                CLOSURE_FLOAT_PARAM(Params, fresnel_multiplier),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, 0, 0);
+
+            g_closure_convert_funs[id()] = &convert_closure;
+        }
+
+        static void convert_closure(
+            CompositeSurfaceClosure&    composite_closure,
+            const Basis3d&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight)
+        {
+            const Params* p = reinterpret_cast<const Params*>(osl_params);
+            InputValues* values =
+                composite_closure.add_closure<InputValues>(
+                    static_cast<ClosureID>(id()),
+                    shading_basis,
+                    weight,
+                    Vector3d(p->N),
+                    Vector3d(p->T));
+
+            values->m_rd = Color3f(p->diffuse_reflectance);
+            values->m_rd_multiplier = 1.0;
+            values->m_rg = Color3f(p->glossy_reflectance);
+            values->m_rg_multiplier = 1.0;
+            values->m_nu = max(p->exponent_u, 0.01f);
+            values->m_nv = max(p->exponent_v, 0.01f);
+            values->m_fr_multiplier = p->fresnel_multiplier;
+        }
     };
 
-    struct DebugClosureParams
+    struct BackgroundClosure
     {
-        OSL::ustring    tag;
+        struct Params
+        {
+        };
+
+        static const char* name()
+        {
+            return "background";
+        }
+
+        static ClosureID id()
+        {
+            return BackgroundID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, 0, 0);
+        }
     };
 
-    struct DiffuseBSDFClosureParams
+    struct DebugClosure
     {
-        OSL::Vec3       N;
+        struct Params
+        {
+            OSL::ustring tag;
+        };
+
+        static const char* name()
+        {
+            return "debug";
+        }
+
+        static ClosureID id()
+        {
+            return DebugID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_STRING_PARAM(Params, tag),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, 0, 0);
+        }
     };
 
-    struct DisneyBRDFClosureParams
+    struct DisneyClosure
     {
-        OSL::Vec3       N;
-        OSL::Vec3       T;
-        OSL::Color3     base_color;
-        float           subsurface;
-        float           metallic;
-        float           specular;
-        float           specular_tint;
-        float           anisotropic;
-        float           roughness;
-        float           sheen;
-        float           sheen_tint;
-        float           clearcoat;
-        float           clearcoat_gloss;
+        typedef DisneyBRDFInputValues InputValues;
+
+        struct Params
+        {
+            OSL::Vec3   N;
+            OSL::Vec3   T;
+            OSL::Color3 base_color;
+            float       subsurface;
+            float       metallic;
+            float       specular;
+            float       specular_tint;
+            float       anisotropic;
+            float       roughness;
+            float       sheen;
+            float       sheen_tint;
+            float       clearcoat;
+            float       clearcoat_gloss;
+        };
+
+        static const char* name()
+        {
+            return "as_disney";
+        }
+
+        static ClosureID id()
+        {
+            return DisneyID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_VECTOR_PARAM(Params, T),
+                CLOSURE_COLOR_PARAM(Params, base_color),
+                CLOSURE_FLOAT_PARAM(Params, subsurface),
+                CLOSURE_FLOAT_PARAM(Params, metallic),
+                CLOSURE_FLOAT_PARAM(Params, specular),
+                CLOSURE_FLOAT_PARAM(Params, specular_tint),
+                CLOSURE_FLOAT_PARAM(Params, anisotropic),
+                CLOSURE_FLOAT_PARAM(Params, roughness),
+                CLOSURE_FLOAT_PARAM(Params, sheen),
+                CLOSURE_FLOAT_PARAM(Params, sheen_tint),
+                CLOSURE_FLOAT_PARAM(Params, clearcoat),
+                CLOSURE_FLOAT_PARAM(Params, clearcoat_gloss),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, 0, 0);
+
+            g_closure_convert_funs[id()] = &convert_closure;
+        }
+
+        static void convert_closure(
+            CompositeSurfaceClosure&    composite_closure,
+            const Basis3d&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight)
+        {
+            const Params* p = reinterpret_cast<const Params*>(osl_params);
+            InputValues* values =
+                composite_closure.add_closure<InputValues>(
+                    static_cast<ClosureID>(id()),
+                    shading_basis,
+                    weight,
+                    Vector3d(p->N),
+                    Vector3d(p->T));
+
+            values->m_base_color = Color3f(p->base_color);
+            values->m_subsurface = saturate(p->subsurface);
+            values->m_metallic = saturate(p->metallic);
+            values->m_specular = max(p->specular, 0.0f);
+            values->m_specular_tint = saturate(p->specular_tint);
+            values->m_anisotropic = saturate(p->anisotropic);
+            values->m_roughness = clamp(p->roughness, 0.0001f, 1.0f);
+            values->m_sheen = saturate(p->sheen);
+            values->m_sheen_tint = saturate(p->sheen_tint);
+            values->m_clearcoat = max(p->clearcoat, 0.0f);
+            values->m_clearcoat_gloss = clamp(p->clearcoat_gloss, 0.0001f, 1.0f);
+        }
     };
 
-    OSL::ustring standard_dipole_profile_name("standard_dipole");
-    OSL::ustring better_dipole_profile_name("better_dipole");
-    OSL::ustring directional_dipole_profile_name("directional_dipole");
-    OSL::ustring normalized_diffusion_profile_name("normalized_diffusion");
-
-    struct SubsurfaceClosureParams
+    struct EmissionClosure
     {
-        OSL::ustring    profile;
-        OSL::Vec3       N;
-        OSL::Color3     rd;
-        OSL::Color3     dmfp;
-        float           eta;
-        float           g;
+        struct Params
+        {
+        };
+
+        static const char* name()
+        {
+            return "emission";
+        }
+
+        static ClosureID id()
+        {
+            return EmissionID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, 0, 0);
+        }
     };
 
-    OSL::ustring beckmann_mdf_name("beckmann");
-    OSL::ustring blinn_mdf_name("blinn");
-    OSL::ustring ggx_mdf_name("ggx");
-
-    struct MicrofacetClosureParams
+    struct GlassClosure
     {
-        OSL::ustring    dist;
-        OSL::Vec3       N;
-        OSL::Vec3       T;
-        float           xalpha;
-        float           yalpha;
-        float           eta;
-        int             refract;
+        struct Params
+        {
+            OSL::ustring    dist;
+            OSL::Vec3       N;
+            OSL::Vec3       T;
+            OSL::Color3     surface_transmittance;
+            OSL::Color3     reflection_tint;
+            OSL::Color3     refraction_tint;
+            float           roughness;
+            float           anisotropic;
+            float           ior;
+            OSL::Color3     volume_transmittance;
+            float           volume_transmittance_distance;
+        };
+
+        static const char* name()
+        {
+            return "as_glass";
+        }
+
+        static ClosureID id()
+        {
+            return GlassID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_STRING_PARAM(Params, dist),
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_VECTOR_PARAM(Params, T),
+                CLOSURE_COLOR_PARAM(Params, surface_transmittance),
+                CLOSURE_COLOR_PARAM(Params, reflection_tint),
+                CLOSURE_COLOR_PARAM(Params, refraction_tint),
+                CLOSURE_FLOAT_PARAM(Params, roughness),
+                CLOSURE_FLOAT_PARAM(Params, anisotropic),
+                CLOSURE_FLOAT_PARAM(Params, ior),
+                CLOSURE_COLOR_PARAM(Params, volume_transmittance),
+                CLOSURE_FLOAT_PARAM(Params, volume_transmittance_distance),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, 0, 0);
+
+            g_closure_convert_funs[id()] = &convert_closure;
+        }
+
+        static void convert_closure(
+            CompositeSurfaceClosure&    composite_closure,
+            const Basis3d&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight)
+        {
+            const Params* p = reinterpret_cast<const Params*>(osl_params);
+
+            GlassBSDFInputValues* values;
+
+            if (p->dist == g_ggx_str)
+            {
+                values =
+                    composite_closure.add_closure<GlassBSDFInputValues>(
+                        GlassGGXID,
+                        shading_basis,
+                        weight,
+                        Vector3d(p->N),
+                        Vector3d(p->T));
+            }
+            else if (p->dist == g_beckmann_str)
+            {
+                values =
+                    composite_closure.add_closure<GlassBSDFInputValues>(
+                        GlassBeckmannID,
+                        shading_basis,
+                        weight,
+                        Vector3d(p->N),
+                        Vector3d(p->T));
+            }
+            else
+            {
+                string msg("invalid microfacet distribution function: ");
+                msg += p->dist.c_str();
+                throw ExceptionOSLRuntimeError(msg.c_str());
+            }
+
+            values->m_surface_transmittance = Color3f(p->surface_transmittance);
+            values->m_surface_transmittance_multiplier = 1.0;
+            values->m_reflection_tint = Color3f(p->reflection_tint);
+            values->m_refraction_tint = Color3f(p->refraction_tint);
+            values->m_roughness = max(p->roughness, 0.0001f);
+            values->m_anisotropic = clamp(p->anisotropic, -1.0f, 1.0f);
+            values->m_ior = max(p->ior, 0.001f);
+            values->m_volume_transmittance = Color3f(p->volume_transmittance);
+            values->m_volume_transmittance_distance = p->volume_transmittance_distance;
+            composite_closure.add_ior(weight, values->m_ior);
+        }
     };
 
-    struct OrenNayarBRDFClosureParams
+    struct GlossyClosure
     {
-        OSL::Vec3       N;
-        float           roughness;
+        struct Params
+        {
+            OSL::ustring    dist;
+            OSL::Vec3       N;
+            OSL::Vec3       T;
+            float           roughness;
+            float           anisotropic;
+            float           ior;
+        };
+
+        static const char* name()
+        {
+            return "as_glossy";
+        }
+
+        static ClosureID id()
+        {
+            return GlossyID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_STRING_PARAM(Params, dist),
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_VECTOR_PARAM(Params, T),
+                CLOSURE_FLOAT_PARAM(Params, roughness),
+                CLOSURE_FLOAT_PARAM(Params, anisotropic),
+                CLOSURE_FLOAT_PARAM(Params, ior),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, 0, 0);
+
+            g_closure_convert_funs[id()] = &convert_closure;
+        }
+
+        static void convert_closure(
+            CompositeSurfaceClosure&    composite_closure,
+            const Basis3d&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight)
+        {
+            const Params* p = reinterpret_cast<const Params*>(osl_params);
+
+            GlossyBRDFInputValues* values;
+
+            if (p->dist == g_ggx_str)
+            {
+                values =
+                    composite_closure.add_closure<GlossyBRDFInputValues>(
+                        GlossyGGXID,
+                        shading_basis,
+                        weight,
+                        Vector3d(p->N),
+                        Vector3d(p->T));
+            }
+            else if (p->dist == g_beckmann_str)
+            {
+                values =
+                    composite_closure.add_closure<GlossyBRDFInputValues>(
+                        GlossyBeckmannID,
+                        shading_basis,
+                        weight,
+                        Vector3d(p->N),
+                        Vector3d(p->T));
+            }
+            else
+            {
+                string msg("invalid microfacet distribution function: ");
+                msg += p->dist.c_str();
+                throw ExceptionOSLRuntimeError(msg.c_str());
+            }
+
+            values->m_reflectance.set(1.0f);
+            values->m_reflectance_multiplier = 1.0;
+            values->m_roughness = max(p->roughness, 0.0001f);
+            values->m_anisotropic = clamp(p->anisotropic, -1.0f, 1.0f);
+            values->m_ior = max(p->ior, 0.001f);
+        }
     };
 
-    struct ReflectionBRDFClosureParams
+    struct HoldoutClosure
     {
-        OSL::Vec3       N;
+        struct Params
+        {
+        };
+
+        static const char* name()
+        {
+            return "holdout";
+        }
+
+        static ClosureID id()
+        {
+            return HoldoutID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, 0, 0);
+        }
     };
 
-    struct RefractionBTDFClosureParams
+    struct MetalClosure
     {
-        OSL::Vec3       N;
-        float           eta;
+        struct Params
+        {
+            OSL::ustring    dist;
+            OSL::Vec3       N;
+            OSL::Vec3       T;
+            OSL::Color3     normal_reflectance;
+            OSL::Color3     edge_tint;
+            float           roughness;
+            float           anisotropic;
+        };
+
+        static const char* name()
+        {
+            return "as_metal";
+        }
+
+        static ClosureID id()
+        {
+            return MetalID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_STRING_PARAM(Params, dist),
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_VECTOR_PARAM(Params, T),
+                CLOSURE_COLOR_PARAM(Params, normal_reflectance),
+                CLOSURE_COLOR_PARAM(Params, edge_tint),
+                CLOSURE_FLOAT_PARAM(Params, roughness),
+                CLOSURE_FLOAT_PARAM(Params, anisotropic),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, 0, 0);
+
+            g_closure_convert_funs[id()] = &convert_closure;
+        }
+
+        static void convert_closure(
+            CompositeSurfaceClosure&    composite_closure,
+            const Basis3d&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight)
+        {
+            const Params* p = reinterpret_cast<const Params*>(osl_params);
+
+            MetalBRDFInputValues* values;
+
+            if (p->dist == g_ggx_str)
+            {
+                values =
+                    composite_closure.add_closure<MetalBRDFInputValues>(
+                        MetalGGXID,
+                        shading_basis,
+                        weight,
+                        Vector3d(p->N),
+                        Vector3d(p->T));
+            }
+            else if (p->dist == g_beckmann_str)
+            {
+                values =
+                    composite_closure.add_closure<MetalBRDFInputValues>(
+                        MetalBeckmannID,
+                        shading_basis,
+                        weight,
+                        Vector3d(p->N),
+                        Vector3d(p->T));
+            }
+            else
+            {
+                string msg("invalid microfacet distribution function: ");
+                msg += p->dist.c_str();
+                throw ExceptionOSLRuntimeError(msg.c_str());
+            }
+
+            values->m_normal_reflectance = Color3f(p->normal_reflectance);
+            values->m_edge_tint = Color3f(p->edge_tint);
+            values->m_reflectance_multiplier = 1.0;
+            values->m_roughness = max(p->roughness, 0.0001f);
+            values->m_anisotropic = clamp(p->anisotropic, -1.0f, 1.0f);
+        }
+    };
+
+    struct OrenNayarClosure
+    {
+        typedef OrenNayarBRDFInputValues InputValues;
+
+        struct Params
+        {
+            OSL::Vec3   N;
+            float       roughness;
+        };
+
+        static const char* name()
+        {
+            return "oren_nayar";
+        }
+
+        static ClosureID id()
+        {
+            return OrenNayarID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_FLOAT_PARAM(Params, roughness),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, 0, 0);
+
+            g_closure_convert_funs[id()] = &convert_closure;
+        }
+
+        static void convert_closure(
+            CompositeSurfaceClosure&    composite_closure,
+            const Basis3d&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight)
+        {
+            const Params* p = reinterpret_cast<const Params*>(osl_params);
+            InputValues* values =
+                composite_closure.add_closure<InputValues>(
+                    static_cast<ClosureID>(id()),
+                    shading_basis,
+                    weight,
+                    Vector3d(p->N));
+
+            values->m_reflectance.set(1.0f);
+            values->m_reflectance_multiplier = 1.0;
+            values->m_roughness = max(p->roughness, 0.0f);
+        }
+    };
+
+    struct SheenClosure
+    {
+        typedef SheenBRDFInputValues InputValues;
+
+        struct Params
+        {
+            OSL::Vec3 N;
+        };
+
+        static const char* name()
+        {
+            return "as_sheen";
+        }
+
+        static ClosureID id()
+        {
+            return SheenID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, 0, 0);
+
+            g_closure_convert_funs[id()] = &convert_closure;
+        }
+
+        static void convert_closure(
+            CompositeSurfaceClosure&    composite_closure,
+            const Basis3d&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight)
+        {
+            const Params* p = reinterpret_cast<const Params*>(osl_params);
+            InputValues* values =
+                composite_closure.add_closure<InputValues>(
+                    static_cast<ClosureID>(id()),
+                    shading_basis,
+                    weight,
+                    Vector3d(p->N));
+
+            values->m_reflectance.set(1.0f);
+            values->m_reflectance_multiplier = 1.0;
+        }
+    };
+
+    struct SubsurfaceClosure
+    {
+        struct Params
+        {
+            OSL::ustring    profile;
+            OSL::Vec3       N;
+            OSL::Color3     reflectance;
+            OSL::Color3     diffuse_mean_free_path;
+            float           ior;
+            float           scattering_anisotropy;
+        };
+
+        static const char* name()
+        {
+            return "as_subsurface";
+        }
+
+        static ClosureID id()
+        {
+            return SubsurfaceID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_STRING_PARAM(Params, profile),
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_COLOR_PARAM(Params, reflectance),
+                CLOSURE_COLOR_PARAM(Params, diffuse_mean_free_path),
+                CLOSURE_FLOAT_PARAM(Params, ior),
+                CLOSURE_FLOAT_PARAM(Params, scattering_anisotropy),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, 0, 0);
+        }
+
+        static void convert_closure(
+            CompositeSubsurfaceClosure&     composite_closure,
+            const Basis3d&                  shading_basis,
+            const void*                     osl_params,
+            const Color3f&                  weight)
+        {
+            const Params* p = reinterpret_cast<const Params*>(osl_params);
+
+            if (p->profile == g_normalized_diffusion_profile_str)
+            {
+#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
+                NormalizedDiffusionBSSRDFInputValues* values =
+                    composite_closure.add_closure<NormalizedDiffusionBSSRDFInputValues>(
+                        SubsurfaceNormalizedDiffusionID,
+                        shading_basis,
+                        weight,
+                        Vector3d(p->N));
+
+                values->m_weight = 1.0;
+                values->m_reflectance = Color3f(p->reflectance);
+                values->m_reflectance_multiplier = 1.0;
+                values->m_dmfp = Color3f(p->diffuse_mean_free_path);
+                values->m_dmfp_multiplier = 1.0;
+                values->m_inside_ior = p->ior;
+                values->m_outside_ior = 1.0;
+#else
+                throw ExceptionOSLRuntimeError("unknown subsurface profile: normalized_diffusion");
+#endif
+            }
+            else
+            {
+                DipoleBSSRDFInputValues* values;
+
+                if (p->profile == g_better_dipole_profile_str)
+                {
+                    values =
+                        composite_closure.add_closure<DipoleBSSRDFInputValues>(
+                            SubsurfaceBetterDipoleID,
+                            shading_basis,
+                            weight,
+                            Vector3d(p->N));
+                }
+                else if (p->profile == g_standard_dipole_profile_str)
+                {
+                    values =
+                        composite_closure.add_closure<DipoleBSSRDFInputValues>(
+                            SubsurfaceStandardDipoleID,
+                            shading_basis,
+                            weight,
+                            Vector3d(p->N));
+                }
+                else if (p->profile == g_directional_dipole_profile_str)
+                {
+                    values =
+                        composite_closure.add_closure<DipoleBSSRDFInputValues>(
+                            SubsurfaceDirectionalDipoleID,
+                            shading_basis,
+                            weight,
+                            Vector3d(p->N));
+                }
+                else
+                {
+                    string msg = "unknown subsurface profile: ";
+                    msg += p->profile.c_str();
+                    throw ExceptionOSLRuntimeError(msg.c_str());
+                }
+
+                values->m_weight = 1.0;
+                values->m_reflectance = Color3f(p->reflectance);
+                values->m_reflectance_multiplier = 1.0;
+                values->m_dmfp = Color3f(p->diffuse_mean_free_path);
+                values->m_dmfp_multiplier = 1.0;
+                values->m_anisotropy = p->scattering_anisotropy;
+                values->m_inside_ior = p->ior;
+                values->m_outside_ior = 1.0;
+            }
+        }
+    };
+
+    struct TranslucentClosure
+    {
+        typedef DiffuseBTDFInputValues InputValues;
+
+        struct Params
+        {
+            OSL::Vec3 N;
+        };
+
+        static const char* name()
+        {
+            return "translucent";
+        }
+
+        static ClosureID id()
+        {
+            return TranslucentID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, 0, 0);
+
+            g_closure_convert_funs[id()] = &convert_closure;
+        }
+
+        static void convert_closure(
+            CompositeSurfaceClosure&    composite_closure,
+            const Basis3d&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight)
+        {
+            const Params* p = reinterpret_cast<const Params*>(osl_params);
+            InputValues* values =
+                composite_closure.add_closure<InputValues>(
+                    static_cast<ClosureID>(id()),
+                    shading_basis,
+                    weight,
+                    Vector3d(p->N));
+
+            values->m_transmittance.set(1.0f);
+            values->m_transmittance_multiplier = 1.0;
+        }
+    };
+
+    struct TransparentClosure
+    {
+        struct Params
+        {
+        };
+
+        static const char* name()
+        {
+            return "transparent";
+        }
+
+        static ClosureID id()
+        {
+            return TransparentID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, 0, 0);
+        }
     };
 }
 
@@ -163,7 +941,6 @@ CompositeClosure::CompositeClosure()
   , m_num_bytes(0)
 {
     assert(is_aligned(m_pool, InputValuesAlignment));
-
 }
 
 void CompositeClosure::compute_cdf()
@@ -195,36 +972,49 @@ size_t CompositeClosure::choose_closure(const double w) const
     return sample_cdf(m_cdf, m_cdf + get_num_closures(), w);
 }
 
-
-//
-// CompositeReflectionClosure class implementation.
-//
-
-void CompositeReflectionClosure::compute_closure_shading_basis(
+void CompositeClosure::compute_closure_shading_basis(
     const Vector3d& normal,
     const Basis3d&  original_shading_basis)
 {
-    // The normalization of the normal shouldn't be needed here,
-    // because the spec says that normals passed to closures
-    // must be normalized. But, since OSL uses floats, the normals are
-    // only normalized to float precision and not double precision.
-    m_bases[m_num_closures] =
-        Basis3d(
-            normalize(normal),
-            original_shading_basis.get_tangent_u());
+    const double normal_square_norm = square_norm(normal);
+    if APPLESEED_LIKELY(normal_square_norm != 0.0)
+    {
+        const double rcp_normal_norm = 1.0 / sqrt(normal_square_norm);
+        m_bases[m_num_closures] =
+            Basis3d(
+                normal * rcp_normal_norm,
+                original_shading_basis.get_tangent_u());
+    }
+    else
+    {
+        // Fallback to the original shading basis if the normal is zero.
+        m_bases[m_num_closures] = original_shading_basis;
+    }
 }
 
-void CompositeReflectionClosure::compute_closure_shading_basis(
+void CompositeClosure::compute_closure_shading_basis(
     const Vector3d& normal,
     const Vector3d& tangent,
     const Basis3d&  original_shading_basis)
 {
-    if (square_norm(tangent) != 0.0)
+    const double tangent_square_norm = square_norm(tangent);
+    if APPLESEED_LIKELY(tangent_square_norm != 0.0)
     {
-        m_bases[m_num_closures] =
-            Basis3d(
-                normalize(normal),
-                normalize(tangent));
+        const double normal_square_norm = square_norm(normal);
+        if APPLESEED_LIKELY(normal_square_norm != 0.0)
+        {
+            const double rcp_normal_norm = 1.0 / sqrt(normal_square_norm);
+            const double rcp_tangent_norm = 1.0 / sqrt(tangent_square_norm);
+            m_bases[m_num_closures] =
+                Basis3d(
+                    normal * rcp_normal_norm,
+                    tangent * rcp_tangent_norm);
+        }
+        else
+        {
+            // Fallback to the original shading basis if the normal is zero.
+            m_bases[m_num_closures] = original_shading_basis;
+        }
     }
     else
     {
@@ -232,6 +1022,85 @@ void CompositeReflectionClosure::compute_closure_shading_basis(
         // This can happen when using the isotropic microfacet closure overloads, for example.
         compute_closure_shading_basis(normal, original_shading_basis);
     }
+}
+
+template <typename InputValues>
+InputValues* CompositeClosure::add_closure(
+    const ClosureID             closure_type,
+    const Basis3d&              original_shading_basis,
+    const Color3f&              weight,
+    const Vector3d&             normal)
+{
+    return do_add_closure<InputValues>(
+        closure_type,
+        original_shading_basis,
+        weight,
+        normal,
+        false,
+        Vector3d(0.0));
+}
+
+template <typename InputValues>
+InputValues* CompositeClosure::add_closure(
+    const ClosureID             closure_type,
+    const Basis3d&              original_shading_basis,
+    const Color3f&              weight,
+    const Vector3d&             normal,
+    const Vector3d&             tangent)
+{
+    return do_add_closure<InputValues>(
+        closure_type,
+        original_shading_basis,
+        weight,
+        normal,
+        true,
+        tangent);
+}
+
+template <typename InputValues>
+InputValues* CompositeClosure::do_add_closure(
+    const ClosureID             closure_type,
+    const Basis3d&              original_shading_basis,
+    const Color3f&              weight,
+    const Vector3d&             normal,
+    bool                        has_tangent,
+    const Vector3d&             tangent)
+{
+    // Check that InputValues is included in our type list.
+    typedef typename boost::mpl::contains<InputValuesTypeList, InputValues>::type value_in_list;
+    BOOST_STATIC_ASSERT(value_in_list::value);
+
+    // Make sure we have enough space.
+    if APPLESEED_UNLIKELY(get_num_closures() >= MaxClosureEntries)
+    {
+        throw ExceptionOSLRuntimeError(
+            "maximum number of closures in OSL shader group exceeded.");
+    }
+
+    assert(m_num_bytes + sizeof(InputValues) <= MaxPoolSize);
+
+    // We use the luminance of the weight as the BSDF weight.
+    const double w = luminance(weight);
+    assert(w > 0.0);
+
+    m_pdf_weights[m_num_closures] = w;
+    m_weights[m_num_closures] = weight;
+
+    if (!has_tangent)
+        compute_closure_shading_basis(normal, original_shading_basis);
+    else
+        compute_closure_shading_basis(normal, tangent, original_shading_basis);
+
+    m_closure_types[m_num_closures] = closure_type;
+
+    char* values_ptr = m_pool + m_num_bytes;
+    assert(is_aligned(values_ptr, InputValuesAlignment));
+    new (values_ptr) InputValues();
+    m_input_values[m_num_closures] = values_ptr;
+    m_num_bytes += align(sizeof(InputValues), InputValuesAlignment);
+    ++m_num_closures;
+
+    return reinterpret_cast<InputValues*>(values_ptr);
 }
 
 
@@ -242,13 +1111,60 @@ void CompositeReflectionClosure::compute_closure_shading_basis(
 BOOST_STATIC_ASSERT(sizeof(CompositeSurfaceClosure) <= InputEvaluator::DataSize);
 
 CompositeSurfaceClosure::CompositeSurfaceClosure(
-    const BSDF*                 osl_bsdf,
     const Basis3d&              original_shading_basis,
     const OSL::ClosureColor*    ci)
-  : m_osl_bsdf(osl_bsdf)
+  : CompositeClosure()
+  , m_num_iors(0)
 {
     process_closure_tree(ci, original_shading_basis, Color3f(1.0f));
     compute_cdf();
+
+    if (m_num_iors == 0)
+    {
+        m_num_iors = 1;
+        m_iors[0] = 1.0;
+        return;
+    }
+
+    // Build the IOR CDF in place if needed.
+    if (m_num_iors > 1)
+    {
+        double total_weight = m_ior_cdf[0];
+        for (size_t i = 1; i < m_num_iors; ++i)
+        {
+            total_weight += m_ior_cdf[i];
+            m_ior_cdf[i] = total_weight;
+        }
+
+        const double rcp_total_weight = 1.0 / total_weight;
+
+        for (size_t i = 0; i < m_num_iors - 1; ++i)
+            m_ior_cdf[i] *= rcp_total_weight;
+
+        m_ior_cdf[m_num_iors - 1] = 1.0;
+    }
+}
+
+void CompositeSurfaceClosure::add_ior(
+    const foundation::Color3f&  weight,
+    const double                ior)
+{
+    // We use the luminance of the weight as the IOR weight.
+    const double w = luminance(weight);
+    assert(w > 0.0);
+
+    m_iors[m_num_iors] = ior;
+    m_ior_cdf[m_num_iors] = w;
+    ++m_num_iors;
+}
+
+double CompositeSurfaceClosure::choose_ior(const double w) const
+{
+    if APPLESEED_LIKELY(m_num_iors == 1)
+        return m_iors[0];
+
+    const size_t index = sample_cdf(m_ior_cdf, m_ior_cdf + m_num_iors, w);
+    return m_iors[index];
 }
 
 void CompositeSurfaceClosure::process_closure_tree(
@@ -259,7 +1175,11 @@ void CompositeSurfaceClosure::process_closure_tree(
     if (closure == 0)
         return;
 
+#if OSL_LIBRARY_VERSION_CODE >= 10700
+    switch (closure->id)
+#else
     switch (closure->type)
+#endif
     {
       case OSL::ClosureColor::MUL:
         {
@@ -277,351 +1197,16 @@ void CompositeSurfaceClosure::process_closure_tree(
         }
         break;
 
-      case OSL::ClosureColor::COMPONENT:
+      default:
         {
             const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
             const Color3f w = weight * Color3f(c->w);
 
-            switch (c->id)
-            {
-              case AshikhminShirleyID:
-                {
-                    const AshikhminShirleyBRDFClosureParams* p =
-                        reinterpret_cast<const AshikhminShirleyBRDFClosureParams*>(c->data());
-
-                    AshikhminBRDFInputValues values;
-                    values.m_rd = Color3f(p->rd);
-                    values.m_rd_multiplier = 1.0;
-                    values.m_rg = Color3f(p->rg);
-                    values.m_rg_multiplier = 1.0;
-                    values.m_nu = max(p->nu, 0.01f);
-                    values.m_nv = max(p->nv, 0.01f);
-                    values.m_fr_multiplier = p->fr;
-
-                    add_closure<AshikhminBRDFInputValues>(
-                        static_cast<ClosureID>(c->id),
-                        original_shading_basis,
-                        w,
-                        Vector3d(p->N),
-                        Vector3d(p->T),
-                        values);
-                }
-                break;
-
-              case DisneyID:
-                {
-                    const DisneyBRDFClosureParams* p =
-                        reinterpret_cast<const DisneyBRDFClosureParams*>(c->data());
-
-                    DisneyBRDFInputValues values;
-                    values.m_base_color = Color3f(p->base_color);
-                    values.m_subsurface = saturate(p->subsurface);
-                    values.m_metallic = saturate(p->metallic);
-                    values.m_specular = max(p->specular, 0.0f);
-                    values.m_specular_tint = saturate(p->specular_tint);
-                    values.m_anisotropic = saturate(p->anisotropic);
-                    values.m_roughness = clamp(p->roughness, 0.0001f, 1.0f);
-                    values.m_sheen = saturate(p->sheen);
-                    values.m_sheen_tint = saturate(p->sheen_tint);
-                    values.m_clearcoat = max(p->clearcoat, 0.0f);
-                    values.m_clearcoat_gloss = clamp(p->clearcoat_gloss, 0.0001f, 1.0f);
-
-                    add_closure<DisneyBRDFInputValues>(
-                        static_cast<ClosureID>(c->id),
-                        original_shading_basis,
-                        w,
-                        Vector3d(p->N),
-                        Vector3d(p->T),
-                        values);
-                }
-                break;
-
-              case MicrofacetID:
-                {
-                    const MicrofacetClosureParams* p =
-                        reinterpret_cast<const MicrofacetClosureParams*>(c->data());
-
-                    if (!p->refract)
-                    {
-                        OSLMicrofacetBRDFInputValues values;
-                        values.m_ax = max(p->xalpha, 0.0001f);
-                        values.m_ay = max(p->yalpha, 0.0001f);
-
-                        if (p->dist == blinn_mdf_name)
-                        {
-                            add_closure<OSLMicrofacetBRDFInputValues>(
-                                MicrofacetBlinnReflectionID,
-                                original_shading_basis,
-                                w,
-                                Vector3d(p->N),
-                                Vector3d(p->T),
-                                values);
-                        }
-                        else if (p->dist == ggx_mdf_name)
-                        {
-                            add_closure<OSLMicrofacetBRDFInputValues>(
-                                MicrofacetGGXReflectionID,
-                                original_shading_basis,
-                                w,
-                                Vector3d(p->N),
-                                Vector3d(p->T),
-                                values);
-                        }
-                        else    // Beckmann by default
-                        {
-                            add_closure<OSLMicrofacetBRDFInputValues>(
-                                MicrofacetBeckmannReflectionID,
-                                original_shading_basis,
-                                w,
-                                Vector3d(p->N),
-                                Vector3d(p->T),
-                                values);
-                        }
-                    }
-                    else
-                    {
-                        // Assume one of the media is air.
-                        double from_ior, to_ior;
-                        if (p->eta > 1.0)
-                        {
-                            from_ior = 1.0;
-                            to_ior = 1.0 / p->eta;
-                        }
-                        else
-                        {
-                            from_ior = p->eta;
-                            to_ior = 1.0;
-                        }
-
-                        OSLMicrofacetBTDFInputValues values;
-                        values.m_ax = max(p->xalpha, 0.0001f);
-                        values.m_ay = max(p->yalpha, 0.0001f);
-                        values.m_from_ior = from_ior;
-                        values.m_to_ior = to_ior;
-
-                        if (p->dist == ggx_mdf_name)
-                        {
-                            add_closure<OSLMicrofacetBTDFInputValues>(
-                                MicrofacetGGXRefractionID,
-                                original_shading_basis,
-                                w,
-                                Vector3d(p->N),
-                                Vector3d(p->T),
-                                values);
-                        }
-                        else    // Beckmann by default
-                        {
-                            add_closure<OSLMicrofacetBTDFInputValues>(
-                                MicrofacetBeckmannRefractionID,
-                                original_shading_basis,
-                                w,
-                                Vector3d(p->N),
-                                Vector3d(p->T),
-                                values);
-                        }
-                    }
-                }
-                break;
-
-              case OrenNayarID:
-                {
-                    const OrenNayarBRDFClosureParams* p =
-                        reinterpret_cast<const OrenNayarBRDFClosureParams*>(c->data());
-
-                    OrenNayarBRDFInputValues values;
-                    values.m_reflectance.set(1.0f);
-                    values.m_reflectance_multiplier = 1.0;
-                    values.m_roughness = max(p->roughness, 0.0f);
-
-                    add_closure<OrenNayarBRDFInputValues>(
-                        static_cast<ClosureID>(c->id),
-                        original_shading_basis,
-                        w,
-                        Vector3d(p->N),
-                        values);
-                }
-                break;
-
-              case ReflectionID:
-                {
-                    const ReflectionBRDFClosureParams* p =
-                        reinterpret_cast<const ReflectionBRDFClosureParams*>(c->data());
-
-                    SpecularBRDFInputValues values;
-                    values.m_reflectance.set(1.0f);
-                    values.m_reflectance_multiplier = 1.0;
-
-                    add_closure<SpecularBRDFInputValues>(
-                        static_cast<ClosureID>(c->id),
-                        original_shading_basis,
-                        w,
-                        Vector3d(p->N),
-                        values);
-                }
-                break;
-
-              case RefractionID:
-                {
-                    const RefractionBTDFClosureParams* p =
-                        reinterpret_cast<const RefractionBTDFClosureParams*>(c->data());
-
-                    // Assume on of the mediums is air.
-                    double from_ior, to_ior;
-                    if (p->eta > 1.0f)
-                    {
-                        from_ior = 1.0;
-                        to_ior = 1.0f / p->eta;
-                    }
-                    else
-                    {
-                        from_ior = p->eta;
-                        to_ior = 1.0;
-                    }
-
-                    SpecularBTDFInputValues values;
-                    values.m_reflectance.set(0.0f);
-                    values.m_reflectance_multiplier = 0.0;
-                    values.m_transmittance.set(1.0f);
-                    values.m_transmittance_multiplier = 1.0;
-                    values.m_fresnel_multiplier = 0.0;
-                    values.m_from_ior = from_ior;
-                    values.m_to_ior = to_ior;
-
-                    add_closure<SpecularBTDFInputValues>(
-                        static_cast<ClosureID>(c->id),
-                        original_shading_basis,
-                        w,
-                        Vector3d(p->N),
-                        values);
-                }
-                break;
-
-              case SheenID:
-                {
-                    const DiffuseBSDFClosureParams* p =
-                        reinterpret_cast<const DiffuseBSDFClosureParams*>(c->data());
-
-                      SheenBRDFInputValues values;
-                      values.m_reflectance.set(1.0f);
-                      values.m_reflectance_multiplier = 1.0;
-
-                      add_closure<SheenBRDFInputValues>(
-                          static_cast<ClosureID>(c->id),
-                          original_shading_basis,
-                          w,
-                          Vector3d(p->N),
-                          values);
-                }
-                break;
-
-              case TranslucentID:
-                {
-                    const DiffuseBSDFClosureParams* p =
-                        reinterpret_cast<const DiffuseBSDFClosureParams*>(c->data());
-
-                    DiffuseBTDFInputValues values;
-                    values.m_transmittance.set(1.0f);
-                    values.m_transmittance_multiplier = 1.0;
-
-                    add_closure<DiffuseBTDFInputValues>(
-                        static_cast<ClosureID>(c->id),
-                        original_shading_basis,
-                        w,
-                        Vector3d(p->N),
-                        values);
-                }
-                break;
-            }
+            if (luminance(w) > 0.0f)
+                g_closure_convert_funs[c->id](*this, original_shading_basis, c->data(), w);
         }
         break;
-
-      assert_otherwise;
     }
-}
-
-template <typename InputValues>
-void CompositeSurfaceClosure::add_closure(
-    const ClosureID             closure_type,
-    const Basis3d&              original_shading_basis,
-    const Color3f&              weight,
-    const Vector3d&             normal,
-    const InputValues&          params)
-{
-    do_add_closure<InputValues>(
-        closure_type,
-        original_shading_basis,
-        weight,
-        normal,
-        false,
-        Vector3d(0.0),
-        params);
-}
-
-template <typename InputValues>
-void CompositeSurfaceClosure::add_closure(
-    const ClosureID             closure_type,
-    const Basis3d&              original_shading_basis,
-    const Color3f&              weight,
-    const Vector3d&             normal,
-    const Vector3d&             tangent,
-    const InputValues&          params)
-{
-    do_add_closure<InputValues>(
-        closure_type,
-        original_shading_basis,
-        weight,
-        normal,
-        true,
-        tangent,
-        params);
-}
-
-template <typename InputValues>
-void CompositeSurfaceClosure::do_add_closure(
-    const ClosureID             closure_type,
-    const Basis3d&              original_shading_basis,
-    const Color3f&              weight,
-    const Vector3d&             normal,
-    bool                        has_tangent,
-    const Vector3d&             tangent,
-    const InputValues&          params)
-{
-    // Check that InputValues is included in our type list.
-    typedef typename boost::mpl::contains<InputValuesTypeList, InputValues>::type value_in_list;
-    BOOST_STATIC_ASSERT(value_in_list::value);
-
-    // Make sure we have enough space.
-    if (get_num_closures() >= MaxClosureEntries)
-    {
-        RENDERER_LOG_WARNING("maximum number of closures in osl shader group exceeded; ignoring closure.");
-        return;
-    }
-
-    assert(m_num_bytes + sizeof(InputValues) <= MaxPoolSize);
-
-    // We use the luminance of the weight as the BSDF weight.
-    const double w = luminance(weight);
-
-    // Ignore zero or negative weights.
-    if (w <= 0.0)
-        return;
-
-    m_pdf_weights[m_num_closures] = w;
-    m_weights[m_num_closures] = weight;
-
-    if (!has_tangent)
-        compute_closure_shading_basis(normal, original_shading_basis);
-    else
-        compute_closure_shading_basis(normal, tangent, original_shading_basis);
-
-    m_closure_types[m_num_closures] = closure_type;
-
-    char* values_ptr = m_pool + m_num_bytes;
-    assert(is_aligned(values_ptr, InputValuesAlignment));
-    new (values_ptr) InputValues(params);
-    m_input_values[m_num_closures] = values_ptr;
-    m_num_bytes += align(sizeof(InputValues), InputValuesAlignment);
-    ++m_num_closures;
 }
 
 
@@ -645,7 +1230,11 @@ void CompositeSubsurfaceClosure::process_closure_tree(
     if (closure == 0)
         return;
 
+#if OSL_LIBRARY_VERSION_CODE >= 10700
+    switch (closure->id)
+#else
     switch (closure->type)
+#endif
     {
       case OSL::ClosureColor::MUL:
         {
@@ -662,121 +1251,25 @@ void CompositeSubsurfaceClosure::process_closure_tree(
         }
         break;
 
-      case OSL::ClosureColor::COMPONENT:
+      default:
         {
             const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
-            const Color3f w = weight * Color3f(c->w);
 
-            const SubsurfaceClosureParams* p =
-                reinterpret_cast<const SubsurfaceClosureParams*>(c->data());
-
-            if (p->profile == normalized_diffusion_profile_name)
+            if (c->id == SubsurfaceID)
             {
-#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
-                NormalizedDiffusionBSSRDFInputValues values;
-                values.m_weight = 1.0;
-                values.m_reflectance = Color3f(p->rd);
-                values.m_reflectance_multiplier = 1.0;
-                values.m_dmfp = luminance(Color3f(p->dmfp));
-                values.m_dmfp_multiplier = 1.0;
-                values.m_inside_ior = p->eta;
-                values.m_outside_ior = 1.0;
-
-                add_closure<NormalizedDiffusionBSSRDFInputValues>(
-                    SubsurfaceNormalizedDiffusionID,
-                    original_shading_basis,
-                    w,
-                    Vector3d(p->N),
-                    values);
-#endif
-            }
-            else
-            {
-                DipoleBSSRDFInputValues values;
-                values.m_weight = 1.0;
-                values.m_reflectance = Color3f(p->rd);
-                values.m_reflectance_multiplier = 1.0;
-                values.m_dmfp = luminance(Color3f(p->dmfp));
-                values.m_dmfp_multiplier = 1.0;
-                values.m_anisotropy = p->g;
-                values.m_inside_ior = p->eta;
-                values.m_outside_ior = 1.0;
-
-                if (p->profile == better_dipole_profile_name)
+                const Color3f w = weight * Color3f(c->w);
+                if (luminance(w) > 0.0f)
                 {
-                    add_closure<DipoleBSSRDFInputValues>(
-                        SubsurfaceBetterDipoleID,
+                    SubsurfaceClosure::convert_closure(
+                        *this,
                         original_shading_basis,
-                        w,
-                        Vector3d(p->N),
-                        values);
-                }
-                else if (p->profile == standard_dipole_profile_name)
-                {
-                    add_closure<DipoleBSSRDFInputValues>(
-                        SubsurfaceStandardDipoleID,
-                        original_shading_basis,
-                        w,
-                        Vector3d(p->N),
-                        values);
-                }
-                else if (p->profile == directional_dipole_profile_name)
-                {
-                    add_closure<DipoleBSSRDFInputValues>(
-                        SubsurfaceDirectionalDipoleID,
-                        original_shading_basis,
-                        w,
-                        Vector3d(p->N),
-                        values);
+                        c->data(),
+                        w);
                 }
             }
         }
         break;
-
-      assert_otherwise;
     }
-}
-
-template <typename InputValues>
-void CompositeSubsurfaceClosure::add_closure(
-    const ClosureID             closure_type,
-    const Basis3d&              original_shading_basis,
-    const Color3f&              weight,
-    const Vector3d&             normal,
-    const InputValues&          params)
-{
-    // Check that InputValues is included in our type list.
-    typedef typename boost::mpl::contains<InputValuesTypeList, InputValues>::type value_in_list;
-    BOOST_STATIC_ASSERT(value_in_list::value);
-
-    // Make sure we have enough space.
-    if (get_num_closures() >= MaxClosureEntries)
-    {
-        RENDERER_LOG_WARNING("maximum number of subsurface closures in osl shader group exceeded; ignoring closure.");
-        return;
-    }
-
-    assert(m_num_bytes + sizeof(InputValues) <= MaxPoolSize);
-
-    // We use the luminance of the weight as the BSSRDF weight.
-    const double w = luminance(weight);
-
-    // Ignore zero or negative weights.
-    if (w <= 0.0)
-        return;
-
-    m_pdf_weights[m_num_closures] = w;
-    m_weights[m_num_closures] = weight;
-    m_closure_types[m_num_closures] = closure_type;
-
-    compute_closure_shading_basis(normal, original_shading_basis);
-
-    char* values_ptr = m_pool + m_num_bytes;
-    assert(is_aligned(values_ptr, InputValuesAlignment));
-    new (values_ptr) InputValues(params);
-    m_input_values[m_num_closures] = values_ptr;
-    m_num_bytes += align(sizeof(InputValues), InputValuesAlignment);
-    ++m_num_closures;
 }
 
 
@@ -814,7 +1307,11 @@ void CompositeEmissionClosure::process_closure_tree(
     if (closure == 0)
         return;
 
+#if OSL_LIBRARY_VERSION_CODE >= 10700
+    switch (closure->id)
+#else
     switch (closure->type)
+#endif
     {
       case OSL::ClosureColor::MUL:
         {
@@ -831,7 +1328,7 @@ void CompositeEmissionClosure::process_closure_tree(
         }
         break;
 
-      case OSL::ClosureColor::COMPONENT:
+      default:
         {
             const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
 
@@ -839,8 +1336,6 @@ void CompositeEmissionClosure::process_closure_tree(
                 m_total_weight += weight * Color3f(c->w);
         }
         break;
-
-      assert_otherwise;
     }
 }
 
@@ -857,7 +1352,11 @@ namespace
     {
         if (closure)
         {
+#if OSL_LIBRARY_VERSION_CODE >= 10700
+            switch (closure->id)
+#else
             switch (closure->type)
+#endif
             {
               case OSL::ClosureColor::MUL:
                 {
@@ -874,14 +1373,12 @@ namespace
                 }
                 break;
 
-              case OSL::ClosureColor::COMPONENT:
+              default:
                 {
                     const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
                     return c->id == closure_id ? Color3f(c->w) : Color3f(0.0f);
                 }
                 break;
-
-              assert_otherwise;
             }
         }
 
@@ -906,118 +1403,35 @@ Color3f process_background_tree(const OSL::ClosureColor* ci)
     return do_process_closure_id_tree(ci, BackgroundID);
 }
 
-}   // namespace renderer
-
-// We want to reuse OSL macros to declare closure params and register the closures.
-// We can use them only inside the OSL namespace.
-OSL_NAMESPACE_ENTER
-
-void register_appleseed_closures(OSL::ShadingSystem& shading_system)
+namespace
 {
-    // Describe the memory layout of each closure type to the OSL runtime.
-    const size_t MaxParams = 32;
-    struct BuiltinClosures
+    template <typename ClosureType>
+    void register_closure(OSL::ShadingSystem& shading_system)
     {
-        const char*     name;
-        int             id;
-        ClosureParam    params[MaxParams];
-    };
-
-    static const BuiltinClosures builtins[] =
-    {
-        { "as_ashikhmin_shirley", AshikhminShirleyID, { CLOSURE_VECTOR_PARAM(AshikhminShirleyBRDFClosureParams, N),
-                                                        CLOSURE_VECTOR_PARAM(AshikhminShirleyBRDFClosureParams, T),
-                                                        CLOSURE_COLOR_PARAM(AshikhminShirleyBRDFClosureParams, rd),
-                                                        CLOSURE_COLOR_PARAM(AshikhminShirleyBRDFClosureParams, rg),
-                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyBRDFClosureParams, nu),
-                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyBRDFClosureParams, nv),
-                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyBRDFClosureParams, fr),
-                                                        CLOSURE_FINISH_PARAM(AshikhminShirleyBRDFClosureParams) } },
-
-        { "as_disney", DisneyID, { CLOSURE_VECTOR_PARAM(DisneyBRDFClosureParams, N),
-                                   CLOSURE_VECTOR_PARAM(DisneyBRDFClosureParams, T),
-                                   CLOSURE_COLOR_PARAM(DisneyBRDFClosureParams, base_color),
-                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, subsurface),
-                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, metallic),
-                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, specular),
-                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, specular_tint),
-                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, anisotropic),
-                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, roughness),
-                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, sheen),
-                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, sheen_tint),
-                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, clearcoat),
-                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, clearcoat_gloss),
-                                   CLOSURE_FINISH_PARAM(DisneyBRDFClosureParams) } },
-
-        { "as_sheen", SheenID, { CLOSURE_VECTOR_PARAM(DiffuseBSDFClosureParams, N),
-                                 CLOSURE_FINISH_PARAM(DiffuseBSDFClosureParams) } },
-
-        { "as_subsurface", SubsurfaceID, { CLOSURE_STRING_PARAM(SubsurfaceClosureParams, profile),
-                                           CLOSURE_VECTOR_PARAM(SubsurfaceClosureParams, N),
-                                           CLOSURE_COLOR_PARAM(SubsurfaceClosureParams, rd),
-                                           CLOSURE_COLOR_PARAM(SubsurfaceClosureParams, dmfp),
-                                           CLOSURE_FLOAT_PARAM(SubsurfaceClosureParams, eta),
-                                           CLOSURE_FLOAT_PARAM(SubsurfaceClosureParams, g),
-                                           CLOSURE_FINISH_PARAM(SubsurfaceClosureParams) } },
-
-        { "oren_nayar", OrenNayarID, { CLOSURE_VECTOR_PARAM(OrenNayarBRDFClosureParams, N),
-                                       CLOSURE_FLOAT_PARAM(OrenNayarBRDFClosureParams, roughness),
-                                       CLOSURE_FINISH_PARAM(OrenNayarBRDFClosureParams) } },
-
-        { "background", BackgroundID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
-
-        { "debug", DebugID, { CLOSURE_STRING_PARAM(DebugClosureParams, tag),
-                              CLOSURE_FINISH_PARAM(DebugClosureParams) } },
-
-        { "emission", EmissionID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
-
-        { "holdout", HoldoutID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
-
-        { "microfacet", MicrofacetID, { CLOSURE_STRING_PARAM(MicrofacetClosureParams, dist),
-                                        CLOSURE_VECTOR_PARAM(MicrofacetClosureParams, N),
-                                        CLOSURE_VECTOR_PARAM(MicrofacetClosureParams, T),
-                                        CLOSURE_FLOAT_PARAM(MicrofacetClosureParams, xalpha),
-                                        CLOSURE_FLOAT_PARAM(MicrofacetClosureParams, yalpha),
-                                        CLOSURE_FLOAT_PARAM(MicrofacetClosureParams, eta),
-                                        CLOSURE_INT_PARAM(MicrofacetClosureParams, refract),
-                                        CLOSURE_FINISH_PARAM(MicrofacetClosureParams) } },
-
-        { "reflection", ReflectionID, { CLOSURE_VECTOR_PARAM(ReflectionBRDFClosureParams, N),
-                                        CLOSURE_FINISH_PARAM(ReflectionBRDFClosureParams) } },
-
-        { "refraction", RefractionID, { CLOSURE_VECTOR_PARAM(RefractionBTDFClosureParams, N),
-                                        CLOSURE_FLOAT_PARAM(RefractionBTDFClosureParams, eta),
-                                        CLOSURE_FINISH_PARAM(RefractionBTDFClosureParams) } },
-
-        { "translucent", TranslucentID, { CLOSURE_VECTOR_PARAM(DiffuseBSDFClosureParams, N),
-                                          CLOSURE_FINISH_PARAM(DiffuseBSDFClosureParams) } },
-
-        { "transparent", TransparentID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
-
-        { 0, 0, {} }    // mark end of the array
-    };
-
-    for (size_t i = 0; builtins[i].name != 0; ++i)
-    {
-        shading_system.register_closure(
-            builtins[i].name,
-            builtins[i].id,
-            builtins[i].params,
-            0,
-            0);
-
-        RENDERER_LOG_INFO("registered osl closure %s.", builtins[i].name);
+        ClosureType::register_closure(shading_system);
+        RENDERER_LOG_INFO("registered OSL closure %s.", ClosureType::name());
     }
 }
 
-OSL_NAMESPACE_EXIT
-
-namespace renderer
-{
-
 void register_closures(OSL::ShadingSystem& shading_system)
 {
-    OSL::register_appleseed_closures(shading_system);
+    for (size_t i = 0; i < NumClosuresIDs; ++i)
+        g_closure_convert_funs[i] = &convert_closure_nop;
+
+    register_closure<AshikhminShirleyClosure>(shading_system);
+    register_closure<BackgroundClosure>(shading_system);
+    register_closure<DebugClosure>(shading_system);
+    register_closure<DisneyClosure>(shading_system);
+    register_closure<EmissionClosure>(shading_system);
+    register_closure<GlassClosure>(shading_system);
+    register_closure<GlossyClosure>(shading_system);
+    register_closure<HoldoutClosure>(shading_system);
+    register_closure<MetalClosure>(shading_system);
+    register_closure<OrenNayarClosure>(shading_system);
+    register_closure<SheenClosure>(shading_system);
+    register_closure<SubsurfaceClosure>(shading_system);
+    register_closure<TranslucentClosure>(shading_system);
+    register_closure<TransparentClosure>(shading_system);
 }
 
 }   // namespace renderer

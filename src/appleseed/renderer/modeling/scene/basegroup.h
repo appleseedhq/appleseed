@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -46,6 +46,8 @@ END_OSL_INCLUDES
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
+namespace foundation    { class StringArray; }
+namespace foundation    { class StringDictionary; }
 namespace renderer      { class Entity; }
 
 namespace renderer
@@ -93,6 +95,10 @@ class APPLESEED_DLLSYMBOL BaseGroup
 
     // Access the assembly instances.
     AssemblyInstanceContainer& assembly_instances() const;
+
+    // Expose asset file paths referenced by this entity to the outside.
+    void collect_asset_paths(foundation::StringArray& paths) const;
+    void update_asset_paths(const foundation::StringDictionary& mappings);
 
   private:
     struct Impl;

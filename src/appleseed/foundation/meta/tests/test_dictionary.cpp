@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -104,33 +104,33 @@ TEST_SUITE(Foundation_Utility_StringDictionary)
         EXPECT_EQ(&sd, result);
     }
 
-    TEST_CASE(Get_GivenCStringKeyOfNonExistingItem_ThrowsExceptionDictionaryItemNotFound)
+    TEST_CASE(Get_GivenCStringKeyOfNonExistingItem_ThrowsExceptionDictionaryKeyNotFound)
     {
         StringDictionary sd;
 
-        EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
+        EXPECT_EXCEPTION(ExceptionDictionaryKeyNotFound,
         {
-            const char* item = sd.get("key");
+            APPLESEED_UNUSED const char* item = sd.get("key");
         });
     }
 
-    TEST_CASE(GetAsInt_GivenCStringKeyOfNonExistingItem_ThrowsExceptionDictionaryItemNotFound)
+    TEST_CASE(GetAsInt_GivenCStringKeyOfNonExistingItem_ThrowsExceptionDictionaryKeyNotFound)
     {
         StringDictionary sd;
 
-        EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
+        EXPECT_EXCEPTION(ExceptionDictionaryKeyNotFound,
         {
-            const int item = sd.get<int>("key");
+            APPLESEED_UNUSED const int item = sd.get<int>("key");
         });
     }
 
-    TEST_CASE(GetAsInt_GivenStdStringKeyOfNonExistingItem_ThrowsExceptionDictionaryItemNotFound)
+    TEST_CASE(GetAsInt_GivenStdStringKeyOfNonExistingItem_ThrowsExceptionDictionaryKeyNotFound)
     {
         StringDictionary sd;
 
-        EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
+        EXPECT_EXCEPTION(ExceptionDictionaryKeyNotFound,
         {
-            const int item = sd.get<int>(string("key"));
+            APPLESEED_UNUSED const int item = sd.get<int>(string("key"));
         });
     }
 
@@ -352,23 +352,23 @@ TEST_SUITE(Foundation_Utility_Dictionary)
         EXPECT_EQ(&dic, result);
     }
 
-    TEST_CASE(GetAsInt_GivenCStringKeyOfNonExistingItem_ThrowsExceptionDictionaryItemNotFound)
+    TEST_CASE(GetAsInt_GivenCStringKeyOfNonExistingItem_ThrowsExceptionDictionaryKeyNotFound)
     {
         Dictionary dic;
 
-        EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
+        EXPECT_EXCEPTION(ExceptionDictionaryKeyNotFound,
         {
-            const int item = dic.get<int>("key");
+            APPLESEED_UNUSED const int item = dic.get<int>("key");
         });
     }
 
-    TEST_CASE(GetAsInt_GivenStdStringKeyOfNonExistingItem_ThrowsExceptionDictionaryItemNotFound)
+    TEST_CASE(GetAsInt_GivenStdStringKeyOfNonExistingItem_ThrowsExceptionDictionaryKeyNotFound)
     {
         Dictionary dic;
 
-        EXPECT_EXCEPTION(ExceptionDictionaryItemNotFound,
+        EXPECT_EXCEPTION(ExceptionDictionaryKeyNotFound,
         {
-            const int item = dic.get<int>(string("key"));
+            APPLESEED_UNUSED const int item = dic.get<int>(string("key"));
         });
     }
 

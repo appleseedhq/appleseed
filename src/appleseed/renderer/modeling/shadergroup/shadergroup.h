@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -115,6 +115,9 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Return true if the shader group contains at least one subsurface closure.
     bool has_subsurface() const;
 
+    // Return true if the shader group contains at least one dielectric closure.
+    bool has_refraction() const;
+
     // Return true if the shader group contains at least one holdout closure.
     bool has_holdout() const;
 
@@ -138,12 +141,27 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     struct Impl;
     Impl* impl;
 
-    bool    m_has_emission;
-    bool    m_has_transparency;
-    bool    m_has_subsurface;
-    bool    m_has_holdout;
-    bool    m_has_debug;
-    bool    m_uses_dPdtime;
+    enum Flags
+    {
+        HasEmission     = 1 << 0,
+        HasTransparency = 1 << 1,
+        HasSubsurface   = 1 << 2,
+        HasRefraction   = 1 << 3,
+        HasHoldout      = 1 << 4,
+        HasDebug        = 1 << 5,
+        UsesdPdTime     = 1 << 6,
+
+        HasAllClosures  =
+            HasEmission     |
+            HasTransparency |
+            HasSubsurface   |
+            HasRefraction   |
+            HasHoldout      |
+            HasDebug,
+
+        UsesAllGlobals  = UsesdPdTime
+    };
+    foundation::uint32 m_flags;
 
     // Constructor.
     explicit ShaderGroup(const char* name);
@@ -152,10 +170,10 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     ~ShaderGroup();
 
     void get_shadergroup_closures_info(OSL::ShadingSystem& shading_system);
-    void report_has_closure(const char* closure_name, const bool has_closure) const;
+    void report_has_closure(const char* closure_name, const Flags flag) const;
 
     void get_shadergroup_globals_info(OSL::ShadingSystem& shading_system);
-    void report_uses_global(const char* global_name, const bool uses_global) const;
+    void report_uses_global(const char* global_name, const Flags flag) const;
 
     void set_surface_area(
         const AssemblyInstance* ass,
@@ -185,32 +203,37 @@ class APPLESEED_DLLSYMBOL ShaderGroupFactory
 
 inline bool ShaderGroup::has_emission() const
 {
-    return m_has_emission;
+    return (m_flags & HasEmission) != 0;
 }
 
 inline bool ShaderGroup::has_transparency() const
 {
-    return m_has_transparency;
+    return (m_flags & HasTransparency) != 0;
 }
 
 inline bool ShaderGroup::has_subsurface() const
 {
-    return m_has_subsurface;
+    return (m_flags & HasSubsurface) != 0;
+}
+
+inline bool ShaderGroup::has_refraction() const
+{
+    return (m_flags & HasRefraction) != 0;
 }
 
 inline bool ShaderGroup::has_holdout() const
 {
-    return m_has_holdout;
+    return (m_flags & HasHoldout) != 0;
 }
 
 inline bool ShaderGroup::has_debug() const
 {
-    return m_has_debug;
+    return (m_flags & HasDebug) != 0;
 }
 
 inline bool ShaderGroup::uses_dPdtime() const
 {
-    return m_uses_dPdtime;
+    return (m_flags & UsesdPdTime) != 0;
 }
 
 }       // namespace renderer

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -178,6 +178,10 @@ class ShadingPoint
 
     // Return the side of the surface that was hit.
     ObjectInstance::Side get_side() const;
+
+    // Return true if the ray is entering/leaving an object.
+    bool is_entering() const;
+    bool is_leaving() const;
 
     // Return the i'th world space vertex of the hit triangle.
     const foundation::Vector3d& get_vertex(const size_t i) const;
@@ -390,7 +394,7 @@ class ShadingPoint
 // ShadingPoint class implementation.
 //
 
-FORCE_INLINE ShadingPoint::ShadingPoint()
+APPLESEED_FORCE_INLINE ShadingPoint::ShadingPoint()
 {
     clear();
 }
@@ -434,7 +438,7 @@ inline ShadingPoint& ShadingPoint::operator=(const ShadingPoint& rhs)
     return *this;
 }
 
-FORCE_INLINE void ShadingPoint::clear()
+APPLESEED_FORCE_INLINE void ShadingPoint::clear()
 {
     m_region_kit_cache = 0;
     m_tess_cache = 0;
@@ -725,6 +729,16 @@ inline ObjectInstance::Side ShadingPoint::get_side() const
     return m_side;
 }
 
+inline bool ShadingPoint::is_entering() const
+{
+    return get_side() == ObjectInstance::FrontSide;
+}
+
+inline bool ShadingPoint::is_leaving() const
+{
+    return get_side() == ObjectInstance::BackSide;
+}
+
 inline const foundation::Vector3d& ShadingPoint::get_vertex(const size_t i) const
 {
     assert(hit());
@@ -889,17 +903,15 @@ inline void ShadingPoint::fetch_materials() const
         // Retrieve material indices from the object instance.
         const MaterialArray* materials;
         const MaterialArray* opposite_materials;
-
-        if (get_side() == ObjectInstance::BackSide)
-        {
-            materials = &m_object_instance->get_back_materials();
-            opposite_materials = &m_object_instance->get_front_materials();
-        }
-        else
+        if (get_side() == ObjectInstance::FrontSide)
         {
             materials = &m_object_instance->get_front_materials();
             opposite_materials = &m_object_instance->get_back_materials();
-
+        }
+        else
+        {
+            materials = &m_object_instance->get_back_materials();
+            opposite_materials = &m_object_instance->get_front_materials();
         }
 
         // Fetch the materials.

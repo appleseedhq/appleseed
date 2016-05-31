@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -343,7 +343,7 @@ namespace
                 context.get_event_counters().signal_error();
             }
         }
-        catch (const ExceptionDictionaryItemNotFound& e)
+        catch (const ExceptionDictionaryKeyNotFound& e)
         {
             RENDERER_LOG_ERROR(
                 "while defining %s \"%s\": required parameter \"%s\" missing.",
@@ -1046,7 +1046,7 @@ namespace
                             m_values,
                             m_alpha);
             }
-            catch (const ExceptionDictionaryItemNotFound& e)
+            catch (const ExceptionDictionaryKeyNotFound& e)
             {
                 RENDERER_LOG_ERROR(
                     "while defining color \"%s\": required parameter \"%s\" missing.",
@@ -1193,7 +1193,7 @@ namespace
                     m_context.get_event_counters().signal_error();
                 }
             }
-            catch (const ExceptionDictionaryItemNotFound& e)
+            catch (const ExceptionDictionaryKeyNotFound& e)
             {
                 RENDERER_LOG_ERROR(
                     "while defining texture \"%s\": required parameter \"%s\" missing.",
@@ -1253,7 +1253,7 @@ namespace
                         m_texture.c_str(),
                         get_earliest_transform());
             }
-            catch (const ExceptionDictionaryItemNotFound& e)
+            catch (const ExceptionDictionaryKeyNotFound& e)
             {
                 RENDERER_LOG_ERROR(
                     "while defining texture instance \"%s\": required parameter \"%s\" missing.",
@@ -1612,7 +1612,7 @@ namespace
                     m_context.get_event_counters().signal_error();
                 }
             }
-            catch (const ExceptionDictionaryItemNotFound& e)
+            catch (const ExceptionDictionaryKeyNotFound& e)
             {
                 RENDERER_LOG_ERROR(
                     "while defining object \"%s\": required parameter \"%s\" missing.",
@@ -2058,12 +2058,12 @@ namespace
             m_materials.clear();
             m_objects.clear();
             m_object_instances.clear();
-            m_surface_shaders.clear();
-            m_textures.clear();
-            m_texture_instances.clear();
 #ifdef APPLESEED_WITH_OSL
             m_shader_groups.clear();
 #endif
+            m_surface_shaders.clear();
+            m_textures.clear();
+            m_texture_instances.clear();
 
             m_name = get_value(attrs, "name");
             m_model = get_value(attrs, "model", AssemblyFactory().get_model());
@@ -2090,12 +2090,12 @@ namespace
                 m_assembly->materials().swap(m_materials);
                 m_assembly->objects().swap(m_objects);
                 m_assembly->object_instances().swap(m_object_instances);
-                m_assembly->surface_shaders().swap(m_surface_shaders);
-                m_assembly->textures().swap(m_textures);
-                m_assembly->texture_instances().swap(m_texture_instances);
 #ifdef APPLESEED_WITH_OSL
                 m_assembly->shader_groups().swap(m_shader_groups);
 #endif
+                m_assembly->surface_shaders().swap(m_surface_shaders);
+                m_assembly->textures().swap(m_textures);
+                m_assembly->texture_instances().swap(m_texture_instances);
             }
             else
             {
@@ -3044,7 +3044,7 @@ namespace
     {
         const string BuiltInPrefix = "builtin:";
 
-        if (project_filepath.substr(0, BuiltInPrefix.size()) == BuiltInPrefix)
+        if (starts_with(project_filepath, BuiltInPrefix))
         {
             project_name = project_filepath.substr(BuiltInPrefix.size());
             return true;

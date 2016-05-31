@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -145,7 +145,6 @@ class MDF
         const T              alpha_y) const
     {
         // Preconditions.
-        assert(is_normalized(v));
         assert(cos_theta(h) >= T(0.0));
         assert(alpha_x > T(0.0));
         assert(alpha_y > T(0.0));
@@ -343,6 +342,8 @@ class MDF
         const T              alpha_x,
         const T              alpha_y)
     {
+        assert(is_normalized(v));
+
         if (cos_theta(v) == T(0.0))
             return T(0.0);
 

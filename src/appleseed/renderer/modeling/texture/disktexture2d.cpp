@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -92,6 +92,17 @@ namespace
         virtual ColorSpace get_color_space() const APPLESEED_OVERRIDE
         {
             return m_color_space;
+        }
+
+        virtual void collect_asset_paths(StringArray& paths) const APPLESEED_OVERRIDE
+        {
+            if (m_params.strings().exist("filename"))
+                paths.push_back(m_params.get("filename"));
+        }
+
+        virtual void update_asset_paths(const StringDictionary& mappings) APPLESEED_OVERRIDE
+        {
+            m_params.set("filename", mappings.get(m_params.get("filename")));
         }
 
         virtual const CanvasProperties& properties() APPLESEED_OVERRIDE
@@ -215,9 +226,15 @@ auto_release_ptr<Texture> DiskTexture2dFactory::create(
     const ParamArray&   params,
     const SearchPaths&  search_paths) const
 {
-    return
-        auto_release_ptr<Texture>(
-            new DiskTexture2d(name, params, search_paths));
+    return auto_release_ptr<Texture>(new DiskTexture2d(name, params, search_paths));
+}
+
+auto_release_ptr<Texture> DiskTexture2dFactory::static_create(
+    const char*         name,
+    const ParamArray&   params,
+    const SearchPaths&  search_paths)
+{
+    return auto_release_ptr<Texture>(new DiskTexture2d(name, params, search_paths));
 }
 
 }   // namespace renderer

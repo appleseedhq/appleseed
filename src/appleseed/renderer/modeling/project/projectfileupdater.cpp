@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -74,6 +74,7 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/iterators.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -81,6 +82,7 @@
 #include <cassert>
 #include <cstring>
 #include <string>
+#include <vector>
 
 using namespace foundation;
 using namespace std;
@@ -336,7 +338,7 @@ namespace
         }
 
       private:
-        void rename_exitance_inputs(AssemblyContainer& assemblies)
+        static void rename_exitance_inputs(AssemblyContainer& assemblies)
         {
             for (each<AssemblyContainer> i = assemblies; i; ++i)
             {
@@ -345,7 +347,7 @@ namespace
             }
         }
 
-        void rename_exitance_inputs(Assembly& assembly)
+        static void rename_exitance_inputs(Assembly& assembly)
         {
             for (each<EDFContainer> i = assembly.edfs(); i; ++i)
                 rename_exitance_inputs(*i);
@@ -354,7 +356,7 @@ namespace
                 rename_exitance_inputs(*i);
         }
 
-        void rename_exitance_inputs(EDF& edf)
+        static void rename_exitance_inputs(EDF& edf)
         {
             if (strcmp(edf.get_model(), DiffuseEDFFactory().get_model()) == 0)
             {
@@ -363,7 +365,7 @@ namespace
             }
         }
 
-        void rename_exitance_inputs(Light& light)
+        static void rename_exitance_inputs(Light& light)
         {
             if (strcmp(light.get_model(), DirectionalLightFactory().get_model()) == 0 ||
                 strcmp(light.get_model(), PointLightFactory().get_model()) == 0 ||
@@ -378,7 +380,7 @@ namespace
             }
         }
 
-        void rename_exitance_inputs(EnvironmentEDF& edf)
+        static void rename_exitance_inputs(EnvironmentEDF& edf)
         {
             if (strcmp(edf.get_model(), ConstantEnvironmentEDFFactory().get_model()) == 0)
             {
@@ -657,6 +659,18 @@ namespace
                 update_entity(*i);
         }
 
+        void update_entity(Assembly& assembly)
+        {
+            update_collection(assembly.edfs());
+            update_collection(assembly.lights());
+            update_collection(assembly.materials());
+            update_collection(assembly.objects());
+            update_collection(assembly.object_instances());
+            update_collection(assembly.surface_shaders());
+            update_collection(assembly.assemblies());
+            update_collection(assembly.assembly_instances());
+        }
+
         template <typename Entity>
         void update_entity(Entity& entity)
         {
@@ -685,18 +699,6 @@ namespace
                 string_params.remove("render_layer");
             }
         }
-
-        void update_entity(Assembly& assembly)
-        {
-            update_collection(assembly.edfs());
-            update_collection(assembly.lights());
-            update_collection(assembly.materials());
-            update_collection(assembly.objects());
-            update_collection(assembly.object_instances());
-            update_collection(assembly.surface_shaders());
-            update_collection(assembly.assemblies());
-            update_collection(assembly.assembly_instances());
-        }
     };
 
 
@@ -723,19 +725,19 @@ namespace
 
       private:
         template <typename Collection>
-        void update_collection(Collection& collection)
+        static void update_collection(Collection& collection)
         {
             for (each<Collection> i = collection; i; ++i)
                 update_entity(*i);
         }
 
-        void update_entity(Assembly& assembly)
+        static void update_entity(Assembly& assembly)
         {
             update_collection(assembly.object_instances());
             update_collection(assembly.assemblies());
         }
 
-        void update_entity(ObjectInstance& object_instance)
+        static void update_entity(ObjectInstance& object_instance)
         {
             const Object* object = object_instance.find_object();
 
@@ -748,7 +750,7 @@ namespace
             }
         }
 
-        void rebuild_material_mappings(StringDictionary& mappings, const string& slot_name)
+        static void rebuild_material_mappings(StringDictionary& mappings, const string& slot_name)
         {
             if (!mappings.empty())
             {
@@ -783,7 +785,7 @@ namespace
         }
 
       private:
-        void rename_radiance_inputs(AssemblyContainer& assemblies)
+        static void rename_radiance_inputs(AssemblyContainer& assemblies)
         {
             for (each<AssemblyContainer> i = assemblies; i; ++i)
             {
@@ -792,13 +794,13 @@ namespace
             }
         }
 
-        void rename_radiance_inputs(Assembly& assembly)
+        static void rename_radiance_inputs(Assembly& assembly)
         {
             for (each<LightContainer> i = assembly.lights(); i; ++i)
                 rename_radiance_inputs(*i);
         }
 
-        void rename_radiance_inputs(Light& light)
+        static void rename_radiance_inputs(Light& light)
         {
             if (strcmp(light.get_model(), DirectionalLightFactory().get_model()) == 0)
             {
@@ -811,6 +813,258 @@ namespace
                 move_if_exist(light, "intensity", "radiance");
                 move_if_exist(light, "intensity_multiplier", "radiance_multiplier");
             }
+        }
+    };
+
+
+    //
+    // Update from revision 9 to revision 10.
+    //
+
+    class UpdateFromRevision_9
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_9(Project& project)
+          : Updater(project, 9)
+        {
+        }
+
+        virtual void update() APPLESEED_OVERRIDE
+        {
+            const Scene* scene = m_project.get_scene();
+
+            if (scene)
+                visit(scene->assemblies());
+        }
+
+      private:
+        struct MaterialInfo
+        {
+            bool        m_updated;
+            Material*   m_material;
+            BSDF*       m_bsdf;
+            string      m_bsdf_reflectance;
+            string      m_bsdf_reflectance_multiplier;
+            string      m_bsdf_transmittance;
+            string      m_bsdf_transmittance_multiplier;
+            string      m_bsdf_fresnel_multiplier;
+            double      m_bsdf_from_ior;
+            double      m_bsdf_to_ior;
+            string      m_bssrdf;
+            string      m_edf;
+            string      m_alpha_map;
+            string      m_displacement_map;
+            string      m_displacement_method;
+            string      m_bump_amplitude;
+            string      m_normal_map_up;
+        };
+
+        static void visit(AssemblyContainer& assemblies)
+        {
+            for (each<AssemblyContainer> i = assemblies; i; ++i)
+                visit(*i);
+        }
+
+        static void visit(Assembly& assembly)
+        {
+            visit(assembly.assemblies());
+            update(assembly);
+        }
+
+        static void update(Assembly& assembly)
+        {
+            vector<MaterialInfo> materials;
+            collect_refractive_materials(assembly, materials);
+
+            for (each<vector<MaterialInfo> > i = materials; i; ++i)
+            {
+                if (i->m_updated)
+                    continue;
+
+                for (each<vector<MaterialInfo> > j = succ(i); j; ++j)
+                {
+                    if (j->m_updated)
+                        continue;
+
+                    MaterialInfo& mat1 = *i;
+                    MaterialInfo& mat2 = *j;
+
+                    if (are_paired(mat1, mat2))
+                    {
+                        // Extract mat1 from the assembly.
+                        auto_release_ptr<Material> mat1_owner = assembly.materials().remove(mat1.m_material);
+
+                        // Update mat1's BSDF.
+                        // todo: make sure the BSDF is not used in another material.
+                        auto_release_ptr<BSDF> bsdf_owner = assembly.bsdfs().remove(mat1.m_bsdf);
+                        update_bsdf(mat1);
+                        assembly.bsdfs().insert(bsdf_owner);
+
+                        // Rename mat1.
+                        const string old_mat1_name = mat1.m_material->get_name();
+                        cleanup_entity_name(*mat1.m_material);
+                        update_material_mappings(
+                            assembly.object_instances(),
+                            old_mat1_name.c_str(),
+                            mat1.m_material->get_name());
+                        update_material_mappings(
+                            assembly.object_instances(),
+                            mat2.m_material->get_name(),
+                            mat1.m_material->get_name());
+
+                        // Insert mat1 back into the assembly.
+                        assembly.materials().insert(mat1_owner);
+
+                        // Remove mat2.
+                        assembly.bsdfs().remove(mat2.m_bsdf);
+                        assembly.materials().remove(mat2.m_material);
+
+                        mat1.m_updated = true;
+                        mat2.m_updated = true;
+                        break;
+                    }
+                }
+
+                if (!i->m_updated)
+                {
+                    // Update the material's BSDF.
+                    // todo: make sure the BSDF is not used in another material.
+                    auto_release_ptr<BSDF> bsdf_owner = assembly.bsdfs().remove(i->m_bsdf);
+                    update_bsdf(*i);
+                    assembly.bsdfs().insert(bsdf_owner);
+
+                    i->m_updated = true;
+                }
+            }
+        }
+
+        static void collect_refractive_materials(Assembly& assembly, vector<MaterialInfo>& materials)
+        {
+            for (each<MaterialContainer> i = assembly.materials(); i; ++i)
+            {
+                Material& material = *i;
+
+                if (strcmp(material.get_model(), "generic_material"))
+                    continue;
+
+                const ParamArray& material_params = material.get_parameters();
+
+                if (!material_params.strings().exist("bsdf"))
+                    continue;
+
+                const string bsdf_name = material_params.get<string>("bsdf");
+                BSDF* bsdf = assembly.bsdfs().get_by_name(bsdf_name.c_str());
+
+                if (bsdf == 0)
+                    continue;
+
+                if (strcmp(bsdf->get_model(), "specular_btdf"))
+                    continue;
+
+                const ParamArray& bsdf_params = bsdf->get_parameters();
+
+                if (!bsdf_params.strings().exist("from_ior") ||
+                    !bsdf_params.strings().exist("to_ior") ||
+                    !bsdf_params.strings().exist("reflectance") ||
+                    !bsdf_params.strings().exist("transmittance"))
+                    continue;
+
+                // At this point we have found a material that needs to be updated.
+
+                MaterialInfo info;
+                info.m_updated = false;
+                info.m_material = &material;
+                info.m_bsdf = bsdf;
+                info.m_bsdf_reflectance = bsdf_params.get<string>("reflectance");
+                info.m_bsdf_reflectance_multiplier = bsdf_params.get_optional<string>("reflectance_multiplier", "1.0");
+                info.m_bsdf_transmittance = bsdf_params.get<string>("transmittance");
+                info.m_bsdf_transmittance_multiplier = bsdf_params.get_optional<string>("transmittance_multiplier", "1.0");
+                info.m_bsdf_fresnel_multiplier = bsdf_params.get_optional<string>("fresnel_multiplier", "1.0");
+                info.m_bsdf_from_ior = bsdf_params.get<double>("from_ior");
+                info.m_bsdf_to_ior = bsdf_params.get<double>("to_ior");
+                info.m_bssrdf = material_params.get_optional<string>("bssrdf", "");
+                info.m_edf = material_params.get_optional<string>("edf", "");
+                info.m_alpha_map = material_params.get_optional<string>("alpha_map", "");
+                info.m_displacement_map = material_params.get_optional<string>("displacement_map", "");
+                info.m_displacement_method = material_params.get_optional<string>("displacement_method", "");
+                info.m_bump_amplitude = material_params.get_optional<string>("bump_amplitude", "");
+                info.m_normal_map_up = material_params.get_optional<string>("normal_map_up", "");
+
+                materials.push_back(info);
+            }
+        }
+
+        static bool are_paired(const MaterialInfo& lhs, const MaterialInfo& rhs)
+        {
+            assert(!lhs.m_updated && !rhs.m_updated);
+
+            return
+                lhs.m_bsdf_reflectance == rhs.m_bsdf_reflectance &&
+                lhs.m_bsdf_reflectance_multiplier == rhs.m_bsdf_reflectance_multiplier &&
+                lhs.m_bsdf_transmittance == rhs.m_bsdf_transmittance &&
+                lhs.m_bsdf_transmittance_multiplier == rhs.m_bsdf_transmittance_multiplier &&
+                lhs.m_bsdf_fresnel_multiplier == rhs.m_bsdf_fresnel_multiplier &&
+                feq(lhs.m_bsdf_from_ior, rhs.m_bsdf_to_ior) &&
+                feq(lhs.m_bsdf_to_ior, rhs.m_bsdf_from_ior) &&
+                lhs.m_bssrdf == rhs.m_bssrdf &&
+                lhs.m_edf == rhs.m_edf &&
+                lhs.m_alpha_map == rhs.m_alpha_map &&
+                lhs.m_displacement_map == rhs.m_displacement_map &&
+                lhs.m_displacement_method == rhs.m_displacement_method &&
+                lhs.m_bump_amplitude == rhs.m_bump_amplitude &&
+                lhs.m_normal_map_up == rhs.m_normal_map_up;
+        }
+
+        static void cleanup_entity_name(Entity& entity)
+        {
+            string name = entity.get_name();
+            name = replace(name, "_front_", "");
+            name = replace(name, "_front", "");
+            name = replace(name, "front_", "");
+            name = replace(name, "_back_", "");
+            name = replace(name, "_back", "");
+            name = replace(name, "back_", "");
+            entity.set_name(name.c_str());
+        }
+
+        static void update_material_mappings(
+            ObjectInstanceContainer&    object_instances,
+            const char*                 old_material_name,
+            const char*                 new_material_name)
+        {
+            for (each<ObjectInstanceContainer> i = object_instances; i; ++i)
+            {
+                update_material_mappings(i->get_front_material_mappings(), old_material_name, new_material_name);
+                update_material_mappings(i->get_back_material_mappings(), old_material_name, new_material_name);
+            }
+        }
+
+        static void update_material_mappings(
+            StringDictionary&           mappings,
+            const char*                 old_material_name,
+            const char*                 new_material_name)
+        {
+            for (const_each<StringDictionary> i = mappings; i; ++i)
+            {
+                if (strcmp(i->value(), old_material_name) == 0)
+                    mappings.set(i->key(), new_material_name);
+            }
+        }
+
+        static void update_bsdf(const MaterialInfo& info)
+        {
+            ParamArray& bsdf_params = info.m_bsdf->get_parameters();
+
+            bsdf_params.strings().remove("from_ior");
+            bsdf_params.strings().remove("to_ior");
+
+            const double ior =
+                feq(info.m_bsdf_from_ior, 1.0) ? info.m_bsdf_to_ior : info.m_bsdf_from_ior;
+            bsdf_params.strings().insert("ior", ior);
+
+            cleanup_entity_name(*info.m_bsdf);
+            info.m_material->get_parameters().insert("bsdf", info.m_bsdf->get_name());
         }
     };
 }
@@ -845,8 +1099,9 @@ bool ProjectFileUpdater::update(Project& project, const size_t to_revision)
       CASE_UPDATE_FROM_REVISION(6);
       CASE_UPDATE_FROM_REVISION(7);
       CASE_UPDATE_FROM_REVISION(8);
+      CASE_UPDATE_FROM_REVISION(9);
 
-      case 9:
+      case 10:
         // Project is up-to-date.
         break;
 

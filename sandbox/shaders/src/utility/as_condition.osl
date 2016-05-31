@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 The masked shader writer, The appleseedhq Organization
+// Copyright (c) 2015-2016 The masked shader writer, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,13 +29,13 @@
 
 shader as_condition
 (
-    string Cond = "Equal"
+    string     Cond = "Equal"
     [[
         string widget = "popup",
         string options = "Equal|NotEqual|Less|LessEqual|Greater|GreaterEqual"
     ]],
-    float Float1 = 0.0,
-    float Float2 = 0.0,
+    float      Float1 = 0.0,
+    float      Float2 = 0.0,
     output int Result = 0
 )
 {

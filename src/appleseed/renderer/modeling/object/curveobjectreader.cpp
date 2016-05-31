@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2015 Srinath Ravichandran, The appleseedhq Organization
+// Copyright (c) 2014-2016 Srinath Ravichandran, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -153,7 +153,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_furry_ball(
         GScalar widths[ControlPointCount];
 
         static const size_t Bases[] = { 2 };
-        const GVector2 s = hammersley_sequence<GScalar, 2>(Bases, c, curve_count);
+        const GVector2 s = hammersley_sequence<GScalar, 2>(Bases, curve_count, c);
         const GVector3 d = sample_sphere_uniform(s);
 
         points[0] = d;

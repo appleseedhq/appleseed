@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,21 +41,22 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace
 {
-    auto_release_ptr<EnvironmentEDF> create_environment_edf(const std::string env_type,
-                                                            const std::string& name,
+    auto_release_ptr<EnvironmentEDF> create_environment_edf(const string&    model,
+                                                            const string&    name,
                                                             const bpy::dict& params)
     {
         EnvironmentEDFFactoryRegistrar factories;
-        const IEnvironmentEDFFactory* factory = factories.lookup(env_type.c_str());
+        const IEnvironmentEDFFactory* factory = factories.lookup(model.c_str());
 
         if (factory)
             return factory->create(name.c_str(), bpy_dict_to_param_array(params));
         else
         {
-            PyErr_SetString(PyExc_RuntimeError, "EnvironmentEDF type not found");
+            PyErr_SetString(PyExc_RuntimeError, "EnvironmentEDF model not found");
             bpy::throw_error_already_set();
         }
 

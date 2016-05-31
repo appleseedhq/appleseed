@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -263,7 +263,7 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
         for (size_t i = 0; i < point_count; ++i)
         {
             const size_t Bases[] = { 2 };
-            const Vector2d s = hammersley_sequence<double, 2>(Bases, i, point_count);
+            const Vector2d s = hammersley_sequence<double, 2>(Bases, point_count, i);
             points[i] = to_unit_square(sampling_function(s));
         }
 
@@ -281,7 +281,7 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
         for (size_t i = 0; i < point_count; ++i)
         {
             const size_t Bases[] = { 2 };
-            const Vector2d s = hammersley_sequence<double, 2>(Bases, i, point_count);
+            const Vector2d s = hammersley_sequence<double, 2>(Bases, point_count, i);
             points[i] = sampling_function(s);
         }
 
@@ -366,7 +366,7 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
         for (size_t i = 0; i < PointCount; ++i)
         {
             const size_t Bases[] = { 2, 3 };
-            const Vector3d s = hammersley_sequence<double, 3>(Bases, i, PointCount);
+            const Vector3d s = hammersley_sequence<double, 3>(Bases, PointCount, i);
             const Vector2d p = sample_regular_polygon_uniform(s, VertexCount, vertices);
             points[i] = to_unit_square(p);
         }

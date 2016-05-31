@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 The masked shader writer, The appleseedhq Organization
+// Copyright (c) 2015-2016 The masked shader writer, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,16 +29,12 @@
 #ifndef APPLESEED_SHADERS_TRANSFORM_H
 #define APPLESEED_SHADERS_TRANSFORM_H
 
-#define APPLESEED_TRANSFORM_SPACE_METADATA  \
-    string widget = "popup",                \
-    string options = "object|world|camera"
-
 void rotate2d(
-    float x, 
-    float y, 
-    float angle_in_degrees,
-    output float rx,
-    output float ry)
+    float         x,
+    float         y,
+    float         angle_in_degrees,
+    output float  rx,
+    output float  ry)
 {
     if (angle_in_degrees != 0)
     {

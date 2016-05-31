@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.8
+# Compiled by oslc 1.6.9
 surface velocity_matte
 global	normal	N	%read{4,4} %write{2147483647,-1}
 global	closure color	Ci	%read{2147483647,-1} %write{5,5}
@@ -21,9 +21,9 @@ code ___main___
 # velocity_matte.osl:5
 #     Ci = Cs * diffuse(N);
 	functioncall	$const2 5 	%line{5} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:496
-# closure color translucent(normal N) BUILTIN;
-	closure		$tmp3 $const5 N $const4 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{496} %argrw{"wrrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:658
+# // compatibility with the OSL spec
+	closure		$tmp3 $const5 N $const4 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{658} %argrw{"wrrr"}
 # velocity_matte.osl:5
 #     Ci = Cs * diffuse(N);
 	mul		Ci $tmp3 Cs 	%filename{"velocity_matte.osl"} %line{5} %argrw{"wrr"}

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -81,6 +81,7 @@ static const double SqrtTwo         =  1.4142135623730950;      // sqrt(2)
 static const double RcpSqrtTwo      =  0.7071067811865475;      // 1 / sqrt(2) = sqrt(2) / 2
 static const double SqrtThree       =  1.7320508075688773;      // sqrt(3)
 static const double GoldenRatio     =  1.6180339887498948;      // (1 + sqrt(5)) / 2
+static const double Ln10            =  2.3025850929940457;      // ln(10)
 
 
 //
@@ -110,6 +111,14 @@ T abs(const T x);
 template <typename T>
 T square(const T x);
 
+// Return the cube of the argument.
+template <typename T>
+T cube(const T x);
+
+// Return 1 / x.
+template <typename T>
+T rcp(const T x);
+
 // Compile-time exponentiation of the form x^p where p >= 0.
 // Note: swapped template arguments to allow writing pow_int<3>(3.14).
 template <size_t P, typename T>
@@ -132,14 +141,6 @@ bool is_pow2(const T x);
 template <typename T>
 T log2_int(T x);
 
-// Return the factorial of a given integer.
-template <typename T>
-T factorial(T x);
-
-// Return the binomial coefficient (n, k).
-template <typename T>
-T binomial(const T n, const T k);
-
 // Return the log in a given base of a given scalar.
 template <typename T>
 T log(const T x, const T base);
@@ -147,6 +148,14 @@ T log(const T x, const T base);
 // Return the next given power of a given scalar.
 template <typename T>
 T next_power(const T x, const T base);
+
+// Return the factorial of a given integer.
+template <typename T>
+T factorial(T x);
+
+// Return the binomial coefficient (n, k).
+template <typename T>
+T binomial(const T n, const T k);
 
 // Clamp the argument to [low, high].
 template <typename T>
@@ -319,6 +328,18 @@ inline T square(const T x)
     return x * x;
 }
 
+template <typename T>
+inline T cube(const T x)
+{
+    return x * x * x;
+}
+
+template <typename T>
+inline T rcp(const T x)
+{
+    return T(1.0) / x;
+}
+
 template <typename T, size_t P>
 struct PowIntHelper
 {
@@ -433,6 +454,8 @@ inline uint32 log2_int(const uint32 x)
     return static_cast<uint32>(index);
 }
 
+#ifdef APPLESEED_ARCH64
+
 template <>
 inline uint64 log2_int(const uint64 x)
 {
@@ -443,6 +466,8 @@ inline uint64 log2_int(const uint64 x)
 
     return static_cast<uint64>(index);
 }
+
+#endif
 
 // gcc.
 #elif defined __GNUC__
@@ -466,6 +491,18 @@ inline unsigned long log2_int(const unsigned long x)
 #endif
 
 template <typename T>
+inline T log(const T x, const T base)
+{
+    return std::log(x) / std::log(base);
+}
+
+template <typename T>
+inline T next_power(const T x, const T base)
+{
+    return std::pow(base, fast_ceil(log(x, base)));
+}
+
+template <typename T>
 inline T factorial(T x)
 {
     assert(x >= 0);
@@ -486,18 +523,6 @@ inline T binomial(const T n, const T k)
 {
     assert(k <= n);
     return factorial(n) / (factorial(k) * factorial(n - k));
-}
-
-template <typename T>
-inline T log(const T x, const T base)
-{
-    return std::log(x) / std::log(base);
-}
-
-template <typename T>
-inline T next_power(const T x, const T base)
-{
-    return std::pow(base, fast_ceil(log(x, base)));
 }
 
 template <typename T>

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -107,7 +107,7 @@ APPLESEED_DLLSYMBOL char* duplicate_string(const char* s);
 APPLESEED_DLLSYMBOL void free_string(const char* s);
 
 // Convert a C string allocated by duplicate_string() to an std::string, and dellocate the C string.
-FORCE_INLINE std::string convert_to_std_string(const char* s);
+APPLESEED_FORCE_INLINE std::string convert_to_std_string(const char* s);
 
 
 //
@@ -150,6 +150,12 @@ std::string trim_both(
     const std::string&      s,
     const std::string&      delimiters = Blanks);
 
+// Return true if a given string starts with a given prefix.
+bool starts_with(const std::string& s, const std::string& prefix);
+
+// Return true if a given string ends with a given suffix.
+bool ends_with(const std::string& s, const std::string& suffix);
+
 // Split a given string into multiple individual tokens of a given
 // type, according to a set of delimiting characters.
 template <typename Vec>
@@ -184,6 +190,18 @@ std::string replace(
     const std::string&      s,
     const std::string&      old_string,
     const std::string&      new_string);
+
+// Formatting functions, similar to the .NET String.Format() method.
+// Placeholders are of the form {n} with n starting at 0, e.g. {0}, {1}, etc.
+// Example: format("Hello {0}", "World") will return "Hello World".
+template <typename T1>
+std::string format(const std::string& fmt, const T1& arg1);
+template <typename T1, typename T2>
+std::string format(const std::string& fmt, const T1& arg1, const T2& arg2);
+template <typename T1, typename T2, typename T3>
+std::string format(const std::string& fmt, const T1& arg1, const T2& arg2, const T3& arg3);
+template <typename T1, typename T2, typename T3, typename T4>
+std::string format(const std::string& fmt, const T1& arg1, const T2& arg2, const T3& arg3, const T4& arg4);
 
 // Return a copy of the input pattern where consecutive '#' characters have
 // been replaced by 'value', with leading zeroes added as necessary.
@@ -498,7 +516,7 @@ inline bool is_empty_string(const char* s)
 // C++ strings manipulation functions implementation.
 //
 
-FORCE_INLINE std::string convert_to_std_string(const char* s)
+APPLESEED_FORCE_INLINE std::string convert_to_std_string(const char* s)
 {
     const std::string result = s;
     free_string(s);
@@ -552,9 +570,10 @@ inline std::string pad_left(
     const char              padding,
     const size_t            length)
 {
-    if (s.size() >= length)
-         return s;
-    else return std::string(length - s.size(), padding) + s;
+    return
+        s.size() < length
+            ? std::string(length - s.size(), padding) + s
+            : s;
 }
 
 inline std::string pad_right(
@@ -562,9 +581,10 @@ inline std::string pad_right(
     const char              padding,
     const size_t            length)
 {
-    if (s.size() >= length)
-         return s;
-    else return s + std::string(length - s.size(), padding);
+    return
+        s.size() < length
+            ? s + std::string(length - s.size(), padding)
+            : s;
 }
 
 inline std::string trim_left(
@@ -590,6 +610,24 @@ inline std::string trim_both(
     const std::string::size_type begin = s.find_first_not_of(delimiters);
     const std::string::size_type end = s.find_last_not_of(delimiters);
     return begin == std::string::npos ? "" : s.substr(begin, end - begin + 1);
+}
+
+inline bool starts_with(const std::string& s, const std::string& prefix)
+{
+    assert(!prefix.empty());
+    return
+        s.size() < prefix.size()
+            ? false
+            : s.compare(0, prefix.size(), prefix) == 0;
+}
+
+inline bool ends_with(const std::string& s, const std::string& suffix)
+{
+    assert(!suffix.empty());
+    return
+        s.size() < suffix.size()
+            ? false
+            : s.compare(s.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
 template <typename Vec>
@@ -714,6 +752,30 @@ inline std::string replace(
     } while ((pos = result.find(old_string, pos)) != std::string::npos);
 
     return result;
+}
+
+template <typename T1>
+std::string format(const std::string& fmt, const T1& arg1)
+{
+    return replace(fmt, "{0}", to_string(arg1));
+}
+
+template <typename T1, typename T2>
+std::string format(const std::string& fmt, const T1& arg1, const T2& arg2)
+{
+    return replace(format(fmt, arg1), "{1}", to_string(arg2));
+}
+
+template <typename T1, typename T2, typename T3>
+std::string format(const std::string& fmt, const T1& arg1, const T2& arg2, const T3& arg3)
+{
+    return replace(format(fmt, arg1, arg2), "{2}", to_string(arg3));
+}
+
+template <typename T1, typename T2, typename T3, typename T4>
+std::string format(const std::string& fmt, const T1& arg1, const T2& arg2, const T3& arg3, const T4& arg4)
+{
+    return replace(format(fmt, arg1, arg2, arg3), "{3}", to_string(arg4));
 }
 
 inline std::string get_numbered_string(

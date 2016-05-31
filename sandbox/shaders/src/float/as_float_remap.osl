@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 The masked shader writer, The appleseedhq Organization
+// Copyright (c) 2015-2016 The masked shader writer, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,12 +29,12 @@
 
 shader as_float_remap
 (
-    float Float = 0.0,
-    float FromLow  = 0.0,
-    float FromHigh = 1.0,
-    float ToLow  = 0.0,
-    float ToHigh = 1.0,
-    output float Result = 0.0
+    float         Float = 0.0,
+    float         FromLow  = 0.0,
+    float         FromHigh = 1.0,
+    float         ToLow  = 0.0,
+    float         ToHigh = 1.0,
+    output float  Result = 0.0
 )
 {
     float t = clamp((Float - FromLow) / (FromHigh - FromLow), 0.0, 1.0);

@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 The masked shader writer, The appleseedhq Organization
+// Copyright (c) 2015-2016 The masked shader writer, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,11 +28,11 @@
 
 shader as_map3d
 (
-    vector Point = 0,
-    vector Center = 0.5,
-    vector Scale = 1.0,
-    vector Rotate = 0.0,
-    vector Translate = 0.0,
+    vector        Point = 0,
+    vector        Center = 0.5,
+    vector        Scale = 1.0,
+    vector        Rotate = 0.0,
+    vector        Translate = 0.0,
     output vector Pout = 0
 )
 {

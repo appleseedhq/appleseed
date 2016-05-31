@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -291,7 +291,6 @@ namespace aabbtriangle_impl
 
 }   // namespace aabbtriangle_impl
 
-// Return true if a given bounding box and a given triangle intersect.
 template <typename T>
 bool intersect(
     const AABB<T, 3>&       bbox,
@@ -357,7 +356,8 @@ bool intersect(
 
     // Find the bounding box corners the farthest from the support plane
     // of the triangle, on each side of the plane.
-    Vector<T, 3> pmin, pmax;
+    Vector<T, 3> pmin(+std::numeric_limits<T>::max());
+    Vector<T, 3> pmax(-std::numeric_limits<T>::max());
     T dmin = +std::numeric_limits<T>::max();
     T dmax = -std::numeric_limits<T>::max();
     aabbtriangle_impl::find_extrema_corners<T, 0>(bbox, n, dmin, dmax, pmin, pmax);

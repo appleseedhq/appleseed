@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -118,7 +118,11 @@ template <typename T, size_t N> T dot(const Vector<T, N>& lhs, const Vector<T, N
 template <typename T, size_t N> T square_norm(const Vector<T, N>& v);
 template <typename T, size_t N> T norm(const Vector<T, N>& v);
 template <typename T, size_t N> Vector<T, N> normalize(const Vector<T, N>& v);
+template <typename T, size_t N> Vector<T, N> safe_normalize(const Vector<T, N>& v, const Vector<T, N>& fallback);
 template <typename T, size_t N> Vector<T, N> safe_normalize(const Vector<T, N>& v);
+
+// Bring the norm of a nearly-unit vector closer to 1.
+template <typename T, size_t N> Vector<T, N> improve_normalization(const Vector<T, N>& v);
 
 // Return true if a vector is normalized (unit-length), false otherwise.
 template <typename T, size_t N> bool is_normalized(const Vector<T, N>& v);
@@ -727,6 +731,14 @@ inline Vector<T, N> normalize(const Vector<T, N>& v)
 }
 
 template <typename T, size_t N>
+inline Vector<T, N> safe_normalize(const Vector<T, N>& v, const Vector<T, N>& fallback)
+{
+    assert(is_normalized(fallback));
+    const T n = norm(v);
+    return n > 0.0 ? v / n : fallback;
+}
+
+template <typename T, size_t N>
 inline Vector<T, N> safe_normalize(const Vector<T, N>& v)
 {
     Vector<T, N> result = v;
@@ -740,6 +752,12 @@ inline Vector<T, N> safe_normalize(const Vector<T, N>& v)
     assert(is_normalized(result));
 
     return result;
+}
+
+template <typename T, size_t N>
+inline Vector<T, N> improve_normalization(const Vector<T, N>& v)
+{
+    return v * (T(3.0) - square_norm(v)) * T(0.5);
 }
 
 template <typename T, size_t N>

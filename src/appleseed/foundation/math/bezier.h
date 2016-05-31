@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2015 Srinath Ravichandran, The appleseedhq Organization
+// Copyright (c) 2014-2016 Srinath Ravichandran, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -129,11 +129,6 @@ inline V evaluate_bezier3_derivative(const V v0, const V v1, const V v2, const V
 
     const T t2 = t * t;             // t^2
     const T u2 = u * u;             // (1-t)^2
-
-    const T a = u2 * u;             // (1-t)^3
-    const T b = u2 * t;             // (1-t)^2*t
-    const T c = u * t2;             // (1-t)*t^2
-    const T d = t2 * t;             // t^3
 
     return T(3.0) * (u2 * (v1 - v0) + t2 * (v3 - v2)) + T(6.0) * u * t * (v2 - v1);
 }

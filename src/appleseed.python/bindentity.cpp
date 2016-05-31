@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -47,29 +47,10 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace
 {
-    Entity* get_entity_vec_item(EntityVector& vec, const int relative_index)
-    {
-        const size_t index =
-            static_cast<size_t>(
-                relative_index >= 0 ? relative_index : vec.size() + relative_index);
-
-        if (index >= vec.size())
-        {
-            PyErr_SetString(PyExc_IndexError, "Invalid index in appleseed.EntityVector");
-            bpy::throw_error_already_set();
-        }
-
-        return vec.get_by_index(index);
-    }
-
-    Entity* get_entity_map_item(EntityMap& map, const std::string& key)
-    {
-        return map.get_by_name(key.c_str());
-    }
-
     bpy::dict entity_get_parameters(const Entity* e)
     {
         return param_array_to_bpy_dict(e->get_parameters());
@@ -106,23 +87,10 @@ void bind_entity()
     bpy::class_<EntityVector, boost::noncopyable>("EntityVector")
         .def("clear", &EntityVector::clear)
         .def("__len__", &EntityVector::size)
-        .def("__getitem__", get_entity_vec_item, bpy::return_value_policy<bpy::reference_existing_object>())
-
-        .def("insert", &EntityVector::insert)
-        .def("remove", &EntityVector::remove)
-
-        .def("__iter__", bpy::iterator<EntityVector>())
         ;
 
     bpy::class_<EntityMap, boost::noncopyable>("EntityMap")
         .def("clear", &EntityMap::clear)
         .def("__len__", &EntityMap::size)
-        .def("__getitem__", get_entity_map_item, bpy::return_value_policy<bpy::reference_existing_object>())
-
-        .def("insert", &EntityMap::insert)
-        .def("remove", &EntityMap::remove)
-
-        .def("get_by_uid", &EntityMap::get_by_uid, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def("get_by_name", &EntityMap::get_by_name, bpy::return_value_policy<bpy::reference_existing_object>())
         ;
 }

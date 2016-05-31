@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -56,7 +56,7 @@ TEST_SUITE(Foundation_Math_Sampling_SphericalImportanceSampler)
         for (size_t i = 0; i < N; ++i)
         {
             static const size_t Bases[] = { 2, 3 };
-            const Vector3d s = hammersley_sequence<double, 3>(Bases, i, N);
+            const Vector3d s = hammersley_sequence<double, 3>(Bases, N, i);
 
             const Vector3d p = sampler.sample(s);
             file.draw_point(p, "color.white", 1);

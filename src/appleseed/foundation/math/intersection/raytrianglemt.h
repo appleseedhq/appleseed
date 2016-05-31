@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -130,7 +130,7 @@ inline TriangleMT<T>::TriangleMT(
 
 template <typename T>
 template <typename U>
-FORCE_INLINE TriangleMT<T>::TriangleMT(const TriangleMT<U>& rhs)
+APPLESEED_FORCE_INLINE TriangleMT<T>::TriangleMT(const TriangleMT<U>& rhs)
   : m_v0(VectorType(rhs.m_v0))
   , m_e0(VectorType(rhs.m_e0))
   , m_e1(VectorType(rhs.m_e1))
@@ -138,7 +138,7 @@ FORCE_INLINE TriangleMT<T>::TriangleMT(const TriangleMT<U>& rhs)
 }
 
 template <typename T>
-FORCE_INLINE bool TriangleMT<T>::intersect(
+APPLESEED_FORCE_INLINE bool TriangleMT<T>::intersect(
     const RayType&          ray,
     ValueType&              t,
     ValueType&              u,
@@ -204,7 +204,7 @@ FORCE_INLINE bool TriangleMT<T>::intersect(
 }
 
 template <typename T>
-FORCE_INLINE bool TriangleMT<T>::intersect(const RayType& ray) const
+APPLESEED_FORCE_INLINE bool TriangleMT<T>::intersect(const RayType& ray) const
 {
     // Calculate determinant.
     const VectorType pvec = cross(ray.m_dir, m_e1);

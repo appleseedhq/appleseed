@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -105,7 +105,7 @@ ParamArray Configuration::get_inherited_parameters() const
 
 Dictionary Configuration::get_metadata()
 {
-    ParamArray metadata;
+    Dictionary metadata;
 
     metadata.insert(
         "sampling_mode",
@@ -113,12 +113,21 @@ Dictionary Configuration::get_metadata()
             .insert("type", "enum")
             .insert("values", "rng|qmc")
             .insert("default", "rng")
+            .insert("label", "Sampler")
             .insert("help", "Sampler to use when generating samples")
             .insert(
                 "options",
                 Dictionary()
-                    .insert("rng", Dictionary().insert("help", "Random sampler"))
-                    .insert("qmc", Dictionary().insert("help", "Quasi Monte Carlo sampler"))));
+                    .insert(
+                        "rng",
+                        Dictionary()
+                            .insert("label", "RNG")
+                            .insert("help", "Random sampler"))
+                    .insert(
+                        "qmc",
+                        Dictionary()
+                            .insert("label", "QMC")
+                            .insert("help", "Quasi Monte Carlo sampler"))));
 
     metadata.insert(
         "lighting_engine",
@@ -126,18 +135,32 @@ Dictionary Configuration::get_metadata()
             .insert("type", "enum")
             .insert("values", "drt|pt|sppm")
             .insert("default", "pt")
+            .insert("label", "Lighting Engine")
             .insert("help", "Lighting engine used when rendering")
             .insert(
                 "options",
                 Dictionary()
-                    .insert("drt", Dictionary().insert("help", "Distribution ray tracing"))
-                    .insert("pt", Dictionary().insert("help", "Unidirectional path tracing"))
-                    .insert("sppm", Dictionary().insert("help", "Stochastic progressive photon mapping"))));
+                    .insert(
+                        "drt",
+                        Dictionary()
+                            .insert("label", "Distribution Ray Tracer")
+                            .insert("help", "Distribution ray tracing"))
+                    .insert(
+                        "pt",
+                        Dictionary()
+                            .insert("label", "Unidirectional Path Tracer")
+                            .insert("help", "Unidirectional path tracing"))
+                    .insert(
+                        "sppm",
+                        Dictionary()
+                            .insert("label", "Progressive Photon Mapping")
+                            .insert("help", "Stochastic progressive photon mapping"))));
 
     metadata.insert(
         "rendering_threads",
         Dictionary()
             .insert("type", "int")
+            .insert("label", "Render Threads")
             .insert("help", "Number of threads to use for rendering"));
 
     metadata.dictionaries().insert(

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -59,12 +59,12 @@ BENCHMARK_SUITE(SameSign)
     // Empty function.
     //
 
-    NO_INLINE bool empty_function(const float a, const float b)
+    APPLESEED_NO_INLINE bool empty_function(const float a, const float b)
     {
         return false;
     }
 
-    NO_INLINE bool empty_function(const float a, const float b, const float c)
+    APPLESEED_NO_INLINE bool empty_function(const float a, const float b, const float c)
     {
         return false;
     }
@@ -73,7 +73,7 @@ BENCHMARK_SUITE(SameSign)
     // Naive variant.
     //
 
-    NO_INLINE bool same_sign_naive(const float a, const float b)
+    APPLESEED_NO_INLINE bool same_sign_naive(const float a, const float b)
     {
         if (abs(a) == 0.0f || abs(b) == 0.0f)
             return true;
@@ -81,7 +81,7 @@ BENCHMARK_SUITE(SameSign)
         return (a >= 0.0f) == (b >= 0.0f);
     }
 
-    NO_INLINE bool same_sign_naive(const float a, const float b, const float c)
+    APPLESEED_NO_INLINE bool same_sign_naive(const float a, const float b, const float c)
     {
         return same_sign_naive(a, b) && same_sign_naive(a, c) && same_sign_naive(b, c);
     }
@@ -90,7 +90,7 @@ BENCHMARK_SUITE(SameSign)
     // Integer arithmetic-based variant.
     //
 
-    NO_INLINE bool same_sign_integer(const float a, const float b)
+    APPLESEED_NO_INLINE bool same_sign_integer(const float a, const float b)
     {
         const int ia = binary_cast<int>(a);
         const int ib = binary_cast<int>(b);
@@ -102,7 +102,7 @@ BENCHMARK_SUITE(SameSign)
         return (az | bz | ab) != 0;
     }
 
-    NO_INLINE bool same_sign_integer(const float a, const float b, const float c)
+    APPLESEED_NO_INLINE bool same_sign_integer(const float a, const float b, const float c)
     {
         const int32 ia = binary_cast<int32>(a);
         const int32 ib = binary_cast<int32>(b);
@@ -127,12 +127,12 @@ BENCHMARK_SUITE(SameSign)
     // Multiplication-based variant.
     //
 
-    NO_INLINE bool same_sign_multiplication(const float a, const float b)
+    APPLESEED_NO_INLINE bool same_sign_multiplication(const float a, const float b)
     {
         return a * b >= 0.0f;
     }
 
-    NO_INLINE bool same_sign_multiplication(const float a, const float b, const float c)
+    APPLESEED_NO_INLINE bool same_sign_multiplication(const float a, const float b, const float c)
     {
         return a * b >= 0.0f && a * c >= 0.0f && b * c >= 0.0f;
     }
@@ -143,9 +143,9 @@ BENCHMARK_SUITE(SameSign)
     // SSE implementation of the 3-component multiplication-based variant.
     //
 
-    NO_INLINE bool same_sign_multiplication_sse(const float a, const float b, const float c)
+    APPLESEED_NO_INLINE bool same_sign_multiplication_sse(const float a, const float b, const float c)
     {
-        SSE_ALIGN float u[4] = { a, a, b, c };
+        APPLESEED_SSE_ALIGN float u[4] = { a, a, b, c };
 
         const __m128 mu = _mm_load_ps(u);
         const __m128 mv = _mm_shuffle_ps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));

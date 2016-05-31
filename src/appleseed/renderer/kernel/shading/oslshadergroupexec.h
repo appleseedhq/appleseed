@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -42,6 +42,7 @@
 #include "foundation/platform/oslheaderguards.h"
 BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
+#include "OSL/oslversion.h"
 END_OSL_INCLUDES
 
 // Forward declarations.

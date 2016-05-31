@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -52,14 +52,14 @@ class APPLESEED_DLLSYMBOL TestListenerHelper
   public:
     // Write a message with formatting to a test listener.
     static void write(
-        ITestListener&          test_listener,
-        const TestSuite&        test_suite,
-        const char*             test_case_name,
-        const char*             file,
-        const size_t            line,
-        const TestMessage::Type message_type,
-        PRINTF_FMT const char*  format, ...)
-        PRINTF_FMT_ATTR(7, 8);
+        ITestListener&                      test_listener,
+        const TestSuite&                    test_suite,
+        const char*                         test_case_name,
+        const char*                         file,
+        const size_t                        line,
+        const TestMessage::Type             message_type,
+        APPLESEED_PRINTF_FMT const char*    format, ...)
+        APPLESEED_PRINTF_FMT_ATTR(7, 8);
 };
 
 }       // namespace foundation

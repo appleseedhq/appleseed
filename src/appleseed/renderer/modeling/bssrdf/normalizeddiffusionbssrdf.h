@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015-2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,7 @@ APPLESEED_DECLARE_INPUT_VALUES(NormalizedDiffusionBSSRDFInputValues)
     double      m_weight;
     Spectrum    m_reflectance;
     double      m_reflectance_multiplier;
-    double      m_dmfp;
+    Spectrum    m_dmfp;
     double      m_dmfp_multiplier;
     double      m_outside_ior;
     double      m_inside_ior;
@@ -93,6 +93,11 @@ class APPLESEED_DLLSYMBOL NormalizedDiffusionBSSRDFFactory
     virtual foundation::auto_release_ptr<BSSRDF> create(
         const char*         name,
         const ParamArray&   params) const APPLESEED_OVERRIDE;
+
+    // Static variant of the create() method above.
+    static foundation::auto_release_ptr<BSSRDF> static_create(
+        const char*         name,
+        const ParamArray&   params);
 };
 
 }       // namespace renderer

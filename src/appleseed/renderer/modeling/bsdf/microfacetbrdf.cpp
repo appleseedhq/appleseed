@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
-#include "renderer/modeling/bsdf/microfacetbrdfhelper.h"
+#include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
@@ -155,13 +155,18 @@ namespace
             return true;
         }
 
-        FORCE_INLINE virtual void sample(
+        APPLESEED_FORCE_INLINE virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
             BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
+            const Vector3d& n = sample.get_shading_basis().get_normal();
+            const double cos_on = std::min(dot(sample.m_outgoing.get_value(), n), 1.0);
+            if (cos_on < 0.0)
+                return;
+
             const InputValues* values = static_cast<const InputValues*>(data);
             const double glossiness = values->m_glossiness * values->m_glossiness_multiplier;
 
@@ -176,9 +181,8 @@ namespace
                         blinn_mdf,
                         e,
                         e,
-                        e,
-                        e,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        cos_on,
                         sample);
                 }
                 break;
@@ -192,9 +196,8 @@ namespace
                         beckmann_mdf,
                         a,
                         a,
-                        a,
-                        a,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        cos_on,
                         sample);
                 }
                 break;
@@ -208,9 +211,8 @@ namespace
                         ward_mdf,
                         a,
                         a,
-                        a,
-                        a,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        cos_on,
                         sample);
                 }
                 break;
@@ -224,9 +226,8 @@ namespace
                         ggx_mdf,
                         a,
                         a,
-                        a,
-                        a,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        cos_on,
                         sample);
                 }
                 break;
@@ -237,7 +238,7 @@ namespace
             sample.m_value *= static_cast<float>(values->m_reflectance_multiplier);
         }
 
-        FORCE_INLINE virtual double evaluate(
+        APPLESEED_FORCE_INLINE virtual double evaluate(
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
@@ -248,6 +249,16 @@ namespace
             const int           modes,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
+            if (!ScatteringMode::has_glossy(modes))
+                return 0.0;
+
+            // No reflection below the shading surface.
+            const Vector3d& n = shading_basis.get_normal();
+            const double cos_in = dot(incoming, n);
+            const double cos_on = dot(outgoing, n);
+            if (cos_in < 0.0 || cos_on < 0.0)
+                return 0.0;
+
             const InputValues* values = static_cast<const InputValues*>(data);
             const double glossiness = values->m_glossiness * values->m_glossiness_multiplier;
 
@@ -263,13 +274,12 @@ namespace
                         blinn_mdf,
                         e,
                         e,
-                        e,
-                        e,
                         shading_basis,
                         outgoing,
                         incoming,
-                        modes,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        cos_in,
+                        cos_on,
                         value);
                 }
                 break;
@@ -282,13 +292,12 @@ namespace
                         beckman_mdf,
                         a,
                         a,
-                        a,
-                        a,
                         shading_basis,
                         outgoing,
                         incoming,
-                        modes,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        cos_in,
+                        cos_on,
                         value);
                 }
                 break;
@@ -301,13 +310,12 @@ namespace
                         ward_mdf,
                         a,
                         a,
-                        a,
-                        a,
                         shading_basis,
                         outgoing,
                         incoming,
-                        modes,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        cos_in,
+                        cos_on,
                         value);
                 }
                 break;
@@ -320,13 +328,12 @@ namespace
                         ggx_mdf,
                         a,
                         a,
-                        a,
-                        a,
                         shading_basis,
                         outgoing,
                         incoming,
-                        modes,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        cos_in,
+                        cos_on,
                         value);
                 }
                 break;
@@ -338,7 +345,7 @@ namespace
             return pdf;
         }
 
-        FORCE_INLINE virtual double evaluate_pdf(
+        APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
             const void*         data,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
@@ -346,6 +353,16 @@ namespace
             const Vector3d&     incoming,
             const int           modes) const APPLESEED_OVERRIDE
         {
+            if (!ScatteringMode::has_glossy(modes))
+                return 0.0;
+
+            // No reflection below the shading surface.
+            const Vector3d& n = shading_basis.get_normal();
+            const double cos_in = dot(incoming, n);
+            const double cos_on = dot(outgoing, n);
+            if (cos_in < 0.0 || cos_on < 0.0)
+                return 0.0;
+
             const InputValues* values = static_cast<const InputValues*>(data);
             const double glossiness = values->m_glossiness * values->m_glossiness_multiplier;
 
@@ -361,8 +378,7 @@ namespace
                         e,
                         shading_basis,
                         outgoing,
-                        incoming,
-                        modes);
+                        incoming);
                 }
                 break;
 
@@ -376,8 +392,7 @@ namespace
                         a,
                         shading_basis,
                         outgoing,
-                        incoming,
-                        modes);
+                        incoming);
                 }
                 break;
 
@@ -391,8 +406,7 @@ namespace
                         a,
                         shading_basis,
                         outgoing,
-                        incoming,
-                        modes);
+                        incoming);
                 }
                 break;
 
@@ -406,8 +420,7 @@ namespace
                         a,
                         shading_basis,
                         outgoing,
-                        incoming,
-                        modes);
+                        incoming);
                 }
                 break;
 
@@ -545,6 +558,13 @@ DictionaryArray MicrofacetBRDFFactory::get_input_metadata() const
 auto_release_ptr<BSDF> MicrofacetBRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
+{
+    return auto_release_ptr<BSDF>(new MicrofacetBRDF(name, params));
+}
+
+auto_release_ptr<BSDF> MicrofacetBRDFFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
 {
     return auto_release_ptr<BSDF>(new MicrofacetBRDF(name, params));
 }

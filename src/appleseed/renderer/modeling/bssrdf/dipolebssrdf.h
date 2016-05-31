@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,7 @@ APPLESEED_DECLARE_INPUT_VALUES(DipoleBSSRDFInputValues)
     double      m_weight;
     Spectrum    m_reflectance;
     double      m_reflectance_multiplier;
-    double      m_dmfp;
+    Spectrum    m_dmfp;
     double      m_dmfp_multiplier;
     Spectrum    m_sigma_a;
     Spectrum    m_sigma_s;

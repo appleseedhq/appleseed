@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -108,10 +108,6 @@ LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
   : m_params(params)
   , m_emitting_triangle_hash_table(m_triangle_key_hasher)
 {
-    const Camera* camera = scene.get_camera();
-    m_shutter_open_time = camera->get_shutter_open_time();
-    m_shutter_close_time = camera->get_shutter_close_time();
-
     RENDERER_LOG_INFO("collecting light emitters...");
 
     // Collect all non-physical lights.
@@ -227,34 +223,6 @@ void LightSampler::collect_emitting_triangles(
             cumulated_transform_seq);
     }
 }
-
-#ifdef APPLESEED_WITH_OSL
-
-void LightSampler::store_object_area_in_shadergroups(
-    const AssemblyInstance* assembly_instance,
-    const ObjectInstance*   object_instance,
-    const double            object_area,
-    const MaterialArray&    materials)
-{
-    for (size_t i = 0, e = materials.size(); i < e; ++i)
-    {
-        if (const Material* m = materials[i])
-        {
-            if (const ShaderGroup* sg = m->get_uncached_osl_surface())
-            {
-                if (sg->has_emission())
-                {
-                    sg->set_surface_area(
-                        assembly_instance,
-                        object_instance,
-                        object_area);
-                }
-            }
-        }
-    }
-}
-
-#endif
 
 void LightSampler::collect_emitting_triangles(
     const Assembly&                     assembly,
@@ -610,6 +578,34 @@ void LightSampler::sample_emitting_triangle(
     // Compute the probability density of this sample.
     light_sample.m_probability = triangle_prob * emitting_triangle.m_rcp_area;
 }
+
+#ifdef APPLESEED_WITH_OSL
+
+void LightSampler::store_object_area_in_shadergroups(
+    const AssemblyInstance*             assembly_instance,
+    const ObjectInstance*               object_instance,
+    const double                        object_area,
+    const MaterialArray&                materials)
+{
+    for (size_t i = 0, e = materials.size(); i < e; ++i)
+    {
+        if (const Material* m = materials[i])
+        {
+            if (const ShaderGroup* sg = m->get_uncached_osl_surface())
+            {
+                if (sg->has_emission())
+                {
+                    sg->set_surface_area(
+                        assembly_instance,
+                        object_instance,
+                        object_area);
+                }
+            }
+        }
+    }
+}
+
+#endif
 
 
 //

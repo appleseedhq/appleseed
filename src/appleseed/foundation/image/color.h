@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -114,6 +114,9 @@ template <typename T, size_t N> Color<T, N>& operator*=(Color<T, N>& lhs, const 
 template <typename T, size_t N> Color<T, N>& operator*=(Color<T, N>& lhs, const Color<T, N>& rhs);
 template <typename T, size_t N> Color<T, N>& operator/=(Color<T, N>& lhs, const T rhs);
 template <typename T, size_t N> Color<T, N>& operator/=(Color<T, N>& lhs, const Color<T, N>& rhs);
+
+// Component-wise reciprocal.
+template <typename T, size_t N> Color<T, N> rcp(const Color<T, N>& c);
 
 // Return whether all components of a color are in [0,1].
 template <typename T, size_t N> bool is_saturated(const Color<T, N>& c);
@@ -572,6 +575,17 @@ inline Color<T, N>& operator/=(Color<T, N>& lhs, const Color<T, N>& rhs)
         lhs[i] /= rhs[i];
 
     return lhs;
+}
+
+template <typename T, size_t N>
+inline Color<T, N> rcp(const Color<T, N>& c)
+{
+    Color<T, N> result;
+
+    for (size_t i = 0; i < N; ++i)
+        result[i] = T(1.0) / c[i];
+
+    return result;
 }
 
 template <typename T, size_t N>
