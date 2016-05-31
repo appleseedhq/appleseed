@@ -1086,7 +1086,7 @@ namespace
             QGroupBox* groupbox = create_checkable_groupbox("rendering_threads.override", "Override");
             parent->addWidget(groupbox);
 
-            QSpinBox* rendering_threads = create_integer_input("rendering_threads.value", 1, 65536, 1);
+            QSpinBox* rendering_threads = create_integer_input("rendering_threads.value", -65535, 65536, 1);
             QCheckBox* auto_rendering_threads = create_checkbox("rendering_threads.auto", "Auto");
             groupbox->setLayout(create_form_layout("Rendering Threads:", create_horizontal_group(rendering_threads, auto_rendering_threads)));
             connect(auto_rendering_threads, SIGNAL(toggled(bool)), rendering_threads, SLOT(setDisabled(bool)));
