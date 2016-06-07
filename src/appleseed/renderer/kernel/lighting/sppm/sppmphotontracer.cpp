@@ -173,7 +173,7 @@ namespace
                         m_initial_flux[wavelength] *
                         Spectrum::Samples *
                         spectral_throughput[wavelength];
-                    m_photons.push_back(vertex.get_point(), photon);
+                    m_photons.push_back(Vector3f(vertex.get_point()), photon);
                 }
                 else
                 {
@@ -185,7 +185,7 @@ namespace
                     photon.m_geometric_normal = Vector3f(vertex.get_geometric_normal());
                     photon.m_flux = m_initial_flux;
                     photon.m_flux *= vertex.m_throughput;
-                    m_photons.push_back(vertex.get_point(), photon);
+                    m_photons.push_back(Vector3f(vertex.get_point()), photon);
                 }
             }
         }
@@ -555,7 +555,7 @@ namespace
           , m_abort_switch(abort_switch)
         {
             const Scene::RenderData& scene_data = m_scene.get_render_data();
-            m_scene_center = scene_data.m_center;
+            m_scene_center = Vector3d(scene_data.m_center);
             m_scene_radius = scene_data.m_radius;
             m_safe_scene_diameter = scene_data.m_safe_diameter;
 

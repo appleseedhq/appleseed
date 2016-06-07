@@ -43,9 +43,10 @@ using namespace std;
 
 namespace
 {
-    auto_release_ptr<EDF> create_edf(const string&      model,
-                                     const string&      name,
-                                     const bpy::dict&   params)
+    auto_release_ptr<EDF> create_edf(
+        const string&      model,
+        const string&      name,
+        const bpy::dict&   params)
     {
         EDFFactoryRegistrar factories;
         const IEDFFactory* factory = factories.lookup(model.c_str());

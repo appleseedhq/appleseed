@@ -57,14 +57,14 @@ namespace renderer
 APPLESEED_DECLARE_INPUT_VALUES(GlassBSDFInputValues)
 {
     Spectrum    m_surface_transmittance;
-    double      m_surface_transmittance_multiplier;
+    ScalarInput m_surface_transmittance_multiplier;
     Spectrum    m_reflection_tint;
     Spectrum    m_refraction_tint;
-    double      m_roughness;
-    double      m_anisotropic;
-    double      m_ior;
+    ScalarInput m_roughness;
+    ScalarInput m_anisotropic;
+    ScalarInput m_ior;
     Spectrum    m_volume_transmittance;
-    double      m_volume_transmittance_distance;
+    ScalarInput m_volume_transmittance_distance;
 
     // Precomputed values.
     bool        m_backfacing;

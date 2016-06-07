@@ -207,7 +207,7 @@ namespace
           , m_path_count(0)
         {
             const Scene::RenderData& scene_data = m_scene.get_render_data();
-            m_scene_center = scene_data.m_center;
+            m_scene_center = Vector3d(scene_data.m_center);
             m_scene_radius = scene_data.m_radius;
             m_safe_scene_diameter = scene_data.m_safe_diameter;
             m_disk_point_prob = 1.0 / (Pi * m_scene_radius * m_scene_radius);

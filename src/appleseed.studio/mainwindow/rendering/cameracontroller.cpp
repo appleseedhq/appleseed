@@ -105,9 +105,7 @@ void CameraController::slot_entity_picked(ScenePicker::PickingResult result)
         m_pivot = Vector3d(object_instance_world_bbox.center());
     }
     else
-    {
-        m_pivot = m_scene->compute_bbox().center();
-    }
+        m_pivot = Vector3d(m_scene->compute_bbox().center());
 }
 
 bool CameraController::eventFilter(QObject* object, QEvent* event)

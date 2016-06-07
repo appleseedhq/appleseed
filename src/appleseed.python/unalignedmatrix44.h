@@ -196,6 +196,25 @@ class UnalignedMatrix44
         return res;
     }
 
+    Vector<T, 3> transform_normal(const Vector<T, 3>& n) const
+    {
+        Vector<T, 3> res;
+
+        res.x = m_data[ 0] * n.x +
+                m_data[ 4] * n.y +
+                m_data[ 8] * n.z;
+
+        res.y = m_data[ 1] * n.x +
+                m_data[ 5] * n.y +
+                m_data[ 9] * n.z;
+
+        res.z = m_data[ 2] * n.x +
+                m_data[ 6] * n.y +
+                m_data[10] * n.z;
+
+        return res;
+    }
+
     Vector<T, 3> transform_point(const Vector<T, 3>& p) const
     {
         Vector<T, 3> res;

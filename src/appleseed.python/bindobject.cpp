@@ -31,13 +31,14 @@
 #include "pyseed.h" // has to be first, to avoid redefinition warnings
 #include "bindentitycontainers.h"
 #include "dict2dict.h"
-#include "unalignedtransformd44.h"
+#include "unalignedtransform.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/object.h"
 #include "renderer/api/scene.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/searchpaths.h"
 
 namespace bpy = boost::python;
@@ -78,7 +79,7 @@ namespace
         const string&                   name,
         const bpy::dict&                params,
         const string&                   object_name,
-        const UnalignedTransformd44&    transform,
+        const UnalignedTransformd&      transform,
         const bpy::dict&                front_material_mappings,
         const bpy::dict&                back_material_mappings)
     {
@@ -96,7 +97,7 @@ namespace
         const string&                   name,
         const bpy::dict&                params,
         const string&                   object_name,
-        const UnalignedTransformd44&    transform,
+        const UnalignedTransformd&      transform,
         const bpy::dict&                front_material_mappings)
     {
         return
@@ -109,9 +110,9 @@ namespace
                 bpy::dict());
     }
 
-    UnalignedTransformd44 obj_inst_get_transform(const ObjectInstance* obj)
+    UnalignedTransformd obj_inst_get_transform(const ObjectInstance* obj)
     {
-        return UnalignedTransformd44(obj->get_transform());
+        return UnalignedTransformd(obj->get_transform());
     }
 
     string obj_inst_get_obj_name(const ObjectInstance* obj)

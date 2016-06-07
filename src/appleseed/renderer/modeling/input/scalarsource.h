@@ -52,14 +52,14 @@ class ScalarSource
 {
   public:
     // Constructor.
-    explicit ScalarSource(const double scalar);
+    explicit ScalarSource(const ScalarInput scalar);
 
     // Compute a signature unique to this source.
     virtual foundation::uint64 compute_signature() const APPLESEED_OVERRIDE;
 
     // Evaluate the source.
     virtual void evaluate_uniform(
-        double&                     scalar) const APPLESEED_OVERRIDE;
+        ScalarInput&                scalar) const APPLESEED_OVERRIDE;
     virtual void evaluate_uniform(
         foundation::Color3f&        linear_rgb) const APPLESEED_OVERRIDE;
     virtual void evaluate_uniform(
@@ -74,7 +74,7 @@ class ScalarSource
         Alpha&                      alpha) const APPLESEED_OVERRIDE;
 
   private:
-    const double    m_scalar;
+    const ScalarInput    m_scalar;
 };
 
 
@@ -82,7 +82,7 @@ class ScalarSource
 // ScalarSource class implementation.
 //
 
-inline ScalarSource::ScalarSource(const double scalar)
+inline ScalarSource::ScalarSource(const ScalarInput scalar)
   : Source(true)
   , m_scalar(scalar)
 {
@@ -94,7 +94,7 @@ inline foundation::uint64 ScalarSource::compute_signature() const
 }
 
 inline void ScalarSource::evaluate_uniform(
-    double&                         scalar) const
+    ScalarInput&                    scalar) const
 {
     scalar = m_scalar;
 }

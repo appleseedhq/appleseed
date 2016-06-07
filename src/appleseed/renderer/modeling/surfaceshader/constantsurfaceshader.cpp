@@ -136,8 +136,8 @@ namespace
         {
             Spectrum    m_color;
             Alpha       m_alpha;
-            double      m_color_multiplier;
-            double      m_alpha_multiplier;
+            ScalarInput m_color_multiplier;
+            ScalarInput m_alpha_multiplier;
         };
 
         enum AlphaSource

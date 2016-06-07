@@ -46,9 +46,10 @@ using namespace std;
 
 namespace
 {
-    auto_release_ptr<BSDF> create_bsdf(const string&    model,
-                                       const string&    name,
-                                       const bpy::dict& params)
+    auto_release_ptr<BSDF> create_bsdf(
+        const string&    model,
+        const string&    name,
+        const bpy::dict& params)
     {
         BSDFFactoryRegistrar factories;
         const IBSDFFactory* factory = factories.lookup(model.c_str());

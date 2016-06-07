@@ -62,6 +62,9 @@ typedef foundation::RayInfo<GScalar, 3> GRayInfo3;
 // Spectrum representation.
 typedef DynamicSpectrum31f Spectrum;
 
+// Scalar input representation.
+typedef double ScalarInput;
+
 // Alpha channel representation.
 typedef foundation::Color<float, 1> Alpha;
 

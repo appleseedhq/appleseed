@@ -112,7 +112,7 @@ namespace
             check_non_zero_emission("irradiance", "irradiance_multiplier");
 
             const Scene::RenderData& scene_data = project.get_scene()->get_render_data();
-            m_scene_center = scene_data.m_center;
+            m_scene_center = Vector3d(scene_data.m_center);
             m_scene_radius = scene_data.m_radius;
             m_safe_scene_diameter = scene_data.m_safe_diameter;
 
@@ -211,8 +211,8 @@ namespace
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_irradiance;               // emitted irradiance in W.m^-2
-            double      m_irradiance_multiplier;    // emitted irradiance multiplier
-            double      m_exposure;                 // emitted irradiance multiplier in f-stops
+            ScalarInput m_irradiance_multiplier;    // emitted irradiance multiplier
+            ScalarInput m_exposure;                 // emitted irradiance multiplier in f-stops
         };
 
         Vector3d        m_scene_center;             // world space

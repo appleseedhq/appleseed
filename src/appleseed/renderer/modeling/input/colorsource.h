@@ -64,7 +64,7 @@ class ColorSource
 
     // Evaluate the source.
     virtual void evaluate_uniform(
-        double&                     scalar) const APPLESEED_OVERRIDE;
+        ScalarInput&                scalar) const APPLESEED_OVERRIDE;
     virtual void evaluate_uniform(
         foundation::Color3f&        linear_rgb) const APPLESEED_OVERRIDE;
     virtual void evaluate_uniform(
@@ -80,7 +80,7 @@ class ColorSource
 
   private:
     const ColorEntity&              m_color_entity;
-    double                          m_scalar;
+    ScalarInput                     m_scalar;
     foundation::Color3f             m_linear_rgb;
     Spectrum                        m_spectrum;
     Alpha                           m_alpha;
@@ -100,7 +100,7 @@ inline const ColorEntity& ColorSource::get_color_entity() const
 }
 
 inline void ColorSource::evaluate_uniform(
-    double&                         scalar) const
+    ScalarInput&                    scalar) const
 {
     scalar = m_scalar;
 }

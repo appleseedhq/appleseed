@@ -416,8 +416,8 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
             if (dot(get_original_shading_normal(), cross(m_dpdv, m_dpdu)) < 0.0)
                 m_dpdu = -m_dpdu;
 
-            const Vector3d dn0 = m_n0 - m_n2;
-            const Vector3d dn1 = m_n1 - m_n2;
+            const Vector3d dn0(m_n0 - m_n2);
+            const Vector3d dn1(m_n1 - m_n2);
 
             m_dndu = (dv1 * dn0 - dv0 * dn1) * rcp_det;
             m_dndv = (du0 * dn1 - du1 * dn0) * rcp_det;
@@ -734,8 +734,8 @@ void ShadingPoint::compute_world_space_point_velocity() const
             const float u = 1.0f - v - w;
 
             // Compute positions at shutter open and close times.
-            p0 = first_v0 * u + first_v1 * v + first_v2 * w;
-            p1 =  last_v0 * u +  last_v1 * v +  last_v2 * w;
+            p0 = Vector3d(first_v0 * u + first_v1 * v + first_v2 * w);
+            p1 = Vector3d( last_v0 * u +  last_v1 * v +  last_v2 * w);
         }
     }
 

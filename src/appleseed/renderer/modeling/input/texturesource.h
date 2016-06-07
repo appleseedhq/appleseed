@@ -76,7 +76,7 @@ class TextureSource
     virtual void evaluate(
         TextureCache&                       texture_cache,
         const foundation::Vector2d&         uv,
-        double&                             scalar) const APPLESEED_OVERRIDE;
+        ScalarInput&                        scalar) const APPLESEED_OVERRIDE;
     virtual void evaluate(
         TextureCache&                       texture_cache,
         const foundation::Vector2d&         uv,
@@ -155,11 +155,11 @@ inline const TextureInstance& TextureSource::get_texture_instance() const
 inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
     const foundation::Vector2d&             uv,
-    double&                                 scalar) const
+    ScalarInput&                            scalar) const
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
 
-    scalar = static_cast<double>(color[0]);
+    scalar = static_cast<ScalarInput>(color[0]);
 }
 
 inline void TextureSource::evaluate(

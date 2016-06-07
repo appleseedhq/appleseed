@@ -212,14 +212,14 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            double  m_sun_theta;                    // sun zenith angle in degrees, 0=zenith
-            double  m_sun_phi;                      // degrees
-            double  m_turbidity;                    // atmosphere turbidity
-            double  m_turbidity_multiplier;
-            double  m_luminance_multiplier;
-            double  m_luminance_gamma;
-            double  m_saturation_multiplier;
-            double  m_horizon_shift;
+            ScalarInput  m_sun_theta;                    // sun zenith angle in degrees, 0=zenith
+            ScalarInput  m_sun_phi;                      // degrees
+            ScalarInput  m_turbidity;                    // atmosphere turbidity
+            ScalarInput  m_turbidity_multiplier;
+            ScalarInput  m_luminance_multiplier;
+            ScalarInput  m_luminance_gamma;
+            ScalarInput  m_saturation_multiplier;
+            ScalarInput  m_horizon_shift;
         };
 
         const LightingConditions    m_lighting_conditions;

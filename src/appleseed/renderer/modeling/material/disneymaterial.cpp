@@ -187,22 +187,26 @@ namespace
         SeAppleseedExpr(const string& expr)
           : SeExpression(expr)
         {
-            m_vars["u"] = Var(0.0);
-            m_vars["v"] = Var(0.0);
+            reset_vars();
         }
 
         void set_expr(const string& expr)
         {
             SeExpression::setExpr(expr);
-            m_vars["u"] = Var(0.0);
-            m_vars["v"] = Var(0.0);
+            reset_vars();
         }
 
         // Called during preparation.
         SeExprVarRef* resolveVar(const string& name) const APPLESEED_OVERRIDE
         {
-            const map<string, Var>::iterator i = m_vars.find(name);
-            return i != m_vars.end() ? &i->second : 0;
+            assert(name.length() >= 1);
+
+            if (name[0] == 'u')
+                return &m_u_var;
+            else if (name[0] == 'v')
+                return &m_v_var;
+            else
+                return SeExpression::resolveVar(name);
         }
 
         // Called during preparation.
@@ -228,14 +232,20 @@ namespace
                 i->set_texture_system(&texture_system);
 
             const Vector2d& uv = shading_point.get_uv(0);
-            m_vars["u"] = Var(uv[0]);
-            m_vars["v"] = Var(uv[1]);
+            m_u_var.m_val = uv[0];
+            m_v_var.m_val = uv[1];
 
             const SeVec3d result = evaluate();
             return Color3d(result[0], result[1], result[2]);
         }
 
       private:
+        void reset_vars() const
+        {
+            m_u_var.m_val = 0.0;
+            m_v_var.m_val = 0.0;
+        }
+
         struct Var
           : public SeExprScalarVarRef
         {
@@ -254,7 +264,8 @@ namespace
             }
         };
 
-        mutable map<string, Var>                m_vars;         // todo: use a hash table
+        mutable Var                             m_u_var;
+        mutable Var                             m_v_var;
         mutable ptr_vector<TextureSeExprFunc>   m_functions_x;
         mutable ptr_vector<SeExprFunc>          m_functions;
     };

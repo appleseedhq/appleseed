@@ -32,7 +32,7 @@
 #include "bindentitycontainers.h"
 #include "dict2dict.h"
 #include "metadata.h"
-#include "unalignedtransformd44.h"
+#include "unalignedtransform.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/texture.h"
@@ -88,7 +88,7 @@ namespace
         const string&                   name,
         const bpy::dict&                params,
         const string&                   texture_name,
-        const UnalignedTransformd44&    transform)
+        const UnalignedTransformd&      transform)
     {
         return
             TextureInstanceFactory::create(
@@ -98,9 +98,9 @@ namespace
                 transform.as_foundation_transform());
     }
 
-    UnalignedTransformd44 texture_inst_get_transform(const TextureInstance* tx)
+    UnalignedTransformd texture_inst_get_transform(const TextureInstance* tx)
     {
-        return UnalignedTransformd44(tx->get_transform());
+        return UnalignedTransformd(tx->get_transform());
     }
 
     string texture_inst_get_texture_name(const TextureInstance* tx)

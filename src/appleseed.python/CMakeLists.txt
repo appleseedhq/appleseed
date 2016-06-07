@@ -105,7 +105,7 @@ set (sources
     module.cpp
     pyseed.h
     unalignedmatrix44.h
-    unalignedtransformd44.h
+    unalignedtransform.h
 )
 if (WITH_OSL)
     list (APPEND sources

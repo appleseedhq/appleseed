@@ -300,8 +300,8 @@ namespace
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_radiance;                 // emitted radiance in W.m^-2.sr^-1
-            double      m_radiance_multiplier;      // emitted radiance multiplier
-            double      m_exposure;                 // emitted radiance multiplier in f-stops
+            ScalarInput m_radiance_multiplier;      // emitted radiance multiplier
+            ScalarInput m_exposure;                 // emitted radiance multiplier in f-stops
         };
 
         double  m_phi_shift;                        // horizontal shift in radians

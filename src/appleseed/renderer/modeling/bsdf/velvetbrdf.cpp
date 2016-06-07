@@ -201,12 +201,12 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            double      m_roughness;
-            double      m_roughness_multiplier;
+            ScalarInput m_roughness;
+            ScalarInput m_roughness_multiplier;
             Spectrum    m_reflectance;
-            double      m_reflectance_multiplier;
-            double      m_fresnel_normal_reflectance;
-            double      m_fresnel_multiplier;
+            ScalarInput m_reflectance_multiplier;
+            ScalarInput m_fresnel_normal_reflectance;
+            ScalarInput m_fresnel_multiplier;
         };
 
         void eval_velvet(

@@ -78,7 +78,10 @@ namespace
         return bpy::object();
     }
 
-    void copy_item_from_list(const bpy::list& l, const size_t index, size_t& dst)
+    void copy_item_from_list(
+        const bpy::list&    l,
+        const size_t        index,
+        size_t&             dst)
     {
         bpy::extract<size_t> ex(l[index]);
         if (!ex.check())

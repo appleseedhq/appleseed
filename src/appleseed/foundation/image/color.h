@@ -70,7 +70,7 @@ class Color
 
     // Construct a color from another color of a different type.
     template <typename U>
-    Color(const Color<U, N>& rhs);
+    explicit Color(const Color<U, N>& rhs);
 
     // Set all components to a given value.
     void set(const ValueType val);

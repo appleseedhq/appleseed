@@ -113,7 +113,7 @@ class IntersectionFilter
             return m_bitmask.is_set(ix, iy);
         }
 
-        bool is_transparent(const foundation::Vector2d& uv) const
+        bool is_transparent(const foundation::Vector2f& uv) const
         {
             return !is_opaque(uv);
         }

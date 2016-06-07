@@ -128,7 +128,7 @@ namespace
             m_values.m_turbidity += BaseTurbidity;
 
             const Scene::RenderData& scene_data = project.get_scene()->get_render_data();
-            m_scene_center = scene_data.m_center;
+            m_scene_center = Vector3d(scene_data.m_center);
             m_scene_radius = scene_data.m_radius;
             m_safe_scene_diameter = scene_data.m_safe_diameter;
 
@@ -230,8 +230,8 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            double      m_turbidity;                // atmosphere turbidity
-            double      m_radiance_multiplier;      // emitted radiance multiplier
+            ScalarInput m_turbidity;                // atmosphere turbidity
+            ScalarInput m_radiance_multiplier;      // emitted radiance multiplier
         };
 
         Vector3d        m_scene_center;             // world space
