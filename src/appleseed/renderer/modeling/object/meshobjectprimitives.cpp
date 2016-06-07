@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016 Ramon Blanquer
+// Copyright (c) 2016 Ramon Blanquer, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -42,6 +42,7 @@
 #include "foundation/platform/types.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cmath>
 
 using namespace foundation;
@@ -52,7 +53,7 @@ namespace renderer
 
 class ParametricSphere
 {
-public:
+  public:
     explicit ParametricSphere(const double radius)
       : m_radius(radius)
     {
@@ -60,22 +61,24 @@ public:
 
     GVector3 evaluate(const double u, const double v) const
     {
-        const double theta = 2.0 * Pi * u;
+        const double theta = TwoPi * u;
         const double phi = Pi * v;
+        const double sin_phi = sin(phi);
 
         return GVector3(
-            m_radius * cos(theta) * sin(phi),
+            m_radius * cos(theta) * sin_phi,
            -m_radius * cos(phi),
-            m_radius * sin(theta) * sin(phi)
+            m_radius * sin(theta) * sin_phi
         );
     }
 
+  private:
     const double m_radius;
 };
 
 class ParametricGrid
 {
-public:
+  public:
     ParametricGrid(const double width, const double height)
       : m_width(width)
       , m_height(height)
@@ -90,13 +93,14 @@ public:
             m_height * (v - 0.5));
     }
 
+  private:
     const double m_width;
     const double m_height;
 };
 
 class ParametricTorus
 {
-public:
+  public:
     ParametricTorus(const double major_radius, const double minor_radius)
       : m_major_radius(major_radius)
       , m_minor_radius(minor_radius)
@@ -105,20 +109,22 @@ public:
 
     GVector3 evaluate(const double u, const double v) const
     {
-        const double theta = 2.0 * Pi * u;
-        const double phi = 2.0 * Pi * v;
+        const double theta = TwoPi * u;
+        const double phi = TwoPi * v;
+        const double cos_phi = cos(phi);
 
         return GVector3(
-            (m_major_radius + m_minor_radius * cos(phi)) * cos(theta),
+            (m_major_radius + m_minor_radius * cos_phi) * cos(theta),
              m_minor_radius * sin(phi),
-            (m_major_radius + m_minor_radius * cos(phi)) * sin(theta));
+            (m_major_radius + m_minor_radius * cos_phi) * sin(theta));
     }
 
+  private:
     const double m_major_radius;
     const double m_minor_radius;
 };
 
-template<typename ParametricSurface>
+template <typename ParametricSurface>
 void create_vertices(MeshObject& mesh, ParametricSurface surface, const size_t resolution_u, const size_t resolution_v)
 {
     const size_t num_points = resolution_u * resolution_v;
@@ -204,7 +210,7 @@ void create_triangles(MeshObject& mesh, const size_t resolution_u, const size_t 
     }
 }
 
-template<typename ParametricSurface>
+template <typename ParametricSurface>
 void create_primitive(MeshObject& mesh, const ParametricSurface& surface, const size_t resolution_u, const size_t resolution_v)
 {
     create_vertices(mesh, surface, resolution_u, resolution_v);
@@ -215,13 +221,25 @@ void create_primitive(MeshObject& mesh, const ParametricSurface& surface, const 
 auto_release_ptr<MeshObject> create_primitive_mesh(const char* name, const ParamArray& params)
 {
     auto_release_ptr<MeshObject> mesh = MeshObjectFactory::create(name, params);
-    const size_t resolution_u  = params.get_optional<size_t>("resolution_u" , 32);
+    const size_t resolution_u  = params.get_optional<size_t>("resolution_u", 32);
     const size_t resolution_v = params.get_optional<size_t>("resolution_v", 32);
+
+    if (resolution_u < 2 || resolution_v < 2)
+    {
+        RENDERER_LOG_ERROR("Resolution must be greater than one.");
+        return auto_release_ptr<MeshObject>();
+    }
+
     const char* primitive_type = params.get("primitive");
 
     if (strcmp(primitive_type, "sphere") == 0)
     {
         const double radius = params.get_optional<double>("radius", 1.0);
+        if (radius <= 0.0)
+        {
+            RENDERER_LOG_ERROR("Radius must be greater than zero.");
+            return auto_release_ptr<MeshObject>();
+        }
         ParametricSphere sphere(radius);
         create_primitive(*mesh, sphere, resolution_u, resolution_v);
     }
@@ -229,6 +247,11 @@ auto_release_ptr<MeshObject> create_primitive_mesh(const char* name, const Param
     {
         const double width = params.get_optional<double>("width", 1.0);
         const double height = params.get_optional<double>("height", 1.0);
+        if (width <= 0.0 || height <= 0.0)
+        {
+            RENDERER_LOG_ERROR("Width and height must be greater than zero.");
+            return auto_release_ptr<MeshObject>();
+        }
         ParametricGrid grid(width, height);
         create_primitive(*mesh, grid, resolution_u, resolution_v);
     }
@@ -236,6 +259,11 @@ auto_release_ptr<MeshObject> create_primitive_mesh(const char* name, const Param
     {
         const double major_radius = params.get_optional<double>("major_radius", 1.0);
         const double minor_radius = params.get_optional<double>("minor_radius", 0.2);
+        if (major_radius <= 0.0 || major_radius <= 0.0)
+        {
+            RENDERER_LOG_ERROR("Torus radii must be greater than zero.");
+            return auto_release_ptr<MeshObject>();
+        }
         ParametricTorus torus(major_radius, minor_radius);
         create_primitive(*mesh, torus, resolution_u, resolution_v);
     }
