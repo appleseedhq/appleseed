@@ -1629,6 +1629,8 @@ set (renderer_modeling_object_sources
     renderer/modeling/object/meshobject.h
     renderer/modeling/object/meshobjectoperations.cpp
     renderer/modeling/object/meshobjectoperations.h
+    renderer/modeling/object/meshobjectprimitives.cpp
+    renderer/modeling/object/meshobjectprimitives.h
     renderer/modeling/object/meshobjectreader.cpp
     renderer/modeling/object/meshobjectreader.h
     renderer/modeling/object/meshobjectwriter.cpp
