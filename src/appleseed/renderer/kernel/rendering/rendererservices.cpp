@@ -173,7 +173,11 @@ bool RendererServices::texture(
         options,
         sg,
         s,
+#if OIIO_VERSION >= 10703
+        t,
+#else
         1.0f - t,
+#endif
         dsdx,
         dtdx,
         dsdy,
