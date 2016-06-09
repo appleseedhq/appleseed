@@ -56,16 +56,16 @@ namespace
     class ParametricSphere
     {
       public:
-        explicit ParametricSphere(const double radius)
+        explicit ParametricSphere(const float radius)
           : m_radius(radius)
         {
         }
     
-        GVector3 evaluate(const double u, const double v) const
+        GVector3 evaluate(const float u, const float v) const
         {
-            const double theta = TwoPi * u;
-            const double phi = Pi * v;
-            const double sin_phi = sin(phi);
+            const float theta = static_cast<float>(TwoPi) * u;
+            const float phi = static_cast<float>(Pi) * v;
+            const float sin_phi = sin(phi);
     
             return GVector3(
                 m_radius * cos(theta) * sin_phi,
@@ -75,45 +75,45 @@ namespace
         }
     
       private:
-        const double m_radius;
+        const float m_radius;
     };
     
     class ParametricGrid
     {
       public:
-        ParametricGrid(const double width, const double height)
+        ParametricGrid(const float width, const float height)
           : m_width(width)
           , m_height(height)
         {
         }
     
-        GVector3 evaluate(const double u, const double v) const
+        GVector3 evaluate(const float u, const float v) const
         {
             return GVector3(
-                m_width * (u - 0.5),
-                0.0,
-                m_height * (v - 0.5));
+                m_width * (u - 0.5f),
+                0.0f,
+                m_height * (v - 0.5f));
         }
     
       private:
-        const double m_width;
-        const double m_height;
+        const float m_width;
+        const float m_height;
     };
     
     class ParametricTorus
     {
       public:
-        ParametricTorus(const double major_radius, const double minor_radius)
+        ParametricTorus(const float major_radius, const float minor_radius)
           : m_major_radius(major_radius)
           , m_minor_radius(minor_radius)
         {
         }
     
-        GVector3 evaluate(const double u, const double v) const
+        GVector3 evaluate(const float u, const float v) const
         {
-            const double theta = TwoPi * u;
-            const double phi = TwoPi * v;
-            const double cos_phi = cos(phi);
+            const float theta = static_cast<float>(TwoPi) * u;
+            const float phi = static_cast<float>(TwoPi) * v;
+            const float cos_phi = cos(phi);
     
             return GVector3(
                 (m_major_radius + m_minor_radius * cos_phi) * cos(theta),
@@ -122,8 +122,8 @@ namespace
         }
     
       private:
-        const double m_major_radius;
-        const double m_minor_radius;
+        const float m_major_radius;
+        const float m_minor_radius;
     };
     
     template <typename ParametricSurface>
@@ -137,21 +137,21 @@ namespace
         mesh.reserve_tex_coords(num_points);
     
         // A small step used to calculate the u and v derivatives using forward differencing.
-        const double h = 1.0 / (max(resolution_u, resolution_v) * 4.0);
+        const float h = 1.0f / (max(resolution_u, resolution_v) * 4.0f);
     
         for (size_t j = 0; j < resolution_v; ++j)
         {
-            const double v = fit<size_t, double>(j, 0, resolution_v - 1, 0.0, 1.0);
+            const float v = fit<size_t, float>(j, 0, resolution_v - 1, 0.0f, 1.0f);
             for (size_t i = 0; i < resolution_u; ++i)
             {
-                const double u = fit<size_t, double>(i, 0, resolution_u - 1, 0.0, 1.0);
+                const float u = fit<size_t, float>(i, 0, resolution_u - 1, 0.0f, 1.0f);
                 const GVector3 p = surface.evaluate(u, v);
     
                 // Compute u tangent using forward differencing.
                 GVector3 dpdu = surface.evaluate(u + h, v) - p;
-                const double dpdu_norm = norm(dpdu);
+                const float dpdu_norm = norm(dpdu);
     
-                if (dpdu_norm == 0.0)
+                if (dpdu_norm == 0.0f)
                 {
                     // If the u tangent is zero (surface pole), approximate it using a nearby point.
                     dpdu = normalize(surface.evaluate(u + h, v + h) - p);
@@ -161,9 +161,9 @@ namespace
     
                 // Compute v tangent using forward differencing.
                 GVector3 dpdv = normalize(surface.evaluate(u, v + h) - p);
-                const double dpdv_norm = norm(dpdv);
+                const float dpdv_norm = norm(dpdv);
     
-                if (dpdv_norm == 0.0)
+                if (dpdv_norm == 0.0f)
                 {
                     // If the v tangent is zero (surface pole), approximate it using a nearby point.
                     dpdu = normalize(surface.evaluate(u + h, v + h) - p);
@@ -176,7 +176,7 @@ namespace
                 mesh.push_vertex(p);
                 mesh.push_vertex_normal(n);
                 mesh.push_vertex_tangent(dpdu);
-                mesh.push_tex_coords(GVector2(1.0 - u, v));
+                mesh.push_tex_coords(GVector2(1.0f - u, v));
             }
         }
     }
@@ -198,16 +198,18 @@ namespace
                 const size_t v2 = convert_to_index(resolution_u, i + 1, j + 1);
                 const size_t v3 = convert_to_index(resolution_u, i    , j + 1);
     
-                mesh.push_triangle(Triangle(
-                                       v3, v1, v0,
-                                       v3, v1, v0,
-                                       v3, v1, v0,
-                                       0));
-                mesh.push_triangle(Triangle(
-                                       v3, v2, v1,
-                                       v3, v2, v1,
-                                       v3, v2, v1,
-                                       0));
+                mesh.push_triangle(
+                    Triangle(
+                        v3, v1, v0,
+                        v3, v1, v0,
+                        v3, v1, v0,
+                        0));
+                mesh.push_triangle(
+                    Triangle(
+                        v3, v2, v1,
+                        v3, v2, v1,
+                        v3, v2, v1,
+                        0));
             }
         }
     }
@@ -237,7 +239,7 @@ auto_release_ptr<MeshObject> create_primitive_mesh(const char* name, const Param
 
     if (strcmp(primitive_type, "sphere") == 0)
     {
-        const double radius = params.get_optional<double>("radius", 1.0);
+        const float radius = params.get_optional<float>("radius", 1.0);
         if (radius <= 0.0)
         {
             RENDERER_LOG_ERROR("radius must be greater than zero.");
@@ -248,8 +250,8 @@ auto_release_ptr<MeshObject> create_primitive_mesh(const char* name, const Param
     }
     else if (strcmp(primitive_type, "grid") == 0)
     {
-        const double width = params.get_optional<double>("width", 1.0);
-        const double height = params.get_optional<double>("height", 1.0);
+        const float width = params.get_optional<float>("width", 1.0);
+        const float height = params.get_optional<float>("height", 1.0);
         if (width <= 0.0 || height <= 0.0)
         {
             RENDERER_LOG_ERROR("width and height must be greater than zero.");
@@ -260,9 +262,9 @@ auto_release_ptr<MeshObject> create_primitive_mesh(const char* name, const Param
     }
     else if (strcmp(primitive_type, "torus") == 0)
     {
-        const double major_radius = params.get_optional<double>("major_radius", 1.0);
-        const double minor_radius = params.get_optional<double>("minor_radius", 0.2);
-        if (major_radius <= 0.0 || major_radius <= 0.0)
+        const float major_radius = params.get_optional<float>("major_radius", 1.0f);
+        const float minor_radius = params.get_optional<float>("minor_radius", 0.2f);
+        if (major_radius <= 0.0f || major_radius <= 0.0f)
         {
             RENDERER_LOG_ERROR("torus radii must be greater than zero.");
             return auto_release_ptr<MeshObject>();
