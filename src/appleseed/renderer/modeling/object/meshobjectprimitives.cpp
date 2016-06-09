@@ -226,7 +226,7 @@ auto_release_ptr<MeshObject> create_primitive_mesh(const char* name, const Param
 
     if (resolution_u < 2 || resolution_v < 2)
     {
-        RENDERER_LOG_ERROR("Resolution must be greater than one.");
+        RENDERER_LOG_ERROR("resolution must be greater than one.");
         return auto_release_ptr<MeshObject>();
     }
 
@@ -237,7 +237,7 @@ auto_release_ptr<MeshObject> create_primitive_mesh(const char* name, const Param
         const double radius = params.get_optional<double>("radius", 1.0);
         if (radius <= 0.0)
         {
-            RENDERER_LOG_ERROR("Radius must be greater than zero.");
+            RENDERER_LOG_ERROR("radius must be greater than zero.");
             return auto_release_ptr<MeshObject>();
         }
         ParametricSphere sphere(radius);
@@ -249,7 +249,7 @@ auto_release_ptr<MeshObject> create_primitive_mesh(const char* name, const Param
         const double height = params.get_optional<double>("height", 1.0);
         if (width <= 0.0 || height <= 0.0)
         {
-            RENDERER_LOG_ERROR("Width and height must be greater than zero.");
+            RENDERER_LOG_ERROR("width and height must be greater than zero.");
             return auto_release_ptr<MeshObject>();
         }
         ParametricGrid grid(width, height);
@@ -261,7 +261,7 @@ auto_release_ptr<MeshObject> create_primitive_mesh(const char* name, const Param
         const double minor_radius = params.get_optional<double>("minor_radius", 0.2);
         if (major_radius <= 0.0 || major_radius <= 0.0)
         {
-            RENDERER_LOG_ERROR("Torus radii must be greater than zero.");
+            RENDERER_LOG_ERROR("torus radii must be greater than zero.");
             return auto_release_ptr<MeshObject>();
         }
         ParametricTorus torus(major_radius, minor_radius);
@@ -269,7 +269,7 @@ auto_release_ptr<MeshObject> create_primitive_mesh(const char* name, const Param
     }
     else
     {
-        RENDERER_LOG_ERROR("Unknown primitive type.");
+        RENDERER_LOG_ERROR("unknown primitive type.");
         return auto_release_ptr<MeshObject>();
     }
 
