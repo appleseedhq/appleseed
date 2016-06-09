@@ -94,9 +94,6 @@ namespace
           , m_texture_system(0)
           , m_texture_is_srgb(true)
         {
-#if OIIO_VERSION <= 10504
-            m_texture_options.nchannels = 3;
-#endif
             m_texture_options.swrap = OIIO::TextureOpt::WrapPeriodic;
             m_texture_options.twrap = OIIO::TextureOpt::WrapPeriodic;
         }
@@ -146,14 +143,16 @@ namespace
                     m_texture_filename,
                     m_texture_options,
                     static_cast<float>(u[0]),
+#if OIIO_VERSION >= 10703
+                    static_cast<float>(v[0]),
+#else
                     static_cast<float>(1.0 - v[0]),
-                    0.0f,
-                    0.0f,
-                    0.0f,
-                    0.0f,
-#if OIIO_VERSION > 10504
-                    3,
 #endif
+                    0.0f,
+                    0.0f,
+                    0.0f,
+                    0.0f,
+                    3,
                     &color[0]))
             {
                 // Failed to find or open the texture.
@@ -363,9 +362,6 @@ namespace
                 m_texture_is_srgb = texture_is_srgb(m_texture_filename);
                 m_texture_options.swrap = OIIO::TextureOpt::WrapPeriodic;
                 m_texture_options.rwrap = OIIO::TextureOpt::WrapPeriodic;
-#if OIIO_VERSION <= 10504
-                m_texture_options.nchannels = 3;
-#endif
             }
 
             return true;
@@ -387,14 +383,16 @@ namespace
                         m_texture_filename,
                         m_texture_options,
                         static_cast<float>(uv[0]),
+#if OIIO_VERSION >= 10703
+                        static_cast<float>(uv[1]),
+#else
                         static_cast<float>(1.0 - uv[1]),
-                        0.0f,
-                        0.0f,
-                        0.0f,
-                        0.0f,
-#if OIIO_VERSION > 10504
-                        3,
 #endif
+                        0.0f,
+                        0.0f,
+                        0.0f,
+                        0.0f,
+                        3,
                         &color[0]))
                 {
                     // Failed to find or open the texture.

@@ -81,6 +81,9 @@ BaseRenderer::BaseRenderer(
     m_texture_system->attribute("accept_unmipped", 1);
     m_texture_system->attribute("gray_to_rgb", 1);
     m_texture_system->attribute("latlong_up", "y");
+#if OIIO_VERSION >= 10703
+    m_texture_system->attribute("flip_t", 1);
+#endif
 #endif
 
 #ifdef APPLESEED_WITH_OSL
