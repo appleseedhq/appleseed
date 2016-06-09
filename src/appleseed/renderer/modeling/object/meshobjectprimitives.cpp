@@ -245,7 +245,7 @@ auto_release_ptr<MeshObject> create_primitive_mesh(const char* name, const Param
             RENDERER_LOG_ERROR("radius must be greater than zero.");
             return auto_release_ptr<MeshObject>();
         }
-        ParametricSphere sphere(radius);
+        const ParametricSphere sphere(radius);
         create_primitive(*mesh, sphere, resolution_u, resolution_v);
     }
     else if (strcmp(primitive_type, "grid") == 0)
@@ -257,7 +257,7 @@ auto_release_ptr<MeshObject> create_primitive_mesh(const char* name, const Param
             RENDERER_LOG_ERROR("width and height must be greater than zero.");
             return auto_release_ptr<MeshObject>();
         }
-        ParametricGrid grid(width, height);
+        const ParametricGrid grid(width, height);
         create_primitive(*mesh, grid, resolution_u, resolution_v);
     }
     else if (strcmp(primitive_type, "torus") == 0)
@@ -269,7 +269,7 @@ auto_release_ptr<MeshObject> create_primitive_mesh(const char* name, const Param
             RENDERER_LOG_ERROR("torus radii must be greater than zero.");
             return auto_release_ptr<MeshObject>();
         }
-        ParametricTorus torus(major_radius, minor_radius);
+        const ParametricTorus torus(major_radius, minor_radius);
         create_primitive(*mesh, torus, resolution_u, resolution_v);
     }
     else
