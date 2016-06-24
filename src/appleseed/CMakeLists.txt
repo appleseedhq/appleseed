@@ -441,6 +441,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_rng.cpp
     foundation/meta/tests/test_sampling.cpp
     foundation/meta/tests/test_scalar.cpp
+    foundation/meta/tests/test_searchpaths.cpp
     foundation/meta/tests/test_settings.cpp
     foundation/meta/tests/test_sharedlibrary.cpp
     foundation/meta/tests/test_siphash.cpp

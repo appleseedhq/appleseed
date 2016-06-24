@@ -104,7 +104,7 @@ struct Project::Impl
 
     Impl()
       : m_format_revision(ProjectFormatRevision)
-      , m_search_paths("APPLESEED_SEARCHPATH")
+      , m_search_paths("APPLESEED_SEARCHPATH", SearchPaths::platform_separator())
     {
     }
 };
