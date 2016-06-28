@@ -131,12 +131,18 @@ class SearchPaths
     // this file is returned. Otherwise the input path is returned.
     std::string qualify(const std::string& filepath) const;
 
-    // Return a string with all the search paths separated by the specified separator,
-    // optionally making them absolute and/or listing them in reverse order.
-    std::string to_string(const char separator, const bool reversed) const;
+    // Return a string with all the search paths separated by the specified separator.
+    std::string to_string(const char separator) const;
 
-    // Return the default separator character for platform.
-    static const char platform_separator();
+    // Return a string with all the search paths in reverse order,
+    // separated by the specified separator.
+    std::string to_string_reversed(const char separator) const;
+
+    // Return the default environment path separator character for the platform.
+    static const char environment_path_separator();
+
+    // Return the path separator used by OSL (and OpenImageIO).
+    static const char osl_path_separator();
 };
 
 
@@ -203,11 +209,14 @@ inline std::string SearchPaths::qualify(const std::string& filepath) const
     return convert_to_std_string(do_qualify(filepath.c_str()));
 }
 
-inline std::string SearchPaths::to_string(
-    const char separator,
-    const bool reversed) const
+inline std::string SearchPaths::to_string(const char separator) const
 {
-    return convert_to_std_string(do_to_string(separator, reversed));
+    return convert_to_std_string(do_to_string(separator, false));
+}
+
+inline std::string SearchPaths::to_string_reversed(const char separator) const
+{
+    return convert_to_std_string(do_to_string(separator, true));
 }
 
 }       // namespace foundation

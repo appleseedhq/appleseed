@@ -104,7 +104,7 @@ struct Project::Impl
 
     Impl()
       : m_format_revision(ProjectFormatRevision)
-      , m_search_paths("APPLESEED_SEARCHPATH", SearchPaths::platform_separator())
+      , m_search_paths("APPLESEED_SEARCHPATH", SearchPaths::environment_path_separator())
     {
     }
 };
@@ -160,7 +160,7 @@ SearchPaths& Project::search_paths() const
 
 string Project::make_search_path_string() const
 {
-    return impl->m_search_paths.to_string(';', true);
+    return impl->m_search_paths.to_string_reversed(SearchPaths::osl_path_separator());
 }
 
 void Project::set_scene(auto_release_ptr<Scene> scene)

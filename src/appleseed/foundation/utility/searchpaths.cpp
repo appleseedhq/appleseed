@@ -271,13 +271,18 @@ char* SearchPathsImpl::do_to_string(const char separator, const bool reversed) c
     return duplicate_string(paths_str.c_str());
 }
 
-const char SearchPaths::platform_separator()
+const char SearchPaths::environment_path_separator()
 {
 #if defined _WIN32
     return ';';
 #else
     return ':';
 #endif
+}
+
+const char SearchPaths::osl_path_separator()
+{
+    return ':';
 }
 
 }   // namespace foundation

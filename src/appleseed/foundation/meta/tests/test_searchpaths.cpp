@@ -40,20 +40,34 @@ using namespace std;
 
 TEST_SUITE(Foundation_Utility_SearchPaths)
 {
+    void set_environment_var(const char* name, const char* value)
+    {
+#if defined _WIN32
+        _putenv_s(name, value);
+#else
+        setenv(name, value, 1);
+#endif
+    }
+
     static const char* TestEnvironmentName = "APPLESEED_TEST_SEARCHPATH_SEARCHPATH";
+
+    TEST_CASE(InitializeFromEmptyEnvironmentVariable)
+    {
+        const char* TestEnvironmentValue = "";
+
+        set_environment_var(TestEnvironmentName, TestEnvironmentValue);
+        SearchPaths searchpaths(TestEnvironmentName, SearchPaths::environment_path_separator());
+        EXPECT_EQ(TestEnvironmentValue, searchpaths.to_string(SearchPaths::environment_path_separator()));
+    }
 
     TEST_CASE(InitializeFromEnvironmentVariableUnixSeparator)
     {
         const char* TestEnvironmentValue = "/tmp:/usr/tmp:/var/local/tmp";
         const char TestSeparator = ':';
 
-#if defined _WIN32
-        _putenv_s(TestEnvironmentName, TestEnvironmentValue);
-#else
-        setenv(TestEnvironmentName, TestEnvironmentValue, 1);
-#endif
+        set_environment_var(TestEnvironmentName, TestEnvironmentValue);
         SearchPaths searchpaths(TestEnvironmentName, TestSeparator);
-        EXPECT_EQ(searchpaths.to_string(TestSeparator, false), TestEnvironmentValue);
+        EXPECT_EQ(TestEnvironmentValue, searchpaths.to_string(TestSeparator));
     }
 
     TEST_CASE(InitializeFromEnvironmentVariableWindowsSeparator)
@@ -61,29 +75,27 @@ TEST_SUITE(Foundation_Utility_SearchPaths)
         const char* TestEnvironmentValue = "/tmp;/usr/tmp;/var/local/tmp";
         const char TestSeparator = ';';
 
-#if defined _WIN32
-        _putenv_s(TestEnvironmentName, TestEnvironmentValue);
-#else
-        setenv(TestEnvironmentName, TestEnvironmentValue, 1);
-#endif
+        set_environment_var(TestEnvironmentName, TestEnvironmentValue);
         SearchPaths searchpaths(TestEnvironmentName, TestSeparator);
-        EXPECT_EQ(searchpaths.to_string(TestSeparator, false), TestEnvironmentValue);
+        EXPECT_EQ(TestEnvironmentValue, searchpaths.to_string(TestSeparator));
     }
 
     TEST_CASE(SearchPathReset)
     {
         const char* TestEnvironmentValue = "/tmp:/usr/tmp:/var/local/tmp";
+        const char* TestRootPath = "/some/root/path";
         const char TestSeparator = ':';
 
-#if defined _WIN32
-        _putenv_s(TestEnvironmentName, TestEnvironmentValue);
-#else
-        setenv(TestEnvironmentName, TestEnvironmentValue, 1);
-#endif
+        set_environment_var(TestEnvironmentName, TestEnvironmentValue);
         SearchPaths searchpaths(TestEnvironmentName, TestSeparator);
+        searchpaths.set_root_path(TestRootPath);
         searchpaths.push_back("/home/username/appleseed");
         searchpaths.reset();
-        EXPECT_EQ(searchpaths.to_string(TestSeparator, false), TestEnvironmentValue);
+
+        string ExpectedResult(TestRootPath);
+        ExpectedResult += string(&TestSeparator, 1);
+        ExpectedResult += TestEnvironmentValue;
+        EXPECT_EQ(ExpectedResult, searchpaths.to_string(TestSeparator));
     }
 
     TEST_CASE(SearchPathSplitAndPushBack)
@@ -93,7 +105,6 @@ TEST_SUITE(Foundation_Utility_SearchPaths)
 
         SearchPaths searchpaths;
         searchpaths.split_and_push_back(TestPaths, TestSeparator);
-        EXPECT_EQ(searchpaths.to_string(TestSeparator, false), TestPaths);
+        EXPECT_EQ(TestPaths, searchpaths.to_string(TestSeparator));
     }
 }
-
