@@ -59,13 +59,17 @@ class APPLESEED_DLLSYMBOL SearchPathsImpl
     SearchPathsImpl();
 
     // Constructor.
-    explicit SearchPathsImpl(const char* envvar);
+    SearchPathsImpl(const char* envvar, const char separator);
 
     // Destructor.
     ~SearchPathsImpl();
 
     // Remove all search paths and clears the root path.
     void clear();
+
+    // Remove all search paths except the root path and
+    // paths added from environment variables.
+    void reset();
 
     // Return true if empty.
     bool empty() const;
@@ -86,6 +90,7 @@ class APPLESEED_DLLSYMBOL SearchPathsImpl
     void do_set_root_path(const char* path);
     char* do_get_root_path() const;
     void do_push_back(const char* path);
+    void do_split_and_push_back(const char* paths, const char separator);
     bool do_exist(const char* filepath) const;
     char* do_qualify(const char* filepath) const;
     char* do_to_string(const char separator, const bool reversed) const;
@@ -100,7 +105,7 @@ class SearchPaths
 
     // Constructor. Initializes search paths with the contents of the specified
     // environment variable.
-    explicit SearchPaths(const char* envvar);
+    SearchPaths(const char* envvar, const char separator);
 
     // Set the root path that is used to resolve relative paths.
     void set_root_path(const char* path);
@@ -113,6 +118,9 @@ class SearchPaths
     void push_back(const char* path);
     void push_back(const std::string& path);
 
+    void split_and_push_back(const char* paths, const char separator);
+    void split_and_push_back(const std::string& paths, const char separator);
+
     // Return true if a given file exists, that is, if the argument is the absolute
     // path to a file that exists, or it is the name of a file that exists in one of
     // the search paths.
@@ -123,11 +131,18 @@ class SearchPaths
     // this file is returned. Otherwise the input path is returned.
     std::string qualify(const std::string& filepath) const;
 
-    // Return a string with all the search paths separated by the specified separator,
-    // optionally making them absolute and/or listing them in reverse order.
-    std::string to_string(
-        const char separator = ':',
-        const bool reversed = false) const;
+    // Return a string with all the search paths separated by the specified separator.
+    std::string to_string(const char separator) const;
+
+    // Return a string with all the search paths in reverse order,
+    // separated by the specified separator.
+    std::string to_string_reversed(const char separator) const;
+
+    // Return the default environment path separator character for the platform.
+    static const char environment_path_separator();
+
+    // Return the path separator used by OSL (and OpenImageIO).
+    static const char osl_path_separator();
 };
 
 
@@ -139,8 +154,8 @@ inline SearchPaths::SearchPaths()
 {
 }
 
-inline SearchPaths::SearchPaths(const char* envvar)
-  : SearchPathsImpl(envvar)
+inline SearchPaths::SearchPaths(const char* envvar, const char separator)
+  : SearchPathsImpl(envvar, separator)
 {
 }
 
@@ -164,6 +179,16 @@ inline void SearchPaths::push_back(const std::string& path)
     do_push_back(path.c_str());
 }
 
+inline void SearchPaths::split_and_push_back(const char* paths, const char separator)
+{
+    do_split_and_push_back(paths, separator);
+}
+
+inline void SearchPaths::split_and_push_back(const std::string& paths, const char separator)
+{
+    do_split_and_push_back(paths.c_str(), separator);
+}
+
 inline std::string SearchPaths::get_root_path() const
 {
     return convert_to_std_string(do_get_root_path());
@@ -184,11 +209,14 @@ inline std::string SearchPaths::qualify(const std::string& filepath) const
     return convert_to_std_string(do_qualify(filepath.c_str()));
 }
 
-inline std::string SearchPaths::to_string(
-    const char separator,
-    const bool reversed) const
+inline std::string SearchPaths::to_string(const char separator) const
 {
-    return convert_to_std_string(do_to_string(separator, reversed));
+    return convert_to_std_string(do_to_string(separator, false));
+}
+
+inline std::string SearchPaths::to_string_reversed(const char separator) const
+{
+    return convert_to_std_string(do_to_string(separator, true));
 }
 
 }       // namespace foundation

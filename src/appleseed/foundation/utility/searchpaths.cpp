@@ -61,6 +61,7 @@ struct SearchPathsImpl::Impl
 
     filesystem::path    m_root_path;
     PathCollection      m_explicit_paths;
+    PathCollection      m_environment_paths;
     PathCollection      m_all_paths;
 };
 
@@ -69,13 +70,13 @@ SearchPathsImpl::SearchPathsImpl()
 {
 }
 
-SearchPathsImpl::SearchPathsImpl(const char* envvar)
+SearchPathsImpl::SearchPathsImpl(const char* envvar, const char separator)
   : impl(new Impl())
 {
     if (const char* value = getenv(envvar))
     {
         vector<string> paths;
-        split(value, ":", paths);
+        split(value, string(&separator, 1), paths);
 
         for (const_each<vector<string> > i = paths; i; ++i)
         {
@@ -86,7 +87,10 @@ SearchPathsImpl::SearchPathsImpl(const char* envvar)
                 continue;
 
             if (!i->empty())
+            {
+                impl->m_environment_paths.push_back(i->c_str());
                 impl->m_all_paths.push_back(i->c_str());
+            }
         }
     }
 }
@@ -100,7 +104,14 @@ void SearchPathsImpl::clear()
 {
     impl->m_root_path.clear();
     impl->m_explicit_paths.clear();
+    impl->m_environment_paths.clear();
     impl->m_all_paths.clear();
+}
+
+void SearchPathsImpl::reset()
+{
+    impl->m_explicit_paths.clear();
+    impl->m_all_paths = impl->m_environment_paths;
 }
 
 bool SearchPathsImpl::empty() const
@@ -139,6 +150,17 @@ void SearchPathsImpl::do_push_back(const char* path)
     assert(path);
     impl->m_explicit_paths.push_back(path);
     impl->m_all_paths.push_back(path);
+}
+
+void SearchPathsImpl::do_split_and_push_back(const char* paths, const char separator)
+{
+    assert(paths);
+
+    vector<string> path_list;
+    split(paths, string(&separator, 1), path_list);
+
+    for (const_each<vector<string> > i = path_list; i; ++i)
+        do_push_back(i->c_str());
 }
 
 bool SearchPathsImpl::do_exist(const char* filepath) const
@@ -247,6 +269,20 @@ char* SearchPathsImpl::do_to_string(const char separator, const bool reversed) c
     }
 
     return duplicate_string(paths_str.c_str());
+}
+
+const char SearchPaths::environment_path_separator()
+{
+#if defined _WIN32
+    return ';';
+#else
+    return ':';
+#endif
+}
+
+const char SearchPaths::osl_path_separator()
+{
+    return ':';
 }
 
 }   // namespace foundation
