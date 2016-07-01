@@ -40,52 +40,100 @@ using namespace std;
 
 TEST_SUITE(Foundation_Utility_SearchPaths)
 {
+    static const char* TestEnvVarName = "APPLESEED_TEST_SEARCHPATH_SEARCHPATH";
+
+#ifdef _WIN32
+
     void set_environment_var(const char* name, const char* value)
     {
-#if defined _WIN32
-        _putenv_s(name, value);
-#else
-        setenv(name, value, 1);
-#endif
+        errno_t result = _putenv_s(name, value);
+        assert(result == 0);
     }
 
-    static const char* TestEnvironmentName = "APPLESEED_TEST_SEARCHPATH_SEARCHPATH";
-
-    TEST_CASE(InitializeFromEmptyEnvironmentVariable)
+    TEST_CASE(Constructor_EmptyEnvironmentVariable)
     {
-        set_environment_var(TestEnvironmentName, "");
+        set_environment_var(TestEnvVarName, "");
 
-        const SearchPaths searchpaths(TestEnvironmentName, ':');
+        const SearchPaths searchpaths(TestEnvVarName, ';');
+
+        const string result = searchpaths.to_string(';');
+        EXPECT_EQ("", result);
+    }
+
+    TEST_CASE(Constructor_NonEmptyEnvironmentVariable)
+    {
+        set_environment_var(TestEnvVarName, "C:\\Windows\\System32;C:\\Windows;C:\\Program Files");
+
+        const SearchPaths searchpaths(TestEnvVarName, ';');
+
+        const string result = searchpaths.to_string(';');
+        EXPECT_EQ("C:\\Windows\\System32;C:\\Windows;C:\\Program Files", result);
+    }
+
+    TEST_CASE(Reset)
+    {
+        set_environment_var(TestEnvVarName, "C:\\Windows\\System32;C:\\Windows;C:\\Program Files");
+
+        SearchPaths searchpaths(TestEnvVarName, ';');
+        searchpaths.set_root_path("C:\\Some\\Root\\Path");
+        searchpaths.push_back("C:\\Users\\UserName\\appleseed");
+        searchpaths.reset();
+
+        const string result = searchpaths.to_string(';');
+        EXPECT_EQ("C:\\Some\\Root\\Path;C:\\Windows\\System32;C:\\Windows;C:\\Program Files", result);
+    }
+
+    TEST_CASE(SplitAndPushBack)
+    {
+        SearchPaths searchpaths;
+        searchpaths.split_and_push_back("C:\\Windows\\System32;C:\\Windows;C:\\Program Files", ';');
+
+        const string result = searchpaths.to_string(';');
+        EXPECT_EQ("C:\\Windows\\System32;C:\\Windows;C:\\Program Files", result);
+    }
+
+    TEST_CASE(ToStringReversed)
+    {
+        SearchPaths searchpaths;
+        searchpaths.split_and_push_back("C:\\Windows\\System32;C:\\Windows;C:\\Program Files", ';');
+
+        const string result = searchpaths.to_string_reversed(';');
+        EXPECT_EQ("C:\\Program Files;C:\\Windows;C:\\Windows\\System32", result);
+    }
+
+#else
+
+    void set_environment_var(const char* name, const char* value)
+    {
+        int result = setenv(name, value, 1);
+        assert(result == 0);
+    }
+
+    TEST_CASE(Constructor_EmptyEnvironmentVariable)
+    {
+        set_environment_var(TestEnvVarName, "");
+
+        const SearchPaths searchpaths(TestEnvVarName, ':');
 
         const string result = searchpaths.to_string(':');
         EXPECT_EQ("", result);
     }
 
-    TEST_CASE(InitializeFromEnvironmentVariable_UnixSeparator)
+    TEST_CASE(Constructor_NonEmptyEnvironmentVariable)
     {
-        set_environment_var(TestEnvironmentName, "/tmp:/usr/tmp:/var/local/tmp");
+        set_environment_var(TestEnvVarName, "/tmp:/usr/tmp:/var/local/tmp");
 
-        const SearchPaths searchpaths(TestEnvironmentName, ':');
+        const SearchPaths searchpaths(TestEnvVarName, ':');
 
         const string result = searchpaths.to_string(':');
         EXPECT_EQ("/tmp:/usr/tmp:/var/local/tmp", result);
     }
 
-    TEST_CASE(InitializeFromEnvironmentVariable_WindowsSeparator)
-    {
-        set_environment_var(TestEnvironmentName, "/tmp;/usr/tmp;/var/local/tmp");
-
-        const SearchPaths searchpaths(TestEnvironmentName, ';');
-
-        const string result = searchpaths.to_string(';');
-        EXPECT_EQ("/tmp;/usr/tmp;/var/local/tmp", result);
-    }
-
     TEST_CASE(Reset)
     {
-        set_environment_var(TestEnvironmentName, "/tmp:/usr/tmp:/var/local/tmp");
+        set_environment_var(TestEnvVarName, "/tmp:/usr/tmp:/var/local/tmp");
 
-        SearchPaths searchpaths(TestEnvironmentName, ':');
+        SearchPaths searchpaths(TestEnvVarName, ':');
         searchpaths.set_root_path("/some/root/path");
         searchpaths.push_back("/home/username/appleseed");
         searchpaths.reset();
@@ -102,4 +150,15 @@ TEST_SUITE(Foundation_Utility_SearchPaths)
         const string result = searchpaths.to_string(':');
         EXPECT_EQ("/tmp:/usr/tmp:/var/local/tmp", result);
     }
+
+    TEST_CASE(ToStringReversed)
+    {
+        SearchPaths searchpaths;
+        searchpaths.split_and_push_back("/tmp:/usr/tmp:/var/local/tmp", ':');
+
+        const string result = searchpaths.to_string_reversed(':');
+        EXPECT_EQ("/var/local/tmp:/usr/tmp:/tmp", result);
+    }
+
+#endif
 }
