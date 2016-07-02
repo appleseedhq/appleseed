@@ -105,7 +105,7 @@ TEST_SUITE(Foundation_Utility_SearchPaths)
 
     void set_environment_var(const char* name, const char* value)
     {
-        int result = setenv(name, value, 1);
+        APPLESEED_UNUSED int result = setenv(name, value, 1);
         assert(result == 0);
     }
 
