@@ -46,7 +46,10 @@ TEST_SUITE(Foundation_Utility_SearchPaths)
 
     void set_environment_var(const char* name, const char* value)
     {
-        errno_t result = _putenv_s(name, value);
+#ifndef NDEBUG
+        const errno_t result =
+#endif
+            _putenv_s(name, value);
         assert(result == 0);
     }
 
@@ -105,7 +108,10 @@ TEST_SUITE(Foundation_Utility_SearchPaths)
 
     void set_environment_var(const char* name, const char* value)
     {
-        APPLESEED_UNUSED int result = setenv(name, value, 1);
+#ifndef NDEBUG
+        const int result =
+#endif
+            setenv(name, value, 1);
         assert(result == 0);
     }
 
