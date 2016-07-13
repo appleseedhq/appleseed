@@ -41,6 +41,7 @@
 #include "foundation/platform/path.h"
 #include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/otherwise.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/string.h"
 
@@ -64,6 +65,24 @@ namespace renderer
 
 namespace
 {
+    template <typename EntityCollection>
+    void do_collect_asset_paths(
+        StringArray&            paths,
+        const EntityCollection& entities)
+    {
+        for (const_each<EntityCollection> i = entities; i; ++i)
+            i->collect_asset_paths(paths);
+    }
+
+    template <typename EntityCollection>
+    void do_update_asset_paths(
+        const StringDictionary& mappings,
+        EntityCollection&       entities)
+    {
+        for (each<EntityCollection> i = entities; i; ++i)
+            i->update_asset_paths(mappings);
+    }
+
     string convert_to_posix(string path)
     {
         replace(path.begin(), path.end(), '\\', '/');
@@ -89,24 +108,6 @@ namespace
                 e.what());
             return false;
         }
-    }
-
-    template <typename EntityCollection>
-    void do_collect_asset_paths(
-        StringArray&            paths,
-        const EntityCollection& entities)
-    {
-        for (const_each<EntityCollection> i = entities; i; ++i)
-            i->collect_asset_paths(paths);
-    }
-
-    template <typename EntityCollection>
-    void do_update_asset_paths(
-        const StringDictionary& mappings,
-        EntityCollection&       entities)
-    {
-        for (each<EntityCollection> i = entities; i; ++i)
-            i->update_asset_paths(mappings);
     }
 }
 
@@ -174,81 +175,88 @@ bool AssetHandler::handle_assets() const
 
 bool AssetHandler::handle_asset(string& asset_path_str) const
 {
-    //
-    // Here is the algorithm for this complicated piece of code.
-    //
-    // There are two modes of operations:
-    //
-    //   SaveWithAssets:
-    //       Save the project to some place on disk, bringing asset files that are
-    //       referenced with relative paths.
-    //
-    //   Archive:
-    //       Write a fully self-contained archive of the project somewhere on disk.
-    //       All asset files are brought next to the project.
-    //
-    // Regardless of the mode, asset files can be relative (to the project) or absolute.
-    //
+    if (filesystem::path(asset_path_str).is_absolute())
+        return handle_absolute_asset(asset_path_str);
 
-    filesystem::path qualified_asset_path =
+    const filesystem::path qualified_asset_path =
         filesystem::canonical(
             m_project.search_paths().qualify(asset_path_str));
 
-    filesystem::path common_path, discard, asset_path;
+    filesystem::path common_path, relative_project_path, relative_asset_path;
     split_paths(
         m_project_old_root_path,        // input path 1
         qualified_asset_path,           // input path 2
         common_path,                    // common part
-        discard,                        // remaining part of path 1
-        asset_path);                    // remaining part of path 2
+        relative_project_path,          // remaining part of path 1
+        relative_asset_path);           // remaining part of path 2
 
-    const bool asset_path_is_absolute = discard.has_parent_path();
-    if (filesystem::path(asset_path_str).is_absolute() || asset_path_is_absolute)
+    if (relative_project_path.has_parent_path())
+        return handle_absolute_asset(asset_path_str);
+
+    return copy_relative_asset(asset_path_str, relative_asset_path);
+}
+
+bool AssetHandler::handle_absolute_asset(string& asset_path_str) const
+{
+    switch (m_mode)
     {
-        //
-        // The asset file is referenced by an absolute path.
-        //
+      case CopyRelativeAssetsOnly:
+        return cleanup_absolute_asset_path(asset_path_str);
 
-        switch (m_mode)
-        {
-          case SaveWithAssets:
-            // Absolute paths use native separators.
-            qualified_asset_path.make_preferred();
-            asset_path_str = qualified_asset_path.string();
-            break;
+      case CopyAllAssets:
+        return copy_absolute_asset(asset_path_str);
 
-          case Archive:
-            // Copy the asset file to the new destination.
-            const filesystem::path new_relative_asset_path = "assets" / asset_path.filename();
-            if (!safe_copy_file(
-                    qualified_asset_path,
-                    m_project_new_root_dir / new_relative_asset_path))
-                return false;
-
-            // The asset path is now relative to the new project file.
-            asset_path_str = new_relative_asset_path.string();
-
-            // Relative paths use POSIX separators.
-            asset_path_str = convert_to_posix(asset_path_str);
-            break;
-        }
+      assert_otherwise_and_return(false);
     }
-    else
+}
+
+bool AssetHandler::cleanup_absolute_asset_path(string& asset_path_str) const
+{
+    // Make sure the asset path is qualified and canonized.
+    filesystem::path qualified_asset_path =
+        filesystem::canonical(
+            m_project.search_paths().qualify(asset_path_str));
+
+    // Make sure absolute paths use native separators.
+    qualified_asset_path.make_preferred();
+    asset_path_str = qualified_asset_path.string();
+
+    return true;
+}
+
+bool AssetHandler::copy_absolute_asset(string& asset_path_str) const
+{
+    const filesystem::path old_absolute_asset_path(asset_path_str);
+    const filesystem::path asset_filename = old_absolute_asset_path.filename();
+    const filesystem::path new_relative_asset_path = "assets" / asset_filename;
+    const filesystem::path new_absolute_asset_path = m_project_new_root_dir / new_relative_asset_path;
+
+    if (!safe_copy_file(
+            m_project.search_paths().qualify(asset_path_str),
+            new_absolute_asset_path))
+        return false;
+
+    // Make sure relative paths use POSIX separators.
+    asset_path_str = new_relative_asset_path.string();
+    asset_path_str = convert_to_posix(asset_path_str);
+
+    return true;
+}
+
+bool AssetHandler::copy_relative_asset(string& asset_path_str, const filesystem::path& relative_asset_path) const
+{
+    // Copy the asset file only if the destination differs from the source.
+    if (m_project_old_root_dir != m_project_new_root_dir)
     {
-        //
-        // The asset file is referenced relatively to the project file's location.
-        //
-
-        // Copy the asset file only if the destination differs from the source.
-        if (m_project_old_root_dir != m_project_new_root_dir)
-        {
-            if (!safe_copy_file(qualified_asset_path, m_project_new_root_dir / asset_path))
-                return false;
-        }
-
-        // Relative paths use POSIX separators.
-        asset_path_str = convert_to_posix(asset_path.string());
+        if (!safe_copy_file(
+                m_project.search_paths().qualify(asset_path_str),
+                m_project_new_root_dir / relative_asset_path))
+            return false;
     }
+
+    // Make sure relative paths use POSIX separators.
+    asset_path_str = relative_asset_path.string();
+    asset_path_str = convert_to_posix(asset_path_str);
 
     return true;
 }
