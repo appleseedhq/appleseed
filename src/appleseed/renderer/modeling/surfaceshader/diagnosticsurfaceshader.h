@@ -89,6 +89,7 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
         Primitives,                 // assign a unique color to each primitive
         Materials,                  // assign a unique color to each material
         RaySpread,                  // shade according to the reflected ray spread
+        FacingRatio,                // shade according to the facing ratio
         ShadingModeCount            // number of shading modes -- keep last
     };
 
