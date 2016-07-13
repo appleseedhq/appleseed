@@ -304,8 +304,7 @@ void bind_project()
         .value("Defaults", ProjectFileWriter::Defaults)
         .value("OmitHeaderComment", ProjectFileWriter::OmitHeaderComment)
         .value("OmitWritingGeometryFiles", ProjectFileWriter::OmitWritingGeometryFiles)
-        .value("OmitBringingAssets", ProjectFileWriter::OmitBringingAssets)
-        .value("OmitSearchPaths", ProjectFileWriter::OmitSearchPaths);
+        .value("OmitHandlingAssetFiles", ProjectFileWriter::OmitHandlingAssetFiles);
 
     bpy::class_<ProjectFileWriter>("ProjectFileWriter")
         // These methods are static, but for symmetry with

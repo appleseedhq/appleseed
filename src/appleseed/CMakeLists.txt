@@ -1649,6 +1649,8 @@ source_group ("renderer\\modeling\\object" FILES
 )
 
 set (renderer_modeling_project_sources
+    renderer/modeling/project/assethandler.cpp
+    renderer/modeling/project/assethandler.h
     renderer/modeling/project/configuration.cpp
     renderer/modeling/project/configuration.h
     renderer/modeling/project/configurationcontainer.h
