@@ -161,12 +161,12 @@ namespace
 
     void split_and_store(
         CurveObject&                object,
-        const CurveType3&           curve,
+        const Curve3Type&           curve,
         const size_t                split_count)
     {
         if (split_count > 0)
         {
-            CurveType3 child1, child2;
+            Curve3Type child1, child2;
             curve.split(child1, child2);
             split_and_store(object, child1, split_count - 1);
             split_and_store(object, child2, split_count - 1);
@@ -225,7 +225,7 @@ namespace
                 widths[p] = lerp(params.m_root_width, params.m_tip_width, r);
             }
 
-            const CurveType3 curve(&points[0], &widths[0]);
+            const Curve3Type curve(&points[0], &widths[0]);
             split_and_store(curve_object.ref(), curve, params.m_split_count);
         }
 

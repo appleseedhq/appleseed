@@ -137,7 +137,7 @@ void CurveTree::collect_curves(vector<GAABB3>& curve_bboxes)
         const size_t curve1_count = curve_object.get_curve1_count();
         for (size_t j = 0; j < curve1_count; ++j)
         {
-            const CurveType1 curve(curve_object.get_curve1(j), transform);
+            const Curve1Type curve(curve_object.get_curve1(j), transform);
             const CurveKey curve_key(
                 i,                  // object instance index
                 j,                  // curve index in object
@@ -157,7 +157,7 @@ void CurveTree::collect_curves(vector<GAABB3>& curve_bboxes)
         const size_t curve3_count = curve_object.get_curve3_count();
         for (size_t j = 0; j < curve3_count; ++j)
         {
-            const CurveType3 curve(curve_object.get_curve3(j), transform);
+            const Curve3Type curve(curve_object.get_curve3(j), transform);
             const CurveKey curve_key(
                 i,                  // object instance index
                 j,                  // curve index in object
@@ -232,8 +232,8 @@ void CurveTree::reorder_curve_keys(const vector<size_t>& ordering)
 
 void CurveTree::reorder_curves(const vector<size_t>& ordering)
 {
-    vector<CurveType1> new_curves1(m_curves1.size());
-    vector<CurveType3> new_curves3(m_curves3.size());
+    vector<Curve1Type> new_curves1(m_curves1.size());
+    vector<Curve3Type> new_curves3(m_curves3.size());
 
     size_t curve1_index = 0;
     size_t curve3_index = 0;

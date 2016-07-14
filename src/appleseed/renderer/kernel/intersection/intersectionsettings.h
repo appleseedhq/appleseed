@@ -119,12 +119,12 @@ const size_t TriangleTreeStackSize = 64;
 //
 
 // Curve formats used for storage and intersection.
-typedef foundation::BezierCurve3<GScalar> CurveType3;
-typedef foundation::BezierCurve1<GScalar> CurveType1;
+typedef foundation::BezierCurve1<GScalar> Curve1Type;
+typedef foundation::BezierCurve3<GScalar> Curve3Type;
 
 // Curve intersectors.
-typedef foundation::BezierCurveIntersector<CurveType3> Curve3IntersectorType;
-typedef foundation::BezierCurveIntersector<CurveType1> Curve1IntersectorType;
+typedef foundation::BezierCurveIntersector<Curve1Type> Curve1IntersectorType;
+typedef foundation::BezierCurveIntersector<Curve3Type> Curve3IntersectorType;
 
 // Matrix used in curve intersections
 typedef foundation::Matrix<GScalar, 4, 4> CurveMatrixType;
