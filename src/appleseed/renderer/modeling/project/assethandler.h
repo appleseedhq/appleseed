@@ -66,12 +66,11 @@ class AssetHandler
     const boost::filesystem::path   m_project_new_root_dir;
     const Mode                      m_mode;
 
-    bool handle_asset(std::string& asset_path_str) const;
-    bool handle_absolute_asset(std::string& asset_path_str) const;
-
-    bool cleanup_absolute_asset_path(std::string& asset_path_str) const;
-    bool copy_absolute_asset(std::string& asset_path_str) const;
-    bool copy_relative_asset(std::string& asset_path_str, const boost::filesystem::path& relative_asset_path) const;
+    bool handle_asset(std::string& asset_path) const;
+    bool handle_absolute_asset(std::string& asset_path) const;
+    bool make_absolute_asset_path(std::string& asset_path) const;
+    bool copy_absolute_asset(std::string& asset_path) const;
+    bool copy_relative_asset(std::string& asset_path) const;
 };
 
 }       // namespace renderer

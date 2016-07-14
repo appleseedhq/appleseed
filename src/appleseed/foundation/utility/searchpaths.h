@@ -83,6 +83,8 @@ class APPLESEED_DLLSYMBOL SearchPathsImpl
     // Return the i'th path.
     const char* operator[](const size_t i) const;
 
+    void remove(const size_t i);
+
   protected:
     struct Impl;
     Impl* impl;
@@ -92,7 +94,7 @@ class APPLESEED_DLLSYMBOL SearchPathsImpl
     void do_push_back(const char* path);
     void do_split_and_push_back(const char* paths, const char separator);
     bool do_exist(const char* filepath) const;
-    char* do_qualify(const char* filepath) const;
+    void do_qualify(const char* filepath, char** qualified_filepath_cstr, char** search_path_cstr) const;
     char* do_to_string(const char separator, const bool reversed) const;
 };
 
@@ -130,6 +132,10 @@ class SearchPaths
     // Find a file in the search paths. If the file was found, the qualified path to
     // this file is returned. Otherwise the input path is returned.
     std::string qualify(const std::string& filepath) const;
+
+    // Same as above, except that the file path is qualified in place and that the
+    // search path inside which the file was found is also returned.
+    void qualify(const std::string& filepath, std::string& qualified_filepath, std::string& search_path);
 
     // Return a string with all the search paths separated by the specified separator.
     std::string to_string(const char separator) const;
@@ -206,7 +212,20 @@ inline bool SearchPaths::exist(const std::string& filepath) const
 
 inline std::string SearchPaths::qualify(const std::string& filepath) const
 {
-    return convert_to_std_string(do_qualify(filepath.c_str()));
+    char* qualified_filepath_cstr;
+    do_qualify(filepath.c_str(), &qualified_filepath_cstr, 0);
+
+    return convert_to_std_string(qualified_filepath_cstr);
+}
+
+inline void SearchPaths::qualify(const std::string& filepath, std::string& qualified_filepath, std::string& search_path)
+{
+    char* qualified_filepath_cstr;
+    char* search_path_cstr;
+    do_qualify(filepath.c_str(), &qualified_filepath_cstr, &search_path_cstr);
+
+    qualified_filepath = convert_to_std_string(qualified_filepath_cstr);
+    search_path = search_path_cstr ? convert_to_std_string(search_path_cstr) : std::string();
 }
 
 inline std::string SearchPaths::to_string(const char separator) const

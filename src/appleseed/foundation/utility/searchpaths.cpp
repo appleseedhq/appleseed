@@ -135,6 +135,12 @@ const char* SearchPathsImpl::operator[](const size_t i) const
     return impl->m_explicit_paths[i].c_str();
 }
 
+void SearchPathsImpl::remove(const size_t i)
+{
+    assert(i < size());
+    impl->m_explicit_paths.erase(impl->m_explicit_paths.begin() + i);
+}
+
 void SearchPathsImpl::do_set_root_path(const char* path)
 {
     impl->m_root_path = filesystem::path(path).make_preferred();
@@ -171,11 +177,13 @@ bool SearchPathsImpl::do_exist(const char* filepath) const
 
     if (!fp.is_absolute())
     {
+        // Look in search paths.
         for (Impl::PathCollection::const_reverse_iterator
                 i = impl->m_all_paths.rbegin(), e = impl->m_all_paths.rend(); i != e; ++i)
         {
             filesystem::path search_path(*i);
 
+            // Make the search path absolute if there is a root path.
             if (has_root_path() && search_path.is_relative())
                 search_path = impl->m_root_path / search_path;
 
@@ -183,6 +191,7 @@ bool SearchPathsImpl::do_exist(const char* filepath) const
                 return true;
         }
 
+        // Look in the root path if there is one.
         if (has_root_path())
         {
             if (filesystem::exists(impl->m_root_path / fp))
@@ -193,7 +202,7 @@ bool SearchPathsImpl::do_exist(const char* filepath) const
     return filesystem::exists(fp);
 }
 
-char* SearchPathsImpl::do_qualify(const char* filepath) const
+void SearchPathsImpl::do_qualify(const char* filepath, char** qualified_filepath_cstr, char** search_path_cstr) const
 {
     assert(filepath);
 
@@ -201,11 +210,13 @@ char* SearchPathsImpl::do_qualify(const char* filepath) const
 
     if (!fp.is_absolute())
     {
+        // Look in search paths.
         for (Impl::PathCollection::const_reverse_iterator
                 i = impl->m_all_paths.rbegin(), e = impl->m_all_paths.rend(); i != e; ++i)
         {
             filesystem::path search_path(*i);
 
+            // Make the search path absolute if there is a root path.
             if (has_root_path() && search_path.is_relative())
                 search_path = impl->m_root_path / search_path;
 
@@ -214,10 +225,14 @@ char* SearchPathsImpl::do_qualify(const char* filepath) const
             if (filesystem::exists(qualified_fp))
             {
                 qualified_fp.make_preferred();
-                return duplicate_string(qualified_fp.string().c_str());
+                *qualified_filepath_cstr = duplicate_string(qualified_fp.string().c_str());
+                if (search_path_cstr)
+                    *search_path_cstr = duplicate_string(i->c_str());
+                return;
             }
         }
 
+        // Look in the root path if there is one.
         if (has_root_path())
         {
             filesystem::path qualified_fp = impl->m_root_path / fp;
@@ -225,12 +240,17 @@ char* SearchPathsImpl::do_qualify(const char* filepath) const
             if (filesystem::exists(qualified_fp))
             {
                 qualified_fp.make_preferred();
-                return duplicate_string(qualified_fp.string().c_str());
+                *qualified_filepath_cstr = duplicate_string(qualified_fp.string().c_str());
+                if (search_path_cstr)
+                    *search_path_cstr = 0;
+                return;
             }
         }
     }
 
-    return duplicate_string(fp.string().c_str());
+    *qualified_filepath_cstr = duplicate_string(fp.string().c_str());
+    if (search_path_cstr)
+        *search_path_cstr = 0;
 }
 
 char* SearchPathsImpl::do_to_string(const char separator, const bool reversed) const
@@ -255,7 +275,7 @@ char* SearchPathsImpl::do_to_string(const char separator, const bool reversed) c
 
         if (p.is_relative())
         {
-            // Ignore relative paths.
+            // Ignore relative paths if we don't have a root path.
             if (!root_path)
                 continue;
 
