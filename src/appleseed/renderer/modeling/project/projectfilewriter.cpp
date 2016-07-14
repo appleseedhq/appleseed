@@ -869,7 +869,9 @@ bool ProjectFileWriter::write(
         const AssetHandler asset_handler(
             project,
             filepath,
-            AssetHandler::CopyRelativeAssetsOnly);
+            (options & CopyAllAssets) != 0
+                ? AssetHandler::CopyAllAssets
+                : AssetHandler::CopyRelativeAssetsOnly);
         if (!asset_handler.handle_assets())
             return false;
     }
