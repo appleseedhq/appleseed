@@ -28,6 +28,8 @@
 //
 
 // appleseed.renderer headers.
+#include "renderer/kernel/intersection/intersectionsettings.h"
+#include "renderer/modeling/object/curveobject.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/project/project.h"
@@ -84,6 +86,16 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
             m_project->search_paths().set_root_path(m_base_output.string());
         }
 
+        void create_assembly()
+        {
+            m_project->get_scene()->assemblies().insert(AssemblyFactory().create("assembly"));
+        }
+
+        Assembly* get_assembly()
+        {
+            return m_project->get_scene()->assemblies().get_by_name("assembly");
+        }
+
         void create_texture_entity(const string& filepath)
         {
             ParamArray params;
@@ -109,6 +121,15 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
             const filesystem::path fullpath = m_base_output / filepath;
             filesystem::create_directories(fullpath.parent_path());
             filesystem::copy_file("unit tests/inputs/test_projectfilewriter_object.obj", fullpath);
+        }
+
+        void create_curve_object(const char* object_name)
+        {
+            auto_release_ptr<CurveObject> curve_object(CurveObjectFactory::create(object_name, ParamArray()));
+            static const GVector3 ControlPoints[] = { GVector3(0.0, 0.0, 0.0), GVector3(0.0, 1.0, 0.0) };
+            curve_object->push_curve1(Curve1Type(ControlPoints, GScalar(0.1)));
+
+            get_assembly()->objects().insert(auto_release_ptr<Object>(curve_object));
         }
 
         string get_texture_entity_filepath() const
@@ -356,5 +377,43 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
                 ->assemblies().get_by_name("assembly")
                 ->objects().get_by_name("bunny")
                     ->get_parameters().strings().exist("filename"));
+    }
+
+    TEST_CASE_F(Write_CurveObjectWithoutFilePath_OmitWritingGeometryFilesIsNotSet_CreatesCurvesFileAndAssignsFilePath, Fixture)
+    {
+        create_project();
+        create_assembly();
+        create_curve_object("curve_object");
+
+        const bool success =
+            ProjectFileWriter::write(
+                m_project.ref(),
+                (m_base_output / "curve_object.appleseed").string().c_str(),
+                ProjectFileWriter::Defaults);
+
+        ASSERT_TRUE(success);
+        EXPECT_TRUE(filesystem::exists(m_base_output / "curve_object.curves"));
+        EXPECT_EQ(
+            string("curve_object.curves"),
+            get_assembly()->objects().get_by_name("curve_object")->get_parameters().get("filepath"));
+    }
+
+    TEST_CASE_F(Write_CurveObjectWithoutFilePath_OmitWritingGeometryFilesIsSet_OnlyAssignsFilePath, Fixture)
+    {
+        create_project();
+        create_assembly();
+        create_curve_object("curve_object");
+
+        const bool success =
+            ProjectFileWriter::write(
+                m_project.ref(),
+                (m_base_output / "curve_object.appleseed").string().c_str(),
+                ProjectFileWriter::OmitWritingGeometryFiles);
+
+        ASSERT_TRUE(success);
+        EXPECT_FALSE(filesystem::exists(m_base_output / "curve_object.curves"));
+        EXPECT_EQ(
+            string("curve_object.curves"),
+            get_assembly()->objects().get_by_name("curve_object")->get_parameters().get("filepath"));
     }
 }

@@ -645,17 +645,20 @@ namespace
         {
             ParamArray& params = object.get_parameters();
 
-            if (!params.strings().exist("filepath") &&
-                !(m_options & ProjectFileWriter::OmitWritingGeometryFiles))
+            if (!params.strings().exist("filepath"))
             {
-                // Write the curve file to disk.
                 const string object_name = object.get_name();
                 const string filename = object_name + ".curves";
-                const string filepath = (m_project_new_root_dir / filename).string();
-                CurveObjectWriter::write(object, filepath.c_str());
+
+                if (!(m_options & ProjectFileWriter::OmitWritingGeometryFiles))
+                {
+                    // Write the curve file to disk.
+                    const string filepath = (m_project_new_root_dir / filename).string();
+                    CurveObjectWriter::write(object, filepath.c_str());
+                }
 
                 // Add a file path parameter to the object.
-                params.insert("filepath", filepath);
+                params.insert("filepath", filename);
             }
 
             // Write the <object> element.
