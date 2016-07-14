@@ -346,11 +346,13 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
         EXPECT_EQ(m_base_output / "tex" / "texture.png", get_texture_entity_filepath());
     }
 
-    TEST_CASE_F(Write_GivenMeshObjectWithMultiValueFilenameParameter_DoesNotAddAnotherFilenameParameter, Fixture)
+    TEST_CASE_F(Write_MeshObjectWithMultivaluedFilenameParameter_DoesNotAddAnotherFilenameParameter, Fixture)
     {
-        create_project();
         create_geometry_file("bunny.0.obj");
         create_geometry_file("bunny.1.obj");
+
+        create_project();
+        create_assembly();
 
         ParamArray filenames;
         filenames.insert("0", "bunny.0.obj");
@@ -360,11 +362,7 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
         object_params.insert("filename", filenames);
 
         auto_release_ptr<Object> object(MeshObjectFactory::create("bunny", object_params));
-
-        auto_release_ptr<Assembly> assembly(AssemblyFactory().create("assembly", ParamArray()));
-        assembly->objects().insert(object);
-
-        m_project->get_scene()->assemblies().insert(assembly);
+        get_assembly()->objects().insert(object);
 
         const bool success =
             ProjectFileWriter::write(
@@ -372,11 +370,7 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
                 (m_base_output / "multivaluefilenameobject.appleseed").string().c_str());
 
         ASSERT_TRUE(success);
-        EXPECT_FALSE(
-            m_project->get_scene()
-                ->assemblies().get_by_name("assembly")
-                ->objects().get_by_name("bunny")
-                    ->get_parameters().strings().exist("filename"));
+        EXPECT_FALSE(get_assembly()->objects().get_by_name("bunny")->get_parameters().strings().exist("filename"));
     }
 
     TEST_CASE_F(Write_CurveObjectWithoutFilePath_OmitWritingGeometryFilesIsNotSet_CreatesCurvesFileAndAssignsFilePath, Fixture)
