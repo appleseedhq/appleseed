@@ -96,7 +96,8 @@ const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
     { "regions",                    Regions },
     { "primitives",                 Primitives },
     { "materials",                  Materials },
-    { "ray_spread",                 RaySpread }
+    { "ray_spread",                 RaySpread },
+    { "facing_ratio",               FacingRatio }
 };
 
 const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingModeNames[] =
@@ -121,7 +122,9 @@ const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingMod
     { "regions",                    "Regions" },
     { "primitives",                 "Primitives" },
     { "materials",                  "Materials" },
-    { "ray_spread",                 "Ray Spread" }
+    { "ray_spread",                 "Ray Spread" },
+    { "facing_ratio",               "Facing Ratio" }
+
 };
 
 DiagnosticSurfaceShader::DiagnosticSurfaceShader(
@@ -544,6 +547,18 @@ void DiagnosticSurfaceShader::evaluate(
                         Color3f(static_cast<float>(spread)));
                 }
             }
+        }
+        break;
+
+      case FacingRatio:
+        {
+            const Vector3d& normal = shading_point.get_shading_normal();
+            const Vector3d& view   = shading_point.get_ray().m_dir;
+
+            const double facing = abs(dot(normal, view));
+
+            shading_result.set_main_to_linear_rgb(
+                Color3f(static_cast<float>(facing)));
         }
         break;
 
