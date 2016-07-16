@@ -67,8 +67,8 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
         auto_release_ptr<Project>   m_project;
 
         Fixture()
-          : m_input_directory(canonical("unit tests/inputs/test_projectfilewriter/"))
-          , m_output_directory(canonical("unit tests/outputs/test_projectfilewriter/"))
+          : m_input_directory(absolute("unit tests/inputs/test_projectfilewriter/"))
+          , m_output_directory(absolute("unit tests/outputs/test_projectfilewriter/"))
         {
             remove_all(m_output_directory);
 
