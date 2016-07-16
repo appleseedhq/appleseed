@@ -67,8 +67,13 @@ cmake \
 
 make -j 2
 
-# Unit tests.
 export LD_LIBRARY_PATH=$DEPSDIR/lib:../sandbox/lib/Debug:$LD_LIBRARY_PATH
+
+# compile OSL shader lib
+cd ../sandbox/shaders/src
+python compile_shaders.py ../../bin/oslc
+
+# Unit tests.
 ../sandbox/bin/Debug/appleseed.cli --run-unit-tests --verbose-unit-tests
 
 echo "Running appleseed.python tests:"
@@ -77,7 +82,3 @@ echo "-------------------------------"
 export PYTHONPATH=$PYTHONPATH:../sandbox/lib/Debug/python2.7
 python ../sandbox/lib/Debug/python2.7/appleseed/test/runtests.py
 
-
-# OSL shader lib
-cd ../sandbox/shaders/src
-python compile_shaders.py ../../bin/oslc
