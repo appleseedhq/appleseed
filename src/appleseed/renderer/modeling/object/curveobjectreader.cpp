@@ -81,11 +81,11 @@ auto_release_ptr<CurveObject> CurveObjectReader::read(
 
 namespace
 {
-    void split_and_store(CurveObject& object, const CurveType3& curve, const size_t split_count)
+    void split_and_store(CurveObject& object, const Curve3Type& curve, const size_t split_count)
     {
         if (split_count > 0)
         {
-            CurveType3 child1, child2;
+            Curve3Type child1, child2;
             curve.split(child1, child2);
             split_and_store(object, child1, split_count - 1);
             split_and_store(object, child2, split_count - 1);
@@ -121,7 +121,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_hair_ball(
             points[p] = r * d;
         }
 
-        const CurveType3 curve(points, curve_width);
+        const Curve3Type curve(points, curve_width);
         split_and_store(object.ref(), curve, split_count);
     }
 
@@ -170,7 +170,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_furry_ball(
             widths[p] = lerp(root_width, tip_width, r);
         }
 
-        const CurveType3 curve(points, widths);
+        const Curve3Type curve(points, widths);
         split_and_store(object.ref(), curve, split_count);
     }
 
@@ -232,7 +232,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_curve_file(
             }
 
             // We never presplit degree-1 curves.
-            const CurveType1 curve(points, widths);
+            const Curve1Type curve(points, widths);
             object->push_curve1(curve);
         }
         else
@@ -248,7 +248,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_curve_file(
                 input >> widths[p];
             }
 
-            const CurveType3 curve(points, widths);
+            const Curve3Type curve(points, widths);
             split_and_store(object.ref(), curve, split_count);
         }
     }

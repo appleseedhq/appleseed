@@ -53,8 +53,8 @@ struct CurveObject::Impl
 {
     RegionKit           m_region_kit;
     Lazy<RegionKit>     m_lazy_region_kit;
-    vector<CurveType1>  m_curves1;
-    vector<CurveType3>  m_curves3;
+    vector<Curve1Type>  m_curves1;
+    vector<Curve3Type>  m_curves3;
     vector<string>      m_material_slots;
 
     Impl()
@@ -123,14 +123,14 @@ void CurveObject::reserve_curves3(const size_t count)
     impl->m_curves3.reserve(count);
 }
 
-size_t CurveObject::push_curve1(const CurveType1& curve)
+size_t CurveObject::push_curve1(const Curve1Type& curve)
 {
     const size_t index = impl->m_curves1.size();
     impl->m_curves1.push_back(curve);
     return index;
 }
 
-size_t CurveObject::push_curve3(const CurveType3& curve)
+size_t CurveObject::push_curve3(const Curve3Type& curve)
 {
     const size_t index = impl->m_curves3.size();
     impl->m_curves3.push_back(curve);
@@ -147,13 +147,13 @@ size_t CurveObject::get_curve3_count() const
     return impl->m_curves3.size();
 }
 
-const CurveType1& CurveObject::get_curve1(const size_t index) const
+const Curve1Type& CurveObject::get_curve1(const size_t index) const
 {
     assert(index < impl->m_curves1.size());
     return impl->m_curves1[index];
 }
 
-const CurveType3& CurveObject::get_curve3(const size_t index) const
+const Curve3Type& CurveObject::get_curve3(const size_t index) const
 {
     assert(index < impl->m_curves3.size());
     return impl->m_curves3[index];
@@ -181,7 +181,8 @@ void CurveObject::collect_asset_paths(StringArray& paths) const
 
 void CurveObject::update_asset_paths(const StringDictionary& mappings)
 {
-    m_params.set("filepath", mappings.get(m_params.get("filepath")));
+    if (m_params.strings().exist("filepath"))
+        m_params.set("filepath", mappings.get(m_params.get("filepath")));
 }
 
 

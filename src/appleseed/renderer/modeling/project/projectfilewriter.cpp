@@ -48,6 +48,7 @@
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/meshobjectwriter.h"
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/project/assethandler.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
 #include "renderer/modeling/project/project.h"
@@ -72,9 +73,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
 #include "foundation/math/transform.h"
-#include "foundation/platform/path.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/indenter.h"
 #include "foundation/utility/searchpaths.h"
@@ -82,7 +81,6 @@
 #include "foundation/utility/xmlelement.h"
 
 // Boost headers.
-#include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.
@@ -113,218 +111,6 @@ namespace
     const char* MatrixFormat     = "%.15f";
     const char* ColorValueFormat = "%.6f";
 
-    template <typename EntityCollection>
-    void do_collect_asset_paths(
-        StringArray&            paths,
-        const EntityCollection& entities)
-    {
-        for (const_each<EntityCollection> i = entities; i; ++i)
-            i->collect_asset_paths(paths);
-    }
-
-    template <typename EntityCollection>
-    void do_update_asset_paths(
-        const StringDictionary& mappings,
-        EntityCollection&       entities)
-    {
-        for (each<EntityCollection> i = entities; i; ++i)
-            i->update_asset_paths(mappings);
-    }
-
-    class AssetHandler
-    {
-      public:
-        // Constructor.
-        AssetHandler(
-            const Project&      project,
-            const char*         filepath,
-            const int           options)
-          : m_project_search_paths(project.search_paths())
-          , m_project_old_root_path(project.get_path())
-          , m_project_new_root_path(filepath)
-          , m_project_old_root_dir(m_project_old_root_path.parent_path())
-          , m_project_new_root_dir(m_project_new_root_path.parent_path())
-          , m_options(options)
-        {
-        }
-
-        bool handle_assets(const Project& project) const
-        {
-            StringArray paths;
-
-            Scene* scene = project.get_scene();
-            if (scene)
-                scene->collect_asset_paths(paths);
-
-            Frame* frame = project.get_frame();
-            if (frame)
-                frame->collect_asset_paths(paths);
-
-            do_collect_asset_paths(paths, project.render_layer_rules());
-            do_collect_asset_paths(paths, project.configurations());
-
-            vector<string> unique_paths = array_vector<vector<string> >(paths);
-            sort(unique_paths.begin(), unique_paths.end());
-            unique_paths.erase(
-                unique(unique_paths.begin(), unique_paths.end()),
-                unique_paths.end());
-
-            StringDictionary mappings;
-            for (size_t i = 0, e = unique_paths.size(); i < e; ++i)
-            {
-                string path = unique_paths[i];
-
-                if (!handle_link_to_asset(path))
-                    return false;
-
-                mappings.insert(unique_paths[i], path);
-            }
-
-            if (scene)
-                scene->update_asset_paths(mappings);
-
-            if (frame)
-                frame->update_asset_paths(mappings);
-
-            do_update_asset_paths(mappings, project.render_layer_rules());
-            do_update_asset_paths(mappings, project.configurations());
-
-            return true;
-        }
-
-      private:
-        //
-        //  PROJECT DIRECTORY   OLD PARAMETER VALUE                 TARGET DIRECTORY    BRING ASSETS?   NEW PARAMETER VALUE                 CHANGES
-        //  -------------------------------------------------------------------------------------------------------------------------------------------
-        //
-        //  -- ABSOLUTE PATHS
-        //
-        //  c:\appleseed        c:\textures\bunny.exr               c:\appleseed        yes             bunny.exr                           copy, param
-        //  c:\appleseed        c:\textures\bunny.exr               c:\appleseed        no              c:\textures\bunny.exr               -
-        //
-        //  c:\appleseed        c:\textures\bunny.exr               c:\temp             yes             bunny.exr                           copy, param
-        //  c:\appleseed        c:\textures\bunny.exr               c:\temp             no              c:\textures\bunny.exr               -
-        //
-        //  c:\appleseed        c:\appleseed\textures\bunny.exr     c:\appleseed        yes             textures/bunny.exr                  param
-        //  c:\appleseed        c:\appleseed\textures\bunny.exr     c:\appleseed        no              c:\appleseed\textures\bunny.exr     -
-        //
-        //  -- RELATIVE PATHS
-        //
-        //  c:\appleseed        bunny.exr                           c:\appleseed        yes             bunny.exr                           -
-        //  c:\appleseed        bunny.exr                           c:\appleseed        no              bunny.exr                           -
-        //
-        //  c:\appleseed        bunny.exr                           c:\temp             yes             bunny.exr                           copy
-        //  c:\appleseed        bunny.exr                           c:\temp             no              c:\appleseed\bunny.exr              param
-        //
-        //  c:\appleseed        textures/bunny.exr                  c:\appleseed        yes             textures/bunny.exr                  -
-        //  c:\appleseed        textures/bunny.exr                  c:\appleseed        no              textures/bunny.exr                  -
-        //
-        //  c:\appleseed        textures/bunny.exr                  c:\temp             yes             textures/bunny.exr                  copy
-        //  c:\appleseed        textures/bunny.exr                  c:\temp             no              c:\appleseed\textures\bunny.exr     param
-        //
-
-        const SearchPaths&      m_project_search_paths;
-        const filesystem::path  m_project_old_root_path;
-        const filesystem::path  m_project_new_root_path;
-        const filesystem::path  m_project_old_root_dir;
-        const filesystem::path  m_project_new_root_dir;
-        const int               m_options;
-
-        bool handle_link_to_asset(string& asset_path) const
-        {
-            return
-                filesystem::path(asset_path).is_absolute()
-                    ? handle_absolute_link_to_asset(asset_path)
-                    : handle_relative_link_to_asset(asset_path);
-        }
-
-        bool handle_absolute_link_to_asset(string& asset_path) const
-        {
-            // Nothing to do if the asset path is absolute and we don't want to bring the asset over.
-            if (m_options & ProjectFileWriter::OmitBringingAssets)
-                return true;
-
-            // Check if the project's old directory (e.g. c:\appleseed) is a prefix of the asset path
-            // (e.g. c:\appleseed\textures\bunny.exr).
-            filesystem::path common_path, discard, relative_asset_path;
-            split_paths(
-                m_project_old_root_path,        // input path 1
-                asset_path,                     // input path 2
-                common_path,                    // common part
-                discard,                        // remaining part of path 1
-                relative_asset_path);           // remaining part of path 2
-
-            // If it is, then keep the relative part of the asset path (e.g. textures\bunny.exr);
-            // otherwise simply keep the asset's file name (e.g. bunny.exr).
-            const filesystem::path new_asset_path =
-                common_path.empty() || discard.has_parent_path()
-                    ? filesystem::path(asset_path).filename()
-                    : relative_asset_path;
-
-            // Copy the asset file to the project's new directory if necessary.
-            const filesystem::path dest_path = m_project_new_root_dir / new_asset_path;
-            const bool success = asset_path != dest_path ? copy_file(asset_path, dest_path) : true;
-
-            // Update the asset path parameter.
-            asset_path = convert_to_posix(new_asset_path.string());
-
-            return success;
-        }
-
-        bool handle_relative_link_to_asset(string& asset_path) const
-        {
-            // Nothing to do if the project is written to the same directory as before.
-            if (m_project_old_root_dir == m_project_new_root_dir)
-                return true;
-
-            // Find the asset in the search paths, leading to e.g. textures/bunny.exr.
-            const filesystem::path qualified_asset_path = m_project_search_paths.qualify(asset_path);
-
-            if (m_options & ProjectFileWriter::OmitBringingAssets)
-            {
-                // Make the asset path absolute according to the old project path.
-                filesystem::path new_asset_path = absolute(qualified_asset_path, m_project_old_root_dir);
-                new_asset_path.make_preferred();
-                asset_path = new_asset_path.string();
-                return true;
-            }
-            else
-            {
-                // Copy the asset file to the project's new directory if necessary.
-                // The asset path parameter is left unmodified, e.g. bunny.exr or textures/bunny.exr.
-                const filesystem::path dest_path = m_project_new_root_dir / asset_path;
-                return qualified_asset_path != dest_path ? copy_file(qualified_asset_path, dest_path) : true;
-            }
-        }
-
-        static string convert_to_posix(string path)
-        {
-            replace(path.begin(), path.end(), '\\', '/');
-            return path;
-        }
-
-        static bool copy_file(
-            const filesystem::path& source_path,
-            const filesystem::path& dest_path)
-        {
-            try
-            {
-                filesystem::create_directories(dest_path.parent_path());
-                filesystem::copy_file(source_path, dest_path, filesystem::copy_option::overwrite_if_exists);
-                return true;
-            }
-            catch (const std::exception& e)
-            {
-                RENDERER_LOG_ERROR(
-                    "failed to copy %s to %s: %s.",
-                    source_path.string().c_str(),
-                    dest_path.string().c_str(),
-                    e.what());
-                return false;
-            }
-        }
-    };
-
     class Writer
     {
       public:
@@ -348,8 +134,7 @@ namespace
             element.add_attribute("format_revision", project.get_format_revision());
             element.write(XMLElement::HasChildElements);
 
-            if (!(m_options & ProjectFileWriter::OmitSearchPaths))
-                write_search_paths(project);
+            write_search_paths(project);
 
             if (project.get_display())
                 write(*project.get_display());
@@ -837,10 +622,7 @@ namespace
             {
                 // Write the mesh file to disk.
                 const string filepath = (m_project_new_root_dir / filename).string();
-                MeshObjectWriter::write(
-                    object,
-                    object_name.c_str(),
-                    filepath.c_str());
+                MeshObjectWriter::write(object, object_name.c_str(), filepath.c_str());
             }
 
             // Write the <object> element.
@@ -863,17 +645,20 @@ namespace
         {
             ParamArray& params = object.get_parameters();
 
-            if (!params.strings().exist("filepath") &&
-                !(m_options & ProjectFileWriter::OmitWritingGeometryFiles))
+            if (!params.strings().exist("filepath"))
             {
-                // Write the curve file to disk.
                 const string object_name = object.get_name();
                 const string filename = object_name + ".curves";
-                const string filepath = (m_project_new_root_dir / filename).string();
-                CurveObjectWriter::write(object, filepath.c_str());
+
+                if (!(m_options & ProjectFileWriter::OmitWritingGeometryFiles))
+                {
+                    // Write the curve file to disk.
+                    const string filepath = (m_project_new_root_dir / filename).string();
+                    CurveObjectWriter::write(object, filepath.c_str());
+                }
 
                 // Add a file path parameter to the object.
-                params.insert("filepath", filepath);
+                params.insert("filepath", filename);
             }
 
             // Write the <object> element.
@@ -1081,10 +866,18 @@ bool ProjectFileWriter::write(
 {
     RENDERER_LOG_INFO("writing project file %s...", filepath);
 
-    // Manage references to external asset files.
-    AssetHandler asset_handler(project, filepath, options);
-    if (!asset_handler.handle_assets(project))
-        return false;
+    if (!(options & OmitHandlingAssetFiles))
+    {
+        // Manage references to external asset files.
+        const AssetHandler asset_handler(
+            project,
+            filepath,
+            (options & CopyAllAssets) != 0
+                ? AssetHandler::CopyAllAssets
+                : AssetHandler::CopyRelativeAssetsOnly);
+        if (!asset_handler.handle_assets())
+            return false;
+    }
 
     // Open the file for writing.
     FILE* file = fopen(filepath, "wt");

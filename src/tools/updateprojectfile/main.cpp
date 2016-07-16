@@ -104,7 +104,7 @@ int main(int argc, const char* argv[])
         ProjectFileWriter::write(
             project.ref(),
             project->get_path(),
-            ProjectFileWriter::OmitWritingGeometryFiles | ProjectFileWriter::OmitBringingAssets);
+            ProjectFileWriter::OmitWritingGeometryFiles | ProjectFileWriter::OmitHandlingAssetFiles);
 
     return success ? 0 : 1;
 }

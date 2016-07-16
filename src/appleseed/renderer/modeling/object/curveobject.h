@@ -77,12 +77,12 @@ class APPLESEED_DLLSYMBOL CurveObject
     // Insert and access curves.
     void reserve_curves1(const size_t count);
     void reserve_curves3(const size_t count);
-    size_t push_curve1(const CurveType1& curve);
-    size_t push_curve3(const CurveType3& curve);
+    size_t push_curve1(const Curve1Type& curve);
+    size_t push_curve3(const Curve3Type& curve);
     size_t get_curve1_count() const;
     size_t get_curve3_count() const;
-    const CurveType1& get_curve1(const size_t index) const;
-    const CurveType3& get_curve3(const size_t index) const;
+    const Curve1Type& get_curve1(const size_t index) const;
+    const Curve3Type& get_curve3(const size_t index) const;
 
     // Insert and access material slots.
     virtual size_t get_material_slot_count() const APPLESEED_OVERRIDE;

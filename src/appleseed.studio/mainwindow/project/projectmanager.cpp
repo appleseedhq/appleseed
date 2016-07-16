@@ -94,7 +94,7 @@ bool ProjectManager::save_project()
 
 bool ProjectManager::save_project_as(const string& filepath)
 {
-    return do_save_project(filepath, ProjectFileWriter::OmitSearchPaths);
+    return do_save_project(filepath, ProjectFileWriter::Defaults);
 }
 
 void ProjectManager::close_project()

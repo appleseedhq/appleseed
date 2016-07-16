@@ -68,6 +68,19 @@ class SwitchException
           break
 #endif
 
+// Call assert() and return when reaching an unhandled case.
+#ifdef NDEBUG
+    #define assert_otherwise_and_return(value)                  \
+        default:                                                \
+          APPLESEED_UNREACHABLE;                                \
+          return value
+#else
+    #define assert_otherwise_and_return(value)                  \
+        default:                                                \
+          assert(!"Unhandled case in switch statement.");       \
+          return value
+#endif
+
 // Throw a SwitchException when reaching an unhandled case.
 #define throw_otherwise                                         \
     default:                                                    \

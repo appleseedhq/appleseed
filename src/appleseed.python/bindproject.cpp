@@ -152,7 +152,6 @@ namespace
 
     void config_insert_path(Configuration* config, const char* path, const bpy::object& value)
     {
-        // string
         {
             bpy::extract<const char*> extractor(value);
             if (extractor.check())
@@ -183,6 +182,7 @@ namespace
             }
         }
 #endif
+
         if (PyLong_Check(value.ptr()))
         {
             bpy::extract<int> extractor(value);
@@ -230,7 +230,7 @@ namespace
         ProjectFileReader*                  reader,
         const char*                         project_filename,
         const char*                         schema_filename,
-        ProjectFileReader::Options          opts)
+        const ProjectFileReader::Options    opts)
     {
         auto_release_ptr<Project> project(reader->read(project_filename, schema_filename, opts));
         return bpy::object(project);
@@ -259,8 +259,7 @@ void bind_project()
         .def("insert_path", config_insert_path)
         .def("remove_path", config_remove_path)
 
-        .def("get_metadata", config_get_metadata).staticmethod("get_metadata")
-        ;
+        .def("get_metadata", config_get_metadata).staticmethod("get_metadata");
 
     bind_typed_entity_map<Configuration>("ConfigurationContainer");
 
@@ -289,33 +288,27 @@ void bind_project()
 
         .def("configurations", project_get_configs, bpy::return_value_policy<bpy::reference_existing_object>())
 
-        .def("create_aov_images", &Project::create_aov_images)
-        ;
+        .def("create_aov_images", &Project::create_aov_images);
 
     bpy::enum_<ProjectFileReader::Options>("ProjectFileReaderOptions")
         .value("Defaults", ProjectFileReader::Defaults)
         .value("OmitReadingMeshFiles", ProjectFileReader::OmitReadingMeshFiles)
-        .value("OmitProjectFileUpdate", ProjectFileReader::OmitProjectFileUpdate)
-        ;
+        .value("OmitProjectFileUpdate", ProjectFileReader::OmitProjectFileUpdate);
 
     bpy::class_<ProjectFileReader>("ProjectFileReader")
         .def("read", &project_file_reader_read_default_opts)
         .def("read", &project_file_reader_read_with_opts)
-        .def("load_builtin", &project_file_reader_load_builtin)
-        ;
+        .def("load_builtin", &project_file_reader_load_builtin);
 
     bpy::enum_<ProjectFileWriter::Options>("ProjectFileWriterOptions")
         .value("Defaults", ProjectFileWriter::Defaults)
         .value("OmitHeaderComment", ProjectFileWriter::OmitHeaderComment)
         .value("OmitWritingGeometryFiles", ProjectFileWriter::OmitWritingGeometryFiles)
-        .value("OmitBringingAssets", ProjectFileWriter::OmitBringingAssets)
-        .value("OmitSearchPaths", ProjectFileWriter::OmitSearchPaths)
-        ;
+        .value("OmitHandlingAssetFiles", ProjectFileWriter::OmitHandlingAssetFiles);
 
     bpy::class_<ProjectFileWriter>("ProjectFileWriter")
         // These methods are static, but for symmetry with
         // ProjectFileReader we're wrapping them non-static.
         .def("write", write_project_default_opts)
-        .def("write", write_project_with_opts)
-        ;
+        .def("write", write_project_with_opts);
 }

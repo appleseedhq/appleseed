@@ -52,10 +52,24 @@ namespace foundation
 {
 
 //
-// SearchPathsImpl class implementation.
+// SearchPaths class implementation.
 //
 
-struct SearchPathsImpl::Impl
+const char SearchPaths::environment_path_separator()
+{
+#if defined _WIN32
+    return ';';
+#else
+    return ':';
+#endif
+}
+
+const char SearchPaths::osl_path_separator()
+{
+    return ':';
+}
+
+struct SearchPaths::Impl
 {
     typedef vector<string> PathCollection;
 
@@ -65,12 +79,12 @@ struct SearchPathsImpl::Impl
     PathCollection      m_all_paths;
 };
 
-SearchPathsImpl::SearchPathsImpl()
+SearchPaths::SearchPaths()
   : impl(new Impl())
 {
 }
 
-SearchPathsImpl::SearchPathsImpl(const char* envvar, const char separator)
+SearchPaths::SearchPaths(const char* envvar, const char separator)
   : impl(new Impl())
 {
     if (const char* value = getenv(envvar))
@@ -95,12 +109,22 @@ SearchPathsImpl::SearchPathsImpl(const char* envvar, const char separator)
     }
 }
 
-SearchPathsImpl::~SearchPathsImpl()
+SearchPaths::~SearchPaths()
 {
     delete impl;
 }
 
-void SearchPathsImpl::clear()
+void SearchPaths::set_root_path(const char* path)
+{
+    impl->m_root_path = filesystem::path(path).make_preferred();
+}
+
+bool SearchPaths::has_root_path() const
+{
+    return !impl->m_root_path.empty();
+}
+
+void SearchPaths::clear()
 {
     impl->m_root_path.clear();
     impl->m_explicit_paths.clear();
@@ -108,51 +132,36 @@ void SearchPathsImpl::clear()
     impl->m_all_paths.clear();
 }
 
-void SearchPathsImpl::reset()
+void SearchPaths::reset()
 {
     impl->m_explicit_paths.clear();
     impl->m_all_paths = impl->m_environment_paths;
 }
 
-bool SearchPathsImpl::empty() const
+bool SearchPaths::empty() const
 {
     return impl->m_explicit_paths.empty();
 }
 
-size_t SearchPathsImpl::size() const
+size_t SearchPaths::size() const
 {
     return impl->m_explicit_paths.size();
 }
 
-bool SearchPathsImpl::has_root_path() const
-{
-    return !impl->m_root_path.empty();
-}
-
-const char* SearchPathsImpl::operator[](const size_t i) const
+const char* SearchPaths::operator[](const size_t i) const
 {
     assert(i < size());
     return impl->m_explicit_paths[i].c_str();
 }
 
-void SearchPathsImpl::do_set_root_path(const char* path)
-{
-    impl->m_root_path = filesystem::path(path).make_preferred();
-}
-
-char* SearchPathsImpl::do_get_root_path() const
-{
-    return duplicate_string(impl->m_root_path.string().c_str());
-}
-
-void SearchPathsImpl::do_push_back(const char* path)
+void SearchPaths::push_back(const char* path)
 {
     assert(path);
     impl->m_explicit_paths.push_back(path);
     impl->m_all_paths.push_back(path);
 }
 
-void SearchPathsImpl::do_split_and_push_back(const char* paths, const char separator)
+void SearchPaths::split_and_push_back(const char* paths, const char separator)
 {
     assert(paths);
 
@@ -160,10 +169,16 @@ void SearchPathsImpl::do_split_and_push_back(const char* paths, const char separ
     split(paths, string(&separator, 1), path_list);
 
     for (const_each<vector<string> > i = path_list; i; ++i)
-        do_push_back(i->c_str());
+        push_back(i->c_str());
 }
 
-bool SearchPathsImpl::do_exist(const char* filepath) const
+void SearchPaths::remove(const size_t i)
+{
+    assert(i < size());
+    impl->m_explicit_paths.erase(impl->m_explicit_paths.begin() + i);
+}
+
+bool SearchPaths::exist(const char* filepath) const
 {
     assert(filepath);
 
@@ -171,11 +186,13 @@ bool SearchPathsImpl::do_exist(const char* filepath) const
 
     if (!fp.is_absolute())
     {
+        // Look in search paths.
         for (Impl::PathCollection::const_reverse_iterator
                 i = impl->m_all_paths.rbegin(), e = impl->m_all_paths.rend(); i != e; ++i)
         {
             filesystem::path search_path(*i);
 
+            // Make the search path absolute if there is a root path.
             if (has_root_path() && search_path.is_relative())
                 search_path = impl->m_root_path / search_path;
 
@@ -183,6 +200,7 @@ bool SearchPathsImpl::do_exist(const char* filepath) const
                 return true;
         }
 
+        // Look in the root path if there is one.
         if (has_root_path())
         {
             if (filesystem::exists(impl->m_root_path / fp))
@@ -193,7 +211,12 @@ bool SearchPathsImpl::do_exist(const char* filepath) const
     return filesystem::exists(fp);
 }
 
-char* SearchPathsImpl::do_qualify(const char* filepath) const
+char* SearchPaths::do_get_root_path() const
+{
+    return duplicate_string(impl->m_root_path.string().c_str());
+}
+
+void SearchPaths::do_qualify(const char* filepath, char** qualified_filepath_cstr, char** search_path_cstr) const
 {
     assert(filepath);
 
@@ -201,11 +224,13 @@ char* SearchPathsImpl::do_qualify(const char* filepath) const
 
     if (!fp.is_absolute())
     {
+        // Look in search paths.
         for (Impl::PathCollection::const_reverse_iterator
                 i = impl->m_all_paths.rbegin(), e = impl->m_all_paths.rend(); i != e; ++i)
         {
             filesystem::path search_path(*i);
 
+            // Make the search path absolute if there is a root path.
             if (has_root_path() && search_path.is_relative())
                 search_path = impl->m_root_path / search_path;
 
@@ -214,10 +239,14 @@ char* SearchPathsImpl::do_qualify(const char* filepath) const
             if (filesystem::exists(qualified_fp))
             {
                 qualified_fp.make_preferred();
-                return duplicate_string(qualified_fp.string().c_str());
+                *qualified_filepath_cstr = duplicate_string(qualified_fp.string().c_str());
+                if (search_path_cstr)
+                    *search_path_cstr = duplicate_string(i->c_str());
+                return;
             }
         }
 
+        // Look in the root path if there is one.
         if (has_root_path())
         {
             filesystem::path qualified_fp = impl->m_root_path / fp;
@@ -225,15 +254,20 @@ char* SearchPathsImpl::do_qualify(const char* filepath) const
             if (filesystem::exists(qualified_fp))
             {
                 qualified_fp.make_preferred();
-                return duplicate_string(qualified_fp.string().c_str());
+                *qualified_filepath_cstr = duplicate_string(qualified_fp.string().c_str());
+                if (search_path_cstr)
+                    *search_path_cstr = 0;
+                return;
             }
         }
     }
 
-    return duplicate_string(fp.string().c_str());
+    *qualified_filepath_cstr = duplicate_string(fp.string().c_str());
+    if (search_path_cstr)
+        *search_path_cstr = 0;
 }
 
-char* SearchPathsImpl::do_to_string(const char separator, const bool reversed) const
+char* SearchPaths::do_to_string(const char separator, const bool reversed) const
 {
     Impl::PathCollection paths;
 
@@ -255,7 +289,7 @@ char* SearchPathsImpl::do_to_string(const char separator, const bool reversed) c
 
         if (p.is_relative())
         {
-            // Ignore relative paths.
+            // Ignore relative paths if we don't have a root path.
             if (!root_path)
                 continue;
 
@@ -269,20 +303,6 @@ char* SearchPathsImpl::do_to_string(const char separator, const bool reversed) c
     }
 
     return duplicate_string(paths_str.c_str());
-}
-
-const char SearchPaths::environment_path_separator()
-{
-#if defined _WIN32
-    return ';';
-#else
-    return ':';
-#endif
-}
-
-const char SearchPaths::osl_path_separator()
-{
-    return ':';
 }
 
 }   // namespace foundation
