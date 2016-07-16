@@ -127,6 +127,7 @@ class APPLESEED_DLLSYMBOL MeshObject
     size_t push_triangle(const Triangle& triangle);
     size_t get_triangle_count() const;
     const Triangle& get_triangle(const size_t index) const;
+    Triangle& get_triangle(const size_t index);
     void clear_triangles();
 
     // Set/get the number of motion segments (the number of motion vectors per vertex).

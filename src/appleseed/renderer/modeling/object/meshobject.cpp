@@ -284,6 +284,11 @@ const Triangle& MeshObject::get_triangle(const size_t index) const
     return impl->m_tess.m_primitives[index];
 }
 
+Triangle& MeshObject::get_triangle(const size_t index)
+{
+    return impl->m_tess.m_primitives[index];
+}
+
 void MeshObject::clear_triangles()
 {
     impl->m_tess.m_primitives.clear();
