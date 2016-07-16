@@ -38,13 +38,16 @@
 #include "renderer/modeling/entity/entitymap.h"
 #include "renderer/modeling/entity/entityvector.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
+
 // Standard headers.
 #include <cstddef>
 #include <string>
 
 namespace detail
 {
-    template <class T>
+    template <typename T>
     T* typed_entity_vector_get_item(renderer::TypedEntityVector<T>& vec, const int relative_index)
     {
         const size_t index =
@@ -60,13 +63,25 @@ namespace detail
         return vec.get_by_index(index);
     }
 
-    template <class T>
+    template <typename T>
     T* typed_entity_map_get_item(renderer::TypedEntityMap<T>& map, const std::string& key)
     {
         return map.get_by_name(key.c_str());
     }
 
-    template <class T>
+    template <typename T>
+    foundation::auto_release_ptr<T> typed_entity_map_remove(renderer::TypedEntityMap<T>* map, T* entity)
+    {
+        return map->remove(entity);
+    }
+
+    template <typename T>
+    foundation::auto_release_ptr<T> typed_entity_map_remove_by_uid(renderer::TypedEntityMap<T>* map, const foundation::UniqueID id)
+    {
+        return map->remove(id);
+    }
+
+    template <typename T>
     boost::python::object typed_entity_map_get_iter(renderer::TypedEntityMap<T>* map)
     {
         boost::python::dict items;
@@ -79,7 +94,7 @@ namespace detail
         return items.attr("__iter__")();
     }
 
-    template <class T>
+    template <typename T>
     boost::python::list typed_entity_map_get_keys(renderer::TypedEntityMap<T>* map)
     {
         boost::python::list items;
@@ -92,7 +107,7 @@ namespace detail
         return items;
     }
 
-    template <class T>
+    template <typename T>
     boost::python::list typed_entity_map_get_values(renderer::TypedEntityMap<T>* map)
     {
         boost::python::list items;
@@ -106,7 +121,7 @@ namespace detail
     }
 }
 
-template <class T>
+template <typename T>
 void bind_typed_entity_vector(const char* name)
 {
     boost::python::class_<renderer::TypedEntityVector<T>, boost::python::bases<renderer::EntityVector>, boost::noncopyable>(name)
@@ -120,17 +135,17 @@ void bind_typed_entity_vector(const char* name)
         .def("__iter__", boost::python::iterator<renderer::TypedEntityVector<T>, boost::python::return_internal_reference<> >());
 }
 
-template <class T>
+template <typename T>
 void bind_typed_entity_map(const char* name)
 {
     boost::python::class_<renderer::TypedEntityMap<T>, boost::python::bases<renderer::EntityMap>, boost::noncopyable>(name)
         .def("__getitem__", detail::typed_entity_map_get_item<T>, boost::python::return_value_policy<boost::python::reference_existing_object>())
-
         .def("get_by_uid", &renderer::TypedEntityMap<T>::get_by_uid, boost::python::return_value_policy<boost::python::reference_existing_object>())
         .def("get_by_name", &renderer::TypedEntityMap<T>::get_by_name, boost::python::return_value_policy<boost::python::reference_existing_object>())
 
         .def("insert", &renderer::TypedEntityMap<T>::insert)
-        .def("remove", &renderer::TypedEntityMap<T>::remove, boost::python::return_value_policy<boost::python::return_by_value>())
+        .def("remove", &detail::typed_entity_map_remove<T>, boost::python::return_value_policy<boost::python::return_by_value>())
+        .def("remove_by_uid", &detail::typed_entity_map_remove_by_uid<T>, boost::python::return_value_policy<boost::python::return_by_value>())
 
         .def("__iter__", &detail::typed_entity_map_get_iter<T>)
         .def("keys", &detail::typed_entity_map_get_keys<T>)

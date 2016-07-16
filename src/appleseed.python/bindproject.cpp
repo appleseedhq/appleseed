@@ -304,11 +304,11 @@ void bind_project()
         .value("Defaults", ProjectFileWriter::Defaults)
         .value("OmitHeaderComment", ProjectFileWriter::OmitHeaderComment)
         .value("OmitWritingGeometryFiles", ProjectFileWriter::OmitWritingGeometryFiles)
-        .value("OmitHandlingAssetFiles", ProjectFileWriter::OmitHandlingAssetFiles);
+        .value("OmitHandlingAssetFiles", ProjectFileWriter::OmitHandlingAssetFiles)
+        .value("CopyAllAssets", ProjectFileWriter::CopyAllAssets);
 
     bpy::class_<ProjectFileWriter>("ProjectFileWriter")
-        // These methods are static, but for symmetry with
-        // ProjectFileReader we're wrapping them non-static.
+        // These methods are static but for symmetry with ProjectFileReader we're exposing them as non-static.
         .def("write", write_project_default_opts)
         .def("write", write_project_with_opts);
 }

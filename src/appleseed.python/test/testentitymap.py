@@ -84,13 +84,13 @@ class TestEntityMap(unittest.TestCase):
         self.assertEqual(self.assembly_map["assembly"].get_uid(), uid1)
         self.assertEqual(self.assembly_map["another_assembly"].get_uid(), uid2)
 
-    def test_insert_remove(self):
+    def test_insert_remove_by_uid(self):
         ass = asr.Assembly("assembly")
         self.assembly_map.insert(ass)
         self.assertEqual(len(self.assembly_map), 1)
 
-        a= self.assembly_map.get_by_name("assembly")
-        ass = self.assembly_map.remove(a.get_uid())
+        a = self.assembly_map.get_by_name("assembly")
+        ass = self.assembly_map.remove_by_uid(a.get_uid())
         self.assertEqual(len(self.assembly_map), 0)
 
         self.assembly_map.insert(ass)
