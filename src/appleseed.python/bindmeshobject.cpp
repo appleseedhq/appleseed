@@ -56,6 +56,16 @@ namespace
         return MeshObjectFactory::create(name.c_str(), bpy_dict_to_param_array(params));
     }
 
+    const Triangle& get_triangle(const MeshObject* object, const size_t index)
+    {
+        return object->get_triangle(index);
+    }
+
+    void set_triangle(MeshObject* object, const size_t index, const Triangle& triangle)
+    {
+        object->get_triangle(index) = triangle;
+    }
+
     bpy::list read_mesh_objects(
         const bpy::list&    search_paths,
         const string&       base_object_name,
@@ -147,7 +157,8 @@ void bind_mesh_object()
         .def("reserve_triangles", &MeshObject::reserve_triangles)
         .def("push_triangle", &MeshObject::push_triangle)
         .def("get_triangle_count", &MeshObject::get_triangle_count)
-        .def("get_triangle", &MeshObject::get_triangle, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_triangle", get_triangle, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("set_triangle", set_triangle)
 
         .def("set_motion_segment_count", &MeshObject::set_motion_segment_count)
         .def("get_motion_segment_count", &MeshObject::get_motion_segment_count)
@@ -166,4 +177,7 @@ void bind_mesh_object()
     bpy::class_<MeshObjectWriter>("MeshObjectWriter", bpy::no_init)
         .def("write", write_mesh_object).staticmethod("write")
         ;
+
+    bpy::def("compute_smooth_vertex_normals", compute_smooth_vertex_normals);
+    bpy::def("compute_smooth_vertex_tangents", compute_smooth_vertex_tangents);
 }

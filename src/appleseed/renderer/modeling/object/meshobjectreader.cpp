@@ -773,6 +773,21 @@ namespace
         return true;
     }
 
+    void compute_smooth_normals(MeshObject& object)
+    {
+        if (object.get_vertex_normal_count() > 0)
+        {
+            RENDERER_LOG_WARNING(
+                "skipping computation of smooth normal vectors for mesh object \"%s\" because it already has normal vectors.",
+                object.get_name());
+            return;
+        }
+
+        RENDERER_LOG_INFO("computing smooth normal vectors for mesh object \"%s\"...", object.get_name());
+
+        compute_smooth_vertex_normals(object);
+    }
+
     void compute_smooth_tangents(MeshObject& object)
     {
         if (object.get_vertex_tangent_count() > 0)
@@ -898,6 +913,18 @@ bool MeshObjectReader::read(
             "\"filename\" parameter group found.",
             base_object_name);
         return false;
+    }
+
+    // Compute smooth normals.
+    if (params.strings().exist("compute_smooth_normals"))
+    {
+        const RegExFilter filter(params.get("compute_smooth_normals"));
+        for (size_t i = 0; i < objects.size(); ++i)
+        {
+            MeshObject& object = *objects[i];
+            if (filter.accepts(object.get_name()))
+                compute_smooth_normals(object);
+        }
     }
 
     // Compute smooth tangents.

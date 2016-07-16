@@ -29,16 +29,23 @@
 #ifndef APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTOPERATIONS_H
 #define APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTOPERATIONS_H
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Forward declarations.
 namespace renderer  { class MeshObject; }
 
 namespace renderer
 {
 
+// Compute smooth vertex normal vectors for a mesh object.
+// The mesh object must not already have normals.
+APPLESEED_DLLSYMBOL void compute_smooth_vertex_normals(MeshObject& object);
+
 // Compute smooth vertex tangent vectors for a mesh object.
 // The mesh object must not already have tangent vectors.
 // The mesh object must have texture coordinates.
-void compute_smooth_vertex_tangents(MeshObject& object);
+APPLESEED_DLLSYMBOL void compute_smooth_vertex_tangents(MeshObject& object);
 
 }       // namespace renderer
 
