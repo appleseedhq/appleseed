@@ -74,8 +74,8 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
 
             // On Windows, the create_directory() call below will fail with an Access Denied error
             // if a File Explorer window was opened in the output directory that we just deleted.
-            // A small pause solves the problem.
-            sleep(50);
+            // A small pause solves the problem. The namespace qualifier is required on Linux.
+            foundation::sleep(50);
 
             create_directory(m_output_directory);
         }
