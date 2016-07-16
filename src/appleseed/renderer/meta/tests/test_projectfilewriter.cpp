@@ -109,7 +109,6 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
                         ParamArray().insert("filename", filename))));
         }
 
-        template <>
         void create_mesh_object(const char* object_name, const path& filename)
         {
             create_mesh_object(object_name, filename.string());
