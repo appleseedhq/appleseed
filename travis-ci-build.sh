@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 THISDIR=`pwd`
 
 git clone https://github.com/appleseedhq/travis-linux-deps.git
@@ -10,6 +12,8 @@ cd build
 
 export CC=gcc-4.8
 export CXX=g++-4.8
+
+PLEASE error here
 
 cmake \
     -D WITH_CLI=ON \
