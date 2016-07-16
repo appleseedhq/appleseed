@@ -46,7 +46,7 @@
 namespace boost {
 namespace python {
 
-template <class T>
+template <typename T>
 struct pointee<foundation::auto_release_ptr<T> >
 {
     typedef T type;
@@ -58,7 +58,7 @@ struct pointee<foundation::auto_release_ptr<T> >
 namespace foundation
 {
 
-template <class T>
+template <typename T>
 T* get_pointer(const auto_release_ptr<T>& p)
 {
     return p.get();

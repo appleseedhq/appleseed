@@ -47,7 +47,7 @@
 
 namespace detail
 {
-    template <class T>
+    template <typename T>
     T* typed_entity_vector_get_item(renderer::TypedEntityVector<T>& vec, const int relative_index)
     {
         const size_t index =
@@ -63,7 +63,7 @@ namespace detail
         return vec.get_by_index(index);
     }
 
-    template <class T>
+    template <typename T>
     T* typed_entity_map_get_item(renderer::TypedEntityMap<T>& map, const std::string& key)
     {
         return map.get_by_name(key.c_str());
@@ -81,7 +81,7 @@ namespace detail
         return map->remove(id);
     }
 
-    template <class T>
+    template <typename T>
     boost::python::object typed_entity_map_get_iter(renderer::TypedEntityMap<T>* map)
     {
         boost::python::dict items;
@@ -94,7 +94,7 @@ namespace detail
         return items.attr("__iter__")();
     }
 
-    template <class T>
+    template <typename T>
     boost::python::list typed_entity_map_get_keys(renderer::TypedEntityMap<T>* map)
     {
         boost::python::list items;
@@ -107,7 +107,7 @@ namespace detail
         return items;
     }
 
-    template <class T>
+    template <typename T>
     boost::python::list typed_entity_map_get_values(renderer::TypedEntityMap<T>* map)
     {
         boost::python::list items;
@@ -121,7 +121,7 @@ namespace detail
     }
 }
 
-template <class T>
+template <typename T>
 void bind_typed_entity_vector(const char* name)
 {
     boost::python::class_<renderer::TypedEntityVector<T>, boost::python::bases<renderer::EntityVector>, boost::noncopyable>(name)
@@ -135,12 +135,11 @@ void bind_typed_entity_vector(const char* name)
         .def("__iter__", boost::python::iterator<renderer::TypedEntityVector<T>, boost::python::return_internal_reference<> >());
 }
 
-template <class T>
+template <typename T>
 void bind_typed_entity_map(const char* name)
 {
     boost::python::class_<renderer::TypedEntityMap<T>, boost::python::bases<renderer::EntityMap>, boost::noncopyable>(name)
         .def("__getitem__", detail::typed_entity_map_get_item<T>, boost::python::return_value_policy<boost::python::reference_existing_object>())
-
         .def("get_by_uid", &renderer::TypedEntityMap<T>::get_by_uid, boost::python::return_value_policy<boost::python::reference_existing_object>())
         .def("get_by_name", &renderer::TypedEntityMap<T>::get_by_name, boost::python::return_value_policy<boost::python::reference_existing_object>())
 

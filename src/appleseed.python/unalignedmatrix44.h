@@ -45,7 +45,7 @@
 namespace foundation
 {
 
-template <class T>
+template <typename T>
 class UnalignedMatrix44
 {
   public:
@@ -255,19 +255,19 @@ class UnalignedMatrix44
     T m_data[16];
 };
 
-template <class T>
+template <typename T>
 UnalignedMatrix44<T> operator*(const UnalignedMatrix44<T>& a, const UnalignedMatrix44<T>& b)
 {
     return UnalignedMatrix44<T>(a.as_foundation_matrix() * b.as_foundation_matrix());
 }
 
-template <class T>
+template <typename T>
 Vector<T, 4> operator*(const UnalignedMatrix44<T>& a, const Vector<T, 4>& v)
 {
     return a.as_foundation_matrix() * v;
 }
 
-template <class T>
+template <typename T>
 UnalignedMatrix44<T> invert_matrix(const UnalignedMatrix44<T>& mat)
 {
     try
@@ -283,7 +283,7 @@ UnalignedMatrix44<T> invert_matrix(const UnalignedMatrix44<T>& mat)
     return UnalignedMatrix44<T>();
 }
 
-template <class T>
+template <typename T>
 std::ostream& operator<<(std::ostream& s, const UnalignedMatrix44<T>& matrix)
 {
     return s << matrix.as_foundation_matrix();
