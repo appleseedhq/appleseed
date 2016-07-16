@@ -13,8 +13,6 @@ cd build
 export CC=gcc-4.8
 export CXX=g++-4.8
 
-PLEASE error here
-
 cmake \
     -D WITH_CLI=ON \
     -D WITH_STUDIO=OFF \
@@ -73,11 +71,9 @@ make -j 2
 
 export LD_LIBRARY_PATH=$DEPSDIR/lib:../sandbox/lib/Debug:$LD_LIBRARY_PATH
 
-# compile OSL shader lib
-cd ../sandbox/shaders/src
-python compile_shaders.py ../../bin/oslc
+echo "Running appleseed tests:"
+echo "------------------------"
 
-# Unit tests.
 ../sandbox/bin/Debug/appleseed.cli --run-unit-tests --verbose-unit-tests
 
 echo "Running appleseed.python tests:"
@@ -86,3 +82,8 @@ echo "-------------------------------"
 export PYTHONPATH=$PYTHONPATH:../sandbox/lib/Debug/python2.7
 python ../sandbox/lib/Debug/python2.7/appleseed/test/runtests.py
 
+# compile OSL shader lib
+cd ../sandbox/shaders/src
+python compile_shaders.py ../../bin/oslc
+
+set +e
