@@ -71,8 +71,8 @@ namespace
     {
       public:
         ConstantEnvironmentEDF(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : EnvironmentEDF(name, params)
         {
             m_inputs.declare("radiance", InputFormatSpectralIlluminance);
@@ -89,8 +89,8 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&      project,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+            const Project&          project,
+            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
             if (!EnvironmentEDF::on_frame_begin(project, abort_switch))
                 return false;
@@ -141,8 +141,8 @@ namespace
         }
 
         virtual double evaluate_pdf(
-            InputEvaluator&     input_evaluator,
-            const Vector3d&     outgoing) const APPLESEED_OVERRIDE
+            InputEvaluator&         input_evaluator,
+            const Vector3d&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
             return RcpFourPi;

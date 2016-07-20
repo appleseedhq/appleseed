@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/connectableentity.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -74,6 +75,10 @@ class APPLESEED_DLLSYMBOL EnvironmentEDF
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 
+    // Access the transform sequence of the environment EDF.
+    TransformSequence& transform_sequence();
+    const TransformSequence& transform_sequence() const;
+
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
@@ -110,7 +115,25 @@ class APPLESEED_DLLSYMBOL EnvironmentEDF
     virtual double evaluate_pdf(
         InputEvaluator&             input_evaluator,
         const foundation::Vector3d& outgoing) const = 0;        // world space emission direction, unit-length
+
+  protected:
+    TransformSequence m_transform_sequence;
 };
+
+
+//
+// EnvironmentEDF class implementation.
+//
+
+inline TransformSequence& EnvironmentEDF::transform_sequence()
+{
+    return m_transform_sequence;
+}
+
+inline const TransformSequence& EnvironmentEDF::transform_sequence() const
+{
+    return m_transform_sequence;
+}
 
 }       // namespace renderer
 

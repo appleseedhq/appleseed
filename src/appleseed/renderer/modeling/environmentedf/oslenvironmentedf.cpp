@@ -35,10 +35,13 @@
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/sampling/mappings.h"
+#include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -75,8 +78,8 @@ namespace
     {
       public:
         OSLEnvironmentEDF(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : EnvironmentEDF(name, params)
         {
             m_inputs.declare("osl_background", InputFormatEntity, "");
@@ -93,8 +96,8 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&      project,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+            const Project&          project,
+            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
             if (!EnvironmentEDF::on_frame_begin(project, abort_switch))
                 return false;
@@ -118,9 +121,14 @@ namespace
             Spectrum&               value,
             double&                 probability) const APPLESEED_OVERRIDE
         {
-            outgoing = sample_sphere_uniform(s);
-            evaluate(shading_context, input_evaluator, outgoing, value);
+            const Vector3d local_outgoing = sample_sphere_uniform(s);
             probability = RcpFourPi;
+
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            outgoing = transform.vector_to_parent(local_outgoing);
+
+            evaluate(shading_context, input_evaluator, local_outgoing, value);
         }
 
         virtual void evaluate(
@@ -130,10 +138,14 @@ namespace
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
+
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            const Vector3d local_outgoing = transform.vector_to_local(outgoing);
+
             if (m_shader_group)
-                shading_context.execute_osl_background(*m_shader_group, outgoing, value);
-            else
-                value.set(0.0f);
+                shading_context.execute_osl_background(*m_shader_group, local_outgoing, value);
+            else value.set(0.0f);
         }
 
         virtual void evaluate(
@@ -144,13 +156,18 @@ namespace
             double&                 probability) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
-            evaluate(shading_context, input_evaluator, outgoing, value);
+
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            const Vector3d local_outgoing = transform.vector_to_local(outgoing);
+
+            evaluate(shading_context, input_evaluator, local_outgoing, value);
             probability = evaluate_pdf(input_evaluator, outgoing);
         }
 
         virtual double evaluate_pdf(
-            InputEvaluator&     input_evaluator,
-            const Vector3d&     outgoing) const APPLESEED_OVERRIDE
+            InputEvaluator&         input_evaluator,
+            const Vector3d&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
             return RcpFourPi;

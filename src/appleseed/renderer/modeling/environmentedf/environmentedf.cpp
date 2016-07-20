@@ -30,6 +30,12 @@
 // Interface header.
 #include "environmentedf.h"
 
+// appleseed.foundation headers.
+#include "foundation/math/transform.h"
+
+// Standard headers.
+#include <cstddef>
+
 using namespace foundation;
 
 namespace renderer
@@ -61,6 +67,32 @@ bool EnvironmentEDF::on_frame_begin(
     const Project&      project,
     IAbortSwitch*       abort_switch)
 {
+    // Make sure the environment EDF's transform is only a (sequence of) rotation.
+    bool warned = false;
+    for (size_t i = 0, e = m_transform_sequence.size(); i < e; ++i)
+    {
+        double time;
+        Transformd transform;
+        m_transform_sequence.get_transform(i, time, transform);
+
+        Vector3d scaling, translation;
+        Quaterniond rotation;
+        transform.get_local_to_parent().decompose(scaling, rotation, translation);
+
+        if ((!feq(scaling, Vector3d(1.0)) || !fz(translation)) && !warned)
+        {
+            RENDERER_LOG_WARNING(
+                "transforms of environment edf \"%s\" must be pure rotations but have scaling and/or translation components; these will be ignored.",
+                get_name());
+            warned = true;
+        }
+
+        m_transform_sequence.set_transform(
+            time,
+            Transformd::from_local_to_parent(
+                Matrix4d::rotation(rotation)));
+    }
+
     return true;
 }
 
