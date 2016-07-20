@@ -1269,6 +1269,11 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation(
     // Implementation from Wild Magic Source Code, David Eberly
     // http://www.geometrictools.com
     //
+    // Another interesting reference if this code needs to be optimized:
+    //
+    // From Quaternion to Matrix and Back
+    // http://fabiensanglard.net/doom3_documentation/37726-293748.pdf
+    //
 
     assert(is_normalized(q));
 

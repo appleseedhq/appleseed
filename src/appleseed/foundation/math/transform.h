@@ -565,9 +565,7 @@ inline typename Transform<T>::VectorType Transform<T>::get_parent_z() const
 template <typename T>
 inline bool Transform<T>::swaps_handedness() const
 {
-    // We can test any of the matrices because the
-    // inverse of a matrix that swaps the handedness
-    // swaps it too.
+    // We can test any of the matrices because if a matrix swaps the handedness, its inverse does too.
     // gcc 4.8 needs the extra foundation qualifier.
     return foundation::swaps_handedness(m_local_to_parent);
 }

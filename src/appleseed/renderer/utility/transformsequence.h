@@ -118,7 +118,7 @@ class APPLESEED_DLLSYMBOL TransformSequence
     // Compose two transform sequences.
     TransformSequence operator*(const TransformSequence& rhs) const;
 
-    // Transform a 3D axis-aligned bounding box.
+    // Transform a 3D axis-aligned bounding box across the whole motion described by this sequence.
     // If the bounding box is invalid, it is returned unmodified.
     template <typename T>
     foundation::AABB<T, 3> to_parent(const foundation::AABB<T, 3>& bbox) const;

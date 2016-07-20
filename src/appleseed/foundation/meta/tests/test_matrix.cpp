@@ -531,6 +531,18 @@ TEST_SUITE(Foundation_Math_Matrix33)
         EXPECT_SEQUENCE_EQ(9, ExpectedValues, &m[0]);
     }
 
+    TEST_CASE(ConstructRotationMatrixGivenQuaternion)
+    {
+        const Vector3d from = normalize(Vector3d(1.0, 1.0, 0.0));
+        const Vector3d to = normalize(Vector3d(1.0, 0.0, 1.0));
+
+        const Quaterniond q = Quaterniond::rotation(from, to);
+        const Matrix3d m = Matrix3d::rotation(q);
+        const Vector3d result = m * from;
+
+        EXPECT_FEQ(to, result);
+    }
+
     TEST_CASE(TestFortranStyleSubscripting)
     {
         const Matrix3d m(Values);
@@ -664,18 +676,6 @@ TEST_SUITE(Foundation_Math_Matrix33)
         m.decompose(s, q);
 
         EXPECT_TRUE(is_normalized(q));
-    }
-
-    TEST_CASE(ConstructRotationMatrixGivenQuaternion)
-    {
-        const Vector3d from = normalize(Vector3d(1.0, 1.0, 0.0));
-        const Vector3d to = normalize(Vector3d(1.0, 0.0, 1.0));
-
-        const Quaterniond q = Quaterniond::rotation(from, to);
-        const Matrix3d m = Matrix3d::rotation(q);
-        const Vector3d result = m * from;
-
-        EXPECT_FEQ(to, result);
     }
 }
 

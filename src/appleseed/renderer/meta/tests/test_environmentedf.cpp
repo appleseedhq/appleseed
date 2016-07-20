@@ -195,6 +195,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
                 OIIO::TextureSystem::create(),
                 boost::bind(&OIIO::TextureSystem::destroy, _1));
 #endif
+
 #ifdef APPLESEED_WITH_OSL
             RendererServices renderer_services(
                 m_project,
@@ -208,29 +209,30 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
                 m_project.get_trace_context(),
                 texture_cache);
 
-    #ifdef APPLESEED_WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             OSLShaderGroupExec sg_exec(*shading_system);
-    #endif
+#endif
+
             Tracer tracer(
                 m_scene,
                 intersector,
                 texture_cache
-    #ifdef APPLESEED_WITH_OSL
+#ifdef APPLESEED_WITH_OSL
                 , sg_exec
-    #endif
+#endif
                 );
 
             ShadingContext shading_context(
                 intersector,
                 tracer,
-                texture_cache
-    #ifdef APPLESEED_WITH_OIIO
-                , *texture_system
-    #endif
-    #ifdef APPLESEED_WITH_OSL
-                , sg_exec
-    #endif
-                , 0);
+                texture_cache,
+#ifdef APPLESEED_WITH_OIIO
+                *texture_system,
+#endif
+#ifdef APPLESEED_WITH_OSL
+                sg_exec,
+#endif
+                0);
 
             InputEvaluator input_evaluator(texture_cache);
 
