@@ -70,19 +70,19 @@ class ShadingContext
   public:
     // Constructor.
     ShadingContext(
-        const Intersector&      intersector,
-        Tracer&                 tracer,
-        TextureCache&           texture_cache,
+        const Intersector&          intersector,
+        Tracer&                     tracer,
+        TextureCache&               texture_cache,
 #ifdef APPLESEED_WITH_OIIO
-        OIIO::TextureSystem&    oiio_texture_system,
+        OIIO::TextureSystem&        oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL
-        OSLShaderGroupExec&     osl_shadergroup_exec,
+        OSLShaderGroupExec&         osl_shadergroup_exec,
 #endif
-        const size_t            thread_index,
-        ILightingEngine*        lighting_engine = 0,
-        const float             transparency_threshold = 0.001f,
-        const size_t            max_iterations = 1000);
+        const size_t                thread_index,
+        ILightingEngine*            lighting_engine = 0,
+        const float                 transparency_threshold = 0.001f,
+        const size_t                max_iterations = 1000);
 
     const Intersector& get_intersector() const;
 
@@ -90,10 +90,14 @@ class ShadingContext
 
     TextureCache& get_texture_cache() const;
 
-    ILightingEngine* get_lighting_engine() const;
+#ifdef APPLESEED_WITH_OIIO
+    OIIO::TextureSystem& get_oiio_texture_system() const;
+#endif
 
-    // Return the thread id
+    // Return the index of the current rendering thread.
     size_t get_thread_index() const;
+
+    ILightingEngine* get_lighting_engine() const;
 
     // Return the minimum transmission value that defines transparency.
     float get_transparency_threshold() const;
@@ -101,24 +105,21 @@ class ShadingContext
     // Return the maximum number of iterations in ray/path tracing loops.
     size_t get_max_iterations() const;
 
-#ifdef APPLESEED_WITH_OIIO
-    OIIO::TextureSystem& get_oiio_texture_system() const;
-#endif
-
 #ifdef APPLESEED_WITH_OSL
+
     void execute_osl_shading(
-        const ShaderGroup&  shader_group,
-        const ShadingPoint& shading_point) const;
+        const ShaderGroup&          shader_group,
+        const ShadingPoint&         shading_point) const;
 
     void execute_osl_subsurface(
-        const ShaderGroup&  shader_group,
-        const ShadingPoint& shading_point) const;
+        const ShaderGroup&          shader_group,
+        const ShadingPoint&         shading_point) const;
 
     void execute_osl_transparency(
-        const ShaderGroup&  shader_group,
-        const ShadingPoint& shading_point,
-        Alpha&              alpha,
-        float*              holdout = 0) const;
+        const ShaderGroup&          shader_group,
+        const ShadingPoint&         shading_point,
+        Alpha&                      alpha,
+        float*                      holdout = 0) const;
 
     void execute_osl_emission(
         const ShaderGroup&  shader_group,
@@ -132,9 +133,9 @@ class ShadingContext
         const foundation::Vector2d& s) const;
 
     void choose_osl_subsurface_normal(
-        const ShadingPoint&             shading_point,
-        const void*                     bssrdf_data,
-        const double                    s) const;
+        const ShadingPoint&         shading_point,
+        const void*                 bssrdf_data,
+        const double                s) const;
 
     void execute_osl_background(
         const ShaderGroup&          shader_group,
@@ -144,20 +145,25 @@ class ShadingContext
 #endif
 
   private:
-    const Intersector&          m_intersector;
-    Tracer&                     m_tracer;
-    TextureCache&               m_texture_cache;
-    ILightingEngine*            m_lighting_engine;
-    const float                 m_transparency_threshold;
-    const size_t                m_max_iterations;
-    const size_t                m_thread_index;
+    const Intersector&              m_intersector;
+    Tracer&                         m_tracer;
+    TextureCache&                   m_texture_cache;
 #ifdef APPLESEED_WITH_OIIO
-    OIIO::TextureSystem&        m_oiio_texture_system;
+    OIIO::TextureSystem&            m_oiio_texture_system;
 #endif
 #ifdef APPLESEED_WITH_OSL
-    OSLShaderGroupExec&         m_shadergroup_exec;
+    OSLShaderGroupExec&             m_shadergroup_exec;
 #endif
+    const size_t                    m_thread_index;
+    ILightingEngine*                m_lighting_engine;
+    const float                     m_transparency_threshold;
+    const size_t                    m_max_iterations;
 };
+
+
+//
+// ShadingContext class implementation.
+//
 
 inline const Intersector& ShadingContext::get_intersector() const
 {
@@ -174,14 +180,14 @@ inline TextureCache& ShadingContext::get_texture_cache() const
     return m_texture_cache;
 }
 
-inline ILightingEngine* ShadingContext::get_lighting_engine() const
-{
-    return m_lighting_engine;
-}
-
 inline size_t ShadingContext::get_thread_index() const
 {
     return m_thread_index;
+}
+
+inline ILightingEngine* ShadingContext::get_lighting_engine() const
+{
+    return m_lighting_engine;
 }
 
 inline float ShadingContext::get_transparency_threshold() const

@@ -64,16 +64,16 @@ ShadingContext::ShadingContext(
   : m_intersector(intersector)
   , m_tracer(tracer)
   , m_texture_cache(texture_cache)
-  , m_thread_index(thread_index)
-  , m_lighting_engine(lighting_engine)
-  , m_transparency_threshold(transparency_threshold)
-  , m_max_iterations(max_iterations)
 #ifdef APPLESEED_WITH_OIIO
   , m_oiio_texture_system(oiio_texture_system)
 #endif
 #ifdef APPLESEED_WITH_OSL
   , m_shadergroup_exec(osl_shadergroup_exec)
 #endif
+  , m_thread_index(thread_index)
+  , m_lighting_engine(lighting_engine)
+  , m_transparency_threshold(transparency_threshold)
+  , m_max_iterations(max_iterations)
 {
 }
 
@@ -140,9 +140,9 @@ void ShadingContext::execute_osl_bump(
 }
 
 void ShadingContext::choose_osl_subsurface_normal(
-    const ShadingPoint&             shading_point,
-    const void*                     bssrdf_data,
-    const double                    s) const
+    const ShadingPoint&     shading_point,
+    const void*             bssrdf_data,
+    const double            s) const
 {
     m_shadergroup_exec.choose_subsurface_normal(
         shading_point,
