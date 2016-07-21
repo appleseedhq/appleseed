@@ -38,6 +38,7 @@ import os
 import platform
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import time
@@ -49,7 +50,7 @@ import zipfile
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.4.1"
+VERSION = "2.4.2"
 SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 
 
@@ -79,12 +80,18 @@ def safe_delete_file(path):
     except OSError:
         fatal("Failed to delete file '" + path + "'")
 
+def on_rmtree_error(func, path, exc_info):
+    # path contains the path of the file that couldn't be removed.
+    # Let's just assume that it's read-only and unlink it.
+    os.chmod(path, stat.S_IWRITE)
+    os.unlink(path)
+
 def safe_delete_directory(path):
     Attempts = 10
     for attempt in range(Attempts):
         try:
             if os.path.exists(path):
-                shutil.rmtree(path)
+                shutil.rmtree(path, onerror = on_rmtree_error)
             return
         except OSError:
             if attempt < Attempts - 1:
@@ -131,7 +138,6 @@ class Settings:
 
     def load_values(self, tree):
         self.configuration = self.__get_required(tree, "configuration")
-        self.platform_id = self.__get_required(tree, "platform_id")
         self.platform_name = self.__get_required(tree, "platform_name")
         self.appleseed_path = self.__get_required(tree, "appleseed_path")
         self.headers_path = self.__get_required(tree, "headers_path")
@@ -142,7 +148,6 @@ class Settings:
     def print_summary(self):
         print("")
         print("  Configuration:             " + self.configuration)
-        print("  Platform ID:               " + self.platform_id + " (Python says " + os.name + ")")
         print("  Platform Name:             " + self.platform_name)
         print("  Path to appleseed:         " + self.appleseed_path)
         print("  Path to appleseed headers: " + self.headers_path)
@@ -375,6 +380,7 @@ class PackageBuilder:
         archive_util.make_zipfile(package_base_path, "appleseed")
 
     def remove_stage(self):
+        progress("Deleting staging directory...")
         safe_delete_directory("appleseed")
 
     def run(self, cmdline):
@@ -414,7 +420,6 @@ class WindowsPackageBuilder(PackageBuilder):
 class MacPackageBuilder(PackageBuilder):
     def __init__(self, settings, package_info):
         PackageBuilder.__init__(self, settings, package_info)
-        self.build_path = os.path.join(self.settings.appleseed_path, "build", self.settings.platform_id)
         self.shared_lib_ext = ".dylib"
         self.system_libs_prefixes = ["/System/Library/", "/usr/lib/libcurl", "/usr/lib/libc++",
                                      "/usr/lib/libbz2", "/usr/lib/libSystem", "usr/lib/libz",
