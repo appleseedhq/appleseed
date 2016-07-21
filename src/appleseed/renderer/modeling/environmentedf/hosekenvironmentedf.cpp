@@ -37,6 +37,7 @@
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -44,7 +45,9 @@
 #include "foundation/image/regularspectrum.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/fastmath.h"
+#include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -94,8 +97,8 @@ namespace
     {
       public:
         HosekEnvironmentEDF(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : EnvironmentEDF(name, params)
           , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
         {
@@ -121,8 +124,8 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&      project,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+            const Project&          project,
+            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
             if (!EnvironmentEDF::on_frame_begin(project, abort_switch))
                 return false;
@@ -163,14 +166,17 @@ namespace
             Spectrum&               value,
             double&                 probability) const APPLESEED_OVERRIDE
         {
-            outgoing = sample_hemisphere_cosine(s);
+            const Vector3d local_outgoing = sample_hemisphere_cosine(s);
+            probability = local_outgoing.y * RcpPi;
 
-            const Vector3d shifted_outgoing = shift(outgoing);
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            outgoing = transform.vector_to_parent(local_outgoing);
+
+            const Vector3d shifted_outgoing = shift(local_outgoing);
             if (shifted_outgoing.y > 0.0)
                 compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
-
-            probability = outgoing.y * RcpPi;
         }
 
         virtual void evaluate(
@@ -181,7 +187,11 @@ namespace
         {
             assert(is_normalized(outgoing));
 
-            const Vector3d shifted_outgoing = shift(outgoing);
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            const Vector3d local_outgoing = transform.vector_to_local(outgoing);
+
+            const Vector3d shifted_outgoing = shift(local_outgoing);
             if (shifted_outgoing.y > 0.0)
                 compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
@@ -196,21 +206,33 @@ namespace
         {
             assert(is_normalized(outgoing));
 
-            const Vector3d shifted_outgoing = shift(outgoing);
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            const Vector3d local_outgoing = transform.vector_to_local(outgoing);
+
+            const Vector3d shifted_outgoing = shift(local_outgoing);
             if (shifted_outgoing.y > 0.0)
                 compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
 
-            probability = outgoing.y > 0.0 ? outgoing.y * RcpPi : 0.0;
+            probability = local_outgoing.y > 0.0 ? local_outgoing.y * RcpPi : 0.0;
         }
 
         virtual double evaluate_pdf(
-            InputEvaluator&     input_evaluator,
-            const Vector3d&     outgoing) const APPLESEED_OVERRIDE
+            InputEvaluator&         input_evaluator,
+            const Vector3d&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
 
-            return outgoing.y > 0.0 ? outgoing.y * RcpPi : 0.0;
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            const Transformd::MatrixType& parent_to_local = transform.get_parent_to_local();
+            const double local_outgoing_y =
+                parent_to_local[ 4] * outgoing.x +
+                parent_to_local[ 5] * outgoing.y +
+                parent_to_local[ 6] * outgoing.z;
+
+            return local_outgoing_y > 0.0 ? local_outgoing_y * RcpPi : 0.0;
         }
 
       private:

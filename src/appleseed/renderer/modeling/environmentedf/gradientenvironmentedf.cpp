@@ -35,10 +35,13 @@
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/sampling/mappings.h"
+#include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -71,8 +74,8 @@ namespace
     {
       public:
         GradientEnvironmentEDF(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : EnvironmentEDF(name, params)
         {
             m_inputs.declare("horizon_radiance", InputFormatSpectralIlluminance);
@@ -90,8 +93,8 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&      project,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+            const Project&          project,
+            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
             if (!EnvironmentEDF::on_frame_begin(project, abort_switch))
                 return false;
@@ -115,9 +118,14 @@ namespace
             Spectrum&               value,
             double&                 probability) const APPLESEED_OVERRIDE
         {
-            outgoing = sample_sphere_uniform(s);
-            compute_gradient(outgoing.y, value);
+            const Vector3d local_outgoing = sample_sphere_uniform(s);
             probability = RcpFourPi;
+
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            outgoing = transform.vector_to_parent(local_outgoing);
+
+            compute_gradient(local_outgoing.y, value);
         }
 
         virtual void evaluate(
@@ -127,7 +135,16 @@ namespace
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
-            compute_gradient(outgoing.y, value);
+
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            const Transformd::MatrixType& parent_to_local = transform.get_parent_to_local();
+            const double local_outgoing_y =
+                parent_to_local[ 4] * outgoing.x +
+                parent_to_local[ 5] * outgoing.y +
+                parent_to_local[ 6] * outgoing.z;
+
+            compute_gradient(local_outgoing_y, value);
         }
 
         virtual void evaluate(
@@ -138,13 +155,22 @@ namespace
             double&                 probability) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
-            compute_gradient(outgoing.y, value);
+
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            const Transformd::MatrixType& parent_to_local = transform.get_parent_to_local();
+            const double local_outgoing_y =
+                parent_to_local[ 4] * outgoing.x +
+                parent_to_local[ 5] * outgoing.y +
+                parent_to_local[ 6] * outgoing.z;
+
+            compute_gradient(local_outgoing_y, value);
             probability = RcpFourPi;
         }
 
         virtual double evaluate_pdf(
-            InputEvaluator&     input_evaluator,
-            const Vector3d&     outgoing) const APPLESEED_OVERRIDE
+            InputEvaluator&         input_evaluator,
+            const Vector3d&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
             return RcpFourPi;

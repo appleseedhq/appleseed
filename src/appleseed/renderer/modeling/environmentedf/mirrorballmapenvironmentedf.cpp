@@ -36,10 +36,13 @@
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/sampling/mappings.h"
+#include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -77,8 +80,8 @@ namespace
     {
       public:
         MirrorBallMapEnvironmentEDF(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : EnvironmentEDF(name, params)
         {
             m_inputs.declare("radiance", InputFormatSpectralIlluminance);
@@ -96,8 +99,8 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&      project,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+            const Project&          project,
+            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
             if (!EnvironmentEDF::on_frame_begin(project, abort_switch))
                 return false;
@@ -115,9 +118,14 @@ namespace
             Spectrum&               value,
             double&                 probability) const APPLESEED_OVERRIDE
         {
-            outgoing = sample_sphere_uniform(s);
-            lookup_envmap(input_evaluator, outgoing, value);
+            const Vector3d local_outgoing = sample_sphere_uniform(s);
             probability = RcpFourPi;
+
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            outgoing = transform.vector_to_parent(local_outgoing);
+
+            lookup_envmap(input_evaluator, local_outgoing, value);
         }
 
         virtual void evaluate(
@@ -127,7 +135,12 @@ namespace
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
-            lookup_envmap(input_evaluator, outgoing, value);
+
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            const Vector3d local_outgoing = transform.vector_to_local(outgoing);
+
+            lookup_envmap(input_evaluator, local_outgoing, value);
         }
 
         virtual void evaluate(
@@ -138,13 +151,18 @@ namespace
             double&                 probability) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
-            lookup_envmap(input_evaluator, outgoing, value);
+
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            const Vector3d local_outgoing = transform.vector_to_local(outgoing);
+
+            lookup_envmap(input_evaluator, local_outgoing, value);
             probability = RcpFourPi;
         }
 
         virtual double evaluate_pdf(
-            InputEvaluator&     input_evaluator,
-            const Vector3d&     outgoing) const APPLESEED_OVERRIDE
+            InputEvaluator&         input_evaluator,
+            const Vector3d&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
             return RcpFourPi;
@@ -158,9 +176,9 @@ namespace
         };
 
         void lookup_envmap(
-            InputEvaluator&     input_evaluator,
-            const Vector3d&     direction,
-            Spectrum&           value) const
+            InputEvaluator&         input_evaluator,
+            const Vector3d&         direction,
+            Spectrum&               value) const
         {
             // Compute the texture coordinates corresponding to this direction.
             const double d = sqrt(square(direction[0]) + square(direction[1]));

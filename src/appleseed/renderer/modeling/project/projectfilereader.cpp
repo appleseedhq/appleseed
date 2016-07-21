@@ -1422,16 +1422,28 @@ namespace
       : public EntityElementHandler<
                    EnvironmentEDF,
                    EnvironmentEDFFactoryRegistrar,
-                   ParametrizedElementHandler>
+                   TransformSequenceElementHandler<ParametrizedElementHandler> >
     {
       public:
         explicit EnvironmentEDFElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                EnvironmentEDF,
-                EnvironmentEDFFactoryRegistrar,
-                ParametrizedElementHandler>("environment edf", context)
+          : Base("environment edf", context)
         {
         }
+
+        virtual void end_element() APPLESEED_OVERRIDE
+        {
+            Base::end_element();
+
+            if (m_entity.get())
+                copy_transform_sequence_to(m_entity->transform_sequence());
+        }
+
+      private:
+        typedef EntityElementHandler<
+            EnvironmentEDF,
+            EnvironmentEDFFactoryRegistrar,
+            TransformSequenceElementHandler<ParametrizedElementHandler>
+        > Base;
     };
 
 

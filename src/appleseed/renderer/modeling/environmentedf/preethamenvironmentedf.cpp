@@ -37,6 +37,7 @@
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -44,7 +45,9 @@
 #include "foundation/image/regularspectrum.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/fastmath.h"
+#include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -88,8 +91,8 @@ namespace
     {
       public:
         PreethamEnvironmentEDF(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : EnvironmentEDF(name, params)
           , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
         {
@@ -114,8 +117,8 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&      project,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+            const Project&          project,
+            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
             if (!EnvironmentEDF::on_frame_begin(project, abort_switch))
                 return false;
@@ -159,14 +162,17 @@ namespace
             Spectrum&               value,
             double&                 probability) const APPLESEED_OVERRIDE
         {
-            outgoing = sample_hemisphere_cosine(s);
+            const Vector3d local_outgoing = sample_hemisphere_cosine(s);
+            probability = local_outgoing.y * RcpPi;
 
-            const Vector3d shifted_outgoing = shift(outgoing);
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            outgoing = transform.vector_to_parent(local_outgoing);
+
+            const Vector3d shifted_outgoing = shift(local_outgoing);
             if (shifted_outgoing.y > 0.0)
                 compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
-
-            probability = outgoing.y * RcpPi;
         }
 
         virtual void evaluate(
@@ -177,7 +183,11 @@ namespace
         {
             assert(is_normalized(outgoing));
 
-            const Vector3d shifted_outgoing = shift(outgoing);
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            const Vector3d local_outgoing = transform.vector_to_local(outgoing);
+
+            const Vector3d shifted_outgoing = shift(local_outgoing);
             if (shifted_outgoing.y > 0.0)
                 compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
@@ -192,21 +202,33 @@ namespace
         {
             assert(is_normalized(outgoing));
 
-            const Vector3d shifted_outgoing = shift(outgoing);
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            const Vector3d local_outgoing = transform.vector_to_local(outgoing);
+
+            const Vector3d shifted_outgoing = shift(local_outgoing);
             if (shifted_outgoing.y > 0.0)
                 compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
 
-            probability = outgoing.y > 0.0 ? outgoing.y * RcpPi : 0.0;
+            probability = local_outgoing.y > 0.0 ? local_outgoing.y * RcpPi : 0.0;
         }
 
         virtual double evaluate_pdf(
-            InputEvaluator&     input_evaluator,
-            const Vector3d&     outgoing) const APPLESEED_OVERRIDE
+            InputEvaluator&         input_evaluator,
+            const Vector3d&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
 
-            return outgoing.y > 0.0 ? outgoing.y * RcpPi : 0.0;
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            const Transformd::MatrixType& parent_to_local = transform.get_parent_to_local();
+            const double local_outgoing_y =
+                parent_to_local[ 4] * outgoing.x +
+                parent_to_local[ 5] * outgoing.y +
+                parent_to_local[ 6] * outgoing.z;
+
+            return local_outgoing_y > 0.0 ? local_outgoing_y * RcpPi : 0.0;
         }
 
       private:
@@ -241,8 +263,8 @@ namespace
 
         // Compute the coefficients of the luminance distribution function.
         static void compute_Y_coefficients(
-            const double        turbidity,
-            double              coeffs[5])
+            const double            turbidity,
+            double                  coeffs[5])
         {
             coeffs[0] =  0.1787 * turbidity - 1.4630;
             coeffs[1] = -0.3554 * turbidity + 0.4275;
@@ -253,8 +275,8 @@ namespace
 
         // Compute the coefficients of the x chromaticity distribution function.
         static void compute_x_coefficients(
-            const double        turbidity,
-            double              coeffs[5])
+            const double            turbidity,
+            double                  coeffs[5])
         {
             coeffs[0] = -0.0193 * turbidity - 0.2592;
             coeffs[1] = -0.0665 * turbidity + 0.0008;
@@ -265,8 +287,8 @@ namespace
 
         // Compute the coefficients of the y chromaticity distribution function.
         static void compute_y_coefficients(
-            const double        turbidity,
-            double              coeffs[5])
+            const double            turbidity,
+            double                  coeffs[5])
         {
             coeffs[0] = -0.0167 * turbidity - 0.2608;
             coeffs[1] = -0.0950 * turbidity + 0.0092;
@@ -277,8 +299,8 @@ namespace
 
         // Compute the luminance at zenith, in cd.m^-2.
         static double compute_zenith_Y(
-            const double        turbidity,
-            const double        sun_theta)
+            const double            turbidity,
+            const double            sun_theta)
         {
             const double chi = ((4.0 / 9.0) - turbidity / 120.0) * (Pi - 2.0 * sun_theta);
             return 1000.0 * ((4.0453 * turbidity - 4.9710) * tan(chi) - 0.2155 * turbidity + 2.4192);
@@ -286,8 +308,8 @@ namespace
 
         // Compute the x chromaticity at zenith.
         static double compute_zenith_x(
-            const double        turbidity,
-            const double        sun_theta)
+            const double            turbidity,
+            const double            sun_theta)
         {
             const double a = ( 0.00166 * turbidity - 0.02903) * turbidity + 0.11693;
             const double b = (-0.00375 * turbidity + 0.06377) * turbidity - 0.21196;
@@ -298,8 +320,8 @@ namespace
 
         // Compute the y chromaticity at zenith.
         static double compute_zenith_y(
-            const double        turbidity,
-            const double        sun_theta)
+            const double            turbidity,
+            const double            sun_theta)
         {
             const double e = ( 0.00275 * turbidity - 0.04214) * turbidity + 0.15346;
             const double f = (-0.00610 * turbidity + 0.08970) * turbidity - 0.26756;
@@ -310,10 +332,10 @@ namespace
 
         // Perez formula describing the sky luminance distribution.
         static double perez(
-            const double        rcp_cos_theta,
-            const double        gamma,
-            const double        cos_gamma,
-            const double        coeffs[5])
+            const double            rcp_cos_theta,
+            const double            gamma,
+            const double            cos_gamma,
+            const double            coeffs[5])
         {
             const double u = 1.0 + coeffs[0] * exp(coeffs[1] * rcp_cos_theta);
             const double v = 1.0 + coeffs[2] * exp(coeffs[3] * gamma)
@@ -323,13 +345,13 @@ namespace
 
         // Compute one the three quantity defining the sky aspect: the sky luminance Y and the sky chromaticities x and y.
         static double compute_quantity(
-            const double        rcp_cos_theta,
-            const double        gamma,
-            const double        cos_gamma,
-            const double        sun_theta,
-            const double        cos_sun_theta,
-            const double        zenith_val,
-            const double        coeffs[5])
+            const double            rcp_cos_theta,
+            const double            gamma,
+            const double            cos_gamma,
+            const double            sun_theta,
+            const double            cos_sun_theta,
+            const double            zenith_val,
+            const double            coeffs[5])
         {
             return
                   zenith_val
@@ -339,9 +361,9 @@ namespace
 
         // Compute the sky radiance along a given direction.
         void compute_sky_radiance(
-            InputEvaluator&     input_evaluator,
-            const Vector3d&     outgoing,
-            Spectrum&           value) const
+            InputEvaluator&         input_evaluator,
+            const Vector3d&         outgoing,
+            Spectrum&               value) const
         {
             if (m_uniform_values.m_luminance_multiplier == 0.0)
             {

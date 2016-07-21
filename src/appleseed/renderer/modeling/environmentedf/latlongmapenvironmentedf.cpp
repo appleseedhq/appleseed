@@ -46,13 +46,16 @@
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/texture/texture.h"
 #include "renderer/utility/paramarray.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/math/sampling/imageimportancesampler.h"
+#include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
@@ -156,8 +159,8 @@ namespace
     {
       public:
         LatLongMapEnvironmentEDF(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : EnvironmentEDF(name, params)
           , m_importance_map_width(0)
           , m_importance_map_height(0)
@@ -182,8 +185,8 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&      project,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+            const Project&          project,
+            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
             if (!EnvironmentEDF::on_frame_begin(project, abort_switch))
                 return false;
@@ -219,12 +222,18 @@ namespace
             unit_square_to_angles(u, v, theta, phi);
             shift_angles(theta, phi, m_theta_shift, m_phi_shift);
 
-            // Compute the world space emission direction.
+            // Compute the local space emission direction.
             const double cos_theta = cos(theta);
             const double sin_theta = sin(theta);
             const double cos_phi = cos(phi);
             const double sin_phi = sin(phi);
-            outgoing = Vector3d::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
+            const Vector3d local_outgoing =
+                Vector3d::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
+
+            // Transform the emission direction to world space.
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            outgoing = transform.vector_to_parent(local_outgoing);
 
             // Return the emitted radiance.
             value = payload.m_color;
@@ -241,9 +250,14 @@ namespace
         {
             assert(is_normalized(outgoing));
 
+            // Transform the emission direction to local space.
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            const Vector3d local_outgoing = transform.vector_to_local(outgoing);
+
             // Compute the spherical coordinates of the outgoing direction.
             double theta, phi;
-            unit_vector_to_angles(outgoing, theta, phi);
+            unit_vector_to_angles(local_outgoing, theta, phi);
             shift_angles(theta, phi, -m_theta_shift, -m_phi_shift);
 
             // Convert the spherical coordinates to [0,1]^2.
@@ -263,9 +277,14 @@ namespace
         {
             assert(is_normalized(outgoing));
 
+            // Transform the emission direction to local space.
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            const Vector3d local_outgoing = transform.vector_to_local(outgoing);
+
             // Compute the spherical coordinates of the outgoing direction.
             double theta, phi;
-            unit_vector_to_angles(outgoing, theta, phi);
+            unit_vector_to_angles(local_outgoing, theta, phi);
             shift_angles(theta, phi, -m_theta_shift, -m_phi_shift);
 
             // Convert the spherical coordinates to [0,1]^2.
@@ -278,14 +297,19 @@ namespace
         }
 
         virtual double evaluate_pdf(
-            InputEvaluator&     input_evaluator,
-            const Vector3d&     outgoing) const APPLESEED_OVERRIDE
+            InputEvaluator&         input_evaluator,
+            const Vector3d&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
 
+            // Transform the emission direction to local space.
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            const Vector3d local_outgoing = transform.vector_to_local(outgoing);
+
             // Compute the spherical coordinates of the outgoing direction.
             double theta, phi;
-            unit_vector_to_angles(outgoing, theta, phi);
+            unit_vector_to_angles(local_outgoing, theta, phi);
             shift_angles(theta, phi, -m_theta_shift, -m_phi_shift);
 
             // Convert the spherical coordinates to [0,1]^2.
@@ -314,7 +338,7 @@ namespace
         double  m_rcp_importance_map_height;
         double  m_probability_scale;
 
-        auto_ptr<ImageImportanceSamplerType>    m_importance_sampler;
+        auto_ptr<ImageImportanceSamplerType> m_importance_sampler;
 
         void build_importance_map(const Scene& scene, IAbortSwitch*abort_switch)
         {
@@ -382,10 +406,10 @@ namespace
         }
 
         void lookup_environment_map(
-            InputEvaluator&     input_evaluator,
-            const double        u,
-            const double        v,
-            Spectrum&           value) const
+            InputEvaluator&         input_evaluator,
+            const double            u,
+            const double            v,
+            Spectrum&               value) const
         {
             assert(u >= 0.0 && u < 1.0);
             assert(v >= 0.0 && v < 1.0);
@@ -399,9 +423,9 @@ namespace
         }
 
         double compute_pdf(
-            const double        u,
-            const double        v,
-            const double        theta) const
+            const double            u,
+            const double            v,
+            const double            theta) const
         {
             assert(u >= 0.0 && u < 1.0);
             assert(v >= 0.0 && v < 1.0);

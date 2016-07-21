@@ -500,7 +500,13 @@ namespace
         // Write an <environment_edf> element.
         void write(const EnvironmentEDF& env_edf)
         {
-            write_entity("environment_edf", env_edf);
+            XMLElement element("environment_edf", m_file, m_indenter);
+            element.add_attribute("name", env_edf.get_name());
+            element.add_attribute("model", env_edf.get_model());
+            element.write(XMLElement::HasChildElements);
+
+            write_params(env_edf.get_parameters());
+            write_transform_sequence(env_edf.transform_sequence());
         }
 
         // Write an <environment_shader> element.
