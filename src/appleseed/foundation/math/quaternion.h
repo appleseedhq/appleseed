@@ -86,16 +86,16 @@ class Quaternion
 
 #endif
 
-    // Return the identity quaternion.
-    static QuaternionType identity();
+    // Construct and return the identity quaternion.
+    static QuaternionType make_identity();
 
     // Build a rotation quaternion from an axis and an angle.
-    static QuaternionType rotation(
+    static QuaternionType make_rotation(
         const VectorType&   axis,                           // rotation axis, unit-length
         const ValueType     angle);                         // rotation angle, in radians
 
     // Build a rotation quaternion from two point on the unit sphere.
-    static QuaternionType rotation(
+    static QuaternionType make_rotation(
         const VectorType&   from,
         const VectorType&   to);
 
@@ -219,13 +219,13 @@ inline Quaternion<T>::operator const Imath::Quat<T>&() const
 #endif
 
 template <typename T>
-inline Quaternion<T> Quaternion<T>::identity()
+inline Quaternion<T> Quaternion<T>::make_identity()
 {
     return QuaternionType(ValueType(1.0), VectorType(0.0));
 }
 
 template <typename T>
-inline Quaternion<T> Quaternion<T>::rotation(
+inline Quaternion<T> Quaternion<T>::make_rotation(
     const VectorType&   axis,
     const ValueType     angle)
 {
@@ -239,7 +239,7 @@ inline Quaternion<T> Quaternion<T>::rotation(
 }
 
 template <typename T>
-inline Quaternion<T> Quaternion<T>::rotation(
+inline Quaternion<T> Quaternion<T>::make_rotation(
     const VectorType&   from,
     const VectorType&   to)
 {

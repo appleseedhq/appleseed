@@ -177,7 +177,7 @@ asf::auto_release_ptr<asr::Project> build_project()
                 .insert("intensity", "light_intensity")));
     light->set_transform(
         asf::Transformd::from_local_to_parent(
-            asf::Matrix4d::translation(asf::Vector3d(0.6, 2.0, 1.0))));
+            asf::Matrix4d::make_translation(asf::Vector3d(0.6, 2.0, 1.0))));
     assembly->lights().insert(light);
 
     //------------------------------------------------------------------------
@@ -253,8 +253,8 @@ asf::auto_release_ptr<asr::Project> build_project()
     camera->transform_sequence().set_transform(
         0.0,
         asf::Transformd::from_local_to_parent(
-            asf::Matrix4d::rotation(asf::Vector3d(1.0, 0.0, 0.0), asf::deg_to_rad(-20.0)) *
-            asf::Matrix4d::translation(asf::Vector3d(0.0, 0.8, 11.0))));
+            asf::Matrix4d::make_rotation(asf::Vector3d(1.0, 0.0, 0.0), asf::deg_to_rad(-20.0)) *
+            asf::Matrix4d::make_translation(asf::Vector3d(0.0, 0.8, 11.0))));
 
     // Bind the camera to the scene.
     scene->set_camera(camera);

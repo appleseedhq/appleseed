@@ -597,7 +597,7 @@ namespace
                 norm(up) > 0.0 &&
                 norm(cross(up, origin - target)) > 0.0)
             {
-                m_matrix = Matrix4d::lookat(origin, target, normalize(up));
+                m_matrix = Matrix4d::make_lookat(origin, target, normalize(up));
             }
             else
             {
@@ -701,7 +701,7 @@ namespace
 
             if (norm(axis) > 0.0)
             {
-                m_matrix = Matrix4d::rotation(normalize(axis), deg_to_rad(angle));
+                m_matrix = Matrix4d::make_rotation(normalize(axis), deg_to_rad(angle));
             }
             else
             {
@@ -737,7 +737,7 @@ namespace
         virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             const Vector3d value = get_vector3(get_value(attrs, "value"), m_context);
-            m_matrix = Matrix4d::scaling(value);
+            m_matrix = Matrix4d::make_scaling(value);
         }
 
         const Matrix4d& get_matrix() const
@@ -767,7 +767,7 @@ namespace
         virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             const Vector3d value = get_vector3(get_value(attrs, "value"), m_context);
-            m_matrix = Matrix4d::translation(value);
+            m_matrix = Matrix4d::make_translation(value);
         }
 
         const Matrix4d& get_matrix() const

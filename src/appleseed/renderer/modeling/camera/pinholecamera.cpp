@@ -164,9 +164,9 @@ namespace
             initialize_ray(sampling_context, ray);
 
             // Retrieve the camera transform.
-            Transformd tmp;
+            Transformd scratch;
             const Transformd& transform =
-                m_transform_sequence.evaluate(ray.m_time.m_absolute, tmp);
+                m_transform_sequence.evaluate(ray.m_time.m_absolute, scratch);
 
             // Compute ray origin and direction.
             ray.m_org = transform.get_local_to_parent().extract_translation();
@@ -206,8 +206,8 @@ namespace
                 return false;
 
             // Retrieve the camera transform.
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
 
             // Compute the outgoing direction vector in world space.
             outgoing = point - transform.get_local_to_parent().extract_translation();
@@ -247,8 +247,8 @@ namespace
             Vector2d&           b_ndc) const APPLESEED_OVERRIDE
         {
             // Retrieve the camera transform.
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
 
             // Transform the segment to camera space.
             Vector3d local_a = transform.point_to_local(a);

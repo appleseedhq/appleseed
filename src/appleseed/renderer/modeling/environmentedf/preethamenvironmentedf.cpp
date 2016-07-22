@@ -129,7 +129,7 @@ namespace
             // Compute the sun direction.
             m_sun_theta = deg_to_rad(m_uniform_values.m_sun_theta);
             m_sun_phi = deg_to_rad(m_uniform_values.m_sun_phi);
-            m_sun_dir = Vector3d::unit_vector(m_sun_theta, m_sun_phi);
+            m_sun_dir = Vector3d::make_unit_vector(m_sun_theta, m_sun_phi);
             m_cos_sun_theta = cos(m_sun_theta);
 
             // Precompute some stuff if turbidity is uniform.
@@ -165,8 +165,8 @@ namespace
             const Vector3d local_outgoing = sample_hemisphere_cosine(s);
             probability = local_outgoing.y * RcpPi;
 
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
             outgoing = transform.vector_to_parent(local_outgoing);
 
             const Vector3d shifted_outgoing = shift(local_outgoing);
@@ -183,8 +183,8 @@ namespace
         {
             assert(is_normalized(outgoing));
 
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
             const Vector3d local_outgoing = transform.vector_to_local(outgoing);
 
             const Vector3d shifted_outgoing = shift(local_outgoing);
@@ -202,8 +202,8 @@ namespace
         {
             assert(is_normalized(outgoing));
 
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
             const Vector3d local_outgoing = transform.vector_to_local(outgoing);
 
             const Vector3d shifted_outgoing = shift(local_outgoing);
@@ -220,8 +220,8 @@ namespace
         {
             assert(is_normalized(outgoing));
 
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
             const Transformd::MatrixType& parent_to_local = transform.get_parent_to_local();
             const double local_outgoing_y =
                 parent_to_local[ 4] * outgoing.x +

@@ -90,7 +90,7 @@ bool EnvironmentEDF::on_frame_begin(
         m_transform_sequence.set_transform(
             time,
             Transformd::from_local_to_parent(
-                Matrix4d::rotation(rotation)));
+                Matrix4d::make_rotation(rotation)));
     }
 
     return true;

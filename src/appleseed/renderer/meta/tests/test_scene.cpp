@@ -95,8 +95,8 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
         assembly_instance->transform_sequence().set_transform(
             0.0,
             Transformd::from_local_to_parent(
-                Matrix4d::translation(Vector3d(1.0)) *
-                Matrix4d::scaling(Vector3d(10.0))));
+                Matrix4d::make_translation(Vector3d(1.0)) *
+                Matrix4d::make_scaling(Vector3d(10.0))));
 
         // Insert the assembly and the assembly instance into the scene.
         scene->assemblies().insert(assembly);

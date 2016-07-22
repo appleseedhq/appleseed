@@ -78,7 +78,7 @@ TEST_SUITE(Foundation_Math_Quaternion)
     {
         const Vector3d ExpectedAxis = normalize(Vector3d(-1.0, 1.0, 1.0));
         const double ExpectedAngle = Pi / 4.0;
-        const Quaterniond q = Quaterniond::rotation(ExpectedAxis, ExpectedAngle);
+        const Quaterniond q = Quaterniond::make_rotation(ExpectedAxis, ExpectedAngle);
 
         Vector3d axis;
         double angle;
@@ -102,7 +102,7 @@ TEST_SUITE(Foundation_Math_Quaternion)
 
     TEST_CASE(ExtractAxisAngle_GivenAngleIsZero_ReturnsXAxis)
     {
-        const Quaterniond q = Quaterniond::rotation(Vector3d(0.0, 1.0, 0.0), 0.0);
+        const Quaterniond q = Quaterniond::make_rotation(Vector3d(0.0, 1.0, 0.0), 0.0);
 
         Vector3d axis;
         double angle;
@@ -130,8 +130,8 @@ TEST_SUITE(Foundation_Math_Quaternion)
     {
         const Vector3d from = normalize(Vector3d(1.0, 1.0, 0.0));
         const Vector3d to = normalize(Vector3d(1.0, 0.0, 1.0));
+        const Quaterniond q = Quaterniond::make_rotation(from, to);
 
-        const Quaterniond q = Quaterniond::rotation(from, to);
         const Vector3d result = rotate(q, from);
 
         EXPECT_FEQ(to, result);
@@ -139,7 +139,7 @@ TEST_SUITE(Foundation_Math_Quaternion)
 
     TEST_CASE(Rotate_AxisAngle)
     {
-        const Quaterniond q = Quaterniond::rotation(Vector3d(0.0, 1.0, 0.0), deg_to_rad(45.0));
+        const Quaterniond q = Quaterniond::make_rotation(Vector3d(0.0, 1.0, 0.0), deg_to_rad(45.0));
 
         const Vector3d result = rotate(q, Vector3d(1.0, 0.0, 0.0));
 
@@ -153,8 +153,8 @@ TEST_SUITE(Foundation_Math_Quaternion)
         plotfile.set_xlabel("t");
         plotfile.set_ylabel("Absolute Angular Error");
 
-        const Quaterniond q1 = Quaterniond::rotation(Vector3d(0.0, 0.0, 1.0), 0.0);
-        const Quaterniond q2 = Quaterniond::rotation(Vector3d(0.0, 0.0, 1.0), Pi);
+        const Quaterniond q1 = Quaterniond::make_rotation(Vector3d(0.0, 0.0, 1.0), 0.0);
+        const Quaterniond q2 = Quaterniond::make_rotation(Vector3d(0.0, 0.0, 1.0), Pi);
 
         const size_t PointCount = 1000;
         vector<Vector2d> points;

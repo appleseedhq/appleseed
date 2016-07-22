@@ -228,11 +228,11 @@ namespace
             const double cos_phi = cos(phi);
             const double sin_phi = sin(phi);
             const Vector3d local_outgoing =
-                Vector3d::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
+                Vector3d::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
 
             // Transform the emission direction to world space.
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
             outgoing = transform.vector_to_parent(local_outgoing);
 
             // Return the emitted radiance.
@@ -251,8 +251,8 @@ namespace
             assert(is_normalized(outgoing));
 
             // Transform the emission direction to local space.
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
             const Vector3d local_outgoing = transform.vector_to_local(outgoing);
 
             // Compute the spherical coordinates of the outgoing direction.
@@ -278,8 +278,8 @@ namespace
             assert(is_normalized(outgoing));
 
             // Transform the emission direction to local space.
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
             const Vector3d local_outgoing = transform.vector_to_local(outgoing);
 
             // Compute the spherical coordinates of the outgoing direction.
@@ -303,8 +303,8 @@ namespace
             assert(is_normalized(outgoing));
 
             // Transform the emission direction to local space.
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
             const Vector3d local_outgoing = transform.vector_to_local(outgoing);
 
             // Compute the spherical coordinates of the outgoing direction.

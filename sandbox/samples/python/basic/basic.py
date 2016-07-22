@@ -103,7 +103,7 @@ def build_project():
 
     # Create a point light called "light" and insert it into the assembly.
     light = asr.Light("point_light", "light", { 'intensity' : 'light_intensity' })
-    light.set_transform(asr.Transformd(asr.Matrix4d.translation(asr.Vector3d(0.6, 2.0, 1.0))))
+    light.set_transform(asr.Transformd(asr.Matrix4d.make_translation(asr.Vector3d(0.6, 2.0, 1.0))))
     assembly.lights().insert(light)
 
     # Create an instance of the assembly and insert it into the scene.
@@ -141,8 +141,8 @@ def build_project():
 
     # Place and orient the camera. By default cameras are located in (0.0, 0.0, 0.0)
     # and are looking toward Z- (0.0, 0.0, -1.0).
-    mat = asr.Matrix4d.rotation(asr.Vector3d(1.0, 0.0, 0.0), math.radians(-20.0))
-    mat = mat * asr.Matrix4d.translation(asr.Vector3d(0.0, 0.8, 11.0))
+    mat = asr.Matrix4d.make_rotation(asr.Vector3d(1.0, 0.0, 0.0), math.radians(-20.0))
+    mat = mat * asr.Matrix4d.make_translation(asr.Vector3d(0.0, 0.8, 11.0))
     camera.transform_sequence().set_transform(0.0, asr.Transformd(mat))
 
     # Bind the camera to the scene.

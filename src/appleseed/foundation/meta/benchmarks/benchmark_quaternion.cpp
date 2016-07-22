@@ -48,7 +48,7 @@ BENCHMARK_SUITE(Foundation_Math_Quaternion)
     {
         const Vector3d axis = sample_sphere_uniform(rand_vector2<Vector2d>(rng));
         const double angle = rand_double2(rng) * TwoPi;
-        return Quaterniond::rotation(axis, angle);
+        return Quaterniond::make_rotation(axis, angle);
     }
 
     struct SlerpFixture
@@ -101,7 +101,7 @@ BENCHMARK_SUITE(Foundation_Math_Quaternion)
             for (size_t i = 0; i < N; ++i)
             {
                 m_q[i] = make_random_unit_quat(rng);
-                m_m[i] = Matrix3d::rotation(m_q[i]);
+                m_m[i] = Matrix3d::make_rotation(m_q[i]);
             }
 
             m_v = rand_vector2<Vector3d>(rng);

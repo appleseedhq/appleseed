@@ -100,8 +100,8 @@ bool Camera::project_point(
     Vector2d&           ndc) const
 {
     // Retrieve the camera transform.
-    Transformd tmp;
-    const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
+    Transformd scratch;
+    const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
 
     // Transform the point from world space to camera space.
     const Vector3d point_camera = transform.point_to_local(point);

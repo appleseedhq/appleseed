@@ -238,7 +238,7 @@ TransformSequence TransformSequence::operator*(const TransformSequence& rhs) con
     TransformSequence result;
 
     size_t lhs_i = 0, rhs_i = 0;
-    Transformd tmp;
+    Transformd scratch;
 
     while (lhs_i < m_size && rhs_i < rhs.m_size)
     {
@@ -253,12 +253,12 @@ TransformSequence TransformSequence::operator*(const TransformSequence& rhs) con
         }
         else if (lhs_t < rhs_t)
         {
-            result.set_transform(lhs_t, m_keys[lhs_i].m_transform * rhs.evaluate(lhs_t, tmp));
+            result.set_transform(lhs_t, m_keys[lhs_i].m_transform * rhs.evaluate(lhs_t, scratch));
             ++lhs_i;
         }
         else
         {
-            result.set_transform(rhs_t, evaluate(rhs_t, tmp) * rhs.m_keys[rhs_i].m_transform);
+            result.set_transform(rhs_t, evaluate(rhs_t, scratch) * rhs.m_keys[rhs_i].m_transform);
             ++rhs_i;
         }
     }
@@ -266,14 +266,14 @@ TransformSequence TransformSequence::operator*(const TransformSequence& rhs) con
     while (lhs_i < m_size)
     {
         const double lhs_t = m_keys[lhs_i].m_time;
-        result.set_transform(lhs_t, m_keys[lhs_i].m_transform * rhs.evaluate(lhs_t, tmp));
+        result.set_transform(lhs_t, m_keys[lhs_i].m_transform * rhs.evaluate(lhs_t, scratch));
         ++lhs_i;
     }
 
     while (rhs_i < rhs.m_size)
     {
         const double rhs_t = rhs.m_keys[rhs_i].m_time;
-        result.set_transform(rhs_t, evaluate(rhs_t, tmp) * rhs.m_keys[rhs_i].m_transform);
+        result.set_transform(rhs_t, evaluate(rhs_t, scratch) * rhs.m_keys[rhs_i].m_transform);
         ++rhs_i;
     }
 
@@ -540,8 +540,8 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
         const Vector3d v = perp / perp_norm;
         const double sin_a = clamp(perp_norm, -1.0, 1.0);
         const double cos_a = sqrt(1.0 - sin_a * sin_a);
-        axis_to_z.set_local_to_parent(Matrix4d::rotation(v, cos_a, +sin_a));
-        axis_to_z.set_parent_to_local(Matrix4d::rotation(v, cos_a, -sin_a));
+        axis_to_z.set_local_to_parent(Matrix4d::make_rotation(v, cos_a, +sin_a));
+        axis_to_z.set_parent_to_local(Matrix4d::make_rotation(v, cos_a, -sin_a));
     }
 
     // Build the linear scaling functions Sx(theta), Sy(theta) and Sz(theta).

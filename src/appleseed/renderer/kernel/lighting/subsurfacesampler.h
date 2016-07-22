@@ -247,7 +247,7 @@ inline void SubsurfaceSampler::pick_sampling_basis(
 #ifdef SUBSURFACESAMPLER_BASIS_ROTATION
     const foundation::Vector3d& n = shading_basis.get_normal();
     const foundation::Quaterniond q =
-        foundation::Quaterniond::rotation(n, s[0] * foundation::Pi);    // todo: would [0, Pi/2] rotations be enough?
+        foundation::Quaterniond::make_rotation(n, s[0] * foundation::Pi);    // todo: would [0, Pi/2] rotations be enough?
     const foundation::Vector3d u = foundation::rotate(q, shading_basis.get_tangent_u());
     const foundation::Vector3d v = foundation::rotate(q, shading_basis.get_tangent_v());
 #else

@@ -69,7 +69,7 @@ class Transform
         const MatrixType& local_to_parent,
         const MatrixType& parent_to_local);     // must be equal to inverse(local_to_parent)
 
-    // Construct and return an identity transform.
+    // Construct and return the identity transform.
     static TransformType make_identity();
 
     // Return the identity transform.
@@ -676,18 +676,18 @@ inline void TransformInterpolator<T>::evaluate(const T t, Transform<T>& result) 
     //     const Vector<T, 3> p = lerp(m_t0, m_t1, t);
     //
     //     // Compute the local-to-parent matrix.
-    //     const Matrix<T, 4, 4> smat(Matrix<T, 4, 4>::scaling(s));
-    //     const Matrix<T, 4, 4> rmat(Matrix<T, 4, 4>::rotation(q));
-    //     const Matrix<T, 4, 4> tmat(Matrix<T, 4, 4>::translation(p));
+    //     const Matrix<T, 4, 4> smat(Matrix<T, 4, 4>::make_scaling(s));
+    //     const Matrix<T, 4, 4> rmat(Matrix<T, 4, 4>::make_rotation(q));
+    //     const Matrix<T, 4, 4> tmat(Matrix<T, 4, 4>::make_translation(p));
     //     Matrix<T, 4, 4> local_to_parent = smat;
     //     local_to_parent = rmat * local_to_parent;
     //     local_to_parent = tmat * local_to_parent;
     //
     //     // Compute the parent-to-local matrix.
     //     const Vector<T, 3> inv_s(T(1.0) / s[0], T(1.0) / s[1], T(1.0) / s[2]);
-    //     const Matrix<T, 4, 4> inv_smat(Matrix<T, 4, 4>::scaling(inv_s));
+    //     const Matrix<T, 4, 4> inv_smat(Matrix<T, 4, 4>::make_scaling(inv_s));
     //     const Matrix<T, 4, 4> inv_rmat(transpose(rmat));
-    //     const Matrix<T, 4, 4> inv_tmat(Matrix<T, 4, 4>::translation(-p));
+    //     const Matrix<T, 4, 4> inv_tmat(Matrix<T, 4, 4>::make_translation(-p));
     //     Matrix<T, 4, 4> parent_to_local = inv_tmat;
     //     parent_to_local = inv_rmat * parent_to_local;
     //     parent_to_local = inv_smat * parent_to_local;

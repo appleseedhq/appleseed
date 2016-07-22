@@ -115,9 +115,9 @@ namespace
             initialize_ray(sampling_context, ray);
 
             // Retrieve the camera transform.
-            Transformd tmp;
+            Transformd scratch;
             const Transformd& transform =
-                m_transform_sequence.evaluate(ray.m_time.m_absolute, tmp);
+                m_transform_sequence.evaluate(ray.m_time.m_absolute, scratch);
 
             // Compute ray origin and direction.
             ray.m_org = transform.get_local_to_parent().extract_translation();
@@ -148,8 +148,8 @@ namespace
             double&             importance) const APPLESEED_OVERRIDE
         {
             // Retrieve the camera transform.
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
 
             // Transform the input point to camera space.
             const Vector3d p = transform.point_to_local(point);
@@ -188,8 +188,8 @@ namespace
             Vector2d&           b_ndc) const APPLESEED_OVERRIDE
         {
             // Retrieve the camera transform.
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
 
             // Project the segment onto the film plane.
             a_ndc = camera_to_ndc(transform.point_to_local(a));
@@ -218,7 +218,7 @@ namespace
 
         static Vector3d ndc_to_camera(const Vector2d& point)
         {
-            return Vector3d::unit_vector(point.y * Pi, point.x * TwoPi);
+            return Vector3d::make_unit_vector(point.y * Pi, point.x * TwoPi);
         }
 
         static Vector2d camera_to_ndc(const Vector3d& point)

@@ -49,7 +49,7 @@ namespace foundation
 // General purpose permutation generators.
 //
 
-// Generate an identity permutation.
+// Generate the identity permutation.
 void identity_permutation(
     const size_t    size,       // size of the permutation
     size_t          perm[]);    // [out] permutation

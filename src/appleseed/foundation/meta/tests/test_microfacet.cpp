@@ -150,7 +150,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
                     const double sin_phi = std::sin(phi);
 
                     const Vector3d l =
-                        Vector3d::unit_vector(
+                        Vector3d::make_unit_vector(
                             cos_theta,
                             sin_theta,
                             cos_phi,

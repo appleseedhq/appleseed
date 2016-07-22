@@ -71,10 +71,10 @@ namespace
     }
 
     template <typename T, size_t N>
-    struct vector_helper {};
+    struct VectorHelper {};
 
     template <typename T>
-    struct vector_helper<T, 2>
+    struct VectorHelper<T, 2>
     {
         typedef Vector<T, 2> VectorType;
 
@@ -100,7 +100,7 @@ namespace
     };
 
     template <typename T>
-    struct vector_helper<T, 3>
+    struct VectorHelper<T, 3>
     {
         typedef Vector<T, 3> VectorType;
 
@@ -131,7 +131,7 @@ namespace
     };
 
     template <typename T>
-    struct vector_helper<T, 4>
+    struct VectorHelper<T, 4>
     {
         typedef Vector<T, 4> VectorType;
 
@@ -196,7 +196,7 @@ namespace
         bpy::class_<Vector<T, N> >(class_name)
             .def(bpy::init<>())
             .def(bpy::init<T>())
-            .def("__init__", bpy::make_constructor(&vector_helper<T, N>::construct))
+            .def("__init__", bpy::make_constructor(&VectorHelper<T, N>::construct))
             .def("__init__", bpy::make_constructor(&construct_vec_from_list<T, N>))
 
             // operator[]
@@ -222,10 +222,9 @@ namespace
 
             // Because of a bug in Boost.Python, this needs the extra self_ns qualification.
             .def(bpy::self_ns::str(bpy::self))
-            .def(bpy::self_ns::repr(bpy::self))
-            ;
+            .def(bpy::self_ns::repr(bpy::self));
 
-        bpy::def("dot", &vector_helper<T, N>::dot);
+        bpy::def("dot", &VectorHelper<T, N>::dot);
     }
 }
 
@@ -243,22 +242,22 @@ void bind_vector()
     do_bind_vector<float, 4>("Vector4f");
     do_bind_vector<double, 4>("Vector4d");
 
-    bpy::def("norm", &vector_helper<float,  2>::norm);
-    bpy::def("norm", &vector_helper<double, 2>::norm);
-    bpy::def("norm", &vector_helper<float,  3>::norm);
-    bpy::def("norm", &vector_helper<double, 3>::norm);
-    bpy::def("norm", &vector_helper<float,  4>::norm);
-    bpy::def("norm", &vector_helper<double, 4>::norm);
+    bpy::def("norm", &VectorHelper<float,  2>::norm);
+    bpy::def("norm", &VectorHelper<double, 2>::norm);
+    bpy::def("norm", &VectorHelper<float,  3>::norm);
+    bpy::def("norm", &VectorHelper<double, 3>::norm);
+    bpy::def("norm", &VectorHelper<float,  4>::norm);
+    bpy::def("norm", &VectorHelper<double, 4>::norm);
 
-    bpy::def("normalize", &vector_helper<float,  2>::normalize);
-    bpy::def("normalize", &vector_helper<double, 2>::normalize);
-    bpy::def("normalize", &vector_helper<float,  3>::normalize);
-    bpy::def("normalize", &vector_helper<double, 3>::normalize);
-    bpy::def("normalize", &vector_helper<float,  4>::normalize);
-    bpy::def("normalize", &vector_helper<double, 4>::normalize);
+    bpy::def("normalize", &VectorHelper<float,  2>::normalize);
+    bpy::def("normalize", &VectorHelper<double, 2>::normalize);
+    bpy::def("normalize", &VectorHelper<float,  3>::normalize);
+    bpy::def("normalize", &VectorHelper<double, 3>::normalize);
+    bpy::def("normalize", &VectorHelper<float,  4>::normalize);
+    bpy::def("normalize", &VectorHelper<double, 4>::normalize);
 
-    bpy::def("cross", &vector_helper<float, 3>::cross);
-    bpy::def("cross", &vector_helper<double, 3>::cross);
+    bpy::def("cross", &VectorHelper<float, 3>::cross);
+    bpy::def("cross", &VectorHelper<double, 3>::cross);
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
     bpy::implicitly_convertible<Vector2i, Imath::V2i>();

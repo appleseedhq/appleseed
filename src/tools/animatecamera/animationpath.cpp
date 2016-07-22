@@ -171,16 +171,16 @@ bool AnimationPath::load(const char* filename, const Format format)
 
             m_keyframes.push_back(
                 Transformd::from_local_to_parent(
-                    Matrix4d::translation(position) *
-                    Matrix4d::rotation(orientation) *
-                    Matrix4d::rotation(Vector3d(1.0, 0.0, 0.0), -HalfPi)));
+                    Matrix4d::make_translation(position) *
+                    Matrix4d::make_rotation(orientation) *
+                    Matrix4d::make_rotation(Vector3d(1.0, 0.0, 0.0), -HalfPi)));
         }
         else
         {
             m_keyframes.push_back(
                 Transformd::from_local_to_parent(
-                    Matrix4d::translation(position) *
-                    Matrix4d::rotation(orientation)));
+                    Matrix4d::make_translation(position) *
+                    Matrix4d::make_rotation(orientation)));
         }
 
         ++line;

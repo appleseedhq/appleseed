@@ -158,10 +158,10 @@ class ReportWriter:
 
         self.file.write(self.__render(self.simple_failure_template,
                                       { 'project-path': scene,
-                                        'ref-image-url': urllib.quote(reference_filepath),
-                                        'output-image-url': urllib.quote(output_filepath),
+                                        'ref-image-url': urllib.pathname2url(reference_filepath),
+                                        'output-image-url': urllib.pathname2url(output_filepath),
                                         'failure-reason': error_message,
-                                        'log-file-url': urllib.quote(log_filepath),
+                                        'log-file-url': urllib.pathname2url(log_filepath),
                                         'log-file-path': os.path.basename(log_filepath),
                                         'update-command': command }))
         self.file.flush()
@@ -174,11 +174,11 @@ class ReportWriter:
 
         self.file.write(self.__render(self.detailed_failure_template,
                                       { 'project-path': scene,
-                                        'ref-image-url': urllib.quote(reference_filepath),
-                                        'diff-image-url': urllib.quote(diff_filepath) if diff_filepath is not None else "",
-                                        'output-image-url': urllib.quote(output_filepath),
+                                        'ref-image-url': urllib.pathname2url(reference_filepath),
+                                        'diff-image-url': urllib.pathname2url(diff_filepath) if diff_filepath is not None else "",
+                                        'output-image-url': urllib.pathname2url(output_filepath),
                                         'failure-reason': error_message,
-                                        'log-file-url': urllib.quote(log_filepath),
+                                        'log-file-url': urllib.pathname2url(log_filepath),
                                         'log-file-path': os.path.basename(log_filepath),
                                         'max-abs-diff': max_diff,
                                         'diff-comps-count': num_diff,

@@ -68,7 +68,7 @@ namespace
     }
 
     template <typename T>
-    struct matrix_indexer
+    struct MatrixIndexer
     {
         static T get(const UnalignedMatrix44<T>& mat, bpy::tuple indices)
         {
@@ -183,27 +183,27 @@ namespace
     template <typename T>
     void bind_typed_matrix4(const char* class_name)
     {
-        UnalignedMatrix44<T>(*rot1)(T, T, T) = &UnalignedMatrix44<T>::rotation;
-        UnalignedMatrix44<T>(*rot2)(const Vector<T, 3>&, T) = &UnalignedMatrix44<T>::rotation;
-        UnalignedMatrix44<T>(*rot3)(const Quaternion<T>&) = &UnalignedMatrix44<T>::rotation;
+        UnalignedMatrix44<T>(*rot1)(T, T, T) = &UnalignedMatrix44<T>::make_rotation;
+        UnalignedMatrix44<T>(*rot2)(const Vector<T, 3>&, T) = &UnalignedMatrix44<T>::make_rotation;
+        UnalignedMatrix44<T>(*rot3)(const Quaternion<T>&) = &UnalignedMatrix44<T>::make_rotation;
 
         bpy::class_<UnalignedMatrix44<T> > X(class_name);
 
         X.def("identity", &UnalignedMatrix44<T>::identity).staticmethod("identity")
-            .def("translation", &UnalignedMatrix44<T>::translation).staticmethod("translation")
-            .def("scaling", &UnalignedMatrix44<T>::scaling).staticmethod("scaling")
-            .def("rotation_x", &UnalignedMatrix44<T>::rotation_x).staticmethod("rotation_x")
-            .def("rotation_y", &UnalignedMatrix44<T>::rotation_y).staticmethod("rotation_y")
-            .def("rotation_z", &UnalignedMatrix44<T>::rotation_z).staticmethod("rotation_z")
-            .def("lookat", &UnalignedMatrix44<T>::lookat).staticmethod("lookat")
-            .def("rotation", rot1).def("rotation", rot2).def("rotation", rot3).staticmethod("rotation")
+            .def("make_translation", &UnalignedMatrix44<T>::make_translation).staticmethod("make_translation")
+            .def("make_scaling", &UnalignedMatrix44<T>::make_scaling).staticmethod("make_scaling")
+            .def("make_rotation_x", &UnalignedMatrix44<T>::make_rotation_x).staticmethod("make_rotation_x")
+            .def("make_rotation_y", &UnalignedMatrix44<T>::make_rotation_y).staticmethod("make_rotation_y")
+            .def("make_rotation_z", &UnalignedMatrix44<T>::make_rotation_z).staticmethod("make_rotation_z")
+            .def("make_lookat", &UnalignedMatrix44<T>::make_lookat).staticmethod("make_lookat")
+            .def("make_rotation", rot1).def("make_rotation", rot2).def("make_rotation", rot3).staticmethod("make_rotation")
 
             .def(bpy::init<T>())
             .def("__init__", bpy::make_constructor(&construct_matrix_from_list<T>))
 
             // operator[]
-            .def("__getitem__", &matrix_indexer<T>::get)
-            .def("__setitem__", &matrix_indexer<T>::set)
+            .def("__getitem__", &MatrixIndexer<T>::get)
+            .def("__setitem__", &MatrixIndexer<T>::set)
 
             .def("transpose", &transpose_matrix<T>)
             .def("inverse", &invert_matrix<T>)
@@ -216,8 +216,7 @@ namespace
             .def(bpy::self_ns::repr(bpy::self))
 
             .def("extract_matrix3", &UnalignedMatrix44<T>::extract_matrix3)
-            .def("extract_translation", &UnalignedMatrix44<T>::extract_translation)
-            ;
+            .def("extract_translation", &UnalignedMatrix44<T>::extract_translation);
 
         bind_typed_matrix4_extra(X);
     }
