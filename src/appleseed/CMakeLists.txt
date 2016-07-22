@@ -1283,6 +1283,8 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/nullbsdf.h
     renderer/modeling/bsdf/orennayarbrdf.cpp
     renderer/modeling/bsdf/orennayarbrdf.h
+    renderer/modeling/bsdf/oslbsdf.cpp
+    renderer/modeling/bsdf/oslbsdf.h
     renderer/modeling/bsdf/sheenbrdf.cpp
     renderer/modeling/bsdf/sheenbrdf.h
     renderer/modeling/bsdf/specularbrdf.cpp
@@ -1304,19 +1306,6 @@ list (APPEND appleseed_sources
 source_group ("renderer\\modeling\\bsdf" FILES
     ${renderer_modeling_bsdf_sources}
 )
-
-if (WITH_OSL)
-    set (renderer_modeling_bsdf_osl_sources
-        renderer/modeling/bsdf/oslbsdf.cpp
-        renderer/modeling/bsdf/oslbsdf.h
-    )
-    list (APPEND appleseed_sources
-        ${renderer_modeling_bsdf_osl_sources}
-    )
-    source_group ("renderer\\modeling\\bsdf\\osl" FILES
-        ${renderer_modeling_bsdf_osl_sources}
-    )
-endif ()
 
 set (renderer_modeling_bssrdf_sources
     renderer/modeling/bssrdf/betterdipolebssrdf.cpp
