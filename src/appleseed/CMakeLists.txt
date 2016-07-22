@@ -1283,8 +1283,6 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/nullbsdf.h
     renderer/modeling/bsdf/orennayarbrdf.cpp
     renderer/modeling/bsdf/orennayarbrdf.h
-    renderer/modeling/bsdf/oslbsdf.cpp
-    renderer/modeling/bsdf/oslbsdf.h
     renderer/modeling/bsdf/sheenbrdf.cpp
     renderer/modeling/bsdf/sheenbrdf.h
     renderer/modeling/bsdf/specularbrdf.cpp
@@ -1295,10 +1293,16 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/velvetbrdf.h
 )
 if (WITH_DISNEY_MATERIAL)
-list (APPEND renderer_modeling_bsdf_sources
-    renderer/modeling/bsdf/disneylayeredbrdf.cpp
-    renderer/modeling/bsdf/disneylayeredbrdf.h
-)
+    list (APPEND renderer_modeling_bsdf_sources
+        renderer/modeling/bsdf/disneylayeredbrdf.cpp
+        renderer/modeling/bsdf/disneylayeredbrdf.h
+    )
+endif ()
+if (WITH_OSL)
+    list (APPEND renderer_modeling_bsdf_sources
+        renderer/modeling/bsdf/oslbsdf.cpp
+        renderer/modeling/bsdf/oslbsdf.h
+    )
 endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_bsdf_sources}
@@ -1415,7 +1419,8 @@ set (renderer_modeling_edf_sources
 if (WITH_OSL)
     list (APPEND renderer_modeling_edf_sources
         renderer/modeling/edf/osledf.cpp
-        renderer/modeling/edf/osledf.h)
+        renderer/modeling/edf/osledf.h
+    )
 endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_edf_sources}
