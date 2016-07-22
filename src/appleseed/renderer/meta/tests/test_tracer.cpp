@@ -187,7 +187,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                     name,
                     params,
                     "plane",
-                    Transformd::from_local_to_parent(Matrix4d::translation(position)),
+                    Transformd::from_local_to_parent(
+                        Matrix4d::make_translation(position)),
                     material_mappings,
                     material_mappings));
         }
@@ -757,7 +758,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         SceneWithTwoOpaqueOccludersAndScaledAssemblyInstance()
         {
             m_assembly_instance->transform_sequence().set_transform(
-                0.0, Transformd::from_local_to_parent(Matrix4d::scaling(Vector3d(0.5))));
+                0.0, Transformd::from_local_to_parent(
+                    Matrix4d::make_scaling(Vector3d(0.5))));
         }
     };
 

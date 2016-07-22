@@ -121,8 +121,8 @@ namespace
             const Vector3d local_outgoing = sample_sphere_uniform(s);
             probability = RcpFourPi;
 
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
             outgoing = transform.vector_to_parent(local_outgoing);
 
             lookup_envmap(input_evaluator, local_outgoing, value);
@@ -136,8 +136,8 @@ namespace
         {
             assert(is_normalized(outgoing));
 
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
             const Vector3d local_outgoing = transform.vector_to_local(outgoing);
 
             lookup_envmap(input_evaluator, local_outgoing, value);
@@ -152,8 +152,8 @@ namespace
         {
             assert(is_normalized(outgoing));
 
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
             const Vector3d local_outgoing = transform.vector_to_local(outgoing);
 
             lookup_envmap(input_evaluator, local_outgoing, value);

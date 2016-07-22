@@ -207,7 +207,7 @@ inline Vector<T, 3> sample_sphere_uniform(const Vector<T, 2>& s)
     const T sin_theta = std::sqrt(T(1.0) - cos_theta * cos_theta);
 
     return
-        Vector<T, 3>::unit_vector(
+        Vector<T, 3>::make_unit_vector(
             cos_theta,
             sin_theta,
             std::cos(phi),
@@ -225,7 +225,7 @@ inline Vector<T, 3> sample_hemisphere_uniform(const Vector<T, 2>& s)
     const T sin_theta = std::sqrt(T(1.0) - cos_theta * cos_theta);
 
     return
-        Vector<T, 3>::unit_vector(
+        Vector<T, 3>::make_unit_vector(
             cos_theta,
             sin_theta,
             std::cos(phi),
@@ -243,7 +243,7 @@ inline Vector<T, 3> sample_hemisphere_cosine(const Vector<T, 2>& s)
     const T sin_theta = std::sqrt(s[1]);
 
     return
-        Vector<T, 3>::unit_vector(
+        Vector<T, 3>::make_unit_vector(
             cos_theta,
             sin_theta,
             std::cos(phi),
@@ -262,7 +262,7 @@ inline Vector<T, 3> sample_hemisphere_cosine_power(const Vector<T, 2>& s, const 
     const T sin_theta = std::sqrt(T(1.0) - cos_theta * cos_theta);
 
     return
-        Vector<T, 3>::unit_vector(
+        Vector<T, 3>::make_unit_vector(
             cos_theta,
             sin_theta,
             std::cos(phi),
@@ -323,7 +323,7 @@ inline Vector<T, 3> sample_cone_uniform(const Vector<T, 2>& s, const T cos_theta
     const T sin_theta = std::sqrt(T(1.0) - cos_theta * cos_theta);
 
     return
-        Vector<T, 3>::unit_vector(
+        Vector<T, 3>::make_unit_vector(
             cos_theta,
             sin_theta,
             std::cos(phi),

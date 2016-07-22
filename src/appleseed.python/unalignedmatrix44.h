@@ -54,49 +54,49 @@ class UnalignedMatrix44
         return UnalignedMatrix44<T>(Matrix<T, 4, 4>::identity());
     }
 
-    static UnalignedMatrix44<T> translation(const Vector<T, 3>& v)
+    static UnalignedMatrix44<T> make_translation(const Vector<T, 3>& v)
     {
-        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::translation(v));
+        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::make_translation(v));
     }
 
-    static UnalignedMatrix44<T> scaling(const Vector<T, 3>& s)
+    static UnalignedMatrix44<T> make_scaling(const Vector<T, 3>& s)
     {
-        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::scaling(s));
+        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::make_scaling(s));
     }
 
-    static UnalignedMatrix44<T> rotation_x(const T angle)
+    static UnalignedMatrix44<T> make_rotation_x(const T angle)
     {
-        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::rotation_x(angle));
+        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::make_rotation_x(angle));
     }
 
-    static UnalignedMatrix44<T> rotation_y(const T angle)
+    static UnalignedMatrix44<T> make_rotation_y(const T angle)
     {
-        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::rotation_y(angle));
+        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::make_rotation_y(angle));
     }
 
-    static UnalignedMatrix44<T> rotation_z(const T angle)
+    static UnalignedMatrix44<T> make_rotation_z(const T angle)
     {
-        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::rotation_z(angle));
+        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::make_rotation_z(angle));
     }
 
-    static UnalignedMatrix44<T> rotation(const T yaw, const T pitch, const T roll)
+    static UnalignedMatrix44<T> make_rotation(const T yaw, const T pitch, const T roll)
     {
-        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::rotation(yaw, pitch, roll));
+        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::make_rotation(yaw, pitch, roll));
     }
 
-    static UnalignedMatrix44<T> rotation(const Vector<T, 3>& axis, const T angle)
+    static UnalignedMatrix44<T> make_rotation(const Vector<T, 3>& axis, const T angle)
     {
-        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::rotation(axis, angle));
+        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::make_rotation(axis, angle));
     }
 
-    static UnalignedMatrix44<T> rotation(const Quaternion<T>& q)
+    static UnalignedMatrix44<T> make_rotation(const Quaternion<T>& q)
     {
-        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::rotation(q));
+        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::make_rotation(q));
     }
 
-    static UnalignedMatrix44<T> lookat(const Vector<T, 3>& origin, const Vector<T, 3>& target, const Vector<T, 3>& up)
+    static UnalignedMatrix44<T> make_lookat(const Vector<T, 3>& origin, const Vector<T, 3>& target, const Vector<T, 3>& up)
     {
-        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::lookat(origin, target, up));
+        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::make_lookat(origin, target, up));
     }
 
     UnalignedMatrix44() {}

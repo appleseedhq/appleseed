@@ -282,9 +282,9 @@ namespace
             initialize_ray(sampling_context, ray);
 
             // Retrieve the camera transform.
-            Transformd tmp;
+            Transformd scratch;
             const Transformd& transform =
-                m_transform_sequence.evaluate(ray.m_time.m_absolute, tmp);
+                m_transform_sequence.evaluate(ray.m_time.m_absolute, scratch);
 
             // Compute lens point in world space.
             const Vector3d lens_point = transform.point_to_parent(sample_lens(sampling_context));
@@ -318,8 +318,8 @@ namespace
             double&             importance) const APPLESEED_OVERRIDE
         {
             // Retrieve the camera transform.
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
 
             // Compute lens point in camera space.
             const Vector3d lens_point = sample_lens(sampling_context);
@@ -381,8 +381,8 @@ namespace
             Vector2d&           b_ndc) const APPLESEED_OVERRIDE
         {
             // Retrieve the camera transform.
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
 
             // Transform the segment to camera space.
             Vector3d local_a = transform.point_to_local(a);

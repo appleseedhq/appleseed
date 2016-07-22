@@ -256,10 +256,10 @@ namespace
                 sun_phi_src->evaluate_uniform(sun_phi);
                 set_transform(
                     Transformd::from_local_to_parent(
-                        Matrix4d::rotation(
-                            Quaterniond::rotation(
+                        Matrix4d::make_rotation(
+                            Quaterniond::make_rotation(
                                 Vector3d(0.0, 0.0, -1.0),
-                                -Vector3d::unit_vector(deg_to_rad(sun_theta), deg_to_rad(sun_phi))))));
+                                -Vector3d::make_unit_vector(deg_to_rad(sun_theta), deg_to_rad(sun_phi))))));
             }
 
             // Use the Sun turbidity from the EDF if it has one.

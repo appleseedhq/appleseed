@@ -448,10 +448,12 @@ class BlinnMDF
     {
         const T cos_theta = std::pow(T(1.0) - s[0], T(1.0) / (alpha_x + T(2.0)));
         const T sin_theta = std::sqrt(T(1.0) - cos_theta * cos_theta);
+
         T cos_phi, sin_phi;
         MDF<T>::sample_phi(s[1], cos_phi, sin_phi);
+
         const Vector<T, 3> h =
-            Vector<T, 3>::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
+            Vector<T, 3>::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
 
         return MDF<T>::v_cavity_choose_microfacet_normal(v, h, s[2]);
     }
@@ -495,7 +497,6 @@ class BlinnMDF
 //   [6] An Improved Visible Normal Sampling Routine for the Beckmann Distribution.
 //       http://www.mitsuba-renderer.org/~wenzel/files/visnormal.pdf
 //
-
 
 template <typename T>
 class BeckmannMDF
@@ -928,7 +929,7 @@ class WardMDF
         const T sin_alpha = cos_alpha * std::sqrt(tan_alpha_2);
         const T phi = TwoPi * s[1];
 
-        return Vector<T, 3>::unit_vector(cos_alpha, sin_alpha, std::cos(phi), std::sin(phi));
+        return Vector<T, 3>::make_unit_vector(cos_alpha, sin_alpha, std::cos(phi), std::sin(phi));
     }
 
     virtual T do_eval_pdf(
@@ -941,9 +942,10 @@ class WardMDF
     }
 };
 
+
 //
-// Berry microfacet distribution function.
-// It's used in the Disney BRDF clearcoat layer.
+// Berry Microfacet Distribution Function.
+// Used in the Disney BRDF clearcoat layer.
 //
 
 template <typename T>
@@ -1015,7 +1017,7 @@ class BerryMDF
 
         T cos_phi, sin_phi;
         MDF<T>::sample_phi(s[1], cos_phi, sin_phi);
-        return Vector<T, 3>::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
+        return Vector<T, 3>::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
     }
 
     virtual T do_eval_pdf(

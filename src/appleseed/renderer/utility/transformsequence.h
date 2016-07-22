@@ -113,7 +113,7 @@ class APPLESEED_DLLSYMBOL TransformSequence
     // A variant of evaluate() that avoids copying transforms in certain cases.
     const foundation::Transformd& evaluate(
         const double                    time,
-        foundation::Transformd&         tmp) const;
+        foundation::Transformd&         scratch) const;
 
     // Compose two transform sequences.
     TransformSequence operator*(const TransformSequence& rhs) const;
@@ -176,13 +176,13 @@ inline bool TransformSequence::can_swap_handedness() const
 
 inline foundation::Transformd TransformSequence::evaluate(const double time) const
 {
-    foundation::Transformd tmp;
-    return evaluate(time, tmp);
+    foundation::Transformd scratch;
+    return evaluate(time, scratch);
 }
 
 APPLESEED_FORCE_INLINE const foundation::Transformd& TransformSequence::evaluate(
     const double            time,
-    foundation::Transformd& tmp) const
+    foundation::Transformd& scratch) const
 {
     if (m_size == 0)
         return foundation::Transformd::identity();
@@ -202,9 +202,9 @@ APPLESEED_FORCE_INLINE const foundation::Transformd& TransformSequence::evaluate
     if (time >= last->m_time)
         return last->m_transform;
 
-    interpolate(time, tmp);
+    interpolate(time, scratch);
 
-    return tmp;
+    return scratch;
 }
 
 template <typename T>

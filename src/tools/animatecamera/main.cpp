@@ -481,7 +481,7 @@ namespace
             const Vector3d position(distance * cos(angle), elevation, distance * sin(angle));
             Transformd previous_transform(
                 Transformd::from_local_to_parent(
-                    Matrix4d::lookat(position, center, Up)));
+                    Matrix4d::make_lookat(position, center, Up)));
 
             for (int i = 0; i < frame_count; ++i)
             {
@@ -490,7 +490,7 @@ namespace
                 const Vector3d position(distance * cos(angle), elevation, distance * sin(angle));
                 const Transformd new_transform(
                     Transformd::from_local_to_parent(
-                        Matrix4d::lookat(position, center, Up)));
+                        Matrix4d::make_lookat(position, center, Up)));
 
                 // Set the camera's transform sequence.
                 Camera* camera = project->get_scene()->get_camera();

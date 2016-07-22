@@ -264,9 +264,9 @@ bool RendererServices::get_matrix(
 {
     if (from == g_camera_ustr)
     {
-        Transformd tmp;
+        Transformd scratch;
         const Transformd& transform =
-            m_camera->transform_sequence().evaluate(time, tmp);
+            m_camera->transform_sequence().evaluate(time, scratch);
         result = Matrix4f(transform.get_local_to_parent());
         return true;
     }
@@ -282,9 +282,9 @@ bool RendererServices::get_inverse_matrix(
 {
     if (to == g_camera_ustr)
     {
-        Transformd tmp;
+        Transformd scratch;
         const Transformd& transform =
-            m_camera->transform_sequence().evaluate(time, tmp);
+            m_camera->transform_sequence().evaluate(time, scratch);
         result = Matrix4f(transform.get_parent_to_local());
         return true;
     }
@@ -306,9 +306,9 @@ bool RendererServices::get_matrix(
         if (m_camera->transform_sequence().size() > 1)
             return false;
 
-        const Transformd& tmp =
+        const Transformd& scratch =
             m_camera->transform_sequence().get_earliest_transform();
-        result = Matrix4f(tmp.get_local_to_parent());
+        result = Matrix4f(scratch.get_local_to_parent());
         return true;
     }
 
@@ -325,9 +325,9 @@ bool RendererServices::get_inverse_matrix(
         if (m_camera->transform_sequence().size() > 1)
             return false;
 
-        const Transformd& tmp =
+        const Transformd& scratch =
             m_camera->transform_sequence().get_earliest_transform();
-        result = Matrix4f(tmp.get_parent_to_local());
+        result = Matrix4f(scratch.get_parent_to_local());
         return true;
     }
 

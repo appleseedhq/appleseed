@@ -121,8 +121,8 @@ namespace
             const Vector3d local_outgoing = sample_sphere_uniform(s);
             probability = RcpFourPi;
 
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
             outgoing = transform.vector_to_parent(local_outgoing);
 
             compute_gradient(local_outgoing.y, value);
@@ -136,8 +136,8 @@ namespace
         {
             assert(is_normalized(outgoing));
 
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
             const Transformd::MatrixType& parent_to_local = transform.get_parent_to_local();
             const double local_outgoing_y =
                 parent_to_local[ 4] * outgoing.x +
@@ -156,8 +156,8 @@ namespace
         {
             assert(is_normalized(outgoing));
 
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
             const Transformd::MatrixType& parent_to_local = transform.get_parent_to_local();
             const double local_outgoing_y =
                 parent_to_local[ 4] * outgoing.x +

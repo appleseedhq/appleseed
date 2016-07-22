@@ -748,18 +748,18 @@ void ShadingPoint::compute_world_space_point_velocity() const
     if (m_assembly_instance_transform_seq->size() > 1)
     {
         const Camera* camera = m_scene->get_camera();
-        Transformd tmp;
+        Transformd scratch;
 
         const Transformd& assembly_instance_transform0 =
             m_assembly_instance_transform_seq->evaluate(
                 camera->get_shutter_open_time(),
-                tmp);
+                scratch);
         p0 = assembly_instance_transform0.point_to_parent(p0);
 
         const Transformd& assembly_instance_transform1 =
             m_assembly_instance_transform_seq->evaluate(
                 camera->get_shutter_close_time(),
-                tmp);
+                scratch);
         p1 = assembly_instance_transform1.point_to_parent(p1);
     }
     else

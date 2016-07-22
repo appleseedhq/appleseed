@@ -505,7 +505,7 @@ TEST_SUITE(Foundation_Math_Matrix33)
     {
         const double angle = deg_to_rad(21.0);
 
-        const Matrix3d rot_z = Matrix3d::rotation_z(angle);
+        const Matrix3d rot_z = Matrix3d::make_rotation_z(angle);
 
         const Imath::M33d imath_rot_z =
             Imath::M33d().setRotation(angle);
@@ -536,8 +536,8 @@ TEST_SUITE(Foundation_Math_Matrix33)
         const Vector3d from = normalize(Vector3d(1.0, 1.0, 0.0));
         const Vector3d to = normalize(Vector3d(1.0, 0.0, 1.0));
 
-        const Quaterniond q = Quaterniond::rotation(from, to);
-        const Matrix3d m = Matrix3d::rotation(q);
+        const Quaterniond q = Quaterniond::make_rotation(from, to);
+        const Matrix3d m = Matrix3d::make_rotation(q);
         const Vector3d result = m * from;
 
         EXPECT_FEQ(to, result);
@@ -610,7 +610,7 @@ TEST_SUITE(Foundation_Math_Matrix33)
 
     TEST_CASE(TestExtractScaling_GivenScalingMatrix)
     {
-        const Matrix3d m = Matrix3d::scaling(Vector3d(2.0, 3.0, 0.5));
+        const Matrix3d m = Matrix3d::make_scaling(Vector3d(2.0, 3.0, 0.5));
 
         const Vector3d s = m.extract_scaling();
 
@@ -620,8 +620,8 @@ TEST_SUITE(Foundation_Math_Matrix33)
     TEST_CASE(TestExtractScaling_GivenScalingFollowedByRotation)
     {
         const Matrix3d m =
-              Matrix3d::rotation_x(Pi / 4.0)
-            * Matrix3d::scaling(Vector3d(2.0, 3.0, 0.5));
+              Matrix3d::make_rotation_x(Pi / 4.0)
+            * Matrix3d::make_scaling(Vector3d(2.0, 3.0, 0.5));
 
         const Vector3d s = m.extract_scaling();
 
@@ -634,30 +634,30 @@ TEST_SUITE(Foundation_Math_Matrix33)
 
         const Quaterniond q = m.extract_unit_quaternion();
 
-        EXPECT_FEQ(Quaterniond::rotation(Vector3d(1.0, 0.0, 0.0), 0.0), q);
+        EXPECT_FEQ(Quaterniond::make_rotation(Vector3d(1.0, 0.0, 0.0), 0.0), q);
     }
 
     TEST_CASE(TestExtractUnitQuaternion_GivenRotationMatrix)
     {
-        const Matrix3d m = Matrix3d::rotation_x(Pi / 4.0);
+        const Matrix3d m = Matrix3d::make_rotation_x(Pi / 4.0);
 
         const Quaterniond q = m.extract_unit_quaternion();
 
-        EXPECT_FEQ(Quaterniond::rotation(Vector3d(1.0, 0.0, 0.0), Pi / 4.0), q);
+        EXPECT_FEQ(Quaterniond::make_rotation(Vector3d(1.0, 0.0, 0.0), Pi / 4.0), q);
     }
 
     TEST_CASE(TestDecompose_GivenScalingFollowedByRotation)
     {
         const Matrix3d m =
-              Matrix3d::rotation_x(Pi / 4.0)
-            * Matrix3d::scaling(Vector3d(2.0, 3.0, 0.5));
+              Matrix3d::make_rotation_x(Pi / 4.0)
+            * Matrix3d::make_scaling(Vector3d(2.0, 3.0, 0.5));
 
         Vector3d s;
         Quaterniond q;
         m.decompose(s, q);
 
         EXPECT_FEQ(Vector3d(2.0, 3.0, 0.5), s);
-        EXPECT_FEQ(Quaterniond::rotation(Vector3d(1.0, 0.0, 0.0), Pi / 4.0), q);
+        EXPECT_FEQ(Quaterniond::make_rotation(Vector3d(1.0, 0.0, 0.0), Pi / 4.0), q);
     }
 
     TEST_CASE(TestDecompose_GivenMirroring)
@@ -743,7 +743,7 @@ TEST_SUITE(Foundation_Math_Matrix44)
     {
         const double angle = deg_to_rad(30.0);
 
-        const Matrix4d rot_x = Matrix4d::rotation_x(angle);
+        const Matrix4d rot_x = Matrix4d::make_rotation_x(angle);
 
         const Imath::M44d imath_rot_x =
             Imath::M44d().setEulerAngles(Imath::V3d(angle, 0.0, 0.0));
@@ -831,7 +831,7 @@ TEST_SUITE(Foundation_Math_Matrix44)
 
     TEST_CASE(TestExtractTranslation)
     {
-        const Matrix4d m = Matrix4d::translation(Vector3d(-4.0, 5.0, 0.7));
+        const Matrix4d m = Matrix4d::make_translation(Vector3d(-4.0, 5.0, 0.7));
 
         const Vector3d t = m.extract_translation();
 
@@ -841,9 +841,9 @@ TEST_SUITE(Foundation_Math_Matrix44)
     TEST_CASE(TestDecompose_GivenScalingFollowedByRotationFollowedByTranslation)
     {
         const Matrix4d m =
-              Matrix4d::translation(Vector3d(-4.0, 5.0, 0.7))
-            * Matrix4d::rotation_x(Pi / 4.0)
-            * Matrix4d::scaling(Vector3d(2.0, 3.0, 0.5));
+              Matrix4d::make_translation(Vector3d(-4.0, 5.0, 0.7))
+            * Matrix4d::make_rotation_x(Pi / 4.0)
+            * Matrix4d::make_scaling(Vector3d(2.0, 3.0, 0.5));
 
         Vector3d s;
         Quaterniond q;
@@ -851,25 +851,25 @@ TEST_SUITE(Foundation_Math_Matrix44)
         m.decompose(s, q, t);
 
         EXPECT_FEQ(Vector3d(2.0, 3.0, 0.5), s);
-        EXPECT_FEQ(Quaterniond::rotation(Vector3d(1.0, 0.0, 0.0), Pi / 4.0), q);
+        EXPECT_FEQ(Quaterniond::make_rotation(Vector3d(1.0, 0.0, 0.0), Pi / 4.0), q);
         EXPECT_FEQ(Vector3d(-4.0, 5.0, 0.7), t);
     }
 
     TEST_CASE(TestSwapsHandedness)
     {
         Matrix4d m =
-              Matrix4d::rotation_x(Pi / 4.0)
-            * Matrix4d::scaling(Vector3d(2.0, 3.0, 0.5));
+              Matrix4d::make_rotation_x(Pi / 4.0)
+            * Matrix4d::make_scaling(Vector3d(2.0, 3.0, 0.5));
 
         EXPECT_FALSE(swaps_handedness(m));
 
         m =
-              Matrix4d::rotation_x(Pi / 2.0)
-            * Matrix4d::scaling(Vector3d(2.0, -3.0, 0.5));
+              Matrix4d::make_rotation_x(Pi / 2.0)
+            * Matrix4d::make_scaling(Vector3d(2.0, -3.0, 0.5));
 
         EXPECT_TRUE(swaps_handedness(m));
 
-        m = Matrix4d::scaling(Vector3d(-2.0, -3.0, 0.5));
+        m = Matrix4d::make_scaling(Vector3d(-2.0, -3.0, 0.5));
 
         EXPECT_FALSE(swaps_handedness(m));
     }

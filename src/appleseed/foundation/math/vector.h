@@ -308,10 +308,10 @@ class Vector<T, 3>
 #endif
 
     // Build a unit vector from two angles.
-    static VectorType unit_vector(
+    static VectorType make_unit_vector(
         const ValueType theta,                  // angle with Y basis vector, in radians
         const ValueType phi);                   // angle with X basis vector, in radians
-    static VectorType unit_vector(
+    static VectorType make_unit_vector(
         const ValueType cos_theta,              // cosine of angle with Y basis vector
         const ValueType sin_theta,              // sine of angle with Y basis vector
         const ValueType cos_phi,                // cosine of angle with X basis vector
@@ -1154,7 +1154,7 @@ inline Vector<T, 3>::operator const Imath::Vec3<T>&() const
 #endif
 
 template <typename T>
-inline Vector<T, 3> Vector<T, 3>::unit_vector(
+inline Vector<T, 3> Vector<T, 3>::make_unit_vector(
     const ValueType theta,
     const ValueType phi)
 {
@@ -1168,7 +1168,7 @@ inline Vector<T, 3> Vector<T, 3>::unit_vector(
 }
 
 template <typename T>
-inline Vector<T, 3> Vector<T, 3>::unit_vector(
+inline Vector<T, 3> Vector<T, 3>::make_unit_vector(
     const ValueType cos_theta,
     const ValueType sin_theta,
     const ValueType cos_phi,
