@@ -151,9 +151,9 @@ class ProjectBuilder
                 // Compute cube transform.
                 const Transformd transform =
                     Transformd::from_local_to_parent(
-                          Matrix4d::translation(translation)
-                        * Matrix4d::rotation_y(rotation)
-                        * Matrix4d::scaling(scaling));
+                          Matrix4d::make_translation(translation)
+                        * Matrix4d::make_rotation_y(rotation)
+                        * Matrix4d::make_scaling(scaling));
 
                 // Add cube to assembly.
                 add_cube(*assembly, ix, iy, fx, fz, color, transform);
@@ -184,7 +184,7 @@ class ProjectBuilder
                     .insert("irradiance", "light_irradiance")));
         light->set_transform(
             Transformd::from_local_to_parent(
-                Matrix4d::rotation_x(deg_to_rad(-30.0))));
+                Matrix4d::make_rotation_x(deg_to_rad(-30.0))));
         assembly->lights().insert(light);
 
         //------------------------------------------------------------------------
