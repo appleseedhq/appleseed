@@ -572,7 +572,7 @@ class BeckmannMDF
                 alpha_y);
 
         const T tan_theta = std::abs(sin_theta / cos_theta);
-        const T a = 1.0 / (alpha * tan_theta);
+        const T a = T(1.0) / (alpha * tan_theta);
 
         if (a < T(1.6))
         {
@@ -618,7 +618,7 @@ class BeckmannMDF
         const T             cos_theta,
         const Vector<T, 3>& s) const
     {
-        const T ct = std::max(cos_theta, T(1e-6));
+        const T ct = std::max(cos_theta, T(1.0e-6));
         const T tan_theta = std::sqrt(T(1.0) - square(ct)) / ct;
         const T cot_theta = T(1.0) / tan_theta;
 
@@ -643,7 +643,7 @@ class BeckmannMDF
         // This also avoids NaNs as we get close to the root.
         Vector2d slope;
 
-        if (std::abs(value) > T(1e-6))
+        if (std::abs(value) > T(1.0e-6))
         {
             b -= value / (T(1.0) - inv_erf * tan_theta); // newton step 1
             inv_erf = erf_inv(b);
@@ -673,7 +673,7 @@ class BeckmannMDF
     static T erf_inv(T x)
     {
         if (std::abs(x) == T(1.0))
-            x -= boost::math::copysign(T(1e-5), x);
+            x -= boost::math::copysign(T(1.0e-5), x);
 
         return boost::math::erf_inv(x, ErfPolicyType());
     }
