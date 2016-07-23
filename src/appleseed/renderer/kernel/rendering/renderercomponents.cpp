@@ -73,7 +73,7 @@ namespace
             dest.strings().insert(param_name, source.strings().get(param_name));
     }
 
-    ParamArray child_inherit(
+    ParamArray get_child_and_inherit_globals(
         const ParamArray&   source,
         const char*         name)
     {
@@ -104,8 +104,8 @@ RendererComponents::RendererComponents(
   , m_scene(*project.get_scene())
   , m_frame(*project.get_frame())
   , m_trace_context(project.get_trace_context())
-  , m_light_sampler(m_scene, child_inherit(params, "light_sampler"))
-  , m_shading_engine(child_inherit(params, "shading_engine"))
+  , m_light_sampler(m_scene, get_child_and_inherit_globals(params, "light_sampler"))
+  , m_shading_engine(get_child_and_inherit_globals(params, "shading_engine"))
   , m_texture_store(texture_store)
 #ifdef APPLESEED_WITH_OIIO
   , m_texture_system(texture_system)
@@ -160,7 +160,7 @@ bool RendererComponents::create_lighting_engine_factory()
         m_lighting_engine_factory.reset(
             new DRTLightingEngineFactory(
                 m_light_sampler,
-                child_inherit(m_params, "drt")));   // todo: change to "drt_lighting_engine"?
+                get_child_and_inherit_globals(m_params, "drt")));   // todo: change to "drt_lighting_engine"?
         return true;
     }
     else if (name == "pt")
@@ -168,12 +168,13 @@ bool RendererComponents::create_lighting_engine_factory()
         m_lighting_engine_factory.reset(
             new PTLightingEngineFactory(
                 m_light_sampler,
-                child_inherit(m_params, "pt")));    // todo: change to "pt_lighting_engine"?
+                get_child_and_inherit_globals(m_params, "pt")));    // todo: change to "pt_lighting_engine"?
         return true;
     }
     else if (name == "sppm")
     {
-        const SPPMParameters sppm_params(child_inherit(m_params, "sppm"));
+        const SPPMParameters sppm_params(
+            get_child_and_inherit_globals(m_params, "sppm"));
 
         SPPMPassCallback* sppm_pass_callback =
             new SPPMPassCallback(
@@ -232,7 +233,7 @@ bool RendererComponents::create_sample_renderer_factory()
 #ifdef APPLESEED_WITH_OSL
                 m_shading_system,
 #endif
-                child_inherit(m_params, "generic_sample_renderer")));
+                get_child_and_inherit_globals(m_params, "generic_sample_renderer")));
         return true;
     }
     else if (name == "blank")
@@ -268,7 +269,7 @@ bool RendererComponents::create_sample_generator_factory()
             new GenericSampleGeneratorFactory(
                 m_frame,
                 m_sample_renderer_factory.get(),
-                child_inherit(m_params, "generic_sample_generator")));
+                get_child_and_inherit_globals(m_params, "generic_sample_generator")));
         return true;
     }
     else if (name == "lighttracing")
@@ -286,7 +287,7 @@ bool RendererComponents::create_sample_generator_factory()
 #ifdef APPLESEED_WITH_OSL
                 m_shading_system,
 #endif
-                child_inherit(m_params, "lighttracing_sample_generator")));
+                get_child_and_inherit_globals(m_params, "lighttracing_sample_generator")));
         return true;
     }
     else
@@ -308,7 +309,7 @@ bool RendererComponents::create_pixel_renderer_factory()
     }
     else if (name == "uniform")
     {
-        ParamArray params = child_inherit(m_params, "uniform_pixel_renderer");
+        ParamArray params = get_child_and_inherit_globals(m_params, "uniform_pixel_renderer");
         copy_param(params, m_params, "passes");
 
         m_pixel_renderer_factory.reset(
@@ -324,7 +325,7 @@ bool RendererComponents::create_pixel_renderer_factory()
             new AdaptivePixelRendererFactory(
                 m_frame,
                 m_sample_renderer_factory.get(),
-                child_inherit(m_params, "adaptive_pixel_renderer")));
+                get_child_and_inherit_globals(m_params, "adaptive_pixel_renderer")));
         return true;
     }
     else
@@ -380,7 +381,7 @@ bool RendererComponents::create_tile_renderer_factory()
                 m_frame,
                 m_pixel_renderer_factory.get(),
                 m_shading_result_framebuffer_factory.get(),
-                child_inherit(m_params, "generic_tile_renderer")));
+                get_child_and_inherit_globals(m_params, "generic_tile_renderer")));
         return true;
     }
     else if (name == "blank")
@@ -418,7 +419,7 @@ bool RendererComponents::create_frame_renderer_factory()
                 m_tile_renderer_factory.get(),
                 m_tile_callback_factory,
                 m_pass_callback.get(),
-                child_inherit(m_params, "generic_frame_renderer")));
+                get_child_and_inherit_globals(m_params, "generic_frame_renderer")));
         return true;
     }
     else if (name == "progressive")
@@ -428,7 +429,7 @@ bool RendererComponents::create_frame_renderer_factory()
                 m_project,
                 m_sample_generator_factory.get(),
                 m_tile_callback_factory,
-                child_inherit(m_params, "progressive_frame_renderer")));
+                get_child_and_inherit_globals(m_params, "progressive_frame_renderer")));
         return true;
     }
     else
