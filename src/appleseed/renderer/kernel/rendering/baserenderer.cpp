@@ -112,8 +112,6 @@ BaseRenderer::BaseRenderer(
         VisibilityFlags::Names);
 
 #ifndef NDEBUG
-    // While debugging, we want all possible outputs.
-    m_shading_system->attribute("debug", 1);
     m_shading_system->attribute("compile_report", 1);
     m_shading_system->attribute("countlayerexecs", 1);
     m_shading_system->attribute("clearmemory", 1);
