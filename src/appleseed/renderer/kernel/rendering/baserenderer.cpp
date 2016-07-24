@@ -140,7 +140,7 @@ BaseRenderer::~BaseRenderer()
 
     const string stats = m_texture_system->getstats();
     const string trimmed_stats = trim_right(stats, "\r\n");
-    RENDERER_LOG_INFO("%s", trimmed_stats.c_str());
+    RENDERER_LOG_INFO("oiio: %s", trimmed_stats.c_str());
 
     RENDERER_LOG_DEBUG("destroying openimageio texture system...");
     OIIO::TextureSystem::destroy(m_texture_system);
