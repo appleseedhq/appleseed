@@ -176,6 +176,7 @@ bool BaseRenderer::initialize_shading_system(
 }
 
 #ifdef APPLESEED_WITH_OIIO
+
 void BaseRenderer::initialize_oiio()
 {
     const ParamArray& params = m_params.child("texture_store");
@@ -207,9 +208,11 @@ void BaseRenderer::initialize_oiio()
         m_texture_system->attribute("searchpath", new_search_path);
     }
 }
+
 #endif
 
 #ifdef APPLESEED_WITH_OSL
+
 bool BaseRenderer::initialize_osl(TextureStore& texture_store, IAbortSwitch& abort_switch)
 {
     m_renderer_services->initialize(texture_store);
@@ -229,12 +232,13 @@ bool BaseRenderer::initialize_osl(TextureStore& texture_store, IAbortSwitch& abo
         m_shading_system->attribute("searchpath:shader", new_search_path);
     }
 
-    // Re-optimize the shadergroups that needs updating.
+    // Re-optimize the shader groups that need updating.
     return
         m_project.get_scene()->create_optimized_osl_shader_groups(
             *m_shading_system,
             &abort_switch);
 }
+
 #endif
 
 }   // namespace renderer
