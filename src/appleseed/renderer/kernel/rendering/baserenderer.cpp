@@ -195,7 +195,7 @@ void BaseRenderer::initialize_oiio()
     const string new_search_path = m_project.make_search_path_string();
     if (new_search_path != prev_search_path)
     {
-        RENDERER_LOG_INFO("setting openimageio search path to %s.", new_search_path.c_str());
+        RENDERER_LOG_INFO("setting openimageio search path to %s", new_search_path.c_str());
         m_texture_system->clear();
         m_texture_system->attribute("searchpath", new_search_path);
     }
@@ -215,7 +215,7 @@ bool BaseRenderer::initialize_osl(TextureStore& texture_store, IAbortSwitch& abo
     const string new_search_path = m_project.make_search_path_string();
     if (new_search_path != prev_search_path)
     {
-        RENDERER_LOG_INFO("setting osl shader search path to %s.", new_search_path.c_str());
+        RENDERER_LOG_INFO("setting osl shader search path to %s", new_search_path.c_str());
         m_project.get_scene()->release_optimized_osl_shader_groups();
         m_shading_system->attribute("searchpath:shader", new_search_path);
     }
