@@ -66,16 +66,14 @@ BaseRenderer::BaseRenderer(
   , m_params(params)
 {
 #ifdef APPLESEED_WITH_OIIO
-    m_error_handler = new OIIOErrorHandler();
 
+    m_error_handler = new OIIOErrorHandler();
 #ifndef NDEBUG
-    // While debugging, we want all possible outputs.
     m_error_handler->verbosity(OIIO::ErrorHandler::VERBOSE);
 #endif
 
     RENDERER_LOG_DEBUG("creating openimageio texture system...");
     m_texture_system = OIIO::TextureSystem::create(false);
-
     m_texture_system->attribute("automip", 0);
     m_texture_system->attribute("accept_untiled", 1);
     m_texture_system->attribute("accept_unmipped", 1);
@@ -84,12 +82,14 @@ BaseRenderer::BaseRenderer(
 #if OIIO_VERSION >= 10703
     m_texture_system->attribute("flip_t", 1);
 #endif
+
 #endif
 
 #ifdef APPLESEED_WITH_OSL
-    RENDERER_LOG_DEBUG("creating osl shading system...");
+
     m_renderer_services = new RendererServices(m_project, *m_texture_system);
 
+    RENDERER_LOG_DEBUG("creating osl shading system...");
 #if OSL_LIBRARY_VERSION_CODE >= 10700
     m_shading_system = new OSL::ShadingSystem(
 #else
@@ -98,19 +98,16 @@ BaseRenderer::BaseRenderer(
         m_renderer_services,
         m_texture_system,
         m_error_handler);
-
     m_shading_system->attribute("lockgeom", 1);
     m_shading_system->attribute("colorspace", "Linear");
     m_shading_system->attribute("commonspace", "world");
     m_shading_system->attribute("statistics:level", 1);
-
     m_shading_system->attribute(
         "raytypes",
         OSL::TypeDesc(
             OSL::TypeDesc::STRING,
             static_cast<int>(VisibilityFlags::Count)),
         VisibilityFlags::Names);
-
 #ifndef NDEBUG
     m_shading_system->attribute("compile_report", 1);
     m_shading_system->attribute("countlayerexecs", 1);
@@ -119,15 +116,16 @@ BaseRenderer::BaseRenderer(
 
     // Register appleseed's closures into OSL's shading system.
     register_closures(*m_shading_system);
+
 #endif
 }
 
 BaseRenderer::~BaseRenderer()
 {
 #ifdef APPLESEED_WITH_OSL
+
     RENDERER_LOG_DEBUG("destroying osl shading system...");
     m_project.get_scene()->release_optimized_osl_shader_groups();
-
 #if OSL_LIBRARY_VERSION_CODE >= 10700
     delete m_shading_system;
 #else
@@ -135,9 +133,11 @@ BaseRenderer::~BaseRenderer()
 #endif
 
     delete m_renderer_services;
+
 #endif
 
 #ifdef APPLESEED_WITH_OIIO
+
     const string stats = m_texture_system->getstats();
     const string trimmed_stats = trim_right(stats, "\r\n");
     RENDERER_LOG_INFO("%s", trimmed_stats.c_str());
@@ -145,6 +145,7 @@ BaseRenderer::~BaseRenderer()
     RENDERER_LOG_DEBUG("destroying openimageio texture system...");
     OIIO::TextureSystem::destroy(m_texture_system);
     delete m_error_handler;
+
 #endif
 }
 
