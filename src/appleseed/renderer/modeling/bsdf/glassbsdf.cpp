@@ -872,7 +872,7 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "1.00"));
+            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()
@@ -884,7 +884,17 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "1.00"));
+            .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "ior")
+            .insert("label", "Index of Refraction")
+            .insert("type", "numeric")
+            .insert("min_value", "1.0")
+            .insert("max_value", "2.5")
+            .insert("use", "required")
+            .insert("default", "1.5"));
 
     metadata.push_back(
         Dictionary()
@@ -916,16 +926,6 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "ior")
-            .insert("label", "Index of Refraction")
-            .insert("type", "numeric")
-            .insert("min_value", "1.0")
-            .insert("max_value", "2.5")
-            .insert("use", "required")
-            .insert("default", "1.5"));
-
-    metadata.push_back(
-        Dictionary()
             .insert("name", "volume_transmittance")
             .insert("label", "Volume Transmittace")
             .insert("type", "colormap")
@@ -934,7 +934,7 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "1.00"));
+            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()
