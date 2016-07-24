@@ -1409,7 +1409,7 @@ namespace
     void register_closure(OSL::ShadingSystem& shading_system)
     {
         ClosureType::register_closure(shading_system);
-        RENDERER_LOG_INFO("registered OSL closure %s.", ClosureType::name());
+        RENDERER_LOG_DEBUG("registered osl closure %s.", ClosureType::name());
     }
 }
 

@@ -52,23 +52,23 @@ void OIIOErrorHandler::operator()(int errcode, const string& msg)
     switch (errcode)
     {
       case EH_WARNING:
-        RENDERER_LOG_WARNING("%s", trimmed_msg.c_str());
+        RENDERER_LOG_WARNING("osl: %s", trimmed_msg.c_str());
         break;
 
       case EH_ERROR:
-        RENDERER_LOG_ERROR("%s", trimmed_msg.c_str());
+        RENDERER_LOG_ERROR("osl: %s", trimmed_msg.c_str());
         break;
 
       case EH_SEVERE:
-        RENDERER_LOG_FATAL("%s", trimmed_msg.c_str());
+        RENDERER_LOG_FATAL("osl: %s", trimmed_msg.c_str());
         break;
 
       case EH_DEBUG:
-        RENDERER_LOG_DEBUG("%s", trimmed_msg.c_str());
+        RENDERER_LOG_DEBUG("osl: %s", trimmed_msg.c_str());
         break;
 
       default:
-        RENDERER_LOG_DEBUG("%s", trimmed_msg.c_str());
+        RENDERER_LOG_DEBUG("osl: %s", trimmed_msg.c_str());
         break;
     }
 }

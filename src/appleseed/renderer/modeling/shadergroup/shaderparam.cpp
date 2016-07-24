@@ -227,7 +227,6 @@ bool ShaderParam::add(OSL::ShadingSystem& shading_system)
         return false;
     }
 
-    RENDERER_LOG_DEBUG("added parameter %s.", get_name());
     return true;
 }
 
