@@ -45,8 +45,6 @@
 #include "foundation/platform/compiler.h"
 
 // Standard headers.
-#include <cassert>
-#include <exception>
 #include <string>
 
 using namespace foundation;
