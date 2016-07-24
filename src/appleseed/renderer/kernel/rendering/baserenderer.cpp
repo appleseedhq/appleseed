@@ -182,27 +182,20 @@ void BaseRenderer::initialize_oiio()
 
     const size_t texture_cache_size_bytes =
         params.get_optional<size_t>("max_size", 256 * 1024 * 1024);
-
     RENDERER_LOG_INFO(
         "setting openimageio texture cache size to %s.",
         pretty_size(texture_cache_size_bytes).c_str());
-
     const float texture_cache_size_mb =
         static_cast<float>(texture_cache_size_bytes) / (1024 * 1024);
-
     m_texture_system->attribute("max_memory_MB", texture_cache_size_mb);
 
-    // search paths
     string prev_search_path;
     m_texture_system->getattribute("searchpath", prev_search_path);
-    const string new_search_path = m_project.make_search_path_string();
 
+    const string new_search_path = m_project.make_search_path_string();
     if (new_search_path != prev_search_path)
     {
-        RENDERER_LOG_INFO(
-            "setting openimageio search path to %s.",
-            new_search_path.c_str());
-
+        RENDERER_LOG_INFO("setting openimageio search path to %s.", new_search_path.c_str());
         m_texture_system->clear();
         m_texture_system->attribute("searchpath", new_search_path);
     }
@@ -216,17 +209,13 @@ bool BaseRenderer::initialize_osl(TextureStore& texture_store, IAbortSwitch& abo
 {
     m_renderer_services->initialize(texture_store);
 
-    // search paths
     string prev_search_path;
     m_shading_system->getattribute("searchpath:shader", prev_search_path);
-    const string new_search_path = m_project.make_search_path_string();
 
+    const string new_search_path = m_project.make_search_path_string();
     if (new_search_path != prev_search_path)
     {
-        RENDERER_LOG_INFO(
-            "setting osl shader search path to %s.",
-            new_search_path.c_str());
-
+        RENDERER_LOG_INFO("setting osl shader search path to %s.", new_search_path.c_str());
         m_project.get_scene()->release_optimized_osl_shader_groups();
         m_shading_system->attribute("searchpath:shader", new_search_path);
     }
