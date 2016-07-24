@@ -194,7 +194,7 @@ void BaseRenderer::initialize_oiio()
     if (new_search_path != prev_search_path)
     {
         RENDERER_LOG_INFO("setting openimageio search path to %s", new_search_path.c_str());
-        m_texture_system->clear();
+        m_texture_system->invalidate_all(true);
         m_texture_system->attribute("searchpath", new_search_path);
     }
 }
