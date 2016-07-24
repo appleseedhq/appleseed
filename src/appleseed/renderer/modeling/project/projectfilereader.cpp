@@ -125,6 +125,7 @@
 #include "xercesc/util/XMLUni.hpp"
 
 // Boost headers.
+#include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.
@@ -137,6 +138,7 @@
 #include <string>
 #include <vector>
 
+using namespace boost;
 using namespace foundation;
 using namespace std;
 using namespace xercesc;
@@ -212,12 +214,6 @@ namespace
           , m_options(options)
           , m_event_counters(event_counters)
         {
-            // Extract the root path of the project.
-            const boost::filesystem::path project_root_path =
-                boost::filesystem::path(project.get_path()).parent_path();
-
-            // Set the root path in the search path collection.
-            m_project.search_paths().set_root_path(project_root_path.string());
         }
 
         Project& get_project()
@@ -3143,6 +3139,8 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
     // Create an empty project.
     auto_release_ptr<Project> project(ProjectFactory::create(project_filepath));
     project->set_path(project_filepath);
+    project->search_paths().set_root_path(
+        filesystem::canonical(project_filepath).parent_path().string());
 
     // Create the error handler.
     auto_ptr<ErrorLogger> error_handler(
