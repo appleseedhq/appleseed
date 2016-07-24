@@ -73,7 +73,7 @@ BaseRenderer::BaseRenderer(
     m_error_handler->verbosity(OIIO::ErrorHandler::VERBOSE);
 #endif
 
-    RENDERER_LOG_DEBUG("creating OpenImageIO texture system...");
+    RENDERER_LOG_DEBUG("creating openimageio texture system...");
     m_texture_system = OIIO::TextureSystem::create(false);
 
     m_texture_system->attribute("automip", 0);
@@ -87,7 +87,7 @@ BaseRenderer::BaseRenderer(
 #endif
 
 #ifdef APPLESEED_WITH_OSL
-    RENDERER_LOG_DEBUG("creating OSL shading system...");
+    RENDERER_LOG_DEBUG("creating osl shading system...");
     m_renderer_services = new RendererServices(m_project, *m_texture_system);
 
 #if OSL_LIBRARY_VERSION_CODE >= 10700
@@ -127,7 +127,7 @@ BaseRenderer::BaseRenderer(
 BaseRenderer::~BaseRenderer()
 {
 #ifdef APPLESEED_WITH_OSL
-    RENDERER_LOG_DEBUG("destroying OSL shading system...");
+    RENDERER_LOG_DEBUG("destroying osl shading system...");
     m_project.get_scene()->release_optimized_osl_shader_groups();
 
 #if OSL_LIBRARY_VERSION_CODE >= 10700
@@ -144,7 +144,7 @@ BaseRenderer::~BaseRenderer()
     const string trimmed_stats = trim_right(stats, "\r\n");
     RENDERER_LOG_INFO("%s", trimmed_stats.c_str());
 
-    RENDERER_LOG_DEBUG("destroying OpenImageIO texture system...");
+    RENDERER_LOG_DEBUG("destroying openimageio texture system...");
     OIIO::TextureSystem::destroy(m_texture_system);
     delete m_error_handler;
 #endif
@@ -176,6 +176,7 @@ bool BaseRenderer::initialize_shading_system(
 }
 
 #ifdef APPLESEED_WITH_OIIO
+
 void BaseRenderer::initialize_oiio()
 {
     const ParamArray& params = m_params.child("texture_store");
@@ -184,7 +185,7 @@ void BaseRenderer::initialize_oiio()
         params.get_optional<size_t>("max_size", 256 * 1024 * 1024);
 
     RENDERER_LOG_INFO(
-        "setting OpenImageIO texture cache size to %s.",
+        "setting openimageio texture cache size to %s.",
         pretty_size(texture_cache_size_bytes).c_str());
 
     const float texture_cache_size_mb =
@@ -200,16 +201,18 @@ void BaseRenderer::initialize_oiio()
     if (new_search_path != prev_search_path)
     {
         RENDERER_LOG_INFO(
-            "setting OpenImageIO search path to %s.",
+            "setting openimageio search path to %s.",
             new_search_path.c_str());
 
         m_texture_system->clear();
         m_texture_system->attribute("searchpath", new_search_path);
     }
 }
+
 #endif
 
 #ifdef APPLESEED_WITH_OSL
+
 bool BaseRenderer::initialize_osl(TextureStore& texture_store, IAbortSwitch& abort_switch)
 {
     m_renderer_services->initialize(texture_store);
@@ -222,19 +225,20 @@ bool BaseRenderer::initialize_osl(TextureStore& texture_store, IAbortSwitch& abo
     if (new_search_path != prev_search_path)
     {
         RENDERER_LOG_INFO(
-            "setting OSL shader search path to %s.",
+            "setting osl shader search path to %s.",
             new_search_path.c_str());
 
         m_project.get_scene()->release_optimized_osl_shader_groups();
         m_shading_system->attribute("searchpath:shader", new_search_path);
     }
 
-    // Re-optimize the shadergroups that needs updating.
+    // Re-optimize the shader groups that need updating.
     return
         m_project.get_scene()->create_optimized_osl_shader_groups(
             *m_shading_system,
             &abort_switch);
 }
+
 #endif
 
 }   // namespace renderer

@@ -51,8 +51,7 @@ namespace renderer
 
 //
 // Map roughness to microfacet distribution function's alpha parameter in a
-// perceptually linear fashion.
-// Refactored from the Disney BRDF implementation.
+// perceptually linear fashion. Refactored from the Disney BRDF implementation.
 //
 
 template <typename T>
@@ -279,6 +278,6 @@ class MicrofacetBRDFHelper
     }
 };
 
-#endif
+}       // namespace renderer
 
-}   // namespace renderer
+#endif  // !APPLESEED_RENDERER_MODELING_BSDF_MICROFACETHELPER_H
