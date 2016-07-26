@@ -88,7 +88,8 @@
                 <shader type="shader" name="surface/as_subsurface_surface" layer="as_sss_surface1">
                     <parameter name="Color" value="color 0.4 0.05 0.27" />
                     <parameter name="Profile" value="string better_dipole" />
-                    <parameter name="Radius" value="float 0.1" />
+                    <parameter name="Radius" value="color 0.1" />
+                    <parameter name="RadiusScale" value="float 1.0" />
                     <parameter name="MaxSubsurfaceRayDepth" value="int 0" />
                 </shader>
                 <shader type="surface" name="material/as_material_builder" layer="appleseedRenderer:surface">

@@ -99,7 +99,8 @@
                     <parameter name="Color" value="color 0.2 0.15 0.37" />
                     <parameter name="MaxSubsurfaceRayDepth" value="int 0" />
                     <parameter name="Profile" value="string directional_dipole" />
-                    <parameter name="Radius" value="float 0.05" />
+                    <parameter name="Radius" value="color 0.05" />
+                    <parameter name="RadiusScale" value="float 1.0" />
                     <parameter name="Reflectance" value="float 1" />
                 </shader>
                 <shader type="shader" name="surface/as_glossy_surface" layer="glossy1">
