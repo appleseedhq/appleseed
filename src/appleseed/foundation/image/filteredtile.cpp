@@ -80,7 +80,7 @@ void FilteredTile::clear()
 {
     float* ptr = reinterpret_cast<float*>(pixel(0));
 
-    for (size_t i = 0; i < m_pixel_count * m_channel_count; ++i)
+    for (size_t i = 0, e = m_pixel_count * m_channel_count; i < e; ++i)
         ptr[i] = 0.0f;
 }
 
@@ -118,7 +118,7 @@ void FilteredTile::add(
 
             *ptr++ += weight;
 
-            for (size_t i = 0; i < m_channel_count - 1; ++i)
+            for (size_t i = 0, e = m_channel_count - 1; i < e; ++i)
                 *ptr++ += values[i] * weight;
         }
     }

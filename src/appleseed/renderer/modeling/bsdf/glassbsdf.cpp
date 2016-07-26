@@ -397,8 +397,7 @@ namespace
 
             if (is_refraction)
                 sample.compute_transmitted_differentials(eta);
-            else
-                sample.compute_reflected_differentials();
+            else sample.compute_reflected_differentials();
         }
 
         APPLESEED_FORCE_INLINE virtual double evaluate(
@@ -701,10 +700,7 @@ namespace
         {
             // [1] eq. 20.
             const double denom = 4.0 * cos_on * cos_in;
-            if (denom == 0.0)
-                return 0.0;
-
-            return 1.0 / (4.0 * cos_on * cos_in);
+            return denom == 0.0 ? 0.0 : 1.0 / denom;
         }
 
         static double reflection_jacobian(
