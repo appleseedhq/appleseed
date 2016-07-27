@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,52 +26,45 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "samplecounter.h"
+// appleseed.renderer headers.
+#include "renderer/kernel/rendering/progressive/samplegeneratorjob.h"
+
+// appleseed.foundation headers.
+#include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
+#include "foundation/platform/types.h"
+#include "foundation/utility/gnuplotfile.h"
+#include "foundation/utility/test.h"
 
 // Standard headers.
-#include <algorithm>
-#include <cassert>
+#include <vector>
 
-using namespace boost;
 using namespace foundation;
+using namespace renderer;
 using namespace std;
 
-namespace renderer
+TEST_SUITE(Renderer_Kernel_Rendering_Progressive_SampleGeneratorJob)
 {
+    TEST_CASE(PlotSamplesPerJob)
+    {
+        const uint64 N = 500000;
 
-SampleCounter::SampleCounter(const uint64 max_sample_count)
-  : m_max_sample_count(max_sample_count)
-  , m_sample_count(0)
-{
+        vector<Vector2d> points;
+        points.reserve(N);
+
+        for (uint64 x = 0; x < N; x += 10)
+        {
+            const uint64 y = SampleGeneratorJob::samples_to_samples_per_job(x);
+            points.push_back(
+                Vector2d(
+                    static_cast<double>(x),
+                    static_cast<double>(y)));
+        }
+
+        GnuplotFile plotfile;
+        plotfile.set_title("Number of samples/job as a function of the number of samples already rendered");
+        plotfile.set_yrange(0.0, 300000.0);
+        plotfile.new_plot().set_points(points);
+        plotfile.write("unit tests/outputs/test_samplegeneratorjob.gnuplot");
+    }
 }
-
-void SampleCounter::clear()
-{
-    Spinlock::ScopedLock lock(m_spinlock);
-
-    m_sample_count = 0;
-}
-
-uint64 SampleCounter::read() const
-{
-    Spinlock::ScopedLock lock(m_spinlock);
-
-    return m_sample_count;
-}
-
-uint64 SampleCounter::reserve(const uint64 sample_count)
-{
-    Spinlock::ScopedLock lock(m_spinlock);
-
-    assert(m_sample_count <= m_max_sample_count);
-
-    const uint64 reserved_sample_count =
-        min(sample_count, m_max_sample_count - m_sample_count);
-
-    m_sample_count += reserved_sample_count;
-
-    return reserved_sample_count;
-}
-
-}   // namespace renderer

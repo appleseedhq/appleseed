@@ -34,6 +34,7 @@
 #include "foundation/image/pixel.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/atomic.h"
 
 using namespace std;
 
@@ -52,6 +53,8 @@ namespace foundation
 //   A Pixel Is Not A Little Square, Technical Memo 6, Alvy Ray Smith
 //   http://alvyray.com/Memos/CG/Microsoft/6_pixel.pdf
 //
+
+#define ATOMIC_UPDATES
 
 FilteredTile::FilteredTile(
     const size_t        width,
@@ -116,10 +119,20 @@ void FilteredTile::add(
         {
             const float weight = m_filter.evaluate(rx - dx, ry - dy);
 
+#ifdef ATOMIC_UPDATES
+            atomic_add(ptr++, weight);
+#else
             *ptr++ += weight;
+#endif
 
             for (size_t i = 0, e = m_channel_count - 1; i < e; ++i)
+            {
+#ifdef ATOMIC_UPDATES
+                atomic_add(ptr++, values[i] * weight);
+#else
                 *ptr++ += values[i] * weight;
+#endif
+            }
         }
     }
 }

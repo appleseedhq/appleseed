@@ -34,11 +34,8 @@
 #include "renderer/api/rendering.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/atomic.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/thread.h"
-
-// Boost headers.
-#include "boost/cstdint.hpp"
 
 // Qt headers.
 #include <QObject>
@@ -85,7 +82,7 @@ class QtRendererController
     void signal_frame_end();
 
   private:
-    mutable volatile boost::uint32_t m_status;
+    boost::atomic<Status> m_status;
 };
 
 }       // namespace studio

@@ -37,6 +37,7 @@
 #include "foundation/image/filteredtile.h"
 #include "foundation/math/filter.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/thread.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.
@@ -75,6 +76,7 @@ class GlobalSampleAccumulationBuffer
     void increment_sample_count(const foundation::uint64 delta_sample_count);
 
   private:
+    boost::shared_mutex             m_mutex;
     foundation::FilteredTile        m_fb;
     const float                     m_filter_rcp_norm_factor;
 

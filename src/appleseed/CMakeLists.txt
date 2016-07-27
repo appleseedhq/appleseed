@@ -487,6 +487,7 @@ source_group ("foundation\\platform\\snprintf" FILES
 
 set (foundation_platform_sources
     foundation/platform/arch.h
+    foundation/platform/atomic.h
     foundation/platform/breakpoint.h
     foundation/platform/compiler.cpp
     foundation/platform/compiler.h
@@ -1226,6 +1227,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_projectfilewriter.cpp
     renderer/meta/tests/test_samplecounter.cpp
     renderer/meta/tests/test_samplecounthistory.cpp
+    renderer/meta/tests/test_samplegeneratorjob.cpp
     renderer/meta/tests/test_scene.cpp
     renderer/meta/tests/test_shadingresult.cpp
     renderer/meta/tests/test_sphericalcamera.cpp

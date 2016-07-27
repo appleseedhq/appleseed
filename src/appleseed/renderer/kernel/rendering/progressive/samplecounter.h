@@ -35,9 +35,6 @@
 #include "foundation/platform/thread.h"
 #include "foundation/platform/types.h"
 
-// Standard headers.
-#include <cstddef>
-
 namespace renderer
 {
 
@@ -55,7 +52,7 @@ class SampleCounter
 
     foundation::uint64 read() const;
 
-    size_t reserve(const size_t sample_count);
+    foundation::uint64 reserve(const foundation::uint64 sample_count);
 
   private:
     const foundation::uint64        m_max_sample_count;

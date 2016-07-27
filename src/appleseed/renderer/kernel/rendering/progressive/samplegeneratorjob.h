@@ -31,6 +31,7 @@
 #define APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLEGENERATORJOB_H
 
 // appleseed.foundation headers.
+#include "foundation/platform/types.h"
 #include "foundation/utility/job.h"
 
 // Standard headers.
@@ -48,6 +49,10 @@ class SampleGeneratorJob
   : public foundation::IJob
 {
   public:
+    // Number of samples per job as a function of the number of samples already rendered.
+    static foundation::uint64 samples_to_samples_per_job(
+        const foundation::uint64    samples);
+
     // Constructor.
     SampleGeneratorJob(
         SampleAccumulationBuffer&   buffer,

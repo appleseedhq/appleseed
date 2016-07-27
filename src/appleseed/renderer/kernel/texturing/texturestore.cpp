@@ -41,7 +41,6 @@
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/tile.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/memory.h"
@@ -241,7 +240,7 @@ void TextureStore::TileSwapper::load(const TileKey& key, TileRecord& record)
 bool TextureStore::TileSwapper::unload(const TileKey& key, TileRecord& record)
 {
     // Cannot unload tiles that are still in use.
-    if (boost_atomic::atomic_read32(&record.m_owners) > 0)
+    if (atomic_read(&record.m_owners) > 0)
         return false;
 
     // Track the amount of memory used by the tile cache.

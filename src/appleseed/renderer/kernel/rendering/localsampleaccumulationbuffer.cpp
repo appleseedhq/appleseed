@@ -51,6 +51,7 @@
 #include <algorithm>
 #include <cassert>
 
+using namespace boost;
 using namespace foundation;
 using namespace std;
 
@@ -94,8 +95,6 @@ LocalSampleAccumulationBuffer::LocalSampleAccumulationBuffer(
                 5,
                 filter));
 
-        m_remaining_pixels.push_back(level_width * level_height);
-
         if (level_width <= MinSize * 2 || level_height <= MinSize * 2)
             break;
 
@@ -106,82 +105,96 @@ LocalSampleAccumulationBuffer::LocalSampleAccumulationBuffer(
             level_height = max(level_height / 2, MinSize);
     }
 
-    m_active_level = m_levels.size() - 1;
+    m_remaining_pixels = new atomic<int32>[m_levels.size()];
+
+    clear();
 }
 
 LocalSampleAccumulationBuffer::~LocalSampleAccumulationBuffer()
 {
-    for (size_t i = 0; i < m_levels.size(); ++i)
+    delete[] m_remaining_pixels;
+
+    for (size_t i = 0, e = m_levels.size(); i < e; ++i)
         delete m_levels[i];
 }
 
 void LocalSampleAccumulationBuffer::clear()
 {
-    boost::mutex::scoped_lock lock(m_mutex);
+    // Request exclusive access.
+    unique_lock<shared_mutex> lock(m_mutex);
 
-    SampleAccumulationBuffer::clear_no_lock();
+    m_sample_count = 0;
 
-    for (size_t level_index = 0; level_index < m_levels.size(); ++level_index)
+    for (size_t i = 0, e = m_levels.size(); i < e; ++i)
     {
-        m_levels[level_index]->clear();
-        m_remaining_pixels[level_index] = m_levels[level_index]->get_pixel_count();
+        m_levels[i]->clear();
+
+        m_remaining_pixels[i] =
+            static_cast<int32>(m_levels[i]->get_pixel_count());
     }
 
-    m_active_level = m_levels.size() - 1;
+    m_active_level = static_cast<uint32>(m_levels.size() - 1);
 }
 
 void LocalSampleAccumulationBuffer::store_samples(
     const size_t    sample_count,
     const Sample    samples[])
 {
-    boost::mutex::scoped_lock lock(m_mutex);
-
-    const Sample* sample_end = samples + sample_count;
-
-    if (m_active_level == 0)
     {
-        FilteredTile* level = m_levels[0];
+        // Request non-exclusive access.
+        shared_lock<shared_mutex> lock(m_mutex);
 
-        const float level_width = static_cast<float>(level->get_width());
-        const float level_height = static_cast<float>(level->get_height());
+        // Store samples at every level between the highest resolution level (index 0) to the active level.
+        const Sample* sample_end = samples + sample_count;
+        for (uint32 i = 0, e = m_active_level; i <= e; ++i)
+        {
+            FilteredTile* level = m_levels[i];
+            const float level_width = static_cast<float>(level->get_width());
+            const float level_height = static_cast<float>(level->get_height());
 
-        for (const Sample* sample_ptr = samples; sample_ptr < sample_end; ++sample_ptr)
-        {
-            const float fx = sample_ptr->m_position.x * level_width;
-            const float fy = sample_ptr->m_position.y * level_height;
-            level->add(fx, fy, sample_ptr->m_values);
-        }
-    }
-    else
-    {
-        for (const Sample* sample_ptr = samples; sample_ptr < sample_end; ++sample_ptr)
-        {
-            for (size_t level_index = 0; level_index <= m_active_level; ++level_index)
+            for (const Sample* s = samples; s < sample_end; ++s)
             {
-                FilteredTile* level = m_levels[level_index];
-
-                const float fx = sample_ptr->m_position.x * level->get_width();
-                const float fy = sample_ptr->m_position.y * level->get_height();
-                level->add(fx, fy, sample_ptr->m_values);
-
-                size_t& remaining_pixels = m_remaining_pixels[level_index];
-
-                if (remaining_pixels > 0)
-                    --remaining_pixels;
-
-                if (remaining_pixels == 0)
-                {
-                    // We just completed this level: make it the new active level.
-                    m_active_level = level_index;
-
-                    // No need to fill the coarser levels anymore.
-                    break;
-                }
+                const float fx = s->m_position.x * level_width;
+                const float fy = s->m_position.y * level_height;
+                level->add(fx, fy, s->m_values);
             }
         }
     }
 
     m_sample_count += sample_count;
+
+    // Potentially update the new active level if we're not already at the highest resolution level.
+    if (m_active_level > 0)
+    {
+        // Update pixel counters for all levels up to the active level.
+        const int32 n = static_cast<int32>(sample_count);
+        for (uint32 i = 0, e = m_active_level; i <= e; ++i)
+            m_remaining_pixels[i].fetch_sub(n);
+
+        while (true)
+        {
+            uint32 cur_active_level = m_active_level;
+            uint32 new_active_level = cur_active_level;
+            for (uint32 i = 0, e = cur_active_level; i < e; ++i)
+            {
+                if (m_remaining_pixels[i] <= 0)
+                {
+                    new_active_level = i;
+                    break;
+                }
+            }
+
+            if (new_active_level == cur_active_level)
+                break;
+
+            assert(new_active_level < cur_active_level);
+
+            //if (m_active_level.compare_exchange_strong(cur_active_level, new_active_level))
+            m_active_level.compare_exchange_strong(cur_active_level, new_active_level);
+
+            break;
+        }
+    }
 }
 
 namespace
@@ -256,7 +269,8 @@ namespace
 
 void LocalSampleAccumulationBuffer::develop_to_frame(Frame& frame)
 {
-    boost::mutex::scoped_lock lock(m_mutex);
+    // Request exclusive access.
+    unique_lock<shared_mutex> lock(m_mutex);
 
     Image& color_image = frame.image();
     Image& depth_image = frame.aov_images().get_image(0);
@@ -269,7 +283,7 @@ void LocalSampleAccumulationBuffer::develop_to_frame(Frame& frame)
     const AABB2u& crop_window = frame.get_crop_window();
     const bool undo_premultiplied_alpha = !frame.is_premultiplied_alpha();
 
-    const FilteredTile& level = find_display_level();
+    const FilteredTile& level = *m_levels[m_active_level];
 
     for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
     {
@@ -292,19 +306,6 @@ void LocalSampleAccumulationBuffer::develop_to_frame(Frame& frame)
                 undo_premultiplied_alpha);
         }
     }
-}
-
-const FilteredTile& LocalSampleAccumulationBuffer::find_display_level() const
-{
-    assert(!m_levels.empty());
-
-    for (size_t i = 0; i < m_levels.size() - 1; ++i)
-    {
-        if (m_remaining_pixels[i] == 0)
-            return *m_levels[i];
-    }
-
-    return *m_levels.back();
 }
 
 }   // namespace renderer

@@ -35,7 +35,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/filter.h"
+#include "foundation/platform/atomic.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/thread.h"
+#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
@@ -74,12 +77,10 @@ class LocalSampleAccumulationBuffer
     virtual void develop_to_frame(Frame& frame) APPLESEED_OVERRIDE;
 
   private:
+    boost::shared_mutex                     m_mutex;
     std::vector<foundation::FilteredTile*>  m_levels;
-    std::vector<size_t>                     m_remaining_pixels;
-    size_t                                  m_active_level;
-
-    // Find the first (the highest resolution) level that has all its pixels set.
-    const foundation::FilteredTile& find_display_level() const;
+    boost::atomic<foundation::int32>*       m_remaining_pixels;
+    boost::atomic<foundation::uint32>       m_active_level;
 };
 
 }       // namespace renderer

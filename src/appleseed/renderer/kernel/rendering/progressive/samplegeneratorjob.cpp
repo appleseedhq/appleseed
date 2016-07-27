@@ -39,10 +39,11 @@
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
-#include "foundation/platform/types.h"
+#include "foundation/math/scalar.h"
 
 // Standard headers.
 #include <algorithm>
+#include <cmath>
 
 using namespace foundation;
 using namespace std;
@@ -74,61 +75,69 @@ SampleGeneratorJob::SampleGeneratorJob(
 {
 }
 
+namespace
+{
+    const uint64 SamplesInLinearPhase = 15000;
+    const uint64 SamplesPerJobInLinearPhase = 1500;
+
+    const double CurveExponentInExponentialPhase = 1.7;
+    const uint64 CurveSlopeInExponentialPhase = 250;
+    const uint64 MaxSamplesPerJobInExponentialPhase = 250 * 1000;
+}
+
+uint64 SampleGeneratorJob::samples_to_samples_per_job(const uint64 samples)
+{
+    if (samples < SamplesInLinearPhase)
+        return SamplesPerJobInLinearPhase;
+
+    const double x = static_cast<double>(samples - SamplesInLinearPhase) / CurveSlopeInExponentialPhase;
+    const uint64 y = SamplesPerJobInLinearPhase + truncate<uint64>(pow(x, CurveExponentInExponentialPhase));
+
+    return min(y, MaxSamplesPerJobInExponentialPhase);
+}
+
 //#define PRINT_DETAILED_PROGRESS
 
 void SampleGeneratorJob::execute(const size_t thread_index)
 {
-    const uint64 MinStoredSamples = 8192;
+    // We will base the number of samples to be rendered by this job
+    // on the number of samples already rendered.
+    const uint64 current_sample_count = m_sample_counter.read();
 
-    if (m_sample_counter.read() < MinStoredSamples)
-    {
-        // Reserve a number of samples to be rendered by this job.
-        const size_t DesiredSampleCount = 1024;
-        const size_t acquired_sample_count = m_sample_counter.reserve(DesiredSampleCount);
+    // Reserve a number of samples to be rendered by this job.
+    const uint64 acquired_sample_count =
+        m_sample_counter.reserve(
+            samples_to_samples_per_job(current_sample_count));
 
-        // Terminate this job is there are no more samples to render.
-        if (acquired_sample_count == 0)
-            return;
+    // Terminate this job is there are no more samples to render.
+    if (acquired_sample_count == 0)
+        return;
 
 #ifdef PRINT_DETAILED_PROGRESS
-        RENDERER_LOG_DEBUG(
-            "job " FMT_SIZE_T ", pass " FMT_SIZE_T ", rendering " FMT_SIZE_T " samples, non-abortable",
-            m_job_index,
-            m_pass,
-            acquired_sample_count);
+    RENDERER_LOG_DEBUG(
+        "job " FMT_SIZE_T ", pass " FMT_SIZE_T ", rendering " FMT_UINT64 " samples%s",
+        m_job_index,
+        m_pass,
+        acquired_sample_count,
+        current_sample_count < SamplesInLinearPhase ? ", non-abortable" : "");
 #endif
 
+    // Render the samples and store them into the accumulation buffer.
+    if (current_sample_count < SamplesInLinearPhase)
+    {
         // The first pass is uninterruptible in order to always get something
         // on screen during navigation. todo: this needs to change as it will
         // freeze rendering if the first pass cannot generate samples.
         AbortSwitch no_abort;
         m_sample_generator->generate_samples(
-            acquired_sample_count,
+            static_cast<size_t>(acquired_sample_count),
             m_buffer,
             no_abort);
     }
     else
     {
-        // Reserve a number of samples to be rendered by this job.
-        const size_t MaxSamplesPerPass = 256 * 1024;
-        const size_t desired_sample_count = min((m_pass + 1) * 8192, MaxSamplesPerPass);
-        const size_t acquired_sample_count = m_sample_counter.reserve(desired_sample_count);
-
-        // Terminate this job is there are no more samples to render.
-        if (acquired_sample_count == 0)
-            return;
-
-#ifdef PRINT_DETAILED_PROGRESS
-        RENDERER_LOG_DEBUG(
-            "job " FMT_SIZE_T ", pass " FMT_SIZE_T ", rendering " FMT_SIZE_T " samples",
-            m_job_index,
-            m_pass,
-            acquired_sample_count);
-#endif
-
-        // Render the samples and store them into the accumulation buffer.
         m_sample_generator->generate_samples(
-            acquired_sample_count,
+            static_cast<size_t>(acquired_sample_count),
             m_buffer,
             m_abort_switch);
     }
