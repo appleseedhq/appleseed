@@ -108,13 +108,20 @@ namespace
             return align(sizeof(DipoleBSSRDFInputValues), 16);
         }
 
-        virtual void prepare_inputs(void* data) const APPLESEED_OVERRIDE
+        virtual void prepare_inputs(
+            const ShadingPoint& shading_point,
+            void*               data) const APPLESEED_OVERRIDE
         {
             DipoleBSSRDFInputValues* values =
                 reinterpret_cast<DipoleBSSRDFInputValues*>(data);
 
             // Precompute the relative index of refraction.
-            values->m_eta = values->m_outside_ior / values->m_inside_ior;
+            const double outside_ior =
+                shading_point.is_entering()
+                    ? shading_point.get_ray().get_current_ior()
+                    : shading_point.get_ray().get_previous_ior();
+
+            values->m_eta = outside_ior / values->m_ior;
 
             // Clamp anisotropy.
             values->m_anisotropy = clamp(values->m_anisotropy, 0.0, 0.999);

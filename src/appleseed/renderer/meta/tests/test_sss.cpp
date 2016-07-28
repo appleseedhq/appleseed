@@ -83,8 +83,10 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             ShadingPointBuilder outgoing_builder(m_outgoing_point);
             outgoing_builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
-            outgoing_builder.set_shading_basis(Basis3d(Vector3d(0.0, 1.0, 0.0)));
             outgoing_builder.set_point(Vector3d(0.0, 0.0, 0.0));
+            outgoing_builder.set_geometric_normal(Vector3d(0.0, 1.0, 0.0));
+            outgoing_builder.set_side(ObjectInstance::FrontSide);
+            outgoing_builder.set_shading_basis(Basis3d(Vector3d(0.0, 1.0, 0.0)));
         }
 
         void set_values_from_sigmas(
@@ -95,8 +97,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             m_values.m_weight = 1.0;
             m_values.m_anisotropy = g;
-            m_values.m_outside_ior = 1.0;
-            m_values.m_inside_ior = eta;
+            m_values.m_ior = eta;
 
             m_bssrdf->get_inputs().find("sigma_a").bind(new ScalarSource(sigma_a));
             m_bssrdf->get_inputs().find("sigma_a").source()->evaluate_uniform(m_values.m_sigma_a);
@@ -104,7 +105,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             m_bssrdf->get_inputs().find("sigma_s").bind(new ScalarSource(sigma_s));
             m_bssrdf->get_inputs().find("sigma_s").source()->evaluate_uniform(m_values.m_sigma_s);
 
-            m_bssrdf->prepare_inputs(&m_values);
+            m_bssrdf->prepare_inputs(m_outgoing_point, &m_values);
         }
 
         void set_values_from_rd_dmfp(
@@ -119,10 +120,9 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             m_values.m_dmfp.set(static_cast<float>(dmfp));
             m_values.m_dmfp_multiplier = 1.0;
             m_values.m_anisotropy = g;
-            m_values.m_outside_ior = 1.0;
-            m_values.m_inside_ior = eta;
+            m_values.m_ior = eta;
 
-            m_bssrdf->prepare_inputs(&m_values);
+            m_bssrdf->prepare_inputs(m_outgoing_point, &m_values);
         }
 
         const double get_sigma_tr() const

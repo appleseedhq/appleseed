@@ -62,6 +62,11 @@ void ShadingPointBuilder::set_geometric_normal(const Vector3d& n)
     m_shading_point.m_members |= ShadingPoint::HasGeometricNormal;
 }
 
+void ShadingPointBuilder::set_side(const ObjectInstance::Side side)
+{
+    m_shading_point.m_side = side;
+}
+
 void ShadingPointBuilder::set_shading_basis(const Basis3d& basis)
 {
     m_shading_point.m_shading_basis = basis;

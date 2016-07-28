@@ -63,8 +63,7 @@ APPLESEED_DECLARE_INPUT_VALUES(DipoleBSSRDFInputValues)
     Spectrum    m_sigma_a;
     Spectrum    m_sigma_s;
     ScalarInput m_anisotropy;
-    ScalarInput m_outside_ior;
-    ScalarInput m_inside_ior;
+    ScalarInput m_ior;
 
     // Precomputed values.
     Spectrum    m_sigma_t;

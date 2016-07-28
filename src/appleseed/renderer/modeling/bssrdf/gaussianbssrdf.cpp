@@ -126,7 +126,7 @@ namespace
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("v", InputFormatScalar);
             m_inputs.declare("outside_ior", InputFormatScalar);
-            m_inputs.declare("inside_ior", InputFormatScalar);
+            m_inputs.declare("ior", InputFormatScalar);
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -145,13 +145,21 @@ namespace
             return align(sizeof(GaussianBSSRDFInputValues), 16);
         }
 
-        virtual void prepare_inputs(void* data) const APPLESEED_OVERRIDE
+        virtual void prepare_inputs(
+            const ShadingPoint& shading_point,
+            void*               data) const APPLESEED_OVERRIDE
         {
             GaussianBSSRDFInputValues* values =
                 reinterpret_cast<GaussianBSSRDFInputValues*>(data);
 
+            // Precompute the relative index of refraction.
+            const double outside_ior =
+                shading_point.is_entering()
+                    ? shading_point.get_ray().get_current_ior()
+                    : shading_point.get_ray().get_previous_ior();
+
+            values->m_eta = outside_ior / values->m_ior;
             values->m_rmax2 = values->m_v * RMax2Constant;
-            values->m_eta = values->m_outside_ior / values->m_inside_ior;
         }
 
         virtual bool sample(
@@ -288,18 +296,8 @@ DictionaryArray GaussianBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "outside_ior")
-            .insert("label", "Outside Index of Refraction")
-            .insert("type", "numeric")
-            .insert("min_value", "1.0")
-            .insert("max_value", "2.5")
-            .insert("use", "required")
-            .insert("default", "1.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "inside_ior")
-            .insert("label", "Inside Index of Refraction")
+            .insert("name", "ior")
+            .insert("label", "Index of Refraction")
             .insert("type", "numeric")
             .insert("min_value", "1.0")
             .insert("max_value", "2.5")

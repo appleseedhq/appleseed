@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/edf/diffuseedf.h"
 #include "renderer/modeling/edf/edf.h"
@@ -1067,6 +1068,50 @@ namespace
             info.m_material->get_parameters().insert("bsdf", info.m_bsdf->get_name());
         }
     };
+
+    //
+    // Update from revision 10 to revision 11.
+    //
+
+    class UpdateFromRevision_10
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_10(Project& project)
+          : Updater(project, 10)
+        {
+        }
+
+        virtual void update() APPLESEED_OVERRIDE
+        {
+            const Scene* scene = m_project.get_scene();
+
+            if (scene)
+                update_bssrdf_ior_inputs(scene->assemblies());
+        }
+
+      private:
+        static void update_bssrdf_ior_inputs(AssemblyContainer& assemblies)
+        {
+            for (each<AssemblyContainer> i = assemblies; i; ++i)
+            {
+                update_bssrdf_ior_inputs(*i);
+                update_bssrdf_ior_inputs(i->assemblies());
+            }
+        }
+
+        static void update_bssrdf_ior_inputs(Assembly& assembly)
+        {
+            for (each<BSSRDFContainer> i = assembly.bssrdfs(); i; ++i)
+                update_bssrdf_ior_inputs(*i);
+        }
+
+        static void update_bssrdf_ior_inputs(BSSRDF& bssrdf)
+        {
+            move_if_exist(bssrdf, "ior", "inside_ior");
+            bssrdf.get_parameters().remove_path("outside_ior");
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(Project& project, const size_t to_revision)
@@ -1100,8 +1145,9 @@ bool ProjectFileUpdater::update(Project& project, const size_t to_revision)
       CASE_UPDATE_FROM_REVISION(7);
       CASE_UPDATE_FROM_REVISION(8);
       CASE_UPDATE_FROM_REVISION(9);
+      CASE_UPDATE_FROM_REVISION(10);
 
-      case 10:
+      case 11:
         // Project is up-to-date.
         break;
 

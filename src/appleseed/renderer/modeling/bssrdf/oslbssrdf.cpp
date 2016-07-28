@@ -158,6 +158,7 @@ namespace
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
                 bssrdf_from_closure_id(c->get_closure_type(i)).prepare_inputs(
+                    shading_point,
                     c->get_closure_input_values(i));
             }
         }
