@@ -40,6 +40,8 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/math/scalar.h"
+#include "foundation/platform/defaulttimers.h"
+#include "foundation/utility/stopwatch.h"
 
 // Boost headers.
 #include "boost/static_assert.hpp"
@@ -57,6 +59,8 @@ namespace renderer
 //
 // SampleGeneratorJob class implementation.
 //
+
+//#define PRINT_DETAILED_PROGRESS
 
 SampleGeneratorJob::SampleGeneratorJob(
     SampleAccumulationBuffer&   buffer,
@@ -110,10 +114,14 @@ uint64 SampleGeneratorJob::samples_to_samples_per_job(const uint64 samples)
     return min(y, MaxSamplesPerJobInExponentialPhase);
 }
 
-//#define PRINT_DETAILED_PROGRESS
-
 void SampleGeneratorJob::execute(const size_t thread_index)
 {
+#ifdef PRINT_DETAILED_PROGRESS
+    Stopwatch<DefaultWallclockTimer> stopwatch(0);
+    stopwatch.measure();
+    const double t1 = stopwatch.get_seconds();
+#endif
+
     // We will base the number of samples to be rendered by this job on
     // the number of samples already reserved (not necessarily rendered).
     const uint64 current_sample_count = m_sample_counter.read();
@@ -126,15 +134,6 @@ void SampleGeneratorJob::execute(const size_t thread_index)
     // Terminate this job is there are no more samples to render.
     if (acquired_sample_count == 0)
         return;
-
-#ifdef PRINT_DETAILED_PROGRESS
-    RENDERER_LOG_DEBUG(
-        "job " FMT_SIZE_T ", pass " FMT_SIZE_T ", rendering " FMT_UINT64 " samples%s",
-        m_job_index,
-        m_pass,
-        acquired_sample_count,
-        current_sample_count < SamplesInLinearPhase ? ", non-abortable" : "");
-#endif
 
     const bool abortable = current_sample_count > SamplesInUninterruptiblePhase;
 
@@ -157,6 +156,19 @@ void SampleGeneratorJob::execute(const size_t thread_index)
             m_buffer,
             m_abort_switch);
     }
+
+#ifdef PRINT_DETAILED_PROGRESS
+    stopwatch.measure();
+    const double t2 = stopwatch.get_seconds();
+
+    RENDERER_LOG_DEBUG(
+        "job " FMT_SIZE_T ", pass " FMT_SIZE_T ", rendered " FMT_UINT64 " samples%s, in %s",
+        m_job_index,
+        m_pass,
+        acquired_sample_count,
+        abortable ? "" : " (non-abortable)",
+        pretty_time(t2 - t1).c_str());
+#endif
 
     // Reschedule this job.
     if (!abortable || !m_abort_switch.is_aborted())
