@@ -64,7 +64,7 @@ namespace renderer
 //
 // LocalSampleAccumulationBuffer class implementation.
 //
-// The algorithm for progressive display deserves some explanations.  Here is how it works:
+// The algorithm for progressive display deserves some explanations. Here is how it works:
 //
 //   When the accumulation buffer is constructed, we create a stack of framebuffers of
 //   decreasing resolution, much like a mipmap pyramid: each level of this pyramid is a
@@ -73,9 +73,9 @@ namespace renderer
 //   a resolution that we consider provides a good balance between speed and usefulness.
 //
 //   At render-time, the store_samples() method pushes the individual samples through this
-//   pyramid.  Samples are stored starting at the highest resolution level and up to what
+//   pyramid. Samples are stored starting at the highest resolution level and up to what
 //   we call the "active level", that is, the coarsest level of the pyramid that we're still
-//   pushing samples to and the level that is displayed.  As soon as a level contains enough
+//   pushing samples to and the level that is displayed. As soon as a level contains enough
 //   samples, it becomes the new active level.
 //
 
