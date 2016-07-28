@@ -86,6 +86,8 @@ namespace
     // Progressive frame renderer.
     //
 
+//#define PRINT_DISPLAY_THREAD_PERFS
+
     class ProgressiveFrameRenderer
       : public FrameRendererBase
     {
@@ -346,8 +348,6 @@ namespace
             }
         };
 
-//#define PRINT_DISPLAY_THREAD_PERFS
-
         class DisplayFunc
           : public NonCopyable
         {
@@ -363,7 +363,7 @@ namespace
               , m_tile_callback(tile_callback)
               , m_target_elapsed(1.0 / max_fps)
               , m_abort_switch(abort_switch)
-              , m_min_pixel_count(frame.get_pixel_count() / 150)
+              , m_min_sample_count(32 * 64)  // size of the last level in the sample accumulation buffer assuming a max. aspect ratio of 2
             {
             }
 
@@ -410,13 +410,24 @@ namespace
 
             void display()
             {
+                if (m_buffer.get_sample_count() < m_min_sample_count)
+                {
+#ifdef PRINT_DISPLAY_THREAD_PERFS
+                    RENDERER_LOG_DEBUG(
+                        "skipping display, buffer contains " FMT_UINT64 " samples but " FMT_UINT64 " are required.",
+                        m_buffer.get_sample_count(),
+                        m_min_sample_count);
+#endif
+                    return;
+                }
+
 #ifdef PRINT_DISPLAY_THREAD_PERFS
                 m_stopwatch.measure();
                 const double t1 = m_stopwatch.get_seconds();
 #endif
 
-                if (m_buffer.get_sample_count() > m_min_pixel_count)
-                    m_buffer.develop_to_frame(m_frame, m_abort_switch);
+                // Develop the accumulation buffer to the frame.
+                m_buffer.develop_to_frame(m_frame, m_abort_switch);
 
 #ifdef PRINT_DISPLAY_THREAD_PERFS
                 m_stopwatch.measure();
@@ -444,7 +455,7 @@ namespace
                         pretty_time(t2 - t1).c_str(),
                         pretty_time(t3 - t2).c_str(),
                         pretty_time(t3 - t1).c_str(),
-                        pretty_ratio(1.0, t3 - t2).c_str());
+                        pretty_ratio(1.0, t3 - t1).c_str());
 #endif
                 }
             }
@@ -456,7 +467,7 @@ namespace
             const double                        m_target_elapsed;
             IAbortSwitch&                       m_abort_switch;
             ThreadFlag                          m_pause_flag;
-            const size_t                        m_min_pixel_count;
+            const uint64                        m_min_sample_count;
             Stopwatch<DefaultWallclockTimer>    m_stopwatch;
         };
 
