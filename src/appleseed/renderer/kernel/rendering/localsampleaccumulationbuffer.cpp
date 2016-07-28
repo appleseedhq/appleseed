@@ -45,7 +45,9 @@
 #include "foundation/image/tile.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/scalar.h"
+#include "foundation/platform/timers.h"
 #include "foundation/utility/job/iabortswitch.h"
+#include "foundation/utility/stopwatch.h"
 
 // Boost headers.
 #include "boost/chrono/duration.hpp"
@@ -78,6 +80,8 @@ namespace renderer
 //   pushing samples to and the level that is displayed. As soon as a level contains enough
 //   samples, it becomes the new active level.
 //
+
+//#define PRINT_DETAILED_PERF_REPORTS
 
 LocalSampleAccumulationBuffer::LocalSampleAccumulationBuffer(
     const size_t    width,
@@ -123,8 +127,18 @@ LocalSampleAccumulationBuffer::~LocalSampleAccumulationBuffer()
 
 void LocalSampleAccumulationBuffer::clear()
 {
+#ifdef PRINT_DETAILED_PERF_REPORTS
+    Stopwatch<DefaultWallclockTimer> sw(0);
+    sw.start();
+#endif
+
     // Request exclusive access.
     unique_lock<shared_mutex> lock(m_mutex);
+
+#ifdef PRINT_DETAILED_PERF_REPORTS
+    sw.measure();
+    RENDERER_LOG_DEBUG("clear: acquiring lock: %f", sw.get_seconds() * 1000.0);
+#endif
 
     m_sample_count = 0;
 
@@ -144,6 +158,11 @@ void LocalSampleAccumulationBuffer::store_samples(
     const Sample    samples[],
     IAbortSwitch&   abort_switch)
 {
+#ifdef PRINT_DETAILED_PERF_REPORTS
+    Stopwatch<DefaultWallclockTimer> sw(0);
+    sw.start();
+#endif
+
     {
         // Request non-exclusive access.
         shared_lock<shared_mutex> lock(m_mutex, defer_lock);
@@ -154,6 +173,11 @@ void LocalSampleAccumulationBuffer::store_samples(
             if (lock.try_lock_for(chrono::milliseconds(5)))
                 break;
         }
+
+#ifdef PRINT_DETAILED_PERF_REPORTS
+        sw.measure();
+        RENDERER_LOG_DEBUG("store_samples: acquiring lock: %f", sw.get_seconds() * 1000.0);
+#endif
 
         // Store samples at every level, starting with the highest resolution level up to the active level.
         size_t counter = 0;
@@ -177,6 +201,11 @@ void LocalSampleAccumulationBuffer::store_samples(
     }
 
     m_sample_count += sample_count;
+
+#ifdef PRINT_DETAILED_PERF_REPORTS
+    sw.measure();
+    RENDERER_LOG_DEBUG("store_samples: " FMT_SIZE_T " -> %f", sample_count, sw.get_seconds() * 1000.0);
+#endif
 
     // Potentially update the new active level if we're not already at the highest resolution level.
     if (m_active_level > 0)
@@ -278,6 +307,11 @@ void LocalSampleAccumulationBuffer::develop_to_frame(
     Frame&          frame,
     IAbortSwitch&   abort_switch)
 {
+#ifdef PRINT_DETAILED_PERF_REPORTS
+    Stopwatch<DefaultWallclockTimer> sw(0);
+    sw.start();
+#endif
+
     // Request exclusive access.
     unique_lock<shared_mutex> lock(m_mutex, defer_lock);
     while (true)
@@ -287,6 +321,12 @@ void LocalSampleAccumulationBuffer::develop_to_frame(
         if (lock.try_lock_for(chrono::milliseconds(5)))
             break;
     }
+
+#ifdef PRINT_DETAILED_PERF_REPORTS
+    sw.measure();
+    const double t1 = sw.get_seconds();
+    RENDERER_LOG_DEBUG("develop_to_frame: acquiring lock: %f", t1 * 1000.0);
+#endif
 
     Image& color_image = frame.image();
     Image& depth_image = frame.aov_images().get_image(0);
@@ -325,6 +365,12 @@ void LocalSampleAccumulationBuffer::develop_to_frame(
                 undo_premultiplied_alpha);
         }
     }
+
+#ifdef PRINT_DETAILED_PERF_REPORTS
+    sw.measure();
+    const double t2 = sw.get_seconds();
+    RENDERER_LOG_DEBUG("develop_to_frame: %f", (t2 - t1) * 1000.0);
+#endif
 }
 
 }   // namespace renderer
