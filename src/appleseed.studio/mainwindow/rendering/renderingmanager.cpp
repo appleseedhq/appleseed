@@ -503,15 +503,17 @@ void RenderingManager::FrozenDisplayFunc::operator()()
         // Display the frame.
         m_tile_callback->post_render(&m_frame);
 
-        // Limit frame rate.
+        // Compute time elapsed since last frame.
         const uint64 time = timer.read();
         const double elapsed = (time - last_time) * rcp_timer_freq;
+        last_time = time;
+
+        // Limit frame rate.
         if (elapsed < TargetElapsed)
         {
             const double ms = ceil(1000.0 * (TargetElapsed - elapsed));
             sleep(truncate<uint32>(ms), m_abort_switch);
         }
-        last_time = time;
     }
 }
 

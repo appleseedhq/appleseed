@@ -377,15 +377,17 @@ namespace
                     if (m_pause_flag.is_clear())
                         display();
 
-                    // Limit frame rate.
+                    // Compute time elapsed since last call to display().
                     const uint64 time = timer.read();
                     const double elapsed = (time - last_time) * rcp_timer_freq;
+                    last_time = time;
+
+                    // Limit display rate.
                     if (elapsed < m_target_elapsed)
                     {
                         const double ms = ceil(1000.0 * (m_target_elapsed - elapsed));
                         sleep(truncate<uint32>(ms), m_abort_switch);
                     }
-                    last_time = time;
                 }
             }
 
