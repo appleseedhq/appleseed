@@ -182,29 +182,21 @@ void LocalSampleAccumulationBuffer::store_samples(
         for (uint32 i = 0, e = m_active_level; i <= e; ++i)
             m_remaining_pixels[i].fetch_sub(n);
 
-        while (true)
+        // Find the new active level.
+        uint32 cur_active_level = m_active_level;
+        uint32 new_active_level = cur_active_level;
+        for (uint32 i = 0, e = cur_active_level; i < e; ++i)
         {
-            uint32 cur_active_level = m_active_level;
-            uint32 new_active_level = cur_active_level;
-            for (uint32 i = 0, e = cur_active_level; i < e; ++i)
+            if (m_remaining_pixels[i] <= 0)
             {
-                if (m_remaining_pixels[i] <= 0)
-                {
-                    new_active_level = i;
-                    break;
-                }
-            }
-
-            if (new_active_level == cur_active_level)
+                new_active_level = i;
                 break;
-
-            assert(new_active_level < cur_active_level);
-
-            //if (m_active_level.compare_exchange_strong(cur_active_level, new_active_level))
-            m_active_level.compare_exchange_strong(cur_active_level, new_active_level);
-
-            break;
+            }
         }
+
+        // Attempt to update the active level. It's OK if we fail, another thread will succeed.
+        if (new_active_level < cur_active_level)
+            m_active_level.compare_exchange_strong(cur_active_level, new_active_level);
     }
 }
 
