@@ -39,6 +39,7 @@
 #include "main/dllsymbol.h"
 
 // Boost headers.
+#define BOOST_THREAD_PROVIDES_GENERIC_SHARED_MUTEX_ON_WIN
 #include "boost/smart_ptr/detail/spinlock.hpp"
 #include "boost/thread/locks.hpp"
 #include "boost/thread/mutex.hpp"
