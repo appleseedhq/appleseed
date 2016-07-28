@@ -69,7 +69,6 @@ SampleGeneratorJob::SampleGeneratorJob(
     JobQueue&                   job_queue,
     const size_t                job_index,
     const size_t                job_count,
-    const size_t                pass,
     IAbortSwitch&               abort_switch)
   : m_buffer(buffer)
   , m_sample_generator(sample_generator)
@@ -77,9 +76,14 @@ SampleGeneratorJob::SampleGeneratorJob(
   , m_job_queue(job_queue)
   , m_job_index(job_index)
   , m_job_count(job_count)
-  , m_pass(pass)
   , m_abort_switch(abort_switch)
 {
+    reset();
+}
+
+void SampleGeneratorJob::reset()
+{
+    m_pass = 0;
 }
 
 namespace
@@ -173,16 +177,8 @@ void SampleGeneratorJob::execute(const size_t thread_index)
     // Reschedule this job.
     if (!abortable || !m_abort_switch.is_aborted())
     {
-        m_job_queue.schedule(
-            new SampleGeneratorJob(
-                m_buffer,
-                m_sample_generator,
-                m_sample_counter,
-                m_job_queue,
-                m_job_index,
-                m_job_count,
-                m_pass + 1,
-                m_abort_switch));
+        ++m_pass;
+        m_job_queue.schedule(this, false);
     }
 }
 

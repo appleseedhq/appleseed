@@ -115,10 +115,26 @@ namespace
                     JobManager::KeepRunningOnEmptyQueue));
 
             // Instantiate sample generators, one per rendering thread.
+            m_sample_generators.reserve(m_params.m_thread_count);
             for (size_t i = 0; i < m_params.m_thread_count; ++i)
             {
                 m_sample_generators.push_back(
                     generator_factory->create(i, m_params.m_thread_count));
+            }
+
+            // Create rendering jobs, one per rendering thread.
+            m_sample_generator_jobs.reserve(m_params.m_thread_count);
+            for (size_t i = 0; i < m_params.m_thread_count; ++i)
+            {
+                m_sample_generator_jobs.push_back(
+                    new SampleGeneratorJob(
+                        *m_buffer.get(),
+                        m_sample_generators[i],
+                        m_sample_counter,
+                        m_job_queue,
+                        i,                              // job index
+                        m_params.m_thread_count,        // job count
+                        m_abort_switch));
             }
 
             // Instantiate a single tile callback.
@@ -172,6 +188,10 @@ namespace
             // Delete the tile callback.
             m_tile_callback.reset();
 
+            // Delete rendering jobs.
+            for (const_each<SampleGeneratorJobVector> i = m_sample_generator_jobs; i; ++i)
+                delete *i;
+
             // Delete sample generators.
             for (const_each<SampleGeneratorVector> i = m_sample_generators; i; ++i)
                 (*i)->release();
@@ -204,26 +224,23 @@ namespace
             m_sample_counter.clear();
 
             // Reset sample generators.
-            for (size_t i = 0; i < m_sample_generators.size(); ++i)
+            for (size_t i = 0, e = m_sample_generators.size(); i < e; ++i)
                 m_sample_generators[i]->reset();
+
+            // Reset rendering jobs.
+            for (size_t i = 0, e = m_sample_generator_jobs.size(); i < e; ++i)
+                m_sample_generator_jobs[i]->reset();
+
+            // Schedule rendering jobs.
+            for (size_t i = 0, e = m_sample_generator_jobs.size(); i < e; ++i)
+            {
+                m_job_queue.schedule(
+                    m_sample_generator_jobs[i],
+                    false);     // don't transfer ownership of the job to the queue
+            }
 
             // Start job execution.
             m_job_manager->start();
-
-            // Schedule the first batch of jobs.
-            for (size_t i = 0; i < m_sample_generators.size(); ++i)
-            {
-                m_job_queue.schedule(
-                    new SampleGeneratorJob(
-                        *m_buffer.get(),
-                        m_sample_generators[i],
-                        m_sample_counter,
-                        m_job_queue,
-                        i,                              // job index
-                        m_sample_generators.size(),     // job count
-                        0,                              // pass number
-                        m_abort_switch));
-            }
 
             // Create and start the statistics thread.
             m_statistics_func.reset(
@@ -591,8 +608,11 @@ namespace
         AbortSwitch                         m_abort_switch;
 
         typedef vector<ISampleGenerator*> SampleGeneratorVector;
-
         SampleGeneratorVector               m_sample_generators;
+
+        typedef vector<SampleGeneratorJob*> SampleGeneratorJobVector;
+        SampleGeneratorJobVector            m_sample_generator_jobs;
+
         auto_release_ptr<ITileCallback>     m_tile_callback;
 
         auto_ptr<Image>                     m_ref_image;
