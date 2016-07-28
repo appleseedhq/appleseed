@@ -98,7 +98,7 @@ LocalSampleAccumulationBuffer::LocalSampleAccumulationBuffer(
                 5,
                 filter));
 
-        if (level_width <= MinSize * 2 || level_height <= MinSize * 2)
+        if (level_width < MinSize * 2 || level_height < MinSize * 2)
             break;
 
         if (level_width > MinSize)
