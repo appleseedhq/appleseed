@@ -45,7 +45,10 @@
 #include "foundation/image/tile.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/scalar.h"
-#include "foundation/platform/thread.h"
+#include "foundation/utility/job/iabortswitch.h"
+
+// Boost headers.
+#include "boost/chrono/duration.hpp"
 
 // Standard headers.
 #include <algorithm>
@@ -138,11 +141,19 @@ void LocalSampleAccumulationBuffer::clear()
 
 void LocalSampleAccumulationBuffer::store_samples(
     const size_t    sample_count,
-    const Sample    samples[])
+    const Sample    samples[],
+    IAbortSwitch&   abort_switch)
 {
     {
         // Request non-exclusive access.
-        shared_lock<shared_mutex> lock(m_mutex);
+        shared_lock<shared_mutex> lock(m_mutex, defer_lock);
+        while (true)
+        {
+            if (abort_switch.is_aborted())
+                return;
+            if (lock.try_lock_for(chrono::milliseconds(5)))
+                break;
+        }
 
         // Store samples at every level between the highest resolution level (index 0) to the active level.
         const Sample* sample_end = samples + sample_count;
@@ -267,10 +278,19 @@ namespace
     }
 }
 
-void LocalSampleAccumulationBuffer::develop_to_frame(Frame& frame)
+void LocalSampleAccumulationBuffer::develop_to_frame(
+    Frame&          frame,
+    IAbortSwitch&   abort_switch)
 {
     // Request exclusive access.
-    unique_lock<shared_mutex> lock(m_mutex);
+    unique_lock<shared_mutex> lock(m_mutex, defer_lock);
+    while (true)
+    {
+        if (abort_switch.is_aborted())
+            return;
+        if (lock.try_lock_for(chrono::milliseconds(5)))
+            break;
+    }
 
     Image& color_image = frame.image();
     Image& depth_image = frame.aov_images().get_image(0);

@@ -40,7 +40,10 @@
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
-#include "foundation/platform/thread.h"
+#include "foundation/utility/job/iabortswitch.h"
+
+// Boost headers.
+#include "boost/chrono/duration.hpp"
 
 using namespace boost;
 using namespace foundation;
@@ -70,10 +73,18 @@ void GlobalSampleAccumulationBuffer::clear()
 
 void GlobalSampleAccumulationBuffer::store_samples(
     const size_t    sample_count,
-    const Sample    samples[])
+    const Sample    samples[],
+    IAbortSwitch&   abort_switch)
 {
     // Request non-exclusive access.
-    shared_lock<shared_mutex> lock(m_mutex);
+    shared_lock<shared_mutex> lock(m_mutex, defer_lock);
+    while (true)
+    {
+        if (abort_switch.is_aborted())
+            return;
+        if (lock.try_lock_for(chrono::milliseconds(5)))
+            break;
+    }
 
     const float fw = static_cast<float>(m_fb.get_width());
     const float fh = static_cast<float>(m_fb.get_height());
@@ -91,10 +102,19 @@ void GlobalSampleAccumulationBuffer::store_samples(
     }
 }
 
-void GlobalSampleAccumulationBuffer::develop_to_frame(Frame& frame)
+void GlobalSampleAccumulationBuffer::develop_to_frame(
+    Frame&          frame,
+    IAbortSwitch&   abort_switch)
 {
     // Request exclusive access.
-    unique_lock<shared_mutex> lock(m_mutex);
+    unique_lock<shared_mutex> lock(m_mutex, defer_lock);
+    while (true)
+    {
+        if (abort_switch.is_aborted())
+            return;
+        if (lock.try_lock_for(chrono::milliseconds(5)))
+            break;
+    }
 
     Image& image = frame.image();
     const CanvasProperties& frame_props = image.properties();

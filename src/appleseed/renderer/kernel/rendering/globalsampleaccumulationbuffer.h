@@ -44,6 +44,7 @@
 #include <cstddef>
 
 // Forward declarations.
+namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class Tile; }
 namespace renderer      { class Frame; }
 namespace renderer      { class Sample; }
@@ -67,10 +68,13 @@ class GlobalSampleAccumulationBuffer
     // Store a set of samples into the buffer. Thread-safe.
     virtual void store_samples(
         const size_t                sample_count,
-        const Sample                samples[]) APPLESEED_OVERRIDE;
+        const Sample                samples[],
+        foundation::IAbortSwitch&   abort_switch) APPLESEED_OVERRIDE;
 
     // Develop the buffer to a frame. Thread-safe.
-    virtual void develop_to_frame(Frame& frame) APPLESEED_OVERRIDE;
+    virtual void develop_to_frame(
+        Frame&                      frame,
+        foundation::IAbortSwitch&   abort_switch) APPLESEED_OVERRIDE;
 
     // Increment the number of samples used for pixel values renormalization. Thread-safe.
     void increment_sample_count(const foundation::uint64 delta_sample_count);

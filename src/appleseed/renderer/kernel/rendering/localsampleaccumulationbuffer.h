@@ -46,6 +46,7 @@
 
 // Forward declarations.
 namespace foundation    { class FilteredTile; }
+namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Frame; }
 namespace renderer      { class Sample; }
 
@@ -71,10 +72,13 @@ class LocalSampleAccumulationBuffer
     // Store a set of samples into the buffer. Thread-safe.
     virtual void store_samples(
         const size_t                        sample_count,
-        const Sample                        samples[]) APPLESEED_OVERRIDE;
+        const Sample                        samples[],
+        foundation::IAbortSwitch&           abort_switch) APPLESEED_OVERRIDE;
 
     // Develop the buffer to a frame. Thread-safe.
-    virtual void develop_to_frame(Frame& frame) APPLESEED_OVERRIDE;
+    virtual void develop_to_frame(
+        Frame&                              frame,
+        foundation::IAbortSwitch&           abort_switch) APPLESEED_OVERRIDE;
 
   private:
     boost::shared_mutex                     m_mutex;

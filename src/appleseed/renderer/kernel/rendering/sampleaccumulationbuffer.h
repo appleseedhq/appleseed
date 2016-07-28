@@ -39,8 +39,9 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class Frame; }
-namespace renderer  { class Sample; }
+namespace foundation    { class IAbortSwitch; }
+namespace renderer      { class Frame; }
+namespace renderer      { class Sample; }
 
 namespace renderer
 {
@@ -60,11 +61,14 @@ class SampleAccumulationBuffer
 
     // Store a set of samples into the buffer. Thread-safe.
     virtual void store_samples(
-        const size_t    sample_count,
-        const Sample    samples[]) = 0;
+        const size_t                sample_count,
+        const Sample                samples[],
+        foundation::IAbortSwitch&   abort_switch) = 0;
 
     // Develop the buffer to a frame. Thread-safe.
-    virtual void develop_to_frame(Frame& frame) = 0;
+    virtual void develop_to_frame(
+        Frame&                      frame,
+        foundation::IAbortSwitch&   abort_switch) = 0;
 
   protected:
     boost::atomic<foundation::uint64> m_sample_count;

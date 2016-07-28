@@ -399,15 +399,20 @@ namespace
 #endif
 
                 if (m_buffer.get_sample_count() > m_min_pixel_count)
-                    m_buffer.develop_to_frame(m_frame);
+                    m_buffer.develop_to_frame(m_frame, m_abort_switch);
 
 #ifdef PRINT_DISPLAY_THREAD_PERFS
                 m_stopwatch.measure();
                 const double t2 = m_stopwatch.get_seconds();
 #endif
 
+                // Make sure we don't present incomplete frames.
+                if (m_abort_switch.is_aborted())
+                    return;
+
                 if (m_tile_callback)
                 {
+                    // Present the frame.
                     m_tile_callback->post_render(&m_frame);
 
 #ifdef PRINT_DISPLAY_THREAD_PERFS
