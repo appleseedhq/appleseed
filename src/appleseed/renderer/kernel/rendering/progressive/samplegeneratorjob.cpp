@@ -41,6 +41,9 @@
 #include "foundation/image/image.h"
 #include "foundation/math/scalar.h"
 
+// Boost headers.
+#include "boost/static_assert.hpp"
+
 // Standard headers.
 #include <algorithm>
 #include <cmath>
@@ -77,12 +80,23 @@ SampleGeneratorJob::SampleGeneratorJob(
 
 namespace
 {
-    const uint64 SamplesInLinearPhase = 15000;
-    const uint64 SamplesPerJobInLinearPhase = 1500;
+    // Duration of the interruptible phase.
+    // The higher this value, the more refined is the image but the lower is the interactivity.
+    const uint64 SamplesInUninterruptiblePhase = 32 * 64;   // 5000
 
-    const double CurveExponentInExponentialPhase = 1.7;
-    const uint64 CurveSlopeInExponentialPhase = 250;
+    // Refinement rates of the image in the different phases.
+    // The higher the refinement rates, the lower the parallelism / CPU efficiency.
+    const uint64 SamplesPerJobInLinearPhase = 250;
     const uint64 MaxSamplesPerJobInExponentialPhase = 250 * 1000;
+
+    // Duration of the linear phase.
+    const uint64 SamplesInLinearPhase = 500 * 1000;
+
+    // Shape of the curve in the exponential phase.
+    const double CurveExponentInExponentialPhase = 2.0;
+
+    // Constraints.
+    BOOST_STATIC_ASSERT(SamplesPerJobInLinearPhase <= SamplesInUninterruptiblePhase);
 }
 
 uint64 SampleGeneratorJob::samples_to_samples_per_job(const uint64 samples)
@@ -90,7 +104,7 @@ uint64 SampleGeneratorJob::samples_to_samples_per_job(const uint64 samples)
     if (samples < SamplesInLinearPhase)
         return SamplesPerJobInLinearPhase;
 
-    const double x = static_cast<double>(samples - SamplesInLinearPhase) / CurveSlopeInExponentialPhase;
+    const double x = (samples - SamplesInLinearPhase) * 0.001;
     const uint64 y = SamplesPerJobInLinearPhase + truncate<uint64>(pow(x, CurveExponentInExponentialPhase));
 
     return min(y, MaxSamplesPerJobInExponentialPhase);
@@ -100,8 +114,8 @@ uint64 SampleGeneratorJob::samples_to_samples_per_job(const uint64 samples)
 
 void SampleGeneratorJob::execute(const size_t thread_index)
 {
-    // We will base the number of samples to be rendered by this job
-    // on the number of samples already rendered.
+    // We will base the number of samples to be rendered by this job on
+    // the number of samples already reserved (not necessarily rendered).
     const uint64 current_sample_count = m_sample_counter.read();
 
     // Reserve a number of samples to be rendered by this job.
@@ -123,7 +137,7 @@ void SampleGeneratorJob::execute(const size_t thread_index)
 #endif
 
     // Render the samples and store them into the accumulation buffer.
-    if (current_sample_count < SamplesInLinearPhase)
+    if (current_sample_count < SamplesInUninterruptiblePhase)
     {
         // The first pass is uninterruptible in order to always get something
         // on screen during navigation. todo: this needs to change as it will

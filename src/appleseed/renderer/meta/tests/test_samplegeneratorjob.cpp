@@ -47,12 +47,12 @@ TEST_SUITE(Renderer_Kernel_Rendering_Progressive_SampleGeneratorJob)
 {
     TEST_CASE(PlotSamplesPerJob)
     {
-        const uint64 N = 500000;
+        const uint64 N = 1500000;
 
         vector<Vector2d> points;
         points.reserve(N);
 
-        for (uint64 x = 0; x < N; x += 10)
+        for (uint64 x = 0; x < N; x += 100)
         {
             const uint64 y = SampleGeneratorJob::samples_to_samples_per_job(x);
             points.push_back(
