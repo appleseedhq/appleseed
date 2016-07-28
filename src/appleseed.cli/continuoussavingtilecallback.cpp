@@ -41,11 +41,11 @@
 #include "foundation/image/image.h"
 #include "foundation/image/imageattributes.h"
 #include "foundation/image/progressiveexrimagefilewriter.h"
+#include "foundation/platform/thread.h"
 
 // Boost headers.
 #include "boost/filesystem/operations.hpp"
 #include "boost/random/mersenne_twister.hpp"
-#include "boost/thread/mutex.hpp"
 #include "boost/uuid/random_generator.hpp"
 #include "boost/uuid/uuid.hpp"
 #include "boost/uuid/uuid_io.hpp"

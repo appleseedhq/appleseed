@@ -34,12 +34,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/sharedlibrary.h"
+#include "foundation/platform/thread.h"
 
 // Boost headers.
-#include <boost/shared_ptr.hpp>
-#include <boost/thread/locks.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/weak_ptr.hpp>
+#include "boost/shared_ptr.hpp"
+#include "boost/weak_ptr.hpp"
 
 // Standard headers.
 #include <algorithm>

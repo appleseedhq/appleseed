@@ -40,6 +40,7 @@
 
 // Boost headers.
 #include "boost/smart_ptr/detail/spinlock.hpp"
+#include "boost/thread/locks.hpp"
 #include "boost/thread/mutex.hpp"
 #include "boost/thread/thread.hpp"
 
