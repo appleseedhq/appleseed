@@ -155,16 +155,20 @@ void LocalSampleAccumulationBuffer::store_samples(
                 break;
         }
 
-        // Store samples at every level between the highest resolution level (index 0) to the active level.
-        const Sample* sample_end = samples + sample_count;
+        // Store samples at every level, starting with the highest resolution level up to the active level.
+        size_t counter = 0;
         for (uint32 i = 0, e = m_active_level; i <= e; ++i)
         {
             FilteredTile* level = m_levels[i];
             const float level_width = static_cast<float>(level->get_width());
             const float level_height = static_cast<float>(level->get_height());
 
+            const Sample* sample_end = samples + sample_count;
             for (const Sample* s = samples; s < sample_end; ++s)
             {
+                if ((counter++ & 4096) == 0 && abort_switch.is_aborted())
+                    return;
+
                 const float fx = s->m_position.x * level_width;
                 const float fy = s->m_position.y * level_height;
                 level->add(fx, fy, s->m_values);
@@ -301,6 +305,9 @@ void LocalSampleAccumulationBuffer::develop_to_frame(
     {
         for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
         {
+            if (abort_switch.is_aborted())
+                return;
+
             const size_t origin_x = tx * frame_props.m_tile_width;
             const size_t origin_y = ty * frame_props.m_tile_height;
 

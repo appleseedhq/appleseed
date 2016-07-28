@@ -88,14 +88,18 @@ void GlobalSampleAccumulationBuffer::store_samples(
 
     const float fw = static_cast<float>(m_fb.get_width());
     const float fh = static_cast<float>(m_fb.get_height());
+    size_t counter = 0;
+
     const Sample* sample_end = samples + sample_count;
-
-    for (const Sample* sample_ptr = samples; sample_ptr < sample_end; ++sample_ptr)
+    for (const Sample* s = samples; s < sample_end; ++s)
     {
-        const float fx = sample_ptr->m_position.x * fw;
-        const float fy = sample_ptr->m_position.y * fh;
+        if ((counter++ & 4096) == 0 && abort_switch.is_aborted())
+            return;
 
-        Color3f value(sample_ptr->m_values);
+        const float fx = s->m_position.x * fw;
+        const float fy = s->m_position.y * fh;
+
+        Color3f value(s->m_values);
         value *= m_filter_rcp_norm_factor;
 
         m_fb.add(fx, fy, &value[0]);
@@ -129,6 +133,9 @@ void GlobalSampleAccumulationBuffer::develop_to_frame(
     {
         for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
         {
+            if (abort_switch.is_aborted())
+                return;
+
             Tile& tile = image.tile(tx, ty);
 
             const size_t x = tx * frame_props.m_tile_width;
