@@ -136,6 +136,8 @@ void SampleGeneratorJob::execute(const size_t thread_index)
         current_sample_count < SamplesInLinearPhase ? ", non-abortable" : "");
 #endif
 
+    const bool abortable = current_sample_count > SamplesInUninterruptiblePhase;
+
     // Render the samples and store them into the accumulation buffer.
     if (current_sample_count < SamplesInUninterruptiblePhase)
     {
@@ -157,7 +159,7 @@ void SampleGeneratorJob::execute(const size_t thread_index)
     }
 
     // Reschedule this job.
-    if (!m_abort_switch.is_aborted())
+    if (!abortable || !m_abort_switch.is_aborted())
     {
         m_job_queue.schedule(
             new SampleGeneratorJob(
