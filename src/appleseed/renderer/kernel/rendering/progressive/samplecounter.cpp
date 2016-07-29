@@ -61,20 +61,18 @@ uint64 SampleCounter::read() const
     return m_sample_count;
 }
 
-size_t SampleCounter::reserve(const size_t sample_count)
+uint64 SampleCounter::reserve(const uint64 sample_count)
 {
     Spinlock::ScopedLock lock(m_spinlock);
 
     assert(m_sample_count <= m_max_sample_count);
 
     const uint64 reserved_sample_count =
-        min(
-            static_cast<uint64>(sample_count),
-            m_max_sample_count - m_sample_count);
+        min(sample_count, m_max_sample_count - m_sample_count);
 
     m_sample_count += reserved_sample_count;
 
-    return static_cast<size_t>(reserved_sample_count);
+    return reserved_sample_count;
 }
 
 }   // namespace renderer

@@ -32,33 +32,22 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/platform/atomic.h"
 #include "foundation/platform/types.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Boost headers.
-#include "boost/interprocess/detail/atomic.hpp"
+#define BOOST_THREAD_PROVIDES_GENERIC_SHARED_MUTEX_ON_WIN
 #include "boost/smart_ptr/detail/spinlock.hpp"
+#include "boost/thread/locks.hpp"
 #include "boost/thread/mutex.hpp"
-#pragma warning (push)
-#pragma warning (disable : 4244)    // conversion from '__int64' to 'long', possible loss of data
 #include "boost/thread/thread.hpp"
-#pragma warning (pop)
-#include "boost/cstdint.hpp"
-#include "boost/version.hpp"
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class Logger; }
-
-// Starting with Boost 1.48.0, the atomic primitives are defined in boost::interprocess::ipcdetail.
-// Starting with Boost 1.53.0, we could simply use Boost.Atomic.
-#if BOOST_VERSION >= 104800
-namespace boost_atomic = boost::interprocess::ipcdetail;
-#else
-namespace boost_atomic = boost::interprocess::detail;
-#endif
 
 namespace foundation
 {
@@ -199,7 +188,7 @@ class ThreadFunctionWrapper
 
 
 //
-// A cross-thread boolean flag.
+// A cross-thread, cross-DLL boolean flag.
 //
 
 class APPLESEED_DLLSYMBOL ThreadFlag
@@ -219,7 +208,7 @@ class APPLESEED_DLLSYMBOL ThreadFlag
     bool is_set() const;
 
   private:
-    mutable volatile boost::uint32_t m_flag;
+    mutable volatile uint32 m_flag;
 };
 
 
@@ -282,17 +271,17 @@ inline ThreadFlag::ThreadFlag()
 
 inline void ThreadFlag::clear()
 {
-    boost_atomic::atomic_write32(&m_flag, 0);
+    atomic_write(&m_flag, 0);
 }
 
 inline void ThreadFlag::set()
 {
-    boost_atomic::atomic_write32(&m_flag, 1);
+    atomic_write(&m_flag, 1);
 }
 
 inline bool ThreadFlag::is_clear() const
 {
-    return boost_atomic::atomic_read32(&m_flag) == 0;
+    return atomic_read(&m_flag) == 0;
 }
 
 inline bool ThreadFlag::is_set() const

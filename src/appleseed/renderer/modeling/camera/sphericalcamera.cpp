@@ -89,11 +89,11 @@ namespace
             return Model;
         }
 
-        virtual bool on_frame_begin(
+        virtual bool on_render_begin(
             const Project&      project,
             IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
         {
-            if (!Camera::on_frame_begin(project, abort_switch))
+            if (!Camera::on_render_begin(project, abort_switch))
                 return false;
 
             // Precompute pixel dimensions.
@@ -207,10 +207,11 @@ namespace
         void print_settings() const
         {
             RENDERER_LOG_INFO(
-                "camera settings:\n"
+                "camera \"%s\" settings:\n"
                 "  model            %s\n"
                 "  shutter open     %f\n"
                 "  shutter close    %f",
+                get_name(),
                 Model,
                 m_shutter_open_time,
                 m_shutter_close_time);

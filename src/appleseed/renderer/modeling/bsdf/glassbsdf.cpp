@@ -397,8 +397,7 @@ namespace
 
             if (is_refraction)
                 sample.compute_transmitted_differentials(eta);
-            else
-                sample.compute_reflected_differentials();
+            else sample.compute_reflected_differentials();
         }
 
         APPLESEED_FORCE_INLINE virtual double evaluate(
@@ -701,10 +700,7 @@ namespace
         {
             // [1] eq. 20.
             const double denom = 4.0 * cos_on * cos_in;
-            if (denom == 0.0)
-                return 0.0;
-
-            return 1.0 / (4.0 * cos_on * cos_in);
+            return denom == 0.0 ? 0.0 : 1.0 / denom;
         }
 
         static double reflection_jacobian(
@@ -872,7 +868,7 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "1.00"));
+            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()
@@ -884,7 +880,17 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "1.00"));
+            .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "ior")
+            .insert("label", "Index of Refraction")
+            .insert("type", "numeric")
+            .insert("min_value", "1.0")
+            .insert("max_value", "2.5")
+            .insert("use", "required")
+            .insert("default", "1.5"));
 
     metadata.push_back(
         Dictionary()
@@ -916,16 +922,6 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "ior")
-            .insert("label", "Index of Refraction")
-            .insert("type", "numeric")
-            .insert("min_value", "1.0")
-            .insert("max_value", "2.5")
-            .insert("use", "required")
-            .insert("default", "1.5"));
-
-    metadata.push_back(
-        Dictionary()
             .insert("name", "volume_transmittance")
             .insert("label", "Volume Transmittace")
             .insert("type", "colormap")
@@ -934,7 +930,7 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "1.00"));
+            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()

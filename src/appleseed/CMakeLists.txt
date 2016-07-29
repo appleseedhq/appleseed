@@ -487,6 +487,7 @@ source_group ("foundation\\platform\\snprintf" FILES
 
 set (foundation_platform_sources
     foundation/platform/arch.h
+    foundation/platform/atomic.h
     foundation/platform/breakpoint.h
     foundation/platform/compiler.cpp
     foundation/platform/compiler.h
@@ -1064,8 +1065,6 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/defaultrenderercontroller.h
     renderer/kernel/rendering/ephemeralshadingresultframebufferfactory.cpp
     renderer/kernel/rendering/ephemeralshadingresultframebufferfactory.h
-    renderer/kernel/rendering/framerendererbase.cpp
-    renderer/kernel/rendering/framerendererbase.h
     renderer/kernel/rendering/globalsampleaccumulationbuffer.cpp
     renderer/kernel/rendering/globalsampleaccumulationbuffer.h
     renderer/kernel/rendering/iframerenderer.h
@@ -1226,6 +1225,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_projectfilewriter.cpp
     renderer/meta/tests/test_samplecounter.cpp
     renderer/meta/tests/test_samplecounthistory.cpp
+    renderer/meta/tests/test_samplegeneratorjob.cpp
     renderer/meta/tests/test_scene.cpp
     renderer/meta/tests/test_shadingresult.cpp
     renderer/meta/tests/test_sphericalcamera.cpp
@@ -1796,7 +1796,8 @@ set (renderer_utility_sources
     renderer/utility/paramarray.h
     renderer/utility/plugin.cpp
     renderer/utility/plugin.h
-    renderer/utility/samplingmode.h
+    renderer/utility/settingsparsing.cpp
+    renderer/utility/settingsparsing.h
     renderer/utility/stochasticcast.h
     renderer/utility/testutils.cpp
     renderer/utility/testutils.h

@@ -92,11 +92,11 @@ namespace
             return Model;
         }
 
-        virtual bool on_frame_begin(
+        virtual bool on_render_begin(
             const Project&      project,
             IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
         {
-            if (!Camera::on_frame_begin(project, abort_switch))
+            if (!Camera::on_render_begin(project, abort_switch))
                 return false;
 
             // Extract the film dimensions from the camera parameters.
@@ -244,13 +244,14 @@ namespace
         void print_settings() const
         {
             RENDERER_LOG_INFO(
-                "camera settings:\n"
+                "camera \"%s\" settings:\n"
                 "  model            %s\n"
                 "  film width       %f\n"
                 "  film height      %f\n"
                 "  near z           %f\n"
                 "  shutter open     %f\n"
                 "  shutter close    %f",
+                get_name(),
                 Model,
                 m_film_dimensions[0],
                 m_film_dimensions[1],

@@ -39,12 +39,12 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
+#include "foundation/platform/thread.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/otherwise.h"
 
 // Boost headers.
 #include "boost/lexical_cast.hpp"
-#include "boost/thread/mutex.hpp"
 
 // Standard headers.
 #include <cstdio>

@@ -107,6 +107,15 @@ class APPLESEED_DLLSYMBOL Scene
     virtual void collect_asset_paths(foundation::StringArray& paths) const APPLESEED_OVERRIDE;
     virtual void update_asset_paths(const foundation::StringDictionary& mappings) APPLESEED_OVERRIDE;
 
+    // Perform pre-render rendering actions.
+    // Returns true on success, false otherwise.
+    bool on_render_begin(
+        const Project&              project,
+        foundation::IAbortSwitch*   abort_switch = 0);
+
+    // Perform post-render rendering actions.
+    void on_render_end(const Project& project);
+
     // Perform pre-frame rendering actions.
     // Returns true on success, false otherwise.
     bool on_frame_begin(

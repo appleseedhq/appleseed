@@ -40,8 +40,12 @@
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
-#include "foundation/platform/thread.h"
+#include "foundation/utility/job/iabortswitch.h"
 
+// Boost headers.
+#include "boost/chrono/duration.hpp"
+
+using namespace boost;
 using namespace foundation;
 using namespace std;
 
@@ -59,38 +63,62 @@ GlobalSampleAccumulationBuffer::GlobalSampleAccumulationBuffer(
 
 void GlobalSampleAccumulationBuffer::clear()
 {
-    boost::mutex::scoped_lock lock(m_mutex);
+    // Request exclusive access.
+    unique_lock<shared_mutex> lock(m_mutex);
 
-    SampleAccumulationBuffer::clear_no_lock();
+    m_sample_count = 0;
 
     m_fb.clear();
 }
 
 void GlobalSampleAccumulationBuffer::store_samples(
     const size_t    sample_count,
-    const Sample    samples[])
+    const Sample    samples[],
+    IAbortSwitch&   abort_switch)
 {
-    boost::mutex::scoped_lock lock(m_mutex);
+    // Request non-exclusive access.
+    shared_lock<shared_mutex> lock(m_mutex, defer_lock);
+    while (true)
+    {
+        if (abort_switch.is_aborted())
+            return;
+        if (lock.try_lock_for(chrono::milliseconds(5)))
+            break;
+    }
 
     const float fw = static_cast<float>(m_fb.get_width());
     const float fh = static_cast<float>(m_fb.get_height());
+    size_t counter = 0;
+
     const Sample* sample_end = samples + sample_count;
-
-    for (const Sample* sample_ptr = samples; sample_ptr < sample_end; ++sample_ptr)
+    for (const Sample* s = samples; s < sample_end; ++s)
     {
-        const float fx = sample_ptr->m_position.x * fw;
-        const float fy = sample_ptr->m_position.y * fh;
+        if ((counter++ & 4096) == 0 && abort_switch.is_aborted())
+            return;
 
-        Color3f value(sample_ptr->m_values);
+        const float fx = s->m_position.x * fw;
+        const float fy = s->m_position.y * fh;
+
+        Color3f value(s->m_values);
         value *= m_filter_rcp_norm_factor;
 
         m_fb.add(fx, fy, &value[0]);
     }
 }
 
-void GlobalSampleAccumulationBuffer::develop_to_frame(Frame& frame)
+void GlobalSampleAccumulationBuffer::develop_to_frame(
+    Frame&          frame,
+    IAbortSwitch&   abort_switch)
 {
-    boost::mutex::scoped_lock lock(m_mutex);
+    // Request exclusive access.
+    unique_lock<shared_mutex> lock(m_mutex, defer_lock);
+    while (true)
+    {
+        if (abort_switch.is_aborted())
+            return;
+        if (lock.try_lock_for(chrono::milliseconds(5)))
+            break;
+    }
 
     Image& image = frame.image();
     const CanvasProperties& frame_props = image.properties();
@@ -105,6 +133,9 @@ void GlobalSampleAccumulationBuffer::develop_to_frame(Frame& frame)
     {
         for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
         {
+            if (abort_switch.is_aborted())
+                return;
+
             Tile& tile = image.tile(tx, ty);
 
             const size_t x = tx * frame_props.m_tile_width;
@@ -117,8 +148,6 @@ void GlobalSampleAccumulationBuffer::develop_to_frame(Frame& frame)
 
 void GlobalSampleAccumulationBuffer::increment_sample_count(const uint64 delta_sample_count)
 {
-    boost::mutex::scoped_lock lock(m_mutex);
-
     m_sample_count += delta_sample_count;
 }
 

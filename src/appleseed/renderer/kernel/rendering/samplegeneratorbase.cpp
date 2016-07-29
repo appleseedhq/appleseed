@@ -96,7 +96,7 @@ void SampleGeneratorBase::generate_samples(
     }
 
     if (stored > 0)
-        buffer.store_samples(stored, &m_samples[0]);
+        buffer.store_samples(stored, &m_samples[0], abort_switch);
 }
 
 }   // namespace renderer

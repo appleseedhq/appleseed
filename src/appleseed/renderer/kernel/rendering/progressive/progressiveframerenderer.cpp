@@ -35,12 +35,13 @@
 #include "renderer/kernel/rendering/progressive/samplecounter.h"
 #include "renderer/kernel/rendering/progressive/samplecounthistory.h"
 #include "renderer/kernel/rendering/progressive/samplegeneratorjob.h"
-#include "renderer/kernel/rendering/framerendererbase.h"
+#include "renderer/kernel/rendering/iframerenderer.h"
 #include "renderer/kernel/rendering/isamplegenerator.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/kernel/rendering/sampleaccumulationbuffer.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/project/project.h"
+#include "renderer/utility/settingsparsing.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -86,8 +87,10 @@ namespace
     // Progressive frame renderer.
     //
 
+//#define PRINT_DISPLAY_THREAD_PERFS
+
     class ProgressiveFrameRenderer
-      : public FrameRendererBase
+      : public IFrameRenderer
     {
       public:
         ProgressiveFrameRenderer(
@@ -115,10 +118,26 @@ namespace
                     JobManager::KeepRunningOnEmptyQueue));
 
             // Instantiate sample generators, one per rendering thread.
+            m_sample_generators.reserve(m_params.m_thread_count);
             for (size_t i = 0; i < m_params.m_thread_count; ++i)
             {
                 m_sample_generators.push_back(
                     generator_factory->create(i, m_params.m_thread_count));
+            }
+
+            // Create rendering jobs, one per rendering thread.
+            m_sample_generator_jobs.reserve(m_params.m_thread_count);
+            for (size_t i = 0; i < m_params.m_thread_count; ++i)
+            {
+                m_sample_generator_jobs.push_back(
+                    new SampleGeneratorJob(
+                        *m_buffer.get(),
+                        m_sample_generators[i],
+                        m_sample_counter,
+                        m_job_queue,
+                        i,                              // job index
+                        m_params.m_thread_count,        // job count
+                        m_abort_switch));
             }
 
             // Instantiate a single tile callback.
@@ -154,7 +173,12 @@ namespace
                 }
             }
 
-            print_rendering_thread_count(m_params.m_thread_count);
+            RENDERER_LOG_INFO(
+                "rendering settings:\n"
+                "  sampling mode    %s\n"
+                "  threads          %s",
+                get_sampling_context_mode_name(get_sampling_context_mode(params)).c_str(),
+                pretty_int(m_params.m_thread_count).c_str());
         }
 
         virtual ~ProgressiveFrameRenderer()
@@ -171,6 +195,10 @@ namespace
 
             // Delete the tile callback.
             m_tile_callback.reset();
+
+            // Delete rendering jobs.
+            for (const_each<SampleGeneratorJobVector> i = m_sample_generator_jobs; i; ++i)
+                delete *i;
 
             // Delete sample generators.
             for (const_each<SampleGeneratorVector> i = m_sample_generators; i; ++i)
@@ -204,26 +232,23 @@ namespace
             m_sample_counter.clear();
 
             // Reset sample generators.
-            for (size_t i = 0; i < m_sample_generators.size(); ++i)
+            for (size_t i = 0, e = m_sample_generators.size(); i < e; ++i)
                 m_sample_generators[i]->reset();
+
+            // Reset rendering jobs.
+            for (size_t i = 0, e = m_sample_generator_jobs.size(); i < e; ++i)
+                m_sample_generator_jobs[i]->reset();
+
+            // Schedule rendering jobs.
+            for (size_t i = 0, e = m_sample_generator_jobs.size(); i < e; ++i)
+            {
+                m_job_queue.schedule(
+                    m_sample_generator_jobs[i],
+                    false);     // don't transfer ownership of the job to the queue
+            }
 
             // Start job execution.
             m_job_manager->start();
-
-            // Schedule the first batch of jobs.
-            for (size_t i = 0; i < m_sample_generators.size(); ++i)
-            {
-                m_job_queue.schedule(
-                    new SampleGeneratorJob(
-                        *m_buffer.get(),
-                        m_sample_generators[i],
-                        m_sample_counter,
-                        m_job_queue,
-                        i,                              // job index
-                        m_sample_generators.size(),     // job count
-                        0,                              // pass number
-                        m_abort_switch));
-            }
 
             // Create and start the statistics thread.
             m_statistics_func.reset(
@@ -320,7 +345,7 @@ namespace
             const string    m_ref_image_path;           // path to the reference image
 
             explicit Parameters(const ParamArray& params)
-              : m_thread_count(FrameRendererBase::get_rendering_thread_count(params))
+              : m_thread_count(get_rendering_thread_count(params))
               , m_max_sample_count(params.get_optional<uint64>("max_samples", numeric_limits<uint64>::max()))
               , m_max_fps(params.get_optional<double>("max_fps", 30.0))
               , m_print_luminance_stats(params.get_optional<bool>("print_luminance_statistics", false))
@@ -328,8 +353,6 @@ namespace
             {
             }
         };
-
-//#define PRINT_DISPLAY_THREAD_PERFS
 
         class DisplayFunc
           : public NonCopyable
@@ -346,7 +369,7 @@ namespace
               , m_tile_callback(tile_callback)
               , m_target_elapsed(1.0 / max_fps)
               , m_abort_switch(abort_switch)
-              , m_min_pixel_count(frame.get_pixel_count() / 150)
+              , m_min_sample_count(32 * 64)  // size of the last level in the sample accumulation buffer assuming a max. aspect ratio of 2
             {
             }
 
@@ -377,35 +400,53 @@ namespace
                     if (m_pause_flag.is_clear())
                         display();
 
-                    // Limit frame rate.
+                    // Compute time elapsed since last call to display().
                     const uint64 time = timer.read();
                     const double elapsed = (time - last_time) * rcp_timer_freq;
+                    last_time = time;
+
+                    // Limit display rate.
                     if (elapsed < m_target_elapsed)
                     {
                         const double ms = ceil(1000.0 * (m_target_elapsed - elapsed));
                         sleep(truncate<uint32>(ms), m_abort_switch);
                     }
-                    last_time = time;
                 }
             }
 
             void display()
             {
+                if (m_buffer.get_sample_count() < m_min_sample_count)
+                {
+#ifdef PRINT_DISPLAY_THREAD_PERFS
+                    RENDERER_LOG_DEBUG(
+                        "skipping display, buffer contains " FMT_UINT64 " samples but " FMT_UINT64 " are required.",
+                        m_buffer.get_sample_count(),
+                        m_min_sample_count);
+#endif
+                    return;
+                }
+
 #ifdef PRINT_DISPLAY_THREAD_PERFS
                 m_stopwatch.measure();
                 const double t1 = m_stopwatch.get_seconds();
 #endif
 
-                if (m_buffer.get_sample_count() > m_min_pixel_count)
-                    m_buffer.develop_to_frame(m_frame);
+                // Develop the accumulation buffer to the frame.
+                m_buffer.develop_to_frame(m_frame, m_abort_switch);
 
 #ifdef PRINT_DISPLAY_THREAD_PERFS
                 m_stopwatch.measure();
                 const double t2 = m_stopwatch.get_seconds();
 #endif
 
+                // Make sure we don't present incomplete frames.
+                if (m_abort_switch.is_aborted())
+                    return;
+
                 if (m_tile_callback)
                 {
+                    // Present the frame.
                     m_tile_callback->post_render(&m_frame);
 
 #ifdef PRINT_DISPLAY_THREAD_PERFS
@@ -420,7 +461,7 @@ namespace
                         pretty_time(t2 - t1).c_str(),
                         pretty_time(t3 - t2).c_str(),
                         pretty_time(t3 - t1).c_str(),
-                        pretty_ratio(1.0, t3 - t2).c_str());
+                        pretty_ratio(1.0, t3 - t1).c_str());
 #endif
                 }
             }
@@ -432,7 +473,7 @@ namespace
             const double                        m_target_elapsed;
             IAbortSwitch&                       m_abort_switch;
             ThreadFlag                          m_pause_flag;
-            const size_t                        m_min_pixel_count;
+            const uint64                        m_min_sample_count;
             Stopwatch<DefaultWallclockTimer>    m_stopwatch;
         };
 
@@ -584,8 +625,11 @@ namespace
         AbortSwitch                         m_abort_switch;
 
         typedef vector<ISampleGenerator*> SampleGeneratorVector;
-
         SampleGeneratorVector               m_sample_generators;
+
+        typedef vector<SampleGeneratorJob*> SampleGeneratorJobVector;
+        SampleGeneratorJobVector            m_sample_generator_jobs;
+
         auto_release_ptr<ITileCallback>     m_tile_callback;
 
         auto_ptr<Image>                     m_ref_image;

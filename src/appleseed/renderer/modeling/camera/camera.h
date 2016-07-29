@@ -89,6 +89,15 @@ class APPLESEED_DLLSYMBOL Camera
     // Get the amount of time the shutter is open.
     double get_shutter_open_time_interval() const;
 
+    // This method is called once before rendering.
+    // Returns true on success, false otherwise.
+    virtual bool on_render_begin(
+        const Project&                  project,
+        foundation::IAbortSwitch*       abort_switch = 0);
+
+    // This method is called once after rendering.
+    virtual void on_render_end(const Project& project);
+
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(

@@ -26,36 +26,32 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_UTILITY_SAMPLINGMODE_H
-#define APPLESEED_RENDERER_UTILITY_SAMPLINGMODE_H
+#ifndef APPLESEED_RENDERER_UTILITY_SETTINGSPARSING_H
+#define APPLESEED_RENDERER_UTILITY_SETTINGSPARSING_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/utility/paramarray.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/makevector.h"
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
+#include <cstddef>
 #include <string>
+
+// Forward declarations.
+namespace renderer  { class ParamArray; }
 
 namespace renderer
 {
 
-inline SamplingContext::Mode get_sampling_context_mode(const ParamArray& params)
-{
-    const std::string sampling_mode =
-        params.get_required<std::string>(
-            "sampling_mode",
-            "rng",
-            foundation::make_vector("rng", "qmc"));
+// Sampling mode.
+APPLESEED_DLLSYMBOL SamplingContext::Mode get_sampling_context_mode(const ParamArray& params);
+std::string get_sampling_context_mode_name(const SamplingContext::Mode mode);
 
-    return
-        sampling_mode == "rng"
-            ? SamplingContext::RNGMode
-            : SamplingContext::QMCMode;
-}
+// Rendering threads.
+APPLESEED_DLLSYMBOL size_t get_rendering_thread_count(const ParamArray& params);
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_UTILITY_SAMPLINGMODE_H
+#endif  // !APPLESEED_RENDERER_UTILITY_SETTINGSPARSING_H

@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,36 +26,45 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_FRAMERENDERERBASE_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_FRAMERENDERERBASE_H
-
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/iframerenderer.h"
+#include "renderer/kernel/rendering/progressive/samplegeneratorjob.h"
+
+// appleseed.foundation headers.
+#include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
+#include "foundation/platform/types.h"
+#include "foundation/utility/gnuplotfile.h"
+#include "foundation/utility/test.h"
 
 // Standard headers.
-#include <cstddef>
+#include <vector>
 
-// Forward declarations.
-namespace renderer      { class ParamArray; }
+using namespace foundation;
+using namespace renderer;
+using namespace std;
 
-namespace renderer
+TEST_SUITE(Renderer_Kernel_Rendering_Progressive_SampleGeneratorJob)
 {
+    TEST_CASE(PlotSamplesPerJob)
+    {
+        const uint64 N = 1500000;
 
-//
-// A convenient base class for frame renderers.
-//
+        vector<Vector2d> points;
+        points.reserve(N);
 
-class FrameRendererBase
-  : public IFrameRenderer
-{
-  protected:
-    // Extract the number of rendering threads from the "rendering_threads" parameter.
-    static size_t get_rendering_thread_count(const ParamArray& params);
+        for (uint64 x = 0; x < N; x += 100)
+        {
+            const uint64 y = SampleGeneratorJob::samples_to_samples_per_job(x);
+            points.push_back(
+                Vector2d(
+                    static_cast<double>(x),
+                    static_cast<double>(y)));
+        }
 
-    // Output the number of rendering threads to the log.
-    static void print_rendering_thread_count(const size_t thread_count);
-};
-
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_FRAMERENDERERBASE_H
+        GnuplotFile plotfile;
+        plotfile.set_title("Number of samples/job as a function of the number of samples already rendered");
+        plotfile.set_yrange(0.0, 300000.0);
+        plotfile.new_plot().set_points(points);
+        plotfile.write("unit tests/outputs/test_samplegeneratorjob.gnuplot");
+    }
+}

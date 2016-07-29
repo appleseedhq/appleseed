@@ -34,10 +34,11 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/rendering/generic/tilejob.h"
 #include "renderer/kernel/rendering/generic/tilejobfactory.h"
-#include "renderer/kernel/rendering/framerendererbase.h"
+#include "renderer/kernel/rendering/iframerenderer.h"
 #include "renderer/kernel/rendering/ipasscallback.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/kernel/rendering/itilerenderer.h"
+#include "renderer/utility/settingsparsing.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -48,6 +49,7 @@
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/job.h"
 #include "foundation/utility/statistics.h"
+#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
@@ -70,7 +72,7 @@ namespace
     //
 
     class GenericFrameRenderer
-      : public FrameRendererBase
+      : public IFrameRenderer
     {
       public:
         GenericFrameRenderer(
@@ -108,7 +110,12 @@ namespace
                     m_tile_callbacks.push_back(tile_callback_factory->create());
             }
 
-            print_rendering_thread_count(m_params.m_thread_count);
+            RENDERER_LOG_INFO(
+                "rendering settings:\n"
+                "  sampling mode    %s\n"
+                "  threads          %s",
+                get_sampling_context_mode_name(get_sampling_context_mode(params)).c_str(),
+                pretty_int(m_params.m_thread_count).c_str());
         }
 
         virtual ~GenericFrameRenderer()
@@ -212,7 +219,7 @@ namespace
             const size_t                        m_pass_count;       // number of rendering passes
 
             explicit Parameters(const ParamArray& params)
-              : m_thread_count(FrameRendererBase::get_rendering_thread_count(params))
+              : m_thread_count(get_rendering_thread_count(params))
               , m_tile_ordering(get_tile_ordering(params))
               , m_pass_count(params.get_optional<size_t>("passes", 1))
             {

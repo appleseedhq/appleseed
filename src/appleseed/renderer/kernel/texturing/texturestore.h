@@ -36,13 +36,11 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/hash.h"
+#include "foundation/platform/atomic.h"
 #include "foundation/platform/thread.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/cache.h"
 #include "foundation/utility/uid.h"
-
-// Boost headers.
-#include "boost/cstdint.hpp"
 
 // Standard headers.
 #include <cassert>
@@ -105,7 +103,7 @@ class TextureStore
     struct TileRecord
     {
         foundation::Tile*           m_tile;
-        volatile boost::uint32_t    m_owners;
+        volatile foundation::uint32 m_owners;
     };
 
     // Constructor.
@@ -197,17 +195,15 @@ inline TextureStore::TileRecord& TextureStore::acquire(const TileKey& key)
     boost::mutex::scoped_lock lock(m_mutex);
 
     TileRecord& record = m_tile_cache.get(key);
-
-    boost_atomic::atomic_inc32(&record.m_owners);
+    foundation::atomic_inc(&record.m_owners);
 
     return record;
 }
 
 inline void TextureStore::release(TileRecord& record) const
 {
-    assert(boost_atomic::atomic_read32(&record.m_owners) > 0);
-
-    boost_atomic::atomic_dec32(&record.m_owners);
+    assert(foundation::atomic_read(&record.m_owners) > 0);
+    foundation::atomic_dec(&record.m_owners);
 }
 
 

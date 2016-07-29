@@ -293,7 +293,7 @@ namespace foundation
     //   https://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx
     //
 
-    #pragma pack(push, 8)
+#pragma pack(push, 8)
     struct ThreadNameInfo
     {
        DWORD    dwType;         // must be 0x1000
@@ -301,7 +301,7 @@ namespace foundation
        DWORD    dwThreadID;     // thread ID (-1 = caller thread)
        DWORD    dwFlags;        // reserved for future use, must be zero
     };
-    #pragma pack(pop)
+#pragma pack(pop)
 
     void set_current_thread_name(const char* name)
     {

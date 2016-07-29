@@ -36,6 +36,7 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
+#include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/benchmark.h"
 
@@ -49,6 +50,7 @@ BENCHMARK_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
     {
         auto_release_ptr<Frame>         m_frame;
         LocalSampleAccumulationBuffer   m_buffer;
+        AbortSwitch                     m_abort_switch;
 
         Fixture()
           : m_frame(
@@ -72,17 +74,17 @@ BENCHMARK_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
             m_buffer.clear();
 
             // Make sure tiles are allocated in the frame.
-            m_buffer.develop_to_frame(m_frame.ref());
+            m_buffer.develop_to_frame(m_frame.ref(), m_abort_switch);
         }
     };
 
     BENCHMARK_CASE_F(DevelopToFrame_PremultipledAlpha, Fixture<true>)
     {
-        m_buffer.develop_to_frame(m_frame.ref());
+        m_buffer.develop_to_frame(m_frame.ref(), m_abort_switch);
     }
 
     BENCHMARK_CASE_F(DevelopToFrame_StraightAlpha, Fixture<false>)
     {
-        m_buffer.develop_to_frame(m_frame.ref());
+        m_buffer.develop_to_frame(m_frame.ref(), m_abort_switch);
     }
 }
