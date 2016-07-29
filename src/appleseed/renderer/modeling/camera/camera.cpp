@@ -74,6 +74,21 @@ Camera::Camera(
     set_name(name);
 }
 
+bool Camera::on_render_begin(
+    const Project&      project,
+    IAbortSwitch*       abort_switch)
+{
+    m_shutter_open_time = m_params.get_optional<double>("shutter_open_time", 0.0);
+    m_shutter_close_time = m_params.get_optional<double>("shutter_close_time", 1.0);
+    m_shutter_open_time_interval = m_shutter_close_time - m_shutter_open_time;
+
+    return true;
+}
+
+void Camera::on_render_end(const Project& project)
+{
+}
+
 bool Camera::on_frame_begin(
     const Project&      project,
     IAbortSwitch*       abort_switch)
@@ -82,10 +97,6 @@ bool Camera::on_frame_begin(
 
     if (!m_transform_sequence.prepare())
         RENDERER_LOG_WARNING("camera \"%s\" has one or more invalid transforms.", get_name());
-
-    m_shutter_open_time = m_params.get_optional<double>("shutter_open_time", 0.0);
-    m_shutter_close_time = m_params.get_optional<double>("shutter_close_time", 1.0);
-    m_shutter_open_time_interval = m_shutter_close_time - m_shutter_open_time;
 
     return true;
 }

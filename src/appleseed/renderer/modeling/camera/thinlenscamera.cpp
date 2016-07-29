@@ -194,11 +194,11 @@ namespace
             return Model;
         }
 
-        virtual bool on_frame_begin(
+        virtual bool on_render_begin(
             const Project&      project,
             IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
         {
-            if (!Camera::on_frame_begin(project, abort_switch))
+            if (!Camera::on_render_begin(project, abort_switch))
                 return false;
 
             // Extract the film dimensions from the camera parameters.
@@ -232,6 +232,28 @@ namespace
             // Precompute lens radius.
             m_lens_radius = 0.5 * m_focal_length / extract_f_stop();
 
+            // Build the diaphragm polygon.
+            if (!m_diaphragm_map_bound && m_diaphragm_blade_count > 0)
+            {
+                m_diaphragm_vertices.resize(m_diaphragm_blade_count);
+                build_regular_polygon(
+                    m_diaphragm_blade_count,
+                    m_diaphragm_tilt_angle,
+                    &m_diaphragm_vertices.front());
+            }
+
+            print_settings();
+
+            return true;
+        }
+
+        virtual bool on_frame_begin(
+            const Project&      project,
+            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+        {
+            if (!Camera::on_frame_begin(project, abort_switch))
+                return false;
+
             // Perform autofocus, if enabled.
             if (m_autofocus_enabled)
             {
@@ -244,18 +266,6 @@ namespace
             // Compute ratios between focal distance and focal length.
             m_focal_ratio = m_focal_distance / m_focal_length;
             m_rcp_focal_ratio = m_focal_length / m_focal_distance;
-
-            // Build the diaphragm polygon.
-            if (!m_diaphragm_map_bound && m_diaphragm_blade_count > 0)
-            {
-                m_diaphragm_vertices.resize(m_diaphragm_blade_count);
-                build_regular_polygon(
-                    m_diaphragm_blade_count,
-                    m_diaphragm_tilt_angle,
-                    &m_diaphragm_vertices.front());
-            }
-
-            print_settings();
 
             return true;
         }
@@ -535,20 +545,20 @@ namespace
         void print_settings() const
         {
             RENDERER_LOG_INFO(
-                "camera settings:\n"
+                "camera \"%s\" settings:\n"
                 "  model            %s\n"
                 "  film width       %f\n"
                 "  film height      %f\n"
                 "  focal length     %f\n"
                 "  autofocus        %s\n"
                 "  autofocus target %f, %f\n"
-                "  focal distance   %g\n"
                 "  diaphragm map    %s\n"
                 "  diaphragm blades %s\n"
                 "  diaphragm angle  %f\n"
                 "  near z           %f\n"
                 "  shutter open     %f\n"
                 "  shutter close    %f",
+                get_name(),
                 Model,
                 m_film_dimensions[0],
                 m_film_dimensions[1],
@@ -556,7 +566,6 @@ namespace
                 m_autofocus_enabled ? "on" : "off",
                 m_autofocus_target[0],
                 m_autofocus_target[1],
-                m_focal_distance,
                 m_diaphragm_map_bound ? m_diaphragm_map_name.c_str() : "none",
                 pretty_uint(m_diaphragm_blade_count).c_str(),
                 m_diaphragm_tilt_angle,

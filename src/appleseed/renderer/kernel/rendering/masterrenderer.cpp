@@ -240,11 +240,18 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     if (!components.initialize())
         return IRendererController::AbortRendering;
 
+    // Perform pre-render rendering actions. Don't proceed if that failed.
+    if (!m_project.get_scene()->on_render_begin(m_project, &abort_switch))
+        return IRendererController::AbortRendering;
+
     // Execute the main rendering loop.
     const IRendererController::Status status =
         render_frame_sequence(
             components.get_frame_renderer(),
             abort_switch);
+
+    // Perform post-render rendering actions.
+    m_project.get_scene()->on_render_end(m_project);
 
     // Print texture store performance statistics.
     RENDERER_LOG_DEBUG("%s", texture_store.get_statistics().to_string().c_str());
@@ -265,7 +272,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
         // of the scene which assumes the scene is up-to-date and ready to be rendered.
         m_renderer_controller->on_frame_begin();
 
-        // Prepare the scene for rendering. Don't proceed if that failed.
+        // Perform pre-frame rendering actions. Don't proceed if that failed.
         if (!m_project.get_scene()->on_frame_begin(m_project, &abort_switch))
         {
             m_renderer_controller->on_frame_end();
@@ -301,6 +308,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
 
         assert(!frame_renderer.is_rendering());
 
+        // Perform post-frame rendering actions
         m_project.get_scene()->on_frame_end(m_project);
         m_renderer_controller->on_frame_end();
 

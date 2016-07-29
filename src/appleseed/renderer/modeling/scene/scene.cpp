@@ -291,12 +291,32 @@ namespace
     }
 }
 
+bool Scene::on_render_begin(
+    const Project&          project,
+    IAbortSwitch*           abort_switch)
+{
+    bool success = true;
+
+    create_render_data();
+
+    if (impl->m_camera.get())
+        success = success && impl->m_camera->on_render_begin(project, abort_switch);
+
+    return success;
+}
+
+void Scene::on_render_end(const Project& project)
+{
+    if (impl->m_camera.get())
+        impl->m_camera->on_render_end(project);
+
+    m_has_render_data = false;
+}
+
 bool Scene::on_frame_begin(
     const Project&          project,
     IAbortSwitch*           abort_switch)
 {
-    create_render_data();
-
     bool success = true;
 
     if (impl->m_camera.get())
@@ -329,8 +349,6 @@ void Scene::on_frame_end(const Project& project)
 
     if (impl->m_camera.get())
         impl->m_camera->on_frame_end(project);
-
-    m_has_render_data = false;
 }
 
 void Scene::create_render_data()
