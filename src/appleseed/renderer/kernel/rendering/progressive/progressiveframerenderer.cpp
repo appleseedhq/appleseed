@@ -35,12 +35,13 @@
 #include "renderer/kernel/rendering/progressive/samplecounter.h"
 #include "renderer/kernel/rendering/progressive/samplecounthistory.h"
 #include "renderer/kernel/rendering/progressive/samplegeneratorjob.h"
-#include "renderer/kernel/rendering/framerendererbase.h"
+#include "renderer/kernel/rendering/iframerenderer.h"
 #include "renderer/kernel/rendering/isamplegenerator.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/kernel/rendering/sampleaccumulationbuffer.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/project/project.h"
+#include "renderer/utility/settingsparsing.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -89,7 +90,7 @@ namespace
 //#define PRINT_DISPLAY_THREAD_PERFS
 
     class ProgressiveFrameRenderer
-      : public FrameRendererBase
+      : public IFrameRenderer
     {
       public:
         ProgressiveFrameRenderer(
@@ -172,7 +173,12 @@ namespace
                 }
             }
 
-            print_rendering_thread_count(m_params.m_thread_count);
+            RENDERER_LOG_INFO(
+                "rendering settings:\n"
+                "  sampling mode    %s\n"
+                "  threads          %s",
+                get_sampling_context_mode_name(get_sampling_context_mode(params)).c_str(),
+                pretty_int(m_params.m_thread_count).c_str());
         }
 
         virtual ~ProgressiveFrameRenderer()
@@ -339,7 +345,7 @@ namespace
             const string    m_ref_image_path;           // path to the reference image
 
             explicit Parameters(const ParamArray& params)
-              : m_thread_count(FrameRendererBase::get_rendering_thread_count(params))
+              : m_thread_count(get_rendering_thread_count(params))
               , m_max_sample_count(params.get_optional<uint64>("max_samples", numeric_limits<uint64>::max()))
               , m_max_fps(params.get_optional<double>("max_fps", 30.0))
               , m_print_luminance_stats(params.get_optional<bool>("print_luminance_statistics", false))

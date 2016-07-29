@@ -1065,8 +1065,6 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/defaultrenderercontroller.h
     renderer/kernel/rendering/ephemeralshadingresultframebufferfactory.cpp
     renderer/kernel/rendering/ephemeralshadingresultframebufferfactory.h
-    renderer/kernel/rendering/framerendererbase.cpp
-    renderer/kernel/rendering/framerendererbase.h
     renderer/kernel/rendering/globalsampleaccumulationbuffer.cpp
     renderer/kernel/rendering/globalsampleaccumulationbuffer.h
     renderer/kernel/rendering/iframerenderer.h
@@ -1798,7 +1796,8 @@ set (renderer_utility_sources
     renderer/utility/paramarray.h
     renderer/utility/plugin.cpp
     renderer/utility/plugin.h
-    renderer/utility/samplingmode.h
+    renderer/utility/settingsparsing.cpp
+    renderer/utility/settingsparsing.h
     renderer/utility/stochasticcast.h
     renderer/utility/testutils.cpp
     renderer/utility/testutils.h

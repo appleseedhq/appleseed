@@ -33,7 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/utility/paramarray.h"
-#include "renderer/utility/samplingmode.h"
+#include "renderer/utility/settingsparsing.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/makevector.h"

@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +27,7 @@
 //
 
 // Interface header.
-#include "framerendererbase.h"
+#include "settingsparsing.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
@@ -36,10 +35,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/system.h"
+#include "foundation/utility/makevector.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
-#include <string>
+#include <algorithm>
 
 using namespace foundation;
 using namespace std;
@@ -47,11 +47,31 @@ using namespace std;
 namespace renderer
 {
 
-//
-// FrameRendererBase class implementation.
-//
+SamplingContext::Mode get_sampling_context_mode(const ParamArray& params)
+{
+    const string sampling_mode =
+        params.get_required<string>(
+            "sampling_mode",
+            "rng",
+            make_vector("rng", "qmc"));
 
-size_t FrameRendererBase::get_rendering_thread_count(const ParamArray& params)
+    return
+        sampling_mode == "rng"
+            ? SamplingContext::RNGMode
+            : SamplingContext::QMCMode;
+}
+
+string get_sampling_context_mode_name(const SamplingContext::Mode mode)
+{
+    switch (mode)
+    {
+      case SamplingContext::RNGMode: return "rng";
+      case SamplingContext::QMCMode: return "qmc";
+      default: return "unknown";
+    }
+}
+
+size_t get_rendering_thread_count(const ParamArray& params)
 {
     const size_t core_count = System::get_logical_cpu_core_count();
 
@@ -96,14 +116,6 @@ size_t FrameRendererBase::get_rendering_thread_count(const ParamArray& params)
     }
 
     return thread_count;
-}
-
-void FrameRendererBase::print_rendering_thread_count(const size_t thread_count)
-{
-    RENDERER_LOG_INFO(
-        "using %s %s for rendering.",
-        pretty_int(thread_count).c_str(),
-        plural(thread_count, "thread").c_str());
 }
 
 }   // namespace renderer

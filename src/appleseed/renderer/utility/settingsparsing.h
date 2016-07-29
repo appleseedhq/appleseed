@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015-2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,36 +26,32 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_FRAMERENDERERBASE_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_FRAMERENDERERBASE_H
+#ifndef APPLESEED_RENDERER_UTILITY_SETTINGSPARSING_H
+#define APPLESEED_RENDERER_UTILITY_SETTINGSPARSING_H
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/iframerenderer.h"
+#include "renderer/global/globaltypes.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>
+#include <string>
 
 // Forward declarations.
-namespace renderer      { class ParamArray; }
+namespace renderer  { class ParamArray; }
 
 namespace renderer
 {
 
-//
-// A convenient base class for frame renderers.
-//
+// Sampling mode.
+APPLESEED_DLLSYMBOL SamplingContext::Mode get_sampling_context_mode(const ParamArray& params);
+std::string get_sampling_context_mode_name(const SamplingContext::Mode mode);
 
-class FrameRendererBase
-  : public IFrameRenderer
-{
-  protected:
-    // Extract the number of rendering threads from the "rendering_threads" parameter.
-    static size_t get_rendering_thread_count(const ParamArray& params);
-
-    // Output the number of rendering threads to the log.
-    static void print_rendering_thread_count(const size_t thread_count);
-};
+// Rendering threads.
+APPLESEED_DLLSYMBOL size_t get_rendering_thread_count(const ParamArray& params);
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_FRAMERENDERERBASE_H
+#endif  // !APPLESEED_RENDERER_UTILITY_SETTINGSPARSING_H

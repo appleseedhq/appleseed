@@ -60,7 +60,7 @@
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/visibilityflags.h"
-#include "renderer/utility/samplingmode.h"
+#include "renderer/utility/settingsparsing.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
