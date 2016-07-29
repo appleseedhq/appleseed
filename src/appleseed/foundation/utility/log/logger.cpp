@@ -330,21 +330,28 @@ void Logger::write(
 {
     boost::mutex::scoped_lock lock(impl->m_mutex);
 
+    LogMessage::Category effective_category = category;
+
     if (impl->m_enabled)
     {
-        // Print the message into the temporary buffer.
+        // Format the message into the temporary buffer.
         va_list argptr;
         va_start(argptr, format);
-        write_to_buffer(impl->m_message_buffer, MaxBufferSize, format, argptr);
+        const bool formatting_succeeded =
+            write_to_buffer(impl->m_message_buffer, MaxBufferSize, format, argptr);
+
+        // If formatting failed, print the message as an error.
+        if (!formatting_succeeded)
+            effective_category = LogMessage::Error;
 
         // Retrieve the current UTC time.
         const ptime datetime(microsec_clock::universal_time());
 
         // Format the header and message.
         const size_t thread = impl->m_thread_map.thread_id_to_int(boost::this_thread::get_id());
-        const FormatEvaluator format_evaluator(category, datetime, thread, &impl->m_message_buffer[0]);
-        const string header = format_evaluator.evaluate(impl->m_formatter.get_header_format(category));
-        const string message = format_evaluator.evaluate(impl->m_formatter.get_message_format(category));
+        const FormatEvaluator format_evaluator(effective_category, datetime, thread, &impl->m_message_buffer[0]);
+        const string header = format_evaluator.evaluate(impl->m_formatter.get_header_format(effective_category));
+        const string message = format_evaluator.evaluate(impl->m_formatter.get_message_format(effective_category));
 
         if (!message.empty())
         {
@@ -353,7 +360,7 @@ void Logger::write(
             {
                 ILogTarget* target = *i;
                 target->write(
-                    category,
+                    effective_category,
                     file,
                     line,
                     header.c_str(),
@@ -363,7 +370,7 @@ void Logger::write(
     }
 
     // Terminate the application if the message category is 'Fatal'.
-    if (category == LogMessage::Fatal)
+    if (effective_category == LogMessage::Fatal)
         exit(EXIT_FAILURE);
 }
 
