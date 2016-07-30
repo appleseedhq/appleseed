@@ -1270,63 +1270,32 @@ void MainWindow::slot_project_file_changed(const QString& filepath)
 
 void MainWindow::slot_load_settings()
 {
-    const filesystem::path root_path(Application::get_root_path());
-    const string schema_file_path = (root_path / "schemas" / "settings.xsd").string();
-
-    SettingsFileReader reader(global_logger());
-
     Dictionary settings;
-    bool success = false;
 
-    // First try to read the settings from the user path.
-    if (const char* p = Application::get_user_settings_path())
+    if (!Application::load_settings("appleseed.studio.xml", settings, global_logger()))
+        return;
+
+    m_settings = settings;
+
+    if (m_settings.strings().exist("message_verbosity"))
     {
-        const filesystem::path user_settings_path(p);
-        const string user_settings_file_path = (user_settings_path / "appleseed.studio.xml").string();
+        const char* level_name = m_settings.get("message_verbosity");
+        const LogMessage::Category level = LogMessage::get_category_value(level_name);
 
-        success =
-            reader.read(
-                user_settings_file_path.c_str(),
-                schema_file_path.c_str(),
-                settings);
-
-        if (success)
-            RENDERER_LOG_INFO("successfully loaded settings from %s.", user_settings_file_path.c_str());
+        if (level < LogMessage::NumMessageCategories)
+            global_logger().set_verbosity_level(level);
+        else RENDERER_LOG_ERROR("invalid message verbosity level \"%s\".", level_name);
     }
 
-    // As a fallback, try to read the settings from the appleseed's installation directory.
-    const string settings_file_path = (root_path / "settings" / "appleseed.studio.xml").string();
-
-    if (!success)
+    if (m_settings.get_optional<bool>(SETTINGS_WATCH_FILE_CHANGES))
     {
-        success =
-            reader.read(
-                settings_file_path.c_str(),
-                schema_file_path.c_str(),
-                settings);
-
-        if (success)
-            RENDERER_LOG_INFO("successfully loaded settings from %s.", settings_file_path.c_str());
-    }
-
-    if (success)
-    {
-        m_settings = settings;
-
-        if (m_settings.get_optional<bool>(SETTINGS_WATCH_FILE_CHANGES))
-        {
-            m_action_monitor_project_file->setChecked(true);
-            enable_project_file_monitoring();
-        }
-        else
-        {
-            m_action_monitor_project_file->setChecked(false);
-            disable_project_file_monitoring();
-        }
+        m_action_monitor_project_file->setChecked(true);
+        enable_project_file_monitoring();
     }
     else
     {
-        RENDERER_LOG_ERROR("failed to load settings from %s.", settings_file_path.c_str());
+        m_action_monitor_project_file->setChecked(false);
+        disable_project_file_monitoring();
     }
 }
 

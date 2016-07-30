@@ -73,7 +73,8 @@ class SHAREDDLL Application
     static const char* get_tests_root_path();
 
     // Load a settings file from appleseed's settings directory.
-    static void load_settings(
+    // Returns true if settings could be loaded.
+    static bool load_settings(
         const char*                 filename,
         foundation::Dictionary&     settings,
         foundation::Logger&         logger);

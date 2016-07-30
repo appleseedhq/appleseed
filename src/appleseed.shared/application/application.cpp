@@ -200,7 +200,7 @@ const char* Application::get_tests_root_path()
     return tests_root_path_buffer;
 }
 
-void Application::load_settings(const char* filename, Dictionary& settings, Logger& logger)
+bool Application::load_settings(const char* filename, Dictionary& settings, Logger& logger)
 {
     const filesystem::path root_path(get_root_path());
     const filesystem::path schema_file_path = root_path / "schemas" / "settings.xsd";
@@ -218,7 +218,7 @@ void Application::load_settings(const char* filename, Dictionary& settings, Logg
                 settings))
         {
             LOG_DEBUG(logger, "successfully loaded settings from %s.", user_settings_file_path.string().c_str());
-            return;
+            return true;
         }
     }
 
@@ -230,8 +230,10 @@ void Application::load_settings(const char* filename, Dictionary& settings, Logg
             settings))
     {
         LOG_DEBUG(logger, "successfully loaded settings from %s.", settings_file_path.string().c_str());
-        return;
+        return true;
     }
+
+    return false;
 }
 
 }   // namespace shared
