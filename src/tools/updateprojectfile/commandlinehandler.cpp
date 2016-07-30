@@ -48,15 +48,17 @@ CommandLineHandler::CommandLineHandler()
 {
     add_default_options();
 
-    m_filename.set_exact_value_count(1);
-    parser().set_default_option_handler(&m_filename);
+    parser().set_default_option_handler(
+        &m_filename
+            .set_exact_value_count(1));
 
-    m_to_revision.add_name("--to-revision");
-    m_to_revision.add_name("-r");
-    m_to_revision.set_description("update the project to this revision (by default, update to the latest revision)");
-    m_to_revision.set_syntax("revision");
-    m_to_revision.set_exact_value_count(1);
-    parser().add_option_handler(&m_to_revision);
+    parser().add_option_handler(
+        &m_to_revision
+            .add_name("--to-revision")
+            .add_name("-r")
+            .set_description("update the project to this revision (by default, update to the latest revision)")
+            .set_syntax("revision")
+            .set_exact_value_count(1));
 }
 
 void CommandLineHandler::print_program_usage(

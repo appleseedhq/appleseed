@@ -51,14 +51,16 @@ CommandLineHandler::CommandLineHandler()
 {
     add_help_option();
 
-    m_filename.set_min_value_count(0);
-    m_filename.set_max_value_count(1);
-    parser().set_default_option_handler(&m_filename);
+    parser().set_default_option_handler(
+        &m_filename
+            .set_min_value_count(0)
+            .set_max_value_count(1));
 
-    m_render.add_name("--render");
-    m_render.set_description("start rendering using the specified configuration");
-    m_render.set_exact_value_count(1);
-    parser().add_option_handler(&m_render);
+    parser().add_option_handler(
+        &m_render
+            .add_name("--render")
+            .set_description("start rendering using the specified configuration")
+            .set_exact_value_count(1));
 }
 
 void CommandLineHandler::print_program_usage(

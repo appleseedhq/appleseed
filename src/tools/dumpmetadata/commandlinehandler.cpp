@@ -47,12 +47,13 @@ CommandLineHandler::CommandLineHandler()
 {
     add_default_options();
 
-    m_format.add_name("--format");
-    m_format.set_syntax("format (valid values: xml, markdown)");
-    m_format.set_description("set the dump format");
-    m_format.set_exact_value_count(1);
-    m_format.set_flags(OptionHandler::Required);
-    parser().add_option_handler(&m_format);
+    parser().add_option_handler(
+        &m_format
+            .add_name("--format")
+            .set_syntax("format (valid values: xml, markdown)")
+            .set_description("set the dump format")
+            .set_exact_value_count(1)
+            .set_flags(OptionHandler::Required));
 }
 
 void CommandLineHandler::print_program_usage(

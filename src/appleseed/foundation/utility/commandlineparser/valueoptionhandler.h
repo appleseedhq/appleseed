@@ -71,14 +71,26 @@ class ValueOptionHandler
     // Constructor.
     ValueOptionHandler();
 
+    // Add a name for this option.
+    ValueOptionHandler<T>& add_name(const std::string& name);
+
+    // Set a description of this option.
+    ValueOptionHandler<T>& set_description(const std::string& description);
+
+    // Set the syntax for this option.
+    ValueOptionHandler<T>& set_syntax(const std::string& syntax);
+
+    // Set the flags for this option.
+    ValueOptionHandler<T>& set_flags(const Flags flags);
+
     // Set minimum/maximum number of values.
-    void set_min_value_count(const size_t min_count);
-    void set_max_value_count(const size_t max_count);
-    void set_exact_value_count(const size_t count);
+    ValueOptionHandler<T>& set_min_value_count(const size_t min_count);
+    ValueOptionHandler<T>& set_max_value_count(const size_t max_count);
+    ValueOptionHandler<T>& set_exact_value_count(const size_t count);
 
     // Set default values.
-    void set_default_value(const ValueType& default_value);
-    void set_default_values(const ValueVectorType& default_values);
+    ValueOptionHandler<T>& set_default_value(const ValueType& default_value);
+    ValueOptionHandler<T>& set_default_values(const ValueVectorType& default_values);
 
     // Return the values of this option.
     const ValueType& value() const;
@@ -124,34 +136,67 @@ inline ValueOptionHandler<T>::ValueOptionHandler()
 }
 
 template <typename T>
-inline void ValueOptionHandler<T>::set_min_value_count(const size_t min_count)
+inline ValueOptionHandler<T>& ValueOptionHandler<T>::add_name(const std::string& name)
+{
+    OptionHandler::add_name(name);
+    return *this;
+}
+
+template <typename T>
+inline ValueOptionHandler<T>& ValueOptionHandler<T>::set_description(const std::string& description)
+{
+    OptionHandler::set_description(description);
+    return *this;
+}
+
+template <typename T>
+inline ValueOptionHandler<T>& ValueOptionHandler<T>::set_syntax(const std::string& syntax)
+{
+    OptionHandler::set_syntax(syntax);
+    return *this;
+}
+
+template <typename T>
+inline ValueOptionHandler<T>& ValueOptionHandler<T>::set_flags(const Flags flags)
+{
+    OptionHandler::set_flags(flags);
+    return *this;
+}
+
+template <typename T>
+inline ValueOptionHandler<T>& ValueOptionHandler<T>::set_min_value_count(const size_t min_count)
 {
     m_min_value_count = min_count;
+    return *this;
 }
 
 template <typename T>
-inline void ValueOptionHandler<T>::set_max_value_count(const size_t max_count)
+inline ValueOptionHandler<T>& ValueOptionHandler<T>::set_max_value_count(const size_t max_count)
 {
     m_max_value_count = max_count;
+    return *this;
 }
 
 template <typename T>
-inline void ValueOptionHandler<T>::set_exact_value_count(const size_t count)
+inline ValueOptionHandler<T>& ValueOptionHandler<T>::set_exact_value_count(const size_t count)
 {
     m_min_value_count = count;
     m_max_value_count = count;
+    return *this;
 }
 
 template <typename T>
-inline void ValueOptionHandler<T>::set_default_value(const ValueType& default_value)
+inline ValueOptionHandler<T>& ValueOptionHandler<T>::set_default_value(const ValueType& default_value)
 {
     m_default_values = make_vector(default_value);
+    return *this;
 }
 
 template <typename T>
-inline void ValueOptionHandler<T>::set_default_values(const ValueVectorType& default_values)
+inline ValueOptionHandler<T>& ValueOptionHandler<T>::set_default_values(const ValueVectorType& default_values)
 {
     m_default_values = default_values;
+    return *this;
 }
 
 template <typename T>

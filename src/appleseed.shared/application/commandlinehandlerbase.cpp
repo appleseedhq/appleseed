@@ -92,48 +92,54 @@ void CommandLineHandlerBase::add_default_options()
 
 void CommandLineHandlerBase::add_help_option()
 {
-    impl->m_help.add_name("--help");
-    impl->m_help.add_name("-h");
-    impl->m_help.set_description("print program usage and exit");
-    impl->m_parser.add_option_handler(&impl->m_help);
+    impl->m_parser.add_option_handler(
+        &impl->m_help
+            .add_name("--help")
+            .add_name("-h")
+            .set_description("print program usage and exit"));
 }
 
 void CommandLineHandlerBase::add_version_option()
 {
-    impl->m_version.add_name("--version");
-    impl->m_version.add_name("-v");
-    impl->m_version.set_description("print program version");
-    impl->m_parser.add_option_handler(&impl->m_version);
+    impl->m_parser.add_option_handler(
+        &impl->m_version
+            .add_name("--version")
+            .add_name("-v")
+            .set_description("print program version"));
 }
 
 void CommandLineHandlerBase::add_system_option()
 {
-    impl->m_system.add_name("--system");
-    impl->m_system.set_description("print system information");
-    impl->m_parser.add_option_handler(&impl->m_system);
+    impl->m_parser.add_option_handler(
+        &impl->m_system
+            .add_name("--system")
+            .set_description("print system information"));
 }
 
 void CommandLineHandlerBase::add_message_verbosity_option()
 {
-    impl->m_message_verbosity.add_name("--message-verbosity");
-    impl->m_message_verbosity.set_description("set message verbosity");
-    impl->m_message_verbosity.set_syntax("level");
-    impl->m_message_verbosity.set_exact_value_count(1);
-    impl->m_parser.add_option_handler(&impl->m_message_verbosity);
+    impl->m_parser.add_option_handler(
+        &impl->m_message_verbosity
+            .add_name("--message-verbosity")
+            .set_description("set message verbosity")
+            .set_syntax("level")
+            .set_exact_value_count(1));
 }
 
 void CommandLineHandlerBase::add_message_coloring_option()
 {
-    impl->m_message_coloring.add_name("--message-coloring");
-    impl->m_message_coloring.set_description("enable message coloring");
-    impl->m_parser.add_option_handler(&impl->m_message_coloring);
+    impl->m_parser.add_option_handler(
+        &impl->m_message_coloring
+            .add_name("--message-coloring")
+            .set_description("enable message coloring"));
 }
 
 void CommandLineHandlerBase::add_display_options_option()
 {
-    impl->m_display_options.add_name("--display-options");
-    impl->m_display_options.set_description("display the recognized command line options");
-    impl->m_parser.add_option_handler(&impl->m_display_options);
+    impl->m_parser.add_option_handler(
+        &impl->m_display_options
+            .add_name("--display-options")
+            .set_description("display the recognized command line options"));
 }
 
 CommandLineHandlerBase::~CommandLineHandlerBase()

@@ -73,16 +73,16 @@ class OptionHandler
     OptionHandler();
 
     // Add a name for this option.
-    void add_name(const std::string& name);
+    OptionHandler& add_name(const std::string& name);
 
     // Set a description of this option.
-    void set_description(const std::string& description);
+    OptionHandler& set_description(const std::string& description);
 
     // Set the syntax for this option.
-    void set_syntax(const std::string& syntax);
+    OptionHandler& set_syntax(const std::string& syntax);
 
     // Set the flags for this option.
-    void set_flags(const Flags flags);
+    OptionHandler& set_flags(const Flags flags);
 
     // Return true if this option is set.
     virtual bool is_set() const;
@@ -127,24 +127,28 @@ inline OptionHandler::OptionHandler()
 {
 }
 
-inline void OptionHandler::add_name(const std::string& name)
+inline OptionHandler& OptionHandler::add_name(const std::string& name)
 {
     m_names.push_back(name);
+    return *this;
 }
 
-inline void OptionHandler::set_description(const std::string& description)
+inline OptionHandler& OptionHandler::set_description(const std::string& description)
 {
     m_description = description;
+    return *this;
 }
 
-inline void OptionHandler::set_syntax(const std::string& syntax)
+inline OptionHandler& OptionHandler::set_syntax(const std::string& syntax)
 {
     m_syntax = syntax;
+    return *this;
 }
 
-inline void OptionHandler::set_flags(const Flags flags)
+inline OptionHandler& OptionHandler::set_flags(const Flags flags)
 {
     m_flags = flags;
+    return *this;
 }
 
 inline bool OptionHandler::is_set() const
