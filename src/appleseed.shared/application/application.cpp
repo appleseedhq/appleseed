@@ -32,7 +32,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/path.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/log.h"
+#include "foundation/utility/settings.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -196,6 +198,40 @@ const char* Application::get_tests_root_path()
     }
 
     return tests_root_path_buffer;
+}
+
+void Application::load_settings(const char* filename, Dictionary& settings, Logger& logger)
+{
+    const filesystem::path root_path(get_root_path());
+    const filesystem::path schema_file_path = root_path / "schemas" / "settings.xsd";
+
+    SettingsFileReader reader(logger);
+
+    // First try to read the settings from the user path.
+    if (const char* user_path = get_user_settings_path())
+    {
+        const filesystem::path user_settings_file_path = filesystem::path(user_path) / filename;
+        if (boost::filesystem::exists(user_settings_file_path) &&
+            reader.read(
+                user_settings_file_path.string().c_str(),
+                schema_file_path.string().c_str(),
+                settings))
+        {
+            LOG_DEBUG(logger, "successfully loaded settings from %s.", user_settings_file_path.string().c_str());
+            return;
+        }
+    }
+
+    // As a fallback, try to read the settings from the appleseed installation directory.
+    const filesystem::path settings_file_path = root_path / "settings" / filename;
+    if (reader.read(
+            settings_file_path.string().c_str(),
+            schema_file_path.string().c_str(),
+            settings))
+    {
+        LOG_DEBUG(logger, "successfully loaded settings from %s.", settings_file_path.string().c_str());
+        return;
+    }
 }
 
 }   // namespace shared

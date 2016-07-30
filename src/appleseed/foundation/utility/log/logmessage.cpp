@@ -45,11 +45,11 @@ namespace foundation
 
 LogMessage::Category LogMessage::get_category_value(const char* name)
 {
-    if (strcmp(name, "info") == 0)
-        return Info;
-
     if (strcmp(name, "debug") == 0)
         return Debug;
+
+    if (strcmp(name, "info") == 0)
+        return Info;
 
     if (strcmp(name, "warning") == 0)
         return Warning;
@@ -67,8 +67,8 @@ const char* LogMessage::get_category_name(const Category c)
 {
     static const char* Names[NumMessageCategories] =
     {
-        "info",
         "debug",
+        "info",
         "warning",
         "error",
         "fatal"
@@ -83,8 +83,8 @@ const char* LogMessage::get_padded_category_name(const Category c)
 {
     static const char* Names[NumMessageCategories] =
     {
-        "info   ",
         "debug  ",
+        "info   ",
         "warning",
         "error  ",
         "fatal  "

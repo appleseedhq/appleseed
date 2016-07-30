@@ -52,7 +52,6 @@
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/filter.h"
 #include "foundation/utility/log.h"
-#include "foundation/utility/settings.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
@@ -84,61 +83,8 @@ using namespace std;
 namespace
 {
     SuperLogger         g_logger;
-    CommandLineHandler  g_cl;
     ParamArray          g_settings;
-
-    void load_settings()
-    {
-        const filesystem::path root_path(Application::get_root_path());
-        const filesystem::path schema_file_path = root_path / "schemas" / "settings.xsd";
-
-        SettingsFileReader reader(g_logger);
-
-        // First try to read the settings from the user path.
-        if (const char* p = Application::get_user_settings_path())
-        {
-            const filesystem::path user_settings_path(p);
-            const filesystem::path user_settings_file_path = user_settings_path / "appleseed.cli.xml";
-
-            if (boost::filesystem::exists(user_settings_file_path) &&
-                reader.read(
-                    user_settings_file_path.string().c_str(),
-                    schema_file_path.string().c_str(),
-                    g_settings))
-            {
-                LOG_INFO(g_logger, "successfully loaded settings from %s.", user_settings_file_path.string().c_str());
-                return;
-            }
-        }
-
-        // As a fallback, try to read the settings from the appleseed install.
-        const filesystem::path settings_file_path = root_path / "settings" / "appleseed.cli.xml";
-
-        if (reader.read(
-                settings_file_path.string().c_str(),
-                schema_file_path.string().c_str(),
-                g_settings))
-        {
-            LOG_INFO(g_logger, "successfully loaded settings from %s.", settings_file_path.string().c_str());
-        }
-    }
-
-    void apply_settings()
-    {
-        if (g_settings.get_optional<bool>("message_coloring", false))
-            g_logger.enable_message_coloring();
-    }
-
-    void configure_renderer_logger()
-    {
-        global_logger().add_target(&g_logger.get_log_target());
-
-        for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
-        {
-            const LogMessage::Category category = static_cast<LogMessage::Category>(i);
-            global_logger().set_format(category, g_logger.get_format(category));
-        }
-    }
+    CommandLineHandler  g_cl;
 
     template <typename Result>
     void print_suite_case_result(const Result& result)
@@ -778,17 +724,24 @@ int main(int argc, const char* argv[])
 {
     start_memory_tracking();
 
+    // Make sure appleseed is correctly installed.
     Application::check_installation(g_logger);
-
-    // Load and apply settings from the settings file.
-    load_settings();
-    apply_settings();
 
     // Parse the command line.
     g_cl.parse(argc, argv, g_logger);
 
+    // Load and apply settings from the settings file.
+    Application::load_settings("appleseed.cli.xml", g_settings, g_logger);
+    g_logger.configure_from_settings(g_settings);
+
+    // Apply command line arguments.
+    g_cl.apply(g_logger);
+
     // Configure the renderer's global logger.
-    configure_renderer_logger();
+    // Must be done after settings have been loaded and the command line
+    // has been parsed, because these two operations may replace the log
+    // target of the global logger.
+    global_logger().initialize_from(g_logger);
 
     bool success = true;
 

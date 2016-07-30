@@ -60,7 +60,7 @@ class CommandLineHandler
   private:
     // Emit usage instructions to the logger.
     virtual void print_program_usage(
-        const char*             program_name,
+        const char*             executable_name,
         shared::SuperLogger&    logger) const;
 };
 

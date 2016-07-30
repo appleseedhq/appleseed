@@ -58,13 +58,14 @@ CommandLineHandler::CommandLineHandler()
 }
 
 void CommandLineHandler::print_program_usage(
-    const char*     program_name,
+    const char*     executable_name,
     SuperLogger&    logger) const
 {
     SaveLogFormatterConfig save_config(logger);
+    logger.set_verbosity_level(LogMessage::Info);
     logger.set_format(LogMessage::Info, "{message}");
 
-    LOG_INFO(logger, "usage: %s [options] input-file output-file", program_name);
+    LOG_INFO(logger, "usage: %s [options] input-file output-file", executable_name);
     LOG_INFO(logger, "options:");
 
     parser().print_usage(logger);

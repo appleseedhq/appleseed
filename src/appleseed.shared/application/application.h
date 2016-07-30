@@ -38,6 +38,7 @@
 #include "boost/filesystem/path.hpp"
 
 // Forward declarations.
+namespace foundation    { class Dictionary; }
 namespace foundation    { class Logger; }
 
 namespace appleseed {
@@ -57,10 +58,11 @@ class SHAREDDLL Application
 
     // Check if the application is correctly installed, and issue a fatal error
     // message (through the provided foundation::Logger object) if it isn't.
-    static void check_installation(foundation::Logger& logger);
+    static void check_installation(
+        foundation::Logger&         logger);
 
-    // Return the root path of the application.  The root path of an application
-    // is the path to the parent of the bin/ subdirectory.  This method returns
+    // Return the root path of the application. The root path of an application
+    // is the path to the parent of the bin/ subdirectory. This method returns
     // an empty string if the application is not correctly installed.
     static const char* get_root_path();
 
@@ -69,6 +71,12 @@ class SHAREDDLL Application
 
     // Return the root path of the application's tests.
     static const char* get_tests_root_path();
+
+    // Load a settings file from appleseed's settings directory.
+    static void load_settings(
+        const char*                 filename,
+        foundation::Dictionary&     settings,
+        foundation::Logger&         logger);
 
     // Change the current directory to the root path of the application's tests.
     // Returns the path to the current directory.

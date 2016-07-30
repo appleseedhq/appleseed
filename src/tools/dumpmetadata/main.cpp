@@ -289,11 +289,23 @@ namespace
 
 int main(int argc, const char* argv[])
 {
+    // Initialize the logger that will be used throughout the program.
     SuperLogger logger;
+
+    // Make sure appleseed is correctly installed.
     Application::check_installation(logger);
 
+    // Parse the command line.
     CommandLineHandler cl;
     cl.parse(argc, argv, logger);
+
+    // Load an apply settings from the settings file.
+    Dictionary settings;
+    Application::load_settings("appleseed.tools.xml", settings, logger);
+    logger.configure_from_settings(settings);
+
+    // Apply command line arguments.
+    cl.apply(logger);
 
     dump_metadata(cl.m_format.value(), logger);
 
