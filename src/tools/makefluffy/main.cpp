@@ -46,6 +46,7 @@
 #include "foundation/math/qmc.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/filter.h"
 #include "foundation/utility/foreach.h"
@@ -310,14 +311,29 @@ namespace
 
 int main(int argc, const char* argv[])
 {
+    // Initialize the logger that will be used throughout the program.
     SuperLogger logger;
+
+    // Make sure appleseed is correctly installed.
     Application::check_installation(logger);
 
+    // Parse the command line.
     CommandLineHandler cl;
     cl.parse(argc, argv, logger);
 
-    // Initialize the renderer's logger.
-    global_logger().add_target(&logger.get_log_target());
+    // Load an apply settings from the settings file.
+    Dictionary settings;
+    Application::load_settings("appleseed.tools.xml", settings, logger);
+    logger.configure_from_settings(settings);
+
+    // Apply command line arguments.
+    cl.apply(logger);
+
+    // Configure the renderer's global logger.
+    // Must be done after settings have been loaded and the command line
+    // has been parsed, because these two operations may replace the log
+    // target of the global logger.
+    global_logger().initialize_from(logger);
 
     // Retrieve the command line arguments.
     const string& input_filepath = cl.m_filenames.values()[0];

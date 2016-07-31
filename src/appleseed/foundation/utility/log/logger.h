@@ -64,8 +64,18 @@ class APPLESEED_DLLSYMBOL Logger
     // Destructor.
     virtual ~Logger();
 
+    // Copy all settings from a given logger to this one.
+    // Existing log targets are removed (but not deleted).
+    // Log targets of the source logger are added to this one.
+    // If the other logger is disabled, this one will be too.
+    void initialize_from(const Logger& source);
+
     // Enable/disable logging.
     void set_enabled(const bool enabled = true);
+
+    // Set/get the verbosity level.
+    void set_verbosity_level(const LogMessage::Category level);
+    LogMessage::Category get_verbosity_level() const;
 
     // Reset the format string for all message categories.
     void reset_all_formats();

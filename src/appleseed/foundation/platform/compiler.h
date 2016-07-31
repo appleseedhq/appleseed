@@ -254,7 +254,7 @@ namespace foundation
 //   available to be checked (such as vprintf), specify the third parameter as zero.
 //   In this case the compiler only checks the format string for consistency. [...]
 //
-//   Since non-static C++ methods have an implicit this argument, the arguments of
+//   Since non-static C++ methods have an implicit 'this' argument, the arguments of
 //   such methods should be counted from two, not one, when giving values for
 //   string_index and first_to_check.
 //

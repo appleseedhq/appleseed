@@ -69,16 +69,19 @@ class SHAREDDLL CommandLineHandlerBase
     void add_display_options_option();
 
     // Parse the application's command line.
-    // This method may reconfigure the logger (to enable message coloring, for instance).
     virtual void parse(
         const int       argc,
         const char*     argv[],
         SuperLogger&    logger);
 
+    // Apply command line arguments. The parse() method must have been called beforehand.
+    // This method may reconfigure the logger (to enable message coloring, for instance).
+    void apply(SuperLogger& logger);
+
   protected:
     // This method must be implemented to emit usage instructions to the logger.
     virtual void print_program_usage(
-        const char*     program_name,
+        const char*     executable_name,
         SuperLogger&    logger) const = 0;
 
     // Access the command line parser object.
@@ -90,7 +93,6 @@ class SHAREDDLL CommandLineHandlerBase
     Impl* impl;
 
     void print_version_information(SuperLogger& logger) const;
-    static void print_system_information(SuperLogger& logger);
 };
 
 }       // namespace shared

@@ -30,8 +30,12 @@
 // Interface header.
 #include "superlogger.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
+
 // Standard headers.
 #include <cstdio>
+#include <string>
 
 // Platform headers.
 #ifndef _WIN32
@@ -55,6 +59,11 @@ SuperLogger::~SuperLogger()
     delete m_log_target;
 }
 
+ILogTarget& SuperLogger::get_log_target() const
+{
+    return *m_log_target;
+}
+
 void SuperLogger::set_log_target(ILogTarget* log_target)
 {
     if (m_log_target)
@@ -67,11 +76,6 @@ void SuperLogger::set_log_target(ILogTarget* log_target)
     add_target(m_log_target);
 }
 
-ILogTarget& SuperLogger::get_log_target() const
-{
-    return *m_log_target;
-}
-
 void SuperLogger::enable_message_coloring()
 {
 #ifndef _WIN32
@@ -81,6 +85,35 @@ void SuperLogger::enable_message_coloring()
 #endif
 
     set_log_target(create_console_log_target(stderr));
+}
+
+void SuperLogger::set_verbosity_level_from_string(const char* level_name)
+{
+    const LogMessage::Category level = LogMessage::get_category_value(level_name);
+
+    if (level < LogMessage::NumMessageCategories)
+        set_verbosity_level(level);
+    else LOG_ERROR(*this, "invalid message verbosity level \"%s\".", level_name);
+}
+
+void SuperLogger::configure_from_settings(const Dictionary& settings)
+{
+    if (settings.strings().exist("message_coloring"))
+    {
+        const char* value = settings.get("message_coloring");
+        try
+        {
+            if (from_string<bool>(value))
+                enable_message_coloring();
+        }
+        catch (ExceptionStringConversionError)
+        {
+            LOG_ERROR(*this, "invalid value \"%s\" for parameter \"message_coloring\".", value);
+        }
+    }
+
+    if (settings.strings().exist("message_verbosity"))
+        set_verbosity_level_from_string(settings.get("message_verbosity"));
 }
 
 }   // namespace shared

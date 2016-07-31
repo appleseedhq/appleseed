@@ -3140,7 +3140,7 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
     auto_release_ptr<Project> project(ProjectFactory::create(project_filepath));
     project->set_path(project_filepath);
     project->search_paths().set_root_path(
-        filesystem::canonical(project_filepath).parent_path().string());
+        filesystem::absolute(project_filepath).parent_path().string());
 
     // Create the error handler.
     auto_ptr<ErrorLogger> error_handler(

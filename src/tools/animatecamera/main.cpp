@@ -48,6 +48,7 @@
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/string.h"
@@ -191,7 +192,7 @@ namespace
             return sstr.str();
         }
 
-        static auto_release_ptr<Project> load_master_project()
+        auto_release_ptr<Project> load_master_project()
         {
             // Construct the schema file path.
             const filesystem::path schema_filepath =
@@ -200,15 +201,16 @@ namespace
                 / "project.xsd";
 
             // Read the master project file.
+            const char* project_filepath = g_cl.m_filenames.values()[0].c_str();
             ProjectFileReader reader;
             auto_release_ptr<Project> project(
                 reader.read(
-                    g_cl.m_filenames.values()[0].c_str(),
+                    project_filepath,
                     schema_filepath.string().c_str()));
 
             // Bail out if the master project file couldn't be read.
             if (project.get() == 0)
-                exit(1);
+                LOG_FATAL(m_logger, "failed to load master project file %s", project_filepath);
 
             return project;
         }
@@ -525,13 +527,28 @@ namespace
 
 int main(int argc, const char* argv[])
 {
+    // Initialize the logger that will be used throughout the program.
     SuperLogger logger;
+
+    // Make sure appleseed is correctly installed.
     Application::check_installation(logger);
 
+    // Parse the command line.
     g_cl.parse(argc, argv, logger);
 
-    // Initialize the renderer's logger.
-    global_logger().add_target(&logger.get_log_target());
+    // Load an apply settings from the settings file.
+    Dictionary settings;
+    Application::load_settings("appleseed.tools.xml", settings, logger);
+    logger.configure_from_settings(settings);
+
+    // Apply command line arguments.
+    g_cl.apply(logger);
+
+    // Configure the renderer's global logger.
+    // Must be done after settings have been loaded and the command line
+    // has been parsed, because these two operations may replace the log
+    // target of the global logger.
+    global_logger().initialize_from(logger);
 
     const string base_output_filename =
         filesystem::path(g_cl.m_filenames.values()[1]).stem().string();

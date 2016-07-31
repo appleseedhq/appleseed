@@ -47,22 +47,24 @@ CommandLineHandler::CommandLineHandler()
 {
     add_default_options();
 
-    m_format.add_name("--format");
-    m_format.set_syntax("format (valid values: xml, markdown)");
-    m_format.set_description("set the dump format");
-    m_format.set_exact_value_count(1);
-    m_format.set_flags(OptionHandler::Required);
-    parser().add_option_handler(&m_format);
+    parser().add_option_handler(
+        &m_format
+            .add_name("--format")
+            .set_syntax("format (valid values: xml, markdown)")
+            .set_description("set the dump format")
+            .set_exact_value_count(1)
+            .set_flags(OptionHandler::Required));
 }
 
 void CommandLineHandler::print_program_usage(
-    const char*     program_name,
+    const char*     executable_name,
     SuperLogger&    logger) const
 {
     SaveLogFormatterConfig save_config(logger);
+    logger.set_verbosity_level(LogMessage::Info);
     logger.set_format(LogMessage::Info, "{message}");
 
-    LOG_INFO(logger, "usage: %s [options]", program_name);
+    LOG_INFO(logger, "usage: %s [options]", executable_name);
     LOG_INFO(logger, "options:");
 
     parser().print_usage(logger);

@@ -72,7 +72,8 @@ namespace
             const ptime&                datetime,
             const size_t                thread,
             const string&               message)
-          : m_category(LogMessage::get_padded_category_name(category))
+          : m_category(LogMessage::get_category_name(category))
+          , m_padded_category(LogMessage::get_padded_category_name(category))
           , m_datetime(to_iso_extended_string(datetime) + 'Z')
           , m_thread(pad_left(to_string(thread), '0', 3))
           , m_process_size(pad_left(to_string(System::get_process_virtual_memory_size() / (1024 * 1024)) + " MB", ' ', 8))
@@ -84,6 +85,7 @@ namespace
         {
             string result = format;
             result = replace(result, "{category}", m_category);
+            result = replace(result, "{padded-category}", m_padded_category);
             result = replace(result, "{datetime-utc}", m_datetime);
             result = replace(result, "{thread}", m_thread);
             result = replace(result, "{process-size}", m_process_size);
@@ -93,6 +95,7 @@ namespace
 
       private:
         const string    m_category;
+        const string    m_padded_category;
         const string    m_datetime;
         const string    m_thread;
         const string    m_process_size;
@@ -116,7 +119,7 @@ namespace
 
         void reset_format(const LogMessage::Category category)
         {
-            set_format(category, "{datetime-utc} <{thread}> {process-size} {category} | {message}");
+            set_format(category, "{datetime-utc} <{thread}> {process-size} {padded-category} | {message}");
         }
 
         void set_all_formats(const string& format)
@@ -203,12 +206,13 @@ struct Logger::Impl
 {
     typedef list<ILogTarget*> LogTargetContainer;
 
-    boost::mutex        m_mutex;
-    bool                m_enabled;
-    LogTargetContainer  m_targets;
-    vector<char>        m_message_buffer;
-    ThreadMap           m_thread_map;
-    Formatter           m_formatter;
+    boost::mutex            m_mutex;
+    bool                    m_enabled;
+    LogMessage::Category    m_verbosity_level;
+    LogTargetContainer      m_targets;
+    vector<char>            m_message_buffer;
+    ThreadMap               m_thread_map;
+    Formatter               m_formatter;
 };
 
 namespace
@@ -221,6 +225,7 @@ Logger::Logger()
   : impl(new Impl())
 {
     impl->m_enabled = true;
+    impl->m_verbosity_level = LogMessage::Info;
     impl->m_message_buffer.resize(InitialBufferSize);
 }
 
@@ -229,10 +234,41 @@ Logger::~Logger()
     delete impl;
 }
 
+void Logger::initialize_from(const Logger& source)
+{
+    boost::mutex::scoped_lock source_lock(source.impl->m_mutex);
+    boost::mutex::scoped_lock this_lock(impl->m_mutex);
+
+    impl->m_enabled = source.impl->m_enabled;
+    impl->m_verbosity_level = source.impl->m_verbosity_level;
+
+    impl->m_targets.clear();
+    for (const_each<Impl::LogTargetContainer> i = source.impl->m_targets; i; ++i)
+        impl->m_targets.push_back(*i);
+
+    for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
+    {
+        const LogMessage::Category category = static_cast<LogMessage::Category>(i);
+        impl->m_formatter.set_format(category, source.impl->m_formatter.get_format(category));
+    }
+}
+
 void Logger::set_enabled(const bool enabled)
 {
     boost::mutex::scoped_lock lock(impl->m_mutex);
     impl->m_enabled = enabled;
+}
+
+void Logger::set_verbosity_level(const LogMessage::Category level)
+{
+    boost::mutex::scoped_lock lock(impl->m_mutex);
+    impl->m_verbosity_level = level;
+}
+
+LogMessage::Category Logger::get_verbosity_level() const
+{
+    boost::mutex::scoped_lock lock(impl->m_mutex);
+    return impl->m_verbosity_level;
 }
 
 void Logger::reset_all_formats()
@@ -329,6 +365,9 @@ void Logger::write(
     APPLESEED_PRINTF_FMT const char*    format, ...)
 {
     boost::mutex::scoped_lock lock(impl->m_mutex);
+
+    if (category < impl->m_verbosity_level)
+        return;
 
     LogMessage::Category effective_category = category;
 

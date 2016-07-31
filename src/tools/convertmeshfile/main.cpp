@@ -42,6 +42,7 @@
 #include "foundation/mesh/imeshbuilder.h"
 #include "foundation/mesh/imeshwalker.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/log.h"
 
@@ -277,11 +278,23 @@ namespace
 
 int main(int argc, const char* argv[])
 {
+    // Initialize the logger that will be used throughout the program.
     SuperLogger logger;
+
+    // Make sure appleseed is correctly installed.
     Application::check_installation(logger);
 
+    // Parse the command line.
     CommandLineHandler cl;
     cl.parse(argc, argv, logger);
+
+    // Load an apply settings from the settings file.
+    Dictionary settings;
+    Application::load_settings("appleseed.tools.xml", settings, logger);
+    logger.configure_from_settings(settings);
+
+    // Apply command line arguments.
+    cl.apply(logger);
 
     // Retrieve the input and output file paths.
     const string& input_filepath = cl.m_filenames.values()[0];
