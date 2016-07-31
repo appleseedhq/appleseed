@@ -1796,6 +1796,7 @@ set (renderer_utility_sources
     renderer/utility/paramarray.h
     renderer/utility/plugin.cpp
     renderer/utility/plugin.h
+    renderer/utility/seexpr.h
     renderer/utility/settingsparsing.cpp
     renderer/utility/settingsparsing.h
     renderer/utility/stochasticcast.h

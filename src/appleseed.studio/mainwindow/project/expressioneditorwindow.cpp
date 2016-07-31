@@ -41,10 +41,7 @@
 #include "renderer/api/log.h"
 #include "renderer/api/material.h"
 #include "renderer/api/project.h"
-
-// appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
-#include "foundation/utility/seexpr.h"
+#include "renderer/api/utility.h"
 
 // appleseed.shared headers.
 #include "application/application.h"
@@ -186,9 +183,9 @@ ExpressionEditorWindow::ExpressionEditorWindow(
 void ExpressionEditorWindow::apply_expression()
 {
     const string expression = m_editor->getExpr();
-    const SeExprValidator validator(expression.c_str());
+    const SeAppleseedExpr expr(expression);
 
-    if (validator.is_valid())
+    if (expr.isValid())
     {
         m_error->hide();
         RENDERER_LOG_INFO("expression successfully applied.");
@@ -197,7 +194,7 @@ void ExpressionEditorWindow::apply_expression()
     else
     {
         m_error->show();
-        RENDERER_LOG_ERROR("expression error: %s", validator.get_parse_error());
+        RENDERER_LOG_ERROR("expression error: %s", expr.parseError().c_str());
     }
 }
 
