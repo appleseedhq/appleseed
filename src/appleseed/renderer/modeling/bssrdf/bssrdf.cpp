@@ -118,10 +118,12 @@ void BSSRDF::evaluate_inputs(
     const size_t            offset) const
 {
     input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0), offset);
-    prepare_inputs(input_evaluator.data() + offset);
+    prepare_inputs(shading_point, input_evaluator.data() + offset);
 }
 
-void BSSRDF::prepare_inputs(void* data) const
+void BSSRDF::prepare_inputs(
+    const ShadingPoint&     shading_point,
+    void*                   data) const
 {
 }
 

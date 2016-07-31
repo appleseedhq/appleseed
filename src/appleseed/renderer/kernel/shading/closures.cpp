@@ -796,8 +796,7 @@ namespace
                 values->m_reflectance_multiplier = 1.0;
                 values->m_dmfp = Color3f(p->diffuse_mean_free_path);
                 values->m_dmfp_multiplier = 1.0;
-                values->m_inside_ior = p->ior;
-                values->m_outside_ior = 1.0;
+                values->m_ior = p->ior;
 #else
                 throw ExceptionOSLRuntimeError("unknown subsurface profile: normalized_diffusion");
 #endif
@@ -846,8 +845,7 @@ namespace
                 values->m_dmfp = Color3f(p->diffuse_mean_free_path);
                 values->m_dmfp_multiplier = 1.0;
                 values->m_anisotropy = p->scattering_anisotropy;
-                values->m_inside_ior = p->ior;
-                values->m_outside_ior = 1.0;
+                values->m_ior = p->ior;
             }
         }
     };

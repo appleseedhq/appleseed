@@ -60,8 +60,7 @@ APPLESEED_DECLARE_INPUT_VALUES(NormalizedDiffusionBSSRDFInputValues)
     ScalarInput m_reflectance_multiplier;
     Spectrum    m_dmfp;
     ScalarInput m_dmfp_multiplier;
-    ScalarInput m_outside_ior;
-    ScalarInput m_inside_ior;
+    ScalarInput m_ior;
 
     // Precomputed values.
     Spectrum    m_s;

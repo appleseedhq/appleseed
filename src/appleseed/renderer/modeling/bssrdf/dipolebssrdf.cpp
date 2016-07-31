@@ -66,8 +66,7 @@ DipoleBSSRDF::DipoleBSSRDF(
     m_inputs.declare("sigma_a", InputFormatSpectralReflectance, "");
     m_inputs.declare("sigma_s", InputFormatSpectralReflectance, "");
     m_inputs.declare("anisotropy", InputFormatScalar);
-    m_inputs.declare("outside_ior", InputFormatScalar);
-    m_inputs.declare("inside_ior", InputFormatScalar);
+    m_inputs.declare("ior", InputFormatScalar);
 }
 
 bool DipoleBSSRDF::sample(
@@ -206,18 +205,8 @@ DictionaryArray DipoleBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "outside_ior")
-            .insert("label", "Outside Index of Refraction")
-            .insert("type", "numeric")
-            .insert("min_value", "1.0")
-            .insert("max_value", "2.5")
-            .insert("use", "required")
-            .insert("default", "1.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "inside_ior")
-            .insert("label", "Inside Index of Refraction")
+            .insert("name", "ior")
+            .insert("label", "Index of Refraction")
             .insert("type", "numeric")
             .insert("min_value", "1.0")
             .insert("max_value", "2.5")
