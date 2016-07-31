@@ -66,7 +66,7 @@ namespace renderer
 namespace
 {
     //
-    // The DisneyLayerParam class wraps an SeAppleseedExpr to add basic optimizations
+    // The DisneyLayerParam class wraps an SeAppleseedExpr object to add basic optimizations
     // for straightforward expressions such as a single scalar or a simple texture lookup.
     //
 
@@ -338,7 +338,11 @@ void DisneyMaterialLayer::evaluate_expressions(
     if (mask == 0.0)
         return;
 
-    base_color = lerp(base_color, impl->m_base_color.evaluate(shading_point, texture_system), mask);
+    base_color =
+        lerp(
+            base_color,
+            impl->m_base_color.evaluate(shading_point, texture_system),
+            mask);
 
     values.m_subsurface =
         lerp(
