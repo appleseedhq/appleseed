@@ -33,6 +33,7 @@
 // API headers.
 #include "renderer/utility/bbox.h"
 #include "renderer/utility/paramarray.h"
+#include "renderer/utility/seexpr.h"
 #include "renderer/utility/settingsparsing.h"
 #include "renderer/utility/testutils.h"
 #include "renderer/utility/transformsequence.h"

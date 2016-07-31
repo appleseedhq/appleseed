@@ -34,6 +34,7 @@
 #include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/bsdf/disneylayeredbrdf.h"
 #include "renderer/modeling/scene/containers.h"
+#include "renderer/utility/seexpr.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
@@ -44,18 +45,9 @@
 #include "foundation/utility/seexpr.h"
 #include "foundation/utility/tls.h"
 
-// SeExpr headers.
-#pragma warning (push)
-#pragma warning (disable : 4267)    // conversion from 'size_t' to 'int', possible loss of data
-#include "SeExpression.h"
-#include "SeExprFunc.h"
-#include "SeExprNode.h"
-#pragma warning (pop)
-
 // Boost headers.
 #include "boost/algorithm/string.hpp"
 #include "boost/algorithm/string/split.hpp"
-#include "boost/ptr_container/ptr_vector.hpp"
 
 // Standard headers.
 #include <algorithm>
@@ -73,203 +65,6 @@ namespace renderer
 
 namespace
 {
-    //
-    // SeExpr utilities.
-    //
-
-    bool texture_is_srgb(const OIIO::ustring& filename)
-    {
-        if (filename.rfind(".exr") == filename.length() - 4)
-            return false;
-
-        return true;
-    }
-
-    class TextureSeExprFunc
-      : public SeExprFuncX
-    {
-      public:
-        TextureSeExprFunc()
-          : SeExprFuncX(true)   // true = thread-safe
-          , m_texture_system(0)
-          , m_texture_is_srgb(true)
-        {
-            m_texture_options.swrap = OIIO::TextureOpt::WrapPeriodic;
-            m_texture_options.twrap = OIIO::TextureOpt::WrapPeriodic;
-        }
-
-        void set_texture_system(OIIO::TextureSystem* texture_system)
-        {
-            m_texture_system = texture_system;
-        }
-
-        virtual bool prep(SeExprFuncNode* node, bool /*wantVec*/) APPLESEED_OVERRIDE
-        {
-            if (node->nargs() != 3)
-            {
-                node->addError("3 arguments expected.");
-                return false;
-            }
-
-            if (!node->isStrArg(0))
-            {
-                node->addError("First argument must be a texture file path.");
-                return false;
-            }
-
-            if (node->getStrArg(0).empty())
-            {
-                node->addError("Path to texture file is empty.");
-                return false;
-            }
-
-            if (!node->child(1)->prep(0) || !node->child(2)->prep(0))
-                return false;
-
-            m_texture_filename = OIIO::ustring(node->getStrArg(0), 0);
-            m_texture_is_srgb = texture_is_srgb(m_texture_filename);
-
-            return true;
-        }
-
-        virtual void eval(const SeExprFuncNode* node, SeVec3d& result) const APPLESEED_OVERRIDE
-        {
-            SeVec3d u, v;
-            node->child(1)->eval(u);
-            node->child(2)->eval(v);
-
-            Color3f color;
-            if (!m_texture_system->texture(
-                    m_texture_filename,
-                    m_texture_options,
-                    static_cast<float>(u[0]),
-#if OIIO_VERSION >= 10703
-                    static_cast<float>(v[0]),
-#else
-                    static_cast<float>(1.0 - v[0]),
-#endif
-                    0.0f,
-                    0.0f,
-                    0.0f,
-                    0.0f,
-                    3,
-                    &color[0]))
-            {
-                // Failed to find or open the texture.
-                // todo: issue an error message (once).
-                result = SeVec3d(1.0, 0.0, 1.0);
-                return;
-            }
-
-            // Colors in SeExpr are always in the sRGB color space.
-            if (!m_texture_is_srgb)
-                color = linear_rgb_to_srgb(color);
-
-            result = SeVec3d(color[0], color[1], color[2]);
-        }
-
-      private:
-        OIIO::TextureSystem*        m_texture_system;
-        OIIO::ustring               m_texture_filename;
-        mutable OIIO::TextureOpt    m_texture_options;
-        bool                        m_texture_is_srgb;
-    };
-
-    class SeAppleseedExpr
-      : public SeExpression
-    {
-      public:
-        SeAppleseedExpr()
-        {
-        }
-
-        SeAppleseedExpr(const string& expr)
-          : SeExpression(expr)
-        {
-            reset_vars();
-        }
-
-        void set_expr(const string& expr)
-        {
-            SeExpression::setExpr(expr);
-            reset_vars();
-        }
-
-        // Called during preparation.
-        SeExprVarRef* resolveVar(const string& name) const APPLESEED_OVERRIDE
-        {
-            assert(name.length() >= 1);
-
-            if (name[0] == 'u')
-                return &m_u_var;
-            else if (name[0] == 'v')
-                return &m_v_var;
-            else
-                return SeExpression::resolveVar(name);
-        }
-
-        // Called during preparation.
-        SeExprFunc* resolveFunc(const string& name) const APPLESEED_OVERRIDE
-        {
-            if (name == "texture")
-            {
-                TextureSeExprFunc* texture_function_x = new TextureSeExprFunc();
-                SeExprFunc* texture_function = new SeExprFunc(*texture_function_x, 3, 3);
-                m_functions_x.push_back(texture_function_x);
-                m_functions.push_back(texture_function);
-                return texture_function;
-            }
-
-            return SeExpression::resolveFunc(name);
-        }
-
-        Color3d update_and_evaluate(
-            const ShadingPoint&     shading_point,
-            OIIO::TextureSystem&    texture_system)
-        {
-            for (each<ptr_vector<TextureSeExprFunc> > i = m_functions_x; i; ++i)
-                i->set_texture_system(&texture_system);
-
-            const Vector2d& uv = shading_point.get_uv(0);
-            m_u_var.m_val = uv[0];
-            m_v_var.m_val = uv[1];
-
-            const SeVec3d result = evaluate();
-            return Color3d(result[0], result[1], result[2]);
-        }
-
-      private:
-        void reset_vars() const
-        {
-            m_u_var.m_val = 0.0;
-            m_v_var.m_val = 0.0;
-        }
-
-        struct Var
-          : public SeExprScalarVarRef
-        {
-            double m_val;
-
-            Var() {}
-
-            explicit Var(const double val)
-              : m_val(val)
-            {
-            }
-
-            virtual void eval(const SeExprVarNode* /*node*/, SeVec3d& result) APPLESEED_OVERRIDE
-            {
-                result[0] = m_val;
-            }
-        };
-
-        mutable Var                             m_u_var;
-        mutable Var                             m_v_var;
-        mutable ptr_vector<TextureSeExprFunc>   m_functions_x;
-        mutable ptr_vector<SeExprFunc>          m_functions;
-    };
-
-
     //
     // The DisneyLayerParam class wraps an SeAppleseedExpr to add basic optimizations
     // for straightforward expressions such as a single scalar or a simple texture lookup.
