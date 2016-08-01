@@ -95,21 +95,13 @@ LocalSampleAccumulationBuffer::LocalSampleAccumulationBuffer(
 
     while (true)
     {
-        m_levels.push_back(
-            new FilteredTile(
-                level_width,
-                level_height,
-                5,
-                filter));
+        m_levels.push_back(new FilteredTile(level_width, level_height, 5, filter));
 
-        if (level_width < MinSize * 2 || level_height < MinSize * 2)
+        if (level_width <= MinSize && level_height <= MinSize)
             break;
 
-        if (level_width > MinSize)
-            level_width = max(level_width / 2, MinSize);
-
-        if (level_height > MinSize)
-            level_height = max(level_height / 2, MinSize);
+        level_width = max(level_width / 2, MinSize);
+        level_height = max(level_height / 2, MinSize);
     }
 
     m_remaining_pixels = new atomic<int32>[m_levels.size()];
