@@ -225,7 +225,7 @@ class AssignNewDisneyMaterialAction
                 {
                     object_instance_item->do_assign_material(
                         object->get_material_slot(i),
-                        ObjectInstance::FrontSide | ObjectInstance::BackSide,
+                        ObjectInstance::BothSides,
                         material_name.c_str());
                 }
             }
@@ -233,7 +233,7 @@ class AssignNewDisneyMaterialAction
             {
                 object_instance_item->do_assign_material(
                     ObjectInstanceItem::DefaultSlotName,
-                    ObjectInstance::FrontSide | ObjectInstance::BackSide,
+                    ObjectInstance::BothSides,
                     material_name.c_str());
             }
         }
@@ -522,7 +522,7 @@ void ObjectInstanceItem::add_material_assignment_menu_actions(
         ->setData(QVariant::fromValue(MaterialAssignmentData(slot, ObjectInstance::BackSide, items)));
 
     menu->addAction("Assign Material To Both Sides...", this, SLOT(slot_assign_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, ObjectInstance::FrontSide | ObjectInstance::BackSide, items)));
+        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, ObjectInstance::BothSides, items)));
 
     menu->addSeparator();
 
@@ -533,7 +533,7 @@ void ObjectInstanceItem::add_material_assignment_menu_actions(
         ->setData(QVariant::fromValue(MaterialAssignmentData(slot, ObjectInstance::BackSide, items)));
 
     menu->addAction("Clear Both Sides Materials", this, SLOT(slot_clear_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, ObjectInstance::FrontSide | ObjectInstance::BackSide, items)));
+        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, ObjectInstance::BothSides, items)));
 }
 
 void ObjectInstanceItem::do_assign_material(

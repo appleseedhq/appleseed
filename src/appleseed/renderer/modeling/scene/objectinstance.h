@@ -130,7 +130,8 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     enum Side
     {
         FrontSide = 1 << 0,
-        BackSide  = 1 << 1
+        BackSide  = 1 << 1,
+        BothSides = FrontSide | BackSide
     };
 
     // Clear all material assignments.
