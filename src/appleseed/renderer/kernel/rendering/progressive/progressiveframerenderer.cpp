@@ -412,16 +412,8 @@ namespace
 
             void display()
             {
-                if (m_buffer.get_sample_count() < m_min_sample_count)
-                {
-#ifdef PRINT_DISPLAY_THREAD_PERFS
-                    RENDERER_LOG_DEBUG(
-                        "skipping display, buffer contains " FMT_UINT64 " samples but " FMT_UINT64 " are required.",
-                        m_buffer.get_sample_count(),
-                        m_min_sample_count);
-#endif
-                    return;
-                }
+                while (m_buffer.get_sample_count() < m_min_sample_count)
+                    yield();
 
 #ifdef PRINT_DISPLAY_THREAD_PERFS
                 m_stopwatch.measure();
