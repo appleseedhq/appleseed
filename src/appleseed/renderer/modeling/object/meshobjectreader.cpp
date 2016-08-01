@@ -818,7 +818,9 @@ bool MeshObjectReader::read(
     const ParamArray&   params,
     MeshObjectArray&    objects)
 {
-    // Check if it is a built-in primitive type.
+    assert(base_object_name);
+
+    // Handle built-in primitives.
     if (params.strings().exist("primitive"))
     {
         auto_release_ptr<MeshObject> mesh = create_primitive_mesh(base_object_name, params);
@@ -828,8 +830,6 @@ bool MeshObjectReader::read(
         objects.push_back(mesh.release());
         return true;
     }
-
-    assert(base_object_name);
 
     // Tag objects with the name of their parent.
     ParamArray completed_params(params);

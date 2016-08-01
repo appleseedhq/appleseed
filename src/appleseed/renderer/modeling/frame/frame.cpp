@@ -626,10 +626,10 @@ void Frame::extract_parameters()
 
     // Retrieve reconstruction filter parameter.
     {
-        const char* DefaultFilterName = "gaussian";
+        const char* DefaultFilterName = "blackman-harris";
 
         impl->m_filter_name = m_params.get_optional<string>("filter", DefaultFilterName);
-        impl->m_filter_radius = m_params.get_optional<float>("filter_size", 2.0f);
+        impl->m_filter_radius = m_params.get_optional<float>("filter_size", 1.5f);
 
         if (impl->m_filter_name == "box")
             impl->m_filter.reset(new BoxFilter2<float>(impl->m_filter_radius, impl->m_filter_radius));
@@ -827,7 +827,7 @@ DictionaryArray FrameFactory::get_input_metadata()
                     .insert("Lanczos", "lanczos")
                     .insert("Blackman-Harris", "blackman-harris"))
             .insert("use", "optional")
-            .insert("default", "gaussian"));
+            .insert("default", "blackman-harris"));
 
     metadata.push_back(
         Dictionary()
@@ -835,7 +835,7 @@ DictionaryArray FrameFactory::get_input_metadata()
             .insert("label", "Filter Size")
             .insert("type", "text")
             .insert("use", "optional")
-            .insert("default", "2.0"));
+            .insert("default", "1.5"));
 
     metadata.push_back(
         Dictionary()

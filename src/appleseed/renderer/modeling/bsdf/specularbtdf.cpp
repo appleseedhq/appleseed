@@ -109,9 +109,9 @@ namespace
             }
             else
             {
+                values->m_from_ior = values->m_ior;
                 values->m_to_ior =
                     shading_point.get_ray().get_previous_ior();
-                values->m_from_ior = values->m_ior;
             }
         }
 

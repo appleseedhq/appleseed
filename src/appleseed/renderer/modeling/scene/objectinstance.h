@@ -126,10 +126,12 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     // Compute the parent space bounding box of the instance.
     GAABB3 compute_parent_bbox() const;
 
+    // Sides of this object instance's surface.
     enum Side
     {
-        FrontSide,
-        BackSide
+        FrontSide = 1 << 0,
+        BackSide  = 1 << 1,
+        BothSides = FrontSide | BackSide
     };
 
     // Clear all material assignments.
