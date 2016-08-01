@@ -118,14 +118,12 @@ class ObjectInstanceItem
 
     void do_assign_material(
         const char*                     slot_name,
-        const bool                      font_side,
-        const bool                      back_side,
+        const int                       sides,
         const char*                     material_name);
 
     void do_unassign_material(
         const char*                     slot_name,
-        const bool                      font_side,
-        const bool                      back_side);
+        const int                       sides);
 };
 
 }       // namespace studio

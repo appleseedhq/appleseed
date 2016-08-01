@@ -70,18 +70,11 @@ using namespace std;
 
 namespace
 {
-    enum Side
-    {
-        FrontSide,
-        BackSide,
-        FrontAndBackSides
-    };
-
     struct MaterialAssignmentData
     {
-        string              m_slot;
-        Side                m_side;
-        QList<ItemBase*>    m_items;
+        string                      m_slot;
+        int                         m_sides;
+        QList<ItemBase*>            m_items;
 
         MaterialAssignmentData()
         {
@@ -89,10 +82,10 @@ namespace
 
         MaterialAssignmentData(
             const char*             slot,
-            const Side              side,
+            const int               sides,
             const QList<ItemBase*>& items)
           : m_slot(slot)
-          , m_side(side)
+          , m_sides(sides)
           , m_items(items)
         {
         }
@@ -232,8 +225,7 @@ class AssignNewDisneyMaterialAction
                 {
                     object_instance_item->do_assign_material(
                         object->get_material_slot(i),
-                        true,   // assign to front side
-                        true,   // assign to back side
+                        ObjectInstance::FrontSide | ObjectInstance::BackSide,
                         material_name.c_str());
                 }
             }
@@ -241,8 +233,7 @@ class AssignNewDisneyMaterialAction
             {
                 object_instance_item->do_assign_material(
                     ObjectInstanceItem::DefaultSlotName,
-                    true,   // assign to front side
-                    true,   // assign to back side
+                    ObjectInstance::FrontSide | ObjectInstance::BackSide,
                     material_name.c_str());
             }
         }
@@ -394,21 +385,16 @@ void ObjectInstanceItem::assign_material(
     const QVariant&                 untyped_data)
 {
     const string material_name = entity_name.toStdString();
-
     const MaterialAssignmentData data = untyped_data.value<MaterialAssignmentData>();
-    const bool front_side = data.m_side == FrontSide || data.m_side == FrontAndBackSides;
-    const bool back_side = data.m_side == BackSide || data.m_side == FrontAndBackSides;
 
     if (data.m_items.empty())
-    {
-        do_assign_material(data.m_slot.c_str(), front_side, back_side, material_name.c_str());
-    }
+        do_assign_material(data.m_slot.c_str(), data.m_sides, material_name.c_str());
     else
     {
         for (int i = 0; i < data.m_items.size(); ++i)
         {
             ObjectInstanceItem* item = static_cast<ObjectInstanceItem*>(data.m_items[i]);
-            item->do_assign_material(data.m_slot.c_str(), front_side, back_side, material_name.c_str());
+            item->do_assign_material(data.m_slot.c_str(), data.m_sides, material_name.c_str());
         }
     }
 }
@@ -451,19 +437,15 @@ void ObjectInstanceItem::slot_clear_material()
 void ObjectInstanceItem::clear_material(const QVariant& untyped_data)
 {
     const MaterialAssignmentData data = untyped_data.value<MaterialAssignmentData>();
-    const bool front_side = data.m_side == FrontSide || data.m_side == FrontAndBackSides;
-    const bool back_side = data.m_side == BackSide || data.m_side == FrontAndBackSides;
 
     if (data.m_items.empty())
-    {
-        do_unassign_material(data.m_slot.c_str(), front_side, back_side);
-    }
+        do_unassign_material(data.m_slot.c_str(), data.m_sides);
     else
     {
         for (int i = 0; i < data.m_items.size(); ++i)
         {
             ObjectInstanceItem* item = static_cast<ObjectInstanceItem*>(data.m_items[i]);
-            item->do_unassign_material(data.m_slot.c_str(), front_side, back_side);
+            item->do_unassign_material(data.m_slot.c_str(), data.m_sides);
         }
     }
 }
@@ -534,36 +516,35 @@ void ObjectInstanceItem::add_material_assignment_menu_actions(
     const QList<ItemBase*>&         items) const
 {
     menu->addAction("Assign Material To Front Side...", this, SLOT(slot_assign_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, FrontSide, items)));
+        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, ObjectInstance::FrontSide, items)));
 
     menu->addAction("Assign Material To Back Side...", this, SLOT(slot_assign_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, BackSide, items)));
+        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, ObjectInstance::BackSide, items)));
 
     menu->addAction("Assign Material To Both Sides...", this, SLOT(slot_assign_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, FrontAndBackSides, items)));
+        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, ObjectInstance::FrontSide | ObjectInstance::BackSide, items)));
 
     menu->addSeparator();
 
     menu->addAction("Clear Front Side Material", this, SLOT(slot_clear_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, FrontSide, items)));
+        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, ObjectInstance::FrontSide, items)));
 
     menu->addAction("Clear Back Side Material", this, SLOT(slot_clear_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, BackSide, items)));
+        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, ObjectInstance::BackSide, items)));
 
     menu->addAction("Clear Both Sides Materials", this, SLOT(slot_clear_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, FrontAndBackSides, items)));
+        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, ObjectInstance::FrontSide | ObjectInstance::BackSide, items)));
 }
 
 void ObjectInstanceItem::do_assign_material(
     const char*                     slot_name,
-    const bool                      front_side,
-    const bool                      back_side,
+    const int                       sides,
     const char*                     material_name)
 {
-    if (front_side)
+    if (sides & ObjectInstance::FrontSide)
         m_entity->assign_material(slot_name, ObjectInstance::FrontSide, material_name);
 
-    if (back_side)
+    if (sides & ObjectInstance::BackSide)
         m_entity->assign_material(slot_name, ObjectInstance::BackSide, material_name);
 
     m_editor_context.m_project_builder.notify_project_modification();
@@ -573,13 +554,12 @@ void ObjectInstanceItem::do_assign_material(
 
 void ObjectInstanceItem::do_unassign_material(
     const char*                     slot_name,
-    const bool                      front_side,
-    const bool                      back_side)
+    const int                       sides)
 {
-    if (front_side)
+    if (sides & ObjectInstance::FrontSide)
         m_entity->unassign_material(slot_name, ObjectInstance::FrontSide);
 
-    if (back_side)
+    if (sides & ObjectInstance::BackSide)
         m_entity->unassign_material(slot_name, ObjectInstance::BackSide);
 
     m_editor_context.m_project_builder.notify_project_modification();
