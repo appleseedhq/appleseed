@@ -63,9 +63,6 @@ class SampleGeneratorJob
         const size_t                job_count,
         foundation::IAbortSwitch&   abort_switch);
 
-    // Reset the job.
-    void reset();
-
     // Execute the job.
     virtual void execute(const size_t thread_index);
 
@@ -77,7 +74,6 @@ class SampleGeneratorJob
     const size_t                    m_job_index;
     const size_t                    m_job_count;
     foundation::IAbortSwitch&       m_abort_switch;
-    size_t                          m_pass;
 };
 
 }       // namespace renderer

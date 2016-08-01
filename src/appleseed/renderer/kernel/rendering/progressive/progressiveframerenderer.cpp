@@ -235,10 +235,6 @@ namespace
             for (size_t i = 0, e = m_sample_generators.size(); i < e; ++i)
                 m_sample_generators[i]->reset();
 
-            // Reset rendering jobs.
-            for (size_t i = 0, e = m_sample_generator_jobs.size(); i < e; ++i)
-                m_sample_generator_jobs[i]->reset();
-
             // Schedule rendering jobs.
             for (size_t i = 0, e = m_sample_generator_jobs.size(); i < e; ++i)
             {
@@ -369,7 +365,7 @@ namespace
               , m_tile_callback(tile_callback)
               , m_target_elapsed(1.0 / max_fps)
               , m_abort_switch(abort_switch)
-              , m_min_sample_count(32 * 64)  // size of the last level in the sample accumulation buffer assuming a max. aspect ratio of 2
+              , m_min_sample_count(32 * 32 * 2)
             {
             }
 

@@ -56,10 +56,6 @@ using namespace std;
 namespace renderer
 {
 
-//
-// SampleGeneratorJob class implementation.
-//
-
 //#define PRINT_DETAILED_PROGRESS
 
 SampleGeneratorJob::SampleGeneratorJob(
@@ -78,27 +74,21 @@ SampleGeneratorJob::SampleGeneratorJob(
   , m_job_count(job_count)
   , m_abort_switch(abort_switch)
 {
-    reset();
-}
-
-void SampleGeneratorJob::reset()
-{
-    m_pass = 0;
 }
 
 namespace
 {
     // Duration of the interruptible phase.
     // The higher this value, the more refined is the image but the lower is the interactivity.
-    const uint64 SamplesInUninterruptiblePhase = 32 * 64;   // 5000
+    const uint64 SamplesInUninterruptiblePhase = 32 * 32 * 2;
+
+    // Duration of the linear phase.
+    const uint64 SamplesInLinearPhase = 500 * 1000;
 
     // Refinement rates of the image in the different phases.
     // The higher the refinement rates, the lower the parallelism / CPU efficiency.
     const uint64 SamplesPerJobInLinearPhase = 250;
     const uint64 MaxSamplesPerJobInExponentialPhase = 250 * 1000;
-
-    // Duration of the linear phase.
-    const uint64 SamplesInLinearPhase = 500 * 1000;
 
     // Shape of the curve in the exponential phase.
     const double CurveExponentInExponentialPhase = 2.0;
@@ -139,26 +129,26 @@ void SampleGeneratorJob::execute(const size_t thread_index)
     if (acquired_sample_count == 0)
         return;
 
+    // The first phase is uninterruptible in order to always have something to
+    // show during navigation. todo: the renderer freezes if it cannot generate
+    // samples during this phase; fix.
     const bool abortable = current_sample_count > SamplesInUninterruptiblePhase;
 
     // Render the samples and store them into the accumulation buffer.
-    if (current_sample_count < SamplesInUninterruptiblePhase)
-    {
-        // The first pass is uninterruptible in order to always get something
-        // on screen during navigation. todo: this needs to change as it will
-        // freeze rendering if the first pass cannot generate samples.
-        AbortSwitch no_abort;
-        m_sample_generator->generate_samples(
-            static_cast<size_t>(acquired_sample_count),
-            m_buffer,
-            no_abort);
-    }
-    else
+    if (abortable)
     {
         m_sample_generator->generate_samples(
             static_cast<size_t>(acquired_sample_count),
             m_buffer,
             m_abort_switch);
+    }
+    else
+    {
+        AbortSwitch no_abort;
+        m_sample_generator->generate_samples(
+            static_cast<size_t>(acquired_sample_count),
+            m_buffer,
+            no_abort);
     }
 
 #ifdef PRINT_DETAILED_PROGRESS
@@ -166,9 +156,8 @@ void SampleGeneratorJob::execute(const size_t thread_index)
     const double t2 = stopwatch.get_seconds();
 
     RENDERER_LOG_DEBUG(
-        "job " FMT_SIZE_T ", pass " FMT_SIZE_T ", rendered " FMT_UINT64 " samples%s, in %s",
+        "job " FMT_SIZE_T ", rendered " FMT_UINT64 " samples%s, in %s",
         m_job_index,
-        m_pass,
         acquired_sample_count,
         abortable ? "" : " (non-abortable)",
         pretty_time(t2 - t1).c_str());
@@ -176,10 +165,7 @@ void SampleGeneratorJob::execute(const size_t thread_index)
 
     // Reschedule this job.
     if (!abortable || !m_abort_switch.is_aborted())
-    {
-        ++m_pass;
         m_job_queue.schedule(this, false);
-    }
 }
 
 }   // namespace renderer
