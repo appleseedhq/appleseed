@@ -1055,7 +1055,7 @@ namespace
             set_widget("texture_store_max_size.value", get_config<size_t>(config, "texture_store.max_size", DefaultTextureStoreSizeMB) / MB);
 
             set_widget("tile_ordering.override", config.get_parameters().exist_path("generic_frame_renderer.tile_ordering"));
-            set_widget("tile_ordering.value", get_config<string>(config, "generic_frame_renderer.tile_ordering", "hilbert"));
+            set_widget("tile_ordering.value", get_config<string>(config, "generic_frame_renderer.tile_ordering", "spiral"));
         }
 
         virtual void save_config(Configuration& config) const APPLESEED_OVERRIDE

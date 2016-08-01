@@ -228,7 +228,7 @@ namespace
             static TileJobFactory::TileOrdering get_tile_ordering(const ParamArray& params)
             {
                 const string tile_ordering =
-                    params.get_optional<string>("tile_ordering", "hilbert");
+                    params.get_optional<string>("tile_ordering", "spiral");
 
                 if (tile_ordering == "linear")
                 {
@@ -443,7 +443,7 @@ Dictionary GenericFrameRendererFactory::get_params_metadata()
         Dictionary()
             .insert("type", "enum")
             .insert("values", "linear|spiral|hilbert|random")
-            .insert("default", "hilbert")
+            .insert("default", "spiral")
             .insert("label", "Tile Order")
             .insert("help", "Tile rendering order")
             .insert(
