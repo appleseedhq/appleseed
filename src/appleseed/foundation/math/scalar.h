@@ -149,6 +149,14 @@ T log(const T x, const T base);
 template <typename T>
 T next_power(const T x, const T base);
 
+// Round n (n >= 0) to the next multiple of m (m > 0).
+template <typename T>
+T next_multiple(const T n, const T m);
+
+// Round n (n >= 0) to the previous multiple of m (m > 0).
+template <typename T>
+T prev_multiple(const T n, const T m);
+
 // Return the factorial of a given integer.
 template <typename T>
 T factorial(T x);
@@ -476,7 +484,6 @@ template <>
 inline unsigned int log2_int(const unsigned int x)
 {
     assert(x > 0);
-
     return 8 * sizeof(unsigned int) - __builtin_clz(x) - 1;
 }
 
@@ -484,7 +491,6 @@ template <>
 inline unsigned long log2_int(const unsigned long x)
 {
     assert(x > 0);
-
     return 8 * sizeof(unsigned long) - __builtin_clzl(x) - 1;
 }
 
@@ -500,6 +506,22 @@ template <typename T>
 inline T next_power(const T x, const T base)
 {
     return std::pow(base, fast_ceil(log(x, base)));
+}
+
+template <typename T>
+inline T next_multiple(const T n, const T m)
+{
+    assert(n >= 0);
+    assert(m > 0);
+    return (n + m - 1) / m * m;
+}
+
+template <typename T>
+inline T prev_multiple(const T n, const T m)
+{
+    assert(n >= 0);
+    assert(m > 0);
+    return n - n % m;
 }
 
 template <typename T>
