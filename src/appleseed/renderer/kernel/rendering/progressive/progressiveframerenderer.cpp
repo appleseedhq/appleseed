@@ -412,6 +412,9 @@ namespace
 
             void display()
             {
+                // It's time to display but the sample accumulation buffer doesn't contain
+                // enough samples yet. Giving up would lead to noticeable jerkiness, so we
+                // wait until enough samples are available.
                 while (m_buffer.get_sample_count() < m_min_sample_count)
                     yield();
 
