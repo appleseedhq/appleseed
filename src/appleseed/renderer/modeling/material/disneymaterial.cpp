@@ -191,7 +191,12 @@ namespace
                         &color[0]))
                 {
                     // Failed to find or open the texture.
-                    // todo: issue an error message (once).
+                    const string message = texture_system.geterror();
+                    if (!message.empty())
+                    {
+                        const string trimmed_message = trim_both(message);
+                        RENDERER_LOG_ERROR("oiio: %s", trimmed_message.c_str());
+                    }
                     return Color3d(1.0, 0.0, 1.0);
                 }
 

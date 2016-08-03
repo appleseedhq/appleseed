@@ -30,6 +30,7 @@
 #define APPLESEED_RENDERER_UTILITY_SEEXPR_H
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 
 // appleseed.foundation headers.
@@ -38,6 +39,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/string.h"
 
 // SeExpr headers.
 #pragma warning (push)
@@ -148,7 +150,12 @@ class TextureSeExprFunc
                 &color[0]))
         {
             // Failed to find or open the texture.
-            // todo: issue an error message (once).
+            const std::string message = m_texture_system->geterror();
+            if (!message.empty())
+            {
+                const std::string trimmed_message = foundation::trim_both(message);
+                RENDERER_LOG_ERROR("oiio: %s", trimmed_message.c_str());
+            }
             result = SeVec3d(1.0, 0.0, 1.0);
             return;
         }
