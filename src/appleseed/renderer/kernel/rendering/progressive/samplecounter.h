@@ -32,7 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/platform/thread.h"
+#include "foundation/platform/atomic.h"
 #include "foundation/platform/types.h"
 
 namespace renderer
@@ -52,13 +52,11 @@ class SampleCounter
 
     foundation::uint64 read() const;
 
-    foundation::uint64 reserve(const foundation::uint64 sample_count);
+    foundation::uint64 reserve(const foundation::uint64 n);
 
   private:
-    const foundation::uint64        m_max_sample_count;
-
-    mutable foundation::Spinlock    m_spinlock;
-    foundation::uint64              m_sample_count;
+    const foundation::uint64            m_max_sample_count;
+    boost::atomic<foundation::uint64>   m_sample_count;
 };
 
 }       // namespace renderer
