@@ -408,12 +408,12 @@ namespace
             // Scale and clamp the diffuse reflectance.
             Spectrum scaled_rd = values->m_rd;
             scaled_rd *= static_cast<float>(values->m_rd_multiplier);
-            scaled_rd = saturate(scaled_rd);
+            saturate_in_place(scaled_rd);
 
             // Scale and clamp the glossy reflectance.
             rval.m_scaled_rg = values->m_rg;
             rval.m_scaled_rg *= static_cast<float>(values->m_rg_multiplier);
-            rval.m_scaled_rg = saturate(rval.m_scaled_rg);
+            saturate_in_place(rval.m_scaled_rg);
 
             // Compute average diffuse and glossy reflectances.
             const double rd_avg = average_value(scaled_rd);

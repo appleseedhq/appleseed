@@ -176,15 +176,19 @@ template <typename T, size_t N> bool is_saturated(const renderer::DynamicSpectru
 
 // Clamp the argument to [0,1].
 template <typename T, size_t N> renderer::DynamicSpectrum<T, N> saturate(const renderer::DynamicSpectrum<T, N>& s);
+template <typename T, size_t N> void saturate_in_place(renderer::DynamicSpectrum<T, N>& s);
 
 // Clamp the argument to [min, max].
 template <typename T, size_t N> renderer::DynamicSpectrum<T, N> clamp(const renderer::DynamicSpectrum<T, N>& s, const T min, const T max);
+template <typename T, size_t N> void clamp_in_place(renderer::DynamicSpectrum<T, N>& s, const T min, const T max);
 
 // Clamp the argument to [min, +infinity).
 template <typename T, size_t N> renderer::DynamicSpectrum<T, N> clamp_low(const renderer::DynamicSpectrum<T, N>& s, const T min);
+template <typename T, size_t N> void clamp_low_in_place(renderer::DynamicSpectrum<T, N>& s, const T min);
 
 // Clamp the argument to (-infinity, max].
 template <typename T, size_t N> renderer::DynamicSpectrum<T, N> clamp_high(const renderer::DynamicSpectrum<T, N>& s, const T max);
+template <typename T, size_t N> void clamp_high_in_place(renderer::DynamicSpectrum<T, N>& s, const T max);
 
 // Component-wise linear interpolation between a and b.
 template <typename T, size_t N> renderer::DynamicSpectrum<T, N> lerp(
@@ -998,6 +1002,19 @@ inline renderer::DynamicSpectrum<T, N> saturate(const renderer::DynamicSpectrum<
 }
 
 template <typename T, size_t N>
+inline void saturate_in_place(renderer::DynamicSpectrum<T, N>& s)
+{
+    for (size_t i = 0, e = s.size(); i < e; ++i)
+    {
+        if (s[i] < T(0.0))
+            s[i] = T(0.0);
+
+        if (s[i] > T(1.0))
+            s[i] = T(1.0);
+    }
+}
+
+template <typename T, size_t N>
 inline renderer::DynamicSpectrum<T, N> clamp(const renderer::DynamicSpectrum<T, N>& s, const T min, const T max)
 {
     renderer::DynamicSpectrum<T, N> result;
@@ -1007,6 +1024,19 @@ inline renderer::DynamicSpectrum<T, N> clamp(const renderer::DynamicSpectrum<T, 
         result[i] = clamp(s[i], min, max);
 
     return result;
+}
+
+template <typename T, size_t N>
+inline void clamp_in_place(renderer::DynamicSpectrum<T, N>& s, const T min, const T max)
+{
+    for (size_t i = 0, e = s.size(); i < e; ++i)
+    {
+        if (s[i] < min)
+            s[i] = min;
+
+        if (s[i] > max)
+            s[i] = max;
+    }
 }
 
 template <typename T, size_t N>
@@ -1022,6 +1052,16 @@ inline renderer::DynamicSpectrum<T, N> clamp_low(const renderer::DynamicSpectrum
 }
 
 template <typename T, size_t N>
+inline void clamp_low_in_place(renderer::DynamicSpectrum<T, N>& s, const T min)
+{
+    for (size_t i = 0, e = s.size(); i < e; ++i)
+    {
+        if (s[i] < min)
+            s[i] = min;
+    }
+}
+
+template <typename T, size_t N>
 inline renderer::DynamicSpectrum<T, N> clamp_high(const renderer::DynamicSpectrum<T, N>& s, const T max)
 {
     renderer::DynamicSpectrum<T, N> result;
@@ -1031,6 +1071,16 @@ inline renderer::DynamicSpectrum<T, N> clamp_high(const renderer::DynamicSpectru
         result[i] = std::min(s[i], max);
 
     return result;
+}
+
+template <typename T, size_t N>
+inline void clamp_high_in_place(renderer::DynamicSpectrum<T, N>& s, const T max)
+{
+    for (size_t i = 0, e = s.size(); i < e; ++i)
+    {
+        if (s[i] > max)
+            s[i] = max;
+    }
 }
 
 template <typename T, size_t N>
