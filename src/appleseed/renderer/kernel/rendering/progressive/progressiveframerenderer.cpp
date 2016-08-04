@@ -65,6 +65,9 @@
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 
+// Boost headers.
+#include "boost/filesystem.hpp"
+
 // Standard headers.
 #include <cassert>
 #include <cmath>
@@ -98,7 +101,7 @@ namespace
             ISampleGeneratorFactory*        generator_factory,
             ITileCallbackFactory*           callback_factory,
             const ParamArray&               params)
-          : m_frame(*project.get_frame())
+          : m_project(project)
           , m_params(params)
           , m_sample_counter(m_params.m_max_sample_count)
           , m_ref_image_avg_lum(0.0)
@@ -155,7 +158,7 @@ namespace
                 GenericImageFileReader reader;
                 m_ref_image.reset(reader.read(ref_image_path.c_str()));
 
-                if (are_images_compatible(m_frame.image(), *m_ref_image))
+                if (are_images_compatible(m_project.get_frame()->image(), *m_ref_image))
                 {
                     m_ref_image_avg_lum = compute_average_luminance(*m_ref_image.get());
 
@@ -249,7 +252,7 @@ namespace
             // Create and start the statistics thread.
             m_statistics_func.reset(
                 new StatisticsFunc(
-                    m_frame,
+                    m_project,
                     *m_buffer.get(),
                     m_params.m_perf_stats,
                     m_params.m_luminance_stats,
@@ -265,7 +268,7 @@ namespace
             {
                 m_display_func.reset(
                     new DisplayFunc(
-                        m_frame,
+                        *m_project.get_frame(),
                         *m_buffer.get(),
                         m_tile_callback.get() ? m_tile_callback.get() : 0,
                         m_params.m_max_fps,
@@ -316,7 +319,6 @@ namespace
 
             // The statistics thread has already been joined in stop_rendering().
             m_statistics_thread.reset();
-            m_statistics_func->write_plot_files();
             m_statistics_func.reset();
 
             // Join and delete the display thread.
@@ -333,6 +335,10 @@ namespace
         }
 
       private:
+        //
+        // Progressive frame renderer parameters.
+        //
+
         struct Parameters
         {
             const size_t    m_thread_count;             // number of rendering threads
@@ -352,6 +358,10 @@ namespace
             {
             }
         };
+
+        //
+        // Frame display thread.
+        //
 
         class DisplayFunc
           : public NonCopyable
@@ -471,19 +481,23 @@ namespace
             Stopwatch<DefaultWallclockTimer>    m_stopwatch;
         };
 
+        //
+        // Statistics gathering and printing thread.
+        //
+
         class StatisticsFunc
           : public NonCopyable
         {
           public:
             StatisticsFunc(
-                Frame&                      frame,
+                const Project&              project,
                 SampleAccumulationBuffer&   buffer,
                 const bool                  perf_stats,
                 const bool                  luminance_stats,
                 const Image*                ref_image,
                 const double                ref_image_avg_lum,
                 IAbortSwitch&               abort_switch)
-              : m_frame(frame)
+              : m_project(project)
               , m_buffer(buffer)
               , m_perf_stats(perf_stats)
               , m_luminance_stats(luminance_stats)
@@ -493,9 +507,44 @@ namespace
               , m_rcp_timer_frequency(1.0 / m_timer.frequency())
               , m_timer_start_value(m_timer.read())
             {
-                const Vector2u crop_window_extent = m_frame.get_crop_window().extent();
+                const Vector2u crop_window_extent = m_project.get_frame()->get_crop_window().extent();
                 const size_t pixel_count = (crop_window_extent.x + 1) * (crop_window_extent.y + 1);
                 m_rcp_pixel_count = 1.0 / pixel_count;
+            }
+
+            ~StatisticsFunc()
+            {
+                if (!m_sample_count_records.empty())
+                {
+                    const string filepath =
+                        (filesystem::path(m_project.search_paths().get_root_path()) / "sample_count.gnuplot").string();
+                    RENDERER_LOG_DEBUG("writing %s...", filepath.c_str());
+
+                    GnuplotFile plotfile;
+                    plotfile.set_xlabel("Time");
+                    plotfile.set_ylabel("Samples");
+                    plotfile
+                        .new_plot()
+                        .set_points(m_sample_count_records)
+                        .set_title("Total Sample Count Over Time");
+                    plotfile.write(filepath);
+                }
+
+                if (!m_rmsd_records.empty())
+                {
+                    const string filepath =
+                        (filesystem::path(m_project.search_paths().get_root_path()) / "rms_deviation.gnuplot").string();
+                    RENDERER_LOG_DEBUG("writing %s...", filepath.c_str());
+
+                    GnuplotFile plotfile;
+                    plotfile.set_xlabel("Samples per Pixel");
+                    plotfile.set_ylabel("RMS Deviation");
+                    plotfile
+                        .new_plot()
+                        .set_points(m_rmsd_records)
+                        .set_title("RMS Deviation Over Time");
+                    plotfile.write(filepath);
+                }
             }
 
             void pause()
@@ -527,35 +576,8 @@ namespace
                 }
             }
 
-            void write_plot_files() const
-            {
-                if (!m_sample_count_records.empty())
-                {
-                    GnuplotFile plotfile;
-                    plotfile.set_xlabel("Time");
-                    plotfile.set_ylabel("Samples");
-                    plotfile
-                        .new_plot()
-                        .set_points(m_sample_count_records)
-                        .set_title("Total Sample Count Over Time");
-                    plotfile.write("sample_count.gnuplot");
-                }
-
-                if (!m_rmsd_records.empty())
-                {
-                    GnuplotFile plotfile;
-                    plotfile.set_xlabel("Samples per Pixel");
-                    plotfile.set_ylabel("RMS Deviation");
-                    plotfile
-                        .new_plot()
-                        .set_points(m_rmsd_records)
-                        .set_title("RMS Deviation Over Time");
-                    plotfile.write("rms_deviation.gnuplot");
-                }
-            }
-
           private:
-            Frame&                          m_frame;
+            const Project&                  m_project;
             SampleAccumulationBuffer&       m_buffer;
             const bool                      m_perf_stats;
             const bool                      m_luminance_stats;
@@ -597,8 +619,8 @@ namespace
 
                 string output;
 
-                Image current_image(m_frame.image());
-                m_frame.transform_to_output_color_space(current_image);
+                Image current_image(m_project.get_frame()->image());
+                m_project.get_frame()->transform_to_output_color_space(current_image);
 
                 if (m_luminance_stats)
                 {
@@ -629,7 +651,11 @@ namespace
             }
         };
 
-        Frame&                              m_frame;
+        //
+        // Progressive frame renderer implementation details.
+        //
+
+        const Project&                      m_project;
         const Parameters                    m_params;
         SampleCounter                       m_sample_counter;
 
