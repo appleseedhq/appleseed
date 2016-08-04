@@ -52,8 +52,8 @@ BENCHMARK_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
         AABB2u                          m_rect;
 
         Fixture()
-          : m_color_tile(64, 64, 4, PixelFormat::PixelFormatHalf)
-          , m_depth_tile(64, 64, 1, PixelFormat::PixelFormatHalf)
+          : m_color_tile(64, 64, 4, PixelFormatHalf)
+          , m_depth_tile(64, 64, 1, PixelFormatHalf)
           , m_filter(1.5f, 1.5f)
           , m_level(256, 256, 5, m_filter)
           , m_rect(Vector2u(0, 0), Vector2u(63, 63))
