@@ -43,7 +43,6 @@
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
-#include "foundation/math/aabb.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/timers.h"
 #include "foundation/utility/job/iabortswitch.h"
@@ -84,9 +83,9 @@ namespace renderer
 //#define PRINT_DETAILED_PERF_REPORTS
 
 LocalSampleAccumulationBuffer::LocalSampleAccumulationBuffer(
-    const size_t    width,
-    const size_t    height,
-    const Filter2f& filter)
+    const size_t        width,
+    const size_t        height,
+    const Filter2f&     filter)
 {
     const size_t MinSize = 32;
 
@@ -146,9 +145,9 @@ void LocalSampleAccumulationBuffer::clear()
 }
 
 void LocalSampleAccumulationBuffer::store_samples(
-    const size_t    sample_count,
-    const Sample    samples[],
-    IAbortSwitch&   abort_switch)
+    const size_t        sample_count,
+    const Sample        samples[],
+    IAbortSwitch&       abort_switch)
 {
 #ifdef PRINT_DETAILED_PERF_REPORTS
     Stopwatch<DefaultWallclockTimer> sw(0);
@@ -225,79 +224,9 @@ void LocalSampleAccumulationBuffer::store_samples(
     }
 }
 
-namespace
-{
-    void develop_to_tile(
-        Tile&                   color_tile,
-        Tile&                   depth_tile,
-        const size_t            image_width,
-        const size_t            image_height,
-        const FilteredTile&     level,
-        const size_t            origin_x,
-        const size_t            origin_y,
-        const AABB2u&           crop_window,
-        const bool              undo_premultiplied_alpha)
-    {
-        const AABB2u r =
-            AABB2u::intersect(
-                AABB2u(
-                    Vector2u(origin_x, origin_y),
-                    Vector2u(origin_x + color_tile.get_width() - 1, origin_y + color_tile.get_height() - 1)),
-                crop_window);
-
-        if (undo_premultiplied_alpha)
-        {
-            for (size_t iy = r.min.y; iy <= r.max.y; ++iy)
-            {
-                const size_t level_width = level.get_width();
-                const size_t src_y = (iy * level.get_height() / image_height) * level_width;
-                const size_t dest_y = (iy - origin_y) * color_tile.get_width() - origin_x;
-
-                for (size_t ix = r.min.x; ix <= r.max.x; ++ix)
-                {
-                    Color<float, 5> values;
-
-                    level.get_pixel(
-                        src_y + ix * level_width / image_width,
-                        &values[0]);
-
-                    const float rcp_alpha = values[3] == 0.0f ? 0.0f : 1.0f / values[3];
-                    values[0] *= rcp_alpha;
-                    values[1] *= rcp_alpha;
-                    values[2] *= rcp_alpha;
-
-                    color_tile.set_pixel<float>(dest_y + ix, &values[0]);
-                    depth_tile.set_component(dest_y + ix, 0, values[4]);
-                }
-            }
-        }
-        else
-        {
-            for (size_t iy = r.min.y; iy <= r.max.y; ++iy)
-            {
-                const size_t level_width = level.get_width();
-                const size_t src_y = (iy * level.get_height() / image_height) * level_width;
-                const size_t dest_y = (iy - origin_y) * color_tile.get_width() - origin_x;
-
-                for (size_t ix = r.min.x; ix <= r.max.x; ++ix)
-                {
-                    Color<float, 5> values;
-
-                    level.get_pixel(
-                        src_y + ix * level_width / image_width,
-                        &values[0]);
-
-                    color_tile.set_pixel<float>(dest_y + ix, &values[0]);
-                    depth_tile.set_component(dest_y + ix, 0, values[4]);
-                }
-            }
-        }
-    }
-}
-
 void LocalSampleAccumulationBuffer::develop_to_frame(
-    Frame&          frame,
-    IAbortSwitch&   abort_switch)
+    Frame&              frame,
+    IAbortSwitch&       abort_switch)
 {
 #ifdef PRINT_DETAILED_PERF_REPORTS
     Stopwatch<DefaultWallclockTimer> sw(0);
@@ -346,15 +275,36 @@ void LocalSampleAccumulationBuffer::develop_to_frame(
             Tile& color_tile = color_image.tile(tx, ty);
             Tile& depth_tile = depth_image.tile(tx, ty);
 
-            develop_to_tile(
-                color_tile,
-                depth_tile,
-                frame_props.m_canvas_width,
-                frame_props.m_canvas_height,
-                level,
-                origin_x, origin_y,
-                crop_window,
-                undo_premultiplied_alpha);
+            const AABB2u tile_rect(
+                Vector2u(origin_x, origin_y),
+                Vector2u(origin_x + color_tile.get_width() - 1, origin_y + color_tile.get_height() - 1));
+
+            const AABB2u rect = AABB2u::intersect(tile_rect, crop_window);
+
+            if (undo_premultiplied_alpha)
+            {
+                develop_to_tile_undo_premult_alpha(
+                    color_tile,
+                    depth_tile,
+                    frame_props.m_canvas_width,
+                    frame_props.m_canvas_height,
+                    level,
+                    origin_x,
+                    origin_y,
+                    rect);
+            }
+            else
+            {
+                develop_to_tile(
+                    color_tile,
+                    depth_tile,
+                    frame_props.m_canvas_width,
+                    frame_props.m_canvas_height,
+                    level,
+                    origin_x,
+                    origin_y,
+                    rect);
+            }
         }
     }
 
@@ -363,6 +313,181 @@ void LocalSampleAccumulationBuffer::develop_to_frame(
     const double t2 = sw.get_seconds();
     RENDERER_LOG_DEBUG("develop_to_frame: %f", (t2 - t1) * 1000.0);
 #endif
+}
+
+void LocalSampleAccumulationBuffer::develop_to_tile_undo_premult_alpha(
+    Tile&               color_tile,
+    Tile&               depth_tile,
+    const size_t        image_width,
+    const size_t        image_height,
+    const FilteredTile& level,
+    const size_t        origin_x,
+    const size_t        origin_y,
+    const AABB2u&       rect)
+{
+    if (rect.min.x > rect.max.x)
+        return;
+
+    const size_t level_width = level.get_width();
+    const size_t m = image_width / level_width;
+
+    if (image_width % level_width == 0 && is_pow2(m))
+    {
+        const size_t s = log2_int(m);
+        for (size_t iy = rect.min.y; iy <= rect.max.y; ++iy)
+        {
+            const size_t src_base = (iy * level.get_height() / image_height) * level_width;
+            const size_t dest_base = (iy - origin_y) * color_tile.get_width();
+
+            const size_t prefix_end = next_multiple(rect.min.x, m);
+            const size_t suffix_begin = prev_multiple(rect.max.x + 1, m);
+
+            Color<float, 5> values;
+
+            // Prefix.
+            for (size_t ix = rect.min.x; ix < prefix_end; ++ix)
+            {
+                level.get_pixel(src_base + (rect.min.x >> s), &values[0]);
+                const float rcp_alpha = values[3] == 0.0f ? 0.0f : 1.0f / values[3];
+                values[0] *= rcp_alpha;
+                values[1] *= rcp_alpha;
+                values[2] *= rcp_alpha;
+                color_tile.set_pixel<float>(dest_base + ix - origin_x, &values[0]);
+                depth_tile.set_component(dest_base + ix - origin_x, 0, values[4]);
+            }
+
+            // Quick run.
+            for (size_t ix = prefix_end; ix < suffix_begin; ix += m)
+            {
+                level.get_pixel(src_base + (ix >> s), &values[0]);
+                const float rcp_alpha = values[3] == 0.0f ? 0.0f : 1.0f / values[3];
+                values[0] *= rcp_alpha;
+                values[1] *= rcp_alpha;
+                values[2] *= rcp_alpha;
+                for (size_t j = 0; j < m; ++j)
+                {
+                    color_tile.set_pixel<float>(dest_base + ix + j - origin_x, &values[0]);
+                    depth_tile.set_component(dest_base + ix + j - origin_x, 0, values[4]);
+                }
+            }
+
+            // Suffix.
+            for (size_t ix = suffix_begin; ix < rect.max.x + 1; ++ix)
+            {
+                level.get_pixel(src_base + (rect.max.x >> s), &values[0]);
+                const float rcp_alpha = values[3] == 0.0f ? 0.0f : 1.0f / values[3];
+                values[0] *= rcp_alpha;
+                values[1] *= rcp_alpha;
+                values[2] *= rcp_alpha;
+                color_tile.set_pixel<float>(dest_base + ix - origin_x, &values[0]);
+                depth_tile.set_component(dest_base + ix - origin_x, 0, values[4]);
+            }
+        }
+    }
+    else
+    {
+        for (size_t iy = rect.min.y; iy <= rect.max.y; ++iy)
+        {
+            const size_t src_base = (iy * level.get_height() / image_height) * level_width;
+            const size_t dest_base = (iy - origin_y) * color_tile.get_width() - origin_x;
+
+            for (size_t ix = rect.min.x; ix <= rect.max.x; ++ix)
+            {
+                Color<float, 5> values;
+
+                level.get_pixel(
+                    src_base + ix * level_width / image_width,
+                    &values[0]);
+
+                const float rcp_alpha = values[3] == 0.0f ? 0.0f : 1.0f / values[3];
+                values[0] *= rcp_alpha;
+                values[1] *= rcp_alpha;
+                values[2] *= rcp_alpha;
+
+                color_tile.set_pixel<float>(dest_base + ix, &values[0]);
+                depth_tile.set_component(dest_base + ix, 0, values[4]);
+            }
+        }
+    }
+}
+
+void LocalSampleAccumulationBuffer::develop_to_tile(
+    Tile&               color_tile,
+    Tile&               depth_tile,
+    const size_t        image_width,
+    const size_t        image_height,
+    const FilteredTile& level,
+    const size_t        origin_x,
+    const size_t        origin_y,
+    const AABB2u&       rect)
+{
+    if (rect.min.x > rect.max.x)
+        return;
+
+    const size_t level_width = level.get_width();
+    const size_t m = image_width / level_width;
+
+    if (image_width % level_width == 0 && is_pow2(m))
+    {
+        const size_t s = log2_int(m);
+        for (size_t iy = rect.min.y; iy <= rect.max.y; ++iy)
+        {
+            const size_t src_base = (iy * level.get_height() / image_height) * level_width;
+            const size_t dest_base = (iy - origin_y) * color_tile.get_width();
+
+            const size_t prefix_end = next_multiple(rect.min.x, m);
+            const size_t suffix_begin = prev_multiple(rect.max.x + 1, m);
+
+            Color<float, 5> values;
+
+            // Prefix.
+            level.get_pixel(src_base + (rect.min.x >> s), &values[0]);
+            for (size_t ix = rect.min.x; ix < prefix_end; ++ix)
+            {
+                color_tile.set_pixel<float>(dest_base + ix - origin_x, &values[0]);
+                depth_tile.set_component(dest_base + ix - origin_x, 0, values[4]);
+            }
+
+            // Quick run.
+            for (size_t ix = prefix_end; ix < suffix_begin; ix += m)
+            {
+                level.get_pixel(src_base + (ix >> s), &values[0]);
+                for (size_t j = 0; j < m; ++j)
+                {
+                    color_tile.set_pixel<float>(dest_base + ix + j - origin_x, &values[0]);
+                    depth_tile.set_component(dest_base + ix + j - origin_x, 0, values[4]);
+                }
+            }
+
+            // Suffix.
+            level.get_pixel(src_base + (rect.max.x >> s), &values[0]);
+            for (size_t ix = suffix_begin; ix < rect.max.x + 1; ++ix)
+            {
+                color_tile.set_pixel<float>(dest_base + ix - origin_x, &values[0]);
+                depth_tile.set_component(dest_base + ix - origin_x, 0, values[4]);
+            }
+        }
+    }
+    else
+    {
+        for (size_t iy = rect.min.y; iy <= rect.max.y; ++iy)
+        {
+            const size_t src_base = (iy * level.get_height() / image_height) * level_width;
+            const size_t dest_base = (iy - origin_y) * color_tile.get_width();
+
+            for (size_t ix = rect.min.x; ix <= rect.max.x; ++ix)
+            {
+                Color<float, 5> values;
+
+                level.get_pixel(
+                    src_base + ix * level_width / image_width,
+                    &values[0]);
+
+                color_tile.set_pixel<float>(dest_base + ix - origin_x, &values[0]);
+                depth_tile.set_component(dest_base + ix - origin_x, 0, values[4]);
+            }
+        }
+    }
 }
 
 }   // namespace renderer

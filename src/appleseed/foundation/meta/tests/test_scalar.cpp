@@ -185,6 +185,28 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_EQ(31, log2_int(1UL << 31));
     }
 
+    TEST_CASE(NextMultiple)
+    {
+        EXPECT_EQ(0,  next_multiple(0, 5));
+        EXPECT_EQ(5,  next_multiple(1, 5));
+        EXPECT_EQ(5,  next_multiple(2, 5));
+        EXPECT_EQ(5,  next_multiple(3, 5));
+        EXPECT_EQ(5,  next_multiple(4, 5));
+        EXPECT_EQ(5,  next_multiple(5, 5));
+        EXPECT_EQ(10, next_multiple(6, 5));
+    }
+
+    TEST_CASE(PrevMultiple)
+    {
+        EXPECT_EQ(0, prev_multiple(0, 5));
+        EXPECT_EQ(0, prev_multiple(1, 5));
+        EXPECT_EQ(0, prev_multiple(2, 5));
+        EXPECT_EQ(0, prev_multiple(3, 5));
+        EXPECT_EQ(0, prev_multiple(4, 5));
+        EXPECT_EQ(5, prev_multiple(5, 5));
+        EXPECT_EQ(5, prev_multiple(6, 5));
+    }
+
     TEST_CASE(Factorial)
     {
         EXPECT_EQ(1,   factorial(0));

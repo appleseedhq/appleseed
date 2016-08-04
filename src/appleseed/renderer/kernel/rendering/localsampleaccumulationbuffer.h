@@ -34,6 +34,7 @@
 #include "renderer/kernel/rendering/sampleaccumulationbuffer.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/aabb.h"
 #include "foundation/math/filter.h"
 #include "foundation/platform/atomic.h"
 #include "foundation/platform/compiler.h"
@@ -47,6 +48,7 @@
 // Forward declarations.
 namespace foundation    { class FilteredTile; }
 namespace foundation    { class IAbortSwitch; }
+namespace foundation    { class Tile; }
 namespace renderer      { class Frame; }
 namespace renderer      { class Sample; }
 
@@ -79,6 +81,26 @@ class LocalSampleAccumulationBuffer
     virtual void develop_to_frame(
         Frame&                              frame,
         foundation::IAbortSwitch&           abort_switch) APPLESEED_OVERRIDE;
+
+    // Exposed for tests and benchmarks.
+    static void develop_to_tile_undo_premult_alpha(
+        foundation::Tile&                   color_tile,
+        foundation::Tile&                   depth_tile,
+        const size_t                        image_width,
+        const size_t                        image_height,
+        const foundation::FilteredTile&     level,
+        const size_t                        origin_x,
+        const size_t                        origin_y,
+        const foundation::AABB2u&           rect);
+    static void develop_to_tile(
+        foundation::Tile&                   color_tile,
+        foundation::Tile&                   depth_tile,
+        const size_t                        image_width,
+        const size_t                        image_height,
+        const foundation::FilteredTile&     level,
+        const size_t                        origin_x,
+        const size_t                        origin_y,
+        const foundation::AABB2u&           rect);
 
   private:
     boost::shared_mutex                     m_mutex;

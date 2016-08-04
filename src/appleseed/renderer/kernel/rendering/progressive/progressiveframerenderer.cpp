@@ -251,7 +251,8 @@ namespace
                 new StatisticsFunc(
                     m_frame,
                     *m_buffer.get(),
-                    m_params.m_print_luminance_stats,
+                    m_params.m_perf_stats,
+                    m_params.m_luminance_stats,
                     m_ref_image.get(),
                     m_ref_image_avg_lum,
                     m_abort_switch));
@@ -315,7 +316,7 @@ namespace
 
             // The statistics thread has already been joined in stop_rendering().
             m_statistics_thread.reset();
-            m_statistics_func->write_rms_deviation_file();
+            m_statistics_func->write_plot_files();
             m_statistics_func.reset();
 
             // Join and delete the display thread.
@@ -337,14 +338,16 @@ namespace
             const size_t    m_thread_count;             // number of rendering threads
             const uint64    m_max_sample_count;         // maximum total number of samples to compute
             const double    m_max_fps;                  // maximum display frequency in frames/second
-            const bool      m_print_luminance_stats;    // compute and print luminance statistics?
+            const bool      m_perf_stats;               // collect and print performance statistics?
+            const bool      m_luminance_stats;          // collect and print luminance statistics?
             const string    m_ref_image_path;           // path to the reference image
 
             explicit Parameters(const ParamArray& params)
               : m_thread_count(get_rendering_thread_count(params))
               , m_max_sample_count(params.get_optional<uint64>("max_samples", numeric_limits<uint64>::max()))
               , m_max_fps(params.get_optional<double>("max_fps", 30.0))
-              , m_print_luminance_stats(params.get_optional<bool>("print_luminance_statistics", false))
+              , m_perf_stats(params.get_optional<bool>("performance_statistics", false))
+              , m_luminance_stats(params.get_optional<bool>("luminance_statistics", false))
               , m_ref_image_path(params.get_optional<string>("reference_image", ""))
             {
             }
@@ -475,17 +478,20 @@ namespace
             StatisticsFunc(
                 Frame&                      frame,
                 SampleAccumulationBuffer&   buffer,
-                const bool                  print_luminance_stats,
+                const bool                  perf_stats,
+                const bool                  luminance_stats,
                 const Image*                ref_image,
                 const double                ref_image_avg_lum,
                 IAbortSwitch&               abort_switch)
               : m_frame(frame)
               , m_buffer(buffer)
-              , m_print_luminance_stats(print_luminance_stats)
+              , m_perf_stats(perf_stats)
+              , m_luminance_stats(luminance_stats)
               , m_ref_image(ref_image)
               , m_ref_image_avg_lum(ref_image_avg_lum)
               , m_abort_switch(abort_switch)
               , m_rcp_timer_frequency(1.0 / m_timer.frequency())
+              , m_timer_start_value(m_timer.read())
             {
                 const Vector2u crop_window_extent = m_frame.get_crop_window().extent();
                 const size_t pixel_count = (crop_window_extent.x + 1) * (crop_window_extent.y + 1);
@@ -510,10 +516,10 @@ namespace
                 {
                     if (m_pause_flag.is_clear())
                     {
-                        const double time = m_timer.read() * m_rcp_timer_frequency;
+                        const double time = (m_timer.read() - m_timer_start_value) * m_rcp_timer_frequency;
                         record_and_print_perf_stats(time);
 
-                        if (m_print_luminance_stats || m_ref_image)
+                        if (m_luminance_stats || m_ref_image)
                             record_and_print_convergence_stats();
                     }
 
@@ -521,16 +527,29 @@ namespace
                 }
             }
 
-            void write_rms_deviation_file() const
+            void write_plot_files() const
             {
-                if (!m_rmsd_history.empty())
+                if (!m_sample_count_records.empty())
+                {
+                    GnuplotFile plotfile;
+                    plotfile.set_xlabel("Time");
+                    plotfile.set_ylabel("Samples");
+                    plotfile
+                        .new_plot()
+                        .set_points(m_sample_count_records)
+                        .set_title("Total Sample Count Over Time");
+                    plotfile.write("sample_count.gnuplot");
+                }
+
+                if (!m_rmsd_records.empty())
                 {
                     GnuplotFile plotfile;
                     plotfile.set_xlabel("Samples per Pixel");
+                    plotfile.set_ylabel("RMS Deviation");
                     plotfile
                         .new_plot()
-                        .set_points(m_rmsd_history)
-                        .set_title("RMS Deviation");
+                        .set_points(m_rmsd_records)
+                        .set_title("RMS Deviation Over Time");
                     plotfile.write("rms_deviation.gnuplot");
                 }
             }
@@ -538,7 +557,8 @@ namespace
           private:
             Frame&                          m_frame;
             SampleAccumulationBuffer&       m_buffer;
-            const bool                      m_print_luminance_stats;
+            const bool                      m_perf_stats;
+            const bool                      m_luminance_stats;
             const Image*                    m_ref_image;
             const double                    m_ref_image_avg_lum;
             IAbortSwitch&                   m_abort_switch;
@@ -546,10 +566,12 @@ namespace
 
             DefaultWallclockTimer           m_timer;
             double                          m_rcp_timer_frequency;
+            uint64                          m_timer_start_value;
 
             double                          m_rcp_pixel_count;
             SampleCountHistory<128>         m_sample_count_history;
-            vector<Vector2d>                m_rmsd_history;             // RMS deviation history
+            vector<Vector2d>                m_sample_count_records;     // total sample count over time
+            vector<Vector2d>                m_rmsd_records;             // RMS deviation over time
 
             void record_and_print_perf_stats(const double time)
             {
@@ -564,18 +586,21 @@ namespace
                     pretty_uint(samples).c_str(),
                     pretty_scalar(samples_per_pixel).c_str(),
                     pretty_uint(samples_per_second).c_str());
+
+                if (m_perf_stats)
+                    m_sample_count_records.push_back(Vector2d(time, static_cast<double>(samples)));
             }
 
             void record_and_print_convergence_stats()
             {
-                assert(m_print_luminance_stats || m_ref_image);
+                assert(m_luminance_stats || m_ref_image);
 
                 string output;
 
                 Image current_image(m_frame.image());
                 m_frame.transform_to_output_color_space(current_image);
 
-                if (m_print_luminance_stats)
+                if (m_luminance_stats)
                 {
                     const double avg_lum = compute_average_luminance(current_image);
                     output += "average luminance " + pretty_scalar(avg_lum, 6);
@@ -593,10 +618,9 @@ namespace
                 {
                     const double samples_per_pixel = m_buffer.get_sample_count() * m_rcp_pixel_count;
                     const double rmsd = compute_rms_deviation(current_image, *m_ref_image);
+                    m_rmsd_records.push_back(Vector2d(samples_per_pixel, rmsd));
 
-                    m_rmsd_history.push_back(Vector2d(samples_per_pixel, rmsd));
-
-                    if (m_print_luminance_stats)
+                    if (m_luminance_stats)
                         output += ", ";
                     output += "rms deviation " + pretty_scalar(rmsd, 6);
                 }
