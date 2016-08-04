@@ -1004,14 +1004,7 @@ inline renderer::DynamicSpectrum<T, N> saturate(const renderer::DynamicSpectrum<
 template <typename T, size_t N>
 inline void saturate_in_place(renderer::DynamicSpectrum<T, N>& s)
 {
-    for (size_t i = 0, e = s.size(); i < e; ++i)
-    {
-        if (s[i] < T(0.0))
-            s[i] = T(0.0);
-
-        if (s[i] > T(1.0))
-            s[i] = T(1.0);
-    }
+    clamp_in_place(s, T(0.0), T(1.0));
 }
 
 template <typename T, size_t N>
