@@ -33,7 +33,9 @@
 // API headers.
 #include "renderer/utility/bbox.h"
 #include "renderer/utility/paramarray.h"
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
 #include "renderer/utility/seexpr.h"
+#endif
 #include "renderer/utility/settingsparsing.h"
 #include "renderer/utility/testutils.h"
 #include "renderer/utility/transformsequence.h"
