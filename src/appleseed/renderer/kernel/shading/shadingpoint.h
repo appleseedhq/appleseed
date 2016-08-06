@@ -456,7 +456,6 @@ inline const Scene& ShadingPoint::get_scene() const
 inline void ShadingPoint::set_ray(const ShadingRay& ray)
 {
     assert(foundation::is_normalized(ray.m_dir));
-
     m_ray = ray;
 }
 

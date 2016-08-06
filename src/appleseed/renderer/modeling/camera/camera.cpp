@@ -306,18 +306,20 @@ void Camera::initialize_ray(
 
     if (m_shutter_open_time == m_shutter_close_time)
     {
-        ray.m_time = ShadingRay::Time::create_with_normalized_time(
-            0.0,
-            m_shutter_open_time,
-            m_shutter_close_time);
+        ray.m_time =
+            ShadingRay::Time::create_with_normalized_time(
+                0.0,
+                m_shutter_open_time,
+                m_shutter_close_time);
     }
     else
     {
         sampling_context.split_in_place(1, 1);
-        ray.m_time = ShadingRay::Time::create_with_normalized_time(
-            sampling_context.next_double2(),
-            m_shutter_open_time,
-            m_shutter_close_time);
+        ray.m_time =
+            ShadingRay::Time::create_with_normalized_time(
+                sampling_context.next_double2(),
+                m_shutter_open_time,
+                m_shutter_close_time);
     }
 }
 
