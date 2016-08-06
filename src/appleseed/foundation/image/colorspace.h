@@ -928,8 +928,10 @@ namespace impl
     {
         for (size_t w = 0;  w < 10; ++w)
             spectrum[w] = static_cast<T>(linear_rgb[2]);
+
         for (size_t w = 10; w < 20; ++w)
             spectrum[w] = static_cast<T>(linear_rgb[1]);
+
         for (size_t w = 20; w < 31; ++w)
             spectrum[w] = static_cast<T>(linear_rgb[0]);
     }
@@ -949,47 +951,84 @@ namespace impl
         const T r = linear_rgb[0];
         const T g = linear_rgb[1];
         const T b = linear_rgb[2];
+        SpectrumType tmp;
 
         if (r <= g && r <= b)
         {
-            spectrum = r * white;
+            spectrum = white;
+            spectrum *= r;
+
             if (g <= b)
             {
-                spectrum += (g - r) * cyan;
-                spectrum += (b - g) * blue;
+                tmp = cyan;
+                tmp *= g - r;
+                spectrum += tmp;
+
+                tmp = blue;
+                tmp *= b - g;
+                spectrum += tmp;
             }
             else
             {
-                spectrum += (b - r) * cyan;
-                spectrum += (g - b) * green;
+                tmp = cyan;
+                tmp *= b - r;
+                spectrum += tmp;
+
+                tmp = green;
+                tmp *= g - b;
+                spectrum += tmp;
             }
         }
         else if (g <= r && g <= b)
         {
-            spectrum = g * white;
+            spectrum = white;
+            spectrum *= g;
+
             if (r <= b)
             {
-                spectrum += (r - g) * magenta;
-                spectrum += (b - r) * blue;
+                tmp = magenta;
+                tmp *= r - g;
+                spectrum += tmp;
+
+                tmp = blue;
+                tmp *= b - r;
+                spectrum += tmp;
             }
             else
             {
-                spectrum += (b - g) * magenta;
-                spectrum += (r - b) * red;
+                tmp = magenta;
+                tmp *= b - g;
+                spectrum += tmp;
+
+                tmp = red;
+                tmp *= r - b;
+                spectrum += tmp;
             }
         }
         else
         {
-            spectrum = b * white;
+            spectrum = white;
+            spectrum *= b;
+
             if (r <= g)
             {
-                spectrum += (r - b) * yellow;
-                spectrum += (g - r) * green;
+                tmp = yellow;
+                tmp *= r - b;
+                spectrum += tmp;
+
+                tmp = green;
+                tmp *= g - r;
+                spectrum += tmp;
             }
             else
             {
-                spectrum += (g - b) * yellow;
-                spectrum += (r - g) * red;
+                tmp = yellow;
+                tmp *= g - b;
+                spectrum += tmp;
+
+                tmp = red;
+                tmp *= r - g;
+                spectrum += tmp;
             }
         }
     }
@@ -1023,7 +1062,7 @@ void linear_rgb_reflectance_to_spectrum(
         linear_rgb,
         spectrum);
 
-    spectrum = clamp(spectrum, T(0.0), std::max(m, T(1.0)));
+    clamp_in_place(spectrum, T(0.0), std::max(m, T(1.0)));
 }
 
 template <typename T, typename SpectrumType>
@@ -1054,7 +1093,7 @@ void linear_rgb_illuminance_to_spectrum(
         RGBToSpectrumBlueReflectance,
         spectrum);
 
-    spectrum = clamp_low(spectrum, T(0.0));
+    clamp_low_in_place(spectrum, T(0.0));
 }
 
 
