@@ -400,6 +400,7 @@ bool RendererServices::trace(
     Intersector intersector(m_project.get_trace_context(), texture_cache);
 
     ShadingPoint shading_point;
+    shading_point.clear();
     intersector.trace(
         ray,
         shading_point,

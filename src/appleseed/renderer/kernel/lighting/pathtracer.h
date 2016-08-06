@@ -152,6 +152,7 @@ inline size_t PathTracer<PathVisitor, Adjoint>::trace(
     const ShadingPoint*         parent_shading_point)
 {
     ShadingPoint shading_point;
+    shading_point.clear();
     shading_context.get_intersector().trace(ray, shading_point, parent_shading_point);
 
     return

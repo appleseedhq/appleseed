@@ -603,12 +603,16 @@ namespace
             output_ray.m_org = assembly_instance_transform.point_to_local(input_ray.m_org);
         }
 
+        // todo: transform ray differentials.
+        output_ray.m_has_differentials = false;
+
         // Copy the remaining members.
         output_ray.m_tmin = input_ray.m_tmin;
         output_ray.m_tmax = input_ray.m_tmax;
         output_ray.m_time = input_ray.m_time;
         output_ray.m_flags = input_ray.m_flags;
         output_ray.m_depth = input_ray.m_depth;
+        output_ray.m_medium_count = input_ray.m_medium_count;
     }
 }
 

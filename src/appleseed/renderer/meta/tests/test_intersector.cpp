@@ -122,6 +122,7 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
             0);                                 // depth
 
         ShadingPoint shading_point;
+        shading_point.clear();
         const bool hit = m_intersector.trace(ray, shading_point);
 
         EXPECT_FALSE(hit);

@@ -81,7 +81,11 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         DipoleBSSRDFEvaluator()
           : m_bssrdf(BSSRDFFactory().create("bssrdf", ParamArray()))
         {
+            ShadingRay ray;
+            ray.m_medium_count = 0;
+
             ShadingPointBuilder outgoing_builder(m_outgoing_point);
+            outgoing_builder.set_ray(ray);
             outgoing_builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
             outgoing_builder.set_point(Vector3d(0.0, 0.0, 0.0));
             outgoing_builder.set_geometric_normal(Vector3d(0.0, 1.0, 0.0));
