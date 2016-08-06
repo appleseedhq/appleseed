@@ -35,11 +35,6 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 
-// Boost headers.
-#include "boost/math/special_functions/erf.hpp"
-#include "boost/math/special_functions/sign.hpp"
-#include "boost/mpl/bool.hpp"
-
 // Standard headers.
 #include <algorithm>
 #include <cassert>
@@ -63,98 +58,35 @@ class MDF
 
     virtual ~MDF() {}
 
-    T D(
+    virtual T D(
         const Vector<T, 3>&  h,
         const T              alpha_x,
-        const T              alpha_y) const
-    {
-        // Preconditions.
-        assert(cos_theta(h) >= T(0.0));
-        assert(alpha_x > T(0.0));
-        assert(alpha_y > T(0.0));
+        const T              alpha_y) const = 0;
 
-        const T result = do_eval_D(h, alpha_x, alpha_y);
-
-        // Postconditions.
-        assert(result >= T(0.0));
-        return result;
-    }
-
-    T G(
+    virtual T G(
         const Vector<T, 3>&  incoming,
         const Vector<T, 3>&  outgoing,
         const Vector<T, 3>&  h,
         const T              alpha_x,
-        const T              alpha_y) const
-    {
-        // Preconditions.
-        assert(alpha_x > T(0.0));
-        assert(alpha_y > T(0.0));
+        const T              alpha_y) const = 0;
 
-        const T result = do_eval_G(incoming, outgoing, h, alpha_x, alpha_y);
-
-        // Postconditions.
-        assert(result >= T(0.0));
-        return result;
-    }
-
-    T G1(
+    virtual T G1(
         const Vector<T, 3>&  v,
         const Vector<T, 3>&  m,
         const T              alpha_x,
-        const T              alpha_y) const
-    {
-        // Preconditions.
-        assert(alpha_x > T(0.0));
-        assert(alpha_y > T(0.0));
+        const T              alpha_y) const = 0;
 
-        const T result = do_eval_G1(v, m, alpha_x, alpha_y);
-
-        // Postconditions.
-        assert(result >= T(0.0));
-        return result;
-    }
-
-    Vector<T, 3> sample(
+    virtual Vector<T, 3> sample(
         const Vector<T, 3>&  v,
         const Vector<T, 3>&  s,
         const T              alpha_x,
-        const T              alpha_y) const
-    {
-        // Preconditions.
-        assert(s[0] >= T(0.0));
-        assert(s[0] <  T(1.0));
-        assert(s[1] >= T(0.0));
-        assert(s[1] <  T(1.0));
-        assert(s[2] >= T(0.0));
-        assert(s[2] <  T(1.0));
-        assert(alpha_x > T(0.0));
-        assert(alpha_y > T(0.0));
+        const T              alpha_y) const = 0;
 
-        const Vector<T, 3> result = do_sample(v, s, alpha_x, alpha_y);
-
-        // Postconditions.
-        assert(is_normalized(result));
-        return result;
-    }
-
-    T pdf(
+    virtual T pdf(
         const Vector<T, 3>&  v,
         const Vector<T, 3>&  h,
         const T              alpha_x,
-        const T              alpha_y) const
-    {
-        // Preconditions.
-        assert(cos_theta(h) >= T(0.0));
-        assert(alpha_x > T(0.0));
-        assert(alpha_y > T(0.0));
-
-        const T result = do_eval_pdf(v, h, alpha_x, alpha_y);
-
-        // Postconditions.
-        assert(result >= T(0.0));
-        return result;
-    }
+        const T              alpha_y) const = 0;
 
   protected:
     static T cos_theta(const Vector<T, 3>& v)
@@ -220,59 +152,6 @@ class MDF
         return std::sqrt(cos_phi_2_ax_2 + sin_phi_2_ay_2);
     }
 
-    static T v_cavity_G1(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  h)
-    {
-        if (v.y <= T(0.0))
-            return T(0.0);
-
-        if (dot(v, h) <= T(0.0))
-            return T(0.0);
-
-        const T cos_vh = std::abs(dot(v, h));
-        if (cos_vh == T(0.0))
-            return T(0.0);
-
-        return std::min(T(1.0), T(2.0) * std::abs(h.y * v.y) / cos_vh);
-    }
-
-    static T v_cavity_G(
-        const Vector<T, 3>&  incoming,
-        const Vector<T, 3>&  outgoing,
-        const Vector<T, 3>&  h)
-    {
-        return std::min(v_cavity_G1(incoming, h), v_cavity_G1(outgoing, h));
-    }
-
-    template <typename Distribution>
-    static T smith_G1(
-        const Distribution&  mdf,
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  m,
-        const T              alpha_x,
-        const T              alpha_y)
-    {
-        if (dot(v, m) * v.y <= T(0.0))
-            return T(0.0);
-
-        return T(1.0) / (T(1.0) + mdf.do_eval_lambda(v, alpha_x, alpha_y));
-    }
-
-    template <typename Distribution>
-    static T smith_G(
-        const Distribution&  mdf,
-        const Vector<T, 3>&  incoming,
-        const Vector<T, 3>&  outgoing,
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y)
-    {
-        return
-            mdf.do_eval_G1(incoming, h, alpha_x, alpha_y) *
-            mdf.do_eval_G1(outgoing, h, alpha_x, alpha_y);
-    }
-
     static Vector<T, 3> v_cavity_choose_microfacet_normal(
         const Vector<T, 3>&  v,
         const Vector<T, 3>&  h,
@@ -280,6 +159,7 @@ class MDF
     {
         // Preconditions.
         assert(is_normalized(v));
+        assert(v.y >= T(0.0));
 
         const Vector<T, 3> hm(-h[0], h[1], -h[2]);
         const T dot_vh  = std::max(dot(v, h), T(0.0));
@@ -304,10 +184,11 @@ class MDF
         assert(is_normalized(v));
 
         // Stretch incident.
+        const T sign_cos_vn = v.y < T(0.0) ? T(-1.0) : T(1.0);
         Vector<T, 3> stretched(
-            v[0] * alpha_x,
-            v[1],
-            v[2] * alpha_y);
+            sign_cos_vn * v[0] * alpha_x,
+            sign_cos_vn * v[1],
+            sign_cos_vn * v[2] * alpha_y);
 
         stretched = normalize(stretched);
 
@@ -316,7 +197,7 @@ class MDF
             stretched[1] < T(0.99999) ? std::atan2(stretched[2], stretched[0]) : T(0.0);
 
         // Sample slope.
-        Vector<T, 2> slope = mdf.do_sample_11(cos_theta, s);
+        Vector<T, 2> slope = mdf.sample11(cos_theta, s);
 
         // Rotate.
         const T cos_phi = std::cos(phi);
@@ -331,59 +212,28 @@ class MDF
             -slope[0] * alpha_x,
             T(1.0),
             -slope[1] * alpha_y);
-        return normalize(m);
+        return normalize(sign_cos_vn * m);
     }
 
     template <typename Distribution>
-    static T do_eval_Dw(
+    T pdf_visible_normals(
         const Distribution&  mdf,
         const Vector<T, 3>&  v,
         const Vector<T, 3>&  h,
         const T              alpha_x,
-        const T              alpha_y)
+        const T              alpha_y) const APPLESEED_OVERRIDE
     {
         assert(is_normalized(v));
 
-        if (cos_theta(v) == T(0.0))
+        const T cos_theta_v = MDF<T>::cos_theta(v);
+
+        if (cos_theta_v == T(0.0))
             return T(0.0);
 
         return
-            mdf.do_eval_G1(v, h, alpha_x, alpha_y) *
-            std::abs(dot(v, h)) *
-            mdf.do_eval_D(h, alpha_x, alpha_y) /
-            std::abs(cos_theta(v));
+            mdf.G1(v, h, alpha_x, alpha_y) * std::abs(dot(v, h)) *
+            mdf.D(h, alpha_x, alpha_y) / std::abs(cos_theta_v);
     }
-
-  private:
-    virtual T do_eval_D(
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const = 0;
-
-    virtual T do_eval_G(
-        const Vector<T, 3>&  incoming,
-        const Vector<T, 3>&  outgoing,
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const = 0;
-
-    virtual T do_eval_G1(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  m,
-        const T              alpha_x,
-        const T              alpha_y) const = 0;
-
-    virtual Vector<T, 3> do_sample(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  s,
-        const T              alpha_x,
-        const T              alpha_y) const = 0;
-
-    virtual T do_eval_pdf(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const = 0;
 };
 
 
@@ -406,14 +256,9 @@ class BlinnMDF
   : public MDF<T>
 {
   public:
-    typedef boost::mpl::bool_<false> IsAnisotropicType;
-
     BlinnMDF() {}
 
-  private:
-    friend class MDF<T>;
-
-    virtual T do_eval_D(
+    virtual T D(
         const Vector<T, 3>&  h,
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
@@ -421,26 +266,36 @@ class BlinnMDF
         return (alpha_x + T(2.0)) * T(RcpTwoPi) * std::pow(MDF<T>::cos_theta(h), alpha_x);
     }
 
-    virtual T do_eval_G(
+    virtual T G(
         const Vector<T, 3>&  incoming,
         const Vector<T, 3>&  outgoing,
         const Vector<T, 3>&  h,
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
-        return MDF<T>::v_cavity_G(incoming, outgoing, h);
+        return std::min(G1(incoming, h, alpha_x, alpha_y), G1(outgoing, h, alpha_x, alpha_y));
     }
 
-    T do_eval_G1(
+    T G1(
         const Vector<T, 3>&  v,
         const Vector<T, 3>&  m,
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
-        return MDF<T>::v_cavity_G1(v, m);
+        if (v.y <= T(0.0))
+            return T(0.0);
+
+        if (dot(v, m) <= T(0.0))
+            return T(0.0);
+
+        const T cos_vh = std::abs(dot(v, m));
+        if (cos_vh == T(0.0))
+            return T(0.0);
+
+        return std::min(T(1.0), T(2.0) * std::abs(m.y * v.y) / cos_vh);
     }
 
-    virtual Vector<T, 3> do_sample(
+    virtual Vector<T, 3> sample(
         const Vector<T, 3>&  v,
         const Vector<T, 3>&  s,
         const T              alpha_x,
@@ -458,19 +313,13 @@ class BlinnMDF
         return MDF<T>::v_cavity_choose_microfacet_normal(v, h, s[2]);
     }
 
-    virtual T do_eval_pdf(
+    virtual T pdf(
         const Vector<T, 3>&  v,
         const Vector<T, 3>&  h,
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
-        return
-            MDF<T>::do_eval_Dw(
-                *this,
-                v,
-                h,
-                alpha_x,
-                alpha_y);
+        return MDF<T>::pdf_visible_normals(*this, v, h, alpha_x, alpha_y);
     }
 };
 
@@ -503,14 +352,9 @@ class BeckmannMDF
   : public MDF<T>
 {
   public:
-    typedef boost::mpl::bool_<true> IsAnisotropicType;
-
     BeckmannMDF() {}
 
-  private:
-    friend class MDF<T>;
-
-    virtual T do_eval_D(
+    virtual T D(
         const Vector<T, 3>&  h,
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
@@ -533,26 +377,26 @@ class BeckmannMDF
         return std::exp(-tan_theta_2 * A) / (T(Pi) * alpha_x * alpha_y * cos_theta_4);
     }
 
-    virtual T do_eval_G(
+    virtual T G(
         const Vector<T, 3>&  incoming,
         const Vector<T, 3>&  outgoing,
         const Vector<T, 3>&  h,
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
-        return MDF<T>::smith_G(*this, incoming, outgoing, h, alpha_x, alpha_y);
+        return T(1.0) / (T(1.0) + lambda(outgoing, alpha_x, alpha_y) + lambda(incoming, alpha_x, alpha_y));
     }
 
-    virtual T do_eval_G1(
+    virtual T G1(
         const Vector<T, 3>&  v,
         const Vector<T, 3>&  m,
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
-        return MDF<T>::smith_G1(*this, v, m, alpha_x, alpha_y);
+        return T(1.0) / (T(1.0) + lambda(v, alpha_x, alpha_y));
     }
 
-    T do_eval_lambda(
+    T lambda(
         const Vector<T, 3>&  v,
         const T              alpha_x,
         const T              alpha_y) const
@@ -583,7 +427,7 @@ class BeckmannMDF
         return T(0.0);
     }
 
-    virtual Vector<T, 3> do_sample(
+    virtual Vector<T, 3> sample(
         const Vector<T, 3>&  v,
         const Vector<T, 3>&  s,
         const T              alpha_x,
@@ -598,23 +442,8 @@ class BeckmannMDF
                 alpha_y);
     }
 
-    virtual T do_eval_pdf(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
-    {
-        return
-            MDF<T>::do_eval_Dw(
-                *this,
-                v,
-                h,
-                alpha_x,
-                alpha_y);
-    }
-
     // This code comes from OpenShadingLanguage test render.
-    Vector<T, 2> do_sample_11(
+    Vector<T, 2> sample11(
         const T             cos_theta,
         const Vector<T, 3>& s) const
     {
@@ -660,22 +489,84 @@ class BeckmannMDF
         return slope;
     }
 
-    typedef boost::math::policies::policy<
-        boost::math::policies::promote_float<false>,
-        boost::math::policies::digits10<6>
-    > ErfPolicyType;
-
-    static T erf(const T x)
+    virtual T pdf(
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  h,
+        const T              alpha_x,
+        const T              alpha_y) const APPLESEED_OVERRIDE
     {
-        return boost::math::erf(x, ErfPolicyType());
+        return MDF<T>::pdf_visible_normals(*this, v, h, alpha_x, alpha_y);
     }
 
-    static T erf_inv(T x)
-    {
-        if (std::abs(x) == T(1.0))
-            x -= boost::math::copysign(T(1.0e-5), x);
+  private:
 
-        return boost::math::erf_inv(x, ErfPolicyType());
+    //
+    //  Reference:
+    //
+    //    Handbook of Mathematical Functions.
+    //    Abramowitz and Stegun.
+    //    http://people.math.sfu.ca/~cbm/aands/toc.htm
+    //
+    //  Copied from from pbrt-v3.
+
+    inline T erf(const T x) const
+    {
+        // Constants.
+        const T a1 = T(0.254829592);
+        const T a2 = T(-0.284496736);
+        const T a3 = T(1.421413741);
+        const T a4 = T(-1.453152027);
+        const T a5 = T(1.061405429);
+        const T p = T(0.3275911);
+
+        // A&S formula 7.1.26.
+        const T abs_x = std::abs(x);
+        const T t = T(1.0) / (T(1.0) + p * abs_x);
+        const T y = T(1.0) - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * std::exp(-square(abs_x * abs_x));
+        return x < T(0.0) ? -y : y;
+    }
+
+    //
+    //  Reference:
+    //
+    //    Approximating the erfinv function, Mike Giles.
+    //    https://people.maths.ox.ac.uk/gilesm/files/gems_erfinv.pdf
+    //
+
+    inline T erf_inv(const T x) const
+    {
+        const T y = clamp(x, T(-0.99999), T(0.99999));
+        T w = -std::log((1 - y) * (1 + y));
+        T p;
+
+        if (w < T(5.0))
+        {
+            w = w - T(2.5);
+            p = T(2.81022636e-08);
+            p = T(3.43273939e-07) + p * w;
+            p = T(-3.5233877e-06) + p * w;
+            p = T(-4.39150654e-06) + p * w;
+            p = T(0.00021858087) + p * w;
+            p = T(-0.00125372503) + p * w;
+            p = T(-0.00417768164) + p * w;
+            p = T(0.246640727) + p * w;
+            p = T(1.50140941) + p * w;
+        }
+        else
+        {
+            w = std::sqrt(w) - T(3.0);
+            p = T(-0.000200214257);
+            p = T(0.000100950558) + p * w;
+            p = T(0.00134934322) + p * w;
+            p = T(-0.00367342844) + p * w;
+            p = T(0.00573950773) + p * w;
+            p = T(-0.0076224613) + p * w;
+            p = T(0.00943887047) + p * w;
+            p = T(1.00167406) + p * w;
+            p = T(2.83297682) + p * w;
+        }
+
+        return p * y;
     }
 };
 
@@ -700,14 +591,9 @@ class GGXMDF
   : public MDF<T>
 {
   public:
-    typedef boost::mpl::bool_<true> IsAnisotropicType;
-
     GGXMDF() {}
 
-  private:
-    friend class MDF<T>;
-
-    virtual T do_eval_D(
+    virtual T D(
         const Vector<T, 3>&  h,
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
@@ -732,26 +618,26 @@ class GGXMDF
         return T(1.0) / (T(Pi) * alpha_x * alpha_y * cos_theta_4 * square(tmp));
     }
 
-    virtual T do_eval_G(
+    virtual T G(
         const Vector<T, 3>&  incoming,
         const Vector<T, 3>&  outgoing,
         const Vector<T, 3>&  h,
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
-        return MDF<T>::smith_G(*this, incoming, outgoing, h, alpha_x, alpha_y);
+        return T(1.0) / (T(1.0) + lambda(outgoing, alpha_x, alpha_y) + lambda(incoming, alpha_x, alpha_y));
     }
 
-    virtual T do_eval_G1(
+    virtual T G1(
         const Vector<T, 3>&  v,
         const Vector<T, 3>&  m,
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
-        return MDF<T>::smith_G1(*this, v, m, alpha_x, alpha_y);
+        return T(1.0) / (T(1.0) + lambda(v, alpha_x, alpha_y));
     }
 
-    T do_eval_lambda(
+    T lambda(
         const Vector<T, 3>&  v,
         const T              alpha_x,
         const T              alpha_y) const
@@ -776,7 +662,7 @@ class GGXMDF
         return (T(-1.0) + std::sqrt(T(1.0) + a2_rcp)) * T(0.5);
     }
 
-    virtual Vector<T, 3> do_sample(
+    virtual Vector<T, 3> sample(
         const Vector<T, 3>&  v,
         const Vector<T, 3>&  s,
         const T              alpha_x,
@@ -791,23 +677,8 @@ class GGXMDF
                 alpha_y);
     }
 
-    virtual T do_eval_pdf(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
-    {
-        return
-            MDF<T>::do_eval_Dw(
-                *this,
-                v,
-                h,
-                alpha_x,
-                alpha_y);
-    }
-
     // Adapted from the sample code provided in [3].
-    Vector<T, 2> do_sample_11(
+    Vector<T, 2> sample11(
         const T             cos_theta,
         const Vector<T, 3>& s) const
     {
@@ -855,6 +726,15 @@ class GGXMDF
         slope[1] = S * z * std::sqrt(T(1.0) + square(slope[0]));
         return slope;
     }
+
+    virtual T pdf(
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  h,
+        const T              alpha_x,
+        const T              alpha_y) const APPLESEED_OVERRIDE
+    {
+        return MDF<T>::pdf_visible_normals(*this, v, h, alpha_x, alpha_y);
+    }
 };
 
 
@@ -874,12 +754,9 @@ class WardMDF
   : public MDF<T>
 {
   public:
-    typedef boost::mpl::bool_<false> IsAnisotropicType;
-
     WardMDF() {}
 
-  private:
-    virtual T do_eval_D(
+    virtual T D(
         const Vector<T, 3>&  h,
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
@@ -899,26 +776,36 @@ class WardMDF
         return std::exp(-tan_alpha_2 / alpha_x2) / (alpha_x2 * T(Pi) * cos_theta_3);
     }
 
-    virtual T do_eval_G(
+    virtual T G(
         const Vector<T, 3>&  incoming,
         const Vector<T, 3>&  outgoing,
         const Vector<T, 3>&  h,
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
-        return MDF<T>::v_cavity_G(incoming, outgoing, h);
+        return std::min(G1(incoming, h, alpha_x, alpha_y), G1(outgoing, h, alpha_x, alpha_y));
     }
 
-    virtual T do_eval_G1(
+    virtual T G1(
         const Vector<T, 3>&  v,
         const Vector<T, 3>&  m,
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
-        return MDF<T>::v_cavity_G1(v, m);
+        if (v.y <= T(0.0))
+            return T(0.0);
+
+        if (dot(v, m) <= T(0.0))
+            return T(0.0);
+
+        const T cos_vh = std::abs(dot(v, m));
+        if (cos_vh == T(0.0))
+            return T(0.0);
+
+        return std::min(T(1.0), T(2.0) * std::abs(m.y * v.y) / cos_vh);
     }
 
-    virtual Vector<T, 3> do_sample(
+    virtual Vector<T, 3> sample(
         const Vector<T, 3>&  v,
         const Vector<T, 3>&  s,
         const T              alpha_x,
@@ -932,13 +819,13 @@ class WardMDF
         return Vector<T, 3>::make_unit_vector(cos_alpha, sin_alpha, std::cos(phi), std::sin(phi));
     }
 
-    virtual T do_eval_pdf(
+    virtual T pdf(
         const Vector<T, 3>&  v,
         const Vector<T, 3>&  h,
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
-        return do_eval_D(h, alpha_x, alpha_y);
+        return D(h, alpha_x, alpha_y);
     }
 };
 
@@ -953,12 +840,9 @@ class BerryMDF
   : public MDF<T>
 {
   public:
-    typedef boost::mpl::bool_<false> IsAnisotropicType;
-
     BerryMDF() {}
 
-  private:
-    virtual T do_eval_D(
+    virtual T D(
         const Vector<T, 3>&  h,
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
@@ -970,7 +854,7 @@ class BerryMDF
         return a * b;
     }
 
-    virtual T do_eval_G(
+    virtual T G(
         const Vector<T, 3>&  incoming,
         const Vector<T, 3>&  outgoing,
         const Vector<T, 3>&  h,
@@ -978,11 +862,11 @@ class BerryMDF
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
         return
-            do_eval_G1(outgoing, h, alpha_x, alpha_y) *
-            do_eval_G1(incoming, h, alpha_x, alpha_y);
+            G1(outgoing, h, alpha_x, alpha_y) *
+            G1(incoming, h, alpha_x, alpha_y);
     }
 
-    virtual T do_eval_G1(
+    virtual T G1(
         const Vector<T, 3>&  v,
         const Vector<T, 3>&  m,
         const T              alpha_x,
@@ -1004,7 +888,7 @@ class BerryMDF
         return T(1.0) / (T(1.0) + lambda);
     }
 
-    virtual Vector<T, 3> do_sample(
+    virtual Vector<T, 3> sample(
         const Vector<T, 3>&  v,
         const Vector<T, 3>&  s,
         const T              alpha_x,
@@ -1020,13 +904,13 @@ class BerryMDF
         return Vector<T, 3>::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
     }
 
-    virtual T do_eval_pdf(
+    virtual T pdf(
         const Vector<T, 3>&  v,
         const Vector<T, 3>&  h,
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
-        return do_eval_D(h, alpha_x, alpha_y) * MDF<T>::cos_theta(h);
+        return D(h, alpha_x, alpha_y) * MDF<T>::cos_theta(h);
     }
 };
 
