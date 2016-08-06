@@ -636,7 +636,7 @@ void Frame::extract_parameters()
         else if (impl->m_filter_name == "triangle")
             impl->m_filter.reset(new TriangleFilter2<float>(impl->m_filter_radius, impl->m_filter_radius));
         else if (impl->m_filter_name == "gaussian")
-            impl->m_filter.reset(new GaussianFilter2<float>(impl->m_filter_radius, impl->m_filter_radius, 8.0f));
+            impl->m_filter.reset(new FastGaussianFilter2<float>(impl->m_filter_radius, impl->m_filter_radius, 8.0f));
         else if (impl->m_filter_name == "mitchell")
             impl->m_filter.reset(new MitchellFilter2<float>(impl->m_filter_radius, impl->m_filter_radius, 1.0f/3, 1.0f/3));
         else if (impl->m_filter_name == "bspline")
@@ -646,7 +646,7 @@ void Frame::extract_parameters()
         else if (impl->m_filter_name == "lanczos")
             impl->m_filter.reset(new LanczosFilter2<float>(impl->m_filter_radius, impl->m_filter_radius, 3.0f));
         else if (impl->m_filter_name == "blackman-harris")
-            impl->m_filter.reset(new BlackmanHarrisFilter2<float>(impl->m_filter_radius, impl->m_filter_radius));
+            impl->m_filter.reset(new FastBlackmanHarrisFilter2<float>(impl->m_filter_radius, impl->m_filter_radius));
         else
         {
             RENDERER_LOG_ERROR(

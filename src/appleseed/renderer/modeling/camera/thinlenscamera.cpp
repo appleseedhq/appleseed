@@ -511,9 +511,12 @@ namespace
                     get_shutter_close_time());
             ray.m_flags = VisibilityFlags::ProbeRay;
             ray.m_depth = 0;
+            ray.m_medium_count = 0;
+            ray.m_has_differentials = false;
 
             // Trace the ray.
             ShadingPoint shading_point;
+            shading_point.clear();
             intersector.trace(ray, shading_point);
 
             if (shading_point.hit())

@@ -76,6 +76,8 @@ double compute_ambient_occlusion(
     ray.m_time = shading_point.get_time();
     ray.m_flags = VisibilityFlags::ProbeRay;
     ray.m_depth = shading_point.get_ray().m_depth + 1;
+    ray.m_medium_count = 0;
+    ray.m_has_differentials = false;
 
     size_t computed_samples = 0;
     size_t occluded_samples = 0;

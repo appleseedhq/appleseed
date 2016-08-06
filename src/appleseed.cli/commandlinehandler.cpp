@@ -179,7 +179,7 @@ CommandLineHandler::CommandLineHandler()
     parser().add_option_handler(
         &m_verbose_unit_tests
             .add_name("--verbose-unit-tests")
-            .add_name("--utv")
+            .add_name("-utv")
             .set_description("enable verbose mode while unit testing"));
 
     parser().add_option_handler(

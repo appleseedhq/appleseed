@@ -40,14 +40,19 @@ ShadingPointBuilder::ShadingPointBuilder(ShadingPoint& shading_point)
 {
 }
 
-void ShadingPointBuilder::set_primitive_type(const ShadingPoint::PrimitiveType primitive_type)
-{
-    m_shading_point.m_primitive_type = primitive_type;
-}
-
 void ShadingPointBuilder::set_scene(const Scene* scene)
 {
     m_shading_point.m_scene = scene;
+}
+
+void ShadingPointBuilder::set_ray(const ShadingRay& ray)
+{
+    m_shading_point.m_ray = ray;
+}
+
+void ShadingPointBuilder::set_primitive_type(const ShadingPoint::PrimitiveType primitive_type)
+{
+    m_shading_point.m_primitive_type = primitive_type;
 }
 
 void ShadingPointBuilder::set_point(const Vector3d& point)
@@ -73,7 +78,7 @@ void ShadingPointBuilder::set_shading_basis(const Basis3d& basis)
     m_shading_point.m_members |= ShadingPoint::HasShadingBasis;
 }
 
-void ShadingPointBuilder::set_uvs(const foundation::Vector2d& uv)
+void ShadingPointBuilder::set_uvs(const Vector2d& uv)
 {
     m_shading_point.m_uv = uv;
     m_shading_point.m_members |= ShadingPoint::HasUV0;

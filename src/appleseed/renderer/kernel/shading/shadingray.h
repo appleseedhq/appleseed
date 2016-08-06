@@ -156,8 +156,6 @@ class ShadingRay
 //
 
 inline ShadingRay::ShadingRay()
-  : m_medium_count(0)
-  , m_has_differentials(false)
 {
 }
 
