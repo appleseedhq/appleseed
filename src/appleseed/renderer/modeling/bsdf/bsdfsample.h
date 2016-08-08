@@ -88,8 +88,6 @@ inline BSDFSample::BSDFSample(
     const foundation::Dual3d&       outgoing)
   : m_shading_point(shading_point)
   , m_outgoing(outgoing)
-  , m_mode(ScatteringMode::Absorption)
-  , m_probability(0.0)
 {
 }
 
