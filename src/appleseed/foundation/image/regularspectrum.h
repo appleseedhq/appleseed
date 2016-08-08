@@ -678,6 +678,31 @@ inline T min_value(const RegularSpectrum<T, N>& s)
     return value;
 }
 
+#ifdef APPLESEED_USE_SSE
+
+template <>
+inline float min_value(const RegularSpectrum<float, 31>& s)
+{
+    const __m128 m1 = _mm_min_ps(_mm_load_ps(&s[ 0]), _mm_load_ps(&s[ 4]));
+    const __m128 m2 = _mm_min_ps(_mm_load_ps(&s[ 8]), _mm_load_ps(&s[12]));
+    const __m128 m3 = _mm_min_ps(_mm_load_ps(&s[16]), _mm_load_ps(&s[20]));
+    const __m128 s28 = _mm_load_ps(&s[28]);
+    const __m128 m4 = _mm_min_ps(_mm_load_ps(&s[24]), _mm_shuffle_ps(s28, s28, _MM_SHUFFLE(2, 2, 1, 0)));
+    const __m128 m5 = _mm_min_ps(m1, m2);
+    const __m128 m6 = _mm_min_ps(m3, m4);
+          __m128 m  = _mm_min_ps(m5, m6);
+
+    m = _mm_min_ps(m, _mm_shuffle_ps(m, m, _MM_SHUFFLE(2, 3, 0, 1)));
+    m = _mm_min_ps(m, _mm_shuffle_ps(m, m, _MM_SHUFFLE(1, 0, 3, 2)));
+
+    APPLESEED_SSE_ALIGN float result;
+    _mm_store_ss(&result, m);
+
+    return result;
+}
+
+#endif  // APPLESEED_USE_SSE
+
 template <typename T, size_t N>
 inline T max_value(const RegularSpectrum<T, N>& s)
 {
@@ -691,6 +716,31 @@ inline T max_value(const RegularSpectrum<T, N>& s)
 
     return value;
 }
+
+#ifdef APPLESEED_USE_SSE
+
+template <>
+inline float max_value(const RegularSpectrum<float, 31>& s)
+{
+    const __m128 m1 = _mm_max_ps(_mm_load_ps(&s[ 0]), _mm_load_ps(&s[ 4]));
+    const __m128 m2 = _mm_max_ps(_mm_load_ps(&s[ 8]), _mm_load_ps(&s[12]));
+    const __m128 m3 = _mm_max_ps(_mm_load_ps(&s[16]), _mm_load_ps(&s[20]));
+    const __m128 s28 = _mm_load_ps(&s[28]);
+    const __m128 m4 = _mm_max_ps(_mm_load_ps(&s[24]), _mm_shuffle_ps(s28, s28, _MM_SHUFFLE(2, 2, 1, 0)));
+    const __m128 m5 = _mm_max_ps(m1, m2);
+    const __m128 m6 = _mm_max_ps(m3, m4);
+          __m128 m  = _mm_max_ps(m5, m6);
+
+    m = _mm_max_ps(m, _mm_shuffle_ps(m, m, _MM_SHUFFLE(2, 3, 0, 1)));
+    m = _mm_max_ps(m, _mm_shuffle_ps(m, m, _MM_SHUFFLE(1, 0, 3, 2)));
+
+    APPLESEED_SSE_ALIGN float result;
+    _mm_store_ss(&result, m);
+
+    return result;
+}
+
+#endif  // APPLESEED_USE_SSE
 
 template <typename T, size_t N>
 inline size_t min_index(const RegularSpectrum<T, N>& s)
