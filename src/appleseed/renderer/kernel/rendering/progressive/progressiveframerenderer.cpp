@@ -264,13 +264,13 @@ namespace
                     ThreadFunctionWrapper<StatisticsFunc>(m_statistics_func.get())));
 
             // Create and start the display thread.
-            if (m_display_thread.get() == 0)
+            if (m_tile_callback.get() != 0 && m_display_thread.get() == 0)
             {
                 m_display_func.reset(
                     new DisplayFunc(
                         *m_project.get_frame(),
                         *m_buffer.get(),
-                        m_tile_callback.get() ? m_tile_callback.get() : 0,
+                        m_tile_callback.get(),
                         m_params.m_max_sample_count,
                         m_params.m_max_fps,
                         m_display_thread_abort_switch));
@@ -301,14 +301,20 @@ namespace
         virtual void pause_rendering() APPLESEED_OVERRIDE
         {
             m_job_manager->pause();
-            m_display_func->pause();
+
+            if (m_display_func.get())
+                m_display_func->pause();
+
             m_statistics_func->pause();
         }
 
         virtual void resume_rendering() APPLESEED_OVERRIDE
         {
             m_statistics_func->resume();
-            m_display_func->resume();
+
+            if (m_display_func.get())
+                m_display_func->resume();
+
             m_job_manager->resume();
         }
 
@@ -323,13 +329,28 @@ namespace
             m_statistics_func.reset();
 
             // Join and delete the display thread.
-            m_display_thread_abort_switch.abort();
-            m_display_thread->join();
-            m_display_thread.reset();
+            if (m_display_thread.get())
+            {
+                m_display_thread_abort_switch.abort();
+                m_display_thread->join();
+                m_display_thread.reset();
+            }
 
-            // Make sure the last samples have been merged into the frame.
-            m_display_func->display();
-            m_display_func.reset();
+            // Make sure the remaining calls of this method don't get interrupted.
+            m_abort_switch.clear();
+            m_display_thread_abort_switch.clear();
+
+            if (m_display_func.get())
+            {
+                // Merge the last samples and display the final frame.
+                m_display_func->develop_and_display();
+                m_display_func.reset();
+            }
+            else
+            {
+                // Just merge the last samples into the frame.
+                m_buffer->develop_to_frame(*m_project.get_frame(), m_abort_switch);
+            }
 
             // Merge and print sample generator statistics.
             print_sample_generators_stats();
@@ -453,26 +474,23 @@ namespace
                 if (m_abort_switch.is_aborted())
                     return;
 
-                if (m_tile_callback)
-                {
-                    // Present the frame.
-                    m_tile_callback->post_render(&m_frame);
+                // Present the frame.
+                m_tile_callback->post_render(&m_frame);
 
 #ifdef PRINT_DISPLAY_THREAD_PERFS
-                    m_stopwatch.measure();
-                    const double t3 = m_stopwatch.get_seconds();
+                m_stopwatch.measure();
+                const double t3 = m_stopwatch.get_seconds();
 
-                    RENDERER_LOG_DEBUG(
-                        "display thread:\n"
-                        "  buffer to frame     : %s\n"
-                        "  frame to widget     : %s\n"
-                        "  total               : %s (%s fps)",
-                        pretty_time(t2 - t1).c_str(),
-                        pretty_time(t3 - t2).c_str(),
-                        pretty_time(t3 - t1).c_str(),
-                        pretty_ratio(1.0, t3 - t1).c_str());
+                RENDERER_LOG_DEBUG(
+                    "display thread:\n"
+                    "  buffer to frame     : %s\n"
+                    "  frame to widget     : %s\n"
+                    "  total               : %s (%s fps)",
+                    pretty_time(t2 - t1).c_str(),
+                    pretty_time(t3 - t2).c_str(),
+                    pretty_time(t3 - t1).c_str(),
+                    pretty_ratio(1.0, t3 - t1).c_str());
 #endif
-                }
             }
 
           private:
