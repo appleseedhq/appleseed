@@ -271,6 +271,7 @@ namespace
                         *m_project.get_frame(),
                         *m_buffer.get(),
                         m_tile_callback.get() ? m_tile_callback.get() : 0,
+                        m_params.m_max_sample_count,
                         m_params.m_max_fps,
                         m_display_thread_abort_switch));
                 m_display_thread.reset(
@@ -371,14 +372,15 @@ namespace
                 Frame&                      frame,
                 SampleAccumulationBuffer&   buffer,
                 ITileCallback*              tile_callback,
+                const uint64                max_sample_count,
                 const double                max_fps,
                 IAbortSwitch&               abort_switch)
               : m_frame(frame)
               , m_buffer(buffer)
               , m_tile_callback(tile_callback)
+              , m_min_sample_count(min<uint64>(max_sample_count, 32 * 32 * 2))
               , m_target_elapsed(1.0 / max_fps)
               , m_abort_switch(abort_switch)
-              , m_min_sample_count(32 * 32 * 2)
             {
             }
 
@@ -407,7 +409,16 @@ namespace
                 while (!m_abort_switch.is_aborted())
                 {
                     if (m_pause_flag.is_clear())
-                        display();
+                    {
+                        // It's time to display but the sample accumulation buffer doesn't contain
+                        // enough samples yet. Giving up would lead to noticeable jerkiness, so we
+                        // wait until enough samples are available.
+                        while (m_buffer.get_sample_count() < m_min_sample_count)
+                            yield();
+
+                        // Merge the samples and display the final frame.
+                        develop_and_display();
+                    }
 
                     // Compute time elapsed since last call to display().
                     const uint64 time = timer.read();
@@ -423,14 +434,8 @@ namespace
                 }
             }
 
-            void display()
+            void develop_and_display()
             {
-                // It's time to display but the sample accumulation buffer doesn't contain
-                // enough samples yet. Giving up would lead to noticeable jerkiness, so we
-                // wait until enough samples are available.
-                while (m_buffer.get_sample_count() < m_min_sample_count)
-                    yield();
-
 #ifdef PRINT_DISPLAY_THREAD_PERFS
                 m_stopwatch.measure();
                 const double t1 = m_stopwatch.get_seconds();
@@ -474,10 +479,10 @@ namespace
             Frame&                              m_frame;
             SampleAccumulationBuffer&           m_buffer;
             ITileCallback*                      m_tile_callback;
+            const uint64                        m_min_sample_count;
             const double                        m_target_elapsed;
             IAbortSwitch&                       m_abort_switch;
             ThreadFlag                          m_pause_flag;
-            const uint64                        m_min_sample_count;
             Stopwatch<DefaultWallclockTimer>    m_stopwatch;
         };
 
