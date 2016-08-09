@@ -221,7 +221,7 @@ class MDF
         const Vector<T, 3>&  v,
         const Vector<T, 3>&  h,
         const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const T              alpha_y) const
     {
         assert(is_normalized(v));
 
