@@ -702,9 +702,6 @@ namespace
             project->get_frame()->write_aov_images(file_path);
         }
 
-        // Force-unload the project.
-        project.reset();
-
         // Print benchmark results.
         LOG_INFO(g_logger, "result=success");
         LOG_INFO(g_logger, "setup_time=%.6f", total_time_seconds - render_time_seconds);
