@@ -571,9 +571,7 @@ namespace
         Stopwatch<DefaultWallclockTimer> stopwatch;
         if (params.get_optional<bool>("background_mode", true))
         {
-            ProcessPriorityContext background_context(
-                ProcessPriorityLow,
-                &g_logger);
+            ProcessPriorityContext background_context(ProcessPriorityLow, &g_logger);
             stopwatch.start();
             renderer.render();
             stopwatch.measure();
