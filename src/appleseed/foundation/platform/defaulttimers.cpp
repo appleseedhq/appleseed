@@ -108,6 +108,13 @@ uint64 DefaultProcessorTimer::read()
 // Other platforms.
 #else
 
+    //
+    // On Linux, we might want to use clock_gettime(CLOCK_REALTIME).
+    //
+    //   Andrei Alexandrescu, Writing Fast Code
+    //   https://youtu.be/vrfYLlR8X8k?t=1973
+    //
+
     return static_cast<uint64>(clock());
 
 #endif
