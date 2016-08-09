@@ -111,7 +111,7 @@ option (WITH_PYTHON                         "Build Python bindings"             
 option (WITH_ALEMBIC                        "Build Alembic support"                                 OFF)
 option (WITH_OSL                            "Build OSL support"                                     OFF)
 option (WITH_DISNEY_MATERIAL                "Build Disney material"                                 OFF)
-option (WITH_NORMALIZED_DIFFUSION_BSSRDF    "Build Normalized diffusion BSSRDF (patented)"          OFF)
+option (WITH_NORMALIZED_DIFFUSION_BSSRDF    "Build Normalized Diffusion BSSRDF (patented)"          OFF)
 option (WITH_PARTIO                         "Build Partio support (used in unit tests)"             OFF)
 
 option (USE_STATIC_BOOST                    "Use static Boost libraries"                            ON)
