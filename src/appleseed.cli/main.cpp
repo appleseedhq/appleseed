@@ -548,10 +548,10 @@ namespace
                     g_cl.m_output.value().c_str(),
                     g_logger));
         }
-        else
+        else if (project->get_display() == 0)
         {
             // Create a default tile callback if needed.
-            if (project->get_display() == 0)
+            if (params.get_optional<string>("frame_renderer", "") != "progressive")
             {
                 tile_callback_factory.reset(
                     new ProgressTileCallbackFactory(g_logger));
