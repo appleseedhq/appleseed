@@ -155,7 +155,7 @@ void LocalSampleAccumulationBuffer::store_samples(
         // Request non-exclusive access.
         while (!m_lock.try_lock_read())
         {
-            sleep(1);
+            foundation::sleep(1);
             if (abort_switch.is_aborted())
                 return;
         }
@@ -236,7 +236,7 @@ void LocalSampleAccumulationBuffer::develop_to_frame(
     // Request exclusive access.
     while (!m_lock.try_lock_write())
     {
-        sleep(5);
+        foundation::sleep(5);
         if (abort_switch.is_aborted())
             return;
     }
