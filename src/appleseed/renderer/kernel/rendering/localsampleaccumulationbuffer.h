@@ -103,7 +103,11 @@ class LocalSampleAccumulationBuffer
         const foundation::AABB2u&           rect);
 
   private:
-    foundation::ReadWriteLock               m_lock;
+    typedef foundation::ReadWriteLock<
+        foundation::SleepWaitPolicy<5>
+    > LockType;
+
+    LockType                                m_lock;
     std::vector<foundation::FilteredTile*>  m_levels;
     boost::atomic<foundation::int32>*       m_remaining_pixels;
     boost::atomic<foundation::uint32>       m_active_level;

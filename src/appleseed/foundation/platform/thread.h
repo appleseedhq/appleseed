@@ -100,6 +100,23 @@ class Spinlock
 // A read/write lock.
 //
 
+struct NoWaitPolicy
+{
+    static void pause(const uint32 iteration) {}
+};
+
+struct YieldWaitPolicy
+{
+    static void pause(const uint32 iteration) { yield(); }
+};
+
+template <uint32 ms>
+struct SleepWaitPolicy
+{
+    static void pause(const uint32 iteration) { sleep(ms); }
+};
+
+template <typename WaitPolicy = NoWaitPolicy>
 class ReadWriteLock
   : public NonCopyable
 {
@@ -309,12 +326,14 @@ inline Spinlock::ScopedLock::ScopedLock(Spinlock& spinlock)
 // ReadWriteLock class implementation.
 //
 
-inline ReadWriteLock::ReadWriteLock()
+template <typename WaitPolicy>
+inline ReadWriteLock<WaitPolicy>::ReadWriteLock()
   : m_readers(0)
 {
 }
 
-inline bool ReadWriteLock::try_lock_read()
+template <typename WaitPolicy>
+inline bool ReadWriteLock<WaitPolicy>::try_lock_read()
 {
     // Make sure there are no writers active.
     if (!m_mutex.try_lock())
@@ -329,7 +348,8 @@ inline bool ReadWriteLock::try_lock_read()
     return true;
 }
 
-inline void ReadWriteLock::lock_read()
+template <typename WaitPolicy>
+inline void ReadWriteLock<WaitPolicy>::lock_read()
 {
     // Make sure there are no writers active.
     m_mutex.lock();
@@ -341,55 +361,65 @@ inline void ReadWriteLock::lock_read()
     m_mutex.unlock();
 }
 
-inline void ReadWriteLock::unlock_read()
+template <typename WaitPolicy>
+inline void ReadWriteLock<WaitPolicy>::unlock_read()
 {
     --m_readers;
 }
 
-inline bool ReadWriteLock::try_lock_write()
+template <typename WaitPolicy>
+inline bool ReadWriteLock<WaitPolicy>::try_lock_write()
 {
     // Make sure no reader can start.
     if (!m_mutex.try_lock())
         return false;
 
     // Wait until active readers have terminated.
-    while (m_readers > 0) { sleep(5); }
+    for (uint32 i = 0; m_readers > 0; ++i)
+        WaitPolicy::pause(i);
 
     return true;
 }
 
-inline void ReadWriteLock::lock_write()
+template <typename WaitPolicy>
+inline void ReadWriteLock<WaitPolicy>::lock_write()
 {
     // Make sure no reader can start.
     m_mutex.lock();
 
     // Wait until active readers have terminated.
-    while (m_readers > 0) { sleep(5); }
+    for (uint32 i = 0; m_readers > 0; ++i)
+        WaitPolicy::pause(i);
 }
 
-inline void ReadWriteLock::unlock_write()
+template <typename WaitPolicy>
+inline void ReadWriteLock<WaitPolicy>::unlock_write()
 {
     m_mutex.unlock();
 }
 
-inline ReadWriteLock::ScopedReadLock::ScopedReadLock(ReadWriteLock& lock)
+template <typename WaitPolicy>
+inline ReadWriteLock<WaitPolicy>::ScopedReadLock::ScopedReadLock(ReadWriteLock& lock)
   : m_lock(lock)
 {
     m_lock.lock_read();
 }
 
-inline ReadWriteLock::ScopedReadLock::~ScopedReadLock()
+template <typename WaitPolicy>
+inline ReadWriteLock<WaitPolicy>::ScopedReadLock::~ScopedReadLock()
 {
     m_lock.unlock_read();
 }
 
-inline ReadWriteLock::ScopedWriteLock::ScopedWriteLock(ReadWriteLock& lock)
+template <typename WaitPolicy>
+inline ReadWriteLock<WaitPolicy>::ScopedWriteLock::ScopedWriteLock(ReadWriteLock& lock)
   : m_lock(lock)
 {
     m_lock.lock_write();
 }
 
-inline ReadWriteLock::ScopedWriteLock::~ScopedWriteLock()
+template <typename WaitPolicy>
+inline ReadWriteLock<WaitPolicy>::ScopedWriteLock::~ScopedWriteLock()
 {
     m_lock.unlock_write();
 }

@@ -121,7 +121,7 @@ void LocalSampleAccumulationBuffer::clear()
 #endif
 
     // Request exclusive access.
-    ReadWriteLock::ScopedWriteLock lock(m_lock);
+    LockType::ScopedWriteLock lock(m_lock);
 
 #ifdef PRINT_DETAILED_PERF_REPORTS
     sw.measure();
@@ -155,7 +155,7 @@ void LocalSampleAccumulationBuffer::store_samples(
         // Request non-exclusive access.
         while (!m_lock.try_lock_read())
         {
-            sleep(5);
+            sleep(1);
             if (abort_switch.is_aborted())
                 return;
         }
