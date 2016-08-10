@@ -48,9 +48,6 @@
 #include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/stopwatch.h"
 
-// Boost headers.
-#include "boost/chrono/duration.hpp"
-
 // Standard headers.
 #include <algorithm>
 #include <cassert>
@@ -124,7 +121,7 @@ void LocalSampleAccumulationBuffer::clear()
 #endif
 
     // Request exclusive access.
-    unique_lock<shared_mutex> lock(m_mutex);
+    ReadWriteLock::ScopedWriteLock lock(m_lock);
 
 #ifdef PRINT_DETAILED_PERF_REPORTS
     sw.measure();
@@ -156,13 +153,11 @@ void LocalSampleAccumulationBuffer::store_samples(
 
     {
         // Request non-exclusive access.
-        shared_lock<shared_mutex> lock(m_mutex, defer_lock);
-        while (true)
+        while (!m_lock.try_lock_read())
         {
+            sleep(5);
             if (abort_switch.is_aborted())
                 return;
-            if (lock.try_lock_for(chrono::milliseconds(5)))
-                break;
         }
 
 #ifdef PRINT_DETAILED_PERF_REPORTS
@@ -182,13 +177,18 @@ void LocalSampleAccumulationBuffer::store_samples(
             for (const Sample* s = samples; s < sample_end; ++s)
             {
                 if ((counter++ & 4096) == 0 && abort_switch.is_aborted())
+                {
+                    m_lock.unlock_read();
                     return;
+                }
 
                 const float fx = s->m_position.x * level_width;
                 const float fy = s->m_position.y * level_height;
                 level->add(fx, fy, s->m_values);
             }
         }
+
+        m_lock.unlock_read();
     }
 
     m_sample_count += sample_count;
@@ -234,13 +234,11 @@ void LocalSampleAccumulationBuffer::develop_to_frame(
 #endif
 
     // Request exclusive access.
-    unique_lock<shared_mutex> lock(m_mutex, defer_lock);
-    while (true)
+    while (!m_lock.try_lock_write())
     {
+        sleep(5);
         if (abort_switch.is_aborted())
             return;
-        if (lock.try_lock_for(chrono::milliseconds(5)))
-            break;
     }
 
 #ifdef PRINT_DETAILED_PERF_REPORTS
@@ -267,7 +265,10 @@ void LocalSampleAccumulationBuffer::develop_to_frame(
         for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
         {
             if (abort_switch.is_aborted())
+            {
+                m_lock.unlock_write();
                 return;
+            }
 
             const size_t origin_x = tx * frame_props.m_tile_width;
             const size_t origin_y = ty * frame_props.m_tile_height;
@@ -307,6 +308,8 @@ void LocalSampleAccumulationBuffer::develop_to_frame(
             }
         }
     }
+
+    m_lock.unlock_write();
 
 #ifdef PRINT_DETAILED_PERF_REPORTS
     sw.measure();
