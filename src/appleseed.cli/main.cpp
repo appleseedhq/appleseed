@@ -678,21 +678,25 @@ namespace
             params,
             &renderer_controller);
 
-        // Start the stopwatch.
-        Stopwatch<DefaultWallclockTimer> stopwatch;
-        stopwatch.start();
+        double total_time_seconds, render_time_seconds;
+        {
+            // Raise the process priority to reduce interruptions.
+            ProcessPriorityContext benchmark_context(ProcessPriorityHigh, &g_logger);
+            Stopwatch<DefaultWallclockTimer> stopwatch;
 
-        // Render a first time.
-        if (!renderer.render())
-            return;
-        stopwatch.measure();
-        const double total_time_seconds = stopwatch.get_seconds();
+            // Render a first time.
+            stopwatch.start();
+            if (!renderer.render())
+                return;
+            stopwatch.measure();
+            total_time_seconds = stopwatch.get_seconds();
 
-        // Render a second time.
-        if (!renderer.render())
-            return;
-        stopwatch.measure();
-        const double render_time_seconds = stopwatch.get_seconds() - total_time_seconds;
+            // Render a second time.
+            if (!renderer.render())
+                return;
+            stopwatch.measure();
+            render_time_seconds = stopwatch.get_seconds() - total_time_seconds;
+        }
 
         // Write the frame to disk.
         if (g_cl.m_output.is_set())
@@ -704,9 +708,9 @@ namespace
 
         // Print benchmark results.
         LOG_INFO(g_logger, "result=success");
+        LOG_INFO(g_logger, "total_time=%.6f", total_time_seconds);
         LOG_INFO(g_logger, "setup_time=%.6f", total_time_seconds - render_time_seconds);
         LOG_INFO(g_logger, "render_time=%.6f", render_time_seconds);
-        LOG_INFO(g_logger, "total_time=%.6f", total_time_seconds);
     }
 }
 
