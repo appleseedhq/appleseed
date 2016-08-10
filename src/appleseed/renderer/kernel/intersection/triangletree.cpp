@@ -1586,19 +1586,19 @@ bool TriangleLeafProbeVisitor::visit(
             v1 += reader.read<GVector3>() * frac;
             v2 += reader.read<GVector3>() * frac;
 
-            // Skip the remaining motion steps of this triangle.
-            reader += (motion_segment_count - base_index - 1) * TriangleSize;
-
             // Build the triangle and convert it to the right format if necessary.
             const GTriangleType triangle(v0, v1, v2);
-            const TriangleReader reader(triangle);
+            const TriangleReader triangle_reader(triangle);
 
             // Intersect the triangle.
-            if (reader.m_triangle.intersect(ray))
+            if (triangle_reader.m_triangle.intersect(ray))
             {
                 m_hit = true;
                 return false;
             }
+
+            // Skip the remaining motion steps of this triangle.
+            reader += (motion_segment_count - base_index - 1) * TriangleSize;
         }
     }
 

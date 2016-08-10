@@ -548,10 +548,10 @@ namespace
                     g_cl.m_output.value().c_str(),
                     g_logger));
         }
-        else
+        else if (project->get_display() == 0)
         {
             // Create a default tile callback if needed.
-            if (project->get_display() == 0)
+            if (params.get_optional<string>("frame_renderer", "") != "progressive")
             {
                 tile_callback_factory.reset(
                     new ProgressTileCallbackFactory(g_logger));
@@ -571,9 +571,7 @@ namespace
         Stopwatch<DefaultWallclockTimer> stopwatch;
         if (params.get_optional<bool>("background_mode", true))
         {
-            ProcessPriorityContext background_context(
-                ProcessPriorityLow,
-                &g_logger);
+            ProcessPriorityContext background_context(ProcessPriorityLow, &g_logger);
             stopwatch.start();
             renderer.render();
             stopwatch.measure();
@@ -680,21 +678,25 @@ namespace
             params,
             &renderer_controller);
 
-        // Start the stopwatch.
-        Stopwatch<DefaultWallclockTimer> stopwatch;
-        stopwatch.start();
+        double total_time_seconds, render_time_seconds;
+        {
+            // Raise the process priority to reduce interruptions.
+            ProcessPriorityContext benchmark_context(ProcessPriorityHigh, &g_logger);
+            Stopwatch<DefaultWallclockTimer> stopwatch;
 
-        // Render a first time.
-        if (!renderer.render())
-            return;
-        stopwatch.measure();
-        const double total_time_seconds = stopwatch.get_seconds();
+            // Render a first time.
+            stopwatch.start();
+            if (!renderer.render())
+                return;
+            stopwatch.measure();
+            total_time_seconds = stopwatch.get_seconds();
 
-        // Render a second time.
-        if (!renderer.render())
-            return;
-        stopwatch.measure();
-        const double render_time_seconds = stopwatch.get_seconds() - total_time_seconds;
+            // Render a second time.
+            if (!renderer.render())
+                return;
+            stopwatch.measure();
+            render_time_seconds = stopwatch.get_seconds() - total_time_seconds;
+        }
 
         // Write the frame to disk.
         if (g_cl.m_output.is_set())
@@ -704,14 +706,11 @@ namespace
             project->get_frame()->write_aov_images(file_path);
         }
 
-        // Force-unload the project.
-        project.reset();
-
         // Print benchmark results.
         LOG_INFO(g_logger, "result=success");
+        LOG_INFO(g_logger, "total_time=%.6f", total_time_seconds);
         LOG_INFO(g_logger, "setup_time=%.6f", total_time_seconds - render_time_seconds);
         LOG_INFO(g_logger, "render_time=%.6f", render_time_seconds);
-        LOG_INFO(g_logger, "total_time=%.6f", total_time_seconds);
     }
 }
 

@@ -41,7 +41,6 @@
 // Boost headers.
 #include "boost/atomic/atomic.hpp"
 #include "boost/interprocess/detail/atomic.hpp"
-#include "boost/static_assert.hpp"
 
 // Standard headers.
 #include <cassert>
@@ -66,9 +65,9 @@ uint32 atomic_inc(
 uint32 atomic_dec(
     volatile uint32*    ptr);
 
-bool atomic_cas(
+uint32 atomic_cas(
     volatile uint32*    ptr,
-    const uint32        initial_value,
+    const uint32        expected_value,
     const uint32        new_value);
 
 void atomic_add(
@@ -105,21 +104,15 @@ APPLESEED_FORCE_INLINE uint32 atomic_dec(
     return boost::interprocess::ipcdetail::atomic_dec32(ptr);
 }
 
-APPLESEED_FORCE_INLINE bool atomic_cas(
+APPLESEED_FORCE_INLINE uint32 atomic_cas(
     volatile uint32*    ptr,
     const uint32        expected_value,
     const uint32        new_value)
 {
 #if defined _WIN32
-    BOOST_STATIC_ASSERT(sizeof(LONG) == sizeof(uint32));
-    return
-        InterlockedCompareExchange(
-            reinterpret_cast<volatile LONG*>(ptr),
-            new_value,
-            expected_value)
-        == expected_value;
+    return InterlockedCompareExchange(ptr, new_value, expected_value);
 #elif defined __GNUC__
-    return __sync_bool_compare_and_swap(ptr, expected_value, new_value);
+    return __sync_val_compare_and_swap(ptr, expected_value, new_value);
 #else
     #error Unsupported platform.
 #endif
@@ -131,14 +124,17 @@ APPLESEED_FORCE_INLINE void atomic_add(
 {
     assert(is_aligned(ptr, 4));
 
+    volatile uint32* iptr = reinterpret_cast<volatile uint32*>(ptr);
+    uint32 expected = *iptr;
+
     while (true)
     {
-        const float forg = *ptr;
-        const float fnew = forg + operand;
-        const uint32 iorg = binary_cast<uint32>(forg);
-        const uint32 inew = binary_cast<uint32>(fnew);
-        if (atomic_cas(reinterpret_cast<volatile uint32*>(ptr), iorg, inew))
-            break;
+        const float value = binary_cast<float>(expected);
+        const uint32 new_value = binary_cast<uint32>(value + operand);
+        const uint32 actual = atomic_cas(iptr, expected, new_value);
+        if (actual == expected)
+            return;
+        expected = actual;
     }
 }
 

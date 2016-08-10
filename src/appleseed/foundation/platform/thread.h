@@ -39,7 +39,6 @@
 #include "main/dllsymbol.h"
 
 // Boost headers.
-#define BOOST_THREAD_PROVIDES_GENERIC_SHARED_MUTEX_ON_WIN
 #include "boost/smart_ptr/detail/spinlock.hpp"
 #include "boost/thread/locks.hpp"
 #include "boost/thread/mutex.hpp"
@@ -53,7 +52,23 @@ namespace foundation
 {
 
 //
-// A spinlock based on boost::detail::spinlock.
+// Utility functions.
+//
+
+// Set the name of the current thread.
+// For portability, limit the name to 16 characters, including the terminating zero.
+APPLESEED_DLLSYMBOL void set_current_thread_name(const char* name);
+
+// Suspend the current thread for a given number of milliseconds.
+APPLESEED_DLLSYMBOL void sleep(const uint32 ms);
+APPLESEED_DLLSYMBOL void sleep(const uint32 ms, IAbortSwitch& abort_switch);
+
+// Give up the remainder of the current thread's time slice, to allow other threads to run.
+APPLESEED_DLLSYMBOL void yield();
+
+
+//
+// A simple spinlock.
 //
 
 class Spinlock
@@ -63,21 +78,84 @@ class Spinlock
     Spinlock();
 
     bool try_lock();
-
     void lock();
-
     void unlock();
 
-    struct ScopedLock
+    class ScopedLock
       : public NonCopyable
     {
-        boost::detail::spinlock::scoped_lock m_lock;
-
+      public:
         explicit ScopedLock(Spinlock& spinlock);
+
+      private:
+        boost::detail::spinlock::scoped_lock m_lock;
     };
 
   private:
     boost::detail::spinlock m_sp;
+};
+
+
+//
+// A read/write lock.
+//
+
+struct NoWaitPolicy
+{
+    static void pause(const uint32 iteration) {}
+};
+
+struct YieldWaitPolicy
+{
+    static void pause(const uint32 iteration) { yield(); }
+};
+
+template <uint32 ms>
+struct SleepWaitPolicy
+{
+    static void pause(const uint32 iteration) { sleep(ms); }
+};
+
+template <typename WaitPolicy = NoWaitPolicy>
+class ReadWriteLock
+  : public NonCopyable
+{
+  public:
+    ReadWriteLock();
+
+    bool try_lock_read();
+    void lock_read();
+    void unlock_read();
+
+    bool try_lock_write();
+    void lock_write();
+    void unlock_write();
+
+    class ScopedReadLock
+      : public NonCopyable
+    {
+      public:
+        explicit ScopedReadLock(ReadWriteLock& lock);
+        ~ScopedReadLock();
+
+      private:
+        ReadWriteLock& m_lock;
+    };
+
+    class ScopedWriteLock
+      : public NonCopyable
+    {
+      public:
+        explicit ScopedWriteLock(ReadWriteLock& lock);
+        ~ScopedWriteLock();
+
+      private:
+        ReadWriteLock& m_lock;
+    };
+
+  private:
+    boost::atomic<uint32>   m_readers;
+    boost::mutex            m_mutex;
 };
 
 
@@ -213,24 +291,15 @@ class APPLESEED_DLLSYMBOL ThreadFlag
 
 
 //
-// Utility free functions.
-//
-
-// Set the name of the current thread.
-// For portability, limit the name to 16 characters, including the terminating zero.
-APPLESEED_DLLSYMBOL void set_current_thread_name(const char* name);
-
-// Suspend the current thread for a given number of milliseconds.
-APPLESEED_DLLSYMBOL void sleep(const uint32 ms);
-APPLESEED_DLLSYMBOL void sleep(const uint32 ms, IAbortSwitch& abort_switch);
-
-// Give up the remainder of the current thread's time slice, to allow other threads to run.
-APPLESEED_DLLSYMBOL void yield();
-
-
-//
 // Spinlock class implementation.
 //
+
+inline Spinlock::Spinlock()
+{
+    // todo: is there a simpler way to initialize m_sp in a platform-independent manner?
+    boost::detail::spinlock initialized_sp = BOOST_DETAIL_SPINLOCK_INIT;
+    m_sp = initialized_sp;
+}
 
 inline bool Spinlock::try_lock()
 {
@@ -247,16 +316,112 @@ inline void Spinlock::unlock()
     m_sp.unlock();
 }
 
-inline Spinlock::Spinlock()
-{
-    // todo: is there a simpler way to initialize m_sp in a platform-independent manner?
-    boost::detail::spinlock initialized_sp = BOOST_DETAIL_SPINLOCK_INIT;
-    m_sp = initialized_sp;
-}
-
 inline Spinlock::ScopedLock::ScopedLock(Spinlock& spinlock)
   : m_lock(spinlock.m_sp)
 {
+}
+
+
+//
+// ReadWriteLock class implementation.
+//
+
+template <typename WaitPolicy>
+inline ReadWriteLock<WaitPolicy>::ReadWriteLock()
+  : m_readers(0)
+{
+}
+
+template <typename WaitPolicy>
+inline bool ReadWriteLock<WaitPolicy>::try_lock_read()
+{
+    // Make sure there are no writers active.
+    if (!m_mutex.try_lock())
+        return false;
+
+    // A new reader is active.
+    ++m_readers;
+
+    // Let other readers start.
+    m_mutex.unlock();
+
+    return true;
+}
+
+template <typename WaitPolicy>
+inline void ReadWriteLock<WaitPolicy>::lock_read()
+{
+    // Make sure there are no writers active.
+    m_mutex.lock();
+
+    // A new reader is active.
+    ++m_readers;
+
+    // Let other readers start.
+    m_mutex.unlock();
+}
+
+template <typename WaitPolicy>
+inline void ReadWriteLock<WaitPolicy>::unlock_read()
+{
+    --m_readers;
+}
+
+template <typename WaitPolicy>
+inline bool ReadWriteLock<WaitPolicy>::try_lock_write()
+{
+    // Make sure no reader can start.
+    if (!m_mutex.try_lock())
+        return false;
+
+    // Wait until active readers have terminated.
+    for (uint32 i = 0; m_readers > 0; ++i)
+        WaitPolicy::pause(i);
+
+    return true;
+}
+
+template <typename WaitPolicy>
+inline void ReadWriteLock<WaitPolicy>::lock_write()
+{
+    // Make sure no reader can start.
+    m_mutex.lock();
+
+    // Wait until active readers have terminated.
+    for (uint32 i = 0; m_readers > 0; ++i)
+        WaitPolicy::pause(i);
+}
+
+template <typename WaitPolicy>
+inline void ReadWriteLock<WaitPolicy>::unlock_write()
+{
+    m_mutex.unlock();
+}
+
+template <typename WaitPolicy>
+inline ReadWriteLock<WaitPolicy>::ScopedReadLock::ScopedReadLock(ReadWriteLock& lock)
+  : m_lock(lock)
+{
+    m_lock.lock_read();
+}
+
+template <typename WaitPolicy>
+inline ReadWriteLock<WaitPolicy>::ScopedReadLock::~ScopedReadLock()
+{
+    m_lock.unlock_read();
+}
+
+template <typename WaitPolicy>
+inline ReadWriteLock<WaitPolicy>::ScopedWriteLock::ScopedWriteLock(ReadWriteLock& lock)
+  : m_lock(lock)
+{
+    m_lock.lock_write();
+}
+
+template <typename WaitPolicy>
+inline ReadWriteLock<WaitPolicy>::ScopedWriteLock::~ScopedWriteLock()
+{
+    m_lock.unlock_write();
 }
 
 

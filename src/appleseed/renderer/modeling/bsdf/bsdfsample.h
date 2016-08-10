@@ -50,10 +50,10 @@ class BSDFSample
     const foundation::Dual3d        m_outgoing;             // world space outgoing direction, unit-length
 
     // Outputs.
-    foundation::Dual3d              m_incoming;             // world space incoming direction, unit-length
     ScatteringMode::Mode            m_mode;                 // scattering mode
-    double                          m_probability;          // PDF value
-    Spectrum                        m_value;                // BSDF value
+    foundation::Dual3d              m_incoming;             // world space incoming direction, unit-length, defined only if m_mode != Absorption
+    double                          m_probability;          // PDF value, defined only if m_mode != Absorption
+    Spectrum                        m_value;                // BSDF value, defined only if m_mode != Absorption
 
     // Constructor.
     BSDFSample(
@@ -89,7 +89,6 @@ inline BSDFSample::BSDFSample(
   : m_shading_point(shading_point)
   , m_outgoing(outgoing)
   , m_mode(ScatteringMode::Absorption)
-  , m_probability(0.0)
 {
 }
 

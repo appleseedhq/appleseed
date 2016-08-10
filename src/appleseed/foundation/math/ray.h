@@ -173,7 +173,7 @@ class RayInfo<double, 3>
     RayInfo(const RayInfo<U, 3>& rhs);
 };
 
-#endif
+#endif  // APPLESEED_USE_SSE
 
 
 //
@@ -325,7 +325,7 @@ inline RayInfo<double, 3>::RayInfo(const RayInfo<U, 3>& rhs)
         m_sgn_dir[i] = rhs.m_sgn_dir[i];
 }
 
-#endif
+#endif  // APPLESEED_USE_SSE
 
 }       // namespace foundation
 
