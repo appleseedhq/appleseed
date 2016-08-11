@@ -53,6 +53,9 @@
 #include "renderer/modeling/project/project.h"
 #include "renderer/utility/paramarray.h"
 
+// Standard headers.
+#include <string>
+
 using namespace std;
 
 namespace renderer
@@ -78,10 +81,8 @@ namespace
         const char*         name)
     {
         ParamArray child = source.child(name);
-
         copy_param(child, source, "sampling_mode");
         copy_param(child, source, "rendering_threads");
-
         return child;
     }
 }
@@ -265,6 +266,12 @@ bool RendererComponents::create_sample_generator_factory()
     }
     else if (name == "generic")
     {
+        if (m_sample_renderer_factory.get() == 0)
+        {
+            RENDERER_LOG_ERROR("cannot use the generic sample generator without a sample renderer.");
+            return false;
+        }
+
         m_sample_generator_factory.reset(
             new GenericSampleGeneratorFactory(
                 m_frame,
@@ -309,18 +316,28 @@ bool RendererComponents::create_pixel_renderer_factory()
     }
     else if (name == "uniform")
     {
+        if (m_sample_renderer_factory.get() == 0)
+        {
+            RENDERER_LOG_ERROR("cannot use the uniform pixel renderer without a sample renderer.");
+            return false;
+        }
+
         ParamArray params = get_child_and_inherit_globals(m_params, "uniform_pixel_renderer");
         copy_param(params, m_params, "passes");
-
         m_pixel_renderer_factory.reset(
             new UniformPixelRendererFactory(
                 m_sample_renderer_factory.get(),
                 params));
-
         return true;
     }
     else if (name == "adaptive")
     {
+        if (m_sample_renderer_factory.get() == 0)
+        {
+            RENDERER_LOG_ERROR("cannot use the adaptive pixel renderer without a sample renderer.");
+            return false;
+        }
+
         m_pixel_renderer_factory.reset(
             new AdaptivePixelRendererFactory(
                 m_frame,
@@ -376,6 +393,18 @@ bool RendererComponents::create_tile_renderer_factory()
     }
     else if (name == "generic")
     {
+        if (m_pixel_renderer_factory.get() == 0)
+        {
+            RENDERER_LOG_ERROR("cannot use the generic tile renderer without a pixel renderer.");
+            return false;
+        }
+
+        if (m_shading_result_framebuffer_factory.get() == 0)
+        {
+            RENDERER_LOG_ERROR("cannot use the generic tile renderer without a shading result framebuffer.");
+            return false;
+        }
+
         m_tile_renderer_factory.reset(
             new GenericTileRendererFactory(
                 m_frame,
@@ -413,6 +442,12 @@ bool RendererComponents::create_frame_renderer_factory()
     }
     else if (name == "generic")
     {
+        if (m_tile_renderer_factory.get() == 0)
+        {
+            RENDERER_LOG_ERROR("cannot use the generic frame renderer without a tile renderer.");
+            return false;
+        }
+
         m_frame_renderer.reset(
             GenericFrameRendererFactory::create(
                 m_frame,
@@ -424,6 +459,12 @@ bool RendererComponents::create_frame_renderer_factory()
     }
     else if (name == "progressive")
     {
+        if (m_sample_generator_factory.get() == 0)
+        {
+            RENDERER_LOG_ERROR("cannot use the progressive frame renderer without a sample generator.");
+            return false;
+        }
+
         m_frame_renderer.reset(
             ProgressiveFrameRendererFactory::create(
                 m_project,

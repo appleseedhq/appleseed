@@ -90,7 +90,7 @@ class APPLESEED_DLLSYMBOL MasterRenderer
     Display*                        m_display;
 
     // Render frame sequences, each time reinitializing the rendering components.
-    void do_render();
+    bool do_render();
 
     // Initialize the rendering components and render a frame sequence.
     IRendererController::Status initialize_and_render_frame_sequence();

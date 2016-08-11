@@ -119,8 +119,7 @@ bool MasterRenderer::render()
 {
     try
     {
-        do_render();
-        return true;
+        return do_render();
     }
     catch (const bad_alloc&)
     {
@@ -144,7 +143,7 @@ bool MasterRenderer::render()
 #endif
 }
 
-void MasterRenderer::do_render()
+bool MasterRenderer::do_render()
 {
     while (true)
     {
@@ -156,11 +155,11 @@ void MasterRenderer::do_render()
         {
           case IRendererController::TerminateRendering:
             m_renderer_controller->on_rendering_success();
-            return;
+            return true;
 
           case IRendererController::AbortRendering:
             m_renderer_controller->on_rendering_abort();
-            return;
+            return false;
 
           case IRendererController::ReinitializeRendering:
             break;
