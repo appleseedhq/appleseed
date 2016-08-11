@@ -48,9 +48,9 @@
 #include "boost/filesystem/path.hpp"
 
 using namespace appleseed::shared;
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace studio {
@@ -78,12 +78,12 @@ void TestRunnerThread::run()
 
     global_logger().set_enabled(false);
 
-    const filesystem::path old_current_path =
+    const bf::path old_current_path =
         Application::change_current_directory_to_tests_root_path();
 
     m_repository.run(listener, result);
 
-    filesystem::current_path(old_current_path);
+    bf::current_path(old_current_path);
 
     global_logger().set_enabled(true);
 

@@ -58,6 +58,7 @@ using namespace foundation;
 using namespace renderer;
 using namespace boost;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace cli {
@@ -78,7 +79,7 @@ namespace
         {
             mt19937 rng(static_cast<uint32_t>(time(0)));
             const uuids::uuid u = uuids::basic_random_generator<boost::mt19937>(&rng)();
-            const filesystem::path ext = m_output_path.extension();
+            const bf::path ext = m_output_path.extension();
             const string tmp_filename = uuids::to_string(u) + ext.string();
 
             m_tmp_output_path = m_output_path.parent_path() / tmp_filename;
@@ -86,8 +87,8 @@ namespace
 
       private:
         boost::mutex        m_mutex;
-        filesystem::path    m_output_path;
-        filesystem::path    m_tmp_output_path;
+        bf::path            m_output_path;
+        bf::path            m_tmp_output_path;
 
         virtual void do_post_render_tile(
             const Frame*    frame,
@@ -97,7 +98,7 @@ namespace
             boost::mutex::scoped_lock lock(m_mutex);
             ProgressTileCallback::do_post_render_tile(frame, tile_x, tile_y);
             frame->write_main_image(m_tmp_output_path.string().c_str());
-            filesystem::rename(m_tmp_output_path, m_output_path);
+            bf::rename(m_tmp_output_path, m_output_path);
         }
     };
 }

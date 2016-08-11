@@ -65,10 +65,10 @@
 #include <cassert>
 
 using namespace appleseed::shared;
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace studio {
@@ -320,8 +320,8 @@ void RenderingManager::archive_frame_to_disk()
 {
     RENDERER_LOG_INFO("archiving frame to disk...");
 
-    const filesystem::path autosave_path =
-          filesystem::path(Application::get_root_path())
+    const bf::path autosave_path =
+          bf::path(Application::get_root_path())
         / "images" / "autosave";
 
     m_project->get_frame()->archive(autosave_path.string().c_str());

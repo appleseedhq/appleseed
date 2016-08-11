@@ -69,10 +69,10 @@
 #include <string>
 
 using namespace appleseed::shared;
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace studio {
@@ -177,8 +177,8 @@ void MaterialCollectionItem::slot_import_disney()
     {
         filepath = QDir::toNativeSeparators(filepath);
 
-        const filesystem::path root_path(Application::get_root_path());
-        const filesystem::path schema_file_path = root_path / "schemas" / "settings.xsd";
+        const bf::path root_path(Application::get_root_path());
+        const bf::path schema_file_path = root_path / "schemas" / "settings.xsd";
 
         SettingsFileReader reader(global_logger());
         ParamArray parameters;

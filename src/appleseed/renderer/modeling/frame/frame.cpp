@@ -68,9 +68,9 @@
 #include <memory>
 #include <string>
 
-using namespace boost;
 using namespace foundation;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace renderer
 {
@@ -504,8 +504,8 @@ bool Frame::write_aov_images(const char* file_path) const
 
     if (!impl->m_aov_images->empty())
     {
-        const filesystem::path boost_file_path(file_path);
-        const filesystem::path directory = boost_file_path.parent_path();
+        const bf::path boost_file_path(file_path);
+        const bf::path directory = boost_file_path.parent_path();
         const string base_file_name = boost_file_path.stem().string();
         const string extension = boost_file_path.extension().string();
 
@@ -539,7 +539,7 @@ bool Frame::archive(
         "autosave." + get_time_stamp_string() + ".exr";
 
     // Construct the path to the image file.
-    const string file_path = (filesystem::path(directory) / filename).string();
+    const string file_path = (bf::path(directory) / filename).string();
 
     // Return the path to the image file.
     if (output_path)
@@ -718,7 +718,7 @@ bool Frame::write_image(
         }
         catch (const ExceptionUnsupportedFileFormat&)
         {
-            const string extension = lower_case(filesystem::path(file_path).extension().string());
+            const string extension = lower_case(bf::path(file_path).extension().string());
 
             RENDERER_LOG_ERROR(
                 "file format '%s' not supported, writing the image in OpenEXR format "

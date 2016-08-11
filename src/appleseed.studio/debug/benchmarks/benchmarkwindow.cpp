@@ -69,6 +69,7 @@ using namespace appleseed::shared;
 using namespace boost;
 using namespace foundation;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace studio {
@@ -180,8 +181,8 @@ void BenchmarkWindow::populate_benchmarks_treeview()
 
 void BenchmarkWindow::reload_benchmarks()
 {
-    const filesystem::path benchmarks_path =
-          filesystem::path(Application::get_tests_root_path())
+    const bf::path benchmarks_path =
+          bf::path(Application::get_tests_root_path())
         / "unit benchmarks/results/";
 
     m_benchmark_aggregator.clear();

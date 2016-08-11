@@ -77,9 +77,9 @@
 #include <string>
 #include <vector>
 
-using namespace boost;
 using namespace foundation;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace renderer
 {
@@ -540,7 +540,7 @@ namespace
                 if (!m_sample_count_records.empty())
                 {
                     const string filepath =
-                        (filesystem::path(m_project.search_paths().get_root_path()) / "sample_count.gnuplot").string();
+                        (bf::path(m_project.search_paths().get_root_path()) / "sample_count.gnuplot").string();
                     RENDERER_LOG_DEBUG("writing %s...", filepath.c_str());
 
                     GnuplotFile plotfile;
@@ -556,7 +556,7 @@ namespace
                 if (!m_rmsd_records.empty())
                 {
                     const string filepath =
-                        (filesystem::path(m_project.search_paths().get_root_path()) / "rms_deviation.gnuplot").string();
+                        (bf::path(m_project.search_paths().get_root_path()) / "rms_deviation.gnuplot").string();
                     RENDERER_LOG_DEBUG("writing %s...", filepath.c_str());
 
                     GnuplotFile plotfile;

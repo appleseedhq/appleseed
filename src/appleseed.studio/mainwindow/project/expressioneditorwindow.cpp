@@ -76,10 +76,10 @@
 #include <sstream>
 
 using namespace appleseed::shared;
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace studio {
@@ -160,7 +160,7 @@ ExpressionEditorWindow::ExpressionEditorWindow(
 
     // Expression browser.
     m_browser = new SeExprEdBrowser(0, m_editor);
-    const filesystem::path root_path(Application::get_root_path());
+    const bf::path root_path(Application::get_root_path());
     const string scripts_path = (root_path / "seexpr").string();
     m_browser->addPath("Examples", scripts_path);
     m_browser->update();
@@ -316,7 +316,7 @@ void ExpressionEditorWindow::slot_show_examples()
 
 void ExpressionEditorWindow::slot_show_help()
 {
-    filesystem::path docs_path = Application::get_root_path();
+    bf::path docs_path = Application::get_root_path();
     docs_path /= "docs/seexpr/userdoc.html";
 
     const QString docs_file = QString::fromStdString(docs_path.string());

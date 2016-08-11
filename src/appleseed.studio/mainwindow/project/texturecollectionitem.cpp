@@ -62,10 +62,10 @@
 #include <cassert>
 #include <string>
 
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace studio {
@@ -102,7 +102,7 @@ namespace
     auto_release_ptr<Texture> create_texture(const string& path)
     {
         const string texture_name =
-            filesystem::path(path).replace_extension().filename().string();
+            bf::path(path).replace_extension().filename().string();
 
         ParamArray texture_params;
         texture_params.insert("filename", path);
@@ -141,7 +141,7 @@ void TextureCollectionItem::slot_import_textures()
     if (filepaths.empty())
         return;
 
-    const filesystem::path path(
+    const bf::path path(
         QDir::toNativeSeparators(filepaths.first()).toStdString());
 
     // todo: schedule creation of texture and texture instances when rendering.

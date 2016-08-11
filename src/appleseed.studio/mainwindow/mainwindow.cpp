@@ -97,10 +97,10 @@
 #include <cassert>
 
 using namespace appleseed::shared;
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace studio {
@@ -1308,8 +1308,8 @@ void MainWindow::slot_save_settings()
     {
         try
         {
-            const filesystem::path user_settings_path(p);
-            filesystem::create_directories(user_settings_path);
+            const bf::path user_settings_path(p);
+            bf::create_directories(user_settings_path);
             const string user_settings_file_path = (user_settings_path / "appleseed.studio.xml").string();
 
             if (writer.write(user_settings_file_path.c_str(), m_settings))
@@ -1318,13 +1318,13 @@ void MainWindow::slot_save_settings()
                 return;
             }
         }
-        catch (const filesystem::filesystem_error&)
+        catch (const bf::filesystem_error&)
         {
         }
     }
 
     // As a fallback, try to save the settings to the appleseed's installation directory.
-    const filesystem::path root_path(Application::get_root_path());
+    const bf::path root_path(Application::get_root_path());
     const string settings_file_path = (root_path / "settings" / "appleseed.studio.xml").string();
 
     if (writer.write(settings_file_path.c_str(), m_settings))
@@ -1580,10 +1580,10 @@ void MainWindow::slot_save_all_aovs()
 namespace
 {
     void write_all_aovs(
-        const Project&          project,
-        const filesystem::path& image_path)
+        const Project&  project,
+        const bf::path& image_path)
     {
-        filesystem::create_directories(image_path.parent_path());
+        bf::create_directories(image_path.parent_path());
 
         const Frame* frame = project.get_frame();
 
@@ -1599,17 +1599,17 @@ void MainWindow::slot_quicksave_all_aovs()
 
     const Project& project = *m_project_manager.get_project();
 
-    const filesystem::path project_path(project.get_path());
-    const filesystem::path quicksave_dir = project_path.parent_path() / "quicksaves";
+    const bf::path project_path(project.get_path());
+    const bf::path quicksave_dir = project_path.parent_path() / "quicksaves";
 
     write_all_aovs(
         project,
-        filesystem::absolute(
+        bf::absolute(
             quicksave_dir / "quicksave.exr"));
 
     write_all_aovs(
         project,
-        filesystem::absolute(
+        bf::absolute(
             find_next_available_path(quicksave_dir / "quicksave####.exr")));
 }
 

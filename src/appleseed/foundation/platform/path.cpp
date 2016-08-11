@@ -57,8 +57,8 @@
 #include <unistd.h>
 #endif
 
-using namespace boost;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace foundation
 {
@@ -122,7 +122,7 @@ const char* get_executable_directory()
 
     if (!path_initialized)
     {
-        filesystem::path executable_path(get_executable_path());
+        bf::path executable_path(get_executable_path());
 
         assert(executable_path.has_filename());
         executable_path.remove_filename();
@@ -179,18 +179,18 @@ const char* get_home_directory()
 }
 
 void split_paths(
-    const filesystem::path&     p1,
-    const filesystem::path&     p2,
-    filesystem::path&           common,
-    filesystem::path&           r1,
-    filesystem::path&           r2)
+    const bf::path&     p1,
+    const bf::path&     p2,
+    bf::path&           common,
+    bf::path&           r1,
+    bf::path&           r2)
 {
     assert(common.empty());
     assert(r1.empty());
     assert(r2.empty());
 
-    filesystem::path::const_iterator i1 = p1.begin();
-    filesystem::path::const_iterator i2 = p2.begin();
+    bf::path::const_iterator i1 = p1.begin();
+    bf::path::const_iterator i2 = p2.begin();
 
     while (i1 != p1.end() && i2 != p2.end())
     {

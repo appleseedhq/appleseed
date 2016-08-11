@@ -67,21 +67,21 @@
 
 using namespace appleseed::studio;
 using namespace appleseed::shared;
-using namespace boost;
 using namespace foundation;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace
 {
     void display_incorrect_installation_error()
     {
         // We need the path to the application's executable to construct the error message.
-        const filesystem::path executable_path(get_executable_path());
+        const bf::path executable_path(get_executable_path());
 
         // Construct the error message.
         const string informative_text =
             "Specifically, it was expected that " + executable_path.filename().string() + " would "
-            "reside in a " + filesystem::path("bin/").make_preferred().string() + " subdirectory "
+            "reside in a " + bf::path("bin/").make_preferred().string() + " subdirectory "
             "inside the main directory of the application, but it appears not to be the case "
             "(" + executable_path.filename().string() +
             " seems to be located in " + executable_path.parent_path().string() + ").";
@@ -202,8 +202,8 @@ namespace
         if (Application::is_correctly_installed())
         {
             // Build the path to the default stylesheet file.
-            const filesystem::path stylesheet_path =
-                  filesystem::path(Application::get_root_path())
+            const bf::path stylesheet_path =
+                  bf::path(Application::get_root_path())
                 / "stylesheets"
                 / "default.qss";
 
