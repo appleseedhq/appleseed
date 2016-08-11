@@ -45,8 +45,8 @@
 #include <iterator>
 #include <vector>
 
-using namespace boost;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace foundation
 {
@@ -73,10 +73,10 @@ struct SearchPaths::Impl
 {
     typedef vector<string> PathCollection;
 
-    filesystem::path    m_root_path;
-    PathCollection      m_explicit_paths;
-    PathCollection      m_environment_paths;
-    PathCollection      m_all_paths;
+    bf::path        m_root_path;
+    PathCollection  m_explicit_paths;
+    PathCollection  m_environment_paths;
+    PathCollection  m_all_paths;
 };
 
 SearchPaths::SearchPaths()
@@ -94,7 +94,7 @@ SearchPaths::SearchPaths(const char* envvar, const char separator)
 
         for (const_each<vector<string> > i = paths; i; ++i)
         {
-            const filesystem::path fp(*i);
+            const bf::path fp(*i);
 
             // Ignore relative paths.
             if (!fp.is_absolute())
@@ -116,7 +116,7 @@ SearchPaths::~SearchPaths()
 
 void SearchPaths::set_root_path(const char* path)
 {
-    impl->m_root_path = filesystem::path(path).make_preferred();
+    impl->m_root_path = bf::path(path).make_preferred();
 }
 
 bool SearchPaths::has_root_path() const
@@ -182,7 +182,7 @@ bool SearchPaths::exist(const char* filepath) const
 {
     assert(filepath);
 
-    const filesystem::path fp(filepath);
+    const bf::path fp(filepath);
 
     if (!fp.is_absolute())
     {
@@ -190,25 +190,25 @@ bool SearchPaths::exist(const char* filepath) const
         for (Impl::PathCollection::const_reverse_iterator
                 i = impl->m_all_paths.rbegin(), e = impl->m_all_paths.rend(); i != e; ++i)
         {
-            filesystem::path search_path(*i);
+            bf::path search_path(*i);
 
             // Make the search path absolute if there is a root path.
             if (has_root_path() && search_path.is_relative())
                 search_path = impl->m_root_path / search_path;
 
-            if (filesystem::exists(search_path / fp))
+            if (bf::exists(search_path / fp))
                 return true;
         }
 
         // Look in the root path if there is one.
         if (has_root_path())
         {
-            if (filesystem::exists(impl->m_root_path / fp))
+            if (bf::exists(impl->m_root_path / fp))
                 return true;
         }
     }
 
-    return filesystem::exists(fp);
+    return bf::exists(fp);
 }
 
 char* SearchPaths::do_get_root_path() const
@@ -220,7 +220,7 @@ void SearchPaths::do_qualify(const char* filepath, char** qualified_filepath_cst
 {
     assert(filepath);
 
-    const filesystem::path fp(filepath);
+    const bf::path fp(filepath);
 
     if (!fp.is_absolute())
     {
@@ -228,15 +228,15 @@ void SearchPaths::do_qualify(const char* filepath, char** qualified_filepath_cst
         for (Impl::PathCollection::const_reverse_iterator
                 i = impl->m_all_paths.rbegin(), e = impl->m_all_paths.rend(); i != e; ++i)
         {
-            filesystem::path search_path(*i);
+            bf::path search_path(*i);
 
             // Make the search path absolute if there is a root path.
             if (has_root_path() && search_path.is_relative())
                 search_path = impl->m_root_path / search_path;
 
-            filesystem::path qualified_fp = search_path / fp;
+            bf::path qualified_fp = search_path / fp;
 
-            if (filesystem::exists(qualified_fp))
+            if (bf::exists(qualified_fp))
             {
                 qualified_fp.make_preferred();
                 *qualified_filepath_cstr = duplicate_string(qualified_fp.string().c_str());
@@ -249,9 +249,9 @@ void SearchPaths::do_qualify(const char* filepath, char** qualified_filepath_cst
         // Look in the root path if there is one.
         if (has_root_path())
         {
-            filesystem::path qualified_fp = impl->m_root_path / fp;
+            bf::path qualified_fp = impl->m_root_path / fp;
 
-            if (filesystem::exists(qualified_fp))
+            if (bf::exists(qualified_fp))
             {
                 qualified_fp.make_preferred();
                 *qualified_filepath_cstr = duplicate_string(qualified_fp.string().c_str());
@@ -285,7 +285,7 @@ char* SearchPaths::do_to_string(const char separator, const bool reversed) const
 
     for (size_t i = 0, e = paths.size(); i < e; ++i)
     {
-        filesystem::path p(paths[i]);
+        bf::path p(paths[i]);
 
         if (p.is_relative())
         {

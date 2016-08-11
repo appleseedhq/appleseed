@@ -40,9 +40,9 @@
 // Standard headers.
 #include <cstring>
 
-using namespace boost;
 using namespace foundation;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace shared {
@@ -61,7 +61,7 @@ void Application::check_installation(Logger& logger)
     if (!is_correctly_installed())
     {
         // We need the path to the application's executable to construct the error message.
-        const filesystem::path executable_path(get_executable_path());
+        const bf::path executable_path(get_executable_path());
 
         // Issue a fatal error message.
         LOG_FATAL(
@@ -72,7 +72,7 @@ void Application::check_installation(Logger& logger)
             "inside the main directory of the application, but it appears not to be "
             "the case (%s seems to be located in %s).",
             executable_path.filename().string().c_str(),
-            filesystem::path("bin/").make_preferred().string().c_str(),
+            bf::path("bin/").make_preferred().string().c_str(),
             executable_path.filename().string().c_str(),
             executable_path.parent_path().string().c_str());
     }
@@ -83,13 +83,13 @@ namespace
     // Compute the root path of the application.  Return true if the root path could be
     // determined, in which case it is stored in root_path, or false if the application
     // is not properly installed, in which case root_path is left unaltered.
-    bool compute_root_path(filesystem::path& root_path)
+    bool compute_root_path(bf::path& root_path)
     {
         // Retrieve the full path to the application's executable.
-        const filesystem::path executable_path(get_executable_path());
+        const bf::path executable_path(get_executable_path());
 
         // Remove the end of the path until /bin is reached.
-        filesystem::path path = executable_path;
+        bf::path path = executable_path;
         while (path.has_parent_path() && path.filename() != "bin")
             path = path.parent_path();
 
@@ -104,7 +104,7 @@ namespace
         }
     }
 
-    void copy_directory_path_to_buffer(const filesystem::path& path, char* output)
+    void copy_directory_path_to_buffer(const bf::path& path, char* output)
     {
         const string path_string = path.string();
 
@@ -122,7 +122,7 @@ const char* Application::get_root_path()
 
     if (!root_path_initialized)
     {
-        filesystem::path root_path;
+        bf::path root_path;
 
         if (compute_root_path(root_path))
         {
@@ -159,7 +159,7 @@ const char* Application::get_user_settings_path()
 // Other Unices.
 #elif defined __linux__ || defined __FreeBSD__
 
-        filesystem::path p(get_home_directory());
+        bf::path p(get_home_directory());
         p /= ".appleseed/settings";
         copy_directory_path_to_buffer(p, user_settings_buffer);
 
@@ -182,11 +182,11 @@ const char* Application::get_tests_root_path()
 
     if (!tests_root_path_initialized)
     {
-        filesystem::path root_path;
+        bf::path root_path;
 
         if (compute_root_path(root_path))
         {
-            root_path = root_path / filesystem::path("tests");
+            root_path = root_path / bf::path("tests");
             copy_directory_path_to_buffer(root_path, tests_root_path_buffer);
         }
         else
@@ -202,16 +202,16 @@ const char* Application::get_tests_root_path()
 
 bool Application::load_settings(const char* filename, Dictionary& settings, Logger& logger)
 {
-    const filesystem::path root_path(get_root_path());
-    const filesystem::path schema_file_path = root_path / "schemas" / "settings.xsd";
+    const bf::path root_path(get_root_path());
+    const bf::path schema_file_path = root_path / "schemas" / "settings.xsd";
 
     SettingsFileReader reader(logger);
 
     // First try to read the settings from the user path.
     if (const char* user_path = get_user_settings_path())
     {
-        const filesystem::path user_settings_file_path = filesystem::path(user_path) / filename;
-        if (boost::filesystem::exists(user_settings_file_path) &&
+        const bf::path user_settings_file_path = bf::path(user_path) / filename;
+        if (bf::exists(user_settings_file_path) &&
             reader.read(
                 user_settings_file_path.string().c_str(),
                 schema_file_path.string().c_str(),
@@ -223,7 +223,7 @@ bool Application::load_settings(const char* filename, Dictionary& settings, Logg
     }
 
     // As a fallback, try to read the settings from the appleseed installation directory.
-    const filesystem::path settings_file_path = root_path / "settings" / filename;
+    const bf::path settings_file_path = root_path / "settings" / filename;
     if (reader.read(
             settings_file_path.string().c_str(),
             schema_file_path.string().c_str(),

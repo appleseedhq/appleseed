@@ -54,10 +54,10 @@
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace studio {
@@ -151,9 +151,9 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
 void MaterialItem::slot_export()
 {
     const char* project_path = m_editor_context.m_project.get_path();
-    const filesystem::path project_root_path = filesystem::path(project_path).parent_path();
-    const filesystem::path file_path = absolute("material.dmt", project_root_path);
-    const filesystem::path file_root_path = file_path.parent_path();
+    const bf::path project_root_path = bf::path(project_path).parent_path();
+    const bf::path file_path = absolute("material.dmt", project_root_path);
+    const bf::path file_root_path = file_path.parent_path();
 
     QString filepath =
         get_save_filename(

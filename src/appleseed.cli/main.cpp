@@ -75,10 +75,10 @@
 
 using namespace appleseed::cli;
 using namespace appleseed::shared;
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace
 {
@@ -149,7 +149,7 @@ namespace
 
         TestResult result;
 
-        const filesystem::path old_current_path =
+        const bf::path old_current_path =
             Application::change_current_directory_to_tests_root_path();
 
         // Run test suites.
@@ -173,7 +173,7 @@ namespace
         }
 
         // Restore the current directory.
-        filesystem::current_path(old_current_path);
+        bf::current_path(old_current_path);
 
         print_unit_test_result(result);
 
@@ -204,8 +204,8 @@ namespace
         auto_release_ptr<XMLFileBenchmarkListener> xmlfile_listener(
             create_xmlfile_benchmark_listener());
         const string xmlfile_name = "benchmark." + get_time_stamp_string() + ".xml";
-        const filesystem::path xmlfile_path =
-              filesystem::path(Application::get_tests_root_path())
+        const bf::path xmlfile_path =
+              bf::path(Application::get_tests_root_path())
             / "unit benchmarks" / "results" / xmlfile_name;
         if (xmlfile_listener->open(xmlfile_path.string().c_str()))
             result.add_listener(xmlfile_listener.get());
@@ -217,7 +217,7 @@ namespace
                 xmlfile_path.string().c_str());
         }
 
-        const filesystem::path old_current_path =
+        const bf::path old_current_path =
             Application::change_current_directory_to_tests_root_path();
 
         // Run benchmark suites.
@@ -241,7 +241,7 @@ namespace
         }
 
         // Restore the current directory.
-        filesystem::current_path(old_current_path);
+        bf::current_path(old_current_path);
 
         // Print results.
         print_unit_benchmark_result(result);
@@ -457,8 +457,8 @@ namespace
     auto_release_ptr<Project> load_project(const string& project_filepath)
     {
         // Construct the schema file path.
-        const filesystem::path schema_filepath =
-              filesystem::path(Application::get_root_path())
+        const bf::path schema_filepath =
+              bf::path(Application::get_root_path())
             / "schemas"
             / "project.xsd";
 
@@ -597,8 +597,8 @@ namespace
         if (params.get_optional<bool>("autosave", true))
         {
             // Construct the path to the archive directory.
-            const filesystem::path autosave_path =
-                  filesystem::path(Application::get_root_path())
+            const bf::path autosave_path =
+                  bf::path(Application::get_root_path())
                 / "images" / "autosave";
 
             // Archive the frame to disk.

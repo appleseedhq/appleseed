@@ -66,10 +66,10 @@
 
 using namespace appleseed::makefluffy;
 using namespace appleseed::shared;
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace
 {
@@ -341,8 +341,8 @@ int main(int argc, const char* argv[])
     const FluffParams params(cl);
 
     // Construct the schema file path.
-    const filesystem::path schema_filepath =
-          filesystem::path(Application::get_root_path())
+    const bf::path schema_filepath =
+          bf::path(Application::get_root_path())
         / "schemas"
         / "project.xsd";
 

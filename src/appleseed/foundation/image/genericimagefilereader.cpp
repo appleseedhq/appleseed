@@ -42,8 +42,8 @@
 // Standard headers.
 #include <string>
 
-using namespace boost;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace foundation
 {
@@ -56,7 +56,7 @@ Image* GenericImageFileReader::read(
     const char*         filename,
     ImageAttributes*    image_attributes)
 {
-    const filesystem::path filepath(filename);
+    const bf::path filepath(filename);
     const string extension = lower_case(filepath.extension().string());
 
     if (extension == ".exr")

@@ -40,10 +40,10 @@
 #include "boost/filesystem/path.hpp"
 
 using namespace appleseed::shared;
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace studio {
@@ -124,7 +124,7 @@ string ProjectManager::get_project_display_name() const
 
     if (m_project->has_path())
     {
-        const filesystem::path filepath(m_project->get_path());
+        const bf::path filepath(m_project->get_path());
         return filepath.filename().string();
     }
     else
@@ -161,8 +161,8 @@ void ProjectManager::slot_load_project_async_complete()
 
 string ProjectManager::get_project_schema_filepath()
 {
-    const filesystem::path schema_filepath =
-          filesystem::path(Application::get_root_path())
+    const bf::path schema_filepath =
+          bf::path(Application::get_root_path())
         / "schemas"
         / "project.xsd";
 

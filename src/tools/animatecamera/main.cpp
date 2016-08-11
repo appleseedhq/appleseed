@@ -70,10 +70,10 @@
 
 using namespace appleseed::animatecamera;
 using namespace appleseed::shared;
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace
 {
@@ -181,7 +181,7 @@ namespace
             const size_t    number,
             const size_t    digits = 4)
         {
-            const filesystem::path path(filename);
+            const bf::path path(filename);
 
             stringstream sstr;
             sstr << path.stem().string();
@@ -195,8 +195,8 @@ namespace
         auto_release_ptr<Project> load_master_project()
         {
             // Construct the schema file path.
-            const filesystem::path schema_filepath =
-                  filesystem::path(Application::get_root_path())
+            const bf::path schema_filepath =
+                  bf::path(Application::get_root_path())
                 / "schemas"
                 / "project.xsd";
 
@@ -551,7 +551,7 @@ int main(int argc, const char* argv[])
     global_logger().initialize_from(logger);
 
     const string base_output_filename =
-        filesystem::path(g_cl.m_filenames.values()[1]).stem().string();
+        bf::path(g_cl.m_filenames.values()[1]).stem().string();
 
     auto_ptr<AnimationGenerator> generator;
 

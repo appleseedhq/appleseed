@@ -47,9 +47,9 @@
 #include <cstdlib>
 #include <string>
 
-using namespace boost;
 using namespace foundation;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace shared {
@@ -149,7 +149,7 @@ CommandLineHandlerBase::~CommandLineHandlerBase()
 
 void CommandLineHandlerBase::parse(const int argc, const char* argv[], SuperLogger& logger)
 {
-    impl->m_executable_name = filesystem::path(argv[0]).filename().string();
+    impl->m_executable_name = bf::path(argv[0]).filename().string();
 
     impl->m_parser.parse(argc, argv, impl->m_parse_results);
 

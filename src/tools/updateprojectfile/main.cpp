@@ -49,10 +49,10 @@
 
 using namespace appleseed::shared;
 using namespace appleseed::updateprojectfile;
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 
 //
@@ -89,8 +89,8 @@ int main(int argc, const char* argv[])
     const string& input_filepath = cl.m_filename.value();
 
     // Construct the schema file path.
-    const filesystem::path schema_filepath =
-          filesystem::path(Application::get_root_path())
+    const bf::path schema_filepath =
+          bf::path(Application::get_root_path())
         / "schemas"
         / "project.xsd";
 

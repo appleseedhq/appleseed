@@ -63,10 +63,10 @@
 #include <cassert>
 #include <cstddef>
 
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace studio {
@@ -155,7 +155,7 @@ void ObjectCollectionItem::import_objects(const QStringList& filepaths)
 void ObjectCollectionItem::insert_objects(const string& path) const
 {
     const string base_object_name =
-        filesystem::path(path).replace_extension().filename().string();
+        bf::path(path).replace_extension().filename().string();
 
     ParamArray params;
     params.insert("filename", path);
