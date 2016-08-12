@@ -2742,7 +2742,9 @@ namespace
                 {
                     SearchPathElementHandler* path_handler =
                         static_cast<SearchPathElementHandler*>(handler);
-                    m_project->search_paths().push_back(path_handler->get_path());
+                    const string& path = path_handler->get_path();
+                    if (!path.empty())
+                        m_project->search_paths().push_back(path);
                 }
                 break;
 
