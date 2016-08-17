@@ -103,7 +103,7 @@ namespace
     //
     // Metal BRDF.
     //
-    //    A future version of this BRDF will support multiple-scattering.
+    //    A future version of this BRDF will support multiple scattering.
     //    For that reason, the only available microfacet distribution functions
     //    are those that support it (Beckmann and GGX).
     //

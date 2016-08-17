@@ -212,7 +212,7 @@ class MDF
             -slope[0] * alpha_x,
             T(1.0),
             -slope[1] * alpha_y);
-        return normalize(sign_cos_vn * m);
+        return normalize(m);
     }
 
     template <typename Distribution>

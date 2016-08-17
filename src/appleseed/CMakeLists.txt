@@ -1250,6 +1250,7 @@ source_group ("renderer\\meta\\tests" FILES
 set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/ashikhminbrdf.cpp
     renderer/modeling/bsdf/ashikhminbrdf.h
+    renderer/modeling/bsdf/backfacingpolicy.h
     renderer/modeling/bsdf/bsdf.cpp
     renderer/modeling/bsdf/bsdf.h
     renderer/modeling/bsdf/bsdfblend.cpp

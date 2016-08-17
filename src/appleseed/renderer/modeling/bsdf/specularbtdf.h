@@ -67,8 +67,7 @@ APPLESEED_DECLARE_INPUT_VALUES(SpecularBTDFInputValues)
     ScalarInput m_scale;                        // distance scaling factor
 
     // Precomputed values.
-    double      m_from_ior;
-    double      m_to_ior;
+    double      m_eta;
 };
 
 
