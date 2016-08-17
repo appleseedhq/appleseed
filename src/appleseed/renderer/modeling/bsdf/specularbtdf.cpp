@@ -173,6 +173,7 @@ namespace
                 }
             }
 
+            // todo: we could get rid of this by not wrapping this BTDF in BSDFWrapper<>.
             const double cos_in = abs(dot(incoming, shading_normal));
             sample.m_value /= static_cast<float>(cos_in);
 
