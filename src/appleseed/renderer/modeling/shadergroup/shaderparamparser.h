@@ -78,6 +78,9 @@ class ShaderParamParser
     template <typename T>
     void parse_n_values(size_t n, T* values);
 
+    void parse_float_array(std::vector<float>& values);
+    void parse_float3_array(std::vector<float>& values);
+
     std::string parse_string_value();
 
   private:

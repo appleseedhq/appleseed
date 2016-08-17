@@ -53,24 +53,53 @@ ShaderParamParser::ShaderParamParser(const string& s)
 
     if (tok == "color")
         m_param_type = OSLParamTypeColor;
+    else if (tok == "color[]")
+        m_param_type = OSLParamTypeColorArray;
     else if (tok == "float")
         m_param_type = OSLParamTypeFloat;
+    else if (tok == "float[]")
+        m_param_type = OSLParamTypeFloatArray;
     else if (tok == "int")
         m_param_type = OSLParamTypeInt;
     else if (tok == "matrix")
         m_param_type = OSLParamTypeMatrix;
     else if (tok == "normal")
         m_param_type = OSLParamTypeNormal;
+    else if (tok == "normal[]")
+        m_param_type = OSLParamTypeNormalArray;
     else if (tok == "point")
         m_param_type = OSLParamTypePoint;
+    else if (tok == "point[]")
+        m_param_type = OSLParamTypePointArray;
     else if (tok == "string")
         m_param_type = OSLParamTypeString;
     else if (tok == "vector")
         m_param_type = OSLParamTypeVector;
+    else if (tok == "vector[]")
+        m_param_type = OSLParamTypeVectorArray;
     else
         throw ExceptionOSLParamParseError();
 
     ++m_tok_it;
+}
+
+void ShaderParamParser::parse_float_array(std::vector<float>& values)
+{
+    values.clear();
+
+    while (m_tok_it != m_tok_end)
+        values.push_back(parse_one_value<float>(false));
+
+    if (values.empty())
+        throw ExceptionOSLParamParseError();
+}
+
+void ShaderParamParser::parse_float3_array(std::vector<float>& values)
+{
+    parse_float_array(values);
+
+    if (values.size() % 3 != 0)
+        throw ExceptionOSLParamParseError();
 }
 
 string ShaderParamParser::parse_string_value()

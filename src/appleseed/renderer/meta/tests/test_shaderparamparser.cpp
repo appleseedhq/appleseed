@@ -72,6 +72,46 @@ TEST_SUITE(Renderer_Modeling_ShaderParamParser)
         EXPECT_EQ("test_string", parser.parse_string_value());
     }
 
+    TEST_CASE(ShaderParamParserFloatArray)
+    {
+        ShaderParamParser parser("float[] 1.0 2.0 3.0 4.0 5.0 6.0 7.0");
+        EXPECT_EQ(OSLParamTypeFloatArray, parser.param_type());
+        std::vector<float> values;
+        parser.parse_float_array(values);
+        EXPECT_EQ(7, values.size());
+    }
+
+    TEST_CASE(ShaderParamParserEmptyFloatArray)
+    {
+        ShaderParamParser parser("float[] ");
+        std::vector<float> values;
+
+        EXPECT_EXCEPTION(ExceptionOSLParamParseError,
+        {
+            parser.parse_float_array(values);
+        });
+    }
+
+    TEST_CASE(ShaderParamParserColorArray)
+    {
+        ShaderParamParser parser("color[] 1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0");
+        EXPECT_EQ(OSLParamTypeColorArray, parser.param_type());
+        std::vector<float> values;
+        parser.parse_float3_array(values);
+        EXPECT_EQ(9, values.size());
+    }
+
+    TEST_CASE(ShaderParamParserVectorArrayWrongLenght)
+    {
+        ShaderParamParser parser("vector[] 1.0 2.0 3.0 4.0 5.0");
+        std::vector<float> values;
+
+        EXPECT_EXCEPTION(ExceptionOSLParamParseError,
+        {
+            parser.parse_float3_array(values);
+        });
+    }
+
     TEST_CASE(ShaderParamParserUnknownType)
     {
         EXPECT_EXCEPTION(ExceptionOSLParamParseError,
