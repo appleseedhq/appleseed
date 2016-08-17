@@ -62,13 +62,18 @@ namespace renderer
 enum OSLParamType
 {
     OSLParamTypeColor,
+    OSLParamTypeColorArray,
     OSLParamTypeFloat,
+    OSLParamTypeFloatArray,
     OSLParamTypeInt,
     OSLParamTypeMatrix,
     OSLParamTypeNormal,
+    OSLParamTypeNormalArray,
     OSLParamTypePoint,
+    OSLParamTypePointArray,
     OSLParamTypeString,
-    OSLParamTypeVector
+    OSLParamTypeVector,
+    OSLParamTypeVectorArray
 };
 
 
@@ -100,51 +105,76 @@ class APPLESEED_DLLSYMBOL ShaderParam
 
     // Create an int param.
     static foundation::auto_release_ptr<ShaderParam> create_int_param(
-        const char*     name,
-        const int       value);
+        const char*         name,
+        const int           value);
 
     // Create a float param.
     static foundation::auto_release_ptr<ShaderParam> create_float_param(
-        const char*     name,
-        const float     value);
+        const char*         name,
+        const float         value);
+
+    // Create a float array param.
+    static foundation::auto_release_ptr<ShaderParam> create_float_array_param(
+        const char*         name,
+        std::vector<float>& value);
 
     // Create a vector param.
     static foundation::auto_release_ptr<ShaderParam> create_vector_param(
-        const char*     name,
-        const float     vx,
-        const float     vy,
-        const float     vz);
+        const char*         name,
+        const float         vx,
+        const float         vy,
+        const float         vz);
+
+    // Create a vector array param.
+    static foundation::auto_release_ptr<ShaderParam> create_vector_array_param(
+        const char*         name,
+        std::vector<float>& value);
 
     // Create a normal param.
     static foundation::auto_release_ptr<ShaderParam> create_normal_param(
-        const char*     name,
-        const float     nx,
-        const float     ny,
-        const float     nz);
+        const char*         name,
+        const float         nx,
+        const float         ny,
+        const float         nz);
+
+    // Create a normal array param.
+    static foundation::auto_release_ptr<ShaderParam> create_normal_array_param(
+        const char*         name,
+        std::vector<float>& value);
 
     // Create a point param.
     static foundation::auto_release_ptr<ShaderParam> create_point_param(
-        const char*     name,
-        const float     vx,
-        const float     vy,
-        const float     vz);
+        const char*         name,
+        const float         vx,
+        const float         vy,
+        const float         vz);
+
+    // Create a point array param.
+    static foundation::auto_release_ptr<ShaderParam> create_point_array_param(
+        const char*         name,
+        std::vector<float>& value);
 
     // Create a color param.
     static foundation::auto_release_ptr<ShaderParam> create_color_param(
-        const char*     name,
-        const float     vx,
-        const float     vy,
-        const float     vz);
+        const char*         name,
+        const float         vx,
+        const float         vy,
+        const float         vz);
+
+    // Create a color array param.
+    static foundation::auto_release_ptr<ShaderParam> create_color_array_param(
+        const char*         name,
+        std::vector<float>& value);
 
     // Create a matrix param.
     static foundation::auto_release_ptr<ShaderParam> create_matrix_param(
-        const char*     name,
-        const float*    values);
+        const char*         name,
+        const float*        values);
 
     // Create a string param.
     static foundation::auto_release_ptr<ShaderParam> create_string_param(
-        const char*     name,
-        const char*     value);
+        const char*         name,
+        const char*         value);
 
     // Return a const void pointer to this param value.
     const void* get_value() const;
