@@ -42,6 +42,7 @@
 // Standard headers.
 #include <cstddef>
 #include <string>
+#include <vector>
 
 // OSL headers.
 #include "foundation/platform/oslheaderguards.h"

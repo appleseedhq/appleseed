@@ -111,14 +111,14 @@ namespace
         }
 
         virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const APPLESEED_OVERRIDE
+            const Assembly&     assembly) const APPLESEED_OVERRIDE
         {
             return align(sizeof(InputValues), 16);
         }
 
         APPLESEED_FORCE_INLINE virtual void prepare_inputs(
-            const ShadingPoint&     shading_point,
-            void*                   data) const APPLESEED_OVERRIDE
+            const ShadingPoint& shading_point,
+            void*               data) const APPLESEED_OVERRIDE
         {
             InputValues* values = reinterpret_cast<InputValues*>(data);
             values->m_outside_ior =
@@ -143,8 +143,7 @@ namespace
 
             if (mdf == "ggx")
                 m_mdf = GGX;
-            else // beckmann
-                m_mdf = Beckmann;
+            else m_mdf = Beckmann;
 
             return true;
         }
@@ -170,7 +169,7 @@ namespace
                 alpha_x,
                 alpha_y);
 
-            FresnelDielectricFun<double> f(
+            const FresnelDielectricFun<double> f(
                 values->m_reflectance,
                 values->m_reflectance_multiplier,
                 values->m_outside_ior / values->m_ior);
@@ -322,11 +321,7 @@ namespace
       private:
         typedef GlossyBRDFInputValues InputValues;
 
-        enum MDF
-        {
-            GGX,
-            Beckmann
-        };
+        enum MDF { GGX, Beckmann };
 
         MDF m_mdf;
     };
