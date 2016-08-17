@@ -33,13 +33,11 @@
 #include "renderer/global/globallogger.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/otherwise.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <cassert>
 #include <sstream>
-#include <vector>
 
 using namespace foundation;
 using namespace std;
@@ -170,7 +168,7 @@ auto_release_ptr<ShaderParam> ShaderParam::create_float_array_param(
     std::vector<float>& value)
 {
     auto_release_ptr<ShaderParam> p(new ShaderParam(name));
-    p->impl->m_type_desc = OSL::TypeDesc(OSL::TypeDesc::FLOAT, value.size());
+    p->impl->m_type_desc = OSL::TypeDesc(OSL::TypeDesc::FLOAT, static_cast<int>(value.size()));
     p->impl->m_float_array_value.swap(value);
     return p;
 }
@@ -194,7 +192,12 @@ auto_release_ptr<ShaderParam> ShaderParam::create_vector_array_param(
     std::vector<float>& value)
 {
     auto_release_ptr<ShaderParam> p(new ShaderParam(name));
-    p->impl->m_type_desc = OSL::TypeDesc(OSL::TypeDesc::FLOAT, OSL::TypeDesc::VEC3, OSL::TypeDesc::VECTOR, value.size() / 3);
+    p->impl->m_type_desc =
+        OSL::TypeDesc(
+            OSL::TypeDesc::FLOAT,
+            OSL::TypeDesc::VEC3,
+            OSL::TypeDesc::VECTOR,
+            static_cast<int>(value.size() / 3));
     p->impl->m_float_array_value.swap(value);
     return p;
 }
@@ -218,7 +221,12 @@ auto_release_ptr<ShaderParam> ShaderParam::create_normal_array_param(
     std::vector<float>& value)
 {
     auto_release_ptr<ShaderParam> p(new ShaderParam(name));
-    p->impl->m_type_desc = OSL::TypeDesc(OSL::TypeDesc::FLOAT, OSL::TypeDesc::VEC3, OSL::TypeDesc::NORMAL, value.size() / 3);
+    p->impl->m_type_desc =
+        OSL::TypeDesc(
+            OSL::TypeDesc::FLOAT,
+            OSL::TypeDesc::VEC3,
+            OSL::TypeDesc::NORMAL,
+            static_cast<int>(value.size() / 3));
     p->impl->m_float_array_value.swap(value);
     return p;
 }
@@ -242,7 +250,12 @@ auto_release_ptr<ShaderParam> ShaderParam::create_point_array_param(
     std::vector<float>& value)
 {
     auto_release_ptr<ShaderParam> p(new ShaderParam(name));
-    p->impl->m_type_desc = OSL::TypeDesc(OSL::TypeDesc::FLOAT, OSL::TypeDesc::VEC3, OSL::TypeDesc::POINT, value.size() / 3);
+    p->impl->m_type_desc =
+        OSL::TypeDesc(
+            OSL::TypeDesc::FLOAT,
+            OSL::TypeDesc::VEC3,
+            OSL::TypeDesc::POINT,
+            static_cast<int>(value.size() / 3));
     p->impl->m_float_array_value.swap(value);
     return p;
 }
@@ -266,7 +279,12 @@ auto_release_ptr<ShaderParam> ShaderParam::create_color_array_param(
     std::vector<float>& value)
 {
     auto_release_ptr<ShaderParam> p(new ShaderParam(name));
-    p->impl->m_type_desc = OSL::TypeDesc(OSL::TypeDesc::FLOAT, OSL::TypeDesc::VEC3, OSL::TypeDesc::COLOR, value.size() / 3);
+    p->impl->m_type_desc =
+        OSL::TypeDesc(
+            OSL::TypeDesc::FLOAT,
+            OSL::TypeDesc::VEC3,
+            OSL::TypeDesc::COLOR,
+            static_cast<int>(value.size() / 3));
     p->impl->m_float_array_value.swap(value);
     return p;
 }
