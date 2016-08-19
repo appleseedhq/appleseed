@@ -275,6 +275,9 @@ namespace
                     refraction_pdf(wi, wo, m, alpha_x, alpha_y, values->m_eta);
             }
 
+            if (sample.m_probability < 1.0e-9)
+                return;
+
             sample.m_mode = ScatteringMode::Glossy;
             sample.m_incoming = Dual3d(backfacing_policy.transform_to_parent(wi));
 
