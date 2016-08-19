@@ -275,6 +275,9 @@ namespace
                     refraction_pdf(wi, wo, m, alpha_x, alpha_y, values->m_eta);
             }
 
+            if (sample.m_probability < 1.0e-9)
+                return;
+
             sample.m_mode = ScatteringMode::Glossy;
             sample.m_incoming = Dual3d(backfacing_policy.transform_to_parent(wi));
 
@@ -487,7 +490,7 @@ namespace
             const Vector3d&     wi,
             const Vector3d&     wo)
         {
-            // [1] eq. 13
+            // [1] eq. 13.
             const Vector3d h = normalize(wi + wo);
             return h.y < 0.0 ? -h : h;
         }
@@ -510,9 +513,10 @@ namespace
                 return;
             }
 
-            value = values->m_reflection_color;
             const double D = m_mdf->D(h, alpha_x, alpha_y);
             const double G = m_mdf->G(wi, wo, h, alpha_x, alpha_y);
+
+            value = values->m_reflection_color;
             value *= static_cast<float>(F * D * G / denom);
         }
 
@@ -536,7 +540,7 @@ namespace
             const Vector3d&     wo,
             const double        eta)
         {
-            // [1] eq. 16
+            // [1] eq. 16.
             const Vector3d h = normalize(wo + eta * wi);
             return h.y < 0.0 ? -h : h;
         }
@@ -552,7 +556,7 @@ namespace
             const double        T,
             Spectrum&           value) const
         {
-            // [1] eq. 21
+            // [1] eq. 21.
             const double cos_ih = dot(h, wi);
             const double cos_oh = dot(h, wo);
             const double dots = (cos_ih * cos_oh) / (wi.y * wo.y);
@@ -564,14 +568,16 @@ namespace
                 return;
             }
 
-            value = values->m_refraction_color;
             const double D = m_mdf->D(h, alpha_x, alpha_y);
             const double G = m_mdf->G(wi, wo, h, alpha_x, alpha_y);
-            value *= static_cast<float>(abs(dots) * square(values->m_eta / sqrt_denom) * T * D * G);
+            double multiplier = abs(dots) * square(values->m_eta / sqrt_denom) * T * D * G;
 
-            // [2] eq. 2
+            // [2] eq. 2.
             if (adjoint)
-                value *= static_cast<float>(square(1.0 / values->m_eta));
+                multiplier /= square(values->m_eta);
+
+            value = values->m_refraction_color;
+            value *= static_cast<float>(multiplier);
         }
 
         double refraction_pdf(
@@ -582,7 +588,7 @@ namespace
             const double        alpha_y,
             const double        eta) const
         {
-            // [1] eq. 17
+            // [1] eq. 17.
             const double cos_ih = dot(h, wi);
             const double cos_oh = dot(h, wo);
 

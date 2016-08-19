@@ -882,13 +882,19 @@ bool ProjectFileWriter::write(
                 ? AssetHandler::CopyAllAssets
                 : AssetHandler::CopyRelativeAssetsOnly);
         if (!asset_handler.handle_assets())
+        {
+            RENDERER_LOG_ERROR("failed to write project file %s.", filepath);
             return false;
+        }
     }
 
     // Open the file for writing.
     FILE* file = fopen(filepath, "wt");
     if (file == 0)
+    {
+        RENDERER_LOG_ERROR("failed to write project file %s: i/o error.", filepath);
         return false;
+    }
 
     // Write the file header.
     fprintf(file, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -910,7 +916,6 @@ bool ProjectFileWriter::write(
     fclose(file);
 
     RENDERER_LOG_INFO("wrote project file %s.", filepath);
-
     return true;
 }
 
