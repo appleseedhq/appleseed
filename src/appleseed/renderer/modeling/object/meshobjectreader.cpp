@@ -740,7 +740,10 @@ namespace
             objects[i]->set_motion_segment_count(key_frames.size() - 1);
 
         for (size_t i = 0; i < objects.size(); ++i)
-            unshare_normals(*objects[i]);
+        {
+            if (objects[i]->get_vertex_normal_count() != 0)
+                unshare_normals(*objects[i]);
+        }
 
         for (size_t i = 1; i < key_frames.size(); ++i)
         {
@@ -756,7 +759,10 @@ namespace
                 return false;
 
             for (size_t j = 0; j < poses.size(); ++j)
-                unshare_normals(*poses[j]);
+            {
+                if (poses[j]->get_vertex_normal_count() != 0)
+                    unshare_normals(*poses[j]);
+            }
 
             if (!set_vertex_poses(
                     objects,
