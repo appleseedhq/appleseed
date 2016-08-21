@@ -391,6 +391,12 @@ namespace
             const bool              cosine_mult,
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
+            // No reflection below the shading surface.
+            const Vector3d& n = sample.get_shading_basis().get_normal();
+            const double cos_on = dot(sample.m_outgoing.get_value(), n);
+            if (cos_on < 0.0)
+                return;
+
             const DisneyBRDFInputValues* values =
                 reinterpret_cast<const DisneyBRDFInputValues*>(data);
 
@@ -417,11 +423,6 @@ namespace
             }
             else
             {
-                const Vector3d& n = sample.get_shading_basis().get_normal();
-                const double cos_on = std::min(dot(sample.m_outgoing.get_value(), n), 1.0);
-                if (cos_on < 0.0)
-                    return;
-
                 if (s < cdf[SpecularComponent])
                 {
                     double alpha_x, alpha_y;
