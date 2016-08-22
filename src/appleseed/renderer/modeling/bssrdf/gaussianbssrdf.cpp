@@ -125,7 +125,6 @@ namespace
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("v", InputFormatScalar);
-            m_inputs.declare("outside_ior", InputFormatScalar);
             m_inputs.declare("ior", InputFormatScalar);
         }
 
