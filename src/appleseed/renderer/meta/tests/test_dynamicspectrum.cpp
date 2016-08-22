@@ -323,8 +323,13 @@ TEST_SUITE(Renderer_Utility_DynamicSpectrum31f)
     {
         for (size_t i = 0; i < 3; ++i)
         {
-            DynamicSpectrum31f s(2.0f);
+            DynamicSpectrum31f s;
+            s.resize(3);
+
+            // Don't use set() to avoid altering the fourth value.
+            s[0] = s[1] = s[2] = 2.0f;
             s[i] = 1.0f;
+
             EXPECT_EQ(1.0f, min_value(s));
         }
     }
@@ -348,8 +353,13 @@ TEST_SUITE(Renderer_Utility_DynamicSpectrum31f)
     {
         for (size_t i = 0; i < 3; ++i)
         {
-            DynamicSpectrum31f s(1.0f);
+            DynamicSpectrum31f s;
+            s.resize(3);
+
+            // Don't use set() to avoid altering the fourth value.
+            s[0] = s[1] = s[2] = 1.0f;
             s[i] = 2.0f;
+
             EXPECT_EQ(2.0f, max_value(s));
         }
     }
