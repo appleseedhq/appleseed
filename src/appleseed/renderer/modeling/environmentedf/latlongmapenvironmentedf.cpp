@@ -136,6 +136,7 @@ namespace
 
             double multiplier;
             m_multiplier_source->evaluate(m_texture_cache, uv, multiplier);
+
             double exposure;
             m_exposure_source->evaluate(m_texture_cache, uv, exposure);
             payload.m_color *= static_cast<float>(multiplier * pow(2.0, exposure));
