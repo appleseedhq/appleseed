@@ -1151,21 +1151,17 @@ inline T min_value(const renderer::DynamicSpectrum<T, N>& s)
 template <>
 inline float min_value(const renderer::DynamicSpectrum<float, 31>& s)
 {
-    __m128 m;
-
     if (s.size() == 3)
-        m = _mm_load_ps(&s[0]);
-    else
-    {
-        const __m128 m1 = _mm_min_ps(_mm_load_ps(&s[ 0]), _mm_load_ps(&s[ 4]));
-        const __m128 m2 = _mm_min_ps(_mm_load_ps(&s[ 8]), _mm_load_ps(&s[12]));
-        const __m128 m3 = _mm_min_ps(_mm_load_ps(&s[16]), _mm_load_ps(&s[20]));
-        const __m128 s28 = _mm_load_ps(&s[28]);
-        const __m128 m4 = _mm_min_ps(_mm_load_ps(&s[24]), _mm_shuffle_ps(s28, s28, _MM_SHUFFLE(2, 2, 1, 0)));
-        const __m128 m5 = _mm_min_ps(m1, m2);
-        const __m128 m6 = _mm_min_ps(m3, m4);
-                     m  = _mm_min_ps(m5, m6);
-    }
+        return std::min(std::min(s[0], s[1]), s[2]);
+
+    const __m128 m1 = _mm_min_ps(_mm_load_ps(&s[ 0]), _mm_load_ps(&s[ 4]));
+    const __m128 m2 = _mm_min_ps(_mm_load_ps(&s[ 8]), _mm_load_ps(&s[12]));
+    const __m128 m3 = _mm_min_ps(_mm_load_ps(&s[16]), _mm_load_ps(&s[20]));
+    const __m128 s28 = _mm_load_ps(&s[28]);
+    const __m128 m4 = _mm_min_ps(_mm_load_ps(&s[24]), _mm_shuffle_ps(s28, s28, _MM_SHUFFLE(2, 2, 1, 0)));
+    const __m128 m5 = _mm_min_ps(m1, m2);
+    const __m128 m6 = _mm_min_ps(m3, m4);
+          __m128 m  = _mm_min_ps(m5, m6);
 
     m = _mm_min_ps(m, _mm_shuffle_ps(m, m, _MM_SHUFFLE(2, 3, 0, 1)));
     m = _mm_min_ps(m, _mm_shuffle_ps(m, m, _MM_SHUFFLE(1, 0, 3, 2)));
@@ -1197,21 +1193,17 @@ inline T max_value(const renderer::DynamicSpectrum<T, N>& s)
 template <>
 inline float max_value(const renderer::DynamicSpectrum<float, 31>& s)
 {
-    __m128 m;
-
     if (s.size() == 3)
-        m = _mm_load_ps(&s[0]);
-    else
-    {
-        const __m128 m1 = _mm_max_ps(_mm_load_ps(&s[ 0]), _mm_load_ps(&s[ 4]));
-        const __m128 m2 = _mm_max_ps(_mm_load_ps(&s[ 8]), _mm_load_ps(&s[12]));
-        const __m128 m3 = _mm_max_ps(_mm_load_ps(&s[16]), _mm_load_ps(&s[20]));
-        const __m128 s28 = _mm_load_ps(&s[28]);
-        const __m128 m4 = _mm_max_ps(_mm_load_ps(&s[24]), _mm_shuffle_ps(s28, s28, _MM_SHUFFLE(2, 2, 1, 0)));
-        const __m128 m5 = _mm_max_ps(m1, m2);
-        const __m128 m6 = _mm_max_ps(m3, m4);
-                     m  = _mm_max_ps(m5, m6);
-    }
+        return std::max(std::max(s[0], s[1]), s[2]);
+
+    const __m128 m1 = _mm_max_ps(_mm_load_ps(&s[ 0]), _mm_load_ps(&s[ 4]));
+    const __m128 m2 = _mm_max_ps(_mm_load_ps(&s[ 8]), _mm_load_ps(&s[12]));
+    const __m128 m3 = _mm_max_ps(_mm_load_ps(&s[16]), _mm_load_ps(&s[20]));
+    const __m128 s28 = _mm_load_ps(&s[28]);
+    const __m128 m4 = _mm_max_ps(_mm_load_ps(&s[24]), _mm_shuffle_ps(s28, s28, _MM_SHUFFLE(2, 2, 1, 0)));
+    const __m128 m5 = _mm_max_ps(m1, m2);
+    const __m128 m6 = _mm_max_ps(m3, m4);
+          __m128 m  = _mm_max_ps(m5, m6);
 
     m = _mm_max_ps(m, _mm_shuffle_ps(m, m, _MM_SHUFFLE(2, 3, 0, 1)));
     m = _mm_max_ps(m, _mm_shuffle_ps(m, m, _MM_SHUFFLE(1, 0, 3, 2)));
