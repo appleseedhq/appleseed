@@ -64,11 +64,11 @@ namespace renderer
 {
 namespace
 {
+
     //
-    // Closures.
+    // Global ustrings.
     //
 
-    // Global ustrings.
     const OIIO::ustring g_beckmann_str("beckmann");
     const OIIO::ustring g_blinn_str("blinn");
     const OIIO::ustring g_ggx_str("ggx");
@@ -77,6 +77,10 @@ namespace
     const OIIO::ustring g_better_dipole_profile_str("better_dipole");
     const OIIO::ustring g_directional_dipole_profile_str("directional_dipole");
     const OIIO::ustring g_normalized_diffusion_profile_str("normalized_diffusion");
+
+    //
+    // Closure functions.
+    //
 
     typedef void(*convert_closure_fun)(
         CompositeSurfaceClosure&    composite_closure,
@@ -93,6 +97,10 @@ namespace
         const Color3f&              weight)
     {
     }
+
+    //
+    // Closures.
+    //
 
     struct AshikhminShirleyClosure
     {
@@ -333,6 +341,8 @@ namespace
 
     struct GlassClosure
     {
+        typedef GlassBSDFInputValues InputValues;
+
         struct Params
         {
             OSL::ustring    dist;
@@ -389,12 +399,12 @@ namespace
         {
             const Params* p = reinterpret_cast<const Params*>(osl_params);
 
-            GlassBSDFInputValues* values;
+            InputValues* values;
 
             if (p->dist == g_ggx_str)
             {
                 values =
-                    composite_closure.add_closure<GlassBSDFInputValues>(
+                    composite_closure.add_closure<InputValues>(
                         GlassGGXID,
                         shading_basis,
                         weight,
@@ -404,7 +414,7 @@ namespace
             else if (p->dist == g_beckmann_str)
             {
                 values =
-                    composite_closure.add_closure<GlassBSDFInputValues>(
+                    composite_closure.add_closure<InputValues>(
                         GlassBeckmannID,
                         shading_basis,
                         weight,
@@ -433,6 +443,8 @@ namespace
 
     struct GlossyClosure
     {
+        typedef GlossyBRDFInputValues InputValues;
+
         struct Params
         {
             OSL::ustring    dist;
@@ -479,12 +491,12 @@ namespace
         {
             const Params* p = reinterpret_cast<const Params*>(osl_params);
 
-            GlossyBRDFInputValues* values;
+            InputValues* values;
 
             if (p->dist == g_ggx_str)
             {
                 values =
-                    composite_closure.add_closure<GlossyBRDFInputValues>(
+                    composite_closure.add_closure<InputValues>(
                         GlossyGGXID,
                         shading_basis,
                         weight,
@@ -494,7 +506,7 @@ namespace
             else if (p->dist == g_beckmann_str)
             {
                 values =
-                    composite_closure.add_closure<GlossyBRDFInputValues>(
+                    composite_closure.add_closure<InputValues>(
                         GlossyBeckmannID,
                         shading_basis,
                         weight,
@@ -545,6 +557,8 @@ namespace
 
     struct MetalClosure
     {
+        typedef MetalBRDFInputValues InputValues;
+
         struct Params
         {
             OSL::ustring    dist;
@@ -593,12 +607,12 @@ namespace
         {
             const Params* p = reinterpret_cast<const Params*>(osl_params);
 
-            MetalBRDFInputValues* values;
+            InputValues* values;
 
             if (p->dist == g_ggx_str)
             {
                 values =
-                    composite_closure.add_closure<MetalBRDFInputValues>(
+                    composite_closure.add_closure<InputValues>(
                         MetalGGXID,
                         shading_basis,
                         weight,
@@ -608,7 +622,7 @@ namespace
             else if (p->dist == g_beckmann_str)
             {
                 values =
-                    composite_closure.add_closure<MetalBRDFInputValues>(
+                    composite_closure.add_closure<InputValues>(
                         MetalBeckmannID,
                         shading_basis,
                         weight,
@@ -927,6 +941,27 @@ namespace
             shading_system.register_closure(name(), id(), params, 0, 0);
         }
     };
+
+    //
+    // Layered closures.
+    //
+
+    struct LayeredClosureBaseParams
+    {
+        void* substrate;
+    };
+
+    const OSL::ClosureColor* get_nested_closure_color(
+        const size_t    closure_id,
+        const void*     params)
+    {
+        assert(closure_id >= FirstLayeredClosure);
+
+        const LayeredClosureBaseParams* p =
+            reinterpret_cast<const LayeredClosureBaseParams*>(params);
+
+        return reinterpret_cast<const OSL::ClosureColor*>(p->substrate);
+    }
 }
 
 
@@ -1212,6 +1247,8 @@ void CompositeSurfaceClosure::process_closure_tree(
 // CompositeSubsurfaceClosure class implementation.
 //
 
+BOOST_STATIC_ASSERT(sizeof(CompositeSubsurfaceClosure) <= InputEvaluator::DataSize);
+
 CompositeSubsurfaceClosure::CompositeSubsurfaceClosure(
     const Basis3d&              original_shading_basis,
     const OSL::ClosureColor*    ci)
@@ -1264,6 +1301,12 @@ void CompositeSubsurfaceClosure::process_closure_tree(
                         c->data(),
                         w);
                 }
+            }
+            else if (c->id >= FirstLayeredClosure)
+            {
+                // For now, we just recurse...
+                const OSL::ClosureColor* nested = get_nested_closure_color(c->id, c->data());
+                process_closure_tree(nested, original_shading_basis, weight * Color3f(c->w));
             }
         }
         break;
@@ -1332,6 +1375,13 @@ void CompositeEmissionClosure::process_closure_tree(
 
             if (c->id == EmissionID)
                 m_total_weight += weight * Color3f(c->w);
+            else if (c->id >= FirstLayeredClosure)
+            {
+                // For now, we just recurse.
+                const OSL::ClosureColor* nested = get_nested_closure_color(c->id, c->data());
+                process_closure_tree(nested, weight * Color3f(c->w));
+            }
+
         }
         break;
     }
@@ -1374,7 +1424,17 @@ namespace
               default:
                 {
                     const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
-                    return c->id == closure_id ? Color3f(c->w) : Color3f(0.0f);
+
+                    if (c->id == closure_id)
+                        return Color3f(c->w);
+                    else if (c->id >= FirstLayeredClosure)
+                    {
+                        // Recurse inside the layered closure.
+                        const OSL::ClosureColor* nested = get_nested_closure_color(c->id, c->data());
+                        return Color3f(c->w) * do_process_closure_id_tree(nested, closure_id);
+                    }
+                    else
+                        return Color3f(0.0f);
                 }
                 break;
             }
@@ -1399,6 +1459,14 @@ float process_holdout_tree(const OSL::ClosureColor* ci)
 Color3f process_background_tree(const OSL::ClosureColor* ci)
 {
     return do_process_closure_id_tree(ci, BackgroundID);
+}
+
+void inject_layered_closure_values(
+    const size_t    closure_id,
+    const BSDF*     osl_bsdf,
+    void*           data)
+{
+    // todo: implement.
 }
 
 namespace

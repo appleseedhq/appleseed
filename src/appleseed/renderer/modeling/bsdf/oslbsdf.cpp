@@ -210,9 +210,28 @@ namespace
                 shading_point.get_shading_basis(),
                 shading_point.get_osl_shader_globals().Ci);
 
+            // Inject values into any children layered closure.
+            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
+            {
+                const ClosureID cid = c->get_closure_type(i);
+                if (cid >= FirstLayeredClosure)
+                    inject_layered_closure_values(cid, this, c->get_closure_input_values(i));
+            }
+
+            prepare_inputs(shading_context, shading_point, input_evaluator.data());
+        }
+
+        void prepare_inputs(
+            const ShadingContext&       shading_context,
+            const ShadingPoint&         shading_point,
+            void*                       data) const APPLESEED_OVERRIDE
+        {
+            CompositeSurfaceClosure* c = reinterpret_cast<CompositeSurfaceClosure*>(data);
+
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
                 bsdf_from_closure_id(c->get_closure_type(i)).prepare_inputs(
+                    shading_context,
                     shading_point,
                     c->get_closure_input_values(i));
             }
@@ -351,6 +370,7 @@ namespace
         }
 
       private:
+        BSDF*                       m_all_bsdfs[NumClosuresIDs];
         auto_release_ptr<BSDF>      m_ashikhmin_shirley_brdf;
         auto_release_ptr<BSDF>      m_diffuse_btdf;
         auto_release_ptr<BSDF>      m_disney_brdf;
@@ -362,7 +382,6 @@ namespace
         auto_release_ptr<BSDF>      m_metal_ggx_brdf;
         auto_release_ptr<BSDF>      m_orennayar_brdf;
         auto_release_ptr<BSDF>      m_sheen_brdf;
-        BSDF*                       m_all_bsdfs[NumClosuresIDs];
 
         auto_release_ptr<BSDF> create_and_register_bsdf(
             const ClosureID         cid,

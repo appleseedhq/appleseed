@@ -92,8 +92,8 @@ namespace
     {
       public:
         GlassBSDFImpl(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : BSDF(name, AllBSDFTypes, ScatteringMode::Glossy, params)
         {
             m_inputs.declare("surface_transmittance", InputFormatSpectralReflectance);
@@ -118,9 +118,9 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&      project,
-            const Assembly&     assembly,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+            const Project&          project,
+            const Assembly&         assembly,
+            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
             if (!BSDF::on_frame_begin(project, assembly, abort_switch))
                 return false;
@@ -143,14 +143,15 @@ namespace
         }
 
         virtual size_t compute_input_data_size(
-            const Assembly&     assembly) const APPLESEED_OVERRIDE
+            const Assembly&         assembly) const APPLESEED_OVERRIDE
         {
             return align(sizeof(InputValues), 16);
         }
 
         APPLESEED_FORCE_INLINE virtual void prepare_inputs(
-            const ShadingPoint& shading_point,
-            void*               data) const APPLESEED_OVERRIDE
+            const ShadingContext&   shading_context,
+            const ShadingPoint&     shading_point,
+            void*                   data) const APPLESEED_OVERRIDE
         {
             InputValues* values = static_cast<InputValues*>(data);
 
@@ -181,11 +182,11 @@ namespace
         }
 
         APPLESEED_FORCE_INLINE virtual void sample(
-            SamplingContext&    sampling_context,
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            BSDFSample&         sample) const APPLESEED_OVERRIDE
+            SamplingContext&        sampling_context,
+            const void*             data,
+            const bool              adjoint,
+            const bool              cosine_mult,
+            BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
             const InputValues* values = static_cast<const InputValues*>(data);
             const BackfacingPolicy backfacing_policy(sample.get_shading_basis(), values->m_backfacing);
@@ -287,15 +288,15 @@ namespace
         }
 
         APPLESEED_FORCE_INLINE virtual double evaluate(
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+            const void*             data,
+            const bool              adjoint,
+            const bool              cosine_mult,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector3d&         outgoing,
+            const Vector3d&         incoming,
+            const int               modes,
+            Spectrum&               value) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0;
@@ -359,12 +360,12 @@ namespace
         }
 
         APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes) const APPLESEED_OVERRIDE
+            const void*             data,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector3d&         outgoing,
+            const Vector3d&         incoming,
+            const int               modes) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0;
@@ -407,16 +408,16 @@ namespace
         }
 
         virtual double sample_ior(
-            SamplingContext&    sampling_context,
-            const void*         data) const APPLESEED_OVERRIDE
+            SamplingContext&        sampling_context,
+            const void*             data) const APPLESEED_OVERRIDE
         {
             return static_cast<const InputValues*>(data)->m_ior;
         }
 
         virtual void compute_absorption(
-            const void*         data,
-            const double        distance,
-            Spectrum&           absorption) const APPLESEED_OVERRIDE
+            const void*             data,
+            const double            distance,
+            Spectrum&               absorption) const APPLESEED_OVERRIDE
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
@@ -441,8 +442,8 @@ namespace
         auto_ptr<MDF<double> > m_mdf;
 
         static double choose_reflection_probability(
-            const InputValues*  values,
-            const double        F)
+            const InputValues*      values,
+            const double            F)
         {
             const double r_probability = F * values->m_reflection_weight;
             const double t_probability = (1.0 - F) * values->m_refraction_weight;
@@ -455,9 +456,9 @@ namespace
         }
 
         static double fresnel_reflectance(
-            const double        cos_theta_i,
-            const double        eta,
-            double&             cos_theta_t)
+            const double            cos_theta_i,
+            const double            eta,
+            double&                 cos_theta_t)
         {
             const double sin_theta_t2 = (1.0 - square(cos_theta_i)) * square(eta);
 
@@ -479,16 +480,16 @@ namespace
         }
 
         static double fresnel_reflectance(
-            const double        cos_theta_i,
-            const double        eta)
+            const double            cos_theta_i,
+            const double            eta)
         {
             double cos_theta_t;
             return fresnel_reflectance(cos_theta_i, eta, cos_theta_t);
         }
 
         static Vector3d half_reflection_vector(
-            const Vector3d&     wi,
-            const Vector3d&     wo)
+            const Vector3d&         wi,
+            const Vector3d&         wo)
         {
             // [1] eq. 13.
             const Vector3d h = normalize(wi + wo);
@@ -496,14 +497,14 @@ namespace
         }
 
         void evaluate_reflection(
-            const InputValues*  values,
-            const Vector3d&     wi,
-            const Vector3d&     wo,
-            const Vector3d&     h,
-            const double        alpha_x,
-            const double        alpha_y,
-            const double        F,
-            Spectrum&           value) const
+            const InputValues*      values,
+            const Vector3d&         wi,
+            const Vector3d&         wo,
+            const Vector3d&         h,
+            const double            alpha_x,
+            const double            alpha_y,
+            const double            F,
+            Spectrum&               value) const
         {
             // [1] eq. 20.
             const double denom = abs(4.0 * wo.y * wi.y);
@@ -521,11 +522,11 @@ namespace
         }
 
         double reflection_pdf(
-            const Vector3d&     wo,
-            const Vector3d&     h,
-            const double        cos_oh,
-            const double        alpha_x,
-            const double        alpha_y) const
+            const Vector3d&         wo,
+            const Vector3d&         h,
+            const double            cos_oh,
+            const double            alpha_x,
+            const double            alpha_y) const
         {
             // [1] eq. 14.
             if (cos_oh == 0.0)
@@ -536,9 +537,9 @@ namespace
         }
 
         static Vector3d half_refraction_vector(
-            const Vector3d&     wi,
-            const Vector3d&     wo,
-            const double        eta)
+            const Vector3d&         wi,
+            const Vector3d&         wo,
+            const double            eta)
         {
             // [1] eq. 16.
             const Vector3d h = normalize(wo + eta * wi);
@@ -546,15 +547,15 @@ namespace
         }
 
         void evaluate_refraction(
-            const InputValues*  values,
-            const bool          adjoint,
-            const Vector3d&     wi,
-            const Vector3d&     wo,
-            const Vector3d&     h,
-            const double        alpha_x,
-            const double        alpha_y,
-            const double        T,
-            Spectrum&           value) const
+            const InputValues*      values,
+            const bool              adjoint,
+            const Vector3d&         wi,
+            const Vector3d&         wo,
+            const Vector3d&         h,
+            const double            alpha_x,
+            const double            alpha_y,
+            const double            T,
+            Spectrum&               value) const
         {
             // [1] eq. 21.
             const double cos_ih = dot(h, wi);
@@ -581,12 +582,12 @@ namespace
         }
 
         double refraction_pdf(
-            const Vector3d&     wi,
-            const Vector3d&     wo,
-            const Vector3d&     h,
-            const double        alpha_x,
-            const double        alpha_y,
-            const double        eta) const
+            const Vector3d&         wi,
+            const Vector3d&         wo,
+            const Vector3d&         h,
+            const double            alpha_x,
+            const double            alpha_y,
+            const double            eta) const
         {
             // [1] eq. 17.
             const double cos_ih = dot(h, wi);

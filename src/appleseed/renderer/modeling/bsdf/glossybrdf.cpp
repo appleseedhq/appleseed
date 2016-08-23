@@ -117,8 +117,9 @@ namespace
         }
 
         APPLESEED_FORCE_INLINE virtual void prepare_inputs(
-            const ShadingPoint& shading_point,
-            void*               data) const APPLESEED_OVERRIDE
+            const ShadingContext&   shading_context,
+            const ShadingPoint&     shading_point,
+            void*                   data) const APPLESEED_OVERRIDE
         {
             InputValues* values = reinterpret_cast<InputValues*>(data);
             values->m_outside_ior =

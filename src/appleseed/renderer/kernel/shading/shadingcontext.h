@@ -142,6 +142,7 @@ class ShadingContext
         const foundation::Vector3d& outgoing,
         Spectrum&                   value) const;
 
+    void* osl_mem_alloc(const size_t size) const;
 #endif
 
   private:
