@@ -152,6 +152,7 @@ class APPLESEED_DLLSYMBOL BSDF
 
     // Perform any precomputation needed for this BSDF's input values.
     virtual void prepare_inputs(
+        const ShadingContext&       shading_context,
         const ShadingPoint&         shading_point,
         void*                       data) const;
 

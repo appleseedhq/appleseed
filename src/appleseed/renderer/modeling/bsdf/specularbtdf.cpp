@@ -65,8 +65,8 @@ namespace
     {
       public:
         SpecularBTDFImpl(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : BSDF(name, Transmissive, ScatteringMode::Specular, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
@@ -90,14 +90,15 @@ namespace
         }
 
         virtual size_t compute_input_data_size(
-            const Assembly&     assembly) const APPLESEED_OVERRIDE
+            const Assembly&         assembly) const APPLESEED_OVERRIDE
         {
             return align(sizeof(InputValues), 16);
         }
 
         virtual void prepare_inputs(
-            const ShadingPoint& shading_point,
-            void*               data) const APPLESEED_OVERRIDE
+            const ShadingContext&   shading_context,
+            const ShadingPoint&     shading_point,
+            void*                   data) const APPLESEED_OVERRIDE
         {
             InputValues* values = static_cast<InputValues*>(data);
 
@@ -108,11 +109,11 @@ namespace
         }
 
         APPLESEED_FORCE_INLINE virtual void sample(
-            SamplingContext&    sampling_context,
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            BSDFSample&         sample) const APPLESEED_OVERRIDE
+            SamplingContext&        sampling_context,
+            const void*             data,
+            const bool              adjoint,
+            const bool              cosine_mult,
+            BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
@@ -194,41 +195,41 @@ namespace
         }
 
         APPLESEED_FORCE_INLINE virtual double evaluate(
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+            const void*             data,
+            const bool              adjoint,
+            const bool              cosine_mult,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector3d&         outgoing,
+            const Vector3d&         incoming,
+            const int               modes,
+            Spectrum&               value) const APPLESEED_OVERRIDE
         {
             return 0.0;
         }
 
         APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes) const APPLESEED_OVERRIDE
+            const void*             data,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector3d&         outgoing,
+            const Vector3d&         incoming,
+            const int               modes) const APPLESEED_OVERRIDE
         {
             return 0.0;
         }
 
         double sample_ior(
-            SamplingContext&    sampling_context,
-            const void*         data) const APPLESEED_OVERRIDE
+            SamplingContext&        sampling_context,
+            const void*             data) const APPLESEED_OVERRIDE
         {
             return static_cast<const InputValues*>(data)->m_ior;
         }
 
         void compute_absorption(
-            const void*         data,
-            const double        distance,
-            Spectrum&           absorption) const APPLESEED_OVERRIDE
+            const void*             data,
+            const double            distance,
+            Spectrum&               absorption) const APPLESEED_OVERRIDE
         {
             const InputValues* values = static_cast<const InputValues*>(data);
             const float d = static_cast<float>(values->m_density * values->m_scale * distance);

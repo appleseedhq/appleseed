@@ -161,6 +161,11 @@ void ShadingContext::execute_osl_background(
             outgoing);
 }
 
+void* ShadingContext::osl_mem_alloc(const size_t size) const
+{
+    return m_shadergroup_exec.osl_mem_alloc(size);
+}
+
 #endif
 
 }   // namespace renderer

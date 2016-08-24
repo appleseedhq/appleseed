@@ -51,7 +51,10 @@ OSLShaderGroupExec::OSLShaderGroupExec(OSL::ShadingSystem& shading_system)
   : m_osl_shading_system(shading_system)
   , m_osl_thread_info(shading_system.create_thread_info())
   , m_osl_shading_context(shading_system.get_context(m_osl_thread_info))
+  , m_osl_mem_used(0)
 {
+    m_osl_mem_pool = new char[OSLMemPoolSize + OSLMemAlignment];
+    m_osl_mem_pool_start = align(m_osl_mem_pool, OSLMemAlignment);
 }
 
 OSLShaderGroupExec::~OSLShaderGroupExec()
@@ -61,6 +64,8 @@ OSLShaderGroupExec::~OSLShaderGroupExec()
 
     if (m_osl_thread_info)
         m_osl_shading_system.destroy_thread_info(m_osl_thread_info);
+
+    delete [] m_osl_mem_pool;
 }
 
 void OSLShaderGroupExec::execute_shading(
@@ -231,6 +236,23 @@ void OSLShaderGroupExec::do_execute(
 #endif
         *shader_group.shader_group_ref(),
         shading_point.get_osl_shader_globals());
+
+    reset_osl_mem_pool();
+}
+
+void* OSLShaderGroupExec::osl_mem_alloc(const size_t size) const
+{
+    if APPLESEED_UNLIKELY(m_osl_mem_used + size >= OSLMemPoolSize)
+        return 0;
+
+    char* ptr = m_osl_mem_pool_start + m_osl_mem_used;
+    m_osl_mem_used += align(size, OSLMemAlignment);
+    return ptr;
+}
+
+void OSLShaderGroupExec::reset_osl_mem_pool() const
+{
+    m_osl_mem_used = 0;
 }
 
 }   // namespace renderer
