@@ -198,7 +198,7 @@ class ReportWriter:
         if self.failures == 0:
             self.file.write("<p>None.</p>")
         else:
-            commands_html = "\n".join('<li class="command">{0}</li>'.format(c) for c in self.all_commands)
+            commands_html = "\n".join('<li class="command"><pre>{0}</pre></li>'.format(c) for c in self.all_commands)
             self.file.write(self.__render(self.footer_template,
                                           { 'commands': commands_html }))
 
