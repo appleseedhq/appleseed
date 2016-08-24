@@ -132,9 +132,9 @@ string ShaderParam::get_value_as_string() const
             ss << "string " << impl->m_string_value;
         else if (impl->m_type_desc == OSL::TypeDesc::TypeMatrix)
         {
-            ss << "matrix ";
+            ss << "matrix";
             for (size_t i = 0; i < 16; ++i)
-                ss << impl->m_float_value[i] << " ";
+                ss << ' ' << impl->m_float_value[i];
         }
         else
             assert(!"Invalid parameter type.");

@@ -152,7 +152,6 @@ inline size_t PathTracer<PathVisitor, Adjoint>::trace(
     const ShadingPoint*         parent_shading_point)
 {
     ShadingPoint shading_point;
-    shading_point.clear();
     shading_context.get_intersector().trace(ray, shading_point, parent_shading_point);
 
     return
@@ -185,7 +184,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
     // This variable tracks the beginning of the path segment inside the current medium.
     // While it is properly initialized when entering a medium, we also initialize it
     // here to silence a gcc warning.
-    foundation::Vector3d medium_start = vertex.get_point();
+    foundation::Vector3d medium_start(0.0);
 
     size_t iterations = 0;
 

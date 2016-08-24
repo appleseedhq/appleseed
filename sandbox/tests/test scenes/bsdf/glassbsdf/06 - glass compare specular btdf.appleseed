@@ -3,7 +3,7 @@
 <project format_revision="11">
     <search_paths>
         <search_path>
-            ../../texture
+            ../../_assets/textures
         </search_path>
     </search_paths>
     <scene>
