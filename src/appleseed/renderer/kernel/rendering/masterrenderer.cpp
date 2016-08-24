@@ -223,6 +223,10 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     if (abort_switch.is_aborted())
         return m_renderer_controller->get_status();
 
+    // Perform pre-render rendering actions. Don't proceed if that failed.
+    if (!m_project.get_scene()->on_render_begin(m_project, &abort_switch))
+        return IRendererController::AbortRendering;
+
     // Create the renderer components.
     RendererComponents components(
         m_project,
@@ -237,10 +241,6 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 #endif
         );
     if (!components.initialize())
-        return IRendererController::AbortRendering;
-
-    // Perform pre-render rendering actions. Don't proceed if that failed.
-    if (!m_project.get_scene()->on_render_begin(m_project, &abort_switch))
         return IRendererController::AbortRendering;
 
     // Execute the main rendering loop.
