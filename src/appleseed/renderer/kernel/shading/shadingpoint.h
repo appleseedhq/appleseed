@@ -394,8 +394,9 @@ class ShadingPoint
 // ShadingPoint class implementation.
 //
 
-inline ShadingPoint::ShadingPoint()
+APPLESEED_FORCE_INLINE ShadingPoint::ShadingPoint()
 {
+    clear();
 }
 
 inline ShadingPoint::ShadingPoint(const ShadingPoint& rhs)

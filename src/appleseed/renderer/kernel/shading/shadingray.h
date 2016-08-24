@@ -106,7 +106,7 @@ class ShadingRay
     bool                            m_has_differentials;
 
     // Constructors.
-    ShadingRay();                   // leave all fields uninitialized
+    ShadingRay();                   // only partially initialize the object
     ShadingRay(
         const VectorType&           org,
         const VectorType&           dir,
@@ -156,6 +156,8 @@ class ShadingRay
 //
 
 inline ShadingRay::ShadingRay()
+  : m_medium_count(0)
+  , m_has_differentials(false)
 {
 }
 

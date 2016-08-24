@@ -95,7 +95,6 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
     camera->spawn_ray(sampling_context, Dual2d(ndc), ray);
 
     ShadingPoint shading_point;
-    shading_point.clear();
     impl->m_intersector.trace(ray, shading_point);
 
     PickingResult result;
