@@ -69,6 +69,9 @@ class OSLShaderGroupExec
     OSL::ShadingSystem&     m_osl_shading_system;
     OSL::PerThreadInfo*     m_osl_thread_info;
     OSL::ShadingContext*    m_osl_shading_context;
+    char*                   m_osl_mem_pool;
+    char*                   m_osl_mem_pool_start;
+    mutable size_t          m_osl_mem_used;
 
     void execute_shading(
         const ShaderGroup&              shader_group,
@@ -111,6 +114,14 @@ class OSLShaderGroupExec
         const ShaderGroup&              shader_group,
         const ShadingPoint&             shading_point,
         const VisibilityFlags::Type     ray_flags) const;
+
+    // OSL memory pool. Used currently in layered closures.
+    // 128 Kb., space for roughly 4 layers.
+    enum { OSLMemPoolSize = 131072 };
+    enum { OSLMemAlignment = 16 };
+
+    void* osl_mem_alloc(const size_t size) const;
+    void reset_osl_mem_pool() const;
 };
 
 }       // namespace renderer

@@ -365,6 +365,7 @@ namespace
         }
 
         void prepare_inputs(
+            const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             void*                   data) const APPLESEED_OVERRIDE
         {
