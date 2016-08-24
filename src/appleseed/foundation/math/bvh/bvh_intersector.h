@@ -125,6 +125,9 @@ class Intersector
 // Intersector class implementation.
 //
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+
 template <
     typename Tree,
     typename Visitor,
@@ -193,10 +196,7 @@ void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect_no_motion(
             if (hit_left | hit_right)
             {
                 // Push the far child node to the stack, continue with the near child node.
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
                 const int far_index = tmin[0] < tmin[1] ? 1 : 0;
-#pragma GCC diagnostic pop
                 *stack_ptr++ = node_ptr + far_index - 1;
                 node_ptr -= far_index;
                 continue;
@@ -255,6 +255,8 @@ void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect_no_motion(
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_bboxes.insert(intersected_bboxes));
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_discarded_nodes.insert(discarded_nodes));
 }
+
+#pragma GCC diagnostic pop
 
 template <
     typename Tree,

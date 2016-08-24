@@ -64,21 +64,30 @@ namespace detail
     }
 
     template <typename T>
+    boost::python::object typed_entity_vector_remove(renderer::TypedEntityVector<T>& vec, T* entity)
+    {
+        foundation::auto_release_ptr<T> e = vec.remove(entity);
+        return boost::python::object(e);
+    }
+
+    template <typename T>
     T* typed_entity_map_get_item(renderer::TypedEntityMap<T>& map, const std::string& key)
     {
         return map.get_by_name(key.c_str());
     }
 
     template <typename T>
-    foundation::auto_release_ptr<T> typed_entity_map_remove(renderer::TypedEntityMap<T>* map, T* entity)
+    boost::python::object typed_entity_map_remove(renderer::TypedEntityMap<T>* map, T* entity)
     {
-        return map->remove(entity);
+        foundation::auto_release_ptr<T> e = map->remove(entity);
+        return boost::python::object(e);
     }
 
     template <typename T>
-    foundation::auto_release_ptr<T> typed_entity_map_remove_by_uid(renderer::TypedEntityMap<T>* map, const foundation::UniqueID id)
+    boost::python::object typed_entity_map_remove_by_uid(renderer::TypedEntityMap<T>* map, const foundation::UniqueID id)
     {
-        return map->remove(id);
+        foundation::auto_release_ptr<T> e = map->remove(id);
+        return boost::python::object(e);
     }
 
     template <typename T>
@@ -130,7 +139,7 @@ void bind_typed_entity_vector(const char* name)
         .def("get_by_name", &renderer::TypedEntityVector<T>::get_by_name, boost::python::return_value_policy<boost::python::reference_existing_object>())
 
         .def("insert", &renderer::TypedEntityVector<T>::insert)
-        .def("remove", &renderer::TypedEntityVector<T>::remove, boost::python::return_value_policy<boost::python::return_by_value>())
+        .def("remove", &detail::typed_entity_vector_remove<T>)
 
         .def("__iter__", boost::python::iterator<renderer::TypedEntityVector<T>, boost::python::return_internal_reference<> >());
 }
@@ -144,8 +153,8 @@ void bind_typed_entity_map(const char* name)
         .def("get_by_name", &renderer::TypedEntityMap<T>::get_by_name, boost::python::return_value_policy<boost::python::reference_existing_object>())
 
         .def("insert", &renderer::TypedEntityMap<T>::insert)
-        .def("remove", &detail::typed_entity_map_remove<T>, boost::python::return_value_policy<boost::python::return_by_value>())
-        .def("remove_by_uid", &detail::typed_entity_map_remove_by_uid<T>, boost::python::return_value_policy<boost::python::return_by_value>())
+        .def("remove", &detail::typed_entity_map_remove<T>)
+        .def("remove_by_uid", &detail::typed_entity_map_remove_by_uid<T>)
 
         .def("__iter__", &detail::typed_entity_map_get_iter<T>)
         .def("keys", &detail::typed_entity_map_get_keys<T>)
