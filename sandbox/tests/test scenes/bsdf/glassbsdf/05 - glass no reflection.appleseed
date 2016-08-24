@@ -3,7 +3,7 @@
 <project format_revision="11">
     <search_paths>
         <search_path>
-            ../../texture
+            ../../_assets/textures
         </search_path>
     </search_paths>
     <scene>
@@ -44,7 +44,7 @@
         <assembly name="assembly">
             <texture name="UVCheckerMap03-512" model="disk_texture_2d">
                 <parameter name="color_space" value="linear_rgb" />
-                <parameter name="filename" value="/home/est/Devel/appleseedhq/appleseed/sandbox/tests/test scenes/texture/UVCheckerMap03-512.exr" />
+                <parameter name="filename" value="UVCheckerMap03-512.exr" />
             </texture>
             <texture_instance name="UVCheckerMap03-512_inst" texture="UVCheckerMap03-512">
                 <transform>
