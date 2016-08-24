@@ -19,7 +19,6 @@
                     return $("<div>").css({
                         "position": "absolute",
                         "z-index": 1,
-                        "background-color": "white",
                         "background-image": "url('" + $(this).attr("src") + "')",
                         "background-position": "left",
                         "width": width / 2,
@@ -35,6 +34,11 @@
             }
 
             $(document).ready(function () {
+                $("img").error(function () {
+                    $(this).width(500);
+                    $(this).height(375);
+                });
+
                 $(".popup-toggle").each(function () {
                     $(this).click(function () {
                         var popup = $(this).prevAll(".popup").first();
@@ -58,7 +62,7 @@
                         return false;
                     });
                 });
-                
+
                 $(".popup").click(function () {
                     $(this).hide();
                     return false;
@@ -73,33 +77,145 @@
             });
         </script>
         <style type="text/css">
-            table.details
+            /* ========================================================================
+             * Eric Meyer's Reset CSS v2.0 (http://meyerweb.com/eric/tools/css/reset/)
+             * http://cssreset.com
+             * Our tweaks:
+             *  - Removed <ul> and <ol> list style resets.
+             * ======================================================================== */
+
+            html, body, div, span, applet, object, iframe,
+            h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+            a, abbr, acronym, address, big, cite, code,
+            del, dfn, em, img, ins, kbd, q, s, samp,
+            small, strike, strong, sub, sup, tt, var,
+            b, u, i, center,
+            dl, dt, dd, ol, ul, li,
+            fieldset, form, label, legend,
+            table, caption, tbody, tfoot, thead, tr, th, td,
+            article, aside, canvas, details, embed, 
+            figure, figcaption, footer, header, hgroup, 
+            menu, nav, output, ruby, section, summary,
+            time, mark, audio, video
+            {
+                margin: 0;
+                padding: 0;
+                border: 0;
+                font-size: 100%;
+                font: inherit;
+                vertical-align: baseline;
+            }
+
+            /* HTML5 display-role reset for older browsers */
+            article, aside, details, figcaption, figure, 
+            footer, header, hgroup, menu, nav, section
+            {
+                display: block;
+            }
+
+            body
+            {
+                line-height: 1;
+            }
+
+            blockquote, q
+            {
+                quotes: none;
+            }
+
+            blockquote:before, blockquote:after,
+            q:before, q:after
+            {
+                content: '';
+                content: none;
+            }
+
+            table
             {
                 border-collapse: collapse;
+                border-spacing: 0;
             }
 
-            table.details td
+            /* ========================================================================
+             * Common styles.
+             * ======================================================================== */
+
+            body
             {
-                padding: 5px;
+                background-color: #282828;
+                color: #ccc;
+                font-family: "Open Sans", sans-serif;
+                padding: 10px;
             }
 
-            table.details,
-            table.details td
+            h1
             {
-                border: 1px solid #ddd;
+                margin-top: 40px;
+                margin-bottom: 30px;
+                text-transform: uppercase;
+                font-size: 30px;
             }
+            
+            h2
+            {
+                margin-top: 30px;
+                margin-bottom: 20px;
+                text-transform: uppercase;
+                font-size: 20px;
+            }
+
+            a
+            {
+                color: #da854c;
+            }
+
+            pre
+            {
+                font-family: "Inconsolata", monospace;
+            }
+
+            table
+            {
+                margin-bottom: 20px;
+            }
+
+            td, th
+            {
+                border: solid 1px #2f2f2f;
+                padding: 10px;
+            }
+
+            td
+            {
+                background-color: #444;
+            }
+
+            th, tfoot td
+            {
+                background-color: #383838;
+                font-size: 18px;
+            }
+
+            /* ========================================================================
+             * Test case result.
+             * ======================================================================== */
 
             .result
             {
-                margin-bottom: 100px;
+                background-color: #2f2f2f;
+                margin-bottom: 60px;
+            }
+
+            .result td
+            {
+                background-color: inherit;
             }
 
             .result .title
             {
-                font-family: "Courier New", Courier, monospace;
                 font-size: 18px;
                 font-weight: bold;
-                padding-bottom: 15px;
+                padding-bottom: 40px;
             }
 
             .result .reference,
@@ -114,21 +230,32 @@
             .result .diff img
             {
                 max-width: 500px;
-                border: 1px solid #ddd;
             }
 
-            ul.commands
+            .result .details td
             {
-                padding: 0;
-                list-style-type: none;
+                border: solid 1px #282828;
+            }
+
+            .result .details td.command
+            {
+                background-color: #383838;
+            }
+
+            ul.commands li
+            {
+                padding: 8px;
             }
 
             .command
             {
-                font-family: "Courier New", Courier, monospace;
                 font-size: 15px;
-                background-color: #eee;
+                background-color: #383838;
             }
+
+            /* ========================================================================
+             * Image comparator.
+             * ======================================================================== */
 
             .popup
             {
@@ -140,21 +267,22 @@
                 background-color: rgba(0, 0, 0, 0.8);
                 display: none;
             }
-            
+
             .window
             {
                 position: fixed;
                 top: 50%;
                 left: 50%;
                 z-index: 10;
-                background-color: white;
+                background-color: #282828;
                 border: 1px solid #222;
             }
         </style>
     </head>
     <body>
+        <h1>appleseed Test Suite Report</h1>
         <div>
-            <h1>Information</h1>
+            <h2>Setup</h2>
             <table class="details">
                 <tr>
                     <td>Test Date</td>
@@ -162,7 +290,7 @@
                 </tr>
                 <tr>
                     <td>appleseed Binary</td>
-                    <td>{appleseed-binary-path}</td>
+                    <td><pre>{appleseed-binary-path}</pre></td>
                 </tr>
                 <tr>
                     <td>Maximum Absolute Component Difference</td>
@@ -175,5 +303,5 @@
             </table>
         </div>
         <div>
-            <h1>Failures</h1>
+            <h2>Failures</h2>
             <div>
