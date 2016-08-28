@@ -83,71 +83,38 @@ namespace
             memset(m_all_bsdfs, 0, sizeof(BSDF*) * NumClosuresIDs);
 
             m_ashikhmin_shirley_brdf =
-                AshikhminBRDFFactory().create(
-                    "ashikhmin_brdf",
-                    ParamArray());
-
-            m_all_bsdfs[AshikhminShirleyID] = m_ashikhmin_shirley_brdf.get();
-
-            m_diffuse_btdf =
                 create_and_register_bsdf(
-                    TranslucentID,
-                    "diffuse_btdf",
-                    "osl_translucent");
+                    AshikhminShirleyID,
+                    "ashikhmin_brdf");
+
+            m_diffuse_btdf = create_and_register_diffuse_btdf();
 
             m_disney_brdf =
-                create_and_register_bsdf(
-                    DisneyID,
-                    "disney_brdf",
-                    "osl_disney_brdf");
+                create_and_register_bsdf(DisneyID, "disney_brdf");
 
             m_glossy_beckmann_brdf =
-                create_and_register_glossy_brdf(
-                    GlossyBeckmannID,
-                    "beckmann",
-                    "osl_glossy_beckmann");
+                create_and_register_glossy_brdf(GlossyBeckmannID, "beckmann");
 
             m_glass_ggx_bsdf =
-                create_and_register_glass_bsdf(
-                    GlassGGXID,
-                    "ggx",
-                    "osl_glass_ggx");
+                create_and_register_glass_bsdf(GlassGGXID, "ggx");
 
             m_glass_beckmann_bsdf =
-                create_and_register_glass_bsdf(
-                    GlassBeckmannID,
-                    "beckmann",
-                    "osl_glass_beckmann");
+                create_and_register_glass_bsdf(GlassBeckmannID, "beckmann");
 
             m_glossy_ggx_brdf =
-                create_and_register_glossy_brdf(
-                    GlossyGGXID,
-                    "ggx",
-                    "osl_glossy_ggx");
+                create_and_register_glossy_brdf(GlossyGGXID, "ggx");
 
             m_metal_beckmann_brdf =
-                create_and_register_metal_brdf(
-                    MetalBeckmannID,
-                    "beckmann",
-                    "osl_metal_beckmann");
+                create_and_register_metal_brdf(MetalBeckmannID, "beckmann");
 
             m_metal_ggx_brdf =
-                create_and_register_metal_brdf(
-                    MetalGGXID,
-                    "ggx",
-                    "osl_metal_ggx");
+                create_and_register_metal_brdf(MetalGGXID, "ggx");
 
             m_orennayar_brdf =
-                create_and_register_bsdf(
-                    OrenNayarID,
-                    "orennayar_brdf",
-                    "osl_orennayar");
+                create_and_register_bsdf(OrenNayarID, "orennayar_brdf");
 
             m_sheen_brdf =
-                create_and_register_bsdf(
-                    SheenID,
-                    "sheen_brdf",
-                    "osl_sheen");
+                create_and_register_bsdf(SheenID, "sheen_brdf");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -385,26 +352,31 @@ namespace
 
         auto_release_ptr<BSDF> create_and_register_bsdf(
             const ClosureID         cid,
-            const char*             model,
-            const char*             name,
-            const ParamArray&       params = ParamArray())
+            const char*             model)
         {
             auto_release_ptr<BSDF> bsdf =
-                BSDFFactoryRegistrar().lookup(model)->create(name, params);
+                BSDFFactoryRegistrar().lookup(model)->create(model, ParamArray());
 
             m_all_bsdfs[cid] = bsdf.get();
+            return bsdf;
+        }
 
+        auto_release_ptr<BSDF> create_and_register_diffuse_btdf()
+        {
+            auto_release_ptr<BSDF> bsdf =
+                DiffuseBTDFFactory().create_osl("diffuse_btdf", ParamArray());
+
+            m_all_bsdfs[TranslucentID] = bsdf.get();
             return bsdf;
         }
 
         auto_release_ptr<BSDF> create_and_register_glass_bsdf(
             const ClosureID         cid,
-            const char*             mdf_name,
-            const char*             name)
+            const char*             mdf_name)
         {
             auto_release_ptr<BSDF> bsdf =
                 GlassBSDFFactory().create_osl(
-                    name,
+                    "glass_bsdf",
                     ParamArray().insert("mdf", mdf_name));
 
             m_all_bsdfs[cid] = bsdf.get();
@@ -413,12 +385,11 @@ namespace
 
         auto_release_ptr<BSDF> create_and_register_glossy_brdf(
             const ClosureID         cid,
-            const char*             mdf_name,
-            const char*             name)
+            const char*             mdf_name)
         {
             auto_release_ptr<BSDF> bsdf =
                 GlossyBRDFFactory().create(
-                    name,
+                    "glossy_brdf",
                     ParamArray().insert("mdf", mdf_name));
 
             m_all_bsdfs[cid] = bsdf.get();
@@ -427,12 +398,11 @@ namespace
 
         auto_release_ptr<BSDF> create_and_register_metal_brdf(
             const ClosureID         cid,
-            const char*             mdf_name,
-            const char*             name)
+            const char*             mdf_name)
         {
             auto_release_ptr<BSDF> bsdf =
                 MetalBRDFFactory().create(
-                    name,
+                    "metal_brdf",
                     ParamArray().insert("mdf", mdf_name));
 
             m_all_bsdfs[cid] = bsdf.get();
