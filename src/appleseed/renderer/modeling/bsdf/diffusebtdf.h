@@ -59,6 +59,9 @@ APPLESEED_DECLARE_INPUT_VALUES(DiffuseBTDFInputValues)
 {
     Spectrum    m_transmittance;                // diffuse transmittance
     ScalarInput m_transmittance_multiplier;     // diffuse transmittance multiplier
+
+    // Precomputed values.
+    bool        m_backfacing;
 };
 
 
@@ -83,6 +86,11 @@ class APPLESEED_DLLSYMBOL DiffuseBTDFFactory
     virtual foundation::auto_release_ptr<BSDF> create(
         const char*         name,
         const ParamArray&   params) const APPLESEED_OVERRIDE;
+
+    // Create a new BSDF instance for use with OSL.
+    foundation::auto_release_ptr<BSDF> create_osl(
+        const char*         name,
+        const ParamArray&   params) const;
 
     // Static variant of the create() method above.
     static foundation::auto_release_ptr<BSDF> static_create(
