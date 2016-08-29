@@ -50,10 +50,10 @@ namespace renderer
 //  a backfacing policy class as a template parameter.
 //
 
-class AppleseedBackfacingPolicy
+class FlipBackfacingNormalsPolicy
 {
   public:
-    AppleseedBackfacingPolicy(
+    FlipBackfacingNormalsPolicy(
         const foundation::Basis3d&  basis,
         const bool                  backfacing)
       : m_basis(
@@ -82,10 +82,10 @@ class AppleseedBackfacingPolicy
     const foundation::Basis3d m_basis;
 };
 
-class OSLBackfacingPolicy
+class UseOriginalNormalsPolicy
 {
   public:
-    OSLBackfacingPolicy(
+    UseOriginalNormalsPolicy(
         const foundation::Basis3d&  basis,
         const bool                  backfacing)
       : m_basis(basis)

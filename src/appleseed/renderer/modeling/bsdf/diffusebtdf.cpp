@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/modeling/bsdf/backfacingpolicy.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 
@@ -61,6 +62,7 @@ namespace
 
     const char* Model = "diffuse_btdf";
 
+    template <typename BackfacingPolicy>
     class DiffuseBTDFImpl
       : public BSDF
     {
@@ -84,6 +86,21 @@ namespace
             return Model;
         }
 
+        virtual size_t compute_input_data_size(
+            const Assembly&         assembly) const APPLESEED_OVERRIDE
+        {
+            return align(sizeof(InputValues), 16);
+        }
+
+        APPLESEED_FORCE_INLINE virtual void prepare_inputs(
+            const ShadingContext&   shading_context,
+            const ShadingPoint&     shading_point,
+            void*                   data) const APPLESEED_OVERRIDE
+        {
+            InputValues* values = static_cast<InputValues*>(data);
+            values->m_backfacing = !shading_point.is_entering();
+        }
+
         APPLESEED_FORCE_INLINE virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
@@ -91,21 +108,27 @@ namespace
             const bool          cosine_mult,
             BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
+            const InputValues* values = static_cast<const InputValues*>(data);
+            const BackfacingPolicy backfacing_policy(sample.get_shading_basis(), values->m_backfacing);
+            const Vector3d wo = backfacing_policy.transform_to_local(sample.m_outgoing.get_value());
+
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);
             const Vector2d s = sampling_context.next_vector2<2>();
             const Vector3d wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
-            sample.m_incoming = Dual3d(-sample.get_shading_basis().transform_to_parent(wi));
+            sample.m_incoming = Dual3d(
+                wo.y < 0.0
+                    ?  backfacing_policy.transform_to_parent(wi)
+                    : -backfacing_policy.transform_to_parent(wi));
 
             // Compute the BRDF value.
-            const InputValues* values = static_cast<const InputValues*>(data);
             sample.m_value = values->m_transmittance;
             sample.m_value *= static_cast<float>(values->m_transmittance_multiplier * RcpPi);
 
             // Compute the probability density of the sampled direction.
-            sample.m_probability = wi.y * RcpPi;
+            sample.m_probability = abs(wi.y) * RcpPi;
             assert(sample.m_probability > 0.0);
 
             // Set the scattering mode.
@@ -126,16 +149,27 @@ namespace
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0;
 
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = abs(dot(incoming, n));
-
-            // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
-            value = values->m_transmittance;
-            value *= static_cast<float>(values->m_transmittance_multiplier * RcpPi);
+            const BackfacingPolicy backfacing_policy(shading_basis, values->m_backfacing);
 
-            // Return the probability density of the sampled direction.
-            return cos_in * RcpPi;
+            const Vector3d& n = backfacing_policy.get_normal();
+            const double cos_in = dot(incoming, n);
+            const double cos_on = dot(outgoing, n);
+
+            if (cos_in * cos_on < 0.0)
+            {
+                // Compute the BRDF value.
+                value = values->m_transmittance;
+                value *= static_cast<float>(values->m_transmittance_multiplier * RcpPi);
+
+                // Return the probability density of the sampled direction.
+                return abs(cos_in) * RcpPi;
+            }
+            else
+            {
+                // No transmission in the same hemisphere as outgoing.
+                return 0.0;
+            }
         }
 
         APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
@@ -149,17 +183,28 @@ namespace
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0;
 
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = abs(dot(incoming, n));
+            const InputValues* values = static_cast<const InputValues*>(data);
+            const BackfacingPolicy backfacing_policy(shading_basis, values->m_backfacing);
 
-            return cos_in * RcpPi;
+            const Vector3d& n = backfacing_policy.get_normal();
+            const double cos_in = dot(incoming, n);
+            const double cos_on = dot(outgoing, n);
+
+            if (cos_in * cos_on < 0.0)
+                return abs(cos_in) * RcpPi;
+            else
+            {
+                // No transmission in the same hemisphere as outgoing.
+                return 0.0;
+            }
         }
 
       private:
         typedef DiffuseBTDFInputValues InputValues;
     };
 
-    typedef BSDFWrapper<DiffuseBTDFImpl> DiffuseBTDF;
+    typedef BSDFWrapper<DiffuseBTDFImpl<FlipBackfacingNormalsPolicy> > AppleseedDiffuseBTDF;
+    typedef BSDFWrapper<DiffuseBTDFImpl<UseOriginalNormalsPolicy> > OSLDiffuseBTDF;
 }
 
 
@@ -213,14 +258,21 @@ auto_release_ptr<BSDF> DiffuseBTDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<BSDF>(new DiffuseBTDF(name, params));
+    return auto_release_ptr<BSDF>(new AppleseedDiffuseBTDF(name, params));
+}
+
+auto_release_ptr<BSDF> DiffuseBTDFFactory::create_osl(
+    const char*         name,
+    const ParamArray&   params) const
+{
+    return auto_release_ptr<BSDF>(new OSLDiffuseBTDF(name, params));
 }
 
 auto_release_ptr<BSDF> DiffuseBTDFFactory::static_create(
     const char*         name,
     const ParamArray&   params)
 {
-    return auto_release_ptr<BSDF>(new DiffuseBTDF(name, params));
+    return auto_release_ptr<BSDF>(new AppleseedDiffuseBTDF(name, params));
 }
 
 }   // namespace renderer
