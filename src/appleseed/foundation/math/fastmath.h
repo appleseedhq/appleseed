@@ -153,12 +153,16 @@ float fast_cos(const float x);
 float fast_cos_full(const float x);
 float fast_cos_full_positive(const float x);    // x >= 0.0f
 
+// Fast reciprocal approximation.
+float fast_rcp(const float x);
+
 // Fast square root approximation.
 float fast_sqrt(const float x);
 
 // Fast reciprocal square root approximations.
 float fast_rcp_sqrt(const float x);
 double fast_rcp_sqrt(const double x);
+float faster_rcp_sqrt(const float x);
 
 // SSE variants of some of the functions above.
 #ifdef APPLESEED_USE_SSE
@@ -355,6 +359,37 @@ inline float fast_sqrt(const float x)
     return binary_cast<float>(i);
 }
 
+#ifdef APPLESEED_USE_SSE
+
+inline float fast_rcp(const float x)
+{
+    return _mm_cvtss_f32(_mm_rcp_ss(_mm_set_ss(x)));
+}
+
+inline float fast_rcp_sqrt(const float x)
+{
+    float z = faster_rcp_sqrt(x);
+    z = z * (1.5f - x * 0.5f * z * z);          // Newton step, repeating increases accuracy
+    return z;
+}
+
+inline double fast_rcp_sqrt(const double x)
+{
+    return fast_rcp_sqrt(static_cast<float>(x));
+}
+
+inline float faster_rcp_sqrt(const float x)
+{
+    return _mm_cvtss_f32(_mm_rsqrt_ss(_mm_set_ss(x)));
+}
+
+#else
+
+inline float fast_rcp(const float x)
+{
+    return 1.0f / x;
+}
+
 inline float fast_rcp_sqrt(const float x)
 {
     assert(x >= 0.0f);
@@ -376,6 +411,13 @@ inline double fast_rcp_sqrt(const double x)
     z = z * (1.5 - xhalf * z * z);              // Newton step, repeating increases accuracy
     return z;
 }
+
+inline float faster_rcp_sqrt(const float x)
+{
+    return fast_rcp_sqrt(x);
+}
+
+#endif  // APPLESEED_USE_SSE
 
 #ifdef APPLESEED_USE_SSE
 

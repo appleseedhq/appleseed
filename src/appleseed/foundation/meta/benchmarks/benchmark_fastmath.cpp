@@ -273,4 +273,72 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
         for (size_t i = 0; i < N; i += 4)
             faster_exp(&m_output[i]);
     }
+
+    //
+    // Rcp(x).
+    //
+
+    BENCHMARK_CASE_F(Rcp, Fixture)
+    {
+        memcpy(m_output, m_values, N * sizeof(float));
+
+        for (size_t i = 0; i < N; ++i)
+            m_output[i] = 1.0f / m_output[i];
+    }
+
+    BENCHMARK_CASE_F(FastRcp, Fixture)
+    {
+        memcpy(m_output, m_values, N * sizeof(float));
+
+        for (size_t i = 0; i < N; ++i)
+            m_output[i] = fast_rcp(m_output[i]);
+    }
+
+    //
+    // Sqrt(x).
+    //
+
+    BENCHMARK_CASE_F(Sqrt, Fixture)
+    {
+        memcpy(m_output, m_values, N * sizeof(float));
+
+        for (size_t i = 0; i < N; ++i)
+            m_output[i] = sqrt(m_output[i]);
+    }
+
+    BENCHMARK_CASE_F(FastSqrt, Fixture)
+    {
+        memcpy(m_output, m_values, N * sizeof(float));
+
+        for (size_t i = 0; i < N; ++i)
+            m_output[i] = fast_sqrt(m_output[i]);
+    }
+
+    //
+    // RcpSqrt(x).
+    //
+
+    BENCHMARK_CASE_F(RcpSqrt, Fixture)
+    {
+        memcpy(m_output, m_values, N * sizeof(float));
+
+        for (size_t i = 0; i < N; ++i)
+            m_output[i] = 1.0f / sqrt(m_output[i]);
+    }
+
+    BENCHMARK_CASE_F(FastRcpSqrt, Fixture)
+    {
+        memcpy(m_output, m_values, N * sizeof(float));
+
+        for (size_t i = 0; i < N; ++i)
+            m_output[i] = fast_rcp_sqrt(m_output[i]);
+    }
+
+    BENCHMARK_CASE_F(FasterRcpSqrt, Fixture)
+    {
+        memcpy(m_output, m_values, N * sizeof(float));
+
+        for (size_t i = 0; i < N; ++i)
+            m_output[i] = faster_rcp_sqrt(m_output[i]);
+    }
 }
