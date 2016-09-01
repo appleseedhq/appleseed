@@ -695,10 +695,7 @@ inline float min_value(const RegularSpectrum<float, 31>& s)
     m = _mm_min_ps(m, _mm_shuffle_ps(m, m, _MM_SHUFFLE(2, 3, 0, 1)));
     m = _mm_min_ps(m, _mm_shuffle_ps(m, m, _MM_SHUFFLE(1, 0, 3, 2)));
 
-    APPLESEED_SSE_ALIGN float result;
-    _mm_store_ss(&result, m);
-
-    return result;
+    return _mm_cvtss_f32(m);
 }
 
 #endif  // APPLESEED_USE_SSE
@@ -734,10 +731,7 @@ inline float max_value(const RegularSpectrum<float, 31>& s)
     m = _mm_max_ps(m, _mm_shuffle_ps(m, m, _MM_SHUFFLE(2, 3, 0, 1)));
     m = _mm_max_ps(m, _mm_shuffle_ps(m, m, _MM_SHUFFLE(1, 0, 3, 2)));
 
-    APPLESEED_SSE_ALIGN float result;
-    _mm_store_ss(&result, m);
-
-    return result;
+    return _mm_cvtss_f32(m);
 }
 
 #endif  // APPLESEED_USE_SSE

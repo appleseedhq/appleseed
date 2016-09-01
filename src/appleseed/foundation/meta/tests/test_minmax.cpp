@@ -95,16 +95,12 @@ TEST_SUITE(Foundation_Math_MinMax)
 
     float ssemin_reference(const float a, const float b)
     {
-        float ret;
-        _mm_store_ss(&ret, _mm_min_ss(_mm_set_ss(a), _mm_set_ss(b)));
-        return ret;
+        return _mm_cvtss_f32(_mm_min_ss(_mm_set_ss(a), _mm_set_ss(b)));
     }
 
     float ssemax_reference(const float a, const float b)
     {
-        float ret;
-        _mm_store_ss(&ret, _mm_max_ss(_mm_set_ss(a), _mm_set_ss(b)));
-        return ret;
+        return _mm_cvtss_f32(_mm_max_ss(_mm_set_ss(a), _mm_set_ss(b)));
     }
 
     TEST_CASE(SSEMinAndSSEMax_GivenPermutationsOfSpecialFloatingPointNumbers_MatchMINSSAndMAXSS)
