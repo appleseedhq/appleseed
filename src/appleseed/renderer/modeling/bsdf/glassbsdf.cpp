@@ -563,7 +563,7 @@ namespace
             const double dots = (cos_ih * cos_oh) / (wi.y * wo.y);
 
             const double sqrt_denom = cos_oh + values->m_eta * cos_ih;
-            if (sqrt_denom == 0.0)
+            if (abs(sqrt_denom) < 1.0e-9)
             {
                 value.set(0.0f);
                 return;
@@ -594,7 +594,7 @@ namespace
             const double cos_oh = dot(h, wo);
 
             const double sqrt_denom = cos_oh + eta * cos_ih;
-            if (sqrt_denom == 0.0)
+            if (abs(sqrt_denom) < 1.0e-9)
                 return 0.0;
 
             const double jacobian = abs(cos_ih) * square(eta / sqrt_denom);
