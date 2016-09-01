@@ -177,6 +177,8 @@ namespace
             const int iy = pixel_context.m_iy;
             const size_t aov_count = frame.aov_images().size();
 
+            on_pixel_begin();
+
             m_scratch_fb->clear();
 
             // Create a sampling context.
@@ -233,7 +235,7 @@ namespace
                     // Ignore invalid samples.
                     if (!shading_result.is_valid_linear_rgb())
                     {
-                        signal_invalid_sample(ix, iy);
+                        signal_invalid_sample();
                         continue;
                     }
 
@@ -301,6 +303,8 @@ namespace
 
                 m_diagnostics->set_pixel(tx, ty, values);
             }
+
+            on_pixel_end(ix, iy);
         }
 
         virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
