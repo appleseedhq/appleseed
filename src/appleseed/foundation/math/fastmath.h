@@ -60,10 +60,10 @@ namespace foundation
 //     foundation::faster_log()
 //     foundation::fast_exp()
 //     foundation::faster_exp()
-//     foundation::faster_sin()
-//     foundation::faster_sin_full()
-//     foundation::faster_cos()
-//     foundation::faster_cos_full()
+//     foundation::fast_sin()
+//     foundation::fast_sin_full()
+//     foundation::fast_cos()
+//     foundation::fast_cos_full()
 //
 // were borrowed from https://code.google.com/p/fastapprox/ with minor,
 // non-functional changes. The original copyright notice for this code
@@ -144,14 +144,14 @@ float fast_exp(const float p);
 float faster_exp(const float p);
 
 // Fast sine approximations.
-float faster_sin(const float x);
-float faster_sin_full(const float x);
-float faster_sin_full_positive(const float x);  // x >= 0.0f
+float fast_sin(const float x);
+float fast_sin_full(const float x);
+float fast_sin_full_positive(const float x);    // x >= 0.0f
 
 // Fast cosine approximations.
-float faster_cos(const float x);
-float faster_cos_full(const float x);
-float faster_cos_full_positive(const float x);  // x >= 0.0f
+float fast_cos(const float x);
+float fast_cos_full(const float x);
+float fast_cos_full_positive(const float x);    // x >= 0.0f
 
 // Fast approximation of the square root.
 float fast_sqrt(const float x);
@@ -281,7 +281,7 @@ inline float faster_exp(const float p)
     return faster_pow2(1.442695040f * p);
 }
 
-inline float faster_sin(const float x)
+inline float fast_sin(const float x)
 {
     static const float FourOverPi = 1.2732395447351627f;
     static const float FourOverPiSq = 0.40528473456935109f;
@@ -298,17 +298,17 @@ inline float faster_sin(const float x)
     return qpprox * (Q + p.f * qpprox);
 }
 
-inline float faster_sin_full(const float x)
+inline float fast_sin_full(const float x)
 {
     static const float TwoPi = 6.2831853071795865f;
     static const float RcpTwoPi = 0.15915494309189534f;
 
     const int k = static_cast<int>(x * RcpTwoPi);
     const float half = (x < 0) ? -0.5f : 0.5f;
-    return faster_sin((half + k) * TwoPi - x);
+    return fast_sin((half + k) * TwoPi - x);
 }
 
-inline float faster_sin_full_positive(const float x)
+inline float fast_sin_full_positive(const float x)
 {
     assert(x >= 0.0f);
 
@@ -316,10 +316,10 @@ inline float faster_sin_full_positive(const float x)
     static const float RcpTwoPi = 0.15915494309189534f;
 
     const int k = static_cast<int>(x * RcpTwoPi);
-    return faster_sin((0.5f + k) * TwoPi - x);
+    return fast_sin((0.5f + k) * TwoPi - x);
 }
 
-inline float faster_cos(const float x)
+inline float fast_cos(const float x)
 {
     static const float TwoOverPi = 0.63661977236758134f;
     static const float P = 0.54641335845679634f;
@@ -331,18 +331,18 @@ inline float faster_cos(const float x)
     return qpprox + P * qpprox * (1.0f - qpprox * qpprox);
 }
 
-inline float faster_cos_full(const float x)
+inline float fast_cos_full(const float x)
 {
     static const float HalfPi = 1.5707963267948966f;
-    return faster_sin_full(x + HalfPi);
+    return fast_sin_full(x + HalfPi);
 }
 
-inline float faster_cos_full_positive(const float x)
+inline float fast_cos_full_positive(const float x)
 {
     assert(x >= 0.0f);
 
     static const float HalfPi = 1.5707963267948966f;
-    return faster_sin_full_positive(x + HalfPi);
+    return fast_sin_full_positive(x + HalfPi);
 }
 
 inline float fast_sqrt(const float x)

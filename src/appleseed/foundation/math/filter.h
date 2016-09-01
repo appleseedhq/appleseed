@@ -526,9 +526,9 @@ APPLESEED_FORCE_INLINE T FastBlackmanHarrisFilter2<T>::blackman(const T x)
 {
     return
           T(0.35875)
-        - T(0.48829) * faster_cos_full_positive(T(2.0 * Pi) * x)
-        + T(0.14128) * faster_cos_full_positive(T(4.0 * Pi) * x)
-        - T(0.01174) * faster_cos_full_positive(T(6.0 * Pi) * x);   // original coefficient is 0.01168, modified to ensure 0 at borders
+        - T(0.48829) * fast_cos_full_positive(T(2.0 * Pi) * x)
+        + T(0.14128) * fast_cos_full_positive(T(4.0 * Pi) * x)
+        - T(0.01174) * fast_cos_full_positive(T(6.0 * Pi) * x);     // original coefficient is 0.01168, modified to ensure 0 at borders
 }
 
 
