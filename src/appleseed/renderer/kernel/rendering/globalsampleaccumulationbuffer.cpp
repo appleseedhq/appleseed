@@ -45,7 +45,6 @@
 // Boost headers.
 #include "boost/chrono/duration.hpp"
 
-using namespace boost;
 using namespace foundation;
 using namespace std;
 
@@ -64,7 +63,7 @@ GlobalSampleAccumulationBuffer::GlobalSampleAccumulationBuffer(
 void GlobalSampleAccumulationBuffer::clear()
 {
     // Request exclusive access.
-    unique_lock<shared_mutex> lock(m_mutex);
+    boost::unique_lock<boost::shared_mutex> lock(m_mutex);
 
     m_sample_count = 0;
 
@@ -77,12 +76,12 @@ void GlobalSampleAccumulationBuffer::store_samples(
     IAbortSwitch&   abort_switch)
 {
     // Request non-exclusive access.
-    shared_lock<shared_mutex> lock(m_mutex, defer_lock);
+    boost::shared_lock<boost::shared_mutex> lock(m_mutex, boost::defer_lock);
     while (true)
     {
         if (abort_switch.is_aborted())
             return;
-        if (lock.try_lock_for(chrono::milliseconds(5)))
+        if (lock.try_lock_for(boost::chrono::milliseconds(5)))
             break;
     }
 
@@ -111,12 +110,12 @@ void GlobalSampleAccumulationBuffer::develop_to_frame(
     IAbortSwitch&   abort_switch)
 {
     // Request exclusive access.
-    unique_lock<shared_mutex> lock(m_mutex, defer_lock);
+    boost::unique_lock<boost::shared_mutex> lock(m_mutex, boost::defer_lock);
     while (true)
     {
         if (abort_switch.is_aborted())
             return;
-        if (lock.try_lock_for(chrono::milliseconds(5)))
+        if (lock.try_lock_for(boost::chrono::milliseconds(5)))
             break;
     }
 

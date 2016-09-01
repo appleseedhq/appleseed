@@ -125,8 +125,10 @@ class Intersector
 // Intersector class implementation.
 //
 
+#ifndef __clang__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
 
 template <
     typename Tree,
@@ -256,7 +258,9 @@ void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect_no_motion(
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_discarded_nodes.insert(discarded_nodes));
 }
 
+#ifndef __clang__
 #pragma GCC diagnostic pop
+#endif
 
 template <
     typename Tree,
