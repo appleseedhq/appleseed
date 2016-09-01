@@ -123,23 +123,23 @@ namespace foundation
 //     http://www.lomont.org/Math/Papers/2003/InvSqrt.pdf
 //
 
-// Fast approximation of 2^p.
+// Fast approximations of 2^p.
 float fast_pow2(const float p);
 float faster_pow2(const float p);
 
-// Fast approximation of the base-2 logarithm.
+// Fast approximations of the base-2 logarithm.
 float fast_log2(const float x);
 float faster_log2(const float x);
 
-// Fast approximation of x^p.
+// Fast approximations of x^p.
 float fast_pow(const float x, const float p);
 float faster_pow(const float x, const float p);
 
-// Fast approximation of the natural logarithm.
+// Fast approximations of the natural logarithm.
 float fast_log(const float x);
 float faster_log(const float x);
 
-// Fast approximation of e^p.
+// Fast approximations of e^p.
 float fast_exp(const float p);
 float faster_exp(const float p);
 
@@ -153,14 +153,14 @@ float fast_cos(const float x);
 float fast_cos_full(const float x);
 float fast_cos_full_positive(const float x);    // x >= 0.0f
 
-// Fast approximation of the square root.
+// Fast square root approximation.
 float fast_sqrt(const float x);
 
-// Fast approximation of the reciprocal square root.
+// Fast reciprocal square root approximations.
 float fast_rcp_sqrt(const float x);
 double fast_rcp_sqrt(const double x);
 
-// SSE variants of the functions above.
+// SSE variants of some of the functions above.
 #ifdef APPLESEED_USE_SSE
 __m128 fast_pow2(const __m128 p);
 __m128 faster_pow2(const __m128 p);
@@ -174,7 +174,7 @@ __m128 fast_exp(const __m128 x);
 __m128 faster_exp(const __m128 x);
 #endif
 
-// Vectorized variants of the functions above.
+// Vectorized variants of some of the functions above.
 // When APPLESEED_USE_SSE is defined, all array arguments must be 16-byte aligned.
 void fast_pow2(float p[4]);
 void faster_pow2(float p[4]);

@@ -55,7 +55,7 @@ TEST_SUITE(Foundation_Math_FastMath)
     {
         return
             ref == T(0.0)
-                ? abs(ref - value)
+                ? abs(value)
                 : abs((ref - value) / ref);
     }
 
@@ -155,7 +155,9 @@ TEST_SUITE(Foundation_Math_FastMath)
         plotfile.write(filepath);
     }
 
+    //
     // Pow2(x).
+    //
 
     float scalar_std_pow2(const float x)
     {
@@ -238,7 +240,9 @@ TEST_SUITE(Foundation_Math_FastMath)
             1000);
     }
 
+    //
     // Log2(x).
+    //
 
     float scalar_std_log2(const float x)
     {
@@ -321,7 +325,9 @@ TEST_SUITE(Foundation_Math_FastMath)
             1000);
     }
 
+    //
     // Pow(x).
+    //
 
     const float Exponent = 2.4f;
 
@@ -426,7 +432,9 @@ TEST_SUITE(Foundation_Math_FastMath)
             1000);
     }
 
+    //
     // Log(x).
+    //
 
     void vector_std_log(float x[4])
     {
@@ -504,7 +512,9 @@ TEST_SUITE(Foundation_Math_FastMath)
             1000);
     }
 
+    //
     // Exp(x).
+    //
 
     void vector_std_exp(float x[4])
     {

@@ -60,7 +60,9 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
         }
     };
 
-    // Pow(2, x).
+    //
+    // Pow2(x).
+    //
 
     BENCHMARK_CASE_F(StdPow2, Fixture)
     {
@@ -102,7 +104,9 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
             faster_pow2(&m_output[i]);
     }
 
+    //
     // Log2(x).
+    //
 
     BENCHMARK_CASE_F(ScalarFastLog2, Fixture)
     {
@@ -136,7 +140,9 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
             faster_log2(&m_output[i]);
     }
 
+    //
     // Pow(x).
+    //
 
     const float Exponent = 2.4f;
 
@@ -180,7 +186,9 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
             faster_pow(&m_output[i], Exponent);
     }
 
+    //
     // Log(x).
+    //
 
     BENCHMARK_CASE_F(StdLog, Fixture)
     {
@@ -222,7 +230,9 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
             faster_log(&m_output[i]);
     }
 
+    //
     // Exp(x).
+    //
 
     BENCHMARK_CASE_F(StdExp, Fixture)
     {
