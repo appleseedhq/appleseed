@@ -568,8 +568,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             foundation::dot(next_ray.m_dir, geometric_normal) < 0.0;
         if (vertex.m_bsdf != 0 && crossing_interface)
         {
-            const ShadingRay::Medium* prev_medium = ray.get_current_medium();
-
             // Refracted ray: inherit the medium list of the parent ray and add/remove the current medium.
             if (entering)
             {
@@ -582,6 +580,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             else next_ray.remove_medium(ray, &object_instance);
 
             // Compute absorption for the segment inside the medium the path is leaving.
+            const ShadingRay::Medium* prev_medium = ray.get_current_medium();
             if (prev_medium != 0 &&
                 prev_medium != next_ray.get_current_medium() &&
                 prev_medium->m_bsdf != 0)
