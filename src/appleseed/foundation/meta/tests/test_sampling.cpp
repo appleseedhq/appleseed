@@ -433,7 +433,7 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
                 sample_hemisphere_cosine_pdf<double>,
                 SampleCount);
 
-        EXPECT_FEQ_EPS(ExpectedIntegralValue, value, 1.0e-5);
+        EXPECT_FEQ_EPS(ExpectedIntegralValue, value, 1.0e-3);
     }
 
     TEST_CASE(Integration_CosinePowerHemisphereSampling)

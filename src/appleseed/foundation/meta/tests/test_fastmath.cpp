@@ -679,7 +679,11 @@ TEST_SUITE(Foundation_Math_FastMath)
                 1.0f,
                 1000);
 
+#ifdef APPLESEED_USE_SSE
         EXPECT_LT(4.0e-8f, error);
+#else
+        EXPECT_LT(1.0e-3f, error);
+#endif
     }
 
     TEST_CASE(ScalarFasterRcpSqrt)
@@ -692,7 +696,11 @@ TEST_SUITE(Foundation_Math_FastMath)
                 1.0f,
                 1000);
 
+#ifdef APPLESEED_USE_SSE
         EXPECT_LT(1.0e-4f, error);
+#else
+        EXPECT_LT(1.0e-3f, error);
+#endif
     }
 
     TEST_CASE(PlotRcpSqrtFunctions)
