@@ -129,9 +129,9 @@ struct FP<float>
 
     // Construct a 32-bit floating-point value given a sign, an exponent and a mantissa.
     static float construct(
-        uint32 sign,
-        uint32 exponent,
-        uint32 mantissa);
+        const uint32    sign,
+        const uint32    exponent,
+        const uint32    mantissa);
 };
 
 template <>
@@ -206,9 +206,9 @@ struct FP<double>
 
     // Construct a 64-bit floating-point value given a sign, an exponent and a mantissa.
     static double construct(
-        uint64 sign,
-        uint64 exponent,
-        uint64 mantissa);
+        const uint64    sign,
+        const uint64    exponent,
+        const uint64    mantissa);
 };
 
 
@@ -249,7 +249,6 @@ inline bool FP<float>::is_normal(float x)
     return exponent(x) > 0 && exponent(x) < 255;
 }
 
-// Return true if x is a subnormal (denormalized) number.
 inline bool FP<float>::is_subnormal(float x)
 {
     return exponent(x) == 0 && mantissa(x) != 0;
@@ -301,9 +300,9 @@ inline bool FP<float>::is_qnan(float x)
 }
 
 inline float FP<float>::construct(
-    uint32 sign,
-    uint32 exponent,
-    uint32 mantissa)
+    const uint32    sign,
+    const uint32    exponent,
+    const uint32    mantissa)
 {
     assert(sign < 2);
     assert(exponent < (uint32(1) << 8));
@@ -438,9 +437,9 @@ inline bool FP<double>::is_qnan(double x)
 }
 
 inline double FP<double>::construct(
-    uint64 sign,
-    uint64 exponent,
-    uint64 mantissa)
+    const uint64    sign,
+    const uint64    exponent,
+    const uint64    mantissa)
 {
     assert(sign < 2);
     assert(exponent < (uint64(1) << 11));

@@ -34,10 +34,7 @@
 #include "renderer/global/globallogger.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/string.h"
-
-// Standard headers.
-#include <string>
+#include "foundation/platform/types.h"
 
 using namespace foundation;
 
@@ -49,19 +46,8 @@ namespace renderer
 //
 
 PixelRendererBase::PixelRendererBase()
-  : m_invalid_sample_count(0)
+  : m_invalid_pixel_count(0)
 {
-}
-
-PixelRendererBase::~PixelRendererBase()
-{
-    if (m_invalid_sample_count > 0)
-    {
-        RENDERER_LOG_WARNING(
-            "found %s pixel sample%s with NaN or negative values.",
-            pretty_uint(m_invalid_sample_count).c_str(),
-            m_invalid_sample_count > 1 ? "s" : "");
-    }
 }
 
 void PixelRendererBase::on_tile_begin(
@@ -78,12 +64,40 @@ void PixelRendererBase::on_tile_end(
 {
 }
 
-void PixelRendererBase::signal_invalid_sample(const int x, const int y)
+void PixelRendererBase::on_pixel_begin()
+{
+    m_invalid_sample_count = 0;
+}
+
+void PixelRendererBase::on_pixel_end(const int x, const int y)
 {
     // todo: mark pixel as faulty in the diagnostic map.
-    if (m_invalid_sample_count++ == 0)
-        RENDERER_LOG_WARNING("at least one sample at pixel (%d, %d) has NaN or negative values.", x, y);
-    else RENDERER_LOG_WARNING("found more pixel samples with NaN or negative values.");
+
+    if (m_invalid_sample_count > 0)
+    {
+        ++m_invalid_pixel_count;
+
+        const size_t MaxWarningsPerThread = 5;
+        if (m_invalid_pixel_count <= MaxWarningsPerThread)
+        {
+            RENDERER_LOG_WARNING(
+                FMT_SIZE_T " sample%s at pixel (%d, %d) had NaN, negative or infinite value%s and %s ignored.",
+                m_invalid_sample_count,
+                m_invalid_sample_count > 1 ? "s" : "",
+                x, y,
+                m_invalid_sample_count > 1 ? "s" : "",
+                m_invalid_sample_count > 1 ? "were" : "was");
+        }
+        else if (m_invalid_pixel_count == MaxWarningsPerThread + 1)
+        {
+            RENDERER_LOG_WARNING("more invalid samples found, omitting warning messages for brevity.");
+        }
+    }
+}
+
+void PixelRendererBase::signal_invalid_sample()
+{
+    ++m_invalid_sample_count;
 }
 
 }   // namespace renderer

@@ -126,6 +126,8 @@ namespace
             const int iy = pixel_context.m_iy;
             const size_t aov_count = frame.aov_images().size();
 
+            on_pixel_begin();
+
             if (m_params.m_decorrelate)
             {
                 // Create a sampling context.
@@ -170,7 +172,7 @@ namespace
                             static_cast<float>(ty + s.y),
                             shading_result);
                     }
-                    else signal_invalid_sample(ix, iy);
+                    else signal_invalid_sample();
                 }
             }
             else
@@ -216,10 +218,12 @@ namespace
                                 static_cast<float>(s.y - iy + ty),
                                 shading_result);
                         }
-                        else signal_invalid_sample(ix, iy);
+                        else signal_invalid_sample();
                     }
                 }
             }
+
+            on_pixel_end(ix, iy);
         }
 
         virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE

@@ -35,7 +35,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace foundation    { class Tile; }
@@ -56,9 +58,6 @@ class PixelRendererBase
     // Constructor.
     PixelRendererBase();
 
-    // Destructor.
-    virtual ~PixelRendererBase();
-
     // This method is called before a tile gets rendered.
     virtual void on_tile_begin(
         const Frame&                frame,
@@ -72,10 +71,17 @@ class PixelRendererBase
         TileStack&                  aov_tiles) APPLESEED_OVERRIDE;
 
   protected:
-    void signal_invalid_sample(const int x, const int y);
+    void on_pixel_begin();
+
+    void on_pixel_end(
+        const int                   x,
+        const int                   y);
+
+    void signal_invalid_sample();
 
   private:
-    foundation::uint64 m_invalid_sample_count;
+    size_t                          m_invalid_sample_count;
+    size_t                          m_invalid_pixel_count;
 };
 
 }       // namespace renderer

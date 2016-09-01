@@ -55,10 +55,19 @@ namespace
     }
 
     template <typename T>
-    inline bool is_valid_scalar(const T x)
+    inline bool is_valid_scalar(const T x);
+
+    template <>
+    inline bool is_valid_scalar(const float x)
     {
-        // Will also return false if x is NaN.
-        return x >= T(0.0);
+        const uint32 ix = binary_cast<uint32>(x);
+        const uint32 sign = (ix & 0x80000000L) >> 31;
+        const uint32 exponent = (ix >> 23) & 255;
+        const uint32 mantissa = ix & 0x007FFFFFL;
+        const bool is_neg = sign == 1 && ix != 0x80000000L;
+        const bool is_nan = exponent == 255 && mantissa != 0;
+        const bool is_inf = (ix & 0x7FFFFFFFL) == 0x7F800000UL;
+        return !is_neg && !is_nan && !is_inf;
     }
 
     template <typename T, size_t N>
@@ -194,9 +203,7 @@ void ShadingResult::composite_over_linear_rgb(const ShadingResult& background)
     m_main.m_color[2] += contrib[0] * background.m_main.m_color[2];
     m_main.m_alpha += contrib * background.m_main.m_alpha;
 
-    const size_t aov_count = m_aovs.size();
-
-    for (size_t i = 0; i < aov_count; ++i)
+    for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
     {
         const ShadingFragment& background_aov = background.m_aovs[i];
         ShadingFragment& aov = m_aovs[i];
@@ -217,9 +224,7 @@ void ShadingResult::apply_alpha_premult_linear_rgb()
     m_main.m_color[1] *= m_main.m_alpha[0];
     m_main.m_color[2] *= m_main.m_alpha[0];
 
-    const size_t aov_count = m_aovs.size();
-
-    for (size_t i = 0; i < aov_count; ++i)
+    for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
     {
         ShadingFragment& aov = m_aovs[i];
         aov.m_color[0] *= aov.m_alpha[0];
@@ -251,7 +256,7 @@ void ShadingResult::poison()
     poison_spectrum(m_main.m_color);
     poison_alpha(m_main.m_alpha);
 
-    for (size_t i = 0; i < m_aovs.size(); ++i)
+    for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
     {
         poison_spectrum(m_aovs[i].m_color);
         poison_alpha(m_aovs[i].m_alpha);
