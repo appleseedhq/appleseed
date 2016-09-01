@@ -33,6 +33,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
+#include "foundation/math/fp.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
@@ -41,17 +42,102 @@ using namespace renderer;
 
 TEST_SUITE(Renderer_Kernel_Shading_ShadingResult)
 {
-    struct Fixture
+    struct IsValidLinearRGBFixture
+    {
+        ShadingResult m_result;
+
+        IsValidLinearRGBFixture()
+        {
+            // Initialize m_result to linear RGB transparent black.
+            m_result.m_color_space = ColorSpaceLinearRGB;
+            m_result.m_main.m_color[0] = 0.0f;
+            m_result.m_main.m_color[1] = 0.0f;
+            m_result.m_main.m_color[2] = 0.0f;
+            m_result.m_main.m_alpha[0] = 0.0f;
+        }
+    };
+
+    TEST_CASE_F(IsValidLinearRGB_PositiveZero_ReturnsTrue, IsValidLinearRGBFixture)
+    {
+        m_result.m_main.m_color[0] = FP<float>::pos_zero();
+
+        EXPECT_TRUE(m_result.is_valid_linear_rgb());
+    }
+
+    TEST_CASE_F(IsValidLinearRGB_NegativeZero_ReturnsTrue, IsValidLinearRGBFixture)
+    {
+        m_result.m_main.m_color[0] = FP<float>::neg_zero();
+
+        EXPECT_TRUE(m_result.is_valid_linear_rgb());
+    }
+
+    TEST_CASE_F(IsValidLinearRGB_PositiveMin_ReturnsTrue, IsValidLinearRGBFixture)
+    {
+        m_result.m_main.m_color[0] = FP<float>::pos_min();
+
+        EXPECT_TRUE(m_result.is_valid_linear_rgb());
+    }
+
+    TEST_CASE_F(IsValidLinearRGB_NegativeMin_ReturnsFalse, IsValidLinearRGBFixture)
+    {
+        m_result.m_main.m_color[0] = FP<float>::neg_min();
+
+        EXPECT_FALSE(m_result.is_valid_linear_rgb());
+    }
+
+    TEST_CASE_F(IsValidLinearRGB_PositiveOne_ReturnsTrue, IsValidLinearRGBFixture)
+    {
+        m_result.m_main.m_color[0] = +1.0f;
+
+        EXPECT_TRUE(m_result.is_valid_linear_rgb());
+    }
+
+    TEST_CASE_F(IsValidLinearRGB_NegativeOne_ReturnsFalse, IsValidLinearRGBFixture)
+    {
+        m_result.m_main.m_color[0] = -1.0f;
+
+        EXPECT_FALSE(m_result.is_valid_linear_rgb());
+    }
+
+    TEST_CASE_F(IsValidLinearRGB_PositiveInfinity_ReturnsFalse, IsValidLinearRGBFixture)
+    {
+        m_result.m_main.m_color[0] = FP<float>::pos_inf();
+
+        EXPECT_FALSE(m_result.is_valid_linear_rgb());
+    }
+
+    TEST_CASE_F(IsValidLinearRGB_NegativeInfinity_ReturnsFalse, IsValidLinearRGBFixture)
+    {
+        m_result.m_main.m_color[0] = FP<float>::neg_inf();
+
+        EXPECT_FALSE(m_result.is_valid_linear_rgb());
+    }
+
+    TEST_CASE_F(IsValidLinearRGB_QNaN_ReturnsFalse, IsValidLinearRGBFixture)
+    {
+        m_result.m_main.m_color[0] = FP<float>::qnan();
+
+        EXPECT_FALSE(m_result.is_valid_linear_rgb());
+    }
+
+    TEST_CASE_F(IsValidLinearRGB_SNaN_ReturnsFalse, IsValidLinearRGBFixture)
+    {
+        m_result.m_main.m_color[0] = FP<float>::snan();
+
+        EXPECT_FALSE(m_result.is_valid_linear_rgb());
+    }
+
+    struct TransformToLinearRGBFixture
     {
         const LightingConditions m_lighting_conditions;
 
-        Fixture()
+        TransformToLinearRGBFixture()
           : m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
         {
         }
     };
 
-    TEST_CASE_F(TransformToLinearRGB_GivenLinearRGB_DoesNothing, Fixture)
+    TEST_CASE_F(TransformToLinearRGB_GivenLinearRGB_DoesNothing, TransformToLinearRGBFixture)
     {
         ShadingResult result;
         result.m_color_space = ColorSpaceLinearRGB;
@@ -67,7 +153,7 @@ TEST_SUITE(Renderer_Kernel_Shading_ShadingResult)
         EXPECT_EQ(0.0f, result.m_main.m_color[2]);
     }
 
-    TEST_CASE_F(TransformToLinearRGB_FromSRGB, Fixture)
+    TEST_CASE_F(TransformToLinearRGB_FromSRGB, TransformToLinearRGBFixture)
     {
         ShadingResult result;
         result.m_color_space = ColorSpaceSRGB;
@@ -83,7 +169,7 @@ TEST_SUITE(Renderer_Kernel_Shading_ShadingResult)
         EXPECT_EQ(0.0f, result.m_main.m_color[2]);
     }
 
-    TEST_CASE_F(TransformToLinearRGB_FromCIEXYZ, Fixture)
+    TEST_CASE_F(TransformToLinearRGB_FromCIEXYZ, TransformToLinearRGBFixture)
     {
         ShadingResult result;
         result.m_color_space = ColorSpaceCIEXYZ;
@@ -99,7 +185,7 @@ TEST_SUITE(Renderer_Kernel_Shading_ShadingResult)
         EXPECT_EQ(0.0f, result.m_main.m_color[2]);
     }
 
-    TEST_CASE_F(TransformToLinearRGB_FromSpectrum, Fixture)
+    TEST_CASE_F(TransformToLinearRGB_FromSpectrum, TransformToLinearRGBFixture)
     {
         ShadingResult result;
         result.m_color_space = ColorSpaceSpectral;

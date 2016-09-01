@@ -55,10 +55,19 @@ namespace
     }
 
     template <typename T>
-    inline bool is_valid_scalar(const T x)
+    inline bool is_valid_scalar(const T x);
+
+    template <>
+    inline bool is_valid_scalar(const float x)
     {
-        // Will also return false if x is NaN.
-        return x >= T(0.0);
+        const uint32 ix = binary_cast<uint32>(x);
+        const uint32 sign = (ix & 0x80000000L) >> 31;
+        const uint32 exponent = (ix >> 23) & 255;
+        const uint32 mantissa = ix & 0x007FFFFFL;
+        const bool is_neg = sign == 1 && ix != 0x80000000L;
+        const bool is_nan = exponent == 255 && mantissa != 0;
+        const bool is_inf = (ix & 0x7FFFFFFFL) == 0x7F800000UL;
+        return !is_neg && !is_nan && !is_inf;
     }
 
     template <typename T, size_t N>
