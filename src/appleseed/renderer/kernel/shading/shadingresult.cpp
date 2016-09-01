@@ -203,9 +203,7 @@ void ShadingResult::composite_over_linear_rgb(const ShadingResult& background)
     m_main.m_color[2] += contrib[0] * background.m_main.m_color[2];
     m_main.m_alpha += contrib * background.m_main.m_alpha;
 
-    const size_t aov_count = m_aovs.size();
-
-    for (size_t i = 0; i < aov_count; ++i)
+    for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
     {
         const ShadingFragment& background_aov = background.m_aovs[i];
         ShadingFragment& aov = m_aovs[i];
@@ -226,9 +224,7 @@ void ShadingResult::apply_alpha_premult_linear_rgb()
     m_main.m_color[1] *= m_main.m_alpha[0];
     m_main.m_color[2] *= m_main.m_alpha[0];
 
-    const size_t aov_count = m_aovs.size();
-
-    for (size_t i = 0; i < aov_count; ++i)
+    for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
     {
         ShadingFragment& aov = m_aovs[i];
         aov.m_color[0] *= aov.m_alpha[0];
@@ -260,7 +256,7 @@ void ShadingResult::poison()
     poison_spectrum(m_main.m_color);
     poison_alpha(m_main.m_alpha);
 
-    for (size_t i = 0; i < m_aovs.size(); ++i)
+    for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
     {
         poison_spectrum(m_aovs[i].m_color);
         poison_alpha(m_aovs[i].m_alpha);
