@@ -196,7 +196,7 @@ TEST_SUITE(Renderer_Utility_DynamicSpectrum31f)
         const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg);
         DynamicSpectrum31f::downgrade(lighting_conditions, source, dest);
 
-        EXPECT_EQ(Expected, dest);
+        EXPECT_FEQ(Expected, dest);
     }
 
     TEST_CASE(Downgrade_GivenSpectrum_MakesRGB_InPlace)
@@ -208,7 +208,7 @@ TEST_SUITE(Renderer_Utility_DynamicSpectrum31f)
         const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg);
         DynamicSpectrum31f::downgrade(lighting_conditions, s, s);
 
-        EXPECT_EQ(Expected, s);
+        EXPECT_FEQ(Expected, s);
     }
 
     TEST_CASE(Downgrade_GivenRGB_CopiesRGB)

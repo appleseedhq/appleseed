@@ -400,7 +400,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         for (size_t i = 0; i < TestCount; ++i)
         {
-            const double Eps = 1.0e-6;
+            const double Eps = 1.0e-5;
             const double alpha_prime = fit<size_t, double>(i, 0, TestCount - 1, 0.0 + Eps, 1.0 - Eps);
 
             const double rd_a = RcpPi * rd_fun(alpha_prime);
@@ -546,7 +546,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         integral /= SampleCount;
 
-        EXPECT_FEQ_EPS(1.0, integral, 0.01);
+        EXPECT_FEQ_EPS(1.0, integral, 0.02);
     }
 
     TEST_CASE(GaussianProfileIntegration_ImportanceSampling)
