@@ -1002,7 +1002,7 @@ void CompositeClosure::compute_cdf()
 
 size_t CompositeClosure::choose_closure(const double w) const
 {
-    return sample_cdf(m_cdf, m_cdf + get_num_closures(), w);
+    return sample_cdf_linear_search(m_cdf, w);
 }
 
 void CompositeClosure::compute_closure_shading_basis(
@@ -1196,7 +1196,7 @@ double CompositeSurfaceClosure::choose_ior(const double w) const
     if APPLESEED_LIKELY(m_num_iors == 1)
         return m_iors[0];
 
-    const size_t index = sample_cdf(m_ior_cdf, m_ior_cdf + m_num_iors, w);
+    const size_t index = sample_cdf_linear_search(m_ior_cdf, w);
     return m_iors[index];
 }
 

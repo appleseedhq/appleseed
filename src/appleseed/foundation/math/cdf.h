@@ -110,6 +110,12 @@ size_t sample_cdf(
     RandomAccessIter    end,
     const Weight        x);
 
+template <typename T>
+size_t sample_cdf_linear_search(
+    const T*            cdf,
+    const size_t        size,
+    const T             x);
+
 // Numerically invert the CDF function cdf, with corresponding PDF pdf,
 // using a combination of bisection and Newton's method.
 template <typename CDF, typename PDF, typename T>
@@ -234,6 +240,21 @@ inline size_t sample_cdf(
     assert(i < end);
 
     return i - begin;
+}
+
+template <typename T>
+inline size_t sample_cdf_linear_search(
+    const T*            cdf,
+    const T             x)
+{
+    assert(x >= T(0.0));
+    assert(x < T(1.0));
+
+    size_t i = 0;
+    while (cdf[i] < x)
+        i++;
+
+    return i;
 }
 
 template <typename CDF, typename PDF, typename T>
