@@ -337,13 +337,13 @@ void LocalSampleAccumulationBuffer::develop_to_tile_undo_premult_alpha(
     if (image_width % level_width == 0 && is_pow2(m))
     {
         const size_t s = log2_int(m);
+        const size_t prefix_end = min(next_multiple(rect.min.x, m), rect.max.x + 1);
+        const size_t suffix_begin = max(prev_multiple(rect.max.x + 1, m), prefix_end);
+
         for (size_t iy = rect.min.y; iy <= rect.max.y; ++iy)
         {
             const size_t src_base = (iy * level.get_height() / image_height) * level_width;
             const size_t dest_base = (iy - origin_y) * color_tile.get_width();
-
-            const size_t prefix_end = next_multiple(rect.min.x, m);
-            const size_t suffix_begin = prev_multiple(rect.max.x + 1, m);
 
             Color<float, 5> values;
 
@@ -433,13 +433,13 @@ void LocalSampleAccumulationBuffer::develop_to_tile(
     if (image_width % level_width == 0 && is_pow2(m))
     {
         const size_t s = log2_int(m);
+        const size_t prefix_end = min(next_multiple(rect.min.x, m), rect.max.x + 1);
+        const size_t suffix_begin = max(prev_multiple(rect.max.x + 1, m), prefix_end);
+
         for (size_t iy = rect.min.y; iy <= rect.max.y; ++iy)
         {
             const size_t src_base = (iy * level.get_height() / image_height) * level_width;
             const size_t dest_base = (iy - origin_y) * color_tile.get_width();
-
-            const size_t prefix_end = next_multiple(rect.min.x, m);
-            const size_t suffix_begin = prev_multiple(rect.max.x + 1, m);
 
             Color<float, 5> values;
 
