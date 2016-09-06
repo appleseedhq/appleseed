@@ -187,26 +187,10 @@ namespace
         // Write a <transform> element.
         void write_transform(const Transformd& transform)
         {
+            if (transform.get_local_to_parent() == Matrix4d::identity())
+                return;
+
             XMLElement element("transform", m_file, m_indenter);
-            element.write(XMLElement::HasChildElements);
-
-            {
-                XMLElement child_element("matrix", m_file, m_indenter);
-                child_element.write(XMLElement::HasChildElements);
-
-                write_vector(
-                    transform.get_local_to_parent(),
-                    16,
-                    4,
-                    MatrixFormat);
-            }
-        }
-
-        // Write a <transform> element with a "time" attribute.
-        void write_transform(const Transformd& transform, const double time)
-        {
-            XMLElement element("transform", m_file, m_indenter);
-            element.add_attribute("time", time);
             element.write(XMLElement::HasChildElements);
 
             {
@@ -224,12 +208,35 @@ namespace
         // Write a transform sequence.
         void write_transform_sequence(const TransformSequence& transform_sequence)
         {
-            for (size_t i = 0; i < transform_sequence.size(); ++i)
+            if (transform_sequence.size() == 1)
+            {
+                double time;
+                Transformd transform;
+                transform_sequence.get_transform(0, time, transform);
+                if (transform.get_local_to_parent() == Matrix4d::identity())
+                    return;
+            }
+
+            for (size_t i = 0, e = transform_sequence.size(); i < e; ++i)
             {
                 double time;
                 Transformd transform;
                 transform_sequence.get_transform(i, time, transform);
-                write_transform(transform, time);
+
+                XMLElement element("transform", m_file, m_indenter);
+                element.add_attribute("time", time);
+                element.write(XMLElement::HasChildElements);
+
+                {
+                    XMLElement child_element("matrix", m_file, m_indenter);
+                    child_element.write(XMLElement::HasChildElements);
+
+                    write_vector(
+                        transform.get_local_to_parent(),
+                        16,
+                        4,
+                        MatrixFormat);
+                }
             }
         }
 
