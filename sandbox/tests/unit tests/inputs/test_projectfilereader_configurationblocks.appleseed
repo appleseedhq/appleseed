@@ -4,14 +4,6 @@
         <camera name="camera" model="pinhole_camera">
             <parameter name="film_dimensions" value="0.025 0.025" />
             <parameter name="focal_length" value="0.035" />
-            <transform time="0">
-                <matrix>
-                    1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
-                    0.000000000000000 1.000000000000000 0.000000000000000 0.000000000000000
-                    0.000000000000000 0.000000000000000 1.000000000000000 0.000000000000000
-                    0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
-                </matrix>
-            </transform>
         </camera>
         <environment name="environment" model="generic_environment" />
     </scene>
