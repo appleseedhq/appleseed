@@ -303,7 +303,7 @@ namespace
             values->m_metallic = saturate(p->metallic);
             values->m_specular = max(p->specular, 0.0f);
             values->m_specular_tint = saturate(p->specular_tint);
-            values->m_anisotropic = saturate(p->anisotropic);
+            values->m_anisotropic = clamp(p->anisotropic, -1.0f, 1.0f);
             values->m_roughness = clamp(p->roughness, 0.0001f, 1.0f);
             values->m_sheen = saturate(p->sheen);
             values->m_sheen_tint = saturate(p->sheen_tint);
@@ -1002,7 +1002,7 @@ void CompositeClosure::compute_cdf()
 
 size_t CompositeClosure::choose_closure(const double w) const
 {
-    return sample_cdf(m_cdf, m_cdf + get_num_closures(), w);
+    return sample_cdf_linear_search(m_cdf, w);
 }
 
 void CompositeClosure::compute_closure_shading_basis(
@@ -1196,7 +1196,7 @@ double CompositeSurfaceClosure::choose_ior(const double w) const
     if APPLESEED_LIKELY(m_num_iors == 1)
         return m_iors[0];
 
-    const size_t index = sample_cdf(m_ior_cdf, m_ior_cdf + m_num_iors, w);
+    const size_t index = sample_cdf_linear_search(m_ior_cdf, w);
     return m_iors[index];
 }
 
