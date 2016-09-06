@@ -303,7 +303,7 @@ namespace
             values->m_metallic = saturate(p->metallic);
             values->m_specular = max(p->specular, 0.0f);
             values->m_specular_tint = saturate(p->specular_tint);
-            values->m_anisotropic = saturate(p->anisotropic);
+            values->m_anisotropic = clamp(p->anisotropic, -1.0f, 1.0f);
             values->m_roughness = clamp(p->roughness, 0.0001f, 1.0f);
             values->m_sheen = saturate(p->sheen);
             values->m_sheen_tint = saturate(p->sheen_tint);
