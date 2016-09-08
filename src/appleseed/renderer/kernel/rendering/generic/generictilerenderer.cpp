@@ -124,16 +124,16 @@ namespace
             // Retrieve tile properties.
             Tile& tile = frame.image().tile(tile_x, tile_y);
             TileStack aov_tiles = frame.aov_images().tiles(tile_x, tile_y);
-            const size_t tile_origin_x = frame_properties.m_tile_width * tile_x;
-            const size_t tile_origin_y = frame_properties.m_tile_height * tile_y;
+            const int tile_origin_x = static_cast<int>(frame_properties.m_tile_width * tile_x);
+            const int tile_origin_y = static_cast<int>(frame_properties.m_tile_height * tile_y);
 
             // Compute the image space bounding box of the pixels to render.
-            AABB2u tile_bbox;
+            AABB2i tile_bbox;
             tile_bbox.min.x = tile_origin_x;
             tile_bbox.min.y = tile_origin_y;
-            tile_bbox.max.x = tile_origin_x + tile.get_width() - 1;
-            tile_bbox.max.y = tile_origin_y + tile.get_height() - 1;
-            tile_bbox = AABB2u::intersect(tile_bbox, frame.get_crop_window());
+            tile_bbox.max.x = tile_origin_x + static_cast<int>(tile.get_width()) - 1;
+            tile_bbox.max.y = tile_origin_y + static_cast<int>(tile.get_height()) - 1;
+            tile_bbox = AABB2i::intersect(tile_bbox, AABB2i(frame.get_crop_window()));
             if (!tile_bbox.is_valid())
                 return;
 
@@ -142,6 +142,13 @@ namespace
             tile_bbox.min.y -= tile_origin_y;
             tile_bbox.max.x -= tile_origin_x;
             tile_bbox.max.y -= tile_origin_y;
+
+            // Pad the bounding box with tile margins.
+            AABB2i padded_tile_bbox;
+            padded_tile_bbox.min.x = tile_bbox.min.x - m_margin_width;
+            padded_tile_bbox.min.y = tile_bbox.min.y - m_margin_height;
+            padded_tile_bbox.max.x = tile_bbox.max.x + m_margin_width;
+            padded_tile_bbox.max.y = tile_bbox.max.y + m_margin_height;
 
             // Inform the pixel renderer that we are about to render a tile.
             m_pixel_renderer->on_tile_begin(frame, tile, aov_tiles);
@@ -161,11 +168,14 @@ namespace
             // than rendering the full tile, e.g. if the sampling context switches to random
             // sampling because the number of dimensions becomes too high.
             const size_t tile_index = tile_y * frame_properties.m_tile_count_x + tile_x;
-            m_rng = SamplingContext::RNGType(hash_uint32(static_cast<uint32>(pass_hash + tile_index)));
+#ifdef APPLESEED_ARCH64
+            m_rng = SamplingContext::RNGType(hash_uint64_to_uint32(pass_hash ^ tile_index));
+#else
+            m_rng = SamplingContext::RNGType(pass_hash ^ tile_index));
+#endif
 
             // Loop over tile pixels.
-            const size_t tile_pixel_count = m_pixel_ordering.size();
-            for (size_t i = 0; i < tile_pixel_count; ++i)
+            for (size_t i = 0, e = m_pixel_ordering.size(); i < e; ++i)
             {
                 // Cancel any work done on this tile if rendering is aborted.
                 if (abort_switch.is_aborted())
@@ -176,16 +186,11 @@ namespace
                 const int ty = m_pixel_ordering[i].y;
 
                 // Skip pixels outside the intersection of the padded tile and the crop window.
-                if (tx < static_cast<int>(tile_bbox.min.x) - m_margin_width  ||
-                    ty < static_cast<int>(tile_bbox.min.y) - m_margin_height ||
-                    tx > static_cast<int>(tile_bbox.max.x) + m_margin_width  ||
-                    ty > static_cast<int>(tile_bbox.max.y) + m_margin_height)
+                if (!padded_tile_bbox.contains(Vector2i(tx, ty)))
                     continue;
 
                 // Create a pixel context that identifies the pixel currently being rendered.
-                const PixelContext pixel_context(
-                    static_cast<int>(tile_origin_x) + tx,
-                    static_cast<int>(tile_origin_y) + ty);
+                const PixelContext pixel_context(tile_origin_x + tx, tile_origin_y + ty);
 
 #ifdef DEBUG_BREAK_AT_PIXEL
 
@@ -200,7 +205,7 @@ namespace
                     frame,
                     tile,
                     aov_tiles,
-                    AABB2i(tile_bbox),
+                    tile_bbox,
                     pixel_context,
                     pass_hash,
                     tx, ty,
