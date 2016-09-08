@@ -51,6 +51,7 @@
 #include "foundation/math/ordering.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/arch.h"
 #include "foundation/platform/breakpoint.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"

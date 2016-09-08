@@ -31,6 +31,7 @@
 #define APPLESEED_FOUNDATION_MATH_SCALAR_H
 
 // appleseed.foundation headers.
+#include "foundation/platform/arch.h"
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
