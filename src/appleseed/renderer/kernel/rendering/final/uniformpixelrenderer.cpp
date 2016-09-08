@@ -152,7 +152,8 @@ namespace
                     const Vector2d sample_position = frame.get_sample_position(ix + s.x, iy + s.y);
 
                     // Create and initialize a shading result.
-                    // The main output *must* be set by the sample renderer (typically, by the surface shader).
+                    // We don't initialize the main output which consequently *must* be set
+                    // by the sample renderer (typically, by the surface shader).
                     ShadingResult shading_result(aov_count);
                     shading_result.set_aovs_to_transparent_black_linear_rgba();
 
