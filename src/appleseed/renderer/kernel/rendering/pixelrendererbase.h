@@ -34,6 +34,7 @@
 #include "renderer/kernel/rendering/ipixelrenderer.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 
 // Standard headers.
@@ -72,10 +73,7 @@ class PixelRendererBase
 
   protected:
     void on_pixel_begin();
-
-    void on_pixel_end(
-        const int                   x,
-        const int                   y);
+    void on_pixel_end(const foundation::Vector2i& pi);
 
     void signal_invalid_sample();
 

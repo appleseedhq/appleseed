@@ -32,6 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
+#include "foundation/platform/arch.h"
 #include "foundation/platform/types.h"
 
 // Boost headers.

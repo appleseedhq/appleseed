@@ -110,10 +110,19 @@ namespace
           , m_lighting_conditions(frame.get_lighting_conditions())
           , m_opacity_threshold(1.0f - m_params.m_transparency_threshold)
           , m_texture_cache(texture_store)
-          , m_intersector(trace_context, m_texture_cache, m_params.m_report_self_intersections)
+          , m_lighting_engine(lighting_engine_factory->create())
+          , m_shading_engine(shading_engine)
+#ifdef APPLESEED_WITH_OIIO
+          , m_oiio_texture_system(oiio_texture_system)
+#endif
 #ifdef APPLESEED_WITH_OSL
           , m_shadergroup_exec(shading_system)
 #endif
+          , m_thread_index(thread_index)
+          , m_intersector(
+                trace_context,
+                m_texture_cache,
+                m_params.m_report_self_intersections)
           , m_tracer(
                 m_scene,
                 m_intersector,
@@ -124,22 +133,20 @@ namespace
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations,
                 thread_index == 0)
-          , m_lighting_engine(lighting_engine_factory->create())
           , m_shading_context(
                 m_intersector,
                 m_tracer,
                 m_texture_cache,
 #ifdef APPLESEED_WITH_OIIO
-                oiio_texture_system,
+                m_oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL
                 m_shadergroup_exec,
 #endif
-                thread_index,
+                m_thread_index,
                 m_lighting_engine,
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations)
-          , m_shading_engine(shading_engine)
         {
             // 1/4 of a pixel, like in Renderman RIS.
             const CanvasProperties& c = frame.image().properties();
@@ -320,16 +327,21 @@ namespace
         const Scene&                m_scene;
         const LightingConditions&   m_lighting_conditions;
         const float                 m_opacity_threshold;
-
         TextureCache                m_texture_cache;
-        Intersector                 m_intersector;
+        ILightingEngine*            m_lighting_engine;
+        ShadingEngine&              m_shading_engine;
+#ifdef APPLESEED_WITH_OIIO
+        OIIO::TextureSystem&        m_oiio_texture_system;
+#endif
+        const size_t                m_thread_index;
+
 #ifdef APPLESEED_WITH_OSL
         OSLShaderGroupExec          m_shadergroup_exec;
 #endif
+        const Intersector           m_intersector;
         Tracer                      m_tracer;
-        ILightingEngine*            m_lighting_engine;
         const ShadingContext        m_shading_context;
-        ShadingEngine&              m_shading_engine;
+
         Vector2d                    m_image_point_dx;
         Vector2d                    m_image_point_dy;
     };

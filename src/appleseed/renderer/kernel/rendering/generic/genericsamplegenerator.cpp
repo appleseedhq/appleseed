@@ -164,16 +164,16 @@ namespace
             if (x >= m_window_width || y >= m_window_height)
                 return 0;
 
-            // Create a pixel context that identifies the pixel currently being rendered.
-            const PixelContext pixel_context(
-                m_window_origin_x + x,
-                m_window_origin_y + y);
-
             // Transform the sample position back to NDC. Full precision divisions are required
             // to ensure that the sample position indeed lies in the [0,1)^2 interval.
             const Vector2d sample_position(
                 (m_window_origin_x + t[0]) / m_canvas_width,
                 (m_window_origin_y + t[1]) / m_canvas_height);
+
+            // Create a pixel context that identifies the pixel and sample currently being rendered.
+            const PixelContext pixel_context(
+                Vector2i(m_window_origin_x + x, m_window_origin_y + y),
+                sample_position);
 
             // Create a sampling context. We start with an initial dimension of 2,
             // corresponding to the Halton sequence used for the sample positions.

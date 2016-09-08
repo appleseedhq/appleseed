@@ -166,15 +166,12 @@ namespace
             Tile&                       tile,
             TileStack&                  aov_tiles,
             const AABB2i&               tile_bbox,
-            const PixelContext&         pixel_context,
             const size_t                pass_hash,
-            const int                   tx,
-            const int                   ty,
+            const Vector2i&             pi,
+            const Vector2i&             pt,
             SamplingContext::RNGType&   rng,
             ShadingResultFrameBuffer&   framebuffer) APPLESEED_OVERRIDE
         {
-            const int ix = pixel_context.m_ix;
-            const int iy = pixel_context.m_iy;
             const size_t aov_count = frame.aov_images().size();
 
             on_pixel_begin();
@@ -186,7 +183,7 @@ namespace
             const size_t instance =
                 mix_uint32(
                     static_cast<uint32>(pass_hash),
-                    static_cast<uint32>(iy * frame_width + ix));
+                    static_cast<uint32>(pi.y * frame_width + pi.x));
             SamplingContext sampling_context(
                 rng,
                 m_params.m_sampling_mode,
@@ -217,7 +214,10 @@ namespace
                     const Vector2d s = sampling_context.next_vector2<2>();
 
                     // Compute the sample position in NDC.
-                    const Vector2d sample_position = frame.get_sample_position(ix + s.x, iy + s.y);
+                    const Vector2d sample_position = frame.get_sample_position(pi.x + s.x, pi.y + s.y);
+
+                    // Create a pixel context that identifies the pixel and sample currently being rendered.
+                    const PixelContext pixel_context(pi, sample_position);
 
                     // Create and initialize a shading result.
                     // The main output *must* be set by the sample renderer (typically, by the surface shader).
@@ -266,11 +266,11 @@ namespace
             {
                 for (int x = -m_scratch_fb_half_width; x <= m_scratch_fb_half_width; ++x)
                 {
-                    if (tile_bbox.contains(Vector2i(tx + x, ty + y)))
+                    if (tile_bbox.contains(Vector2i(pt.x + x, pt.y + y)))
                     {
                         framebuffer.merge(                  // destination
-                            tx + x,                         // destination X
-                            ty + y,                         // destination Y
+                            pt.x + x,                       // destination X
+                            pt.y + y,                       // destination Y
                             *m_scratch_fb.get(),            // source
                             m_scratch_fb_half_width + x,    // source X
                             m_scratch_fb_half_height + y,   // source Y
@@ -280,7 +280,7 @@ namespace
             }
 
             // Store diagnostics values in the diagnostics tile.
-            if (m_params.m_diagnostics && tile_bbox.contains(Vector2i(tx, ty)))
+            if (m_params.m_diagnostics && tile_bbox.contains(pt))
             {
                 Color<float, 2> values;
 
@@ -301,10 +301,10 @@ namespace
                             static_cast<float>(m_params.m_max_samples),
                             0.0f, 1.0f);
 
-                m_diagnostics->set_pixel(tx, ty, values);
+                m_diagnostics->set_pixel(pt.x, pt.y, values);
             }
 
-            on_pixel_end(ix, iy);
+            on_pixel_end(pi);
         }
 
         virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE

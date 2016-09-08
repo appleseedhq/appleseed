@@ -54,6 +54,7 @@
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class InputEvaluator; }
+namespace renderer      { class PixelContext; }
 
 using namespace foundation;
 using namespace std;
@@ -74,8 +75,8 @@ namespace
     {
       public:
         EDFEnvironmentShader(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : EnvironmentShader(name, params)
           , m_env_edf(0)
         {
@@ -93,8 +94,8 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&      project,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+            const Project&          project,
+            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
             if (!EnvironmentShader::on_frame_begin(project, abort_switch))
                 return false;
@@ -124,6 +125,7 @@ namespace
 
         virtual void evaluate(
             const ShadingContext&   shading_context,
+            const PixelContext&     pixel_context,
             InputEvaluator&         input_evaluator,
             const Vector3d&         direction,
             ShadingResult&          shading_result) const APPLESEED_OVERRIDE

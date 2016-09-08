@@ -189,7 +189,7 @@ namespace
             shading_result.m_aovs.m_color = aovs;
 
             // Set alpha channel of AOVs.
-            for (size_t i = 0; i < aovs.size(); ++i)
+            for (size_t i = 0, e = aovs.size(); i < e; ++i)
             {
                 shading_result.m_aovs[i].m_alpha =
                     m_is_contribution_aov[i]
@@ -209,6 +209,7 @@ namespace
                 apply_aerial_perspective(
                     values,
                     shading_context,
+                    pixel_context,
                     shading_point,
                     shading_result);
             }
@@ -323,6 +324,7 @@ namespace
         void apply_aerial_perspective(
             const InputValues&      values,
             const ShadingContext&   shading_context,
+            const PixelContext&     pixel_context,
             const ShadingPoint&     shading_point,
             ShadingResult&          shading_result) const
         {
@@ -344,7 +346,12 @@ namespace
                     const ShadingRay& ray = shading_point.get_ray();
                     const Vector3d direction = normalize(ray.m_dir);
                     ShadingResult sky;
-                    environment_shader->evaluate(shading_context, input_evaluator, direction, sky);
+                    environment_shader->evaluate(
+                        shading_context,
+                        pixel_context,
+                        input_evaluator,
+                        direction,
+                        sky);
                     sky_color = sky.m_main.m_color;
                 }
                 else sky_color.set(0.0f);

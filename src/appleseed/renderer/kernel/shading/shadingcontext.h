@@ -94,10 +94,10 @@ class ShadingContext
     OIIO::TextureSystem& get_oiio_texture_system() const;
 #endif
 
+    ILightingEngine* get_lighting_engine() const;
+
     // Return the index of the current rendering thread.
     size_t get_thread_index() const;
-
-    ILightingEngine* get_lighting_engine() const;
 
     // Return the minimum transmission value that defines transparency.
     float get_transparency_threshold() const;
@@ -181,14 +181,14 @@ inline TextureCache& ShadingContext::get_texture_cache() const
     return m_texture_cache;
 }
 
-inline size_t ShadingContext::get_thread_index() const
-{
-    return m_thread_index;
-}
-
 inline ILightingEngine* ShadingContext::get_lighting_engine() const
 {
     return m_lighting_engine;
+}
+
+inline size_t ShadingContext::get_thread_index() const
+{
+    return m_thread_index;
 }
 
 inline float ShadingContext::get_transparency_threshold() const

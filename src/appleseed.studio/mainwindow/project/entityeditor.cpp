@@ -579,7 +579,10 @@ void EntityEditor::slot_open_file_picker(const QString& widget_name)
                 options);
 
         if (!filepath.isEmpty())
+        {
             widget_proxy->set(QDir::toNativeSeparators(filepath).toStdString());
+            widget_proxy->emit_signal_changed();
+        }
     }
 }
 

@@ -31,6 +31,7 @@
 #include "environmentshaderfactoryregistrar.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/environmentshader/backgroundenvironmentshader.h"
 #include "renderer/modeling/environmentshader/edfenvironmentshader.h"
 #include "renderer/modeling/environmentshader/ienvironmentshaderfactory.h"
 
@@ -58,6 +59,7 @@ struct EnvironmentShaderFactoryRegistrar::Impl
 EnvironmentShaderFactoryRegistrar::EnvironmentShaderFactoryRegistrar()
   : impl(new Impl())
 {
+    register_factory(auto_ptr<FactoryType>(new BackgroundEnvironmentShaderFactory()));
     register_factory(auto_ptr<FactoryType>(new EDFEnvironmentShaderFactory()));
 }
 
