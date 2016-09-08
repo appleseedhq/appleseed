@@ -81,6 +81,7 @@ class ShadingEngine
 
     void shade_environment(
         SamplingContext&        sampling_context,
+        const PixelContext&     pixel_context,
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point,
         ShadingResult&          shading_result) const;
@@ -113,6 +114,7 @@ inline void ShadingEngine::shade(
         return
             shade_environment(
                 sampling_context,
+                pixel_context,
                 shading_context,
                 shading_point,
                 shading_result);

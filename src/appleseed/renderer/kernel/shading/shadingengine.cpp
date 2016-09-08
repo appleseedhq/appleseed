@@ -165,6 +165,7 @@ void ShadingEngine::shade_hit_point(
 
 void ShadingEngine::shade_environment(
     SamplingContext&        sampling_context,
+    const PixelContext&     pixel_context,
     const ShadingContext&   shading_context,
     const ShadingPoint&     shading_point,
     ShadingResult&          shading_result) const
@@ -181,6 +182,7 @@ void ShadingEngine::shade_environment(
         const Vector3d direction = normalize(ray.m_dir);
         environment_shader->evaluate(
             shading_context,
+            pixel_context,
             input_evaluator,
             direction,
             shading_result);
