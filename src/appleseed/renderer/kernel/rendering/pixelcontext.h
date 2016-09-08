@@ -43,11 +43,17 @@ namespace renderer
 class PixelContext
 {
   public:
-    const int m_ix, m_iy;
+    // Constructor.
+    PixelContext(const int x, const int y);
 
-    PixelContext(const int ix, const int iy);
-
+    // Return pixel coordinates.
+    int get_pixel_x() const;
+    int get_pixel_y() const;
     foundation::Vector2i get_pixel_coordinates() const;
+
+  private:
+    const int m_x;
+    const int m_y;
 };
 
 
@@ -55,15 +61,25 @@ class PixelContext
 // PixelContext class implementation.
 //
 
-inline PixelContext::PixelContext(const int ix, const int iy)
-  : m_ix(ix)
-  , m_iy(iy)
+inline PixelContext::PixelContext(const int x, const int y)
+  : m_x(x)
+  , m_y(y)
 {
+}
+
+inline int PixelContext::get_pixel_x() const
+{
+    return m_x;
+}
+
+inline int PixelContext::get_pixel_y() const
+{
+    return m_y;
 }
 
 inline foundation::Vector2i PixelContext::get_pixel_coordinates() const
 {
-    return foundation::Vector2i(m_ix, m_iy);
+    return foundation::Vector2i(m_x, m_y);
 }
 
 }       // namespace renderer

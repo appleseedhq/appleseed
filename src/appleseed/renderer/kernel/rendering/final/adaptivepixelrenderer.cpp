@@ -173,8 +173,8 @@ namespace
             SamplingContext::RNGType&   rng,
             ShadingResultFrameBuffer&   framebuffer) APPLESEED_OVERRIDE
         {
-            const int ix = pixel_context.m_ix;
-            const int iy = pixel_context.m_iy;
+            const int ix = pixel_context.get_pixel_x();
+            const int iy = pixel_context.get_pixel_y();
             const size_t aov_count = frame.aov_images().size();
 
             on_pixel_begin();
