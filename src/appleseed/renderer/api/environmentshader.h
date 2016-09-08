@@ -31,6 +31,7 @@
 #define APPLESEED_RENDERER_API_ENVIRONMENTSHADER_H
 
 // API headers.
+#include "renderer/modeling/environmentshader/backgroundenvironmentshader.h"
 #include "renderer/modeling/environmentshader/edfenvironmentshader.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/environmentshader/environmentshaderfactoryregistrar.h"

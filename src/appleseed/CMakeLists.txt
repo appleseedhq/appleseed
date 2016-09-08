@@ -1500,6 +1500,8 @@ source_group ("renderer\\modeling\\environmentedf" FILES
 )
 
 set (renderer_modeling_environmentshader_sources
+    renderer/modeling/environmentshader/backgroundenvironmentshader.cpp
+    renderer/modeling/environmentshader/backgroundenvironmentshader.h
     renderer/modeling/environmentshader/edfenvironmentshader.cpp
     renderer/modeling/environmentshader/edfenvironmentshader.h
     renderer/modeling/environmentshader/environmentshader.cpp
