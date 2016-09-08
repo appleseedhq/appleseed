@@ -69,7 +69,7 @@ void PixelRendererBase::on_pixel_begin()
     m_invalid_sample_count = 0;
 }
 
-void PixelRendererBase::on_pixel_end(const int x, const int y)
+void PixelRendererBase::on_pixel_end(const Vector2i& pi)
 {
     // todo: mark pixel as faulty in the diagnostic map.
 
@@ -84,7 +84,7 @@ void PixelRendererBase::on_pixel_end(const int x, const int y)
                 FMT_SIZE_T " sample%s at pixel (%d, %d) had NaN, negative or infinite value%s and %s ignored.",
                 m_invalid_sample_count,
                 m_invalid_sample_count > 1 ? "s" : "",
-                x, y,
+                pi.x, pi.y,
                 m_invalid_sample_count > 1 ? "s" : "",
                 m_invalid_sample_count > 1 ? "were" : "was");
         }

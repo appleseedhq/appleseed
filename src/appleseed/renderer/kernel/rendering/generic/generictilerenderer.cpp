@@ -182,20 +182,18 @@ namespace
                     return;
 
                 // Retrieve the coordinates of the pixel in the padded tile.
-                const int tx = m_pixel_ordering[i].x;
-                const int ty = m_pixel_ordering[i].y;
+                const Vector2i pt(m_pixel_ordering[i].x, m_pixel_ordering[i].y);
 
                 // Skip pixels outside the intersection of the padded tile and the crop window.
-                if (!padded_tile_bbox.contains(Vector2i(tx, ty)))
+                if (!padded_tile_bbox.contains(pt))
                     continue;
 
-                // Create a pixel context that identifies the pixel currently being rendered.
-                const PixelContext pixel_context(tile_origin_x + tx, tile_origin_y + ty);
+                const Vector2i pi(tile_origin_x + pt.x, tile_origin_y + pt.y);
 
 #ifdef DEBUG_BREAK_AT_PIXEL
 
                 // Break in the debugger when this pixel is reached.
-                if (pixel_context.get_pixel_coordinates() == DEBUG_BREAK_AT_PIXEL)
+                if (pi == DEBUG_BREAK_AT_PIXEL)
                     BREAKPOINT();
 
 #endif
@@ -206,9 +204,9 @@ namespace
                     tile,
                     aov_tiles,
                     tile_bbox,
-                    pixel_context,
                     pass_hash,
-                    tx, ty,
+                    pi,
+                    pt,
                     m_rng,
                     *framebuffer);
             }

@@ -115,15 +115,12 @@ namespace
             Tile&                       tile,
             TileStack&                  aov_tiles,
             const AABB2i&               tile_bbox,
-            const PixelContext&         pixel_context,
             const size_t                pass_hash,
-            const int                   tx,
-            const int                   ty,
+            const Vector2i&             pi,
+            const Vector2i&             pt,
             SamplingContext::RNGType&   rng,
             ShadingResultFrameBuffer&   framebuffer) APPLESEED_OVERRIDE
         {
-            const int ix = pixel_context.get_pixel_x();
-            const int iy = pixel_context.get_pixel_y();
             const size_t aov_count = frame.aov_images().size();
 
             on_pixel_begin();
@@ -132,7 +129,7 @@ namespace
             {
                 // Create a sampling context.
                 const size_t frame_width = frame.image().properties().m_canvas_width;
-                const size_t instance = hash_uint32(static_cast<uint32>(pass_hash + iy * frame_width + ix));
+                const size_t instance = hash_uint32(static_cast<uint32>(pass_hash + pi.y * frame_width + pi.x));
                 SamplingContext sampling_context(
                     rng,
                     m_params.m_sampling_mode,
@@ -149,7 +146,10 @@ namespace
                             : Vector2d(0.5);
 
                     // Compute the sample position in NDC.
-                    const Vector2d sample_position = frame.get_sample_position(ix + s.x, iy + s.y);
+                    const Vector2d sample_position = frame.get_sample_position(pi.x + s.x, pi.y + s.y);
+
+                    // Create a pixel context that identifies the pixel and sample currently being rendered.
+                    const PixelContext pixel_context(pi, sample_position);
 
                     // Create and initialize a shading result.
                     // We don't initialize the main output which consequently *must* be set
@@ -169,8 +169,8 @@ namespace
                     if (shading_result.is_valid_linear_rgb())
                     {
                         framebuffer.add(
-                            static_cast<float>(tx + s.x),
-                            static_cast<float>(ty + s.y),
+                            static_cast<float>(pt.x + s.x),
+                            static_cast<float>(pt.y + s.y),
                             shading_result);
                     }
                     else signal_invalid_sample();
@@ -178,8 +178,8 @@ namespace
             }
             else
             {
-                const int base_sx = ix * m_sqrt_sample_count;
-                const int base_sy = iy * m_sqrt_sample_count;
+                const int base_sx = pi.x * m_sqrt_sample_count;
+                const int base_sy = pi.y * m_sqrt_sample_count;
 
                 for (int sy = 0; sy < m_sqrt_sample_count; ++sy)
                 {
@@ -192,6 +192,9 @@ namespace
 
                         // Compute the sample position in NDC.
                         const Vector2d sample_position = frame.get_sample_position(s.x, s.y);
+
+                        // Create a pixel context that identifies the pixel and sample currently being rendered.
+                        const PixelContext pixel_context(pi, sample_position);
 
                         // Create a sampling context. We start with an initial dimension of 1,
                         // as this seems to give less correlation artifacts than when the
@@ -215,8 +218,8 @@ namespace
                         if (shading_result.is_valid_linear_rgb())
                         {
                             framebuffer.add(
-                                static_cast<float>(s.x - ix + tx),
-                                static_cast<float>(s.y - iy + ty),
+                                static_cast<float>(s.x - pi.x + pt.x),
+                                static_cast<float>(s.y - pi.y + pt.y),
                                 shading_result);
                         }
                         else signal_invalid_sample();
@@ -224,7 +227,7 @@ namespace
                 }
             }
 
-            on_pixel_end(ix, iy);
+            on_pixel_end(pi);
         }
 
         virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE

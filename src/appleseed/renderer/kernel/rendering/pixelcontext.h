@@ -44,16 +44,19 @@ class PixelContext
 {
   public:
     // Constructor.
-    PixelContext(const int x, const int y);
+    PixelContext(
+        const foundation::Vector2i& pixel_coords,
+        const foundation::Vector2d& sample_position);
 
     // Return pixel coordinates.
-    int get_pixel_x() const;
-    int get_pixel_y() const;
-    foundation::Vector2i get_pixel_coordinates() const;
+    const foundation::Vector2i& get_pixel_coords() const;
+
+    // Return sample coordinates.
+    const foundation::Vector2d& get_sample_position() const;
 
   private:
-    const int m_x;
-    const int m_y;
+    const foundation::Vector2i  m_pixel_coords;
+    const foundation::Vector2d  m_sample_position;
 };
 
 
@@ -61,25 +64,22 @@ class PixelContext
 // PixelContext class implementation.
 //
 
-inline PixelContext::PixelContext(const int x, const int y)
-  : m_x(x)
-  , m_y(y)
+inline PixelContext::PixelContext(
+    const foundation::Vector2i& pixel_coords,
+    const foundation::Vector2d& sample_position)
+  : m_pixel_coords(pixel_coords)
+  , m_sample_position(sample_position)
 {
 }
 
-inline int PixelContext::get_pixel_x() const
+inline const foundation::Vector2i& PixelContext::get_pixel_coords() const
 {
-    return m_x;
+    return m_pixel_coords;
 }
 
-inline int PixelContext::get_pixel_y() const
+inline const foundation::Vector2d& PixelContext::get_sample_position() const
 {
-    return m_y;
-}
-
-inline foundation::Vector2i PixelContext::get_pixel_coordinates() const
-{
-    return foundation::Vector2i(m_x, m_y);
+    return m_sample_position;
 }
 
 }       // namespace renderer

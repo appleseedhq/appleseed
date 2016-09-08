@@ -36,6 +36,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
 #include "foundation/math/aabb.h"
+#include "foundation/math/vector.h"
 
 // Standard headers.
 #include <cstddef>
@@ -44,7 +45,6 @@
 namespace foundation    { class StatisticsVector; }
 namespace foundation    { class Tile; }
 namespace renderer      { class Frame; }
-namespace renderer      { class PixelContext; }
 namespace renderer      { class ShadingResultFrameBuffer; }
 namespace renderer      { class TileStack; }
 
@@ -77,10 +77,9 @@ class IPixelRenderer
         foundation::Tile&           tile,
         TileStack&                  aov_tiles,
         const foundation::AABB2i&   tile_bbox,
-        const PixelContext&         pixel_context,
         const size_t                pass_hash,
-        const int                   tx,
-        const int                   ty,
+        const foundation::Vector2i& pi,             // image-space pixel coordinates
+        const foundation::Vector2i& pt,             // tile-space pixel coordinates
         SamplingContext::RNGType&   rng,
         ShadingResultFrameBuffer&   framebuffer) = 0;
 
