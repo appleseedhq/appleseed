@@ -1776,6 +1776,8 @@ set (renderer_modeling_texture_sources
     renderer/modeling/texture/disktexture2d.cpp
     renderer/modeling/texture/disktexture2d.h
     renderer/modeling/texture/itexturefactory.h
+    renderer/modeling/texture/memorytexture2d.cpp
+    renderer/modeling/texture/memorytexture2d.h
     renderer/modeling/texture/texture.cpp
     renderer/modeling/texture/texture.h
     renderer/modeling/texture/texturefactoryregistrar.cpp

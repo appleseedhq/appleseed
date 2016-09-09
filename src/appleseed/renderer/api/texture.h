@@ -33,6 +33,7 @@
 // API headers.
 #include "renderer/modeling/texture/disktexture2d.h"
 #include "renderer/modeling/texture/itexturefactory.h"
+#include "renderer/modeling/texture/memorytexture2d.h"
 #include "renderer/modeling/texture/texture.h"
 #include "renderer/modeling/texture/texturefactoryregistrar.h"
 #include "renderer/modeling/texture/texturetraits.h"
