@@ -51,7 +51,7 @@ namespace renderer
 {
 
 //
-// 2D disk texture factory.
+// Factory for 2D on-disk textures.
 //
 
 class APPLESEED_DLLSYMBOL DiskTexture2dFactory
