@@ -328,9 +328,9 @@ namespace
                     {
                         RENDERER_LOG_DEBUG(
                             "assigning entity \"%s\" to render layer \"%s\" (via rule \"%s\").",
-                            entity.get_name(),
+                            entity.get_path().c_str(),
                             rule->get_render_layer(),
-                            rule->get_name());
+                            rule->get_path().c_str());
 
                         apply_rule_to_entity(*rule, type, entity);
 
@@ -363,7 +363,7 @@ namespace
                     RENDERER_LOG_ERROR(
                         "while assigning entity \"%s\" to render layer \"%s\": "
                         "could not create render layer, maximum number of AOVs (" FMT_SIZE_T ") reached.",
-                        entity.get_name(),
+                        entity.get_path().c_str(),
                         render_layer_name.c_str(),
                         MaxAOVCount);
                     return;
@@ -389,7 +389,7 @@ namespace
                     RENDERER_LOG_ERROR(
                         "while assigning entity \"%s\" to render layer \"%s\": "
                         "lights/edfs and objects/materials/instances cannot be assigned to the same render layer.",
-                        entity.get_name(),
+                        entity.get_path().c_str(),
                         render_layer_name.c_str());
                     return;
                 }

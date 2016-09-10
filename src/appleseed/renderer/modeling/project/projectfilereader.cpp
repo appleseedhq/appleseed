@@ -2026,8 +2026,8 @@ namespace
             if (container.get_by_name(entity->get_name()) != 0)
             {
                 RENDERER_LOG_ERROR(
-                    "an entity with the name \"%s\" already exists.",
-                    entity->get_name());
+                    "an entity with the path \"%s\" already exists.",
+                    entity->get_path().c_str());
                 m_context.get_event_counters().signal_error();
                 return;
             }
@@ -2597,7 +2597,7 @@ namespace
                 {
                     RENDERER_LOG_ERROR(
                         "while defining configuration \"%s\": the configuration \"%s\" does not exist.",
-                        m_configuration->get_name(),
+                        m_configuration->get_path().c_str(),
                         m_base_name.c_str());
                     m_context.get_event_counters().signal_error();
                 }

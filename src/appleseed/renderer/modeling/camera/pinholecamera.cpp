@@ -285,7 +285,7 @@ namespace
                 "  near z           %f\n"
                 "  shutter open     %f\n"
                 "  shutter close    %f",
-                get_name(),
+                get_path().c_str(),
                 Model,
                 m_film_dimensions[0],
                 m_film_dimensions[1],

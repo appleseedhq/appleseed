@@ -105,7 +105,7 @@ bool ConnectableEntity::check_uniform(const char* input_name) const
     RENDERER_LOG_ERROR(
         "the \"%s\" input of \"%s\" must be bound to a scalar or a color.",
         input_name,
-        get_name());
+        get_path().c_str());
 
     return false;
 }
@@ -139,7 +139,7 @@ void ConnectableEntity::warn_zero_emission() const
     RENDERER_LOG_WARNING(
         "\"%s\" does not emit any light and will slow down rendering "
         "without contributing to the lighting.",
-        get_name());
+        get_path().c_str());
 }
 
 }   // namespace renderer
