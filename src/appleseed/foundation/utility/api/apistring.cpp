@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "APIString.h"
+#include "apistring.h"
 
 namespace foundation
 {
