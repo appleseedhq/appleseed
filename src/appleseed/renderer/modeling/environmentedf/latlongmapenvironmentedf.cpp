@@ -195,7 +195,6 @@ namespace
 
             // Do not build an importance map if the environment EDF is not the active one.
             const Environment* environment = project.get_scene()->get_environment();
-
             if (environment->get_uncached_environment_edf() == this)
             {
                 check_non_zero_emission("radiance", "radiance_multiplier");
@@ -218,8 +217,8 @@ namespace
             if (m_importance_sampler.get() == 0)
             {
                 RENDERER_LOG_WARNING(
-                    "Trying to sample uninitialized latlong environment EDF %s.",
-                    get_name());
+                    "cannot sample environment edf \"%s\" because it is not bound to the environment.",
+                    get_path().c_str());
                 value.set(0.0f);
                 probability = 0.0;
                 return;
@@ -298,8 +297,8 @@ namespace
             if (m_importance_sampler.get() == 0)
             {
                 RENDERER_LOG_WARNING(
-                    "Trying to compute the pdf of uninitialized latlong environment EDF %s.",
-                    get_name());
+                    "cannot compute pdf for environment edf \"%s\" because it is not bound to the environment.",
+                    get_path().c_str());
                 value.set(0.0f);
                 probability = 0.0;
                 return;
@@ -333,8 +332,8 @@ namespace
             if (m_importance_sampler.get() == 0)
             {
                 RENDERER_LOG_WARNING(
-                    "Trying to compute the pdf of uninitialized latlong environment EDF %s.",
-                    get_name());
+                    "cannot compute pdf for environment edf \"%s\" because it is not bound to the environment.",
+                    get_path().c_str());
                 return 0.0;
             }
 
