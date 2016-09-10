@@ -41,6 +41,7 @@
 #include "renderer/modeling/scene/visibilityflags.h"
 #include "renderer/modeling/surfaceshader/physicalsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
+#include "renderer/modeling/texture/texture.h"
 #include "renderer/utility/bbox.h"
 
 // appleseed.foundation headers.
@@ -322,6 +323,7 @@ bool Scene::on_frame_begin(
     if (impl->m_camera.get())
         success = success && impl->m_camera->on_frame_begin(project, abort_switch);
 
+    success = success && invoke_on_frame_begin(project, textures(), abort_switch);
     success = success && invoke_on_frame_begin(project, texture_instances(), abort_switch);
     success = success && invoke_on_frame_begin(project, environment_edfs(), abort_switch);
     success = success && invoke_on_frame_begin(project, environment_shaders(), abort_switch);
@@ -346,6 +348,7 @@ void Scene::on_frame_end(const Project& project)
     invoke_on_frame_end(project, environment_shaders());
     invoke_on_frame_end(project, environment_edfs());
     invoke_on_frame_end(project, texture_instances());
+    invoke_on_frame_end(project, textures());
 
     if (impl->m_camera.get())
         impl->m_camera->on_frame_end(project);

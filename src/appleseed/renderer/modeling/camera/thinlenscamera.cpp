@@ -450,7 +450,7 @@ namespace
                 RENDERER_LOG_ERROR(
                     "while defining camera \"%s\": invalid value \"%d\" for parameter \"%s\", "
                     "using default value \"" FMT_SIZE_T "\".",
-                    get_name(),
+                    get_path().c_str(),
                     blade_count,
                     "diaphragm_blades",
                     m_diaphragm_blade_count);
@@ -524,7 +524,7 @@ namespace
 
                 RENDERER_LOG_INFO(
                     "camera \"%s\": autofocus sets focal distance to %f (using camera position at time=%.1f).",
-                    get_name(),
+                    get_path().c_str(),
                     af_focal_distance,
                     ray.m_time.m_absolute);
 
@@ -535,7 +535,7 @@ namespace
                 // Miss: focus at infinity.
                 RENDERER_LOG_INFO(
                     "camera \"%s\": autofocus sets focal distance to infinity (using camera position at time=%.1f).",
-                    get_name(),
+                    get_path().c_str(),
                     ray.m_time.m_absolute);
 
                 return 1.0e38;
@@ -558,7 +558,7 @@ namespace
                 "  near z           %f\n"
                 "  shutter open     %f\n"
                 "  shutter close    %f",
-                get_name(),
+                get_path().c_str(),
                 Model,
                 m_film_dimensions[0],
                 m_film_dimensions[1],

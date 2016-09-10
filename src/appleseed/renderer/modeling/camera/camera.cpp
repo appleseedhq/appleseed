@@ -96,7 +96,7 @@ bool Camera::on_frame_begin(
     m_transform_sequence.optimize();
 
     if (!m_transform_sequence.prepare())
-        RENDERER_LOG_WARNING("camera \"%s\" has one or more invalid transforms.", get_name());
+        RENDERER_LOG_WARNING("camera \"%s\" has one or more invalid transforms.", get_path().c_str());
 
     return true;
 }
@@ -154,7 +154,7 @@ Vector2d Camera::extract_film_dimensions() const
             RENDERER_LOG_ERROR(
                 "while defining camera \"%s\": invalid value \"%f %f\" for parameter \"%s\"; "
                 "using default value \"%f %f\".",
-                get_name(),
+                get_path().c_str(),
                 film_dimensions[0],
                 film_dimensions[1],
                 "film_dimensions",
@@ -190,7 +190,7 @@ double Camera::extract_focal_length(const double film_width) const
             RENDERER_LOG_WARNING(
                 "while defining camera \"%s\": the parameter \"horizontal_fov\" "
                 "has precedence over \"focal_length\".",
-                get_name());
+                get_path().c_str());
 
             const double hfov = get_greater_than_zero("horizontal_fov", DefaultHFov);
             return hfov_to_focal_length(film_width, hfov);
@@ -210,7 +210,7 @@ double Camera::extract_focal_length(const double film_width) const
         RENDERER_LOG_ERROR(
             "while defining camera \"%s\": no \"horizontal_fov\" or \"focal_length\" parameter found; "
             "using default focal length value \"%f\".",
-            get_name(),
+            get_path().c_str(),
             DefaultFocalLength);
 
         return DefaultFocalLength;
@@ -239,7 +239,7 @@ void Camera::extract_focal_distance(
             RENDERER_LOG_WARNING(
                 "while defining camera \"%s\": autofocus is enabled; \"focal_distance\" parameter "
                 "will be ignored.",
-                get_name());
+                get_path().c_str());
 
             autofocus_enabled = true;
             autofocus_target = m_params.get_required<Vector2d>("autofocus_target", DefaultAFTarget);
@@ -263,7 +263,7 @@ void Camera::extract_focal_distance(
         RENDERER_LOG_ERROR(
             "while defining camera \"%s\": no \"focal_distance\" or \"autofocus_target\" parameter found; "
             "using default focal distance value \"%f\".",
-            get_name(),
+            get_path().c_str(),
             DefaultFocalDistance);
 
         autofocus_enabled = false;
@@ -283,7 +283,7 @@ double Camera::extract_near_z() const
         RENDERER_LOG_ERROR(
             "while defining camera \"%s\": invalid near-Z value \"%f\", near-Z values must be negative or zero; "
             "using default value \"%f\".",
-            get_name(),
+            get_path().c_str(),
             near_z,
             DefaultNearZ);
 
@@ -342,7 +342,7 @@ double Camera::get_greater_than_zero(
         RENDERER_LOG_ERROR(
             "while defining camera \"%s\": invalid value \"%f\" for parameter \"%s\"; "
             "using default value \"%f\".",
-            get_name(),
+            get_path().c_str(),
             value,
             name,
             default_value);

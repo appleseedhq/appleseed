@@ -40,6 +40,7 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
+#include "renderer/modeling/texture/texture.h"
 #include "renderer/utility/bbox.h"
 #include "renderer/utility/paramarray.h"
 
@@ -297,6 +298,7 @@ bool Assembly::on_frame_begin(
     IAbortSwitch*       abort_switch)
 {
     bool success = true;
+    success = success && invoke_on_frame_begin(project, textures(), abort_switch);
     success = success && invoke_on_frame_begin(project, texture_instances(), abort_switch);
     success = success && invoke_on_frame_begin(project, *this, surface_shaders(), abort_switch);
     success = success && invoke_on_frame_begin(project, *this, bsdfs(), abort_switch);
@@ -324,6 +326,7 @@ void Assembly::on_frame_end(const Project& project)
     invoke_on_frame_end(project, *this, bsdfs());
     invoke_on_frame_end(project, *this, surface_shaders());
     invoke_on_frame_end(project, texture_instances());
+    invoke_on_frame_end(project, textures());
 }
 
 

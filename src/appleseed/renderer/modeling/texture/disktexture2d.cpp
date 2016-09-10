@@ -60,7 +60,7 @@ namespace renderer
 namespace
 {
     //
-    // 2D disk texture.
+    // 2D on-disk texture.
     //
 
     const char* Model = "disk_texture_2d";
@@ -76,7 +76,23 @@ namespace
           : Texture(name, params)
           , m_reader(&global_logger())
         {
-            extract_parameters(search_paths);
+            const EntityDefMessageContext message_context("texture", this);
+
+            // Establish and store the qualified path to the texture file.
+            m_filepath = search_paths.qualify(m_params.get_required<string>("filename", ""));
+
+            // Retrieve the color space.
+            const string color_space =
+                m_params.get_required<string>(
+                    "color_space",
+                    "linear_rgb",
+                    make_vector("linear_rgb", "srgb", "ciexyz"),
+                    message_context);
+            if (color_space == "linear_rgb")
+                m_color_space = ColorSpaceLinearRGB;
+            else if (color_space == "srgb")
+                m_color_space = ColorSpaceSRGB;
+            else m_color_space = ColorSpaceCIEXYZ;
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -136,27 +152,6 @@ namespace
         mutable boost::mutex                m_mutex;
         GenericProgressiveImageFileReader   m_reader;
         CanvasProperties                    m_props;
-
-        void extract_parameters(const SearchPaths& search_paths)
-        {
-            const EntityDefMessageContext message_context("texture", this);
-
-            // Establish and store the qualified path to the texture file.
-            m_filepath = search_paths.qualify(m_params.get_required<string>("filename", ""));
-
-            // Retrieve the color space.
-            const string color_space =
-                m_params.get_required<string>(
-                    "color_space",
-                    "linear_rgb",
-                    make_vector("linear_rgb", "srgb", "ciexyz"),
-                    message_context);
-            if (color_space == "linear_rgb")
-                m_color_space = ColorSpaceLinearRGB;
-            else if (color_space == "srgb")
-                m_color_space = ColorSpaceSRGB;
-            else m_color_space = ColorSpaceCIEXYZ;
-        }
 
         void open_image_file()
         {

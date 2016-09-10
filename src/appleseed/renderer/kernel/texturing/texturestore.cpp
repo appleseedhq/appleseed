@@ -188,7 +188,7 @@ void TextureStore::TileSwapper::load(const TileKey& key, TileRecord& record)
             "from texture \"%s\"...",
             key.get_tile_x(),
             key.get_tile_y(),
-            texture->get_name());
+            texture->get_path().c_str());
     }
 
     // Load the tile.
@@ -264,7 +264,7 @@ bool TextureStore::TileSwapper::unload(const TileKey& key, TileRecord& record)
             "from texture \"%s\"...",
             key.get_tile_x(),
             key.get_tile_y(),
-            texture->get_name());
+            texture->get_path().c_str());
     }
 
     // Unload the tile.

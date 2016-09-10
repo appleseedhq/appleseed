@@ -211,7 +211,7 @@ namespace
                 "  model            %s\n"
                 "  shutter open     %f\n"
                 "  shutter close    %f",
-                get_name(),
+                get_path().c_str(),
                 Model,
                 m_shutter_open_time,
                 m_shutter_close_time);

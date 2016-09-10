@@ -314,7 +314,7 @@ bool ShaderParam::add(OSL::ShadingSystem& shading_system)
 {
     if (!shading_system.Parameter(get_name(), impl->m_type_desc, get_value()))
     {
-        RENDERER_LOG_ERROR("error adding parameter %s.", get_name());
+        RENDERER_LOG_ERROR("error adding parameter %s.", get_path().c_str());
         return false;
     }
 

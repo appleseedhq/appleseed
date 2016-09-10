@@ -86,7 +86,7 @@ CurveTree::CurveTree(const Arguments& arguments)
 {
     // Retrieve construction parameters.
     const MessageContext message_context(
-        string("while building curve tree for assembly \"") + m_arguments.m_assembly.get_name() + "\"");
+        string("while building curve tree for assembly \"") + m_arguments.m_assembly.get_path() + "\"");
     const ParamArray& params = m_arguments.m_assembly.get_parameters().child("acceleration_structure");
     const string algorithm = params.get_optional<string>("algorithm", "bvh", make_vector("bvh", "sbvh"), message_context);
     const double time = params.get_optional<double>("time", 0.5);
@@ -184,7 +184,7 @@ void CurveTree::build_bvh(
     RENDERER_LOG_INFO(
         "collecting geometry for curve tree #" FMT_UNIQUE_ID " from assembly \"%s\"...",
         m_arguments.m_curve_tree_uid,
-        m_arguments.m_assembly.get_name());
+        m_arguments.m_assembly.get_path().c_str());
     vector<GAABB3> curve_bboxes;
     collect_curves(curve_bboxes);
 
