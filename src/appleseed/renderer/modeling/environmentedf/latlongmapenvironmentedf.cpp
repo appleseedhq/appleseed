@@ -192,10 +192,16 @@ namespace
             if (!EnvironmentEDF::on_frame_begin(project, abort_switch))
                 return false;
 
-            check_non_zero_emission("radiance", "radiance_multiplier");
+            // Do not build an importance map if the environment EDF is not the active one.
+            const Environment* environment = project.get_scene()->get_environment();
 
-            if (m_importance_sampler.get() == 0)
-                build_importance_map(*project.get_scene(), abort_switch);
+            if (environment->get_uncached_environment_edf() == this)
+            {
+                check_non_zero_emission("radiance", "radiance_multiplier");
+
+                if (m_importance_sampler.get() == 0)
+                    build_importance_map(*project.get_scene(), abort_switch);
+            }
 
             return true;
         }
@@ -208,6 +214,16 @@ namespace
             Spectrum&               value,
             double&                 probability) const APPLESEED_OVERRIDE
         {
+            if (m_importance_sampler.get() == 0)
+            {
+                RENDERER_LOG_WARNING(
+                    "Trying to sample uninitialized latlong environment EDF %s.",
+                    get_name());
+                value.set(0.0f);
+                probability = 0.0;
+                return;
+            }
+
             // Sample the importance map.
             Payload payload;
             size_t y;
@@ -278,6 +294,16 @@ namespace
         {
             assert(is_normalized(outgoing));
 
+            if (m_importance_sampler.get() == 0)
+            {
+                RENDERER_LOG_WARNING(
+                    "Trying to compute the pdf of uninitialized latlong environment EDF %s.",
+                    get_name());
+                value.set(0.0f);
+                probability = 0.0;
+                return;
+            }
+
             // Transform the emission direction to local space.
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
@@ -302,6 +328,14 @@ namespace
             const Vector3d&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
+
+            if (m_importance_sampler.get() == 0)
+            {
+                RENDERER_LOG_WARNING(
+                    "Trying to compute the pdf of uninitialized latlong environment EDF %s.",
+                    get_name());
+                return 0.0;
+            }
 
             // Transform the emission direction to local space.
             Transformd scratch;
@@ -430,6 +464,7 @@ namespace
         {
             assert(u >= 0.0 && u < 1.0);
             assert(v >= 0.0 && v < 1.0);
+            assert(m_importance_sampler.get());
 
             // Compute the probability density of this sample in the importance map.
             const size_t x = truncate<size_t>(m_importance_map_width * u);
