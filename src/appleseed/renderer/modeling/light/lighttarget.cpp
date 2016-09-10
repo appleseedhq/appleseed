@@ -32,6 +32,6 @@
 namespace renderer
 {
 
-APPLESEED_DEFINE_ARRAY(LightTargetArray);
+APPLESEED_DEFINE_APIARRAY(LightTargetArray);
 
 }   // namespace renderer

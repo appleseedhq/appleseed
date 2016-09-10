@@ -79,7 +79,7 @@ namespace renderer
 // MeshObjectArray class implementation.
 //
 
-APPLESEED_DEFINE_ARRAY(MeshObjectArray);
+APPLESEED_DEFINE_APIARRAY(MeshObjectArray);
 
 
 //

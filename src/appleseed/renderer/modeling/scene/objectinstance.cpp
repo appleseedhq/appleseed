@@ -43,8 +43,8 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/makevector.h"
 
 // Standard headers.
@@ -60,7 +60,7 @@ namespace renderer
 // MaterialArray class implementation.
 //
 
-APPLESEED_DEFINE_ARRAY(MaterialArray);
+APPLESEED_DEFINE_APIARRAY(MaterialArray);
 
 bool has_emitting_materials(const MaterialArray& materials)
 {

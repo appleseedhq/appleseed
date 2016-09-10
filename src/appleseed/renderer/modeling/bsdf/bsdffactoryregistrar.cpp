@@ -63,7 +63,7 @@ using namespace std;
 namespace renderer
 {
 
-APPLESEED_DEFINE_ARRAY(BSDFFactoryArray);
+APPLESEED_DEFINE_APIARRAY(BSDFFactoryArray);
 
 struct BSDFFactoryRegistrar::Impl
 {

@@ -531,8 +531,11 @@ source_group ("foundation\\platform" FILES
 )
 
 set (foundation_utility_api_sources
+    foundation/utility/api/apiarray.h
     foundation/utility/api/apistring.cpp
     foundation/utility/api/apistring.h
+    foundation/utility/api/specializedapiarrays.cpp
+    foundation/utility/api/specializedapiarrays.h
 )
 list (APPEND appleseed_sources
     ${foundation_utility_api_sources}
@@ -588,12 +591,9 @@ source_group ("foundation\\utility\\commandlineparser" FILES
 )
 
 set (foundation_utility_containers_sources
-    foundation/utility/containers/array.h
     foundation/utility/containers/dictionary.cpp
     foundation/utility/containers/dictionary.h
     foundation/utility/containers/hashtable.h
-    foundation/utility/containers/specializedarrays.cpp
-    foundation/utility/containers/specializedarrays.h
 )
 list (APPEND appleseed_sources
     ${foundation_utility_containers_sources}

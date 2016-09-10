@@ -33,6 +33,6 @@
 namespace foundation
 {
 
-APPLESEED_DEFINE_ARRAY(BenchmarkSerie);
+APPLESEED_DEFINE_APIARRAY(BenchmarkSerie);
 
 }   // namespace foundation

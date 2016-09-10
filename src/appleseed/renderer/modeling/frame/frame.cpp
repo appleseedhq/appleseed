@@ -54,7 +54,7 @@
 #endif
 #include "foundation/platform/timers.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/stopwatch.h"

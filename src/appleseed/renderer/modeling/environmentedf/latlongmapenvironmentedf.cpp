@@ -52,16 +52,16 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
-#include "foundation/math/sampling/imageimportancesampler.h"
 #include "foundation/math/matrix.h"
+#include "foundation/math/sampling/imageimportancesampler.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/api/apistring.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/job/abortswitch.h"
 
 // Standard headers.

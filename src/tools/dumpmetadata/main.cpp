@@ -52,7 +52,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/indenter.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/xmlelement.h"

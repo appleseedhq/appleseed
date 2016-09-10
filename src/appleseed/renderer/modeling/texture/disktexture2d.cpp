@@ -42,8 +42,8 @@
 #include "foundation/image/genericprogressiveimagefilereader.h"
 #include "foundation/image/tile.h"
 #include "foundation/platform/thread.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/searchpaths.h"
 

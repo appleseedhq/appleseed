@@ -42,8 +42,8 @@
 #include "foundation/image/colorspace.h"
 #include "foundation/image/tile.h"
 #include "foundation/utility/api/apistring.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/makevector.h"
 
 // Standard headers.

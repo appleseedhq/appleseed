@@ -39,8 +39,8 @@
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
 #include "foundation/utility/api/apistring.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/iostreamop.h"
 
 // Standard headers.

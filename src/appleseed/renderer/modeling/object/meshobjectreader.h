@@ -31,7 +31,7 @@
 #define APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTREADER_H
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/array.h"
+#include "foundation/utility/api/apiarray.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -48,7 +48,7 @@ namespace renderer
 // An array of mesh objects.
 //
 
-APPLESEED_DECLARE_ARRAY(MeshObjectArray, MeshObject*);
+APPLESEED_DECLARE_APIARRAY(MeshObjectArray, MeshObject*);
 
 
 //

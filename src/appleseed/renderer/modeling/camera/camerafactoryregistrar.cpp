@@ -51,7 +51,7 @@ using namespace std;
 namespace renderer
 {
 
-APPLESEED_DEFINE_ARRAY(CameraFactoryArray);
+APPLESEED_DEFINE_APIARRAY(CameraFactoryArray);
 
 struct CameraFactoryRegistrar::Impl
 {

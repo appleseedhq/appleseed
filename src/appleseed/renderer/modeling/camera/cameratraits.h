@@ -35,8 +35,8 @@
 #include "renderer/modeling/entity/entitytraits.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/containers/dictionary.h"
 
 // Forward declarations.
 namespace renderer  { class CameraFactoryRegistrar; }

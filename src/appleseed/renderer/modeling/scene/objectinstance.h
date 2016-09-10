@@ -39,7 +39,7 @@
 #include "foundation/math/transform.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
-#include "foundation/utility/containers/array.h"
+#include "foundation/utility/api/apiarray.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
@@ -67,7 +67,7 @@ namespace renderer
 // An array of materials.
 //
 
-APPLESEED_DECLARE_ARRAY(MaterialArray, const Material*);
+APPLESEED_DECLARE_APIARRAY(MaterialArray, const Material*);
 
 // Return true if at least one material in the array emits light.
 bool has_emitting_materials(const MaterialArray& materials);

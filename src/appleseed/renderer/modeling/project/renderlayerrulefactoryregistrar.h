@@ -32,7 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/utility/containers/array.h"
+#include "foundation/utility/api/apiarray.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -50,7 +50,7 @@ namespace renderer
 // An array of render layer rule factories.
 //
 
-APPLESEED_DECLARE_ARRAY(RenderLayerRuleFactoryArray, IRenderLayerRuleFactory*);
+APPLESEED_DECLARE_APIARRAY(RenderLayerRuleFactoryArray, IRenderLayerRuleFactory*);
 
 
 //

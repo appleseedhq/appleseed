@@ -53,7 +53,7 @@ using namespace std;
 namespace renderer
 {
 
-APPLESEED_DEFINE_ARRAY(LightFactoryArray);
+APPLESEED_DEFINE_APIARRAY(LightFactoryArray);
 
 struct LightFactoryRegistrar::Impl
 {

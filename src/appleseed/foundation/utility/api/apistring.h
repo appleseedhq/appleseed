@@ -42,7 +42,7 @@ namespace foundation
 {
 
 //
-// A minimal string class that can safely cross DLL boundaries.
+// A minimalist string class that can safely cross DLL boundaries.
 //
 
 class APPLESEED_DLLSYMBOL APIString
