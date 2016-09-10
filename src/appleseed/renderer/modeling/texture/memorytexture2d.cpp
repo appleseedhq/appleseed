@@ -45,6 +45,7 @@
 #include "foundation/utility/makevector.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 #include <string>
 
@@ -98,6 +99,21 @@ namespace
         virtual ColorSpace get_color_space() const APPLESEED_OVERRIDE
         {
             return m_color_space;
+        }
+
+        virtual bool on_frame_begin(
+            const Project&      project,
+            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+        {
+            if (!Texture::on_frame_begin(project, abort_switch))
+                return false;
+
+            assert(m_image.get() != 0 || m_dummy_texture.get() != 0);
+
+            if (m_image.get() == 0)
+                RENDERER_LOG_WARNING("in-memory 2d texture \"%s\" has no texture data.", get_path().c_str());
+
+            return true;
         }
 
         virtual const CanvasProperties& properties() APPLESEED_OVERRIDE

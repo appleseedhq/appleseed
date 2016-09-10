@@ -45,8 +45,10 @@
 
 // Forward declarations.
 namespace foundation    { class CanvasProperties; }
+namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class Tile; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class Project; }
 
 namespace renderer
 {
@@ -64,8 +66,8 @@ class APPLESEED_DLLSYMBOL Texture
 
     // Constructor.
     Texture(
-        const char*             name,
-        const ParamArray&       params);
+        const char*                 name,
+        const ParamArray&           params);
 
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
@@ -73,19 +75,28 @@ class APPLESEED_DLLSYMBOL Texture
     // Return the color space of the texture.
     virtual foundation::ColorSpace get_color_space() const = 0;
 
+    // This method is called once before rendering each frame.
+    // Returns true on success, false otherwise.
+    virtual bool on_frame_begin(
+        const Project&              project,
+        foundation::IAbortSwitch*   abort_switch = 0);
+
+    // This method is called once after rendering each frame.
+    virtual void on_frame_end(const Project& project);
+
     // Access canvas properties.
     virtual const foundation::CanvasProperties& properties() = 0;
 
     // Load a given tile.
     virtual foundation::Tile* load_tile(
-        const size_t            tile_x,
-        const size_t            tile_y) = 0;
+        const size_t                tile_x,
+        const size_t                tile_y) = 0;
 
     // Unload a given tile.
     virtual void unload_tile(
-        const size_t            tile_x,
-        const size_t            tile_y,
-        const foundation::Tile* tile) = 0;
+        const size_t                tile_x,
+        const size_t                tile_y,
+        const foundation::Tile*     tile) = 0;
 };
 
 }       // namespace renderer
