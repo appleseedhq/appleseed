@@ -192,10 +192,16 @@ namespace
             if (!EnvironmentEDF::on_frame_begin(project, abort_switch))
                 return false;
 
-            check_non_zero_emission("radiance", "radiance_multiplier");
+            // Do not build an importance map if the environment EDF is not the active one.
+            const Environment* environment = project.get_scene()->get_environment();
 
-            if (m_importance_sampler.get() == 0)
-                build_importance_map(*project.get_scene(), abort_switch);
+            if (environment->get_uncached_environment_edf() == this)
+            {
+                check_non_zero_emission("radiance", "radiance_multiplier");
+
+                if (m_importance_sampler.get() == 0)
+                    build_importance_map(*project.get_scene(), abort_switch);
+            }
 
             return true;
         }
