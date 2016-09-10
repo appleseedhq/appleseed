@@ -504,7 +504,7 @@ namespace
                     {
                         RENDERER_LOG_ERROR(
                             "while updating bsdf \"%s\", failed to convert mdf parameter %f.",
-                            bsdf.get_name(),
+                            bsdf.get_path().c_str(),
                             mdf_param_value);
                         continue;
                     }
@@ -527,9 +527,9 @@ namespace
                         {
                             RENDERER_LOG_ERROR(
                                 "while updating bsdf \"%s\", failed to convert mdf parameter %f in color entity \"%s\".",
-                                bsdf.get_name(),
+                                bsdf.get_path().c_str(),
                                 mdf_param_value,
-                                color->get_name());
+                                color->get_path().c_str());
                             continue;
                         }
 

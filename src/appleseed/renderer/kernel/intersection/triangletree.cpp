@@ -412,7 +412,7 @@ TriangleTree::TriangleTree(const Arguments& arguments)
 {
     // Retrieve construction parameters.
     const MessageContext message_context(
-        string("while building triangle tree for assembly \"") + m_arguments.m_assembly.get_name() + "\"");
+        string("while building triangle tree for assembly \"") + m_arguments.m_assembly.get_path() + "\"");
     const ParamArray& params = m_arguments.m_assembly.get_parameters().child("acceleration_structure");
     const string algorithm = params.get_optional<string>("algorithm", "bvh", make_vector("bvh", "sbvh"), message_context);
     const double time = params.get_optional<double>("time", 0.5);
@@ -518,7 +518,7 @@ void TriangleTree::build_bvh(
     RENDERER_LOG_INFO(
         "collecting geometry for triangle tree #" FMT_UNIQUE_ID " from assembly \"%s\" (%s %s)...",
         m_arguments.m_triangle_tree_uid,
-        m_arguments.m_assembly.get_name(),
+        m_arguments.m_assembly.get_path().c_str(),
         pretty_uint(m_arguments.m_regions.size()).c_str(),
         plural(m_arguments.m_regions.size(), "region").c_str());
     stopwatch.start();
@@ -622,7 +622,7 @@ void TriangleTree::build_sbvh(
     RENDERER_LOG_INFO(
         "collecting geometry for triangle tree #" FMT_UNIQUE_ID " from assembly \"%s\" (%s %s)...",
         m_arguments.m_triangle_tree_uid,
-        m_arguments.m_assembly.get_name(),
+        m_arguments.m_assembly.get_path().c_str(),
         pretty_uint(m_arguments.m_regions.size()).c_str(),
         plural(m_arguments.m_regions.size(), "region").c_str());
     vector<TriangleKey> triangle_keys;
@@ -1177,7 +1177,7 @@ namespace
             RENDERER_LOG_DEBUG(
                 "created intersection filter for object \"%s\" with " FMT_SIZE_T " material%s "
                 "(masks: %s, uvs: %s, filter key hash: 0x" FMT_UINT64_HEX ").",
-                filter_key.m_object->get_name(),
+                filter_key.m_object->get_path().c_str(),
                 filter_key.m_materials.size(),
                 filter_key.m_materials.size() > 1 ? "s" : "",
                 pretty_size(intersection_filter->get_masks_memory_size()).c_str(),

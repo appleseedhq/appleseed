@@ -239,7 +239,7 @@ void TextureInstance::bind_texture(const TextureContainer& textures)
 
             RENDERER_LOG_DEBUG(
                 "texture instance \"%s\" was detected to use the \"%s\" alpha mode.",
-                get_name(),
+                get_path().c_str(),
                 m_effective_alpha_mode == TextureAlphaModeAlphaChannel ? "alpha_channel" : "luminance");
         }
     }

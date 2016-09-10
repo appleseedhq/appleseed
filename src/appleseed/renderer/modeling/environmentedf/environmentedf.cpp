@@ -83,7 +83,7 @@ bool EnvironmentEDF::on_frame_begin(
         {
             RENDERER_LOG_WARNING(
                 "transforms of environment edf \"%s\" must be pure rotations but have scaling and/or translation components; these will be ignored.",
-                get_name());
+                get_path().c_str());
             warned = true;
         }
 

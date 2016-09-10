@@ -225,7 +225,7 @@ IBasisModifier* Material::create_basis_modifier(const MessageContext& context) c
             "%s: color space for displacement map \"%s\" "
             "should be \"%s\" but is \"%s\" instead; expect artifacts and/or slowdowns.",
             context.get(),
-            texture.get_name(),
+            texture.get_path().c_str(),
             color_space_name(ColorSpaceLinearRGB),
             color_space_name(texture.get_color_space()));
     }

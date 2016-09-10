@@ -360,7 +360,7 @@ namespace
                 RENDERER_LOG_ERROR(
                     "while building importance map for environment edf \"%s\": a texture instance "
                     "must be bound to the \"radiance\" input.",
-                    get_name());
+                    get_path().c_str());
 
                 m_importance_map_width = 1;
                 m_importance_map_height = 1;
@@ -392,7 +392,7 @@ namespace
                 "for environment edf \"%s\"...",
                 m_importance_map_width,
                 m_importance_map_height,
-                get_name());
+                get_path().c_str());
 
             m_importance_sampler->rebuild(sampler, abort_switch);
 
@@ -402,7 +402,7 @@ namespace
             {
                 RENDERER_LOG_INFO(
                     "built importance map for environment edf \"%s\".",
-                    get_name());
+                    get_path().c_str());
             }
         }
 

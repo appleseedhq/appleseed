@@ -146,7 +146,7 @@ namespace
             {
                 RENDERER_LOG_WARNING(
                     "while loading mesh object \"%s\": %s polygonal %s (out of %s) could not be triangulated and have been replaced by zero-area triangles.",
-                    m_objects.back()->get_name(),
+                    m_objects.back()->get_path().c_str(),
                     pretty_uint(m_triangulation_error_count).c_str(),
                     m_triangulation_error_count > 1 ? "faces" : "face",
                     pretty_uint(m_face_count).c_str());
@@ -157,7 +157,7 @@ namespace
             {
                 RENDERER_LOG_WARNING(
                     "while loading mesh object \"%s\": %s normal %s (out of %s) were null and have been replaced by arbitrary unit-length vectors.",
-                    m_objects.back()->get_name(),
+                    m_objects.back()->get_path().c_str(),
                     pretty_uint(m_null_normal_vector_count).c_str(),
                     m_null_normal_vector_count > 1 ? "vectors" : "vector",
                     pretty_uint(m_normal_count).c_str());
@@ -785,11 +785,11 @@ namespace
         {
             RENDERER_LOG_WARNING(
                 "skipping computation of smooth normal vectors for mesh object \"%s\" because it already has normal vectors.",
-                object.get_name());
+                object.get_path().c_str());
             return;
         }
 
-        RENDERER_LOG_INFO("computing smooth normal vectors for mesh object \"%s\"...", object.get_name());
+        RENDERER_LOG_INFO("computing smooth normal vectors for mesh object \"%s\"...", object.get_path().c_str());
 
         compute_smooth_vertex_normals(object);
     }
@@ -800,7 +800,7 @@ namespace
         {
             RENDERER_LOG_WARNING(
                 "skipping computation of smooth tangent vectors for mesh object \"%s\" because it already has tangent vectors.",
-                object.get_name());
+                object.get_path().c_str());
             return;
         }
 
@@ -808,11 +808,11 @@ namespace
         {
             RENDERER_LOG_WARNING(
                 "cannot compute smooth tangent vectors for mesh object \"%s\" because it lacks texture coordinates.",
-                object.get_name());
+                object.get_path().c_str());
             return;
         }
 
-        RENDERER_LOG_INFO("computing smooth tangent vectors for mesh object \"%s\"...", object.get_name());
+        RENDERER_LOG_INFO("computing smooth tangent vectors for mesh object \"%s\"...", object.get_path().c_str());
 
         compute_smooth_vertex_tangents(object);
     }
