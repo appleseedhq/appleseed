@@ -161,7 +161,7 @@ bool ShaderGroup::create_optimized_osl_shader_group(
     if (is_valid())
         return true;
 
-    RENDERER_LOG_DEBUG("setting up shader group %s...", get_path().c_str());
+    RENDERER_LOG_DEBUG("setting up shader group \"%s\"...", get_path().c_str());
 
     try
     {
@@ -169,7 +169,7 @@ bool ShaderGroup::create_optimized_osl_shader_group(
 
         if (shader_group_ref.get() == 0)
         {
-            RENDERER_LOG_ERROR("failed to setup shader group %s: ShaderGroupBegin() call failed.", get_path().c_str());
+            RENDERER_LOG_ERROR("failed to setup shader group \"%s\": ShaderGroupBegin() call failed.", get_path().c_str());
             return false;
         }
 
@@ -199,7 +199,7 @@ bool ShaderGroup::create_optimized_osl_shader_group(
 
         if (!shading_system.ShaderGroupEnd())
         {
-            RENDERER_LOG_ERROR("failed to setup shader group %s: ShaderGroupEnd() call failed.", get_path().c_str());
+            RENDERER_LOG_ERROR("failed to setup shader group \"%s\": ShaderGroupEnd() call failed.", get_path().c_str());
             return false;
         }
 
@@ -220,7 +220,7 @@ bool ShaderGroup::create_optimized_osl_shader_group(
     }
     catch (const exception& e)
     {
-        RENDERER_LOG_ERROR("failed to setup shader group %s: %s.", get_path().c_str(), e.what());
+        RENDERER_LOG_ERROR("failed to setup shader group \"%s\": %s.", get_path().c_str(), e.what());
         return false;
     }
 }
@@ -269,7 +269,7 @@ void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_syst
             num_unknown_closures))
     {
         RENDERER_LOG_WARNING(
-            "getattribute: unknown_closures_needed call failed for shader group %s; "
+            "getattribute: unknown_closures_needed call failed for shader group \"%s\"; "
             "assuming shader group has all kinds of closures.",
             get_path().c_str());
         return;
@@ -278,7 +278,7 @@ void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_syst
     if (num_unknown_closures != 0)
     {
         RENDERER_LOG_WARNING(
-            "shader group %s has unknown closures; "
+            "shader group \"%s\" has unknown closures; "
             "assuming shader group has all kinds of closures.",
             get_path().c_str());
         return;
@@ -291,7 +291,7 @@ void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_syst
             num_closures))
     {
         RENDERER_LOG_WARNING(
-            "getattribute: num_closures_needed call failed for shader group %s; "
+            "getattribute: num_closures_needed call failed for shader group \"%s\"; "
             "assuming shader group has all kinds of closures.",
             get_path().c_str());
     }
@@ -306,7 +306,7 @@ void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_syst
                 &closures))
         {
             RENDERER_LOG_WARNING(
-                "getattribute: closures_needed call failed for shader group %s; "
+                "getattribute: closures_needed call failed for shader group \"%s\"; "
                 "assuming shader group has all kinds of closures.",
                 get_path().c_str());
             return;
@@ -349,14 +349,14 @@ void ShaderGroup::report_has_closure(const char* closure_name, const Flags flag)
     if (m_flags & flag)
     {
         RENDERER_LOG_INFO(
-            "shader group %s has %s closures.",
+            "shader group \"%s\" has %s closures.",
             get_path().c_str(),
             closure_name);
     }
     else
     {
         RENDERER_LOG_INFO(
-            "shader group %s does not have %s closures.",
+            "shader group \"%s\" does not have %s closures.",
             get_path().c_str(),
             closure_name);
     }
@@ -374,7 +374,7 @@ void ShaderGroup::get_shadergroup_globals_info(OSL::ShadingSystem& shading_syste
             num_globals))
     {
         RENDERER_LOG_WARNING(
-            "getattribute: num_globals_needed call failed for shader group %s; "
+            "getattribute: num_globals_needed call failed for shader group \"%s\"; "
             "assuming shader group uses all globals.",
             get_path().c_str());
         return;
@@ -390,7 +390,7 @@ void ShaderGroup::get_shadergroup_globals_info(OSL::ShadingSystem& shading_syste
                 &globals))
         {
             RENDERER_LOG_WARNING(
-                "getattribute: globals_needed call failed for shader group %s; "
+                "getattribute: globals_needed call failed for shader group \"%s\"; "
                 "assuming shader group uses all globals.",
                 get_path().c_str());
             return;
@@ -418,14 +418,14 @@ void ShaderGroup::report_uses_global(const char* global_name, const Flags flag) 
     if (m_flags & flag)
     {
         RENDERER_LOG_INFO(
-            "shader group %s uses the %s global.",
+            "shader group \"%s\" uses the %s global.",
             get_path().c_str(),
             global_name);
     }
     else
     {
         RENDERER_LOG_INFO(
-            "shader group %s does not use the %s global.",
+            "shader group \"%s\" does not use the %s global.",
             get_path().c_str(),
             global_name);
     }
