@@ -38,6 +38,7 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
+#include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/constantenvironmentedf.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentedf/gradientenvironmentedf.h"
@@ -182,6 +183,12 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
 
         bool check_consistency(EnvironmentEDF& env_edf)
         {
+            auto_release_ptr<Environment> environment(
+                EnvironmentFactory().create(
+                    "environment", ParamArray().insert("environment_edf", env_edf.get_name())));
+
+            m_scene.set_environment(environment);
+
             bind_inputs();
 
             APPLESEED_UNUSED const bool success = env_edf.on_frame_begin(m_project);
