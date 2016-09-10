@@ -49,7 +49,7 @@ using namespace std;
 namespace renderer
 {
 
-APPLESEED_DEFINE_ARRAY(TextureFactoryArray);
+APPLESEED_DEFINE_APIARRAY(TextureFactoryArray);
 
 struct TextureFactoryRegistrar::Impl
 {

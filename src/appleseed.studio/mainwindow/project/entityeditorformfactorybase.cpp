@@ -32,7 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 
 // Standard headers.
 #include <cstddef>

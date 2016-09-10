@@ -39,7 +39,7 @@
 #include "foundation/math/ray.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.

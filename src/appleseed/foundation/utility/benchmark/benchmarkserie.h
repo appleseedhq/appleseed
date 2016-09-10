@@ -31,13 +31,13 @@
 #define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKSERIE_H
 
 // appleseed.foundation headers.
+#include "foundation/utility/api/apiarray.h"
 #include "foundation/utility/benchmark/benchmarkdatapoint.h"
-#include "foundation/utility/containers/array.h"
 
 namespace foundation
 {
 
-APPLESEED_DECLARE_ARRAY(BenchmarkSerie, BenchmarkDataPoint);
+APPLESEED_DECLARE_APIARRAY(BenchmarkSerie, BenchmarkDataPoint);
 
 }       // namespace foundation
 

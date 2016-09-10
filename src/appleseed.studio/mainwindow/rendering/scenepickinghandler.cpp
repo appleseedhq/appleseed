@@ -49,6 +49,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
+#include "foundation/utility/api/apistring.h"
+#include "foundation/utility/string.h"
 
 // Qt headers.
 #include <QComboBox>
@@ -159,16 +161,12 @@ namespace
         }
     }
 
-    string print_entity(const char* label, const Entity* entity)
+    string print_entity(const char* prefix, const Entity* entity)
     {
-        stringstream sstr;
-        sstr << label;
-
-        if (entity)
-            sstr << "\"" << entity->get_path() << "\" (#" << entity->get_uid() << ")";
-        else sstr << "n/a";
-
-        return sstr.str();
+        return
+            entity
+                ? format("{0}\"{1}\" (#{2})", prefix, entity->get_path(), entity->get_uid())
+                : format("{0}n/a", prefix);
     }
 
     const Entity* get_picked_entity(

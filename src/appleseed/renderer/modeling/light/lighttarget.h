@@ -32,7 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/containers/array.h"
+#include "foundation/utility/api/apiarray.h"
 
 namespace renderer
 {
@@ -63,7 +63,7 @@ class LightTarget
     double                  m_radius;   // world space
 };
 
-APPLESEED_DECLARE_ARRAY(LightTargetArray, LightTarget);
+APPLESEED_DECLARE_APIARRAY(LightTargetArray, LightTarget);
 
 
 //

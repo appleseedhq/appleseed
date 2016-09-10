@@ -27,8 +27,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_CONTAINERS_ARRAY_H
-#define APPLESEED_FOUNDATION_UTILITY_CONTAINERS_ARRAY_H
+#ifndef APPLESEED_FOUNDATION_UTILITY_API_APIARRAY_H
+#define APPLESEED_FOUNDATION_UTILITY_API_APIARRAY_H
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -43,12 +43,10 @@ namespace foundation
 {
 
 //
-// An array of elements of a given type with minimalistic functionalities.
-//
-// The array can be passed safely across DLL boundaries.
+// A minimalist array class that can safely cross DLL boundaries.
 //
 
-#define APPLESEED_DECLARE_ARRAY(ArrayName, ArrayType)                   \
+#define APPLESEED_DECLARE_APIARRAY(ArrayName, ArrayType)                \
     class APPLESEED_DLLSYMBOL ArrayName                                 \
     {                                                                   \
       public:                                                           \
@@ -106,7 +104,7 @@ namespace foundation
         Impl* impl;                                                     \
     }
 
-#define APPLESEED_DEFINE_ARRAY(ArrayName)                               \
+#define APPLESEED_DEFINE_APIARRAY(ArrayName)                            \
     struct ArrayName::Impl                                              \
       : public std::vector<value_type>                                  \
     {                                                                   \
@@ -225,4 +223,4 @@ U array_vector(const V& v)
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_UTILITY_CONTAINERS_ARRAY_H
+#endif  // !APPLESEED_FOUNDATION_UTILITY_API_APIARRAY_H

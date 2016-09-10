@@ -45,15 +45,15 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/distance.h"
 #include "foundation/math/hash.h"
 #include "foundation/math/minmax.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <algorithm>

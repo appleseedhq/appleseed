@@ -33,6 +33,10 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/api/apistring.h"
+#include "foundation/utility/string.h"
+
 using namespace std;
 
 namespace renderer
@@ -90,7 +94,7 @@ EntityDefMessageContext::EntityDefMessageContext(
     const char*     entity_type,
     const Entity*   entity)
 {
-    set_message("while defining " + string(entity_type) + " \"" + entity->get_path() + "\"");
+    set_message(format("while defining {0} \"{1}\"", entity_type, entity->get_path()));
 }
 
 }   // namespace renderer

@@ -32,6 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
+#include "foundation/utility/api/apistring.h"
 
 // Standard headers.
 #include <cstddef>

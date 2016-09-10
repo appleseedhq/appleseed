@@ -57,7 +57,7 @@ using namespace std;
 namespace renderer
 {
 
-APPLESEED_DEFINE_ARRAY(EnvironmentEDFFactoryArray);
+APPLESEED_DEFINE_APIARRAY(EnvironmentEDFFactoryArray);
 
 struct EnvironmentEDFFactoryRegistrar::Impl
 {

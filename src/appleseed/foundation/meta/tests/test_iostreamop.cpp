@@ -30,7 +30,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 

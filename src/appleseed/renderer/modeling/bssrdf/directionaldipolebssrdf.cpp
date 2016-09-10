@@ -38,9 +38,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/cdf.h"
 #include "foundation/math/fresnel.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"

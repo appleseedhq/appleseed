@@ -47,7 +47,7 @@ using namespace std;
 namespace renderer
 {
 
-APPLESEED_DEFINE_ARRAY(AssemblyFactoryArray);
+APPLESEED_DEFINE_APIARRAY(AssemblyFactoryArray);
 
 struct AssemblyFactoryRegistrar::Impl
 {

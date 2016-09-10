@@ -37,7 +37,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.

@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,36 +27,29 @@
 //
 
 // Interface header.
-#include "ilightfactory.h"
+#include "apistring.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
-
-using namespace foundation;
-
-namespace renderer
+namespace foundation
 {
 
-void ILightFactory::add_common_input_metadata(DictionaryArray& metadata)
+APIString::APIString(const char* s)
+  : m_s(duplicate_string(s))
 {
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "cast_indirect_light")
-            .insert("label", "Cast Indirect Light")
-            .insert("type", "boolean")
-            .insert("use", "optional")
-            .insert("default", "true")
-            .insert("help", "If enabled, this light contributes to indirect lighting"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "importance_multiplier")
-            .insert("label", "Importance Multiplier")
-            .insert("type", "text")
-            .insert("use", "optional")
-            .insert("default", "1.0")
-            .insert("help", "Adjust the sampling effort for this light with respect to the other lights"));
 }
 
-}   // namespace renderer
+APIString::APIString(const APIString& rhs)
+  : m_s(duplicate_string(rhs.m_s))
+{
+}
+
+APIString::~APIString()
+{
+    free_string(m_s);
+}
+
+const char* APIString::c_str() const
+{
+    return m_s;
+}
+
+}   // namespace foundation

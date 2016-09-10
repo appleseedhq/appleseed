@@ -49,7 +49,7 @@ using namespace std;
 namespace renderer
 {
 
-APPLESEED_DEFINE_ARRAY(EnvironmentShaderFactoryArray);
+APPLESEED_DEFINE_APIARRAY(EnvironmentShaderFactoryArray);
 
 struct EnvironmentShaderFactoryRegistrar::Impl
 {

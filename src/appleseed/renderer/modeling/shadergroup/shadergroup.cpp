@@ -37,8 +37,9 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/job/abortswitch.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/uid.h"
 
 // Boost headers

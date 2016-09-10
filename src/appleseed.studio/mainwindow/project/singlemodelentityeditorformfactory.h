@@ -34,7 +34,7 @@
 #include "mainwindow/project/entityeditorformfactorybase.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 
 // Standard headers.
 #include <string>

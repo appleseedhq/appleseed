@@ -53,7 +53,7 @@ using namespace std;
 namespace renderer
 {
 
-APPLESEED_DEFINE_ARRAY(BSSRDFFactoryArray);
+APPLESEED_DEFINE_APIARRAY(BSSRDFFactoryArray);
 
 struct BSSRDFFactoryRegistrar::Impl
 {

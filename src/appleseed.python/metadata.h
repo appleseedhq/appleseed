@@ -35,7 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 
 namespace detail
 {

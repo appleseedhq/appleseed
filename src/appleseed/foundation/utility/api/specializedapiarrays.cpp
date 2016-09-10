@@ -28,7 +28,7 @@
 //
 
 // Interface header.
-#include "specializedarrays.h"
+#include "specializedapiarrays.h"
 
 // Standard headers.
 #include <cassert>
@@ -40,9 +40,9 @@ using namespace std;
 namespace foundation
 {
 
-APPLESEED_DEFINE_ARRAY(FloatArray);
-APPLESEED_DEFINE_ARRAY(DoubleArray);
-APPLESEED_DEFINE_ARRAY(DictionaryArray);
+APPLESEED_DEFINE_APIARRAY(FloatArray);
+APPLESEED_DEFINE_APIARRAY(DoubleArray);
+APPLESEED_DEFINE_APIARRAY(DictionaryArray);
 
 
 //

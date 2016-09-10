@@ -60,6 +60,7 @@
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/searchpaths.h"
 
@@ -404,7 +405,7 @@ namespace
         {
             string result = render_layer_name;
             result = replace(result, "{entity-name}", entity.get_name());
-            result = replace(result, "{entity-path}", entity.get_path());
+            result = replace(result, "{entity-path}", entity.get_path().c_str());
             return result;
         }
     };

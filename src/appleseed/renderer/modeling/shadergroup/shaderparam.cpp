@@ -33,6 +33,7 @@
 #include "renderer/global/globallogger.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.

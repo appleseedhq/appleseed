@@ -39,7 +39,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/path.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/searchpaths.h"

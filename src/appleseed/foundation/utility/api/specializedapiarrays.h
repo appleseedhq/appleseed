@@ -27,11 +27,11 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_CONTAINERS_SPECIALIZEDARRAYS_H
-#define APPLESEED_FOUNDATION_UTILITY_CONTAINERS_SPECIALIZEDARRAYS_H
+#ifndef APPLESEED_FOUNDATION_UTILITY_API_SPECIALIZEDAPIARRAYS_H
+#define APPLESEED_FOUNDATION_UTILITY_API_SPECIALIZEDAPIARRAYS_H
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/array.h"
+#include "foundation/utility/api/apiarray.h"
 #include "foundation/utility/containers/dictionary.h"
 
 // appleseed.main headers.
@@ -47,16 +47,16 @@ namespace foundation
 // Predefined array types.
 //
 
-APPLESEED_DECLARE_ARRAY(FloatArray, float);
-APPLESEED_DECLARE_ARRAY(DoubleArray, double);
-APPLESEED_DECLARE_ARRAY(DictionaryArray, Dictionary);
+APPLESEED_DECLARE_APIARRAY(FloatArray, float);
+APPLESEED_DECLARE_APIARRAY(DoubleArray, double);
+APPLESEED_DECLARE_APIARRAY(DictionaryArray, Dictionary);
 
 
 //
 // An array of strings that can be passed safely across DLL boundaries.
 //
 // The interface and implementation of this class both differ slightly
-// from what APPLESEED_DECLARE_ARRAY and APPLESEED_DEFINE_ARRAY offer.
+// from what APPLESEED_DECLARE_APIARRAY and APPLESEED_DEFINE_APIARRAY offer.
 //
 
 class APPLESEED_DLLSYMBOL StringArray
@@ -110,4 +110,4 @@ class APPLESEED_DLLSYMBOL StringArray
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_UTILITY_CONTAINERS_SPECIALIZEDARRAYS_H
+#endif  // !APPLESEED_FOUNDATION_UTILITY_API_SPECIALIZEDAPIARRAYS_H

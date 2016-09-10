@@ -32,7 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/utility/containers/array.h"
+#include "foundation/utility/api/apiarray.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -50,7 +50,7 @@ namespace renderer
 // An array of texture factories.
 //
 
-APPLESEED_DECLARE_ARRAY(TextureFactoryArray, ITextureFactory*);
+APPLESEED_DECLARE_APIARRAY(TextureFactoryArray, ITextureFactory*);
 
 
 //

@@ -51,6 +51,7 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/filter.h"
 #include "foundation/utility/foreach.h"
@@ -78,7 +79,7 @@ namespace renderer
 // MeshObjectArray class implementation.
 //
 
-APPLESEED_DEFINE_ARRAY(MeshObjectArray);
+APPLESEED_DEFINE_APIARRAY(MeshObjectArray);
 
 
 //

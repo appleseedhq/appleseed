@@ -41,8 +41,8 @@
 #include "renderer/modeling/texture/texture.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/job/abortswitch.h"
 
 using namespace foundation;
 

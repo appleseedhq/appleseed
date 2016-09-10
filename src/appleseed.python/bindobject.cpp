@@ -38,7 +38,7 @@
 #include "renderer/api/scene.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/searchpaths.h"
 
 namespace bpy = boost::python;

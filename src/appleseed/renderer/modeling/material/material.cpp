@@ -50,6 +50,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/string.h"
 

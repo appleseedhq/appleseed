@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,37 +26,47 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "ilightfactory.h"
+#ifndef APPLESEED_FOUNDATION_UTILITY_API_APISTRING_H
+#define APPLESEED_FOUNDATION_UTILITY_API_APISTRING_H
 
 // appleseed.foundation headers.
-#include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/string.h"
 
-using namespace foundation;
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
-namespace renderer
+// Standard headers.
+#include <string>
+
+namespace foundation
 {
 
-void ILightFactory::add_common_input_metadata(DictionaryArray& metadata)
-{
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "cast_indirect_light")
-            .insert("label", "Cast Indirect Light")
-            .insert("type", "boolean")
-            .insert("use", "optional")
-            .insert("default", "true")
-            .insert("help", "If enabled, this light contributes to indirect lighting"));
+//
+// A minimalist string class that can safely cross DLL boundaries.
+//
 
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "importance_multiplier")
-            .insert("label", "Importance Multiplier")
-            .insert("type", "text")
-            .insert("use", "optional")
-            .insert("default", "1.0")
-            .insert("help", "Adjust the sampling effort for this light with respect to the other lights"));
+class APPLESEED_DLLSYMBOL APIString
+{
+  public:
+    explicit APIString(const char* s);
+    APIString(const APIString& rhs);
+
+    ~APIString();
+
+    const char* c_str() const;
+
+  private:
+    const char* m_s;
+
+    APIString& operator=(const APIString& rhs);
+};
+
+template <>
+inline std::string to_string(const APIString& value)
+{
+    return std::string(value.c_str());
 }
 
-}   // namespace renderer
+}       // namespace foundation
+
+#endif  // !APPLESEED_FOUNDATION_UTILITY_API_APISTRING_H

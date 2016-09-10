@@ -35,6 +35,9 @@
 #include "renderer/modeling/scene/basegroup.h"
 #include "renderer/modeling/scene/visibilityflags.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/api/apistring.h"
+
 // Standard headers.
 #include <string>
 

@@ -46,9 +46,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
-#include "foundation/utility/containers/specializedarrays.h"
-#include "foundation/utility/job/abortswitch.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/job/abortswitch.h"
 
 // Standard headers.
 #include <set>

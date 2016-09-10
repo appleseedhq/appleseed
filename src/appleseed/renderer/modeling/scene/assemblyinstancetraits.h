@@ -32,12 +32,12 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entitytraits.h"
-#include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
+#include "renderer/modeling/scene/containers.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/containers/dictionary.h"
 
 namespace renderer
 {
