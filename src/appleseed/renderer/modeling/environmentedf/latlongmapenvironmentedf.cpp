@@ -216,6 +216,9 @@ namespace
         {
             if (m_importance_sampler.get() == 0)
             {
+                RENDERER_LOG_WARNING(
+                    "Trying to sample uninitialized latlong environment EDF %s.",
+                    get_name());
                 value.set(0.0f);
                 probability = 0.0;
                 return;
@@ -293,6 +296,9 @@ namespace
 
             if (m_importance_sampler.get() == 0)
             {
+                RENDERER_LOG_WARNING(
+                    "Trying to compute the pdf of uninitialized latlong environment EDF %s.",
+                    get_name());
                 value.set(0.0f);
                 probability = 0.0;
                 return;
@@ -324,7 +330,12 @@ namespace
             assert(is_normalized(outgoing));
 
             if (m_importance_sampler.get() == 0)
+            {
+                RENDERER_LOG_WARNING(
+                    "Trying to compute the pdf of uninitialized latlong environment EDF %s.",
+                    get_name());
                 return 0.0;
+            }
 
             // Transform the emission direction to local space.
             Transformd scratch;
