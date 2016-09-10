@@ -214,6 +214,13 @@ namespace
             Spectrum&               value,
             double&                 probability) const APPLESEED_OVERRIDE
         {
+            if (m_importance_sampler.get() == 0)
+            {
+                value.set(0.0f);
+                probability = 0.0;
+                return;
+            }
+
             // Sample the importance map.
             Payload payload;
             size_t y;
@@ -284,6 +291,13 @@ namespace
         {
             assert(is_normalized(outgoing));
 
+            if (m_importance_sampler.get() == 0)
+            {
+                value.set(0.0f);
+                probability = 0.0;
+                return;
+            }
+
             // Transform the emission direction to local space.
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
@@ -308,6 +322,9 @@ namespace
             const Vector3d&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
+
+            if (m_importance_sampler.get() == 0)
+                return 0.0;
 
             // Transform the emission direction to local space.
             Transformd scratch;
@@ -436,6 +453,7 @@ namespace
         {
             assert(u >= 0.0 && u < 1.0);
             assert(v >= 0.0 && v < 1.0);
+            assert(m_importance_sampler.get());
 
             // Compute the probability density of this sample in the importance map.
             const size_t x = truncate<size_t>(m_importance_map_width * u);
