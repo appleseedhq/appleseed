@@ -62,6 +62,7 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
@@ -266,7 +267,7 @@ void InputBinder::bind_scene_entity_inputs(
     const char*                     entity_type,
     ConnectableEntity&              entity)
 {
-    const string entity_path = entity.get_path();
+    const string entity_path(entity.get_path().c_str());
     const ParamArray& entity_params = entity.get_parameters();
 
     for (each<InputArray> i = entity.get_inputs(); i; ++i)
@@ -482,7 +483,7 @@ void InputBinder::bind_assembly_entity_inputs(
     const char*                     entity_type,
     ConnectableEntity&              entity)
 {
-    const string entity_path = entity.get_path();
+    const string entity_path(entity.get_path().c_str());
     const ParamArray& entity_params = entity.get_parameters();
 
     for (each<InputArray> i = entity.get_inputs(); i; ++i)

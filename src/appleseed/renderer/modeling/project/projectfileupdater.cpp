@@ -72,6 +72,7 @@
 #include "foundation/math/scalar.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/foreach.h"
@@ -684,7 +685,7 @@ namespace
 
             if (!render_layer_name.empty())
             {
-                const string entity_path = entity.get_path();
+                const string entity_path(entity.get_path().c_str());
 
                 string rule_name = entity_path;
                 replace(rule_name.begin(), rule_name.end(), '/', '_');

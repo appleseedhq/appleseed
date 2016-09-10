@@ -45,6 +45,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 #include "foundation/image/colorspace.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 

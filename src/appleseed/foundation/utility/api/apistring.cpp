@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,73 +27,29 @@
 //
 
 // Interface header.
-#include "messagecontext.h"
+#include "APIString.h"
 
-// appleseed.renderer headers.
-#include "renderer/modeling/entity/entity.h"
-
-// appleseed.foundation headers.
-#include "foundation/utility/api/apistring.h"
-#include "foundation/utility/string.h"
-
-using namespace std;
-
-namespace renderer
+namespace foundation
 {
 
-//
-// MessageContext class implementation.
-//
-
-struct MessageContext::Impl
-{
-    string m_message;
-};
-
-MessageContext::MessageContext()
-  : impl(0)
+APIString::APIString(const char* s)
+  : m_s(duplicate_string(s))
 {
 }
 
-MessageContext::MessageContext(const char* message)
-  : impl(0)
+APIString::APIString(const APIString& rhs)
+  : m_s(duplicate_string(rhs.m_s))
 {
-    set_message(message);
 }
 
-MessageContext::~MessageContext()
+APIString::~APIString()
 {
-    delete impl;
+    free_string(m_s);
 }
 
-bool MessageContext::empty() const
+const char* APIString::c_str() const
 {
-    return impl == 0 || impl->m_message.empty();
+    return m_s;
 }
 
-const char* MessageContext::get() const
-{
-    return impl ? impl->m_message.c_str() : "";
-}
-
-void MessageContext::set_message(const char* message)
-{
-    if (impl == 0)
-        impl = new Impl();
-
-    impl->m_message = message;
-}
-
-
-//
-// EntityDefMessageContext class implementation.
-//
-
-EntityDefMessageContext::EntityDefMessageContext(
-    const char*     entity_type,
-    const Entity*   entity)
-{
-    set_message(format("while defining {0} \"{1}\"", entity_type, entity->get_path()));
-}
-
-}   // namespace renderer
+}   // namespace foundation

@@ -48,6 +48,7 @@
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/autoreleaseptr.h"
 

@@ -30,6 +30,9 @@
 // Interface header.
 #include "containers.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/api/apistring.h"
+
 using namespace foundation;
 using namespace std;
 
@@ -48,7 +51,7 @@ namespace
     {
         return
             context
-                ? "while defining \"" + context->get_path() + "\": unknown entity"
+                ? format("while defining \"{0}\": unknown entity", context->get_path())
                 : "unknown entity";
     }
 }
@@ -59,7 +62,7 @@ ExceptionUnknownEntity::ExceptionUnknownEntity(
   : StringException(
         build_message(entity_name, context).c_str(),
         entity_name)
-  , m_context_path(context->get_path())
+  , m_context_path(context->get_path().c_str())
 {
 }
 

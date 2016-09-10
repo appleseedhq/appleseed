@@ -46,6 +46,7 @@
 #include "foundation/math/transform.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/system.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/alignedallocator.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/memory.h"
@@ -86,7 +87,7 @@ CurveTree::CurveTree(const Arguments& arguments)
 {
     // Retrieve construction parameters.
     const MessageContext message_context(
-        string("while building curve tree for assembly \"") + m_arguments.m_assembly.get_path() + "\"");
+        format("while building curve tree for assembly \"{0}\"", m_arguments.m_assembly.get_path()));
     const ParamArray& params = m_arguments.m_assembly.get_parameters().child("acceleration_structure");
     const string algorithm = params.get_optional<string>("algorithm", "bvh", make_vector("bvh", "sbvh"), message_context);
     const double time = params.get_optional<double>("time", 0.5);

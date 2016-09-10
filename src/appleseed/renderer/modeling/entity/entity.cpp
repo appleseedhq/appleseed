@@ -30,6 +30,9 @@
 // Interface header.
 #include "entity.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/api/apistring.h"
+
 using namespace foundation;
 using namespace std;
 
@@ -97,6 +100,25 @@ void Entity::set_name(const char* name)
 const char* Entity::get_name() const
 {
     return impl->m_name.c_str();
+}
+
+APIString Entity::get_path() const
+{
+    std::string path;
+
+    const Entity* entity = this;
+
+    while (entity)
+    {
+        if (!path.empty())
+            path.insert(0, "/");
+
+        path.insert(0, entity->get_name());
+
+        entity = entity->get_parent();
+    }
+
+    return APIString(path.c_str());
 }
 
 void Entity::collect_asset_paths(StringArray& paths) const

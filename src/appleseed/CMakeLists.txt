@@ -530,6 +530,17 @@ source_group ("foundation\\platform" FILES
     ${foundation_platform_sources}
 )
 
+set (foundation_utility_api_sources
+    foundation/utility/api/apistring.cpp
+    foundation/utility/api/apistring.h
+)
+list (APPEND appleseed_sources
+    ${foundation_utility_api_sources}
+)
+source_group ("foundation\\utility\\api" FILES
+    ${foundation_utility_api_sources}
+)
+
 set (foundation_utility_benchmark_sources
     foundation/utility/benchmark/benchmarkaggregator.cpp
     foundation/utility/benchmark/benchmarkaggregator.h

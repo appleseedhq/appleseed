@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,74 +26,47 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "messagecontext.h"
-
-// appleseed.renderer headers.
-#include "renderer/modeling/entity/entity.h"
+#ifndef APPLESEED_FOUNDATION_UTILITY_API_APISTRING_H
+#define APPLESEED_FOUNDATION_UTILITY_API_APISTRING_H
 
 // appleseed.foundation headers.
-#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/string.h"
 
-using namespace std;
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
-namespace renderer
+// Standard headers.
+#include <string>
+
+namespace foundation
 {
 
 //
-// MessageContext class implementation.
+// A minimal string class that can safely cross DLL boundaries.
 //
 
-struct MessageContext::Impl
+class APPLESEED_DLLSYMBOL APIString
 {
-    string m_message;
+  public:
+    explicit APIString(const char* s);
+    APIString(const APIString& rhs);
+
+    ~APIString();
+
+    const char* c_str() const;
+
+  private:
+    const char* m_s;
+
+    APIString& operator=(const APIString& rhs);
 };
 
-MessageContext::MessageContext()
-  : impl(0)
+template <>
+inline std::string to_string(const APIString& value)
 {
+    return std::string(value.c_str());
 }
 
-MessageContext::MessageContext(const char* message)
-  : impl(0)
-{
-    set_message(message);
-}
+}       // namespace foundation
 
-MessageContext::~MessageContext()
-{
-    delete impl;
-}
-
-bool MessageContext::empty() const
-{
-    return impl == 0 || impl->m_message.empty();
-}
-
-const char* MessageContext::get() const
-{
-    return impl ? impl->m_message.c_str() : "";
-}
-
-void MessageContext::set_message(const char* message)
-{
-    if (impl == 0)
-        impl = new Impl();
-
-    impl->m_message = message;
-}
-
-
-//
-// EntityDefMessageContext class implementation.
-//
-
-EntityDefMessageContext::EntityDefMessageContext(
-    const char*     entity_type,
-    const Entity*   entity)
-{
-    set_message(format("while defining {0} \"{1}\"", entity_type, entity->get_path()));
-}
-
-}   // namespace renderer
+#endif  // !APPLESEED_FOUNDATION_UTILITY_API_APISTRING_H

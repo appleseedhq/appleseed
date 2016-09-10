@@ -35,6 +35,9 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/input/inputevaluator.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/api/apistring.h"
+
 // Standard headers.
 #include <string>
 

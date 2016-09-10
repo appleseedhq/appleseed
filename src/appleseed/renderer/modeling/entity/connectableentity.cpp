@@ -35,6 +35,9 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/source.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/api/apistring.h"
+
 // Standard headers.
 #include <cassert>
 
