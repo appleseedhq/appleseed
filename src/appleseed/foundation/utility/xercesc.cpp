@@ -35,8 +35,8 @@
 
 // Xerces-C++ headers.
 #include "xercesc/util/PlatformUtils.hpp"
-#include "xercesc/util/XMLExceptMsgs.hpp"
 #include "xercesc/util/XMLException.hpp"
+#include "xercesc/util/XMLExceptMsgs.hpp"
 
 using namespace std;
 using namespace xercesc;
