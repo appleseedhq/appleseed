@@ -52,7 +52,7 @@ def process_file(filepath):
 
         if section_begin != -1 and line in ["\n", "\r\n"]:
             if all(clause.startswith("#include") for clause in lines[section_begin:index]):
-                lines[section_begin:index] = sorted(lines[section_begin:index])
+                lines[section_begin:index] = sorted(lines[section_begin:index], key=lambda s: s.lower())
             section_begin = -1
 
     with open(filepath + ".processed", "wt") as f:
