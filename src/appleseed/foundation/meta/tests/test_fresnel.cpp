@@ -29,10 +29,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/regularspectrum.h"
+#include "foundation/math/fresnel.h"
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/mersennetwister.h"
 #include "foundation/math/sampling/mappings.h"
-#include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/gnuplotfile.h"

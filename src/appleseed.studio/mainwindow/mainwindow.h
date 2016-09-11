@@ -34,9 +34,9 @@
 #include "debug/benchmarks/benchmarkwindow.h"
 #include "debug/tests/testwindow.h"
 #include "mainwindow/project/projectmanager.h"
+#include "mainwindow/qtlogtarget.h"
 #include "mainwindow/rendering/renderingmanager.h"
 #include "mainwindow/rendering/rendertab.h"
-#include "mainwindow/qtlogtarget.h"
 #include "mainwindow/renderingsettingswindow.h"
 #include "mainwindow/statusbar.h"
 

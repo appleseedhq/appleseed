@@ -38,11 +38,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/platform/types.h"
 #include "foundation/math/cdf.h"
 #include "foundation/math/hash.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/containers/hashtable.h"
 #include "foundation/utility/uid.h"
 

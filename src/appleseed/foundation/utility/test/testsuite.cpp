@@ -31,6 +31,7 @@
 #include "testsuite.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/filter.h"
 #include "foundation/utility/test/exceptionassertionfailure.h"
 #include "foundation/utility/test/itestcase.h"
 #include "foundation/utility/test/itestcasefactory.h"
@@ -38,7 +39,6 @@
 #include "foundation/utility/test/testlistenerhelper.h"
 #include "foundation/utility/test/testmessage.h"
 #include "foundation/utility/test/testresult.h"
-#include "foundation/utility/filter.h"
 
 // Standard headers.
 #include <cassert>

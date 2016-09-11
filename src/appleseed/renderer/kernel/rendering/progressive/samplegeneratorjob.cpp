@@ -32,8 +32,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
-#include "renderer/kernel/rendering/progressive/samplecounter.h"
 #include "renderer/kernel/rendering/isamplegenerator.h"
+#include "renderer/kernel/rendering/progressive/samplecounter.h"
 #include "renderer/kernel/rendering/sampleaccumulationbuffer.h"
 
 // appleseed.foundation headers.

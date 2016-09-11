@@ -37,8 +37,8 @@
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/iostreamop.h"
-#include "foundation/utility/vpythonfile.h"
 #include "foundation/utility/test.h"
+#include "foundation/utility/vpythonfile.h"
 
 using namespace foundation;
 using namespace renderer;

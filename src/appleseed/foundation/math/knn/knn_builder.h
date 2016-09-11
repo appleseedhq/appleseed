@@ -32,9 +32,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/aabb.h"
 #include "foundation/math/knn/knn_node.h"
 #include "foundation/math/knn/knn_tree.h"
-#include "foundation/math/aabb.h"
 #include "foundation/math/permutation.h"
 #include "foundation/math/split.h"
 #include "foundation/math/vector.h"

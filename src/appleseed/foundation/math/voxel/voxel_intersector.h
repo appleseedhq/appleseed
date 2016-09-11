@@ -32,8 +32,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/voxel/voxel_statistics.h"
 #include "foundation/math/ray.h"
+#include "foundation/math/voxel/voxel_statistics.h"
 
 // Standard headers.
 #include <cassert>

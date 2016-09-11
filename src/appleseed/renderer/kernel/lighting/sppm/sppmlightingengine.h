@@ -31,8 +31,8 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
 
 // appleseed.renderer headers.
-#include "renderer/kernel/lighting/sppm/sppmparameters.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
+#include "renderer/kernel/lighting/sppm/sppmparameters.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"

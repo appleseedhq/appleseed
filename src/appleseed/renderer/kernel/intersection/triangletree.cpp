@@ -55,16 +55,16 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/intersection/aabbtriangle.h"
 #include "foundation/math/area.h"
+#include "foundation/math/intersection/aabbtriangle.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/treeoptimizer.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/system.h"
 #include "foundation/platform/timers.h"
-#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/alignedallocator.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/memory.h"

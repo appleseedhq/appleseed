@@ -32,11 +32,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/distance.h"
+#include "foundation/math/fp.h"
 #include "foundation/math/knn/knn_answer.h"
 #include "foundation/math/knn/knn_statistics.h"
 #include "foundation/math/knn/knn_tree.h"
-#include "foundation/math/distance.h"
-#include "foundation/math/fp.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"

@@ -27,11 +27,11 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/math/matrix.h"
+#include "foundation/math/quaternion.h"
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/mersennetwister.h"
 #include "foundation/math/sampling/mappings.h"
-#include "foundation/math/matrix.h"
-#include "foundation/math/quaternion.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/benchmark.h"

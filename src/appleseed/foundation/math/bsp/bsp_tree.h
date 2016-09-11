@@ -32,8 +32,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/bsp/bsp_node.h"
 #include "foundation/math/aabb.h"
+#include "foundation/math/bsp/bsp_node.h"
 
 // Standard headers.
 #include <cstddef>

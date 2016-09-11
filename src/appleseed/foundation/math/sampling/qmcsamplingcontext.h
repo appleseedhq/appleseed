@@ -32,10 +32,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionnotimplemented.h"
-#include "foundation/math/rng/distribution.h"
 #include "foundation/math/permutation.h"
 #include "foundation/math/primes.h"
 #include "foundation/math/qmc.h"
+#include "foundation/math/rng/distribution.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/test/helpers.h"
 

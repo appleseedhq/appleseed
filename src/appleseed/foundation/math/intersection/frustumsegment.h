@@ -30,8 +30,8 @@
 #define APPLESEED_FOUNDATION_MATH_INTERSECTION_FRUSTUMSEGMENT_H
 
 // appleseed.foundation headers.
-#include "foundation/math/intersection/planesegment.h"
 #include "foundation/math/frustum.h"
+#include "foundation/math/intersection/planesegment.h"
 #include "foundation/math/vector.h"
 
 // Standard headers.

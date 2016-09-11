@@ -31,6 +31,8 @@
 #define APPLESEED_RENDERER_API_PROJECT_H
 
 // API headers.
+#include "renderer/modeling/project-builtin/cornellboxproject.h"
+#include "renderer/modeling/project-builtin/defaultproject.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
 #include "renderer/modeling/project/irenderlayerrulefactory.h"
@@ -42,7 +44,5 @@
 #include "renderer/modeling/project/renderlayerrulecontainer.h"
 #include "renderer/modeling/project/renderlayerrulefactoryregistrar.h"
 #include "renderer/modeling/project/renderlayerruletraits.h"
-#include "renderer/modeling/project-builtin/cornellboxproject.h"
-#include "renderer/modeling/project-builtin/defaultproject.h"
 
 #endif  // !APPLESEED_RENDERER_API_PROJECT_H

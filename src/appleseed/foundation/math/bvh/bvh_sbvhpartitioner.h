@@ -32,8 +32,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/bvh/bvh_bboxsortpredicate.h"
 #include "foundation/math/aabb.h"
+#include "foundation/math/bvh/bvh_bboxsortpredicate.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/split.h"
 #include "foundation/platform/types.h"
