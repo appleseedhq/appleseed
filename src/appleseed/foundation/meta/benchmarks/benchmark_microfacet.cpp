@@ -28,9 +28,9 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/math/microfacet.h"
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/lcg.h"
-#include "foundation/math/microfacet.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/benchmark.h"
 

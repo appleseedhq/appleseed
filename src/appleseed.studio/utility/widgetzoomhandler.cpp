@@ -39,8 +39,8 @@
 #include <QLayout>
 #include <QScrollArea>
 #include <QScrollBar>
-#include <QWidget>
 #include <QWheelEvent>
+#include <QWidget>
 
 // Standard headers.
 #include <algorithm>

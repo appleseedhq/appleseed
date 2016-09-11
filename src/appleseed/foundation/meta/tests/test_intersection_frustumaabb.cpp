@@ -27,9 +27,9 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/math/intersection/frustumaabb.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/frustum.h"
+#include "foundation/math/intersection/frustumaabb.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"

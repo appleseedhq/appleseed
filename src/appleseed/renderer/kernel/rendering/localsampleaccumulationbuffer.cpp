@@ -31,9 +31,9 @@
 #include "localsampleaccumulationbuffer.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/sample.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/aov/tilestack.h"
+#include "renderer/kernel/rendering/sample.h"
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.

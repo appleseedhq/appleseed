@@ -35,8 +35,8 @@
 #include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
-#include "foundation/math/sampling/imageimportancesampler.h"
 #include "foundation/math/qmc.h"
+#include "foundation/math/sampling/imageimportancesampler.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/test.h"
 

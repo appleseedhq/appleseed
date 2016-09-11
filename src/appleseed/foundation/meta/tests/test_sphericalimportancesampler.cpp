@@ -27,8 +27,8 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/math/sampling/sphericalimportancesampler.h"
 #include "foundation/math/qmc.h"
+#include "foundation/math/sampling/sphericalimportancesampler.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/test.h"
 #include "foundation/utility/vpythonfile.h"

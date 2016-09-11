@@ -34,8 +34,8 @@
 #include "ui_renderingsettingswindow.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/projectmanager.h"
 #include "mainwindow/configurationmanagerwindow.h"
+#include "mainwindow/project/projectmanager.h"
 #include "utility/foldablepanelwidget.h"
 #include "utility/inputwidgetproxies.h"
 #include "utility/miscellaneous.h"

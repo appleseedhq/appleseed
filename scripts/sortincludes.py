@@ -33,6 +33,21 @@ import sys
 
 
 #--------------------------------------------------------------------------------------------------
+# Utility functions.
+#--------------------------------------------------------------------------------------------------
+
+def walk(directory, recursive):
+    if recursive:
+        for dirpath, dirnames, filenames in os.walk(directory):
+            for filename in filenames:
+                yield os.path.join(dirpath, filename)
+    else:
+        dirpath, dirnames, filenames = os.walk(directory).next()
+        for filename in filenames:
+            yield os.path.join(dirpath, filename)
+
+
+#--------------------------------------------------------------------------------------------------
 # Processing code.
 #--------------------------------------------------------------------------------------------------
 
@@ -52,7 +67,7 @@ def process_file(filepath):
 
         if section_begin != -1 and line in ["\n", "\r\n"]:
             if all(clause.startswith("#include") for clause in lines[section_begin:index]):
-                lines[section_begin:index] = sorted(lines[section_begin:index])
+                lines[section_begin:index] = sorted(lines[section_begin:index], key=lambda s: s.lower())
             section_begin = -1
 
     with open(filepath + ".processed", "wt") as f:
@@ -61,13 +76,6 @@ def process_file(filepath):
 
     os.remove(filepath)
     os.rename(filepath + ".processed", filepath)
-    
-def process_recursively():
-    for dirpath, dirnames, filenames in os.walk("."):
-        for filename in filenames:
-            ext = os.path.splitext(filename)[1]
-            if ext == ".h" or ext == ".cpp":
-                process_file(os.path.join(dirpath, filename))
 
 
 #--------------------------------------------------------------------------------------------------
@@ -78,19 +86,16 @@ def main():
     parser = argparse.ArgumentParser(description="sort #include clauses in c++ source code.")
     parser.add_argument("-r", "--recursive", action='store_true', dest='recursive',
                         help="process all files in the specified directory and all its subdirectories")
-    parser.add_argument("filepath", nargs="?", help="file to process")
+    parser.add_argument("path", help="file or directory to process")
     args = parser.parse_args()
 
-    if args.filepath:
-        if args.recursive:
-            print("cannot simultaneously specify a file path and use the --recursive flag.")
-            sys.exit(1)
-        print(args.filepath)
+    if os.path.isfile(args.path):
+        process_file(args.path)
     else:
-        if not args.recursive:
-            print("either a file path or the --recursive flag must be specified.")
-            sys.exit(1)
-        process_recursively()
+        for filepath in walk(args.path, args.recursive):
+            ext = os.path.splitext(filepath)[1]
+            if ext == ".h" or ext == ".cpp":
+                process_file(filepath)
 
 if __name__ == '__main__':
     main()

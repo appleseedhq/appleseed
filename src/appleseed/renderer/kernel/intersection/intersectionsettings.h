@@ -34,8 +34,8 @@
 #include "renderer/global/globaltypes.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/intersection/raytrianglemt.h"
 #include "foundation/math/beziercurve.h"
+#include "foundation/math/intersection/raytrianglemt.h"
 #include "foundation/math/matrix.h"
 
 // Standard headers.

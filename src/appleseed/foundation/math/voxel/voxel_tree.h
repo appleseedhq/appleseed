@@ -32,10 +32,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/voxel/voxel_node.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/split.h"
 #include "foundation/math/vector.h"
+#include "foundation/math/voxel/voxel_node.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/bufferedfile.h"
 

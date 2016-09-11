@@ -33,13 +33,13 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
-#include "foundation/utility/test/testlistenerbase.h"
-#include "foundation/utility/test/testsuite.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
+#include "foundation/utility/test/testlistenerbase.h"
+#include "foundation/utility/test/testsuite.h"
 
 // Standard headers.
 #include <cstddef>

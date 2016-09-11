@@ -44,8 +44,8 @@
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
 #include "foundation/platform/thread.h"
-#include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/job/abortswitch.h"
 
 // Qt headers.
 #include <QObject>

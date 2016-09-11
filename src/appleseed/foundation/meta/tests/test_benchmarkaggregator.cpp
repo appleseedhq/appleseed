@@ -33,8 +33,8 @@
 #include "foundation/utility/benchmark/benchmarkdatapoint.h"
 #include "foundation/utility/benchmark/benchmarkserie.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/uid.h"
 #include "foundation/utility/test.h"
+#include "foundation/utility/uid.h"
 
 // Boost headers.
 #include "boost/date_time/gregorian/gregorian.hpp"

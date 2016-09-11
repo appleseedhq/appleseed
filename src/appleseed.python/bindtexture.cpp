@@ -35,8 +35,8 @@
 #include "unalignedtransform.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/texture.h"
 #include "renderer/api/scene.h"
+#include "renderer/api/texture.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/searchpaths.h"

@@ -36,8 +36,8 @@
 #include "renderer/api/shadergroup.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/api/specializedapiarrays.h"
+#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.

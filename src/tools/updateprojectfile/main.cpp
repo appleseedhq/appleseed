@@ -38,8 +38,8 @@
 #include "renderer/api/project.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/containers/dictionary.h"
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"

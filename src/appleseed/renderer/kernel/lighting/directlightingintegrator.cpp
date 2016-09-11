@@ -587,7 +587,9 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     if (square_distance < square(edf->get_light_near_start()))
         return;
 
-    if (mis_heuristic != MISNone && square_distance > 0.0)
+    if (sample.m_probability != BSDF::DiracDelta &&
+        mis_heuristic != MISNone &&
+        square_distance > 0.0)
     {
         // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
         const double bsdf_prob_area = sample.m_probability * cos_on / square_distance;

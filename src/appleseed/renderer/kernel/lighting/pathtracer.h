@@ -52,10 +52,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/dual.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/rr.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/string.h"

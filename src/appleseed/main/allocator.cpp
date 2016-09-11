@@ -50,8 +50,8 @@
 #ifdef _WIN32
 
 // appleseed.foundation headers.
-#include "foundation/platform/win32stackwalker.h"
 #include "foundation/platform/types.h"
+#include "foundation/platform/win32stackwalker.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/string.h"

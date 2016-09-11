@@ -32,10 +32,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/thread.h"
-#include "foundation/utility/job/abortswitch.h"
-#include "foundation/utility/job/ijob.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iterators.h"
+#include "foundation/utility/job/abortswitch.h"
+#include "foundation/utility/job/ijob.h"
 
 // Boost headers.
 #include "boost/thread/condition_variable.hpp"

@@ -28,8 +28,8 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/math/rng/mersennetwister.h"
 #include "foundation/math/permutation.h"
+#include "foundation/math/rng/mersennetwister.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/benchmark.h"
 

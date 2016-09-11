@@ -39,15 +39,15 @@
 #include "renderer/api/scene.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/cdf.h"
+#include "foundation/math/qmc.h"
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/mersennetwister.h"
 #include "foundation/math/sampling/mappings.h"
-#include "foundation/math/cdf.h"
-#include "foundation/math/qmc.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/filter.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
