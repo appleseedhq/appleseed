@@ -33,6 +33,9 @@
 // appleseed.shared headers.
 #include "dllsymbol.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/log/logmessage.h"
+
 // Boost headers.
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
@@ -58,8 +61,7 @@ class SHAREDDLL Application
 
     // Check if the application is correctly installed, and issue a fatal error
     // message (through the provided foundation::Logger object) if it isn't.
-    static void check_installation(
-        foundation::Logger&         logger);
+    static void check_installation(foundation::Logger& logger);
 
     // Return the root path of the application. The root path of an application
     // is the path to the parent of the bin/ subdirectory. This method returns
@@ -75,9 +77,10 @@ class SHAREDDLL Application
     // Load a settings file from appleseed's settings directory.
     // Returns true if settings could be loaded.
     static bool load_settings(
-        const char*                 filename,
-        foundation::Dictionary&     settings,
-        foundation::Logger&         logger);
+        const char*                             filename,
+        foundation::Dictionary&                 settings,
+        foundation::Logger&                     logger,
+        const foundation::LogMessage::Category  category = foundation::LogMessage::Debug);
 
     // Change the current directory to the root path of the application's tests.
     // Returns the path to the current directory.
