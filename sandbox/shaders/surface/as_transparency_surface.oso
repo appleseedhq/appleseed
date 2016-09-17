@@ -1,5 +1,6 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.9
+# Compiled by oslc 1.7.4
+# options: -v -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include -o .././surface/as_transparency_surface.oso
 shader as_transparency_surface	%meta{string,help,"Transparent surface shader."} 
 param	closure color	BSDF1			%read{10,10} %write{2147483647,-1}
 param	float	Transparency	0.5		%meta{float,min,0} %meta{float,max,1}  %read{8,8} %write{2147483647,-1}

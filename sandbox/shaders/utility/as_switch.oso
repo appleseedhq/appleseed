@@ -1,5 +1,6 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.9
+# Compiled by oslc 1.7.4
+# options: -v -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include -o .././utility/as_switch.oso
 shader as_switch
 param	int	Index	0		%meta{int,min,0} %meta{int,max,1}  %read{0,5} %write{2147483647,-1}
 param	float	Float1	0		%read{2,2} %write{2147483647,-1}

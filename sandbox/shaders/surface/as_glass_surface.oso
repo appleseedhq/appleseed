@@ -1,5 +1,6 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.9
+# Compiled by oslc 1.7.4
+# options: -v -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include -o .././surface/as_glass_surface.oso
 shader as_glass_surface	%meta{string,help,"Glass surface shader"} 
 param	vector	Normal	0 0 0		%read{1,1} %write{0,0} %initexpr
 param	vector	Tn	0 0 0		%meta{int,lockgeom,0} %meta{string,help,"Tangent"} %meta{string,label,"Tangent"}  %read{1,1} %write{2147483647,-1}
