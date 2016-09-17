@@ -68,9 +68,6 @@ APPLESEED_DECLARE_INPUT_VALUES(DipoleBSSRDFInputValues)
     ScalarInput m_ior;
 
     // Precomputed values.
-    Spectrum    m_sigma_t;
-    Spectrum    m_sigma_s_prime;
-    Spectrum    m_sigma_t_prime;
     Spectrum    m_alpha_prime;
     Spectrum    m_sigma_tr;
     Spectrum    m_channel_pdf;
@@ -172,21 +169,23 @@ class DipoleBSSRDF
                 values->m_sigma_tr);
         }
 
-        // Precompute some coefficients.
-        values->m_sigma_t = values->m_sigma_s + values->m_sigma_a;
-        values->m_sigma_s_prime = values->m_sigma_s * static_cast<float>(1.0 - values->m_anisotropy);
-        values->m_sigma_t_prime = values->m_sigma_s_prime + values->m_sigma_a;
-        values->m_alpha_prime = values->m_sigma_s_prime / values->m_sigma_t_prime;
+        // Precompute some coefficients and build a CDF for channel sampling.
+        values->m_alpha_prime.resize(values->m_reflectance.size());
+        values->m_channel_pdf.resize(values->m_reflectance.size());
+        values->m_channel_cdf.resize(values->m_reflectance.size());
 
-        // Build a CDF for channel sampling.
-        values->m_channel_pdf = values->m_alpha_prime;
-        values->m_channel_cdf.resize(values->m_channel_pdf.size());
         float cumulated_pdf = 0.0f;
         for (size_t i = 0, e = values->m_channel_cdf.size(); i < e; ++i)
         {
+            const float sigma_s_prime = values->m_sigma_s[i] * static_cast<float>(1.0 - values->m_anisotropy);
+            const float sigma_t_prime = sigma_s_prime + values->m_sigma_a[i];
+            values->m_alpha_prime[i] = sigma_s_prime / sigma_t_prime;
+
+            values->m_channel_pdf[i] = values->m_alpha_prime[i];
             cumulated_pdf += values->m_channel_pdf[i];
             values->m_channel_cdf[i] = cumulated_pdf;
         }
+
         const float rcp_cumulated_pdf = 1.0f / cumulated_pdf;
         values->m_channel_pdf *= rcp_cumulated_pdf;
         values->m_channel_cdf *= rcp_cumulated_pdf;

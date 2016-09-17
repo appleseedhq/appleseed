@@ -232,8 +232,11 @@ namespace
 
             for (size_t i = 0, e = value.size(); i < e; ++i)
             {
-                const double sigma_t = values->m_sigma_t[i];                            // extinction coefficient
-                const double sigma_t_prime = values->m_sigma_t_prime[i];                // reduced extinction coefficient
+                const double sigma_a = values->m_sigma_a[i];
+                const double sigma_s = values->m_sigma_s[i];
+                const double sigma_t = sigma_s + sigma_a;
+                const double sigma_s_prime = sigma_s * (1.0 - values->m_anisotropy);
+                const double sigma_t_prime = sigma_s_prime + sigma_a;
                 const double alpha_prime = values->m_alpha_prime[i];                    // reduced scattering albedo
                 const double sigma_tr = values->m_sigma_tr[i];                          // effective transport coefficient
 
