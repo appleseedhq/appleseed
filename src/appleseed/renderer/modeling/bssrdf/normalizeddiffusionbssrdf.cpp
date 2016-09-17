@@ -36,7 +36,6 @@
 #include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/colorspace.h"
 #include "foundation/math/cdf.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -80,7 +79,6 @@ namespace
             const char*         name,
             const ParamArray&   params)
           : SeparableBSSRDF(name, params)
-          , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
         {
             m_inputs.declare("weight", InputFormatScalar, "1.0");
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
@@ -114,33 +112,9 @@ namespace
                 reinterpret_cast<NormalizedDiffusionBSSRDFInputValues*>(data);
 
             // Precompute the relative index of refraction.
-            const double outside_ior =
-                shading_point.is_entering()
-                    ? shading_point.get_ray().get_current_ior()
-                    : shading_point.get_ray().get_previous_ior();
+            values->m_eta = compute_eta(shading_point, values->m_ior);
 
-            values->m_eta = outside_ior / values->m_ior;
-
-            if (values->m_reflectance.size() != values->m_dmfp.size())
-            {
-                // Since it does not really make sense to convert a dmfp,
-                // a per channel distance, as if it were a color,
-                // we instead always convert the reflectance to match the
-                // size of the dmfp.
-                if (values->m_dmfp.is_spectral())
-                {
-                    Spectrum::upgrade(
-                        values->m_reflectance,
-                        values->m_reflectance);
-                }
-                else
-                {
-                    Spectrum::downgrade(
-                        m_lighting_conditions,
-                        values->m_reflectance,
-                        values->m_reflectance);
-                }
-            }
+            make_reflectance_and_dmfp_compatible(values->m_reflectance, values->m_dmfp);
 
             // Apply multipliers to input values.
             values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
@@ -285,9 +259,6 @@ namespace
             // Compute and return the final PDF.
             return pdf_radius * pdf_angle;
         }
-
-      private:
-        const LightingConditions m_lighting_conditions;
     };
 }
 
