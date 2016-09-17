@@ -64,7 +64,7 @@ APPLESEED_DECLARE_INPUT_VALUES(DipoleBSSRDFInputValues)
     ScalarInput m_dmfp_multiplier;
     Spectrum    m_sigma_a;
     Spectrum    m_sigma_s;
-    ScalarInput m_anisotropy;
+    ScalarInput m_g;
     ScalarInput m_ior;
 
     // Precomputed values.
@@ -117,14 +117,11 @@ class DipoleBSSRDF
         // Precompute the relative index of refraction.
         values->m_eta = compute_eta(shading_point, values->m_ior);
 
-        // Clamp anisotropy.
-        values->m_anisotropy = foundation::clamp(values->m_anisotropy, 0.0, 0.999);
-
         if (m_inputs.source("sigma_a") == 0 || m_inputs.source("sigma_s") == 0)
         {
             //
             // Compute sigma_a, sigma_s and sigma_tr from the diffuse surface reflectance
-            // and mean free path (mfp).
+            // and diffuse mean free path (dmfp).
             //
 
             make_reflectance_and_dmfp_compatible(values->m_reflectance, values->m_dmfp);
@@ -143,7 +140,7 @@ class DipoleBSSRDF
                 rd_fun,
                 values->m_reflectance,
                 values->m_dmfp,
-                values->m_anisotropy,
+                values->m_g,
                 values->m_sigma_a,
                 values->m_sigma_s);
 
@@ -165,7 +162,7 @@ class DipoleBSSRDF
             effective_extinction_coefficient(
                 values->m_sigma_a,
                 values->m_sigma_s,
-                values->m_anisotropy,
+                values->m_g,
                 values->m_sigma_tr);
         }
 
@@ -177,7 +174,7 @@ class DipoleBSSRDF
         float cumulated_pdf = 0.0f;
         for (size_t i = 0, e = values->m_channel_cdf.size(); i < e; ++i)
         {
-            const float sigma_s_prime = values->m_sigma_s[i] * static_cast<float>(1.0 - values->m_anisotropy);
+            const float sigma_s_prime = values->m_sigma_s[i] * static_cast<float>(1.0 - values->m_g);
             const float sigma_t_prime = sigma_s_prime + values->m_sigma_a[i];
             values->m_alpha_prime[i] = sigma_s_prime / sigma_t_prime;
 

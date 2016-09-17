@@ -856,7 +856,7 @@ namespace
                 values->m_reflectance_multiplier = 1.0;
                 values->m_dmfp = Color3f(p->diffuse_mean_free_path);
                 values->m_dmfp_multiplier = 1.0;
-                values->m_anisotropy = 0.0;
+                values->m_g = 0.0;
                 values->m_ior = p->ior;
             }
         }

@@ -96,7 +96,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double    g)
         {
             m_values.m_weight = 1.0;
-            m_values.m_anisotropy = g;
+            m_values.m_g = g;
             m_values.m_ior = eta;
 
             m_bssrdf->get_inputs().find("sigma_a").bind(new ScalarSource(sigma_a));
@@ -118,7 +118,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             m_values.m_reflectance_multiplier = 1.0;
             m_values.m_dmfp.set(static_cast<float>(dmfp));
             m_values.m_dmfp_multiplier = 1.0;
-            m_values.m_anisotropy = 0.0;
+            m_values.m_g = 0.0;
             m_values.m_ior = eta;
 
             m_bssrdf->prepare_inputs(m_outgoing_point, &m_values);
