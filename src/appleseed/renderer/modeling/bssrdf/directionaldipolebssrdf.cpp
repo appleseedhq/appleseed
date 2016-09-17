@@ -107,70 +107,7 @@ namespace
             DipoleBSSRDFInputValues* values =
                 reinterpret_cast<DipoleBSSRDFInputValues*>(data);
 
-            // Precompute the relative index of refraction.
-            values->m_eta = compute_eta(shading_point, values->m_ior);
-
-            // Clamp anisotropy.
-            values->m_anisotropy = clamp(values->m_anisotropy, 0.0, 0.999);
-
-            if (m_inputs.source("sigma_a") == 0 || m_inputs.source("sigma_s") == 0)
-            {
-                //
-                // Compute sigma_a, sigma_s and sigma_tr from the diffuse surface reflectance
-                // and diffuse mean free path (dmfp).
-                //
-
-                make_reflectance_and_dmfp_compatible(values->m_reflectance, values->m_dmfp);
-
-                // Apply multipliers to input values.
-                values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
-                values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
-
-                // Clamp input values.
-                clamp_in_place(values->m_reflectance, 0.001f, 0.999f);
-                clamp_low_in_place(values->m_dmfp, 1.0e-5f);
-
-                // Compute sigma_a and sigma_s.
-                // Currently, we don't have a reparameterization for this BSSRDF model.
-                // We reuse the standard dipole reparameterization method and apply a
-                // correction weight in evaluate() to try to match the reflectance of
-                // the standard dipole model.
-                const ComputeRdStandardDipole rd_fun(values->m_eta);
-                compute_absorption_and_scattering_dmfp(
-                    rd_fun,
-                    values->m_reflectance,
-                    values->m_dmfp,
-                    values->m_anisotropy,
-                    values->m_sigma_a,
-                    values->m_sigma_s);
-
-                // Compute sigma_tr = 1 / dmfp.
-                values->m_sigma_tr = rcp(values->m_dmfp);
-            }
-            else
-            {
-                //
-                // Compute sigma_tr from sigma_a and sigma_s.
-                //
-                // If you want to use the sigma_a and sigma_s values provided in [1],
-                // and if your scene is modeled in meters, you will need to *multiply*
-                // them by 1000. If your scene is modeled in centimers (e.g. the "size"
-                // of the object is 4 units) then you will need to multiply the sigmas
-                // by 100.
-                //
-
-                effective_extinction_coefficient(
-                    values->m_sigma_a,
-                    values->m_sigma_s,
-                    values->m_anisotropy,
-                    values->m_sigma_tr);
-            }
-
-            // Precompute some coefficients.
-            values->m_sigma_t = values->m_sigma_s + values->m_sigma_a;
-            values->m_sigma_s_prime = values->m_sigma_s * static_cast<float>(1.0 - values->m_anisotropy);
-            values->m_sigma_t_prime = values->m_sigma_s_prime + values->m_sigma_a;
-            values->m_alpha_prime = values->m_sigma_s_prime / values->m_sigma_t_prime;
+            do_prepare_inputs<ComputeRdStandardDipole>(shading_point, values);
 
             if (m_inputs.source("sigma_a") == 0 || m_inputs.source("sigma_s") == 0)
             {
@@ -188,23 +125,6 @@ namespace
             }
             else
                 values->m_dirpole_reparam_weight.set(1.0f);
-
-            // Build a CDF for channel sampling.
-            values->m_channel_pdf = values->m_alpha_prime;
-            values->m_channel_cdf.resize(values->m_channel_pdf.size());
-            float cumulated_pdf = 0.0f;
-            for (size_t i = 0, e = values->m_channel_cdf.size(); i < e; ++i)
-            {
-                cumulated_pdf += values->m_channel_pdf[i];
-                values->m_channel_cdf[i] = cumulated_pdf;
-            }
-            const float rcp_cumulated_pdf = 1.0f / cumulated_pdf;
-            values->m_channel_pdf *= rcp_cumulated_pdf;
-            values->m_channel_cdf *= rcp_cumulated_pdf;
-            values->m_channel_cdf[values->m_channel_cdf.size() - 1] = 1.0f;
-
-            // Precompute the (square of the) max radius.
-            values->m_rmax2 = square(dipole_max_radius(min_value(values->m_sigma_tr)));
         }
 
         virtual void evaluate_profile(

@@ -173,6 +173,7 @@ class DipoleBSSRDF
         }
 
         // Precompute some coefficients.
+        values->m_sigma_t = values->m_sigma_s + values->m_sigma_a;
         values->m_sigma_s_prime = values->m_sigma_s * static_cast<float>(1.0 - values->m_anisotropy);
         values->m_sigma_t_prime = values->m_sigma_s_prime + values->m_sigma_a;
         values->m_alpha_prime = values->m_sigma_s_prime / values->m_sigma_t_prime;
