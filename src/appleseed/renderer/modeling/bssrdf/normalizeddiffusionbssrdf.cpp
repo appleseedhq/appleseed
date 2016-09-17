@@ -134,7 +134,7 @@ namespace
             for (size_t i = 0, e = values->m_channel_pdf.size(); i < e; ++i)
             {
                 const double a = static_cast<double>(values->m_reflectance[i]);
-                const double s = normalized_diffusion_s(a);
+                const double s = normalized_diffusion_s_dmfp(a);
                 values->m_s[i] = static_cast<float>(s);
 
                 const double l = values->m_dmfp[i];

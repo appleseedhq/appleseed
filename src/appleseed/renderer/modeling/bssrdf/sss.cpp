@@ -186,7 +186,7 @@ double dipole_max_radius(const double sigma_tr)
 // Normalized diffusion profile implementation.
 //
 
-double normalized_diffusion_s(
+double normalized_diffusion_s_dmfp(
     const double    a)
 {
     // Equation 8.

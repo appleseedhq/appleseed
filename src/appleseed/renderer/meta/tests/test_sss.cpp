@@ -265,7 +265,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const Spectrum rd(rand_float1(rng, 0.001f, 0.999f));
 
             Spectrum sigma_a1, sigma_s1;
-            compute_absorption_and_scattering(
+            compute_absorption_and_scattering_dmfp(
                 rd_fun,
                 rd,
                 Spectrum(1.0f),
@@ -275,7 +275,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
             const Spectrum dmfp(rand_float1(rng, 0.001f, 10.0f));
             Spectrum sigma_a, sigma_s;
-            compute_absorption_and_scattering(
+            compute_absorption_and_scattering_dmfp(
                 rd_fun,
                 rd,
                 dmfp,
@@ -332,7 +332,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         Spectrum new_sigma_a_spectrum, new_sigma_s_spectrum;
         const Spectrum rd_spectrum(rd);
-        compute_absorption_and_scattering(
+        compute_absorption_and_scattering_dmfp(
             rd_fun,
             rd_spectrum,
             dmfp,
@@ -593,7 +593,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         for (size_t i = 0, e = countof(Expected); i < e; ++i)
         {
             const double a = fit<size_t, double>(i, 0, countof(Expected) - 1, 0.0, 1.0);
-            const double s = normalized_diffusion_s(a);
+            const double s = normalized_diffusion_s_dmfp(a);
 
             EXPECT_FEQ_EPS(Expected[i], s, NormalizedDiffusionTestEps);
         }
@@ -652,7 +652,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double u = rand_double2(rng);
             const double a = rand_double1(rng);
             const double l = rand_double1(rng, 0.001, 10.0);
-            const double s = normalized_diffusion_s(a);
+            const double s = normalized_diffusion_s_dmfp(a);
             const double r = normalized_diffusion_sample(u, l, s, 0.00001);
             const double e = normalized_diffusion_cdf(r, l, s);
 
@@ -668,7 +668,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             const double a = rand_double1(rng);
             const double l = rand_double1(rng, 0.001, 10.0);
-            const double s = normalized_diffusion_s(a);
+            const double s = normalized_diffusion_s_dmfp(a);
             const double r = normalized_diffusion_max_radius(l, s);
             const double value = normalized_diffusion_profile(r, l, s, a);
 
@@ -680,7 +680,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     {
         const double A = 0.5;
         const double L = 100;
-        const double s = normalized_diffusion_s(A);
+        const double s = normalized_diffusion_s_dmfp(A);
 
         const size_t SampleCount = 1000;
         MersenneTwister rng;
@@ -718,7 +718,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         for (size_t i = 0; i < N; ++i)
         {
             const double a = fit<size_t, double>(i, 0, N - 1, 0.0, 1.0);
-            const double s = normalized_diffusion_s(a);
+            const double s = normalized_diffusion_s_dmfp(a);
             points.push_back(Vector2d(a, s));
         }
 
@@ -739,7 +739,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         for (size_t i = 9; i >= 1; --i)
         {
             const double a = static_cast<double>(i) / 10.0;
-            const double s = normalized_diffusion_s(a);
+            const double s = normalized_diffusion_s_dmfp(a);
 
             const size_t N = 1000;
             vector<Vector2d> points;
@@ -803,7 +803,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     {
         const double A = 1.0;
         const double L = 1;
-        const double s = normalized_diffusion_s(A);
+        const double s = normalized_diffusion_s_dmfp(A);
 
         const size_t SampleCount = 1000;
         MersenneTwister rng;

@@ -136,7 +136,7 @@ namespace
                 // correction weight in evaluate() to try to match the reflectance of
                 // the standard dipole model.
                 const ComputeRdStandardDipole rd_fun(values->m_eta);
-                compute_absorption_and_scattering(
+                compute_absorption_and_scattering_dmfp(
                     rd_fun,
                     values->m_reflectance,
                     values->m_dmfp,

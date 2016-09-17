@@ -111,7 +111,7 @@ void effective_extinction_coefficient(
 
 // rd and dmfp must have the same size (both RGB or both spectral).
 template <typename ComputeRdFun>
-void compute_absorption_and_scattering(
+void compute_absorption_and_scattering_dmfp(
     const ComputeRdFun  rd_fun,
     const Spectrum&     rd,                     // diffuse surface reflectance
     const Spectrum&     dmfp,                   // diffuse mean free path
@@ -158,7 +158,7 @@ double dipole_max_radius(const double sigma_tr);
 //
 
 // Compute the scaling factor s for the searchlight configuration with dmfp parameterization.
-double normalized_diffusion_s(
+double normalized_diffusion_s_dmfp(
     const double        a);                     // surface albedo
 
 // Evaluate the diffuse reflectance profile R(r).
@@ -230,7 +230,7 @@ inline double compute_alpha_prime(
 }
 
 template <typename ComputeRdFun>
-void compute_absorption_and_scattering(
+void compute_absorption_and_scattering_dmfp(
     const ComputeRdFun  rd_fun,
     const Spectrum&     rd,
     const Spectrum&     dmfp,

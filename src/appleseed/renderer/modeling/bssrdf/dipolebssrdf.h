@@ -142,7 +142,7 @@ class DipoleBSSRDF
 
             // Compute sigma_a and sigma_s.
             const ComputeRdFun rd_fun(values->m_eta);
-            compute_absorption_and_scattering(
+            compute_absorption_and_scattering_dmfp(
                 rd_fun,
                 values->m_reflectance,
                 values->m_dmfp,
