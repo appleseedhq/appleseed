@@ -111,15 +111,14 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         void set_values_from_rd_dmfp(
             const double    rd,
             const double    dmfp,
-            const double    eta,
-            const double    g)
+            const double    eta)
         {
             m_values.m_weight = 1.0;
             m_values.m_reflectance.set(static_cast<float>(rd));
             m_values.m_reflectance_multiplier = 1.0;
             m_values.m_dmfp.set(static_cast<float>(dmfp));
             m_values.m_dmfp_multiplier = 1.0;
-            m_values.m_anisotropy = g;
+            m_values.m_anisotropy = 0.0;
             m_values.m_ior = eta;
 
             m_bssrdf->prepare_inputs(m_outgoing_point, &m_values);
@@ -192,7 +191,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         const size_t            sample_count)
     {
         DipoleBSSRDFEvaluator<BSSRDFFactory> bssrdf_eval;
-        bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, eta, 0.0);
+        bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, eta);
 
         return integrate_dipole(rng, bssrdf_eval, sample_count);
     }
@@ -880,7 +879,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             const double rd = rand_double1(rng);
             const double dmfp = rand_double1(rng, 0.001, 100.0);
-            bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, 1.0, 0.0);
+            bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, 1.0);
 
             const double r = dipole_max_radius(bssrdf_eval.get_sigma_tr());
             const double result = bssrdf_eval.evaluate(r);
@@ -992,7 +991,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             const double rd = rand_double1(rng);
             const double dmfp = rand_double1(rng, 0.001, 100.0);
-            bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, 1.0, 0.0);
+            bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, 1.0);
 
             const double r = dipole_max_radius(bssrdf_eval.get_sigma_tr());
             const double result = bssrdf_eval.evaluate(r);
