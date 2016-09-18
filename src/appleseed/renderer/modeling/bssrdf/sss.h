@@ -111,11 +111,20 @@ void effective_extinction_coefficient(
 
 // rd and dmfp must have the same size (both RGB or both spectral).
 template <typename ComputeRdFun>
-void compute_absorption_and_scattering(
+void compute_absorption_and_scattering_dmfp(
     const ComputeRdFun  rd_fun,
     const Spectrum&     rd,                     // diffuse surface reflectance
     const Spectrum&     dmfp,                   // diffuse mean free path
     const double        g,                      // anisotropy
+    Spectrum&           sigma_a,                // absorption coefficient
+    Spectrum&           sigma_s);               // scattering coefficient
+
+// rd and mfp must have the same size (both RGB or both spectral).
+template <typename ComputeRdFun>
+void compute_absorption_and_scattering_mfp(
+    const ComputeRdFun  rd_fun,
+    const Spectrum&     rd,                     // diffuse surface reflectance
+    const Spectrum&     mfp,                    // mean free path
     Spectrum&           sigma_a,                // absorption coefficient
     Spectrum&           sigma_s);               // scattering coefficient
 
@@ -158,7 +167,11 @@ double dipole_max_radius(const double sigma_tr);
 //
 
 // Compute the scaling factor s for the searchlight configuration with dmfp parameterization.
-double normalized_diffusion_s(
+double normalized_diffusion_s_dmfp(
+    const double        a);                     // surface albedo
+
+// Compute the scaling factor s for the searchlight configuration with mfp parameterization.
+double normalized_diffusion_s_mfp(
     const double        a);                     // surface albedo
 
 // Evaluate the diffuse reflectance profile R(r).
@@ -230,7 +243,7 @@ inline double compute_alpha_prime(
 }
 
 template <typename ComputeRdFun>
-void compute_absorption_and_scattering(
+void compute_absorption_and_scattering_dmfp(
     const ComputeRdFun  rd_fun,
     const Spectrum&     rd,
     const Spectrum&     dmfp,
@@ -267,6 +280,39 @@ void compute_absorption_and_scattering(
 
         // Compute absorption coefficient.
         sigma_a[i] = static_cast<float>(sigma_t_prime - sigma_s_prime);
+    }
+}
+
+template <typename ComputeRdFun>
+void compute_absorption_and_scattering_mfp(
+    const ComputeRdFun  rd_fun,
+    const Spectrum&     rd,
+    const Spectrum&     mfp,
+    Spectrum&           sigma_a,
+    Spectrum&           sigma_s)
+{
+    assert(rd.size() == mfp.size());
+
+    sigma_a.resize(rd.size());
+    sigma_s.resize(rd.size());
+
+    for (size_t i = 0, e = rd.size(); i < e; ++i)
+    {
+        assert(rd[i] > 0.0f);
+        assert(rd[i] < 1.0f);
+
+        // Find alpha' by numerically inverting Rd(alpha').
+        const double alpha_prime = compute_alpha_prime(rd_fun, rd[i]);
+        assert(alpha_prime > 0.0);
+        assert(alpha_prime < 1.0);
+
+        const double sigma_t = 1.0 / mfp[i];
+
+        // Compute scattering coefficient.
+        sigma_s[i] = static_cast<float>(alpha_prime * sigma_t);
+
+        // Compute absorption coefficient.
+        sigma_a[i] = static_cast<float>(sigma_t - sigma_s[i]);
     }
 }
 

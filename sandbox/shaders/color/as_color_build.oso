@@ -1,5 +1,6 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.9
+# Compiled by oslc 1.7.4
+# options: -v -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include -o .././color/as_color_build.oso
 shader as_color_build
 param	float	R	0		%read{0,0} %write{2147483647,-1}
 param	float	G	0		%read{0,0} %write{2147483647,-1}

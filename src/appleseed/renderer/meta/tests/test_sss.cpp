@@ -96,7 +96,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double    g)
         {
             m_values.m_weight = 1.0;
-            m_values.m_anisotropy = g;
+            m_values.m_g = g;
             m_values.m_ior = eta;
 
             m_bssrdf->get_inputs().find("sigma_a").bind(new ScalarSource(sigma_a));
@@ -111,15 +111,14 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         void set_values_from_rd_dmfp(
             const double    rd,
             const double    dmfp,
-            const double    eta,
-            const double    g)
+            const double    eta)
         {
             m_values.m_weight = 1.0;
             m_values.m_reflectance.set(static_cast<float>(rd));
             m_values.m_reflectance_multiplier = 1.0;
             m_values.m_dmfp.set(static_cast<float>(dmfp));
             m_values.m_dmfp_multiplier = 1.0;
-            m_values.m_anisotropy = g;
+            m_values.m_g = 0.0;
             m_values.m_ior = eta;
 
             m_bssrdf->prepare_inputs(m_outgoing_point, &m_values);
@@ -192,7 +191,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         const size_t            sample_count)
     {
         DipoleBSSRDFEvaluator<BSSRDFFactory> bssrdf_eval;
-        bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, eta, 0.0);
+        bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, eta);
 
         return integrate_dipole(rng, bssrdf_eval, sample_count);
     }
@@ -265,7 +264,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const Spectrum rd(rand_float1(rng, 0.001f, 0.999f));
 
             Spectrum sigma_a1, sigma_s1;
-            compute_absorption_and_scattering(
+            compute_absorption_and_scattering_dmfp(
                 rd_fun,
                 rd,
                 Spectrum(1.0f),
@@ -275,7 +274,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
             const Spectrum dmfp(rand_float1(rng, 0.001f, 10.0f));
             Spectrum sigma_a, sigma_s;
-            compute_absorption_and_scattering(
+            compute_absorption_and_scattering_dmfp(
                 rd_fun,
                 rd,
                 dmfp,
@@ -332,7 +331,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         Spectrum new_sigma_a_spectrum, new_sigma_s_spectrum;
         const Spectrum rd_spectrum(rd);
-        compute_absorption_and_scattering(
+        compute_absorption_and_scattering_dmfp(
             rd_fun,
             rd_spectrum,
             dmfp,
@@ -593,7 +592,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         for (size_t i = 0, e = countof(Expected); i < e; ++i)
         {
             const double a = fit<size_t, double>(i, 0, countof(Expected) - 1, 0.0, 1.0);
-            const double s = normalized_diffusion_s(a);
+            const double s = normalized_diffusion_s_dmfp(a);
 
             EXPECT_FEQ_EPS(Expected[i], s, NormalizedDiffusionTestEps);
         }
@@ -652,7 +651,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double u = rand_double2(rng);
             const double a = rand_double1(rng);
             const double l = rand_double1(rng, 0.001, 10.0);
-            const double s = normalized_diffusion_s(a);
+            const double s = normalized_diffusion_s_dmfp(a);
             const double r = normalized_diffusion_sample(u, l, s, 0.00001);
             const double e = normalized_diffusion_cdf(r, l, s);
 
@@ -668,7 +667,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             const double a = rand_double1(rng);
             const double l = rand_double1(rng, 0.001, 10.0);
-            const double s = normalized_diffusion_s(a);
+            const double s = normalized_diffusion_s_dmfp(a);
             const double r = normalized_diffusion_max_radius(l, s);
             const double value = normalized_diffusion_profile(r, l, s, a);
 
@@ -680,7 +679,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     {
         const double A = 0.5;
         const double L = 100;
-        const double s = normalized_diffusion_s(A);
+        const double s = normalized_diffusion_s_dmfp(A);
 
         const size_t SampleCount = 1000;
         MersenneTwister rng;
@@ -718,7 +717,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         for (size_t i = 0; i < N; ++i)
         {
             const double a = fit<size_t, double>(i, 0, N - 1, 0.0, 1.0);
-            const double s = normalized_diffusion_s(a);
+            const double s = normalized_diffusion_s_dmfp(a);
             points.push_back(Vector2d(a, s));
         }
 
@@ -739,7 +738,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         for (size_t i = 9; i >= 1; --i)
         {
             const double a = static_cast<double>(i) / 10.0;
-            const double s = normalized_diffusion_s(a);
+            const double s = normalized_diffusion_s_dmfp(a);
 
             const size_t N = 1000;
             vector<Vector2d> points;
@@ -803,7 +802,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     {
         const double A = 1.0;
         const double L = 1;
-        const double s = normalized_diffusion_s(A);
+        const double s = normalized_diffusion_s_dmfp(A);
 
         const size_t SampleCount = 1000;
         MersenneTwister rng;
@@ -880,7 +879,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             const double rd = rand_double1(rng);
             const double dmfp = rand_double1(rng, 0.001, 100.0);
-            bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, 1.0, 0.0);
+            bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, 1.0);
 
             const double r = dipole_max_radius(bssrdf_eval.get_sigma_tr());
             const double result = bssrdf_eval.evaluate(r);
@@ -992,7 +991,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             const double rd = rand_double1(rng);
             const double dmfp = rand_double1(rng, 0.001, 100.0);
-            bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, 1.0, 0.0);
+            bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, 1.0);
 
             const double r = dipole_max_radius(bssrdf_eval.get_sigma_tr());
             const double result = bssrdf_eval.evaluate(r);

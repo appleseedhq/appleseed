@@ -1,5 +1,6 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.9
+# Compiled by oslc 1.7.4
+# options: -v -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include -o .././input/as_globals.oso
 shader as_globals
 oparam	vector	Point	0 0 0		%read{2147483647,-1} %write{0,0} %initexpr
 oparam	vector	Normal	0 0 0		%read{2147483647,-1} %write{1,1} %initexpr

@@ -152,12 +152,9 @@ namespace
                 reinterpret_cast<GaussianBSSRDFInputValues*>(data);
 
             // Precompute the relative index of refraction.
-            const double outside_ior =
-                shading_point.is_entering()
-                    ? shading_point.get_ray().get_current_ior()
-                    : shading_point.get_ray().get_previous_ior();
+            values->m_eta = compute_eta(shading_point, values->m_ior);
 
-            values->m_eta = outside_ior / values->m_ior;
+            // Precompute the (square of the) max radius.
             values->m_rmax2 = values->m_v * RMax2Constant;
         }
 

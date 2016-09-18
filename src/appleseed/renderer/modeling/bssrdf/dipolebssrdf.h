@@ -32,9 +32,11 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bssrdf/separablebssrdf.h"
+#include "renderer/modeling/bssrdf/sss.h"
 #include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/scalar.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/memory.h"
 
@@ -62,13 +64,10 @@ APPLESEED_DECLARE_INPUT_VALUES(DipoleBSSRDFInputValues)
     ScalarInput m_dmfp_multiplier;
     Spectrum    m_sigma_a;
     Spectrum    m_sigma_s;
-    ScalarInput m_anisotropy;
+    ScalarInput m_g;
     ScalarInput m_ior;
 
     // Precomputed values.
-    Spectrum    m_sigma_t;
-    Spectrum    m_sigma_s_prime;
-    Spectrum    m_sigma_t_prime;
     Spectrum    m_alpha_prime;
     Spectrum    m_sigma_tr;
     Spectrum    m_channel_pdf;
@@ -89,25 +88,109 @@ class DipoleBSSRDF
   public:
     // Constructor.
     DipoleBSSRDF(
-        const char*         name,
-        const ParamArray&   params);
+        const char*                 name,
+        const ParamArray&           params);
 
     virtual size_t compute_input_data_size(
-        const Assembly&     assembly) const APPLESEED_OVERRIDE;
+        const Assembly&             assembly) const APPLESEED_OVERRIDE;
 
     virtual bool sample(
-        SamplingContext&    sampling_context,
-        const void*         data,
-        BSSRDFSample&       sample) const APPLESEED_OVERRIDE;
+        SamplingContext&            sampling_context,
+        const void*                 data,
+        BSSRDFSample&               sample) const APPLESEED_OVERRIDE;
 
     virtual double evaluate_pdf(
-        const void*         data,
-        const size_t        channel,
-        const double        radius) const APPLESEED_OVERRIDE;
+        const void*                 data,
+        const size_t                channel,
+        const double                radius) const APPLESEED_OVERRIDE;
 
   private:
     virtual double get_eta(
-        const void*         data) const APPLESEED_OVERRIDE;
+        const void*                 data) const APPLESEED_OVERRIDE;
+
+  protected:
+    template<typename ComputeRdFun>
+    void do_prepare_inputs(
+        const ShadingPoint&         shading_point,
+        DipoleBSSRDFInputValues*    values) const
+    {
+        // Precompute the relative index of refraction.
+        values->m_eta = compute_eta(shading_point, values->m_ior);
+
+        if (m_inputs.source("sigma_a") == 0 || m_inputs.source("sigma_s") == 0)
+        {
+            //
+            // Compute sigma_a, sigma_s and sigma_tr from the diffuse surface reflectance
+            // and diffuse mean free path (dmfp).
+            //
+
+            make_reflectance_and_dmfp_compatible(values->m_reflectance, values->m_dmfp);
+
+            // Apply multipliers to input values.
+            values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
+            values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
+
+            // Clamp input values.
+            foundation::clamp_in_place(values->m_reflectance, 0.001f, 0.999f);
+            foundation::clamp_low_in_place(values->m_dmfp, 1.0e-5f);
+
+            // Compute sigma_a and sigma_s.
+            const ComputeRdFun rd_fun(values->m_eta);
+            compute_absorption_and_scattering_dmfp(
+                rd_fun,
+                values->m_reflectance,
+                values->m_dmfp,
+                values->m_g,
+                values->m_sigma_a,
+                values->m_sigma_s);
+
+            // Compute sigma_tr = 1 / dmfp.
+            values->m_sigma_tr = foundation::rcp(values->m_dmfp);
+        }
+        else
+        {
+            //
+            // Compute sigma_tr from sigma_a and sigma_s.
+            //
+            // If you want to use the sigma_a and sigma_s values provided in [1],
+            // and if your scene is modeled in meters, you will need to *multiply*
+            // them by 1000. If your scene is modeled in centimers (e.g. the "size"
+            // of the object is 4 units) then you will need to multiply the sigmas
+            // by 100.
+            //
+
+            effective_extinction_coefficient(
+                values->m_sigma_a,
+                values->m_sigma_s,
+                values->m_g,
+                values->m_sigma_tr);
+        }
+
+        // Precompute some coefficients and build a CDF for channel sampling.
+        values->m_alpha_prime.resize(values->m_reflectance.size());
+        values->m_channel_pdf.resize(values->m_reflectance.size());
+        values->m_channel_cdf.resize(values->m_reflectance.size());
+
+        float cumulated_pdf = 0.0f;
+        for (size_t i = 0, e = values->m_channel_cdf.size(); i < e; ++i)
+        {
+            const float sigma_s_prime = values->m_sigma_s[i] * static_cast<float>(1.0 - values->m_g);
+            const float sigma_t_prime = sigma_s_prime + values->m_sigma_a[i];
+            values->m_alpha_prime[i] = sigma_s_prime / sigma_t_prime;
+
+            values->m_channel_pdf[i] = values->m_alpha_prime[i];
+            cumulated_pdf += values->m_channel_pdf[i];
+            values->m_channel_cdf[i] = cumulated_pdf;
+        }
+
+        const float rcp_cumulated_pdf = 1.0f / cumulated_pdf;
+        values->m_channel_pdf *= rcp_cumulated_pdf;
+        values->m_channel_cdf *= rcp_cumulated_pdf;
+        values->m_channel_cdf[values->m_channel_cdf.size() - 1] = 1.0f;
+
+        // Precompute the (square of the) max radius.
+        values->m_rmax2 = foundation::square(dipole_max_radius(foundation::min_value(values->m_sigma_tr)));
+    }
 };
 
 

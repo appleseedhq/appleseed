@@ -33,6 +33,7 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/utility/paramarray.h"
 
@@ -125,6 +126,44 @@ void BSSRDF::prepare_inputs(
     const ShadingPoint&     shading_point,
     void*                   data) const
 {
+}
+
+double BSSRDF::compute_eta(
+    const ShadingPoint&     shading_point,
+    const double            ior) const
+{
+    const double outside_ior =
+        shading_point.is_entering()
+            ? shading_point.get_ray().get_current_ior()
+            : shading_point.get_ray().get_previous_ior();
+
+    return outside_ior / ior;
+}
+
+void BSSRDF::make_reflectance_and_dmfp_compatible(
+    Spectrum&               reflectance,
+    const Spectrum&         dmfp) const
+{
+    if (reflectance.size() != dmfp.size())
+    {
+        // Since it does not really make sense to convert a dmfp,
+        // a per channel distance, as if it were a color,
+        // we instead always convert the reflectance to match the
+        // size of the dmfp.
+        if (dmfp.is_spectral())
+        {
+            Spectrum::upgrade(
+                reflectance,
+                reflectance);
+        }
+        else
+        {
+            Spectrum::downgrade(
+                g_std_lighting_conditions,
+                reflectance,
+                reflectance);
+        }
+    }
 }
 
 }   // namespace renderer

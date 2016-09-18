@@ -186,11 +186,19 @@ double dipole_max_radius(const double sigma_tr)
 // Normalized diffusion profile implementation.
 //
 
-double normalized_diffusion_s(
+double normalized_diffusion_s_dmfp(
     const double    a)
 {
     // Equation 8.
     return 3.5 + 100.0 * square(square(a - 0.33));
+}
+
+double normalized_diffusion_s_mfp(
+    const double    a)
+{
+    // Equation 5.
+    const double x = std::abs(a - 0.8);
+    return 1.85 - a + 7.0 * (x * x * x);
 }
 
 double normalized_diffusion_profile(
