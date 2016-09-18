@@ -133,15 +133,12 @@ namespace
             float cumulated_pdf = 0.0f;
             for (size_t i = 0, e = values->m_channel_pdf.size(); i < e; ++i)
             {
-                const double a = static_cast<double>(values->m_reflectance[i]);
+                const float a = values->m_reflectance[i];
                 const double s = normalized_diffusion_s_dmfp(a);
                 values->m_s[i] = static_cast<float>(s);
 
-                const double l = values->m_dmfp[i];
-                const float pdf = static_cast<float>(s / l);
-                values->m_channel_pdf[i] = pdf;
-
-                cumulated_pdf += pdf;
+                values->m_channel_pdf[i] = a;
+                cumulated_pdf += a;
                 values->m_channel_cdf[i] = cumulated_pdf;
             }
 
