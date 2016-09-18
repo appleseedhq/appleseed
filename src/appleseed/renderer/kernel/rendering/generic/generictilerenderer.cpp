@@ -171,7 +171,7 @@ namespace
 #ifdef APPLESEED_ARCH64
             m_rng = SamplingContext::RNGType(hash_uint64_to_uint32(pass_hash ^ tile_index));
 #else
-            m_rng = SamplingContext::RNGType(pass_hash ^ tile_index));
+            m_rng = SamplingContext::RNGType(pass_hash ^ tile_index);
 #endif
 
             // Loop over tile pixels.
