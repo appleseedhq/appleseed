@@ -1,5 +1,6 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.9
+# Compiled by oslc 1.7.4
+# options: -v -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include -o .././texture2d/as_noise2d.oso
 shader as_noise2d
 param	float	U	0		%read{3,3} %write{0,0} %derivs %initexpr
 param	float	V	0		%read{7,7} %write{1,1} %derivs %initexpr

@@ -758,7 +758,6 @@ namespace
             OSL::Color3     reflectance;
             OSL::Color3     diffuse_mean_free_path;
             float           ior;
-            float           scattering_anisotropy;
         };
 
         static const char* name()
@@ -780,7 +779,6 @@ namespace
                 CLOSURE_COLOR_PARAM(Params, reflectance),
                 CLOSURE_COLOR_PARAM(Params, diffuse_mean_free_path),
                 CLOSURE_FLOAT_PARAM(Params, ior),
-                CLOSURE_FLOAT_PARAM(Params, scattering_anisotropy),
                 CLOSURE_FINISH_PARAM(Params)
             };
 
@@ -858,7 +856,7 @@ namespace
                 values->m_reflectance_multiplier = 1.0;
                 values->m_dmfp = Color3f(p->diffuse_mean_free_path);
                 values->m_dmfp_multiplier = 1.0;
-                values->m_anisotropy = p->scattering_anisotropy;
+                values->m_g = 0.0;
                 values->m_ior = p->ior;
             }
         }

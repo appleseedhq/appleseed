@@ -36,7 +36,6 @@
 #include "renderer/modeling/bssrdf/sss.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/colorspace.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -76,7 +75,6 @@ namespace
             const char*         name,
             const ParamArray&   params)
           : DipoleBSSRDF(name, params)
-          , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
         {
         }
 
@@ -97,106 +95,7 @@ namespace
             DipoleBSSRDFInputValues* values =
                 reinterpret_cast<DipoleBSSRDFInputValues*>(data);
 
-            // Precompute the relative index of refraction.
-            const double outside_ior =
-                shading_point.is_entering()
-                    ? shading_point.get_ray().get_current_ior()
-                    : shading_point.get_ray().get_previous_ior();
-
-            values->m_eta = outside_ior / values->m_ior;
-
-            // Clamp anisotropy.
-            values->m_anisotropy = clamp(values->m_anisotropy, 0.0, 0.999);
-
-            if (m_inputs.source("sigma_a") == 0 || m_inputs.source("sigma_s") == 0)
-            {
-                //
-                // Compute sigma_a, sigma_s and sigma_tr from the diffuse surface reflectance
-                // and diffuse mean free path (dmfp).
-                //
-
-                if (values->m_reflectance.size() != values->m_dmfp.size())
-                {
-                    // Since it does not really make sense to convert a dmfp,
-                    // a per channel distance, as if it were a color,
-                    // we instead always convert the reflectance to match the
-                    // size of the dmfp.
-                    if (values->m_dmfp.is_spectral())
-                    {
-                        Spectrum::upgrade(
-                            values->m_reflectance,
-                            values->m_reflectance);
-                    }
-                    else
-                    {
-                        Spectrum::downgrade(
-                            m_lighting_conditions,
-                            values->m_reflectance,
-                            values->m_reflectance);
-                    }
-                }
-
-                // Apply multipliers to input values.
-                values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
-                values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
-
-                // Clamp input values.
-                clamp_in_place(values->m_reflectance, 0.001f, 0.999f);
-                clamp_low_in_place(values->m_dmfp, 1.0e-5f);
-
-                // Compute sigma_a and sigma_s.
-                const ComputeRdStandardDipole rd_fun(values->m_eta);
-                compute_absorption_and_scattering(
-                    rd_fun,
-                    values->m_reflectance,
-                    values->m_dmfp,
-                    values->m_anisotropy,
-                    values->m_sigma_a,
-                    values->m_sigma_s);
-
-                // Compute sigma_tr = 1 / dmfp.
-                values->m_sigma_tr = rcp(values->m_dmfp);
-            }
-            else
-            {
-                //
-                // Compute sigma_tr from sigma_a and sigma_s.
-                //
-                // If you want to use the sigma_a and sigma_s values provided in [1],
-                // and if your scene is modeled in meters, you will need to *multiply*
-                // them by 1000. If your scene is modeled in centimers (e.g. the "size"
-                // of the object is 4 units) then you will need to multiply the sigmas
-                // by 100.
-                //
-
-                effective_extinction_coefficient(
-                    values->m_sigma_a,
-                    values->m_sigma_s,
-                    values->m_anisotropy,
-                    values->m_sigma_tr);
-            }
-
-            // Precompute some coefficients.
-            values->m_sigma_s_prime = values->m_sigma_s * static_cast<float>(1.0 - values->m_anisotropy);
-            values->m_sigma_t_prime = values->m_sigma_s_prime + values->m_sigma_a;
-            values->m_alpha_prime = values->m_sigma_s_prime / values->m_sigma_t_prime;
-
-            // Build a CDF for channel sampling.
-            values->m_channel_pdf = values->m_alpha_prime;
-            values->m_channel_cdf.resize(values->m_channel_pdf.size());
-            float cumulated_pdf = 0.0f;
-            for (size_t i = 0, e = values->m_channel_cdf.size(); i < e; ++i)
-            {
-                cumulated_pdf += values->m_channel_pdf[i];
-                values->m_channel_cdf[i] = cumulated_pdf;
-            }
-            const float rcp_cumulated_pdf = 1.0f / cumulated_pdf;
-            values->m_channel_pdf *= rcp_cumulated_pdf;
-            values->m_channel_cdf *= rcp_cumulated_pdf;
-            values->m_channel_cdf[values->m_channel_cdf.size() - 1] = 1.0f;
-
-            // Precompute the (square of the) max radius.
-            values->m_rmax2 = square(dipole_max_radius(min_value(values->m_sigma_tr)));
+            do_prepare_inputs<ComputeRdStandardDipole>(shading_point, values);
         }
 
         virtual void evaluate_profile(
@@ -214,7 +113,10 @@ namespace
 
             for (size_t i = 0, e = value.size(); i < e; ++i)
             {
-                const double sigma_t_prime = values->m_sigma_t_prime[i];
+                const double sigma_a = values->m_sigma_a[i];
+                const double sigma_s = values->m_sigma_s[i];
+                const double sigma_s_prime = sigma_s * (1.0 - values->m_g);
+                const double sigma_t_prime = sigma_s_prime + sigma_a;
                 const double alpha_prime = values->m_alpha_prime[i];
                 const double sigma_tr = values->m_sigma_tr[i];
 
@@ -288,9 +190,6 @@ namespace
             // Return r * R(r) * weight.
             value *= static_cast<float>(sqrt(square_radius) * values->m_weight);
         }
-
-      private:
-        const LightingConditions m_lighting_conditions;
     };
 }
 

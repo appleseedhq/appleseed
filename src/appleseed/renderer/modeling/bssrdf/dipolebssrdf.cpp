@@ -65,7 +65,7 @@ DipoleBSSRDF::DipoleBSSRDF(
     m_inputs.declare("dmfp_multiplier", InputFormatScalar, "1.0");
     m_inputs.declare("sigma_a", InputFormatSpectralReflectance, "");
     m_inputs.declare("sigma_s", InputFormatSpectralReflectance, "");
-    m_inputs.declare("anisotropy", InputFormatScalar);
+    m_inputs.declare("g", InputFormatScalar, "0.0");
     m_inputs.declare("ior", InputFormatScalar);
 }
 
@@ -192,16 +192,6 @@ DictionaryArray DipoleBSSRDFFactory::get_input_metadata() const
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
             .insert("default", "1.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "anisotropy")
-            .insert("label", "Anisotropy")
-            .insert("type", "numeric")
-            .insert("min_value", "-1.0")
-            .insert("max_value", "1.0")
-            .insert("use", "required")
-            .insert("default", "0.0"));
 
     metadata.push_back(
         Dictionary()

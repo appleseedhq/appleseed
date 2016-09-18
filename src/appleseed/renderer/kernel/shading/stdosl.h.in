@@ -599,18 +599,7 @@ closure color as_subsurface(
     normal  N,
     color   reflectance,
     color   diffuse_mean_free_path,
-    float   ior,
-    float   scattering_anisotropy) BUILTIN;
-
-closure color as_subsurface(
-    string  profile,
-    normal  N,
-    color   reflectance,
-    color   diffuse_mean_free_path,
-    float   ior)
-{
-    return as_subsurface(profile, N, reflectance, diffuse_mean_free_path, ior, 0.0);
-}
+    float   ior) BUILTIN;
 
 
 /***************************************/
@@ -672,7 +661,7 @@ closure color phong(normal N, float exponent)
 
 closure color subsurface(float eta, float g, color mfp, color albedo)
 {
-    return as_subsurface("better_dipole", N, albedo, mfp, eta, g);
+    return as_subsurface("better_dipole", N, albedo, mfp, eta);
 }
 
 

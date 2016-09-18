@@ -1,5 +1,6 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.9
+# Compiled by oslc 1.7.4
+# options: -v -I/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include -o .././vector/as_vector_split.oso
 shader as_vector_split
 param	vector	Vector	0 0 0		%read{0,2} %write{2147483647,-1}
 oparam	float	X	0		%read{2147483647,-1} %write{0,0}
