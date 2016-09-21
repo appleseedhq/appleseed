@@ -65,6 +65,10 @@ class Transform
 
     // Constructors.
     Transform();                                // leave the transformation uninitialized
+
+    // Throws a foundation::ExceptionSingularMatrix exception if local_to_parent is singular.
+    explicit Transform(const MatrixType& local_to_parent);
+
     Transform(
         const MatrixType& local_to_parent,
         const MatrixType& parent_to_local);     // must be equal to inverse(local_to_parent)
@@ -210,6 +214,13 @@ typedef TransformInterpolator<double> TransformInterpolatord;
 
 template <typename T>
 inline Transform<T>::Transform()
+{
+}
+
+template <typename T>
+inline Transform<T>::Transform(const MatrixType& local_to_parent)
+  : m_local_to_parent(local_to_parent)
+  , m_parent_to_local(inverse(local_to_parent))
 {
 }
 
