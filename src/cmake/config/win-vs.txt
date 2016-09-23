@@ -181,7 +181,7 @@ set (shared_lib_linker_flags_profile
 
 
 #--------------------------------------------------------------------------------------------------
-# libraries.
+# Libraries.
 #--------------------------------------------------------------------------------------------------
 
 macro (link_against_platform target)
@@ -349,6 +349,7 @@ endmacro ()
 macro (link_against_partio target)
     target_link_libraries (${target} ${PARTIO_LIBRARIES})
 endmacro ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Copy a target binary to the sandbox.
