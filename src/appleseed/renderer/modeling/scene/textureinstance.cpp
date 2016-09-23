@@ -73,7 +73,7 @@ UniqueID TextureInstance::get_class_uid()
 struct TextureInstance::Impl
 {
     // Order of data members impacts performance, preserve it.
-    Transformd              m_transform;
+    Transformf              m_transform;
     string                  m_texture_name;
     LightingConditions      m_lighting_conditions;
 };
@@ -82,7 +82,7 @@ TextureInstance::TextureInstance(
     const char*             name,
     const ParamArray&       params,
     const char*             texture_name,
-    const Transformd&       transform)
+    const Transformf&       transform)
   : Entity(g_class_uid, params)
   , impl(new Impl())
 {
@@ -149,7 +149,7 @@ const char* TextureInstance::get_texture_name() const
     return impl->m_texture_name.c_str();
 }
 
-const Transformd& TextureInstance::get_transform() const
+const Transformf& TextureInstance::get_transform() const
 {
     return impl->m_transform;
 }
@@ -316,7 +316,7 @@ auto_release_ptr<TextureInstance> TextureInstanceFactory::create(
     const char*             name,
     const ParamArray&       params,
     const char*             texture_name,
-    const Transformd&       transform)
+    const Transformf&       transform)
 {
     return
         auto_release_ptr<TextureInstance>(

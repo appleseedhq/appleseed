@@ -124,7 +124,7 @@ namespace
                 texture_instance_name.c_str(),
                 ParamArray(),
                 texture_name.c_str(),
-                Transformd::identity());
+                Transformf::identity());
     }
 }
 

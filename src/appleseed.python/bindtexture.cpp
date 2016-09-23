@@ -88,7 +88,7 @@ namespace
         const string&                   name,
         const bpy::dict&                params,
         const string&                   texture_name,
-        const UnalignedTransformd&      transform)
+        const UnalignedTransformf&      transform)
     {
         return
             TextureInstanceFactory::create(
@@ -98,9 +98,9 @@ namespace
                 transform.as_foundation_transform());
     }
 
-    UnalignedTransformd texture_inst_get_transform(const TextureInstance* tx)
+    UnalignedTransformf texture_inst_get_transform(const TextureInstance* tx)
     {
-        return UnalignedTransformd(tx->get_transform());
+        return UnalignedTransformf(tx->get_transform());
     }
 
     string texture_inst_get_texture_name(const TextureInstance* tx)

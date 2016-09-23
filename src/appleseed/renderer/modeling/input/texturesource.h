@@ -75,28 +75,28 @@ class TextureSource
     // Evaluate the source at a given shading point.
     virtual void evaluate(
         TextureCache&                       texture_cache,
-        const foundation::Vector2d&         uv,
+        const foundation::Vector2f&         uv,
         ScalarInput&                        scalar) const APPLESEED_OVERRIDE;
     virtual void evaluate(
         TextureCache&                       texture_cache,
-        const foundation::Vector2d&         uv,
+        const foundation::Vector2f&         uv,
         foundation::Color3f&                linear_rgb) const APPLESEED_OVERRIDE;
     virtual void evaluate(
         TextureCache&                       texture_cache,
-        const foundation::Vector2d&         uv,
+        const foundation::Vector2f&         uv,
         Spectrum&                           spectrum) const APPLESEED_OVERRIDE;
     virtual void evaluate(
         TextureCache&                       texture_cache,
-        const foundation::Vector2d&         uv,
+        const foundation::Vector2f&         uv,
         Alpha&                              alpha) const APPLESEED_OVERRIDE;
     virtual void evaluate(
         TextureCache&                       texture_cache,
-        const foundation::Vector2d&         uv,
+        const foundation::Vector2f&         uv,
         foundation::Color3f&                linear_rgb,
         Alpha&                              alpha) const APPLESEED_OVERRIDE;
     virtual void evaluate(
         TextureCache&                       texture_cache,
-        const foundation::Vector2d&         uv,
+        const foundation::Vector2f&         uv,
         Spectrum&                           spectrum,
         Alpha&                              alpha) const APPLESEED_OVERRIDE;
 
@@ -105,15 +105,15 @@ class TextureSource
     const TextureInstance&                  m_texture_instance;
     const foundation::UniqueID              m_texture_uid;
     const foundation::CanvasProperties      m_texture_props;
-    const foundation::Transformd            m_texture_transform;
-    const double                            m_scalar_canvas_width;
-    const double                            m_scalar_canvas_height;
-    const double                            m_max_x;
-    const double                            m_max_y;
+    const foundation::Transformf            m_texture_transform;
+    const float                             m_scalar_canvas_width;
+    const float                             m_scalar_canvas_height;
+    const float                             m_max_x;
+    const float                             m_max_y;
 
     // Apply the texture instance transform to UV coordinates.
-    foundation::Vector2d apply_transform(
-        const foundation::Vector2d&         uv) const;
+    foundation::Vector2f apply_transform(
+        const foundation::Vector2f&         uv) const;
 
     // Retrieve a given texel. Return a color in the linear RGB color space.
     foundation::Color4f get_texel(
@@ -134,7 +134,7 @@ class TextureSource
     // Sample the texture. Return a color in the linear RGB color space.
     foundation::Color4f sample_texture(
         TextureCache&                       texture_cache,
-        const foundation::Vector2d&         uv) const;
+        const foundation::Vector2f&         uv) const;
 
     // Compute an alpha value given a linear RGBA color and the alpha mode of the texture instance.
     void evaluate_alpha(
@@ -154,7 +154,7 @@ inline const TextureInstance& TextureSource::get_texture_instance() const
 
 inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
-    const foundation::Vector2d&             uv,
+    const foundation::Vector2f&             uv,
     ScalarInput&                            scalar) const
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
@@ -164,7 +164,7 @@ inline void TextureSource::evaluate(
 
 inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
-    const foundation::Vector2d&             uv,
+    const foundation::Vector2f&             uv,
     foundation::Color3f&                    linear_rgb) const
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
@@ -174,7 +174,7 @@ inline void TextureSource::evaluate(
 
 inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
-    const foundation::Vector2d&             uv,
+    const foundation::Vector2f&             uv,
     Spectrum&                               spectrum) const
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
@@ -184,7 +184,7 @@ inline void TextureSource::evaluate(
 
 inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
-    const foundation::Vector2d&             uv,
+    const foundation::Vector2f&             uv,
     Alpha&                                  alpha) const
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
@@ -194,7 +194,7 @@ inline void TextureSource::evaluate(
 
 inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
-    const foundation::Vector2d&             uv,
+    const foundation::Vector2f&             uv,
     foundation::Color3f&                    linear_rgb,
     Alpha&                                  alpha) const
 {
@@ -207,7 +207,7 @@ inline void TextureSource::evaluate(
 
 inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
-    const foundation::Vector2d&             uv,
+    const foundation::Vector2f&             uv,
     Spectrum&                               spectrum,
     Alpha&                                  alpha) const
 {

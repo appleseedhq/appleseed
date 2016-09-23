@@ -153,9 +153,9 @@ namespace
 
             payload /= m_range;     // scale to fit in a unit disk
 
-            const Vector2d uv(
-                x / (m_width - 1.0),
-                y / (m_height - 1.0));
+            const Vector2f uv(
+                x / (m_width - 1.0f),
+                y / (m_height - 1.0f));
 
             Color3f color;
             m_texture_source->evaluate(m_texture_cache, uv, color);

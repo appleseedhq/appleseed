@@ -56,7 +56,7 @@ Basis3d NormalMappingModifier::modify(
 {
     // Lookup the normal map.
     Color3f normal_rgb;
-    m_map->evaluate(texture_cache, Vector2d(uv), normal_rgb);
+    m_map->evaluate(texture_cache, uv, normal_rgb);
 
     // Reconstruct the normal from the texel value.
     const Vector3d normal(
