@@ -47,8 +47,8 @@ namespace renderer
 
 BumpMappingModifier::BumpMappingModifier(
     const Source*       map,
-    const double        offset,
-    const double        amplitude)
+    const float         offset,
+    const float         amplitude)
   : m_map(map)
   , m_amplitude(amplitude)
 {
@@ -67,18 +67,18 @@ BumpMappingModifier::BumpMappingModifier(
         m_du = m_dv = offset;
     }
 
-    m_rcp_du = 1.0 / m_du;
-    m_rcp_dv = 1.0 / m_dv;
+    m_rcp_du = 1.0f / m_du;
+    m_rcp_dv = 1.0f / m_dv;
 }
 
 Basis3d BumpMappingModifier::modify(
     TextureCache&       texture_cache,
-    const Vector2d&     uv,
+    const Vector2f&     uv,
     const Basis3d&      basis) const
 {
     // Evaluate the displacement function at (u, v).
     double val;
-    m_map->evaluate(texture_cache, uv, val);
+    m_map->evaluate(texture_cache, Vector2d(uv), val);
 
     // Evaluate the displacement function at (u + delta_u, v).
     double val_du;

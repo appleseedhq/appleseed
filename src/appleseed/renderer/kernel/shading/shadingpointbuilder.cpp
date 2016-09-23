@@ -78,7 +78,7 @@ void ShadingPointBuilder::set_shading_basis(const Basis3d& basis)
     m_shading_point.m_members |= ShadingPoint::HasShadingBasis;
 }
 
-void ShadingPointBuilder::set_uvs(const Vector2d& uv)
+void ShadingPointBuilder::set_uvs(const Vector2f& uv)
 {
     m_shading_point.m_uv = uv;
     m_shading_point.m_members |= ShadingPoint::HasUV0;

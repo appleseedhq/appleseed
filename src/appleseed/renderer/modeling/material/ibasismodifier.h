@@ -49,7 +49,7 @@ class IBasisModifier
 
     virtual foundation::Basis3d modify(
         TextureCache&                   texture_cache,
-        const foundation::Vector2d&     uv,
+        const foundation::Vector2f&     uv,
         const foundation::Basis3d&      basis) const = 0;
 };
 

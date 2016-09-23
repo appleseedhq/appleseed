@@ -119,7 +119,7 @@ void EDF::evaluate_inputs(
     InputEvaluator&     input_evaluator,
     const ShadingPoint& shading_point) const
 {
-    input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0));
+    input_evaluator.evaluate(get_inputs(), Vector2d(shading_point.get_uv(0)));
 }
 
 }   // namespace renderer

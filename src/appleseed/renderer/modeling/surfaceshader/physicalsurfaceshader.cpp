@@ -154,7 +154,7 @@ namespace
             InputValues values;
             m_inputs.evaluate(
                 shading_context.get_texture_cache(),
-                shading_point.get_uv(0),
+                Vector2d(shading_point.get_uv(0)),
                 &values);
 
             Spectrum radiance;

@@ -113,11 +113,11 @@ void BSDFSample::compute_normal_derivatives(
 
     const Vector3d& dndu = m_shading_point.get_dndu(0);
     const Vector3d& dndv = m_shading_point.get_dndv(0);
-    const Vector2d& duvdx = m_shading_point.get_duvdx(0);
-    const Vector2d& duvdy = m_shading_point.get_duvdy(0);
+    const Vector2f& duvdx = m_shading_point.get_duvdx(0);
+    const Vector2f& duvdy = m_shading_point.get_duvdy(0);
 
-    dndx = dndu * duvdx[0] + dndv * duvdx[1];
-    dndy = dndu * duvdy[0] + dndv * duvdy[1];
+    dndx = dndu * static_cast<double>(duvdx[0]) + dndv * static_cast<double>(duvdx[1]);
+    dndy = dndu * static_cast<double>(duvdy[0]) + dndv * static_cast<double>(duvdy[1]);
 
     const Vector3d& normal = m_shading_point.get_shading_normal();
 
