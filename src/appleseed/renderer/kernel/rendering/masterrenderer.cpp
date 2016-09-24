@@ -77,16 +77,14 @@ MasterRenderer::MasterRenderer(
   , m_serial_tile_callback_factory(0)
   , m_display(0)
 {
-    if (!m_tile_callback_factory)
+    if (m_tile_callback_factory == 0)
     {
         // Try to use the display if there is one in the project
         // and no tile callback factory was specified.
         m_display = m_project.get_display();
-
         if (m_display && m_display->open(m_project))
             m_tile_callback_factory = m_display->get_tile_callback_factory();
-        else
-            m_display = 0;
+        else m_display = 0;
     }
 }
 
