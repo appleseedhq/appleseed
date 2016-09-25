@@ -208,7 +208,7 @@ namespace
             const Vector3d d = outgoing / cos_theta - axis;
             const double x = dot(d, u) * m_rcp_screen_half_size;
             const double y = dot(d, n) * m_rcp_screen_half_size;
-            const Vector2d uv(0.5 * (x + 1.0), 0.5 * (y + 1.0));
+            const Vector2f uv(0.5f * (x + 1.0f), 0.5f * (y + 1.0f));
 
             const InputValues* values = input_evaluator.evaluate<InputValues>(m_inputs, uv);
             radiance = values->m_intensity;

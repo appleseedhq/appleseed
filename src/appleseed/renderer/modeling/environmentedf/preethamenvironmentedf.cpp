@@ -391,7 +391,7 @@ namespace
                 double u, v;
                 unit_vector_to_angles(outgoing, theta, phi);
                 angles_to_unit_square(theta, phi, u, v);
-                double turbidity = input_evaluator.evaluate<InputValues>(m_inputs, Vector2d(u, v))->m_turbidity;
+                double turbidity = input_evaluator.evaluate<InputValues>(m_inputs, Vector2f(u, v))->m_turbidity;
 
                 // Apply turbidity multiplier and bias.
                 turbidity *= m_uniform_values.m_turbidity_multiplier;

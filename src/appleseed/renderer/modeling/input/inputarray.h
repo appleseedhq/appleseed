@@ -217,7 +217,7 @@ class APPLESEED_DLLSYMBOL InputArray
     // The address 'values + offset' must be 16-byte aligned.
     void evaluate(
         TextureCache&               texture_cache,
-        const foundation::Vector2d& uv,
+        const foundation::Vector2f& uv,
         void*                       values,
         const size_t                offset = 0) const;
 

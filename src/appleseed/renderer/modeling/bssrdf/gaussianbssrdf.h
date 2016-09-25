@@ -61,8 +61,8 @@ APPLESEED_DECLARE_INPUT_VALUES(GaussianBSSRDFInputValues)
     ScalarInput m_ior;
 
     // Precomputed values.
-    double      m_rmax2;
-    double      m_eta;
+    ScalarInput m_rmax2;
+    ScalarInput m_eta;
 };
 
 

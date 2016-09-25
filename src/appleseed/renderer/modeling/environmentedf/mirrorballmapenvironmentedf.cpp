@@ -183,7 +183,7 @@ namespace
             // Compute the texture coordinates corresponding to this direction.
             const double d = sqrt(square(direction[0]) + square(direction[1]));
             const double r = (0.5 / Pi) * acos(direction[2]) / d;
-            const Vector2d uv(0.5 + direction[0] * r, 0.5 + direction[1] * r);
+            const Vector2f uv(0.5f + direction[0] * r, 0.5f + direction[1] * r);
 
             // Evaluate the input.
             const InputValues* values = input_evaluator.evaluate<InputValues>(m_inputs, uv);

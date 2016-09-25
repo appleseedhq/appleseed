@@ -1248,7 +1248,9 @@ namespace
                         m_name.c_str(),
                         m_params,
                         m_texture.c_str(),
-                        get_earliest_transform());
+                        Transformf(
+                            get_earliest_transform().get_local_to_parent(),
+                            get_earliest_transform().get_parent_to_local()));
             }
             catch (const ExceptionDictionaryKeyNotFound& e)
             {

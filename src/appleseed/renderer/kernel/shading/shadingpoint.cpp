@@ -439,7 +439,7 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
     {
         assert(is_curve_primitive());
 
-        const GScalar v = static_cast<GScalar>(m_bary[1]);
+        const GScalar v = m_bary[1];
 
         const CurveObject* curves = static_cast<const CurveObject*>(m_object);
         const GVector3 tangent =
@@ -491,14 +491,14 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
 
         if (d == 0.0)
         {
-            m_duvdx = Vector2d(0.0);
-            m_duvdy = Vector2d(0.0);
+            m_duvdx = Vector2f(0.0f);
+            m_duvdy = Vector2f(0.0f);
             return;
         }
 
-        const double rcp_d = 1.0 / d;
+        const float rcp_d = 1.0f / d;
 
-        const Vector2d bx(
+        const Vector2f bx(
             px[axes[0]] - p[axes[0]],
             px[axes[1]] - p[axes[1]]);
 
@@ -516,8 +516,8 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
     {
         m_dpdx = Vector3d(0.0);
         m_dpdy = Vector3d(0.0);
-        m_duvdx = Vector2d(0.0);
-        m_duvdy = Vector2d(0.0);
+        m_duvdx = Vector2f(0.0f);
+        m_duvdy = Vector2f(0.0f);
     }
 }
 
@@ -599,9 +599,9 @@ void ShadingPoint::compute_original_shading_normal() const
         {
             // Compute the object instance space shading normal.
             m_original_shading_normal =
-                  Vector3d(m_n0) * (1.0 - m_bary[0] - m_bary[1])
-                + Vector3d(m_n1) * m_bary[0]
-                + Vector3d(m_n2) * m_bary[1];
+                  Vector3d(m_n0) * static_cast<double>(1.0 - m_bary[0] - m_bary[1])
+                + Vector3d(m_n1) * static_cast<double>(m_bary[0])
+                + Vector3d(m_n2) * static_cast<double>(m_bary[1]);
 
             // Transform the shading normal to world space.
             m_original_shading_normal =
@@ -641,9 +641,9 @@ void ShadingPoint::compute_shading_basis() const
         (m_members & HasTriangleVertexTangents) != 0
             ? m_assembly_instance_transform.vector_to_parent(
                   m_object_instance->get_transform().vector_to_parent(
-                        Vector3d(m_t0) * (1.0 - m_bary[0] - m_bary[1])
-                      + Vector3d(m_t1) * m_bary[0]
-                      + Vector3d(m_t2) * m_bary[1]))
+                        Vector3d(m_t0) * static_cast<double>(1.0 - m_bary[0] - m_bary[1])
+                      + Vector3d(m_t1) * static_cast<double>(m_bary[0])
+                      + Vector3d(m_t2) * static_cast<double>(m_bary[1])))
             : get_dpdu(0);
 
     // Construct an orthonormal basis.
@@ -729,8 +729,8 @@ void ShadingPoint::compute_world_space_point_velocity() const
             const GVector3 last_v2 = tess.get_vertex_pose(triangle.m_v2, motion_segment_count - 1);
 
             // Compute barycentric coordinates.
-            const float v = static_cast<float>(m_bary[0]);
-            const float w = static_cast<float>(m_bary[1]);
+            const float v = m_bary[0];
+            const float w = m_bary[1];
             const float u = 1.0f - v - w;
 
             // Compute positions at shutter open and close times.
@@ -844,7 +844,7 @@ void ShadingPoint::initialize_osl_shader_globals(
         {
             m_shader_globals.dPdx = Vector3f(0.0f);
             m_shader_globals.dPdy = Vector3f(0.0f);
-            m_shader_globals.dPdz = Vector3f(0.0);
+            m_shader_globals.dPdz = Vector3f(0.0f);
             m_shader_globals.dIdx = Vector3f(0.0f);
             m_shader_globals.dIdy = Vector3f(0.0f);
         }
@@ -857,17 +857,17 @@ void ShadingPoint::initialize_osl_shader_globals(
             get_side() == ObjectInstance::FrontSide ? 0 : 1;
 
         // Surface parameters and their differentials.
-        const Vector2d& uv = get_uv(0);
-        m_shader_globals.u = static_cast<float>(uv[0]);
-        m_shader_globals.v = static_cast<float>(uv[1]);
+        const Vector2f& uv = get_uv(0);
+        m_shader_globals.u = uv[0];
+        m_shader_globals.v = uv[1];
         if (ray.m_has_differentials)
         {
-            const Vector2d& duvdx = get_duvdx(0);
-            const Vector2d& duvdy = get_duvdy(0);
-            m_shader_globals.dudx = static_cast<float>(duvdx[0]);
-            m_shader_globals.dudy = static_cast<float>(duvdy[0]);
-            m_shader_globals.dvdx = static_cast<float>(duvdx[1]);
-            m_shader_globals.dvdy = static_cast<float>(duvdy[1]);
+            const Vector2f& duvdx = get_duvdx(0);
+            const Vector2f& duvdy = get_duvdy(0);
+            m_shader_globals.dudx = duvdx[0];
+            m_shader_globals.dudy = duvdy[0];
+            m_shader_globals.dvdx = duvdx[1];
+            m_shader_globals.dvdy = duvdy[1];
         }
         else
         {

@@ -112,7 +112,7 @@ void TestFixtureBase::create_texture_instance(const char* name, const char* text
             name,
             params,
             texture_name,
-            Transformd::identity()));
+            Transformf::identity()));
 }
 
 void TestFixtureBase::bind_inputs()

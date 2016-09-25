@@ -288,8 +288,8 @@ IntersectionFilter::AlphaMask* IntersectionFilter::create_alpha_mask(
     // Create and initialize the alpha mask.
     AlphaMask* alpha_mask = new AlphaMask(width, height);
 
-    const double rcp_width = 1.0 / width;
-    const double rcp_height = 1.0 / height;
+    const float rcp_width = 1.0f / width;
+    const float rcp_height = 1.0f / height;
     size_t transparent_texel_count = 0;
 
     // Compute the alpha mask.
@@ -298,9 +298,9 @@ IntersectionFilter::AlphaMask* IntersectionFilter::create_alpha_mask(
         for (size_t x = 0; x < width; ++x)
         {
             // Evaluate the alpha map at the center of the texel.
-            const Vector2d uv(
-                (x + 0.5) * rcp_width,
-                1.0 - (y + 0.5) * rcp_height);
+            const Vector2f uv(
+                (x + 0.5f) * rcp_width,
+                1.0f - (y + 0.5f) * rcp_height);
             Alpha alpha;
             alpha_map->evaluate(texture_cache, uv, alpha);
 

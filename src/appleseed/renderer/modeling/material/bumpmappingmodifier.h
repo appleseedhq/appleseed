@@ -51,19 +51,19 @@ class BumpMappingModifier
   public:
     BumpMappingModifier(
         const Source*                   map,
-        const double                    offset,
-        const double                    amplitude);
+        const float                     offset,
+        const float                     amplitude);
 
     virtual foundation::Basis3d modify(
         TextureCache&                   texture_cache,
-        const foundation::Vector2d&     uv,
+        const foundation::Vector2f&     uv,
         const foundation::Basis3d&      basis) const APPLESEED_OVERRIDE;
 
   private:
     const Source*   m_map;
-    const double    m_amplitude;
-    double          m_du, m_dv;
-    double          m_rcp_du, m_rcp_dv;
+    const float     m_amplitude;
+    float           m_du, m_dv;
+    float           m_rcp_du, m_rcp_dv;
 };
 
 }       // namespace renderer

@@ -113,8 +113,8 @@ namespace
           , m_radiance_source(radiance_source)
           , m_multiplier_source(multiplier_source)
           , m_exposure_source(exposure_source)
-          , m_rcp_width(1.0 / width)
-          , m_rcp_height(1.0 / height)
+          , m_rcp_width(1.0f / width)
+          , m_rcp_height(1.0f / height)
         {
         }
 
@@ -129,9 +129,9 @@ namespace
                 return;
             }
 
-            const Vector2d uv(
-                (x + 0.5) * m_rcp_width,
-                1.0 - (y + 0.5) * m_rcp_height);
+            const Vector2f uv(
+                (x + 0.5f) * m_rcp_width,
+                1.0f - (y + 0.5f) * m_rcp_height);
 
             m_radiance_source->evaluate(m_texture_cache, uv, payload.m_color);
 
@@ -150,8 +150,8 @@ namespace
         const Source*   m_radiance_source;
         const Source*   m_multiplier_source;
         const Source*   m_exposure_source;
-        const double    m_rcp_width;
-        const double    m_rcp_height;
+        const float     m_rcp_width;
+        const float     m_rcp_height;
     };
 
     const char* Model = "latlong_map_environment_edf";
@@ -450,7 +450,7 @@ namespace
             assert(v >= 0.0 && v < 1.0);
 
             const InputValues* values =
-                input_evaluator.evaluate<InputValues>(m_inputs, Vector2d(u, 1.0 - v));
+                input_evaluator.evaluate<InputValues>(m_inputs, Vector2f(u, 1.0 - v));
 
             value = values->m_radiance;
             value *=

@@ -51,7 +51,7 @@ NormalMappingModifier::NormalMappingModifier(
 
 Basis3d NormalMappingModifier::modify(
     TextureCache&       texture_cache,
-    const Vector2d&     uv,
+    const Vector2f&     uv,
     const Basis3d&      basis) const
 {
     // Lookup the normal map.

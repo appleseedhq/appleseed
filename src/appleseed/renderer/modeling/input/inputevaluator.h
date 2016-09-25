@@ -60,12 +60,12 @@ class InputEvaluator
     // Evaluate a set of inputs, and return the values as an opaque block of memory.
     const void* evaluate(
         const InputArray&           inputs,
-        const foundation::Vector2d& uv,
+        const foundation::Vector2f& uv,
         const size_t                offset = 0);
     template <typename T>
     const T* evaluate(
         const InputArray&           inputs,
-        const foundation::Vector2d& uv,
+        const foundation::Vector2f& uv,
         const size_t                offset = 0);
 
     // Access the values stored by the evaluate() methods.
@@ -91,7 +91,7 @@ inline InputEvaluator::InputEvaluator(TextureCache& texture_cache)
 
 inline const void* InputEvaluator::evaluate(
     const InputArray&               inputs,
-    const foundation::Vector2d&     uv,
+    const foundation::Vector2f&     uv,
     const size_t                    offset)
 {
     inputs.evaluate(m_texture_cache, uv, m_data, offset);
@@ -101,7 +101,7 @@ inline const void* InputEvaluator::evaluate(
 template <typename T>
 inline const T* InputEvaluator::evaluate(
     const InputArray&               inputs,
-    const foundation::Vector2d&     uv,
+    const foundation::Vector2f&     uv,
     const size_t                    offset)
 {
     inputs.evaluate(m_texture_cache, uv, m_data, offset);

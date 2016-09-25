@@ -171,17 +171,17 @@ namespace
 
             if (!m_texture_filename.empty())
             {
-                const Vector2d& uv = shading_point.get_uv(0);
+                const Vector2f& uv = shading_point.get_uv(0);
 
                 Color3f color;
                 if (!texture_system.texture(
                         m_texture_filename,
                         m_texture_options,
-                        static_cast<float>(uv[0]),
+                        uv[0],
 #if OIIO_VERSION >= 10703
-                        static_cast<float>(uv[1]),
+                        uv[1],
 #else
-                        static_cast<float>(1.0 - uv[1]),
+                        1.0f - uv[1],
 #endif
                         0.0f,
                         0.0f,

@@ -417,9 +417,9 @@ bool RendererServices::trace(
         trace_data->m_hit_distance = static_cast<float>(shading_point.get_distance());
         trace_data->m_N = Imath::V3d(shading_point.get_shading_normal());
         trace_data->m_Ng = Imath::V3d(shading_point.get_geometric_normal());
-        const Vector2d& uv = shading_point.get_uv(0);
-        trace_data->m_u = static_cast<float>(uv[0]);
-        trace_data->m_v = static_cast<float>(uv[1]);
+        const Vector2f& uv = shading_point.get_uv(0);
+        trace_data->m_u = uv[0];
+        trace_data->m_v = uv[1];
         return true;
     }
 

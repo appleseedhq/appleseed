@@ -80,7 +80,7 @@ namespace
     // Apply an addressing mode to texture coordinates.
     inline void apply_addressing_mode(
         const TextureAddressingMode addressing_mode,
-        Vector2d&                   p)
+        Vector2f&                   p)
     {
         switch (addressing_mode)
         {
@@ -178,10 +178,10 @@ TextureSource::TextureSource(
   , m_texture_uid(texture_instance.get_texture().get_uid())
   , m_texture_props(texture_instance.get_texture().properties())
   , m_texture_transform(texture_instance.get_transform())
-  , m_scalar_canvas_width(static_cast<double>(m_texture_props.m_canvas_width))
-  , m_scalar_canvas_height(static_cast<double>(m_texture_props.m_canvas_height))
-  , m_max_x(static_cast<double>(m_texture_props.m_canvas_width - 1))
-  , m_max_y(static_cast<double>(m_texture_props.m_canvas_height - 1))
+  , m_scalar_canvas_width(static_cast<float>(m_texture_props.m_canvas_width))
+  , m_scalar_canvas_height(static_cast<float>(m_texture_props.m_canvas_height))
+  , m_max_x(static_cast<float>(m_texture_props.m_canvas_width - 1))
+  , m_max_y(static_cast<float>(m_texture_props.m_canvas_height - 1))
 {
 }
 
@@ -190,16 +190,16 @@ uint64 TextureSource::compute_signature() const
     return m_texture_instance.compute_signature();
 }
 
-Vector2d TextureSource::apply_transform(const Vector2d& uv) const
+Vector2f TextureSource::apply_transform(const Vector2f& uv) const
 {
     // Convert to 3D coordinates.
-    Vector3d p(uv.x, uv.y, 0.0);
+    Vector3f p(uv.x, uv.y, 0.0f);
 
     // Apply transform.
     p = m_texture_transform.point_to_local(p);
 
     // Convert back to 2D coordinates.
-    return Vector2d(p.x, p.y);
+    return Vector2f(p.x, p.y);
 }
 
 Color4f TextureSource::get_texel(
@@ -360,11 +360,11 @@ void TextureSource::get_texels_2x2(
 
 Color4f TextureSource::sample_texture(
     TextureCache&               texture_cache,
-    const Vector2d&             uv) const
+    const Vector2f&             uv) const
 {
     // Start with the transformed input texture coordinates.
-    Vector2d p = apply_transform(uv);
-    p.y = 1.0 - p.y;
+    Vector2f p = apply_transform(uv);
+    p.y = 1.0f - p.y;
 
     // Apply the texture addressing mode.
     apply_addressing_mode(m_texture_instance.get_addressing_mode(), p);
@@ -373,8 +373,8 @@ Color4f TextureSource::sample_texture(
     {
       case TextureFilteringNearest:
         {
-            p.x = clamp(p.x * m_scalar_canvas_width, 0.0, m_max_x);
-            p.y = clamp(p.y * m_scalar_canvas_height, 0.0, m_max_y);
+            p.x = clamp(p.x * m_scalar_canvas_width, 0.0f, m_max_x);
+            p.y = clamp(p.y * m_scalar_canvas_height, 0.0f, m_max_y);
 
             const size_t ix = truncate<size_t>(p.x);
             const size_t iy = truncate<size_t>(p.y);

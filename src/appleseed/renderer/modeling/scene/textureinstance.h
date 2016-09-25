@@ -108,7 +108,7 @@ class APPLESEED_DLLSYMBOL TextureInstance
     const char* get_texture_name() const;
 
     // Return the texture transform.
-    const foundation::Transformd& get_transform() const;
+    const foundation::Transformf& get_transform() const;
 
     // Return the modes.
     TextureAddressingMode get_addressing_mode() const;
@@ -159,7 +159,7 @@ class APPLESEED_DLLSYMBOL TextureInstance
         const char*                     name,
         const ParamArray&               params,
         const char*                     texture_name,
-        const foundation::Transformd&   transform);
+        const foundation::Transformf&   transform);
 
     // Destructor.
     ~TextureInstance();
@@ -181,7 +181,7 @@ class APPLESEED_DLLSYMBOL TextureInstanceFactory
         const char*                     name,
         const ParamArray&               params,
         const char*                     texture_name,
-        const foundation::Transformd&   transform = foundation::Transformd::identity());
+        const foundation::Transformf&   transform = foundation::Transformf::identity());
 };
 
 
