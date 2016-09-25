@@ -63,7 +63,7 @@ APPLESEED_DECLARE_INPUT_VALUES(GlossyBRDFInputValues)
     ScalarInput m_ior;
 
     // Precomputed values.
-    double      m_outside_ior;
+    ScalarInput m_outside_ior;
 };
 
 

@@ -47,8 +47,8 @@ namespace renderer
 
 BumpMappingModifier::BumpMappingModifier(
     const Source*       map,
-    const double        offset,
-    const double        amplitude)
+    const float         offset,
+    const float         amplitude)
   : m_map(map)
   , m_amplitude(amplitude)
 {
@@ -67,13 +67,13 @@ BumpMappingModifier::BumpMappingModifier(
         m_du = m_dv = offset;
     }
 
-    m_rcp_du = 1.0 / m_du;
-    m_rcp_dv = 1.0 / m_dv;
+    m_rcp_du = 1.0f / m_du;
+    m_rcp_dv = 1.0f / m_dv;
 }
 
 Basis3d BumpMappingModifier::modify(
     TextureCache&       texture_cache,
-    const Vector2d&     uv,
+    const Vector2f&     uv,
     const Basis3d&      basis) const
 {
     // Evaluate the displacement function at (u, v).
@@ -82,11 +82,11 @@ Basis3d BumpMappingModifier::modify(
 
     // Evaluate the displacement function at (u + delta_u, v).
     double val_du;
-    m_map->evaluate(texture_cache, Vector2d(uv[0] + m_du, uv[1]), val_du);
+    m_map->evaluate(texture_cache, Vector2f(uv[0] + m_du, uv[1]), val_du);
 
     // Evaluate the displacement function at (u, v + delta_v).
     double val_dv;
-    m_map->evaluate(texture_cache, Vector2d(uv[0], uv[1] + m_dv), val_dv);
+    m_map->evaluate(texture_cache, Vector2f(uv[0], uv[1] + m_dv), val_dv);
 
     // Compute the partial derivatives of the displacement function d(u, v).
     const double ddispdu = m_amplitude * (val_du - val) * m_rcp_du;

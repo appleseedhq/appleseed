@@ -130,14 +130,14 @@ class ShadingPoint
     double get_distance() const;
 
     // Return the barycentric coordinates of the intersection point.
-    const foundation::Vector2d& get_bary() const;
+    const foundation::Vector2f& get_bary() const;
 
     // Return the texture coordinates from a given UV set at the intersection point.
-    const foundation::Vector2d& get_uv(const size_t uvset) const;
+    const foundation::Vector2f& get_uv(const size_t uvset) const;
 
     // Return the screen space partial derivatives of the texture coordinates from a given UV set.
-    const foundation::Vector2d& get_duvdx(const size_t uvset) const;
-    const foundation::Vector2d& get_duvdy(const size_t uvset) const;
+    const foundation::Vector2f& get_duvdx(const size_t uvset) const;
+    const foundation::Vector2f& get_duvdy(const size_t uvset) const;
 
     // Return the intersection point in world space.
     const foundation::Vector3d& get_point() const;
@@ -279,7 +279,7 @@ class ShadingPoint
 
     // Intersection results.
     PrimitiveType                       m_primitive_type;                   // type of the hit primitive
-    foundation::Vector2d                m_bary;                             // barycentric coordinates of intersection point
+    foundation::Vector2f                m_bary;                             // barycentric coordinates of intersection point
     const AssemblyInstance*             m_assembly_instance;                // hit assembly instance
     foundation::Transformd              m_assembly_instance_transform;      // transform of the hit assembly instance at ray time
     const TransformSequence*            m_assembly_instance_transform_seq;  // transform sequence of the hit assembly instance.
@@ -324,9 +324,9 @@ class ShadingPoint
     mutable GVector3                    m_t0, m_t1, m_t2;               // object instance space triangle vertex tangents
 
     // Additional intersection results, computed on demand.
-    mutable foundation::Vector2d        m_uv;                           // texture coordinates from UV set #0
-    mutable foundation::Vector2d        m_duvdx;                        // screen space partial derivative of the texture coords wrt. X
-    mutable foundation::Vector2d        m_duvdy;                        // screen space partial derivative of the texture coords wrt. Y
+    mutable foundation::Vector2f        m_uv;                           // texture coordinates from UV set #0
+    mutable foundation::Vector2f        m_duvdx;                        // screen space partial derivative of the texture coords wrt. X
+    mutable foundation::Vector2f        m_duvdy;                        // screen space partial derivative of the texture coords wrt. Y
     mutable foundation::Vector3d        m_point;                        // world space intersection point
     mutable foundation::Vector3d        m_biased_point;                 // world space intersection point with per-object-instance bias applied
     mutable foundation::Vector3d        m_dpdu;                         // world space partial derivative of the intersection point wrt. U
@@ -496,13 +496,13 @@ inline double ShadingPoint::get_distance() const
     return m_ray.m_tmax;
 }
 
-inline const foundation::Vector2d& ShadingPoint::get_bary() const
+inline const foundation::Vector2f& ShadingPoint::get_bary() const
 {
     assert(hit());
     return m_bary;
 }
 
-inline const foundation::Vector2d& ShadingPoint::get_uv(const size_t uvset) const
+inline const foundation::Vector2f& ShadingPoint::get_uv(const size_t uvset) const
 {
     assert(hit());
     assert(uvset == 0);     // todo: support multiple UV sets
@@ -514,13 +514,10 @@ inline const foundation::Vector2d& ShadingPoint::get_uv(const size_t uvset) cons
         if (m_primitive_type == PrimitiveTriangle)
         {
             // Compute the texture coordinates.
-            const foundation::Vector2d v0_uv(m_v0_uv);
-            const foundation::Vector2d v1_uv(m_v1_uv);
-            const foundation::Vector2d v2_uv(m_v2_uv);
             m_uv =
-                  v0_uv * (1.0 - m_bary[0] - m_bary[1])
-                + v1_uv * m_bary[0]
-                + v2_uv * m_bary[1];
+                  m_v0_uv * (1.0f - m_bary[0] - m_bary[1])
+                + m_v1_uv * m_bary[0]
+                + m_v2_uv * m_bary[1];
         }
         else
         {
@@ -535,7 +532,7 @@ inline const foundation::Vector2d& ShadingPoint::get_uv(const size_t uvset) cons
     return m_uv;
 }
 
-inline const foundation::Vector2d& ShadingPoint::get_duvdx(const size_t uvset) const
+inline const foundation::Vector2f& ShadingPoint::get_duvdx(const size_t uvset) const
 {
     assert(hit());
     assert(uvset == 0);     // todo: support multiple UV sets
@@ -549,7 +546,7 @@ inline const foundation::Vector2d& ShadingPoint::get_duvdx(const size_t uvset) c
     return m_duvdx;
 }
 
-inline const foundation::Vector2d& ShadingPoint::get_duvdy(const size_t uvset) const
+inline const foundation::Vector2f& ShadingPoint::get_duvdy(const size_t uvset) const
 {
     assert(hit());
     assert(uvset == 0);     // todo: support multiple UV sets

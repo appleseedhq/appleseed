@@ -123,7 +123,7 @@ namespace
 
         uint8* evaluate(
             TextureCache&       texture_cache,
-            const Vector2d&     uv,
+            const Vector2f&     uv,
             uint8*              ptr) const
         {
             switch (m_format)
@@ -391,7 +391,7 @@ size_t InputArray::compute_data_size() const
 
 void InputArray::evaluate(
     TextureCache&       texture_cache,
-    const Vector2d&     uv,
+    const Vector2f&     uv,
     void*               values,
     const size_t        offset) const
 {

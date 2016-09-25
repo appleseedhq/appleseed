@@ -160,7 +160,8 @@ namespace
     }
 
     // Compute a color from a given 2D vector.
-    inline Color3f vector2_to_color(const Vector2d& vec)
+    template <typename T>
+    inline Color3f vector2_to_color(const Vector<T,2>& vec)
     {
         const float u = wrap1(static_cast<float>(vec[0]));
         const float v = wrap1(static_cast<float>(vec[1]));
@@ -169,7 +170,8 @@ namespace
     }
 
     // Compute a color from uv coordinates.
-    inline Color3f uvs_to_color(const Vector2d& vec)
+    template <typename T>
+    inline Color3f uvs_to_color(const Vector<T,2>& vec)
     {
         const float u = wrap1(static_cast<float>(vec[0]));
         const float v = wrap1(static_cast<float>(vec[1]));
@@ -177,20 +179,21 @@ namespace
     }
 
     // Compute a color from a given unit-length 3D vector.
-    inline Color3f vector3_to_color(const Vector3d& vec)
+    template <typename T>
+    inline Color3f vector3_to_color(const Vector<T,3>& vec)
     {
         assert(is_normalized(vec));
 
 #ifdef SHADE_VECTORS_USING_3DSMAX_CONVENTIONS
         return Color3f(
-            static_cast<float>((vec[0] + 1.0) * 0.5),
-            static_cast<float>((-vec[2] + 1.0) * 0.5),
-            static_cast<float>((vec[1] + 1.0) * 0.5));
+            static_cast<float>(( vec[0] + T(1.0)) * T(0.5)),
+            static_cast<float>((-vec[2] + T(1.0)) * T(0.5)),
+            static_cast<float>(( vec[1] + T(1.0)) * T(0.5)));
 #else
         return Color3f(
-            static_cast<float>((vec[0] + 1.0) * 0.5),
-            static_cast<float>((vec[1] + 1.0) * 0.5),
-            static_cast<float>((vec[2] + 1.0) * 0.5));
+            static_cast<float>((vec[0] + T(1.0)) * T(0.5)),
+            static_cast<float>((vec[1] + T(1.0)) * T(0.5)),
+            static_cast<float>((vec[2] + T(1.0)) * T(0.5)));
 #endif
     }
 

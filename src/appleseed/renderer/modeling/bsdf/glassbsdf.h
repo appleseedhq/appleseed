@@ -68,12 +68,12 @@ APPLESEED_DECLARE_INPUT_VALUES(GlassBSDFInputValues)
 
     // Precomputed values.
     bool        m_backfacing;
-    double      m_eta;
+    ScalarInput m_eta;
     Spectrum    m_reflection_color;
     Spectrum    m_refraction_color;
     Spectrum    m_absorption;
-    double      m_reflection_weight;
-    double      m_refraction_weight;
+    ScalarInput m_reflection_weight;
+    ScalarInput m_refraction_weight;
 };
 
 
