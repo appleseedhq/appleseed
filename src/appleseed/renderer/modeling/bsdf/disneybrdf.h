@@ -70,7 +70,7 @@ APPLESEED_DECLARE_INPUT_VALUES(DisneyBRDFInputValues)
     // These are not a real params of the BRDF.
     // Instead, they are used to hold some temporary values.
     Spectrum    m_tint_color;
-    double      m_base_color_luminance;
+    ScalarInput m_base_color_luminance;
 };
 
 
