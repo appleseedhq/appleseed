@@ -278,8 +278,8 @@ namespace
             shift_angles(theta, phi, -m_theta_shift, -m_phi_shift);
 
             // Convert the spherical coordinates to [0,1]^2.
-            double u, v;
-            angles_to_unit_square(theta, phi, u, v);
+            float u, v;
+            angles_to_unit_square(static_cast<float>(theta), static_cast<float>(phi), u, v);
 
             // Compute and return the environment color.
             lookup_environment_map(input_evaluator, u, v, value);
@@ -315,8 +315,8 @@ namespace
             shift_angles(theta, phi, -m_theta_shift, -m_phi_shift);
 
             // Convert the spherical coordinates to [0,1]^2.
-            double u, v;
-            angles_to_unit_square(theta, phi, u, v);
+            float u, v;
+            angles_to_unit_square(static_cast<float>(theta), static_cast<float>(phi), u, v);
 
             // Compute and return the environment color and the PDF value.
             lookup_environment_map(input_evaluator, u, v, value);
@@ -348,8 +348,8 @@ namespace
             shift_angles(theta, phi, -m_theta_shift, -m_phi_shift);
 
             // Convert the spherical coordinates to [0,1]^2.
-            double u, v;
-            angles_to_unit_square(theta, phi, u, v);
+            float u, v;
+            angles_to_unit_square(static_cast<float>(theta), static_cast<float>(phi), u, v);
 
             // Compute and return the PDF value.
             return compute_pdf(u, v, theta);
@@ -442,15 +442,15 @@ namespace
 
         void lookup_environment_map(
             InputEvaluator&         input_evaluator,
-            const double            u,
-            const double            v,
+            const float             u,
+            const float             v,
             Spectrum&               value) const
         {
-            assert(u >= 0.0 && u < 1.0);
-            assert(v >= 0.0 && v < 1.0);
+            assert(u >= 0.0f && u < 1.0f);
+            assert(v >= 0.0f && v < 1.0f);
 
             const InputValues* values =
-                input_evaluator.evaluate<InputValues>(m_inputs, Vector2f(u, 1.0 - v));
+                input_evaluator.evaluate<InputValues>(m_inputs, Vector2f(u, 1.0f - v));
 
             value = values->m_radiance;
             value *=
@@ -458,12 +458,12 @@ namespace
         }
 
         double compute_pdf(
-            const double            u,
-            const double            v,
+            const float             u,
+            const float             v,
             const double            theta) const
         {
-            assert(u >= 0.0 && u < 1.0);
-            assert(v >= 0.0 && v < 1.0);
+            assert(u >= 0.0f && u < 1.0f);
+            assert(v >= 0.0f && v < 1.0f);
             assert(m_importance_sampler.get());
 
             // Compute the probability density of this sample in the importance map.

@@ -287,8 +287,8 @@ inline bool CurveLeafVisitor::visit(
         {
             m_shading_point.m_primitive_type = ShadingPoint::PrimitiveCurve1;
             m_shading_point.m_ray.m_tmax = static_cast<double>(t);
-            m_shading_point.m_bary[0] = static_cast<double>(u);
-            m_shading_point.m_bary[1] = static_cast<double>(v);
+            m_shading_point.m_bary[0] = static_cast<float>(u);
+            m_shading_point.m_bary[1] = static_cast<float>(v);
             hit_curve_index = curve_index;
         }
     }
@@ -302,8 +302,8 @@ inline bool CurveLeafVisitor::visit(
         {
             m_shading_point.m_primitive_type = ShadingPoint::PrimitiveCurve3;
             m_shading_point.m_ray.m_tmax = static_cast<double>(t);
-            m_shading_point.m_bary[0] = static_cast<double>(u);
-            m_shading_point.m_bary[1] = static_cast<double>(v);
+            m_shading_point.m_bary[0] = static_cast<float>(u);
+            m_shading_point.m_bary[1] = static_cast<float>(v);
             hit_curve_index = curve_index;
         }
     }

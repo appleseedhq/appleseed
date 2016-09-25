@@ -484,8 +484,12 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
         const Vector3d& dpdu = get_dpdu(0);
         const Vector3d& dpdv = get_dpdv(0);
 
-        const Vector2d a0(dpdu[axes[0]], dpdu[axes[1]]);
-        const Vector2d a1(dpdv[axes[0]], dpdv[axes[1]]);
+        const Vector2f a0(
+            static_cast<float>(dpdu[axes[0]]),
+            static_cast<float>(dpdu[axes[1]]));
+        const Vector2f a1(
+            static_cast<float>(dpdv[axes[0]]),
+            static_cast<float>(dpdv[axes[1]]));
 
         const double d = det(a0, a1);
 
@@ -496,18 +500,17 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
             return;
         }
 
-        const float rcp_d = 1.0f / d;
-
         const Vector2f bx(
-            px[axes[0]] - p[axes[0]],
-            px[axes[1]] - p[axes[1]]);
+            static_cast<float>(px[axes[0]] - p[axes[0]]),
+            static_cast<float>(px[axes[1]] - p[axes[1]]));
+        const Vector2f by(
+            static_cast<float>(py[axes[0]] - p[axes[0]]),
+            static_cast<float>(py[axes[1]] - p[axes[1]]));
+
+        const float rcp_d = 1.0f / static_cast<float>(d);
 
         m_duvdx[0] = (a1[1] * bx[0] - a0[1] * bx[1]) * rcp_d;
         m_duvdx[1] = (a0[0] * bx[1] - a1[0] * bx[0]) * rcp_d;
-
-        const Vector2d by(
-            py[axes[0]] - p[axes[0]],
-            py[axes[1]] - p[axes[1]]);
 
         m_duvdy[0] = (a1[1] * by[0] - a0[1] * by[1]) * rcp_d;
         m_duvdy[1] = (a0[0] * by[1] - a1[0] * by[0]) * rcp_d;

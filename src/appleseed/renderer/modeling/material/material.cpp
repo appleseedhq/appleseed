@@ -242,8 +242,8 @@ IBasisModifier* Material::create_basis_modifier(const MessageContext& context) c
     // Create the basis modifier.
     if (displacement_method == "bump")
     {
-        const double offset = m_params.get_optional<double>("bump_offset", 2.0);
-        const double amplitude = m_params.get_optional<double>("bump_amplitude", 1.0);
+        const float offset = m_params.get_optional<float>("bump_offset", 2.0f);
+        const float amplitude = m_params.get_optional<float>("bump_amplitude", 1.0f);
         return new BumpMappingModifier(displacement_map, offset, amplitude);
     }
     else

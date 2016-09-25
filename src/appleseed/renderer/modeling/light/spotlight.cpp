@@ -200,9 +200,9 @@ namespace
             assert(cos_theta > m_cos_outer_half_angle);
 
             const Vector3d d = outgoing / cos_theta - axis;
-            const double x = dot(d, u) * m_rcp_screen_half_size;
-            const double y = dot(d, n) * m_rcp_screen_half_size;
-            const Vector2f uv(0.5 * (x + 1.0), 0.5 * (y + 1.0));
+            const float x = static_cast<float>(dot(d, u) * m_rcp_screen_half_size);
+            const float y = static_cast<float>(dot(d, n) * m_rcp_screen_half_size);
+            const Vector2f uv(0.5f * (x + 1.0f), 0.5f * (y + 1.0f));
 
             const InputValues* values = input_evaluator.evaluate<InputValues>(m_inputs, uv);
             radiance = values->m_intensity;

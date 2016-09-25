@@ -141,7 +141,7 @@ namespace
         ParametricSphere(const float radius, const size_t resolution_u)
           : m_radius(radius)
           , m_h(1.0f / resolution_u * 4.0f)
-          , m_transform(Matrix4f::make_rotation_x(HalfPi))
+          , m_transform(Matrix4f::make_rotation_x(static_cast<float>(HalfPi)))
         {
         }
 
@@ -201,7 +201,7 @@ namespace
           , m_minor_radius(minor_radius)
           , m_hu(1.0f / (resolution_u * 4.0f))
           , m_hv(1.0f / (resolution_v * 4.0f))
-          , m_transform(Matrix4f::make_rotation_x(HalfPi))
+          , m_transform(Matrix4f::make_rotation_x(static_cast<float>(HalfPi)))
         {
         }
 

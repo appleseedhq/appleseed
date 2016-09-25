@@ -403,9 +403,9 @@ namespace
             {
                 // Evaluate turbidity.
                 double theta, phi;
-                double u, v;
+                float u, v;
                 unit_vector_to_angles(outgoing, theta, phi);
-                angles_to_unit_square(theta, phi, u, v);
+                angles_to_unit_square(static_cast<float>(theta), static_cast<float>(phi), u, v);
                 double turbidity = input_evaluator.evaluate<InputValues>(m_inputs, Vector2f(u, v))->m_turbidity;
 
                 // Apply turbidity multiplier and bias.

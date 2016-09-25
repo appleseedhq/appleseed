@@ -86,9 +86,9 @@ namespace
             const Vector3d&         direction,
             ShadingResult&          shading_result) const APPLESEED_OVERRIDE
         {
-            const Vector2d& s = pixel_context.get_sample_position();
+            const Vector2f s(pixel_context.get_sample_position());
             const InputValues* input_values =
-                input_evaluator.evaluate<InputValues>(m_inputs, Vector2f(s[0], 1.0 - s[1]));
+                input_evaluator.evaluate<InputValues>(m_inputs, Vector2f(s[0], 1.0f - s[1]));
 
             shading_result.m_color_space = ColorSpaceSpectral;
             shading_result.m_main.m_color = input_values->m_color;
