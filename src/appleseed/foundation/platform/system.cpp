@@ -476,9 +476,9 @@ namespace
             "=d" (regs[edx]));
     }
 
-#define BIT(n)          (1ul << (n))
-#define BITMASK(h,l)    ((BIT(h) | (BIT(h) - 1)) & ~(BIT(l) - 1))
-#define BITFIELD(x,h,l) (((x) & BITMASK(h, l)) >> l)
+#define BIT(n)              (1ul << (n))
+#define BITMASK(h, l)       ((BIT(h) | (BIT(h) - 1)) & ~(BIT(l) - 1))
+#define BITFIELD(x, h, l)   (((x) & BITMASK(h, l)) >> l)
 
     // For modern CPUs, we use Deterministic Cache Parameters (Function 04h)
     // to obtain cache information.

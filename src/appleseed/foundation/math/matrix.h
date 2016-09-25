@@ -797,7 +797,7 @@ template <typename T, size_t M, size_t N>
 inline Matrix<T, N, M> transpose(const Matrix<T, M, N>& mat)
 {
     Matrix<T, N, M> res;
-    T *p = &res(0,0);
+    T* p = &res(0, 0);
 
     for (size_t c = 0; c < N; ++c)
     {

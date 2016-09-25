@@ -97,9 +97,9 @@ class FresnelDielectricFun
     }
 
     void operator()(
-        const foundation::Vector<T,3>&  o,
-        const foundation::Vector<T,3>&  h,
-        const foundation::Vector<T,3>&  n,
+        const foundation::Vector<T, 3>& o,
+        const foundation::Vector<T, 3>& h,
+        const foundation::Vector<T, 3>& n,
         Spectrum&                       value) const
     {
         value = m_reflectance;

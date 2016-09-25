@@ -188,7 +188,7 @@ namespace
         template <typename T>
         void write_transform(const Transform<T>& transform)
         {
-            if (transform.get_local_to_parent() == Matrix<T,4,4>::identity())
+            if (transform.get_local_to_parent() == Matrix<T, 4, 4>::identity())
                 return;
 
             XMLElement element("transform", m_file, m_indenter);
