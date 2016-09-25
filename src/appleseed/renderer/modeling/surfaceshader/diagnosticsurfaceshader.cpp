@@ -161,7 +161,7 @@ namespace
 
     // Compute a color from a given 2D vector.
     template <typename T>
-    inline Color3f vector2_to_color(const Vector<T,2>& vec)
+    inline Color3f vector2_to_color(const Vector<T, 2>& vec)
     {
         const float u = wrap1(static_cast<float>(vec[0]));
         const float v = wrap1(static_cast<float>(vec[1]));
@@ -171,7 +171,7 @@ namespace
 
     // Compute a color from uv coordinates.
     template <typename T>
-    inline Color3f uvs_to_color(const Vector<T,2>& vec)
+    inline Color3f uvs_to_color(const Vector<T, 2>& vec)
     {
         const float u = wrap1(static_cast<float>(vec[0]));
         const float v = wrap1(static_cast<float>(vec[1]));
@@ -180,7 +180,7 @@ namespace
 
     // Compute a color from a given unit-length 3D vector.
     template <typename T>
-    inline Color3f vector3_to_color(const Vector<T,3>& vec)
+    inline Color3f vector3_to_color(const Vector<T, 3>& vec)
     {
         assert(is_normalized(vec));
 

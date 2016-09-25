@@ -717,7 +717,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
                         "rt",
                         Dictionary()
                             .insert("label", "Ray Tracing")
-                            .insert("help","Use ray tracing to estimate direct lighting"))
+                            .insert("help", "Use ray tracing to estimate direct lighting"))
                     .insert(
                         "sppm",
                         Dictionary()
@@ -727,7 +727,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
                         "off",
                         Dictionary()
                             .insert("label", "Disabled")
-                            .insert("help","Do not estimate direct lighting"))));
+                            .insert("help", "Do not estimate direct lighting"))));
 
     metadata.dictionaries().insert(
         "photon_tracing_max_path_length",

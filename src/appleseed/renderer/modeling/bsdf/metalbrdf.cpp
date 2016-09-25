@@ -81,9 +81,9 @@ namespace
         }
 
         void operator()(
-            const foundation::Vector<T,3>&  o,
-            const foundation::Vector<T,3>&  h,
-            const foundation::Vector<T,3>&  n,
+            const foundation::Vector<T, 3>& o,
+            const foundation::Vector<T, 3>& h,
+            const foundation::Vector<T, 3>& n,
             Spectrum&                       value) const
         {
             artist_friendly_fresnel_reflectance_conductor(

@@ -1418,8 +1418,8 @@ bool TriangleLeafVisitor::visit(
                 m_hit_triangle = &triangle;
                 m_hit_triangle_index = triangle_index;
                 m_shading_point.m_ray.m_tmax = t;
-                m_shading_point.m_bary[0] = u;
-                m_shading_point.m_bary[1] = v;
+                m_shading_point.m_bary[0] = static_cast<float>(u);
+                m_shading_point.m_bary[1] = static_cast<float>(v);
             }
         }
         else
@@ -1474,8 +1474,8 @@ bool TriangleLeafVisitor::visit(
                 m_hit_triangle = &m_interpolated_triangle;
                 m_hit_triangle_index = triangle_index;
                 m_shading_point.m_ray.m_tmax = t;
-                m_shading_point.m_bary[0] = u;
-                m_shading_point.m_bary[1] = v;
+                m_shading_point.m_bary[0] = static_cast<float>(u);
+                m_shading_point.m_bary[1] = static_cast<float>(v);
             }
         }
     }
