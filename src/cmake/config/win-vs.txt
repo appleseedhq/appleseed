@@ -357,12 +357,12 @@ endmacro ()
 
 macro (get_sandbox_bin_path path)
     slashes_to_backslashes (${path} ${PROJECT_SOURCE_DIR})
-    set (${path} ${${path}}\\sandbox\\bin\\$(ConfigurationName)\\)
+    set (${path} ${${path}}\\sandbox\\bin\\$(PlatformToolset)\\$(ConfigurationName)\\)
 endmacro ()
 
 macro (get_sandbox_lib_path path)
     slashes_to_backslashes (${path} ${PROJECT_SOURCE_DIR})
-    set (${path} ${${path}}\\sandbox\\lib\\$(ConfigurationName)\\)
+    set (${path} ${${path}}\\sandbox\\lib\\$(PlatformToolset)\\$(ConfigurationName)\\)
 endmacro ()
 
 macro (add_copy_target_exe_to_sandbox_command target)
