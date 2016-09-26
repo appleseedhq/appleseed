@@ -46,6 +46,15 @@ using namespace foundation;
 using namespace renderer;
 using namespace std;
 
+// Work around a regression in Visual Studio 2015 Update 3.
+#if defined(_MSC_VER) && _MSC_VER == 1900
+namespace boost
+{
+    template <> Texture const volatile* get_pointer<Texture const volatile>(Texture const volatile* p) { return p; }
+    template <> TextureInstance const volatile* get_pointer<TextureInstance const volatile>(TextureInstance const volatile* p) { return p; }
+}
+#endif
+
 namespace
 {
     auto_release_ptr<Texture> create_texture(

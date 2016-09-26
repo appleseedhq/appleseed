@@ -46,6 +46,15 @@ using namespace foundation;
 using namespace renderer;
 using namespace std;
 
+// Work around a regression in Visual Studio 2015 Update 3.
+#if defined(_MSC_VER) && _MSC_VER == 1900
+namespace boost
+{
+    template <> Assembly const volatile* get_pointer<Assembly const volatile>(Assembly const volatile* p) { return p; }
+    template <> AssemblyInstance const volatile* get_pointer<AssemblyInstance const volatile>(AssemblyInstance const volatile* p) { return p; }
+}
+#endif
+
 namespace
 {
     auto_release_ptr<Assembly> create_assembly(const string& name)

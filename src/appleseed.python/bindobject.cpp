@@ -46,6 +46,15 @@ using namespace foundation;
 using namespace renderer;
 using namespace std;
 
+// Work around a regression in Visual Studio 2015 Update 3.
+#if defined(_MSC_VER) && _MSC_VER == 1900
+namespace boost
+{
+    template <> Object const volatile* get_pointer<Object const volatile>(Object const volatile* p) { return p; }
+    template <> ObjectInstance const volatile* get_pointer<ObjectInstance const volatile>(ObjectInstance const volatile* p) { return p; }
+}
+#endif
+
 namespace
 {
     void bpy_list_to_string_array(const bpy::list& l, StringArray& strings)

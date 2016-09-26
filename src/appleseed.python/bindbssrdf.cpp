@@ -43,6 +43,14 @@ using namespace foundation;
 using namespace renderer;
 using namespace std;
 
+// Work around a regression in Visual Studio 2015 Update 3.
+#if defined(_MSC_VER) && _MSC_VER == 1900
+namespace boost
+{
+    template <> BSSRDF const volatile* get_pointer<BSSRDF const volatile>(BSSRDF const volatile* p) { return p; }
+}
+#endif
+
 namespace
 {
     auto_release_ptr<BSSRDF> create_bssrdf(
