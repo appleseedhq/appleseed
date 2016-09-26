@@ -90,6 +90,7 @@ set (cxx_compiler_flags_common
     /wd4355                                 # Disable warning C4355: 'this' : used in base member initializer list
     /wd4503                                 # Disable warning C4503: decorated name length exceeded, name was truncated
     /wd4068                                 # Disable warning C4068: unknown pragma
+    /wd4091                                 # Disable warning C4091: 'typedef' : ignored on left of X when no variable is declared
 )
 if (CMAKE_SIZEOF_VOID_P EQUAL 8)
     set (c_compiler_flags_common
