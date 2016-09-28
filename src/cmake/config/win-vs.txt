@@ -90,6 +90,7 @@ set (cxx_compiler_flags_common
     /wd4355                                 # Disable warning C4355: 'this' : used in base member initializer list
     /wd4503                                 # Disable warning C4503: decorated name length exceeded, name was truncated
     /wd4068                                 # Disable warning C4068: unknown pragma
+    /wd4091                                 # Disable warning C4091: 'typedef' : ignored on left of X when no variable is declared
 )
 if (CMAKE_SIZEOF_VOID_P EQUAL 8)
     set (c_compiler_flags_common
@@ -329,8 +330,8 @@ macro (link_against_seexpr target)
         target_link_libraries (${target} ${SEEXPR_LIBRARIES})
     else ()
         target_link_libraries (${target}
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/SeExpr-debug/lib/SeExpr.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/SeExpr-release/lib/SeExpr.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/seexpr-debug/lib/SeExpr.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/seexpr-release/lib/SeExpr.lib
         )
     endif ()
 endmacro ()
@@ -340,8 +341,8 @@ macro (link_against_seexpreditor target)
         target_link_libraries (${target} ${SEEXPREDITOR_LIBRARIES})
     else ()
         target_link_libraries (${target}
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/SeExpr-debug/lib/SeExprEditor.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/SeExpr-release/lib/SeExprEditor.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/seexpr-debug/lib/SeExprEditor.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/seexpr-release/lib/SeExprEditor.lib
         )
     endif ()
 endmacro ()
@@ -357,12 +358,12 @@ endmacro ()
 
 macro (get_sandbox_bin_path path)
     slashes_to_backslashes (${path} ${PROJECT_SOURCE_DIR})
-    set (${path} ${${path}}\\sandbox\\bin\\$(ConfigurationName)\\)
+    set (${path} ${${path}}\\sandbox\\bin\\$(PlatformToolset)\\$(ConfigurationName)\\)
 endmacro ()
 
 macro (get_sandbox_lib_path path)
     slashes_to_backslashes (${path} ${PROJECT_SOURCE_DIR})
-    set (${path} ${${path}}\\sandbox\\lib\\$(ConfigurationName)\\)
+    set (${path} ${${path}}\\sandbox\\lib\\$(PlatformToolset)\\$(ConfigurationName)\\)
 endmacro ()
 
 macro (add_copy_target_exe_to_sandbox_command target)
