@@ -106,6 +106,9 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Return true if the shader group was setup correctly.
     bool is_valid() const;
 
+    // Return true if the shader group contains at least one bsdf closure.
+    bool has_bsdfs() const;
+
     // Return true if the shader group contains at least one emission closure.
     bool has_emission() const;
 
@@ -143,15 +146,16 @@ class APPLESEED_DLLSYMBOL ShaderGroup
 
     enum Flags
     {
-        HasEmission     = 1 << 0,
-        HasTransparency = 1 << 1,
-        HasSubsurface   = 1 << 2,
-        HasRefraction   = 1 << 3,
-        HasHoldout      = 1 << 4,
-        HasDebug        = 1 << 5,
-        UsesdPdTime     = 1 << 6,
-
+        // Closures.
+        HasBSDFs        = 1 << 0,
+        HasEmission     = 1 << 1,
+        HasTransparency = 1 << 2,
+        HasSubsurface   = 1 << 3,
+        HasRefraction   = 1 << 4,
+        HasHoldout      = 1 << 5,
+        HasDebug        = 1 << 6,
         HasAllClosures  =
+            HasBSDFs        |
             HasEmission     |
             HasTransparency |
             HasSubsurface   |
@@ -159,6 +163,8 @@ class APPLESEED_DLLSYMBOL ShaderGroup
             HasHoldout      |
             HasDebug,
 
+        // Globals.
+        UsesdPdTime     = 1 << 7,
         UsesAllGlobals  = UsesdPdTime
     };
     foundation::uint32 m_flags;
@@ -200,6 +206,11 @@ class APPLESEED_DLLSYMBOL ShaderGroupFactory
 //
 // ShaderGroup class implementation.
 //
+
+inline bool ShaderGroup::has_bsdfs() const
+{
+    return (m_flags & HasBSDFs) != 0;
+}
 
 inline bool ShaderGroup::has_emission() const
 {

@@ -100,24 +100,30 @@ namespace
             if (!Material::on_frame_begin(project, assembly, abort_switch))
                 return false;
 
+            if (!m_osl_bsdf->on_frame_begin(project, assembly, abort_switch))
+                return false;
+
+            if (!m_osl_bssrdf->on_frame_begin(project, assembly, abort_switch))
+                return false;
+
+            if (!m_osl_edf->on_frame_begin(project, assembly, abort_switch))
+                return false;
+
             m_render_data.m_shader_group = get_uncached_osl_surface();
+            m_render_data.m_bsdf = 0;
+            m_render_data.m_bssrdf = 0;
+            m_render_data.m_edf = 0;
 
             if (m_render_data.m_shader_group)
             {
-                m_render_data.m_bsdf = m_osl_bsdf.get();
-                m_osl_bsdf->on_frame_begin(project, assembly, abort_switch);
+                if (m_render_data.m_shader_group->has_bsdfs())
+                    m_render_data.m_bsdf = m_osl_bsdf.get();
 
                 if (m_render_data.m_shader_group->has_subsurface())
-                {
                     m_render_data.m_bssrdf = m_osl_bssrdf.get();
-                    m_osl_bssrdf->on_frame_begin(project, assembly, abort_switch);
-                }
 
                 if (m_render_data.m_shader_group->has_emission())
-                {
                     m_render_data.m_edf = m_osl_edf.get();
-                    m_osl_edf->on_frame_begin(project, assembly, abort_switch);
-                }
             }
 
             return true;
@@ -128,14 +134,8 @@ namespace
             const Assembly&         assembly) APPLESEED_OVERRIDE
         {
             m_osl_bsdf->on_frame_end(project, assembly);
-
-            if (m_render_data.m_shader_group &&
-                m_render_data.m_shader_group->has_subsurface())
-                m_osl_bssrdf->on_frame_end(project, assembly);
-
-            if (m_render_data.m_shader_group &&
-                m_render_data.m_shader_group->has_emission())
-                m_osl_edf->on_frame_end(project, assembly);
+            m_osl_bssrdf->on_frame_end(project, assembly);
+            m_osl_edf->on_frame_end(project, assembly);
 
             Material::on_frame_end(project, assembly);
         }
