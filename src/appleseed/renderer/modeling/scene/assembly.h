@@ -113,14 +113,17 @@ class APPLESEED_DLLSYMBOL Assembly
     virtual void collect_asset_paths(foundation::StringArray& paths) const APPLESEED_OVERRIDE;
     virtual void update_asset_paths(const foundation::StringDictionary& mappings) APPLESEED_OVERRIDE;
 
-    // Perform pre-frame rendering actions.
+    // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
         const Project&              project,
-        foundation::IAbortSwitch*   abort_switch = 0);
+        const BaseGroup*            parent,
+        foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
 
-    // Perform post-frame rendering actions.
-    virtual void on_frame_end(const Project& project);
+    // This method is called once after rendering each frame (only if on_frame_begin() was called).
+    virtual void on_frame_end(
+        const Project&              project,
+        const BaseGroup*            parent) APPLESEED_OVERRIDE;
 
   private:
     friend class AssemblyFactory;

@@ -132,9 +132,12 @@ namespace
 
         virtual bool on_frame_begin(
             const Project&          project,
-            const Assembly&         assembly,
+            const BaseGroup*        parent,
             IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
+            if (!SurfaceShader::on_frame_begin(project, parent, abort_switch))
+                return false;
+
             const ImageStack& aov_images = project.get_frame()->aov_images();
 
             for (size_t i = 0; i < aov_images.size(); ++i)

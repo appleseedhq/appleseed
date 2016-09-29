@@ -66,8 +66,12 @@ EnvironmentEDF::EnvironmentEDF(
 
 bool EnvironmentEDF::on_frame_begin(
     const Project&      project,
+    const BaseGroup*    parent,
     IAbortSwitch*       abort_switch)
 {
+    if (!ConnectableEntity::on_frame_begin(project, parent, abort_switch))
+        return false;
+
     // Make sure the environment EDF's transform is only a (sequence of) rotation.
     bool warned = false;
     for (size_t i = 0, e = m_transform_sequence.size(); i < e; ++i)
@@ -95,10 +99,6 @@ bool EnvironmentEDF::on_frame_begin(
     }
 
     return true;
-}
-
-void EnvironmentEDF::on_frame_end(const Project& project)
-{
 }
 
 }   // namespace renderer

@@ -116,14 +116,17 @@ class APPLESEED_DLLSYMBOL Scene
     // Perform post-render rendering actions.
     void on_render_end(const Project& project);
 
-    // Perform pre-frame rendering actions.
+    // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    bool on_frame_begin(
+    virtual bool on_frame_begin(
         const Project&              project,
-        foundation::IAbortSwitch*   abort_switch = 0);
+        const BaseGroup*            parent,
+        foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
 
-    // Perform post-frame rendering actions.
-    void on_frame_end(const Project& project);
+    // This method is called once after rendering each frame (only if on_frame_begin() was called).
+    virtual void on_frame_end(
+        const Project&              project,
+        const BaseGroup*            parent) APPLESEED_OVERRIDE;
 
     struct RenderData
     {

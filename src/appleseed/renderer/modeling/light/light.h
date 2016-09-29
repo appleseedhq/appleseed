@@ -37,6 +37,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/uid.h"
 
 // appleseed.main headers.
@@ -44,7 +45,7 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class Assembly; }
+namespace renderer      { class BaseGroup; }
 namespace renderer      { class InputEvaluator; }
 namespace renderer      { class LightTargetArray; }
 namespace renderer      { class ParamArray; }
@@ -96,13 +97,8 @@ class APPLESEED_DLLSYMBOL Light
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
         const Project&                  project,
-        const Assembly&                 assembly,
-        foundation::IAbortSwitch*       abort_switch = 0);
-
-    // This method is called once after rendering each frame.
-    virtual void on_frame_end(
-        const Project&                  project,
-        const Assembly&                 assembly);
+        const BaseGroup*                parent,
+        foundation::IAbortSwitch*       abort_switch = 0) APPLESEED_OVERRIDE;
 
     // Sample the light and compute the emission position, the emission direction,
     // its probability density and the value of the light for this direction.

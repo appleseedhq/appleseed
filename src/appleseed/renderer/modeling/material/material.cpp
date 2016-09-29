@@ -150,10 +150,13 @@ const ShaderGroup* Material::get_uncached_osl_surface() const
 
 bool Material::on_frame_begin(
     const Project&      project,
-    const Assembly&     assembly,
+    const BaseGroup*    parent,
     IAbortSwitch*       abort_switch)
 {
     assert(!m_has_render_data);
+
+    if (!ConnectableEntity::on_frame_begin(project, parent, abort_switch))
+        return false;
 
     m_render_data.m_surface_shader = get_uncached_surface_shader();
     if (m_render_data.m_surface_shader == 0)
@@ -173,13 +176,15 @@ bool Material::on_frame_begin(
 
 void Material::on_frame_end(
     const Project&      project,
-    const Assembly&     assembly)
+    const BaseGroup*    parent)
 {
     if (m_has_render_data)
     {
         delete m_render_data.m_basis_modifier;
         m_has_render_data = false;
     }
+
+    ConnectableEntity::on_frame_end(project, parent);
 }
 
 bool Material::has_emission() const

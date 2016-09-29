@@ -84,18 +84,26 @@ const char* Environment::get_model() const
 
 bool Environment::on_frame_begin(
     const Project&      project,
+    const BaseGroup*    parent,
     IAbortSwitch*       abort_switch)
 {
+    if (!ConnectableEntity::on_frame_begin(project, parent, abort_switch))
+        return false;
+
     m_environment_edf = get_uncached_environment_edf();
     m_environment_shader = get_uncached_environment_shader();
 
     return true;
 }
 
-void Environment::on_frame_end(const Project& project)
+void Environment::on_frame_end(
+    const Project&      project,
+    const BaseGroup*    parent)
 {
     m_environment_edf = 0;
     m_environment_shader = 0;
+
+    ConnectableEntity::on_frame_end(project, parent);
 }
 
 EnvironmentEDF* Environment::get_uncached_environment_edf() const

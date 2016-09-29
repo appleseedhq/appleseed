@@ -94,10 +94,10 @@ namespace
 
         virtual bool on_frame_begin(
             const Project&          project,
-            const Assembly&         assembly,
+            const BaseGroup*        parent,
             IAbortSwitch*           abort_switch = 0) APPLESEED_OVERRIDE
         {
-            if (!Material::on_frame_begin(project, assembly, abort_switch))
+            if (!Material::on_frame_begin(project, parent, abort_switch))
                 return false;
 
             m_render_data.m_shader_group = get_uncached_osl_surface();
@@ -105,18 +105,18 @@ namespace
             if (m_render_data.m_shader_group)
             {
                 m_render_data.m_bsdf = m_osl_bsdf.get();
-                m_osl_bsdf->on_frame_begin(project, assembly, abort_switch);
+                m_osl_bsdf->on_frame_begin(project, parent, abort_switch);
 
                 if (m_render_data.m_shader_group->has_subsurface())
                 {
                     m_render_data.m_bssrdf = m_osl_bssrdf.get();
-                    m_osl_bssrdf->on_frame_begin(project, assembly, abort_switch);
+                    m_osl_bssrdf->on_frame_begin(project, parent, abort_switch);
                 }
 
                 if (m_render_data.m_shader_group->has_emission())
                 {
                     m_render_data.m_edf = m_osl_edf.get();
-                    m_osl_edf->on_frame_begin(project, assembly, abort_switch);
+                    m_osl_edf->on_frame_begin(project, parent, abort_switch);
                 }
             }
 
@@ -125,19 +125,19 @@ namespace
 
         virtual void on_frame_end(
             const Project&          project,
-            const Assembly&         assembly) APPLESEED_OVERRIDE
+            const BaseGroup*        parent) APPLESEED_OVERRIDE
         {
-            m_osl_bsdf->on_frame_end(project, assembly);
+            if (m_render_data.m_shader_group &&
+                m_render_data.m_shader_group->has_emission())
+                m_osl_edf->on_frame_end(project, parent);
 
             if (m_render_data.m_shader_group &&
                 m_render_data.m_shader_group->has_subsurface())
-                m_osl_bssrdf->on_frame_end(project, assembly);
+                m_osl_bssrdf->on_frame_end(project, parent);
 
-            if (m_render_data.m_shader_group &&
-                m_render_data.m_shader_group->has_emission())
-                m_osl_edf->on_frame_end(project, assembly);
+            m_osl_bsdf->on_frame_end(project, parent);
 
-            Material::on_frame_end(project, assembly);
+            Material::on_frame_end(project, parent);
         }
 
       private:

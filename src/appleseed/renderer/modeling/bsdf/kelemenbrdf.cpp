@@ -163,10 +163,10 @@ namespace
 
         virtual bool on_frame_begin(
             const Project&      project,
-            const Assembly&     assembly,
+            const BaseGroup*    parent,
             IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
         {
-            if (!BSDF::on_frame_begin(project, assembly, abort_switch))
+            if (!BSDF::on_frame_begin(project, parent, abort_switch))
                 return false;
 
             // todo: implement proper error handling.
@@ -205,11 +205,11 @@ namespace
 
         virtual void on_frame_end(
             const Project&      project,
-            const Assembly&     assembly) APPLESEED_OVERRIDE
+            const BaseGroup*    parent) APPLESEED_OVERRIDE
         {
             m_mdf.reset();
 
-            BSDF::on_frame_end(project, assembly);
+            BSDF::on_frame_end(project, parent);
         }
 
         APPLESEED_FORCE_INLINE virtual void sample(

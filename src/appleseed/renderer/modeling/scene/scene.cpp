@@ -31,6 +31,7 @@
 #include "scene.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/object/object.h"
@@ -39,6 +40,9 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/scene/visibilityflags.h"
+#ifdef APPLESEED_WITH_OSL
+#include "renderer/modeling/shadergroup/shadergroup.h"
+#endif
 #include "renderer/modeling/surfaceshader/physicalsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/texture/texture.h"
@@ -261,37 +265,6 @@ void Scene::update_asset_paths(const StringDictionary& mappings)
     do_update_asset_paths(mappings, environment_shaders());
 }
 
-namespace
-{
-    template <typename EntityCollection>
-    bool invoke_on_frame_begin(
-        const Project&      project,
-        EntityCollection&   entities,
-        IAbortSwitch*       abort_switch)
-    {
-        bool success = true;
-
-        for (each<EntityCollection> i = entities; i; ++i)
-        {
-            if (is_aborted(abort_switch))
-                break;
-
-            success = success && i->on_frame_begin(project, abort_switch);
-        }
-
-        return success;
-    }
-
-    template <typename EntityCollection>
-    void invoke_on_frame_end(
-        const Project&      project,
-        EntityCollection&   entities)
-    {
-        for (each<EntityCollection> i = entities; i; ++i)
-            i->on_frame_end(project);
-    }
-}
-
 bool Scene::on_render_begin(
     const Project&          project,
     IAbortSwitch*           abort_switch)
@@ -314,44 +287,95 @@ void Scene::on_render_end(const Project& project)
     m_has_render_data = false;
 }
 
+namespace
+{
+    template <typename EntityCollection>
+    bool invoke_on_frame_begin(
+        const Project&          project,
+        const BaseGroup*        parent,
+        EntityCollection&       entities,
+        IAbortSwitch*           abort_switch)
+    {
+        bool success = true;
+
+        for (each<EntityCollection> i = entities; i; ++i)
+        {
+            if (is_aborted(abort_switch))
+                break;
+
+            success = success && i->on_frame_begin(project, parent, abort_switch);
+        }
+
+        return success;
+    }
+
+    template <typename EntityCollection>
+    void invoke_on_frame_end(
+        const Project&          project,
+        const BaseGroup*        parent,
+        EntityCollection&       entities)
+    {
+        for (each<EntityCollection> i = entities; i; ++i)
+            i->on_frame_end(project, parent);
+    }
+}
+
 bool Scene::on_frame_begin(
     const Project&          project,
+    const BaseGroup*        parent,
     IAbortSwitch*           abort_switch)
 {
+    if (!Entity::on_frame_begin(project, parent, abort_switch))
+        return false;
+
     bool success = true;
 
-    if (impl->m_camera.get())
-        success = success && impl->m_camera->on_frame_begin(project, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, colors(), abort_switch);
+    success = success && invoke_on_frame_begin(project, this, textures(), abort_switch);
+    success = success && invoke_on_frame_begin(project, this, texture_instances(), abort_switch);
+#ifdef APPLESEED_WITH_OSL
+    success = success && invoke_on_frame_begin(project, this, shader_groups(), abort_switch);
+#endif
 
-    success = success && invoke_on_frame_begin(project, textures(), abort_switch);
-    success = success && invoke_on_frame_begin(project, texture_instances(), abort_switch);
-    success = success && invoke_on_frame_begin(project, environment_edfs(), abort_switch);
-    success = success && invoke_on_frame_begin(project, environment_shaders(), abort_switch);
+    if (impl->m_camera.get())
+        success = success && impl->m_camera->on_frame_begin(project, this, abort_switch);
+
+    success = success && invoke_on_frame_begin(project, this, environment_edfs(), abort_switch);
+    success = success && invoke_on_frame_begin(project, this, environment_shaders(), abort_switch);
 
     if (!is_aborted(abort_switch) && impl->m_environment.get())
-        success = success && impl->m_environment->on_frame_begin(project, abort_switch);
+        success = success && impl->m_environment->on_frame_begin(project, this, abort_switch);
 
-    success = success && invoke_on_frame_begin(project, assemblies(), abort_switch);
-    success = success && invoke_on_frame_begin(project, assembly_instances(), abort_switch);
+    success = success && invoke_on_frame_begin(project, this, assemblies(), abort_switch);
+    success = success && invoke_on_frame_begin(project, this, assembly_instances(), abort_switch);
 
     return success;
 }
 
-void Scene::on_frame_end(const Project& project)
+void Scene::on_frame_end(
+    const Project&          project,
+    const BaseGroup*        parent)
 {
-    invoke_on_frame_end(project, assembly_instances());
-    invoke_on_frame_end(project, assemblies());
+    invoke_on_frame_end(project, this, assembly_instances());
+    invoke_on_frame_end(project, this, assemblies());
 
     if (impl->m_environment.get())
-        impl->m_environment->on_frame_end(project);
+        impl->m_environment->on_frame_end(project, this);
 
-    invoke_on_frame_end(project, environment_shaders());
-    invoke_on_frame_end(project, environment_edfs());
-    invoke_on_frame_end(project, texture_instances());
-    invoke_on_frame_end(project, textures());
+    invoke_on_frame_end(project, this, environment_shaders());
+    invoke_on_frame_end(project, this, environment_edfs());
 
     if (impl->m_camera.get())
-        impl->m_camera->on_frame_end(project);
+        impl->m_camera->on_frame_end(project, this);
+
+#ifdef APPLESEED_WITH_OSL
+    invoke_on_frame_end(project, this, shader_groups());
+#endif
+    invoke_on_frame_end(project, this, texture_instances());
+    invoke_on_frame_end(project, this, textures());
+    invoke_on_frame_end(project, this, colors());
+
+    Entity::on_frame_end(project, this);
 }
 
 void Scene::create_render_data()

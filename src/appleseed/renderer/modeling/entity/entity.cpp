@@ -129,4 +129,18 @@ void Entity::update_asset_paths(const StringDictionary& mappings)
 {
 }
 
+bool Entity::on_frame_begin(
+    const Project&      project,
+    const BaseGroup*    parent,
+    IAbortSwitch*       abort_switch)
+{
+    return true;
+}
+
+void Entity::on_frame_end(
+    const Project&      project,
+    const BaseGroup*    parent)
+{
+}
+
 }   // namespace renderer

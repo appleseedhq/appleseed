@@ -191,7 +191,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
 
             bind_inputs();
 
-            APPLESEED_UNUSED const bool success = env_edf.on_frame_begin(m_project);
+            APPLESEED_UNUSED const bool success = env_edf.on_frame_begin(m_project, &m_scene);
             assert(success);
 
             TextureStore texture_store(m_scene);
@@ -268,7 +268,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
                     input_evaluator,
                     outgoing);
 
-            env_edf.on_frame_end(m_project);
+            env_edf.on_frame_end(m_project, &m_scene);
 
             const bool consistent =
                 feq(probability1, probability2) &&

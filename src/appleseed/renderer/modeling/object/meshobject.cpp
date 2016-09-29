@@ -126,11 +126,11 @@ const char* MeshObject::get_model() const
 }
 
 bool MeshObject::on_frame_begin(
-    const Project&  project,
-    const Assembly& assembly,
-    IAbortSwitch*   abort_switch)
+    const Project&      project,
+    const BaseGroup*    parent,
+    IAbortSwitch*       abort_switch)
 {
-    if (!Object::on_frame_begin(project, assembly, abort_switch))
+    if (!Object::on_frame_begin(project, parent, abort_switch))
         return false;
 
     m_alpha_map = get_uncached_alpha_map();
@@ -138,12 +138,14 @@ bool MeshObject::on_frame_begin(
     return true;
 }
 
-void MeshObject::on_frame_end(const Project& project)
+void MeshObject::on_frame_end(
+    const Project&      project,
+    const BaseGroup*    parent)
 {
     m_alpha_map = 0;
     m_shade_alpha_cutouts = false;
 
-    Object::on_frame_end(project);
+    Object::on_frame_end(project, parent);
 }
 
 bool MeshObject::has_alpha_map() const

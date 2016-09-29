@@ -156,18 +156,18 @@ void AssemblyInstance::check_assembly() const
 
 bool AssemblyInstance::on_frame_begin(
     const Project&      project,
+    const BaseGroup*    parent,
     IAbortSwitch*       abort_switch)
 {
+    if (!Entity::on_frame_begin(project, parent, abort_switch))
+        return false;
+
     m_transform_sequence.optimize();
 
     if (!m_transform_sequence.prepare())
         RENDERER_LOG_WARNING("assembly instance \"%s\" has one or more invalid transforms.", get_path().c_str());
 
     return true;
-}
-
-void AssemblyInstance::on_frame_end(const Project& project)
-{
 }
 
 

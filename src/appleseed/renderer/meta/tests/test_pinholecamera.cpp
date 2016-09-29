@@ -66,7 +66,7 @@ TEST_SUITE(Renderer_Modeling_Camera_PinholeCamera)
                     .insert("resolution", "512 512")));
 
         project->get_scene()->on_render_begin(project.ref());
-        project->get_scene()->on_frame_begin(project.ref());
+        project->get_scene()->on_frame_begin(project.ref(), 0);
 
         const Camera* camera = project->get_scene()->get_camera();
 
@@ -76,7 +76,7 @@ TEST_SUITE(Renderer_Modeling_Camera_PinholeCamera)
         ASSERT_TRUE(success);
         EXPECT_FEQ(Vector2d(0.5, 0.5), projected);
 
-        project->get_scene()->on_frame_end(project.ref());
+        project->get_scene()->on_frame_end(project.ref(), 0);
         project->get_scene()->on_render_end(project.ref());
     }
 }

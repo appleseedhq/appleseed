@@ -49,10 +49,8 @@
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
-namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class LightingConditions; }
 namespace renderer      { class ParamArray; }
-namespace renderer      { class Project; }
 namespace renderer      { class Texture; }
 
 namespace renderer
@@ -132,15 +130,6 @@ class APPLESEED_DLLSYMBOL TextureInstance
     // Return the effective (detected) alpha mode.
     // A texture must be bound to this instance.
     TextureAlphaMode get_effective_alpha_mode() const;
-
-    // This method is called once before rendering each frame.
-    // Returns true on success, false otherwise.
-    bool on_frame_begin(
-        const Project&                  project,
-        foundation::IAbortSwitch*       abort_switch = 0);
-
-    // This method is called once after rendering each frame.
-    void on_frame_end(const Project& project);
 
   private:
     friend class TextureInstanceFactory;

@@ -82,9 +82,12 @@ double EDF::get_uncached_light_near_start() const
 
 bool EDF::on_frame_begin(
     const Project&      project,
-    const Assembly&     assembly,
+    const BaseGroup*    parent,
     IAbortSwitch*       abort_switch)
 {
+    if (!ConnectableEntity::on_frame_begin(project, parent, abort_switch))
+        return false;
+
     m_flags = 0;
 
     if (m_params.get_optional<bool>("cast_indirect_light", true))
@@ -107,12 +110,6 @@ bool EDF::on_frame_begin(
     }
 
     return true;
-}
-
-void EDF::on_frame_end(
-    const Project&      project,
-    const Assembly&     assembly)
-{
 }
 
 void EDF::evaluate_inputs(

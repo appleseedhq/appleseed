@@ -178,13 +178,10 @@ class APPLESEED_DLLSYMBOL ObjectInstance
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    bool on_frame_begin(
+    virtual bool on_frame_begin(
         const Project&              project,
-        const Assembly&             assembly,
-        foundation::IAbortSwitch*   abort_switch);
-
-    // This method is called once after rendering each frame.
-    void on_frame_end(const Project& project);
+        const BaseGroup*            parent,
+        foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
 
   private:
     friend class ObjectInstanceFactory;

@@ -46,7 +46,7 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class Assembly; }
+namespace renderer      { class BaseGroup; }
 namespace renderer      { class BSDF; }
 namespace renderer      { class BSSRDF; }
 namespace renderer      { class EDF; }
@@ -122,13 +122,13 @@ class APPLESEED_DLLSYMBOL Material
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
         const Project&              project,
-        const Assembly&             assembly,
-        foundation::IAbortSwitch*   abort_switch = 0);
+        const BaseGroup*            parent,
+        foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
 
-    // This method is called once after rendering each frame.
+    // This method is called once after rendering each frame (only if on_frame_begin() was called).
     virtual void on_frame_end(
         const Project&              project,
-        const Assembly&             assembly);
+        const BaseGroup*            parent) APPLESEED_OVERRIDE;
 
     struct RenderData
     {

@@ -232,12 +232,12 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_shading_group_exec.reset(new OSLShaderGroupExec(*m_shading_system));
 #endif
 
-            Base::m_scene->on_frame_begin(Base::m_project.ref());
+            Base::m_scene->on_frame_begin(Base::m_project.ref(), 0);
         }
 
         ~Fixture()
         {
-            Base::m_scene->on_frame_end(Base::m_project.ref());
+            Base::m_scene->on_frame_end(Base::m_project.ref(), 0);
         }
     };
 

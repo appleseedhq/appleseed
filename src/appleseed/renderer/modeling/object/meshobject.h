@@ -50,7 +50,7 @@
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
-namespace renderer      { class Assembly; }
+namespace renderer      { class BaseGroup; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 namespace renderer      { class Source; }
@@ -79,11 +79,13 @@ class APPLESEED_DLLSYMBOL MeshObject
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
         const Project&              project,
-        const Assembly&             assembly,
+        const BaseGroup*            parent,
         foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
 
-    // This method is called once after rendering each frame.
-    virtual void on_frame_end(const Project& project) APPLESEED_OVERRIDE;
+    // This method is called once after rendering each frame (only if on_frame_begin() was called).
+    virtual void on_frame_end(
+        const Project&              project,
+        const BaseGroup*            parent) APPLESEED_OVERRIDE;
 
     // Return true if this object has an alpha map.
     virtual bool has_alpha_map() const APPLESEED_OVERRIDE;

@@ -270,7 +270,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
         m_renderer_controller->on_frame_begin();
 
         // Perform pre-frame rendering actions. Don't proceed if that failed.
-        if (!m_project.get_scene()->on_frame_begin(m_project, &abort_switch))
+        if (!m_project.get_scene()->on_frame_begin(m_project, 0, &abort_switch))
         {
             m_renderer_controller->on_frame_end();
             return IRendererController::AbortRendering;
@@ -279,7 +279,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
         // Don't proceed with rendering if scene preparation was aborted.
         if (abort_switch.is_aborted())
         {
-            m_project.get_scene()->on_frame_end(m_project);
+            m_project.get_scene()->on_frame_end(m_project, 0);
             m_renderer_controller->on_frame_end();
             return m_renderer_controller->get_status();
         }
@@ -306,7 +306,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
         assert(!frame_renderer.is_rendering());
 
         // Perform post-frame rendering actions
-        m_project.get_scene()->on_frame_end(m_project);
+        m_project.get_scene()->on_frame_end(m_project, 0);
         m_renderer_controller->on_frame_end();
 
         switch (status)

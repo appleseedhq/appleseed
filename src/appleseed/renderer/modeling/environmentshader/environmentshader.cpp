@@ -57,15 +57,4 @@ EnvironmentShader::EnvironmentShader(
     set_name(name);
 }
 
-bool EnvironmentShader::on_frame_begin(
-    const Project&      project,
-    IAbortSwitch*       abort_switch)
-{
-    return true;
-}
-
-void EnvironmentShader::on_frame_end(const Project& project)
-{
-}
-
 }   // namespace renderer

@@ -59,18 +59,6 @@ Object::Object(
     set_name(name);
 }
 
-bool Object::on_frame_begin(
-    const Project&  project,
-    const Assembly& assembly,
-    IAbortSwitch*   abort_switch)
-{
-    return true;
-}
-
-void Object::on_frame_end(const Project& project)
-{
-}
-
 bool Object::has_alpha_map() const
 {
     return false;

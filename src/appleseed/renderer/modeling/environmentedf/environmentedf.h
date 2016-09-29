@@ -37,6 +37,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/uid.h"
 
 // appleseed.main headers.
@@ -45,6 +46,7 @@
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class InputEvaluator; }
+namespace renderer      { class BaseGroup; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 namespace renderer      { class ShadingContext; }
@@ -83,10 +85,8 @@ class APPLESEED_DLLSYMBOL EnvironmentEDF
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
         const Project&              project,
-        foundation::IAbortSwitch*   abort_switch = 0);
-
-    // This method is called once after rendering each frame.
-    virtual void on_frame_end(const Project& project);
+        const BaseGroup*            parent,
+        foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
 
     // Sample the EDF and compute the emission direction, its probability
     // density and the value of the EDF for this direction.

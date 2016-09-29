@@ -129,17 +129,17 @@ namespace
 
         virtual bool on_frame_begin(
             const Project&          project,
-            const Assembly&         assembly,
+            const BaseGroup*        parent,
             IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
-            if (!BSDF::on_frame_begin(project, assembly))
+            if (!BSDF::on_frame_begin(project, parent, abort_switch))
                 return false;
 
             for (int i = 0; i < NumClosuresIDs; ++i)
             {
                 if (BSDF* bsdf = m_all_bsdfs[i])
                 {
-                    if (!bsdf->on_frame_begin(project, assembly))
+                    if (!bsdf->on_frame_begin(project, parent, abort_switch))
                         return false;
                 }
             }
@@ -149,15 +149,15 @@ namespace
 
         virtual void on_frame_end(
             const Project&          project,
-            const Assembly&         assembly) APPLESEED_OVERRIDE
+            const BaseGroup*        parent) APPLESEED_OVERRIDE
         {
-            for (int i = 0; i < NumClosuresIDs; ++i)
+            for (int i = NumClosuresIDs - 1; i >= 0; --i)
             {
                 if (BSDF* bsdf = m_all_bsdfs[i])
-                    bsdf->on_frame_end(project, assembly);
+                    bsdf->on_frame_end(project, parent);
             }
 
-            BSDF::on_frame_end(project, assembly);
+            BSDF::on_frame_end(project, parent);
         }
 
         virtual size_t compute_input_data_size(

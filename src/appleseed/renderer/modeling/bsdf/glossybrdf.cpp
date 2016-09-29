@@ -127,11 +127,11 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&      project,
-            const Assembly&     assembly,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+            const Project&          project,
+            const BaseGroup*        parent,
+            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
-            if (!BSDF::on_frame_begin(project, assembly, abort_switch))
+            if (!BSDF::on_frame_begin(project, parent, abort_switch))
                 return false;
 
             const EntityDefMessageContext context("bsdf", this);

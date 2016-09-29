@@ -97,9 +97,10 @@ namespace
 
         virtual bool on_frame_begin(
             const Project&          project,
+            const BaseGroup*        parent,
             IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
-            if (!EnvironmentEDF::on_frame_begin(project, abort_switch))
+            if (!EnvironmentEDF::on_frame_begin(project, parent, abort_switch))
                 return false;
 
             m_shader_group =
@@ -108,9 +109,13 @@ namespace
             return true;
         }
 
-        virtual void on_frame_end(const Project& project) APPLESEED_OVERRIDE
+        virtual void on_frame_end(
+            const Project&          project,
+            const BaseGroup*        parent) APPLESEED_OVERRIDE
         {
             m_shader_group = 0;
+
+            EnvironmentEDF::on_frame_end(project, parent);
         }
 
         virtual void sample(

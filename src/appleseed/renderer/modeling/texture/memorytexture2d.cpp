@@ -105,9 +105,10 @@ namespace
 
         virtual bool on_frame_begin(
             const Project&      project,
+            const BaseGroup*    parent,
             IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
         {
-            if (!Texture::on_frame_begin(project, abort_switch))
+            if (!Texture::on_frame_begin(project, parent, abort_switch))
                 return false;
 
             assert(m_image.get() != 0 || m_dummy_texture.get() != 0);

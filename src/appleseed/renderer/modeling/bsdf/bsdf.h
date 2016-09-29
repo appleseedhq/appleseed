@@ -48,11 +48,9 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class InputEvaluator; }
 namespace renderer      { class ParamArray; }
-namespace renderer      { class Project; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 
@@ -123,18 +121,6 @@ class APPLESEED_DLLSYMBOL BSDF
     bool is_purely_specular() const;
     bool is_purely_diffuse_or_glossy() const;
     bool is_purely_glossy_or_specular() const;
-
-    // This method is called once before rendering each frame.
-    // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
-        const Project&              project,
-        const Assembly&             assembly,
-        foundation::IAbortSwitch*   abort_switch = 0);
-
-    // This method is called once after rendering each frame.
-    virtual void on_frame_end(
-        const Project&              project,
-        const Assembly&             assembly);
 
     // Compute the cumulated size in bytes of the values of all inputs of
     // this BSDF and its child BSDFs, if any.

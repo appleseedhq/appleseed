@@ -164,7 +164,7 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         input_binder.bind(scene);
         assert(input_binder.get_error_count() == 0);
 
-        scene.on_frame_begin(project.ref());
+        scene.on_frame_begin(project.ref(), 0);
 
         TextureCache texture_cache(texture_store);
         InputEvaluator input_evaluator(texture_cache);
@@ -229,6 +229,6 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         // child1_bsdf reflectance.
         EXPECT_EQ(Spectrum(1.0f), get_value<Spectrum>(input_evaluator, offset));
 
-        scene.on_frame_end(project.ref());
+        scene.on_frame_end(project.ref(), 0);
     }
 }
