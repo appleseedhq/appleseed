@@ -140,7 +140,7 @@ namespace
 
             const ImageStack& aov_images = project.get_frame()->aov_images();
 
-            for (size_t i = 0; i < aov_images.size(); ++i)
+            for (size_t i = 0, e = aov_images.size(); i < e; ++i)
                 m_is_contribution_aov[i] = aov_images.get_type(i) == ImageStack::ContributionType;
 
             return true;

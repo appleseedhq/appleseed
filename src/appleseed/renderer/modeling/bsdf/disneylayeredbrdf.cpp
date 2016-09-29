@@ -61,7 +61,11 @@ namespace
 }
 
 DisneyLayeredBRDF::DisneyLayeredBRDF(const DisneyMaterial* parent)
-  : BSDF("disney_layered_brdf", Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy, ParamArray())
+  : BSDF(
+        "disney_layered_brdf",
+        Reflective,
+        ScatteringMode::Diffuse | ScatteringMode::Glossy,
+        ParamArray())
   , m_parent(parent)
   , m_brdf(DisneyBRDFFactory().create("disney_brdf", ParamArray()))
 {

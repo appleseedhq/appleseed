@@ -114,7 +114,7 @@ namespace
         }
 
         virtual size_t compute_input_data_size(
-            const Assembly&     assembly) const APPLESEED_OVERRIDE
+            const Assembly&         assembly) const APPLESEED_OVERRIDE
         {
             size_t size = get_inputs().compute_data_size();
 

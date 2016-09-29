@@ -135,6 +135,7 @@ bool MeshObject::on_frame_begin(
 
     m_alpha_map = get_uncached_alpha_map();
     m_shade_alpha_cutouts = m_params.get_optional<bool>("shade_alpha_cutouts", false);
+
     return true;
 }
 

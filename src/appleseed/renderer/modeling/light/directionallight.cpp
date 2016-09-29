@@ -101,8 +101,7 @@ namespace
             if (!Light::on_frame_begin(project, parent, abort_switch))
                 return false;
 
-            if (
-                !check_uniform("irradiance") ||
+            if (!check_uniform("irradiance") ||
                 !check_uniform("irradiance_multiplier") ||
                 !check_uniform("exposure"))
             {

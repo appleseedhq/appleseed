@@ -165,10 +165,7 @@ namespace
                     make_vector("beckmann", "ggx"),
                     context);
 
-            if (mdf == "ggx")
-                m_mdf = GGX;
-            else // beckmann
-                m_mdf = Beckmann;
+            m_mdf = mdf == "ggx" ? GGX : Beckmann;
 
             return true;
         }
