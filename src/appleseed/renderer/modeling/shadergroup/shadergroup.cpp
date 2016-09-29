@@ -207,6 +207,7 @@ bool ShaderGroup::create_optimized_osl_shader_group(
         impl->m_shader_group_ref = shader_group_ref;
 
         get_shadergroup_closures_info(shading_system);
+        report_has_closure("bsdf", HasBSDFs);
         report_has_closure("emission", HasEmission);
         report_has_closure("transparent", HasTransparency);
         report_has_closure("subsurface", HasSubsurface);
@@ -321,21 +322,21 @@ void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_syst
         {
             if (closures[i] == g_emission_str)
                 m_flags |= HasEmission;
-
-            if (closures[i] == g_transparent_str)
+            else if (closures[i] == g_transparent_str)
                 m_flags |= HasTransparency;
-
-            if (closures[i] == g_subsurface_str)
+            else if (closures[i] == g_subsurface_str)
                 m_flags |= HasSubsurface;
-
-            if (closures[i] == g_glass_str)
-                m_flags |= HasRefraction;
-
-            if (closures[i] == g_holdout_str)
+            else if (closures[i] == g_holdout_str)
                 m_flags |= HasHoldout;
-
-            if (closures[i] == g_debug_str)
+            else if (closures[i] == g_debug_str)
                 m_flags |= HasDebug;
+            else
+            {
+                m_flags |= HasBSDFs;
+
+                if (closures[i] == g_glass_str)
+                    m_flags |= HasRefraction;
+            }
         }
     }
     else

@@ -683,6 +683,9 @@ bool DisneyMaterial::on_frame_begin(
     if (!Material::on_frame_begin(project, parent, abort_switch))
         return false;
 
+    if (!impl->m_brdf->on_frame_begin(project, parent, abort_switch))
+        return false;
+
     const EntityDefMessageContext context("material", this);
 
     m_render_data.m_bsdf = impl->m_brdf.get();
@@ -697,6 +700,8 @@ void DisneyMaterial::on_frame_end(
 {
     impl->clear_per_thread_layers();
     impl->m_layers.clear();
+
+    impl->m_brdf->on_frame_end(project, parent);
 
     Material::on_frame_end(project, parent);
 }
