@@ -121,6 +121,10 @@ option (USE_STATIC_OSL                      "Use static OpenShadingLanguage libr
 option (WARNINGS_AS_ERRORS                  "Treat compiler warnings as errors"                     ON)
 option (HIDE_SYMBOLS                        "When using gcc, hide symbols not on the public API"    ON)
 
+if (CMAKE_SYSTEM_NAME MATCHES "Linux|FreeBSD")
+    option (USE_VISIBILITY_MAP              "When using gcc, hide symbols not on the public API"    OFF)
+endif ()
+
 # SIMD options.
 if (is_x86)
     option (USE_SSE                         "Use SSE instruction sets up to version 2"              ON)
