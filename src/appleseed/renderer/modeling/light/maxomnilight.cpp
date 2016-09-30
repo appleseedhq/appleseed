@@ -71,8 +71,8 @@ namespace
     {
       public:
         MaxOmniLight(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : Light(name, params)
         {
             m_inputs.declare("intensity", InputFormatSpectralIlluminance);
@@ -90,11 +90,12 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&      project,
-            const BaseGroup*    parent,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
-            if (!Light::on_frame_begin(project, parent, abort_switch))
+            if (!Light::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             if (!check_uniform("intensity") || !check_uniform("intensity_multiplier"))
@@ -112,13 +113,13 @@ namespace
         }
 
         virtual void sample(
-            InputEvaluator&     input_evaluator,
-            const Transformd&   light_transform,
-            const Vector2d&     s,
-            Vector3d&           position,
-            Vector3d&           outgoing,
-            Spectrum&           value,
-            double&             probability) const APPLESEED_OVERRIDE
+            InputEvaluator&         input_evaluator,
+            const Transformd&       light_transform,
+            const Vector2d&         s,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            double&                 probability) const APPLESEED_OVERRIDE
         {
             position = light_transform.get_parent_origin();
             outgoing = sample_sphere_uniform(s);
@@ -127,12 +128,12 @@ namespace
         }
 
         virtual void evaluate(
-            InputEvaluator&     input_evaluator,
-            const Transformd&   light_transform,
-            const Vector3d&     target,
-            Vector3d&           position,
-            Vector3d&           outgoing,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+            InputEvaluator&         input_evaluator,
+            const Transformd&       light_transform,
+            const Vector3d&         target,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value) const APPLESEED_OVERRIDE
         {
             position = light_transform.get_parent_origin();
             outgoing = normalize(target - position);
@@ -140,8 +141,8 @@ namespace
         }
 
         double compute_distance_attenuation(
-            const Vector3d&     target,
-            const Vector3d&     position) const APPLESEED_OVERRIDE
+            const Vector3d&         target,
+            const Vector3d&         position) const APPLESEED_OVERRIDE
         {
             return
                 autodesk_max_decay(

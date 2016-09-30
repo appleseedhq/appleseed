@@ -47,6 +47,7 @@
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class BaseGroup; }
 namespace renderer      { class InputEvaluator; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 namespace renderer      { class ShadingPoint; }
@@ -103,6 +104,7 @@ class APPLESEED_DLLSYMBOL EDF
     virtual bool on_frame_begin(
         const Project&              project,
         const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
         foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
 
     // Evaluate the inputs of this EDF.

@@ -95,18 +95,19 @@ namespace
         virtual bool on_frame_begin(
             const Project&          project,
             const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
             IAbortSwitch*           abort_switch = 0) APPLESEED_OVERRIDE
         {
-            if (!Material::on_frame_begin(project, parent, abort_switch))
+            if (!Material::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
-            if (!m_osl_bsdf->on_frame_begin(project, parent, abort_switch))
+            if (!m_osl_bsdf->on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
-            if (!m_osl_bssrdf->on_frame_begin(project, parent, abort_switch))
+            if (!m_osl_bssrdf->on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
-            if (!m_osl_edf->on_frame_begin(project, parent, abort_switch))
+            if (!m_osl_edf->on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             m_render_data.m_shader_group = get_uncached_osl_surface();
@@ -127,17 +128,6 @@ namespace
             }
 
             return true;
-        }
-
-        virtual void on_frame_end(
-            const Project&          project,
-            const BaseGroup*        parent) APPLESEED_OVERRIDE
-        {
-            m_osl_edf->on_frame_end(project, parent);
-            m_osl_bssrdf->on_frame_end(project, parent);
-            m_osl_bsdf->on_frame_end(project, parent);
-
-            Material::on_frame_end(project, parent);
         }
 
       private:

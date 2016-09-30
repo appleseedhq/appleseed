@@ -49,6 +49,7 @@ namespace foundation    { class DictionaryArray; }
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class BaseGroup; }
 namespace renderer      { class Frame; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 namespace renderer      { class ShadingRay; }
@@ -105,6 +106,7 @@ class APPLESEED_DLLSYMBOL Camera
     virtual bool on_frame_begin(
         const Project&                  project,
         const BaseGroup*                parent,
+        OnFrameBeginRecorder&           recorder,
         foundation::IAbortSwitch*       abort_switch = 0) APPLESEED_OVERRIDE;
 
     // Generate a ray directed toward a given point on the film plane,

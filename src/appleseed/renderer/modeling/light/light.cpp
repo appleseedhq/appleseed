@@ -102,9 +102,10 @@ const Transformd& Light::get_transform() const
 bool Light::on_frame_begin(
     const Project&          project,
     const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
     IAbortSwitch*           abort_switch)
 {
-    if (!ConnectableEntity::on_frame_begin(project, parent, abort_switch))
+    if (!ConnectableEntity::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
     m_flags = 0;

@@ -135,8 +135,8 @@ namespace
     {
       public:
         KelemenBRDFImpl(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : BSDF(name, Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy, params)
         {
             m_inputs.declare("matte_reflectance", InputFormatSpectralReflectance);
@@ -162,11 +162,12 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&      project,
-            const BaseGroup*    parent,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
-            if (!BSDF::on_frame_begin(project, parent, abort_switch))
+            if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             // todo: implement proper error handling.
@@ -204,20 +205,18 @@ namespace
         }
 
         virtual void on_frame_end(
-            const Project&      project,
-            const BaseGroup*    parent) APPLESEED_OVERRIDE
+            const Project&          project,
+            const BaseGroup*        parent) APPLESEED_OVERRIDE
         {
             m_mdf.reset();
-
-            BSDF::on_frame_end(project, parent);
         }
 
         APPLESEED_FORCE_INLINE virtual void sample(
-            SamplingContext&    sampling_context,
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            BSDFSample&         sample) const APPLESEED_OVERRIDE
+            SamplingContext&        sampling_context,
+            const void*             data,
+            const bool              adjoint,
+            const bool              cosine_mult,
+            BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
             // Define aliases to match the notations in the paper.
             const Vector3d& V = sample.m_outgoing.get_value();
@@ -337,15 +336,15 @@ namespace
         }
 
         APPLESEED_FORCE_INLINE virtual double evaluate(
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+            const void*             data,
+            const bool              adjoint,
+            const bool              cosine_mult,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector3d&         outgoing,
+            const Vector3d&         incoming,
+            const int               modes,
+            Spectrum&               value) const APPLESEED_OVERRIDE
         {
             // Define aliases to match the notations in the paper.
             const Vector3d& V = outgoing;
@@ -420,12 +419,12 @@ namespace
         }
 
         APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes) const APPLESEED_OVERRIDE
+            const void*             data,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector3d&         outgoing,
+            const Vector3d&         incoming,
+            const int               modes) const APPLESEED_OVERRIDE
         {
             // Define aliases to match the notations in the paper.
             const Vector3d& V = outgoing;

@@ -48,6 +48,7 @@ namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class BaseGroup; }
 namespace renderer      { class InputEvaluator; }
 namespace renderer      { class LightTargetArray; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 
@@ -98,6 +99,7 @@ class APPLESEED_DLLSYMBOL Light
     virtual bool on_frame_begin(
         const Project&                  project,
         const BaseGroup*                parent,
+        OnFrameBeginRecorder&           recorder,
         foundation::IAbortSwitch*       abort_switch = 0) APPLESEED_OVERRIDE;
 
     // Sample the light and compute the emission position, the emission direction,

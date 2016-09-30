@@ -97,9 +97,10 @@ namespace
         virtual bool on_frame_begin(
             const Project&          project,
             const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
             IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
-            if (!EnvironmentShader::on_frame_begin(project, parent, abort_switch))
+            if (!EnvironmentShader::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             // Bind the environment EDF to this environment shader.

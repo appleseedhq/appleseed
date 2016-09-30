@@ -47,6 +47,7 @@ namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class BaseGroup; }
 namespace renderer      { class EnvironmentEDF; }
 namespace renderer      { class EnvironmentShader; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 
@@ -75,6 +76,7 @@ class APPLESEED_DLLSYMBOL Environment
     virtual bool on_frame_begin(
         const Project&              project,
         const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
         foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
 
     // This method is called once after rendering each frame (only if on_frame_begin() was called).

@@ -47,6 +47,7 @@
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class InputEvaluator; }
 namespace renderer      { class BaseGroup; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 namespace renderer      { class ShadingContext; }
@@ -86,6 +87,7 @@ class APPLESEED_DLLSYMBOL EnvironmentEDF
     virtual bool on_frame_begin(
         const Project&              project,
         const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
         foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
 
     // Sample the EDF and compute the emission direction, its probability

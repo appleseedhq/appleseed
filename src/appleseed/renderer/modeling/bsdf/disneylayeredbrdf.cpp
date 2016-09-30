@@ -85,24 +85,16 @@ const char* DisneyLayeredBRDF::get_model() const
 bool DisneyLayeredBRDF::on_frame_begin(
     const Project&              project,
     const BaseGroup*            parent,
+    OnFrameBeginRecorder&       recorder,
     IAbortSwitch*               abort_switch)
 {
-    if (!BSDF::on_frame_begin(project, parent, abort_switch))
+    if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
-    if (!m_brdf->on_frame_begin(project, parent, abort_switch))
+    if (!m_brdf->on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
     return true;
-}
-
-void DisneyLayeredBRDF::on_frame_end(
-    const Project&              project,
-    const BaseGroup*            parent)
-{
-    m_brdf->on_frame_end(project, parent);
-
-    BSDF::on_frame_end(project, parent);
 }
 
 size_t DisneyLayeredBRDF::compute_input_data_size(

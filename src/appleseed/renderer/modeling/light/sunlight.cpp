@@ -111,9 +111,10 @@ namespace
         virtual bool on_frame_begin(
             const Project&          project,
             const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
             IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
-            if (!Light::on_frame_begin(project, parent, abort_switch))
+            if (!Light::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             // Evaluate uniform inputs.

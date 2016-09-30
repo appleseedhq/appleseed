@@ -38,6 +38,7 @@
 #include "renderer/kernel/rendering/serialtilecallback.h"
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/display/display.h"
+#include "renderer/modeling/entity/onframebeginrecorder.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/project/project.h"
@@ -270,8 +271,10 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
         m_renderer_controller->on_frame_begin();
 
         // Perform pre-frame rendering actions. Don't proceed if that failed.
-        if (!m_project.get_scene()->on_frame_begin(m_project, 0, &abort_switch))
+        OnFrameBeginRecorder recorder;
+        if (!m_project.get_scene()->on_frame_begin(m_project, 0, recorder, &abort_switch))
         {
+            recorder.on_frame_end(m_project);
             m_renderer_controller->on_frame_end();
             return IRendererController::AbortRendering;
         }
@@ -279,7 +282,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
         // Don't proceed with rendering if scene preparation was aborted.
         if (abort_switch.is_aborted())
         {
-            m_project.get_scene()->on_frame_end(m_project, 0);
+            recorder.on_frame_end(m_project);
             m_renderer_controller->on_frame_end();
             return m_renderer_controller->get_status();
         }
@@ -306,7 +309,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
         assert(!frame_renderer.is_rendering());
 
         // Perform post-frame rendering actions
-        m_project.get_scene()->on_frame_end(m_project, 0);
+        recorder.on_frame_end(m_project);
         m_renderer_controller->on_frame_end();
 
         switch (status)

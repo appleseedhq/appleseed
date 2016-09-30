@@ -102,8 +102,8 @@ struct MeshObject::Impl
 };
 
 MeshObject::MeshObject(
-    const char*         name,
-    const ParamArray&   params)
+    const char*             name,
+    const ParamArray&       params)
   : Object(name, params)
   , impl(new Impl())
 {
@@ -126,11 +126,12 @@ const char* MeshObject::get_model() const
 }
 
 bool MeshObject::on_frame_begin(
-    const Project&      project,
-    const BaseGroup*    parent,
-    IAbortSwitch*       abort_switch)
+    const Project&          project,
+    const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
+    IAbortSwitch*           abort_switch)
 {
-    if (!Object::on_frame_begin(project, parent, abort_switch))
+    if (!Object::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
     m_alpha_map = get_uncached_alpha_map();
@@ -140,13 +141,11 @@ bool MeshObject::on_frame_begin(
 }
 
 void MeshObject::on_frame_end(
-    const Project&      project,
-    const BaseGroup*    parent)
+    const Project&          project,
+    const BaseGroup*        parent)
 {
     m_alpha_map = 0;
     m_shade_alpha_cutouts = false;
-
-    Object::on_frame_end(project, parent);
 }
 
 bool MeshObject::has_alpha_map() const
@@ -308,16 +307,16 @@ size_t MeshObject::get_motion_segment_count() const
 }
 
 void MeshObject::set_vertex_pose(
-    const size_t        vertex_index,
-    const size_t        motion_segment_index,
-    const GVector3&     vertex)
+    const size_t            vertex_index,
+    const size_t            motion_segment_index,
+    const GVector3&         vertex)
 {
     impl->m_tess.set_vertex_pose(vertex_index, motion_segment_index, vertex);
 }
 
 GVector3 MeshObject::get_vertex_pose(
-    const size_t        vertex_index,
-    const size_t        motion_segment_index) const
+    const size_t            vertex_index,
+    const size_t            motion_segment_index) const
 {
     return impl->m_tess.get_vertex_pose(vertex_index, motion_segment_index);
 }
@@ -328,16 +327,16 @@ void MeshObject::clear_vertex_poses()
 }
 
 void MeshObject::set_vertex_normal_pose(
-    const size_t        normal_index,
-    const size_t        motion_segment_index,
-    const GVector3&     normal)
+    const size_t            normal_index,
+    const size_t            motion_segment_index,
+    const GVector3&         normal)
 {
     impl->m_tess.set_vertex_normal_pose(normal_index, motion_segment_index, normal);
 }
 
 GVector3 MeshObject::get_vertex_normal_pose(
-    const size_t        normal_index,
-    const size_t        motion_segment_index) const
+    const size_t            normal_index,
+    const size_t            motion_segment_index) const
 {
     return impl->m_tess.get_vertex_normal_pose(normal_index, motion_segment_index);
 }
@@ -348,16 +347,16 @@ void MeshObject::clear_vertex_normal_poses()
 }
 
 void MeshObject::set_vertex_tangent_pose(
-    const size_t        tangent_index,
-    const size_t        motion_segment_index,
-    const GVector3&     tangent)
+    const size_t            tangent_index,
+    const size_t            motion_segment_index,
+    const GVector3&         tangent)
 {
     impl->m_tess.set_vertex_tangent_pose(tangent_index, motion_segment_index, tangent);
 }
 
 GVector3 MeshObject::get_vertex_tangent_pose(
-    const size_t        tangent_index,
-    const size_t        motion_segment_index) const
+    const size_t            tangent_index,
+    const size_t            motion_segment_index) const
 {
     return impl->m_tess.get_vertex_tangent_pose(tangent_index, motion_segment_index);
 }
@@ -424,8 +423,8 @@ const char* MeshObjectFactory::get_model()
 }
 
 auto_release_ptr<MeshObject> MeshObjectFactory::create(
-    const char*         name,
-    const ParamArray&   params)
+    const char*             name,
+    const ParamArray&       params)
 {
     return auto_release_ptr<MeshObject>(new MeshObject(name, params));
 }

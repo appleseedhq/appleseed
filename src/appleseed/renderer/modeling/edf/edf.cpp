@@ -61,8 +61,8 @@ UniqueID EDF::get_class_uid()
 }
 
 EDF::EDF(
-    const char*         name,
-    const ParamArray&   params)
+    const char*             name,
+    const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
   , m_flags(0)
   , m_light_near_start(0.0)
@@ -81,11 +81,12 @@ double EDF::get_uncached_light_near_start() const
 }
 
 bool EDF::on_frame_begin(
-    const Project&      project,
-    const BaseGroup*    parent,
-    IAbortSwitch*       abort_switch)
+    const Project&          project,
+    const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
+    IAbortSwitch*           abort_switch)
 {
-    if (!ConnectableEntity::on_frame_begin(project, parent, abort_switch))
+    if (!ConnectableEntity::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
     m_flags = 0;
@@ -113,8 +114,8 @@ bool EDF::on_frame_begin(
 }
 
 void EDF::evaluate_inputs(
-    InputEvaluator&     input_evaluator,
-    const ShadingPoint& shading_point) const
+    InputEvaluator&         input_evaluator,
+    const ShadingPoint&     shading_point) const
 {
     input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0));
 }

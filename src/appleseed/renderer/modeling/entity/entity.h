@@ -53,6 +53,7 @@ namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
 namespace renderer      { class BaseGroup; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class Project; }
 
 namespace renderer
@@ -122,6 +123,7 @@ class APPLESEED_DLLSYMBOL Entity
     virtual bool on_frame_begin(
         const Project&                  project,
         const BaseGroup*                parent,
+        OnFrameBeginRecorder&           recorder,
         foundation::IAbortSwitch*       abort_switch = 0);
 
     // This method is called once after rendering each frame (only if on_frame_begin() was called).

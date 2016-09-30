@@ -128,8 +128,8 @@ namespace
     {
       public:
         MetalBRDFImpl(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : BSDF(name, Reflective, ScatteringMode::Glossy, params)
         {
             m_inputs.declare("normal_reflectance", InputFormatSpectralReflectance);
@@ -150,11 +150,12 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&      project,
-            const BaseGroup*    parent,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
-            if (!BSDF::on_frame_begin(project, parent, abort_switch))
+            if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             const EntityDefMessageContext context("bsdf", this);
@@ -171,11 +172,11 @@ namespace
         }
 
         APPLESEED_FORCE_INLINE virtual void sample(
-            SamplingContext&    sampling_context,
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            BSDFSample&         sample) const APPLESEED_OVERRIDE
+            SamplingContext&        sampling_context,
+            const void*             data,
+            const bool              adjoint,
+            const bool              cosine_mult,
+            BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
             const Vector3d& n = sample.get_shading_basis().get_normal();
             const double cos_on = std::min(dot(sample.m_outgoing.get_value(), n), 1.0);
@@ -223,15 +224,15 @@ namespace
         }
 
         APPLESEED_FORCE_INLINE virtual double evaluate(
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+            const void*             data,
+            const bool              adjoint,
+            const bool              cosine_mult,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector3d&         outgoing,
+            const Vector3d&         incoming,
+            const int               modes,
+            Spectrum&               value) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0;
@@ -290,12 +291,12 @@ namespace
         }
 
         APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes) const APPLESEED_OVERRIDE
+            const void*             data,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector3d&         outgoing,
+            const Vector3d&         incoming,
+            const int               modes) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0;

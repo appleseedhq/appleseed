@@ -57,6 +57,7 @@ namespace foundation    { class StringDictionary; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class Material; }
 namespace renderer      { class Object; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 
@@ -181,6 +182,7 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     virtual bool on_frame_begin(
         const Project&              project,
         const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
         foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
 
   private:

@@ -60,8 +60,8 @@ UniqueID Environment::get_class_uid()
 }
 
 Environment::Environment(
-    const char*         name,
-    const ParamArray&   params)
+    const char*             name,
+    const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
   , m_environment_edf(0)
   , m_environment_shader(0)
@@ -83,11 +83,12 @@ const char* Environment::get_model() const
 }
 
 bool Environment::on_frame_begin(
-    const Project&      project,
-    const BaseGroup*    parent,
-    IAbortSwitch*       abort_switch)
+    const Project&          project,
+    const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
+    IAbortSwitch*           abort_switch)
 {
-    if (!ConnectableEntity::on_frame_begin(project, parent, abort_switch))
+    if (!ConnectableEntity::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
     m_environment_edf = get_uncached_environment_edf();
@@ -97,13 +98,11 @@ bool Environment::on_frame_begin(
 }
 
 void Environment::on_frame_end(
-    const Project&      project,
-    const BaseGroup*    parent)
+    const Project&          project,
+    const BaseGroup*        parent)
 {
     m_environment_edf = 0;
     m_environment_shader = 0;
-
-    ConnectableEntity::on_frame_end(project, parent);
 }
 
 EnvironmentEDF* Environment::get_uncached_environment_edf() const
@@ -152,8 +151,8 @@ DictionaryArray EnvironmentFactory::get_input_metadata()
 }
 
 auto_release_ptr<Environment> EnvironmentFactory::create(
-    const char*         name,
-    const ParamArray&   params)
+    const char*             name,
+    const ParamArray&       params)
 {
     return auto_release_ptr<Environment>(new Environment(name, params));
 }

@@ -67,10 +67,10 @@ struct AssemblyInstance::Impl
 };
 
 AssemblyInstance::AssemblyInstance(
-    const char*         name,
-    const ParamArray&   params,
-    const char*         assembly_name)
-  : Entity(g_class_uid, params)
+    const char*             name,
+    const ParamArray&       params,
+    const char*             assembly_name)
+  : Entity(g_class_uid,     params)
   , impl(new Impl())
 {
     set_name(name);
@@ -155,11 +155,12 @@ void AssemblyInstance::check_assembly() const
 }
 
 bool AssemblyInstance::on_frame_begin(
-    const Project&      project,
-    const BaseGroup*    parent,
-    IAbortSwitch*       abort_switch)
+    const Project&          project,
+    const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
+    IAbortSwitch*           abort_switch)
 {
-    if (!Entity::on_frame_begin(project, parent, abort_switch))
+    if (!Entity::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
     m_transform_sequence.optimize();
@@ -176,9 +177,9 @@ bool AssemblyInstance::on_frame_begin(
 //
 
 auto_release_ptr<AssemblyInstance> AssemblyInstanceFactory::create(
-    const char*         name,
-    const ParamArray&   params,
-    const char*         assembly_name)
+    const char*             name,
+    const ParamArray&       params,
+    const char*             assembly_name)
 {
     return
         auto_release_ptr<AssemblyInstance>(

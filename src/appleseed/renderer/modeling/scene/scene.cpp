@@ -294,6 +294,7 @@ namespace
         const Project&          project,
         const BaseGroup*        parent,
         EntityCollection&       entities,
+        OnFrameBeginRecorder&   recorder,
         IAbortSwitch*           abort_switch)
     {
         bool success = true;
@@ -303,79 +304,44 @@ namespace
             if (is_aborted(abort_switch))
                 break;
 
-            success = success && i->on_frame_begin(project, parent, abort_switch);
+            success = success && i->on_frame_begin(project, parent, recorder, abort_switch);
         }
 
         return success;
-    }
-
-    template <typename EntityCollection>
-    void invoke_on_frame_end(
-        const Project&          project,
-        const BaseGroup*        parent,
-        EntityCollection&       entities)
-    {
-        for (each<EntityCollection> i = entities; i; ++i)
-            i->on_frame_end(project, parent);
     }
 }
 
 bool Scene::on_frame_begin(
     const Project&          project,
     const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
     IAbortSwitch*           abort_switch)
 {
-    if (!Entity::on_frame_begin(project, parent, abort_switch))
+    if (!Entity::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
     bool success = true;
 
-    success = success && invoke_on_frame_begin(project, this, colors(), abort_switch);
-    success = success && invoke_on_frame_begin(project, this, textures(), abort_switch);
-    success = success && invoke_on_frame_begin(project, this, texture_instances(), abort_switch);
+    success = success && invoke_on_frame_begin(project, this, colors(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, textures(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, texture_instances(), recorder, abort_switch);
 #ifdef APPLESEED_WITH_OSL
-    success = success && invoke_on_frame_begin(project, this, shader_groups(), abort_switch);
+    success = success && invoke_on_frame_begin(project, this, shader_groups(), recorder, abort_switch);
 #endif
 
     if (impl->m_camera.get())
-        success = success && impl->m_camera->on_frame_begin(project, this, abort_switch);
+        success = success && impl->m_camera->on_frame_begin(project, this, recorder, abort_switch);
 
-    success = success && invoke_on_frame_begin(project, this, environment_edfs(), abort_switch);
-    success = success && invoke_on_frame_begin(project, this, environment_shaders(), abort_switch);
+    success = success && invoke_on_frame_begin(project, this, environment_edfs(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, environment_shaders(), recorder, abort_switch);
 
     if (!is_aborted(abort_switch) && impl->m_environment.get())
-        success = success && impl->m_environment->on_frame_begin(project, this, abort_switch);
+        success = success && impl->m_environment->on_frame_begin(project, this, recorder, abort_switch);
 
-    success = success && invoke_on_frame_begin(project, this, assemblies(), abort_switch);
-    success = success && invoke_on_frame_begin(project, this, assembly_instances(), abort_switch);
+    success = success && invoke_on_frame_begin(project, this, assemblies(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, assembly_instances(), recorder, abort_switch);
 
     return success;
-}
-
-void Scene::on_frame_end(
-    const Project&          project,
-    const BaseGroup*        parent)
-{
-    invoke_on_frame_end(project, this, assembly_instances());
-    invoke_on_frame_end(project, this, assemblies());
-
-    if (impl->m_environment.get())
-        impl->m_environment->on_frame_end(project, this);
-
-    invoke_on_frame_end(project, this, environment_shaders());
-    invoke_on_frame_end(project, this, environment_edfs());
-
-    if (impl->m_camera.get())
-        impl->m_camera->on_frame_end(project, this);
-
-#ifdef APPLESEED_WITH_OSL
-    invoke_on_frame_end(project, this, shader_groups());
-#endif
-    invoke_on_frame_end(project, this, texture_instances());
-    invoke_on_frame_end(project, this, textures());
-    invoke_on_frame_end(project, this, colors());
-
-    Entity::on_frame_end(project, this);
 }
 
 void Scene::create_render_data()

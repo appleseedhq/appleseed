@@ -113,9 +113,10 @@ namespace
         virtual bool on_frame_begin(
             const Project&          project,
             const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
             IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
-            if (!SurfaceShader::on_frame_begin(project, parent, abort_switch))
+            if (!SurfaceShader::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             for (size_t i = 0; i < MaxShaderCount; ++i)

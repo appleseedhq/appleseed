@@ -30,6 +30,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/camera/pinholecamera.h"
+#include "renderer/modeling/entity/onframebeginrecorder.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
@@ -66,7 +67,9 @@ TEST_SUITE(Renderer_Modeling_Camera_PinholeCamera)
                     .insert("resolution", "512 512")));
 
         project->get_scene()->on_render_begin(project.ref());
-        project->get_scene()->on_frame_begin(project.ref(), 0);
+
+        OnFrameBeginRecorder recorder;
+        project->get_scene()->on_frame_begin(project.ref(), 0, recorder);
 
         const Camera* camera = project->get_scene()->get_camera();
 
@@ -76,7 +79,7 @@ TEST_SUITE(Renderer_Modeling_Camera_PinholeCamera)
         ASSERT_TRUE(success);
         EXPECT_FEQ(Vector2d(0.5, 0.5), projected);
 
-        project->get_scene()->on_frame_end(project.ref(), 0);
+        recorder.on_frame_end(project.ref());
         project->get_scene()->on_render_end(project.ref());
     }
 }

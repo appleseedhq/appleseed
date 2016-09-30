@@ -678,12 +678,13 @@ void DisneyMaterial::update_asset_paths(const StringDictionary& mappings)
 bool DisneyMaterial::on_frame_begin(
     const Project&          project,
     const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
     IAbortSwitch*           abort_switch)
 {
-    if (!Material::on_frame_begin(project, parent, abort_switch))
+    if (!Material::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
-    if (!impl->m_brdf->on_frame_begin(project, parent, abort_switch))
+    if (!impl->m_brdf->on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
     const EntityDefMessageContext context("material", this);
@@ -700,10 +701,6 @@ void DisneyMaterial::on_frame_end(
 {
     impl->clear_per_thread_layers();
     impl->m_layers.clear();
-
-    impl->m_brdf->on_frame_end(project, parent);
-
-    Material::on_frame_end(project, parent);
 }
 
 void DisneyMaterial::add_layer(Dictionary layer_values)

@@ -70,8 +70,8 @@ namespace
     {
       public:
         ConeEDF(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : EDF(name, params)
         {
             m_inputs.declare("radiance", InputFormatSpectralIlluminance);
@@ -90,11 +90,12 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&      project,
-            const BaseGroup*    parent,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
-            if (!EDF::on_frame_begin(project, parent, abort_switch))
+            if (!EDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             check_non_zero_emission("radiance", "radiance_multiplier");
@@ -105,14 +106,14 @@ namespace
         }
 
         virtual void sample(
-            SamplingContext&    sampling_context,
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector2d&     s,
-            Vector3d&           outgoing,
-            Spectrum&           value,
-            double&             probability) const APPLESEED_OVERRIDE
+            SamplingContext&        sampling_context,
+            const void*             data,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector2d&         s,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            double&                 probability) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(geometric_normal));
 
@@ -128,11 +129,11 @@ namespace
         }
 
         virtual void evaluate(
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+            const void*             data,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector3d&         outgoing,
+            Spectrum&               value) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
@@ -151,12 +152,12 @@ namespace
         }
 
         virtual void evaluate(
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            Spectrum&           value,
-            double&             probability) const APPLESEED_OVERRIDE
+            const void*             data,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector3d&         outgoing,
+            Spectrum&               value,
+            double&                 probability) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
@@ -178,10 +179,10 @@ namespace
         }
 
         virtual double evaluate_pdf(
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing) const APPLESEED_OVERRIDE
+            const void*             data,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector3d&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
@@ -197,7 +198,7 @@ namespace
       private:
         typedef ConeEDFInputValues InputValues;
 
-        double          m_cos_half_angle;
+        double m_cos_half_angle;
     };
 }
 

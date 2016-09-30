@@ -52,6 +52,7 @@
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class BaseGroup; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 
@@ -101,6 +102,7 @@ class APPLESEED_DLLSYMBOL AssemblyInstance
     virtual bool on_frame_begin(
         const Project&              project,
         const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
         foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
 
   private:
