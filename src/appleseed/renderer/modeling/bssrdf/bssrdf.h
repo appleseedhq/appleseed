@@ -44,13 +44,11 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class BSDF; }
 namespace renderer      { class BSSRDFSample; }
 namespace renderer      { class InputEvaluator; }
 namespace renderer      { class ParamArray; }
-namespace renderer      { class Project; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 
@@ -96,18 +94,6 @@ class APPLESEED_DLLSYMBOL BSSRDF
 
     // Return the BRDF associated with this BSSRDF.
     const BSDF& get_brdf() const;
-
-    // This method is called once before rendering each frame.
-    // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
-        const Project&              project,
-        const Assembly&             assembly,
-        foundation::IAbortSwitch*   abort_switch = 0);
-
-    // This method is called once after rendering each frame.
-    virtual void on_frame_end(
-        const Project&              project,
-        const Assembly&             assembly);
 
     // Compute the cumulated size in bytes of the values of all inputs of
     // this BSSRDF and its child BSSRDFs, if any.

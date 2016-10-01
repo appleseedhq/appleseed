@@ -33,12 +33,16 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
+#include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/textureinstance.h"
+#ifdef APPLESEED_WITH_OSL
+#include "renderer/modeling/shadergroup/shadergroup.h"
+#endif
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/texture/texture.h"
 #include "renderer/utility/bbox.h"
@@ -237,7 +241,9 @@ namespace
     template <typename EntityCollection>
     bool invoke_on_frame_begin(
         const Project&          project,
+        const BaseGroup*        parent,
         EntityCollection&       entities,
+        OnFrameBeginRecorder&   recorder,
         IAbortSwitch*           abort_switch)
     {
         bool success = true;
@@ -247,86 +253,40 @@ namespace
             if (is_aborted(abort_switch))
                 break;
 
-            success = success && i->on_frame_begin(project, abort_switch);
+            success = success && i->on_frame_begin(project, parent, recorder, abort_switch);
         }
 
         return success;
-    }
-
-    template <typename EntityCollection>
-    bool invoke_on_frame_begin(
-        const Project&          project,
-        const Assembly&         assembly,
-        EntityCollection&       entities,
-        IAbortSwitch*           abort_switch)
-    {
-        bool success = true;
-
-        for (each<EntityCollection> i = entities; i; ++i)
-        {
-            if (is_aborted(abort_switch))
-                break;
-
-            success = success && i->on_frame_begin(project, assembly, abort_switch);
-        }
-
-        return success;
-    }
-
-    template <typename EntityCollection>
-    void invoke_on_frame_end(
-        const Project&          project,
-        EntityCollection&       entities)
-    {
-        for (each<EntityCollection> i = entities; i; ++i)
-            i->on_frame_end(project);
-    }
-
-    template <typename EntityCollection>
-    void invoke_on_frame_end(
-        const Project&          project,
-        const Assembly&         assembly,
-        EntityCollection&       entities)
-    {
-        for (each<EntityCollection> i = entities; i; ++i)
-            i->on_frame_end(project, assembly);
     }
 }
 
 bool Assembly::on_frame_begin(
-    const Project&      project,
-    IAbortSwitch*       abort_switch)
+    const Project&          project,
+    const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
+    IAbortSwitch*           abort_switch)
 {
-    bool success = true;
-    success = success && invoke_on_frame_begin(project, textures(), abort_switch);
-    success = success && invoke_on_frame_begin(project, texture_instances(), abort_switch);
-    success = success && invoke_on_frame_begin(project, *this, surface_shaders(), abort_switch);
-    success = success && invoke_on_frame_begin(project, *this, bsdfs(), abort_switch);
-    success = success && invoke_on_frame_begin(project, *this, bssrdfs(), abort_switch);
-    success = success && invoke_on_frame_begin(project, *this, edfs(), abort_switch);
-    success = success && invoke_on_frame_begin(project, *this, materials(), abort_switch);
-    success = success && invoke_on_frame_begin(project, *this, lights(), abort_switch);
-    success = success && invoke_on_frame_begin(project, *this, objects(), abort_switch);
-    success = success && invoke_on_frame_begin(project, *this, object_instances(), abort_switch);
-    success = success && invoke_on_frame_begin(project, assemblies(), abort_switch);
-    success = success && invoke_on_frame_begin(project, assembly_instances(), abort_switch);
-    return success;
-}
+    if (!Entity::on_frame_begin(project, parent, recorder, abort_switch))
+        return false;
 
-void Assembly::on_frame_end(const Project& project)
-{
-    invoke_on_frame_end(project, assembly_instances());
-    invoke_on_frame_end(project, assemblies());
-    invoke_on_frame_end(project, object_instances());
-    invoke_on_frame_end(project, objects());
-    invoke_on_frame_end(project, *this, lights());
-    invoke_on_frame_end(project, *this, materials());
-    invoke_on_frame_end(project, *this, edfs());
-    invoke_on_frame_end(project, *this, bssrdfs());
-    invoke_on_frame_end(project, *this, bsdfs());
-    invoke_on_frame_end(project, *this, surface_shaders());
-    invoke_on_frame_end(project, texture_instances());
-    invoke_on_frame_end(project, textures());
+    bool success = true;
+    success = success && invoke_on_frame_begin(project, this, colors(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, textures(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, texture_instances(), recorder, abort_switch);
+#ifdef APPLESEED_WITH_OSL
+    success = success && invoke_on_frame_begin(project, this, shader_groups(), recorder, abort_switch);
+#endif
+    success = success && invoke_on_frame_begin(project, this, bsdfs(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, bssrdfs(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, edfs(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, surface_shaders(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, materials(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, lights(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, objects(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, object_instances(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, assemblies(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, assembly_instances(), recorder, abort_switch);
+    return success;
 }
 
 

@@ -78,8 +78,8 @@ UniqueID Material::get_class_uid()
 }
 
 Material::Material(
-    const char*         name,
-    const ParamArray&   params)
+    const char*             name,
+    const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
   , m_shade_alpha_cutouts(params.get_optional<bool>("shade_alpha_cutouts", false))
   , m_has_render_data(false)
@@ -149,11 +149,15 @@ const ShaderGroup* Material::get_uncached_osl_surface() const
 #endif
 
 bool Material::on_frame_begin(
-    const Project&      project,
-    const Assembly&     assembly,
-    IAbortSwitch*       abort_switch)
+    const Project&          project,
+    const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
+    IAbortSwitch*           abort_switch)
 {
     assert(!m_has_render_data);
+
+    if (!ConnectableEntity::on_frame_begin(project, parent, recorder, abort_switch))
+        return false;
 
     m_render_data.m_surface_shader = get_uncached_surface_shader();
     if (m_render_data.m_surface_shader == 0)
@@ -172,8 +176,8 @@ bool Material::on_frame_begin(
 }
 
 void Material::on_frame_end(
-    const Project&      project,
-    const Assembly&     assembly)
+    const Project&          project,
+    const BaseGroup*        parent)
 {
     if (m_has_render_data)
     {

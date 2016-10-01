@@ -132,12 +132,16 @@ namespace
 
         virtual bool on_frame_begin(
             const Project&          project,
-            const Assembly&         assembly,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
             IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
+            if (!SurfaceShader::on_frame_begin(project, parent, recorder, abort_switch))
+                return false;
+
             const ImageStack& aov_images = project.get_frame()->aov_images();
 
-            for (size_t i = 0; i < aov_images.size(); ++i)
+            for (size_t i = 0, e = aov_images.size(); i < e; ++i)
                 m_is_contribution_aov[i] = aov_images.get_type(i) == ImageStack::ContributionType;
 
             return true;

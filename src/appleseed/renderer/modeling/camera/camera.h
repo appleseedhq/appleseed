@@ -38,6 +38,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/uid.h"
 
 // appleseed.main headers.
@@ -46,7 +47,9 @@
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace foundation    { class IAbortSwitch; }
+namespace renderer      { class BaseGroup; }
 namespace renderer      { class Frame; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 namespace renderer      { class ShadingRay; }
@@ -102,10 +105,9 @@ class APPLESEED_DLLSYMBOL Camera
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
         const Project&                  project,
-        foundation::IAbortSwitch*       abort_switch = 0);
-
-    // This method is called once after rendering each frame.
-    virtual void on_frame_end(const Project& project);
+        const BaseGroup*                parent,
+        OnFrameBeginRecorder&           recorder,
+        foundation::IAbortSwitch*       abort_switch = 0) APPLESEED_OVERRIDE;
 
     // Generate a ray directed toward a given point on the film plane,
     // expressed in normalized device coordinates

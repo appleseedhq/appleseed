@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,33 +27,58 @@
 //
 
 // Interface header.
-#include "environmentshader.h"
+#include "onframebeginrecorder.h"
 
-using namespace foundation;
+// appleseed.renderer headers.
+#include "renderer/modeling/entity/entity.h"
+
+// Standard headers.
+#include <cassert>
+#include <stack>
+
+using namespace std;
 
 namespace renderer
 {
 
-//
-// EnvironmentShader class implementation.
-//
-
-namespace
+struct OnFrameBeginRecorder::Impl
 {
-    const UniqueID g_class_uid = new_guid();
+    struct Record
+    {
+        Entity*             m_entity;
+        const BaseGroup*    m_parent;
+    };
+
+    stack<Record> m_records;
+};
+
+OnFrameBeginRecorder::OnFrameBeginRecorder()
+  : impl(new Impl())
+{
 }
 
-UniqueID EnvironmentShader::get_class_uid()
+OnFrameBeginRecorder::~OnFrameBeginRecorder()
 {
-    return g_class_uid;
+    assert(impl->m_records.empty());
+    delete impl;
 }
 
-EnvironmentShader::EnvironmentShader(
-    const char*         name,
-    const ParamArray&   params)
-  : ConnectableEntity(g_class_uid, params)
+void OnFrameBeginRecorder::record(Entity* entity, const BaseGroup* parent)
 {
-    set_name(name);
+    Impl::Record record;
+    record.m_entity = entity;
+    record.m_parent = parent;
+    impl->m_records.push(record);
+}
+
+void OnFrameBeginRecorder::on_frame_end(const Project& project)
+{
+    while (!impl->m_records.empty())
+    {
+        const Impl::Record& record = impl->m_records.top();
+        record.m_entity->on_frame_end(project, record.m_parent);
+        impl->m_records.pop();
+    }
 }
 
 }   // namespace renderer

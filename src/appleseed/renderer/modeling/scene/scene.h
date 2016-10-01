@@ -53,6 +53,7 @@
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class Project; }
 namespace renderer      { class SurfaceShader; }
 
@@ -116,14 +117,13 @@ class APPLESEED_DLLSYMBOL Scene
     // Perform post-render rendering actions.
     void on_render_end(const Project& project);
 
-    // Perform pre-frame rendering actions.
+    // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    bool on_frame_begin(
+    virtual bool on_frame_begin(
         const Project&              project,
-        foundation::IAbortSwitch*   abort_switch = 0);
-
-    // Perform post-frame rendering actions.
-    void on_frame_end(const Project& project);
+        const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
+        foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
 
     struct RenderData
     {

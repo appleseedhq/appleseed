@@ -43,6 +43,7 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfmix.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
+#include "renderer/modeling/entity/onframebeginrecorder.h"
 #include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/project/project.h"
@@ -164,7 +165,8 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         input_binder.bind(scene);
         assert(input_binder.get_error_count() == 0);
 
-        scene.on_frame_begin(project.ref());
+        OnFrameBeginRecorder recorder;
+        scene.on_frame_begin(project.ref(), 0, recorder);
 
         TextureCache texture_cache(texture_store);
         InputEvaluator input_evaluator(texture_cache);
@@ -229,6 +231,6 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         // child1_bsdf reflectance.
         EXPECT_EQ(Spectrum(1.0f), get_value<Spectrum>(input_evaluator, offset));
 
-        scene.on_frame_end(project.ref());
+        recorder.on_frame_end(project.ref());
     }
 }

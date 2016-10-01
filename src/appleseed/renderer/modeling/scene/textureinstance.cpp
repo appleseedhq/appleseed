@@ -252,17 +252,6 @@ void TextureInstance::check_texture() const
         throw ExceptionUnknownEntity(impl->m_texture_name.c_str(), this);
 }
 
-bool TextureInstance::on_frame_begin(
-    const Project&          project,
-    IAbortSwitch*           abort_switch)
-{
-    return true;
-}
-
-void TextureInstance::on_frame_end(const Project& project)
-{
-}
-
 
 //
 // TextureInstanceFactory class implementation.

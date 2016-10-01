@@ -49,8 +49,12 @@
 
 // Forward declarations.
 namespace foundation    { class APIString; }
+namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
+namespace renderer      { class BaseGroup; }
+namespace renderer      { class OnFrameBeginRecorder; }
+namespace renderer      { class Project; }
 
 namespace renderer
 {
@@ -113,6 +117,19 @@ class APPLESEED_DLLSYMBOL Entity
     // Use ~0 to disable render layer assignment.
     void set_render_layer_index(const size_t render_layer);
     size_t get_render_layer_index() const;
+
+    // This method is called once before rendering each frame.
+    // Returns true on success, false otherwise.
+    virtual bool on_frame_begin(
+        const Project&                  project,
+        const BaseGroup*                parent,
+        OnFrameBeginRecorder&           recorder,
+        foundation::IAbortSwitch*       abort_switch = 0);
+
+    // This method is called once after rendering each frame (only if on_frame_begin() was called).
+    virtual void on_frame_end(
+        const Project&                  project,
+        const BaseGroup*                parent);
 
   protected:
     struct Impl;

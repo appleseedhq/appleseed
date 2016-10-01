@@ -68,16 +68,16 @@ UniqueID Camera::get_class_uid()
 }
 
 Camera::Camera(
-    const char*         name,
-    const ParamArray&   params)
+    const char*             name,
+    const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
 {
     set_name(name);
 }
 
 bool Camera::on_render_begin(
-    const Project&      project,
-    IAbortSwitch*       abort_switch)
+    const Project&          project,
+    IAbortSwitch*           abort_switch)
 {
     m_shutter_open_time = m_params.get_optional<double>("shutter_open_time", 0.0);
     m_shutter_close_time = m_params.get_optional<double>("shutter_close_time", 1.0);
@@ -91,9 +91,14 @@ void Camera::on_render_end(const Project& project)
 }
 
 bool Camera::on_frame_begin(
-    const Project&      project,
-    IAbortSwitch*       abort_switch)
+    const Project&          project,
+    const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
+    IAbortSwitch*           abort_switch)
 {
+    if (!ConnectableEntity::on_frame_begin(project, parent, recorder, abort_switch))
+        return false;
+
     m_transform_sequence.optimize();
 
     if (!m_transform_sequence.prepare())
@@ -102,14 +107,10 @@ bool Camera::on_frame_begin(
     return true;
 }
 
-void Camera::on_frame_end(const Project& project)
-{
-}
-
 bool Camera::project_point(
-    const double        time,
-    const Vector3d&     point,
-    Vector2d&           ndc) const
+    const double            time,
+    const Vector3d&         point,
+    Vector2d&               ndc) const
 {
     // Retrieve the camera transform.
     Transformd scratch;
@@ -226,9 +227,9 @@ double Camera::extract_f_stop() const
 }
 
 void Camera::extract_focal_distance(
-    bool&               autofocus_enabled,
-    Vector2d&           autofocus_target,
-    double&             focal_distance) const
+    bool&                   autofocus_enabled,
+    Vector2d&               autofocus_target,
+    double&                 focal_distance) const
 {
     const Vector2d DefaultAFTarget(0.5);        // in NDC
     const double DefaultFocalDistance = 1.0;    // in meters
@@ -295,8 +296,8 @@ double Camera::extract_near_z() const
 }
 
 void Camera::initialize_ray(
-    SamplingContext&    sampling_context,
-    ShadingRay&         ray) const
+    SamplingContext&        sampling_context,
+    ShadingRay&             ray) const
 {
     ray.m_tmin = 0.0;
     ray.m_tmax = numeric_limits<double>::max();

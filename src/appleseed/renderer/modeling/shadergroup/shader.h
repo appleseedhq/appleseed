@@ -70,9 +70,9 @@ class APPLESEED_DLLSYMBOL Shader
     // Delete this instance.
     virtual void release() APPLESEED_OVERRIDE;
 
-    const char *get_type() const;
-    const char *get_shader() const;
-    const char *get_layer() const;
+    const char* get_type() const;
+    const char* get_shader() const;
+    const char* get_layer() const;
 
     const ShaderParamContainer& shader_params() const;
 
@@ -80,7 +80,7 @@ class APPLESEED_DLLSYMBOL Shader
     friend class ShaderGroup;
 
     struct Impl;
-    Impl *impl;
+    Impl* impl;
 
     // Constructor.
     Shader(

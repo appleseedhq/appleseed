@@ -55,8 +55,8 @@ namespace
     {
       public:
         GenericMaterial(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : Material(name, params)
         {
             m_inputs.declare("bsdf", InputFormatEntity, "");
@@ -77,11 +77,12 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&      project,
-            const Assembly&     assembly,
-            IAbortSwitch*       abort_switch = 0) APPLESEED_OVERRIDE
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
-            if (!Material::on_frame_begin(project, assembly, abort_switch))
+            if (!Material::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             const EntityDefMessageContext context("material", this);
@@ -100,13 +101,6 @@ namespace
             }
 
             return true;
-        }
-
-        virtual void on_frame_end(
-            const Project&      project,
-            const Assembly&     assembly) APPLESEED_OVERRIDE
-        {
-            Material::on_frame_end(project, assembly);
         }
     };
 }

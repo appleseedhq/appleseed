@@ -57,18 +57,4 @@ SurfaceShader::SurfaceShader(
     set_name(name);
 }
 
-bool SurfaceShader::on_frame_begin(
-    const Project&      project,
-    const Assembly&     assembly,
-    IAbortSwitch*       abort_switch)
-{
-    return true;
-}
-
-void SurfaceShader::on_frame_end(
-    const Project&      project,
-    const Assembly&     assembly)
-{
-}
-
 }   // namespace renderer

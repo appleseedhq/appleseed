@@ -92,20 +92,6 @@ const BSDF& BSSRDF::get_brdf() const
     return impl->m_brdf.ref();
 }
 
-bool BSSRDF::on_frame_begin(
-    const Project&          project,
-    const Assembly&         assembly,
-    IAbortSwitch*           abort_switch)
-{
-    return true;
-}
-
-void BSSRDF::on_frame_end(
-    const Project&          project,
-    const Assembly&         assembly)
-{
-}
-
 size_t BSSRDF::compute_input_data_size(
     const Assembly&         assembly) const
 {

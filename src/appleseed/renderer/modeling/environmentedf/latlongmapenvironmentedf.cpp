@@ -188,9 +188,11 @@ namespace
 
         virtual bool on_frame_begin(
             const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
             IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
-            if (!EnvironmentEDF::on_frame_begin(project, abort_switch))
+            if (!EnvironmentEDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             // Do not build an importance map if the environment EDF is not the active one.
