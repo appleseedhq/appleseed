@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2016 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,34 +26,39 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "environmentshader.h"
+#ifndef APPLESEED_RENDERER_MODELING_ENTITY_ONFRAMEBEGINRECORDER_H
+#define APPLESEED_RENDERER_MODELING_ENTITY_ONFRAMEBEGINRECORDER_H
 
-using namespace foundation;
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Forward declarations.
+namespace renderer  { class BaseGroup; }
+namespace renderer  { class Entity; }
+namespace renderer  { class Project; }
 
 namespace renderer
 {
 
 //
-// EnvironmentShader class implementation.
+// Keep tracks of which entity we have called on_frame_begin() on,
+// and allows to call on_frame_end() on all those entities, in reverse order.
 //
 
-namespace
+class APPLESEED_DLLSYMBOL OnFrameBeginRecorder
 {
-    const UniqueID g_class_uid = new_guid();
-}
+  public:
+    OnFrameBeginRecorder();
+    ~OnFrameBeginRecorder();
 
-UniqueID EnvironmentShader::get_class_uid()
-{
-    return g_class_uid;
-}
+    void record(Entity* entity, const BaseGroup* parent);
+    void on_frame_end(const Project& project);
 
-EnvironmentShader::EnvironmentShader(
-    const char*         name,
-    const ParamArray&   params)
-  : ConnectableEntity(g_class_uid, params)
-{
-    set_name(name);
-}
+  private:
+    struct Impl;
+    Impl* impl;
+};
 
-}   // namespace renderer
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_ENTITY_ONFRAMEBEGINRECORDER_H

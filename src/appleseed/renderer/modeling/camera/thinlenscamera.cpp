@@ -178,8 +178,8 @@ namespace
     {
       public:
         ThinLensCamera(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : Camera(name, params)
         {
             m_inputs.declare("diaphragm_map", InputFormatSpectralReflectance, "");
@@ -196,8 +196,8 @@ namespace
         }
 
         virtual bool on_render_begin(
-            const Project&      project,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+            const Project&          project,
+            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
             if (!Camera::on_render_begin(project, abort_switch))
                 return false;
@@ -249,10 +249,12 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&      project,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
-            if (!Camera::on_frame_begin(project, abort_switch))
+            if (!Camera::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             // Perform autofocus, if enabled.
@@ -272,9 +274,9 @@ namespace
         }
 
         virtual void spawn_ray(
-            SamplingContext&    sampling_context,
-            const Dual2d&       ndc,
-            ShadingRay&         ray) const APPLESEED_OVERRIDE
+            SamplingContext&        sampling_context,
+            const Dual2d&           ndc,
+            ShadingRay&             ray) const APPLESEED_OVERRIDE
         {
             //
             // The algorithm is as follow:
@@ -321,12 +323,12 @@ namespace
         }
 
         virtual bool connect_vertex(
-            SamplingContext&    sampling_context,
-            const double        time,
-            const Vector3d&     point,
-            Vector2d&           ndc,
-            Vector3d&           outgoing,
-            double&             importance) const APPLESEED_OVERRIDE
+            SamplingContext&        sampling_context,
+            const double            time,
+            const Vector3d&         point,
+            Vector2d&               ndc,
+            Vector3d&               outgoing,
+            double&                 importance) const APPLESEED_OVERRIDE
         {
             // Retrieve the camera transform.
             Transformd scratch;
@@ -370,8 +372,8 @@ namespace
         }
 
         virtual bool project_camera_space_point(
-            const Vector3d&     point,
-            Vector2d&           ndc) const APPLESEED_OVERRIDE
+            const Vector3d&         point,
+            Vector2d&               ndc) const APPLESEED_OVERRIDE
         {
             // Cannot project the point if it is behind the near plane.
             if (point.z > m_near_z)
@@ -385,11 +387,11 @@ namespace
         }
 
         virtual bool project_segment(
-            const double        time,
-            const Vector3d&     a,
-            const Vector3d&     b,
-            Vector2d&           a_ndc,
-            Vector2d&           b_ndc) const APPLESEED_OVERRIDE
+            const double            time,
+            const Vector3d&         a,
+            const Vector3d&         b,
+            Vector2d&               a_ndc,
+            Vector2d&               b_ndc) const APPLESEED_OVERRIDE
         {
             // Retrieve the camera transform.
             Transformd scratch;

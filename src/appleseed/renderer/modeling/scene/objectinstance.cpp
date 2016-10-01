@@ -426,9 +426,13 @@ bool ObjectInstance::uses_alpha_mapping() const
 
 bool ObjectInstance::on_frame_begin(
     const Project&          project,
-    const Assembly&         assembly,
+    const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
     IAbortSwitch*           abort_switch)
 {
+    if (!Entity::on_frame_begin(project, parent, recorder, abort_switch))
+        return false;
+
     m_transform_swaps_handedness = get_transform().swaps_handedness();
 
     const EntityDefMessageContext context("object instance", this);
@@ -445,10 +449,6 @@ bool ObjectInstance::on_frame_begin(
     }
 
     return true;
-}
-
-void ObjectInstance::on_frame_end(const Project& project)
-{
 }
 
 

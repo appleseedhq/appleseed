@@ -104,10 +104,12 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&      project,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
-            if (!Texture::on_frame_begin(project, abort_switch))
+            if (!Texture::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             assert(m_image.get() != 0 || m_dummy_texture.get() != 0);
@@ -127,8 +129,8 @@ namespace
         }
 
         virtual Tile* load_tile(
-            const size_t        tile_x,
-            const size_t        tile_y) APPLESEED_OVERRIDE
+            const size_t            tile_x,
+            const size_t            tile_y) APPLESEED_OVERRIDE
         {
             return
                 m_image.get()
@@ -137,9 +139,9 @@ namespace
         }
 
         virtual void unload_tile(
-            const size_t        tile_x,
-            const size_t        tile_y,
-            const Tile*         tile) APPLESEED_OVERRIDE
+            const size_t            tile_x,
+            const size_t            tile_y,
+            const Tile*             tile) APPLESEED_OVERRIDE
         {
             // Nothing to do, the tile is owned by the source image.
         }

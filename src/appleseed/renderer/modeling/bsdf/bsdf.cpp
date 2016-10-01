@@ -67,20 +67,6 @@ BSDF::BSDF(
     set_name(name);
 }
 
-bool BSDF::on_frame_begin(
-    const Project&          project,
-    const Assembly&         assembly,
-    IAbortSwitch*           abort_switch)
-{
-    return true;
-}
-
-void BSDF::on_frame_end(
-    const Project&          project,
-    const Assembly&         assembly)
-{
-}
-
 size_t BSDF::compute_input_data_size(
     const Assembly&         assembly) const
 {

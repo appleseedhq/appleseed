@@ -106,7 +106,7 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Return true if the shader group was setup correctly.
     bool is_valid() const;
 
-    // Return true if the shader group contains at least one bsdf closure.
+    // Return true if the shader group contains at least one BSDF closure.
     bool has_bsdfs() const;
 
     // Return true if the shader group contains at least one emission closure.

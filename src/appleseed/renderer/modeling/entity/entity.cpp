@@ -30,6 +30,9 @@
 // Interface header.
 #include "entity.h"
 
+// appleseed.renderer headers.
+#include "renderer/modeling/entity/onframebeginrecorder.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/api/apistring.h"
 
@@ -45,7 +48,7 @@ struct Entity::Impl
 };
 
 Entity::Entity(
-    const UniqueID      class_uid)
+    const UniqueID          class_uid)
   : impl(new Impl())
   , m_class_uid(class_uid)
   , m_parent(0)
@@ -54,8 +57,8 @@ Entity::Entity(
 }
 
 Entity::Entity(
-    const UniqueID      class_uid,
-    Entity*             parent)
+    const UniqueID          class_uid,
+    Entity*                 parent)
   : impl(new Impl())
   , m_class_uid(class_uid)
   , m_parent(parent)
@@ -64,8 +67,8 @@ Entity::Entity(
 }
 
 Entity::Entity(
-    const UniqueID      class_uid,
-    const ParamArray&   params)
+    const UniqueID          class_uid,
+    const ParamArray&       params)
   : impl(new Impl())
   , m_class_uid(class_uid)
   , m_parent(0)
@@ -75,9 +78,9 @@ Entity::Entity(
 }
 
 Entity::Entity(
-    const UniqueID      class_uid,
-    Entity*             parent,
-    const ParamArray&   params)
+    const UniqueID          class_uid,
+    Entity*                 parent,
+    const ParamArray&       params)
   : impl(new Impl())
   , m_class_uid(class_uid)
   , m_parent(parent)
@@ -126,6 +129,22 @@ void Entity::collect_asset_paths(StringArray& paths) const
 }
 
 void Entity::update_asset_paths(const StringDictionary& mappings)
+{
+}
+
+bool Entity::on_frame_begin(
+    const Project&          project,
+    const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
+    IAbortSwitch*           abort_switch)
+{
+    recorder.record(this, parent);
+    return true;
+}
+
+void Entity::on_frame_end(
+    const Project&          project,
+    const BaseGroup*        parent)
 {
 }
 

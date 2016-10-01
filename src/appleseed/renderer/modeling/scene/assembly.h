@@ -49,6 +49,7 @@
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 
@@ -113,14 +114,13 @@ class APPLESEED_DLLSYMBOL Assembly
     virtual void collect_asset_paths(foundation::StringArray& paths) const APPLESEED_OVERRIDE;
     virtual void update_asset_paths(const foundation::StringDictionary& mappings) APPLESEED_OVERRIDE;
 
-    // Perform pre-frame rendering actions.
+    // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
         const Project&              project,
-        foundation::IAbortSwitch*   abort_switch = 0);
-
-    // Perform post-frame rendering actions.
-    virtual void on_frame_end(const Project& project);
+        const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
+        foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
 
   private:
     friend class AssemblyFactory;

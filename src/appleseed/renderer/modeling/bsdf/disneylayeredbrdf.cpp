@@ -61,7 +61,11 @@ namespace
 }
 
 DisneyLayeredBRDF::DisneyLayeredBRDF(const DisneyMaterial* parent)
-  : BSDF("disney_layered_brdf", Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy, ParamArray())
+  : BSDF(
+        "disney_layered_brdf",
+        Reflective,
+        ScatteringMode::Diffuse | ScatteringMode::Glossy,
+        ParamArray())
   , m_parent(parent)
   , m_brdf(DisneyBRDFFactory().create("disney_brdf", ParamArray()))
 {
@@ -80,24 +84,17 @@ const char* DisneyLayeredBRDF::get_model() const
 
 bool DisneyLayeredBRDF::on_frame_begin(
     const Project&              project,
-    const Assembly&             assembly,
+    const BaseGroup*            parent,
+    OnFrameBeginRecorder&       recorder,
     IAbortSwitch*               abort_switch)
 {
-    if (!BSDF::on_frame_begin(project, assembly, abort_switch))
+    if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
-    if (!m_brdf->on_frame_begin(project, assembly, abort_switch))
+    if (!m_brdf->on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
     return true;
-}
-
-void DisneyLayeredBRDF::on_frame_end(
-    const Project&              project,
-    const Assembly&             assembly)
-{
-    m_brdf->on_frame_end(project, assembly);
-    BSDF::on_frame_end(project, assembly);
 }
 
 size_t DisneyLayeredBRDF::compute_input_data_size(

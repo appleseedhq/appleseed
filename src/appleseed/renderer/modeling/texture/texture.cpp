@@ -57,15 +57,4 @@ Texture::Texture(
     set_name(name);
 }
 
-bool Texture::on_frame_begin(
-    const Project&      project,
-    IAbortSwitch*       abort_switch)
-{
-    return true;
-}
-
-void Texture::on_frame_end(const Project& project)
-{
-}
-
 }   // namespace renderer

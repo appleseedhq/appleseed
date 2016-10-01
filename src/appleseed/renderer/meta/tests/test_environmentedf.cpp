@@ -38,6 +38,7 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
+#include "renderer/modeling/entity/onframebeginrecorder.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/constantenvironmentedf.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
@@ -191,7 +192,8 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
 
             bind_inputs();
 
-            APPLESEED_UNUSED const bool success = env_edf.on_frame_begin(m_project);
+            OnFrameBeginRecorder recorder;
+            APPLESEED_UNUSED const bool success = env_edf.on_frame_begin(m_project, &m_scene, recorder);
             assert(success);
 
             TextureStore texture_store(m_scene);
@@ -268,7 +270,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
                     input_evaluator,
                     outgoing);
 
-            env_edf.on_frame_end(m_project);
+            recorder.on_frame_end(m_project);
 
             const bool consistent =
                 feq(probability1, probability2) &&

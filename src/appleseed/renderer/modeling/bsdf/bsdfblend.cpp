@@ -93,26 +93,29 @@ namespace
 
         virtual bool on_frame_begin(
             const Project&          project,
-            const Assembly&         assembly,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
             IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
-            if (!BSDF::on_frame_begin(project, assembly, abort_switch))
+            if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
-            m_bsdf[0] = retrieve_bsdf(assembly, "bsdf0");
-            m_bsdf[1] = retrieve_bsdf(assembly, "bsdf1");
+            const Assembly* assembly = static_cast<const Assembly*>(parent);
+
+            m_bsdf[0] = retrieve_bsdf(*assembly, "bsdf0");
+            m_bsdf[1] = retrieve_bsdf(*assembly, "bsdf1");
 
             if (m_bsdf[0] == 0 || m_bsdf[1] == 0)
                 return false;
 
             m_bsdf_data_offset[0] = get_inputs().compute_data_size();
-            m_bsdf_data_offset[1] = m_bsdf_data_offset[0] + m_bsdf[0]->compute_input_data_size(assembly);
+            m_bsdf_data_offset[1] = m_bsdf_data_offset[0] + m_bsdf[0]->compute_input_data_size(*assembly);
 
             return true;
         }
 
         virtual size_t compute_input_data_size(
-            const Assembly&     assembly) const APPLESEED_OVERRIDE
+            const Assembly&         assembly) const APPLESEED_OVERRIDE
         {
             size_t size = get_inputs().compute_data_size();
 
