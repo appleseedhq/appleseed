@@ -1,9 +1,0 @@
-{
-global: *;
-local:
-    extern "C++"
-    {
-        OSL*;
-        boost*;
-    };
-};

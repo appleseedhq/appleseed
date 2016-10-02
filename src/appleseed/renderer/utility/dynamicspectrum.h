@@ -120,7 +120,7 @@ class DynamicSpectrum
         DynamicSpectrum&                        dest);
 
   private:
-    APPLESEED_SSE_ALIGN ValueType   m_samples[StoredSamples];
+    APPLESEED_SIMD4_ALIGN ValueType m_samples[StoredSamples];
     foundation::uint32              m_size;
 };
 

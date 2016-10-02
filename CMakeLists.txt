@@ -121,10 +121,6 @@ option (USE_STATIC_OSL                      "Use static OpenShadingLanguage libr
 option (WARNINGS_AS_ERRORS                  "Treat compiler warnings as errors"                     ON)
 option (HIDE_SYMBOLS                        "When using gcc, hide symbols not on the public API"    ON)
 
-if (CMAKE_SYSTEM_NAME MATCHES "Linux|FreeBSD")
-    option (USE_VISIBILITY_MAP              "When using gcc, hide symbols not on the public API"    OFF)
-endif ()
-
 # SIMD options.
 if (is_x86)
     option (USE_SSE                         "Use SSE instruction sets up to version 2"              ON)
@@ -132,6 +128,9 @@ if (is_x86)
     if (TARGET_ARCH MATCHES "x86_64")
        option (USE_SSE42                    "Use SSE instruction sets up to version 4.2"            OFF)
        option (USE_AVX                      "Use AVX instruction set"                               OFF)
+       option (USE_AVX2                     "Use AVX2 instruction set"                              OFF)
+       option (USE_FMA                      "Use FMA instruction set"                               OFF)
+       option (USE_F16C                     "Use F16C instruction set"                              OFF)
     endif ()
 elseif (TARGET_ARCH MATCHES "ARM")
     option (USE_NEON                        "Use NEON instruction set"                              OFF)
@@ -391,29 +390,64 @@ if (UNIX AND NOT APPLE)
 endif ()
 
 # SIMD.
-if (USE_AVX)
-    set (USE_SSE42 TRUE)
-    set (preprocessor_definitions_common
-        ${preprocessor_definitions_common}
-        APPLESEED_USE_AVX
-    )
-endif ()
-if (USE_SSE42)
-   set (USE_SSE TRUE)
-   set (preprocessor_definitions_common
-       ${preprocessor_definitions_common}
-       APPLESEED_USE_SSE42
-   )
-endif ()
-if (USE_SSE)
-   if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SIZEOF_VOID_P MATCHES 4)
-       message (WARNING "Building appleseed with SSE/SSE2 instruction sets on 32-bit Linux is not supported; continuing without SSE/SSE2.")
-   else ()
+if (is_x86)
+    if (USE_F16C)
+        set (preprocessor_definitions_common
+            ${preprocessor_definitions_common}
+            APPLESEED_USE_F16C
+        )
+    endif ()
+    if (USE_FMA)
+        set (preprocessor_definitions_common
+            ${preprocessor_definitions_common}
+            APPLESEED_USE_FMA
+        )
+    endif ()
+    if (USE_AVX2)
+        set (USE_AVX TRUE)
+        set (preprocessor_definitions_common
+            ${preprocessor_definitions_common}
+            APPLESEED_USE_AVX2
+        )
+    endif ()
+    if (USE_AVX)
+        set (USE_SSE42 TRUE)
+        set (preprocessor_definitions_common
+            ${preprocessor_definitions_common}
+            APPLESEED_USE_AVX
+        )
+    endif ()
+    if (USE_SSE42)
+       set (USE_SSE TRUE)
        set (preprocessor_definitions_common
            ${preprocessor_definitions_common}
-           APPLESEED_USE_SSE
+           APPLESEED_USE_SSE42
        )
-   endif ()
+    endif ()
+    if (USE_SSE)
+       if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SIZEOF_VOID_P MATCHES 4)
+           message (WARNING "Building appleseed with SSE/SSE2 instruction sets on 32-bit Linux is not supported; continuing without SSE/SSE2.")
+       else ()
+           set (preprocessor_definitions_common
+               ${preprocessor_definitions_common}
+               APPLESEED_USE_SSE
+           )
+       endif ()
+    endif ()
+elseif (TARGET_ARCH MATCHES "ARM")
+    if (USE_NEON)
+        set (preprocessor_definitions_common
+            ${preprocessor_definitions_common}
+            APPLESEED_USE_NEON
+        )
+    endif ()
+elseif (TARGET_ARCH MATCHES "PPC")
+    if (USE_ALTIVEC)
+        set (preprocessor_definitions_common
+            ${preprocessor_definitions_common}
+            APPLESEED_USE_ALTIVEC
+        )
+    endif ()
 endif ()
 
 # Debug configuration.
