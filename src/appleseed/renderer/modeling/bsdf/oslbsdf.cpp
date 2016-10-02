@@ -253,8 +253,7 @@ namespace
 
                 if (bsdf_prob > 0.0)
                 {
-                    s *= c->get_closure_weight(i);
-                    value += s;
+                    madd(value, s, c->get_closure_weight(i));
                     prob += bsdf_prob * c->get_closure_pdf_weight(i);
                 }
             }
