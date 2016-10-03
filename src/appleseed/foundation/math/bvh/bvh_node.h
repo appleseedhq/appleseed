@@ -108,7 +108,7 @@ class APPLESEED_ALIGN(64) Node
     uint32                          m_right_bbox_index;
     uint32                          m_right_bbox_count;
 
-    APPLESEED_SSE_ALIGN ValueType   m_bbox_data[4 * Dimension];
+    APPLESEED_SIMD4_ALIGN ValueType m_bbox_data[4 * Dimension];
 };
 
 

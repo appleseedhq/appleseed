@@ -92,25 +92,28 @@ namespace foundation
 
 
 //
-// A qualifier to specify the alignment of a variable, a structure member or a structure.
+// Qualifiers to specify the alignment of a variable, a structure member or a structure.
 //
-// APPLESEED_SSE_ALIGN aligns on a 16-byte boundary as required by SSE load/store instructions.
+// APPLESEED_SIMD4_ALIGN aligns on a 16-byte boundary as required by SSE load/store instructions.
+// APPLESEED_SIMD8_ALIGN aligns on a 32-byte boundary as required by AVX load/store instructions.
 //
-// Note that APPLESEED_SSE_ALIGN *always* performs the alignment, regardless of whether or not
+// Note that APPLESEED_SIMDX_ALIGN *always* performs the alignment, regardless of whether or not
 // SSE is enabled in the build configuration.
 //
 
 // Visual C++.
 #if defined _MSC_VER
     #define APPLESEED_ALIGN(n) __declspec(align(n))
-    #define APPLESEED_SSE_ALIGN APPLESEED_ALIGN(16)
+    #define APPLESEED_SIMD4_ALIGN APPLESEED_ALIGN(16)
+    #define APPLESEED_SIMD8_ALIGN APPLESEED_ALIGN(32)
 
 // gcc.
 #elif defined __GNUC__
     #define APPLESEED_ALIGN(n) __attribute__((aligned(n)))
-    #define APPLESEED_SSE_ALIGN APPLESEED_ALIGN(16)
+    #define APPLESEED_SIMD4_ALIGN APPLESEED_ALIGN(16)
+    #define APPLESEED_SIMD8_ALIGN APPLESEED_ALIGN(32)
 
-// Other compilers: ignore the qualifier, and leave APPLESEED_SSE_ALIGN undefined.
+// Other compilers: ignore the qualifier, and leave APPLESEED_SIMDX_ALIGN undefined.
 #else
     #define APPLESEED_ALIGN(n)
 #endif

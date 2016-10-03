@@ -38,10 +38,10 @@
 #include "foundation/platform/types.h"
 
 // Platform headers.
-#include <xmmintrin.h>      // SSE1 intrinsics
-#include <emmintrin.h>      // SSE2 intrinsics
-#ifdef APPLESEED_USE_SSE42
-#include <smmintrin.h>      // SSE4.2 intrinsics
+#if defined _MSC_VER
+#include <intrin.h>
+#else
+#include <x86intrin.h>
 #endif
 
 namespace foundation

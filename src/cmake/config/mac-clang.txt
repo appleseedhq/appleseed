@@ -87,6 +87,25 @@ if (USE_AVX)
         -mavx                                           # enable AVX instruction sets
     )
 endif ()
+if (USE_AVX2)
+    set (c_compiler_flags_common
+         ${c_compiler_flags_common}
+        -mavx2                                          # enable AVX2 instruction sets
+    )
+endif ()
+if (USE_FMA)
+    set (c_compiler_flags_common
+         ${c_compiler_flags_common}
+        -mfma                                           # enable FMA instruction sets
+        -ffp-contract=off                               # for now only explicit fmadd
+    )
+endif ()
+if (USE_F16C)
+    set (c_compiler_flags_common
+         ${c_compiler_flags_common}
+        -mf16c                                          # enable F16C instruction sets
+    )
+endif ()
 set (exe_linker_flags_common
     -Werror                                             # Treat Warnings As Errors
     -bind_at_load

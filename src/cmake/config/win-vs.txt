@@ -148,6 +148,25 @@ if (USE_AVX)
         /arch:AVX                           # Advanced Vector Extensions
     )
 endif ()
+if (USE_AVX2)
+    set (c_compiler_flags_release
+        ${c_compiler_flags_release}
+        /arch:AVX2                          # Advanced Vector Extensions 2
+    )
+endif ()
+if (USE_FMA)
+    set (c_compiler_flags_release
+        ${c_compiler_flags_release}
+        /arch:FMA                           # FMA SIMD Extensions
+    )
+endif ()
+if (USE_F16C)
+    set (c_compiler_flags_release
+        ${c_compiler_flags_release}
+        /arch:F16C                          # F16C SIMD Extensions
+    )
+endif ()
+
 set (exe_linker_flags_release
     /DEBUG                                  # Generate Debug Info
     /OPT:REF                                # Eliminate Unreferenced Data

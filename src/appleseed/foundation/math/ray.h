@@ -157,12 +157,12 @@ class RayInfo<double, 3>
     static const size_t Dimension = 3;
 
     // Reciprocal of the ray direction.
-    APPLESEED_SSE_ALIGN VectorType m_rcp_dir;
+    APPLESEED_SIMD4_ALIGN VectorType m_rcp_dir;
 
     // Sign of the ray direction (for the i'th component, the sign value
     // is 1 if the component is positive or null, and 0 if the component
     // is strictly negative).
-    APPLESEED_SSE_ALIGN Vector<uint32, 4> m_sgn_dir;
+    APPLESEED_SIMD4_ALIGN Vector<uint32, 4> m_sgn_dir;
 
     // Constructors.
     RayInfo();                              // leave all fields uninitialized

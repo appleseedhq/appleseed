@@ -202,8 +202,7 @@ namespace
                     incoming_dir,
                     s);
 
-                s *= c->get_closure_weight(i);
-                value += s;
+                madd(value, s, c->get_closure_weight(i));
             }
         }
 

@@ -444,7 +444,7 @@ class Matrix<T, 4, 4>
         Vector<T, 3>&           translation) const;
 
   private:
-    APPLESEED_SSE_ALIGN ValueType m_comp[Components];
+    APPLESEED_SIMD4_ALIGN ValueType m_comp[Components];
 
     // The identity matrix returned by identity().
     static const MatrixType m_identity;

@@ -221,8 +221,7 @@ namespace
             const double den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
             Spectrum glossy;
             fresnel_reflectance_dielectric_schlick(glossy, rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
-            glossy *= static_cast<float>(num / den);
-            sample.m_value += glossy;
+            madd(sample.m_value, glossy, static_cast<float>(num / den));
 
             // Evaluate the PDF of the glossy component (equation 8).
             const double pdf_glossy = num / cos_oh;     // omit division by 4 since num = pdf(h) / 4
@@ -302,8 +301,7 @@ namespace
                 const double den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
                 Spectrum glossy;
                 fresnel_reflectance_dielectric_schlick(glossy, rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
-                glossy *= static_cast<float>(num / den);
-                value += glossy;
+                madd(value, glossy, static_cast<float>(num / den));
 
                 // Evaluate the PDF of the glossy component (equation 8).
                 const double pdf_glossy = num / cos_oh;     // omit division by 4 since num = pdf(h) / 4

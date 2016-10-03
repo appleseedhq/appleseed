@@ -75,7 +75,7 @@ class InputEvaluator
     enum { DataSize = 32 * 1024 };  // bytes
 
   private:
-    APPLESEED_SSE_ALIGN foundation::uint8   m_data[DataSize];
+    APPLESEED_SIMD4_ALIGN foundation::uint8 m_data[DataSize];
     TextureCache&                           m_texture_cache;
 };
 
