@@ -907,7 +907,7 @@ inline void madd(
     const DynamicSpectrum<T, N>&    b,
     const DynamicSpectrum<T, N>&    c)
 {
-    assert(a.size() == b.size() == c.size());
+    assert(a.size() == b.size() && a.size() == c.size());
 
     for (size_t i = 0, e = a.size(); i < e; ++i)
         a[i] += b[i] * c[i];
@@ -932,7 +932,7 @@ APPLESEED_FORCE_INLINE void madd(
     const DynamicSpectrum<float, 31>&   b,
     const DynamicSpectrum<float, 31>&   c)
 {
-    assert(a.size() == b.size() == c.size());
+    assert(a.size() == b.size() && a.size() == c.size());
 
     _mm_store_ps(&a[0], _mm_add_ps(_mm_load_ps(&a[0]), _mm_mul_ps(_mm_load_ps(&b[0]), _mm_load_ps(&c[0]))));
 
