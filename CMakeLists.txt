@@ -434,7 +434,7 @@ if (is_x86)
             APPLESEED_USE_SSE
        )
        if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SIZEOF_VOID_P MATCHES 4)
-           message (WARNING "Building appleseed with SSE/SSE2 instruction sets on 32-bit Linux is not supported; continuing without SSE/SSE2.")
+           message (WARNING "Building appleseed with SSE/SSE2 instruction sets on 32-bit Linux is not recommended.")
        endif ()
     endif ()
 elseif (TARGET_ARCH MATCHES "ARM")
