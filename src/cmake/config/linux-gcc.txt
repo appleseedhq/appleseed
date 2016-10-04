@@ -72,64 +72,63 @@ set (c_compiler_flags_common
 )
 if (WARNINGS_AS_ERRORS)
     set (c_compiler_flags_common
-         ${c_compiler_flags_common}
+        ${c_compiler_flags_common}
         -Werror                                         # treat Warnings As Errors
     )
 endif ()
 
-# SIMD compiler flags
-
+# SIMD compiler flags.
 if (is_x86)
     if (USE_SSE)
         set (c_compiler_flags_common
-             ${c_compiler_flags_common}
+            ${c_compiler_flags_common}
             -msse2                                      # enable SSE instruction sets up to SSE 2
         )
     endif ()
     if (USE_SSE42)
         set (c_compiler_flags_common
-             ${c_compiler_flags_common}
+            ${c_compiler_flags_common}
             -msse4.2                                    # enable SSE instruction sets up to SSE 4.2
         )
     endif ()
     if (USE_AVX)
         set (c_compiler_flags_common
-             ${c_compiler_flags_common}
+            ${c_compiler_flags_common}
             -mavx                                       # enable AVX instruction sets
         )
     endif ()
     if (USE_AVX2)
         set (c_compiler_flags_common
-             ${c_compiler_flags_common}
+            ${c_compiler_flags_common}
             -mavx2                                      # enable AVX2 instruction sets
         )
     endif ()
     if (USE_FMA)
         set (c_compiler_flags_common
-             ${c_compiler_flags_common}
+            ${c_compiler_flags_common}
             -mfma                                       # enable FMA instruction sets
             -ffp-contract=off                           # for now only explicit fmadd
         )
     endif ()
     if (USE_F16C)
         set (c_compiler_flags_common
-             ${c_compiler_flags_common}
+            ${c_compiler_flags_common}
             -mf16c                                      # enable F16C instruction sets
         )
     endif ()
 elseif (TARGET_ARCH MATCHES "ARM")
     if (USE_NEON)
         set (c_compiler_flags_common
-             ${c_compiler_flags_common}
-             -mfpu=neon
+            ${c_compiler_flags_common}
+            -mfpu=neon
         )
     endif ()
 elseif (TARGET_ARCH MATCHES "PPC")
     if (USE_ALTIVEC)
         set (c_compiler_flags_common
-             ${c_compiler_flags_common}
-             -maltivec
-             -mabi=altivec
+            ${c_compiler_flags_common}
+            -maltivec
+            -mabi=altivec
         )
     endif ()
 endif ()
