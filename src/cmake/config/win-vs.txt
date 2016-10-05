@@ -154,18 +154,6 @@ if (USE_AVX2)
         /arch:AVX2                          # Advanced Vector Extensions 2
     )
 endif ()
-if (USE_FMA)
-    set (c_compiler_flags_release
-        ${c_compiler_flags_release}
-        /arch:FMA                           # FMA SIMD Extensions
-    )
-endif ()
-if (USE_F16C)
-    set (c_compiler_flags_release
-        ${c_compiler_flags_release}
-        /arch:F16C                          # F16C SIMD Extensions
-    )
-endif ()
 
 set (exe_linker_flags_release
     /DEBUG                                  # Generate Debug Info

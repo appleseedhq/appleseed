@@ -128,13 +128,12 @@ endif ()
 # SIMD options.
 if (is_x86)
     option (USE_SSE                         "Use SSE instruction sets up to version 2"              ON)
-
-    if (TARGET_ARCH MATCHES "x86_64")
-       option (USE_SSE42                    "Use SSE instruction sets up to version 4.2"            OFF)
-       option (USE_AVX                      "Use AVX instruction set"                               OFF)
-       option (USE_AVX2                     "Use AVX2 instruction set"                              OFF)
-       option (USE_FMA                      "Use FMA instruction set"                               OFF)
-       option (USE_F16C                     "Use F16C instruction set"                              OFF)
+        if (TARGET_ARCH MATCHES "x86_64")
+        option (USE_SSE42                   "Use SSE instruction sets up to version 4.2"            OFF)
+        option (USE_AVX                     "Use AVX instruction set"                               OFF)
+        option (USE_AVX2                    "Use AVX2 instruction set"                              OFF)
+        option (USE_FMA                     "Use FMA instruction set"                               OFF)
+        option (USE_F16C                    "Use F16C instruction set"                              OFF)
     endif ()
 elseif (TARGET_ARCH MATCHES "ARM")
     option (USE_NEON                        "Use NEON instruction set"                              OFF)
@@ -377,10 +376,14 @@ endif ()
 # Preprocessor definitions.
 #--------------------------------------------------------------------------------------------------
 
+#
 # Definitions common to all configurations.
+#
+
 set (preprocessor_definitions_common
     ${preprocessor_definitions_common}
 )
+
 if (is_x86)
     set (preprocessor_definitions_common
         ${preprocessor_definitions_common}
@@ -422,20 +425,20 @@ if (is_x86)
         )
     endif ()
     if (USE_SSE42)
-       set (USE_SSE TRUE)
-       set (preprocessor_definitions_common
-           ${preprocessor_definitions_common}
-           APPLESEED_USE_SSE42
-       )
+        set (USE_SSE TRUE)
+        set (preprocessor_definitions_common
+            ${preprocessor_definitions_common}
+            APPLESEED_USE_SSE42
+        )
     endif ()
     if (USE_SSE)
-       set (preprocessor_definitions_common
+        set (preprocessor_definitions_common
             ${preprocessor_definitions_common}
             APPLESEED_USE_SSE
-       )
-       if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SIZEOF_VOID_P MATCHES 4)
-           message (WARNING "Building appleseed with SSE/SSE2 instruction sets on 32-bit Linux is not recommended.")
-       endif ()
+        )
+        if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SIZEOF_VOID_P MATCHES 4)
+            message (WARNING "Building appleseed with SSE/SSE2 instruction sets on 32-bit Linux is not supported.")
+        endif ()
     endif ()
 elseif (TARGET_ARCH MATCHES "ARM")
     if (USE_NEON)
