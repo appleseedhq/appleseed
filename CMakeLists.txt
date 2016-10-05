@@ -128,17 +128,15 @@ endif ()
 # SIMD options.
 if (is_x86)
     option (USE_SSE                         "Use SSE instruction sets up to version 2"              ON)
-        if (TARGET_ARCH MATCHES "x86_64")
+    if (TARGET_ARCH MATCHES "x86_64")
         option (USE_SSE42                   "Use SSE instruction sets up to version 4.2"            OFF)
         option (USE_AVX                     "Use AVX instruction set"                               OFF)
         option (USE_AVX2                    "Use AVX2 instruction set"                              OFF)
-        option (USE_FMA                     "Use FMA instruction set"                               OFF)
-        option (USE_F16C                    "Use F16C instruction set"                              OFF)
     endif ()
 elseif (TARGET_ARCH MATCHES "ARM")
     option (USE_NEON                        "Use NEON instruction set"                              OFF)
 elseif (TARGET_ARCH MATCHES "PPC")
-    option (USE_ALTIVEC                     "Use Altivec instruction set"                           OFF)
+    option (USE_ALTIVEC                     "Use AltiVec instruction set"                           OFF)
 else ()
     # Unknown architecture: No SIMD.
 endif ()
@@ -398,18 +396,6 @@ endif ()
 
 # SIMD.
 if (is_x86)
-    if (USE_F16C)
-        set (preprocessor_definitions_common
-            ${preprocessor_definitions_common}
-            APPLESEED_USE_F16C
-        )
-    endif ()
-    if (USE_FMA)
-        set (preprocessor_definitions_common
-            ${preprocessor_definitions_common}
-            APPLESEED_USE_FMA
-        )
-    endif ()
     if (USE_AVX2)
         set (USE_AVX TRUE)
         set (preprocessor_definitions_common
