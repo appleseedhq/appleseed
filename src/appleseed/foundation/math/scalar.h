@@ -50,19 +50,6 @@ namespace foundation
 {
 
 //
-// Interesting reference:
-//
-//   Slerping Clock Cycles
-//   J.M.P. van Waveren
-//   http://fabiensanglard.net/doom3_documentation/37725-293747_293747.pdf
-//
-// todo: implement feq_ulp() and fz_ulp(), to compare scalars with precision
-// expressed in ulp. Most probably an integer based comparison. Reference:
-// http://www.cygnus-software.com/papers/comparingfloats/comparingfloats.htm.
-//
-
-
-//
 // Constants.
 //
 
@@ -245,6 +232,10 @@ V fit(
 
 //
 // Robust floating-point tests.
+//
+// todo: implement feq_ulp() and fz_ulp(), to compare scalars with precision
+// expressed in ulp. Most probably an integer based comparison. Reference:
+// http://www.cygnus-software.com/papers/comparingfloats/comparingfloats.htm.
 //
 
 // Default epsilon values for floating-point tests.
