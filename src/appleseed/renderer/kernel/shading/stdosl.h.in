@@ -598,7 +598,7 @@ closure color as_subsurface(
     string  profile,
     normal  N,
     color   reflectance,
-    color   diffuse_mean_free_path,
+    color   mean_free_path,
     float   ior) BUILTIN;
 
 

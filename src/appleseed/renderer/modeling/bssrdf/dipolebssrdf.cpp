@@ -61,8 +61,8 @@ DipoleBSSRDF::DipoleBSSRDF(
     m_inputs.declare("weight", InputFormatScalar, "1.0");
     m_inputs.declare("reflectance", InputFormatSpectralReflectance);
     m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-    m_inputs.declare("dmfp", InputFormatSpectralReflectance);
-    m_inputs.declare("dmfp_multiplier", InputFormatScalar, "1.0");
+    m_inputs.declare("mfp", InputFormatSpectralReflectance);
+    m_inputs.declare("mfp_multiplier", InputFormatScalar, "1.0");
     m_inputs.declare("sigma_a", InputFormatSpectralReflectance, "");
     m_inputs.declare("sigma_s", InputFormatSpectralReflectance, "");
     m_inputs.declare("g", InputFormatScalar, "0.0");
@@ -173,8 +173,8 @@ DictionaryArray DipoleBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "dmfp")
-            .insert("label", "Diffuse Mean Free Path")
+            .insert("name", "mfp")
+            .insert("label", "Mean Free Path")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
@@ -185,8 +185,8 @@ DictionaryArray DipoleBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "dmfp_multiplier")
-            .insert("label", "Diffuse Mean Free Path Multiplier")
+            .insert("name", "mfp_multiplier")
+            .insert("label", "Mean Free Path Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))

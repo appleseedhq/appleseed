@@ -83,8 +83,8 @@ namespace
             m_inputs.declare("weight", InputFormatScalar, "1.0");
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("dmfp", InputFormatSpectralReflectance);
-            m_inputs.declare("dmfp_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("mfp", InputFormatSpectralReflectance);
+            m_inputs.declare("mfp_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("ior", InputFormatScalar);
         }
 
@@ -114,15 +114,15 @@ namespace
             // Precompute the relative index of refraction.
             values->m_eta = compute_eta(shading_point, values->m_ior);
 
-            make_reflectance_and_dmfp_compatible(values->m_reflectance, values->m_dmfp);
+            make_reflectance_and_mfp_compatible(values->m_reflectance, values->m_mfp);
 
             // Apply multipliers to input values.
             values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
-            values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
+            values->m_mfp *= static_cast<float>(values->m_mfp_multiplier);
 
             // Clamp input values.
             clamp_in_place(values->m_reflectance, 0.001f, 0.999f);
-            clamp_low_in_place(values->m_dmfp, 1.0e-5f);
+            clamp_low_in_place(values->m_mfp, 1.0e-5f);
 
             // Build a CDF for channel sampling.
 
@@ -134,7 +134,7 @@ namespace
             for (size_t i = 0, e = values->m_channel_pdf.size(); i < e; ++i)
             {
                 const float a = values->m_reflectance[i];
-                const double s = normalized_diffusion_s_dmfp(a);
+                const double s = normalized_diffusion_s_mfp(a);
                 values->m_s[i] = static_cast<float>(s);
 
                 values->m_channel_pdf[i] = a;
@@ -149,9 +149,9 @@ namespace
 
             // Precompute the (square of the) max radius.
             values->m_rmax2 = 0.0;
-            for (size_t i = 0, e = values->m_dmfp.size(); i < e; ++i)
+            for (size_t i = 0, e = values->m_mfp.size(); i < e; ++i)
             {
-                const double l = static_cast<double>(values->m_dmfp[i]);
+                const double l = static_cast<double>(values->m_mfp[i]);
                 values->m_rmax2 =
                     max(
                         normalized_diffusion_max_radius(l, values->m_s[i]),
@@ -184,7 +184,7 @@ namespace
                     s[0]);
 
             // Sample a radius.
-            const double l = values->m_dmfp[channel];
+            const double l = values->m_mfp[channel];
             const double radius =
                 normalized_diffusion_sample(s[1], l, values->m_s[channel]);
 
@@ -221,7 +221,7 @@ namespace
             {
                 const double a = values->m_reflectance[i];
                 const double s = values->m_s[i];
-                const double l = values->m_dmfp[i];
+                const double l = values->m_mfp[i];
                 value[i] = static_cast<float>(normalized_diffusion_profile(radius, l, s, a));
             }
 
@@ -241,7 +241,7 @@ namespace
             double pdf_radius = 0.0;
             for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
             {
-                const double l = values->m_dmfp[i];
+                const double l = values->m_mfp[i];
                 pdf_radius +=
                     normalized_diffusion_pdf(
                         radius,
@@ -315,8 +315,8 @@ DictionaryArray NormalizedDiffusionBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "dmfp")
-            .insert("label", "Diffuse Mean Free Path")
+            .insert("name", "mfp")
+            .insert("label", "Mean Free Path")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
@@ -327,8 +327,8 @@ DictionaryArray NormalizedDiffusionBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "dmfp_multiplier")
-            .insert("label", "Diffuse Mean Free Path Multiplier")
+            .insert("name", "mfp_multiplier")
+            .insert("label", "Mean Free Path Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
