@@ -47,7 +47,7 @@ BENCHMARK_SUITE(Foundation_Math_Quaternion)
     Quaterniond make_random_unit_quat(RNG& rng)
     {
         const Vector3d axis = sample_sphere_uniform(rand_vector2<Vector2d>(rng));
-        const double angle = rand_double2(rng) * TwoPi;
+        const double angle = rand_double2(rng) * TwoPi<double>();
         return Quaterniond::make_rotation(axis, angle);
     }
 

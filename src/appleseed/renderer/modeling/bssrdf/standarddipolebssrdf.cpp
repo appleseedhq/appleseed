@@ -184,7 +184,7 @@ namespace
                 const double kv = zv * (sigma_tr_dv + 1.0) * square(rcp_dv);
                 const double er = exp(-sigma_tr_dr) * rcp_dr;
                 const double ev = exp(-sigma_tr_dv) * rcp_dv;
-                value[i] = static_cast<float>(alpha_prime * RcpFourPi * (kr * er - kv * ev));
+                value[i] = static_cast<float>(alpha_prime * RcpFourPi<double>() * (kr * er - kv * ev));
             }
 
             // Return r * R(r) * weight.

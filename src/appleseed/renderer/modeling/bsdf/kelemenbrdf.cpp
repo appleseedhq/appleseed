@@ -194,7 +194,7 @@ namespace
             // Precompute the normalization constant for the matte component.
             Spectrum s_denom(1.0f);
             s_denom -= a_spec_avg;
-            s_denom *= static_cast<float>(Pi);
+            s_denom *= Pi<float>();
             m_s.set(1.0f);
             m_s /= s_denom;
 
@@ -321,7 +321,7 @@ namespace
             assert(pdf_specular >= 0.0);
 
             // Evaluate the PDF of the incoming direction for the matte component.
-            const double pdf_matte = dot_LN * RcpPi;
+            const double pdf_matte = dot_LN * RcpPi<double>();
             assert(pdf_matte >= 0.0);
 
             // Evaluate the final PDF.
@@ -391,7 +391,7 @@ namespace
                 const double matte_prob = average_value(matte_albedo);
 
                 // Evaluate the PDF of the incoming direction for the matte component.
-                const double pdf_matte = dot_LN * RcpPi;
+                const double pdf_matte = dot_LN * RcpPi<double>();
                 assert(pdf_matte >= 0.0);
                 probability += matte_prob * pdf_matte;
             }
@@ -462,7 +462,7 @@ namespace
                 const double matte_prob = average_value(matte_albedo);
 
                 // Evaluate the PDF of the incoming direction for the matte component.
-                const double pdf_matte = dot_LN * RcpPi;
+                const double pdf_matte = dot_LN * RcpPi<double>();
                 assert(pdf_matte >= 0.0);
                 probability += matte_prob * pdf_matte;
             }
@@ -607,9 +607,9 @@ namespace
                 a_spec_avg += sample;
             }
 
-            a_spec_avg *= static_cast<float>(HalfPi / AlbedoTableSize);     // integration over theta
-            a_spec_avg *= static_cast<float>(TwoPi);                        // integration over phi
-            a_spec_avg *= static_cast<float>(RcpPi);                        // average
+            a_spec_avg *= HalfPi<float>() / AlbedoTableSize;    // integration over theta
+            a_spec_avg *= TwoPi<float>();                       // integration over phi
+            a_spec_avg *= RcpPi<float>();                       // average
         }
 
         // Evaluate the specular albedo function for an arbitrary angle.

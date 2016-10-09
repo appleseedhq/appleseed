@@ -369,7 +369,7 @@ size_t BezierCurveBase<T, N>::compute_recursion_depth(const ValueType epsilon) c
                 std::abs(m_ctrl_pts[i].z - ValueType(2.0) * m_ctrl_pts[i + 1].z + m_ctrl_pts[i + 2].z));
     }
 
-    const ValueType value = (ValueType(SqrtTwo) * N * (N - 1) * l0) / (ValueType(8.0) * epsilon);
+    const ValueType value = (SqrtTwo<ValueType>() * N * (N - 1) * l0) / (ValueType(8.0) * epsilon);
     const ValueType RcpLog4 = ValueType(0.7213475204444817);
     const ValueType r0 = std::log(value) * RcpLog4;
     return r0 > ValueType(0.0) ? truncate<size_t>(r0) : 0;
@@ -687,7 +687,7 @@ void make_curve_projection_transform(
     //     }
     //     else
     //     {
-    //         const ValueType phi = dir.y > ValueType(0.0) ? ValueType(HalfPi) : -ValueType(HalfPi);
+    //         const ValueType phi = dir.y > ValueType(0.0) ? HalfPi<ValueType>() : -HalfPi<ValueType>();
     //         const MatrixType rot_x = MatrixType::make_rotation_x(phi);
     //         const MatrixType tr = MatrixType::make_translation(-ray.m_org);
     //         matrix = rot_x * tr;

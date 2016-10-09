@@ -95,7 +95,7 @@ bool DipoleBSSRDF::sample(
     const double radius = sample_exponential_distribution(s[1], sigma_tr);
 
     // Sample an angle.
-    const double phi = TwoPi * s[2];
+    const double phi = TwoPi<double>() * s[2];
 
     sample.m_eta = values->m_eta;
     sample.m_channel = channel;
@@ -124,7 +124,7 @@ double DipoleBSSRDF::evaluate_pdf(
     }
 
     // PDF of the sampled angle.
-    const double pdf_angle = RcpTwoPi;
+    const double pdf_angle = RcpTwoPi<double>();
 
     // Compute and return the final PDF.
     return pdf_radius * pdf_angle;

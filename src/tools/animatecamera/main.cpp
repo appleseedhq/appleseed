@@ -479,7 +479,7 @@ namespace
             const double elevation = max_height * normalized_elevation;
 
             // Compute the transform of the camera at the last frame.
-            const double angle = -1.0 / frame_count * TwoPi;
+            const double angle = -1.0 / frame_count * TwoPi<double>();
             const Vector3d position(distance * cos(angle), elevation, distance * sin(angle));
             Transformd previous_transform(
                 Transformd::from_local_to_parent(
@@ -488,7 +488,7 @@ namespace
             for (int i = 0; i < frame_count; ++i)
             {
                 // Compute the transform of the camera at this frame.
-                const double angle = static_cast<double>(i) / frame_count * TwoPi;
+                const double angle = (i * TwoPi<double>()) / frame_count;
                 const Vector3d position(distance * cos(angle), elevation, distance * sin(angle));
                 const Transformd new_transform(
                     Transformd::from_local_to_parent(

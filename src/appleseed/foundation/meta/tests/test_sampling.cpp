@@ -219,13 +219,13 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
     template <typename T>
     T sample_hemisphere_uniform_pdf(const Vector<T, 3>& dir)
     {
-        return T(RcpTwoPi);
+        return RcpTwoPi<T>();
     }
 
     template <typename T>
     T sample_hemisphere_cosine_pdf(const Vector<T, 3>& dir)
     {
-        return dir.y * T(RcpPi);
+        return dir.y * RcpPi<T>();
     }
 
     template <typename T>
@@ -406,7 +406,7 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
     }
 
     // Value of the integral of func() over the hemisphere.
-    const double ExpectedIntegralValue = Pi / 3;
+    const double ExpectedIntegralValue = Pi<double>() / 3;
 
     TEST_CASE(Integration_UniformHemisphereSampling)
     {

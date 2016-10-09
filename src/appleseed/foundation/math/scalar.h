@@ -53,23 +53,28 @@ namespace foundation
 // Constants.
 //
 
-// Various constants in double precision.
-static const double Pi              =  3.1415926535897932;
-static const double HalfPi          =  1.5707963267948966;      // Pi / 2
-static const double TwoPi           =  6.2831853071795865;      // 2 * Pi
-static const double RcpPi           =  0.3183098861837907;      // 1 / Pi
-static const double SqrtPi          =  1.7724538509055160;      // sqrt(Pi)
-static const double FourPiSquare    = 39.4784176043574344;      // 4 * Pi^2
-static const double RcpHalfPi       =  0.6366197723675813;      // 1 / (Pi/2) = 2 / Pi
-static const double RcpTwoPi        =  0.1591549430918953;      // 1 / (2 * Pi)
-static const double RcpFourPi       =  0.0795774715459477;      // 1 / (4 * Pi)
-static const double RcpPiSquare     =  0.1013211836423378;      // 1 / (Pi^2) = (1 / Pi)^2
-static const double RcpFourPiSquare =  0.0253302959105844;      // 1 / (4 * Pi^2)
-static const double SqrtTwo         =  1.4142135623730950;      // sqrt(2)
-static const double RcpSqrtTwo      =  0.7071067811865475;      // 1 / sqrt(2) = sqrt(2) / 2
-static const double SqrtThree       =  1.7320508075688773;      // sqrt(3)
-static const double GoldenRatio     =  1.6180339887498948;      // (1 + sqrt(5)) / 2
-static const double Ln10            =  2.3025850929940457;      // ln(10)
+template <typename T> inline T Pi()                 { return static_cast<T>(3.1415926535897932); }
+template <typename T> inline T TwoPi()              { return static_cast<T>(6.2831853071795865); }  // 2 * Pi
+template <typename T> inline T FourPi()             { return static_cast<T>(12.566370614359173); }  // 4 * Pi
+template <typename T> inline T HalfPi()             { return static_cast<T>(1.5707963267948966); }  // Pi / 2
+template <typename T> inline T PiOverFour()         { return static_cast<T>(0.7853981633974483); }  // Pi / 4
+template <typename T> inline T RcpPi()              { return static_cast<T>(0.3183098861837907); }  // 1 / Pi
+template <typename T> inline T TwoOverPi()          { return static_cast<T>(0.6366197723675813); }  // 2 / Pi
+template <typename T> inline T FourOverPi()         { return static_cast<T>(1.2732395447351627); }  // 4 / Pi
+template <typename T> inline T RcpHalfPi()          { return static_cast<T>(0.6366197723675813); }  // 1 / (Pi/2)
+template <typename T> inline T RcpTwoPi()           { return static_cast<T>(0.1591549430918953); }  // 1 / (2 * Pi) = 0.5 / Pi
+template <typename T> inline T RcpFourPi()          { return static_cast<T>(0.0795774715459477); }  // 1 / (4 * Pi)
+template <typename T> inline T SqrtPi()             { return static_cast<T>(1.7724538509055160); }  // sqrt(Pi)
+template <typename T> inline T PiSquare()           { return static_cast<T>(9.8696044010893586); }  // Pi^2
+template <typename T> inline T FourPiSquare()       { return static_cast<T>(39.478417604357434); }  // 4 * Pi^2
+template <typename T> inline T RcpPiSquare()        { return static_cast<T>(0.1013211836423378); }  // 1 / (Pi^2) = (1 / Pi)^2
+template <typename T> inline T RcpFourPiSquare()    { return static_cast<T>(0.0253302959105844); }  // 1 / (4 * Pi^2)
+template <typename T> inline T FourOverPiSquare()   { return static_cast<T>(0.4052847345693511); }  // 1 / (4 * Pi^2)
+template <typename T> inline T SqrtTwo()            { return static_cast<T>(1.4142135623730950); }  // sqrt(2)
+template <typename T> inline T RcpSqrtTwo()         { return static_cast<T>(0.7071067811865475); }  // 1 / sqrt(2) = sqrt(2) / 2
+template <typename T> inline T SqrtThree()          { return static_cast<T>(1.7320508075688773); }  // sqrt(3)
+template <typename T> inline T GoldenRatio()        { return static_cast<T>(1.6180339887498948); }  // (1 + sqrt(5)) / 2
+template <typename T> inline T Ln10()               { return static_cast<T>(2.3025850929940457); }  // ln(10)
 
 
 //
@@ -278,37 +283,37 @@ template <> inline long double signed_min() { return -std::numeric_limits<long d
 template <>
 inline float deg_to_rad(const float angle)
 {
-    return angle * static_cast<float>(Pi / 180.0);
+    return angle * (Pi<float>() / 180.0f);
 }
 
 template <>
 inline double deg_to_rad(const double angle)
 {
-    return angle * (Pi / 180.0);
+    return angle * (Pi<double>() / 180.0);
 }
 
 template <>
 inline long double deg_to_rad(const long double angle)
 {
-    return angle * static_cast<long double>(Pi / 180.0);
+    return angle * (Pi<long double>() / 180.0);
 }
 
 template <>
 inline float rad_to_deg(const float angle)
 {
-    return angle * static_cast<float>(180.0 / Pi);
+    return angle * (180.0f / Pi<float>());
 }
 
 template <>
 inline double rad_to_deg(const double angle)
 {
-    return angle * (180.0 / Pi);
+    return angle * (180.0 / Pi<double>());
 }
 
 template <>
 inline long double rad_to_deg(const long double angle)
 {
-    return angle * static_cast<long double>(180.0 / Pi);
+    return angle * (180.0 / Pi<long double>());
 }
 
 
@@ -564,8 +569,8 @@ inline T wrap(const T x)
 template <typename T>
 inline T normalize_angle(const T angle)
 {
-    const T a = std::fmod(angle, T(TwoPi));
-    return a < T(0.0) ? a + T(TwoPi) : a;
+    const T a = std::fmod(angle, TwoPi<T>());
+    return a < T(0.0) ? a + TwoPi<T>() : a;
 }
 
 template <typename Int, typename T>

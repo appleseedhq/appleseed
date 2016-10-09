@@ -252,7 +252,7 @@ void compute_ibl_bssrdf_sampling(
         // Sample the BSSRDF (hemisphere cosine).
         Vector3d incoming = sample_hemisphere_cosine(s);
         const double cos_in = incoming.y;
-        const double bssrdf_prob = cos_in * RcpPi;
+        const double bssrdf_prob = cos_in * RcpPi<double>();
         incoming = incoming_point.get_shading_basis().transform_to_parent(incoming);
         if (incoming_point.get_side() == ObjectInstance::BackSide)
             incoming = -incoming;
@@ -460,7 +460,7 @@ void compute_ibl_environment_sampling(
             bssrdf_value);
 
         // Compute MIS weight.
-        const double bssrdf_prob = cos_in * RcpPi;
+        const double bssrdf_prob = cos_in * RcpPi<double>();
         const double mis_weight =
             mis_power2(
                 env_sample_count * env_prob,

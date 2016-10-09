@@ -495,7 +495,7 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
     //
 
     // Parameters.
-    const double MinLength = Pi / 2.0;
+    const double MinLength = HalfPi<double>();
     const double RootEps = 1.0e-6;
     const double GrowEps = 1.0e-4;
     const size_t MaxIterations = 100;

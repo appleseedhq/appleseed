@@ -77,7 +77,7 @@ TEST_SUITE(Foundation_Math_Quaternion)
     TEST_CASE(ExtractAxisAngle)
     {
         const Vector3d ExpectedAxis = normalize(Vector3d(-1.0, 1.0, 1.0));
-        const double ExpectedAngle = Pi / 4.0;
+        const double ExpectedAngle = Pi<double>() / 4.0;
         const Quaterniond q = Quaterniond::make_rotation(ExpectedAxis, ExpectedAngle);
 
         Vector3d axis;
@@ -143,7 +143,7 @@ TEST_SUITE(Foundation_Math_Quaternion)
 
         const Vector3d result = rotate(q, Vector3d(1.0, 0.0, 0.0));
 
-        EXPECT_FEQ(Vector3d(RcpSqrtTwo, 0.0, -RcpSqrtTwo), result);
+        EXPECT_FEQ(Vector3d(RcpSqrtTwo<double>(), 0.0, -RcpSqrtTwo<double>()), result);
     }
 
     TEST_CASE(PlotFastSlerpError)
@@ -154,7 +154,7 @@ TEST_SUITE(Foundation_Math_Quaternion)
         plotfile.set_ylabel("Absolute Angular Error");
 
         const Quaterniond q1 = Quaterniond::make_rotation(Vector3d(0.0, 0.0, 1.0), 0.0);
-        const Quaterniond q2 = Quaterniond::make_rotation(Vector3d(0.0, 0.0, 1.0), Pi);
+        const Quaterniond q2 = Quaterniond::make_rotation(Vector3d(0.0, 0.0, 1.0), Pi<double>());
 
         const size_t PointCount = 1000;
         vector<Vector2d> points;

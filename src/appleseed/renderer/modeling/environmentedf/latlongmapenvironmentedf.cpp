@@ -406,7 +406,7 @@ namespace
             m_rcp_importance_map_height = 1.0 / m_importance_map_height;
 
             const size_t texel_count = m_importance_map_width * m_importance_map_height;
-            m_probability_scale = texel_count / (2.0 * Pi * Pi);
+            m_probability_scale = texel_count / (2.0 * PiSquare<double>());
 
             TextureStore texture_store(scene);
             TextureCache texture_cache(texture_store);

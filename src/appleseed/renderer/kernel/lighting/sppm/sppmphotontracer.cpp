@@ -670,7 +670,7 @@ namespace
                 + disk_radius * p[0] * basis.get_tangent_u() +
                 + disk_radius * p[1] * basis.get_tangent_v();
 
-            const double disk_point_prob = 1.0 / (Pi * disk_radius * disk_radius);
+            const double disk_point_prob = 1.0 / (Pi<double>() * disk_radius * disk_radius);
 
             // Compute the initial particle weight.
             Spectrum initial_flux = env_edf_value;

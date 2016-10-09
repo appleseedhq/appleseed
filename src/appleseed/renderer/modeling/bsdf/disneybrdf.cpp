@@ -219,7 +219,7 @@ namespace
             }
 
             value = values->m_base_color;
-            value *= static_cast<float>(fd * RcpPi * (1.0 - values->m_metallic));
+            value *= static_cast<float>(fd * RcpPi<double>() * (1.0 - values->m_metallic));
 
             // Return the probability density of the sampled direction.
             return evaluate_pdf(shading_basis, incoming);
@@ -229,7 +229,7 @@ namespace
             const Basis3d&                  shading_basis,
             const Vector3d&                 incoming) const
         {
-            return dot(incoming, shading_basis.get_normal()) * RcpPi;
+            return dot(incoming, shading_basis.get_normal()) * RcpPi<double>();
         }
     };
 
@@ -297,7 +297,7 @@ namespace
             const Basis3d&                  shading_basis,
             const Vector3d&                 incoming) const
         {
-            return RcpTwoPi;
+            return RcpTwoPi<double>();
         }
     };
 

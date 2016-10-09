@@ -106,10 +106,10 @@ namespace
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
             sample.m_value = values->m_reflectance;
-            sample.m_value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
+            sample.m_value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi<double>());
 
             // Compute the probability density of the sampled direction.
-            sample.m_probability = wi.y * RcpPi;
+            sample.m_probability = wi.y * RcpPi<double>();
             assert(sample.m_probability > 0.0);
 
             // Set the scattering mode.
@@ -141,10 +141,10 @@ namespace
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_reflectance;
-            value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
+            value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi<double>());
 
             // Return the probability density of the sampled direction.
-            return cos_in * RcpPi;
+            return cos_in * RcpPi<double>();
         }
 
         APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
@@ -164,7 +164,7 @@ namespace
             if (cos_in < 0.0)
                 return 0.0;
 
-            return cos_in * RcpPi;
+            return cos_in * RcpPi<double>();
         }
 
       private:

@@ -418,7 +418,7 @@ namespace
                 + disk_radius * p[0] * basis.get_tangent_u()
                 + disk_radius * p[1] * basis.get_tangent_v();
 
-            probability = 1.0 / (Pi * disk_radius * disk_radius);
+            probability = 1.0 / (Pi<double>() * disk_radius * disk_radius);
 
             compute_sun_radiance(
                 outgoing,

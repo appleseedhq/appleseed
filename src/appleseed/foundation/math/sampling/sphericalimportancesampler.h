@@ -175,20 +175,20 @@ void SphericalImportanceSampler<T>::create_regular_icosahedron()
     m_verts.reserve(12);
     m_tris.reserve(20);
 
-    m_verts.push_back(normalize(Vector<T, 3>(T(-1.0), T( GoldenRatio), T(0.0))));
-    m_verts.push_back(normalize(Vector<T, 3>(T( 1.0), T( GoldenRatio), T(0.0))));
-    m_verts.push_back(normalize(Vector<T, 3>(T(-1.0), T(-GoldenRatio), T(0.0))));
-    m_verts.push_back(normalize(Vector<T, 3>(T( 1.0), T(-GoldenRatio), T(0.0))));
+    m_verts.push_back(normalize(Vector<T, 3>(T(-1.0),  GoldenRatio<T>(), T(0.0))));
+    m_verts.push_back(normalize(Vector<T, 3>(T( 1.0),  GoldenRatio<T>(), T(0.0))));
+    m_verts.push_back(normalize(Vector<T, 3>(T(-1.0), -GoldenRatio<T>(), T(0.0))));
+    m_verts.push_back(normalize(Vector<T, 3>(T( 1.0), -GoldenRatio<T>(), T(0.0))));
 
-    m_verts.push_back(normalize(Vector<T, 3>(T(0.0), T(-1.0), T( GoldenRatio))));
-    m_verts.push_back(normalize(Vector<T, 3>(T(0.0), T( 1.0), T( GoldenRatio))));
-    m_verts.push_back(normalize(Vector<T, 3>(T(0.0), T(-1.0), T(-GoldenRatio))));
-    m_verts.push_back(normalize(Vector<T, 3>(T(0.0), T( 1.0), T(-GoldenRatio))));
+    m_verts.push_back(normalize(Vector<T, 3>(T(0.0), T(-1.0),  GoldenRatio<T>())));
+    m_verts.push_back(normalize(Vector<T, 3>(T(0.0), T( 1.0),  GoldenRatio<T>())));
+    m_verts.push_back(normalize(Vector<T, 3>(T(0.0), T(-1.0), -GoldenRatio<T>())));
+    m_verts.push_back(normalize(Vector<T, 3>(T(0.0), T( 1.0), -GoldenRatio<T>())));
 
-    m_verts.push_back(normalize(Vector<T, 3>(T( GoldenRatio), T(0.0), T(-1.0))));
-    m_verts.push_back(normalize(Vector<T, 3>(T( GoldenRatio), T(0.0), T( 1.0))));
-    m_verts.push_back(normalize(Vector<T, 3>(T(-GoldenRatio), T(0.0), T(-1.0))));
-    m_verts.push_back(normalize(Vector<T, 3>(T(-GoldenRatio), T(0.0), T( 1.0))));
+    m_verts.push_back(normalize(Vector<T, 3>( GoldenRatio<T>(), T(0.0), T(-1.0))));
+    m_verts.push_back(normalize(Vector<T, 3>( GoldenRatio<T>(), T(0.0), T( 1.0))));
+    m_verts.push_back(normalize(Vector<T, 3>(-GoldenRatio<T>(), T(0.0), T(-1.0))));
+    m_verts.push_back(normalize(Vector<T, 3>(-GoldenRatio<T>(), T(0.0), T( 1.0))));
 
     // 5 faces around point 0.
     m_tris.push_back(Tri(0, 11, 5));

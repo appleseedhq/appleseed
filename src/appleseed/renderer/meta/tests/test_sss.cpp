@@ -172,7 +172,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double r = sample_exponential_distribution(u, sigma_tr);
 
             const double pdf_radius = exponential_distribution_pdf(r, sigma_tr);
-            const double pdf_angle = RcpTwoPi;
+            const double pdf_angle = RcpTwoPi<double>();
             const double pdf = pdf_radius * pdf_angle;
 
             const double value = bssrdf_eval.evaluate(r);
@@ -402,7 +402,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double Eps = 1.0e-5;
             const double alpha_prime = fit<size_t, double>(i, 0, TestCount - 1, 0.0 + Eps, 1.0 - Eps);
 
-            const double rd_a = RcpPi * rd_fun(alpha_prime);
+            const double rd_a = RcpPi<double>() * rd_fun(alpha_prime);
 
             MersenneTwister rng;
             const double rd_n =
@@ -439,7 +439,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             ai_points.push_back(
                 Vector2d(
                     alpha_prime,
-                    RcpPi * rd_fun(alpha_prime)));
+                    RcpPi<double>() * rd_fun(alpha_prime)));
 
             ni_points.push_back(
                 Vector2d(
@@ -489,7 +489,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             ai_points.push_back(
                 Vector2d(
                     alpha_prime,
-                    RcpPi * rd_fun(alpha_prime)));
+                    RcpPi<double>() * rd_fun(alpha_prime)));
 
             ni_points.push_back(
                 Vector2d(
@@ -537,7 +537,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double u = rand_double2(rng);
             const double r = u * sqrt(RMax2);
             const double pdf_radius = 1.0 / sqrt(RMax2);
-            const double pdf_angle = RcpTwoPi;
+            const double pdf_angle = RcpTwoPi<double>();
             const double pdf = pdf_radius * pdf_angle;
             const double value = r * gaussian_profile(r, V, RIntegralThreshold);
             integral += value / pdf;
@@ -691,7 +691,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const double u = rand_double2(rng);
             const double r = normalized_diffusion_sample(u, L, s);
             const double pdf_radius = normalized_diffusion_pdf(r, L, s);
-            const double pdf_angle = RcpTwoPi;
+            const double pdf_angle = RcpTwoPi<double>();
             const double pdf = pdf_radius * pdf_angle;
             const double value = r * normalized_diffusion_profile(r, L, s, A);
             integral += value / pdf;
@@ -815,7 +815,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             const double u = rand_double2(rng);
             const double r = normalized_diffusion_sample(u, L, s);
-            const double phi = TwoPi * rand_double2(rng);
+            const double phi = TwoPi<double>() * rand_double2(rng);
             const Vector3d sample(r * cos(phi), 0.0, r * sin(phi));
 
             Partio::ParticleIndex p = particles.add_particle();
@@ -948,7 +948,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             const double r = fit<size_t, double>(i, 0, N - 1, -16.0, 16.0);
             const double result = bssrdf_eval.evaluate(r);
-            points.push_back(Vector2d(r, result * Pi / abs(r)));
+            points.push_back(Vector2d(r, result * Pi<double>() / abs(r)));
         }
 
         plotfile

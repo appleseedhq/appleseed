@@ -1009,7 +1009,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
             0.0,
             Transformd::from_local_to_parent(
                   Matrix4d::make_translation(Vector3d(0.278, 0.273, -0.800))
-                * Matrix4d::make_rotation_y(Pi)));
+                * Matrix4d::make_rotation_y(Pi<double>())));
 
         // Attach the camera to the scene.
         scene->set_camera(camera);

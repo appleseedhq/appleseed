@@ -169,7 +169,7 @@ namespace
             double&                 probability) const APPLESEED_OVERRIDE
         {
             const Vector3d local_outgoing = sample_hemisphere_cosine(s);
-            probability = local_outgoing.y * RcpPi;
+            probability = local_outgoing.y * RcpPi<double>();
 
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
@@ -217,7 +217,7 @@ namespace
                 compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
 
-            probability = local_outgoing.y > 0.0 ? local_outgoing.y * RcpPi : 0.0;
+            probability = local_outgoing.y > 0.0 ? local_outgoing.y * RcpPi<double>() : 0.0;
         }
 
         virtual double evaluate_pdf(
@@ -234,7 +234,7 @@ namespace
                 parent_to_local[ 5] * outgoing.y +
                 parent_to_local[ 6] * outgoing.z;
 
-            return local_outgoing_y > 0.0 ? local_outgoing_y * RcpPi : 0.0;
+            return local_outgoing_y > 0.0 ? local_outgoing_y * RcpPi<double>() : 0.0;
         }
 
       private:
@@ -277,10 +277,10 @@ namespace
             const double turbidity_interp = clamped_turbidity - turbidity_low;
 
             // Compute solar elevation.
-            const double eta = HalfPi - sun_theta;
+            const double eta = HalfPi<double>() - sun_theta;
 
             // Transform solar elevation to [0, 1] with more samples for low elevations.
-            const double x1 = pow(eta * RcpHalfPi, (1.0 / 3.0));
+            const double x1 = pow(eta * RcpHalfPi<double>(), (1.0 / 3.0));
             const double y1 = 1.0 - x1;
 
             // Compute the square and cube of x1 and (1 - x1).
@@ -461,7 +461,7 @@ namespace
                   luminance                                         // start with computed luminance
                 / sum_value(value * Spectrum(XYZCMFCIE19312Deg[1])) // normalize to unit luminance
                 * (1.0f / 683.0f)                                   // convert lumens to Watts
-                * static_cast<float>(RcpPi);                        // convert irradiance to radiance
+                * RcpPi<float>();                                   // convert irradiance to radiance
         }
 
         Vector3d shift(Vector3d v) const

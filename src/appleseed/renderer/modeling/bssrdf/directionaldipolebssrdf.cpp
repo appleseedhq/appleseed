@@ -290,7 +290,7 @@ namespace
             const double r2 = square(r);
             const double sigma_tr_r = sigma_tr * r;
 
-            const double t0 = RcpFourPiSquare * exp(-sigma_tr_r) / (r2 * r);
+            const double t0 = RcpFourPiSquare<double>() * exp(-sigma_tr_r) / (r2 * r);
             const double t1 = r2 / D + 3.0 * (1.0 + sigma_tr_r) * dot_w_x;
             const double t2 = 3.0 * D * (1.0 + sigma_tr_r) * dot_w_n;
             const double t3 = (1.0 + sigma_tr_r + 3.0 * D * (3.0 * (1.0 + sigma_tr_r) + square(sigma_tr_r)) / r2 * dot_w_x) * dot_x_n;

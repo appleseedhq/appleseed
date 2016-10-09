@@ -149,7 +149,7 @@ double gaussian_profile(
     const double    v,
     const double    r_integral_threshold)
 {
-    return exp(-r * r / (2.0 * v)) / (TwoPi * v * r_integral_threshold);
+    return exp(-r * r / (2.0 * v)) / (TwoPi<double>() * v * r_integral_threshold);
 }
 
 double gaussian_profile_sample(
@@ -165,7 +165,7 @@ double gaussian_profile_pdf(
     const double    v,
     const double    r_integral_threshold)
 {
-    return exp(-r * r / (2.0 * v)) / (TwoPi * v * r_integral_threshold);
+    return exp(-r * r / (2.0 * v)) / (TwoPi<double>() * v * r_integral_threshold);
 }
 
 
@@ -207,7 +207,7 @@ double normalized_diffusion_profile(
 {
     // Equation 2.
     const double exp_r3 = exp(-r / (3.0 * d));
-    return (cube(exp_r3) + exp_r3) / (8.0 * Pi * d * r);
+    return (cube(exp_r3) + exp_r3) / (8.0 * Pi<double>() * d * r);
 }
 
 double normalized_diffusion_profile(
@@ -338,7 +338,7 @@ double normalized_diffusion_pdf(
     const double    r,
     const double    d)
 {
-    return r * TwoPi * normalized_diffusion_profile(r, d);
+    return r * TwoPi<double>() * normalized_diffusion_profile(r, d);
 }
 
 double normalized_diffusion_pdf(

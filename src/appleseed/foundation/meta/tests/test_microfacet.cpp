@@ -79,15 +79,15 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
         for (size_t i = 0; i < sample_count; ++i)
         {
-            const ValueType theta = radical_inverse_base2<ValueType>(i) * ValueType(HalfPi);
+            const ValueType theta = radical_inverse_base2<ValueType>(i) * HalfPi<ValueType>();
             const Vector<ValueType, 3> h(ValueType(0.0), cos(theta), ValueType(0.0));
             const ValueType value = mdf.D(h, alpha, alpha);
 
             integral += value * h.y * sin(theta);
         }
 
-        integral *= ValueType(HalfPi) / sample_count;   // integration over theta
-        integral *= ValueType(TwoPi);                   // integration over phi
+        integral *= HalfPi<ValueType>() / sample_count;     // integration over theta
+        integral *= TwoPi<ValueType>();                     // integration over phi
 
         return integral;
     }
@@ -139,12 +139,12 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
             double integral = 0.0;
 
-            for (double theta = 0.0; theta < Pi; theta += angle_step)
+            for (double theta = 0.0; theta < Pi<double>(); theta += angle_step)
             {
                 const double cos_theta = std::cos(theta);
                 const double sin_theta = std::sin(theta);
 
-                for (double phi = 0.0; phi < TwoPi; phi += angle_step)
+                for (double phi = 0.0; phi < TwoPi<double>(); phi += angle_step)
                 {
                     const double cos_phi = std::cos(phi);
                     const double sin_phi = std::sin(phi);
@@ -290,7 +290,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
     {
         const double AlphaG = 0.5;
         const GGXMDF<double> mdf;
-        const double ExpectedLimit = AlphaG * AlphaG * RcpPi;
+        const double ExpectedLimit = AlphaG * AlphaG * RcpPi<double>();
 
         const double limit = mdf.D(Vector3d(0.0), AlphaG, AlphaG);
 

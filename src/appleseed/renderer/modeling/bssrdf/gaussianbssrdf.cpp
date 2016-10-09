@@ -177,7 +177,7 @@ namespace
             const double v = values->m_v;
             const double radius =
                 sqrt(-2.0 * v * log(1.0 - s[0] * (1.0 - exp(-rmax2 / (2.0 * v)))));
-            const double phi = TwoPi * s[1];
+            const double phi = TwoPi<double>() * s[1];
 
             sample.m_eta = values->m_eta;
             sample.m_channel = 0;
@@ -210,7 +210,7 @@ namespace
             }
 
             const double v = values->m_v;
-            const double rd = exp(-square_radius / (2.0 * v)) / (TwoPi * v * RIntegralThreshold);
+            const double rd = exp(-square_radius / (2.0 * v)) / (TwoPi<double>() * v * RIntegralThreshold);
 
             value = values->m_reflectance;
             value *= static_cast<float>(values->m_reflectance_multiplier * rd);
@@ -231,7 +231,7 @@ namespace
                 return 0.0;
 
             const double v = values->m_v;
-            return exp(-r2 / (2.0 * v)) / (TwoPi * v * RIntegralThreshold);
+            return exp(-r2 / (2.0 * v)) / (TwoPi<double>() * v * RIntegralThreshold);
         }
     };
 }
