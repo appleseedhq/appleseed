@@ -307,7 +307,7 @@ TEST_SUITE(Foundation_Math_TransformInterpolator)
         const Transformd to(
             Transformd::from_local_to_parent(
                 Matrix4d::make_translation(Vector3d(1.0, 0.0, 0.0)) *
-                Matrix4d::make_rotation_x(Pi)));
+                Matrix4d::make_rotation_x(Pi<double>())));
 
         const TransformInterpolatord interpolator(from, to);
 

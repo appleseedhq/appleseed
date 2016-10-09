@@ -149,7 +149,7 @@ inline void SeparableBSSRDF::evaluate(
         foundation::square_norm(outgoing_point.get_point() - incoming_point.get_point());
     evaluate_profile(data, square_radius, value);
 
-    value *= static_cast<float>(foundation::RcpPi * fo * fi);
+    value *= static_cast<float>(foundation::RcpPi<double>() * fo * fi);
 }
 
 }       // namespace renderer

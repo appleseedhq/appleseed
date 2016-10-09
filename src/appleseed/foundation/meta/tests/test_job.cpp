@@ -68,6 +68,7 @@ namespace
 
         virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
         {
+            // todo: use atomic operation.
             ++m_execution_count;
         }
 

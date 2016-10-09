@@ -89,13 +89,13 @@ namespace
     template <typename T>
     inline T box2d(const T r2)
     {
-        return static_cast<T>(RcpPi);
+        return foundation::RcpPi<T>();
     }
 
     template <typename T>
     inline T epanechnikov2d(const T r2)
     {
-        return static_cast<T>(2.0 / Pi) * (T(1.0) - r2);
+        return foundation::RcpHalfPi<T>() * (T(1.0) - r2);
     }
 
 

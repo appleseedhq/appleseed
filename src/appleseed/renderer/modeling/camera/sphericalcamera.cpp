@@ -220,7 +220,7 @@ namespace
 
         static Vector3d ndc_to_camera(const Vector2d& point)
         {
-            return Vector3d::make_unit_vector(point.y * Pi, point.x * TwoPi);
+            return Vector3d::make_unit_vector(point.y * Pi<double>(), point.x * TwoPi<double>());
         }
 
         static Vector2d camera_to_ndc(const Vector3d& point)
@@ -233,7 +233,9 @@ namespace
             const double theta = acos(dir.y);
 
             // Convert the spherical coordinates to normalized device coordinates.
-            return Vector2d(wrap(phi * RcpTwoPi), saturate(theta * RcpPi));
+            return Vector2d(
+                wrap(phi * RcpTwoPi<double>()),
+                saturate(theta * RcpPi<double>()));
         }
     };
 }

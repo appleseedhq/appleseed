@@ -121,7 +121,7 @@ T compute_spherical_triangle_area(
     const T             beta,
     const T             gamma)
 {
-    return alpha + beta + gamma - T(Pi);
+    return alpha + beta + gamma - Pi<T>();
 }
 
 }       // namespace foundation

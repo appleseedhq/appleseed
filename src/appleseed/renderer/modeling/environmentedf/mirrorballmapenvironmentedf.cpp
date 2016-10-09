@@ -121,7 +121,7 @@ namespace
             double&                 probability) const APPLESEED_OVERRIDE
         {
             const Vector3d local_outgoing = sample_sphere_uniform(s);
-            probability = RcpFourPi;
+            probability = RcpFourPi<double>();
 
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
@@ -159,7 +159,7 @@ namespace
             const Vector3d local_outgoing = transform.vector_to_local(outgoing);
 
             lookup_envmap(input_evaluator, local_outgoing, value);
-            probability = RcpFourPi;
+            probability = RcpFourPi<double>();
         }
 
         virtual double evaluate_pdf(
@@ -167,7 +167,7 @@ namespace
             const Vector3d&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
-            return RcpFourPi;
+            return RcpFourPi<double>();
         }
 
       private:
@@ -184,7 +184,7 @@ namespace
         {
             // Compute the texture coordinates corresponding to this direction.
             const double d = sqrt(square(direction[0]) + square(direction[1]));
-            const double r = (0.5 / Pi) * acos(direction[2]) / d;
+            const double r = RcpTwoPi<double>() * acos(direction[2]) / d;
             const Vector2f uv(
                 0.5f + static_cast<float>(direction[0] * r),
                 0.5f + static_cast<float>(direction[1] * r));

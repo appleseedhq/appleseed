@@ -244,7 +244,7 @@ namespace
 
             value = m_values.m_irradiance;
 
-            probability = 1.0 / (Pi * disk_radius * disk_radius);
+            probability = 1.0 / (Pi<double>() * disk_radius * disk_radius);
         }
     };
 }

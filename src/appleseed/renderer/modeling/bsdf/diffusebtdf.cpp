@@ -125,10 +125,10 @@ namespace
 
             // Compute the BRDF value.
             sample.m_value = values->m_transmittance;
-            sample.m_value *= static_cast<float>(values->m_transmittance_multiplier * RcpPi);
+            sample.m_value *= static_cast<float>(values->m_transmittance_multiplier * RcpPi<double>());
 
             // Compute the probability density of the sampled direction.
-            sample.m_probability = abs(wi.y) * RcpPi;
+            sample.m_probability = abs(wi.y) * RcpPi<double>();
             assert(sample.m_probability > 0.0);
 
             // Set the scattering mode.
@@ -160,10 +160,10 @@ namespace
             {
                 // Compute the BRDF value.
                 value = values->m_transmittance;
-                value *= static_cast<float>(values->m_transmittance_multiplier * RcpPi);
+                value *= static_cast<float>(values->m_transmittance_multiplier * RcpPi<double>());
 
                 // Return the probability density of the sampled direction.
-                return abs(cos_in) * RcpPi;
+                return abs(cos_in) * RcpPi<double>();
             }
             else
             {
@@ -191,7 +191,7 @@ namespace
             const double cos_on = dot(outgoing, n);
 
             if (cos_in * cos_on < 0.0)
-                return abs(cos_in) * RcpPi;
+                return abs(cos_in) * RcpPi<double>();
             else
             {
                 // No transmission in the same hemisphere as outgoing.

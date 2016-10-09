@@ -43,24 +43,24 @@ TEST_SUITE(Foundation_Math_Scalar)
 {
     TEST_CASE(DegToRad)
     {
-        EXPECT_FEQ(0.0,      deg_to_rad(0.0));
-        EXPECT_FEQ(Pi / 4.0, deg_to_rad(45.0));
-        EXPECT_FEQ(Pi,       deg_to_rad(180.0));
-        EXPECT_FEQ(2.0 * Pi, deg_to_rad(360.0));
+        EXPECT_FEQ(0.0,                deg_to_rad(0.0));
+        EXPECT_FEQ(Pi<double>() / 4.0, deg_to_rad(45.0));
+        EXPECT_FEQ(Pi<double>(),       deg_to_rad(180.0));
+        EXPECT_FEQ(2.0 * Pi<double>(), deg_to_rad(360.0));
 
-        EXPECT_FEQ(static_cast<float>(Pi / 4.0), deg_to_rad(45.0f));
-        EXPECT_FEQ_EPS(static_cast<long double>(Pi / 4.0), deg_to_rad(45.0L), 1.0e-14L);
+        EXPECT_FEQ(static_cast<float>(Pi<double>() / 4.0), deg_to_rad(45.0f));
+        EXPECT_FEQ_EPS(static_cast<long double>(Pi<double>() / 4.0), deg_to_rad(45.0L), 1.0e-14L);
     }
 
     TEST_CASE(RadToDeg)
     {
-        EXPECT_FEQ(0.0,      rad_to_deg(0.0));
-        EXPECT_FEQ(45.0,     rad_to_deg(Pi / 4.0));
-        EXPECT_FEQ(180.0,    rad_to_deg(Pi));
-        EXPECT_FEQ(360.0,    rad_to_deg(2.0 * Pi));
+        EXPECT_FEQ(0.0,   rad_to_deg(0.0));
+        EXPECT_FEQ(45.0,  rad_to_deg(Pi<double>() / 4.0));
+        EXPECT_FEQ(180.0, rad_to_deg(Pi<double>()));
+        EXPECT_FEQ(360.0, rad_to_deg(2.0 * Pi<double>()));
 
-        EXPECT_FEQ(45.0f, rad_to_deg(static_cast<float>(Pi / 4.0)));
-        EXPECT_FEQ_EPS(45.0L, rad_to_deg(static_cast<long double>(Pi / 4.0)), 1.0e-14L);
+        EXPECT_FEQ(45.0f, rad_to_deg(static_cast<float>(Pi<double>() / 4.0)));
+        EXPECT_FEQ_EPS(45.0L, rad_to_deg(static_cast<long double>(Pi<double>() / 4.0)), 1.0e-14L);
     }
 
     TEST_CASE(PowInt)

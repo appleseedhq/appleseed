@@ -621,7 +621,7 @@ namespace
                 if (incoming_prob != BSDF::DiracDelta && !last_vertex)
                 {
                     const double cos_in = abs(dot(incoming, vertex.m_incoming_point->get_shading_normal()));
-                    const double bsdf_prob = cos_in * RcpPi;
+                    const double bsdf_prob = cos_in * RcpPi<double>();
                     weight *= mis_power2(incoming_prob, bsdf_prob);
                 }
 

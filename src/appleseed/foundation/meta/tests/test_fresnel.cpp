@@ -243,7 +243,7 @@ TEST_SUITE(Foundation_Math_Fresnel)
             }
 
             const double value = reflectance * cos_theta_i;
-            const double pdf = cos_theta_i * RcpPi;
+            const double pdf = cos_theta_i * RcpPi<double>();
 
             integral += value / pdf;
         }
@@ -252,7 +252,7 @@ TEST_SUITE(Foundation_Math_Fresnel)
         // and we should divide by 2 * Pi, or we are just computing the integral, in
         // which case we shouldn't divide at all. In any case, this allows to match
         // the polynomial approximation perfectly.
-        integral *= RcpPi;
+        integral *= RcpPi<double>();
 
         return integral / SampleCount;
     }

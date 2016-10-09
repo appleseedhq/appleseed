@@ -104,7 +104,7 @@ class MDF
         T&      cos_phi,
         T&      sin_phi)
     {
-        const T phi = T(TwoPi) * s;
+        const T phi = TwoPi<T>() * s;
         cos_phi = std::cos(phi);
         sin_phi = std::sin(phi);
     }
@@ -117,8 +117,8 @@ class MDF
         T&      sin_phi)
     {
         Vector<T, 2> sin_cos_phi(
-            std::cos(T(TwoPi) * s) * alpha_x,
-            std::sin(T(TwoPi) * s) * alpha_y);
+            std::cos(TwoPi<T>() * s) * alpha_x,
+            std::sin(TwoPi<T>() * s) * alpha_y);
         sin_cos_phi = normalize(sin_cos_phi);
         cos_phi = sin_cos_phi[0];
         sin_phi = sin_cos_phi[1];
@@ -263,7 +263,7 @@ class BlinnMDF
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
-        return (alpha_x + T(2.0)) * T(RcpTwoPi) * std::pow(MDF<T>::cos_theta(h), alpha_x);
+        return (alpha_x + T(2.0)) * RcpTwoPi<T>() * std::pow(MDF<T>::cos_theta(h), alpha_x);
     }
 
     virtual T G(
@@ -374,7 +374,7 @@ class BeckmannMDF
             alpha_x,
             alpha_y);
 
-        return std::exp(-tan_theta_2 * A) / (T(Pi) * alpha_x * alpha_y * cos_theta_4);
+        return std::exp(-tan_theta_2 * A) / (Pi<T>() * alpha_x * alpha_y * cos_theta_4);
     }
 
     virtual T G(
@@ -457,7 +457,7 @@ class BeckmannMDF
         // solve y = 1 + b + K * (1 - b * b).
 
         const T c = erf(cot_theta);
-        const T K = tan_theta / std::sqrt(Pi);
+        const T K = tan_theta / SqrtPi<T>();
         const T y_approx = s[0] * (T(1.0) + c + K * (1 - c * c));
         const T y_exact  = s[0] * (T(1.0) + c + K * std::exp(-square(cot_theta)));
         T b = K > T(0.0)
@@ -601,7 +601,7 @@ class GGXMDF
         const T cos_theta = MDF<T>::cos_theta(h);
 
         if (cos_theta == T(0.0))
-            return square(alpha_x) * T(RcpPi);
+            return square(alpha_x) * RcpPi<T>();
 
         const T cos_theta_2 = square(cos_theta);
         const T cos_theta_4 = square(cos_theta_2);
@@ -615,7 +615,7 @@ class GGXMDF
                 alpha_y);
 
         const T tmp = T(1.0) + tan_theta_2 * A;
-        return T(1.0) / (T(Pi) * alpha_x * alpha_y * cos_theta_4 * square(tmp));
+        return T(1.0) / (Pi<T>() * alpha_x * alpha_y * cos_theta_4 * square(tmp));
     }
 
     virtual T G(
@@ -688,8 +688,8 @@ class GGXMDF
         if (sin_theta < T(1.0e-4))
         {
             const T r = std::sqrt(s[0] / (T(1.0) - s[0]));
-            const T cos_phi = std::cos(TwoPi * s[1]);
-            const T sin_phi = std::sin(TwoPi * s[1]);
+            const T cos_phi = std::cos(TwoPi<T>() * s[1]);
+            const T sin_phi = std::sin(TwoPi<T>() * s[1]);
             return Vector<T, 2>(r * cos_phi, r * sin_phi);
         }
 
@@ -773,7 +773,7 @@ class WardMDF
         const T tan_alpha_2 = (T(1.0) - cos_theta_2) / cos_theta_2;
 
         const T alpha_x2 = square(alpha_x);
-        return std::exp(-tan_alpha_2 / alpha_x2) / (alpha_x2 * T(Pi) * cos_theta_3);
+        return std::exp(-tan_alpha_2 / alpha_x2) / (alpha_x2 * Pi<T>() * cos_theta_3);
     }
 
     virtual T G(
@@ -814,7 +814,7 @@ class WardMDF
         const T tan_alpha_2 = square(alpha_x) * (-std::log(T(1.0) - s[0]));
         const T cos_alpha = T(1.0) / std::sqrt(T(1.0) + tan_alpha_2);
         const T sin_alpha = cos_alpha * std::sqrt(tan_alpha_2);
-        const T phi = TwoPi * s[1];
+        const T phi = TwoPi<T>() * s[1];
 
         return Vector<T, 3>::make_unit_vector(cos_alpha, sin_alpha, std::cos(phi), std::sin(phi));
     }
@@ -849,7 +849,7 @@ class BerryMDF
     {
         const T alpha_x_2 = square(alpha_x);
         const T cos_theta_2 = square(MDF<T>::cos_theta(h));
-        const T a = (alpha_x_2 - T(1.0)) / (T(Pi) * std::log(alpha_x_2));
+        const T a = (alpha_x_2 - T(1.0)) / (Pi<T>() * std::log(alpha_x_2));
         const T b = (T(1.0) / (T(1.0) + (alpha_x_2 - T(1.0)) * cos_theta_2));
         return a * b;
     }

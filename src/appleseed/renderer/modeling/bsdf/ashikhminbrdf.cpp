@@ -163,7 +163,7 @@ namespace
 
                 if (sval.m_isotropic)
                 {
-                    const double phi = s[0] * TwoPi;
+                    const double phi = s[0] * TwoPi<double>();
 
                     cos_phi = cos(phi);
                     sin_phi = sin(phi);
@@ -212,7 +212,7 @@ namespace
             sample.m_value *= static_cast<float>(a * b);
 
             // Evaluate the PDF of the diffuse component.
-            const double pdf_diffuse = cos_in * RcpPi;
+            const double pdf_diffuse = cos_in * RcpPi<double>();
             assert(pdf_diffuse > 0.0);
             double probability = rval.m_pd * pdf_diffuse;
 
@@ -285,7 +285,7 @@ namespace
                 value += diffuse;
 
                 // Evaluate the PDF of the diffuse component.
-                const double pdf_diffuse = cos_in * RcpPi;
+                const double pdf_diffuse = cos_in * RcpPi<double>();
                 assert(pdf_diffuse >= 0.0);
                 probability += rval.m_pd * pdf_diffuse;
             }
@@ -352,7 +352,7 @@ namespace
             if (ScatteringMode::has_diffuse(modes))
             {
                 // Evaluate the PDF of the diffuse component.
-                const double pdf_diffuse = cos_in * RcpPi;
+                const double pdf_diffuse = cos_in * RcpPi<double>();
                 assert(pdf_diffuse >= 0.0);
                 probability += pdf_diffuse;
             }
@@ -429,7 +429,7 @@ namespace
             rval.m_kd.set(1.0f);
             rval.m_kd -= rval.m_scaled_rg;
             rval.m_kd *= scaled_rd;
-            rval.m_kd *= static_cast<float>(28.0 / (23.0 * Pi));
+            rval.m_kd *= 28.0f / (23.0f * Pi<float>());
             assert(min_value(rval.m_kd) >= 0.0f);
 
             return true;
@@ -441,7 +441,7 @@ namespace
             sval.m_isotropic = feq(nu, nv, 1.0e-6);
 
             // Precompute constant factor of glossy component (equations 4 and 6).
-            sval.m_kg = sqrt((nu + 1.0) * (nv + 1.0)) / (8.0 * Pi);
+            sval.m_kg = sqrt((nu + 1.0) * (nv + 1.0)) / (8.0 * Pi<double>());
 
             if (!sval.m_isotropic)
             {
@@ -457,26 +457,26 @@ namespace
             if (s < 0.25)
             {
                 // First quadrant.
-                const double b = tan(HalfPi * (4.0 * s));
+                const double b = tan(HalfPi<double>() * (4.0 * s));
                 return atan(k * b);
             }
             else if (s < 0.5)
             {
                 // Second quadrant.
-                const double b = tan(HalfPi * (4.0 * s - 1.0));
-                return atan(k * b) + HalfPi;
+                const double b = tan(HalfPi<double>() * (4.0 * s - 1.0));
+                return atan(k * b) + HalfPi<double>();
             }
             else if (s < 0.75)
             {
                 // Third quadrant.
-                const double b = tan(HalfPi * (4.0 * s - 2.0));
-                return atan(k * b) + Pi;
+                const double b = tan(HalfPi<double>() * (4.0 * s - 2.0));
+                return atan(k * b) + Pi<double>();
             }
             else
             {
                 // Fourth quadrant.
-                const double b = tan(HalfPi * (4.0 * s - 3.0));
-                return atan(k * b) + Pi + HalfPi;
+                const double b = tan(HalfPi<double>() * (4.0 * s - 3.0));
+                return atan(k * b) + Pi<double>() + HalfPi<double>();
             }
         }
     };

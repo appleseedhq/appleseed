@@ -33,6 +33,7 @@
 //
 // Quick reminder about Visual Studio versions:
 //
+//   Visual Studio 2015   MSVC++ 14.0   _MSC_VER == 1900
 //   Visual Studio 2013   MSVC++ 12.0   _MSC_VER == 1800
 //   Visual Studio 2012   MSVC++ 11.0   _MSC_VER == 1700
 //   Visual Studio 2010   MSVC++ 10.0   _MSC_VER == 1600
@@ -175,6 +176,24 @@ namespace foundation
     #define APPLESEED_OVERRIDE override
 
 // Other compilers: the APPLESEED_OVERRIDE qualifier has no effect.
+#else
+    #define APPLESEED_OVERRIDE
+#endif
+
+
+//
+// Define the APPLESEED_FINAL qualifier as a synonym for the 'final' keyword in C++11.
+//
+
+// Visual C++: supported since Visual Studio 2012.
+#if _MSC_VER >= 1700
+    #define APPLESEED_FINAL final
+
+// gcc: supported since gcc 4.7 when C++11 mode is enabled.
+#elif defined __GNUC__ && __cplusplus >= 201103
+    #define APPLESEED_FINAL final
+
+// Other compilers: the APPLESEED_FINAL qualifier has no effect.
 #else
     #define APPLESEED_OVERRIDE
 #endif

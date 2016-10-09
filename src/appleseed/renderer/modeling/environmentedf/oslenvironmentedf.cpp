@@ -126,7 +126,7 @@ namespace
             double&                 probability) const APPLESEED_OVERRIDE
         {
             const Vector3d local_outgoing = sample_sphere_uniform(s);
-            probability = RcpFourPi;
+            probability = RcpFourPi<double>();
 
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
@@ -174,7 +174,7 @@ namespace
             const Vector3d&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
-            return RcpFourPi;
+            return RcpFourPi<double>();
         }
 
       private:

@@ -140,11 +140,11 @@ namespace
             {
                 // Revert to Lambertian when roughness is zero.
                 sample.m_value = values->m_reflectance;
-                sample.m_value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
+                sample.m_value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi<double>());
             }
 
             // Compute the probability density of the sampled direction.
-            sample.m_probability = wi.y * RcpPi;
+            sample.m_probability = wi.y * RcpPi<double>();
             assert(sample.m_probability > 0.0);
 
             // Set the scattering mode.
@@ -198,11 +198,11 @@ namespace
             {
                 // Revert to Lambertian when roughness is zero.
                 value = values->m_reflectance;
-                value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
+                value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi<double>());
             }
 
             // Return the probability density of the sampled direction.
-            return cos_in * RcpPi;
+            return cos_in * RcpPi<double>();
         }
 
         APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
@@ -231,7 +231,7 @@ namespace
                     return 0.0;
             }
 
-            return cos_in * RcpPi;
+            return cos_in * RcpPi<double>();
         }
 
       private:
@@ -249,7 +249,7 @@ namespace
             Spectrum&           value)
         {
             const double sigma2 = square(roughness);
-            const double theta_r = min(acos(cos_on), HalfPi);
+            const double theta_r = min(acos(cos_on), HalfPi<double>());
             const double theta_i = acos(cos_in);
             const double alpha = max(theta_r, theta_i);
             const double beta = min(theta_r, theta_i);
@@ -270,21 +270,21 @@ namespace
                 * sigma2_009
                 * (delta_cos_phi >= 0.0
                       ? sin(alpha)
-                      : sin(alpha) - pow_int<3>(2.0 * beta * RcpPi));
+                      : sin(alpha) - pow_int<3>(2.0 * beta * RcpPi<double>()));
             assert(C2 >= 0.0);
 
             // Compute C3 coefficient.
             const double C3 =
                   0.125
                 * sigma2_009
-                * square(4.0 * alpha * beta * RcpPiSquare);
+                * square(4.0 * alpha * beta * RcpPiSquare<double>());
             assert(C3 >= 0.0);
 
             // Direct illumination component.
             value = reflectance;
             value *=
                 static_cast<float>(
-                    reflectance_multiplier * RcpPi * (
+                    reflectance_multiplier * RcpPi<double>() * (
                           C1
                         + delta_cos_phi * C2 * tan(beta)
                         + (1.0 - abs(delta_cos_phi)) * C3 * tan(0.5 * (alpha + beta))));
@@ -295,10 +295,10 @@ namespace
             r2 *=
                 static_cast<float>(
                       0.17
-                    * square(reflectance_multiplier) * RcpPi
+                    * square(reflectance_multiplier) * RcpPi<double>()
                     * cos_in
                     * sigma2 / (sigma2 + 0.13)
-                    * (1.0 - delta_cos_phi * square(2.0 * beta * RcpPi)));
+                    * (1.0 - delta_cos_phi * square(2.0 * beta * RcpPi<double>())));
             value += r2;
 
             assert(min_value(value) >= 0.0f);

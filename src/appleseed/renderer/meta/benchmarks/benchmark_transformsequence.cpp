@@ -61,7 +61,7 @@ BENCHMARK_SUITE(Renderer_Utility_TransformSequence)
             m_sequence.set_transform(
                 1.0,
                 Transformd::from_local_to_parent(
-                    Matrix4d::make_rotation(axis, Pi - Pi / 8) *
+                    Matrix4d::make_rotation(axis, Pi<double>() - Pi<double>() / 8) *
                     Matrix4d::make_scaling(Vector3d(0.2))));
             m_sequence.prepare();
         }

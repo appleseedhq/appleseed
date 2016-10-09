@@ -109,7 +109,7 @@ namespace
         GVector3 evaluate(const float u, const float v) const
         {
             const float r = u * 2.0f * m_radius;
-            const float theta = static_cast<float>(TwoPi) * v;
+            const float theta = TwoPi<float>() * v;
             return GVector3(r * cos(theta), 0.0f, r * sin(theta));
         }
 
@@ -141,7 +141,7 @@ namespace
         ParametricSphere(const float radius, const size_t resolution_u)
           : m_radius(radius)
           , m_h(1.0f / resolution_u * 4.0f)
-          , m_transform(Matrix4f::make_rotation_x(static_cast<float>(HalfPi)))
+          , m_transform(Matrix4f::make_rotation_x(HalfPi<float>()))
         {
         }
 
@@ -152,8 +152,8 @@ namespace
 
         GVector3 evaluate(const float u, const float v) const
         {
-            const float theta = static_cast<float>(TwoPi) * (1.0f - u);
-            const float phi = static_cast<float>(Pi) * v;
+            const float theta = TwoPi<float>() * (1.0f - u);
+            const float phi = Pi<float>() * v;
             const float sin_phi = sin(phi);
 
             return GVector3(
@@ -201,7 +201,7 @@ namespace
           , m_minor_radius(minor_radius)
           , m_hu(1.0f / (resolution_u * 4.0f))
           , m_hv(1.0f / (resolution_v * 4.0f))
-          , m_transform(Matrix4f::make_rotation_x(static_cast<float>(HalfPi)))
+          , m_transform(Matrix4f::make_rotation_x(HalfPi<float>()))
         {
         }
 
@@ -212,8 +212,8 @@ namespace
 
         GVector3 evaluate(const float u, const float v) const
         {
-            const float theta = static_cast<float>(TwoPi) * (1.0f - u);
-            const float phi = static_cast<float>(TwoPi) * (1.0f - v);
+            const float theta = TwoPi<float>() * (1.0f - u);
+            const float phi = TwoPi<float>() * (1.0f - v);
             const float cos_phi = cos(phi);
 
             return GVector3(

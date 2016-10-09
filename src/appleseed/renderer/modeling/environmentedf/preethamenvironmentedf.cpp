@@ -165,7 +165,7 @@ namespace
             double&                 probability) const APPLESEED_OVERRIDE
         {
             const Vector3d local_outgoing = sample_hemisphere_cosine(s);
-            probability = local_outgoing.y * RcpPi;
+            probability = local_outgoing.y * RcpPi<double>();
 
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
@@ -213,7 +213,7 @@ namespace
                 compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
 
-            probability = local_outgoing.y > 0.0 ? local_outgoing.y * RcpPi : 0.0;
+            probability = local_outgoing.y > 0.0 ? local_outgoing.y * RcpPi<double>() : 0.0;
         }
 
         virtual double evaluate_pdf(
@@ -230,7 +230,7 @@ namespace
                 parent_to_local[ 5] * outgoing.y +
                 parent_to_local[ 6] * outgoing.z;
 
-            return local_outgoing_y > 0.0 ? local_outgoing_y * RcpPi : 0.0;
+            return local_outgoing_y > 0.0 ? local_outgoing_y * RcpPi<double>() : 0.0;
         }
 
       private:
@@ -304,7 +304,7 @@ namespace
             const double            turbidity,
             const double            sun_theta)
         {
-            const double chi = ((4.0 / 9.0) - turbidity / 120.0) * (Pi - 2.0 * sun_theta);
+            const double chi = ((4.0 / 9.0) - turbidity / 120.0) * (Pi<double>() - 2.0 * sun_theta);
             return 1000.0 * ((4.0453 * turbidity - 4.9710) * tan(chi) - 0.2155 * turbidity + 2.4192);
         }
 
@@ -449,7 +449,7 @@ namespace
                   luminance                                         // start with computed luminance
                 / sum_value(value * Spectrum(XYZCMFCIE19312Deg[1])) // normalize to unit luminance
                 * (1.0f / 683.0f)                                   // convert lumens to Watts
-                * static_cast<float>(RcpPi);                        // convert irradiance to radiance
+                * RcpPi<float>();                                   // convert irradiance to radiance
         }
 
         Vector3d shift(Vector3d v) const

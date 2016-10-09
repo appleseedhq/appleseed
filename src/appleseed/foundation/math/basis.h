@@ -66,6 +66,10 @@ class Basis3
         const VectorType&   u,                      // must be unit-length
         const VectorType&   v);                     // must be unit-length
 
+    // Construct a basis from another basis of a different type.
+    template <typename U>
+    explicit Basis3(const Basis3<U>& rhs);
+
     // Rebuild the basis for a given unit-length normal vector.
     void build(const VectorType& normal);           // normal must be unit-length
 
@@ -92,6 +96,9 @@ class Basis3
     const VectorType& get_tangent_v() const;
 
   private:
+    template <typename U>
+    friend class Basis3;
+
     VectorType m_n, m_u, m_v;
 
 #ifndef NDEBUG
@@ -139,6 +146,15 @@ inline Basis3<T>::Basis3(
     const VectorType&   v)
 {
     build(normal, u, v);
+}
+
+template <typename T>
+template <typename U>
+inline Basis3<T>::Basis3(const Basis3<U>& rhs)
+  : m_n(rhs.m_n)
+  , m_u(rhs.m_u)
+  , m_v(rhs.m_v)
+{
 }
 
 template <typename T>

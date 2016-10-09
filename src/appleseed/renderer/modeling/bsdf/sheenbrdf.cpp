@@ -121,7 +121,7 @@ namespace
             sample.m_value = values->m_reflectance;
             sample.m_value *= static_cast<float>(fh * values->m_reflectance_multiplier);
 
-            sample.m_probability = RcpTwoPi;
+            sample.m_probability = RcpTwoPi<double>();
 
             sample.m_mode = ScatteringMode::Diffuse;
             sample.m_incoming = Dual3d(incoming);
@@ -158,7 +158,7 @@ namespace
             value = values->m_reflectance;
             value *= static_cast<float>(fh * values->m_reflectance_multiplier);
 
-            return RcpTwoPi;
+            return RcpTwoPi<double>();
         }
 
         APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
@@ -179,7 +179,7 @@ namespace
             if (cos_in < 0.0 || cos_on < 0.0)
                 return 0.0;
 
-            return RcpTwoPi;
+            return RcpTwoPi<double>();
         }
 
       private:

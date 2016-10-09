@@ -189,7 +189,7 @@ namespace
                 normalized_diffusion_sample(s[1], l, values->m_s[channel]);
 
             // Sample an angle.
-            const double phi = TwoPi * s[2];
+            const double phi = TwoPi<double>() * s[2];
 
             sample.m_eta = values->m_eta;
             sample.m_channel = channel;
@@ -251,7 +251,7 @@ namespace
             }
 
             // PDF of the sampled angle.
-            const double pdf_angle = RcpTwoPi;
+            const double pdf_angle = RcpTwoPi<double>();
 
             // Compute and return the final PDF.
             return pdf_radius * pdf_angle;

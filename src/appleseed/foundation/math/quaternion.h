@@ -157,6 +157,10 @@ template <typename T> Quaternion<T> slerp(const Quaternion<T>& p, const Quaterni
 
 // Approximate but faster spherical linear interpolation between two unit-length quaternions.
 // See http://zeuxcg.org/2015/07/23/approximating-slerp/ for derivation and error analysis.
+// Another interesting reference:
+//   Slerping Clock Cycles
+//   J.M.P. van Waveren
+//   http://fabiensanglard.net/doom3_documentation/37725-293747_293747.pdf
 template <typename T> Quaternion<T> fast_slerp(const Quaternion<T>& p, const Quaternion<T>& q, const T t);
 
 // Rotation of a vector by a quaternion.

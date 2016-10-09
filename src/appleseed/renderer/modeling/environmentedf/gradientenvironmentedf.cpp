@@ -121,7 +121,7 @@ namespace
             double&                 probability) const APPLESEED_OVERRIDE
         {
             const Vector3d local_outgoing = sample_sphere_uniform(s);
-            probability = RcpFourPi;
+            probability = RcpFourPi<double>();
 
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
@@ -167,7 +167,7 @@ namespace
                 parent_to_local[ 6] * outgoing.z;
 
             compute_gradient(local_outgoing_y, value);
-            probability = RcpFourPi;
+            probability = RcpFourPi<double>();
         }
 
         virtual double evaluate_pdf(
@@ -175,7 +175,7 @@ namespace
             const Vector3d&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
-            return RcpFourPi;
+            return RcpFourPi<double>();
         }
 
       private:
@@ -191,7 +191,7 @@ namespace
         {
             // Compute the blending factor between the horizon and zenith colors.
             const double angle = acos(abs(y));
-            const double blend = angle * (1.0 / HalfPi);
+            const double blend = angle * (1.0 / HalfPi<double>());
 
             // Blend the horizon and zenith radiances.
             const float k = static_cast<float>(blend);

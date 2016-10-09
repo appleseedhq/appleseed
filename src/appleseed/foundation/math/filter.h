@@ -463,7 +463,7 @@ inline T LanczosFilter2<T>::evaluate(const T x, const T y) const
 template <typename T>
 APPLESEED_FORCE_INLINE T LanczosFilter2<T>::lanczos(const T x, const T rcp_tau)
 {
-    const T theta = T(Pi) * x;
+    const T theta = Pi<T>() * x;
     return theta == T(0.0) ? T(1.0) : sinc(theta * rcp_tau) * sinc(theta);
 }
 
@@ -497,9 +497,9 @@ APPLESEED_FORCE_INLINE T BlackmanHarrisFilter2<T>::blackman(const T x)
 {
     return
           T(0.35875)
-        - T(0.48829) * std::cos(T(2.0 * Pi) * x)
-        + T(0.14128) * std::cos(T(4.0 * Pi) * x)
-        - T(0.01174) * std::cos(T(6.0 * Pi) * x);                   // original coefficient is 0.01168, modified to ensure 0 at borders
+        - T(0.48829) * std::cos((T(2.0) * Pi<T>()) * x)
+        + T(0.14128) * std::cos((T(4.0) * Pi<T>()) * x)
+        - T(0.01174) * std::cos((T(6.0) * Pi<T>()) * x);                // original coefficient is 0.01168, modified to ensure 0 at borders
 }
 
 
@@ -526,9 +526,9 @@ APPLESEED_FORCE_INLINE T FastBlackmanHarrisFilter2<T>::blackman(const T x)
 {
     return
           T(0.35875)
-        - T(0.48829) * fast_cos_full_positive(T(2.0 * Pi) * x)
-        + T(0.14128) * fast_cos_full_positive(T(4.0 * Pi) * x)
-        - T(0.01174) * fast_cos_full_positive(T(6.0 * Pi) * x);     // original coefficient is 0.01168, modified to ensure 0 at borders
+        - T(0.48829) * fast_cos_full_positive((T(2.0) * Pi<T>()) * x)
+        + T(0.14128) * fast_cos_full_positive((T(4.0) * Pi<T>()) * x)
+        - T(0.01174) * fast_cos_full_positive((T(6.0) * Pi<T>()) * x);  // original coefficient is 0.01168, modified to ensure 0 at borders
 }
 
 

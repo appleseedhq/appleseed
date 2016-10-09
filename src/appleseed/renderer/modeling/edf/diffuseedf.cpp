@@ -119,7 +119,7 @@ namespace
             value = values->m_radiance;
             value *= static_cast<float>(values->m_radiance_multiplier);
 
-            probability = wo.y * RcpPi;
+            probability = wo.y * RcpPi<double>();
             assert(probability > 0.0);
         }
 
@@ -172,7 +172,7 @@ namespace
             value = values->m_radiance;
             value *= static_cast<float>(values->m_radiance_multiplier);
 
-            probability = cos_on * RcpPi;
+            probability = cos_on * RcpPi<double>();
         }
 
         virtual double evaluate_pdf(
@@ -190,7 +190,7 @@ namespace
             if (cos_on <= 0.0)
                 return 0.0;
 
-            return cos_on * RcpPi;
+            return cos_on * RcpPi<double>();
         }
 
       private:

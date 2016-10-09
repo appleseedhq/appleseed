@@ -117,7 +117,7 @@ namespace
         {
             outgoing = sample_sphere_uniform(s);
             value = m_values.m_radiance;
-            probability = RcpFourPi;
+            probability = RcpFourPi<double>();
         }
 
         virtual void evaluate(
@@ -139,7 +139,7 @@ namespace
         {
             assert(is_normalized(outgoing));
             value = m_values.m_radiance;
-            probability = RcpFourPi;
+            probability = RcpFourPi<double>();
         }
 
         virtual double evaluate_pdf(
@@ -147,7 +147,7 @@ namespace
             const Vector3d&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
-            return RcpFourPi;
+            return RcpFourPi<double>();
         }
 
       private:

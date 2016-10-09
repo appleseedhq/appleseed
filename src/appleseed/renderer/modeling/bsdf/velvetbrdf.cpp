@@ -133,7 +133,7 @@ namespace
                 sample.m_value);
 
             // Compute the probability density of the sampled direction.
-            sample.m_probability = RcpTwoPi;
+            sample.m_probability = RcpTwoPi<double>();
 
             // Set the scattering mode.
             sample.m_mode = ScatteringMode::Glossy;
@@ -175,7 +175,7 @@ namespace
                 value);
 
             // Return the probability density of the sampled direction.
-            return RcpTwoPi;
+            return RcpTwoPi<double>();
         }
 
         APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
@@ -195,7 +195,7 @@ namespace
             if (cos_in < 0.0)
                 return 0.0;
 
-            return RcpTwoPi;
+            return RcpTwoPi<double>();
         }
 
       private:
@@ -235,7 +235,7 @@ namespace
             const double cot2 = cos_nh2 / sin2;
             const double m2 = max(square(roughness), 0.000001);
             const double A = 4.0;
-            const double cnorm = 1.0 / (Pi * (1 + A * m2));
+            const double cnorm = 1.0 / (Pi<double>() * (1 + A * m2));
             return cnorm * (1.0 + (A * exp(-cot2 / m2) / square(sin2)));
         }
 

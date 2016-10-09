@@ -210,7 +210,7 @@ namespace
             m_scene_center = Vector3d(scene_data.m_center);
             m_scene_radius = scene_data.m_radius;
             m_safe_scene_diameter = scene_data.m_safe_diameter;
-            m_disk_point_prob = 1.0 / (Pi * m_scene_radius * m_scene_radius);
+            m_disk_point_prob = 1.0 / (Pi<double>() * m_scene_radius * m_scene_radius);
 
             const Camera* camera = scene.get_camera();
             m_shutter_open_time = camera->get_shutter_open_time();

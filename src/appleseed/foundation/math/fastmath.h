@@ -287,8 +287,6 @@ inline float faster_exp(const float p)
 
 inline float fast_sin(const float x)
 {
-    static const float FourOverPi = 1.2732395447351627f;
-    static const float FourOverPiSq = 0.40528473456935109f;
     static const float Q = 0.77633023248007499f;
 
     union { float f; uint32 i; } p = { 0.22308510060189463f };
@@ -298,55 +296,46 @@ inline float fast_sin(const float x)
     vx.i &= 0x7FFFFFFF;
     p.i |= sign;
 
-    const float qpprox = FourOverPi * x - FourOverPiSq * x * vx.f;
+    const float qpprox = FourOverPi<float>() * x - FourOverPiSquare<float>() * x * vx.f;
     return qpprox * (Q + p.f * qpprox);
 }
 
 inline float fast_sin_full(const float x)
 {
-    static const float TwoPi = 6.2831853071795865f;
-    static const float RcpTwoPi = 0.15915494309189534f;
-
-    const int k = static_cast<int>(x * RcpTwoPi);
+    const int k = static_cast<int>(x * RcpTwoPi<float>());
     const float half = (x < 0) ? -0.5f : 0.5f;
-    return fast_sin((half + k) * TwoPi - x);
+    return fast_sin((half + k) * TwoPi<float>() - x);
 }
 
 inline float fast_sin_full_positive(const float x)
 {
     assert(x >= 0.0f);
 
-    static const float TwoPi = 6.2831853071795865f;
-    static const float RcpTwoPi = 0.15915494309189534f;
-
-    const int k = static_cast<int>(x * RcpTwoPi);
-    return fast_sin((0.5f + k) * TwoPi - x);
+    const int k = static_cast<int>(x * RcpTwoPi<float>());
+    return fast_sin((0.5f + k) * TwoPi<float>() - x);
 }
 
 inline float fast_cos(const float x)
 {
-    static const float TwoOverPi = 0.63661977236758134f;
     static const float P = 0.54641335845679634f;
 
     union { float f; uint32 i; } vx = { x };
     vx.i &= 0x7FFFFFFF;
 
-    const float qpprox = 1.0f - TwoOverPi * vx.f;
+    const float qpprox = 1.0f - TwoOverPi<float>() * vx.f;
     return qpprox + P * qpprox * (1.0f - qpprox * qpprox);
 }
 
 inline float fast_cos_full(const float x)
 {
-    static const float HalfPi = 1.5707963267948966f;
-    return fast_sin_full(x + HalfPi);
+    return fast_sin_full(x + HalfPi<float>());
 }
 
 inline float fast_cos_full_positive(const float x)
 {
     assert(x >= 0.0f);
 
-    static const float HalfPi = 1.5707963267948966f;
-    return fast_sin_full_positive(x + HalfPi);
+    return fast_sin_full_positive(x + HalfPi<float>());
 }
 
 inline float fast_sqrt(const float x)
