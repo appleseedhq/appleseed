@@ -300,16 +300,17 @@ void compute_absorption_and_scattering_mfp(
     {
         assert(rd[i] > 0.0f);
         assert(rd[i] < 1.0f);
+        assert(mfp[i] > 0.0f);
 
-        // Find alpha' by numerically inverting Rd(alpha').
-        const double alpha_prime = compute_alpha_prime(rd_fun, rd[i]);
-        assert(alpha_prime > 0.0);
-        assert(alpha_prime < 1.0);
+        // Find alpha by numerically inverting Rd(alpha).
+        const double alpha = compute_alpha_prime(rd_fun, rd[i]);
+        assert(alpha > 0.0);
+        assert(alpha < 1.0);
 
         const double sigma_t = 1.0 / mfp[i];
 
         // Compute scattering coefficient.
-        sigma_s[i] = static_cast<float>(alpha_prime * sigma_t);
+        sigma_s[i] = static_cast<float>(alpha * sigma_t);
 
         // Compute absorption coefficient.
         sigma_a[i] = static_cast<float>(sigma_t - sigma_s[i]);

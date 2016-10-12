@@ -122,7 +122,7 @@ namespace
 
             // Clamp input values.
             clamp_in_place(values->m_reflectance, 0.001f, 0.999f);
-            clamp_low_in_place(values->m_mfp, 1.0e-5f);
+            clamp_low_in_place(values->m_mfp, 1.0e-6f);
 
             // Build a CDF for channel sampling.
 

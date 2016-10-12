@@ -120,8 +120,8 @@ class DipoleBSSRDF
         if (m_inputs.source("sigma_a") == 0 || m_inputs.source("sigma_s") == 0)
         {
             //
-            // Compute sigma_a, sigma_s and sigma_tr from the diffuse surface reflectance
-            // and diffuse mean free path (mfp).
+            // Compute sigma_a, sigma_s and sigma_t from the diffuse surface reflectance
+            // and mean free path (mfp).
             //
 
             make_reflectance_and_mfp_compatible(values->m_reflectance, values->m_mfp);
@@ -132,7 +132,7 @@ class DipoleBSSRDF
 
             // Clamp input values.
             foundation::clamp_in_place(values->m_reflectance, 0.001f, 0.999f);
-            foundation::clamp_low_in_place(values->m_mfp, 1.0e-5f);
+            foundation::clamp_low_in_place(values->m_mfp, 1.0e-6f);
 
             // Compute sigma_a and sigma_s.
             const ComputeRdFun rd_fun(values->m_eta);
@@ -142,31 +142,23 @@ class DipoleBSSRDF
                 values->m_mfp,
                 values->m_sigma_a,
                 values->m_sigma_s);
-
-            effective_extinction_coefficient(
-                values->m_sigma_a,
-                values->m_sigma_s,
-                values->m_g,
-                values->m_sigma_tr);
         }
-        else
-        {
-            //
-            // Compute sigma_tr from sigma_a and sigma_s.
-            //
-            // If you want to use the sigma_a and sigma_s values provided in [1],
-            // and if your scene is modeled in meters, you will need to *multiply*
-            // them by 1000. If your scene is modeled in centimers (e.g. the "size"
-            // of the object is 4 units) then you will need to multiply the sigmas
-            // by 100.
-            //
 
-            effective_extinction_coefficient(
-                values->m_sigma_a,
-                values->m_sigma_s,
-                values->m_g,
-                values->m_sigma_tr);
-        }
+        //
+        // Compute sigma_tr from sigma_a and sigma_s.
+        //
+        // If you want to use the sigma_a and sigma_s values provided in [1],
+        // and if your scene is modeled in meters, you will need to *multiply*
+        // them by 1000. If your scene is modeled in centimers (e.g. the "size"
+        // of the object is 4 units) then you will need to multiply the sigmas
+        // by 100.
+        //
+
+        effective_extinction_coefficient(
+            values->m_sigma_a,
+            values->m_sigma_s,
+            values->m_g,
+            values->m_sigma_tr);
 
         // Precompute some coefficients and build a CDF for channel sampling.
         values->m_alpha_prime.resize(values->m_reflectance.size());
