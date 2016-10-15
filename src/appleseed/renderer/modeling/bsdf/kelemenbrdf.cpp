@@ -220,7 +220,7 @@ namespace
         {
             // Define aliases to match the notations in the paper.
             const Vector3d& V = sample.m_outgoing.get_value();
-            const Vector3d& N = sample.get_shading_normal();
+            const Vector3d& N = sample.m_shading_normal;
 
             // No reflection below the shading surface.
             const double dot_VN = dot(V, N);
@@ -262,7 +262,7 @@ namespace
                 const Vector3d wi = sample_hemisphere_cosine(Vector2d(s[0], s[1]));
 
                 // Transform the incoming direction to parent space.
-                incoming = sample.get_shading_basis().transform_to_parent(wi);
+                incoming = sample.m_shading_basis.transform_to_parent(wi);
 
                 // Compute the halfway vector.
                 H = normalize(incoming + V);
@@ -279,7 +279,7 @@ namespace
                 const Vector3d local_H = m_mdf->sample(Vector2d(s[0], s[1]));
 
                 // Transform the halfway vector to parent space.
-                H = sample.get_shading_basis().transform_to_parent(local_H);
+                H = sample.m_shading_basis.transform_to_parent(local_H);
 
                 dot_HV = dot(H, V);
 

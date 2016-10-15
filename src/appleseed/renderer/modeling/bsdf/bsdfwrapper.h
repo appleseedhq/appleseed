@@ -111,7 +111,7 @@ void BSDFWrapper<BSDFImpl>::sample(
     const bool                          cosine_mult,
     BSDFSample&                         sample) const
 {
-    assert(foundation::is_normalized(sample.get_geometric_normal()));
+    assert(foundation::is_normalized(sample.m_geometric_normal));
     assert(foundation::is_normalized(sample.m_outgoing.get_value()));
 
     BSDFImpl::sample(
@@ -130,14 +130,14 @@ void BSDFWrapper<BSDFImpl>::sample(
         {
             if (adjoint)
             {
-                const double cos_on = std::abs(foundation::dot(sample.m_outgoing.get_value(), sample.get_shading_normal()));
-                const double cos_ig = std::abs(foundation::dot(sample.m_incoming.get_value(), sample.get_geometric_normal()));
-                const double cos_og = std::abs(foundation::dot(sample.m_outgoing.get_value(), sample.get_geometric_normal()));
+                const double cos_on = std::abs(foundation::dot(sample.m_outgoing.get_value(), sample.m_shading_normal));
+                const double cos_ig = std::abs(foundation::dot(sample.m_incoming.get_value(), sample.m_geometric_normal));
+                const double cos_og = std::abs(foundation::dot(sample.m_outgoing.get_value(), sample.m_geometric_normal));
                 sample.m_value *= static_cast<float>(cos_on * cos_ig / cos_og);
             }
             else
             {
-                const double cos_in = std::abs(foundation::dot(sample.m_incoming.get_value(), sample.get_shading_normal()));
+                const double cos_in = std::abs(foundation::dot(sample.m_incoming.get_value(), sample.m_shading_normal));
                 sample.m_value *= static_cast<float>(cos_in);
             }
         }

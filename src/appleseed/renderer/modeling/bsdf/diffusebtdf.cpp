@@ -109,7 +109,7 @@ namespace
             BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
             const InputValues* values = static_cast<const InputValues*>(data);
-            const BackfacingPolicy backfacing_policy(sample.get_shading_basis(), values->m_backfacing);
+            const BackfacingPolicy backfacing_policy(sample.m_shading_basis, values->m_backfacing);
             const Vector3d wo = backfacing_policy.transform_to_local(sample.m_outgoing.get_value());
 
             // Compute the incoming direction in local space.

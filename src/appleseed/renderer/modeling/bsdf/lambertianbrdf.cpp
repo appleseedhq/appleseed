@@ -101,7 +101,7 @@ namespace
             const Vector3d wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
-            sample.m_incoming = Dual3d(sample.get_shading_basis().transform_to_parent(wi));
+            sample.m_incoming = Dual3d(sample.m_shading_basis.transform_to_parent(wi));
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);

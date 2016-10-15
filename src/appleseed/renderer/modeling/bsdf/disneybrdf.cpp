@@ -164,12 +164,12 @@ namespace
             const Vector3d wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
-            const Vector3d incoming = sample.get_shading_basis().transform_to_parent(wi);
+            const Vector3d incoming = sample.m_shading_basis.transform_to_parent(wi);
 
             sample.m_probability =
                 evaluate(
                     values,
-                    sample.get_shading_basis(),
+                    sample.m_shading_basis,
                     sample.m_outgoing.get_value(),
                     incoming,
                     sample.m_value);
@@ -252,12 +252,12 @@ namespace
             const Vector3d wi = sample_hemisphere_uniform(s);
 
             // Transform the incoming direction to parent space.
-            const Vector3d incoming = sample.get_shading_basis().transform_to_parent(wi);
+            const Vector3d incoming = sample.m_shading_basis.transform_to_parent(wi);
 
             sample.m_probability =
                 evaluate(
                     values,
-                    sample.get_shading_basis(),
+                    sample.m_shading_basis,
                     sample.m_outgoing.get_value(),
                     incoming,
                     sample.m_value);
@@ -393,7 +393,7 @@ namespace
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
             // No reflection below the shading surface.
-            const Vector3d& n = sample.get_shading_basis().get_normal();
+            const Vector3d& n = sample.m_shading_basis.get_normal();
             const double cos_on = dot(sample.m_outgoing.get_value(), n);
             if (cos_on < 0.0)
                 return;

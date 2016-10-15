@@ -46,7 +46,13 @@ class BSDFSample
 {
   public:
     // Inputs.
-    const ShadingPoint&             m_shading_point;        // shading point at which the sampling is done
+    const foundation::Vector3d      m_geometric_normal;     // world space geometric normal at the point where sampling is done, unit-length
+    const foundation::Vector3d      m_shading_normal;       // world space shading normal at the point where sampling is done, unit-length
+    foundation::Basis3d             m_shading_basis;        // world space shading basis at the point where sampling is done
+    const foundation::Vector3d      m_dndu;
+    const foundation::Vector3d      m_dndv;
+    const foundation::Vector2f      m_duvdx;
+    const foundation::Vector2f      m_duvdy;
     const foundation::Dual3d        m_outgoing;             // world space outgoing direction, unit-length
 
     // Outputs.
@@ -59,11 +65,6 @@ class BSDFSample
     BSDFSample(
         const ShadingPoint&         shading_point,
         const foundation::Dual3d&   outgoing);
-
-    const foundation::Vector3d& get_geometric_normal() const;
-    const foundation::Vector3d& get_shading_normal() const;
-    const foundation::Basis3d& get_shading_basis() const;
-    void set_shading_basis(const foundation::Basis3d& basis);
 
     void compute_reflected_differentials();
     void compute_transmitted_differentials(const double eta);
@@ -86,30 +87,16 @@ class BSDFSample
 inline BSDFSample::BSDFSample(
     const ShadingPoint&             shading_point,
     const foundation::Dual3d&       outgoing)
-  : m_shading_point(shading_point)
+  : m_geometric_normal(shading_point.get_geometric_normal())
+  , m_shading_normal(shading_point.get_shading_normal())
+  , m_shading_basis(shading_point.get_shading_basis())
+  , m_dndu(shading_point.get_dndu(0))
+  , m_dndv(shading_point.get_dndv(0))
+  , m_duvdx(shading_point.get_duvdx(0))
+  , m_duvdy(shading_point.get_duvdy(0))
   , m_outgoing(outgoing)
   , m_mode(ScatteringMode::Absorption)
 {
-}
-
-inline const foundation::Vector3d& BSDFSample::get_geometric_normal() const
-{
-    return m_shading_point.get_geometric_normal();
-}
-
-inline const foundation::Vector3d& BSDFSample::get_shading_normal() const
-{
-    return m_shading_point.get_shading_normal();
-}
-
-inline const foundation::Basis3d& BSDFSample::get_shading_basis() const
-{
-    return m_shading_point.get_shading_basis();
-}
-
-inline void BSDFSample::set_shading_basis(const foundation::Basis3d& basis)
-{
-    m_shading_point.set_shading_basis(basis);
 }
 
 }       // namespace renderer

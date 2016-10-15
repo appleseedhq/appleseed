@@ -108,7 +108,7 @@ namespace
             BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
             // No reflection below the shading surface.
-            const Vector3d& shading_normal = sample.get_shading_normal();
+            const Vector3d& shading_normal = sample.m_shading_normal;
             const double cos_on = dot(sample.m_outgoing.get_value(), shading_normal);
             if (cos_on < 0.0)
                 return;
@@ -141,15 +141,15 @@ namespace
                 const Vector3d wi = sample_hemisphere_cosine(Vector2d(s[0], s[1]));
 
                 // Transform the incoming direction to parent space.
-                incoming = sample.get_shading_basis().transform_to_parent(wi);
+                incoming = sample.m_shading_basis.transform_to_parent(wi);
 
                 // Compute the halfway vector in world space.
                 h = normalize(incoming + sample.m_outgoing.get_value());
 
                 // Compute the glossy exponent, needed to evaluate the PDF.
-                const double cos_hn = dot(h, sample.get_shading_normal());
-                const double cos_hu = dot(h, sample.get_shading_basis().get_tangent_u());
-                const double cos_hv = dot(h, sample.get_shading_basis().get_tangent_v());
+                const double cos_hn = dot(h, sample.m_shading_normal);
+                const double cos_hu = dot(h, sample.m_shading_basis.get_tangent_u());
+                const double cos_hv = dot(h, sample.m_shading_basis.get_tangent_v());
                 const double exp_den = 1.0 - cos_hn * cos_hn;
                 const double exp_u = values->m_nu * cos_hu * cos_hu;
                 const double exp_v = values->m_nv * cos_hv * cos_hv;
@@ -187,13 +187,13 @@ namespace
                 const double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
 
                 // Compute the halfway vector in world space.
-                h = sample.get_shading_basis().transform_to_parent(
+                h = sample.m_shading_basis.transform_to_parent(
                     Vector3d::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi));
 
                 // Compute the incoming direction in world space.
                 incoming =
                     force_above_surface(
-                        reflect(sample.m_outgoing.get_value(), h), sample.get_geometric_normal());
+                        reflect(sample.m_outgoing.get_value(), h), sample.m_geometric_normal);
             }
 
             // No reflection below the shading surface.

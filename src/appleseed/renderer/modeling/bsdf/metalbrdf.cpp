@@ -178,7 +178,7 @@ namespace
             const bool              cosine_mult,
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
-            const Vector3d& n = sample.get_shading_basis().get_normal();
+            const Vector3d& n = sample.m_shading_basis.get_normal();
             const double cos_on = std::min(dot(sample.m_outgoing.get_value(), n), 1.0);
             if (cos_on < 0.0)
                 return;

@@ -103,7 +103,7 @@ namespace
             const bool          cosine_mult,
             BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
-            const Vector3d& n = sample.get_shading_normal();
+            const Vector3d& n = sample.m_shading_normal;
             const double cos_on = min(dot(sample.m_outgoing.get_value(), n), 1.0);
             if (cos_on < 0.0)
                 return;
@@ -114,7 +114,7 @@ namespace
             const Vector3d wi = sample_hemisphere_uniform(s);
 
             // Transform the incoming direction to parent space.
-            const Vector3d incoming = sample.get_shading_basis().transform_to_parent(wi);
+            const Vector3d incoming = sample.m_shading_basis.transform_to_parent(wi);
 
             // No reflection below the shading surface.
             const double cos_in = dot(incoming, n);

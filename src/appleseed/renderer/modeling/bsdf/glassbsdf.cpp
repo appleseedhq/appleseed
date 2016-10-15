@@ -190,7 +190,7 @@ namespace
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
             const InputValues* values = static_cast<const InputValues*>(data);
-            const BackfacingPolicy backfacing_policy(sample.get_shading_basis(), values->m_backfacing);
+            const BackfacingPolicy backfacing_policy(sample.m_shading_basis, values->m_backfacing);
 
             double alpha_x, alpha_y;
             microfacet_alpha_from_roughness(

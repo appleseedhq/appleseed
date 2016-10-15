@@ -102,7 +102,7 @@ namespace
             BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
             // No reflection below the shading surface.
-            const Vector3d& n = sample.get_shading_normal();
+            const Vector3d& n = sample.m_shading_normal;
 
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);
@@ -110,7 +110,7 @@ namespace
             const Vector3d wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
-            const Vector3d incoming = sample.get_shading_basis().transform_to_parent(wi);
+            const Vector3d incoming = sample.m_shading_basis.transform_to_parent(wi);
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
