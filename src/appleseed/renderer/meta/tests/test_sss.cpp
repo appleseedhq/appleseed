@@ -108,16 +108,16 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             m_bssrdf->prepare_inputs(m_outgoing_point, &m_values);
         }
 
-        void set_values_from_rd_dmfp(
+        void set_values_from_rd_mfp(
             const double    rd,
-            const double    dmfp,
+            const double    mfp,
             const double    eta)
         {
             m_values.m_weight = 1.0;
             m_values.m_reflectance.set(static_cast<float>(rd));
             m_values.m_reflectance_multiplier = 1.0;
-            m_values.m_dmfp.set(static_cast<float>(dmfp));
-            m_values.m_dmfp_multiplier = 1.0;
+            m_values.m_mfp.set(static_cast<float>(mfp));
+            m_values.m_mfp_multiplier = 1.0;
             m_values.m_g = 0.0;
             m_values.m_ior = eta;
 
@@ -183,15 +183,15 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     }
 
     template <typename BSSRDFFactory>
-    double integrate_dipole_rd_dmfp(
+    double integrate_dipole_rd_mfp(
         MersenneTwister&        rng,
         const double            rd,
-        const double            dmfp,
+        const double            mfp,
         const double            eta,
         const size_t            sample_count)
     {
         DipoleBSSRDFEvaluator<BSSRDFFactory> bssrdf_eval;
-        bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, eta);
+        bssrdf_eval.set_values_from_rd_mfp(rd, mfp, eta);
 
         return integrate_dipole(rng, bssrdf_eval, sample_count);
     }
@@ -250,48 +250,11 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             EXPECT_FEQ_EPS(AlphaPrimes[i], rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(AlphaPrimes[i], IORs[i]), AlphaPrimeRoundtripTestEps);
     }
 
-    TEST_CASE(BSSRDFReparamStandardDipole_VaryingDiffuseMeanFreePath)
-    {
-        const size_t N = 1000;
-        const double Eta = 1.0 / 1.3;
-        const double Anisotropy = 0.0;
-
-        MersenneTwister rng;
-
-        for (size_t i = 0; i < N; ++i)
-        {
-            const ComputeRdStandardDipole rd_fun(Eta);
-            const Spectrum rd(rand_float1(rng, 0.001f, 0.999f));
-
-            Spectrum sigma_a1, sigma_s1;
-            compute_absorption_and_scattering_dmfp(
-                rd_fun,
-                rd,
-                Spectrum(1.0f),
-                Anisotropy,
-                sigma_a1,
-                sigma_s1);
-
-            const Spectrum dmfp(rand_float1(rng, 0.001f, 10.0f));
-            Spectrum sigma_a, sigma_s;
-            compute_absorption_and_scattering_dmfp(
-                rd_fun,
-                rd,
-                dmfp,
-                Anisotropy,
-                sigma_a,
-                sigma_s);
-
-            EXPECT_FEQ_EPS(sigma_a1 / dmfp, sigma_a, 1.0e-6f);
-            EXPECT_FEQ_EPS(sigma_s1 / dmfp, sigma_s, 1.0e-6f);
-        }
-    }
-
     TEST_CASE(BSSRDFReparamStandardDipole_RoundTrip)
     {
         //
         // 1. Start with sigma_a and sigma_s.
-        //    Compute diffuse surface reflectance and diffuse mean free path.
+        //    Compute diffuse surface reflectance and mean free path.
         //
         //    Using skin2 material parameters from
         //
@@ -301,6 +264,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         const Color3f sigma_a(0.013f, 0.070f, 0.145f);      // in mm^-1
         const Color3f sigma_s(1.09f, 1.59f, 1.79f);         // in mm^-1
+        const Spectrum sigma_t(sigma_a + sigma_s);
 
         const Spectrum sigma_a_spectrum(sigma_a);
         const Spectrum sigma_s_spectrum(sigma_s);
@@ -322,20 +286,19 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             0.0,        // anisotropy
             sigma_tr);
 
-        const Spectrum dmfp = Spectrum(1.0f) / sigma_tr;
+        const Spectrum mfp = Spectrum(1.0f) / sigma_t;
 
         //
-        // 2. Start from diffuse surface reflectance and diffuse mean free path.
+        // 2. Start from diffuse surface reflectance and mean free path.
         //    Compute sigma_a and sigma_s.
         //
 
         Spectrum new_sigma_a_spectrum, new_sigma_s_spectrum;
         const Spectrum rd_spectrum(rd);
-        compute_absorption_and_scattering_dmfp(
+        compute_absorption_and_scattering_mfp(
             rd_fun,
             rd_spectrum,
-            dmfp,
-            0.0,        // anisotropy
+            mfp,
             new_sigma_a_spectrum,
             new_sigma_s_spectrum);
 
@@ -878,8 +841,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         for (size_t i = 0; i < 1000; ++i)
         {
             const double rd = rand_double1(rng);
-            const double dmfp = rand_double1(rng, 0.001, 100.0);
-            bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, 1.0);
+            const double mfp = rand_double1(rng, 0.001, 10.0);
+            bssrdf_eval.set_values_from_rd_mfp(rd, mfp, 1.0);
 
             const double r = dipole_max_radius(bssrdf_eval.get_sigma_tr());
             const double result = bssrdf_eval.evaluate(r);
@@ -905,7 +868,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             const double rd = fit<size_t, double>(i, 0, N - 1, 0.01, 1.0);
             const double x =
-                integrate_dipole_rd_dmfp<StandardDipoleBSSRDFFactory>(
+                integrate_dipole_rd_mfp<StandardDipoleBSSRDFFactory>(
                     rng,
                     rd,
                     1.0,
@@ -990,8 +953,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         for (size_t i = 0; i < 1000; ++i)
         {
             const double rd = rand_double1(rng);
-            const double dmfp = rand_double1(rng, 0.001, 100.0);
-            bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, 1.0);
+            const double mfp = rand_double1(rng, 0.001, 100.0);
+            bssrdf_eval.set_values_from_rd_mfp(rd, mfp, 1.0);
 
             const double r = dipole_max_radius(bssrdf_eval.get_sigma_tr());
             const double result = bssrdf_eval.evaluate(r);

@@ -756,7 +756,7 @@ namespace
             OSL::ustring    profile;
             OSL::Vec3       N;
             OSL::Color3     reflectance;
-            OSL::Color3     diffuse_mean_free_path;
+            OSL::Color3     mean_free_path;
             float           ior;
         };
 
@@ -777,7 +777,7 @@ namespace
                 CLOSURE_STRING_PARAM(Params, profile),
                 CLOSURE_VECTOR_PARAM(Params, N),
                 CLOSURE_COLOR_PARAM(Params, reflectance),
-                CLOSURE_COLOR_PARAM(Params, diffuse_mean_free_path),
+                CLOSURE_COLOR_PARAM(Params, mean_free_path),
                 CLOSURE_FLOAT_PARAM(Params, ior),
                 CLOSURE_FINISH_PARAM(Params)
             };
@@ -806,8 +806,8 @@ namespace
                 values->m_weight = 1.0;
                 values->m_reflectance = Color3f(p->reflectance);
                 values->m_reflectance_multiplier = 1.0;
-                values->m_dmfp = Color3f(p->diffuse_mean_free_path);
-                values->m_dmfp_multiplier = 1.0;
+                values->m_mfp = Color3f(p->mean_free_path);
+                values->m_mfp_multiplier = 1.0;
                 values->m_ior = p->ior;
 #else
                 throw ExceptionOSLRuntimeError("unknown subsurface profile: normalized_diffusion");
@@ -854,8 +854,8 @@ namespace
                 values->m_weight = 1.0;
                 values->m_reflectance = Color3f(p->reflectance);
                 values->m_reflectance_multiplier = 1.0;
-                values->m_dmfp = Color3f(p->diffuse_mean_free_path);
-                values->m_dmfp_multiplier = 1.0;
+                values->m_mfp = Color3f(p->mean_free_path);
+                values->m_mfp_multiplier = 1.0;
                 values->m_g = 0.0;
                 values->m_ior = p->ior;
             }
