@@ -185,10 +185,11 @@ namespace
 
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
-                bsdf_from_closure_id(c->get_closure_type(i)).prepare_inputs(
-                    shading_context,
-                    shading_point,
-                    c->get_closure_input_values(i));
+                bsdf_from_closure_id(c->get_closure_type(i))
+                    .prepare_inputs(
+                        shading_context,
+                        shading_point,
+                        c->get_closure_input_values(i));
             }
         }
 
@@ -208,8 +209,8 @@ namespace
 
                 const size_t closure_index = c->choose_closure(s);
                 sample.set_shading_basis(c->get_closure_shading_basis(closure_index));
-                bsdf_from_closure_id(
-                    c->get_closure_type(closure_index)).sample(
+                bsdf_from_closure_id(c->get_closure_type(closure_index))
+                    .sample(
                         sampling_context,
                         c->get_closure_input_values(closure_index),
                         adjoint,
@@ -240,16 +241,17 @@ namespace
             {
                 Spectrum s;
                 const double bsdf_prob =
-                    bsdf_from_closure_id(c->get_closure_type(i)).evaluate(
-                        c->get_closure_input_values(i),
-                        adjoint,
-                        false,
-                        geometric_normal,
-                        c->get_closure_shading_basis(i),
-                        outgoing,
-                        incoming,
-                        modes,
-                        s);
+                    bsdf_from_closure_id(c->get_closure_type(i))
+                        .evaluate(
+                            c->get_closure_input_values(i),
+                            adjoint,
+                            false,
+                            geometric_normal,
+                            c->get_closure_shading_basis(i),
+                            outgoing,
+                            incoming,
+                            modes,
+                            s);
 
                 if (bsdf_prob > 0.0)
                 {
@@ -275,13 +277,14 @@ namespace
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
                 const double bsdf_prob =
-                    bsdf_from_closure_id(c->get_closure_type(i)).evaluate_pdf(
-                        c->get_closure_input_values(i),
-                        geometric_normal,
-                        c->get_closure_shading_basis(i),
-                        outgoing,
-                        incoming,
-                        modes);
+                    bsdf_from_closure_id(c->get_closure_type(i))
+                        .evaluate_pdf(
+                            c->get_closure_input_values(i),
+                            geometric_normal,
+                            c->get_closure_shading_basis(i),
+                            outgoing,
+                            incoming,
+                            modes);
 
                 if (bsdf_prob > 0.0)
                     prob += bsdf_prob * c->get_closure_pdf_weight(i);
@@ -309,10 +312,11 @@ namespace
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
                 Spectrum a;
-                bsdf_from_closure_id(c->get_closure_type(i)).compute_absorption(
-                    c->get_closure_input_values(i),
-                    distance,
-                    a);
+                bsdf_from_closure_id(c->get_closure_type(i))
+                    .compute_absorption(
+                        c->get_closure_input_values(i),
+                        distance,
+                        a);
                 const float w = static_cast<float>(c->get_closure_pdf_weight(i));
 
                 // absorption += lerp(1.0, a, w)
