@@ -1113,6 +1113,50 @@ namespace
             bssrdf.get_parameters().remove_path("outside_ior");
         }
     };
+
+    //
+    // Update from revision 11 to revision 12.
+    //
+
+    class UpdateFromRevision_11
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_11(Project& project)
+          : Updater(project, 11)
+        {
+        }
+
+        virtual void update() APPLESEED_OVERRIDE
+        {
+            const Scene* scene = m_project.get_scene();
+
+            if (scene)
+                update_bssrdf_mfp_inputs(scene->assemblies());
+        }
+
+      private:
+        static void update_bssrdf_mfp_inputs(AssemblyContainer& assemblies)
+        {
+            for (each<AssemblyContainer> i = assemblies; i; ++i)
+            {
+                update_bssrdf_mfp_inputs(*i);
+                update_bssrdf_mfp_inputs(i->assemblies());
+            }
+        }
+
+        static void update_bssrdf_mfp_inputs(Assembly& assembly)
+        {
+            for (each<BSSRDFContainer> i = assembly.bssrdfs(); i; ++i)
+                update_bssrdf_mfp_inputs(*i);
+        }
+
+        static void update_bssrdf_mfp_inputs(BSSRDF& bssrdf)
+        {
+            move_if_exist(bssrdf, "mfp", "dmfp");
+            move_if_exist(bssrdf, "mfp_multiplier", "dmfp_multiplier");
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(Project& project, const size_t to_revision)
@@ -1147,8 +1191,9 @@ bool ProjectFileUpdater::update(Project& project, const size_t to_revision)
       CASE_UPDATE_FROM_REVISION(8);
       CASE_UPDATE_FROM_REVISION(9);
       CASE_UPDATE_FROM_REVISION(10);
+      CASE_UPDATE_FROM_REVISION(11);
 
-      case 11:
+      case 12:
         // Project is up-to-date.
         break;
 

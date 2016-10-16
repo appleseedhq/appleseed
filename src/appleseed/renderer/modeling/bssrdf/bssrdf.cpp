@@ -126,17 +126,17 @@ float BSSRDF::compute_eta(
     return outside_ior / ior;
 }
 
-void BSSRDF::make_reflectance_and_dmfp_compatible(
+void BSSRDF::make_reflectance_and_mfp_compatible(
     Spectrum&               reflectance,
-    const Spectrum&         dmfp) const
+    const Spectrum&         mfp) const
 {
-    if (reflectance.size() != dmfp.size())
+    if (reflectance.size() != mfp.size())
     {
-        // Since it does not really make sense to convert a dmfp,
+        // Since it does not really make sense to convert a mfp,
         // a per channel distance, as if it were a color,
         // we instead always convert the reflectance to match the
-        // size of the dmfp.
-        if (dmfp.is_spectral())
+        // size of the mfp.
+        if (mfp.is_spectral())
         {
             Spectrum::upgrade(
                 reflectance,

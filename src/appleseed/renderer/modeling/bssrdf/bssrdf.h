@@ -143,9 +143,9 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const ShadingPoint&         shading_point,
         const float                 ior) const;
 
-    void make_reflectance_and_dmfp_compatible(
+    void make_reflectance_and_mfp_compatible(
         Spectrum&                   reflectance,
-        const Spectrum&             dmfp) const;
+        const Spectrum&             mfp) const;
 };
 
 }       // namespace renderer
