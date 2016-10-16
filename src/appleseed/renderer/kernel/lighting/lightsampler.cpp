@@ -439,7 +439,6 @@ void LightSampler::sample_non_physical_lights(
     light_sample.m_triangle = 0;
     sample_non_physical_light(
         time,
-        Vector2d(s[1], s[2]),
         light_index,
         light_prob,
         light_sample);
@@ -520,7 +519,6 @@ double LightSampler::evaluate_pdf(const ShadingPoint& shading_point) const
 
 void LightSampler::sample_non_physical_light(
     const ShadingRay::Time&             time,
-    const Vector2d&                     s,
     const size_t                        light_index,
     const double                        light_prob,
     LightSample&                        light_sample) const

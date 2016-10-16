@@ -201,7 +201,6 @@ class LightSampler
     // Sample a single given non-physical light.
     void sample_non_physical_light(
         const ShadingRay::Time&             time,
-        const foundation::Vector2d&         s,
         const size_t                        light_index,
         LightSample&                        light_sample) const;
 
@@ -272,7 +271,6 @@ class LightSampler
     // Sample a given non-physical light.
     void sample_non_physical_light(
         const ShadingRay::Time&             time,
-        const foundation::Vector2d&         s,
         const size_t                        light_index,
         const double                        light_prob,
         LightSample&                        sample) const;
@@ -361,11 +359,10 @@ inline bool LightSampler::has_lights_or_emitting_triangles() const
 
 inline void LightSampler::sample_non_physical_light(
     const ShadingRay::Time&                 time,
-    const foundation::Vector2d&             s,
     const size_t                            light_index,
     LightSample&                            sample) const
 {
-    sample_non_physical_light(time, s, light_index, 1.0, sample);
+    sample_non_physical_light(time, light_index, 1.0, sample);
 }
 
 }       // namespace renderer

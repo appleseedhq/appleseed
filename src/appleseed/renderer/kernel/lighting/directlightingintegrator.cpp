@@ -245,24 +245,16 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
     }
 
     // Sample non-physical light sources.
-    const size_t light_count = m_light_sampler.get_non_physical_light_count();
-    if (light_count > 0)
+    for (size_t i = 0, e = m_light_sampler.get_non_physical_light_count(); i < e; ++i)
     {
-        sampling_context.split_in_place(2, light_count);
+        LightSample sample;
+        m_light_sampler.sample_non_physical_light(m_time, i, sample);
 
-        for (size_t i = 0; i < light_count; ++i)
-        {
-            const Vector2d s = sampling_context.next_vector2<2>();
-
-            LightSample sample;
-            m_light_sampler.sample_non_physical_light(m_time, s, i, sample);
-
-            add_non_physical_light_sample_contribution(
-                sample,
-                outgoing,
-                radiance,
-                aovs);
-        }
+        add_non_physical_light_sample_contribution(
+            sample,
+            outgoing,
+            radiance,
+            aovs);
     }
 }
 
