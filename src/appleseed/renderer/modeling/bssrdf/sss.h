@@ -232,7 +232,7 @@ inline float compute_alpha_prime(
     float x0 = 0.0f, x1 = 1.0f;
 
     // Simple bisection.
-    for (size_t i = 0; i < 20; ++i)
+    for (size_t i = 0; i < 15; ++i)
     {
         const float xmid = 0.5f * (x0 + x1);
         const float x = rd_fun(xmid);
