@@ -134,8 +134,7 @@ namespace
             for (size_t i = 0, e = values->m_channel_pdf.size(); i < e; ++i)
             {
                 const float a = values->m_reflectance[i];
-                const double s = normalized_diffusion_s_mfp(a);
-                values->m_s[i] = static_cast<float>(s);
+                values->m_s[i] = normalized_diffusion_s_mfp(a);
 
                 values->m_channel_pdf[i] = a;
                 cumulated_pdf += a;
@@ -148,10 +147,10 @@ namespace
             values->m_channel_cdf[values->m_channel_cdf.size() - 1] = 1.0f;
 
             // Precompute the (square of the) max radius.
-            values->m_rmax2 = 0.0;
+            values->m_rmax2 = 0.0f;
             for (size_t i = 0, e = values->m_mfp.size(); i < e; ++i)
             {
-                const double l = static_cast<double>(values->m_mfp[i]);
+                const float l = values->m_mfp[i];
                 values->m_rmax2 =
                     max(
                         normalized_diffusion_max_radius(l, values->m_s[i]),
@@ -169,11 +168,11 @@ namespace
             const NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
 
-            if (values->m_weight == 0.0)
+            if (values->m_weight == 0.0f)
                 return false;
 
             sampling_context.split_in_place(3, 1);
-            const Vector3d s = sampling_context.next_vector2<3>();
+            const Vector3f s(sampling_context.next_vector2<3>());
 
             // Sample a channel.
             const float* cdf_begin = &values->m_channel_cdf[0];
@@ -184,16 +183,16 @@ namespace
                     s[0]);
 
             // Sample a radius.
-            const double l = values->m_mfp[channel];
-            const double radius =
+            const float l = values->m_mfp[channel];
+            const float radius =
                 normalized_diffusion_sample(s[1], l, values->m_s[channel]);
 
             // Sample an angle.
-            const double phi = TwoPi<double>() * s[2];
+            const float phi = TwoPi<float>() * s[2];
 
             sample.m_eta = values->m_eta;
             sample.m_channel = channel;
-            sample.m_point = Vector2d(radius * cos(phi), radius * sin(phi));
+            sample.m_point = Vector2f(radius * cos(phi), radius * sin(phi));
             sample.m_rmax2 = values->m_rmax2;
 
             return true;
@@ -207,51 +206,48 @@ namespace
 
         virtual void evaluate_profile(
             const void*         data,
-            const double        square_radius,
+            const float         square_radius,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
             const NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
 
-            const double radius = sqrt(square_radius);
+            const float radius = sqrt(square_radius);
 
             value.resize(values->m_reflectance.size());
 
             for (size_t i = 0, e = value.size(); i < e; ++i)
             {
-                const double a = values->m_reflectance[i];
-                const double s = values->m_s[i];
-                const double l = values->m_mfp[i];
+                const float a = values->m_reflectance[i];
+                const float s = values->m_s[i];
+                const float l = values->m_mfp[i];
                 value[i] = static_cast<float>(normalized_diffusion_profile(radius, l, s, a));
             }
 
             // Return r * R(r) * weight.
-            value *= static_cast<float>(radius * values->m_weight);
+            value *= radius * static_cast<float>(values->m_weight);
         }
 
-        virtual double evaluate_pdf(
+        virtual float evaluate_pdf(
             const void*         data,
             const size_t        channel,
-            const double        radius) const APPLESEED_OVERRIDE
+            const float         radius) const APPLESEED_OVERRIDE
         {
             const NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
 
             // PDF of the sampled radius.
-            double pdf_radius = 0.0;
+            float pdf_radius = 0.0f;
             for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
             {
-                const double l = values->m_mfp[i];
+                const float l = values->m_mfp[i];
                 pdf_radius +=
-                    normalized_diffusion_pdf(
-                        radius,
-                        l,
-                        values->m_s[i])
+                      normalized_diffusion_pdf(radius, l, values->m_s[i])
                     * values->m_channel_pdf[i];
             }
 
             // PDF of the sampled angle.
-            const double pdf_angle = RcpTwoPi<double>();
+            const float pdf_angle = RcpTwoPi<float>();
 
             // Compute and return the final PDF.
             return pdf_radius * pdf_angle;

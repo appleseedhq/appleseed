@@ -129,7 +129,7 @@ namespace
 
         virtual void evaluate_profile(
             const void*         data,
-            const double        square_radius,
+            const float         square_radius,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
             assert(!"Should never be called.");
@@ -138,26 +138,26 @@ namespace
         virtual void evaluate(
             const void*         data,
             const ShadingPoint& outgoing_point,
-            const Vector3d&     outgoing_dir,
+            const Vector3f&     outgoing_dir,
             const ShadingPoint& incoming_point,
-            const Vector3d&     incoming_dir,
+            const Vector3f&     incoming_dir,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
             const DipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
 
             const Vector3d incoming_normal =
-                dot(incoming_dir, incoming_point.get_shading_normal()) > 0.0
+                dot(Vector3d(incoming_dir), incoming_point.get_shading_normal()) > 0.0
                     ? incoming_point.get_shading_normal()
                     : -incoming_point.get_shading_normal();
 
             bssrdf(
                 values,
-                incoming_point.get_point(),
-                incoming_normal,
+                Vector3f(incoming_point.get_point()),
+                Vector3f(incoming_normal),
                 incoming_dir,
-                outgoing_point.get_point(),
-                outgoing_point.get_shading_normal(),
+                Vector3f(outgoing_point.get_point()),
+                Vector3f(outgoing_point.get_shading_normal()),
                 value);
 
 #ifdef DIRPOLE_RECIPROCAL
@@ -175,16 +175,16 @@ namespace
             value *= 0.5f;
 #endif
 
-            double fo;
-            const double cos_on = abs(dot(outgoing_dir, outgoing_point.get_shading_normal()));
-            fresnel_transmittance_dielectric(fo, static_cast<double>(values->m_eta), cos_on);
+            float fo;
+            const float cos_on = abs(dot(outgoing_dir, Vector3f(outgoing_point.get_shading_normal())));
+            fresnel_transmittance_dielectric(fo, values->m_eta, cos_on);
 
-            double fi;
-            const double cos_in = abs(dot(incoming_dir, incoming_point.get_shading_normal()));
-            fresnel_transmittance_dielectric(fi, static_cast<double>(values->m_eta), cos_in);
+            float fi;
+            const float cos_in = abs(dot(incoming_dir, Vector3f(incoming_point.get_shading_normal())));
+            fresnel_transmittance_dielectric(fi, values->m_eta, cos_in);
 
-            const double radius = norm(incoming_point.get_point() - outgoing_point.get_point());
-            value *= static_cast<float>(radius * fo * fi * values->m_weight);
+            const float radius = static_cast<float>(norm(incoming_point.get_point() - outgoing_point.get_point()));
+            value *= radius * fo * fi * static_cast<float>(values->m_weight);
 
             value *= values->m_dirpole_reparam_weight;
         }
@@ -193,80 +193,80 @@ namespace
         // Evaluate the directional dipole BSSRDF.
         static void bssrdf(
             const DipoleBSSRDFInputValues*  values,
-            const Vector3d&                 xi,
-            const Vector3d&                 ni,
-            const Vector3d&                 wi,
-            const Vector3d&                 xo,
-            const Vector3d&                 no,
+            const Vector3f&                 xi,
+            const Vector3f&                 ni,
+            const Vector3f&                 wi,
+            const Vector3f&                 xo,
+            const Vector3f&                 no,
             Spectrum&                       value)
         {
             // Precompute some stuff. Same as for the Better Dipole model.
-            const Vector3d xoxi = xo - xi;
-            const double r2 = square_norm(xoxi);                                        // square distance between points of incidence and emergence
-            const double rcp_eta = 1.0 / values->m_eta;
-            const double cphi_eta = 0.25 * (1.0 - fresnel_first_moment(rcp_eta));
-            const double cphi_rcp_eta = 0.25 * (1.0 - fresnel_first_moment(values->m_eta));
-            const double ce_eta = 0.5 * (1.0 - fresnel_second_moment(rcp_eta));
-            const double A = (1.0 - ce_eta) / (2.0 * cphi_eta);                         // reflection parameter
+            const Vector3f xoxi = xo - xi;
+            const float r2 = square_norm(xoxi);                                         // square distance between points of incidence and emergence
+            const float rcp_eta = 1.0f / values->m_eta;
+            const float cphi_eta = 0.25f * (1.0f - fresnel_first_moment(rcp_eta));
+            const float cphi_rcp_eta = 0.25f * (1.0f - fresnel_first_moment(values->m_eta));
+            const float ce_eta = 0.5f * (1.0f - fresnel_second_moment(rcp_eta));
+            const float A = (1.0f - ce_eta) / (2.0f * cphi_eta);                        // reflection parameter
 
             // Compute normal to modified tangent plane.
-            const Vector3d ni_star = cross(xoxi / sqrt(r2), normalize(cross(ni, xoxi)));
+            const Vector3f ni_star = cross(xoxi / sqrt(r2), normalize(cross(ni, xoxi)));
             assert(is_normalized(ni_star));
 
             // Compute direction of real ray source.
-            Vector3d wr;
-            APPLESEED_UNUSED const bool successful = refract(wi, ni, static_cast<double>(values->m_eta), wr);
+            Vector3f wr;
+            APPLESEED_UNUSED const bool successful = refract(wi, ni, static_cast<float>(values->m_eta), wr);
             assert(successful);
             assert(is_normalized(wr));
 
             // Compute direction of virtual ray source.
-            const Vector3d wv = -reflect(wr, ni_star);
+            const Vector3f wv = -reflect(wr, ni_star);
             assert(is_normalized(wv));
 
-            const double dot_wr_xoxi = dot(xoxi, wr);                                   // r * cos( real source direction, modified plane tangent )
-            const double dot_wr_no = dot(wr, no);                                       // cos( real source direction, normal at outgoing )
-            const double dot_xoxi_no = dot(xoxi, no);
-            const double dot_wv_no = dot(wv, no);
+            const float dot_wr_xoxi = dot(xoxi, wr);                                    // r * cos( real source direction, modified plane tangent )
+            const float dot_wr_no = dot(wr, no);                                        // cos( real source direction, normal at outgoing )
+            const float dot_xoxi_no = dot(xoxi, no);
+            const float dot_wv_no = dot(wv, no);
 
             value.resize(values->m_sigma_a.size());
 
             for (size_t i = 0, e = value.size(); i < e; ++i)
             {
-                const double sigma_a = values->m_sigma_a[i];
-                const double sigma_s = values->m_sigma_s[i];
-                const double sigma_t = sigma_s + sigma_a;
-                const double sigma_s_prime = sigma_s * (1.0 - values->m_g);
-                const double sigma_t_prime = sigma_s_prime + sigma_a;
-                const double alpha_prime = values->m_alpha_prime[i];                    // reduced scattering albedo
-                const double sigma_tr = values->m_sigma_tr[i];                          // effective transport coefficient
+                const float sigma_a = values->m_sigma_a[i];
+                const float sigma_s = values->m_sigma_s[i];
+                const float sigma_t = sigma_s + sigma_a;
+                const float sigma_s_prime = sigma_s * (1.0f - static_cast<float>(values->m_g));
+                const float sigma_t_prime = sigma_s_prime + sigma_a;
+                const float alpha_prime = values->m_alpha_prime[i];                     // reduced scattering albedo
+                const float sigma_tr = values->m_sigma_tr[i];                           // effective transport coefficient
 
                 // Compute extrapolation distance ([1] equation 21).
-                const double D = 1.0 / (3.0 * sigma_t_prime);                           // diffusion coefficient
-                const double de = 2.131 * D / sqrt(alpha_prime);                        // distance to extrapolated boundary
-                //const double de = 2.121 * D / alpha_prime;                            // [2] equation 18
+                const float D = 1.0f / (3.0f * sigma_t_prime);                          // diffusion coefficient
+                const float de = 2.131f * D / sqrt(alpha_prime);                        // distance to extrapolated boundary
+                //const float de = 2.121f * D / alpha_prime;                            // [2] equation 18
 
                 // Compute corrected distance to real source.
-                const double cos_beta = -sqrt((r2 - square(dot_wr_xoxi)) / (r2 + de * de));
-                const double mu0 = -dot_wr_no;
-                const double zr2 =
-                    mu0 > 0.0
-                        ? D * mu0 * (D * mu0 - 2.0 * de * cos_beta)                     // frontlit
-                        : 1.0 / square(3.0 * sigma_t);                                  // backlit
-                const double dr = sqrt(r2 + zr2);                                       // distance to real ray source
+                const float cos_beta = -sqrt((r2 - square(dot_wr_xoxi)) / (r2 + de * de));
+                const float mu0 = -dot_wr_no;
+                const float zr2 =
+                    mu0 > 0.0f
+                        ? D * mu0 * (D * mu0 - 2.0f * de * cos_beta)                    // frontlit
+                        : 1.0f / square(3.0f * sigma_t);                                // backlit
+                const float dr = sqrt(r2 + zr2);                                        // distance to real ray source
 
                 // Compute position of virtual source.
-                const Vector3d xv = xi + (2.0 * A * de) * ni_star;                      // position of the virtual ray source
-                const Vector3d xoxv = xo - xv;
-                const double dot_xoxv_no = dot(xoxv, no);
+                const Vector3f xv = xi + (2.0f * A * de) * ni_star;                     // position of the virtual ray source
+                const Vector3f xoxv = xo - xv;
+                const float dot_xoxv_no = dot(xoxv, no);
 
                 // Compute distance to virtual source.
-                const double dv = norm(xoxv);                                           // distance to virtual ray source
-                assert(feq(dv, sqrt(r2 + square(2.0 * A * de)), 1.0e-9));               // true because we computed xv using ni_star, not ni
+                const float dv = norm(xoxv);                                            // distance to virtual ray source
+                assert(feq(dv, sqrt(r2 + square(2.0f * A * de)), 1.0e-9f));             // true because we computed xv using ni_star, not ni
 
                 // Evaluate the BSSRDF.
-                const double sdr = sd_prime(cphi_eta, ce_eta, D, sigma_tr, dot_wr_xoxi, dot_wr_no, dot_xoxi_no, dr);
-                const double sdv = sd_prime(cphi_eta, ce_eta, D, sigma_tr, dot(wv, xoxv), dot_wv_no, dot_xoxv_no, dv);
-                const double result = max((sdr - sdv) / (4.0 * cphi_rcp_eta), 0.0);
+                const float sdr = sd_prime(cphi_eta, ce_eta, D, sigma_tr, dot_wr_xoxi, dot_wr_no, dot_xoxi_no, dr);
+                const float sdv = sd_prime(cphi_eta, ce_eta, D, sigma_tr, dot(wv, xoxv), dot_wv_no, dot_xoxv_no, dv);
+                const float result = max((sdr - sdv) / (4.0f * cphi_rcp_eta), 0.0f);
 
                 // Store result.
                 value[i] = static_cast<float>(result);
@@ -277,23 +277,23 @@ namespace
         }
 
         // Diffusion term of the BSSRDF.
-        static double sd_prime(
-            const double        cphi_eta,
-            const double        ce_eta,
-            const double        D,
-            const double        sigma_tr,
-            const double        dot_w_x,
-            const double        dot_w_n,
-            const double        dot_x_n,
-            const double        r)
+        static float sd_prime(
+            const float         cphi_eta,
+            const float         ce_eta,
+            const float         D,
+            const float         sigma_tr,
+            const float         dot_w_x,
+            const float         dot_w_n,
+            const float         dot_x_n,
+            const float         r)
         {
-            const double r2 = square(r);
-            const double sigma_tr_r = sigma_tr * r;
+            const float r2 = square(r);
+            const float sigma_tr_r = sigma_tr * r;
 
-            const double t0 = RcpFourPiSquare<double>() * exp(-sigma_tr_r) / (r2 * r);
-            const double t1 = r2 / D + 3.0 * (1.0 + sigma_tr_r) * dot_w_x;
-            const double t2 = 3.0 * D * (1.0 + sigma_tr_r) * dot_w_n;
-            const double t3 = (1.0 + sigma_tr_r + 3.0 * D * (3.0 * (1.0 + sigma_tr_r) + square(sigma_tr_r)) / r2 * dot_w_x) * dot_x_n;
+            const float t0 = RcpFourPiSquare<float>() * exp(-sigma_tr_r) / (r2 * r);
+            const float t1 = r2 / D + 3.0f * (1.0f + sigma_tr_r) * dot_w_x;
+            const float t2 = 3.0f * D * (1.0f + sigma_tr_r) * dot_w_n;
+            const float t3 = (1.0f + sigma_tr_r + 3.0f * D * (3.0f * (1.0f + sigma_tr_r) + square(sigma_tr_r)) / r2 * dot_w_x) * dot_x_n;
 
             return t0 * (cphi_eta * t1 - ce_eta * (t2 - t3));
         }

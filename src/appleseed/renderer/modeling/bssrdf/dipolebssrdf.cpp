@@ -81,7 +81,7 @@ bool DipoleBSSRDF::sample(
         return false;
 
     sampling_context.split_in_place(3, 1);
-    const Vector3d s = sampling_context.next_vector2<3>();
+    const Vector3f s(sampling_context.next_vector2<3>());
 
     // Sample a channel.
     const size_t channel =
@@ -91,40 +91,40 @@ bool DipoleBSSRDF::sample(
             s[0]);
 
     // Sample a radius.
-    const double sigma_tr = values->m_sigma_tr[channel];
-    const double radius = sample_exponential_distribution(s[1], sigma_tr);
+    const float sigma_tr = values->m_sigma_tr[channel];
+    const float radius = sample_exponential_distribution(s[1], sigma_tr);
 
     // Sample an angle.
-    const double phi = TwoPi<double>() * s[2];
+    const float phi = TwoPi<float>() * s[2];
 
     sample.m_eta = values->m_eta;
     sample.m_channel = channel;
-    sample.m_point = Vector2d(radius * cos(phi), radius * sin(phi));
+    sample.m_point = Vector2f(radius * cos(phi), radius * sin(phi));
     sample.m_rmax2 = values->m_rmax2;
 
     return true;
 }
 
-double DipoleBSSRDF::evaluate_pdf(
+float DipoleBSSRDF::evaluate_pdf(
     const void*         data,
     const size_t        channel,
-    const double        radius) const
+    const float         radius) const
 {
     const DipoleBSSRDFInputValues* values =
         reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
 
     // PDF of the sampled radius.
-    double pdf_radius = 0.0;
+    float pdf_radius = 0.0f;
     for (size_t i = 0, e = values->m_sigma_tr.size(); i < e; ++i)
     {
-        const double sigma_tr = values->m_sigma_tr[i];
+        const float sigma_tr = values->m_sigma_tr[i];
         pdf_radius +=
               exponential_distribution_pdf(radius, sigma_tr)
             * values->m_channel_pdf[i];
     }
 
     // PDF of the sampled angle.
-    const double pdf_angle = RcpTwoPi<double>();
+    const float pdf_angle = RcpTwoPi<float>();
 
     // Compute and return the final PDF.
     return pdf_radius * pdf_angle;

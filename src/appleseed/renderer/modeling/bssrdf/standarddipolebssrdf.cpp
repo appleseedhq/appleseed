@@ -100,25 +100,25 @@ namespace
 
         virtual void evaluate_profile(
             const void*         data,
-            const double        square_radius,
+            const float         square_radius,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
             const DipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
 
-            const double fdr = fresnel_internal_diffuse_reflectance(values->m_eta);
-            const double a = (1.0 + fdr) / (1.0 - fdr);
+            const float fdr = fresnel_internal_diffuse_reflectance(values->m_eta);
+            const float a = (1.0f + fdr) / (1.0f - fdr);
 
             value.resize(values->m_sigma_a.size());
 
             for (size_t i = 0, e = value.size(); i < e; ++i)
             {
-                const double sigma_a = values->m_sigma_a[i];
-                const double sigma_s = values->m_sigma_s[i];
-                const double sigma_s_prime = sigma_s * (1.0 - values->m_g);
-                const double sigma_t_prime = sigma_s_prime + sigma_a;
-                const double alpha_prime = values->m_alpha_prime[i];
-                const double sigma_tr = values->m_sigma_tr[i];
+                const float sigma_a = values->m_sigma_a[i];
+                const float sigma_s = values->m_sigma_s[i];
+                const float sigma_s_prime = sigma_s * (1.0f - static_cast<float>(values->m_g));
+                const float sigma_t_prime = sigma_s_prime + sigma_a;
+                const float alpha_prime = values->m_alpha_prime[i];
+                const float sigma_tr = values->m_sigma_tr[i];
 
                 //
                 // The extended source represented by the refracted ray in the medium is approximated
@@ -145,8 +145,8 @@ namespace
                 //      = -zr * (1 + 4/3 * A)
                 //
 
-                const double zr = 1.0 / sigma_t_prime;
-                const double zv = -zr * (1.0 + (4.0 / 3.0) * a);
+                const float zr = 1.0f / sigma_t_prime;
+                const float zv = -zr * (1.0f + (4.0f / 3.0f) * a);
 
                 //
                 // Let's call xo the outgoing point, xi the incoming point and ni the normal at
@@ -172,23 +172,23 @@ namespace
                 //   dv = sqrt( ||xo - xi||^2 + zv^2 )
                 //
 
-                const double dr = sqrt(square_radius + zr * zr);
-                const double dv = sqrt(square_radius + zv * zv);
+                const float dr = sqrt(square_radius + zr * zr);
+                const float dv = sqrt(square_radius + zv * zv);
 
                 // The expression for R(r) in [1] is incorrect; use the correct expression from [2].
-                const double rcp_dr = 1.0 / dr;
-                const double rcp_dv = 1.0 / dv;
-                const double sigma_tr_dr = sigma_tr * dr;
-                const double sigma_tr_dv = sigma_tr * dv;
-                const double kr = zr * (sigma_tr_dr + 1.0) * square(rcp_dr);
-                const double kv = zv * (sigma_tr_dv + 1.0) * square(rcp_dv);
-                const double er = exp(-sigma_tr_dr) * rcp_dr;
-                const double ev = exp(-sigma_tr_dv) * rcp_dv;
-                value[i] = static_cast<float>(alpha_prime * RcpFourPi<double>() * (kr * er - kv * ev));
+                const float rcp_dr = 1.0f / dr;
+                const float rcp_dv = 1.0f / dv;
+                const float sigma_tr_dr = sigma_tr * dr;
+                const float sigma_tr_dv = sigma_tr * dv;
+                const float kr = zr * (sigma_tr_dr + 1.0f) * square(rcp_dr);
+                const float kv = zv * (sigma_tr_dv + 1.0f) * square(rcp_dv);
+                const float er = exp(-sigma_tr_dr) * rcp_dr;
+                const float ev = exp(-sigma_tr_dv) * rcp_dv;
+                value[i] = alpha_prime * RcpFourPi<float>() * (kr * er - kv * ev);
             }
 
             // Return r * R(r) * weight.
-            value *= static_cast<float>(sqrt(square_radius) * values->m_weight);
+            value *= sqrt(square_radius) * static_cast<float>(values->m_weight);
         }
     };
 }

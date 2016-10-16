@@ -110,8 +110,8 @@ namespace
 
     const char* Model = "gaussian_bssrdf";
 
-    const double RIntegralThreshold = 0.999;
-    const double RMax2Constant = -2.0 * log(1.0 - RIntegralThreshold);
+    const float RIntegralThreshold = 0.999f;
+    const float RMax2Constant = -2.0f * log(1.0f - RIntegralThreshold);
 
     class GaussianBSSRDF
       : public SeparableBSSRDF
@@ -155,7 +155,7 @@ namespace
             values->m_eta = compute_eta(shading_point, static_cast<float>(values->m_ior));
 
             // Precompute the (square of the) max radius.
-            values->m_rmax2 = values->m_v * RMax2Constant;
+            values->m_rmax2 = static_cast<float>(values->m_v) * RMax2Constant;
         }
 
         virtual bool sample(
@@ -166,22 +166,22 @@ namespace
             const GaussianBSSRDFInputValues* values =
                 reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
 
-            const double rmax2 = values->m_rmax2;
+            const float rmax2 = static_cast<float>(values->m_rmax2);
 
-            if (rmax2 <= 0.0)
+            if (rmax2 <= 0.0f)
                 return false;
 
             sampling_context.split_in_place(2, 1);
-            const Vector2d s = sampling_context.next_vector2<2>();
+            const Vector2f s(sampling_context.next_vector2<2>());
 
-            const double v = values->m_v;
-            const double radius =
-                sqrt(-2.0 * v * log(1.0 - s[0] * (1.0 - exp(-rmax2 / (2.0 * v)))));
-            const double phi = TwoPi<double>() * s[1];
+            const float v = static_cast<float>(values->m_v);
+            const float radius =
+                sqrt(-2.0f * v * log(1.0f - s[0] * (1.0f - exp(-rmax2 / (2.0f * v)))));
+            const float phi = TwoPi<float>() * s[1];
 
             sample.m_eta = values->m_eta;
             sample.m_channel = 0;
-            sample.m_point = Vector2d(radius * cos(phi), radius * sin(phi));
+            sample.m_point = Vector2f(radius * cos(phi), radius * sin(phi));
             sample.m_rmax2 = rmax2;
 
             return true;
@@ -195,13 +195,13 @@ namespace
 
         virtual void evaluate_profile(
             const void*         data,
-            const double        square_radius,
+            const float         square_radius,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
             const GaussianBSSRDFInputValues* values =
                 reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
 
-            const double rmax2 = values->m_rmax2;
+            const float rmax2 = static_cast<float>(values->m_rmax2);
 
             if (square_radius > rmax2)
             {
@@ -209,29 +209,29 @@ namespace
                 return;
             }
 
-            const double v = values->m_v;
-            const double rd = exp(-square_radius / (2.0 * v)) / (TwoPi<double>() * v * RIntegralThreshold);
+            const float v = static_cast<float>(values->m_v);
+            const float rd = exp(-square_radius / (2.0f * v)) / (TwoPi<float>() * v * RIntegralThreshold);
 
             value = values->m_reflectance;
-            value *= static_cast<float>(values->m_reflectance_multiplier * rd);
+            value *= static_cast<float>(values->m_reflectance_multiplier) * rd;
         }
 
-        virtual double evaluate_pdf(
+        virtual float evaluate_pdf(
             const void*         data,
             const size_t        channel,
-            const double        radius) const APPLESEED_OVERRIDE
+            const float         radius) const APPLESEED_OVERRIDE
         {
             const GaussianBSSRDFInputValues* values =
                 reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
 
-            const double rmax2 = values->m_rmax2;
-            const double r2 = radius * radius;
+            const float rmax2 = values->m_rmax2;
+            const float r2 = radius * radius;
 
             if (r2 > rmax2)
-                return 0.0;
+                return 0.0f;
 
-            const double v = values->m_v;
-            return exp(-r2 / (2.0 * v)) / (TwoPi<double>() * v * RIntegralThreshold);
+            const float v = static_cast<float>(values->m_v);
+            return exp(-r2 / (2.0f * v)) / (TwoPi<float>() * v * RIntegralThreshold);
         }
     };
 }

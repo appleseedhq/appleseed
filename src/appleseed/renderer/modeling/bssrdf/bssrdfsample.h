@@ -47,8 +47,8 @@ class BSSRDFSample
     const foundation::Basis3d*  m_shading_basis;
     float                       m_eta;
     size_t                      m_channel;
-    foundation::Vector2d        m_point;
-    double                      m_rmax2;
+    foundation::Vector2f        m_point;
+    float                       m_rmax2;
 };
 
 

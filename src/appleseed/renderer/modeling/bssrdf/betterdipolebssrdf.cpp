@@ -97,51 +97,51 @@ namespace
 
         virtual void evaluate_profile(
             const void*         data,
-            const double        square_radius,
+            const float         square_radius,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
             const DipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
 
-            const double two_c1 = fresnel_first_moment(values->m_eta);
-            const double three_c2 = fresnel_second_moment(values->m_eta);
-            const double A = (1.0 + three_c2) / (1.0 - two_c1);
-            const double cphi = 0.25 * (1.0 - two_c1);
-            const double ce = 0.5 * (1.0 - three_c2);
+            const float two_c1 = fresnel_first_moment(values->m_eta);
+            const float three_c2 = fresnel_second_moment(values->m_eta);
+            const float A = (1.0f + three_c2) / (1.0f - two_c1);
+            const float cphi = 0.25f * (1.0f - two_c1);
+            const float ce = 0.5f * (1.0f - three_c2);
 
             value.resize(values->m_sigma_a.size());
 
             for (size_t i = 0, e = value.size(); i < e; ++i)
             {
-                const double sigma_a = values->m_sigma_a[i];
-                const double sigma_s = values->m_sigma_s[i];
-                const double sigma_s_prime = sigma_s * (1.0 - values->m_g);
-                const double sigma_t_prime = sigma_s_prime + sigma_a;
-                const double alpha_prime = values->m_alpha_prime[i];
-                const double sigma_tr = values->m_sigma_tr[i];
+                const float sigma_a = values->m_sigma_a[i];
+                const float sigma_s = values->m_sigma_s[i];
+                const float sigma_s_prime = sigma_s * (1.0f - static_cast<float>(values->m_g));
+                const float sigma_t_prime = sigma_s_prime + sigma_a;
+                const float alpha_prime = values->m_alpha_prime[i];
+                const float sigma_tr = values->m_sigma_tr[i];
 
-                const double D = (2.0 * sigma_a + sigma_s_prime) / (3.0 * square(sigma_t_prime));
-                const double zr = 1.0 / sigma_t_prime;
-                const double zv = -zr - 4.0 * A * D;
+                const float D = (2.0f * sigma_a + sigma_s_prime) / (3.0f * square(sigma_t_prime));
+                const float zr = 1.0f / sigma_t_prime;
+                const float zv = -zr - 4.0f * A * D;
 
                 // See the note in the implementation of the standard dipole.
-                const double dr = sqrt(square_radius + zr * zr);
-                const double dv = sqrt(square_radius + zv * zv);
+                const float dr = sqrt(square_radius + zr * zr);
+                const float dv = sqrt(square_radius + zv * zv);
 
-                const double rcp_dr = 1.0 / dr;
-                const double rcp_dv = 1.0 / dv;
-                const double sigma_tr_dr = sigma_tr * dr;
-                const double sigma_tr_dv = sigma_tr * dv;
-                const double cphi_over_D = cphi / D;
-                const double kr = ce * zr * (sigma_tr_dr + 1.0) * square(rcp_dr) + cphi_over_D;
-                const double kv = ce * zv * (sigma_tr_dv + 1.0) * square(rcp_dv) + cphi_over_D;
-                const double er = exp(-sigma_tr_dr) * rcp_dr;
-                const double ev = exp(-sigma_tr_dv) * rcp_dv;
-                value[i] = static_cast<float>(square(alpha_prime) * RcpFourPi<double>() * (kr * er - kv * ev));
+                const float rcp_dr = 1.0f / dr;
+                const float rcp_dv = 1.0f / dv;
+                const float sigma_tr_dr = sigma_tr * dr;
+                const float sigma_tr_dv = sigma_tr * dv;
+                const float cphi_over_D = cphi / D;
+                const float kr = ce * zr * (sigma_tr_dr + 1.0f) * square(rcp_dr) + cphi_over_D;
+                const float kv = ce * zv * (sigma_tr_dv + 1.0f) * square(rcp_dv) + cphi_over_D;
+                const float er = exp(-sigma_tr_dr) * rcp_dr;
+                const float ev = exp(-sigma_tr_dv) * rcp_dv;
+                value[i] = square(alpha_prime) * RcpFourPi<float>() * (kr * er - kv * ev);
             }
 
             // Return r * R(r) * weight.
-            value *= static_cast<float>(sqrt(square_radius) * values->m_weight);
+            value *= sqrt(square_radius) * static_cast<float>(values->m_weight);
         }
     };
 }

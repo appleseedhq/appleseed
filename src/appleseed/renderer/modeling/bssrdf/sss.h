@@ -58,12 +58,12 @@ namespace renderer
 class ComputeRdStandardDipole
 {
   public:
-    explicit ComputeRdStandardDipole(const double eta);
+    explicit ComputeRdStandardDipole(const float eta);
 
-    double operator()(const double alpha_prime) const;
+    float operator()(const float alpha_prime) const;
 
   private:
-    double m_a;
+    float m_a;
 };
 
 // Compute Rd (integral of the diffusion profile R) given the reduced albedo alpha'
@@ -71,42 +71,42 @@ class ComputeRdStandardDipole
 class ComputeRdBetterDipole
 {
   public:
-    explicit ComputeRdBetterDipole(const double eta);
+    explicit ComputeRdBetterDipole(const float eta);
 
-    double operator()(const double alpha_prime) const;
+    float operator()(const float alpha_prime) const;
 
   private:
-    const double m_two_c1;
-    const double m_three_c2;
+    const float m_two_c1;
+    const float m_three_c2;
 };
 
 // Numerically solve for the reduced albedo alpha' given Rd.
 template <typename ComputeRdFun>
-double compute_alpha_prime(
+float compute_alpha_prime(
     const ComputeRdFun  rd_fun,
-    const double        rd);
+    const float         rd);
 
-double diffusion_coefficient(
-    const double        sigma_a,
-    const double        sigma_t);
+float diffusion_coefficient(
+    const float         sigma_a,
+    const float         sigma_t);
 
-double diffuse_mean_free_path(
-    const double        sigma_a,
-    const double        sigma_t);
+float diffuse_mean_free_path(
+    const float         sigma_a,
+    const float         sigma_t);
 
-double reduced_extinction_coefficient(
-    const double        dmfp,
-    const double        alpha_prime);
+float reduced_extinction_coefficient(
+    const float         dmfp,
+    const float         alpha_prime);
 
-double effective_extinction_coefficient(
-    const double        sigma_a,
-    const double        sigma_s,
-    const double        anisotropy);
+float effective_extinction_coefficient(
+    const float         sigma_a,
+    const float         sigma_s,
+    const float         anisotropy);
 
 void effective_extinction_coefficient(
     const Spectrum&     sigma_a,
     const Spectrum&     sigma_s,
-    const double        anisotropy,
+    const float         anisotropy,
     Spectrum&           sigma_tr);
 
 // rd and dmfp must have the same size (both RGB or both spectral).
@@ -115,7 +115,7 @@ void compute_absorption_and_scattering_dmfp(
     const ComputeRdFun  rd_fun,
     const Spectrum&     rd,                     // diffuse surface reflectance
     const Spectrum&     dmfp,                   // diffuse mean free path
-    const double        g,                      // anisotropy
+    const float         g,                      // anisotropy
     Spectrum&           sigma_a,                // absorption coefficient
     Spectrum&           sigma_s);               // scattering coefficient
 
@@ -133,27 +133,27 @@ void compute_absorption_and_scattering_mfp(
 // Gaussian diffusion profile.
 //
 
-double gaussian_profile(
-    const double        r,
-    const double        v,
-    const double        r_integral_threshold);
+float gaussian_profile(
+    const float         r,
+    const float         v,
+    const float         r_integral_threshold);
 
-double gaussian_profile_sample(
-    const double        u,
-    const double        v,
-    const double        rmax2);
+float gaussian_profile_sample(
+    const float         u,
+    const float         v,
+    const float         rmax2);
 
-double gaussian_profile_pdf(
-    const double        r,
-    const double        v,
-    const double        r_integral_threshold);
+float gaussian_profile_pdf(
+    const float         r,
+    const float         v,
+    const float         r_integral_threshold);
 
 
 //
 // Dipole diffusion profile.
 //
 
-double dipole_max_radius(const double sigma_tr);
+float dipole_max_radius(const float sigma_tr);
 
 
 //
@@ -167,57 +167,57 @@ double dipole_max_radius(const double sigma_tr);
 //
 
 // Compute the scaling factor s for the searchlight configuration with dmfp parameterization.
-double normalized_diffusion_s_dmfp(
-    const double        a);                     // surface albedo
+float normalized_diffusion_s_dmfp(
+    const float         a);                     // surface albedo
 
 // Compute the scaling factor s for the searchlight configuration with mfp parameterization.
-double normalized_diffusion_s_mfp(
-    const double        a);                     // surface albedo
+float normalized_diffusion_s_mfp(
+    const float         a);                     // surface albedo
 
 // Evaluate the diffuse reflectance profile R(r).
 // The d parameter shapes the height and width of the curve and can be set
 // based on artistic preference or determined based on physical parameters.
-double normalized_diffusion_profile(
-    const double        r,                      // radius
-    const double        d);                     // curve shape
-double normalized_diffusion_profile(
-    const double        r,                      // radius
-    const double        l,                      // mean free path length or diffuse mean free path length
-    const double        s,                      // scaling factor
-    const double        a);                     // surface albedo
+float normalized_diffusion_profile(
+    const float         r,                      // radius
+    const float         d);                     // curve shape
+float normalized_diffusion_profile(
+    const float         r,                      // radius
+    const float         l,                      // mean free path length or diffuse mean free path length
+    const float         s,                      // scaling factor
+    const float         a);                     // surface albedo
 
 // Sample the function r * R(r).
-double normalized_diffusion_sample(
-    const double        u,                      // uniform random sample in [0,1)
-    const double        l,                      // mean free path length or diffuse mean free path length
-    const double        s,                      // scaling factor
-    const double        eps = 0.0001,           // root precision
+float normalized_diffusion_sample(
+    const float         u,                      // uniform random sample in [0,1)
+    const float         l,                      // mean free path length or diffuse mean free path length
+    const float         s,                      // scaling factor
+    const float         eps = 0.0001f,          // root precision
     const size_t        max_iterations = 10);   // max root refinement iterations
 
 // Evaluate the cumulative distribution function of r * R(r).
-double normalized_diffusion_cdf(
-    const double        r,                      // radius
-    const double        d);                     // curve shape
-double normalized_diffusion_cdf(
-    const double        r,                      // radius
-    const double        l,                      // mean free path length or diffuse mean free path length
-    const double        s);                     // scaling factor
+float normalized_diffusion_cdf(
+    const float         r,                      // radius
+    const float         d);                     // curve shape
+float normalized_diffusion_cdf(
+    const float         r,                      // radius
+    const float         l,                      // mean free path length or diffuse mean free path length
+    const float         s);                     // scaling factor
 
 // Evaluate the probability density of a given sample.
-double normalized_diffusion_pdf(
-    const double        r,                      // radius
-    const double        d);                     // curve shape
-double normalized_diffusion_pdf(
-    const double        r,                      // radius
-    const double        l,                      // mean free path length or diffuse mean free path length
-    const double        s);                     // scaling factor
+float normalized_diffusion_pdf(
+    const float         r,                      // radius
+    const float         d);                     // curve shape
+float normalized_diffusion_pdf(
+    const float         r,                      // radius
+    const float         l,                      // mean free path length or diffuse mean free path length
+    const float         s);                     // scaling factor
 
 // Return the radius r at which we consider R(r) zero.
-double normalized_diffusion_max_radius(
-    const double        d);                     // curve shape
-double normalized_diffusion_max_radius(
-    const double        l,                      // mean free path length or diffuse mean free path length
-    const double        s);                     // scaling factor
+float normalized_diffusion_max_radius(
+    const float         d);                     // curve shape
+float normalized_diffusion_max_radius(
+    const float         l,                      // mean free path length or diffuse mean free path length
+    const float         s);                     // scaling factor
 
 
 //
@@ -225,21 +225,21 @@ double normalized_diffusion_max_radius(
 //
 
 template <typename ComputeRdFun>
-inline double compute_alpha_prime(
+inline float compute_alpha_prime(
     const ComputeRdFun  rd_fun,
-    const double        rd)
+    const float         rd)
 {
-    double x0 = 0.0, x1 = 1.0;
+    float x0 = 0.0f, x1 = 1.0f;
 
     // Simple bisection.
     for (size_t i = 0; i < 20; ++i)
     {
-        const double xmid = 0.5 * (x0 + x1);
-        const double x = rd_fun(xmid);
+        const float xmid = 0.5f * (x0 + x1);
+        const float x = rd_fun(xmid);
         x < rd ? x0 = xmid : x1 = xmid;
     }
 
-    return 0.5 * (x0 + x1);
+    return 0.5f * (x0 + x1);
 }
 
 template <typename ComputeRdFun>
@@ -247,18 +247,18 @@ void compute_absorption_and_scattering_dmfp(
     const ComputeRdFun  rd_fun,
     const Spectrum&     rd,
     const Spectrum&     dmfp,
-    const double        g,
+    const float         g,
     Spectrum&           sigma_a,
     Spectrum&           sigma_s)
 {
     assert(rd.size() == dmfp.size());
-    assert(g > -1.0);
-    assert(g < 1.0);
+    assert(g > -1.0f);
+    assert(g < 1.0f);
 
     sigma_a.resize(rd.size());
     sigma_s.resize(rd.size());
 
-    const double rcp_g_complement = 1.0 / (1.0 - g);
+    const float rcp_g_complement = 1.0f / (1.0f - g);
 
     for (size_t i = 0, e = rd.size(); i < e; ++i)
     {
@@ -266,16 +266,16 @@ void compute_absorption_and_scattering_dmfp(
         assert(rd[i] < 1.0f);
 
         // Find alpha' by numerically inverting Rd(alpha').
-        const double alpha_prime = compute_alpha_prime(rd_fun, rd[i]);
-        assert(alpha_prime > 0.0);
-        assert(alpha_prime < 1.0);
+        const float alpha_prime = compute_alpha_prime(rd_fun, rd[i]);
+        assert(alpha_prime > 0.0f);
+        assert(alpha_prime < 1.0f);
 
         // Compute reduced extinction coefficient.
-        const double sigma_t_prime =
+        const float sigma_t_prime =
             reduced_extinction_coefficient(dmfp[i], alpha_prime);
 
         // Compute scattering coefficient.
-        const double sigma_s_prime = alpha_prime * sigma_t_prime;
+        const float sigma_s_prime = alpha_prime * sigma_t_prime;
         sigma_s[i] = static_cast<float>(sigma_s_prime * rcp_g_complement);
 
         // Compute absorption coefficient.
@@ -303,11 +303,11 @@ void compute_absorption_and_scattering_mfp(
         assert(mfp[i] > 0.0f);
 
         // Find alpha by numerically inverting Rd(alpha).
-        const double alpha = compute_alpha_prime(rd_fun, rd[i]);
-        assert(alpha > 0.0);
-        assert(alpha < 1.0);
+        const float alpha = compute_alpha_prime(rd_fun, rd[i]);
+        assert(alpha > 0.0f);
+        assert(alpha < 1.0f);
 
-        const double sigma_t = 1.0 / mfp[i];
+        const float sigma_t = 1.0f / mfp[i];
 
         // Compute scattering coefficient.
         sigma_s[i] = static_cast<float>(alpha * sigma_t);

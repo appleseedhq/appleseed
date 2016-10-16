@@ -72,7 +72,7 @@ APPLESEED_DECLARE_INPUT_VALUES(DipoleBSSRDFInputValues)
     Spectrum    m_sigma_tr;
     Spectrum    m_channel_pdf;
     Spectrum    m_channel_cdf;
-    ScalarInput m_rmax2;
+    float       m_rmax2;
     float       m_eta;
     Spectrum    m_dirpole_reparam_weight;
 };
@@ -99,10 +99,10 @@ class DipoleBSSRDF
         const void*                 data,
         BSSRDFSample&               sample) const APPLESEED_OVERRIDE;
 
-    virtual double evaluate_pdf(
+    virtual float evaluate_pdf(
         const void*                 data,
         const size_t                channel,
-        const double                radius) const APPLESEED_OVERRIDE;
+        const float                 radius) const APPLESEED_OVERRIDE;
 
   private:
     virtual float get_eta(
@@ -157,7 +157,7 @@ class DipoleBSSRDF
         effective_extinction_coefficient(
             values->m_sigma_a,
             values->m_sigma_s,
-            values->m_g,
+            static_cast<float>(values->m_g),
             values->m_sigma_tr);
 
         // Precompute some coefficients and build a CDF for channel sampling.
