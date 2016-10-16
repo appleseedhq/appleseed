@@ -70,7 +70,7 @@ Tracer::Tracer(
   , m_shadergroup_exec(shadergroup_exec)
 #endif
   , m_assume_no_alpha_mapping(!scene.uses_alpha_mapping())
-  , m_transmission_threshold(static_cast<double>(transparency_threshold))
+  , m_transmission_threshold(transparency_threshold)
   , m_max_iterations(max_iterations)
 {
     if (print_details)
@@ -87,12 +87,12 @@ const ShadingPoint& Tracer::do_trace(
     const ShadingRay::Time&     ray_time,
     const VisibilityFlags::Type ray_flags,
     const ShadingRay::DepthType ray_depth,
-    double&                     transmission,
+    float&                      transmission,
     const ShadingPoint*         parent_shading_point)
 {
     assert(is_normalized(direction));
 
-    transmission = 1.0;
+    transmission = 1.0f;
 
     const ShadingPoint* shading_point_ptr = parent_shading_point;
     size_t shading_point_index = 0;
@@ -146,7 +146,7 @@ const ShadingPoint& Tracer::do_trace(
             break;
 
         // Update the transmission factor.
-        transmission *= 1.0 - static_cast<double>(alpha[0]);
+        transmission *= 1.0f - alpha[0];
 
         // Stop once we hit full opacity.
         if (transmission < m_transmission_threshold)
@@ -165,10 +165,10 @@ const ShadingPoint& Tracer::do_trace_between(
     const ShadingRay::Time&     ray_time,
     const VisibilityFlags::Type ray_flags,
     const ShadingRay::DepthType ray_depth,
-    double&                     transmission,
+    float&                      transmission,
     const ShadingPoint*         parent_shading_point)
 {
-    transmission = 1.0;
+    transmission = 1.0f;
 
     const ShadingPoint* shading_point_ptr = parent_shading_point;
     size_t shading_point_index = 0;
@@ -228,7 +228,7 @@ const ShadingPoint& Tracer::do_trace_between(
             break;
 
         // Update the transmission factor.
-        transmission *= 1.0 - static_cast<double>(alpha[0]);
+        transmission *= 1.0f - alpha[0];
 
         // Stop once we hit full opacity.
         if (transmission < m_transmission_threshold)

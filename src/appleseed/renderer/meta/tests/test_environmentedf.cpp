@@ -245,14 +245,14 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
 
             InputEvaluator input_evaluator(texture_cache);
 
-            Vector3d outgoing;
+            Vector3f outgoing;
             Spectrum value1;
-            double probability1;
+            float probability1;
 
             env_edf.sample(
                 shading_context,
                 input_evaluator,
-                Vector2d(0.3, 0.7),
+                Vector2f(0.3f, 0.7f),
                 outgoing,
                 value1,
                 probability1);
@@ -265,7 +265,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
                 outgoing,
                 value2);
 
-            const double probability2 =
+            const float probability2 =
                 env_edf.evaluate_pdf(
                     input_evaluator,
                     outgoing);

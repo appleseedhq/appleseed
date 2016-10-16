@@ -92,7 +92,7 @@ class ShadingRay
     {
         const ObjectInstance*       m_object_instance;
         const BSDF*                 m_bsdf;
-        double                      m_ior;
+        float                       m_ior;
     };
 
     // Public members, in an order that optimizes packing.
@@ -130,7 +130,7 @@ class ShadingRay
         const ShadingRay&           source,
         const ObjectInstance*       object_instance,
         const BSDF*                 bsdf,
-        const double                ior);
+        const float                 ior);
 
     // Copy all media from the source ray except a given medium.
     void remove_medium(
@@ -144,10 +144,10 @@ class ShadingRay
     const ShadingRay::Medium* get_previous_medium() const;
 
     // Return the IOR of the medium the ray is currently in.
-    double get_current_ior() const;
+    float get_current_ior() const;
 
     // Return the IOR of the medium the ray would be in if it would leave the currently active medium.
-    double get_previous_ior() const;
+    float get_previous_ior() const;
 };
 
 
@@ -203,14 +203,14 @@ inline const ShadingRay::Medium* ShadingRay::get_previous_medium() const
     return m_medium_count > 1 ? &m_media[1] : 0;
 }
 
-inline double ShadingRay::get_current_ior() const
+inline float ShadingRay::get_current_ior() const
 {
-    return m_medium_count > 0 ? m_media[0].m_ior : 1.0;
+    return m_medium_count > 0 ? m_media[0].m_ior : 1.0f;
 }
 
-inline double ShadingRay::get_previous_ior() const
+inline float ShadingRay::get_previous_ior() const
 {
-    return m_medium_count > 1 ? m_media[1].m_ior : 1.0;
+    return m_medium_count > 1 ? m_media[1].m_ior : 1.0f;
 }
 
 

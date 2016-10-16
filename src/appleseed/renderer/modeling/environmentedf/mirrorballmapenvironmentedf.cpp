@@ -115,16 +115,16 @@ namespace
         virtual void sample(
             const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
-            const Vector2d&         s,
-            Vector3d&               outgoing,
+            const Vector2f&         s,
+            Vector3f&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
-            const Vector3d local_outgoing = sample_sphere_uniform(s);
-            probability = RcpFourPi<double>();
+            const Vector3f local_outgoing = sample_sphere_uniform(s);
+            probability = RcpFourPi<float>();
 
             Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             outgoing = transform.vector_to_parent(local_outgoing);
 
             lookup_envmap(input_evaluator, local_outgoing, value);
@@ -133,14 +133,14 @@ namespace
         virtual void evaluate(
             const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,
+            const Vector3f&         outgoing,
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
 
             Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
-            const Vector3d local_outgoing = transform.vector_to_local(outgoing);
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            const Vector3f local_outgoing = transform.vector_to_local(outgoing);
 
             lookup_envmap(input_evaluator, local_outgoing, value);
         }
@@ -148,26 +148,26 @@ namespace
         virtual void evaluate(
             const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,
+            const Vector3f&         outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
 
             Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
-            const Vector3d local_outgoing = transform.vector_to_local(outgoing);
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            const Vector3f local_outgoing = transform.vector_to_local(outgoing);
 
             lookup_envmap(input_evaluator, local_outgoing, value);
-            probability = RcpFourPi<double>();
+            probability = RcpFourPi<float>();
         }
 
-        virtual double evaluate_pdf(
+        virtual float evaluate_pdf(
             InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing) const APPLESEED_OVERRIDE
+            const Vector3f&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
-            return RcpFourPi<double>();
+            return RcpFourPi<float>();
         }
 
       private:
@@ -179,15 +179,13 @@ namespace
 
         void lookup_envmap(
             InputEvaluator&         input_evaluator,
-            const Vector3d&         direction,
+            const Vector3f&         direction,
             Spectrum&               value) const
         {
             // Compute the texture coordinates corresponding to this direction.
-            const double d = sqrt(square(direction[0]) + square(direction[1]));
-            const double r = RcpTwoPi<double>() * acos(direction[2]) / d;
-            const Vector2f uv(
-                0.5f + static_cast<float>(direction[0] * r),
-                0.5f + static_cast<float>(direction[1] * r));
+            const float d = sqrt(square(direction[0]) + square(direction[1]));
+            const float r = RcpTwoPi<float>() * acos(direction[2]) / d;
+            const Vector2f uv(0.5f + direction[0] * r, 0.5f + direction[1] * r);
 
             // Evaluate the input.
             const InputValues* values = input_evaluator.evaluate<InputValues>(m_inputs, uv);

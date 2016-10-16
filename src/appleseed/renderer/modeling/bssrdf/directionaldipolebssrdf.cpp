@@ -177,11 +177,11 @@ namespace
 
             double fo;
             const double cos_on = abs(dot(outgoing_dir, outgoing_point.get_shading_normal()));
-            fresnel_transmittance_dielectric(fo, values->m_eta, cos_on);
+            fresnel_transmittance_dielectric(fo, static_cast<double>(values->m_eta), cos_on);
 
             double fi;
             const double cos_in = abs(dot(incoming_dir, incoming_point.get_shading_normal()));
-            fresnel_transmittance_dielectric(fi, values->m_eta, cos_in);
+            fresnel_transmittance_dielectric(fi, static_cast<double>(values->m_eta), cos_in);
 
             const double radius = norm(incoming_point.get_point() - outgoing_point.get_point());
             value *= static_cast<float>(radius * fo * fi * values->m_weight);
@@ -215,7 +215,7 @@ namespace
 
             // Compute direction of real ray source.
             Vector3d wr;
-            APPLESEED_UNUSED const bool successful = refract(wi, ni, values->m_eta, wr);
+            APPLESEED_UNUSED const bool successful = refract(wi, ni, static_cast<double>(values->m_eta), wr);
             assert(successful);
             assert(is_normalized(wr));
 

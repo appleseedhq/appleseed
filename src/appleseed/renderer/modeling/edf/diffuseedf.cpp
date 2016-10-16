@@ -103,40 +103,40 @@ namespace
         virtual void sample(
             SamplingContext&        sampling_context,
             const void*             data,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector2d&         s,
-            Vector3d&               outgoing,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector2f&         s,
+            Vector3f&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(geometric_normal));
 
-            const Vector3d wo = sample_hemisphere_cosine(s);
+            const Vector3f wo = sample_hemisphere_cosine(s);
             outgoing = shading_basis.transform_to_parent(wo);
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
             value *= static_cast<float>(values->m_radiance_multiplier);
 
-            probability = wo.y * RcpPi<double>();
-            assert(probability > 0.0);
+            probability = wo.y * RcpPi<float>();
+            assert(probability > 0.0f);
         }
 
         virtual void evaluate(
             const void*             data,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing,
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
 
-            const double cos_on = dot(outgoing, shading_basis.get_normal());
+            const float cos_on = dot(outgoing, shading_basis.get_normal());
 
             // No emission in or below the shading surface.
-            if (cos_on <= 0.0)
+            if (cos_on <= 0.0f)
             {
                 value.set(0.0f);
                 return;
@@ -149,22 +149,22 @@ namespace
 
         virtual void evaluate(
             const void*             data,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
 
-            const double cos_on = dot(outgoing, shading_basis.get_normal());
+            const float cos_on = dot(outgoing, shading_basis.get_normal());
 
             // No emission in or below the shading surface.
-            if (cos_on <= 0.0)
+            if (cos_on <= 0.0f)
             {
                 value.set(0.0f);
-                probability = 0.0;
+                probability = 0.0f;
                 return;
             }
 
@@ -172,25 +172,25 @@ namespace
             value = values->m_radiance;
             value *= static_cast<float>(values->m_radiance_multiplier);
 
-            probability = cos_on * RcpPi<double>();
+            probability = cos_on * RcpPi<float>();
         }
 
-        virtual double evaluate_pdf(
+        virtual float evaluate_pdf(
             const void*             data,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing) const APPLESEED_OVERRIDE
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
 
-            const double cos_on = dot(outgoing, shading_basis.get_normal());
+            const float cos_on = dot(outgoing, shading_basis.get_normal());
 
             // No emission in or below the shading surface.
-            if (cos_on <= 0.0)
-                return 0.0;
+            if (cos_on <= 0.0f)
+                return 0.0f;
 
-            return cos_on * RcpPi<double>();
+            return cos_on * RcpPi<float>();
         }
 
       private:

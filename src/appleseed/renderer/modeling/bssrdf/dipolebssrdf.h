@@ -73,7 +73,7 @@ APPLESEED_DECLARE_INPUT_VALUES(DipoleBSSRDFInputValues)
     Spectrum    m_channel_pdf;
     Spectrum    m_channel_cdf;
     ScalarInput m_rmax2;
-    ScalarInput m_eta;
+    float       m_eta;
     Spectrum    m_dirpole_reparam_weight;
 };
 
@@ -105,7 +105,7 @@ class DipoleBSSRDF
         const double                radius) const APPLESEED_OVERRIDE;
 
   private:
-    virtual double get_eta(
+    virtual float get_eta(
         const void*                 data) const APPLESEED_OVERRIDE;
 
   protected:
@@ -115,7 +115,7 @@ class DipoleBSSRDF
         DipoleBSSRDFInputValues*    values) const
     {
         // Precompute the relative index of refraction.
-        values->m_eta = compute_eta(shading_point, values->m_ior);
+        values->m_eta = compute_eta(shading_point, static_cast<float>(values->m_ior));
 
         if (m_inputs.source("sigma_a") == 0 || m_inputs.source("sigma_s") == 0)
         {
@@ -204,7 +204,7 @@ inline size_t DipoleBSSRDF::compute_input_data_size(
     return foundation::align(sizeof(DipoleBSSRDFInputValues), 16);
 }
 
-inline double DipoleBSSRDF::get_eta(
+inline float DipoleBSSRDF::get_eta(
     const void*             data) const
 {
     return reinterpret_cast<const DipoleBSSRDFInputValues*>(data)->m_eta;

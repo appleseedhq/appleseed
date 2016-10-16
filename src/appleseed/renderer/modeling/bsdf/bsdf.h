@@ -97,7 +97,7 @@ class APPLESEED_DLLSYMBOL BSDF
 
     // Use a particular (negative) value as the probability density
     // of the Dirac Delta in order to detect incorrect usages.
-    static const double DiracDelta;
+    static const float DiracDelta;
 
     // Constructor.
     BSDF(
@@ -156,42 +156,42 @@ class APPLESEED_DLLSYMBOL BSDF
     // Evaluate the BSDF for a given pair of directions. Return the PDF value
     // for this pair of directions. If the returned probability is zero, the
     // BSDF value is undefined.
-    virtual double evaluate(
+    virtual float evaluate(
         const void*                 data,                       // input values
         const bool                  adjoint,                    // if true, use the adjoint scattering kernel
         const bool                  cosine_mult,                // if true, multiply by |cos(incoming, normal)|
-        const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
-        const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
-        const foundation::Vector3d& outgoing,                   // world space outgoing direction, unit-length
-        const foundation::Vector3d& incoming,                   // world space incoming direction, unit-length
+        const foundation::Vector3f& geometric_normal,           // world space geometric normal, unit-length
+        const foundation::Basis3f&  shading_basis,              // world space orthonormal basis around shading normal
+        const foundation::Vector3f& outgoing,                   // world space outgoing direction, unit-length
+        const foundation::Vector3f& incoming,                   // world space incoming direction, unit-length
         const int                   modes,                      // selected scattering modes
         Spectrum&                   value) const = 0;           // BSDF value, or BSDF value * |cos(incoming, normal)|
 
     // Evaluate the PDF for a given pair of directions.
-    virtual double evaluate_pdf(
+    virtual float evaluate_pdf(
         const void*                 data,                       // input values
-        const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
-        const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
-        const foundation::Vector3d& outgoing,                   // world space outgoing direction, unit-length
-        const foundation::Vector3d& incoming,                   // world space incoming direction, unit-length
+        const foundation::Vector3f& geometric_normal,           // world space geometric normal, unit-length
+        const foundation::Basis3f&  shading_basis,              // world space orthonormal basis around shading normal
+        const foundation::Vector3f& outgoing,                   // world space outgoing direction, unit-length
+        const foundation::Vector3f& incoming,                   // world space incoming direction, unit-length
         const int                   modes) const = 0;           // selected scattering modes
 
     // Compute the index of refraction of the interior medium.
-    virtual double sample_ior(
+    virtual float sample_ior(
         SamplingContext&            sampling_context,
         const void*                 data) const;
 
     // Compute absorption of the interior medium over a given distance.
     virtual void compute_absorption(
         const void*                 data,
-        const double                distance,
+        const float                 distance,
         Spectrum&                   absorption) const;
 
   protected:
     // Force a given direction to lie above a surface described by its normal vector.
-    static foundation::Vector3d force_above_surface(
-        const foundation::Vector3d& direction,
-        const foundation::Vector3d& normal);
+    static foundation::Vector3f force_above_surface(
+        const foundation::Vector3f& direction,
+        const foundation::Vector3f& normal);
 
   private:
     const Type  m_type;
@@ -238,17 +238,17 @@ inline bool BSDF::is_purely_glossy_or_specular() const
     return m_modes == (ScatteringMode::Glossy | ScatteringMode::Specular);
 }
 
-inline foundation::Vector3d BSDF::force_above_surface(
-    const foundation::Vector3d&     direction,
-    const foundation::Vector3d&     normal)
+inline foundation::Vector3f BSDF::force_above_surface(
+    const foundation::Vector3f&     direction,
+    const foundation::Vector3f&     normal)
 {
-    const double Eps = 1.0e-4;
+    const float Eps = 1.0e-4f;
 
-    const double cos_theta = foundation::dot(direction, normal);
-    const double correction = Eps - cos_theta;
+    const float cos_theta = foundation::dot(direction, normal);
+    const float correction = Eps - cos_theta;
 
     return
-        correction > 0.0
+        correction > 0.0f
             ? foundation::normalize(direction + correction * normal)
             : direction;
 }

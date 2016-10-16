@@ -126,11 +126,11 @@ namespace
             Vector3d&               position,
             Vector3d&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
             position = light_transform.get_parent_origin();
             outgoing = light_transform.vector_to_parent(rotate_minus_pi_around_x(sample_cone_uniform(s, m_cos_outer_half_angle)));
-            probability = sample_cone_uniform_pdf(m_cos_outer_half_angle);
+            probability = sample_cone_uniform_pdf(static_cast<float>(m_cos_outer_half_angle));
 
             const Vector3d axis = -normalize(light_transform.get_parent_z());
 
@@ -155,11 +155,11 @@ namespace
             else value.set(0.0f);
         }
 
-        double compute_distance_attenuation(
+        float compute_distance_attenuation(
             const Vector3d&         target,
             const Vector3d&         position) const APPLESEED_OVERRIDE
         {
-            return 1.0 / square_distance(target, position);
+            return 1.0f / static_cast<float>(square_distance(target, position));
         }
 
       private:

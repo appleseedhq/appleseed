@@ -71,20 +71,20 @@ namespace
     struct FresnelDielectricSchlickFun
     {
         const Spectrum&     m_reflectance;
-        const double        m_fr_multiplier;
+        const float         m_fr_multiplier;
 
         FresnelDielectricSchlickFun(
             const Spectrum& reflectance,
-            const double    fr_multiplier)
+            const float     fr_multiplier)
           : m_reflectance(reflectance)
           , m_fr_multiplier(fr_multiplier)
         {
         }
 
         void operator()(
-            const Vector3d& o,
-            const Vector3d& h,
-            const Vector3d& n,
+            const Vector3f& o,
+            const Vector3f& h,
+            const Vector3f& n,
             Spectrum&       value) const
         {
             fresnel_reflectance_dielectric_schlick(
@@ -163,26 +163,26 @@ namespace
             const bool              cosine_mult,
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
-            const Vector3d& n = sample.m_shading_basis.get_normal();
-            const double cos_on = std::min(dot(sample.m_outgoing.get_value(), n), 1.0);
-            if (cos_on < 0.0)
+            const Vector3f& n = sample.m_shading_basis.get_normal();
+            const float cos_on = std::min(dot(sample.m_outgoing.get_value(), n), 1.0f);
+            if (cos_on < 0.0f)
                 return;
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            const double glossiness = values->m_glossiness * values->m_glossiness_multiplier;
+            const float glossiness = static_cast<float>(values->m_glossiness) * static_cast<float>(values->m_glossiness_multiplier);
 
             switch (m_mdf)
             {
               case Blinn:
                 {
-                    const double e = glossiness_to_blinn_exponent(glossiness);
-                    const BlinnMDF<double> blinn_mdf;
-                    MicrofacetBRDFHelper<double>::sample(
+                    const float e = glossiness_to_blinn_exponent(glossiness);
+                    const BlinnMDF<float> blinn_mdf;
+                    MicrofacetBRDFHelper<float>::sample(
                         sampling_context,
                         blinn_mdf,
                         e,
                         e,
-                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        FresnelDielectricSchlickFun(values->m_reflectance, static_cast<float>(values->m_fr_multiplier)),
                         cos_on,
                         sample);
                 }
@@ -190,14 +190,14 @@ namespace
 
               case Beckmann:
                 {
-                    const double a = glossiness_to_roughness(glossiness);
-                    const BeckmannMDF<double> beckmann_mdf;
-                    MicrofacetBRDFHelper<double>::sample(
+                    const float a = glossiness_to_roughness(glossiness);
+                    const BeckmannMDF<float> beckmann_mdf;
+                    MicrofacetBRDFHelper<float>::sample(
                         sampling_context,
                         beckmann_mdf,
                         a,
                         a,
-                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        FresnelDielectricSchlickFun(values->m_reflectance, static_cast<float>(values->m_fr_multiplier)),
                         cos_on,
                         sample);
                 }
@@ -205,14 +205,14 @@ namespace
 
               case Ward:
                 {
-                    const double a = glossiness_to_roughness(glossiness);
-                    const WardMDF<double> ward_mdf;
-                    MicrofacetBRDFHelper<double>::sample(
+                    const float a = glossiness_to_roughness(glossiness);
+                    const WardMDF<float> ward_mdf;
+                    MicrofacetBRDFHelper<float>::sample(
                         sampling_context,
                         ward_mdf,
                         a,
                         a,
-                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        FresnelDielectricSchlickFun(values->m_reflectance, static_cast<float>(values->m_fr_multiplier)),
                         cos_on,
                         sample);
                 }
@@ -220,14 +220,14 @@ namespace
 
               case GGX:
                 {
-                    const double a = glossiness_to_roughness(glossiness);
-                    const GGXMDF<double> ggx_mdf;
-                    MicrofacetBRDFHelper<double>::sample(
+                    const float a = glossiness_to_roughness(glossiness);
+                    const GGXMDF<float> ggx_mdf;
+                    MicrofacetBRDFHelper<float>::sample(
                         sampling_context,
                         ggx_mdf,
                         a,
                         a,
-                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        FresnelDielectricSchlickFun(values->m_reflectance, static_cast<float>(values->m_fr_multiplier)),
                         cos_on,
                         sample);
                 }
@@ -239,46 +239,46 @@ namespace
             sample.m_value *= static_cast<float>(values->m_reflectance_multiplier);
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate(
+        APPLESEED_FORCE_INLINE virtual float evaluate(
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing,
-            const Vector3d&         incoming,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing,
+            const Vector3f&         incoming,
             const int               modes,
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_glossy(modes))
-                return 0.0;
+                return 0.0f;
 
             // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            const double cos_on = dot(outgoing, n);
-            if (cos_in < 0.0 || cos_on < 0.0)
-                return 0.0;
+            const Vector3f& n = shading_basis.get_normal();
+            const float cos_in = dot(incoming, n);
+            const float cos_on = dot(outgoing, n);
+            if (cos_in < 0.0f || cos_on < 0.0f)
+                return 0.0f;
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            const double glossiness = values->m_glossiness * values->m_glossiness_multiplier;
+            const float glossiness = static_cast<float>(values->m_glossiness) * static_cast<float>(values->m_glossiness_multiplier);
 
-            double pdf = 0.0;
+            float pdf = 0.0f;
 
             switch (m_mdf)
             {
               case Blinn:
                 {
-                    const double e = glossiness_to_blinn_exponent(glossiness);
-                    const BlinnMDF<double> blinn_mdf;
-                    pdf = MicrofacetBRDFHelper<double>::evaluate(
+                    const float e = glossiness_to_blinn_exponent(glossiness);
+                    const BlinnMDF<float> blinn_mdf;
+                    pdf = MicrofacetBRDFHelper<float>::evaluate(
                         blinn_mdf,
                         e,
                         e,
                         shading_basis,
                         outgoing,
                         incoming,
-                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        FresnelDielectricSchlickFun(values->m_reflectance, static_cast<float>(values->m_fr_multiplier)),
                         cos_in,
                         cos_on,
                         value);
@@ -287,16 +287,16 @@ namespace
 
               case Beckmann:
                 {
-                    const double a = glossiness_to_roughness(glossiness);
-                    const BeckmannMDF<double> beckman_mdf;
-                    pdf = MicrofacetBRDFHelper<double>::evaluate(
+                    const float a = glossiness_to_roughness(glossiness);
+                    const BeckmannMDF<float> beckman_mdf;
+                    pdf = MicrofacetBRDFHelper<float>::evaluate(
                         beckman_mdf,
                         a,
                         a,
                         shading_basis,
                         outgoing,
                         incoming,
-                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        FresnelDielectricSchlickFun(values->m_reflectance, static_cast<float>(values->m_fr_multiplier)),
                         cos_in,
                         cos_on,
                         value);
@@ -305,16 +305,16 @@ namespace
 
               case Ward:
                 {
-                    const double a = glossiness_to_roughness(glossiness);
-                    const WardMDF<double> ward_mdf;
-                    pdf = MicrofacetBRDFHelper<double>::evaluate(
+                    const float a = glossiness_to_roughness(glossiness);
+                    const WardMDF<float> ward_mdf;
+                    pdf = MicrofacetBRDFHelper<float>::evaluate(
                         ward_mdf,
                         a,
                         a,
                         shading_basis,
                         outgoing,
                         incoming,
-                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        FresnelDielectricSchlickFun(values->m_reflectance, static_cast<float>(values->m_fr_multiplier)),
                         cos_in,
                         cos_on,
                         value);
@@ -323,16 +323,16 @@ namespace
 
               case GGX:
                 {
-                    const double a = glossiness_to_roughness(glossiness);
-                    const GGXMDF<double> ggx_mdf;
-                    pdf =  MicrofacetBRDFHelper<double>::evaluate(
+                    const float a = glossiness_to_roughness(glossiness);
+                    const GGXMDF<float> ggx_mdf;
+                    pdf =  MicrofacetBRDFHelper<float>::evaluate(
                         ggx_mdf,
                         a,
                         a,
                         shading_basis,
                         outgoing,
                         incoming,
-                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        FresnelDielectricSchlickFun(values->m_reflectance, static_cast<float>(values->m_fr_multiplier)),
                         cos_in,
                         cos_on,
                         value);
@@ -346,34 +346,34 @@ namespace
             return pdf;
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
+        APPLESEED_FORCE_INLINE virtual float evaluate_pdf(
             const void*             data,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing,
-            const Vector3d&         incoming,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing,
+            const Vector3f&         incoming,
             const int               modes) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_glossy(modes))
-                return 0.0;
+                return 0.0f;
 
             // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            const double cos_on = dot(outgoing, n);
-            if (cos_in < 0.0 || cos_on < 0.0)
-                return 0.0;
+            const Vector3f& n = shading_basis.get_normal();
+            const float cos_in = dot(incoming, n);
+            const float cos_on = dot(outgoing, n);
+            if (cos_in < 0.0f || cos_on < 0.0f)
+                return 0.0f;
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            const double glossiness = values->m_glossiness * values->m_glossiness_multiplier;
+            const float glossiness = static_cast<float>(values->m_glossiness) * static_cast<float>(values->m_glossiness_multiplier);
 
             switch (m_mdf)
             {
               case Blinn:
                 {
-                    const double e = glossiness_to_blinn_exponent(glossiness);
-                    const BlinnMDF<double> blinn_mdf;
-                    return MicrofacetBRDFHelper<double>::pdf(
+                    const float e = glossiness_to_blinn_exponent(glossiness);
+                    const BlinnMDF<float> blinn_mdf;
+                    return MicrofacetBRDFHelper<float>::pdf(
                         blinn_mdf,
                         e,
                         e,
@@ -385,9 +385,9 @@ namespace
 
               case Beckmann:
                 {
-                    const double a = glossiness_to_roughness(glossiness);
-                    const BeckmannMDF<double> beckmann_mdf;
-                    return MicrofacetBRDFHelper<double>::pdf(
+                    const float a = glossiness_to_roughness(glossiness);
+                    const BeckmannMDF<float> beckmann_mdf;
+                    return MicrofacetBRDFHelper<float>::pdf(
                         beckmann_mdf,
                         a,
                         a,
@@ -399,9 +399,9 @@ namespace
 
               case Ward:
                 {
-                    const double a = glossiness_to_roughness(glossiness);
-                    const WardMDF<double> ward_mdf;
-                    return MicrofacetBRDFHelper<double>::pdf(
+                    const float a = glossiness_to_roughness(glossiness);
+                    const WardMDF<float> ward_mdf;
+                    return MicrofacetBRDFHelper<float>::pdf(
                         ward_mdf,
                         a,
                         a,
@@ -413,9 +413,9 @@ namespace
 
               case GGX:
                 {
-                    const double a = glossiness_to_roughness(glossiness);
-                    const GGXMDF<double> ggx_mdf;
-                    return MicrofacetBRDFHelper<double>::pdf(
+                    const float a = glossiness_to_roughness(glossiness);
+                    const GGXMDF<float> ggx_mdf;
+                    return MicrofacetBRDFHelper<float>::pdf(
                         ggx_mdf,
                         a,
                         a,
@@ -427,7 +427,7 @@ namespace
 
               default:
                  assert(false);
-                 return 0.0;
+                 return 0.0f;
             }
         }
 
@@ -451,14 +451,14 @@ namespace
 
         MDF m_mdf;
 
-        double glossiness_to_blinn_exponent(const double g) const
+        float glossiness_to_blinn_exponent(const float g) const
         {
-            return 100.0 * pow_int<3>(g) + 9900.0 * pow_int<30>(g);
+            return 100.0f * pow_int<3>(g) + 9900.0f * pow_int<30>(g);
         }
 
-        double glossiness_to_roughness(const double g) const
+        float glossiness_to_roughness(const float g) const
         {
-            return max(1.0 - g, 1.0e-6);
+            return max(1.0f - g, 1.0e-6f);
         }
     };
 

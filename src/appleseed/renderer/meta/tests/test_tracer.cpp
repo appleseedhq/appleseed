@@ -259,7 +259,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 #endif
             );
 
-        double transmission;
+        float transmission;
         const ShadingPoint& shading_point =
             tracer.trace(
                 Vector3d(0.0),
@@ -270,7 +270,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 transmission);
 
         EXPECT_FALSE(shading_point.hit());
-        EXPECT_EQ(1.0, transmission);
+        EXPECT_EQ(1.0f, transmission);
     }
 
     TEST_CASE_F(Trace_QuickVariant_GivenNoOccluder, Fixture<EmptyScene>)
@@ -284,7 +284,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 #endif
             );
 
-        const double transmission =
+        const float transmission =
             tracer.trace(
                 Vector3d(0.0),
                 Vector3d(1.0, 0.0, 0.0),
@@ -292,7 +292,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 VisibilityFlags::ShadowRay,
                 0);
 
-        EXPECT_EQ(1.0, transmission);
+        EXPECT_EQ(1.0f, transmission);
     }
 
     TEST_CASE_F(TraceBetween_GivenNoOccluder, Fixture<EmptyScene>)
@@ -306,7 +306,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 #endif
             );
 
-        double transmission;
+        float transmission;
         const ShadingPoint& shading_point =
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
@@ -317,7 +317,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 transmission);
 
         EXPECT_FALSE(shading_point.hit());
-        EXPECT_EQ(1.0, transmission);
+        EXPECT_EQ(1.0f, transmission);
     }
 
     TEST_CASE_F(TraceBetween_QuickVariant_GivenNoOccluder, Fixture<EmptyScene>)
@@ -331,7 +331,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 #endif
             );
 
-        const double transmission =
+        const float transmission =
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
@@ -339,7 +339,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 VisibilityFlags::ShadowRay,
                 0);
 
-        EXPECT_EQ(1.0, transmission);
+        EXPECT_EQ(1.0f, transmission);
     }
 
     struct SceneWithSingleOpaqueOccluder
@@ -362,7 +362,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 #endif
             );
 
-        double transmission;
+        float transmission;
         const ShadingPoint& shading_point =
             tracer.trace(
                 Vector3d(0.0, 0.0, 0.0),
@@ -374,7 +374,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
         ASSERT_TRUE(shading_point.hit());
         EXPECT_FEQ(Vector3d(2.0, 0.0, 0.0), shading_point.get_point());
-        EXPECT_EQ(1.0, transmission);
+        EXPECT_EQ(1.0f, transmission);
     }
 
     TEST_CASE_F(Trace_QuickVariant_GivenSingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
@@ -388,7 +388,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 #endif
             );
 
-        const double transmission =
+        const float transmission =
             tracer.trace(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
@@ -396,7 +396,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 VisibilityFlags::ShadowRay,
                 0);
 
-        EXPECT_EQ(0.0, transmission);
+        EXPECT_EQ(0.0f, transmission);
     }
 
     TEST_CASE_F(TraceBetween_GivenSingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
@@ -410,7 +410,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 #endif
             );
 
-        double transmission;
+        float transmission;
         const ShadingPoint& shading_point =
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
@@ -422,7 +422,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
         ASSERT_TRUE(shading_point.hit());
         EXPECT_FEQ(Vector3d(2.0, 0.0, 0.0), shading_point.get_point());
-        EXPECT_EQ(1.0, transmission);
+        EXPECT_EQ(1.0f, transmission);
     }
 
     TEST_CASE_F(TraceBetween_QuickVariant_GivenSingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
@@ -436,7 +436,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 #endif
             );
 
-        const double transmission =
+        const float transmission =
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
@@ -444,7 +444,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 VisibilityFlags::ShadowRay,
                 0);
 
-        EXPECT_EQ(0.0, transmission);
+        EXPECT_EQ(0.0f, transmission);
     }
 
     struct SceneWithSingleTransparentOccluder
@@ -467,7 +467,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 #endif
             );
 
-        double transmission;
+        float transmission;
         const ShadingPoint& shading_point =
             tracer.trace(
                 Vector3d(0.0, 0.0, 0.0),
@@ -478,7 +478,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 transmission);
 
         ASSERT_FALSE(shading_point.hit());
-        EXPECT_FEQ(0.5, transmission);
+        EXPECT_FEQ(0.5f, transmission);
     }
 
     TEST_CASE_F(Trace_QuickVariant_GivenSingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
@@ -492,7 +492,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 #endif
             );
 
-        const double transmission =
+        const float transmission =
             tracer.trace(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
@@ -500,7 +500,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 VisibilityFlags::ShadowRay,
                 0);
 
-        EXPECT_FEQ(0.5, transmission);
+        EXPECT_FEQ(0.5f, transmission);
     }
 
     TEST_CASE_F(TraceBetween_GivenSingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
@@ -514,7 +514,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 #endif
             );
 
-        double transmission;
+        float transmission;
         const ShadingPoint& shading_point =
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
@@ -525,7 +525,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 transmission);
 
         ASSERT_FALSE(shading_point.hit());
-        EXPECT_FEQ(0.5, transmission);
+        EXPECT_FEQ(0.5f, transmission);
     }
 
     TEST_CASE_F(TraceBetween_QuickVariant_GivenSingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
@@ -539,7 +539,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 #endif
             );
 
-        const double transmission =
+        const float transmission =
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
@@ -547,7 +547,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 VisibilityFlags::ShadowRay,
                 0);
 
-        EXPECT_FEQ(0.5, transmission);
+        EXPECT_FEQ(0.5f, transmission);
     }
 
     struct SceneWithTransparentThenOpaqueOccluders
@@ -571,7 +571,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 #endif
             );
 
-        double transmission;
+        float transmission;
         const ShadingPoint& shading_point =
             tracer.trace(
                 Vector3d(0.0, 0.0, 0.0),
@@ -583,7 +583,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
         ASSERT_TRUE(shading_point.hit());
         EXPECT_FEQ(Vector3d(4.0, 0.0, 0.0), shading_point.get_point());
-        EXPECT_FEQ(0.5, transmission);
+        EXPECT_FEQ(0.5f, transmission);
     }
 
     TEST_CASE_F(Trace_QuickVariant_GivenTransparentThenOpaqueOccluders, Fixture<SceneWithTransparentThenOpaqueOccluders>)
@@ -597,7 +597,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 #endif
             );
 
-        const double transmission =
+        const float transmission =
             tracer.trace(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
@@ -605,7 +605,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 VisibilityFlags::ShadowRay,
                 0);
 
-        EXPECT_FEQ(0.0, transmission);
+        EXPECT_FEQ(0.0f, transmission);
     }
 
     TEST_CASE_F(TraceBetween_GivenTransparentThenOpaqueOccluders_GivenTargetPastOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
@@ -619,7 +619,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 #endif
             );
 
-        double transmission;
+        float transmission;
         const ShadingPoint& shading_point =
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
@@ -631,7 +631,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
         ASSERT_TRUE(shading_point.hit());
         EXPECT_FEQ(Vector3d(4.0, 0.0, 0.0), shading_point.get_point());
-        EXPECT_FEQ(0.5, transmission);
+        EXPECT_FEQ(0.5f, transmission);
     }
 
     TEST_CASE_F(TraceBetween_QuickVariant_GivenTransparentThenOpaqueOccluders_GivenTargetPastOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
@@ -645,7 +645,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 #endif
             );
 
-        const double transmission =
+        const float transmission =
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
@@ -653,7 +653,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 VisibilityFlags::ShadowRay,
                 0);
 
-        EXPECT_FEQ(0.0, transmission);
+        EXPECT_FEQ(0.0f, transmission);
     }
 
     TEST_CASE_F(TraceBetween_GivenTransparentThenOpaqueOccluders_GivenTargetOnOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
@@ -667,7 +667,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 #endif
             );
 
-        double transmission;
+        float transmission;
         const ShadingPoint& shading_point =
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
@@ -678,7 +678,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 transmission);
 
         ASSERT_FALSE(shading_point.hit());
-        EXPECT_FEQ(0.5, transmission);
+        EXPECT_FEQ(0.5f, transmission);
     }
 
     TEST_CASE_F(TraceBetween_QuickVariant_GivenTransparentThenOpaqueOccluders_GivenTargetOnOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
@@ -692,7 +692,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 #endif
             );
 
-        const double transmission =
+        const float transmission =
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(4.0, 0.0, 0.0),
@@ -700,7 +700,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 VisibilityFlags::ShadowRay,
                 0);
 
-        EXPECT_FEQ(0.5, transmission);
+        EXPECT_FEQ(0.5f, transmission);
     }
 
     struct SceneWithTwoOpaqueOccluders
@@ -724,7 +724,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 #endif
             );
 
-        double parent_transmission;
+        float parent_transmission;
         const ShadingPoint& parent_shading_point =
             parent_tracer.trace(
                 Vector3d(0.0, 0.0, 0.0),
@@ -745,13 +745,13 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             , *m_shading_group_exec
 #endif
             );
-        const double transmission =
+        const float transmission =
             tracer.trace_between(
                 parent_shading_point,
                 Vector3d(4.0, 0.0, 0.0),
                 VisibilityFlags::ShadowRay);
 
-        EXPECT_EQ(1.0, transmission);
+        EXPECT_EQ(1.0f, transmission);
     }
 
     struct SceneWithTwoOpaqueOccludersAndScaledAssemblyInstance
@@ -776,7 +776,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 #endif
             );
 
-        double parent_transmission;
+        float parent_transmission;
         const ShadingPoint& parent_shading_point =
             parent_tracer.trace(
                 Vector3d(0.0, 0.0, 0.0),
@@ -797,12 +797,12 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             , *m_shading_group_exec
 #endif
             );
-        const double transmission =
+        const float transmission =
             tracer.trace_between(
                 parent_shading_point,
                 Vector3d(2.0, 0.0, 0.0),
                 VisibilityFlags::ShadowRay);
 
-        EXPECT_EQ(1.0, transmission);
+        EXPECT_EQ(1.0f, transmission);
     }
 }

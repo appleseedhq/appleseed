@@ -67,7 +67,7 @@ inline void microfacet_alpha_from_roughness(
     T&         alpha_x,
     T&         alpha_y)
 {
-    if (anisotropic >= 0.0)
+    if (anisotropic >= T(0.0))
     {
         const T aspect = std::sqrt(T(1.0) - anisotropic * T(0.9));
         alpha_x = std::max(T(0.001), foundation::square(roughness) / aspect);
@@ -102,9 +102,10 @@ class FresnelDielectricFun
         const foundation::Vector<T, 3>& n,
         Spectrum&                       value) const
     {
-        value = m_reflectance;
-        double f;
+        T f;
         foundation::fresnel_reflectance_dielectric(f, m_eta, foundation::dot(o, h));
+
+        value = m_reflectance;
         value *= static_cast<float>(f * m_reflectance_multiplier);
     }
 
@@ -212,7 +213,7 @@ class MicrofacetBRDFHelper
     {
         // Compute the incoming direction by sampling the MDF.
         sampling_context.split_in_place(3, 1);
-        const VectorType s = sampling_context.next_vector2<3>();
+        const VectorType s(sampling_context.next_vector2<3>());
         const VectorType wo = sample.m_shading_basis.transform_to_local(sample.m_outgoing.get_value());
         const VectorType m = mdf.sample(wo, s, alpha_x, alpha_y);
         const VectorType h = sample.m_shading_basis.transform_to_parent(m);

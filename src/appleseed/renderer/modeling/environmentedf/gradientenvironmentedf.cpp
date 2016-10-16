@@ -115,16 +115,16 @@ namespace
         virtual void sample(
             const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
-            const Vector2d&         s,
-            Vector3d&               outgoing,
+            const Vector2f&         s,
+            Vector3f&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
-            const Vector3d local_outgoing = sample_sphere_uniform(s);
-            probability = RcpFourPi<double>();
+            const Vector3f local_outgoing = sample_sphere_uniform(s);
+            probability = RcpFourPi<float>();
 
             Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             outgoing = transform.vector_to_parent(local_outgoing);
 
             compute_gradient(local_outgoing.y, value);
@@ -133,18 +133,18 @@ namespace
         virtual void evaluate(
             const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,
+            const Vector3f&         outgoing,
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
 
             Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Transformd::MatrixType& parent_to_local = transform.get_parent_to_local();
-            const double local_outgoing_y =
-                parent_to_local[ 4] * outgoing.x +
-                parent_to_local[ 5] * outgoing.y +
-                parent_to_local[ 6] * outgoing.z;
+            const float local_outgoing_y =
+                static_cast<float>(parent_to_local[ 4]) * outgoing.x +
+                static_cast<float>(parent_to_local[ 5]) * outgoing.y +
+                static_cast<float>(parent_to_local[ 6]) * outgoing.z;
 
             compute_gradient(local_outgoing_y, value);
         }
@@ -152,30 +152,30 @@ namespace
         virtual void evaluate(
             const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,
+            const Vector3f&         outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
 
             Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Transformd::MatrixType& parent_to_local = transform.get_parent_to_local();
-            const double local_outgoing_y =
-                parent_to_local[ 4] * outgoing.x +
-                parent_to_local[ 5] * outgoing.y +
-                parent_to_local[ 6] * outgoing.z;
+            const float local_outgoing_y =
+                static_cast<float>(parent_to_local[ 4]) * outgoing.x +
+                static_cast<float>(parent_to_local[ 5]) * outgoing.y +
+                static_cast<float>(parent_to_local[ 6]) * outgoing.z;
 
             compute_gradient(local_outgoing_y, value);
-            probability = RcpFourPi<double>();
+            probability = RcpFourPi<float>();
         }
 
-        virtual double evaluate_pdf(
+        virtual float evaluate_pdf(
             InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing) const APPLESEED_OVERRIDE
+            const Vector3f&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
-            return RcpFourPi<double>();
+            return RcpFourPi<float>();
         }
 
       private:
@@ -187,11 +187,11 @@ namespace
 
         InputValues     m_values;
 
-        void compute_gradient(const double y, Spectrum& output) const
+        void compute_gradient(const float y, Spectrum& output) const
         {
             // Compute the blending factor between the horizon and zenith colors.
-            const double angle = acos(abs(y));
-            const double blend = angle * (1.0 / HalfPi<double>());
+            const float angle = acos(abs(y));
+            const float blend = angle * (1.0f / HalfPi<float>());
 
             // Blend the horizon and zenith radiances.
             const float k = static_cast<float>(blend);

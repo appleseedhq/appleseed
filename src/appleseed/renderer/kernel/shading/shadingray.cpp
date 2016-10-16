@@ -53,7 +53,7 @@ void ShadingRay::add_medium(
     const ShadingRay&       source,
     const ObjectInstance*   object_instance,
     const BSDF*             bsdf,
-    const double            ior)
+    const float             ior)
 {
     assert(m_medium_count == 0);
 

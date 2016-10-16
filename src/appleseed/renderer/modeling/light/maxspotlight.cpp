@@ -114,8 +114,8 @@ namespace
             m_rcp_screen_half_size = 1.0 / tan(outer_half_angle);
             m_up = Vector3d(sin(tilt_angle), cos(tilt_angle), 0.0);
 
-            m_decay_start = m_params.get_optional<double>("decay_start", 0.0);
-            m_decay_exponent = m_params.get_optional<double>("decay_exponent", 2.0);
+            m_decay_start = m_params.get_optional<float>("decay_start", 0.0f);
+            m_decay_exponent = m_params.get_optional<float>("decay_exponent", 2.0f);
 
             return true;
         }
@@ -127,11 +127,11 @@ namespace
             Vector3d&               position,
             Vector3d&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
             position = light_transform.get_parent_origin();
             outgoing = light_transform.vector_to_parent(rotate_minus_pi_around_x(sample_cone_uniform(s, m_cos_outer_half_angle)));
-            probability = sample_cone_uniform_pdf(m_cos_outer_half_angle);
+            probability = sample_cone_uniform_pdf(static_cast<float>(m_cos_outer_half_angle));
 
             const Vector3d axis = -normalize(light_transform.get_parent_z());
 
@@ -156,13 +156,13 @@ namespace
             else value.set(0.0f);
         }
 
-        double compute_distance_attenuation(
+        float compute_distance_attenuation(
             const Vector3d&         target,
             const Vector3d&         position) const APPLESEED_OVERRIDE
         {
             return
                 autodesk_max_decay(
-                    sqrt(square_distance(target, position)),
+                    sqrt(static_cast<float>(square_distance(target, position))),
                     m_decay_start,
                     m_decay_exponent);
         }
@@ -183,8 +183,8 @@ namespace
 
         Vector3d        m_up;                       // light space
 
-        double          m_decay_start;              // distance at which light decay starts
-        double          m_decay_exponent;           // exponent of the light decay function
+        float           m_decay_start;              // distance at which light decay starts
+        float           m_decay_exponent;           // exponent of the light decay function
 
         static Vector3d rotate_minus_pi_around_x(const Vector3d& v)
         {

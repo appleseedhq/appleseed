@@ -110,92 +110,92 @@ namespace
         {
             const InputValues* values = static_cast<const InputValues*>(data);
             const BackfacingPolicy backfacing_policy(sample.m_shading_basis, values->m_backfacing);
-            const Vector3d wo = backfacing_policy.transform_to_local(sample.m_outgoing.get_value());
+            const Vector3f wo = backfacing_policy.transform_to_local(sample.m_outgoing.get_value());
 
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);
-            const Vector2d s = sampling_context.next_vector2<2>();
-            const Vector3d wi = sample_hemisphere_cosine(s);
+            const Vector2f s(sampling_context.next_vector2<2>());
+            const Vector3f wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
-            sample.m_incoming = Dual3d(
-                wo.y < 0.0
+            sample.m_incoming = Dual3f(
+                wo.y < 0.0f
                     ?  backfacing_policy.transform_to_parent(wi)
                     : -backfacing_policy.transform_to_parent(wi));
 
             // Compute the BRDF value.
             sample.m_value = values->m_transmittance;
-            sample.m_value *= static_cast<float>(values->m_transmittance_multiplier * RcpPi<double>());
+            sample.m_value *= static_cast<float>(values->m_transmittance_multiplier) * RcpPi<float>();
 
             // Compute the probability density of the sampled direction.
-            sample.m_probability = abs(wi.y) * RcpPi<double>();
-            assert(sample.m_probability > 0.0);
+            sample.m_probability = abs(wi.y) * RcpPi<float>();
+            assert(sample.m_probability > 0.0f);
 
             // Set the scattering mode.
             sample.m_mode = ScatteringMode::Diffuse;
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate(
+        APPLESEED_FORCE_INLINE virtual float evaluate(
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
+            const Vector3f&     geometric_normal,
+            const Basis3f&      shading_basis,
+            const Vector3f&     outgoing,
+            const Vector3f&     incoming,
             const int           modes,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_diffuse(modes))
-                return 0.0;
+                return 0.0f;
 
             const InputValues* values = static_cast<const InputValues*>(data);
             const BackfacingPolicy backfacing_policy(shading_basis, values->m_backfacing);
 
-            const Vector3d& n = backfacing_policy.get_normal();
-            const double cos_in = dot(incoming, n);
-            const double cos_on = dot(outgoing, n);
+            const Vector3f& n = backfacing_policy.get_normal();
+            const float cos_in = dot(incoming, n);
+            const float cos_on = dot(outgoing, n);
 
-            if (cos_in * cos_on < 0.0)
+            if (cos_in * cos_on < 0.0f)
             {
                 // Compute the BRDF value.
                 value = values->m_transmittance;
-                value *= static_cast<float>(values->m_transmittance_multiplier * RcpPi<double>());
+                value *= static_cast<float>(values->m_transmittance_multiplier) * RcpPi<float>();
 
                 // Return the probability density of the sampled direction.
-                return abs(cos_in) * RcpPi<double>();
+                return abs(cos_in) * RcpPi<float>();
             }
             else
             {
                 // No transmission in the same hemisphere as outgoing.
-                return 0.0;
+                return 0.0f;
             }
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
+        APPLESEED_FORCE_INLINE virtual float evaluate_pdf(
             const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
+            const Vector3f&     geometric_normal,
+            const Basis3f&      shading_basis,
+            const Vector3f&     outgoing,
+            const Vector3f&     incoming,
             const int           modes) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_diffuse(modes))
-                return 0.0;
+                return 0.0f;
 
             const InputValues* values = static_cast<const InputValues*>(data);
             const BackfacingPolicy backfacing_policy(shading_basis, values->m_backfacing);
 
-            const Vector3d& n = backfacing_policy.get_normal();
-            const double cos_in = dot(incoming, n);
-            const double cos_on = dot(outgoing, n);
+            const Vector3f& n = backfacing_policy.get_normal();
+            const float cos_in = dot(incoming, n);
+            const float cos_on = dot(outgoing, n);
 
-            if (cos_in * cos_on < 0.0)
-                return abs(cos_in) * RcpPi<double>();
+            if (cos_in * cos_on < 0.0f)
+                return abs(cos_in) * RcpPi<float>();
             else
             {
                 // No transmission in the same hemisphere as outgoing.
-                return 0.0;
+                return 0.0f;
             }
         }
 

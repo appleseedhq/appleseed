@@ -46,19 +46,19 @@ class BSDFSample
 {
   public:
     // Inputs.
-    const foundation::Vector3d      m_geometric_normal;     // world space geometric normal at the point where sampling is done, unit-length
-    const foundation::Vector3d      m_shading_normal;       // world space shading normal at the point where sampling is done, unit-length
-    foundation::Basis3d             m_shading_basis;        // world space shading basis at the point where sampling is done
-    const foundation::Vector3d      m_dndu;
-    const foundation::Vector3d      m_dndv;
+    const foundation::Vector3f      m_geometric_normal;     // world space geometric normal at the point where sampling is done, unit-length
+    const foundation::Vector3f      m_shading_normal;       // world space shading normal at the point where sampling is done, unit-length
+    foundation::Basis3f             m_shading_basis;        // world space shading basis at the point where sampling is done
+    const foundation::Vector3f      m_dndu;
+    const foundation::Vector3f      m_dndv;
     const foundation::Vector2f      m_duvdx;
     const foundation::Vector2f      m_duvdy;
-    const foundation::Dual3d        m_outgoing;             // world space outgoing direction, unit-length
+    const foundation::Dual3f        m_outgoing;             // world space outgoing direction, unit-length
 
     // Outputs.
     ScatteringMode::Mode            m_mode;                 // scattering mode
-    foundation::Dual3d              m_incoming;             // world space incoming direction, unit-length, defined only if m_mode != Absorption
-    double                          m_probability;          // PDF value, defined only if m_mode != Absorption
+    foundation::Dual3f              m_incoming;             // world space incoming direction, unit-length, defined only if m_mode != Absorption
+    float                           m_probability;          // PDF value, defined only if m_mode != Absorption
     Spectrum                        m_value;                // BSDF value, defined only if m_mode != Absorption
 
     // Constructor.
@@ -67,14 +67,14 @@ class BSDFSample
         const foundation::Dual3d&   outgoing);
 
     void compute_reflected_differentials();
-    void compute_transmitted_differentials(const double eta);
+    void compute_transmitted_differentials(const float eta);
 
   private:
     void compute_normal_derivatives(
-        foundation::Vector3d&       dndx,
-        foundation::Vector3d&       dndy,
-        double&                     ddndx,
-        double&                     ddndy) const;
+        foundation::Vector3f&       dndx,
+        foundation::Vector3f&       dndy,
+        float&                      ddndx,
+        float&                      ddndy) const;
 
     void apply_pdf_differentials_heuristic();
 };

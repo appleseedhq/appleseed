@@ -136,16 +136,16 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const double                radius) const = 0;
 
   protected:
-    double compute_eta(
-        const ShadingPoint&     shading_point,
-        const double            ior) const;
-
-    void make_reflectance_and_dmfp_compatible(
-        Spectrum&               reflectance,
-        const Spectrum&         dmfp) const;
-
     struct Impl;
     Impl* impl;
+
+    float compute_eta(
+        const ShadingPoint&         shading_point,
+        const float                 ior) const;
+
+    void make_reflectance_and_dmfp_compatible(
+        Spectrum&                   reflectance,
+        const Spectrum&             dmfp) const;
 };
 
 }       // namespace renderer

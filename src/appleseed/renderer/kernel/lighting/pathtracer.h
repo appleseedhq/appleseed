@@ -279,7 +279,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                     shading_context,
                     input_evaluator,
                     *vertex.m_shading_point);
-                const double ior =
+                const float ior =
                     material_data.m_bsdf->sample_ior(
                         sampling_context,
                         input_evaluator.data());
@@ -571,7 +571,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             // Refracted ray: inherit the medium list of the parent ray and add/remove the current medium.
             if (entering)
             {
-                const double ior =
+                const float ior =
                     vertex.m_bsdf->sample_ior(
                         sampling_context,
                         bsdf_input_evaluator.data());

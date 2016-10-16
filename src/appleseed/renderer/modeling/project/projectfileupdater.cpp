@@ -851,8 +851,8 @@ namespace
             string      m_bsdf_transmittance;
             string      m_bsdf_transmittance_multiplier;
             string      m_bsdf_fresnel_multiplier;
-            double      m_bsdf_from_ior;
-            double      m_bsdf_to_ior;
+            float       m_bsdf_from_ior;
+            float       m_bsdf_to_ior;
             string      m_bssrdf;
             string      m_edf;
             string      m_alpha_map;
@@ -983,8 +983,8 @@ namespace
                 info.m_bsdf_transmittance = bsdf_params.get<string>("transmittance");
                 info.m_bsdf_transmittance_multiplier = bsdf_params.get_optional<string>("transmittance_multiplier", "1.0");
                 info.m_bsdf_fresnel_multiplier = bsdf_params.get_optional<string>("fresnel_multiplier", "1.0");
-                info.m_bsdf_from_ior = bsdf_params.get<double>("from_ior");
-                info.m_bsdf_to_ior = bsdf_params.get<double>("to_ior");
+                info.m_bsdf_from_ior = bsdf_params.get<float>("from_ior");
+                info.m_bsdf_to_ior = bsdf_params.get<float>("to_ior");
                 info.m_bssrdf = material_params.get_optional<string>("bssrdf", "");
                 info.m_edf = material_params.get_optional<string>("edf", "");
                 info.m_alpha_map = material_params.get_optional<string>("alpha_map", "");
@@ -1061,8 +1061,8 @@ namespace
             bsdf_params.strings().remove("from_ior");
             bsdf_params.strings().remove("to_ior");
 
-            const double ior =
-                feq(info.m_bsdf_from_ior, 1.0) ? info.m_bsdf_to_ior : info.m_bsdf_from_ior;
+            const float ior =
+                feq(info.m_bsdf_from_ior, 1.0f) ? info.m_bsdf_to_ior : info.m_bsdf_from_ior;
             bsdf_params.strings().insert("ior", ior);
 
             cleanup_entity_name(*info.m_bsdf);

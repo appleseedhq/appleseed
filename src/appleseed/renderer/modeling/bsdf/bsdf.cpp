@@ -53,7 +53,7 @@ UniqueID BSDF::get_class_uid()
     return g_class_uid;
 }
 
-const double BSDF::DiracDelta = -1.0;
+const float BSDF::DiracDelta = -1.0f;
 
 BSDF::BSDF(
     const char*             name,
@@ -90,16 +90,16 @@ void BSDF::prepare_inputs(
 {
 }
 
-double BSDF::sample_ior(
+float BSDF::sample_ior(
     SamplingContext&        sampling_context,
     const void*             data) const
 {
-    return 1.0;
+    return 1.0f;
 }
 
 void BSDF::compute_absorption(
     const void*             data,
-    const double            distance,
+    const float             distance,
     Spectrum&               absorption) const
 {
     absorption.set(1.0f);

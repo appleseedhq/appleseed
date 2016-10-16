@@ -162,7 +162,7 @@ namespace
         {
             CompositeSurfaceClosure* c = reinterpret_cast<CompositeSurfaceClosure*>(input_evaluator.data());
             new (c) CompositeSurfaceClosure(
-                shading_point.get_shading_basis(),
+                Basis3f(shading_point.get_shading_basis()),
                 shading_point.get_osl_shader_globals().Ci);
 
             // Inject values into any children layered closure.
@@ -205,7 +205,7 @@ namespace
             if (c->get_num_closures() > 0)
             {
                 sampling_context.split_in_place(1, 1);
-                const double s = sampling_context.next_double2();
+                const float s = static_cast<float>(sampling_context.next_double2());
 
                 const size_t closure_index = c->choose_closure(s);
                 sample.m_shading_basis = c->get_closure_shading_basis(closure_index);
@@ -221,18 +221,18 @@ namespace
             }
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate(
+        APPLESEED_FORCE_INLINE virtual float evaluate(
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing,
-            const Vector3d&         incoming,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing,
+            const Vector3f&         incoming,
             const int               modes,
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
-            double prob = 0.0;
+            float prob = 0.0f;
             value.set(0.0f);
 
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
@@ -240,7 +240,7 @@ namespace
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
                 Spectrum s;
-                const double bsdf_prob =
+                const float bsdf_prob =
                     bsdf_from_closure_id(c->get_closure_type(i))
                         .evaluate(
                             c->get_closure_input_values(i),
@@ -253,7 +253,7 @@ namespace
                             modes,
                             s);
 
-                if (bsdf_prob > 0.0)
+                if (bsdf_prob > 0.0f)
                 {
                     madd(value, s, c->get_closure_weight(i));
                     prob += bsdf_prob * c->get_closure_pdf_weight(i);
@@ -263,20 +263,20 @@ namespace
             return prob;
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
+        APPLESEED_FORCE_INLINE virtual float evaluate_pdf(
             const void*             data,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing,
-            const Vector3d&         incoming,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing,
+            const Vector3f&         incoming,
             const int               modes) const APPLESEED_OVERRIDE
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
-            double prob = 0.0;
+            float prob = 0.0f;
 
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
-                const double bsdf_prob =
+                const float bsdf_prob =
                     bsdf_from_closure_id(c->get_closure_type(i))
                         .evaluate_pdf(
                             c->get_closure_input_values(i),
@@ -286,25 +286,25 @@ namespace
                             incoming,
                             modes);
 
-                if (bsdf_prob > 0.0)
+                if (bsdf_prob > 0.0f)
                     prob += bsdf_prob * c->get_closure_pdf_weight(i);
             }
 
             return prob;
         }
 
-        virtual double sample_ior(
+        virtual float sample_ior(
             SamplingContext&            sampling_context,
             const void*                 data) const APPLESEED_OVERRIDE
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
             sampling_context.split_in_place(1, 1);
-            return c->choose_ior(sampling_context.next_double2());
+            return c->choose_ior(static_cast<float>(sampling_context.next_double2()));
         }
 
         virtual void compute_absorption(
             const void*                 data,
-            const double                distance,
+            const float                distance,
             Spectrum&                   absorption) const APPLESEED_OVERRIDE
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
@@ -317,9 +317,9 @@ namespace
                         c->get_closure_input_values(i),
                         distance,
                         a);
-                const float w = static_cast<float>(c->get_closure_pdf_weight(i));
+                const float w = c->get_closure_pdf_weight(i);
 
-                // absorption += lerp(1.0, a, w)
+                // absorption += lerp(1.0f, a, w)
                 a *= w;
                 absorption += a;
                 a.set(1.0f - w);

@@ -145,7 +145,7 @@ namespace
             Vector3d&               position,
             Vector3d&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
             sample_disk(
                 light_transform,
@@ -166,7 +166,7 @@ namespace
             Vector3d&               position,
             Vector3d&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
             const size_t target_count = targets.size();
 
@@ -221,11 +221,11 @@ namespace
             value *= SunSolidAngle;
         }
 
-        virtual double compute_distance_attenuation(
+        virtual float compute_distance_attenuation(
             const Vector3d&         target,
             const Vector3d&         position) const APPLESEED_OVERRIDE
         {
-            return 1.0;
+            return 1.0f;
         }
 
       private:
@@ -405,7 +405,7 @@ namespace
             Vector3d&               position,
             Vector3d&               outgoing,
             Spectrum&               value,
-            double&                 probability) const
+            float&                  probability) const
         {
             outgoing = -normalize(light_transform.get_parent_z());
 
@@ -418,7 +418,7 @@ namespace
                 + disk_radius * p[0] * basis.get_tangent_u()
                 + disk_radius * p[1] * basis.get_tangent_v();
 
-            probability = 1.0 / (Pi<double>() * disk_radius * disk_radius);
+            probability = 1.0f / (Pi<float>() * square(static_cast<float>(disk_radius)));
 
             compute_sun_radiance(
                 outgoing,

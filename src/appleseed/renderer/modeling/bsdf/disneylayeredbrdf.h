@@ -91,23 +91,23 @@ class DisneyLayeredBRDF
         const bool                      cosine_mult,
         BSDFSample&                     sample) const APPLESEED_OVERRIDE;
 
-    virtual double evaluate(
+    virtual float evaluate(
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
-        const foundation::Vector3d&     geometric_normal,
-        const foundation::Basis3d&      shading_basis,
-        const foundation::Vector3d&     outgoing,
-        const foundation::Vector3d&     incoming,
+        const foundation::Vector3f&     geometric_normal,
+        const foundation::Basis3f&      shading_basis,
+        const foundation::Vector3f&     outgoing,
+        const foundation::Vector3f&     incoming,
         const int                       modes,
         Spectrum&                       value) const APPLESEED_OVERRIDE;
 
-    virtual double evaluate_pdf(
+    virtual float evaluate_pdf(
         const void*                     data,
-        const foundation::Vector3d&     geometric_normal,
-        const foundation::Basis3d&      shading_basis,
-        const foundation::Vector3d&     outgoing,
-        const foundation::Vector3d&     incoming,
+        const foundation::Vector3f&     geometric_normal,
+        const foundation::Basis3f&      shading_basis,
+        const foundation::Vector3f&     outgoing,
+        const foundation::Vector3f&     incoming,
         const int                       modes) const APPLESEED_OVERRIDE;
 
   private:

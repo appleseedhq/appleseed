@@ -91,7 +91,7 @@ class APPLESEED_DLLSYMBOL EDF
     int get_flags() const;
 
     // Retrieve the importance multiplier.
-    double get_uncached_importance_multiplier() const;
+    float get_uncached_importance_multiplier() const;
 
     // Get the cached light near start value.
     double get_light_near_start() const;
@@ -118,34 +118,34 @@ class APPLESEED_DLLSYMBOL EDF
     virtual void sample(
         SamplingContext&            sampling_context,
         const void*                 data,                       // input values
-        const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
-        const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
-        const foundation::Vector2d& s,                          // sample in [0,1)^2
-        foundation::Vector3d&       outgoing,                   // world space emission direction, unit-length
+        const foundation::Vector3f& geometric_normal,           // world space geometric normal, unit-length
+        const foundation::Basis3f&  shading_basis,              // world space orthonormal basis around shading normal
+        const foundation::Vector2f& s,                          // sample in [0,1)^2
+        foundation::Vector3f&       outgoing,                   // world space emission direction, unit-length
         Spectrum&                   value,                      // EDF value for this direction
-        double&                     probability) const = 0;     // PDF value
+        float&                      probability) const = 0;     // PDF value
 
     // Evaluate the EDF for a given emission direction.
     virtual void evaluate(
         const void*                 data,                       // input values
-        const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
-        const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
-        const foundation::Vector3d& outgoing,                   // world space emission direction, unit-length
+        const foundation::Vector3f& geometric_normal,           // world space geometric normal, unit-length
+        const foundation::Basis3f&  shading_basis,              // world space orthonormal basis around shading normal
+        const foundation::Vector3f& outgoing,                   // world space emission direction, unit-length
         Spectrum&                   value) const = 0;           // EDF value for this direction
     virtual void evaluate(
         const void*                 data,                       // input values
-        const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
-        const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
-        const foundation::Vector3d& outgoing,                   // world space emission direction, unit-length
+        const foundation::Vector3f& geometric_normal,           // world space geometric normal, unit-length
+        const foundation::Basis3f&  shading_basis,              // world space orthonormal basis around shading normal
+        const foundation::Vector3f& outgoing,                   // world space emission direction, unit-length
         Spectrum&                   value,                      // EDF value for this direction
-        double&                     probability) const = 0;     // PDF value
+        float&                      probability) const = 0;     // PDF value
 
     // Evaluate the PDF for a given emission direction.
-    virtual double evaluate_pdf(
+    virtual float evaluate_pdf(
         const void*                 data,                       // input values
-        const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
-        const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
-        const foundation::Vector3d& outgoing) const = 0;        // world space emission direction, unit-length
+        const foundation::Vector3f& geometric_normal,           // world space geometric normal, unit-length
+        const foundation::Basis3f&  shading_basis,              // world space orthonormal basis around shading normal
+        const foundation::Vector3f& outgoing) const = 0;        // world space emission direction, unit-length
 
   private:
     int    m_flags;

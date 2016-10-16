@@ -114,11 +114,11 @@ void BSSRDF::prepare_inputs(
 {
 }
 
-double BSSRDF::compute_eta(
+float BSSRDF::compute_eta(
     const ShadingPoint&     shading_point,
-    const double            ior) const
+    const float             ior) const
 {
-    const double outside_ior =
+    const float outside_ior =
         shading_point.is_entering()
             ? shading_point.get_ray().get_current_ior()
             : shading_point.get_ray().get_previous_ior();

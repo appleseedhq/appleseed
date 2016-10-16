@@ -123,12 +123,12 @@ namespace
             Vector3d&               position,
             Vector3d&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
             position = light_transform.get_parent_origin();
             outgoing = sample_sphere_uniform(s);
             value = m_values.m_intensity;
-            probability = RcpFourPi<double>();
+            probability = RcpFourPi<float>();
         }
 
         virtual void evaluate(
@@ -137,18 +137,18 @@ namespace
             const Vector3d&         target,
             Vector3d&               position,
             Vector3d&               outgoing,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+            Spectrum&               value) const APPLESEED_OVERRIDE
         {
             position = light_transform.get_parent_origin();
             outgoing = normalize(target - position);
             value = m_values.m_intensity;
         }
 
-        double compute_distance_attenuation(
+        float compute_distance_attenuation(
             const Vector3d&         target,
             const Vector3d&         position) const APPLESEED_OVERRIDE
         {
-            return 1.0 / square_distance(target, position);
+            return 1.0f / static_cast<float>(square_distance(target, position));
         }
 
       private:

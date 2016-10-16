@@ -330,7 +330,7 @@ namespace
 
                 // Compute the transmission factor between the light vertex and the camera.
                 // Prevent self-intersections by letting the ray originate from the camera.
-                const double transmission =
+                const float transmission =
                     m_shading_context.get_tracer().trace_between(
                         light_sample.m_point - camera_outgoing,
                         light_sample.m_point,
@@ -339,7 +339,7 @@ namespace
                         0);
 
                 // Ignore occluded vertices.
-                if (transmission == 0.0)
+                if (transmission == 0.0f)
                     return;
 
                 // Adjust cos(alpha) to account for the fact that the camera outgoing direction was not unit-length.
@@ -371,7 +371,7 @@ namespace
                     return;
 
                 // Compute the transmission factor between the light vertex and the camera.
-                const double transmission =
+                const float transmission =
                     m_shading_context.get_tracer().trace_between(
                         light_vertex - camera_outgoing,
                         light_vertex,
@@ -380,7 +380,7 @@ namespace
                         0);
 
                 // Ignore occluded vertices.
-                if (transmission == 0.0)
+                if (transmission == 0.0f)
                     return;
 
                 // Store the contribution of this vertex.
@@ -415,7 +415,7 @@ namespace
 
                 // Compute the transmission factor between the path vertex and the camera.
                 // Prevent self-intersections by letting the ray originate from the camera.
-                const double transmission =
+                const float transmission =
                     m_shading_context.get_tracer().trace_between(
                         vertex.get_point() - camera_outgoing,
                         vertex.get_point(),
@@ -424,7 +424,7 @@ namespace
                         static_cast<ShadingRay::DepthType>(vertex.m_path_length));  // ray depth = (path length - 1) + 1
 
                 // Ignore occluded vertices.
-                if (transmission == 0.0)
+                if (transmission == 0.0f)
                     return;
 
                 // Normalize the camera outgoing direction.

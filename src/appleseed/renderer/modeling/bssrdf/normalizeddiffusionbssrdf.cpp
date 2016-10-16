@@ -112,7 +112,7 @@ namespace
                 reinterpret_cast<NormalizedDiffusionBSSRDFInputValues*>(data);
 
             // Precompute the relative index of refraction.
-            values->m_eta = compute_eta(shading_point, values->m_ior);
+            values->m_eta = compute_eta(shading_point, static_cast<float>(values->m_ior));
 
             make_reflectance_and_dmfp_compatible(values->m_reflectance, values->m_dmfp);
 
@@ -199,7 +199,7 @@ namespace
             return true;
         }
 
-        virtual double get_eta(
+        virtual float get_eta(
             const void*         data) const APPLESEED_OVERRIDE
         {
             return reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data)->m_eta;

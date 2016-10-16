@@ -95,28 +95,28 @@ class APPLESEED_DLLSYMBOL EnvironmentEDF
     virtual void sample(
         const ShadingContext&       shading_context,
         InputEvaluator&             input_evaluator,
-        const foundation::Vector2d& s,                          // sample in [0,1)^2
-        foundation::Vector3d&       outgoing,                   // world space emission direction, unit-length
+        const foundation::Vector2f& s,                          // sample in [0,1)^2
+        foundation::Vector3f&       outgoing,                   // world space emission direction, unit-length
         Spectrum&                   value,                      // EDF value for this direction
-        double&                     probability) const = 0;     // PDF value
+        float&                      probability) const = 0;     // PDF value
 
     // Evaluate the EDF for a given emission direction.
     virtual void evaluate(
         const ShadingContext&       shading_context,
         InputEvaluator&             input_evaluator,
-        const foundation::Vector3d& outgoing,                   // world space emission direction, unit-length
+        const foundation::Vector3f& outgoing,                   // world space emission direction, unit-length
         Spectrum&                   value) const = 0;           // EDF value for this direction
     virtual void evaluate(
         const ShadingContext&       shading_context,
         InputEvaluator&             input_evaluator,
-        const foundation::Vector3d& outgoing,                   // world space emission direction, unit-length
+        const foundation::Vector3f& outgoing,                   // world space emission direction, unit-length
         Spectrum&                   value,                      // EDF value for this direction
-        double&                     probability) const = 0;     // PDF value
+        float&                      probability) const = 0;     // PDF value
 
     // Evaluate the PDF for a given emission direction.
-    virtual double evaluate_pdf(
+    virtual float evaluate_pdf(
         InputEvaluator&             input_evaluator,
-        const foundation::Vector3d& outgoing) const = 0;        // world space emission direction, unit-length
+        const foundation::Vector3f& outgoing) const = 0;        // world space emission direction, unit-length
 
   protected:
     TransformSequence m_transform_sequence;

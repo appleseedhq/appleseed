@@ -470,7 +470,7 @@ class BeckmannMDF
 
         // Check if we are close enough already.
         // This also avoids NaNs as we get close to the root.
-        Vector2d slope;
+        Vector<T, 2> slope;
 
         if (std::abs(value) > T(1.0e-6))
         {
@@ -501,13 +501,14 @@ class BeckmannMDF
   private:
 
     //
-    //  Reference:
+    // Reference:
     //
-    //    Handbook of Mathematical Functions.
-    //    Abramowitz and Stegun.
-    //    http://people.math.sfu.ca/~cbm/aands/toc.htm
+    //   Handbook of Mathematical Functions.
+    //   Abramowitz and Stegun.
+    //   http://people.math.sfu.ca/~cbm/aands/toc.htm
     //
-    //  Copied from from pbrt-v3.
+    // Copied from from pbrt-v3.
+    //
 
     inline T erf(const T x) const
     {
@@ -527,10 +528,10 @@ class BeckmannMDF
     }
 
     //
-    //  Reference:
+    // Reference:
     //
-    //    Approximating the erfinv function, Mike Giles.
-    //    https://people.maths.ox.ac.uk/gilesm/files/gems_erfinv.pdf
+    //   Approximating the erfinv function, Mike Giles.
+    //   https://people.maths.ox.ac.uk/gilesm/files/gems_erfinv.pdf
     //
 
     inline T erf_inv(const T x) const

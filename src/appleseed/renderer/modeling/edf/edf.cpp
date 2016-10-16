@@ -70,9 +70,9 @@ EDF::EDF(
     set_name(name);
 }
 
-double EDF::get_uncached_importance_multiplier() const
+float EDF::get_uncached_importance_multiplier() const
 {
-    return m_params.get_optional<double>("importance_multiplier", 1.0);
+    return m_params.get_optional<float>("importance_multiplier", 1.0f);
 }
 
 double EDF::get_uncached_light_near_start() const
@@ -103,7 +103,7 @@ bool EDF::on_frame_begin(
             get_path().c_str());
     }
 
-    if (get_uncached_importance_multiplier() <= 0.0)
+    if (get_uncached_importance_multiplier() <= 0.0f)
     {
         RENDERER_LOG_WARNING(
             "edf \"%s\" has negative or zero importance; expect artifacts and/or slowdowns.",

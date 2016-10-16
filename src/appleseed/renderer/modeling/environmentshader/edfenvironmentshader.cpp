@@ -143,7 +143,7 @@ namespace
             m_env_edf->evaluate(
                 shading_context,
                 input_evaluator,
-                direction,
+                Vector3f(direction),
                 shading_result.m_main.m_color);
         }
 

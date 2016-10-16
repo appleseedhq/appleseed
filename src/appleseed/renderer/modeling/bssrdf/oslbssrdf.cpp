@@ -140,7 +140,7 @@ namespace
         {
             CompositeSubsurfaceClosure* c = reinterpret_cast<CompositeSubsurfaceClosure*>(input_evaluator.data());
             new (c) CompositeSubsurfaceClosure(
-                shading_point.get_shading_basis(),
+                Basis3f(shading_point.get_shading_basis()),
                 shading_point.get_osl_shader_globals().Ci);
 
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
@@ -162,7 +162,7 @@ namespace
             if (c->get_num_closures() > 0)
             {
                 sampling_context.split_in_place(1, 1);
-                const double s = sampling_context.next_double2();
+                const float s = static_cast<float>(sampling_context.next_double2());
                 const size_t closure_index = c->choose_closure(s);
 
                 sample.m_shading_basis =

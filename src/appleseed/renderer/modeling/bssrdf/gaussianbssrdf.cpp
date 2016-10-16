@@ -152,7 +152,7 @@ namespace
                 reinterpret_cast<GaussianBSSRDFInputValues*>(data);
 
             // Precompute the relative index of refraction.
-            values->m_eta = compute_eta(shading_point, values->m_ior);
+            values->m_eta = compute_eta(shading_point, static_cast<float>(values->m_ior));
 
             // Precompute the (square of the) max radius.
             values->m_rmax2 = values->m_v * RMax2Constant;
@@ -187,7 +187,7 @@ namespace
             return true;
         }
 
-        virtual double get_eta(
+        virtual float get_eta(
             const void*         data) const APPLESEED_OVERRIDE
         {
             return reinterpret_cast<const GaussianBSSRDFInputValues*>(data)->m_eta;

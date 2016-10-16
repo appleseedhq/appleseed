@@ -185,12 +185,12 @@ void compute_ibl_bsdf_sampling(
             continue;
 
         // Discard occluded samples.
-        const double transmission =
+        const float transmission =
             shading_context.get_tracer().trace(
                 shading_point,
                 sample.m_incoming.get_value(),
                 VisibilityFlags::ShadowRay);
-        if (transmission == 0.0)
+        if (transmission == 0.0f)
             continue;
 
         // Evaluate the environment's EDF.
@@ -206,7 +206,7 @@ void compute_ibl_bsdf_sampling(
 
         // Apply all weights, including MIS weight.
         if (sample.m_mode == ScatteringMode::Specular)
-            env_value *= static_cast<float>(transmission);
+            env_value *= transmission;
         else
         {
             const double mis_weight =
@@ -259,12 +259,12 @@ void compute_ibl_bssrdf_sampling(
         assert(is_normalized(incoming));
 
         // Discard occluded samples.
-        const double transmission =
+        const float transmission =
             shading_context.get_tracer().trace(
                 incoming_point,
                 incoming,
                 VisibilityFlags::ShadowRay);
-        if (transmission == 0.0)
+        if (transmission == 0.0f)
             continue;
 
         // Evaluate the BSSRDF.
@@ -355,12 +355,12 @@ void compute_ibl_environment_sampling(
             continue;
 
         // Discard occluded samples.
-        const double transmission =
+        const float transmission =
             shading_context.get_tracer().trace(
                 shading_point,
                 incoming,
                 VisibilityFlags::ShadowRay);
-        if (transmission == 0.0)
+        if (transmission == 0.0f)
             continue;
 
         // Evaluate the BSDF.
@@ -441,12 +441,12 @@ void compute_ibl_environment_sampling(
             continue;
 
         // Discard occluded samples.
-        const double transmission =
+        const float transmission =
             shading_context.get_tracer().trace(
                 incoming_point,
                 incoming,
                 VisibilityFlags::ShadowRay);
-        if (transmission == 0.0)
+        if (transmission == 0.0f)
             continue;
 
         // Evaluate the BSSRDF.

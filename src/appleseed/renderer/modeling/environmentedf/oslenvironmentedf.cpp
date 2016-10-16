@@ -120,16 +120,16 @@ namespace
         virtual void sample(
             const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
-            const Vector2d&         s,
-            Vector3d&               outgoing,
+            const Vector2f&         s,
+            Vector3f&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
-            const Vector3d local_outgoing = sample_sphere_uniform(s);
-            probability = RcpFourPi<double>();
+            const Vector3f local_outgoing = sample_sphere_uniform(s);
+            probability = RcpFourPi<float>();
 
             Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             outgoing = transform.vector_to_parent(local_outgoing);
 
             evaluate(shading_context, input_evaluator, local_outgoing, value);
@@ -138,14 +138,14 @@ namespace
         virtual void evaluate(
             const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,
+            const Vector3f&         outgoing,
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
 
             Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
-            const Vector3d local_outgoing = transform.vector_to_local(outgoing);
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            const Vector3f local_outgoing = transform.vector_to_local(outgoing);
 
             if (m_shader_group)
                 shading_context.execute_osl_background(*m_shader_group, local_outgoing, value);
@@ -155,26 +155,26 @@ namespace
         virtual void evaluate(
             const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,
+            const Vector3f&         outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
 
             Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
-            const Vector3d local_outgoing = transform.vector_to_local(outgoing);
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            const Vector3f local_outgoing = transform.vector_to_local(outgoing);
 
             evaluate(shading_context, input_evaluator, local_outgoing, value);
             probability = evaluate_pdf(input_evaluator, outgoing);
         }
 
-        virtual double evaluate_pdf(
+        virtual float evaluate_pdf(
             InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing) const APPLESEED_OVERRIDE
+            const Vector3f&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
-            return RcpFourPi<double>();
+            return RcpFourPi<float>();
         }
 
       private:

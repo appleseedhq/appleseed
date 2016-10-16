@@ -72,7 +72,7 @@ class SeparableBSSRDF
 
   protected:
     // Return the relative index of refraction.
-    virtual double get_eta(
+    virtual float get_eta(
         const void*                 data) const = 0;
 
     // Evaluate the profile for a given (square) radius.
@@ -135,15 +135,15 @@ inline void SeparableBSSRDF::evaluate(
     //     http://www.ci.i.u-tokyo.ac.jp/~hachisuka/dirpole.pdf
     //
 
-    const double eta = get_eta(data);
+    const float eta = get_eta(data);
 
     double fo;
     const double cos_on = std::abs(foundation::dot(outgoing_dir, outgoing_point.get_shading_normal()));
-    foundation::fresnel_transmittance_dielectric(fo, eta, cos_on);
+    foundation::fresnel_transmittance_dielectric(fo, static_cast<double>(eta), cos_on);
 
     double fi;
     const double cos_in = std::abs(foundation::dot(incoming_dir, incoming_point.get_shading_normal()));
-    foundation::fresnel_transmittance_dielectric(fi, eta, cos_in);
+    foundation::fresnel_transmittance_dielectric(fi, static_cast<double>(eta), cos_in);
 
     const double square_radius =
         foundation::square_norm(outgoing_point.get_point() - incoming_point.get_point());

@@ -401,14 +401,14 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
             return false;
 
         // Compute the transmission factor between the light sample and the shading point.
-        const double transmission =
+        const float transmission =
             m_shading_context.get_tracer().trace_between(
                 m_shading_point,
                 sample.m_point,
                 VisibilityFlags::ShadowRay);
 
         // Discard occluded samples.
-        if (transmission == 0.0)
+        if (transmission == 0.0f)
             return false;
 
         // Don't use this sample if we're closer than the light near start value.
@@ -477,14 +477,14 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
             radiance);
 
         // Compute the transmission factor between the light sample and the shading point.
-        const double transmission =
+        const float transmission =
             m_shading_context.get_tracer().trace_between(
                 m_shading_point,
                 emission_position,
                 VisibilityFlags::ShadowRay);
 
         // Discard occluded samples.
-        if (transmission == 0.0)
+        if (transmission == 0.0f)
             return false;
 
         // Compute the incoming direction in world space.
@@ -522,7 +522,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
         return;
 
     // Trace a ray in the direction of the reflection.
-    double weight;
+    float weight;
     const ShadingPoint& light_shading_point =
         m_shading_context.get_tracer().trace(
             m_shading_point,
@@ -569,7 +569,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
 
     // Evaluate emitted radiance.
     Spectrum edf_value;
-    double edf_prob;
+    float edf_prob;
     edf->evaluate(
         edf_input_evaluator.data(),
         light_shading_point.get_geometric_normal(),
@@ -577,7 +577,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
         -sample.m_incoming.get_value(),
         edf_value,
         edf_prob);
-    if (edf_prob == 0.0)
+    if (edf_prob == 0.0f)
         return;
 
     // Compute the square distance between the light sample and the shading point.
@@ -685,14 +685,14 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
         return;
 
     // Compute the transmission factor between the light sample and the shading point.
-    const double transmission =
+    const float transmission =
         m_shading_context.get_tracer().trace_between(
             m_shading_point,
             sample.m_point,
             VisibilityFlags::ShadowRay);
 
     // Discard occluded samples.
-    if (transmission == 0.0)
+    if (transmission == 0.0f)
         return;
 
     // Compute the square distance between the light sample and the shading point.
@@ -809,14 +809,14 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     }
 
     // Compute the transmission factor between the light sample and the shading point.
-    const double transmission =
+    const float transmission =
         m_shading_context.get_tracer().trace_between(
             m_shading_point,
             emission_position,
             VisibilityFlags::ShadowRay);
 
     // Discard occluded samples.
-    if (transmission == 0.0)
+    if (transmission == 0.0f)
         return;
 
     // Evaluate the BSDF.

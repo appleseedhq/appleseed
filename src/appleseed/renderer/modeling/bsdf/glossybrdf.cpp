@@ -122,8 +122,7 @@ namespace
             void*                   data) const APPLESEED_OVERRIDE
         {
             InputValues* values = reinterpret_cast<InputValues*>(data);
-            values->m_outside_ior =
-                shading_point.get_ray().get_current_ior();
+            values->m_outside_ior = shading_point.get_ray().get_current_ior();
         }
 
         virtual bool on_frame_begin(
@@ -157,29 +156,29 @@ namespace
             const bool              cosine_mult,
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
-            const Vector3d& n = sample.m_shading_basis.get_normal();
-            const double cos_on = std::min(dot(sample.m_outgoing.get_value(), n), 1.0);
-            if (cos_on < 0.0)
+            const Vector3f& n = sample.m_shading_basis.get_normal();
+            const float cos_on = std::min(dot(sample.m_outgoing.get_value(), n), 1.0f);
+            if (cos_on < 0.0f)
                 return;
 
             const InputValues* values = reinterpret_cast<const InputValues*>(data);
 
-            double alpha_x, alpha_y;
+            float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
-                values->m_roughness,
-                values->m_anisotropic,
+                static_cast<float>(values->m_roughness),
+                static_cast<float>(values->m_anisotropic),
                 alpha_x,
                 alpha_y);
 
-            const FresnelDielectricFun<double> f(
+            const FresnelDielectricFun<float> f(
                 values->m_reflectance,
-                values->m_reflectance_multiplier,
-                values->m_outside_ior / values->m_ior);
+                static_cast<float>(values->m_reflectance_multiplier),
+                static_cast<float>(values->m_outside_ior) / static_cast<float>(values->m_ior));
 
             if (m_mdf == GGX)
             {
-                const GGXMDF<double> mdf;
-                MicrofacetBRDFHelper<double>::sample(
+                const GGXMDF<float> mdf;
+                MicrofacetBRDFHelper<float>::sample(
                     sampling_context,
                     mdf,
                     alpha_x,
@@ -190,8 +189,8 @@ namespace
             }
             else
             {
-                const BeckmannMDF<double> mdf;
-                MicrofacetBRDFHelper<double>::sample(
+                const BeckmannMDF<float> mdf;
+                MicrofacetBRDFHelper<float>::sample(
                     sampling_context,
                     mdf,
                     alpha_x,
@@ -202,45 +201,45 @@ namespace
             }
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate(
+        APPLESEED_FORCE_INLINE virtual float evaluate(
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing,
-            const Vector3d&         incoming,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing,
+            const Vector3f&         incoming,
             const int               modes,
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_glossy(modes))
-                return 0.0;
+                return 0.0f;
 
             // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            const double cos_on = dot(outgoing, n);
-            if (cos_in < 0.0 || cos_on < 0.0)
-                return 0.0;
+            const Vector3f& n = shading_basis.get_normal();
+            const float cos_in = dot(incoming, n);
+            const float cos_on = dot(outgoing, n);
+            if (cos_in < 0.0f || cos_on < 0.0f)
+                return 0.0f;
 
             const InputValues* values = reinterpret_cast<const InputValues*>(data);
 
-            double alpha_x, alpha_y;
+            float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
-                values->m_roughness,
-                values->m_anisotropic,
+                static_cast<float>(values->m_roughness),
+                static_cast<float>(values->m_anisotropic),
                 alpha_x,
                 alpha_y);
 
-            FresnelDielectricFun<double> f(
+            FresnelDielectricFun<float> f(
                 values->m_reflectance,
-                values->m_reflectance_multiplier,
-                values->m_outside_ior / values->m_ior);
+                static_cast<float>(values->m_reflectance_multiplier),
+                static_cast<float>(values->m_outside_ior) / static_cast<float>(values->m_ior));
 
             if (m_mdf == GGX)
             {
-                const GGXMDF<double> mdf;
-                return MicrofacetBRDFHelper<double>::evaluate(
+                const GGXMDF<float> mdf;
+                return MicrofacetBRDFHelper<float>::evaluate(
                     mdf,
                     alpha_x,
                     alpha_y,
@@ -254,8 +253,8 @@ namespace
             }
             else
             {
-                const BeckmannMDF<double> mdf;
-                return MicrofacetBRDFHelper<double>::evaluate(
+                const BeckmannMDF<float> mdf;
+                return MicrofacetBRDFHelper<float>::evaluate(
                     mdf,
                     alpha_x,
                     alpha_y,
@@ -269,37 +268,37 @@ namespace
             }
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
+        APPLESEED_FORCE_INLINE virtual float evaluate_pdf(
             const void*             data,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing,
-            const Vector3d&         incoming,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing,
+            const Vector3f&         incoming,
             const int               modes) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_glossy(modes))
-                return 0.0;
+                return 0.0f;
 
             // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            const double cos_on = dot(outgoing, n);
-            if (cos_in < 0.0 || cos_on < 0.0)
-                return 0.0;
+            const Vector3f& n = shading_basis.get_normal();
+            const float cos_in = dot(incoming, n);
+            const float cos_on = dot(outgoing, n);
+            if (cos_in < 0.0f || cos_on < 0.0f)
+                return 0.0f;
 
             const InputValues* values = reinterpret_cast<const InputValues*>(data);
 
-            double alpha_x, alpha_y;
+            float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
-                values->m_roughness,
-                values->m_anisotropic,
+                static_cast<float>(values->m_roughness),
+                static_cast<float>(values->m_anisotropic),
                 alpha_x,
                 alpha_y);
 
             if (m_mdf == GGX)
             {
-                const GGXMDF<double> mdf;
-                return MicrofacetBRDFHelper<double>::pdf(
+                const GGXMDF<float> mdf;
+                return MicrofacetBRDFHelper<float>::pdf(
                     mdf,
                     alpha_x,
                     alpha_y,
@@ -309,8 +308,8 @@ namespace
             }
             else
             {
-                const BeckmannMDF<double> mdf;
-                return MicrofacetBRDFHelper<double>::pdf(
+                const BeckmannMDF<float> mdf;
+                return MicrofacetBRDFHelper<float>::pdf(
                     mdf,
                     alpha_x,
                     alpha_y,
