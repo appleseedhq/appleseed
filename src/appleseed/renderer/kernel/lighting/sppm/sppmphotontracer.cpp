@@ -377,7 +377,7 @@ namespace
             SamplingContext child_sampling_context = sampling_context.split(2, 1);
             Vector3d emission_direction;
             Spectrum edf_value;
-            double edf_prob;
+            float edf_prob;
             edf->sample(
                 sampling_context,
                 input_evaluator.data(),
@@ -391,9 +391,8 @@ namespace
             // Compute the initial particle weight.
             Spectrum initial_flux = edf_value;
             initial_flux *=
-                static_cast<float>(
-                    dot(emission_direction, light_sample.m_shading_normal)
-                        / (light_sample.m_probability * edf_prob * m_params.m_light_photon_count));
+                static_cast<float>(dot(emission_direction, light_sample.m_shading_normal)) /
+                (light_sample.m_probability * edf_prob * m_params.m_light_photon_count);
 
             // Make a shading point that will be used to avoid self-intersections with the light sample.
             ShadingPoint parent_shading_point;
@@ -448,7 +447,7 @@ namespace
             SamplingContext child_sampling_context = sampling_context.split(2, 1);
             Vector3d emission_position, emission_direction;
             Spectrum light_value;
-            double light_prob;
+            float light_prob;
             light_sample.m_light->sample(
                 input_evaluator,
                 light_sample.m_light_transform,
@@ -461,7 +460,7 @@ namespace
 
             // Compute the initial particle weight.
             Spectrum initial_flux = light_value;
-            initial_flux /= static_cast<float>(light_sample.m_probability * light_prob * m_params.m_light_photon_count);
+            initial_flux /= light_sample.m_probability * light_prob * m_params.m_light_photon_count;
 
             // Build the photon ray.
             child_sampling_context.split_in_place(1, 1);
@@ -629,7 +628,7 @@ namespace
             InputEvaluator input_evaluator(m_texture_cache);
             Vector3d outgoing;
             Spectrum env_edf_value;
-            double env_edf_prob;
+            float env_edf_prob;
             m_env_edf.sample(
                 shading_context,
                 input_evaluator,
@@ -670,11 +669,11 @@ namespace
                 + disk_radius * p[0] * basis.get_tangent_u() +
                 + disk_radius * p[1] * basis.get_tangent_v();
 
-            const double disk_point_prob = 1.0 / (Pi<double>() * disk_radius * disk_radius);
+            const float disk_point_prob = 1.0f / (Pi<float>() * square(static_cast<float>(disk_radius)));
 
             // Compute the initial particle weight.
             Spectrum initial_flux = env_edf_value;
-            initial_flux /= static_cast<float>(disk_point_prob * env_edf_prob * m_params.m_env_photon_count);
+            initial_flux /= disk_point_prob * env_edf_prob * m_params.m_env_photon_count;
 
             // Build the photon ray.
             child_sampling_context.split_in_place(1, 1);

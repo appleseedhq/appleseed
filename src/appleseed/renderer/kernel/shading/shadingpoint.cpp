@@ -927,7 +927,7 @@ void ShadingPoint::initialize_osl_shader_globals(
     // Always update the surface area of emissive objects.
     m_shader_globals.surfacearea =
         ray_flags == VisibilityFlags::LightRay && sg.has_emission()
-            ? static_cast<float>(sg.get_surface_area(&get_assembly_instance(), &get_object_instance()))
+            ? sg.get_surface_area(&get_assembly_instance(), &get_object_instance())
             : 0.0f;
 
     // Output closure.

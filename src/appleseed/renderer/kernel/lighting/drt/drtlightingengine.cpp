@@ -91,8 +91,8 @@ namespace
             const size_t    m_max_path_length;              // maximum path length, ~0 for unlimited
             const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
 
-            const double    m_dl_light_sample_count;        // number of light samples used to estimate direct illumination
-            const double    m_ibl_env_sample_count;         // number of environment samples used to estimate IBL
+            const float     m_dl_light_sample_count;        // number of light samples used to estimate direct illumination
+            const float     m_ibl_env_sample_count;         // number of environment samples used to estimate IBL
 
             float           m_rcp_dl_light_sample_count;
             float           m_rcp_ibl_env_sample_count;
@@ -101,19 +101,19 @@ namespace
               : m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
               , m_max_path_length(nz(params.get_optional<size_t>("max_path_length", 0)))
               , m_rr_min_path_length(nz(params.get_optional<size_t>("rr_min_path_length", 3)))
-              , m_dl_light_sample_count(params.get_optional<double>("dl_light_samples", 1.0))
-              , m_ibl_env_sample_count(params.get_optional<double>("ibl_env_samples", 1.0))
+              , m_dl_light_sample_count(params.get_optional<float>("dl_light_samples", 1.0f))
+              , m_ibl_env_sample_count(params.get_optional<float>("ibl_env_samples", 1.0f))
             {
                 // Precompute the reciprocal of the number of light samples.
                 m_rcp_dl_light_sample_count =
-                    m_dl_light_sample_count > 0.0 && m_dl_light_sample_count < 1.0
-                        ? static_cast<float>(1.0 / m_dl_light_sample_count)
+                    m_dl_light_sample_count > 0.0f && m_dl_light_sample_count < 1.0f
+                        ? 1.0f / m_dl_light_sample_count
                         : 0.0f;
 
                 // Precompute the reciprocal of the number of environment samples.
                 m_rcp_ibl_env_sample_count =
-                    m_ibl_env_sample_count > 0.0 && m_ibl_env_sample_count < 1.0
-                        ? static_cast<float>(1.0 / m_ibl_env_sample_count)
+                    m_ibl_env_sample_count > 0.0f && m_ibl_env_sample_count < 1.0f
+                        ? 1.0f / m_ibl_env_sample_count
                         : 0.0f;
             }
 
@@ -386,12 +386,12 @@ namespace
                 // Multiple importance sampling.
                 if (vertex.m_prev_mode != ScatteringMode::Specular)
                 {
-                    const double light_sample_count = max(m_params.m_dl_light_sample_count, 1.0);
-                    const double mis_weight =
+                    const float light_sample_count = max(m_params.m_dl_light_sample_count, 1.0f);
+                    const float mis_weight =
                         mis_power2(
-                            1.0 * vertex.get_bsdf_prob_area(),
+                            1.0f * vertex.get_bsdf_prob_area(),
                             light_sample_count * vertex.get_light_prob_area(m_light_sampler));
-                    emitted_radiance *= static_cast<float>(mis_weight);
+                    emitted_radiance *= mis_weight;
                 }
 
                 // Add the emitted light contribution.
@@ -414,7 +414,7 @@ namespace
                 // Evaluate the environment EDF.
                 InputEvaluator input_evaluator(m_texture_cache);
                 Spectrum env_radiance;
-                double env_prob;
+                float env_prob;
                 m_env_edf->evaluate(
                     m_shading_context,
                     input_evaluator,
@@ -425,13 +425,13 @@ namespace
                 // Multiple importance sampling.
                 if (vertex.m_prev_mode != ScatteringMode::Specular)
                 {
-                    assert(vertex.m_prev_prob > 0.0);
-                    const double env_sample_count = max(m_params.m_ibl_env_sample_count, 1.0);
-                    const double mis_weight =
+                    assert(vertex.m_prev_prob > 0.0f);
+                    const float env_sample_count = max(m_params.m_ibl_env_sample_count, 1.0f);
+                    const float mis_weight =
                         mis_power2(
-                            1.0 * vertex.m_prev_prob,
+                            1.0f * vertex.m_prev_prob,
                             env_sample_count * env_prob);
-                    env_radiance *= static_cast<float>(mis_weight);
+                    env_radiance *= mis_weight;
                 }
 
                 // Update the path radiance.

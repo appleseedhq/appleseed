@@ -131,7 +131,7 @@ void ShadingContext::execute_osl_emission(
 void ShadingContext::execute_osl_bump(
     const ShaderGroup&      shader_group,
     const ShadingPoint&     shading_point,
-    const Vector2d&         s) const
+    const Vector2f&         s) const
 {
     m_shadergroup_exec.execute_bump(
         shader_group,
@@ -142,7 +142,7 @@ void ShadingContext::execute_osl_bump(
 void ShadingContext::choose_osl_subsurface_normal(
     const ShadingPoint&     shading_point,
     const void*             bssrdf_data,
-    const double            s) const
+    const float             s) const
 {
     m_shadergroup_exec.choose_subsurface_normal(
         shading_point,
@@ -152,7 +152,7 @@ void ShadingContext::choose_osl_subsurface_normal(
 
 void ShadingContext::execute_osl_background(
     const ShaderGroup&      shader_group,
-    const Vector3d&         outgoing,
+    const Vector3f&         outgoing,
     Spectrum&               value) const
 {
     value =

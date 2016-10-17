@@ -210,7 +210,7 @@ namespace
             m_scene_center = Vector3d(scene_data.m_center);
             m_scene_radius = scene_data.m_radius;
             m_safe_scene_diameter = scene_data.m_safe_diameter;
-            m_disk_point_prob = 1.0 / (Pi<double>() * m_scene_radius * m_scene_radius);
+            m_disk_point_prob = 1.0f / (Pi<float>() * square(static_cast<float>(m_scene_radius)));
 
             const Camera* camera = scene.get_camera();
             m_shutter_open_time = camera->get_shutter_open_time();
@@ -439,7 +439,7 @@ namespace
 
                 // Evaluate the BSDF at the vertex position.
                 Spectrum bsdf_value;
-                const double bsdf_prob =
+                const float bsdf_prob =
                     vertex.m_bsdf->evaluate(
                         vertex.m_bsdf_data,
                         true,                           // adjoint
@@ -450,7 +450,7 @@ namespace
                         -camera_outgoing,               // incoming (toward the camera)
                         ScatteringMode::All,            // todo: likely incorrect
                         bsdf_value);
-                if (bsdf_prob == 0.0)
+                if (bsdf_prob == 0.0f)
                     return;
 
                 // Store the contribution of this vertex.
@@ -502,7 +502,7 @@ namespace
         Vector3d                        m_scene_center;         // world space
         double                          m_scene_radius;         // world space
         double                          m_safe_scene_diameter;  // world space
-        double                          m_disk_point_prob;
+        float                           m_disk_point_prob;
 
         const LightSampler&             m_light_sampler;
         TextureCache                    m_texture_cache;
@@ -615,7 +615,7 @@ namespace
             sampling_context.split_in_place(2, 1);
             Vector3d emission_direction;
             Spectrum edf_value;
-            double edf_prob;
+            float edf_prob;
             material_data.m_edf->sample(
                 sampling_context,
                 input_evaluator.data(),
@@ -629,9 +629,8 @@ namespace
             // Compute the initial particle weight.
             Spectrum initial_flux = edf_value;
             initial_flux *=
-                static_cast<float>(
-                    dot(emission_direction, light_sample.m_shading_normal)
-                        / (light_sample.m_probability * edf_prob));
+                static_cast<float>(dot(emission_direction, light_sample.m_shading_normal)) /
+                (light_sample.m_probability * edf_prob);
 
             // Make a shading point that will be used to avoid self-intersections with the light sample.
             ShadingPoint parent_shading_point;
@@ -672,7 +671,7 @@ namespace
 
             // Handle the light vertex separately.
             Spectrum light_particle_flux = edf_value;       // todo: only works for diffuse EDF? What we need is the light exitance
-            light_particle_flux /= static_cast<float>(light_sample.m_probability);
+            light_particle_flux /= light_sample.m_probability;
             path_visitor.visit_area_light_vertex(
                 light_sample,
                 light_particle_flux,
@@ -704,7 +703,7 @@ namespace
             sampling_context.split_in_place(2, 1);
             Vector3d emission_position, emission_direction;
             Spectrum light_value;
-            double light_prob;
+            float light_prob;
             light_sample.m_light->sample(
                 input_evaluator,
                 light_sample.m_light_transform,
@@ -716,7 +715,7 @@ namespace
 
             // Compute the initial particle weight.
             Spectrum initial_flux = light_value;
-            initial_flux /= static_cast<float>(light_sample.m_probability * light_prob);
+            initial_flux /= light_sample.m_probability * light_prob;
 
             // Build the light ray.
             sampling_context.split_in_place(1, 1);
@@ -749,7 +748,7 @@ namespace
 
             // Handle the light vertex separately.
             Spectrum light_particle_flux = light_value;
-            light_particle_flux /= static_cast<float>(light_sample.m_probability);
+            light_particle_flux /= light_sample.m_probability;
             path_visitor.visit_non_physical_light_vertex(
                 emission_position,
                 light_particle_flux,
@@ -780,7 +779,7 @@ namespace
             InputEvaluator input_evaluator(m_texture_cache);
             Vector3d outgoing;
             Spectrum env_edf_value;
-            double env_edf_prob;
+            float env_edf_prob;
             env_edf->sample(
                 m_shading_context,
                 input_evaluator,
@@ -805,7 +804,7 @@ namespace
 
             // Compute the initial particle weight.
             Spectrum initial_flux = env_edf_value;
-            initial_flux /= static_cast<float>(m_disk_point_prob * env_edf_prob);
+            initial_flux /= m_disk_point_prob * env_edf_prob;
 
             // Build the light ray.
             sampling_context.split_in_place(1, 1);

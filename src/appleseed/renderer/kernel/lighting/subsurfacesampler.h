@@ -89,15 +89,15 @@ class SubsurfaceSampler
         const foundation::Vector2d& s,
         Axis&                       axis,
         foundation::Basis3d&        basis,
-        double&                     basis_pdf);
+        float&                      basis_pdf);
 
-    static double compute_mis_weight(
+    static float compute_mis_weight(
         const BSSRDF&               bssrdf,
         const void*                 data,
         const size_t                channel,
         const foundation::Basis3d&  basis,
         const Axis                  axis,
-        const double                sample_pdf,
+        const float                 sample_pdf,
         const foundation::Vector3d& outgoing_point,
         const foundation::Vector3d& incoming_point,
         const foundation::Vector3d& incoming_normal);
@@ -129,9 +129,9 @@ void SubsurfaceSampler::sample(
 
     // Reject points too far away.
     // This introduces negligible bias in comparison to the other approximations.
-    const foundation::Vector2d& point = bssrdf_sample.m_point;
-    const double radius2 = foundation::square_norm(point);
-    const double rmax2 = bssrdf_sample.m_rmax2;
+    const foundation::Vector2f& point = bssrdf_sample.m_point;
+    const float radius2 = foundation::square_norm(point);
+    const float rmax2 = bssrdf_sample.m_rmax2;
     if (radius2 > rmax2)
         return;
 
@@ -141,15 +141,15 @@ void SubsurfaceSampler::sample(
 
     // Evaluate the PDF of the BSSRDF sample.
     // todo: integrate into BSSRDF sampling.
-    const double radius = std::sqrt(radius2);
-    const double bssrdf_sample_pdf =
+    const float radius = std::sqrt(radius2);
+    const float bssrdf_sample_pdf =
         bssrdf.evaluate_pdf(bssrdf_data, bssrdf_sample.m_channel, radius);
 
     // Pick a sampling basis.
     sampling_context.split_in_place(2, 1);
     Axis sampling_axis;
     foundation::Basis3d sampling_basis;
-    double sampling_basis_pdf;
+    float sampling_basis_pdf;
     pick_sampling_basis(
         outgoing_point.get_shading_basis(),
         sampling_context.next_vector2<2>(),
@@ -200,13 +200,14 @@ void SubsurfaceSampler::sample(
             incoming_point.get_opposite_material() == outgoing_material)
         {
             // Compute sample probability.
-            const double dot_nn =
-                std::abs(foundation::dot(
-                    sampling_basis.get_normal(),
-                    incoming_point.get_shading_normal()));
-            double probability = sampling_basis_pdf * bssrdf_sample_pdf * dot_nn;
+            const float dot_nn =
+                static_cast<float>(
+                    std::abs(foundation::dot(
+                        sampling_basis.get_normal(),
+                        incoming_point.get_shading_normal())));
+            float probability = sampling_basis_pdf * bssrdf_sample_pdf * dot_nn;
 
-            if (probability > 0.0)
+            if (probability > 0.0f)
             {
                 // Weight sample contribution using multiple importance sampling.
                 probability /=
@@ -242,7 +243,7 @@ inline void SubsurfaceSampler::pick_sampling_basis(
     const foundation::Vector2d&     s,
     Axis&                           axis,
     foundation::Basis3d&            basis,
-    double&                         basis_pdf)
+    float&                          basis_pdf)
 {
 #ifdef SUBSURFACESAMPLER_BASIS_ROTATION
     const foundation::Vector3d& n = shading_basis.get_normal();
@@ -261,66 +262,66 @@ inline void SubsurfaceSampler::pick_sampling_basis(
         // Project the sample along N.
         axis = NAxis;
         basis = foundation::Basis3d(n, u, v);
-        basis_pdf = 0.5;
+        basis_pdf = 0.5f;
     }
     else if (s[1] < 0.75)
     {
         // Project the sample along U.
         axis = UAxis;
         basis = foundation::Basis3d(u, v, n);
-        basis_pdf = 0.25;
+        basis_pdf = 0.25f;
     }
     else
     {
         // Project the sample along V.
         axis = VAxis;
         basis = foundation::Basis3d(v, n, u);
-        basis_pdf = 0.25;
+        basis_pdf = 0.25f;
     }
 }
 
-inline double SubsurfaceSampler::compute_mis_weight(
+inline float SubsurfaceSampler::compute_mis_weight(
     const BSSRDF&                   bssrdf,
     const void*                     data,
     const size_t                    channel,
     const foundation::Basis3d&      basis,
     const Axis                      axis,
-    const double                    sample_pdf,
+    const float                     sample_pdf,
     const foundation::Vector3d&     outgoing_point,
     const foundation::Vector3d&     incoming_point,
     const foundation::Vector3d&     incoming_normal)
 {
     const foundation::Vector3d d = incoming_point - outgoing_point;
-    const double du = foundation::norm(foundation::project(d, basis.get_tangent_u()));
-    const double dv = foundation::norm(foundation::project(d, basis.get_tangent_v()));
-    const double dot_un = std::abs(foundation::dot(basis.get_tangent_u(), incoming_normal));
-    const double dot_vn = std::abs(foundation::dot(basis.get_tangent_v(), incoming_normal));
-    const double pdf_u = bssrdf.evaluate_pdf(data, channel, du) * dot_un;
-    const double pdf_v = bssrdf.evaluate_pdf(data, channel, dv) * dot_vn;
+    const float du = static_cast<float>(foundation::norm(foundation::project(d, basis.get_tangent_u())));
+    const float dv = static_cast<float>(foundation::norm(foundation::project(d, basis.get_tangent_v())));
+    const float dot_un = static_cast<float>(std::abs(foundation::dot(basis.get_tangent_u(), incoming_normal)));
+    const float dot_vn = static_cast<float>(std::abs(foundation::dot(basis.get_tangent_v(), incoming_normal)));
+    const float pdf_u = bssrdf.evaluate_pdf(data, channel, du) * dot_un;
+    const float pdf_v = bssrdf.evaluate_pdf(data, channel, dv) * dot_vn;
 
     switch (axis)
     {
       case NAxis:
       {
           // We chose N: the original U is at U and the original V is at V.
-          return foundation::mis_power2(sample_pdf, 0.25 * pdf_u, 0.25 * pdf_v);
+          return foundation::mis_power2(sample_pdf, 0.25f * pdf_u, 0.25f * pdf_v);
       }
 
       case UAxis:
       {
           // We chose U: the original V is at U and the original N is at V.
-          return foundation::mis_power2(sample_pdf, 0.25 * pdf_u, 0.5 * pdf_v);
+          return foundation::mis_power2(sample_pdf, 0.25f * pdf_u, 0.5f * pdf_v);
       }
 
       case VAxis:
       {
           // We chose V: the original N is at U and the original U is at V.
-          return foundation::mis_power2(sample_pdf, 0.5 * pdf_u, 0.25 * pdf_v);
+          return foundation::mis_power2(sample_pdf, 0.5f * pdf_u, 0.25f * pdf_v);
       }
     }
 
     APPLESEED_UNREACHABLE;
-    return -1.0;
+    return -1.0f;
 }
 
 }       // namespace renderer

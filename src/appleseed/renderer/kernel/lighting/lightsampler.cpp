@@ -188,7 +188,7 @@ void LightSampler::collect_non_physical_lights(
 
         // Insert the light into the CDF.
         // todo: compute importance.
-        double importance = 1.0;
+        float importance = 1.0f;
         importance *= light.get_uncached_importance_multiplier();
         m_non_physical_lights_cdf.insert(light_index, importance);
     }
@@ -349,7 +349,7 @@ void LightSampler::collect_emitting_triangles(
                         continue;
 
                     // Retrieve the EDF and get the importance multiplier.
-                    double importance_multiplier = 1.0;
+                    float importance_multiplier = 1.0f;
                     if (const EDF* edf = material->get_uncached_edf())
                         importance_multiplier = edf->get_uncached_importance_multiplier();
 
@@ -357,8 +357,8 @@ void LightSampler::collect_emitting_triangles(
                     object_area += area;
 
                     // Compute the probability density of this triangle.
-                    const double triangle_importance = m_params.m_importance_sampling ? area : 1.0;
-                    const double triangle_prob = triangle_importance * importance_multiplier;
+                    const float triangle_importance = m_params.m_importance_sampling ? static_cast<float>(area) : 1.0f;
+                    const float triangle_prob = triangle_importance * importance_multiplier;
 
                     // Create a light-emitting triangle.
                     EmittingTriangle emitting_triangle;
@@ -374,8 +374,8 @@ void LightSampler::collect_emitting_triangles(
                     emitting_triangle.m_n2 = side == 0 ? n2 : -n2;
                     emitting_triangle.m_geometric_normal = side == 0 ? geometric_normal : -geometric_normal;
                     emitting_triangle.m_triangle_support_plane = triangle_support_plane;
-                    emitting_triangle.m_rcp_area = rcp_area;
-                    emitting_triangle.m_triangle_prob = 0.0;    // will be initialized once the emitting triangle CDF is built
+                    emitting_triangle.m_rcp_area = static_cast<float>(rcp_area);
+                    emitting_triangle.m_triangle_prob = 0.0f;   // will be initialized once the emitting triangle CDF is built
                     emitting_triangle.m_material = material;
 
                     // Store the light-emitting triangle.
@@ -392,13 +392,13 @@ void LightSampler::collect_emitting_triangles(
         store_object_area_in_shadergroups(
             &assembly_instance,
             object_instance,
-            object_area,
+            static_cast<float>(object_area),
             front_materials);
 
         store_object_area_in_shadergroups(
             &assembly_instance,
             object_instance,
-            object_area,
+            static_cast<float>(object_area),
             back_materials);
 #endif
     }
@@ -432,9 +432,9 @@ void LightSampler::sample_non_physical_lights(
 {
     assert(m_non_physical_lights_cdf.valid());
 
-    const EmitterCDF::ItemWeightPair result = m_non_physical_lights_cdf.sample(s[0]);
+    const EmitterCDF::ItemWeightPair result = m_non_physical_lights_cdf.sample(static_cast<float>(s[0]));
     const size_t light_index = result.first;
-    const double light_prob = result.second;
+    const float light_prob = result.second;
 
     light_sample.m_triangle = 0;
     sample_non_physical_light(
@@ -444,7 +444,7 @@ void LightSampler::sample_non_physical_lights(
         light_sample);
 
     assert(light_sample.m_light);
-    assert(light_sample.m_probability > 0.0);
+    assert(light_sample.m_probability > 0.0f);
 }
 
 void LightSampler::sample_emitting_triangles(
@@ -454,9 +454,9 @@ void LightSampler::sample_emitting_triangles(
 {
     assert(m_emitting_triangles_cdf.valid());
 
-    const EmitterCDF::ItemWeightPair result = m_emitting_triangles_cdf.sample(s[0]);
+    const EmitterCDF::ItemWeightPair result = m_emitting_triangles_cdf.sample(static_cast<float>(s[0]));
     const size_t emitter_index = result.first;
-    const double emitter_prob = result.second;
+    const float emitter_prob = result.second;
 
     light_sample.m_light = 0;
     sample_emitting_triangle(
@@ -467,7 +467,7 @@ void LightSampler::sample_emitting_triangles(
         light_sample);
 
     assert(light_sample.m_triangle);
-    assert(light_sample.m_probability > 0.0);
+    assert(light_sample.m_probability > 0.0f);
 }
 
 void LightSampler::sample(
@@ -496,14 +496,14 @@ void LightSampler::sample(
                     light_sample);
             }
 
-            light_sample.m_probability *= 0.5;
+            light_sample.m_probability *= 0.5f;
         }
         else sample_non_physical_lights(time, s, light_sample);
     }
     else sample_emitting_triangles(time, s, light_sample);
 }
 
-double LightSampler::evaluate_pdf(const ShadingPoint& shading_point) const
+float LightSampler::evaluate_pdf(const ShadingPoint& shading_point) const
 {
     assert(shading_point.is_triangle_primitive());
 
@@ -520,7 +520,7 @@ double LightSampler::evaluate_pdf(const ShadingPoint& shading_point) const
 void LightSampler::sample_non_physical_light(
     const ShadingRay::Time&             time,
     const size_t                        light_index,
-    const double                        light_prob,
+    const float                         light_prob,
     LightSample&                        light_sample) const
 {
     // Fetch the light.
@@ -540,7 +540,7 @@ void LightSampler::sample_emitting_triangle(
     const ShadingRay::Time&             time,
     const Vector2d&                     s,
     const size_t                        triangle_index,
-    const double                        triangle_prob,
+    const float                         triangle_prob,
     LightSample&                        light_sample) const
 {
     // Fetch the emitting triangle.
@@ -582,7 +582,7 @@ void LightSampler::sample_emitting_triangle(
 void LightSampler::store_object_area_in_shadergroups(
     const AssemblyInstance*             assembly_instance,
     const ObjectInstance*               object_instance,
-    const double                        object_area,
+    const float                         object_area,
     const MaterialArray&                materials)
 {
     for (size_t i = 0, e = materials.size(); i < e; ++i)
@@ -592,12 +592,7 @@ void LightSampler::store_object_area_in_shadergroups(
             if (const ShaderGroup* sg = m->get_uncached_osl_surface())
             {
                 if (sg->has_emission())
-                {
-                    sg->set_surface_area(
-                        assembly_instance,
-                        object_instance,
-                        object_area);
-                }
+                    sg->set_surface_area(assembly_instance, object_instance, object_area);
             }
         }
     }
