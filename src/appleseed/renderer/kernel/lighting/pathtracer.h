@@ -549,6 +549,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             ray.m_time,
             ScatteringMode::get_vis_flags(vertex.m_prev_mode),
             ray.m_depth + 1);
+        next_ray.m_dir = improve_normalization<2>(next_ray.m_dir);
 
         // Compute scattered ray differentials.
         if (incoming.has_derivatives())
