@@ -188,7 +188,7 @@ void compute_ibl_bsdf_sampling(
         const float transmission =
             shading_context.get_tracer().trace(
                 shading_point,
-                sample.m_incoming.get_value(),
+                Vector3d(sample.m_incoming.get_value()),
                 VisibilityFlags::ShadowRay);
         if (transmission == 0.0f)
             continue;
@@ -247,7 +247,7 @@ void compute_ibl_bssrdf_sampling(
     for (size_t i = 0; i < bssrdf_sample_count; ++i)
     {
         // Generate a uniform sample in [0,1)^2.
-        const Vector2d s = sampling_context.next_vector2<2>();
+        const Vector2f s(sampling_context.next_vector2<2>());
 
         // Sample the BSSRDF (hemisphere cosine).
         Vector3f incoming = sample_hemisphere_cosine(s);
@@ -262,7 +262,7 @@ void compute_ibl_bssrdf_sampling(
         const float transmission =
             shading_context.get_tracer().trace(
                 incoming_point,
-                incoming,
+                Vector3d(incoming),
                 VisibilityFlags::ShadowRay);
         if (transmission == 0.0f)
             continue;
@@ -272,7 +272,7 @@ void compute_ibl_bssrdf_sampling(
         bssrdf.evaluate(
             bssrdf_data,
             outgoing_point,
-            outgoing.get_value(),
+            Vector3f(outgoing.get_value()),
             incoming_point,
             incoming,
             bssrdf_value);
@@ -319,8 +319,8 @@ void compute_ibl_environment_sampling(
 {
     assert(is_normalized(outgoing.get_value()));
 
-    const Vector3d& geometric_normal = shading_point.get_geometric_normal();
-    const Basis3d& shading_basis = shading_point.get_shading_basis();
+    const Vector3f geometric_normal(shading_point.get_geometric_normal());
+    const Basis3f shading_basis(shading_point.get_shading_basis());
 
     radiance.set(0.0f);
 
@@ -337,7 +337,7 @@ void compute_ibl_environment_sampling(
 
         // Sample the environment.
         InputEvaluator input_evaluator(shading_context.get_texture_cache());
-        Vector3d incoming;
+        Vector3f incoming;
         Spectrum env_value;
         float env_prob;
         environment_edf.sample(
@@ -358,7 +358,7 @@ void compute_ibl_environment_sampling(
         const float transmission =
             shading_context.get_tracer().trace(
                 shading_point,
-                incoming,
+                Vector3d(incoming),
                 VisibilityFlags::ShadowRay);
         if (transmission == 0.0f)
             continue;
@@ -372,7 +372,7 @@ void compute_ibl_environment_sampling(
                 true,                           // multiply by |cos(incoming, normal)|
                 geometric_normal,
                 shading_basis,
-                outgoing.get_value(),
+                Vector3f(outgoing.get_value()),
                 incoming,
                 env_sampling_modes,
                 bsdf_value);
@@ -423,7 +423,7 @@ void compute_ibl_environment_sampling(
 
         // Sample the environment.
         InputEvaluator input_evaluator(shading_context.get_texture_cache());
-        Vector3d incoming;
+        Vector3f incoming;
         Spectrum env_value;
         float env_prob;
         environment_edf.sample(
@@ -444,7 +444,7 @@ void compute_ibl_environment_sampling(
         const float transmission =
             shading_context.get_tracer().trace(
                 incoming_point,
-                incoming,
+                Vector3d(incoming),
                 VisibilityFlags::ShadowRay);
         if (transmission == 0.0f)
             continue;
@@ -454,7 +454,7 @@ void compute_ibl_environment_sampling(
         bssrdf.evaluate(
             bssrdf_data,
             outgoing_point,
-            outgoing.get_value(),
+            Vector3f(outgoing.get_value()),
             incoming_point,
             incoming,
             bssrdf_value);

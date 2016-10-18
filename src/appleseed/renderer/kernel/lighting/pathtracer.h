@@ -496,7 +496,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             vertex.m_bssrdf->evaluate(
                 vertex.m_bssrdf_data,
                 *vertex.m_shading_point,
-                vertex.m_outgoing.get_value(),
+                Vector3f(vertex.m_outgoing.get_value()),
                 *vertex.m_incoming_point,
                 incoming_vector,
                 value);

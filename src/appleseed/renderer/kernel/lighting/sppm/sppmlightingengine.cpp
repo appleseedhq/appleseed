@@ -450,10 +450,10 @@ namespace
                             vertex.m_bsdf_data,
                             false,                                      // not adjoint
                             true,                                       // multiply by |cos(incoming, normal)|
-                            vertex.get_geometric_normal(),
-                            vertex.get_shading_basis(),
-                            vertex.m_outgoing.get_value(),              // toward the camera
-                            normalize(Vector3d(photon.m_incoming)),     // toward the light
+                            Vector3f(vertex.get_geometric_normal()),
+                            Basis3f(vertex.get_shading_basis()),
+                            Vector3f(vertex.m_outgoing.get_value()),    // toward the camera
+                            normalize(photon.m_incoming),               // toward the light
                             ScatteringMode::Diffuse,
                             bsdf_value);
                     if (bsdf_prob == 0.0f)
@@ -526,10 +526,10 @@ namespace
                             vertex.m_bsdf_data,
                             false,                                      // not adjoint
                             true,                                       // multiply by |cos(incoming, normal)|
-                            vertex.get_geometric_normal(),
-                            vertex.get_shading_basis(),
-                            vertex.m_outgoing.get_value(),              // toward the camera
-                            normalize(Vector3d(photon.m_incoming)),     // toward the light
+                            Vector3f(vertex.get_geometric_normal()),
+                            Basis3f(vertex.get_shading_basis()),
+                            Vector3f(vertex.m_outgoing.get_value()),    // toward the camera
+                            normalize(photon.m_incoming),               // toward the light
                             ScatteringMode::Diffuse,
                             bsdf_value);
                     if (bsdf_prob == 0.0f)
@@ -585,7 +585,7 @@ namespace
                 m_env_edf->evaluate(
                     m_shading_context,
                     input_evaluator,
-                    -vertex.m_outgoing.get_value(),
+                    -Vector3f(vertex.m_outgoing.get_value()),
                     env_radiance,
                     env_prob);
 

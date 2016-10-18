@@ -442,13 +442,13 @@ namespace
                 const float bsdf_prob =
                     vertex.m_bsdf->evaluate(
                         vertex.m_bsdf_data,
-                        true,                           // adjoint
-                        true,                           // multiply by |cos(incoming, normal)|
-                        geometric_normal,
-                        vertex.get_shading_basis(),
-                        vertex.m_outgoing.get_value(),  // outgoing (toward the light)
-                        -camera_outgoing,               // incoming (toward the camera)
-                        ScatteringMode::All,            // todo: likely incorrect
+                        true,                                       // adjoint
+                        true,                                       // multiply by |cos(incoming, normal)|
+                        Vector3f(geometric_normal),
+                        Basis3f(vertex.get_shading_basis()),
+                        Vector3f(vertex.m_outgoing.get_value()),    // outgoing (toward the light)
+                        -Vector3f(camera_outgoing),                 // incoming (toward the camera)
+                        ScatteringMode::All,                        // todo: likely incorrect
                         bsdf_value);
                 if (bsdf_prob == 0.0f)
                     return;
@@ -619,10 +619,10 @@ namespace
             material_data.m_edf->sample(
                 sampling_context,
                 input_evaluator.data(),
-                light_sample.m_geometric_normal,
-                Basis3d(light_sample.m_shading_normal),
-                sampling_context.next_vector2<2>(),
-                emission_direction,
+                Vector3f(light_sample.m_geometric_normal),
+                Basis3f(Vector3f(light_sample.m_shading_normal)),
+                Vector2f(sampling_context.next_vector2<2>()),
+                Vector3f(emission_direction),
                 edf_value,
                 edf_prob);
 
@@ -777,13 +777,13 @@ namespace
             // Sample the environment.
             sampling_context.split_in_place(2, 1);
             InputEvaluator input_evaluator(m_texture_cache);
-            Vector3d outgoing;
+            Vector3f outgoing;
             Spectrum env_edf_value;
             float env_edf_prob;
             env_edf->sample(
                 m_shading_context,
                 input_evaluator,
-                sampling_context.next_vector2<2>(),
+                Vector2f(sampling_context.next_vector2<2>()),
                 outgoing,               // points toward the environment
                 env_edf_value,
                 env_edf_prob);
@@ -795,7 +795,7 @@ namespace
                 * sample_disk_uniform(sampling_context.next_vector2<2>());
 
             // Compute the origin of the light ray.
-            const Basis3d basis(-outgoing);
+            const Basis3d basis(-Vector3d(outgoing));
             const Vector3d ray_origin =
                   m_scene_center
                 - m_safe_scene_diameter * basis.get_normal()    // a safe radius would have been sufficient
@@ -815,7 +815,7 @@ namespace
                     m_shutter_close_time);
             const ShadingRay light_ray(
                 ray_origin,
-                -outgoing,
+                -Vector3d(outgoing),
                 time,
                 VisibilityFlags::LightRay,
                 0);

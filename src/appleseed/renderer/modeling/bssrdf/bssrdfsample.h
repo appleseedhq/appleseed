@@ -44,7 +44,7 @@ class BSSRDFSample
   public:
     BSSRDFSample();
 
-    const foundation::Basis3d*  m_shading_basis;
+    const foundation::Basis3f*  m_shading_basis;
     float                       m_eta;
     size_t                      m_channel;
     foundation::Vector2f        m_point;

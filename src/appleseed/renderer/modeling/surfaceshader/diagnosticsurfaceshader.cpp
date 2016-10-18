@@ -250,13 +250,13 @@ void DiagnosticSurfaceShader::evaluate(
                         input_evaluator,
                         shading_point);
 
-                    const Vector3d direction = -normalize(shading_point.get_ray().m_dir);
+                    const Vector3f direction = -normalize(Vector3f(shading_point.get_ray().m_dir));
                     material_data.m_bsdf->evaluate(
                         input_evaluator.data(),
                         false,
                         false,
-                        shading_point.get_geometric_normal(),
-                        shading_point.get_shading_basis(),
+                        Vector3f(shading_point.get_geometric_normal()),
+                        Basis3f(shading_point.get_shading_basis()),
                         direction,
                         direction,
                         ScatteringMode::All,
@@ -299,7 +299,7 @@ void DiagnosticSurfaceShader::evaluate(
                     shading_context.execute_osl_bump(
                         *material_data.m_shader_group,
                         shading_point,
-                        sampling_context.next_vector2<2>());
+                        Vector2f(sampling_context.next_vector2<2>()));
                 }
             }
 #endif

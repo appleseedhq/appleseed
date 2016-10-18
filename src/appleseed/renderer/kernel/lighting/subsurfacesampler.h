@@ -137,7 +137,7 @@ void SubsurfaceSampler::sample(
 
     // Apply OSL bump / normal mapping.
     if (bssrdf_sample.m_shading_basis)
-        outgoing_point.set_shading_basis(*bssrdf_sample.m_shading_basis);
+        outgoing_point.set_shading_basis(foundation::Basis3d(*bssrdf_sample.m_shading_basis));
 
     // Evaluate the PDF of the BSSRDF sample.
     // todo: integrate into BSSRDF sampling.

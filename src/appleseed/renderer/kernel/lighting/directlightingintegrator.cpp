@@ -437,9 +437,9 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
         // Evaluate the EDF.
         edf->evaluate(
             edf_input_evaluator.data(),
-            sample.m_geometric_normal,
-            Basis3d(sample.m_shading_normal),
-            -incoming,
+            Vector3f(sample.m_geometric_normal),
+            Basis3f(Vector3f(sample.m_shading_normal)),
+            -Vector3f(incoming),
             radiance);
 
         // Compute probability with respect to solid angle of incoming direction.
@@ -518,7 +518,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     const ShadingPoint& light_shading_point =
         m_shading_context.get_tracer().trace(
             m_shading_point,
-            sample.m_incoming.get_value(),
+            Vector3d(sample.m_incoming.get_value()),
             VisibilityFlags::ShadowRay,
             weight);
 
@@ -564,8 +564,8 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     float edf_prob;
     edf->evaluate(
         edf_input_evaluator.data(),
-        light_shading_point.get_geometric_normal(),
-        light_shading_point.get_shading_basis(),
+        Vector3f(light_shading_point.get_geometric_normal()),
+        Basis3f(light_shading_point.get_shading_basis()),
         -sample.m_incoming.get_value(),
         edf_value,
         edf_prob);
@@ -707,10 +707,10 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
             m_bsdf_data,
             false,              // not adjoint
             true,               // multiply by |cos(incoming, normal)|
-            m_geometric_normal,
-            m_shading_basis,
-            outgoing.get_value(),
-            incoming,
+            Vector3f(m_geometric_normal),
+            Basis3f(m_shading_basis),
+            Vector3f(outgoing.get_value()),
+            Vector3f(incoming),
             m_light_sampling_modes,
             bsdf_value);
     if (bsdf_prob == 0.0f)
@@ -740,9 +740,9 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     Spectrum edf_value;
     edf->evaluate(
         edf_input_evaluator.data(),
-        sample.m_geometric_normal,
-        Basis3d(sample.m_shading_normal),
-        -incoming,
+        Vector3f(sample.m_geometric_normal),
+        Basis3f(Vector3f(sample.m_shading_normal)),
+        -Vector3f(incoming),
         edf_value);
 
     const float g = static_cast<float>(cos_on * rcp_sample_square_distance);
@@ -818,10 +818,10 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
             m_bsdf_data,
             false,              // not adjoint
             true,               // multiply by |cos(incoming, normal)|
-            m_geometric_normal,
-            m_shading_basis,
-            outgoing.get_value(),
-            incoming,
+            Vector3f(m_geometric_normal),
+            Basis3f(m_shading_basis),
+            Vector3f(outgoing.get_value()),
+            Vector3f(incoming),
             m_light_sampling_modes,
             bsdf_value);
     if (bsdf_prob == 0.0f)

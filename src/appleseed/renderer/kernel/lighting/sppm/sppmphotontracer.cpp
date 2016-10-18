@@ -381,10 +381,10 @@ namespace
             edf->sample(
                 sampling_context,
                 input_evaluator.data(),
-                light_sample.m_geometric_normal,
-                Basis3d(light_sample.m_shading_normal),
-                child_sampling_context.next_vector2<2>(),
-                emission_direction,
+                Vector3f(light_sample.m_geometric_normal),
+                Basis3f(Vector3f(light_sample.m_shading_normal)),
+                Vector2f(child_sampling_context.next_vector2<2>()),
+                Vector3f(emission_direction),
                 edf_value,
                 edf_prob);
 
@@ -626,13 +626,13 @@ namespace
         {
             // Sample the environment.
             InputEvaluator input_evaluator(m_texture_cache);
-            Vector3d outgoing;
+            Vector3f outgoing;
             Spectrum env_edf_value;
             float env_edf_prob;
             m_env_edf.sample(
                 shading_context,
                 input_evaluator,
-                sampling_context.next_vector2<2>(),
+                Vector2f(sampling_context.next_vector2<2>()),
                 outgoing,                                   // points toward the environment
                 env_edf_value,
                 env_edf_prob);
@@ -661,7 +661,7 @@ namespace
             }
 
             // Compute the origin of the photon ray.
-            const Basis3d basis(-outgoing);
+            const Basis3d basis(-Vector3d(outgoing));
             const Vector2d p = sample_disk_uniform(s);
             const Vector3d ray_origin =
                   disk_center
@@ -679,7 +679,7 @@ namespace
             child_sampling_context.split_in_place(1, 1);
             const ShadingRay ray(
                 ray_origin,
-                -outgoing,
+                -Vector3d(outgoing),
                 ShadingRay::Time::create_with_normalized_time(
                     child_sampling_context.next_double2(),
                     m_shutter_open_time,

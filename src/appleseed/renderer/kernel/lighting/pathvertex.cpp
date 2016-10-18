@@ -35,6 +35,8 @@
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 
+using namespace foundation;
+
 namespace renderer
 {
 
@@ -64,9 +66,9 @@ void PathVertex::compute_emitted_radiance(
     // Compute the emitted radiance.
     m_edf->evaluate(
         input_evaluator.data(),
-        m_shading_point->get_geometric_normal(),
-        m_shading_point->get_shading_basis(),
-        m_outgoing.get_value(),
+        Vector3f(m_shading_point->get_geometric_normal()),
+        Basis3f(m_shading_point->get_shading_basis()),
+        Vector3f(m_outgoing.get_value()),
         radiance);
 }
 

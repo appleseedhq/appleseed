@@ -418,7 +418,7 @@ namespace
                 m_env_edf->evaluate(
                     m_shading_context,
                     input_evaluator,
-                    -vertex.m_outgoing.get_value(),
+                    -Vector3f(vertex.m_outgoing.get_value()),
                     env_radiance,
                     env_prob);
 
