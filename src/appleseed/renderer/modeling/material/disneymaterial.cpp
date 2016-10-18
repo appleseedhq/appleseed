@@ -701,6 +701,8 @@ void DisneyMaterial::on_frame_end(
 {
     impl->clear_per_thread_layers();
     impl->m_layers.clear();
+
+    Material::on_frame_end(project, parent);
 }
 
 void DisneyMaterial::add_layer(Dictionary layer_values)

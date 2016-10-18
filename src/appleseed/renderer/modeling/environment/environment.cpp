@@ -103,6 +103,8 @@ void Environment::on_frame_end(
 {
     m_environment_edf = 0;
     m_environment_shader = 0;
+
+    ConnectableEntity::on_frame_end(project, parent);
 }
 
 EnvironmentEDF* Environment::get_uncached_environment_edf() const
