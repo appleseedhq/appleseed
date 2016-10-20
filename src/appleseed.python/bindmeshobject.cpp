@@ -131,8 +131,6 @@ void bind_mesh_object()
         .def(bpy::init<size_t, size_t, size_t, size_t, size_t, size_t, size_t>())
         .def(bpy::init<size_t, size_t, size_t, size_t, size_t, size_t, size_t, size_t, size_t, size_t>())
 
-        .def("has_vertex_attributes", &Triangle::has_vertex_attributes)
-
         .def_readwrite("v0", &Triangle::m_v0)
         .def_readwrite("v1", &Triangle::m_v1)
         .def_readwrite("v2", &Triangle::m_v2)
@@ -143,6 +141,8 @@ void bind_mesh_object()
         .def_readwrite("a1", &Triangle::m_a1)
         .def_readwrite("a2", &Triangle::m_a2)
         .def_readwrite("pa", &Triangle::m_pa)
+
+        .def("has_vertex_attributes", &Triangle::has_vertex_attributes)
         ;
 
     bpy::class_<MeshObject, auto_release_ptr<MeshObject>, bpy::bases<Object>, boost::noncopyable>("MeshObject", bpy::no_init)
@@ -158,6 +158,7 @@ void bind_mesh_object()
         .def("get_vertex_normal_count", &MeshObject::get_vertex_normal_count)
         .def("get_vertex_normal", &MeshObject::get_vertex_normal, bpy::return_value_policy<bpy::reference_existing_object>())
 
+        .def("reserve_tex_coords", &MeshObject::reserve_tex_coords)
         .def("push_tex_coords", &MeshObject::push_tex_coords)
         .def("get_tex_coords_count", &MeshObject::get_tex_coords_count)
         .def("get_tex_coords", &MeshObject::get_tex_coords)
@@ -174,6 +175,14 @@ void bind_mesh_object()
         .def("set_vertex_pose", &MeshObject::set_vertex_pose)
         .def("get_vertex_pose", &MeshObject::get_vertex_pose)
         .def("clear_vertex_poses", &MeshObject::clear_vertex_poses)
+
+        .def("set_vertex_normal_pose", &MeshObject::set_vertex_normal_pose)
+        .def("get_vertex_normal_pose", &MeshObject::get_vertex_normal_pose)
+        .def("clear_vertex_normal_poses", &MeshObject::clear_vertex_normal_poses)
+
+        .def("set_vertex_tangent_pose", &MeshObject::set_vertex_tangent_pose)
+        .def("get_vertex_tangent_pose", &MeshObject::get_vertex_tangent_pose)
+        .def("clear_vertex_tangent_poses", &MeshObject::clear_vertex_tangent_poses)
         ;
 
     boost::python::implicitly_convertible<auto_release_ptr<MeshObject>, auto_release_ptr<Object> >();
