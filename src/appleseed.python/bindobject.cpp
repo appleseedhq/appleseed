@@ -156,6 +156,8 @@ void bind_object()
         .def("get_model", &Object::get_model)
         .def("compute_local_bbox", &Object::compute_local_bbox)
         .def("material_slots", &obj_material_slots)
+        .def("get_material_slot_count", &Object::get_material_slot_count)
+        .def("get_material_slot", &Object::get_material_slot)
         ;
 
     bind_typed_entity_vector<Object>("ObjectContainer");

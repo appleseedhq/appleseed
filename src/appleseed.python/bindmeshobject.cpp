@@ -183,6 +183,9 @@ void bind_mesh_object()
         .def("set_vertex_tangent_pose", &MeshObject::set_vertex_tangent_pose)
         .def("get_vertex_tangent_pose", &MeshObject::get_vertex_tangent_pose)
         .def("clear_vertex_tangent_poses", &MeshObject::clear_vertex_tangent_poses)
+
+        .def("reserve_material_slots", &MeshObject::reserve_material_slots)
+        .def("push_material_slot", &MeshObject::push_material_slot)
         ;
 
     boost::python::implicitly_convertible<auto_release_ptr<MeshObject>, auto_release_ptr<Object> >();
