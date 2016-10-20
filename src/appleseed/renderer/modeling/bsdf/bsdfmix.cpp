@@ -78,8 +78,8 @@ namespace
             const ParamArray&       params)
           : BSDF(name, Reflective, ScatteringMode::All, params)
         {
-            m_inputs.declare("weight0", InputFormatScalar);
-            m_inputs.declare("weight1", InputFormatScalar);
+            m_inputs.declare("weight0", InputFormatFloat);
+            m_inputs.declare("weight1", InputFormatFloat);
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -173,7 +173,7 @@ namespace
 
             // Retrieve the blending weights.
             const InputValues* values = static_cast<const InputValues*>(data);
-            const float w[2] = { static_cast<float>(values->m_weight[0]), static_cast<float>(values->m_weight[1]) };
+            const float w[2] = { values->m_weight[0], values->m_weight[1] };
 
             // Handle absorption.
             const float total_weight = w[0] + w[1];
@@ -209,8 +209,8 @@ namespace
 
             // Retrieve the blending weights.
             const InputValues* values = static_cast<const InputValues*>(data);
-            float w0 = static_cast<float>(values->m_weight[0]);
-            float w1 = static_cast<float>(values->m_weight[1]);
+            float w0 = values->m_weight[0];
+            float w1 = values->m_weight[1];
             const float total_weight = w0 + w1;
 
             // Handle absorption.
@@ -277,8 +277,8 @@ namespace
 
             // Retrieve the blending weights.
             const InputValues* values = static_cast<const InputValues*>(data);
-            const float w0 = static_cast<float>(values->m_weight[0]);
-            const float w1 = static_cast<float>(values->m_weight[1]);
+            const float w0 = values->m_weight[0];
+            const float w1 = values->m_weight[1];
             const float total_weight = w0 + w1;
 
             // Handle absorption.
@@ -316,7 +316,7 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            ScalarInput  m_weight[2];
+            float   m_weight[2];
         };
 
         const BSDF* m_bsdf[2];

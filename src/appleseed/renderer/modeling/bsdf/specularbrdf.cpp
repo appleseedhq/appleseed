@@ -65,7 +65,7 @@ namespace
           : BSDF(name, Reflective, ScatteringMode::Specular, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -105,7 +105,7 @@ namespace
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
             sample.m_value = values->m_reflectance;
-            sample.m_value *= static_cast<float>(values->m_reflectance_multiplier) / cos_in;
+            sample.m_value *= values->m_reflectance_multiplier / cos_in;
 
             // The probability density of the sampled direction is the Dirac delta.
             sample.m_probability = DiracDelta;

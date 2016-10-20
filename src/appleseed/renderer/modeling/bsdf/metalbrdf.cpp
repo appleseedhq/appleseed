@@ -134,9 +134,9 @@ namespace
         {
             m_inputs.declare("normal_reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("edge_tint", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("roughness", InputFormatScalar, "0.15");
-            m_inputs.declare("anisotropic", InputFormatScalar, "0.0");
+            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("roughness", InputFormatFloat, "0.15");
+            m_inputs.declare("anisotropic", InputFormatFloat, "0.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -187,15 +187,15 @@ namespace
 
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
-                static_cast<float>(values->m_roughness),
-                static_cast<float>(values->m_anisotropic),
+                values->m_roughness,
+                values->m_anisotropic,
                 alpha_x,
                 alpha_y);
 
             FresnelFriendlyConductorFun<float> f(
                 values->m_normal_reflectance,
                 values->m_edge_tint,
-                static_cast<float>(values->m_reflectance_multiplier));
+                values->m_reflectance_multiplier);
 
             if (m_mdf == GGX)
             {
@@ -248,15 +248,15 @@ namespace
 
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
-                static_cast<float>(values->m_roughness),
-                static_cast<float>(values->m_anisotropic),
+                values->m_roughness,
+                values->m_anisotropic,
                 alpha_x,
                 alpha_y);
 
             FresnelFriendlyConductorFun<float> f(
                 values->m_normal_reflectance,
                 values->m_edge_tint,
-                static_cast<float>(values->m_reflectance_multiplier));
+                values->m_reflectance_multiplier);
 
             if (m_mdf == GGX)
             {
@@ -312,8 +312,8 @@ namespace
 
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
-                static_cast<float>(values->m_roughness),
-                static_cast<float>(values->m_anisotropic),
+                values->m_roughness,
+                values->m_anisotropic,
                 alpha_x,
                 alpha_y);
 

@@ -135,12 +135,12 @@ namespace
 
             m_radiance_source->evaluate(m_texture_cache, uv, payload.m_color);
 
-            double multiplier;
+            float multiplier;
             m_multiplier_source->evaluate(m_texture_cache, uv, multiplier);
 
-            double exposure;
+            float exposure;
             m_exposure_source->evaluate(m_texture_cache, uv, exposure);
-            payload.m_color *= static_cast<float>(multiplier * pow(2.0, exposure));
+            payload.m_color *= multiplier * pow(2.0f, exposure);
 
             importance = luminance(payload.m_color);
         }
@@ -169,8 +169,8 @@ namespace
           , m_probability_scale(0.0f)
         {
             m_inputs.declare("radiance", InputFormatSpectralIlluminance);
-            m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("exposure", InputFormatScalar, "0.0");
+            m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("exposure", InputFormatFloat, "0.0");
 
             m_phi_shift = deg_to_rad(m_params.get_optional<float>("horizontal_shift", 0.0f));
             m_theta_shift = deg_to_rad(m_params.get_optional<float>("vertical_shift", 0.0f));
@@ -361,8 +361,8 @@ namespace
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_radiance;                 // emitted radiance in W.m^-2.sr^-1
-            ScalarInput m_radiance_multiplier;      // emitted radiance multiplier
-            ScalarInput m_exposure;                 // emitted radiance multiplier in f-stops
+            float       m_radiance_multiplier;      // emitted radiance multiplier
+            float       m_exposure;                 // emitted radiance multiplier in f-stops
         };
 
         float   m_phi_shift;                        // horizontal shift in radians
@@ -455,7 +455,7 @@ namespace
                 input_evaluator.evaluate<InputValues>(m_inputs, Vector2f(u, 1.0f - v));
 
             value = values->m_radiance;
-            value *= static_cast<float>(values->m_radiance_multiplier) * pow(2.0f, static_cast<float>(values->m_exposure));
+            value *= values->m_radiance_multiplier * pow(2.0f, values->m_exposure);
         }
 
         float compute_pdf(

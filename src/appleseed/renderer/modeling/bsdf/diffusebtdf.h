@@ -58,7 +58,7 @@ namespace renderer
 APPLESEED_DECLARE_INPUT_VALUES(DiffuseBTDFInputValues)
 {
     Spectrum    m_transmittance;                // diffuse transmittance
-    ScalarInput m_transmittance_multiplier;     // diffuse transmittance multiplier
+    float       m_transmittance_multiplier;     // diffuse transmittance multiplier
 
     // Precomputed values.
     bool        m_backfacing;

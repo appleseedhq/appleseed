@@ -80,12 +80,12 @@ namespace
             const ParamArray&   params)
           : SeparableBSSRDF(name, params)
         {
-            m_inputs.declare("weight", InputFormatScalar, "1.0");
+            m_inputs.declare("weight", InputFormatFloat, "1.0");
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("mfp", InputFormatSpectralReflectance);
-            m_inputs.declare("mfp_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("ior", InputFormatScalar);
+            m_inputs.declare("mfp_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("ior", InputFormatFloat);
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -112,13 +112,13 @@ namespace
                 reinterpret_cast<NormalizedDiffusionBSSRDFInputValues*>(data);
 
             // Precompute the relative index of refraction.
-            values->m_eta = compute_eta(shading_point, static_cast<float>(values->m_ior));
+            values->m_eta = compute_eta(shading_point, values->m_ior);
 
             make_reflectance_and_mfp_compatible(values->m_reflectance, values->m_mfp);
 
             // Apply multipliers to input values.
-            values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
-            values->m_mfp *= static_cast<float>(values->m_mfp_multiplier);
+            values->m_reflectance *= values->m_reflectance_multiplier;
+            values->m_mfp *= values->m_mfp_multiplier;
 
             // Clamp input values.
             clamp_in_place(values->m_reflectance, 0.001f, 0.999f);
@@ -225,7 +225,7 @@ namespace
             }
 
             // Return r * R(r) * weight.
-            value *= radius * static_cast<float>(values->m_weight);
+            value *= radius * values->m_weight;
         }
 
         virtual float evaluate_pdf(

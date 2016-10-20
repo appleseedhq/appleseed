@@ -58,15 +58,15 @@ DipoleBSSRDF::DipoleBSSRDF(
     const ParamArray&   params)
   : SeparableBSSRDF(name, params)
 {
-    m_inputs.declare("weight", InputFormatScalar, "1.0");
+    m_inputs.declare("weight", InputFormatFloat, "1.0");
     m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-    m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
+    m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
     m_inputs.declare("mfp", InputFormatSpectralReflectance);
-    m_inputs.declare("mfp_multiplier", InputFormatScalar, "1.0");
+    m_inputs.declare("mfp_multiplier", InputFormatFloat, "1.0");
     m_inputs.declare("sigma_a", InputFormatSpectralReflectance, "");
     m_inputs.declare("sigma_s", InputFormatSpectralReflectance, "");
-    m_inputs.declare("g", InputFormatScalar, "0.0");
-    m_inputs.declare("ior", InputFormatScalar);
+    m_inputs.declare("g", InputFormatFloat, "0.0");
+    m_inputs.declare("ior", InputFormatFloat);
 }
 
 bool DipoleBSSRDF::sample(

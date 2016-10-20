@@ -437,7 +437,7 @@ namespace
             values->m_ior = max(p->ior, 0.001f);
             values->m_volume_transmittance = Color3f(p->volume_transmittance);
             values->m_volume_transmittance_distance = p->volume_transmittance_distance;
-            composite_closure.add_ior(weight, static_cast<float>(values->m_ior));
+            composite_closure.add_ior(weight, values->m_ior);
         }
     };
 

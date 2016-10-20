@@ -123,9 +123,9 @@ namespace
           : SeparableBSSRDF(name, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("v", InputFormatScalar);
-            m_inputs.declare("ior", InputFormatScalar);
+            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("v", InputFormatFloat);
+            m_inputs.declare("ior", InputFormatFloat);
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -152,10 +152,10 @@ namespace
                 reinterpret_cast<GaussianBSSRDFInputValues*>(data);
 
             // Precompute the relative index of refraction.
-            values->m_eta = compute_eta(shading_point, static_cast<float>(values->m_ior));
+            values->m_eta = compute_eta(shading_point, values->m_ior);
 
             // Precompute the (square of the) max radius.
-            values->m_rmax2 = static_cast<float>(values->m_v) * RMax2Constant;
+            values->m_rmax2 = values->m_v * RMax2Constant;
         }
 
         virtual bool sample(
@@ -166,7 +166,7 @@ namespace
             const GaussianBSSRDFInputValues* values =
                 reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
 
-            const float rmax2 = static_cast<float>(values->m_rmax2);
+            const float rmax2 = values->m_rmax2;
 
             if (rmax2 <= 0.0f)
                 return false;
@@ -174,7 +174,7 @@ namespace
             sampling_context.split_in_place(2, 1);
             const Vector2f s(sampling_context.next_vector2<2>());
 
-            const float v = static_cast<float>(values->m_v);
+            const float v = values->m_v;
             const float radius =
                 sqrt(-2.0f * v * log(1.0f - s[0] * (1.0f - exp(-rmax2 / (2.0f * v)))));
             const float phi = TwoPi<float>() * s[1];
@@ -201,7 +201,7 @@ namespace
             const GaussianBSSRDFInputValues* values =
                 reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
 
-            const float rmax2 = static_cast<float>(values->m_rmax2);
+            const float rmax2 = values->m_rmax2;
 
             if (square_radius > rmax2)
             {
@@ -209,11 +209,11 @@ namespace
                 return;
             }
 
-            const float v = static_cast<float>(values->m_v);
+            const float v = values->m_v;
             const float rd = exp(-square_radius / (2.0f * v)) / (TwoPi<float>() * v * RIntegralThreshold);
 
             value = values->m_reflectance;
-            value *= static_cast<float>(values->m_reflectance_multiplier) * rd;
+            value *= values->m_reflectance_multiplier * rd;
         }
 
         virtual float evaluate_pdf(
@@ -230,7 +230,7 @@ namespace
             if (r2 > rmax2)
                 return 0.0f;
 
-            const float v = static_cast<float>(values->m_v);
+            const float v = values->m_v;
             return exp(-r2 / (2.0f * v)) / (TwoPi<float>() * v * RIntegralThreshold);
         }
     };

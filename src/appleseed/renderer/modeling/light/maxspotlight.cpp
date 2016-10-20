@@ -79,7 +79,7 @@ namespace
           : Light(name, params)
         {
             m_inputs.declare("intensity", InputFormatSpectralIlluminance);
-            m_inputs.declare("intensity_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("intensity_multiplier", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -171,7 +171,7 @@ namespace
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_intensity;                // emitted intensity in W.sr^-1
-            ScalarInput m_intensity_multiplier;     // emitted intensity multiplier
+            float       m_intensity_multiplier;     // emitted intensity multiplier
         };
 
         const Source*   m_intensity_source;
@@ -213,7 +213,7 @@ namespace
 
             const InputValues* values = input_evaluator.evaluate<InputValues>(m_inputs, uv);
             radiance = values->m_intensity;
-            radiance *= static_cast<float>(values->m_intensity_multiplier);
+            radiance *= values->m_intensity_multiplier;
 
             if (cos_theta < m_cos_inner_half_angle)
             {

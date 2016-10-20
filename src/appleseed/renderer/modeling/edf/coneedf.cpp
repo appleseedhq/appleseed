@@ -75,8 +75,8 @@ namespace
           : EDF(name, params)
         {
             m_inputs.declare("radiance", InputFormatSpectralIlluminance);
-            m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("angle", InputFormatScalar, "90.0");
+            m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("angle", InputFormatFloat, "90.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -122,7 +122,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= static_cast<float>(values->m_radiance_multiplier);
+            value *= values->m_radiance_multiplier;
 
             probability = sample_cone_uniform_pdf(m_cos_half_angle);
             assert(probability > 0.0f);
@@ -148,7 +148,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= static_cast<float>(values->m_radiance_multiplier);
+            value *= values->m_radiance_multiplier;
         }
 
         virtual void evaluate(
@@ -173,7 +173,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= static_cast<float>(values->m_radiance_multiplier);
+            value *= values->m_radiance_multiplier;
 
             probability = sample_cone_uniform_pdf(m_cos_half_angle);
         }

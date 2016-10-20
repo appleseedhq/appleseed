@@ -67,7 +67,7 @@ class Source
     virtual void evaluate(
         TextureCache&               texture_cache,
         const foundation::Vector2f& uv,
-        ScalarInput&                scalar) const;
+        float&                      scalar) const;
     virtual void evaluate(
         TextureCache&               texture_cache,
         const foundation::Vector2f& uv,
@@ -93,7 +93,7 @@ class Source
 
     // Evaluate the source as a uniform source.
     virtual void evaluate_uniform(
-        ScalarInput&                scalar) const;
+        float&                      scalar) const;
     virtual void evaluate_uniform(
         foundation::Color3f&        linear_rgb) const;
     virtual void evaluate_uniform(
@@ -108,7 +108,7 @@ class Source
         Alpha&                      alpha) const;
 
   private:
-    const bool  m_uniform;
+    const bool m_uniform;
 };
 
 
@@ -133,7 +133,7 @@ inline bool Source::is_uniform() const
 inline void Source::evaluate(
     TextureCache&                   texture_cache,
     const foundation::Vector2f&     uv,
-    ScalarInput&                    scalar) const
+    float&                          scalar) const
 {
     evaluate_uniform(scalar);
 }
@@ -181,9 +181,9 @@ inline void Source::evaluate(
 }
 
 inline void Source::evaluate_uniform(
-    ScalarInput&                    scalar) const
+    float&                          scalar) const
 {
-    scalar = ScalarInput(0.0);
+    scalar = 0.0f;
 }
 
 inline void Source::evaluate_uniform(

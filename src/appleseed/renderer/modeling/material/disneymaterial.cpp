@@ -620,7 +620,7 @@ DisneyMaterial::DisneyMaterial(
   : Material(name, params)
   , impl(new Impl(this))
 {
-    m_inputs.declare("alpha_map", InputFormatScalar, "");
+    m_inputs.declare("alpha_map", InputFormatFloat, "");
     m_inputs.declare("displacement_map", InputFormatSpectralReflectance, "");
 }
 

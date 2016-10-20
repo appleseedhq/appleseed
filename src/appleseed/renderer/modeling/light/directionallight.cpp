@@ -79,8 +79,8 @@ namespace
           : Light(name, params)
         {
             m_inputs.declare("irradiance", InputFormatSpectralIlluminance);
-            m_inputs.declare("irradiance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("exposure", InputFormatScalar, "0.0");
+            m_inputs.declare("irradiance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("exposure", InputFormatFloat, "0.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -211,8 +211,8 @@ namespace
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_irradiance;               // emitted irradiance in W.m^-2
-            ScalarInput m_irradiance_multiplier;    // emitted irradiance multiplier
-            ScalarInput m_exposure;                 // emitted irradiance multiplier in f-stops
+            float       m_irradiance_multiplier;    // emitted irradiance multiplier
+            float       m_exposure;                 // emitted irradiance multiplier in f-stops
         };
 
         Vector3d        m_scene_center;             // world space

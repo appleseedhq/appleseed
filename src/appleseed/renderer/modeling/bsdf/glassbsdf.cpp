@@ -97,14 +97,14 @@ namespace
           : BSDF(name, AllBSDFTypes, ScatteringMode::Glossy, params)
         {
             m_inputs.declare("surface_transmittance", InputFormatSpectralReflectance);
-            m_inputs.declare("surface_transmittance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("surface_transmittance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("reflection_tint", InputFormatSpectralReflectance, "1.0");
             m_inputs.declare("refraction_tint", InputFormatSpectralReflectance, "1.0");
-            m_inputs.declare("roughness", InputFormatScalar, "0.15");
-            m_inputs.declare("anisotropic", InputFormatScalar, "0.0");
-            m_inputs.declare("ior", InputFormatScalar, "1.5");
+            m_inputs.declare("roughness", InputFormatFloat, "0.15");
+            m_inputs.declare("anisotropic", InputFormatFloat, "0.0");
+            m_inputs.declare("ior", InputFormatFloat, "1.5");
             m_inputs.declare("volume_transmittance", InputFormatSpectralReflectance, "1.0");
-            m_inputs.declare("volume_transmittance_distance", InputFormatScalar, "0.0");
+            m_inputs.declare("volume_transmittance_distance", InputFormatFloat, "0.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -159,22 +159,22 @@ namespace
             if (shading_point.is_entering())
             {
                 values->m_backfacing = false;
-                values->m_eta = shading_point.get_ray().get_current_ior() / static_cast<float>(values->m_ior);
+                values->m_eta = shading_point.get_ray().get_current_ior() / values->m_ior;
             }
             else
             {
                 values->m_backfacing = true;
-                values->m_eta = static_cast<float>(values->m_ior) / shading_point.get_ray().get_previous_ior();
+                values->m_eta = values->m_ior / shading_point.get_ray().get_previous_ior();
             }
 
             values->m_reflection_color  = values->m_surface_transmittance;
             values->m_reflection_color *= values->m_reflection_tint;
-            values->m_reflection_color *= static_cast<float>(values->m_surface_transmittance_multiplier);
+            values->m_reflection_color *= values->m_surface_transmittance_multiplier;
 
             // [2] Surface absorption, page 5.
             values->m_refraction_color  = values->m_surface_transmittance;
             values->m_refraction_color *= values->m_refraction_tint;
-            values->m_refraction_color *= static_cast<float>(values->m_surface_transmittance_multiplier);
+            values->m_refraction_color *= values->m_surface_transmittance_multiplier;
             values->m_refraction_color  = sqrt(values->m_refraction_color);
 
             // Weights used when choosing reflection or refraction.
@@ -194,8 +194,8 @@ namespace
 
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
-                static_cast<float>(values->m_roughness),
-                static_cast<float>(values->m_anisotropic),
+                values->m_roughness,
+                values->m_anisotropic,
                 alpha_x,
                 alpha_y);
 
@@ -307,8 +307,8 @@ namespace
 
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
-                static_cast<float>(values->m_roughness),
-                static_cast<float>(values->m_anisotropic),
+                values->m_roughness,
+                values->m_anisotropic,
                 alpha_x,
                 alpha_y);
 
@@ -376,8 +376,8 @@ namespace
 
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
-                static_cast<float>(values->m_roughness),
-                static_cast<float>(values->m_anisotropic),
+                values->m_roughness,
+                values->m_anisotropic,
                 alpha_x,
                 alpha_y);
 
@@ -426,7 +426,7 @@ namespace
             {
                 // [2] Volumetric absorption reparameterization, page 5.
                 absorption.resize(values->m_volume_transmittance.size());
-                const float d = distance / static_cast<float>(values->m_volume_transmittance_distance);
+                const float d = distance / values->m_volume_transmittance_distance;
                 for (size_t i = 0, e = absorption.size(); i < e; ++i)
                 {
                     const float a = log(max(values->m_volume_transmittance[i], 0.01f));
@@ -446,8 +446,8 @@ namespace
             const InputValues*      values,
             const float             F)
         {
-            const float r_probability = F * static_cast<float>(values->m_reflection_weight);
-            const float t_probability = (1.0f - F) * static_cast<float>(values->m_refraction_weight);
+            const float r_probability = F * values->m_reflection_weight;
+            const float t_probability = (1.0f - F) * values->m_refraction_weight;
             const float sum_probabilities = r_probability + t_probability;
 
             if (sum_probabilities == 0.0f)

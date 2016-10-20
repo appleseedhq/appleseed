@@ -82,12 +82,12 @@ namespace
           : BSDF(name, Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy, params)
         {
             m_inputs.declare("diffuse_reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("diffuse_reflectance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("diffuse_reflectance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("glossy_reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("glossy_reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("fresnel_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("shininess_u", InputFormatScalar);
-            m_inputs.declare("shininess_v", InputFormatScalar);
+            m_inputs.declare("glossy_reflectance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("fresnel_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("shininess_u", InputFormatFloat);
+            m_inputs.declare("shininess_v", InputFormatFloat);
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -121,7 +121,7 @@ namespace
 
             // Compute shininess-related values.
             SVal sval;
-            compute_sval(sval, static_cast<float>(values->m_nu), static_cast<float>(values->m_nv));
+            compute_sval(sval, values->m_nu, values->m_nv);
 
             // Generate a uniform sample in [0,1)^3.
             sampling_context.split_in_place(3, 1);
@@ -150,8 +150,8 @@ namespace
                 const float cos_hu = dot(h, sample.m_shading_basis.get_tangent_u());
                 const float cos_hv = dot(h, sample.m_shading_basis.get_tangent_v());
                 const float exp_den = 1.0f - cos_hn * cos_hn;
-                const float exp_u = static_cast<float>(values->m_nu) * cos_hu * cos_hu;
-                const float exp_v = static_cast<float>(values->m_nv) * cos_hv * cos_hv;
+                const float exp_u = values->m_nu * cos_hu * cos_hu;
+                const float exp_v = values->m_nv * cos_hv * cos_hv;
                 exp = exp_den == 0.0f ? FP<float>::pos_inf() : (exp_u + exp_v) / exp_den;
             }
             else
@@ -167,7 +167,7 @@ namespace
                     cos_phi = cos(phi);
                     sin_phi = sin(phi);
 
-                    exp = static_cast<float>(values->m_nu);
+                    exp = values->m_nu;
                 }
                 else
                 {
@@ -176,8 +176,8 @@ namespace
                     cos_phi = cos(phi);
                     sin_phi = sin(phi);
 
-                    const float exp_u = static_cast<float>(values->m_nu) * cos_phi * cos_phi;
-                    const float exp_v = static_cast<float>(values->m_nv) * sin_phi * sin_phi;
+                    const float exp_u = values->m_nu * cos_phi * cos_phi;
+                    const float exp_v = values->m_nv * sin_phi * sin_phi;
 
                     exp = exp_u + exp_v;
                 }
@@ -219,7 +219,7 @@ namespace
             const float num = sval.m_kg * pow(cos_hn, exp);
             const float den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
             Spectrum glossy;
-            fresnel_reflectance_dielectric_schlick(glossy, rval.m_scaled_rg, cos_oh, static_cast<float>(values->m_fr_multiplier));
+            fresnel_reflectance_dielectric_schlick(glossy, rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
             madd(sample.m_value, glossy, num / den);
 
             // Evaluate the PDF of the glossy component (equation 8).
@@ -260,7 +260,7 @@ namespace
 
             // Compute shininess-related values.
             SVal sval;
-            compute_sval(sval, static_cast<float>(values->m_nu), static_cast<float>(values->m_nv));
+            compute_sval(sval, values->m_nu, values->m_nv);
 
             value.set(0.0f);
             float probability = 0.0f;
@@ -292,14 +292,14 @@ namespace
             if (ScatteringMode::has_glossy(modes))
             {
                 // Evaluate the glossy component of the BRDF (equation 4).
-                const float exp_num_u = static_cast<float>(values->m_nu) * cos_hu * cos_hu;
-                const float exp_num_v = static_cast<float>(values->m_nv) * cos_hv * cos_hv;
+                const float exp_num_u = values->m_nu * cos_hu * cos_hu;
+                const float exp_num_v = values->m_nv * cos_hv * cos_hv;
                 const float exp_den = 1.0f - cos_hn * cos_hn;
                 const float exp = (exp_num_u + exp_num_v) / exp_den;
                 const float num = exp_den == 0.0f ? 0.0f : sval.m_kg * pow(cos_hn, exp);
                 const float den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
                 Spectrum glossy;
-                fresnel_reflectance_dielectric_schlick(glossy, rval.m_scaled_rg, cos_oh, static_cast<float>(values->m_fr_multiplier));
+                fresnel_reflectance_dielectric_schlick(glossy, rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
                 madd(value, glossy, num / den);
 
                 // Evaluate the PDF of the glossy component (equation 8).
@@ -335,7 +335,7 @@ namespace
 
             // Compute shininess-related values.
             SVal sval;
-            compute_sval(sval, static_cast<float>(values->m_nu), static_cast<float>(values->m_nv));
+            compute_sval(sval, values->m_nu, values->m_nv);
 
             float probability = 0.0f;
 
@@ -359,8 +359,8 @@ namespace
             if (ScatteringMode::has_glossy(modes))
             {
                 // Evaluate the PDF for the halfway vector (equation 6).
-                const float exp_num_u = static_cast<float>(values->m_nu) * cos_hu * cos_hu;
-                const float exp_num_v = static_cast<float>(values->m_nv) * cos_hv * cos_hv;
+                const float exp_num_u = values->m_nu * cos_hu * cos_hu;
+                const float exp_num_v = values->m_nv * cos_hv * cos_hv;
                 const float exp_den = 1.0f - cos_hn * cos_hn;
                 const float exp = (exp_num_u + exp_num_v) / exp_den;
                 const float num = exp_den == 0.0f ? 0.0f : sval.m_kg * pow(cos_hn, exp);
@@ -405,12 +405,12 @@ namespace
         {
             // Scale and clamp the diffuse reflectance.
             Spectrum scaled_rd = values->m_rd;
-            scaled_rd *= static_cast<float>(values->m_rd_multiplier);
+            scaled_rd *= values->m_rd_multiplier;
             saturate_in_place(scaled_rd);
 
             // Scale and clamp the glossy reflectance.
             rval.m_scaled_rg = values->m_rg;
-            rval.m_scaled_rg *= static_cast<float>(values->m_rg_multiplier);
+            rval.m_scaled_rg *= values->m_rg_multiplier;
             saturate_in_place(rval.m_scaled_rg);
 
             // Compute average diffuse and glossy reflectances.

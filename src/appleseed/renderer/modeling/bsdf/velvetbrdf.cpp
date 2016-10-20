@@ -78,12 +78,12 @@ namespace
             const ParamArray&   params)
           : BSDF(name, Reflective, ScatteringMode::Glossy, params)
         {
-            m_inputs.declare("roughness", InputFormatScalar);
-            m_inputs.declare("roughness_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("roughness", InputFormatFloat);
+            m_inputs.declare("roughness_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("fresnel_normal_reflectance", InputFormatScalar, "1.0");
-            m_inputs.declare("fresnel_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("fresnel_normal_reflectance", InputFormatFloat, "1.0");
+            m_inputs.declare("fresnel_multiplier", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -201,12 +201,12 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            ScalarInput m_roughness;
-            ScalarInput m_roughness_multiplier;
+            float       m_roughness;
+            float       m_roughness_multiplier;
             Spectrum    m_reflectance;
-            ScalarInput m_reflectance_multiplier;
-            ScalarInput m_fresnel_normal_reflectance;
-            ScalarInput m_fresnel_multiplier;
+            float       m_reflectance_multiplier;
+            float       m_fresnel_normal_reflectance;
+            float       m_fresnel_multiplier;
         };
 
         void eval_velvet(
@@ -220,11 +220,11 @@ namespace
         {
             value = values->m_reflectance;
             const Vector3f h = normalize(incoming + outgoing);
-            const float roughness = static_cast<float>(values->m_roughness) * static_cast<float>(values->m_roughness_multiplier);
+            const float roughness = values->m_roughness * values->m_roughness_multiplier;
             const float D = velvet_distribution(dot(n, h), roughness);
             const float denom = velvet_denom(cos_in, cos_on);
             float F = fresnel_factor(values, n, outgoing);
-            value *= static_cast<float>(values->m_reflectance_multiplier) * D * F / denom;
+            value *= values->m_reflectance_multiplier * D * F / denom;
         }
 
         const float velvet_distribution(const float cos_nh, const float roughness) const
@@ -255,11 +255,11 @@ namespace
             {
                 fresnel_reflectance_dielectric_schlick(
                     F,
-                    static_cast<float>(values->m_fresnel_normal_reflectance),
+                    values->m_fresnel_normal_reflectance,
                     dot(outgoing, n));
             }
 
-            return F * static_cast<float>(values->m_fresnel_multiplier);
+            return F * values->m_fresnel_multiplier;
         }
     };
 

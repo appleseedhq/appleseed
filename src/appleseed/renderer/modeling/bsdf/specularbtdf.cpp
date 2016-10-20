@@ -70,13 +70,13 @@ namespace
           : BSDF(name, Transmissive, ScatteringMode::Specular, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("transmittance", InputFormatSpectralReflectance);
-            m_inputs.declare("transmittance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("fresnel_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("ior", InputFormatScalar);
-            m_inputs.declare("density", InputFormatScalar, "0.0");
-            m_inputs.declare("scale", InputFormatScalar, "1.0");
+            m_inputs.declare("transmittance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("fresnel_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("ior", InputFormatFloat);
+            m_inputs.declare("density", InputFormatFloat, "0.0");
+            m_inputs.declare("scale", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -104,8 +104,8 @@ namespace
 
             values->m_eta =
                 shading_point.is_entering()
-                    ? shading_point.get_ray().get_current_ior() / static_cast<float>(values->m_ior)
-                    : static_cast<float>(values->m_ior) / shading_point.get_ray().get_previous_ior();
+                    ? shading_point.get_ray().get_current_ior() / values->m_ior
+                    : values->m_ior / shading_point.get_ray().get_previous_ior();
         }
 
         APPLESEED_FORCE_INLINE virtual void sample(
@@ -131,7 +131,7 @@ namespace
                 // Total internal reflection: compute the reflected direction and radiance.
                 incoming = reflect(sample.m_outgoing.get_value(), shading_normal);
                 sample.m_value = values->m_transmittance;
-                sample.m_value *= static_cast<float>(values->m_transmittance_multiplier);
+                sample.m_value *= values->m_transmittance_multiplier;
                 refract_differentials = false;
             }
             else
@@ -144,7 +144,7 @@ namespace
                     1.0f / values->m_eta,
                     abs(cos_theta_i),
                     cos_theta_t);
-                fresnel_reflection *= static_cast<float>(values->m_fresnel_multiplier);
+                fresnel_reflection *= values->m_fresnel_multiplier;
 
                 sampling_context.split_in_place(1, 1);
                 const float s = static_cast<float>(sampling_context.next_double2());
@@ -154,7 +154,7 @@ namespace
                     // Fresnel reflection: compute the reflected direction and radiance.
                     incoming = reflect(sample.m_outgoing.get_value(), shading_normal);
                     sample.m_value = values->m_reflectance;
-                    sample.m_value *= static_cast<float>(values->m_reflectance_multiplier);
+                    sample.m_value *= values->m_reflectance_multiplier;
                     refract_differentials = false;
                 }
                 else
@@ -169,8 +169,8 @@ namespace
                     sample.m_value = values->m_transmittance;
                     sample.m_value *=
                         adjoint
-                            ? static_cast<float>(values->m_transmittance_multiplier)
-                            : square(values->m_eta) * static_cast<float>(values->m_transmittance_multiplier);
+                            ? values->m_transmittance_multiplier
+                            : square(values->m_eta) * values->m_transmittance_multiplier;
                 }
             }
 
@@ -232,7 +232,7 @@ namespace
             Spectrum&               absorption) const APPLESEED_OVERRIDE
         {
             const InputValues* values = static_cast<const InputValues*>(data);
-            const float d = static_cast<float>(values->m_density) * static_cast<float>(values->m_scale) * distance;
+            const float d = values->m_density * values->m_scale * distance;
 
             absorption.resize(values->m_transmittance.size());
 
@@ -245,7 +245,7 @@ namespace
                 //   https://en.wikipedia.org/wiki/Beer%E2%80%93Lambert_law
                 //
 
-                const float a = 1.0f - (values->m_transmittance[i] * static_cast<float>(values->m_transmittance_multiplier));
+                const float a = 1.0f - (values->m_transmittance[i] * values->m_transmittance_multiplier);
                 const float optical_depth = a * d;
                 absorption[i] = exp(-optical_depth);
             }

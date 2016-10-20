@@ -58,9 +58,9 @@ APPLESEED_DECLARE_INPUT_VALUES(MetalBRDFInputValues)
 {
     Spectrum    m_normal_reflectance;
     Spectrum    m_edge_tint;
-    ScalarInput m_reflectance_multiplier;
-    ScalarInput m_roughness;
-    ScalarInput m_anisotropic;
+    float       m_reflectance_multiplier;
+    float       m_roughness;
+    float       m_anisotropic;
 };
 
 

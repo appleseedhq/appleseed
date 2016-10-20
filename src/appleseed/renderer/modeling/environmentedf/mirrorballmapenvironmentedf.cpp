@@ -85,7 +85,7 @@ namespace
           : EnvironmentEDF(name, params)
         {
             m_inputs.declare("radiance", InputFormatSpectralIlluminance);
-            m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -174,7 +174,7 @@ namespace
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
-            ScalarInput m_radiance_multiplier;  // emitted radiance multiplier
+            float       m_radiance_multiplier;  // emitted radiance multiplier
         };
 
         void lookup_envmap(
@@ -190,7 +190,7 @@ namespace
             // Evaluate the input.
             const InputValues* values = input_evaluator.evaluate<InputValues>(m_inputs, uv);
             value = values->m_radiance;
-            value *= static_cast<float>(values->m_radiance_multiplier);
+            value *= values->m_radiance_multiplier;
         }
     };
 }

@@ -79,8 +79,8 @@ namespace
           : Light(name, params)
         {
             m_inputs.declare("intensity", InputFormatSpectralIlluminance);
-            m_inputs.declare("intensity_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("exposure", InputFormatScalar, "0.0");
+            m_inputs.declare("intensity_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("exposure", InputFormatFloat, "0.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -129,7 +129,10 @@ namespace
             float&                  probability) const APPLESEED_OVERRIDE
         {
             position = light_transform.get_parent_origin();
-            outgoing = light_transform.vector_to_parent(rotate_minus_pi_around_x(sample_cone_uniform(s, m_cos_outer_half_angle)));
+            outgoing =
+                light_transform.vector_to_parent(
+                    rotate_minus_pi_around_x(
+                        sample_cone_uniform(s, m_cos_outer_half_angle)));
             probability = sample_cone_uniform_pdf(static_cast<float>(m_cos_outer_half_angle));
 
             const Vector3d axis = -normalize(light_transform.get_parent_z());
@@ -166,8 +169,8 @@ namespace
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_intensity;                // emitted intensity in W.sr^-1
-            ScalarInput m_intensity_multiplier;     // emitted intensity multiplier
-            ScalarInput m_exposure;                 // emitted intensity multiplier in f-stops
+            float       m_intensity_multiplier;     // emitted intensity multiplier
+            float       m_exposure;                 // emitted intensity multiplier in f-stops
         };
 
         const Source*   m_intensity_source;
@@ -186,11 +189,11 @@ namespace
         }
 
         void compute_radiance(
-            InputEvaluator&     input_evaluator,
-            const Transformd&   light_transform,
-            const Vector3d&     axis,
-            const Vector3d&     outgoing,
-            Spectrum&           radiance) const
+            InputEvaluator&         input_evaluator,
+            const Transformd&       light_transform,
+            const Vector3d&         axis,
+            const Vector3d&         outgoing,
+            Spectrum&               radiance) const
         {
             const Vector3d up = light_transform.vector_to_parent(m_up);
             const Vector3d v = -axis;
@@ -207,8 +210,7 @@ namespace
 
             const InputValues* values = input_evaluator.evaluate<InputValues>(m_inputs, uv);
             radiance = values->m_intensity;
-            radiance *=
-                static_cast<float>(values->m_intensity_multiplier * pow(2.0, values->m_exposure));
+            radiance *= values->m_intensity_multiplier * pow(2.0f, values->m_exposure);
 
             if (cos_theta < m_cos_inner_half_angle)
             {

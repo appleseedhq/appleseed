@@ -94,8 +94,8 @@ namespace
           : Light(name, params)
         {
             m_inputs.declare("environment_edf", InputFormatEntity, "");
-            m_inputs.declare("turbidity", InputFormatScalar);
-            m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("turbidity", InputFormatFloat);
+            m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -231,8 +231,8 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            ScalarInput m_turbidity;                // atmosphere turbidity
-            ScalarInput m_radiance_multiplier;      // emitted radiance multiplier
+            float       m_turbidity;                // atmosphere turbidity
+            float       m_radiance_multiplier;      // emitted radiance multiplier
         };
 
         Vector3d        m_scene_center;             // world space
@@ -269,7 +269,7 @@ namespace
             if (turbidity_src && turbidity_src->is_uniform() &&
                 turbidity_multiplier_src && turbidity_multiplier_src->is_uniform())
             {
-                double turbidity_multiplier;
+                float turbidity_multiplier;
                 turbidity_multiplier_src->evaluate_uniform(turbidity_multiplier);
                 turbidity_src->evaluate_uniform(m_values.m_turbidity);
                 m_values.m_turbidity *= turbidity_multiplier;

@@ -75,8 +75,8 @@ namespace
           : Light(name, params)
         {
             m_inputs.declare("intensity", InputFormatSpectralIlluminance);
-            m_inputs.declare("intensity_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("exposure", InputFormatScalar, "0.0");
+            m_inputs.declare("intensity_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("exposure", InputFormatFloat, "0.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -155,8 +155,8 @@ namespace
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_intensity;                // emitted intensity in W.sr^-1
-            ScalarInput m_intensity_multiplier;     // emitted intensity multiplier
-            ScalarInput m_exposure;                 // emitted intensity multiplier in f-stops
+            float       m_intensity_multiplier;     // emitted intensity multiplier
+            float       m_exposure;                 // emitted intensity multiplier in f-stops
         };
 
         InputValues     m_values;

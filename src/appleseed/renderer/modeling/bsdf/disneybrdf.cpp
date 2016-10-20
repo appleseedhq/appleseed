@@ -201,7 +201,7 @@ namespace
 
             if (values->m_subsurface != 1.0f)
             {
-                const float fd90 = 0.5f + 2.0f * square(cos_ih) * static_cast<float>(values->m_roughness);
+                const float fd90 = 0.5f + 2.0f * square(cos_ih) * values->m_roughness;
                 fd = mix(1.0f, fd90, fl) * mix(1.0f, fd90, fv);
             }
 
@@ -210,14 +210,14 @@ namespace
                 // Based on Hanrahan-Krueger BRDF approximation of isotropic BSRDF.
                 // The 1.25f scale is used to (roughly) preserve albedo.
                 // Fss90 is used to "flatten" retroreflection based on roughness.
-                const float fss90 = square(cos_ih) * static_cast<float>(values->m_roughness);
+                const float fss90 = square(cos_ih) * values->m_roughness;
                 const float fss = mix(1.0f, fss90, fl) * mix(1.0f, fss90, fv);
                 const float ss = 1.25f * (fss * (1.0f / (cos_on + cos_in) - 0.5f) + 0.5f);
-                fd = mix(fd, ss, static_cast<float>(values->m_subsurface));
+                fd = mix(fd, ss, values->m_subsurface);
             }
 
             value = values->m_base_color;
-            value *= fd * RcpPi<float>() * (1.0f - static_cast<float>(values->m_metallic));
+            value *= fd * RcpPi<float>() * (1.0f - values->m_metallic);
 
             // Return the probability density of the sampled direction.
             return evaluate_pdf(shading_basis, incoming);
@@ -282,10 +282,10 @@ namespace
             mix_spectra(
                 Color3f(1.0f),
                 values->m_tint_color,
-                static_cast<float>(values->m_sheen_tint),
+                values->m_sheen_tint,
                 value);
             const float fh = schlick_fresnel(cos_ih);
-            value *= fh * static_cast<float>(values->m_sheen) * (1.0f - static_cast<float>(values->m_metallic));
+            value *= fh * values->m_sheen * (1.0f - values->m_metallic);
 
             // Return the probability density of the sampled direction.
             return evaluate_pdf(shading_basis, incoming);
@@ -334,16 +334,16 @@ namespace
           : BSDF(name, Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy, params)
         {
             m_inputs.declare("base_color", InputFormatSpectralReflectance);
-            m_inputs.declare("subsurface", InputFormatScalar, "0.0");
-            m_inputs.declare("metallic", InputFormatScalar, "0.0");
-            m_inputs.declare("specular", InputFormatScalar, "0.5");
-            m_inputs.declare("specular_tint", InputFormatScalar, "0.0");
-            m_inputs.declare("anisotropic", InputFormatScalar, "0.0");
-            m_inputs.declare("roughness", InputFormatScalar, "0.5");
-            m_inputs.declare("sheen", InputFormatScalar, "0.0");
-            m_inputs.declare("sheen_tint", InputFormatScalar, "0.5");
-            m_inputs.declare("clearcoat", InputFormatScalar, "0.0");
-            m_inputs.declare("clearcoat_gloss", InputFormatScalar, "1.0");
+            m_inputs.declare("subsurface", InputFormatFloat, "0.0");
+            m_inputs.declare("metallic", InputFormatFloat, "0.0");
+            m_inputs.declare("specular", InputFormatFloat, "0.5");
+            m_inputs.declare("specular_tint", InputFormatFloat, "0.0");
+            m_inputs.declare("anisotropic", InputFormatFloat, "0.0");
+            m_inputs.declare("roughness", InputFormatFloat, "0.5");
+            m_inputs.declare("sheen", InputFormatFloat, "0.0");
+            m_inputs.declare("sheen_tint", InputFormatFloat, "0.5");
+            m_inputs.declare("clearcoat", InputFormatFloat, "0.0");
+            m_inputs.declare("clearcoat_gloss", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -426,8 +426,8 @@ namespace
                 {
                     float alpha_x, alpha_y;
                     microfacet_alpha_from_roughness(
-                        static_cast<float>(values->m_roughness),
-                        static_cast<float>(values->m_anisotropic),
+                        values->m_roughness,
+                        values->m_anisotropic,
                         alpha_x,
                         alpha_y);
 
@@ -518,8 +518,8 @@ namespace
                     Spectrum spec;
                     float alpha_x, alpha_y;
                     microfacet_alpha_from_roughness(
-                        static_cast<float>(values->m_roughness),
-                        static_cast<float>(values->m_anisotropic),
+                        values->m_roughness,
+                        values->m_anisotropic,
                         alpha_x,
                         alpha_y);
 
@@ -609,8 +609,8 @@ namespace
                 {
                     float alpha_x, alpha_y;
                     microfacet_alpha_from_roughness(
-                        static_cast<float>(values->m_roughness),
-                        static_cast<float>(values->m_anisotropic),
+                        values->m_roughness,
+                        values->m_anisotropic,
                         alpha_x,
                         alpha_y);
 
@@ -649,13 +649,13 @@ namespace
             float                           weights[NumComponents]) const
         {
             weights[DiffuseComponent] =
-                lerp(static_cast<float>(values->m_base_color_luminance), 0.0f, static_cast<float>(values->m_metallic));
+                lerp(values->m_base_color_luminance, 0.0f, values->m_metallic);
             weights[SheenComponent] =
-                lerp(static_cast<float>(values->m_sheen), 0.0f, static_cast<float>(values->m_metallic));
+                lerp(values->m_sheen, 0.0f, values->m_metallic);
             weights[SpecularComponent] =
-                lerp(static_cast<float>(values->m_specular), 1.0f, static_cast<float>(values->m_metallic));
+                lerp(values->m_specular, 1.0f, values->m_metallic);
             weights[CleatcoatComponent] =
-                static_cast<float>(values->m_clearcoat) * 0.25f;
+                values->m_clearcoat * 0.25f;
 
             const float total_weight =
                 weights[DiffuseComponent] +
@@ -685,7 +685,7 @@ namespace
 
         float clearcoat_roughness(const DisneyBRDFInputValues* values) const
         {
-            return mix(0.1f, 0.001f, static_cast<float>(values->m_clearcoat_gloss));
+            return mix(0.1f, 0.001f, values->m_clearcoat_gloss);
         }
     };
 

@@ -111,11 +111,11 @@ namespace
             const ParamArray&       params)
           : BSDF(name, Reflective, ScatteringMode::Glossy, params)
         {
-            m_inputs.declare("glossiness", InputFormatScalar);
-            m_inputs.declare("glossiness_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("glossiness", InputFormatFloat);
+            m_inputs.declare("glossiness_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("fresnel_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("fresnel_multiplier", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -169,7 +169,7 @@ namespace
                 return;
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            const float glossiness = static_cast<float>(values->m_glossiness) * static_cast<float>(values->m_glossiness_multiplier);
+            const float glossiness = values->m_glossiness * values->m_glossiness_multiplier;
 
             switch (m_mdf)
             {
@@ -182,7 +182,7 @@ namespace
                         blinn_mdf,
                         e,
                         e,
-                        FresnelDielectricSchlickFun(values->m_reflectance, static_cast<float>(values->m_fr_multiplier)),
+                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
                         cos_on,
                         sample);
                 }
@@ -197,7 +197,7 @@ namespace
                         beckmann_mdf,
                         a,
                         a,
-                        FresnelDielectricSchlickFun(values->m_reflectance, static_cast<float>(values->m_fr_multiplier)),
+                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
                         cos_on,
                         sample);
                 }
@@ -212,7 +212,7 @@ namespace
                         ward_mdf,
                         a,
                         a,
-                        FresnelDielectricSchlickFun(values->m_reflectance, static_cast<float>(values->m_fr_multiplier)),
+                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
                         cos_on,
                         sample);
                 }
@@ -227,7 +227,7 @@ namespace
                         ggx_mdf,
                         a,
                         a,
-                        FresnelDielectricSchlickFun(values->m_reflectance, static_cast<float>(values->m_fr_multiplier)),
+                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
                         cos_on,
                         sample);
                 }
@@ -236,7 +236,7 @@ namespace
               assert_otherwise;
             }
 
-            sample.m_value *= static_cast<float>(values->m_reflectance_multiplier);
+            sample.m_value *= values->m_reflectance_multiplier;
         }
 
         APPLESEED_FORCE_INLINE virtual float evaluate(
@@ -261,7 +261,7 @@ namespace
                 return 0.0f;
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            const float glossiness = static_cast<float>(values->m_glossiness) * static_cast<float>(values->m_glossiness_multiplier);
+            const float glossiness = values->m_glossiness * values->m_glossiness_multiplier;
 
             float pdf = 0.0f;
 
@@ -278,7 +278,7 @@ namespace
                         shading_basis,
                         outgoing,
                         incoming,
-                        FresnelDielectricSchlickFun(values->m_reflectance, static_cast<float>(values->m_fr_multiplier)),
+                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
                         cos_in,
                         cos_on,
                         value);
@@ -296,7 +296,7 @@ namespace
                         shading_basis,
                         outgoing,
                         incoming,
-                        FresnelDielectricSchlickFun(values->m_reflectance, static_cast<float>(values->m_fr_multiplier)),
+                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
                         cos_in,
                         cos_on,
                         value);
@@ -314,7 +314,7 @@ namespace
                         shading_basis,
                         outgoing,
                         incoming,
-                        FresnelDielectricSchlickFun(values->m_reflectance, static_cast<float>(values->m_fr_multiplier)),
+                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
                         cos_in,
                         cos_on,
                         value);
@@ -332,7 +332,7 @@ namespace
                         shading_basis,
                         outgoing,
                         incoming,
-                        FresnelDielectricSchlickFun(values->m_reflectance, static_cast<float>(values->m_fr_multiplier)),
+                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
                         cos_in,
                         cos_on,
                         value);
@@ -342,7 +342,7 @@ namespace
               assert_otherwise;
             }
 
-            value *= static_cast<float>(values->m_reflectance_multiplier);
+            value *= values->m_reflectance_multiplier;
             return pdf;
         }
 
@@ -365,7 +365,7 @@ namespace
                 return 0.0f;
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            const float glossiness = static_cast<float>(values->m_glossiness) * static_cast<float>(values->m_glossiness_multiplier);
+            const float glossiness = values->m_glossiness * values->m_glossiness_multiplier;
 
             switch (m_mdf)
             {
@@ -434,11 +434,11 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            ScalarInput m_glossiness;
-            ScalarInput m_glossiness_multiplier;
+            float       m_glossiness;
+            float       m_glossiness_multiplier;
             Spectrum    m_reflectance;
-            ScalarInput m_reflectance_multiplier;
-            ScalarInput m_fr_multiplier;            // Fresnel multiplier
+            float       m_reflectance_multiplier;
+            float       m_fr_multiplier;            // Fresnel multiplier
         };
 
         enum MDF

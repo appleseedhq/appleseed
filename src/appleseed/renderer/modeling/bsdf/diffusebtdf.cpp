@@ -73,7 +73,7 @@ namespace
           : BSDF(name, Transmissive, ScatteringMode::Diffuse, params)
         {
             m_inputs.declare("transmittance", InputFormatSpectralReflectance);
-            m_inputs.declare("transmittance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("transmittance_multiplier", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -125,7 +125,7 @@ namespace
 
             // Compute the BRDF value.
             sample.m_value = values->m_transmittance;
-            sample.m_value *= static_cast<float>(values->m_transmittance_multiplier) * RcpPi<float>();
+            sample.m_value *= values->m_transmittance_multiplier * RcpPi<float>();
 
             // Compute the probability density of the sampled direction.
             sample.m_probability = abs(wi.y) * RcpPi<float>();
@@ -160,7 +160,7 @@ namespace
             {
                 // Compute the BRDF value.
                 value = values->m_transmittance;
-                value *= static_cast<float>(values->m_transmittance_multiplier) * RcpPi<float>();
+                value *= values->m_transmittance_multiplier * RcpPi<float>();
 
                 // Return the probability density of the sampled direction.
                 return abs(cos_in) * RcpPi<float>();

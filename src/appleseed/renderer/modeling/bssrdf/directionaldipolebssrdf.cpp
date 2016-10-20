@@ -184,7 +184,7 @@ namespace
             fresnel_transmittance_dielectric(fi, values->m_eta, cos_in);
 
             const float radius = static_cast<float>(norm(incoming_point.get_point() - outgoing_point.get_point()));
-            value *= radius * fo * fi * static_cast<float>(values->m_weight);
+            value *= radius * fo * fi * values->m_weight;
 
             value *= values->m_dirpole_reparam_weight;
         }
@@ -215,7 +215,7 @@ namespace
 
             // Compute direction of real ray source.
             Vector3f wr;
-            APPLESEED_UNUSED const bool successful = refract(wi, ni, static_cast<float>(values->m_eta), wr);
+            APPLESEED_UNUSED const bool successful = refract(wi, ni, values->m_eta, wr);
             assert(successful);
             assert(is_normalized(wr));
 
@@ -235,7 +235,7 @@ namespace
                 const float sigma_a = values->m_sigma_a[i];
                 const float sigma_s = values->m_sigma_s[i];
                 const float sigma_t = sigma_s + sigma_a;
-                const float sigma_s_prime = sigma_s * (1.0f - static_cast<float>(values->m_g));
+                const float sigma_s_prime = sigma_s * (1.0f - values->m_g);
                 const float sigma_t_prime = sigma_s_prime + sigma_a;
                 const float alpha_prime = values->m_alpha_prime[i];                     // reduced scattering albedo
                 const float sigma_tr = values->m_sigma_tr[i];                           // effective transport coefficient

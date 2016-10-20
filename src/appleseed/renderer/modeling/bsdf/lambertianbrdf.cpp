@@ -75,7 +75,7 @@ namespace
           : BSDF(name, Reflective, ScatteringMode::Diffuse, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -106,7 +106,7 @@ namespace
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
             sample.m_value = values->m_reflectance;
-            sample.m_value *= static_cast<float>(values->m_reflectance_multiplier) * RcpPi<float>();
+            sample.m_value *= values->m_reflectance_multiplier * RcpPi<float>();
 
             // Compute the probability density of the sampled direction.
             sample.m_probability = wi.y * RcpPi<float>();
@@ -141,7 +141,7 @@ namespace
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_reflectance;
-            value *= static_cast<float>(values->m_reflectance_multiplier) * RcpPi<float>();
+            value *= values->m_reflectance_multiplier * RcpPi<float>();
 
             // Return the probability density of the sampled direction.
             return cos_in * RcpPi<float>();
@@ -171,7 +171,7 @@ namespace
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_reflectance;              // diffuse reflectance (albedo, technically)
-            ScalarInput m_reflectance_multiplier;
+            float       m_reflectance_multiplier;
         };
     };
 

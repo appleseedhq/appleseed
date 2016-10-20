@@ -140,10 +140,10 @@ namespace
           : BSDF(name, Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy, params)
         {
             m_inputs.declare("matte_reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("matte_reflectance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("matte_reflectance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("specular_reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("specular_reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("roughness", InputFormatScalar);
+            m_inputs.declare("specular_reflectance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("roughness", InputFormatFloat);
         }
 
         ~KelemenBRDFImpl()
@@ -180,11 +180,11 @@ namespace
                 static_cast<const InputValues*>(input_evaluator.evaluate(m_inputs));
 
             // Construct the Microfacet Distribution Function.
-            m_mdf.reset(new MDFType(max(static_cast<float>(values->m_roughness), 1.0e-6f)));
+            m_mdf.reset(new MDFType(max(values->m_roughness, 1.0e-6f)));
 
             // Precompute the specular albedo curve.
             Spectrum rs(values->m_rs);
-            rs *= static_cast<float>(values->m_rs_multiplier);
+            rs *= values->m_rs_multiplier;
             compute_specular_albedo(*m_mdf.get(), rs, m_a_spec);
 
             // Precompute the average specular albedo.
@@ -237,7 +237,7 @@ namespace
             Spectrum matte_albedo(1.0f);
             matte_albedo -= specular_albedo_V;
             matte_albedo *= values->m_rm;
-            matte_albedo *= static_cast<float>(values->m_rm_multiplier);
+            matte_albedo *= values->m_rm_multiplier;
 
             // Compute the probability of a specular bounce.
             const float specular_prob = average_value(specular_albedo_V);
@@ -302,7 +302,7 @@ namespace
 
             // Specular component (equation 3).
             Spectrum rs(values->m_rs);
-            rs *= static_cast<float>(values->m_rs_multiplier);
+            rs *= values->m_rs_multiplier;
             Spectrum fr_spec;
             evaluate_fr_spec(*m_mdf.get(), rs, dot_HV, dot_HN, fr_spec);
 
@@ -378,7 +378,7 @@ namespace
                 Spectrum matte_albedo(1.0f);
                 matte_albedo -= specular_albedo_V;
                 matte_albedo *= values->m_rm;
-                matte_albedo *= static_cast<float>(values->m_rm_multiplier);
+                matte_albedo *= values->m_rm_multiplier;
 
                 // Compute the matte component (last equation of section 2.2f).
                 Spectrum matte_comp(1.0f);
@@ -400,7 +400,7 @@ namespace
             {
                 // Compute the specular component (equation 3).
                 Spectrum rs(values->m_rs);
-                rs *= static_cast<float>(values->m_rs_multiplier);
+                rs *= values->m_rs_multiplier;
                 Spectrum fr_spec;
                 evaluate_fr_spec(*m_mdf.get(), rs, dot_HL, dot_HN, fr_spec);
                 value += fr_spec;
@@ -456,7 +456,7 @@ namespace
                 Spectrum matte_albedo(1.0f);
                 matte_albedo -= specular_albedo_V;
                 matte_albedo *= values->m_rm;
-                matte_albedo *= static_cast<float>(values->m_rm_multiplier);
+                matte_albedo *= values->m_rm_multiplier;
 
                 // Compute the probability of a matte bounce.
                 const float matte_prob = average_value(matte_albedo);
@@ -486,10 +486,10 @@ namespace
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum            m_rm;                           // matte reflectance of the substrate
-            ScalarInput         m_rm_multiplier;                // matte reflectance multiplier
+            float               m_rm_multiplier;                // matte reflectance multiplier
             Spectrum            m_rs;                           // specular reflectance at normal incidence
-            ScalarInput         m_rs_multiplier;                // specular reflectance multiplier
-            ScalarInput         m_roughness;                    // technically, root-mean-square of the microfacets slopes
+            float               m_rs_multiplier;                // specular reflectance multiplier
+            float               m_roughness;                    // technically, root-mean-square of the microfacets slopes
         };
 
         typedef WardMDFAdapter<float> MDFType;

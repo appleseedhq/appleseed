@@ -78,7 +78,7 @@ namespace
             const ParamArray&       params)
           : BSDF(name, Reflective, ScatteringMode::All, params)
         {
-            m_inputs.declare("weight", InputFormatScalar);
+            m_inputs.declare("weight", InputFormatFloat);
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -202,7 +202,7 @@ namespace
 
             // Retrieve the blending weights.
             const InputValues* values = static_cast<const InputValues*>(data);
-            const float w0 = static_cast<float>(values->m_weight);
+            const float w0 = values->m_weight;
             const float w1 = 1.0f - w0;
 
             // Evaluate the first BSDF.
@@ -260,7 +260,7 @@ namespace
 
             // Retrieve the blending weights.
             const InputValues* values = static_cast<const InputValues*>(data);
-            const float w0 = static_cast<float>(values->m_weight);
+            const float w0 = values->m_weight;
             const float w1 = 1.0f - w0;
 
             // Evaluate the PDF of the first BSDF.
@@ -294,7 +294,7 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            ScalarInput  m_weight;
+            float   m_weight;
         };
 
         const BSDF* m_bsdf[2];

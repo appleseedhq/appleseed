@@ -80,8 +80,8 @@ namespace
           : BSDF(name, Reflective, ScatteringMode::Diffuse, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("roughness" , InputFormatScalar, "0.1");
+            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("roughness" , InputFormatFloat, "0.1");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -128,9 +128,9 @@ namespace
                 oren_nayar_qualitative(
                     cos_on,
                     cos_in,
-                    static_cast<float>(values->m_roughness),
+                    values->m_roughness,
                     values->m_reflectance,
-                    static_cast<float>(values->m_reflectance_multiplier),
+                    values->m_reflectance_multiplier,
                     sample.m_outgoing.get_value(),
                     incoming,
                     n,
@@ -140,7 +140,7 @@ namespace
             {
                 // Revert to Lambertian when roughness is zero.
                 sample.m_value = values->m_reflectance;
-                sample.m_value *= static_cast<float>(values->m_reflectance_multiplier) * RcpPi<float>();
+                sample.m_value *= values->m_reflectance_multiplier * RcpPi<float>();
             }
 
             // Compute the probability density of the sampled direction.
@@ -186,9 +186,9 @@ namespace
                 oren_nayar_qualitative(
                     cos_on,
                     cos_in,
-                    static_cast<float>(values->m_roughness),
+                    values->m_roughness,
                     values->m_reflectance,
-                    static_cast<float>(values->m_reflectance_multiplier),
+                    values->m_reflectance_multiplier,
                     outgoing,
                     incoming,
                     n,
@@ -198,7 +198,7 @@ namespace
             {
                 // Revert to Lambertian when roughness is zero.
                 value = values->m_reflectance;
-                value *= static_cast<float>(values->m_reflectance_multiplier) * RcpPi<float>();
+                value *= values->m_reflectance_multiplier * RcpPi<float>();
             }
 
             // Return the probability density of the sampled direction.

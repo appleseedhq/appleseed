@@ -94,10 +94,10 @@ namespace
           : BSDF(name, Reflective, ScatteringMode::Glossy, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("roughness", InputFormatScalar, "0.15");
-            m_inputs.declare("anisotropic", InputFormatScalar, "0.0");
-            m_inputs.declare("ior", InputFormatScalar, "1.5");
+            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("roughness", InputFormatFloat, "0.15");
+            m_inputs.declare("anisotropic", InputFormatFloat, "0.0");
+            m_inputs.declare("ior", InputFormatFloat, "1.5");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -165,15 +165,15 @@ namespace
 
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
-                static_cast<float>(values->m_roughness),
-                static_cast<float>(values->m_anisotropic),
+                values->m_roughness,
+                values->m_anisotropic,
                 alpha_x,
                 alpha_y);
 
             const FresnelDielectricFun<float> f(
                 values->m_reflectance,
-                static_cast<float>(values->m_reflectance_multiplier),
-                static_cast<float>(values->m_outside_ior) / static_cast<float>(values->m_ior));
+                values->m_reflectance_multiplier,
+                values->m_outside_ior / values->m_ior);
 
             if (m_mdf == GGX)
             {
@@ -226,15 +226,15 @@ namespace
 
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
-                static_cast<float>(values->m_roughness),
-                static_cast<float>(values->m_anisotropic),
+                values->m_roughness,
+                values->m_anisotropic,
                 alpha_x,
                 alpha_y);
 
             FresnelDielectricFun<float> f(
                 values->m_reflectance,
-                static_cast<float>(values->m_reflectance_multiplier),
-                static_cast<float>(values->m_outside_ior) / static_cast<float>(values->m_ior));
+                values->m_reflectance_multiplier,
+                values->m_outside_ior / values->m_ior);
 
             if (m_mdf == GGX)
             {
@@ -290,8 +290,8 @@ namespace
 
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
-                static_cast<float>(values->m_roughness),
-                static_cast<float>(values->m_anisotropic),
+                values->m_roughness,
+                values->m_anisotropic,
                 alpha_x,
                 alpha_y);
 

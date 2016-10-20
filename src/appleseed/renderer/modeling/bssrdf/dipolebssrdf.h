@@ -57,15 +57,15 @@ namespace renderer
 
 APPLESEED_DECLARE_INPUT_VALUES(DipoleBSSRDFInputValues)
 {
-    ScalarInput m_weight;
+    float       m_weight;
     Spectrum    m_reflectance;
-    ScalarInput m_reflectance_multiplier;
+    float       m_reflectance_multiplier;
     Spectrum    m_mfp;
-    ScalarInput m_mfp_multiplier;
+    float       m_mfp_multiplier;
     Spectrum    m_sigma_a;
     Spectrum    m_sigma_s;
-    ScalarInput m_g;
-    ScalarInput m_ior;
+    float       m_g;
+    float       m_ior;
 
     // Precomputed values.
     Spectrum    m_alpha_prime;
@@ -115,7 +115,7 @@ class DipoleBSSRDF
         DipoleBSSRDFInputValues*    values) const
     {
         // Precompute the relative index of refraction.
-        values->m_eta = compute_eta(shading_point, static_cast<float>(values->m_ior));
+        values->m_eta = compute_eta(shading_point, values->m_ior);
 
         if (m_inputs.source("sigma_a") == 0 || m_inputs.source("sigma_s") == 0)
         {
@@ -127,8 +127,8 @@ class DipoleBSSRDF
             make_reflectance_and_mfp_compatible(values->m_reflectance, values->m_mfp);
 
             // Apply multipliers to input values.
-            values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
-            values->m_mfp *= static_cast<float>(values->m_mfp_multiplier);
+            values->m_reflectance *= values->m_reflectance_multiplier;
+            values->m_mfp *= values->m_mfp_multiplier;
 
             // Clamp input values.
             foundation::clamp_in_place(values->m_reflectance, 0.001f, 0.999f);
@@ -157,7 +157,7 @@ class DipoleBSSRDF
         effective_extinction_coefficient(
             values->m_sigma_a,
             values->m_sigma_s,
-            static_cast<float>(values->m_g),
+            values->m_g,
             values->m_sigma_tr);
 
         // Precompute some coefficients and build a CDF for channel sampling.

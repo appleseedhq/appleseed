@@ -81,7 +81,7 @@ namespace
           : EnvironmentShader(name, params)
           , m_env_edf(0)
         {
-            m_inputs.declare("alpha_value", InputFormatScalar, "1.0");
+            m_inputs.declare("alpha_value", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -150,7 +150,7 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            ScalarInput m_alpha_value;
+            float m_alpha_value;
         };
 
         EnvironmentEDF*     m_env_edf;

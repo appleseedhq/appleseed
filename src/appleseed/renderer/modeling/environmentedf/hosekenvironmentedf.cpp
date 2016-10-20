@@ -102,15 +102,15 @@ namespace
           : EnvironmentEDF(name, params)
           , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
         {
-            m_inputs.declare("sun_theta", InputFormatScalar);
-            m_inputs.declare("sun_phi", InputFormatScalar);
-            m_inputs.declare("turbidity", InputFormatScalar);
-            m_inputs.declare("turbidity_multiplier", InputFormatScalar, "2.0");
-            m_inputs.declare("ground_albedo", InputFormatScalar, "0.3");
-            m_inputs.declare("luminance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("luminance_gamma", InputFormatScalar, "1.0");
-            m_inputs.declare("saturation_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("horizon_shift", InputFormatScalar, "0.0");
+            m_inputs.declare("sun_theta", InputFormatFloat);
+            m_inputs.declare("sun_phi", InputFormatFloat);
+            m_inputs.declare("turbidity", InputFormatFloat);
+            m_inputs.declare("turbidity_multiplier", InputFormatFloat, "2.0");
+            m_inputs.declare("ground_albedo", InputFormatFloat, "0.3");
+            m_inputs.declare("luminance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("luminance_gamma", InputFormatFloat, "1.0");
+            m_inputs.declare("saturation_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("horizon_shift", InputFormatFloat, "0.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -240,15 +240,15 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            ScalarInput  m_sun_theta;                    // sun zenith angle in degrees, 0=zenith
-            ScalarInput  m_sun_phi;                      // degrees
-            ScalarInput  m_turbidity;                    // atmosphere turbidity
-            ScalarInput  m_turbidity_multiplier;
-            ScalarInput  m_ground_albedo;
-            ScalarInput  m_luminance_multiplier;
-            ScalarInput  m_luminance_gamma;
-            ScalarInput  m_saturation_multiplier;
-            ScalarInput  m_horizon_shift;
+            float   m_sun_theta;                    // sun zenith angle in degrees, 0=zenith
+            float   m_sun_phi;                      // degrees
+            float   m_turbidity;                    // atmosphere turbidity
+            float   m_turbidity_multiplier;
+            float   m_ground_albedo;
+            float   m_luminance_multiplier;
+            float   m_luminance_gamma;
+            float   m_saturation_multiplier;
+            float   m_horizon_shift;
         };
 
         const LightingConditions    m_lighting_conditions;

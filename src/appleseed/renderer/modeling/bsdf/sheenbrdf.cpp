@@ -78,7 +78,7 @@ namespace
           : BSDF(name, Reflective, ScatteringMode::Diffuse, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -118,7 +118,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             sample.m_value = values->m_reflectance;
-            sample.m_value *= fh * static_cast<float>(values->m_reflectance_multiplier);
+            sample.m_value *= fh * values->m_reflectance_multiplier;
 
             sample.m_probability = RcpTwoPi<float>();
 
@@ -155,7 +155,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_reflectance;
-            value *= fh * static_cast<float>(values->m_reflectance_multiplier);
+            value *= fh * values->m_reflectance_multiplier;
 
             return RcpTwoPi<float>();
         }

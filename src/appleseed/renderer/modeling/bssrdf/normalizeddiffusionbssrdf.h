@@ -55,12 +55,12 @@ namespace renderer
 
 APPLESEED_DECLARE_INPUT_VALUES(NormalizedDiffusionBSSRDFInputValues)
 {
-    ScalarInput m_weight;
+    float       m_weight;
     Spectrum    m_reflectance;
-    ScalarInput m_reflectance_multiplier;
+    float       m_reflectance_multiplier;
     Spectrum    m_mfp;
-    ScalarInput m_mfp_multiplier;
-    ScalarInput m_ior;
+    float       m_mfp_multiplier;
+    float       m_ior;
 
     // Precomputed values.
     Spectrum    m_s;

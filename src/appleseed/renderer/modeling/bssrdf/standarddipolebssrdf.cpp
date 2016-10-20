@@ -115,7 +115,7 @@ namespace
             {
                 const float sigma_a = values->m_sigma_a[i];
                 const float sigma_s = values->m_sigma_s[i];
-                const float sigma_s_prime = sigma_s * (1.0f - static_cast<float>(values->m_g));
+                const float sigma_s_prime = sigma_s * (1.0f - values->m_g);
                 const float sigma_t_prime = sigma_s_prime + sigma_a;
                 const float alpha_prime = values->m_alpha_prime[i];
                 const float sigma_tr = values->m_sigma_tr[i];
@@ -188,7 +188,7 @@ namespace
             }
 
             // Return r * R(r) * weight.
-            value *= sqrt(square_radius) * static_cast<float>(values->m_weight);
+            value *= sqrt(square_radius) * values->m_weight;
         }
     };
 }
