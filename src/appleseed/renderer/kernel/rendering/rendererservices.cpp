@@ -139,9 +139,9 @@ void RendererServices::initialize(TextureStore& texture_store)
         strcmp(m_camera->get_model(), "spherical_camera") == 0 ? g_spherical_ustr :
         g_unknown_proj_ustr;
 
-    m_shutter[0] = static_cast<float>(m_camera->get_shutter_open_time());
-    m_shutter[1] = static_cast<float>(m_camera->get_shutter_close_time());
-    m_shutter_interval = static_cast<float>(m_camera->get_shutter_open_time_interval());
+    m_shutter[0] = m_camera->get_shutter_open_time();
+    m_shutter[1] = m_camera->get_shutter_close_time();
+    m_shutter_interval = m_camera->get_shutter_open_time_interval();
 }
 
 OIIO::TextureSystem* RendererServices::texturesys() const
@@ -937,7 +937,6 @@ IMPLEMENT_USER_DATA_GETTER(bn)
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
         const Vector3d& bn = shading_point->get_shading_basis().get_tangent_v();
-
         OSL::Vec3 v(
             static_cast<float>(bn.x),
             static_cast<float>(bn.y),

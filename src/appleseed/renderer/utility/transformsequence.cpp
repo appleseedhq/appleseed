@@ -92,7 +92,7 @@ void TransformSequence::clear()
 }
 
 void TransformSequence::set_transform(
-    const double        time,
+    const float         time,
     const Transformd&   transform)
 {
     assert(m_size <= m_capacity);
@@ -127,7 +127,7 @@ void TransformSequence::set_transform(
 
 void TransformSequence::get_transform(
     const size_t        index,
-    double&             time,
+    float&              time,
     Transformd&         transform) const
 {
     assert(index < m_size);
@@ -141,12 +141,12 @@ const Transformd& TransformSequence::get_earliest_transform() const
     if (m_size == 0)
         return Transformd::identity();
 
-    double earliest_time = m_keys[0].m_time;
+    float earliest_time = m_keys[0].m_time;
     size_t earliest_index = 0;
 
     for (size_t i = 1; i < m_size; ++i)
     {
-        const double time = m_keys[i].m_time;
+        const float time = m_keys[i].m_time;
 
         if (earliest_time > time)
         {
@@ -242,8 +242,8 @@ TransformSequence TransformSequence::operator*(const TransformSequence& rhs) con
 
     while (lhs_i < m_size && rhs_i < rhs.m_size)
     {
-        const double lhs_t = m_keys[lhs_i].m_time;
-        const double rhs_t = rhs.m_keys[rhs_i].m_time;
+        const float lhs_t = m_keys[lhs_i].m_time;
+        const float rhs_t = rhs.m_keys[rhs_i].m_time;
 
         if (lhs_t == rhs_t)
         {
@@ -265,14 +265,14 @@ TransformSequence TransformSequence::operator*(const TransformSequence& rhs) con
 
     while (lhs_i < m_size)
     {
-        const double lhs_t = m_keys[lhs_i].m_time;
+        const float lhs_t = m_keys[lhs_i].m_time;
         result.set_transform(lhs_t, m_keys[lhs_i].m_transform * rhs.evaluate(lhs_t, scratch));
         ++lhs_i;
     }
 
     while (rhs_i < rhs.m_size)
     {
-        const double rhs_t = rhs.m_keys[rhs_i].m_time;
+        const float rhs_t = rhs.m_keys[rhs_i].m_time;
         result.set_transform(rhs_t, evaluate(rhs_t, scratch) * rhs.m_keys[rhs_i].m_transform);
         ++rhs_i;
     }
@@ -308,7 +308,7 @@ void TransformSequence::copy_from(const TransformSequence& rhs)
 }
 
 void TransformSequence::interpolate(
-    const double        time,
+    const float         time,
     Transformd&         result) const
 {
     assert(m_size > 0);
@@ -324,14 +324,14 @@ void TransformSequence::interpolate(
         else begin = mid;
     }
 
-    const double begin_time = m_keys[begin].m_time;
-    const double end_time = m_keys[end].m_time;
+    const float begin_time = m_keys[begin].m_time;
+    const float end_time = m_keys[end].m_time;
 
     assert(end_time > begin_time);
 
-    const double t = (time - begin_time) / (end_time - begin_time);
+    const float t = (time - begin_time) / (end_time - begin_time);
 
-    m_interpolators[begin].evaluate(t, result);
+    m_interpolators[begin].evaluate(static_cast<double>(t), result);
 }
 
 namespace

@@ -324,7 +324,7 @@ namespace
 
         virtual bool connect_vertex(
             SamplingContext&        sampling_context,
-            const double            time,
+            const float             time,
             const Vector3d&         point,
             Vector2d&               ndc,
             Vector3d&               outgoing,
@@ -387,7 +387,7 @@ namespace
         }
 
         virtual bool project_segment(
-            const double            time,
+            const float             time,
             const Vector3d&         a,
             const Vector3d&         b,
             Vector2d&               a_ndc,
@@ -498,7 +498,7 @@ namespace
         double get_autofocus_focal_distance(const Intersector& intersector) const
         {
             // The autofocus considers the scene at the middle of the shutter interval.
-            const double time = get_shutter_middle_time();
+            const float time = get_shutter_middle_time();
             const Transformd transform = m_transform_sequence.evaluate(time);
 
             // Create a ray that goes through the center of the lens.
@@ -509,7 +509,7 @@ namespace
             ray.m_tmax = numeric_limits<double>::max();
             ray.m_time =
                 ShadingRay::Time::create_with_normalized_time(
-                    0.5,
+                    0.5f,
                     get_shutter_open_time(),
                     get_shutter_close_time());
             ray.m_flags = VisibilityFlags::ProbeRay;

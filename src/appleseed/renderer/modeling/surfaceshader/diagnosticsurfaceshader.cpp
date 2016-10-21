@@ -354,7 +354,7 @@ void DiagnosticSurfaceShader::evaluate(
                 const double SquareWireThickness = square(0.00025);
 
                 // Retrieve the time, the scene and the camera.
-                const double time = shading_point.get_time().m_absolute;
+                const float time = shading_point.get_time().m_absolute;
                 const Scene& scene = shading_point.get_scene();
                 const Camera& camera = *scene.get_camera();
 

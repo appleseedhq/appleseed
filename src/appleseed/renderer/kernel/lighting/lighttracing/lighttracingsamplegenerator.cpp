@@ -520,8 +520,8 @@ namespace
         uint64                          m_path_count;
         Population<uint64>              m_path_length;
 
-        double                          m_shutter_open_time;
-        double                          m_shutter_close_time;
+        float                           m_shutter_open_time;
+        float                           m_shutter_close_time;
 
         virtual size_t generate_samples(
             const size_t                sequence_index,
@@ -565,7 +565,7 @@ namespace
             LightSample light_sample;
             m_light_sampler.sample(
                 ShadingRay::Time::create_with_normalized_time(
-                    static_cast<double>(s[0]),
+                    s[0],
                     m_shutter_open_time,
                     m_shutter_close_time),
                 Vector3f(s[1], s[2], s[3]),
@@ -643,7 +643,7 @@ namespace
             sampling_context.split_in_place(1, 1);
             const ShadingRay::Time time =
                 ShadingRay::Time::create_with_normalized_time(
-                    sampling_context.next2<double>(),
+                    sampling_context.next2<float>(),
                     m_shutter_open_time,
                     m_shutter_close_time);
             const ShadingRay light_ray(
@@ -721,7 +721,7 @@ namespace
             sampling_context.split_in_place(1, 1);
             const ShadingRay::Time time =
                 ShadingRay::Time::create_with_normalized_time(
-                    sampling_context.next2<double>(),
+                    sampling_context.next2<float>(),
                     m_shutter_open_time,
                     m_shutter_close_time);
             const ShadingRay light_ray(
@@ -810,7 +810,7 @@ namespace
             sampling_context.split_in_place(1, 1);
             const ShadingRay::Time time =
                 ShadingRay::Time::create_with_normalized_time(
-                    sampling_context.next2<double>(),
+                    sampling_context.next2<float>(),
                     m_shutter_open_time,
                     m_shutter_close_time);
             const ShadingRay light_ray(

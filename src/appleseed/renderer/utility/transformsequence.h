@@ -73,13 +73,13 @@ class APPLESEED_DLLSYMBOL TransformSequence
     // Set a transform at a given time.
     // Replaces any transform already set at this time.
     void set_transform(
-        const double                    time,
+        const float                     time,
         const foundation::Transformd&   transform);
 
     // Return a given (time, transform) pair.
     void get_transform(
         const size_t                    index,
-        double&                         time,
+        float&                          time,
         foundation::Transformd&         transform) const;
 
     // Return the transform with the lowest time value.
@@ -108,11 +108,11 @@ class APPLESEED_DLLSYMBOL TransformSequence
     bool swaps_handedness(const foundation::Transformd& xform) const;
 
     // Compute the transform for any time value.
-    foundation::Transformd evaluate(const double time) const;
+    foundation::Transformd evaluate(const float time) const;
 
     // A variant of evaluate() that avoids copying transforms in certain cases.
     const foundation::Transformd& evaluate(
-        const double                    time,
+        const float                     time,
         foundation::Transformd&         scratch) const;
 
     // Compose two transform sequences.
@@ -126,7 +126,7 @@ class APPLESEED_DLLSYMBOL TransformSequence
   private:
     struct TransformKey
     {
-        double                          m_time;
+        float                           m_time;
         foundation::Transformd          m_transform;
 
         bool operator<(const TransformKey& rhs) const
@@ -145,7 +145,7 @@ class APPLESEED_DLLSYMBOL TransformSequence
     void copy_from(const TransformSequence& rhs);
 
     void interpolate(
-        const double                    time,
+        const float                     time,
         foundation::Transformd&         result) const;
 
     foundation::AABB3d compute_motion_segment_bbox(
@@ -174,14 +174,14 @@ inline bool TransformSequence::can_swap_handedness() const
     return m_can_swap_handedness;
 }
 
-inline foundation::Transformd TransformSequence::evaluate(const double time) const
+inline foundation::Transformd TransformSequence::evaluate(const float time) const
 {
     foundation::Transformd scratch;
     return evaluate(time, scratch);
 }
 
 APPLESEED_FORCE_INLINE const foundation::Transformd& TransformSequence::evaluate(
-    const double            time,
+    const float             time,
     foundation::Transformd& scratch) const
 {
     if (m_size == 0)

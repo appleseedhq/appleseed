@@ -85,7 +85,7 @@ void CameraController::update_camera_transform()
     camera->transform_sequence().clear();
 
     // Set the scene camera orientation and position based on the controller.
-    camera->transform_sequence().set_transform(0.0, get_transform());
+    camera->transform_sequence().set_transform(0.0f, get_transform());
 }
 
 void CameraController::save_camera_target()

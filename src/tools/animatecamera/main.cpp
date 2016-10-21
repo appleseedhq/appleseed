@@ -409,9 +409,9 @@ namespace
                 // Set the camera's transform sequence.
                 Camera* camera = project->get_scene()->get_camera();
                 camera->transform_sequence().clear();
-                camera->transform_sequence().set_transform(0.0, animation_path[i]);
+                camera->transform_sequence().set_transform(0.0f, animation_path[i]);
                 if (i + 1 < animation_path.size())
-                    camera->transform_sequence().set_transform(1.0, animation_path[i + 1]);
+                    camera->transform_sequence().set_transform(1.0f, animation_path[i + 1]);
 
                 // Write the project file for this frame.
                 const string new_path = make_numbered_filename(m_base_output_filename + ".appleseed", frame);
@@ -497,8 +497,8 @@ namespace
                 // Set the camera's transform sequence.
                 Camera* camera = project->get_scene()->get_camera();
                 camera->transform_sequence().clear();
-                camera->transform_sequence().set_transform(0.0, previous_transform);
-                camera->transform_sequence().set_transform(1.0, new_transform);
+                camera->transform_sequence().set_transform(0.0f, previous_transform);
+                camera->transform_sequence().set_transform(1.0f, new_transform);
                 previous_transform = new_transform;
 
                 // Write the project file for this frame.

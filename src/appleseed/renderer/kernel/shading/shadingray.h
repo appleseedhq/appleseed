@@ -61,7 +61,6 @@ class ShadingRay
 {
   public:
     // Types.
-    typedef double                  ValueType;
     typedef foundation::Vector3d    VectorType;
     typedef foundation::Ray3d       RayType;
     typedef foundation::RayInfo3d   RayInfoType;
@@ -70,20 +69,20 @@ class ShadingRay
     class Time
     {
       public:
-        double                      m_absolute;                     // absolute time of the ray
-        double                      m_normalized;                   // time of the ray, relative to shutter open / close times
+        float                       m_absolute;                     // absolute time of the ray
+        float                       m_normalized;                   // time of the ray, relative to shutter open / close times
 
         static Time create_with_normalized_time(
-            const double            time,
-            const double            shutter_open,
-            const double            shutter_close);
+            const float             time,
+            const float             shutter_open,
+            const float             shutter_close);
 
         Time();                     // leave all fields uninitialized
 
       private:
         Time(
-            const double            absolute,
-            const double            normalized);
+            const float             absolute,
+            const float             normalized);
     };
 
     enum { MaxMediumCount = 8 };
@@ -116,8 +115,8 @@ class ShadingRay
     ShadingRay(
         const VectorType&           org,
         const VectorType&           dir,
-        const ValueType             tmin,
-        const ValueType             tmax,
+        const double                tmin,
+        const double                tmax,
         const Time&                 time,
         const VisibilityFlags::Type flags,
         const DepthType             depth);
@@ -179,8 +178,8 @@ inline ShadingRay::ShadingRay(
 inline ShadingRay::ShadingRay(
     const VectorType&               org,
     const VectorType&               dir,
-    const ValueType                 tmin,
-    const ValueType                 tmax,
+    const double                    tmin,
+    const double                    tmax,
     const Time&                     time,
     const VisibilityFlags::Type     flags,
     const DepthType                 depth)
@@ -219,9 +218,9 @@ inline float ShadingRay::get_previous_ior() const
 //
 
 inline ShadingRay::Time ShadingRay::Time::create_with_normalized_time(
-    const double                    time,
-    const double                    shutter_open,
-    const double                    shutter_close)
+    const float                     time,
+    const float                     shutter_open,
+    const float                     shutter_close)
 {
     return
         Time(
@@ -234,13 +233,13 @@ inline ShadingRay::Time::Time()
 }
 
 inline ShadingRay::Time::Time(
-    const double                    absolute,
-    const double                    normalized)
+    const float                     absolute,
+    const float                     normalized)
   : m_absolute(absolute)
   , m_normalized(normalized)
 {
-    assert(m_normalized >= 0.0);
-    assert(m_normalized < 1.0);
+    assert(m_normalized >= 0.0f);
+    assert(m_normalized < 1.0f);
 }
 
 }       // namespace renderer

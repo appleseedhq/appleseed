@@ -211,7 +211,7 @@ namespace
         {
             if (transform_sequence.size() == 1)
             {
-                double time;
+                float time;
                 Transformd transform;
                 transform_sequence.get_transform(0, time, transform);
                 if (transform.get_local_to_parent() == Matrix4d::identity())
@@ -220,7 +220,7 @@ namespace
 
             for (size_t i = 0, e = transform_sequence.size(); i < e; ++i)
             {
-                double time;
+                float time;
                 Transformd transform;
                 transform_sequence.get_transform(i, time, transform);
 

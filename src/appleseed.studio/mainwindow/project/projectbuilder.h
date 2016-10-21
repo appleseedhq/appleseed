@@ -272,9 +272,9 @@ inline renderer::Camera* ProjectBuilder::edit_entity(
 
     new_entity->transform_sequence().clear();
 
-    for (size_t i = 0; i < old_entity->transform_sequence().size(); ++i)
+    for (size_t i = 0, e = old_entity->transform_sequence().size(); i < e; ++i)
     {
-        double time;
+        float time;
         foundation::Transformd transform;
         old_entity->transform_sequence().get_transform(i, time, transform);
         new_entity->transform_sequence().set_transform(time, transform);

@@ -243,19 +243,20 @@ namespace
     // Utility functions.
     //
 
-    double get_scalar(
+    template <typename T>
+    T get_scalar(
         const string&       text,
         ParseContext&       context)
     {
         try
         {
-            return from_string<double>(text);
+            return from_string<T>(text);
         }
         catch (const ExceptionStringConversionError&)
         {
             RENDERER_LOG_ERROR("expected scalar value, got \"%s\".", text.c_str());
             context.get_event_counters().signal_error();
-            return 0.0;
+            return T(0.0);
         }
     }
 
@@ -694,7 +695,7 @@ namespace
             m_matrix = Matrix4d::identity();
 
             const Vector3d axis = get_vector3(get_value(attrs, "axis"), m_context);
-            const double angle = get_scalar(get_value(attrs, "angle"), m_context);
+            const double angle = get_scalar<double>(get_value(attrs, "angle"), m_context);
 
             if (norm(axis) > 0.0)
             {
@@ -793,7 +794,7 @@ namespace
 
         virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
-            m_time = get_scalar(get_value(attrs, "time", "0.0"), m_context);
+            m_time = get_scalar<float>(get_value(attrs, "time", "0.0"), m_context);
             m_matrix = Matrix4d::identity();
         }
 
@@ -861,7 +862,7 @@ namespace
             }
         }
 
-        double get_time() const
+        float get_time() const
         {
             return m_time;
         }
@@ -873,7 +874,7 @@ namespace
 
       private:
         ParseContext&   m_context;
-        double          m_time;
+        float           m_time;
         Matrix4d        m_matrix;
         Transformd      m_transform;
     };
@@ -899,7 +900,7 @@ namespace
                 collapse_transforms();
 
             if (m_transforms.empty())
-                m_transforms[0.0] = Transformd::identity();
+                m_transforms[0.0f] = Transformd::identity();
         }
 
         virtual void end_child_element(
@@ -938,7 +939,7 @@ namespace
         }
 
       private:
-        typedef map<double, Transformd> TransformMap;
+        typedef map<float, Transformd> TransformMap;
 
         TransformMap m_transforms;
 
@@ -948,13 +949,13 @@ namespace
             {
                 const Transformd transform = m_transforms.begin()->second;
                 m_transforms.clear();
-                m_transforms[0.0] = transform;
+                m_transforms[0.0f] = transform;
             }
         }
 
         bool are_transforms_identical() const
         {
-            for (TransformMap::const_iterator i = m_transforms.begin(); i != pred(m_transforms.end()); ++i)
+            for (TransformMap::const_iterator i = m_transforms.begin(), e = pred(m_transforms.end()); i != e; ++i)
             {
                 if (i->second != succ(i)->second)
                     return false;

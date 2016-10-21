@@ -1006,7 +1006,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         auto_release_ptr<Camera> camera(
             PinholeCameraFactory().create("camera", params));
         camera->transform_sequence().set_transform(
-            0.0,
+            0.0f,
             Transformd::from_local_to_parent(
                   Matrix4d::make_translation(Vector3d(0.278, 0.273, -0.800))
                 * Matrix4d::make_rotation_y(Pi<double>())));

@@ -54,12 +54,12 @@ BENCHMARK_SUITE(Renderer_Utility_TransformSequence)
         {
             const Vector3d axis = normalize(Vector3d(0.1, 0.2, 1.0));
             m_sequence.set_transform(
-                0.0,
+                0.0f,
                 Transformd::from_local_to_parent(
                     Matrix4d::make_rotation(axis, 0.0) *
                     Matrix4d::make_scaling(Vector3d(0.1))));
             m_sequence.set_transform(
-                1.0,
+                1.0f,
                 Transformd::from_local_to_parent(
                     Matrix4d::make_rotation(axis, Pi<double>() - Pi<double>() / 8) *
                     Matrix4d::make_scaling(Vector3d(0.2))));

@@ -305,8 +305,8 @@ namespace
         const size_t                m_pass_hash;
         IAbortSwitch&               m_abort_switch;
         SPPMPhotonVector            m_local_photons;
-        double                      m_shutter_open_time;
-        double                      m_shutter_close_time;
+        float                       m_shutter_open_time;
+        float                       m_shutter_close_time;
 
         void trace_light_photon(
             const ShadingContext&   shading_context,
@@ -316,7 +316,7 @@ namespace
             LightSample light_sample;
             m_light_sampler.sample(
                 ShadingRay::Time::create_with_normalized_time(
-                    static_cast<double>(s[0]),
+                    s[0],
                     m_shutter_open_time,
                     m_shutter_close_time),
                 Vector3f(s[1], s[2], s[3]),
@@ -407,7 +407,7 @@ namespace
                 light_sample.m_point,
                 emission_direction,
                 ShadingRay::Time::create_with_normalized_time(
-                    child_sampling_context.next2<double>(),
+                    child_sampling_context.next2<float>(),
                     m_shutter_open_time,
                     m_shutter_close_time),
                 VisibilityFlags::LightRay,
@@ -468,7 +468,7 @@ namespace
                 emission_position,
                 emission_direction,
                 ShadingRay::Time::create_with_normalized_time(
-                    child_sampling_context.next2<double>(),
+                    child_sampling_context.next2<float>(),
                     m_shutter_open_time,
                     m_shutter_close_time),
                 VisibilityFlags::LightRay,
@@ -613,8 +613,8 @@ namespace
         const size_t                m_pass_hash;
         IAbortSwitch&               m_abort_switch;
         SPPMPhotonVector            m_local_photons;
-        double                      m_shutter_open_time;
-        double                      m_shutter_close_time;
+        float                       m_shutter_open_time;
+        float                       m_shutter_close_time;
 
         Vector3d                    m_scene_center;         // world space
         double                      m_scene_radius;         // world space
@@ -681,7 +681,7 @@ namespace
                 ray_origin,
                 -Vector3d(outgoing),
                 ShadingRay::Time::create_with_normalized_time(
-                    child_sampling_context.next2<double>(),
+                    child_sampling_context.next2<float>(),
                     m_shutter_open_time,
                     m_shutter_close_time),
                 VisibilityFlags::LightRay,

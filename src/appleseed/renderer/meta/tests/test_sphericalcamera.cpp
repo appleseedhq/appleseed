@@ -76,7 +76,7 @@ TEST_SUITE(Renderer_Modeling_Camera_SphericalCamera)
         const Vector3d hit_point = ray.m_org + 3.0 * normalize(ray.m_dir);
 
         Vector2d projected;
-        const bool success = camera->project_point(0.0, hit_point, projected);
+        const bool success = camera->project_point(0.0f, hit_point, projected);
 
         ASSERT_TRUE(success);
         EXPECT_FEQ(Vector2d(1.0, 1.0), projected);
