@@ -376,7 +376,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         if (vertex.m_bsdf && vertex.m_bssrdf)
         {
             sampling_context.split_in_place(1, 1);
-            if (sampling_context.next_double2() < 0.5)
+            if (sampling_context.next2<float>() < 0.5f)
                 vertex.m_bsdf = 0;
             else vertex.m_bssrdf = 0;
             vertex.m_throughput *= 2.0f;
@@ -426,7 +426,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
             // Select one of the incoming points at random.
             sampling_context.split_in_place(1, 1);
-            const double s = sampling_context.next_double2();
+            const float s = sampling_context.next2<float>();
             const size_t i = foundation::truncate<size_t>(s * subsurf_visitor.m_sample_count);
             vertex.m_incoming_point = &subsurf_visitor.m_incoming_points[i];
             vertex.m_incoming_point_prob = subsurf_visitor.m_probabilities[i] / subsurf_visitor.m_sample_count;
@@ -480,7 +480,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         {
             // Pick the direction of the scattered ray at random.
             sampling_context.split_in_place(2, 1);
-            const foundation::Vector2f s(sampling_context.next_vector2<2>());
+            const foundation::Vector2f s = sampling_context.next2<foundation::Vector2f>();
             foundation::Vector3f incoming_vector = foundation::sample_hemisphere_cosine(s);
             const float cos_in = incoming_vector.y;
             const float incoming_prob = cos_in * foundation::RcpPi<float>();
@@ -525,7 +525,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         {
             // Generate a uniform sample in [0,1).
             sampling_context.split_in_place(1, 1);
-            const float s = static_cast<float>(sampling_context.next_double2());
+            const float s = sampling_context.next2<float>();
 
             // Compute the probability of extending this path.
             const float scattering_prob = std::min(foundation::max_value(value), 1.0f);
@@ -634,7 +634,7 @@ inline bool PathTracer<PathVisitor, Adjoint>::pass_through(
 
     sampling_context.split_in_place(1, 1);
 
-    return sampling_context.next_double2() >= alpha[0];
+    return sampling_context.next2<float>() >= alpha[0];
 }
 
 

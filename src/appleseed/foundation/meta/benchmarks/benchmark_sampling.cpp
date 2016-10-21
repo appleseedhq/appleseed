@@ -72,7 +72,7 @@ BENCHMARK_SUITE(Foundation_Math_Sampling_RNGSamplingContext)
         for (size_t i = 0; i < 32; ++i)
         {
             context.split_in_place(2, 1);
-            m_v += context.next_vector2<2>();
+            m_v += context.next2<Vector2d>();
         }
     }
 }
@@ -92,7 +92,7 @@ BENCHMARK_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
         for (size_t i = 0; i < 32; ++i)
         {
             context.split_in_place(2, 1);
-            m_v += context.next_vector2<2>();
+            m_v += context.next2<Vector2d>();
         }
     }
 
@@ -109,7 +109,7 @@ BENCHMARK_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
         for (size_t i = 0; i < 32; ++i)
         {
             context.split_in_place(2, 1);
-            m_v += context.next_vector2<2>();
+            m_v += context.next2<Vector2d>();
         }
     }
 }

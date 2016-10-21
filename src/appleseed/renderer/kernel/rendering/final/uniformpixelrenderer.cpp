@@ -142,7 +142,7 @@ namespace
                     // Generate a uniform sample in [0,1)^2.
                     const Vector2d s =
                         m_sample_count > 1 || m_params.m_force_aa
-                            ? sampling_context.next_vector2<2>()
+                            ? sampling_context.next2<Vector2d>()
                             : Vector2d(0.5);
 
                     // Compute the sample position in NDC.

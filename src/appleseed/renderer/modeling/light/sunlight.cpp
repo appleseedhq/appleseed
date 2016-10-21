@@ -252,7 +252,7 @@ namespace
             if (sun_theta_src && sun_theta_src->is_uniform() &&
                 sun_phi_src && sun_phi_src->is_uniform())
             {
-                double sun_theta, sun_phi;
+                float sun_theta, sun_phi;
                 sun_theta_src->evaluate_uniform(sun_theta);
                 sun_phi_src->evaluate_uniform(sun_phi);
                 set_transform(

@@ -147,7 +147,7 @@ namespace
                 fresnel_reflection *= values->m_fresnel_multiplier;
 
                 sampling_context.split_in_place(1, 1);
-                const float s = static_cast<float>(sampling_context.next_double2());
+                const float s = sampling_context.next2<float>();
 
                 if (s < fresnel_reflection)
                 {

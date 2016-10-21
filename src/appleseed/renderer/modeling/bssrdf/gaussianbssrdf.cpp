@@ -172,11 +172,10 @@ namespace
                 return false;
 
             sampling_context.split_in_place(2, 1);
-            const Vector2f s(sampling_context.next_vector2<2>());
+            const Vector2f s = sampling_context.next2<Vector2f>();
 
             const float v = values->m_v;
-            const float radius =
-                sqrt(-2.0f * v * log(1.0f - s[0] * (1.0f - exp(-rmax2 / (2.0f * v)))));
+            const float radius = sqrt(-2.0f * v * log(1.0f - s[0] * (1.0f - exp(-rmax2 / (2.0f * v)))));
             const float phi = TwoPi<float>() * s[1];
 
             sample.m_eta = values->m_eta;

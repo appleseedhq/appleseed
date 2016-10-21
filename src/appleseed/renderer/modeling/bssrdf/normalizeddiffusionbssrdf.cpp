@@ -172,7 +172,7 @@ namespace
                 return false;
 
             sampling_context.split_in_place(3, 1);
-            const Vector3f s(sampling_context.next_vector2<3>());
+            const Vector3f s = sampling_context.next2<Vector3f>();
 
             // Sample a channel.
             const float* cdf_begin = &values->m_channel_cdf[0];

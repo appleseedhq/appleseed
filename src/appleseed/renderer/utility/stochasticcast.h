@@ -59,7 +59,7 @@ inline Int stochastic_cast(SamplingContext& sampling_context, const Float n)
     {
         sampling_context.split_in_place(1, 1);
 
-        if (static_cast<Float>(sampling_context.next_double2()) < n - i)
+        if (sampling_context.next2<Float>() < n - i)
             ++i;
     }
 

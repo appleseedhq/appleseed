@@ -213,7 +213,7 @@ class MicrofacetBRDFHelper
     {
         // Compute the incoming direction by sampling the MDF.
         sampling_context.split_in_place(3, 1);
-        const VectorType s(sampling_context.next_vector2<3>());
+        const VectorType s = sampling_context.next2<VectorType>();
         const VectorType wo = sample.m_shading_basis.transform_to_local(sample.m_outgoing.get_value());
         const VectorType m = mdf.sample(wo, s, alpha_x, alpha_y);
         const VectorType h = sample.m_shading_basis.transform_to_parent(m);

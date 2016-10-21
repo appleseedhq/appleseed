@@ -561,7 +561,7 @@ namespace
         {
             // Sample the light sources.
             sampling_context.split_in_place(4, 1);
-            const Vector4d s = sampling_context.next_vector2<4>();
+            const Vector4d s = sampling_context.next2<Vector4d>();
             LightSample light_sample;
             m_light_sampler.sample(
                 ShadingRay::Time::create_with_normalized_time(
@@ -621,7 +621,7 @@ namespace
                 input_evaluator.data(),
                 Vector3f(light_sample.m_geometric_normal),
                 Basis3f(Vector3f(light_sample.m_shading_normal)),
-                Vector2f(sampling_context.next_vector2<2>()),
+                sampling_context.next2<Vector2f>(),
                 Vector3f(emission_direction),
                 edf_value,
                 edf_prob);
@@ -643,7 +643,7 @@ namespace
             sampling_context.split_in_place(1, 1);
             const ShadingRay::Time time =
                 ShadingRay::Time::create_with_normalized_time(
-                    sampling_context.next_double2(),
+                    sampling_context.next2<double>(),
                     m_shutter_open_time,
                     m_shutter_close_time);
             const ShadingRay light_ray(
@@ -707,7 +707,7 @@ namespace
             light_sample.m_light->sample(
                 input_evaluator,
                 light_sample.m_light_transform,
-                sampling_context.next_vector2<2>(),
+                sampling_context.next2<Vector2d>(),
                 emission_position,
                 emission_direction,
                 light_value,
@@ -721,7 +721,7 @@ namespace
             sampling_context.split_in_place(1, 1);
             const ShadingRay::Time time =
                 ShadingRay::Time::create_with_normalized_time(
-                    sampling_context.next_double2(),
+                    sampling_context.next2<double>(),
                     m_shutter_open_time,
                     m_shutter_close_time);
             const ShadingRay light_ray(
@@ -783,7 +783,7 @@ namespace
             env_edf->sample(
                 m_shading_context,
                 input_evaluator,
-                Vector2f(sampling_context.next_vector2<2>()),
+                sampling_context.next2<Vector2f>(),
                 outgoing,               // points toward the environment
                 env_edf_value,
                 env_edf_prob);
@@ -792,7 +792,7 @@ namespace
             sampling_context.split_in_place(2, 1);
             const Vector2d p =
                   m_scene_radius
-                * sample_disk_uniform(sampling_context.next_vector2<2>());
+                * sample_disk_uniform(sampling_context.next2<Vector2d>());
 
             // Compute the origin of the light ray.
             const Basis3d basis(-Vector3d(outgoing));
@@ -810,7 +810,7 @@ namespace
             sampling_context.split_in_place(1, 1);
             const ShadingRay::Time time =
                 ShadingRay::Time::create_with_normalized_time(
-                    sampling_context.next_double2(),
+                    sampling_context.next2<double>(),
                     m_shutter_open_time,
                     m_shutter_close_time);
             const ShadingRay light_ray(

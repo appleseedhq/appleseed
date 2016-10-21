@@ -56,7 +56,6 @@ namespace renderer
 enum InputFormat
 {
     InputFormatFloat,
-    InputFormatDouble,
     InputFormatSpectralReflectance,
     InputFormatSpectralIlluminance,
     InputFormatSpectralReflectanceWithAlpha,

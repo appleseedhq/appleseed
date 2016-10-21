@@ -158,7 +158,7 @@ namespace
         {
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);
-            const Vector2f s(sampling_context.next_vector2<2>());
+            const Vector2f s = sampling_context.next2<Vector2f>();
             const Vector3f wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
@@ -246,7 +246,7 @@ namespace
         {
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);
-            const Vector2f s(sampling_context.next_vector2<2>());
+            const Vector2f s = sampling_context.next2<Vector2f>();
             const Vector3f wi = sample_hemisphere_uniform(s);
 
             // Transform the incoming direction to parent space.
@@ -404,7 +404,7 @@ namespace
 
             // Choose which of the components to sample.
             sampling_context.split_in_place(1, 1);
-            const float s = static_cast<float>(sampling_context.next_double2());
+            const float s = sampling_context.next2<float>();
 
             if (s < cdf[DiffuseComponent])
             {

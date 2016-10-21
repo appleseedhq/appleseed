@@ -600,7 +600,7 @@ namespace
             if (m_diaphragm_map_bound)
             {
                 sampling_context.split_in_place(2, 1);
-                const Vector2d s = sampling_context.next_vector2<2>();
+                const Vector2d s = sampling_context.next2<Vector2d>();
 
                 Vector2d v;
                 size_t y;
@@ -613,14 +613,14 @@ namespace
             else if (m_diaphragm_blade_count == 0)
             {
                 sampling_context.split_in_place(2, 1);
-                const Vector2d s = sampling_context.next_vector2<2>();
+                const Vector2d s = sampling_context.next2<Vector2d>();
                 const Vector2d lens_point = m_lens_radius * sample_disk_uniform(s);
                 return Vector3d(lens_point.x, lens_point.y, 0.0);
             }
             else
             {
                 sampling_context.split_in_place(3, 1);
-                const Vector3d s = sampling_context.next_vector2<3>();
+                const Vector3d s = sampling_context.next2<Vector3d>();
                 const Vector2d lens_point =
                     m_lens_radius *
                     sample_regular_polygon_uniform(

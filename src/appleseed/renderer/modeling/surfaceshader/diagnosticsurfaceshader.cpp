@@ -299,7 +299,7 @@ void DiagnosticSurfaceShader::evaluate(
                     shading_context.execute_osl_bump(
                         *material_data.m_shader_group,
                         shading_point,
-                        Vector2f(sampling_context.next_vector2<2>()));
+                        sampling_context.next2<Vector2f>());
                 }
             }
 #endif

@@ -175,7 +175,7 @@ namespace
 
             // Choose which of the two BSDFs to sample.
             sampling_context.split_in_place(1, 1);
-            const double s = sampling_context.next_double2();
+            const float s = sampling_context.next2<float>();
             const size_t bsdf_index = s < values->m_weight ? 0 : 1;
 
             // Sample the chosen BSDF.

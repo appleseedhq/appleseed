@@ -204,7 +204,7 @@ namespace
 
             // Compute the microfacet normal by sampling the MDF.
             sampling_context.split_in_place(4, 1);
-            const Vector4f s(sampling_context.next_vector2<4>());
+            const Vector4f s = sampling_context.next2<Vector4f>();
             Vector3f m = m_mdf->sample(wo, Vector3f(s[0], s[1], s[2]), alpha_x, alpha_y);
             assert(m.y > 0.0f);
 

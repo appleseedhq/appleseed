@@ -163,7 +163,7 @@ namespace
             if (c->get_num_closures() > 0)
             {
                 sampling_context.split_in_place(1, 1);
-                const float s = static_cast<float>(sampling_context.next_double2());
+                const float s = sampling_context.next2<float>();
                 const size_t closure_index = c->choose_closure(s);
 
                 sample.m_shading_basis =

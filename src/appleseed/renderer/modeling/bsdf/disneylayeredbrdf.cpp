@@ -114,7 +114,7 @@ void DisneyLayeredBRDF::evaluate_inputs(
 
     memset(values, 0, sizeof(DisneyBRDFInputValues));
 
-    Color3d base_color(0.0);
+    Color3f base_color(0.0f);
 
     for (size_t i = 0, e = m_parent->get_layer_count(); i < e; ++i)
     {
@@ -130,7 +130,7 @@ void DisneyLayeredBRDF::evaluate_inputs(
 
     // Colors in SeExpr are always in the sRGB color space.
     // todo: convert colors earlier so that all math is done in linear space.
-    values->m_base_color = srgb_to_linear_rgb(Color3f(base_color));
+    values->m_base_color = srgb_to_linear_rgb(base_color);
 
     m_brdf->prepare_inputs(shading_context, shading_point, values);
 }

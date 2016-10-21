@@ -162,7 +162,7 @@ namespace
             return true;
         }
 
-        Color3d evaluate(
+        Color3f evaluate(
             const ShadingPoint&     shading_point,
             OIIO::TextureSystem&    texture_system) const
         {
@@ -197,14 +197,14 @@ namespace
                         const string trimmed_message = trim_both(message);
                         RENDERER_LOG_ERROR("oiio: %s", trimmed_message.c_str());
                     }
-                    return Color3d(1.0, 0.0, 1.0);
+                    return Color3f(1.0f, 0.0f, 1.0f);
                 }
 
                 // Colors in SeExpr are always in the sRGB color space.
                 if (!m_texture_is_srgb)
                     color = linear_rgb_to_srgb(color);
 
-                return Color3d(color);
+                return color;
             }
 
             return
@@ -335,12 +335,12 @@ bool DisneyMaterialLayer::prepare_expressions() const
 void DisneyMaterialLayer::evaluate_expressions(
     const ShadingPoint&     shading_point,
     OIIO::TextureSystem&    texture_system,
-    Color3d&                base_color,
+    Color3f&                base_color,
     DisneyBRDFInputValues&  values) const
 {
-    const double mask = saturate(impl->m_mask.evaluate(shading_point, texture_system)[0]);
+    const float mask = saturate(impl->m_mask.evaluate(shading_point, texture_system)[0]);
 
-    if (mask == 0.0)
+    if (mask == 0.0f)
         return;
 
     base_color =
@@ -364,7 +364,7 @@ void DisneyMaterialLayer::evaluate_expressions(
     values.m_specular =
         lerp(
             values.m_specular,
-            max(impl->m_specular.evaluate(shading_point, texture_system)[0], 0.0),
+            max(impl->m_specular.evaluate(shading_point, texture_system)[0], 0.0f),
             mask);
 
     values.m_specular_tint =
@@ -376,13 +376,13 @@ void DisneyMaterialLayer::evaluate_expressions(
     values.m_anisotropic =
         lerp(
             values.m_anisotropic,
-            clamp(impl->m_anisotropic.evaluate(shading_point, texture_system)[0], -1.0, 1.0),
+            clamp(impl->m_anisotropic.evaluate(shading_point, texture_system)[0], -1.0f, 1.0f),
             mask);
 
     values.m_roughness =
         lerp(
             values.m_roughness,
-            clamp(impl->m_roughness.evaluate(shading_point, texture_system)[0], 0.001, 1.0),
+            clamp(impl->m_roughness.evaluate(shading_point, texture_system)[0], 0.001f, 1.0f),
             mask);
 
     values.m_sheen =

@@ -211,7 +211,7 @@ namespace
                 for (size_t i = 0; i < batch_size; ++i)
                 {
                     // Generate a uniform sample in [0,1)^2.
-                    const Vector2d s = sampling_context.next_vector2<2>();
+                    const Vector2d s = sampling_context.next2<Vector2d>();
 
                     // Compute the sample position in NDC.
                     const Vector2d sample_position = frame.get_sample_position(pi.x + s.x, pi.y + s.y);

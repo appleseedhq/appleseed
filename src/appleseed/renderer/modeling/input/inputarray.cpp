@@ -98,11 +98,6 @@ namespace
                 size += sizeof(float);
                 break;
 
-              case InputFormatDouble:
-                size = align_to<double>(size);
-                size += sizeof(double);
-                break;
-
               case InputFormatSpectralReflectance:
               case InputFormatSpectralIlluminance:
                 size = align_to<Spectrum>(size);
@@ -143,19 +138,6 @@ namespace
                     else *out_scalar = 0.0f;
 
                     ptr += sizeof(float);
-                }
-                break;
-
-              case InputFormatDouble:
-                {
-                    ptr = align_to<double>(ptr);
-                    double* out_scalar = reinterpret_cast<double*>(ptr);
-
-                    if (m_source)
-                        m_source->evaluate(texture_cache, uv, *out_scalar);
-                    else *out_scalar = 0.0;
-
-                    ptr += sizeof(double);
                 }
                 break;
 
@@ -223,19 +205,6 @@ namespace
                     else *out_scalar = 0.0f;
 
                     ptr += sizeof(float);
-                }
-                break;
-
-              case InputFormatDouble:
-                {
-                    ptr = align_to<double>(ptr);
-                    double* out_scalar = reinterpret_cast<double*>(ptr);
-
-                    if (m_source && m_source->is_uniform())
-                        m_source->evaluate_uniform(*out_scalar);
-                    else *out_scalar = 0.0;
-
-                    ptr += sizeof(double);
                 }
                 break;
 

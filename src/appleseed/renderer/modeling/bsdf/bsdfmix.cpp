@@ -182,7 +182,7 @@ namespace
 
             // Choose which of the two BSDFs to sample.
             sampling_context.split_in_place(1, 1);
-            const double s = sampling_context.next_double2();
+            const float s = sampling_context.next2<float>();
             const size_t bsdf_index = s * total_weight < w[0] ? 0 : 1;
 
             // Sample the chosen BSDF.
@@ -257,9 +257,9 @@ namespace
             // Blend BSDF values.
             value.set(0.0f);
             if (bsdf0_prob > 0.0f)
-                madd(value, bsdf0_value, static_cast<float>(w0));
+                madd(value, bsdf0_value, w0);
             if (bsdf1_prob > 0.0f)
-                madd(value, bsdf1_value, static_cast<float>(w1));
+                madd(value, bsdf1_value, w1);
 
             // Blend PDF values.
             return bsdf0_prob * w0 + bsdf1_prob * w1;

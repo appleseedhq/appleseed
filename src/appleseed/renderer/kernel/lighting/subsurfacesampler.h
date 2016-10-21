@@ -152,7 +152,7 @@ void SubsurfaceSampler::sample(
     float sampling_basis_pdf;
     pick_sampling_basis(
         outgoing_point.get_shading_basis(),
-        sampling_context.next_vector2<2>(),
+        sampling_context.next2<Vector2d>(),
         sampling_axis,
         sampling_basis,
         sampling_basis_pdf);

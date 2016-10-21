@@ -158,7 +158,7 @@ namespace
                     vertex.m_sampling_context.split_in_place(1, 1);
                     const uint32 wavelength =
                         truncate<uint32>(
-                            vertex.m_sampling_context.next_double2() * Spectrum::Samples);
+                            vertex.m_sampling_context.next2<double>() * Spectrum::Samples);
 
                     // Make sure the path throughput is spectral.
                     Spectrum spectral_throughput;
@@ -312,7 +312,7 @@ namespace
             const ShadingContext&   shading_context,
             SamplingContext&        sampling_context)
         {
-            const Vector4d s = sampling_context.next_vector2<4>();
+            const Vector4d s = sampling_context.next2<Vector4d>();
             LightSample light_sample;
             m_light_sampler.sample(
                 ShadingRay::Time::create_with_normalized_time(
@@ -383,7 +383,7 @@ namespace
                 input_evaluator.data(),
                 Vector3f(light_sample.m_geometric_normal),
                 Basis3f(Vector3f(light_sample.m_shading_normal)),
-                Vector2f(child_sampling_context.next_vector2<2>()),
+                child_sampling_context.next2<Vector2f>(),
                 Vector3f(emission_direction),
                 edf_value,
                 edf_prob);
@@ -407,7 +407,7 @@ namespace
                 light_sample.m_point,
                 emission_direction,
                 ShadingRay::Time::create_with_normalized_time(
-                    child_sampling_context.next_double2(),
+                    child_sampling_context.next2<double>(),
                     m_shutter_open_time,
                     m_shutter_close_time),
                 VisibilityFlags::LightRay,
@@ -451,7 +451,7 @@ namespace
             light_sample.m_light->sample(
                 input_evaluator,
                 light_sample.m_light_transform,
-                child_sampling_context.next_vector2<2>(),
+                child_sampling_context.next2<Vector2d>(),
                 m_photon_targets,
                 emission_position,
                 emission_direction,
@@ -468,7 +468,7 @@ namespace
                 emission_position,
                 emission_direction,
                 ShadingRay::Time::create_with_normalized_time(
-                    child_sampling_context.next_double2(),
+                    child_sampling_context.next2<double>(),
                     m_shutter_open_time,
                     m_shutter_close_time),
                 VisibilityFlags::LightRay,
@@ -632,13 +632,13 @@ namespace
             m_env_edf.sample(
                 shading_context,
                 input_evaluator,
-                Vector2f(sampling_context.next_vector2<2>()),
+                sampling_context.next2<Vector2f>(),
                 outgoing,                                   // points toward the environment
                 env_edf_value,
                 env_edf_prob);
 
             SamplingContext child_sampling_context = sampling_context.split(2, 1);
-            Vector2d s = child_sampling_context.next_vector2<2>();
+            Vector2d s = child_sampling_context.next2<Vector2d>();
 
             // Compute the center and radius of the target disk.
             Vector3d disk_center;
@@ -681,7 +681,7 @@ namespace
                 ray_origin,
                 -Vector3d(outgoing),
                 ShadingRay::Time::create_with_normalized_time(
-                    child_sampling_context.next_double2(),
+                    child_sampling_context.next2<double>(),
                     m_shutter_open_time,
                     m_shutter_close_time),
                 VisibilityFlags::LightRay,

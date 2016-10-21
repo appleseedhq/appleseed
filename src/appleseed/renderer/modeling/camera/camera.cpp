@@ -317,7 +317,7 @@ void Camera::initialize_ray(
         sampling_context.split_in_place(1, 1);
         ray.m_time =
             ShadingRay::Time::create_with_normalized_time(
-                sampling_context.next_double2(),
+                sampling_context.next2<double>(),
                 m_shutter_open_time,
                 m_shutter_close_time);
     }

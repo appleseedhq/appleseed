@@ -223,7 +223,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
 
         for (size_t i = 0; i < m_light_sample_count; ++i)
         {
-            const Vector3d s = sampling_context.next_vector2<3>();
+            const Vector3d s = sampling_context.next2<Vector3d>();
 
             LightSample sample;
             m_light_sampler.sample_emitting_triangles(m_time, s, sample);
@@ -325,7 +325,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_single_sample(
     {
         sampling_context.split_in_place(1, 1);
 
-        if (sampling_context.next_double2() < 0.5)
+        if (sampling_context.next2<float>() < 0.5f)
         {
             sampling_context.split_in_place(3, 1);
             take_single_light_sample(
@@ -369,7 +369,7 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
         return false;
 
     sampling_context.split_in_place(3, 1);
-    const Vector3d s = sampling_context.next_vector2<3>();
+    const Vector3d s = sampling_context.next2<Vector3d>();
 
     LightSample sample;
     m_light_sampler.sample(m_time, s, sample);
@@ -618,7 +618,7 @@ void DirectLightingIntegrator::take_single_light_sample(
     if (!m_light_sampler.has_lights_or_emitting_triangles())
         return;
 
-    const Vector3d s = sampling_context.next_vector2<3>();
+    const Vector3d s = sampling_context.next2<Vector3d>();
 
     LightSample sample;
     m_light_sampler.sample(m_time, s, sample);

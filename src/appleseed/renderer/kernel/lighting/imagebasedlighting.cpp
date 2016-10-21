@@ -247,7 +247,7 @@ void compute_ibl_bssrdf_sampling(
     for (size_t i = 0; i < bssrdf_sample_count; ++i)
     {
         // Generate a uniform sample in [0,1)^2.
-        const Vector2f s(sampling_context.next_vector2<2>());
+        const Vector2f s = sampling_context.next2<Vector2f>();
 
         // Sample the BSSRDF (hemisphere cosine).
         Vector3f incoming = sample_hemisphere_cosine(s);
@@ -333,7 +333,7 @@ void compute_ibl_environment_sampling(
     for (size_t i = 0; i < env_sample_count; ++i)
     {
         // Generate a uniform sample in [0,1)^2.
-        const Vector2f s(sampling_context.next_vector2<2>());
+        const Vector2f s = sampling_context.next2<Vector2f>();
 
         // Sample the environment.
         InputEvaluator input_evaluator(shading_context.get_texture_cache());
@@ -419,7 +419,7 @@ void compute_ibl_environment_sampling(
     for (size_t i = 0; i < env_sample_count; ++i)
     {
         // Generate a uniform sample in [0,1)^2.
-        const Vector2f s(sampling_context.next_vector2<2>());
+        const Vector2f s = sampling_context.next2<Vector2f>();
 
         // Sample the environment.
         InputEvaluator input_evaluator(shading_context.get_texture_cache());

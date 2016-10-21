@@ -124,7 +124,7 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulat
 
         for (size_t i = 0; i < light_sample_count; ++i)
         {
-            const Vector2d s = child_context.next_vector2<2>();
+            const Vector2d s = child_context.next2<Vector2d>();
             light_samples.push_back(s);
         }
     }
@@ -146,7 +146,7 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulat
 
         for (size_t i = 0; i < pixel_sample_count; ++i)
         {
-            const Vector2d s = sampling_context.next_vector2<2>();
+            const Vector2d s = sampling_context.next2<Vector2d>();
 
             pixel_samples.push_back(s);
 
