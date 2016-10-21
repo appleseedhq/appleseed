@@ -240,7 +240,7 @@ bool Intersector::trace(
     ShadingPoint&                   shading_point,
     const ShadingPoint*             parent_shading_point) const
 {
-    assert(is_normalized(ray.m_dir));
+    assert(is_normalized(ray.m_dir, 1.0e-6));
     assert(shading_point.m_scene == 0);
     assert(shading_point.hit() == false);
     assert(parent_shading_point == 0 || parent_shading_point != &shading_point);
@@ -302,7 +302,7 @@ bool Intersector::trace_probe(
     const ShadingRay&               ray,
     const ShadingPoint*             parent_shading_point) const
 {
-    assert(is_normalized(ray.m_dir));
+    assert(is_normalized(ray.m_dir, 1.0e-6));
     assert(parent_shading_point == 0 || parent_shading_point->hit());
 
     // Update ray casting statistics.

@@ -225,7 +225,7 @@ inline float Tracer::trace(
 {
     if (m_assume_no_alpha_mapping)
     {
-        assert(foundation::is_normalized(direction));
+        assert(foundation::is_normalized(direction, 1.0e-6));
 
         const ShadingRay ray(
             origin,
@@ -259,7 +259,7 @@ inline float Tracer::trace(
 {
     if (m_assume_no_alpha_mapping)
     {
-        assert(foundation::is_normalized(direction));
+        assert(foundation::is_normalized(direction, 1.0e-6));
 
         const ShadingRay ray(
             origin.get_biased_point(direction),

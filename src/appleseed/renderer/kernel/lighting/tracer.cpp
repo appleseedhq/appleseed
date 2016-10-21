@@ -90,7 +90,7 @@ const ShadingPoint& Tracer::do_trace(
     float&                      transmission,
     const ShadingPoint*         parent_shading_point)
 {
-    assert(is_normalized(direction));
+    assert(is_normalized(direction, 1.0e-6));
 
     transmission = 1.0f;
 
