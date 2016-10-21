@@ -195,7 +195,7 @@ class LightSampler
     // Sample the set of non-physical lights.
     void sample_non_physical_lights(
         const ShadingRay::Time&             time,
-        const foundation::Vector3d&         s,
+        const foundation::Vector3f&         s,
         LightSample&                        light_sample) const;
 
     // Sample a single given non-physical light.
@@ -207,13 +207,13 @@ class LightSampler
     // Sample the set of emitting triangles.
     void sample_emitting_triangles(
         const ShadingRay::Time&             time,
-        const foundation::Vector3d&         s,
+        const foundation::Vector3f&         s,
         LightSample&                        light_sample) const;
 
     // Sample the sets of non-physical lights and emitting triangles.
     void sample(
         const ShadingRay::Time&             time,
-        const foundation::Vector3d&         s,
+        const foundation::Vector3f&         s,
         LightSample&                        light_sample) const;
 
     // Compute the probability density in area measure of a given light sample.
@@ -278,7 +278,7 @@ class LightSampler
     // Sample a given emitting triangle.
     void sample_emitting_triangle(
         const ShadingRay::Time&             time,
-        const foundation::Vector2d&         s,
+        const foundation::Vector2f&         s,
         const size_t                        triangle_index,
         const float                         triangle_prob,
         LightSample&                        sample) const;

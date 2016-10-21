@@ -427,12 +427,12 @@ void LightSampler::build_emitting_triangle_hash_table()
 
 void LightSampler::sample_non_physical_lights(
     const ShadingRay::Time&             time,
-    const Vector3d&                     s,
+    const Vector3f&                     s,
     LightSample&                        light_sample) const
 {
     assert(m_non_physical_lights_cdf.valid());
 
-    const EmitterCDF::ItemWeightPair result = m_non_physical_lights_cdf.sample(static_cast<float>(s[0]));
+    const EmitterCDF::ItemWeightPair result = m_non_physical_lights_cdf.sample(s[0]);
     const size_t light_index = result.first;
     const float light_prob = result.second;
 
@@ -449,19 +449,19 @@ void LightSampler::sample_non_physical_lights(
 
 void LightSampler::sample_emitting_triangles(
     const ShadingRay::Time&             time,
-    const Vector3d&                     s,
+    const Vector3f&                     s,
     LightSample&                        light_sample) const
 {
     assert(m_emitting_triangles_cdf.valid());
 
-    const EmitterCDF::ItemWeightPair result = m_emitting_triangles_cdf.sample(static_cast<float>(s[0]));
+    const EmitterCDF::ItemWeightPair result = m_emitting_triangles_cdf.sample(s[0]);
     const size_t emitter_index = result.first;
     const float emitter_prob = result.second;
 
     light_sample.m_light = 0;
     sample_emitting_triangle(
         time,
-        Vector2d(s[1], s[2]),
+        Vector2f(s[1], s[2]),
         emitter_index,
         emitter_prob,
         light_sample);
@@ -472,7 +472,7 @@ void LightSampler::sample_emitting_triangles(
 
 void LightSampler::sample(
     const ShadingRay::Time&             time,
-    const Vector3d&                     s,
+    const Vector3f&                     s,
     LightSample&                        light_sample) const
 {
     assert(m_non_physical_lights_cdf.valid() || m_emitting_triangles_cdf.valid());
@@ -481,18 +481,18 @@ void LightSampler::sample(
     {
         if (m_emitting_triangles_cdf.valid())
         {
-            if (s[0] < 0.5)
+            if (s[0] < 0.5f)
             {
                 sample_non_physical_lights(
                     time,
-                    Vector3d(s[0] * 2.0, s[1], s[2]),
+                    Vector3f(s[0] * 2.0f, s[1], s[2]),
                     light_sample);
             }
             else
             {
                 sample_emitting_triangles(
                     time,
-                    Vector3d((s[0] - 0.5) * 2.0, s[1], s[2]),
+                    Vector3f((s[0] - 0.5f) * 2.0f, s[1], s[2]),
                     light_sample);
             }
 
@@ -538,7 +538,7 @@ void LightSampler::sample_non_physical_light(
 
 void LightSampler::sample_emitting_triangle(
     const ShadingRay::Time&             time,
-    const Vector2d&                     s,
+    const Vector2f&                     s,
     const size_t                        triangle_index,
     const float                         triangle_prob,
     LightSample&                        light_sample) const
@@ -551,7 +551,7 @@ void LightSampler::sample_emitting_triangle(
     light_sample.m_triangle = &emitting_triangle;
 
     // Uniformly sample the surface of the triangle.
-    const Vector3d bary = sample_triangle_uniform(s);
+    const Vector3d bary = Vector3d(sample_triangle_uniform(s));
 
     // Set the barycentric coordinates.
     light_sample.m_bary[0] = bary[0];
