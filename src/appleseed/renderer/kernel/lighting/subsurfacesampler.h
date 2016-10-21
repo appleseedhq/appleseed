@@ -144,6 +144,8 @@ void SubsurfaceSampler::sample(
     const float radius = std::sqrt(radius2);
     const float bssrdf_sample_pdf =
         bssrdf.evaluate_pdf(bssrdf_data, bssrdf_sample.m_channel, radius);
+    if (bssrdf_sample_pdf == 0.0f)
+        return;
 
     // Pick a sampling basis.
     sampling_context.split_in_place(2, 1);
@@ -199,16 +201,16 @@ void SubsurfaceSampler::sample(
         if (incoming_point.get_material() == outgoing_material ||
             incoming_point.get_opposite_material() == outgoing_material)
         {
-            // Compute sample probability.
             const float dot_nn =
                 static_cast<float>(
                     std::abs(foundation::dot(
                         sampling_basis.get_normal(),
                         incoming_point.get_shading_normal())));
-            float probability = sampling_basis_pdf * bssrdf_sample_pdf * dot_nn;
-
-            if (probability > 0.0f)
+            if (dot_nn > 1.0e-6f)
             {
+                // Compute sample probability.
+                float probability = sampling_basis_pdf * bssrdf_sample_pdf * dot_nn;
+
                 // Weight sample contribution using multiple importance sampling.
                 probability /=
                     compute_mis_weight(
@@ -225,6 +227,13 @@ void SubsurfaceSampler::sample(
                 // Pass incoming point to visitor.
                 if (!visitor.visit(bssrdf_sample, incoming_point, probability))
                     break;
+            }
+            else
+            {
+                // The ray is tangent to the surface. It will be difficult to move away
+                // from that intersection point without risking looping forever. Let's
+                // simply ignore this case.
+                break;
             }
         }
 

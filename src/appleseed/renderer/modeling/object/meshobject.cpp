@@ -146,6 +146,8 @@ void MeshObject::on_frame_end(
 {
     m_alpha_map = 0;
     m_shade_alpha_cutouts = false;
+
+    Object::on_frame_end(project, parent);
 }
 
 bool MeshObject::has_alpha_map() const

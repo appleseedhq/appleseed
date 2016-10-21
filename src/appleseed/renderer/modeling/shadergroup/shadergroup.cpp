@@ -42,6 +42,12 @@
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/uid.h"
 
+// OSL headers.
+#include "foundation/platform/oslheaderguards.h"
+BEGIN_OSL_INCLUDES
+#include "OSL/oslexec.h"
+END_OSL_INCLUDES
+
 // Boost headers
 #include "boost/unordered/unordered_map.hpp"
 

@@ -184,6 +184,8 @@ void Material::on_frame_end(
         delete m_render_data.m_basis_modifier;
         m_has_render_data = false;
     }
+
+    ConnectableEntity::on_frame_end(project, parent);
 }
 
 bool Material::has_emission() const

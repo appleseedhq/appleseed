@@ -209,6 +209,8 @@ namespace
             const BaseGroup*        parent) APPLESEED_OVERRIDE
         {
             m_mdf.reset();
+
+            BSDF::on_frame_end(project, parent);
         }
 
         APPLESEED_FORCE_INLINE virtual void sample(

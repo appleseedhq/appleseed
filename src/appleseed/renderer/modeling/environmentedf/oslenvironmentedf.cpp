@@ -115,6 +115,8 @@ namespace
             const BaseGroup*        parent) APPLESEED_OVERRIDE
         {
             m_shader_group = 0;
+
+            EnvironmentEDF::on_frame_end(project, parent);
         }
 
         virtual void sample(
