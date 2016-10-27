@@ -40,23 +40,13 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// boost headers.
-#include "boost/shared_ptr.hpp"
+// OSL headers.
+#include "foundation/platform/oslheaderguards.h"
+BEGIN_OSL_INCLUDES
+#include "OSL/oslexec.h"
+END_OSL_INCLUDES
 
 // Forward declarations.
-namespace OSL
-{
-    class ShadingSystem;
-
-    // We cannot forward declare ShaderGroupRef because it's a typedef.
-    // Instead, it's legal to define a typedef multiple times as long
-    // as the definition is the same.
-    // It's not very elegant, but it seems better than requiring API
-    // users to have OSL just for one header.
-    class ShaderGroup;
-    typedef boost::shared_ptr<ShaderGroup> ShaderGroupRef;
-}
-
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class AssemblyInstance; }
