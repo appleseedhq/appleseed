@@ -34,7 +34,9 @@
 #include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
+#include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
@@ -80,14 +82,15 @@ UniqueID Scene::get_class_uid()
 struct Scene::Impl
 {
     UniqueID                        m_uid;
-    auto_release_ptr<Camera>        m_camera;
+    CameraContainer                 m_cameras;
     auto_release_ptr<Environment>   m_environment;
     EnvironmentEDFContainer         m_environment_edfs;
     EnvironmentShaderContainer      m_environment_shaders;
     auto_release_ptr<SurfaceShader> m_default_surface_shader;
 
     explicit Impl(Entity* parent)
-      : m_environment_edfs(parent)
+      : m_cameras(parent)
+      , m_environment_edfs(parent)
       , m_environment_shaders(parent)
       , m_default_surface_shader(
             PhysicalSurfaceShaderFactory().create(
@@ -102,6 +105,7 @@ Scene::Scene()
   , BaseGroup(this)
   , impl(new Impl(this))
   , m_has_render_data(false)
+  , m_camera(0)
 {
     set_name("scene");
 }
@@ -116,17 +120,14 @@ void Scene::release()
     delete this;
 }
 
-void Scene::set_camera(auto_release_ptr<Camera> camera)
-{
-    impl->m_camera = camera;
-
-    if (impl->m_camera.get())
-        impl->m_camera->set_parent(this);
-}
-
 Camera* Scene::get_camera() const
 {
-    return impl->m_camera.get();
+    return m_camera;
+}
+
+CameraContainer& Scene::cameras() const
+{
+    return impl->m_cameras;
 }
 
 void Scene::set_environment(auto_release_ptr<Environment> environment)
@@ -241,8 +242,7 @@ void Scene::collect_asset_paths(StringArray& paths) const
 {
     BaseGroup::collect_asset_paths(paths);
 
-    if (impl->m_camera.get())
-        impl->m_camera->collect_asset_paths(paths);
+    do_collect_asset_paths(paths, cameras());
 
     if (impl->m_environment.get())
         impl->m_environment->collect_asset_paths(paths);
@@ -255,8 +255,7 @@ void Scene::update_asset_paths(const StringDictionary& mappings)
 {
     BaseGroup::update_asset_paths(mappings);
 
-    if (impl->m_camera.get())
-        impl->m_camera->update_asset_paths(mappings);
+    do_update_asset_paths(mappings, cameras());
 
     if (impl->m_environment.get())
         impl->m_environment->update_asset_paths(mappings);
@@ -273,16 +272,16 @@ bool Scene::on_render_begin(
 
     create_render_data();
 
-    if (impl->m_camera.get())
-        success = success && impl->m_camera->on_render_begin(project, abort_switch);
+    for (each<CameraContainer> i = cameras(); i; ++i)
+        success = success && i->on_render_begin(project, abort_switch);
 
     return success;
 }
 
 void Scene::on_render_end(const Project& project)
 {
-    if (impl->m_camera.get())
-        impl->m_camera->on_render_end(project);
+    for (each<CameraContainer> i = cameras(); i; ++i)
+        i->on_render_end(project);
 
     m_has_render_data = false;
 }
@@ -320,6 +319,15 @@ bool Scene::on_frame_begin(
     if (!Entity::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
+    m_camera = project.get_uncached_camera();
+
+    // Fail if we don't have a camera.
+    if (m_camera == 0)
+    {
+        RENDERER_LOG_ERROR("no cameras in scene or no camera specified in the frame entity.");
+        return false;
+    }
+
     bool success = true;
 
     success = success && invoke_on_frame_begin(project, this, colors(), recorder, abort_switch);
@@ -329,9 +337,7 @@ bool Scene::on_frame_begin(
     success = success && invoke_on_frame_begin(project, this, shader_groups(), recorder, abort_switch);
 #endif
 
-    if (impl->m_camera.get())
-        success = success && impl->m_camera->on_frame_begin(project, this, recorder, abort_switch);
-
+    success = success && invoke_on_frame_begin(project, this, cameras(), recorder, abort_switch);
     success = success && invoke_on_frame_begin(project, this, environment_edfs(), recorder, abort_switch);
     success = success && invoke_on_frame_begin(project, this, environment_shaders(), recorder, abort_switch);
 
@@ -342,6 +348,14 @@ bool Scene::on_frame_begin(
     success = success && invoke_on_frame_begin(project, this, assembly_instances(), recorder, abort_switch);
 
     return success;
+}
+
+void Scene::on_frame_end(
+    const Project&          project,
+    const BaseGroup*        parent)
+{
+    m_camera = 0;
+    Entity::on_frame_end(project, parent);
 }
 
 void Scene::create_render_data()
