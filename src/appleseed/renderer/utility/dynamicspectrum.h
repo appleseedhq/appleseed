@@ -903,77 +903,119 @@ inline DynamicSpectrum<T, N>& operator/=(DynamicSpectrum<T, N>& lhs, const Dynam
 
 template <typename T, size_t N>
 inline void madd(
-    DynamicSpectrum<T, N>&          a,
-    const DynamicSpectrum<T, N>&    b,
-    const DynamicSpectrum<T, N>&    c)
+    DynamicSpectrum<T, N>&                  a,
+    const DynamicSpectrum<T, N>&            b,
+    const DynamicSpectrum<T, N>&            c)
 {
-    assert(a.size() == b.size() && a.size() == c.size());
-
-    for (size_t i = 0, e = a.size(); i < e; ++i)
-        a[i] += b[i] * c[i];
+    if (a.size() == b.size() && a.size() == c.size())
+    {
+        for (size_t i = 0, e = a.size(); i < e; ++i)
+            a[i] += b[i] * c[i];
+    }
+    else
+    {
+        a += b * c;
+    }
 }
 
 template <typename T, size_t N>
 inline void madd(
-    DynamicSpectrum<T, N>&          a,
-    const DynamicSpectrum<T, N>&    b,
-    const T                         c)
+    DynamicSpectrum<T, N>&                  a,
+    const DynamicSpectrum<T, N>&            b,
+    const T                                 c)
 {
-    assert(a.size() == b.size());
+    if (a.size() <= b.size())
+    {
+        if (a.size() < b.size())
+            DynamicSpectrum<T, N>::upgrade(a, a);
 
-    for (size_t i = 0, e = a.size(); i < e; ++i)
-        a[i] += b[i] * c;
+        for (size_t i = 0, e = a.size(); i < e; ++i)
+            a[i] += b[i] * c;
+    }
+    else
+    {
+        DynamicSpectrum<T, N> up_b;
+        DynamicSpectrum<T, N>::upgrade(b, up_b);
+
+        for (size_t i = 0, e = a.size(); i < e; ++i)
+            a[i] += up_b[i] * c;
+    }
 }
 
 #ifdef APPLESEED_USE_SSE
+
 template <>
 APPLESEED_FORCE_INLINE void madd(
-    DynamicSpectrum<float, 31>&         a,
-    const DynamicSpectrum<float, 31>&   b,
-    const DynamicSpectrum<float, 31>&   c)
+    DynamicSpectrum<float, 31>&             a,
+    const DynamicSpectrum<float, 31>&       b,
+    const DynamicSpectrum<float, 31>&       c)
 {
-    assert(a.size() == b.size() && a.size() == c.size());
-
-    _mm_store_ps(&a[0], _mm_add_ps(_mm_load_ps(&a[0]), _mm_mul_ps(_mm_load_ps(&b[0]), _mm_load_ps(&c[0]))));
-
-    if (a.size() > 3)
+    if (a.size() == b.size() && a.size() == c.size())
     {
-        _mm_store_ps(&a[ 4], _mm_add_ps(_mm_load_ps(&a[ 4]), _mm_mul_ps(_mm_load_ps(&b[ 4]), _mm_load_ps(&c[ 4]))));
-        _mm_store_ps(&a[ 8], _mm_add_ps(_mm_load_ps(&a[ 8]), _mm_mul_ps(_mm_load_ps(&b[ 8]), _mm_load_ps(&c[ 8]))));
-        _mm_store_ps(&a[12], _mm_add_ps(_mm_load_ps(&a[12]), _mm_mul_ps(_mm_load_ps(&b[12]), _mm_load_ps(&c[12]))));
-        _mm_store_ps(&a[16], _mm_add_ps(_mm_load_ps(&a[16]), _mm_mul_ps(_mm_load_ps(&b[16]), _mm_load_ps(&c[16]))));
-        _mm_store_ps(&a[20], _mm_add_ps(_mm_load_ps(&a[20]), _mm_mul_ps(_mm_load_ps(&b[20]), _mm_load_ps(&c[20]))));
-        _mm_store_ps(&a[24], _mm_add_ps(_mm_load_ps(&a[24]), _mm_mul_ps(_mm_load_ps(&b[24]), _mm_load_ps(&c[24]))));
-        _mm_store_ps(&a[28], _mm_add_ps(_mm_load_ps(&a[28]), _mm_mul_ps(_mm_load_ps(&b[28]), _mm_load_ps(&c[28]))));
+        _mm_store_ps(&a[0], _mm_add_ps(_mm_load_ps(&a[0]), _mm_mul_ps(_mm_load_ps(&b[0]), _mm_load_ps(&c[0]))));
+
+        if (a.size() > 3)
+        {
+            _mm_store_ps(&a[ 4], _mm_add_ps(_mm_load_ps(&a[ 4]), _mm_mul_ps(_mm_load_ps(&b[ 4]), _mm_load_ps(&c[ 4]))));
+            _mm_store_ps(&a[ 8], _mm_add_ps(_mm_load_ps(&a[ 8]), _mm_mul_ps(_mm_load_ps(&b[ 8]), _mm_load_ps(&c[ 8]))));
+            _mm_store_ps(&a[12], _mm_add_ps(_mm_load_ps(&a[12]), _mm_mul_ps(_mm_load_ps(&b[12]), _mm_load_ps(&c[12]))));
+            _mm_store_ps(&a[16], _mm_add_ps(_mm_load_ps(&a[16]), _mm_mul_ps(_mm_load_ps(&b[16]), _mm_load_ps(&c[16]))));
+            _mm_store_ps(&a[20], _mm_add_ps(_mm_load_ps(&a[20]), _mm_mul_ps(_mm_load_ps(&b[20]), _mm_load_ps(&c[20]))));
+            _mm_store_ps(&a[24], _mm_add_ps(_mm_load_ps(&a[24]), _mm_mul_ps(_mm_load_ps(&b[24]), _mm_load_ps(&c[24]))));
+            _mm_store_ps(&a[28], _mm_add_ps(_mm_load_ps(&a[28]), _mm_mul_ps(_mm_load_ps(&b[28]), _mm_load_ps(&c[28]))));
+        }
+    }
+    else
+    {
+        a += b * c;
     }
 }
 
 template <>
 APPLESEED_FORCE_INLINE void madd(
-    DynamicSpectrum<float, 31>&         a,
-    const DynamicSpectrum<float, 31>&   b,
-    const float                         c)
+    DynamicSpectrum<float, 31>&             a,
+    const DynamicSpectrum<float, 31>&       b,
+    const float                             c)
 {
-    assert(a.size() == b.size());
-
     const __m128 k = _mm_set_ps1(c);
 
-    _mm_store_ps(&a[0], _mm_add_ps(_mm_load_ps(&a[0]), _mm_mul_ps(_mm_load_ps(&b[0]), k)));
-
-    if (a.size() > 3)
+    if (a.size() <= b.size())
     {
-        _mm_store_ps(&a[ 4], _mm_add_ps(_mm_load_ps(&a[ 4]), _mm_mul_ps(_mm_load_ps(&b[ 4]), k)));
-        _mm_store_ps(&a[ 8], _mm_add_ps(_mm_load_ps(&a[ 8]), _mm_mul_ps(_mm_load_ps(&b[ 8]), k)));
-        _mm_store_ps(&a[12], _mm_add_ps(_mm_load_ps(&a[12]), _mm_mul_ps(_mm_load_ps(&b[12]), k)));
-        _mm_store_ps(&a[16], _mm_add_ps(_mm_load_ps(&a[16]), _mm_mul_ps(_mm_load_ps(&b[16]), k)));
-        _mm_store_ps(&a[20], _mm_add_ps(_mm_load_ps(&a[20]), _mm_mul_ps(_mm_load_ps(&b[20]), k)));
-        _mm_store_ps(&a[24], _mm_add_ps(_mm_load_ps(&a[24]), _mm_mul_ps(_mm_load_ps(&b[24]), k)));
-        _mm_store_ps(&a[28], _mm_add_ps(_mm_load_ps(&a[28]), _mm_mul_ps(_mm_load_ps(&b[28]), k)));
+        if (a.size() < b.size())
+            DynamicSpectrum<float, 31>::upgrade(a, a);
+
+        _mm_store_ps(&a[0], _mm_add_ps(_mm_load_ps(&a[0]), _mm_mul_ps(_mm_load_ps(&b[0]), k)));
+
+        if (a.size() > 3)
+        {
+            _mm_store_ps(&a[ 4], _mm_add_ps(_mm_load_ps(&a[ 4]), _mm_mul_ps(_mm_load_ps(&b[ 4]), k)));
+            _mm_store_ps(&a[ 8], _mm_add_ps(_mm_load_ps(&a[ 8]), _mm_mul_ps(_mm_load_ps(&b[ 8]), k)));
+            _mm_store_ps(&a[12], _mm_add_ps(_mm_load_ps(&a[12]), _mm_mul_ps(_mm_load_ps(&b[12]), k)));
+            _mm_store_ps(&a[16], _mm_add_ps(_mm_load_ps(&a[16]), _mm_mul_ps(_mm_load_ps(&b[16]), k)));
+            _mm_store_ps(&a[20], _mm_add_ps(_mm_load_ps(&a[20]), _mm_mul_ps(_mm_load_ps(&b[20]), k)));
+            _mm_store_ps(&a[24], _mm_add_ps(_mm_load_ps(&a[24]), _mm_mul_ps(_mm_load_ps(&b[24]), k)));
+            _mm_store_ps(&a[28], _mm_add_ps(_mm_load_ps(&a[28]), _mm_mul_ps(_mm_load_ps(&b[28]), k)));
+        }
+    }
+    else
+    {
+        DynamicSpectrum<float, 31> up_b;
+        DynamicSpectrum<float, 31>::upgrade(b, up_b);
+
+        _mm_store_ps(&a[ 0], _mm_add_ps(_mm_load_ps(&a[ 0]), _mm_mul_ps(_mm_load_ps(&up_b[ 0]), k)));
+        _mm_store_ps(&a[ 4], _mm_add_ps(_mm_load_ps(&a[ 4]), _mm_mul_ps(_mm_load_ps(&up_b[ 4]), k)));
+        _mm_store_ps(&a[ 8], _mm_add_ps(_mm_load_ps(&a[ 8]), _mm_mul_ps(_mm_load_ps(&up_b[ 8]), k)));
+        _mm_store_ps(&a[12], _mm_add_ps(_mm_load_ps(&a[12]), _mm_mul_ps(_mm_load_ps(&up_b[12]), k)));
+        _mm_store_ps(&a[16], _mm_add_ps(_mm_load_ps(&a[16]), _mm_mul_ps(_mm_load_ps(&up_b[16]), k)));
+        _mm_store_ps(&a[20], _mm_add_ps(_mm_load_ps(&a[20]), _mm_mul_ps(_mm_load_ps(&up_b[20]), k)));
+        _mm_store_ps(&a[24], _mm_add_ps(_mm_load_ps(&a[24]), _mm_mul_ps(_mm_load_ps(&up_b[24]), k)));
+        _mm_store_ps(&a[28], _mm_add_ps(_mm_load_ps(&a[28]), _mm_mul_ps(_mm_load_ps(&up_b[28]), k)));
     }
 }
-#endif
 
-}   // namespace renderer
+#endif  // APPLESEED_USE_SSE
+
+}       // namespace renderer
 
 namespace foundation
 {
