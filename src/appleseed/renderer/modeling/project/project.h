@@ -50,6 +50,7 @@
 
 // Forward declarations.
 namespace foundation    { class SearchPaths; }
+namespace renderer      { class Camera; }
 namespace renderer      { class Display; }
 namespace renderer      { class Frame; }
 namespace renderer      { class Scene; }
@@ -108,6 +109,11 @@ class APPLESEED_DLLSYMBOL Project
     // Access the display.
     // Return 0 if the project does not contain a display.
     Display* get_display() const;
+
+    // Access the camera specified in the frame as active.
+    // Return 0 if the scene does not contain cameras or if
+    // no cameras are specified in the frame.
+    Camera* get_uncached_camera() const;
 
     // Add a render layer rule.
     void add_render_layer_rule(foundation::auto_release_ptr<RenderLayerRule> rule);

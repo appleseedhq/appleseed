@@ -34,6 +34,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
+#include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/edf/diffuseedf.h"
 #include "renderer/modeling/edf/edf.h"
@@ -1129,9 +1130,7 @@ namespace
 
         virtual void update() APPLESEED_OVERRIDE
         {
-            const Scene* scene = m_project.get_scene();
-
-            if (scene)
+            if (Scene* scene = m_project.get_scene())
                 update_bssrdf_mfp_inputs(scene->assemblies());
         }
 
@@ -1155,6 +1154,36 @@ namespace
         {
             move_if_exist(bssrdf, "mfp", "dmfp");
             move_if_exist(bssrdf, "mfp_multiplier", "dmfp_multiplier");
+        }
+    };
+
+    class UpdateFromRevision_12
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_12(Project& project)
+          : Updater(project, 12)
+        {
+        }
+
+        virtual void update() APPLESEED_OVERRIDE
+        {
+            // Add camera param to frame.
+            Frame* frame = m_project.get_frame();
+            const Scene* scene = m_project.get_scene();
+
+            if (frame == 0 || scene == 0 || scene->cameras().empty())
+                return;
+
+            // Check if we already have a camera param in the frame.
+            ParamArray& frame_params = frame->get_parameters();
+            if (frame_params.strings().exist("camera"))
+                return;
+
+            // Use the first camera as the active camera.
+            frame_params.insert(
+                "camera",
+                scene->cameras().get_by_index(0)->get_name());
         }
     };
 }
@@ -1192,8 +1221,9 @@ bool ProjectFileUpdater::update(Project& project, const size_t to_revision)
       CASE_UPDATE_FROM_REVISION(9);
       CASE_UPDATE_FROM_REVISION(10);
       CASE_UPDATE_FROM_REVISION(11);
+      CASE_UPDATE_FROM_REVISION(12);
 
-      case 12:
+      case 13:
         // Project is up-to-date.
         break;
 

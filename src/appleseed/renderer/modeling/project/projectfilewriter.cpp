@@ -736,7 +736,7 @@ namespace
         {
             XMLElement element("scene", m_file, m_indenter);
             element.write(
-                scene.get_camera() != 0 ||
+                !scene.cameras().empty() ||
                 !scene.colors().empty() ||
                 !scene.textures().empty() ||
                 !scene.texture_instances().empty() ||
@@ -753,9 +753,7 @@ namespace
 
             write_params(scene.get_parameters());
 
-            if (scene.get_camera())
-                write(*scene.get_camera());
-
+            write_collection(scene.cameras());
             write_collection(scene.colors());
             write_collection(scene.textures());
             write_collection(scene.texture_instances());
