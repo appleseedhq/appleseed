@@ -52,7 +52,7 @@ TEST_SUITE(Renderer_Modeling_Camera_SphericalCamera)
     TEST_CASE(ProjectPoint)
     {
         auto_release_ptr<Scene> scene(SceneFactory::create());
-        scene->set_camera(SphericalCameraFactory().create("camera", ParamArray()));
+        scene->cameras().insert(SphericalCameraFactory().create("camera", ParamArray()));
 
         auto_release_ptr<Project> project(ProjectFactory::create("test"));
         project->set_scene(scene);
@@ -60,10 +60,15 @@ TEST_SUITE(Renderer_Modeling_Camera_SphericalCamera)
             FrameFactory::create(
                 "frame",
                 ParamArray()
-                    .insert("resolution", "512 512")));
+                    .insert("resolution", "512 512")
+                    .insert("camera", "camera")));
+
+        bool success = project->get_scene()->on_render_begin(project.ref());
+        ASSERT_TRUE(success);
 
         OnFrameBeginRecorder recorder;
-        project->get_scene()->on_frame_begin(project.ref(), 0, recorder);
+        success = project->get_scene()->on_frame_begin(project.ref(), 0, recorder);
+        ASSERT_TRUE(success);
 
         const Camera* camera = project->get_scene()->get_camera();
 
@@ -76,11 +81,12 @@ TEST_SUITE(Renderer_Modeling_Camera_SphericalCamera)
         const Vector3d hit_point = ray.m_org + 3.0 * normalize(ray.m_dir);
 
         Vector2d projected;
-        const bool success = camera->project_point(0.0, hit_point, projected);
+        success = camera->project_point(0.0, hit_point, projected);
 
         ASSERT_TRUE(success);
         EXPECT_FEQ(Vector2d(1.0, 1.0), projected);
 
         recorder.on_frame_end(project.ref());
+        project->get_scene()->on_render_end(project.ref());
     }
 }

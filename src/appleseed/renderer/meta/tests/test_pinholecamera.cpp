@@ -50,7 +50,7 @@ TEST_SUITE(Renderer_Modeling_Camera_PinholeCamera)
     TEST_CASE(ProjectPoint_GivenIdentityCameraAndPointArgumentIsOnZAxis_ReturnsCenterOfImagePlane)
     {
         auto_release_ptr<Scene> scene(SceneFactory::create());
-        scene->set_camera(
+        scene->cameras().insert(
             PinholeCameraFactory().create(
                 "camera",
                 ParamArray()
@@ -64,17 +64,20 @@ TEST_SUITE(Renderer_Modeling_Camera_PinholeCamera)
             FrameFactory::create(
                 "frame",
                 ParamArray()
-                    .insert("resolution", "512 512")));
+                    .insert("resolution", "512 512")
+                    .insert("camera", "camera")));
 
-        project->get_scene()->on_render_begin(project.ref());
+        bool success = project->get_scene()->on_render_begin(project.ref());
+        ASSERT_TRUE(success);
 
         OnFrameBeginRecorder recorder;
-        project->get_scene()->on_frame_begin(project.ref(), 0, recorder);
+        success = project->get_scene()->on_frame_begin(project.ref(), 0, recorder);
+        ASSERT_TRUE(success);
 
         const Camera* camera = project->get_scene()->get_camera();
 
         Vector2d projected;
-        const bool success = camera->project_point(0.0, Vector3d(0.0, 0.0, -1.0), projected);
+        success = camera->project_point(0.0, Vector3d(0.0, 0.0, -1.0), projected);
 
         ASSERT_TRUE(success);
         EXPECT_FEQ(Vector2d(0.5, 0.5), projected);
