@@ -29,6 +29,7 @@
 
 // appleseed.python headers.
 #include "pyseed.h" // has to be first, to avoid redefinition warnings
+#include "bindentitycontainers.h"
 #include "dict2dict.h"
 #include "metadata.h"
 
@@ -87,4 +88,6 @@ void bind_camera()
         .def("get_shutter_close_time", &Camera::get_shutter_close_time)
         .def("get_shutter_middle_time", &Camera::get_shutter_middle_time)
         ;
+
+    bind_typed_entity_vector<Camera>("CameraContainer");
 }
