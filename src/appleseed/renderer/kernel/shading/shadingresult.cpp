@@ -49,9 +49,9 @@ namespace renderer
 
 namespace
 {
-    inline Color3f spectrum_as_color3f(const Spectrum& s)
+    inline const Color3f& spectrum_as_color3f(const Spectrum& s)
     {
-        return Color3f(s[0], s[1], s[2]);
+        return reinterpret_cast<const Color3f&>(s[0]);
     }
 
     template <typename T>
@@ -93,9 +93,7 @@ bool ShadingResult::is_valid_linear_rgb() const
     if (!is_valid_color(m_main.m_alpha))
         return false;
 
-    const size_t aov_count = m_aovs.size();
-
-    for (size_t i = 0; i < aov_count; ++i)
+    for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
     {
         const ShadingFragment& aov = m_aovs[i];
 
@@ -111,9 +109,7 @@ bool ShadingResult::is_valid_linear_rgb() const
 
 void ShadingResult::set_aovs_to_transparent_black_linear_rgba()
 {
-    const size_t aov_count = m_aovs.size();
-
-    for (size_t i = 0; i < aov_count; ++i)
+    for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
     {
         ShadingFragment& aov = m_aovs[i];
         aov.m_color[0] = 0.0f;
@@ -145,29 +141,27 @@ namespace
 
 void ShadingResult::transform_to_linear_rgb(const LightingConditions& lighting)
 {
-    const size_t aov_count = m_aovs.size();
+    if (m_color_space == ColorSpaceLinearRGB)
+        return;
 
     switch (m_color_space)
     {
-      case ColorSpaceLinearRGB:
-        break;
-
       case ColorSpaceSRGB:
         transform_srgb_to_linear_rgb(m_main.m_color);
-        for (size_t i = 0; i < aov_count; ++i)
+        for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
             transform_srgb_to_linear_rgb(m_aovs[i].m_color);
         break;
 
       case ColorSpaceCIEXYZ:
         transform_ciexyz_to_linear_rgb(m_main.m_color);
-        for (size_t i = 0; i < aov_count; ++i)
+        for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
             transform_ciexyz_to_linear_rgb(m_aovs[i].m_color);
         break;
 
       case ColorSpaceSpectral:
         if (m_main.m_color.is_spectral())
             transform_spectrum_to_linear_rgb(lighting, m_main.m_color);
-        for (size_t i = 0; i < aov_count; ++i)
+        for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
         {
             ShadingFragment& aov = m_aovs[i];
             if (aov.m_color.is_spectral())
