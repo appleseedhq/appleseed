@@ -50,7 +50,7 @@ import zipfile
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.4.2"
+VERSION = "2.4.3"
 SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 
 
@@ -137,20 +137,20 @@ class Settings:
         self.print_summary()
 
     def load_values(self, tree):
+        self.platform = self.__get_required(tree, "platform")
         self.configuration = self.__get_required(tree, "configuration")
-        self.platform_name = self.__get_required(tree, "platform_name")
         self.appleseed_path = self.__get_required(tree, "appleseed_path")
-        self.headers_path = self.__get_required(tree, "headers_path")
+        self.appleseed_headers_path = self.__get_required(tree, "appleseed_headers_path")
         self.qt_runtime_path = self.__get_required(tree, "qt_runtime_path")
         self.platform_runtime_path = self.__get_required(tree, "platform_runtime_path")
         self.package_output_path = self.__get_required(tree, "package_output_path")
 
     def print_summary(self):
         print("")
+        print("  Platform:                  " + self.platform)
         print("  Configuration:             " + self.configuration)
-        print("  Platform Name:             " + self.platform_name)
         print("  Path to appleseed:         " + self.appleseed_path)
-        print("  Path to appleseed headers: " + self.headers_path)
+        print("  Path to appleseed headers: " + self.appleseed_headers_path)
         print("  Path to Qt runtime:        " + self.qt_runtime_path)
         if os.name == "nt":
             print("  Path to platform runtime:  " + self.platform_runtime_path)
@@ -184,7 +184,7 @@ class PackageInfo:
         os.chdir(old_path)
 
     def build_package_path(self):
-        package_name = "appleseed-" + self.version + "-" + self.settings.platform_name + ".zip"
+        package_name = "appleseed-" + self.version + "-" + self.settings.platform + ".zip"
         self.package_path = os.path.join(self.settings.package_output_path, self.version, package_name)
 
     def print_summary(self):
@@ -329,13 +329,13 @@ class PackageBuilder:
         # appleseed headers.
         safe_make_directory("appleseed/include")
         ignore_files = shutil.ignore_patterns("*.cpp", "*.c", "*.xsd", "stdosl.h", "oslutil.h", "snprintf", "version.h.in")
-        shutil.copytree(os.path.join(self.settings.headers_path, "foundation"), "appleseed/include/foundation", ignore = ignore_files)
-        shutil.copytree(os.path.join(self.settings.headers_path, "main"), "appleseed/include/main", ignore = ignore_files)
-        shutil.copytree(os.path.join(self.settings.headers_path, "renderer"), "appleseed/include/renderer", ignore = ignore_files)
+        shutil.copytree(os.path.join(self.settings.appleseed_headers_path, "foundation"), "appleseed/include/foundation", ignore = ignore_files)
+        shutil.copytree(os.path.join(self.settings.appleseed_headers_path, "main"), "appleseed/include/main", ignore = ignore_files)
+        shutil.copytree(os.path.join(self.settings.appleseed_headers_path, "renderer"), "appleseed/include/renderer", ignore = ignore_files)
 
         # OSL headers.
-        shutil.copy(os.path.join(self.settings.headers_path, "renderer/kernel/shading/oslutil.h"), "appleseed/shaders/")
-        shutil.copy(os.path.join(self.settings.headers_path, "renderer/kernel/shading/stdosl.h"), "appleseed/shaders/")
+        shutil.copy(os.path.join(self.settings.appleseed_headers_path, "renderer/kernel/shading/oslutil.h"), "appleseed/shaders/")
+        shutil.copy(os.path.join(self.settings.appleseed_headers_path, "renderer/kernel/shading/stdosl.h"), "appleseed/shaders/")
 
     def add_scripts_to_stage(self):
         progress("Adding scripts to staging directory")
