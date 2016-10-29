@@ -59,6 +59,7 @@ class ShadingResult
     double                      m_depth;
 
     // Constructor.
+    // AOVs are cleared to transparent black but the main output is left uninitialized.
     explicit ShadingResult(const size_t aov_count = 0);
 
     // Return true if this shading result contains valid linear RGB values;
@@ -114,6 +115,8 @@ inline ShadingResult::ShadingResult(const size_t aov_count)
 #ifdef DEBUG
     poison();
 #endif
+
+    set_aovs_to_transparent_black_linear_rgba();
 }
 
 inline void ShadingResult::set_main_to_linear_rgb(const foundation::Color3f& linear_rgb)
