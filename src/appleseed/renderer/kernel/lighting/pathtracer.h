@@ -190,6 +190,14 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
     while (true)
     {
+#ifndef NDEBUG
+        // Save the sampling context at the beginning of the iteration.
+        const SamplingContext backup_sampling_context(sampling_context);
+
+        // Resume execution here to reliably reproduce problems downstream.
+        sampling_context = backup_sampling_context;
+#endif
+
         // Put a hard limit on the number of iterations.
         if (++iterations >= m_max_iterations)
         {
