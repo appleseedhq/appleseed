@@ -31,6 +31,7 @@
 #include "rendertab.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/rendering/renderwidget.h"
 #include "utility/miscellaneous.h"
 
@@ -377,7 +378,7 @@ void RenderTab::recreate_handlers()
     m_camera_controller.reset(
         new CameraController(
             m_render_widget,
-            m_project.get_scene()));
+            m_project));
     connect(
         m_camera_controller.get(), SIGNAL(signal_camera_change_begin()),
         SIGNAL(signal_camera_change_begin()));
@@ -387,6 +388,9 @@ void RenderTab::recreate_handlers()
     connect(
         m_camera_controller.get(), SIGNAL(signal_camera_changed()),
         SIGNAL(signal_camera_changed()));
+    connect(
+        &m_project_explorer, SIGNAL(signal_frame_modified()),
+        m_camera_controller.get(), SLOT(slot_frame_modified()));
 
     // Handler for picking scene entities in the render widget.
     m_picking_handler.reset(

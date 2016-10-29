@@ -58,11 +58,11 @@ namespace studio {
 
 CameraController::CameraController(
     QWidget*    render_widget,
-    Scene*      scene)
+    Project&    project)
   : m_render_widget(render_widget)
-  , m_scene(scene)
+  , m_project(project)
 {
-    configure_controller(m_scene);
+    configure_controller();
 
     m_render_widget->installEventFilter(this);
 }
@@ -79,19 +79,20 @@ Transformd CameraController::get_transform() const
 
 void CameraController::update_camera_transform()
 {
-    Camera* camera = m_scene->get_camera();
+    if (Camera* camera = m_project.get_uncached_camera())
+    {
+        // Moving the camera kills camera motion blur.
+        camera->transform_sequence().clear();
 
-    // Moving the camera kills camera motion blur.
-    camera->transform_sequence().clear();
-
-    // Set the scene camera orientation and position based on the controller.
-    camera->transform_sequence().set_transform(0.0, get_transform());
+        // Set the scene camera orientation and position based on the controller.
+        camera->transform_sequence().set_transform(0.0, get_transform());
+    }
 }
 
 void CameraController::save_camera_target()
 {
-    Camera* camera = m_scene->get_camera();
-    camera->get_parameters().insert("controller_target", m_controller.get_target());
+    if (Camera* camera = m_project.get_uncached_camera())
+        camera->get_parameters().insert("controller_target", m_controller.get_target());
 }
 
 void CameraController::slot_entity_picked(ScenePicker::PickingResult result)
@@ -105,7 +106,12 @@ void CameraController::slot_entity_picked(ScenePicker::PickingResult result)
         m_pivot = Vector3d(object_instance_world_bbox.center());
     }
     else
-        m_pivot = Vector3d(m_scene->compute_bbox().center());
+        m_pivot = Vector3d(m_project.get_scene()->compute_bbox().center());
+}
+
+void CameraController::slot_frame_modified()
+{
+    configure_controller();
 }
 
 bool CameraController::eventFilter(QObject* object, QEvent* event)
@@ -136,9 +142,12 @@ bool CameraController::eventFilter(QObject* object, QEvent* event)
     return QObject::eventFilter(object, event);
 }
 
-void CameraController::configure_controller(const Scene* scene)
+void CameraController::configure_controller()
 {
-    Camera* camera = m_scene->get_camera();
+    Camera* camera = m_project.get_uncached_camera();
+
+    if (!camera)
+        return;
 
     // Set the controller orientation and position based on the scene camera.
     m_controller.set_transform(
@@ -155,7 +164,7 @@ void CameraController::configure_controller(const Scene* scene)
     else
     {
         // Otherwise, if the scene is not empty, use its center as the target position.
-        const GAABB3 scene_bbox = scene->compute_bbox();
+        const GAABB3 scene_bbox = m_project.get_scene()->compute_bbox();
         if (scene_bbox.is_valid())
             m_controller.set_target(Vector3d(scene_bbox.center()));
     }
