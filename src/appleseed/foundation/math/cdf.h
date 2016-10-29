@@ -293,7 +293,7 @@ T invert_cdf_function(
             break;
 
         // Update bounds.
-        f < 0.0 ? xmin = x : xmax = x;
+        f < T(0.0) ? xmin = x : xmax = x;
 
         // Newton step.
         const T df = pdf(x);
