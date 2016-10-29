@@ -613,7 +613,7 @@ namespace
 
             // Sample the EDF.
             sampling_context.split_in_place(2, 1);
-            Vector3d emission_direction;
+            Vector3f emission_direction;
             Spectrum edf_value;
             float edf_prob;
             material_data.m_edf->sample(
@@ -622,21 +622,21 @@ namespace
                 Vector3f(light_sample.m_geometric_normal),
                 Basis3f(Vector3f(light_sample.m_shading_normal)),
                 sampling_context.next2<Vector2f>(),
-                Vector3f(emission_direction),
+                emission_direction,
                 edf_value,
                 edf_prob);
 
             // Compute the initial particle weight.
             Spectrum initial_flux = edf_value;
             initial_flux *=
-                static_cast<float>(dot(emission_direction, light_sample.m_shading_normal)) /
+                dot(emission_direction, Vector3f(light_sample.m_shading_normal)) /
                 (light_sample.m_probability * edf_prob);
 
             // Make a shading point that will be used to avoid self-intersections with the light sample.
             ShadingPoint parent_shading_point;
             light_sample.make_shading_point(
                 parent_shading_point,
-                emission_direction,
+                Vector3d(emission_direction),
                 m_intersector);
 
             // Build the light ray.
@@ -648,7 +648,7 @@ namespace
                     m_shutter_close_time);
             const ShadingRay light_ray(
                 light_sample.m_point,
-                emission_direction,
+                Vector3d(emission_direction),
                 time,
                 VisibilityFlags::LightRay,
                 0);
