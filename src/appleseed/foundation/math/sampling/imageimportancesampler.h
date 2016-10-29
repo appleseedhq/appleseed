@@ -157,9 +157,10 @@ void ImageImportanceSampler<Payload, Importance>::rebuild(
         }
 
         if (m_cdf_x[y].valid())
+        {
             m_cdf_x[y].prepare();
-
-        m_cdf_y.insert(y, m_cdf_x[y].weight());
+            m_cdf_y.insert(y, m_cdf_x[y].weight());
+        }
     }
 
     if (m_cdf_y.valid())
