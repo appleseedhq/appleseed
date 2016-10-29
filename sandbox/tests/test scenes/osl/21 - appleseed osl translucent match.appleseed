@@ -43,7 +43,7 @@
         <assembly name="assembly">
             <texture name="uv_grid_mip" model="disk_texture_2d">
                 <parameter name="color_space" value="linear_rgb" />
-                <parameter name="filename" value="/home/est/Devel/appleseedhq/appleseed/sandbox/tests/test scenes/_assets/textures/UVCheckerMap03-512.exr" />
+                <parameter name="filename" value="UVCheckerMap03-512.exr" />
             </texture>
             <texture_instance name="uv_grid_mip_inst" texture="uv_grid_mip">
                 <parameter name="addressing_mode" value="wrap" />
