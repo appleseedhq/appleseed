@@ -257,7 +257,7 @@ asf::auto_release_ptr<asr::Project> build_project()
             asf::Matrix4d::make_translation(asf::Vector3d(0.0, 0.8, 11.0))));
 
     // Bind the camera to the scene.
-    scene->set_camera(camera);
+    scene->cameras().insert(camera);
 
     //------------------------------------------------------------------------
     // Frame
@@ -268,7 +268,7 @@ asf::auto_release_ptr<asr::Project> build_project()
         asr::FrameFactory::create(
             "beauty",
             asr::ParamArray()
-                .insert("camera", scene->get_camera()->get_name())
+                .insert("camera", "camera")
                 .insert("resolution", "640 480")
                 .insert("color_space", "srgb")));
 
