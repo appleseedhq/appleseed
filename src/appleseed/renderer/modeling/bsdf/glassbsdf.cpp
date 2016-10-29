@@ -208,7 +208,7 @@ namespace
             Vector3f m = m_mdf->sample(wo, Vector3f(s[0], s[1], s[2]), alpha_x, alpha_y);
             assert(m.y > 0.0f);
 
-            const float cos_wom = dot(wo, m);
+            const float cos_wom = clamp(dot(wo, m), -1.0f, 1.0f);
             float cos_theta_t;
             const float F = fresnel_reflectance(cos_wom, values->m_eta, cos_theta_t);
             const float r_probability = choose_reflection_probability(values, F);
@@ -469,7 +469,7 @@ namespace
                 return 1.0f;
             }
 
-            cos_theta_t = sqrt(max(1.0f - sin_theta_t2, 0.0f));
+            cos_theta_t = min(sqrt(max(1.0f - sin_theta_t2, 0.0f)), 1.0f);
 
             float F;
             fresnel_reflectance_dielectric(

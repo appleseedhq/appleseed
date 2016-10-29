@@ -103,7 +103,10 @@ class FresnelDielectricFun
         Spectrum&                       value) const
     {
         T f;
-        foundation::fresnel_reflectance_dielectric(f, m_eta, foundation::dot(o, h));
+        foundation::fresnel_reflectance_dielectric(
+            f,
+            m_eta,
+            clamp(foundation::dot(o, h), T(-1.0), T(1.0)));
 
         value = m_reflectance;
         value *= static_cast<float>(f * m_reflectance_multiplier);
@@ -223,7 +226,7 @@ class MicrofacetBRDFHelper
         // No reflection below the shading surface.
         const VectorType& n = sample.m_shading_normal;
         const T cos_in = foundation::dot(incoming, n);
-        if (cos_in < T(0.0))
+        if (cos_in <= T(0.0))
             return;
 
         const T D = mdf.D(m, alpha_x, alpha_y);

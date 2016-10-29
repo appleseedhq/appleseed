@@ -769,7 +769,7 @@ inline Vector<T, N> improve_normalization(const Vector<T, N>& v)
 template <typename T, size_t N>
 inline bool is_normalized(const Vector<T, N>& v)
 {
-    return feq(square_norm(v), T(1.0));
+    return feq(square_norm(v), T(1.0), make_eps<T>(1.0e-4f, 1.0e-5));
 }
 
 template <typename T, size_t N>

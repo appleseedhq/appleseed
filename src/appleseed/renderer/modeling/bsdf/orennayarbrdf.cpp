@@ -299,8 +299,7 @@ namespace
                 * sigma2 / (sigma2 + 0.13f)
                 * (1.0f - delta_cos_phi * square(2.0f * beta * RcpPi<float>()));
             value += r2;
-
-            assert(min_value(value) >= 0.0f);
+            clamp_low_in_place(value, 0.0f);
         }
     };
 

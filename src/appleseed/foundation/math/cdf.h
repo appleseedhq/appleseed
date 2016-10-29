@@ -269,8 +269,14 @@ T invert_cdf_function(
     const T             eps,
     const size_t        max_iterations)
 {
-    assert(cdf(xmin) <= u);
-    assert(cdf(xmax) >= u);
+    const T cdf_xmin = cdf(xmin);
+    const T cdf_xmax = cdf(xmax);
+
+    if (u <= cdf_xmin)
+        return xmin;
+
+    if (u >= cdf_xmax)
+        return xmax;
 
     T x = guess;
 

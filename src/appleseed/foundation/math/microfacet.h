@@ -59,34 +59,34 @@ class MDF
     virtual ~MDF() {}
 
     virtual T D(
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const = 0;
+        const Vector<T, 3>&     h,
+        const T                 alpha_x,
+        const T                 alpha_y) const = 0;
 
     virtual T G(
-        const Vector<T, 3>&  incoming,
-        const Vector<T, 3>&  outgoing,
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const = 0;
+        const Vector<T, 3>&     incoming,
+        const Vector<T, 3>&     outgoing,
+        const Vector<T, 3>&     h,
+        const T                 alpha_x,
+        const T                 alpha_y) const = 0;
 
     virtual T G1(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  m,
-        const T              alpha_x,
-        const T              alpha_y) const = 0;
+        const Vector<T, 3>&     v,
+        const Vector<T, 3>&     m,
+        const T                 alpha_x,
+        const T                 alpha_y) const = 0;
 
     virtual Vector<T, 3> sample(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  s,
-        const T              alpha_x,
-        const T              alpha_y) const = 0;
+        const Vector<T, 3>&     v,
+        const Vector<T, 3>&     s,
+        const T                 alpha_x,
+        const T                 alpha_y) const = 0;
 
     virtual T pdf(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const = 0;
+        const Vector<T, 3>&     v,
+        const Vector<T, 3>&     h,
+        const T                 alpha_x,
+        const T                 alpha_y) const = 0;
 
   protected:
     static T cos_theta(const Vector<T, 3>& v)
@@ -100,9 +100,9 @@ class MDF
     }
 
     static void sample_phi(
-        const T s,
-        T&      cos_phi,
-        T&      sin_phi)
+        const T                 s,
+        T&                      cos_phi,
+        T&                      sin_phi)
     {
         const T phi = TwoPi<T>() * s;
         cos_phi = std::cos(phi);
@@ -110,11 +110,11 @@ class MDF
     }
 
     static void sample_phi(
-        const T s,
-        const T alpha_x,
-        const T alpha_y,
-        T&      cos_phi,
-        T&      sin_phi)
+        const T                 s,
+        const T                 alpha_x,
+        const T                 alpha_y,
+        T&                      cos_phi,
+        T&                      sin_phi)
     {
         Vector<T, 2> sin_cos_phi(
             std::cos(TwoPi<T>() * s) * alpha_x,
@@ -125,10 +125,10 @@ class MDF
     }
 
     static T stretched_roughness(
-        const Vector<T, 3>& h,
-        const T             sin_theta,
-        const T             alpha_x,
-        const T             alpha_y)
+        const Vector<T, 3>&     h,
+        const T                 sin_theta,
+        const T                 alpha_x,
+        const T                 alpha_y)
     {
         if (alpha_x == alpha_y || sin_theta == T(0.0))
             return T(1.0) / square(alpha_x);
@@ -139,10 +139,10 @@ class MDF
     }
 
     static T projected_roughness(
-        const Vector<T, 3>& h,
-        const T             sin_theta,
-        const T             alpha_x,
-        const T             alpha_y)
+        const Vector<T, 3>&     h,
+        const T                 sin_theta,
+        const T                 alpha_x,
+        const T                 alpha_y)
     {
         if (alpha_x == alpha_y || sin_theta == T(0.0))
             return alpha_x;
@@ -153,9 +153,9 @@ class MDF
     }
 
     static Vector<T, 3> v_cavity_choose_microfacet_normal(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  h,
-        const T              s)
+        const Vector<T, 3>&     v,
+        const Vector<T, 3>&     h,
+        const T                 s)
     {
         // Preconditions.
         assert(is_normalized(v));
@@ -174,11 +174,11 @@ class MDF
 
     template <typename Distribution>
     static Vector<T, 3> sample_visible_normals(
-        const Distribution&  mdf,
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  s,
-        const T              alpha_x,
-        const T              alpha_y)
+        const Distribution&     mdf,
+        const Vector<T, 3>&     v,
+        const Vector<T, 3>&     s,
+        const T                 alpha_x,
+        const T                 alpha_y)
     {
         // Preconditions.
         assert(is_normalized(v));
@@ -202,7 +202,6 @@ class MDF
         // Rotate.
         const T cos_phi = std::cos(phi);
         const T sin_phi = std::sin(phi);
-
         slope = Vector<T, 2>(
             cos_phi * slope[0] - sin_phi * slope[1],
             sin_phi * slope[0] + cos_phi * slope[1]);
@@ -217,11 +216,11 @@ class MDF
 
     template <typename Distribution>
     T pdf_visible_normals(
-        const Distribution&  mdf,
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const
+        const Distribution&     mdf,
+        const Vector<T, 3>&     v,
+        const Vector<T, 3>&     h,
+        const T                 alpha_x,
+        const T                 alpha_y) const
     {
         assert(is_normalized(v));
 
@@ -259,28 +258,28 @@ class BlinnMDF
     BlinnMDF() {}
 
     virtual T D(
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     h,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         return (alpha_x + T(2.0)) * RcpTwoPi<T>() * std::pow(MDF<T>::cos_theta(h), alpha_x);
     }
 
     virtual T G(
-        const Vector<T, 3>&  incoming,
-        const Vector<T, 3>&  outgoing,
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     incoming,
+        const Vector<T, 3>&     outgoing,
+        const Vector<T, 3>&     h,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         return std::min(G1(incoming, h, alpha_x, alpha_y), G1(outgoing, h, alpha_x, alpha_y));
     }
 
     T G1(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  m,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     v,
+        const Vector<T, 3>&     m,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         if (v.y <= T(0.0))
             return T(0.0);
@@ -296,10 +295,10 @@ class BlinnMDF
     }
 
     virtual Vector<T, 3> sample(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  s,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     v,
+        const Vector<T, 3>&     s,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         const T cos_theta = std::pow(T(1.0) - s[0], T(1.0) / (alpha_x + T(2.0)));
         const T sin_theta = std::sqrt(T(1.0) - cos_theta * cos_theta);
@@ -314,10 +313,10 @@ class BlinnMDF
     }
 
     virtual T pdf(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     v,
+        const Vector<T, 3>&     h,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         return MDF<T>::pdf_visible_normals(*this, v, h, alpha_x, alpha_y);
     }
@@ -355,9 +354,9 @@ class BeckmannMDF
     BeckmannMDF() {}
 
     virtual T D(
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     h,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         const T cos_theta = MDF<T>::cos_theta(h);
 
@@ -378,28 +377,28 @@ class BeckmannMDF
     }
 
     virtual T G(
-        const Vector<T, 3>&  incoming,
-        const Vector<T, 3>&  outgoing,
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     incoming,
+        const Vector<T, 3>&     outgoing,
+        const Vector<T, 3>&     h,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         return T(1.0) / (T(1.0) + lambda(outgoing, alpha_x, alpha_y) + lambda(incoming, alpha_x, alpha_y));
     }
 
     virtual T G1(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  m,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     v,
+        const Vector<T, 3>&     m,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         return T(1.0) / (T(1.0) + lambda(v, alpha_x, alpha_y));
     }
 
     T lambda(
-        const Vector<T, 3>&  v,
-        const T              alpha_x,
-        const T              alpha_y) const
+        const Vector<T, 3>&     v,
+        const T                 alpha_x,
+        const T                 alpha_y) const
     {
         const T cos_theta = MDF<T>::cos_theta(v);
 
@@ -428,10 +427,10 @@ class BeckmannMDF
     }
 
     virtual Vector<T, 3> sample(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  s,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     v,
+        const Vector<T, 3>&     s,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         return
             MDF<T>::sample_visible_normals(
@@ -444,8 +443,8 @@ class BeckmannMDF
 
     // This code comes from OpenShadingLanguage test render.
     Vector<T, 2> sample11(
-        const T             cos_theta,
-        const Vector<T, 3>& s) const
+        const T                 cos_theta,
+        const Vector<T, 3>&     s) const
     {
         const T ct = std::max(cos_theta, T(1.0e-6));
         const T tan_theta = std::sqrt(T(1.0) - square(ct)) / ct;
@@ -490,10 +489,10 @@ class BeckmannMDF
     }
 
     virtual T pdf(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     v,
+        const Vector<T, 3>&     h,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         return MDF<T>::pdf_visible_normals(*this, v, h, alpha_x, alpha_y);
     }
@@ -595,9 +594,9 @@ class GGXMDF
     GGXMDF() {}
 
     virtual T D(
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     h,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         const T cos_theta = MDF<T>::cos_theta(h);
 
@@ -620,28 +619,28 @@ class GGXMDF
     }
 
     virtual T G(
-        const Vector<T, 3>&  incoming,
-        const Vector<T, 3>&  outgoing,
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     incoming,
+        const Vector<T, 3>&     outgoing,
+        const Vector<T, 3>&     h,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         return T(1.0) / (T(1.0) + lambda(outgoing, alpha_x, alpha_y) + lambda(incoming, alpha_x, alpha_y));
     }
 
     virtual T G1(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  m,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     v,
+        const Vector<T, 3>&     m,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         return T(1.0) / (T(1.0) + lambda(v, alpha_x, alpha_y));
     }
 
     T lambda(
-        const Vector<T, 3>&  v,
-        const T              alpha_x,
-        const T              alpha_y) const
+        const Vector<T, 3>&     v,
+        const T                 alpha_x,
+        const T                 alpha_y) const
     {
         const T cos_theta = std::abs(v.y);
 
@@ -664,10 +663,10 @@ class GGXMDF
     }
 
     virtual Vector<T, 3> sample(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  s,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     v,
+        const Vector<T, 3>&     s,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         return
             MDF<T>::sample_visible_normals(
@@ -680,8 +679,8 @@ class GGXMDF
 
     // Adapted from the sample code provided in [3].
     Vector<T, 2> sample11(
-        const T             cos_theta,
-        const Vector<T, 3>& s) const
+        const T                 cos_theta,
+        const Vector<T, 3>&     s) const
     {
         const T sin_theta = std::sqrt(T(1.0) - square(cos_theta));
 
@@ -705,34 +704,32 @@ class GGXMDF
         // Sample slope x.
         const T A = T(2.0) * s[0] / G1 - T(1.0);
         const T A2 = square(A);
-        const T rcp_A2_minus_one = T(1.0) / (A2 - T(1.0));
+        const T rcp_A2_minus_one = std::min(T(1.0) / (A2 - T(1.0)), T(1.0e10));
         const T B = tan_theta;
         const T B2 = square(B);
-
-        const T D = std::sqrt(B2 * square(rcp_A2_minus_one) - (A2 - B2) * rcp_A2_minus_one);
+        const T D = std::sqrt(std::max(B2 * square(rcp_A2_minus_one) - (A2 - B2) * rcp_A2_minus_one, T(0.0)));
         const T slope_x_1 = B * rcp_A2_minus_one - D;
         const T slope_x_2 = B * rcp_A2_minus_one + D;
-
-        if (A < T(0.0) || slope_x_2 > cot_theta)
-            slope[0] = slope_x_1;
-        else
-            slope[0] = slope_x_2;
+        slope[0] =
+            A < T(0.0) || slope_x_2 > cot_theta
+                ? slope_x_1
+                : slope_x_2;
 
         // Sample slope y.
         const T z =
             (s[1] * (s[1] * (s[1] * T(0.27385) - T(0.73369)) + T(0.46341))) /
             (s[1] * (s[1] * (s[1] * T(0.093073) + T(0.309420)) - T(1.0)) + T(0.597999));
-
         const T S = s[2] < T(0.5) ? T(1.0) : T(-1.0);
         slope[1] = S * z * std::sqrt(T(1.0) + square(slope[0]));
+
         return slope;
     }
 
     virtual T pdf(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     v,
+        const Vector<T, 3>&     h,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         return MDF<T>::pdf_visible_normals(*this, v, h, alpha_x, alpha_y);
     }
@@ -758,9 +755,9 @@ class WardMDF
     WardMDF() {}
 
     virtual T D(
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     h,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         const T cos_theta = MDF<T>::cos_theta(h);
 
@@ -778,20 +775,20 @@ class WardMDF
     }
 
     virtual T G(
-        const Vector<T, 3>&  incoming,
-        const Vector<T, 3>&  outgoing,
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     incoming,
+        const Vector<T, 3>&     outgoing,
+        const Vector<T, 3>&     h,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         return std::min(G1(incoming, h, alpha_x, alpha_y), G1(outgoing, h, alpha_x, alpha_y));
     }
 
     virtual T G1(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  m,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     v,
+        const Vector<T, 3>&     m,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         if (v.y <= T(0.0))
             return T(0.0);
@@ -807,10 +804,10 @@ class WardMDF
     }
 
     virtual Vector<T, 3> sample(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  s,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     v,
+        const Vector<T, 3>&     s,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         const T tan_alpha_2 = square(alpha_x) * (-std::log(T(1.0) - s[0]));
         const T cos_alpha = T(1.0) / std::sqrt(T(1.0) + tan_alpha_2);
@@ -821,10 +818,10 @@ class WardMDF
     }
 
     virtual T pdf(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     v,
+        const Vector<T, 3>&     h,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         return D(h, alpha_x, alpha_y);
     }
@@ -844,9 +841,9 @@ class BerryMDF
     BerryMDF() {}
 
     virtual T D(
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     h,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         const T alpha_x_2 = square(alpha_x);
         const T cos_theta_2 = square(MDF<T>::cos_theta(h));
@@ -856,11 +853,11 @@ class BerryMDF
     }
 
     virtual T G(
-        const Vector<T, 3>&  incoming,
-        const Vector<T, 3>&  outgoing,
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     incoming,
+        const Vector<T, 3>&     outgoing,
+        const Vector<T, 3>&     h,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         return
             G1(outgoing, h, alpha_x, alpha_y) *
@@ -868,10 +865,10 @@ class BerryMDF
     }
 
     virtual T G1(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  m,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     v,
+        const Vector<T, 3>&     m,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         if (dot(v, m) * v.y <= T(0.0))
             return T(0.0);
@@ -890,10 +887,10 @@ class BerryMDF
     }
 
     virtual Vector<T, 3> sample(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  s,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     v,
+        const Vector<T, 3>&     s,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         const T alpha_x_2 = square(alpha_x);
         const T a = T(1.0) - std::pow(alpha_x_2, T(1.0) - s[0]);
@@ -906,10 +903,10 @@ class BerryMDF
     }
 
     virtual T pdf(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
+        const Vector<T, 3>&     v,
+        const Vector<T, 3>&     h,
+        const T                 alpha_x,
+        const T                 alpha_y) const APPLESEED_OVERRIDE
     {
         return D(h, alpha_x, alpha_y) * MDF<T>::cos_theta(h);
     }

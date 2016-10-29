@@ -374,7 +374,7 @@ namespace
             }
 
             const float rcp_cos_theta = 1.0f / outgoing.y;
-            const float cos_gamma = dot(outgoing, m_sun_dir);
+            const float cos_gamma = clamp(dot(outgoing, m_sun_dir), -1.0f, 1.0f);
             const float gamma = acos(cos_gamma);
 
             Color3f xyY;

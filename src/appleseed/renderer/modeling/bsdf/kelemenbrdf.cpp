@@ -367,7 +367,7 @@ namespace
             // Compute the halfway vector.
             const Vector3f H = normalize(L + V);
             const float dot_HN = dot(H, N);
-            const float dot_HL = dot(H, L);
+            const float dot_HL = min(dot(H, L), 1.0f);
 
             // Compute the specular albedos for the outgoing and incoming angles.
             Spectrum specular_albedo_V, specular_albedo_L;
@@ -509,7 +509,7 @@ namespace
             const float         dot_HN,
             Spectrum&           fr_spec)
         {
-            assert(dot_HL >= 0.0f);
+            assert(dot_HL >  0.0f);
             assert(dot_HN >= 0.0f);
 
             fresnel_reflectance_dielectric_schlick(fr_spec, rs, dot_HL);

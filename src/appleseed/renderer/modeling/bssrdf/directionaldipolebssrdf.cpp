@@ -203,6 +203,11 @@ namespace
             // Precompute some stuff. Same as for the Better Dipole model.
             const Vector3f xoxi = xo - xi;
             const float r2 = square_norm(xoxi);                                         // square distance between points of incidence and emergence
+            if (r2 == 0.0f)
+            {
+                value.set(0.0f);
+                return;
+            }
             const float rcp_eta = 1.0f / values->m_eta;
             const float cphi_eta = 0.25f * (1.0f - fresnel_first_moment(rcp_eta));
             const float cphi_rcp_eta = 0.25f * (1.0f - fresnel_first_moment(values->m_eta));
@@ -261,7 +266,7 @@ namespace
 
                 // Compute distance to virtual source.
                 const float dv = norm(xoxv);                                            // distance to virtual ray source
-                assert(feq(dv, sqrt(r2 + square(2.0f * A * de)), 1.0e-6f));             // true because we computed xv using ni_star, not ni
+                assert(feq(dv, sqrt(r2 + square(2.0f * A * de)), 1.0e-5f));             // true because we computed xv using ni_star, not ni
 
                 // Evaluate the BSSRDF.
                 const float sdr = sd_prime(cphi_eta, ce_eta, D, sigma_tr, dot_wr_xoxi, dot_wr_no, dot_xoxi_no, dr);

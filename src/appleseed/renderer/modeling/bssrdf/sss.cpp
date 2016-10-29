@@ -337,7 +337,10 @@ float normalized_diffusion_pdf(
     const float     r,
     const float     d)
 {
-    return r * TwoPi<float>() * normalized_diffusion_profile(r, d);
+    return
+        abs(r) < 1.0e-6f
+            ? 1.0f / (2.0f * d)
+            : r * TwoPi<float>() * normalized_diffusion_profile(r, d);
 }
 
 float normalized_diffusion_pdf(
