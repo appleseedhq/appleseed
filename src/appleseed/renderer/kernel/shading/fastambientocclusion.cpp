@@ -182,7 +182,7 @@ void AOVoxelTree::build(
     BuilderType&    builder)
 {
     // The voxel tree is built using the scene geometry at the middle of the shutter interval.
-    const double time = scene.get_camera()->get_shutter_middle_time();
+    const double time = scene.get_active_camera()->get_shutter_middle_time();
 
     // Loop over the assembly instances of the scene.
     for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)

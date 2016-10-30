@@ -50,6 +50,7 @@ namespace renderer  { class EDF; }
 namespace renderer  { class Material; }
 namespace renderer  { class Object; }
 namespace renderer  { class ObjectInstance; }
+namespace renderer  { class Project; }
 namespace renderer  { class SurfaceShader; }
 namespace renderer  { class TraceContext; }
 
@@ -79,7 +80,7 @@ class APPLESEED_DLLSYMBOL ScenePicker
         const EDF*                      m_edf;
     };
 
-    explicit ScenePicker(const TraceContext& trace_context);
+    explicit ScenePicker(const Project& project);
 
     ~ScenePicker();
 

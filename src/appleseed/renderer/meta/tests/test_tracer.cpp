@@ -40,8 +40,10 @@
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
+#include "renderer/modeling/camera/pinholecamera.h"
 #include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/entity/onframebeginrecorder.h"
+#include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/material/genericmaterial.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/triangle.h"
@@ -101,6 +103,20 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         {
             m_project->set_scene(SceneFactory::create());
             m_scene = m_project->get_scene();
+            m_scene->cameras().insert(
+                PinholeCameraFactory().create(
+                    "camera",
+                    ParamArray()
+                        .insert("film_width", "0.025")
+                        .insert("film_height", "0.025")
+                        .insert("focal_length", "0.035")));
+
+            m_project->set_frame(
+                FrameFactory::create(
+                    "frame",
+                    ParamArray()
+                        .insert("resolution", "512 512")
+                        .insert("camera", "camera")));
 
             m_scene->assemblies().insert(
                 AssemblyFactory().create("assembly", ParamArray()));

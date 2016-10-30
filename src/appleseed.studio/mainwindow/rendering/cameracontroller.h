@@ -42,7 +42,7 @@
 #include <QObject>
 
 // Forward declarations.
-namespace renderer  { class Scene; }
+namespace renderer  { class Project; }
 class QEvent;
 class QKeyEvent;
 class QMouseEvent;
@@ -60,7 +60,7 @@ class CameraController
     // Constructor.
     CameraController(
         QWidget*            render_widget,
-        renderer::Scene*    scene);
+        renderer::Project&  project);
 
     // Destructor.
     ~CameraController();
@@ -72,6 +72,7 @@ class CameraController
 
   public slots:
     void slot_entity_picked(renderer::ScenePicker::PickingResult result);
+    void slot_frame_modified();
 
   signals:
     void signal_camera_change_begin();
@@ -82,11 +83,11 @@ class CameraController
     typedef foundation::CameraController<double> ControllerType;
 
     QWidget*                m_render_widget;
-    renderer::Scene*        m_scene;
+    renderer::Project&      m_project;
     ControllerType          m_controller;
     foundation::Vector3d    m_pivot;
 
-    void configure_controller(const renderer::Scene* scene);
+    void configure_controller();
 
     virtual bool eventFilter(QObject* object, QEvent* event) APPLESEED_OVERRIDE;
 

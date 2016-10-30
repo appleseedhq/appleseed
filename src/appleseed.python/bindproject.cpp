@@ -293,7 +293,10 @@ void bind_project()
         .def("set_frame", &Project::set_frame)
         .def("get_frame", &Project::get_frame, bpy::return_value_policy<bpy::reference_existing_object>())
 
+        .def("get_display", &Project::get_display, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("set_display", &Project::set_display)
+
+        .def("get_active_camera", &Project::get_uncached_active_camera, bpy::return_value_policy<bpy::reference_existing_object>())
 
         .def("configurations", project_get_configs, bpy::return_value_policy<bpy::reference_existing_object>())
 
