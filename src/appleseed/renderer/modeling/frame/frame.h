@@ -81,7 +81,7 @@ class APPLESEED_DLLSYMBOL Frame
     // Print frame settings to the renderer's global logger.
     void print_settings();
 
-    // Return the camera name.
+    // Return the name of the active camera.
     const char* get_camera_name() const;
 
     // Access the main underlying image.

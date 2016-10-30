@@ -120,7 +120,7 @@ void Scene::release()
     delete this;
 }
 
-Camera* Scene::get_camera() const
+Camera* Scene::get_active_camera() const
 {
     return m_camera;
 }
@@ -319,7 +319,7 @@ bool Scene::on_frame_begin(
     if (!Entity::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
-    m_camera = project.get_uncached_camera();
+    m_camera = project.get_uncached_active_camera();
 
     // Fail if we don't have a camera.
     if (m_camera == 0)

@@ -131,7 +131,7 @@ RendererServices::RendererServices(
 void RendererServices::initialize(TextureStore& texture_store)
 {
     m_texture_store = &texture_store;
-    m_camera = m_project.get_uncached_camera();
+    m_camera = m_project.get_uncached_active_camera();
 
     if (m_camera)
     {

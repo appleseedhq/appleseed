@@ -3234,7 +3234,7 @@ void ProjectFileReader::validate_project(
     // Make sure the project contains a scene.
     if (project.get_scene())
     {
-        // Make sure the scene contains at least a camera.
+        // Make sure the scene contains at least one camera.
         if (project.get_scene()->cameras().empty())
         {
             RENDERER_LOG_ERROR("the scene does not define any camera.");

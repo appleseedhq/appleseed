@@ -91,7 +91,7 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
     SamplingContext::RNGType rng;
     SamplingContext sampling_context(rng, SamplingContext::QMCMode);
 
-    const Camera* camera = impl->m_project.get_uncached_camera();
+    const Camera* camera = impl->m_project.get_uncached_active_camera();
     ShadingRay ray;
     ShadingPoint shading_point;
     PickingResult result;

@@ -113,7 +113,7 @@ class APPLESEED_DLLSYMBOL Project
     // Access the camera specified in the frame as active.
     // Return 0 if the scene does not contain cameras or if
     // no cameras are specified in the frame.
-    Camera* get_uncached_camera() const;
+    Camera* get_uncached_active_camera() const;
 
     // Add a render layer rule.
     void add_render_layer_rule(foundation::auto_release_ptr<RenderLayerRule> rule);

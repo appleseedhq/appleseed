@@ -79,7 +79,7 @@ Transformd CameraController::get_transform() const
 
 void CameraController::update_camera_transform()
 {
-    if (Camera* camera = m_project.get_uncached_camera())
+    if (Camera* camera = m_project.get_uncached_active_camera())
     {
         // Moving the camera kills camera motion blur.
         camera->transform_sequence().clear();
@@ -91,7 +91,7 @@ void CameraController::update_camera_transform()
 
 void CameraController::save_camera_target()
 {
-    if (Camera* camera = m_project.get_uncached_camera())
+    if (Camera* camera = m_project.get_uncached_active_camera())
         camera->get_parameters().insert("controller_target", m_controller.get_target());
 }
 
@@ -144,7 +144,7 @@ bool CameraController::eventFilter(QObject* object, QEvent* event)
 
 void CameraController::configure_controller()
 {
-    Camera* camera = m_project.get_uncached_camera();
+    Camera* camera = m_project.get_uncached_active_camera();
 
     if (!camera)
         return;

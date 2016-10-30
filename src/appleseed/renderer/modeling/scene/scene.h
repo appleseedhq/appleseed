@@ -75,9 +75,9 @@ class APPLESEED_DLLSYMBOL Scene
     // Delete this instance.
     virtual void release() APPLESEED_OVERRIDE;
 
-    // Access the camera.
+    // Access the active camera.
     // Return 0 if the camera does not exist.
-    Camera* get_camera() const;
+    Camera* get_active_camera() const;
 
     // Access the cameras.
     CameraContainer& cameras() const;
@@ -127,8 +127,8 @@ class APPLESEED_DLLSYMBOL Scene
 
     // This method is called once after rendering each frame (only if on_frame_begin() was called).
     virtual void on_frame_end(
-        const Project&                  project,
-        const BaseGroup*                parent) APPLESEED_OVERRIDE;
+        const Project&              project,
+        const BaseGroup*            parent) APPLESEED_OVERRIDE;
 
     struct RenderData
     {

@@ -74,7 +74,7 @@ TEST_SUITE(Renderer_Modeling_Camera_PinholeCamera)
         success = project->get_scene()->on_frame_begin(project.ref(), 0, recorder);
         ASSERT_TRUE(success);
 
-        const Camera* camera = project->get_scene()->get_camera();
+        const Camera* camera = project->get_scene()->get_active_camera();
 
         Vector2d projected;
         success = camera->project_point(0.0, Vector3d(0.0, 0.0, -1.0), projected);
