@@ -273,7 +273,7 @@ namespace
             {
                 const float u = fit<size_t, float>(i, 0, resolution_u - 1, 0.0f, 1.0f);
 
-                mesh.push_tex_coords(GVector2(u, v));
+                mesh.push_tex_coords(GVector2(u, 1.0f - v));
 
                 const GVector3 p = surface.evaluate(u, v);
                 mesh.push_vertex(transform.point_to_parent(p));
