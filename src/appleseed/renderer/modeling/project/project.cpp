@@ -194,13 +194,13 @@ Display* Project::get_display() const
     return impl->m_display.get();
 }
 
-Camera*Project::get_uncached_active_camera() const
+Camera* Project::get_uncached_active_camera() const
 {
     if (const Scene* scene = get_scene())
     {
         if (const Frame* frame = get_frame())
         {
-            if (const char* camera_name = frame->get_camera_name())
+            if (const char* camera_name = frame->get_active_camera_name())
                 return scene->cameras().get_by_name(camera_name);
         }
     }
