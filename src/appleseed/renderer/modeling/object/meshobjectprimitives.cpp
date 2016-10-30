@@ -57,7 +57,6 @@ namespace
     class ParametricSurfaceBase
     {
       public:
-
         const Transformf& transform() const
         {
             return Transformf::identity();
@@ -118,7 +117,7 @@ namespace
             GVector3 dpdu = evaluate(u, v);
             const float dpdu_norm = norm(dpdu);
 
-            // Return an arbitrary tangent at center of the disk.
+            // Return an arbitrary tangent at the center of the disk.
             if (dpdu_norm == 0.0f)
                 return GVector3(-1.0f, 0.0f, 0.0f);
 
@@ -273,16 +272,16 @@ namespace
             {
                 const float u = fit<size_t, float>(i, 0, resolution_u - 1, 0.0f, 1.0f);
 
-                mesh.push_tex_coords(GVector2(u, 1.0f - v));
-
                 const GVector3 p = surface.evaluate(u, v);
                 mesh.push_vertex(transform.point_to_parent(p));
 
-                GVector3 dpdu = surface.evaluate_du(u, v);
-                mesh.push_vertex_tangent(transform.vector_to_parent(dpdu));
-
                 const GVector3 n = surface.evaluate_normal(u, v);
                 mesh.push_vertex_normal(transform.normal_to_parent(n));
+
+                const GVector3 dpdu = surface.evaluate_du(u, v);
+                mesh.push_vertex_tangent(transform.vector_to_parent(dpdu));
+
+                mesh.push_tex_coords(GVector2(u, 1.0f - v));
             }
         }
     }
@@ -298,6 +297,7 @@ namespace
         const size_t    resolution_v)
     {
         mesh.reserve_triangles(2 * (resolution_u - 1) * (resolution_v - 1));
+
         for (size_t j = 0, je = resolution_v - 1; j < je; ++j)
         {
             for (size_t i = 0, ie = resolution_u - 1; i < ie; ++i)
@@ -307,10 +307,8 @@ namespace
                 const size_t v2 = convert_to_index(resolution_u, i + 1, j + 1);
                 const size_t v3 = convert_to_index(resolution_u, i    , j + 1);
 
-                mesh.push_triangle(
-                    Triangle(v3, v1, v0, v3, v1, v0, v3, v1, v0, 0));
-                mesh.push_triangle(
-                    Triangle(v3, v2, v1, v3, v2, v1, v3, v2, v1, 0));
+                mesh.push_triangle(Triangle(v3, v1, v0, v3, v1, v0, v3, v1, v0, 0));
+                mesh.push_triangle(Triangle(v3, v2, v1, v3, v2, v1, v3, v2, v1, 0));
             }
         }
     }
@@ -390,7 +388,7 @@ auto_release_ptr<MeshObject> create_primitive_mesh(const char* name, const Param
     }
     else
     {
-        RENDERER_LOG_ERROR("unknown primitive type.");
+        RENDERER_LOG_ERROR("unknown primitive type: %s", primitive_type);
         return auto_release_ptr<MeshObject>();
     }
 
