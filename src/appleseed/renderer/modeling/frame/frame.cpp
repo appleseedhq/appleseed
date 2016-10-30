@@ -171,7 +171,7 @@ void Frame::print_settings()
         "  clamping         %s\n"
         "  gamma correction %f\n"
         "  crop window      (%s, %s)-(%s, %s)",
-        get_camera_name(),
+        get_active_camera_name(),
         pretty_uint(impl->m_frame_width).c_str(),
         pretty_uint(impl->m_frame_height).c_str(),
         pretty_uint(impl->m_tile_width).c_str(),
@@ -189,7 +189,7 @@ void Frame::print_settings()
         pretty_uint(impl->m_crop_window.max[1]).c_str());
 }
 
-const char* Frame::get_camera_name() const
+const char* Frame::get_active_camera_name() const
 {
     if (m_params.strings().exist("camera"))
         return m_params.strings().get("camera");
