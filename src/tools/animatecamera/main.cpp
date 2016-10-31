@@ -407,7 +407,7 @@ namespace
                 }
 
                 // Set the camera's transform sequence.
-                Camera* camera = project->get_scene()->get_camera();
+                Camera* camera = project->get_uncached_active_camera();
                 camera->transform_sequence().clear();
                 camera->transform_sequence().set_transform(0.0, animation_path[i]);
                 if (i + 1 < animation_path.size())
@@ -495,7 +495,7 @@ namespace
                         Matrix4d::make_lookat(position, center, Up)));
 
                 // Set the camera's transform sequence.
-                Camera* camera = project->get_scene()->get_camera();
+                Camera* camera = project->get_uncached_active_camera();
                 camera->transform_sequence().clear();
                 camera->transform_sequence().set_transform(0.0, previous_transform);
                 camera->transform_sequence().set_transform(1.0, new_transform);

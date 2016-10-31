@@ -414,7 +414,7 @@ void RenderingManager::slot_camera_change_begin()
         m_frozen_display_func.reset(
             new FrozenDisplayFunc(
                 get_sampling_context_mode(m_params),
-                *m_project->get_scene()->get_camera(),
+                *m_project->get_uncached_active_camera(),
                 *m_project->get_frame(),
                 *m_tile_callback_factory.get(),
                 m_frozen_display_abort_switch));

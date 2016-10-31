@@ -32,6 +32,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/attributeeditor.h"
+#include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityeditor.h"
 #include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/projectbuilder.h"
@@ -80,11 +81,15 @@ void FrameItem::slot_edit(AttributeEditor* attribute_editor)
             m_frame->get_name(),
             FrameFactory::get_input_metadata()));
 
+    const Scene& scene = *m_editor_context.m_project.get_scene();
+    std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
+        new EntityBrowser<Scene>(scene));
+
     if (attribute_editor)
     {
         attribute_editor->edit(
             form_factory,
-            auto_ptr<EntityEditor::IEntityBrowser>(0),
+            entity_browser,
             auto_ptr<CustomEntityUI>(),
             m_frame->get_parameters(),
             this,
@@ -97,7 +102,7 @@ void FrameItem::slot_edit(AttributeEditor* attribute_editor)
             "Edit Frame",
             m_editor_context.m_project,
             form_factory,
-            auto_ptr<EntityEditor::IEntityBrowser>(0),
+            entity_browser,
             m_frame->get_parameters(),
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)),

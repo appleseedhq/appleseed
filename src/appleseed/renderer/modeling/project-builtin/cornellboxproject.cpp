@@ -1012,7 +1012,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 * Matrix4d::make_rotation_y(Pi<double>())));
 
         // Attach the camera to the scene.
-        scene->set_camera(camera);
+        scene->cameras().insert(camera);
     }
 
     //
@@ -1022,7 +1022,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
     {
         // Create a frame.
         ParamArray params;
-        params.insert("camera", scene->get_camera()->get_name());
+        params.insert("camera", "camera");
         params.insert("resolution", "512 512");
         params.insert("color_space", "srgb");
         auto_release_ptr<Frame> frame(FrameFactory::create("beauty", params));

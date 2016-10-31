@@ -75,7 +75,7 @@ auto_release_ptr<Project> DefaultProjectFactory::create()
     scene->assemblies().insert(assembly);
 
     // Create a pinhole camera and attach it to the scene.
-    scene->set_camera(
+    scene->cameras().insert(
         PinholeCameraFactory().create(
             "camera",
             ParamArray()
@@ -87,7 +87,7 @@ auto_release_ptr<Project> DefaultProjectFactory::create()
         FrameFactory::create(
             "beauty",
             ParamArray()
-                .insert("camera", scene->get_camera()->get_name())
+                .insert("camera", "camera")
                 .insert("resolution", "1024 576")));
 
     // Attach the scene to the project.

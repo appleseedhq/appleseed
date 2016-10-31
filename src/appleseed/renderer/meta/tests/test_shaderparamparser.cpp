@@ -72,6 +72,30 @@ TEST_SUITE(Renderer_Modeling_ShaderParamParser)
         EXPECT_EQ("test_string", parser.parse_string_value());
     }
 
+    TEST_CASE(ShaderParamParserEmptyString)
+    {
+        {
+            ShaderParamParser parser("string");
+            EXPECT_EQ("", parser.parse_string_value());
+        }
+
+        {
+            ShaderParamParser parser("string ");
+            EXPECT_EQ("", parser.parse_string_value());
+        }
+
+        {
+            ShaderParamParser parser("string      ");
+            EXPECT_EQ("", parser.parse_string_value());
+        }
+    }
+
+    TEST_CASE(ShaderParamParserStringWithSpaces)
+    {
+        ShaderParamParser parser("string c:\\Some Windows Filename.tiff");
+        EXPECT_EQ("c:\\Some Windows Filename.tiff", parser.parse_string_value());
+    }
+
     TEST_CASE(ShaderParamParserFloatArray)
     {
         ShaderParamParser parser("float[] 1.0 2.0 3.0 4.0 5.0 6.0 7.0");
@@ -148,15 +172,6 @@ TEST_SUITE(Renderer_Modeling_ShaderParamParser)
             EXPECT_EXCEPTION(ExceptionOSLParamParseError,
             {
                 parser.parse_one_value<float>();
-            });
-        }
-
-        {
-            ShaderParamParser parser("string a b");
-
-            EXPECT_EXCEPTION(ExceptionOSLParamParseError,
-            {
-                parser.parse_string_value();
             });
         }
     }

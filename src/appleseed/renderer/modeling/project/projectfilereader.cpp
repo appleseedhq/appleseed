@@ -2321,14 +2321,7 @@ namespace
                     auto_release_ptr<Camera> camera =
                         static_cast<CameraElementHandler*>(handler)->get_entity();
                     if (camera.get())
-                    {
-                        if (m_scene->get_camera())
-                        {
-                            RENDERER_LOG_WARNING("support for multiple cameras is not implemented yet.");
-                            m_context.get_event_counters().signal_warning();
-                        }
-                        m_scene->set_camera(camera);
-                    }
+                        m_scene->cameras().insert(camera);
                 }
                 break;
 
@@ -3241,8 +3234,8 @@ void ProjectFileReader::validate_project(
     // Make sure the project contains a scene.
     if (project.get_scene())
     {
-        // Make sure the scene contains a camera.
-        if (project.get_scene()->get_camera() == 0)
+        // Make sure the scene contains at least one camera.
+        if (project.get_scene()->cameras().empty())
         {
             RENDERER_LOG_ERROR("the scene does not define any camera.");
             event_counters.signal_error();

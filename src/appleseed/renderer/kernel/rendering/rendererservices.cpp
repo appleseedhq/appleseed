@@ -131,17 +131,20 @@ RendererServices::RendererServices(
 void RendererServices::initialize(TextureStore& texture_store)
 {
     m_texture_store = &texture_store;
-    m_camera = m_project.get_scene()->get_camera();
+    m_camera = m_project.get_uncached_active_camera();
 
-    m_cam_projection_str =
-        strcmp(m_camera->get_model(), "pinhole_camera") == 0 ? g_perspective_ustr :
-        strcmp(m_camera->get_model(), "thinlens_camera") == 0 ? g_perspective_ustr :
-        strcmp(m_camera->get_model(), "spherical_camera") == 0 ? g_spherical_ustr :
-        g_unknown_proj_ustr;
+    if (m_camera)
+    {
+        m_cam_projection_str =
+            strcmp(m_camera->get_model(), "pinhole_camera") == 0 ? g_perspective_ustr :
+            strcmp(m_camera->get_model(), "thinlens_camera") == 0 ? g_perspective_ustr :
+            strcmp(m_camera->get_model(), "spherical_camera") == 0 ? g_spherical_ustr :
+            g_unknown_proj_ustr;
 
-    m_shutter[0] = static_cast<float>(m_camera->get_shutter_open_time());
-    m_shutter[1] = static_cast<float>(m_camera->get_shutter_close_time());
-    m_shutter_interval = static_cast<float>(m_camera->get_shutter_open_time_interval());
+        m_shutter[0] = static_cast<float>(m_camera->get_shutter_open_time());
+        m_shutter[1] = static_cast<float>(m_camera->get_shutter_close_time());
+        m_shutter_interval = static_cast<float>(m_camera->get_shutter_open_time_interval());
+    }
 }
 
 OIIO::TextureSystem* RendererServices::texturesys() const

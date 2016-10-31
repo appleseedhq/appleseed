@@ -43,6 +43,7 @@ namespace renderer
 //
 
 ShaderParamParser::ShaderParamParser(const string& s)
+  : m_original_string(s)
 {
     tokenize(s, Blanks, m_tokens);
 
@@ -106,12 +107,9 @@ string ShaderParamParser::parse_string_value()
 {
     assert(param_type() == OSLParamTypeString);
 
-    const string val(*m_tok_it++);
-
-    if (m_tok_it != m_tok_end)
-        throw ExceptionOSLParamParseError();
-
-    return val;
+    // Remove the string prefix and trim whitespace.
+    string val(m_original_string, 6, string::npos);
+    return trim_both(val);
 }
 
 }   // namespace renderer

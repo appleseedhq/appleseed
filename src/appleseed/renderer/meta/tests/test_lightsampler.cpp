@@ -44,7 +44,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_LightSampler)
     TEST_CASE(HasLightsOrEmittingTriangles_GivenEmptyScene_ReturnsFalse)
     {
         auto_release_ptr<Scene> scene(SceneFactory::create());
-        scene->set_camera(PinholeCameraFactory().create("camera", ParamArray()));
+        scene->cameras().insert(PinholeCameraFactory().create("camera", ParamArray()));
         LightSampler light_sampler(scene.ref());
 
         EXPECT_FALSE(light_sampler.has_lights_or_emitting_triangles());
