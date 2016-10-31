@@ -291,11 +291,12 @@ inline Vector<T, 2> sample_disk_uniform(const Vector<T, 2>& s)
         r = a;
         phi = PiOverFour<T>() * (b / a);
     }
-    else
+    else if (b != T(0.0))
     {
         r = b;
         phi = HalfPi<T>() - PiOverFour<T>() * (a / b);
     }
+    else return Vector<T, 2>(0.0);
 
     return Vector<T, 2>(r * std::cos(phi), r * std::sin(phi));
 }
