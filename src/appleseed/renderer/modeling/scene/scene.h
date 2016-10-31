@@ -75,12 +75,12 @@ class APPLESEED_DLLSYMBOL Scene
     // Delete this instance.
     virtual void release() APPLESEED_OVERRIDE;
 
-    // Set the camera.
-    void set_camera(foundation::auto_release_ptr<Camera> camera);
-
-    // Access the camera.
+    // Access the active camera.
     // Return 0 if the camera does not exist.
-    Camera* get_camera() const;
+    Camera* get_active_camera() const;
+
+    // Access the cameras.
+    CameraContainer& cameras() const;
 
     // Set the environment.
     void set_environment(foundation::auto_release_ptr<Environment> environment);
@@ -125,6 +125,11 @@ class APPLESEED_DLLSYMBOL Scene
         OnFrameBeginRecorder&       recorder,
         foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
 
+    // This method is called once after rendering each frame (only if on_frame_begin() was called).
+    virtual void on_frame_end(
+        const Project&              project,
+        const BaseGroup*            parent) APPLESEED_OVERRIDE;
+
     struct RenderData
     {
         GAABB3      m_bbox;
@@ -144,6 +149,7 @@ class APPLESEED_DLLSYMBOL Scene
     struct Impl;
     Impl* impl;
 
+    Camera*     m_camera;
     bool        m_has_render_data;
     RenderData  m_render_data;
 

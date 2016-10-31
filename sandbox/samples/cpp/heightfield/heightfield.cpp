@@ -248,7 +248,7 @@ class ProjectBuilder
             0.0,
             Transformd::from_local_to_parent(Matrix4d(CameraMatrix)));
 
-        scene->set_camera(camera);
+        scene->cameras().insert(camera);
 
         //------------------------------------------------------------------------
         // Frame
@@ -260,7 +260,8 @@ class ProjectBuilder
                 ParamArray()
                     .insert("camera", scene->get_camera()->get_name())
                     .insert("resolution", "1280 720")
-                    .insert("color_space", "srgb")));
+                    .insert("color_space", "srgb")
+                    .insert("camera", "camera")));
 
         project->set_scene(scene);
 

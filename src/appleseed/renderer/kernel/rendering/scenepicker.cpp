@@ -44,6 +44,7 @@
 #include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/material/materialtraits.h"
+#include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/surfaceshader/surfaceshadertraits.h"
@@ -59,22 +60,24 @@ namespace renderer
 
 struct ScenePicker::Impl
 {
+    const Project&      m_project;
     const TraceContext& m_trace_context;
     TextureStore        m_texture_store;
     TextureCache        m_texture_cache;
     Intersector         m_intersector;
 
-    explicit Impl(const TraceContext& trace_context)
-      : m_trace_context(trace_context)
-      , m_texture_store(trace_context.get_scene())
+    explicit Impl(const Project& project)
+      : m_project(project)
+      , m_trace_context(m_project.get_trace_context())
+      , m_texture_store(m_trace_context.get_scene())
       , m_texture_cache(m_texture_store)
-      , m_intersector(trace_context, m_texture_cache)
+      , m_intersector(m_trace_context, m_texture_cache)
     {
     }
 };
 
-ScenePicker::ScenePicker(const TraceContext& trace_context)
-  : impl(new Impl(trace_context))
+ScenePicker::ScenePicker(const Project& project)
+  : impl(new Impl(project))
 {
 }
 
@@ -88,18 +91,22 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
     SamplingContext::RNGType rng;
     SamplingContext sampling_context(rng, SamplingContext::QMCMode);
 
-    const Scene& scene = impl->m_trace_context.get_scene();
-    const Camera* camera = scene.get_camera();
-
+    const Camera* camera = impl->m_project.get_uncached_active_camera();
     ShadingRay ray;
-    camera->spawn_ray(sampling_context, Dual2d(ndc), ray);
-
     ShadingPoint shading_point;
-    impl->m_intersector.trace(ray, shading_point);
-
     PickingResult result;
-    result.m_hit = shading_point.hit();
-    result.m_primitive_type = shading_point.get_primitive_type();
+
+    if (camera)
+    {
+        camera->spawn_ray(sampling_context, Dual2d(ndc), ray);
+
+        impl->m_intersector.trace(ray, shading_point);
+
+        result.m_hit = shading_point.hit();
+        result.m_primitive_type = shading_point.get_primitive_type();
+    }
+    else
+        result.m_hit = false;
 
     if (result.m_hit)
     {

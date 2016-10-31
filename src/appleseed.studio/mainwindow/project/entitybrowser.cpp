@@ -132,6 +132,7 @@ EntityBrowser<Scene>::EntityBrowser(const Scene& scene)
 StringDictionary EntityBrowser<Scene>::get_entities(const string& type) const
 {
     return
+        type == "camera" ? build_entity_dictionary(m_scene.cameras()) :
         type == "environment_edf" ? build_entity_dictionary(m_scene.environment_edfs()) :
         type == "environment_shader" ? build_entity_dictionary(m_scene.environment_shaders()) :
         EntityBrowser<BaseGroup>::get_entities(type);

@@ -137,9 +137,7 @@ void InputBinder::build_scene_symbol_table(
 {
     try
     {
-        if (scene.get_camera())
-            symbols.insert(scene.get_camera()->get_name(), SymbolTable::SymbolCamera);
-
+        insert_entities(symbols, scene.cameras(), SymbolTable::SymbolCamera);
         insert_entities(symbols, scene.colors(), SymbolTable::SymbolColor);
         insert_entities(symbols, scene.textures(), SymbolTable::SymbolTexture);
         insert_entities(symbols, scene.texture_instances(), SymbolTable::SymbolTextureInstance);
@@ -213,13 +211,13 @@ void InputBinder::bind_scene_entities_inputs(
         *scene.get_default_surface_shader());
 
     // Bind camera inputs.
-    if (scene.get_camera())
+    for (each<CameraContainer> i = scene.cameras(); i; ++i)
     {
         bind_scene_entity_inputs(
             scene,
             scene_symbols,
             SymbolTable::symbol_name(SymbolTable::SymbolCamera),
-            *scene.get_camera());
+            *i);
     }
 
     // Bind environment EDFs inputs.

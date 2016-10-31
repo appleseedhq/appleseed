@@ -540,6 +540,7 @@ inline Color<T, 3> hsl_to_linear_rgb(const Color<T, 3>& hsl)
     const T x = c * (T(1.0) - std::abs(mod(hprime, T(2.0)) - T(1.0)));
     switch (truncate<int>(hprime))
     {
+      case 6: // fallthrough
       case 0: linear_rgb[0] += c; linear_rgb[1] += x; break;
       case 1: linear_rgb[0] += x; linear_rgb[1] += c; break;
       case 2: linear_rgb[1] += c; linear_rgb[2] += x; break;

@@ -146,7 +146,7 @@ def build_project():
     camera.transform_sequence().set_transform(0.0, asr.Transformd(mat))
 
     # Bind the camera to the scene.
-    scene.set_camera(camera)
+    scene.cameras().insert(camera)
 
     #------------------------------------------------------------------------
     # Frame
@@ -155,7 +155,8 @@ def build_project():
     # Create a frame and bind it to the project.
     params = { 'camera' : scene.get_camera().get_name(),
                'resolution' : asr.Vector2i(640, 480),
-               'color_space' : 'srgb' }
+               'color_space' : 'srgb',
+               'camera' : 'camera' }
     project.set_frame(asr.Frame("beauty", params))
 
     # Bind the scene to the project.

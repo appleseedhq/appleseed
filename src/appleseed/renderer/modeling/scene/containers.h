@@ -50,6 +50,7 @@ namespace renderer  { class Assembly; }
 namespace renderer  { class AssemblyInstance; }
 namespace renderer  { class BSDF; }
 namespace renderer  { class BSSRDF; }
+namespace renderer  { class Camera; }
 namespace renderer  { class ColorEntity; }
 namespace renderer  { class EDF; }
 namespace renderer  { class EnvironmentEDF; }
@@ -79,6 +80,7 @@ typedef TypedEntityMap<Assembly>                AssemblyContainer;
 typedef TypedEntityMap<AssemblyInstance>        AssemblyInstanceContainer;
 typedef TypedEntityVector<BSDF>                 BSDFContainer;
 typedef TypedEntityVector<BSSRDF>               BSSRDFContainer;
+typedef TypedEntityVector<Camera>               CameraContainer;
 typedef TypedEntityVector<ColorEntity>          ColorContainer;
 typedef TypedEntityVector<EDF>                  EDFContainer;
 typedef TypedEntityVector<EnvironmentEDF>       EnvironmentEDFContainer;

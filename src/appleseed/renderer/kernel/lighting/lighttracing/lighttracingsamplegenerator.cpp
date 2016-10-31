@@ -212,7 +212,7 @@ namespace
             m_safe_scene_diameter = scene_data.m_safe_diameter;
             m_disk_point_prob = 1.0f / (Pi<float>() * square(static_cast<float>(m_scene_radius)));
 
-            const Camera* camera = scene.get_camera();
+            const Camera* camera = scene.get_active_camera();
             m_shutter_open_time = camera->get_shutter_open_time();
             m_shutter_close_time = camera->get_shutter_close_time();
         }
@@ -273,7 +273,7 @@ namespace
                 SampleVector&               samples,
                 const Spectrum&             initial_flux)
               : m_params(params)
-              , m_camera(*scene.get_camera())
+              , m_camera(*scene.get_active_camera())
               , m_frame(frame)
               , m_lighting_conditions(frame.get_lighting_conditions())
               , m_shading_context(shading_context)

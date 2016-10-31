@@ -160,6 +160,7 @@ void Frame::print_settings()
 {
     RENDERER_LOG_INFO(
         "frame settings:\n"
+        "  camera           %s\n"
         "  resolution       %s x %s\n"
         "  tile size        %s x %s\n"
         "  pixel format     %s\n"
@@ -170,6 +171,7 @@ void Frame::print_settings()
         "  clamping         %s\n"
         "  gamma correction %f\n"
         "  crop window      (%s, %s)-(%s, %s)",
+        get_active_camera_name(),
         pretty_uint(impl->m_frame_width).c_str(),
         pretty_uint(impl->m_frame_height).c_str(),
         pretty_uint(impl->m_tile_width).c_str(),
@@ -185,6 +187,14 @@ void Frame::print_settings()
         pretty_uint(impl->m_crop_window.min[1]).c_str(),
         pretty_uint(impl->m_crop_window.max[0]).c_str(),
         pretty_uint(impl->m_crop_window.max[1]).c_str());
+}
+
+const char* Frame::get_active_camera_name() const
+{
+    if (m_params.strings().exist("camera"))
+        return m_params.strings().get("camera");
+
+    return 0;
 }
 
 Image& Frame::image() const
@@ -773,6 +783,15 @@ bool Frame::write_image(
 DictionaryArray FrameFactory::get_input_metadata()
 {
     DictionaryArray metadata;
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "camera")
+            .insert("label", "Camera")
+            .insert("type", "entity")
+            .insert("entity_types",
+                Dictionary().insert("camera", "Camera"))
+            .insert("use", "optional"));
 
     metadata.push_back(
         Dictionary()

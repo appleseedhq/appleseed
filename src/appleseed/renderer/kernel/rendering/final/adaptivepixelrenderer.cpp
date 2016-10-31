@@ -219,12 +219,8 @@ namespace
                     // Create a pixel context that identifies the pixel and sample currently being rendered.
                     const PixelContext pixel_context(pi, sample_position);
 
-                    // Create and initialize a shading result.
-                    // The main output *must* be set by the sample renderer (typically, by the surface shader).
-                    ShadingResult shading_result(aov_count);
-                    shading_result.set_aovs_to_transparent_black_linear_rgba();
-
                     // Render the sample.
+                    ShadingResult shading_result(aov_count);
                     SamplingContext child_sampling_context(sampling_context);
                     m_sample_renderer->render_sample(
                         child_sampling_context,

@@ -43,7 +43,9 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfmix.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
+#include "renderer/modeling/camera/pinholecamera.h"
 #include "renderer/modeling/entity/onframebeginrecorder.h"
+#include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/project/project.h"
@@ -103,6 +105,21 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         project->set_scene(SceneFactory::create());
 
         Scene& scene = *project->get_scene();
+        scene.cameras().insert(
+            PinholeCameraFactory().create(
+                "camera",
+                ParamArray()
+                    .insert("film_width", "0.025")
+                    .insert("film_height", "0.025")
+                    .insert("focal_length", "0.035")));
+
+        project->set_frame(
+            FrameFactory::create(
+                "frame",
+                ParamArray()
+                    .insert("resolution", "512 512")
+                    .insert("camera", "camera")));
+
         TextureStore texture_store(scene);
 
 #ifdef APPLESEED_WITH_OIIO
@@ -165,8 +182,12 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         input_binder.bind(scene);
         assert(input_binder.get_error_count() == 0);
 
+        bool success = project->get_scene()->on_render_begin(project.ref());
+        ASSERT_TRUE(success);
+
         OnFrameBeginRecorder recorder;
-        scene.on_frame_begin(project.ref(), 0, recorder);
+        success = scene.on_frame_begin(project.ref(), 0, recorder);
+        ASSERT_TRUE(success);
 
         TextureCache texture_cache(texture_store);
         InputEvaluator input_evaluator(texture_cache);

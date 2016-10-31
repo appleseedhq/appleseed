@@ -70,7 +70,6 @@ namespace
     //
 
     const OIIO::ustring g_beckmann_str("beckmann");
-    const OIIO::ustring g_blinn_str("blinn");
     const OIIO::ustring g_ggx_str("ggx");
 
     const OIIO::ustring g_standard_dipole_profile_str("standard_dipole");

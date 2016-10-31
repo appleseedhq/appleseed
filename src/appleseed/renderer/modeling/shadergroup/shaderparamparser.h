@@ -84,6 +84,7 @@ class ShaderParamParser
     std::string parse_string_value();
 
   private:
+    std::string                                 m_original_string;
     std::vector<std::string>                    m_tokens;
     OSLParamType                                m_param_type;
     std::vector<std::string>::const_iterator    m_tok_it;

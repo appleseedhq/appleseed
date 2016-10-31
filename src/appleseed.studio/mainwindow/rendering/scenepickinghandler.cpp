@@ -210,7 +210,7 @@ ItemBase* ScenePickingHandler::pick(const QPoint& point)
     const Vector2i pix = m_mouse_tracker.widget_to_pixel(point);
     const Vector2d ndc = m_mouse_tracker.widget_to_ndc(point);
 
-    const ScenePicker scene_picker(m_project.get_trace_context());
+    const ScenePicker scene_picker(m_project);
     const ScenePicker::PickingResult result = scene_picker.pick(ndc);
 
     stringstream sstr;

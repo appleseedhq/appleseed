@@ -33,13 +33,15 @@
 #include "foundation/utility/autoreleaseptr.h"
 
 // Forward declarations.
-namespace renderer      { class MeshObject; }
-namespace renderer      { class ParamArray; }
+namespace renderer  { class MeshObject; }
+namespace renderer  { class ParamArray; }
 
 namespace renderer
 {
 
-foundation::auto_release_ptr<MeshObject> create_primitive_mesh(const char* name, const ParamArray& params);
+foundation::auto_release_ptr<MeshObject> create_primitive_mesh(
+    const char*         name,
+    const ParamArray&   params);
 
 }       // namespace renderer
 
