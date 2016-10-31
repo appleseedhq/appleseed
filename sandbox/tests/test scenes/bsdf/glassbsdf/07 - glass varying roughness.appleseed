@@ -189,8 +189,8 @@
                 <parameter name="width" value="10" />
             </object>
             <object name="torus" model="mesh_object">
-                <parameter name="major_radius" value="0.4" />
-                <parameter name="minor_radius" value="0.15" />
+                <parameter name="major_radius" value="0.55" />
+                <parameter name="minor_radius" value="0.25" />
                 <parameter name="primitive" value="torus" />
             </object>
             <object_instance name="grid_inst" object="grid">
