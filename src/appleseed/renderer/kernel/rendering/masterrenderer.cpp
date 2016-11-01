@@ -116,6 +116,24 @@ MasterRenderer::~MasterRenderer()
 
 bool MasterRenderer::render()
 {
+    if (m_project.get_scene() == 0)
+    {
+        RENDERER_LOG_ERROR("project does not contain a scene.");
+        return false;
+    }
+
+    if (m_project.get_frame() == 0)
+    {
+        RENDERER_LOG_ERROR("project does not contain a frame.");
+        return false;
+    }
+
+    if (m_project.get_uncached_active_camera() == 0)
+    {
+        RENDERER_LOG_ERROR("no active camera in project.");
+        return false;
+    }
+
     try
     {
         return do_render();
@@ -196,9 +214,6 @@ namespace
 
 IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence()
 {
-    assert(m_project.get_scene());
-    assert(m_project.get_frame());
-
     // Construct an abort switch based on the renderer controller.
     RendererControllerAbortSwitch abort_switch(*m_renderer_controller);
 
