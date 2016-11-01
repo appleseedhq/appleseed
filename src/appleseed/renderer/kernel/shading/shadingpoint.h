@@ -703,6 +703,7 @@ inline void ShadingPoint::set_shading_basis(const foundation::Basis3d& basis) co
 
     m_shading_basis = basis;
     m_members |= HasShadingBasis;
+    m_members &= ~HasScreenSpacePartialDerivatives;
 }
 
 inline const foundation::Basis3d& ShadingPoint::get_shading_basis() const
