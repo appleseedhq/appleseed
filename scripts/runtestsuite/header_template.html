@@ -35,6 +35,18 @@
                 });
             }
 
+            function gatherUpdateCommands() {
+                $("ul.commands").empty();
+                $(".result").each(function () {
+                    var result = $(this);
+                    var checkbox = result.find(".update-checkbox");
+                    if (checkbox.is(":checked")) {
+                        var command = result.find(".command").text();
+                        $("ul.commands").append("<li>" + command + "</li>");
+                    }
+                });
+            }
+
             $(document).ready(function () {
                 $("img").error(function () {
                     $(this).width(500);
@@ -75,6 +87,10 @@
                         $(".popup").hide();
                         return false;
                     }
+                });
+
+                $(".result").on("click", ".update-checkbox", function () {
+                    gatherUpdateCommands();
                 });
             });
         </script>
@@ -239,20 +255,29 @@
                 border: solid 1px #282828;
             }
 
-            .result .details td.command
+            .command,
+            ul.commands li
+            {
+                font-family: monospace;
+                font-size: 15px;
+            }
+
+            .command,
+            td.command,
+            ul.commands
             {
                 background-color: #383838;
+            }
+            
+            ul.commands
+            {
+                padding-top: 15px;
+                padding-bottom: 15px;
             }
 
             ul.commands li
             {
                 padding: 8px;
-            }
-
-            .command
-            {
-                font-size: 15px;
-                background-color: #383838;
             }
 
             /* ========================================================================
