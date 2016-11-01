@@ -103,6 +103,8 @@ string ShaderParam::get_value_as_string() const
     {
         if (impl->m_type_desc.aggregate == OSL::TypeDesc::SCALAR)
             ss << "float[] ";
+        else if (impl->m_type_desc.aggregate == OSL::TypeDesc::MATRIX44)
+            ss << "matrix[] ";
         else if (impl->m_type_desc.vecsemantics == OSL::TypeDesc::COLOR)
             ss << "color[] ";
         else if (impl->m_type_desc.vecsemantics == OSL::TypeDesc::POINT)
@@ -297,6 +299,21 @@ auto_release_ptr<ShaderParam> ShaderParam::create_matrix_param(
     auto_release_ptr<ShaderParam> p(new ShaderParam(name));
     p->impl->m_type_desc = OSL::TypeDesc::TypeMatrix;
     memcpy(p->impl->m_float_value, values, sizeof(float) * 16);
+    return p;
+}
+
+auto_release_ptr<ShaderParam> ShaderParam::create_matrix_array_param(
+    const char*         name,
+    std::vector<float>& value)
+{
+    auto_release_ptr<ShaderParam> p(new ShaderParam(name));
+    p->impl->m_type_desc =
+        OSL::TypeDesc(
+            OSL::TypeDesc::FLOAT,
+            OSL::TypeDesc::MATRIX44,
+            OSL::TypeDesc::NOSEMANTICS,
+            static_cast<int>(value.size() / 16));
+    p->impl->m_float_array_value.swap(value);
     return p;
 }
 

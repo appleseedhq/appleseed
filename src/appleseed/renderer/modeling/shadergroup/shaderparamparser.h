@@ -81,6 +81,8 @@ class ShaderParamParser
     void parse_float_array(std::vector<float>& values);
     void parse_float3_array(std::vector<float>& values);
 
+    void parse_matrix_array(std::vector<float>& values);
+
     std::string parse_string_value();
 
   private:
