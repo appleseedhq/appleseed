@@ -12,6 +12,7 @@
                 var height = first.height();
                 $container.height(height);
                 first.css({
+                    "background-color": "#000",
                     "position": "absolute",
                     "z-index": 0
                 });
@@ -19,6 +20,7 @@
                     return $("<div>").css({
                         "position": "absolute",
                         "z-index": 1,
+                        "background-color": "#000",
                         "background-image": "url('" + $(this).attr("src") + "')",
                         "background-position": "left",
                         "width": width / 2,
