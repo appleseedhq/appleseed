@@ -551,7 +551,7 @@ void LightSampler::sample_emitting_triangle(
     light_sample.m_triangle = &emitting_triangle;
 
     // Uniformly sample the surface of the triangle.
-    const Vector3d bary = Vector3d(sample_triangle_uniform(s));
+    const Vector3d bary = sample_triangle_uniform(Vector2d(s));
 
     // Set the barycentric coordinates.
     light_sample.m_bary[0] = bary[0];
