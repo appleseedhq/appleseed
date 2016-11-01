@@ -64,6 +64,8 @@ ShaderParamParser::ShaderParamParser(const string& s)
         m_param_type = OSLParamTypeInt;
     else if (tok == "matrix")
         m_param_type = OSLParamTypeMatrix;
+    else if (tok == "matrix[]")
+        m_param_type = OSLParamTypeMatrixArray;
     else if (tok == "normal")
         m_param_type = OSLParamTypeNormal;
     else if (tok == "normal[]")
@@ -100,6 +102,14 @@ void ShaderParamParser::parse_float3_array(std::vector<float>& values)
     parse_float_array(values);
 
     if (values.size() % 3 != 0)
+        throw ExceptionOSLParamParseError();
+}
+
+void ShaderParamParser::parse_matrix_array(std::vector<float>& values)
+{
+    parse_float_array(values);
+
+    if (values.size() % 16 != 0)
         throw ExceptionOSLParamParseError();
 }
 

@@ -68,6 +68,7 @@ enum OSLParamType
     OSLParamTypeFloatArray,
     OSLParamTypeInt,
     OSLParamTypeMatrix,
+    OSLParamTypeMatrixArray,
     OSLParamTypeNormal,
     OSLParamTypeNormalArray,
     OSLParamTypePoint,
@@ -171,6 +172,11 @@ class APPLESEED_DLLSYMBOL ShaderParam
     static foundation::auto_release_ptr<ShaderParam> create_matrix_param(
         const char*         name,
         const float*        values);
+
+    // Create a matrix array param.
+    static foundation::auto_release_ptr<ShaderParam> create_matrix_array_param(
+        const char*         name,
+        std::vector<float>& value);
 
     // Create a string param.
     static foundation::auto_release_ptr<ShaderParam> create_string_param(

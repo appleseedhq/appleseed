@@ -59,8 +59,8 @@ END_OIIO_INCLUDES
 // Forward declarations.
 namespace renderer  { class Frame; }
 namespace renderer  { class LightSampler; }
+namespace renderer  { class Project; }
 namespace renderer  { class SampleAccumulationBuffer; }
-namespace renderer  { class Scene; }
 namespace renderer  { class TextureStore; }
 namespace renderer  { class TraceContext; }
 
@@ -73,7 +73,7 @@ class LightTracingSampleGeneratorFactory
   public:
     // Constructor.
     LightTracingSampleGeneratorFactory(
-        const Scene&            scene,
+        const Project&          project,
         const Frame&            frame,
         const TraceContext&     trace_context,
         TextureStore&           texture_store,
@@ -98,7 +98,7 @@ class LightTracingSampleGeneratorFactory
     virtual SampleAccumulationBuffer* create_sample_accumulation_buffer() APPLESEED_OVERRIDE;
 
   private:
-    const Scene&                m_scene;
+    const Project&              m_project;
     const Frame&                m_frame;
     const TraceContext&         m_trace_context;
     TextureStore&               m_texture_store;

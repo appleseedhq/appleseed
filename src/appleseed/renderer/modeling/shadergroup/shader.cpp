@@ -123,6 +123,14 @@ struct Shader::Impl
                     }
                     break;
 
+                  case OSLParamTypeMatrixArray:
+                    {
+                        vector<float> values;
+                        parser.parse_matrix_array(values);
+                        m_params.insert(ShaderParam::create_matrix_array_param(i.it().key(), values));
+                    }
+                    break;
+
                   case OSLParamTypeNormal:
                     {
                         float x, y, z;
