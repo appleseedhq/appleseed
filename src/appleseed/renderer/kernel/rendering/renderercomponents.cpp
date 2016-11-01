@@ -283,7 +283,7 @@ bool RendererComponents::create_sample_generator_factory()
     {
         m_sample_generator_factory.reset(
             new LightTracingSampleGeneratorFactory(
-                m_scene,
+                m_project,
                 m_frame,
                 m_trace_context,
                 m_texture_store,

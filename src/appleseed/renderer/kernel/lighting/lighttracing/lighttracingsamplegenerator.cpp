@@ -58,6 +58,7 @@
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
+#include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/visibilityflags.h"
 #include "renderer/utility/settingsparsing.h"
@@ -156,7 +157,7 @@ namespace
         };
 
         LightTracingSampleGenerator(
-            const Scene&                scene,
+            const Project&              project,
             const Frame&                frame,
             const TraceContext&         trace_context,
             TextureStore&               texture_store,
@@ -172,7 +173,7 @@ namespace
             const ParamArray&           params)
           : SampleGeneratorBase(generator_index, generator_count)
           , m_params(params)
-          , m_scene(scene)
+          , m_scene(*project.get_scene())
           , m_frame(frame)
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
@@ -212,7 +213,8 @@ namespace
             m_safe_scene_diameter = scene_data.m_safe_diameter;
             m_disk_point_prob = 1.0 / (Pi<double>() * m_scene_radius * m_scene_radius);
 
-            const Camera* camera = scene.get_active_camera();
+            const Camera* camera = project.get_uncached_active_camera();
+
             m_shutter_open_time = camera->get_shutter_open_time();
             m_shutter_close_time = camera->get_shutter_close_time();
         }
@@ -859,7 +861,7 @@ namespace
 //
 
 LightTracingSampleGeneratorFactory::LightTracingSampleGeneratorFactory(
-    const Scene&            scene,
+    const Project&          project,
     const Frame&            frame,
     const TraceContext&     trace_context,
     TextureStore&           texture_store,
@@ -871,7 +873,7 @@ LightTracingSampleGeneratorFactory::LightTracingSampleGeneratorFactory(
     OSL::ShadingSystem&     shading_system,
 #endif
     const ParamArray&       params)
-  : m_scene(scene)
+  : m_project(project)
   , m_frame(frame)
   , m_trace_context(trace_context)
   , m_texture_store(texture_store)
@@ -898,7 +900,7 @@ ISampleGenerator* LightTracingSampleGeneratorFactory::create(
 {
     return
         new LightTracingSampleGenerator(
-            m_scene,
+            m_project,
             m_frame,
             m_trace_context,
             m_texture_store,
