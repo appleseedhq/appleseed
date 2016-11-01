@@ -101,9 +101,6 @@ namespace
             const bool          cosine_mult,
             BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
-            // No reflection below the shading surface.
-            const Vector3f& n = sample.m_shading_normal;
-
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);
             const Vector2f s = sampling_context.next2<Vector2f>();
@@ -116,6 +113,9 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
             if (values->m_roughness != 0.0f)
             {
+                const Vector3f& n = sample.m_shading_basis.get_normal();
+
+                // No reflection below the shading surface.
                 const float cos_on = dot(sample.m_outgoing.get_value(), n);
                 if (cos_on < 0.0f)
                     return;

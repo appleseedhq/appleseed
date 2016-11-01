@@ -86,7 +86,7 @@ namespace
             BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
             // No reflection below the shading surface.
-            const Vector3f& shading_normal = sample.m_shading_normal;
+            const Vector3f& shading_normal = sample.m_shading_basis.get_normal();
             const float cos_on = dot(sample.m_outgoing.get_value(), shading_normal);
             if (cos_on < 0.0f)
                 return;

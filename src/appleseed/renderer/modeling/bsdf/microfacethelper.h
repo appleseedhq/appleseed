@@ -224,8 +224,7 @@ class MicrofacetBRDFHelper
         const T cos_oh = foundation::dot(sample.m_outgoing.get_value(), h);
 
         // No reflection below the shading surface.
-        const VectorType& n = sample.m_shading_normal;
-        const T cos_in = foundation::dot(incoming, n);
+        const T cos_in = foundation::dot(incoming, sample.m_shading_basis.get_normal());
         if (cos_in <= T(0.0))
             return;
 
@@ -239,7 +238,7 @@ class MicrofacetBRDFHelper
                 g_alpha_x,
                 g_alpha_y);
 
-        f(sample.m_outgoing.get_value(), h, sample.m_shading_normal, sample.m_value);
+        f(sample.m_outgoing.get_value(), h, sample.m_shading_basis.get_normal(), sample.m_value);
         sample.m_value *= static_cast<float>(D * G / (T(4.0) * cos_on * cos_in));
         sample.m_probability = mdf.pdf(wo, m, alpha_x, alpha_y) / (T(4.0) * cos_oh);
         sample.m_mode = ScatteringMode::Glossy;

@@ -222,7 +222,7 @@ namespace
         {
             // Define aliases to match the notations in the paper.
             const Vector3f& V = sample.m_outgoing.get_value();
-            const Vector3f& N = sample.m_shading_normal;
+            const Vector3f& N = sample.m_shading_basis.get_normal();
 
             // No reflection below the shading surface.
             const float dot_VN = dot(V, N);

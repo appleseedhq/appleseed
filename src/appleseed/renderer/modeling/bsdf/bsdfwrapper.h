@@ -130,14 +130,14 @@ void BSDFWrapper<BSDFImpl>::sample(
         {
             if (adjoint)
             {
-                const float cos_on = std::abs(foundation::dot(sample.m_outgoing.get_value(), sample.m_shading_normal));
+                const float cos_on = std::abs(foundation::dot(sample.m_outgoing.get_value(), sample.m_shading_basis.get_normal()));
                 const float cos_ig = std::abs(foundation::dot(sample.m_incoming.get_value(), sample.m_geometric_normal));
                 const float cos_og = std::abs(foundation::dot(sample.m_outgoing.get_value(), sample.m_geometric_normal));
                 sample.m_value *= cos_on * cos_ig / cos_og;
             }
             else
             {
-                const float cos_in = std::abs(foundation::dot(sample.m_incoming.get_value(), sample.m_shading_normal));
+                const float cos_in = std::abs(foundation::dot(sample.m_incoming.get_value(), sample.m_shading_basis.get_normal()));
                 sample.m_value *= cos_in;
             }
         }

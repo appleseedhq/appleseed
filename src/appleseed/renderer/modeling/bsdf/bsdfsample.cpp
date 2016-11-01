@@ -58,13 +58,14 @@ void BSDFSample::compute_reflected_differentials()
         float ddndx, ddndy;
         compute_normal_derivatives(dndx, dndy, ddndx, ddndy);
 
-        const float dot_on = dot(m_outgoing.get_value(), m_shading_normal);
+        const Vector3f& n = m_shading_basis.get_normal();
+        const float dot_on = dot(m_outgoing.get_value(), n);
 
         m_incoming =
             Dual3f(
                 m_incoming.get_value(),
-                -m_outgoing.get_dx() + 2.0f * Vector3f(dot_on * dndx + ddndx * m_shading_normal),
-                -m_outgoing.get_dy() + 2.0f * Vector3f(dot_on * dndy + ddndy * m_shading_normal));
+                -m_outgoing.get_dx() + 2.0f * Vector3f(dot_on * dndx + ddndx * n),
+                -m_outgoing.get_dy() + 2.0f * Vector3f(dot_on * dndy + ddndy * n));
 
         if (m_probability != BSDF::DiracDelta)
             apply_pdf_differentials_heuristic();
@@ -79,8 +80,9 @@ void BSDFSample::compute_transmitted_differentials(const float eta)
         float ddndx, ddndy;
         compute_normal_derivatives(dndx, dndy, ddndx, ddndy);
 
-        const float dot_on = dot(-m_outgoing.get_value(), m_shading_normal);
-        const float dot_in = dot(m_incoming.get_value(), m_shading_normal);
+        const Vector3f& n = m_shading_basis.get_normal();
+        const float dot_on = dot(-m_outgoing.get_value(), n);
+        const float dot_in = dot(m_incoming.get_value(), n);
         const float mu = eta * dot_on - dot_in;
 
         const float a = eta - (square(eta) * dot_on) / dot_in;
@@ -90,8 +92,8 @@ void BSDFSample::compute_transmitted_differentials(const float eta)
         m_incoming =
             Dual3f(
                 m_incoming.get_value(),
-                eta * m_outgoing.get_dx() - Vector3f(mu * dndx + dmudx * m_shading_normal),
-                eta * m_outgoing.get_dy() - Vector3f(mu * dndy + dmudy * m_shading_normal));
+                eta * m_outgoing.get_dx() - Vector3f(mu * dndx + dmudx * n),
+                eta * m_outgoing.get_dy() - Vector3f(mu * dndy + dmudy * n));
 
         if (m_probability != BSDF::DiracDelta)
             apply_pdf_differentials_heuristic();
@@ -108,11 +110,19 @@ void BSDFSample::compute_normal_derivatives(
     // Physically Based Rendering, first edition, page 513.
     //
 
-    dndx = m_dndu * m_duvdx[0] + m_dndv * m_duvdx[1];
-    dndy = m_dndu * m_duvdy[0] + m_dndv * m_duvdy[1];
+    const Vector3f dndu(m_shading_point.get_dndu(0));
+    const Vector3f dndv(m_shading_point.get_dndv(0));
 
-    ddndx = dot(m_outgoing.get_dx(), m_shading_normal) + dot(m_outgoing.get_value(), dndx);
-    ddndy = dot(m_outgoing.get_dy(), m_shading_normal) + dot(m_outgoing.get_value(), dndy);
+    const Vector2f duvdx(m_shading_point.get_duvdx(0));
+    const Vector2f duvdy(m_shading_point.get_duvdy(0));
+
+    dndx = dndu * duvdx[0] + dndv * duvdx[1];
+    dndy = dndu * duvdy[0] + dndv * duvdy[1];
+
+    const Vector3f& n = m_shading_basis.get_normal();
+
+    ddndx = dot(m_outgoing.get_dx(), n) + dot(m_outgoing.get_value(), dndx);
+    ddndy = dot(m_outgoing.get_dy(), n) + dot(m_outgoing.get_value(), dndy);
 }
 
 void BSDFSample::apply_pdf_differentials_heuristic()

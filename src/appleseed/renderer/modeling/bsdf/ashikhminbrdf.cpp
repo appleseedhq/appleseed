@@ -108,7 +108,7 @@ namespace
             BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
             // No reflection below the shading surface.
-            const float cos_on = dot(sample.m_outgoing.get_value(), sample.m_shading_normal);
+            const float cos_on = dot(sample.m_outgoing.get_value(), sample.m_shading_basis.get_normal());
             if (cos_on < 0.0f)
                 return;
 
@@ -146,7 +146,7 @@ namespace
                 h = normalize(incoming + sample.m_outgoing.get_value());
 
                 // Compute the glossy exponent, needed to evaluate the PDF.
-                const float cos_hn = dot(h, sample.m_shading_normal);
+                const float cos_hn = dot(h, sample.m_shading_basis.get_normal());
                 const float cos_hu = dot(h, sample.m_shading_basis.get_tangent_u());
                 const float cos_hv = dot(h, sample.m_shading_basis.get_tangent_v());
                 const float exp_den = 1.0f - cos_hn * cos_hn;
@@ -196,13 +196,13 @@ namespace
             }
 
             // No reflection below the shading surface.
-            const float cos_in = dot(incoming, sample.m_shading_normal);
+            const float cos_in = dot(incoming, sample.m_shading_basis.get_normal());
             if (cos_in < 0.0f)
                 return;
 
             // Compute dot products.
             const float cos_oh = abs(dot(sample.m_outgoing.get_value(), h));
-            const float cos_hn = dot(h, sample.m_shading_normal);
+            const float cos_hn = dot(h, sample.m_shading_basis.get_normal());
 
             // Evaluate the diffuse component of the BRDF (equation 5).
             const float a = 1.0f - pow5(1.0f - 0.5f * cos_in);

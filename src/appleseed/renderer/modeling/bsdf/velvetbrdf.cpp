@@ -103,7 +103,7 @@ namespace
             const bool          cosine_mult,
             BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
-            const Vector3f& n = sample.m_shading_normal;
+            const Vector3f& n = sample.m_shading_basis.get_normal();
             const float cos_on = min(dot(sample.m_outgoing.get_value(), n), 1.0f);
             if (cos_on < 0.0f)
                 return;

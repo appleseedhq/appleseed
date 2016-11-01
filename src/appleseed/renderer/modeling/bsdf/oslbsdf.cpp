@@ -208,7 +208,7 @@ namespace
                 const float s = sampling_context.next2<float>();
 
                 const size_t closure_index = c->choose_closure(s);
-                sample.m_shading_basis = c->get_closure_shading_basis(closure_index);
+                sample.set_shading_basis(c->get_closure_shading_basis(closure_index));
                 bsdf_from_closure_id(c->get_closure_type(closure_index))
                     .sample(
                         sampling_context,
