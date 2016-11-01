@@ -53,7 +53,7 @@
     </scene>
     <output>
         <frame name="beauty">
-            <parameter name="camera" value="Camera" />
+            <parameter name="camera" value="camera" />
             <parameter name="color_space" value="srgb" />
             <parameter name="resolution" value="960 540" />
         </frame>
