@@ -106,7 +106,7 @@ class FresnelDielectricFun
         foundation::fresnel_reflectance_dielectric(
             f,
             m_eta,
-            clamp(foundation::dot(o, h), T(-1.0), T(1.0)));
+            foundation::clamp(foundation::dot(o, h), T(-1.0), T(1.0)));
 
         value = m_reflectance;
         value *= static_cast<float>(f * m_reflectance_multiplier);
