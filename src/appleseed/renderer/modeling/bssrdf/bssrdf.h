@@ -124,28 +124,28 @@ class APPLESEED_DLLSYMBOL BSSRDF
     virtual void evaluate(
         const void*                 data,
         const ShadingPoint&         outgoing_point,
-        const foundation::Vector3d& outgoing_dir,
+        const foundation::Vector3f& outgoing_dir,
         const ShadingPoint&         incoming_point,
-        const foundation::Vector3d& incoming_dir,
+        const foundation::Vector3f& incoming_dir,
         Spectrum&                   value) const = 0;
 
     // Evaluate the PDF of r * R(r) for a given radius r.
-    virtual double evaluate_pdf(
+    virtual float evaluate_pdf(
         const void*                 data,
         const size_t                channel,
-        const double                radius) const = 0;
+        const float                 radius) const = 0;
 
   protected:
-    double compute_eta(
-        const ShadingPoint&     shading_point,
-        const double            ior) const;
-
-    void make_reflectance_and_mfp_compatible(
-        Spectrum&               reflectance,
-        const Spectrum&         mfp) const;
-
     struct Impl;
     Impl* impl;
+
+    float compute_eta(
+        const ShadingPoint&         shading_point,
+        const float                 ior) const;
+
+    void make_reflectance_and_mfp_compatible(
+        Spectrum&                   reflectance,
+        const Spectrum&             mfp) const;
 };
 
 }       // namespace renderer

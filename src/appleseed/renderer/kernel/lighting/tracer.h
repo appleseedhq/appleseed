@@ -88,23 +88,23 @@ class Tracer
         const ShadingRay::Time&         ray_time,
         const VisibilityFlags::Type     ray_flags,
         const ShadingRay::DepthType     ray_depth,
-        double&                         transmission);
+        float&                          transmission);
     const ShadingPoint& trace(
         const ShadingPoint&             origin,
         const foundation::Vector3d&     direction,
         const VisibilityFlags::Type     ray_flags,
-        double&                         transmission);
+        float&                          transmission);
 
     // Compute the transmission in a given direction. This variant may take
     // advantage of the fact that the intersection with the closest occluder
     // is not required to deliver higher performances.
-    double trace(
+    float trace(
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     direction,
         const ShadingRay::Time&         ray_time,
         const VisibilityFlags::Type     ray_flags,
         const ShadingRay::DepthType     ray_depth);
-    double trace(
+    float trace(
         const ShadingPoint&             origin,
         const foundation::Vector3d&     direction,
         const VisibilityFlags::Type     ray_flags);
@@ -119,23 +119,23 @@ class Tracer
         const ShadingRay::Time&         ray_time,
         const VisibilityFlags::Type     ray_flags,
         const ShadingRay::DepthType     ray_depth,
-        double&                         transmission);
+        float&                          transmission);
     const ShadingPoint& trace_between(
         const ShadingPoint&             origin,
         const foundation::Vector3d&     target,
         const VisibilityFlags::Type     ray_flags,
-        double&                         transmission);
+        float&                          transmission);
 
     // Compute the transmission between two points. This variant may take
     // advantage of the fact that the intersection with the closest occluder
     // is not required to deliver higher performances.
-    double trace_between(
+    float trace_between(
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     target,
         const ShadingRay::Time&         ray_time,
         const VisibilityFlags::Type     ray_flags,
         const ShadingRay::DepthType     ray_depth);
-    double trace_between(
+    float trace_between(
         const ShadingPoint&             origin,
         const foundation::Vector3d&     target,
         const VisibilityFlags::Type     ray_flags);
@@ -147,7 +147,7 @@ class Tracer
     OSLShaderGroupExec&                 m_shadergroup_exec;
 #endif
     const bool                          m_assume_no_alpha_mapping;
-    const double                        m_transmission_threshold;
+    const float                         m_transmission_threshold;
     const size_t                        m_max_iterations;
     ShadingPoint                        m_shading_points[2];
 
@@ -157,7 +157,7 @@ class Tracer
         const ShadingRay::Time&         ray_time,
         const VisibilityFlags::Type     ray_flags,
         const ShadingRay::DepthType     ray_depth,
-        double&                         transmission,
+        float&                          transmission,
         const ShadingPoint*             parent_shading_point);
 
     const ShadingPoint& do_trace_between(
@@ -166,7 +166,7 @@ class Tracer
         const ShadingRay::Time&         ray_time,
         const VisibilityFlags::Type     ray_flags,
         const ShadingRay::DepthType     ray_depth,
-        double&                         transmission,
+        float&                          transmission,
         const ShadingPoint*             parent_shading_point);
 
     void evaluate_alpha(
@@ -186,7 +186,7 @@ inline const ShadingPoint& Tracer::trace(
     const ShadingRay::Time&             ray_time,
     const VisibilityFlags::Type         ray_flags,
     const ShadingRay::DepthType         ray_depth,
-    double&                             transmission)
+    float&                              transmission)
 {
     return
         do_trace(
@@ -203,7 +203,7 @@ inline const ShadingPoint& Tracer::trace(
     const ShadingPoint&                 origin,
     const foundation::Vector3d&         direction,
     const VisibilityFlags::Type         ray_flags,
-    double&                             transmission)
+    float&                              transmission)
 {
     return
         do_trace(
@@ -216,7 +216,7 @@ inline const ShadingPoint& Tracer::trace(
             &origin);
 }
 
-inline double Tracer::trace(
+inline float Tracer::trace(
     const foundation::Vector3d&         origin,
     const foundation::Vector3d&         direction,
     const ShadingRay::Time&             ray_time,
@@ -234,11 +234,11 @@ inline double Tracer::trace(
             ray_flags,
             ray_depth);
 
-        return m_intersector.trace_probe(ray) ? 0.0 : 1.0;
+        return m_intersector.trace_probe(ray) ? 0.0f : 1.0f;
     }
     else
     {
-        double transmission;
+        float transmission;
         const ShadingPoint& shading_point =
             trace(
                 origin,
@@ -248,11 +248,11 @@ inline double Tracer::trace(
                 ray_depth,
                 transmission);
 
-        return shading_point.hit() ? 0.0 : transmission;
+        return shading_point.hit() ? 0.0f : transmission;
     }
 }
 
-inline double Tracer::trace(
+inline float Tracer::trace(
     const ShadingPoint&                 origin,
     const foundation::Vector3d&         direction,
     const VisibilityFlags::Type         ray_flags)
@@ -268,11 +268,11 @@ inline double Tracer::trace(
             ray_flags,
             origin.get_ray().m_depth + 1);
 
-        return m_intersector.trace_probe(ray, &origin) ? 0.0 : 1.0;
+        return m_intersector.trace_probe(ray, &origin) ? 0.0f : 1.0f;
     }
     else
     {
-        double transmission;
+        float transmission;
         const ShadingPoint& shading_point =
             trace(
                 origin,
@@ -280,7 +280,7 @@ inline double Tracer::trace(
                 ray_flags,
                 transmission);
 
-        return shading_point.hit() ? 0.0 : transmission;
+        return shading_point.hit() ? 0.0f : transmission;
     }
 }
 
@@ -290,7 +290,7 @@ inline const ShadingPoint& Tracer::trace_between(
     const ShadingRay::Time&             ray_time,
     const VisibilityFlags::Type         ray_flags,
     const ShadingRay::DepthType         ray_depth,
-    double&                             transmission)
+    float&                              transmission)
 {
     return
         do_trace_between(
@@ -307,7 +307,7 @@ inline const ShadingPoint& Tracer::trace_between(
     const ShadingPoint&                 origin,
     const foundation::Vector3d&         target,
     const VisibilityFlags::Type         ray_flags,
-    double&                             transmission)
+    float&                              transmission)
 {
     return
         do_trace_between(
@@ -320,7 +320,7 @@ inline const ShadingPoint& Tracer::trace_between(
             &origin);
 }
 
-inline double Tracer::trace_between(
+inline float Tracer::trace_between(
     const foundation::Vector3d&         origin,
     const foundation::Vector3d&         target,
     const ShadingRay::Time&             ray_time,
@@ -341,11 +341,11 @@ inline double Tracer::trace_between(
             ray_flags,
             ray_depth);
 
-        return m_intersector.trace_probe(ray) ? 0.0 : 1.0;
+        return m_intersector.trace_probe(ray) ? 0.0f : 1.0f;
     }
     else
     {
-        double transmission;
+        float transmission;
         const ShadingPoint& shading_point =
             trace_between(
                 origin,
@@ -355,11 +355,11 @@ inline double Tracer::trace_between(
                 ray_depth,
                 transmission);
 
-        return shading_point.hit() ? 0.0 : transmission;
+        return shading_point.hit() ? 0.0f : transmission;
     }
 }
 
-inline double Tracer::trace_between(
+inline float Tracer::trace_between(
     const ShadingPoint&                 origin,
     const foundation::Vector3d&         target,
     const VisibilityFlags::Type         ray_flags)
@@ -378,11 +378,11 @@ inline double Tracer::trace_between(
             ray_flags,
             origin.get_ray().m_depth + 1);
 
-        return m_intersector.trace_probe(ray, &origin) ? 0.0 : 1.0;
+        return m_intersector.trace_probe(ray, &origin) ? 0.0f : 1.0f;
     }
     else
     {
-        double transmission;
+        float transmission;
         const ShadingPoint& shading_point =
             trace_between(
                 origin,
@@ -390,7 +390,7 @@ inline double Tracer::trace_between(
                 ray_flags,
                 transmission);
 
-        return shading_point.hit() ? 0.0 : transmission;
+        return shading_point.hit() ? 0.0f : transmission;
     }
 }
 

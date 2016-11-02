@@ -114,7 +114,7 @@ void DisneyLayeredBRDF::evaluate_inputs(
 
     memset(values, 0, sizeof(DisneyBRDFInputValues));
 
-    Color3d base_color(0.0);
+    Color3f base_color(0.0f);
 
     for (size_t i = 0, e = m_parent->get_layer_count(); i < e; ++i)
     {
@@ -130,7 +130,7 @@ void DisneyLayeredBRDF::evaluate_inputs(
 
     // Colors in SeExpr are always in the sRGB color space.
     // todo: convert colors earlier so that all math is done in linear space.
-    values->m_base_color = srgb_to_linear_rgb(Color3f(base_color));
+    values->m_base_color = srgb_to_linear_rgb(base_color);
 
     m_brdf->prepare_inputs(shading_context, shading_point, values);
 }
@@ -153,21 +153,21 @@ void DisneyLayeredBRDF::sample(
         sample);
 }
 
-double DisneyLayeredBRDF::evaluate(
+float DisneyLayeredBRDF::evaluate(
     const void*                 data,
     const bool                  adjoint,
     const bool                  cosine_mult,
-    const Vector3d&             geometric_normal,
-    const Basis3d&              shading_basis,
-    const Vector3d&             outgoing,
-    const Vector3d&             incoming,
+    const Vector3f&             geometric_normal,
+    const Basis3f&              shading_basis,
+    const Vector3f&             outgoing,
+    const Vector3f&             incoming,
     const int                   modes,
     Spectrum&                   value) const
 {
     if (m_parent->get_layer_count() == 0)
     {
         value.set(0.0f);
-        return 0.0;
+        return 0.0f;
     }
 
     return m_brdf->evaluate(
@@ -182,16 +182,16 @@ double DisneyLayeredBRDF::evaluate(
         value);
 }
 
-double DisneyLayeredBRDF::evaluate_pdf(
+float DisneyLayeredBRDF::evaluate_pdf(
     const void*                 data,
-    const Vector3d&             geometric_normal,
-    const Basis3d&              shading_basis,
-    const Vector3d&             outgoing,
-    const Vector3d&             incoming,
+    const Vector3f&             geometric_normal,
+    const Basis3f&              shading_basis,
+    const Vector3f&             outgoing,
+    const Vector3f&             incoming,
     const int                   modes) const
 {
     if (m_parent->get_layer_count() == 0)
-        return 0.0;
+        return 0.0f;
 
     return m_brdf->evaluate_pdf(
         data,

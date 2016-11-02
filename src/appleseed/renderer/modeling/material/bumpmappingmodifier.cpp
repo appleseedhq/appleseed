@@ -77,15 +77,15 @@ Basis3d BumpMappingModifier::modify(
     const Basis3d&      basis) const
 {
     // Evaluate the displacement function at (u, v).
-    double val;
+    float val;
     m_map->evaluate(texture_cache, uv, val);
 
     // Evaluate the displacement function at (u + delta_u, v).
-    double val_du;
+    float val_du;
     m_map->evaluate(texture_cache, Vector2f(uv[0] + m_du, uv[1]), val_du);
 
     // Evaluate the displacement function at (u, v + delta_v).
-    double val_dv;
+    float val_dv;
     m_map->evaluate(texture_cache, Vector2f(uv[0], uv[1] + m_dv), val_dv);
 
     // Compute the partial derivatives of the displacement function d(u, v).

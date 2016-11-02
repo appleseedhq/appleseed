@@ -153,36 +153,36 @@ class APPLESEED_ALIGN(16) CompositeClosure
     size_t get_num_closures() const;
     ClosureID get_closure_type(const size_t index) const;
     const Spectrum& get_closure_weight(const size_t index) const;
-    double get_closure_pdf_weight(const size_t index) const;
+    float get_closure_pdf_weight(const size_t index) const;
     void* get_closure_input_values(const size_t index) const;
 
-    size_t choose_closure(const double w) const;
+    size_t choose_closure(const float w) const;
 
-    const foundation::Basis3d& get_closure_shading_basis(const size_t index) const;
-
-    void compute_closure_shading_basis(
-        const foundation::Vector3d& normal,
-        const foundation::Basis3d&  original_shading_basis);
+    const foundation::Basis3f& get_closure_shading_basis(const size_t index) const;
 
     void compute_closure_shading_basis(
-        const foundation::Vector3d& normal,
-        const foundation::Vector3d& tangent,
-        const foundation::Basis3d&  original_shading_basis);
+        const foundation::Vector3f& normal,
+        const foundation::Basis3f&  original_shading_basis);
+
+    void compute_closure_shading_basis(
+        const foundation::Vector3f& normal,
+        const foundation::Vector3f& tangent,
+        const foundation::Basis3f&  original_shading_basis);
 
     template <typename InputValues>
     InputValues* add_closure(
         const ClosureID             closure_type,
-        const foundation::Basis3d&  original_shading_basis,
+        const foundation::Basis3f&  original_shading_basis,
         const foundation::Color3f&  weight,
-        const foundation::Vector3d& normal);
+        const foundation::Vector3f& normal);
 
     template <typename InputValues>
     InputValues* add_closure(
         const ClosureID             closure_type,
-        const foundation::Basis3d&  original_shading_basis,
+        const foundation::Basis3f&  original_shading_basis,
         const foundation::Color3f&  weight,
-        const foundation::Vector3d& normal,
-        const foundation::Vector3d& tangent);
+        const foundation::Vector3f& normal,
+        const foundation::Vector3f& tangent);
 
   protected:
     typedef boost::mpl::vector<
@@ -217,9 +217,9 @@ class APPLESEED_ALIGN(16) CompositeClosure
     size_t                          m_num_closures;
     size_t                          m_num_bytes;
     Spectrum                        m_weights[MaxClosureEntries];
-    double                          m_cdf[MaxClosureEntries];
-    double                          m_pdf_weights[MaxClosureEntries];
-    foundation::Basis3d             m_bases[MaxClosureEntries];
+    float                           m_cdf[MaxClosureEntries];
+    float                           m_pdf_weights[MaxClosureEntries];
+    foundation::Basis3f             m_bases[MaxClosureEntries];
 
     CompositeClosure();
 
@@ -228,11 +228,11 @@ class APPLESEED_ALIGN(16) CompositeClosure
     template <typename InputValues>
     InputValues* do_add_closure(
         const ClosureID             closure_type,
-        const foundation::Basis3d&  original_shading_basis,
+        const foundation::Basis3f&  original_shading_basis,
         const foundation::Color3f&  weight,
-        const foundation::Vector3d& normal,
+        const foundation::Vector3f& normal,
         bool                        has_tangent,
-        const foundation::Vector3d& tangent);
+        const foundation::Vector3f& tangent);
 };
 
 
@@ -245,23 +245,23 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
 {
   public:
     CompositeSurfaceClosure(
-        const foundation::Basis3d&  original_shading_basis,
+        const foundation::Basis3f&  original_shading_basis,
         const OSL::ClosureColor*    ci);
 
     void add_ior(
         const foundation::Color3f&  weight,
-        const double                ior);
+        const float                 ior);
 
-    double choose_ior(const double w) const;
+    float choose_ior(const float w) const;
 
   private:
     size_t                          m_num_iors;
-    double                          m_iors[MaxClosureEntries];
-    double                          m_ior_cdf[MaxClosureEntries];
+    float                           m_iors[MaxClosureEntries];
+    float                           m_ior_cdf[MaxClosureEntries];
 
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
-        const foundation::Basis3d&  original_shading_basis,
+        const foundation::Basis3f&  original_shading_basis,
         const foundation::Color3f&  weight);
 };
 
@@ -275,13 +275,13 @@ class APPLESEED_ALIGN(16) CompositeSubsurfaceClosure
 {
   public:
     CompositeSubsurfaceClosure(
-        const foundation::Basis3d&  original_shading_basis,
+        const foundation::Basis3f&  original_shading_basis,
         const OSL::ClosureColor*    ci);
 
   private:
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
-        const foundation::Basis3d&  original_shading_basis,
+        const foundation::Basis3f&  original_shading_basis,
         const foundation::Color3f&  weight);
 };
 
@@ -299,12 +299,12 @@ class APPLESEED_ALIGN(16) CompositeEmissionClosure
     const DiffuseEDFInputValues& edf_input_values() const;
 
   private:
+    DiffuseEDFInputValues           m_edf_values;
+
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
-        const foundation::Color3f&  weight);
-
-    DiffuseEDFInputValues   m_edf_values;
-    foundation::Color3f     m_total_weight;
+        const foundation::Color3f&  weight,
+        foundation::Color3f&        total_weight);
 };
 
 
@@ -345,7 +345,7 @@ inline const Spectrum& CompositeClosure::get_closure_weight(const size_t index) 
     return m_weights[index];
 }
 
-inline double CompositeClosure::get_closure_pdf_weight(const size_t index) const
+inline float CompositeClosure::get_closure_pdf_weight(const size_t index) const
 {
     assert(index < get_num_closures());
     return m_pdf_weights[index];
@@ -357,7 +357,7 @@ inline void* CompositeClosure::get_closure_input_values(const size_t index) cons
     return m_input_values[index];
 }
 
-inline const foundation::Basis3d& CompositeClosure::get_closure_shading_basis(const size_t index) const
+inline const foundation::Basis3f& CompositeClosure::get_closure_shading_basis(const size_t index) const
 {
     assert(index < get_num_closures());
     return m_bases[index];

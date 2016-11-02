@@ -97,7 +97,7 @@ namespace
         Color3f m_color;
     };
 
-    typedef ImageImportanceSampler<Payload, double> ImageImportanceSamplerType;
+    typedef ImageImportanceSampler<Payload, float> ImageImportanceSamplerType;
 
     class ImageSampler
     {
@@ -118,14 +118,14 @@ namespace
         {
         }
 
-        void sample(const size_t x, const size_t y, Payload& payload, double& importance)
+        void sample(const size_t x, const size_t y, Payload& payload, float& importance)
         {
             payload.m_x = static_cast<uint32>(x);
 
             if (m_radiance_source == 0)
             {
                 payload.m_color.set(0.0f);
-                importance = 0.0;
+                importance = 0.0f;
                 return;
             }
 
@@ -135,14 +135,14 @@ namespace
 
             m_radiance_source->evaluate(m_texture_cache, uv, payload.m_color);
 
-            double multiplier;
+            float multiplier;
             m_multiplier_source->evaluate(m_texture_cache, uv, multiplier);
 
-            double exposure;
+            float exposure;
             m_exposure_source->evaluate(m_texture_cache, uv, exposure);
-            payload.m_color *= static_cast<float>(multiplier * pow(2.0, exposure));
+            payload.m_color *= multiplier * pow(2.0f, exposure);
 
-            importance = static_cast<double>(luminance(payload.m_color));
+            importance = luminance(payload.m_color);
         }
 
       private:
@@ -166,14 +166,14 @@ namespace
           : EnvironmentEDF(name, params)
           , m_importance_map_width(0)
           , m_importance_map_height(0)
-          , m_probability_scale(0.0)
+          , m_probability_scale(0.0f)
         {
             m_inputs.declare("radiance", InputFormatSpectralIlluminance);
-            m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("exposure", InputFormatScalar, "0.0");
+            m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("exposure", InputFormatFloat, "0.0");
 
-            m_phi_shift = deg_to_rad(m_params.get_optional<double>("horizontal_shift", 0.0));
-            m_theta_shift = deg_to_rad(m_params.get_optional<double>("vertical_shift", 0.0));
+            m_phi_shift = deg_to_rad(m_params.get_optional<float>("horizontal_shift", 0.0f));
+            m_theta_shift = deg_to_rad(m_params.get_optional<float>("vertical_shift", 0.0f));
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -211,10 +211,10 @@ namespace
         virtual void sample(
             const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
-            const Vector2d&         s,
-            Vector3d&               outgoing,
+            const Vector2f&         s,
+            Vector3f&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
             if (m_importance_sampler.get() == 0)
             {
@@ -222,36 +222,36 @@ namespace
                     "cannot sample environment edf \"%s\" because it is not bound to the environment.",
                     get_path().c_str());
                 value.set(0.0f);
-                probability = 0.0;
+                probability = 0.0f;
                 return;
             }
 
             // Sample the importance map.
             Payload payload;
             size_t y;
-            double prob_xy;
+            float prob_xy;
             m_importance_sampler->sample(s, payload, y, prob_xy);
 
             // Compute the coordinates in [0,1]^2 of the sample.
-            const double u = (payload.m_x + 0.5) * m_rcp_importance_map_width;
-            const double v = (y + 0.5) * m_rcp_importance_map_height;
+            const float u = (payload.m_x + 0.5f) * m_rcp_importance_map_width;
+            const float v = (y + 0.5f) * m_rcp_importance_map_height;
 
             // Compute the spherical coordinates of the sample.
-            double theta, phi;
+            float theta, phi;
             unit_square_to_angles(u, v, theta, phi);
             shift_angles(theta, phi, m_theta_shift, m_phi_shift);
 
             // Compute the local space emission direction.
-            const double cos_theta = cos(theta);
-            const double sin_theta = sin(theta);
-            const double cos_phi = cos(phi);
-            const double sin_phi = sin(phi);
-            const Vector3d local_outgoing =
-                Vector3d::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
+            const float cos_theta = cos(theta);
+            const float sin_theta = sin(theta);
+            const float cos_phi = cos(phi);
+            const float sin_phi = sin(phi);
+            const Vector3f local_outgoing =
+                Vector3f::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
 
             // Transform the emission direction to world space.
             Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             outgoing = transform.vector_to_parent(local_outgoing);
 
             // Return the emitted radiance.
@@ -264,24 +264,24 @@ namespace
         virtual void evaluate(
             const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,
+            const Vector3f&         outgoing,
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
 
             // Transform the emission direction to local space.
             Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
-            const Vector3d local_outgoing = transform.vector_to_local(outgoing);
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            const Vector3f local_outgoing = transform.vector_to_local(outgoing);
 
             // Compute the spherical coordinates of the outgoing direction.
-            double theta, phi;
+            float theta, phi;
             unit_vector_to_angles(local_outgoing, theta, phi);
             shift_angles(theta, phi, -m_theta_shift, -m_phi_shift);
 
             // Convert the spherical coordinates to [0,1]^2.
             float u, v;
-            angles_to_unit_square(static_cast<float>(theta), static_cast<float>(phi), u, v);
+            angles_to_unit_square(theta, phi, u, v);
 
             // Compute and return the environment color.
             lookup_environment_map(input_evaluator, u, v, value);
@@ -290,9 +290,9 @@ namespace
         virtual void evaluate(
             const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,
+            const Vector3f&         outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
 
@@ -302,32 +302,32 @@ namespace
                     "cannot compute pdf for environment edf \"%s\" because it is not bound to the environment.",
                     get_path().c_str());
                 value.set(0.0f);
-                probability = 0.0;
+                probability = 0.0f;
                 return;
             }
 
             // Transform the emission direction to local space.
             Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
-            const Vector3d local_outgoing = transform.vector_to_local(outgoing);
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            const Vector3f local_outgoing = transform.vector_to_local(outgoing);
 
             // Compute the spherical coordinates of the outgoing direction.
-            double theta, phi;
+            float theta, phi;
             unit_vector_to_angles(local_outgoing, theta, phi);
             shift_angles(theta, phi, -m_theta_shift, -m_phi_shift);
 
             // Convert the spherical coordinates to [0,1]^2.
             float u, v;
-            angles_to_unit_square(static_cast<float>(theta), static_cast<float>(phi), u, v);
+            angles_to_unit_square(theta, phi, u, v);
 
             // Compute and return the environment color and the PDF value.
             lookup_environment_map(input_evaluator, u, v, value);
             probability = compute_pdf(u, v, theta);
         }
 
-        virtual double evaluate_pdf(
+        virtual float evaluate_pdf(
             InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing) const APPLESEED_OVERRIDE
+            const Vector3f&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
 
@@ -336,22 +336,22 @@ namespace
                 RENDERER_LOG_WARNING(
                     "cannot compute pdf for environment edf \"%s\" because it is not bound to the environment.",
                     get_path().c_str());
-                return 0.0;
+                return 0.0f;
             }
 
             // Transform the emission direction to local space.
             Transformd scratch;
-            const Transformd& transform = m_transform_sequence.evaluate(0.0, scratch);
-            const Vector3d local_outgoing = transform.vector_to_local(outgoing);
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            const Vector3f local_outgoing = transform.vector_to_local(outgoing);
 
             // Compute the spherical coordinates of the outgoing direction.
-            double theta, phi;
+            float theta, phi;
             unit_vector_to_angles(local_outgoing, theta, phi);
             shift_angles(theta, phi, -m_theta_shift, -m_phi_shift);
 
             // Convert the spherical coordinates to [0,1]^2.
             float u, v;
-            angles_to_unit_square(static_cast<float>(theta), static_cast<float>(phi), u, v);
+            angles_to_unit_square(theta, phi, u, v);
 
             // Compute and return the PDF value.
             return compute_pdf(u, v, theta);
@@ -361,19 +361,19 @@ namespace
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_radiance;                 // emitted radiance in W.m^-2.sr^-1
-            ScalarInput m_radiance_multiplier;      // emitted radiance multiplier
-            ScalarInput m_exposure;                 // emitted radiance multiplier in f-stops
+            float       m_radiance_multiplier;      // emitted radiance multiplier
+            float       m_exposure;                 // emitted radiance multiplier in f-stops
         };
 
-        double  m_phi_shift;                        // horizontal shift in radians
-        double  m_theta_shift;                      // vertical shift in radians
+        float   m_phi_shift;                        // horizontal shift in radians
+        float   m_theta_shift;                      // vertical shift in radians
 
         size_t  m_importance_map_width;
         size_t  m_importance_map_height;
 
-        double  m_rcp_importance_map_width;
-        double  m_rcp_importance_map_height;
-        double  m_probability_scale;
+        float   m_rcp_importance_map_width;
+        float   m_rcp_importance_map_height;
+        float   m_probability_scale;
 
         auto_ptr<ImageImportanceSamplerType> m_importance_sampler;
 
@@ -402,11 +402,11 @@ namespace
                 m_importance_map_height = 1;
             }
 
-            m_rcp_importance_map_width = 1.0 / m_importance_map_width;
-            m_rcp_importance_map_height = 1.0 / m_importance_map_height;
+            m_rcp_importance_map_width = 1.0f / m_importance_map_width;
+            m_rcp_importance_map_height = 1.0f / m_importance_map_height;
 
             const size_t texel_count = m_importance_map_width * m_importance_map_height;
-            m_probability_scale = texel_count / (2.0 * PiSquare<double>());
+            m_probability_scale = texel_count / (2.0f * PiSquare<float>());
 
             TextureStore texture_store(scene);
             TextureCache texture_cache(texture_store);
@@ -455,14 +455,13 @@ namespace
                 input_evaluator.evaluate<InputValues>(m_inputs, Vector2f(u, 1.0f - v));
 
             value = values->m_radiance;
-            value *=
-                static_cast<float>(values->m_radiance_multiplier * pow(2.0, values->m_exposure));
+            value *= values->m_radiance_multiplier * pow(2.0f, values->m_exposure);
         }
 
-        double compute_pdf(
+        float compute_pdf(
             const float             u,
             const float             v,
-            const double            theta) const
+            const float             theta) const
         {
             assert(u >= 0.0f && u < 1.0f);
             assert(v >= 0.0f && v < 1.0f);
@@ -471,7 +470,7 @@ namespace
             // Compute the probability density of this sample in the importance map.
             const size_t x = truncate<size_t>(m_importance_map_width * u);
             const size_t y = truncate<size_t>(m_importance_map_height * v);
-            const double prob_xy = m_importance_sampler->get_pdf(x, y);
+            const float prob_xy = m_importance_sampler->get_pdf(x, y);
 
             // Compute the probability density of the emission direction.
             return prob_xy * m_probability_scale / sin(theta);

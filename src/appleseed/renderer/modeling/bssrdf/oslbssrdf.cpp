@@ -140,14 +140,15 @@ namespace
         {
             CompositeSubsurfaceClosure* c = reinterpret_cast<CompositeSubsurfaceClosure*>(input_evaluator.data());
             new (c) CompositeSubsurfaceClosure(
-                shading_point.get_shading_basis(),
+                Basis3f(shading_point.get_shading_basis()),
                 shading_point.get_osl_shader_globals().Ci);
 
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
-                bssrdf_from_closure_id(c->get_closure_type(i)).prepare_inputs(
-                    shading_point,
-                    c->get_closure_input_values(i));
+                bssrdf_from_closure_id(c->get_closure_type(i))
+                    .prepare_inputs(
+                        shading_point,
+                        c->get_closure_input_values(i));
             }
         }
 
@@ -162,17 +163,18 @@ namespace
             if (c->get_num_closures() > 0)
             {
                 sampling_context.split_in_place(1, 1);
-                const double s = sampling_context.next_double2();
+                const float s = sampling_context.next2<float>();
                 const size_t closure_index = c->choose_closure(s);
 
                 sample.m_shading_basis =
                     &c->get_closure_shading_basis(closure_index);
 
                 return
-                    bssrdf_from_closure_id(c->get_closure_type(closure_index)).sample(
-                        sampling_context,
-                        c->get_closure_input_values(closure_index),
-                        sample);
+                    bssrdf_from_closure_id(c->get_closure_type(closure_index))
+                        .sample(
+                            sampling_context,
+                            c->get_closure_input_values(closure_index),
+                            sample);
             }
 
             return false;
@@ -181,9 +183,9 @@ namespace
         virtual void evaluate(
             const void*             data,
             const ShadingPoint&     outgoing_point,
-            const Vector3d&         outgoing_dir,
+            const Vector3f&         outgoing_dir,
             const ShadingPoint&     incoming_point,
-            const Vector3d&         incoming_dir,
+            const Vector3f&         incoming_dir,
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
             const CompositeSubsurfaceClosure* c =
@@ -194,35 +196,37 @@ namespace
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
                 Spectrum s;
-                bssrdf_from_closure_id(c->get_closure_type(i)).evaluate(
-                    c->get_closure_input_values(i),
-                    outgoing_point,
-                    outgoing_dir,
-                    incoming_point,
-                    incoming_dir,
-                    s);
+                bssrdf_from_closure_id(c->get_closure_type(i))
+                    .evaluate(
+                        c->get_closure_input_values(i),
+                        outgoing_point,
+                        outgoing_dir,
+                        incoming_point,
+                        incoming_dir,
+                        s);
 
                 madd(value, s, c->get_closure_weight(i));
             }
         }
 
-        virtual double evaluate_pdf(
+        virtual float evaluate_pdf(
             const void*             data,
             const size_t            channel,
-            const double            dist) const APPLESEED_OVERRIDE
+            const float             dist) const APPLESEED_OVERRIDE
         {
             const CompositeSubsurfaceClosure* c =
                 reinterpret_cast<const CompositeSubsurfaceClosure*>(data);
 
-            double pdf = 0.0;
+            float pdf = 0.0f;
 
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
                 pdf +=
-                    bssrdf_from_closure_id(c->get_closure_type(i)).evaluate_pdf(
-                        c->get_closure_input_values(i),
-                        channel,
-                        dist) * c->get_closure_pdf_weight(i);
+                    bssrdf_from_closure_id(c->get_closure_type(i))
+                        .evaluate_pdf(
+                            c->get_closure_input_values(i),
+                            channel,
+                            dist) * c->get_closure_pdf_weight(i);
             }
 
             return pdf;

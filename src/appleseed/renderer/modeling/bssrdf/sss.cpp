@@ -48,80 +48,80 @@ namespace renderer
 // BSSRDF reparameterization implementation.
 //
 
-ComputeRdStandardDipole::ComputeRdStandardDipole(const double eta)
+ComputeRdStandardDipole::ComputeRdStandardDipole(const float eta)
 {
-    const double fdr = fresnel_internal_diffuse_reflectance(eta);
-    m_a = (1.0 + fdr) / (1.0 - fdr);
+    const float fdr = fresnel_internal_diffuse_reflectance(eta);
+    m_a = (1.0f + fdr) / (1.0f - fdr);
 }
 
-double ComputeRdStandardDipole::operator()(const double alpha_prime) const
+float ComputeRdStandardDipole::operator()(const float alpha_prime) const
 {
     // [1] eq. 15.
-    const double sqrt_3ap = sqrt(3.0 * (1.0 - alpha_prime));
-    return (0.5 * alpha_prime) * (1.0 + exp(-(4.0 / 3.0) * m_a * sqrt_3ap)) * exp(-sqrt_3ap);
+    const float sqrt_3ap = sqrt(3.0f * (1.0f - alpha_prime));
+    return (0.5f * alpha_prime) * (1.0f + exp(-(4.0f / 3.0f) * m_a * sqrt_3ap)) * exp(-sqrt_3ap);
 }
 
-ComputeRdBetterDipole::ComputeRdBetterDipole(const double eta)
+ComputeRdBetterDipole::ComputeRdBetterDipole(const float eta)
   : m_two_c1(fresnel_first_moment(eta))
   , m_three_c2(fresnel_second_moment(eta))
 {
 }
 
-double ComputeRdBetterDipole::operator()(const double alpha_prime) const
+float ComputeRdBetterDipole::operator()(const float alpha_prime) const
 {
-    const double cphi = 0.25 * (1.0 - m_two_c1);
-    const double ce = 0.5 * (1.0 - m_three_c2);
-    const double four_a = (1.0 + m_three_c2) / cphi;
-    const double mu_tr_d = sqrt((1.0 - alpha_prime) * (2.0 - alpha_prime) * (1.0 / 3.0));
-    const double myexp = exp(-four_a * mu_tr_d);
-    return 0.5 * square(alpha_prime)
-               * exp(-sqrt(3.0 * (1.0 - alpha_prime) / (2.0 - alpha_prime)))
-               * (ce * (1.0 + myexp) + cphi / mu_tr_d * (1.0 - myexp));
+    const float cphi = 0.25f * (1.0f - m_two_c1);
+    const float ce = 0.5f * (1.0f - m_three_c2);
+    const float four_a = (1.0f + m_three_c2) / cphi;
+    const float mu_tr_d = sqrt((1.0f - alpha_prime) * (2.0f - alpha_prime) * (1.0f / 3.0f));
+    const float myexp = exp(-four_a * mu_tr_d);
+    return 0.5f * square(alpha_prime)
+                * exp(-sqrt(3.0f * (1.0f - alpha_prime) / (2.0f - alpha_prime)))
+                * (ce * (1.0f + myexp) + cphi / mu_tr_d * (1.0f - myexp));
 }
 
-double diffusion_coefficient(
-    const double    sigma_a,
-    const double    sigma_t)
+float diffusion_coefficient(
+    const float     sigma_a,
+    const float     sigma_t)
 {
-    assert(sigma_t > 0.0);
+    assert(sigma_t > 0.0f);
 
-    return (sigma_t + sigma_a) / (3.0 * square(sigma_t));
+    return (sigma_t + sigma_a) / (3.0f * square(sigma_t));
 }
 
-double diffuse_mean_free_path(
-    const double    sigma_a,
-    const double    sigma_t)
+float diffuse_mean_free_path(
+    const float     sigma_a,
+    const float     sigma_t)
 {
-    assert(sigma_a > 0.0);
+    assert(sigma_a > 0.0f);
 
-    const double D = diffusion_coefficient(sigma_a, sigma_t);
-    return 1.0 / sqrt(sigma_a / D);
+    const float D = diffusion_coefficient(sigma_a, sigma_t);
+    return 1.0f / sqrt(sigma_a / D);
 }
 
-double reduced_extinction_coefficient(
-    const double    dmfp,
-    const double    alpha_prime)
+float reduced_extinction_coefficient(
+    const float     dmfp,
+    const float     alpha_prime)
 {
-    assert(alpha_prime >= 0.0);
-    assert(alpha_prime < 1.0);
+    assert(alpha_prime >= 0.0f);
+    assert(alpha_prime < 1.0f);
 
-    return 1.0 / (sqrt(3.0 * (1.0 - alpha_prime)) * dmfp);
+    return 1.0f / (sqrt(3.0f * (1.0f - alpha_prime)) * dmfp);
 }
 
-double effective_extinction_coefficient(
-    const double    sigma_a,
-    const double    sigma_s,
-    const double    anisotropy)
+float effective_extinction_coefficient(
+    const float     sigma_a,
+    const float     sigma_s,
+    const float     anisotropy)
 {
-    const double sigma_s_prime = sigma_s * (1.0 - anisotropy);
-    const double sigma_t_prime = sigma_s_prime + sigma_a;
-    return sqrt(3.0 * sigma_a * sigma_t_prime);
+    const float sigma_s_prime = sigma_s * (1.0f - anisotropy);
+    const float sigma_t_prime = sigma_s_prime + sigma_a;
+    return sqrt(3.0f * sigma_a * sigma_t_prime);
 }
 
 void effective_extinction_coefficient(
     const Spectrum& sigma_a,
     const Spectrum& sigma_s,
-    const double    anisotropy,
+    const float     anisotropy,
     Spectrum&       sigma_tr)
 {
     assert(sigma_a.size() == sigma_s.size());
@@ -131,11 +131,10 @@ void effective_extinction_coefficient(
     for (size_t i = 0, e = sigma_tr.size(); i < e; ++i)
     {
         sigma_tr[i] =
-            static_cast<float>(
-                effective_extinction_coefficient(
-                    static_cast<double>(sigma_a[i]),
-                    static_cast<double>(sigma_s[i]),
-                    anisotropy));
+            effective_extinction_coefficient(
+                sigma_a[i],
+                sigma_s[i],
+                anisotropy);
     }
 }
 
@@ -144,28 +143,28 @@ void effective_extinction_coefficient(
 // Gaussian diffusion profile implementation.
 //
 
-double gaussian_profile(
-    const double    r,
-    const double    v,
-    const double    r_integral_threshold)
+float gaussian_profile(
+    const float     r,
+    const float     v,
+    const float     r_integral_threshold)
 {
-    return exp(-r * r / (2.0 * v)) / (TwoPi<double>() * v * r_integral_threshold);
+    return exp(-r * r / (2.0f * v)) / (TwoPi<float>() * v * r_integral_threshold);
 }
 
-double gaussian_profile_sample(
-    const double    u,
-    const double    v,
-    const double    rmax2)
+float gaussian_profile_sample(
+    const float     u,
+    const float     v,
+    const float     rmax2)
 {
-    return sqrt(-2.0 * v * log(1.0 - u * (1.0 - exp(-rmax2 / (2.0 * v)))));
+    return sqrt(-2.0f * v * log(1.0f - u * (1.0f - exp(-rmax2 / (2.0f * v)))));
 }
 
-double gaussian_profile_pdf(
-    const double    r,
-    const double    v,
-    const double    r_integral_threshold)
+float gaussian_profile_pdf(
+    const float     r,
+    const float     v,
+    const float     r_integral_threshold)
 {
-    return exp(-r * r / (2.0 * v)) / (TwoPi<double>() * v * r_integral_threshold);
+    return exp(-r * r / (2.0f * v)) / (TwoPi<float>() * v * r_integral_threshold);
 }
 
 
@@ -173,12 +172,12 @@ double gaussian_profile_pdf(
 // Dipole diffusion profile implementation.
 //
 
-double dipole_max_radius(const double sigma_tr)
+float dipole_max_radius(const float sigma_tr)
 {
     // todo: some plots suggest that our estimate
     // for max radius is too conservative.
     // We could probably reduce it a bit.
-    return -log(0.00001) / sigma_tr;
+    return -log(0.00001f) / sigma_tr;
 }
 
 
@@ -186,35 +185,35 @@ double dipole_max_radius(const double sigma_tr)
 // Normalized diffusion profile implementation.
 //
 
-double normalized_diffusion_s_dmfp(
-    const double    a)
+float normalized_diffusion_s_dmfp(
+    const float     a)
 {
     // Equation 8.
-    return 3.5 + 100.0 * square(square(a - 0.33));
+    return 3.5f + 100.0f * square(square(a - 0.33f));
 }
 
-double normalized_diffusion_s_mfp(
-    const double    a)
+float normalized_diffusion_s_mfp(
+    const float     a)
 {
     // Equation 5.
-    const double x = std::abs(a - 0.8);
-    return 1.85 - a + 7.0 * (x * x * x);
+    const float x = abs(a - 0.8f);
+    return 1.85f - a + 7.0f * (x * x * x);
 }
 
-double normalized_diffusion_profile(
-    const double    r,
-    const double    d)
+float normalized_diffusion_profile(
+    const float     r,
+    const float     d)
 {
     // Equation 2.
-    const double exp_r3 = exp(-r / (3.0 * d));
-    return (cube(exp_r3) + exp_r3) / (8.0 * Pi<double>() * d * r);
+    const float exp_r3 = exp(-r / (3.0f * d));
+    return (cube(exp_r3) + exp_r3) / (8.0f * Pi<float>() * d * r);
 }
 
-double normalized_diffusion_profile(
-    const double    r,
-    const double    l,
-    const double    s,
-    const double    a)
+float normalized_diffusion_profile(
+    const float     r,
+    const float     l,
+    const float     s,
+    const float     a)
 {
     // Equation 3.
     return a * normalized_diffusion_profile(r, l / s);
@@ -223,11 +222,11 @@ double normalized_diffusion_profile(
 namespace
 {
     const size_t NDCDFTableSize = 128;
-    const double NDCDFTableRmax = 55.0;
-    const double NDCDFTableStep = NDCDFTableRmax / NDCDFTableSize;
+    const float NDCDFTableRmax = 55.0f;
+    const float NDCDFTableStep = NDCDFTableRmax / NDCDFTableSize;
 
-    double nd_cdf_table[NDCDFTableSize];
-    double nd_cdf_rmax;
+    float nd_cdf_table[NDCDFTableSize];
+    float nd_cdf_rmax;
 
     struct InitializeNDCDFTable
     {
@@ -235,15 +234,15 @@ namespace
         {
             for (size_t i = 0; i < NDCDFTableSize; ++i)
             {
-                const double r = fit<size_t, double>(i, 0, NDCDFTableSize - 1, 0.0, NDCDFTableRmax);
-                nd_cdf_table[i] = normalized_diffusion_cdf(r, 1.0);
+                const float r = fit<size_t, float>(i, 0, NDCDFTableSize - 1, 0.0f, NDCDFTableRmax);
+                nd_cdf_table[i] = normalized_diffusion_cdf(r, 1.0f);
             }
 
             // Save the real value of cdf(Rmax, 1).
             nd_cdf_rmax = nd_cdf_table[NDCDFTableSize - 1];
 
             // Make sure the last value is exactly 1.
-            nd_cdf_table[NDCDFTableSize - 1] = 1.0;
+            nd_cdf_table[NDCDFTableSize - 1] = 1.0f;
         }
     };
 
@@ -251,14 +250,14 @@ namespace
 
     struct NDCDFFun
     {
-        const double m_d;
+        const float m_d;
 
-        explicit NDCDFFun(const double d)
+        explicit NDCDFFun(const float d)
           : m_d(d)
         {
         }
 
-        double operator()(const double r) const
+        float operator()(const float r) const
         {
             return normalized_diffusion_cdf(r, m_d);
         }
@@ -266,31 +265,31 @@ namespace
 
     struct NDPDFFun
     {
-        const double m_d;
+        const float m_d;
 
-        explicit NDPDFFun(const double d)
+        explicit NDPDFFun(const float d)
           : m_d(d)
         {
         }
 
-        double operator()(const double r) const
+        float operator()(const float r) const
         {
             return normalized_diffusion_pdf(r, m_d);
         }
     };
 }
 
-double normalized_diffusion_sample(
-    const double    u,
-    const double    l,
-    const double    s,
-    const double    eps,
+float normalized_diffusion_sample(
+    const float     u,
+    const float     l,
+    const float     s,
+    const float     eps,
     const size_t    max_iterations)
 {
-    assert(u >= 0.0);
-    assert(u < 1.0);
+    assert(u >= 0.0f);
+    assert(u < 1.0f);
 
-    const double d = l / s;
+    const float d = l / s;
 
     // Handle the case where u is greater than the value we consider 1 in our CDF.
     if (u >= nd_cdf_rmax)
@@ -303,8 +302,8 @@ double normalized_diffusion_sample(
     assert(nd_cdf_table[i] > u);
 
     // Transform the cdf(r, 1) interval to cdf(r, d) using the fact that cdf(r, d) == cdf(r/d, 1).
-    const double rmin = fit<size_t, double>(i - 1, 0, NDCDFTableSize - 1, 0.0, NDCDFTableRmax) * d;
-    const double rmax = fit<size_t, double>(i,     0, NDCDFTableSize - 1, 0.0, NDCDFTableRmax) * d;
+    const float rmin = fit<size_t, float>(i - 1, 0, NDCDFTableSize - 1, 0.0f, NDCDFTableRmax) * d;
+    const float rmax = fit<size_t, float>(i,     0, NDCDFTableSize - 1, 0.0f, NDCDFTableRmax) * d;
 
     return invert_cdf_function(
         NDCDFFun(d),
@@ -312,45 +311,48 @@ double normalized_diffusion_sample(
         u,
         rmin,
         rmax,
-        (rmax + rmin) * 0.5,
+        (rmax + rmin) * 0.5f,
         eps,
         max_iterations);
 }
 
-double normalized_diffusion_cdf(
-    const double    r,
-    const double    d)
+float normalized_diffusion_cdf(
+    const float     r,
+    const float     d)
 {
     // Equation 11.
-    const double exp_r3 = exp(-r / (3.0 * d));
-    return 1.0 - 0.25 * cube(exp_r3) - 0.75 * exp_r3;
+    const float exp_r3 = exp(-r / (3.0f * d));
+    return 1.0f - 0.25f * cube(exp_r3) - 0.75f * exp_r3;
 }
 
-double normalized_diffusion_cdf(
-    const double    r,
-    const double    l,
-    const double    s)
+float normalized_diffusion_cdf(
+    const float     r,
+    const float     l,
+    const float     s)
 {
     return normalized_diffusion_cdf(r, l / s);
 }
 
-double normalized_diffusion_pdf(
-    const double    r,
-    const double    d)
+float normalized_diffusion_pdf(
+    const float     r,
+    const float     d)
 {
-    return r * TwoPi<double>() * normalized_diffusion_profile(r, d);
+    return
+        abs(r) < 1.0e-6f
+            ? 1.0f / (2.0f * d)
+            : r * TwoPi<float>() * normalized_diffusion_profile(r, d);
 }
 
-double normalized_diffusion_pdf(
-    const double    r,
-    const double    l,
-    const double    s)
+float normalized_diffusion_pdf(
+    const float     r,
+    const float     l,
+    const float     s)
 {
     return normalized_diffusion_pdf(r, l / s);
 }
 
-double normalized_diffusion_max_radius(
-    const double    d)
+float normalized_diffusion_max_radius(
+    const float     d)
 {
     // todo: some plots suggest that our estimate
     // for max radius is too conservative.
@@ -358,9 +360,9 @@ double normalized_diffusion_max_radius(
     return d * NDCDFTableRmax;
 }
 
-double normalized_diffusion_max_radius(
-    const double    l,
-    const double    s)
+float normalized_diffusion_max_radius(
+    const float     l,
+    const float     s)
 {
     return normalized_diffusion_max_radius(l / s);
 }

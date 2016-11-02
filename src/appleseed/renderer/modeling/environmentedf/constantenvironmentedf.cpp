@@ -110,20 +110,20 @@ namespace
         virtual void sample(
             const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
-            const Vector2d&         s,
-            Vector3d&               outgoing,
+            const Vector2f&         s,
+            Vector3f&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
             outgoing = sample_sphere_uniform(s);
             value = m_values.m_radiance;
-            probability = RcpFourPi<double>();
+            probability = RcpFourPi<float>();
         }
 
         virtual void evaluate(
             const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,
+            const Vector3f&         outgoing,
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
@@ -133,21 +133,21 @@ namespace
         virtual void evaluate(
             const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,
+            const Vector3f&         outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
             value = m_values.m_radiance;
-            probability = RcpFourPi<double>();
+            probability = RcpFourPi<float>();
         }
 
-        virtual double evaluate_pdf(
+        virtual float evaluate_pdf(
             InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing) const APPLESEED_OVERRIDE
+            const Vector3f&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
-            return RcpFourPi<double>();
+            return RcpFourPi<float>();
         }
 
       private:

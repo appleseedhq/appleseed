@@ -251,6 +251,7 @@ inline size_t sample_cdf_linear_search(
     assert(x < T(1.0));
 
     size_t i = 0;
+
     while (cdf[i] < x)
         i++;
 
@@ -268,10 +269,17 @@ T invert_cdf_function(
     const T             eps,
     const size_t        max_iterations)
 {
-    assert(cdf(xmin) < u);
-    assert(cdf(xmax) > u);
+    const T cdf_xmin = cdf(xmin);
+    const T cdf_xmax = cdf(xmax);
+
+    if (u <= cdf_xmin)
+        return xmin;
+
+    if (u >= cdf_xmax)
+        return xmax;
 
     T x = guess;
+
     for (size_t i = 0; i < max_iterations; ++i)
     {
         // Use bisection if we go out of bounds.
@@ -285,7 +293,7 @@ T invert_cdf_function(
             break;
 
         // Update bounds.
-        f < 0.0 ? xmin = x : xmax = x;
+        f < T(0.0) ? xmin = x : xmax = x;
 
         // Newton step.
         const T df = pdf(x);

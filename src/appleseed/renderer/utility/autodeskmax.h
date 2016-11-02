@@ -35,19 +35,20 @@
 namespace renderer
 {
 
-inline double autodesk_max_decay(
-    const double    distance,
-    const double    decay_start,
-    const double    decay_exponent)
+template <typename T>
+inline T autodesk_max_decay(
+    const T distance,
+    const T decay_start,
+    const T decay_exponent)
 {
-    if (distance < decay_start || decay_exponent == 0.0)
-        return 1.0;
+    if (distance < decay_start || decay_exponent == T(0.0))
+        return T(1.0);
 
-    const double s = decay_start / distance;
+    const T s = decay_start / distance;
 
     return
-        decay_exponent == 1.0 ? s :
-        decay_exponent == 2.0 ? s * s :
+        decay_exponent == T(1.0) ? s :
+        decay_exponent == T(2.0) ? s * s :
         std::pow(s, decay_exponent);
 }
 

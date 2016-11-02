@@ -83,7 +83,7 @@ namespace
 
     typedef void(*convert_closure_fun)(
         CompositeSurfaceClosure&    composite_closure,
-        const Basis3d&              shading_basis,
+        const Basis3f&              shading_basis,
         const void*                 osl_params,
         const Color3f&              weight);
 
@@ -91,7 +91,7 @@ namespace
 
     void convert_closure_nop(
         CompositeSurfaceClosure&    composite_closure,
-        const Basis3d&              shading_basis,
+        const Basis3f&              shading_basis,
         const void*                 osl_params,
         const Color3f&              weight)
     {
@@ -147,18 +147,18 @@ namespace
 
         static void convert_closure(
             CompositeSurfaceClosure&    composite_closure,
-            const Basis3d&              shading_basis,
+            const Basis3f&              shading_basis,
             const void*                 osl_params,
             const Color3f&              weight)
         {
             const Params* p = reinterpret_cast<const Params*>(osl_params);
             InputValues* values =
                 composite_closure.add_closure<InputValues>(
-                    static_cast<ClosureID>(id()),
+                    id(),
                     shading_basis,
                     weight,
-                    Vector3d(p->N),
-                    Vector3d(p->T));
+                    p->N,
+                    p->T);
 
             values->m_rd = Color3f(p->diffuse_reflectance);
             values->m_rd_multiplier = 1.0;
@@ -284,18 +284,18 @@ namespace
 
         static void convert_closure(
             CompositeSurfaceClosure&    composite_closure,
-            const Basis3d&              shading_basis,
+            const Basis3f&              shading_basis,
             const void*                 osl_params,
             const Color3f&              weight)
         {
             const Params* p = reinterpret_cast<const Params*>(osl_params);
             InputValues* values =
                 composite_closure.add_closure<InputValues>(
-                    static_cast<ClosureID>(id()),
+                    id(),
                     shading_basis,
                     weight,
-                    Vector3d(p->N),
-                    Vector3d(p->T));
+                    p->N,
+                    p->T);
 
             values->m_base_color = Color3f(p->base_color);
             values->m_subsurface = saturate(p->subsurface);
@@ -392,7 +392,7 @@ namespace
 
         static void convert_closure(
             CompositeSurfaceClosure&    composite_closure,
-            const Basis3d&              shading_basis,
+            const Basis3f&              shading_basis,
             const void*                 osl_params,
             const Color3f&              weight)
         {
@@ -407,8 +407,8 @@ namespace
                         GlassGGXID,
                         shading_basis,
                         weight,
-                        Vector3d(p->N),
-                        Vector3d(p->T));
+                        p->N,
+                        p->T);
             }
             else if (p->dist == g_beckmann_str)
             {
@@ -417,8 +417,8 @@ namespace
                         GlassBeckmannID,
                         shading_basis,
                         weight,
-                        Vector3d(p->N),
-                        Vector3d(p->T));
+                        p->N,
+                        p->T);
             }
             else
             {
@@ -484,7 +484,7 @@ namespace
 
         static void convert_closure(
             CompositeSurfaceClosure&    composite_closure,
-            const Basis3d&              shading_basis,
+            const Basis3f&              shading_basis,
             const void*                 osl_params,
             const Color3f&              weight)
         {
@@ -499,8 +499,8 @@ namespace
                         GlossyGGXID,
                         shading_basis,
                         weight,
-                        Vector3d(p->N),
-                        Vector3d(p->T));
+                        p->N,
+                        p->T);
             }
             else if (p->dist == g_beckmann_str)
             {
@@ -509,8 +509,8 @@ namespace
                         GlossyBeckmannID,
                         shading_basis,
                         weight,
-                        Vector3d(p->N),
-                        Vector3d(p->T));
+                        p->N,
+                        p->T);
             }
             else
             {
@@ -600,7 +600,7 @@ namespace
 
         static void convert_closure(
             CompositeSurfaceClosure&    composite_closure,
-            const Basis3d&              shading_basis,
+            const Basis3f&              shading_basis,
             const void*                 osl_params,
             const Color3f&              weight)
         {
@@ -615,8 +615,8 @@ namespace
                         MetalGGXID,
                         shading_basis,
                         weight,
-                        Vector3d(p->N),
-                        Vector3d(p->T));
+                        p->N,
+                        p->T);
             }
             else if (p->dist == g_beckmann_str)
             {
@@ -625,8 +625,8 @@ namespace
                         MetalBeckmannID,
                         shading_basis,
                         weight,
-                        Vector3d(p->N),
-                        Vector3d(p->T));
+                        p->N,
+                        p->T);
             }
             else
             {
@@ -679,17 +679,17 @@ namespace
 
         static void convert_closure(
             CompositeSurfaceClosure&    composite_closure,
-            const Basis3d&              shading_basis,
+            const Basis3f&              shading_basis,
             const void*                 osl_params,
             const Color3f&              weight)
         {
             const Params* p = reinterpret_cast<const Params*>(osl_params);
             InputValues* values =
                 composite_closure.add_closure<InputValues>(
-                    static_cast<ClosureID>(id()),
+                    id(),
                     shading_basis,
                     weight,
-                    Vector3d(p->N));
+                    p->N);
 
             values->m_reflectance.set(1.0f);
             values->m_reflectance_multiplier = 1.0;
@@ -731,17 +731,17 @@ namespace
 
         static void convert_closure(
             CompositeSurfaceClosure&    composite_closure,
-            const Basis3d&              shading_basis,
+            const Basis3f&              shading_basis,
             const void*                 osl_params,
             const Color3f&              weight)
         {
             const Params* p = reinterpret_cast<const Params*>(osl_params);
             InputValues* values =
                 composite_closure.add_closure<InputValues>(
-                    static_cast<ClosureID>(id()),
+                    id(),
                     shading_basis,
                     weight,
-                    Vector3d(p->N));
+                    p->N);
 
             values->m_reflectance.set(1.0f);
             values->m_reflectance_multiplier = 1.0;
@@ -786,7 +786,7 @@ namespace
 
         static void convert_closure(
             CompositeSubsurfaceClosure&     composite_closure,
-            const Basis3d&                  shading_basis,
+            const Basis3f&                  shading_basis,
             const void*                     osl_params,
             const Color3f&                  weight)
         {
@@ -800,7 +800,7 @@ namespace
                         SubsurfaceNormalizedDiffusionID,
                         shading_basis,
                         weight,
-                        Vector3d(p->N));
+                        p->N);
 
                 values->m_weight = 1.0;
                 values->m_reflectance = Color3f(p->reflectance);
@@ -823,7 +823,7 @@ namespace
                             SubsurfaceBetterDipoleID,
                             shading_basis,
                             weight,
-                            Vector3d(p->N));
+                            p->N);
                 }
                 else if (p->profile == g_standard_dipole_profile_str)
                 {
@@ -832,7 +832,7 @@ namespace
                             SubsurfaceStandardDipoleID,
                             shading_basis,
                             weight,
-                            Vector3d(p->N));
+                            p->N);
                 }
                 else if (p->profile == g_directional_dipole_profile_str)
                 {
@@ -841,7 +841,7 @@ namespace
                             SubsurfaceDirectionalDipoleID,
                             shading_basis,
                             weight,
-                            Vector3d(p->N));
+                            p->N);
                 }
                 else
                 {
@@ -895,20 +895,20 @@ namespace
 
         static void convert_closure(
             CompositeSurfaceClosure&    composite_closure,
-            const Basis3d&              shading_basis,
+            const Basis3f&              shading_basis,
             const void*                 osl_params,
             const Color3f&              weight)
         {
             const Params* p = reinterpret_cast<const Params*>(osl_params);
             InputValues* values =
                 composite_closure.add_closure<InputValues>(
-                    static_cast<ClosureID>(id()),
+                    id(),
                     shading_basis,
                     weight,
-                    Vector3d(p->N));
+                    p->N);
 
             values->m_transmittance.set(1.0f);
-            values->m_transmittance_multiplier = 1.0;
+            values->m_transmittance_multiplier = 1.0f;
         }
     };
 
@@ -978,14 +978,14 @@ void CompositeClosure::compute_cdf()
     const size_t closure_count = get_num_closures();
     if (closure_count > 0)
     {
-        double total_weight = 0.0;
+        float total_weight = 0.0f;
         for (size_t i = 0; i < closure_count; ++i)
         {
             total_weight += m_pdf_weights[i];
             m_cdf[i] = total_weight;
         }
 
-        const double rcp_total_weight = 1.0 / total_weight;
+        const float rcp_total_weight = 1.0f / total_weight;
 
         for (size_t i = 0; i < closure_count; ++i)
             m_pdf_weights[i] *= rcp_total_weight;
@@ -993,25 +993,25 @@ void CompositeClosure::compute_cdf()
         for (size_t i = 0; i < closure_count - 1; ++i)
             m_cdf[i] *= rcp_total_weight;
 
-        m_cdf[closure_count - 1] = 1.0;
+        m_cdf[closure_count - 1] = 1.0f;
     }
 }
 
-size_t CompositeClosure::choose_closure(const double w) const
+size_t CompositeClosure::choose_closure(const float w) const
 {
     return sample_cdf_linear_search(m_cdf, w);
 }
 
 void CompositeClosure::compute_closure_shading_basis(
-    const Vector3d& normal,
-    const Basis3d&  original_shading_basis)
+    const Vector3f& normal,
+    const Basis3f&  original_shading_basis)
 {
-    const double normal_square_norm = square_norm(normal);
-    if APPLESEED_LIKELY(normal_square_norm != 0.0)
+    const float normal_square_norm = square_norm(normal);
+    if APPLESEED_LIKELY(normal_square_norm != 0.0f)
     {
-        const double rcp_normal_norm = 1.0 / sqrt(normal_square_norm);
+        const float rcp_normal_norm = 1.0f / sqrt(normal_square_norm);
         m_bases[m_num_closures] =
-            Basis3d(
+            Basis3f(
                 normal * rcp_normal_norm,
                 original_shading_basis.get_tangent_u());
     }
@@ -1023,20 +1023,20 @@ void CompositeClosure::compute_closure_shading_basis(
 }
 
 void CompositeClosure::compute_closure_shading_basis(
-    const Vector3d& normal,
-    const Vector3d& tangent,
-    const Basis3d&  original_shading_basis)
+    const Vector3f& normal,
+    const Vector3f& tangent,
+    const Basis3f&  original_shading_basis)
 {
-    const double tangent_square_norm = square_norm(tangent);
-    if APPLESEED_LIKELY(tangent_square_norm != 0.0)
+    const float tangent_square_norm = square_norm(tangent);
+    if APPLESEED_LIKELY(tangent_square_norm != 0.0f)
     {
-        const double normal_square_norm = square_norm(normal);
-        if APPLESEED_LIKELY(normal_square_norm != 0.0)
+        const float normal_square_norm = square_norm(normal);
+        if APPLESEED_LIKELY(normal_square_norm != 0.0f)
         {
-            const double rcp_normal_norm = 1.0 / sqrt(normal_square_norm);
-            const double rcp_tangent_norm = 1.0 / sqrt(tangent_square_norm);
+            const float rcp_normal_norm = 1.0f / sqrt(normal_square_norm);
+            const float rcp_tangent_norm = 1.0f / sqrt(tangent_square_norm);
             m_bases[m_num_closures] =
-                Basis3d(
+                Basis3f(
                     normal * rcp_normal_norm,
                     tangent * rcp_tangent_norm);
         }
@@ -1057,9 +1057,9 @@ void CompositeClosure::compute_closure_shading_basis(
 template <typename InputValues>
 InputValues* CompositeClosure::add_closure(
     const ClosureID             closure_type,
-    const Basis3d&              original_shading_basis,
+    const Basis3f&              original_shading_basis,
     const Color3f&              weight,
-    const Vector3d&             normal)
+    const Vector3f&             normal)
 {
     return do_add_closure<InputValues>(
         closure_type,
@@ -1067,16 +1067,16 @@ InputValues* CompositeClosure::add_closure(
         weight,
         normal,
         false,
-        Vector3d(0.0));
+        Vector3f(0.0f));
 }
 
 template <typename InputValues>
 InputValues* CompositeClosure::add_closure(
     const ClosureID             closure_type,
-    const Basis3d&              original_shading_basis,
+    const Basis3f&              original_shading_basis,
     const Color3f&              weight,
-    const Vector3d&             normal,
-    const Vector3d&             tangent)
+    const Vector3f&             normal,
+    const Vector3f&             tangent)
 {
     return do_add_closure<InputValues>(
         closure_type,
@@ -1090,11 +1090,11 @@ InputValues* CompositeClosure::add_closure(
 template <typename InputValues>
 InputValues* CompositeClosure::do_add_closure(
     const ClosureID             closure_type,
-    const Basis3d&              original_shading_basis,
+    const Basis3f&              original_shading_basis,
     const Color3f&              weight,
-    const Vector3d&             normal,
+    const Vector3f&             normal,
     bool                        has_tangent,
-    const Vector3d&             tangent)
+    const Vector3f&             tangent)
 {
     // Check that InputValues is included in our type list.
     typedef typename boost::mpl::contains<InputValuesTypeList, InputValues>::type value_in_list;
@@ -1110,16 +1110,15 @@ InputValues* CompositeClosure::do_add_closure(
     assert(m_num_bytes + sizeof(InputValues) <= MaxPoolSize);
 
     // We use the luminance of the weight as the BSDF weight.
-    const double w = luminance(weight);
-    assert(w > 0.0);
+    const float w = luminance(weight);
+    assert(w > 0.0f);
 
     m_pdf_weights[m_num_closures] = w;
     m_weights[m_num_closures] = weight;
 
     if (!has_tangent)
         compute_closure_shading_basis(normal, original_shading_basis);
-    else
-        compute_closure_shading_basis(normal, tangent, original_shading_basis);
+    else compute_closure_shading_basis(normal, tangent, original_shading_basis);
 
     m_closure_types[m_num_closures] = closure_type;
 
@@ -1141,7 +1140,7 @@ InputValues* CompositeClosure::do_add_closure(
 BOOST_STATIC_ASSERT(sizeof(CompositeSurfaceClosure) <= InputEvaluator::DataSize);
 
 CompositeSurfaceClosure::CompositeSurfaceClosure(
-    const Basis3d&              original_shading_basis,
+    const Basis3f&              original_shading_basis,
     const OSL::ClosureColor*    ci)
   : CompositeClosure()
   , m_num_iors(0)
@@ -1152,43 +1151,43 @@ CompositeSurfaceClosure::CompositeSurfaceClosure(
     if (m_num_iors == 0)
     {
         m_num_iors = 1;
-        m_iors[0] = 1.0;
+        m_iors[0] = 1.0f;
         return;
     }
 
     // Build the IOR CDF in place if needed.
     if (m_num_iors > 1)
     {
-        double total_weight = m_ior_cdf[0];
+        float total_weight = m_ior_cdf[0];
         for (size_t i = 1; i < m_num_iors; ++i)
         {
             total_weight += m_ior_cdf[i];
             m_ior_cdf[i] = total_weight;
         }
 
-        const double rcp_total_weight = 1.0 / total_weight;
+        const float rcp_total_weight = 1.0f / total_weight;
 
         for (size_t i = 0; i < m_num_iors - 1; ++i)
             m_ior_cdf[i] *= rcp_total_weight;
 
-        m_ior_cdf[m_num_iors - 1] = 1.0;
+        m_ior_cdf[m_num_iors - 1] = 1.0f;
     }
 }
 
 void CompositeSurfaceClosure::add_ior(
     const foundation::Color3f&  weight,
-    const double                ior)
+    const float                 ior)
 {
     // We use the luminance of the weight as the IOR weight.
-    const double w = luminance(weight);
-    assert(w > 0.0);
+    const float w = luminance(weight);
+    assert(w > 0.0f);
 
     m_iors[m_num_iors] = ior;
     m_ior_cdf[m_num_iors] = w;
     ++m_num_iors;
 }
 
-double CompositeSurfaceClosure::choose_ior(const double w) const
+float CompositeSurfaceClosure::choose_ior(const float w) const
 {
     if APPLESEED_LIKELY(m_num_iors == 1)
         return m_iors[0];
@@ -1199,7 +1198,7 @@ double CompositeSurfaceClosure::choose_ior(const double w) const
 
 void CompositeSurfaceClosure::process_closure_tree(
     const OSL::ClosureColor*    closure,
-    const Basis3d&              original_shading_basis,
+    const Basis3f&              original_shading_basis,
     const Color3f&              weight)
 {
     if (closure == 0)
@@ -1247,7 +1246,7 @@ void CompositeSurfaceClosure::process_closure_tree(
 BOOST_STATIC_ASSERT(sizeof(CompositeSubsurfaceClosure) <= InputEvaluator::DataSize);
 
 CompositeSubsurfaceClosure::CompositeSubsurfaceClosure(
-    const Basis3d&              original_shading_basis,
+    const Basis3f&              original_shading_basis,
     const OSL::ClosureColor*    ci)
 {
     process_closure_tree(ci, original_shading_basis, Color3f(1.0f));
@@ -1256,7 +1255,7 @@ CompositeSubsurfaceClosure::CompositeSubsurfaceClosure(
 
 void CompositeSubsurfaceClosure::process_closure_tree(
     const OSL::ClosureColor*    closure,
-    const Basis3d&              original_shading_basis,
+    const Basis3f&              original_shading_basis,
     const foundation::Color3f&  weight)
 {
     if (closure == 0)
@@ -1301,7 +1300,7 @@ void CompositeSubsurfaceClosure::process_closure_tree(
             }
             else if (c->id >= FirstLayeredClosure)
             {
-                // For now, we just recurse...
+                // For now, we just recurse.
                 const OSL::ClosureColor* nested = get_nested_closure_color(c->id, c->data());
                 process_closure_tree(nested, original_shading_basis, weight * Color3f(c->w));
             }
@@ -1320,16 +1319,15 @@ BOOST_STATIC_ASSERT(sizeof(CompositeEmissionClosure) <= InputEvaluator::DataSize
 CompositeEmissionClosure::CompositeEmissionClosure(
     const OSL::ClosureColor*    ci)
 {
-    m_total_weight = Color3f(0.0f);
-    process_closure_tree(ci, Color3f(1.0f));
+    Color3f total_weight(0.0f);
+    process_closure_tree(ci, Color3f(1.0f), total_weight);
 
-    const float max_comp = max_value(m_total_weight);
+    const float max_comp = max_value(total_weight);
 
     if (max_comp != 0.0f)
     {
-        m_total_weight /= max_comp;
-        m_edf_values.m_radiance = m_total_weight;
-        m_edf_values.m_radiance_multiplier = static_cast<double>(max_comp);
+        m_edf_values.m_radiance = total_weight / max_comp;
+        m_edf_values.m_radiance_multiplier = max_comp;
     }
     else
     {
@@ -1340,7 +1338,8 @@ CompositeEmissionClosure::CompositeEmissionClosure(
 
 void CompositeEmissionClosure::process_closure_tree(
     const OSL::ClosureColor*    closure,
-    const Color3f&              weight)
+    const Color3f&              weight,
+    Color3f&                    total_weight)
 {
     if (closure == 0)
         return;
@@ -1354,15 +1353,15 @@ void CompositeEmissionClosure::process_closure_tree(
       case OSL::ClosureColor::MUL:
         {
             const OSL::ClosureMul* c = reinterpret_cast<const OSL::ClosureMul*>(closure);
-            process_closure_tree(c->closure, weight * Color3f(c->weight));
+            process_closure_tree(c->closure, weight * Color3f(c->weight), total_weight);
         }
         break;
 
       case OSL::ClosureColor::ADD:
         {
             const OSL::ClosureAdd* c = reinterpret_cast<const OSL::ClosureAdd*>(closure);
-            process_closure_tree(c->closureA, weight);
-            process_closure_tree(c->closureB, weight);
+            process_closure_tree(c->closureA, weight, total_weight);
+            process_closure_tree(c->closureB, weight, total_weight);
         }
         break;
 
@@ -1371,14 +1370,13 @@ void CompositeEmissionClosure::process_closure_tree(
             const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
 
             if (c->id == EmissionID)
-                m_total_weight += weight * Color3f(c->w);
+                total_weight += weight * Color3f(c->w);
             else if (c->id >= FirstLayeredClosure)
             {
                 // For now, we just recurse.
                 const OSL::ClosureColor* nested = get_nested_closure_color(c->id, c->data());
-                process_closure_tree(nested, weight * Color3f(c->w));
+                process_closure_tree(nested, weight * Color3f(c->w), total_weight);
             }
-
         }
         break;
     }
@@ -1430,8 +1428,7 @@ namespace
                         const OSL::ClosureColor* nested = get_nested_closure_color(c->id, c->data());
                         return Color3f(c->w) * do_process_closure_id_tree(nested, closure_id);
                     }
-                    else
-                        return Color3f(0.0f);
+                    else return Color3f(0.0f);
                 }
                 break;
             }

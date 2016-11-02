@@ -66,7 +66,7 @@ namespace
           : EnvironmentShader(name, params)
         {
             m_inputs.declare("color", InputFormatSpectralIlluminance);
-            m_inputs.declare("alpha", InputFormatScalar, "1.0");
+            m_inputs.declare("alpha", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -100,8 +100,8 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            Spectrum        m_color;
-            ScalarInput     m_alpha;
+            Spectrum    m_color;
+            float       m_alpha;
         };
     };
 }

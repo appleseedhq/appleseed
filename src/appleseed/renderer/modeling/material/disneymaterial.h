@@ -90,7 +90,7 @@ class APPLESEED_DLLSYMBOL DisneyMaterialLayer
     void evaluate_expressions(
         const ShadingPoint&             shading_point,
         OIIO::TextureSystem&            texture_system,
-        foundation::Color3d&            base_color,
+        foundation::Color3f&            base_color,
         DisneyBRDFInputValues&          values) const;
 
     static foundation::DictionaryArray get_input_metadata();

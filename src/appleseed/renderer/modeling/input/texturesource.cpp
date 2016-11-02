@@ -398,8 +398,8 @@ Color4f TextureSource::sample_texture(
                 t00, t10, t01, t11);
 
             // Compute weights.
-            const float wx1 = static_cast<float>(p.x - ix);
-            const float wy1 = static_cast<float>(p.y - iy);
+            const float wx1 = p.x - ix;
+            const float wy1 = p.y - iy;
             const float wx0 = 1.0f - wx1;
             const float wy0 = 1.0f - wy1;
 

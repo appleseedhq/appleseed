@@ -37,7 +37,7 @@ using namespace std;
 
 TEST_SUITE(Foundation_Math_CDF)
 {
-    typedef CDF<int, double> CDF;
+    typedef foundation::CDF<int, double> CDF;
 
     TEST_CASE(Empty_GivenCDFInInitialState_ReturnsTrue)
     {
@@ -152,7 +152,7 @@ TEST_SUITE(Foundation_Math_CDF)
         EXPECT_FEQ(0.8, result.second);
     }
 
-    TEST_CASE(2D_CDF_Exploration)
+    TEST_CASE(TwoDimensional_CDF_Exploration)
     {
         CDF child[2];
 

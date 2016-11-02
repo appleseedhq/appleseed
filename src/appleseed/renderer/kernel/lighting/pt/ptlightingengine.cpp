@@ -106,8 +106,8 @@ namespace
             const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
             const bool      m_next_event_estimation;        // use next event estimation?
 
-            const double    m_dl_light_sample_count;        // number of light samples used to estimate direct illumination
-            const double    m_ibl_env_sample_count;         // number of environment samples used to estimate IBL
+            const float     m_dl_light_sample_count;        // number of light samples used to estimate direct illumination
+            const float     m_ibl_env_sample_count;         // number of environment samples used to estimate IBL
 
             const bool      m_has_max_ray_intensity;
             const float     m_max_ray_intensity;
@@ -122,21 +122,21 @@ namespace
               , m_max_path_length(nz(params.get_optional<size_t>("max_path_length", 0)))
               , m_rr_min_path_length(nz(params.get_optional<size_t>("rr_min_path_length", 3)))
               , m_next_event_estimation(params.get_optional<bool>("next_event_estimation", true))
-              , m_dl_light_sample_count(params.get_optional<double>("dl_light_samples", 1.0))
-              , m_ibl_env_sample_count(params.get_optional<double>("ibl_env_samples", 1.0))
+              , m_dl_light_sample_count(params.get_optional<float>("dl_light_samples", 1.0f))
+              , m_ibl_env_sample_count(params.get_optional<float>("ibl_env_samples", 1.0f))
               , m_has_max_ray_intensity(params.strings().exist("max_ray_intensity"))
               , m_max_ray_intensity(params.get_optional<float>("max_ray_intensity", 0.0f))
             {
                 // Precompute the reciprocal of the number of light samples.
                 m_rcp_dl_light_sample_count =
-                    m_dl_light_sample_count > 0.0 && m_dl_light_sample_count < 1.0
-                        ? static_cast<float>(1.0 / m_dl_light_sample_count)
+                    m_dl_light_sample_count > 0.0f && m_dl_light_sample_count < 1.0f
+                        ? 1.0f / m_dl_light_sample_count
                         : 0.0f;
 
                 // Precompute the reciprocal of the number of environment samples.
                 m_rcp_ibl_env_sample_count =
-                    m_ibl_env_sample_count > 0.0 && m_ibl_env_sample_count < 1.0
-                        ? static_cast<float>(1.0 / m_ibl_env_sample_count)
+                    m_ibl_env_sample_count > 0.0f && m_ibl_env_sample_count < 1.0f
+                        ? 1.0f / m_ibl_env_sample_count
                         : 0.0f;
             }
 
@@ -384,11 +384,11 @@ namespace
                 // Evaluate the environment EDF.
                 InputEvaluator input_evaluator(m_texture_cache);
                 Spectrum env_radiance;
-                double env_prob;
+                float env_prob;
                 m_env_edf->evaluate(
                     m_shading_context,
                     input_evaluator,
-                    -vertex.m_outgoing.get_value(),
+                    -Vector3f(vertex.m_outgoing.get_value()),
                     env_radiance,
                     env_prob);
 
@@ -594,7 +594,7 @@ namespace
                     1,
                     m_is_indirect_lighting);
                 Vector3d incoming;
-                double incoming_prob;
+                float incoming_prob;
                 Spectrum radiance;
                 if (!integrator.compute_incoming_radiance(
                         m_sampling_context,
@@ -608,26 +608,25 @@ namespace
                 vertex.m_bssrdf->evaluate(
                     vertex.m_bssrdf_data,
                     *vertex.m_shading_point,
-                    vertex.m_outgoing.get_value(),
+                    Vector3f(vertex.m_outgoing.get_value()),
                     *vertex.m_incoming_point,
-                    incoming,
+                    Vector3f(incoming),
                     rd);
 
-                const double cos_in = abs(dot(incoming, vertex.m_incoming_point->get_shading_normal()));
-                double weight = cos_in / vertex.m_incoming_point_prob;
+                const float cos_in = static_cast<float>(abs(dot(incoming, vertex.m_incoming_point->get_shading_normal())));
+                float weight = cos_in / vertex.m_incoming_point_prob;
 
                 // Multiple importance sampling.
                 const bool last_vertex = vertex.m_path_length == m_params.m_max_path_length;
                 if (incoming_prob != BSDF::DiracDelta && !last_vertex)
                 {
-                    const double cos_in = abs(dot(incoming, vertex.m_incoming_point->get_shading_normal()));
-                    const double bsdf_prob = cos_in * RcpPi<double>();
+                    const float bsdf_prob = cos_in * RcpPi<float>();
                     weight *= mis_power2(incoming_prob, bsdf_prob);
                 }
 
                 // Add the direct lighting contributions.
                 radiance *= rd;
-                radiance *= static_cast<float>(weight);
+                radiance *= weight;
                 vertex_radiance += radiance;
             }
 
@@ -741,7 +740,7 @@ namespace
                         ibl_radiance);
                 }
 
-                ibl_radiance /= static_cast<float>(vertex.m_incoming_point_prob);
+                ibl_radiance /= vertex.m_incoming_point_prob;
 
                 // Divide by the sample count when this number is less than 1.
                 if (m_params.m_rcp_ibl_env_sample_count > 0.0f)
@@ -767,12 +766,12 @@ namespace
                 // Multiple importance sampling.
                 if (vertex.m_prev_mode != ScatteringMode::Specular)
                 {
-                    const double light_sample_count = max(m_params.m_dl_light_sample_count, 1.0);
-                    const double mis_weight =
+                    const float light_sample_count = max(m_params.m_dl_light_sample_count, 1.0f);
+                    const float mis_weight =
                         mis_power2(
-                            1 * vertex.get_bsdf_prob_area(),
+                            1.0f * vertex.get_bsdf_prob_area(),
                             light_sample_count * vertex.get_light_prob_area(m_light_sampler));
-                    emitted_radiance *= static_cast<float>(mis_weight);
+                    emitted_radiance *= mis_weight;
                 }
 
                 // Add the emitted light contributions.
@@ -795,24 +794,24 @@ namespace
                 // Evaluate the environment EDF.
                 InputEvaluator input_evaluator(m_texture_cache);
                 Spectrum env_radiance;
-                double env_prob;
+                float env_prob;
                 m_env_edf->evaluate(
                     m_shading_context,
                     input_evaluator,
-                    -vertex.m_outgoing.get_value(),
+                    -Vector3f(vertex.m_outgoing.get_value()),
                     env_radiance,
                     env_prob);
 
                 // Multiple importance sampling.
                 if (vertex.m_prev_mode != ScatteringMode::Specular)
                 {
-                    assert(vertex.m_prev_prob > 0.0);
-                    const double env_sample_count = max(m_params.m_ibl_env_sample_count, 1.0);
-                    const double mis_weight =
+                    assert(vertex.m_prev_prob > 0.0f);
+                    const float env_sample_count = max(m_params.m_ibl_env_sample_count, 1.0f);
+                    const float mis_weight =
                         mis_power2(
-                            1.0 * vertex.m_prev_prob,
+                            1.0f * vertex.m_prev_prob,
                             env_sample_count * env_prob);
-                    env_radiance *= static_cast<float>(mis_weight);
+                    env_radiance *= mis_weight;
                 }
 
                 // Apply path throughput.

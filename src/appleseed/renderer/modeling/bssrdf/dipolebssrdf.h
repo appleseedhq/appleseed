@@ -57,23 +57,23 @@ namespace renderer
 
 APPLESEED_DECLARE_INPUT_VALUES(DipoleBSSRDFInputValues)
 {
-    ScalarInput m_weight;
+    float       m_weight;
     Spectrum    m_reflectance;
-    ScalarInput m_reflectance_multiplier;
+    float       m_reflectance_multiplier;
     Spectrum    m_mfp;
-    ScalarInput m_mfp_multiplier;
+    float       m_mfp_multiplier;
     Spectrum    m_sigma_a;
     Spectrum    m_sigma_s;
-    ScalarInput m_g;
-    ScalarInput m_ior;
+    float       m_g;
+    float       m_ior;
 
     // Precomputed values.
     Spectrum    m_alpha_prime;
     Spectrum    m_sigma_tr;
     Spectrum    m_channel_pdf;
     Spectrum    m_channel_cdf;
-    ScalarInput m_rmax2;
-    ScalarInput m_eta;
+    float       m_rmax2;
+    float       m_eta;
     Spectrum    m_dirpole_reparam_weight;
 };
 
@@ -99,13 +99,13 @@ class DipoleBSSRDF
         const void*                 data,
         BSSRDFSample&               sample) const APPLESEED_OVERRIDE;
 
-    virtual double evaluate_pdf(
+    virtual float evaluate_pdf(
         const void*                 data,
         const size_t                channel,
-        const double                radius) const APPLESEED_OVERRIDE;
+        const float                 radius) const APPLESEED_OVERRIDE;
 
   private:
-    virtual double get_eta(
+    virtual float get_eta(
         const void*                 data) const APPLESEED_OVERRIDE;
 
   protected:
@@ -127,8 +127,8 @@ class DipoleBSSRDF
             make_reflectance_and_mfp_compatible(values->m_reflectance, values->m_mfp);
 
             // Apply multipliers to input values.
-            values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
-            values->m_mfp *= static_cast<float>(values->m_mfp_multiplier);
+            values->m_reflectance *= values->m_reflectance_multiplier;
+            values->m_mfp *= values->m_mfp_multiplier;
 
             // Clamp input values.
             foundation::clamp_in_place(values->m_reflectance, 0.001f, 0.999f);
@@ -198,7 +198,7 @@ inline size_t DipoleBSSRDF::compute_input_data_size(
     return foundation::align(sizeof(DipoleBSSRDFInputValues), 16);
 }
 
-inline double DipoleBSSRDF::get_eta(
+inline float DipoleBSSRDF::get_eta(
     const void*             data) const
 {
     return reinterpret_cast<const DipoleBSSRDFInputValues*>(data)->m_eta;

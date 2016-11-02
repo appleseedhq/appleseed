@@ -182,7 +182,7 @@ void AOVoxelTree::build(
     BuilderType&    builder)
 {
     // The voxel tree is built using the scene geometry at the middle of the shutter interval.
-    const double time = scene.get_active_camera()->get_shutter_middle_time();
+    const float time = scene.get_active_camera()->get_shutter_middle_time();
 
     // Loop over the assembly instances of the scene.
     for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
@@ -333,7 +333,7 @@ double compute_fast_ambient_occlusion(
     for (size_t i = 0; i < sample_count; ++i)
     {
         // Generate a cosine-weighted direction over the unit hemisphere.
-        ray.m_dir = sample_hemisphere_cosine(child_sampling_context.next_vector2<2>());
+        ray.m_dir = sample_hemisphere_cosine(child_sampling_context.next2<Vector2d>());
 
         // Transform the direction to world space.
         ray.m_dir = shading_basis.transform_to_parent(ray.m_dir);

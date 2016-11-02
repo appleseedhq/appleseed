@@ -121,8 +121,13 @@ template <typename T, size_t N> Vector<T, N> normalize(const Vector<T, N>& v);
 template <typename T, size_t N> Vector<T, N> safe_normalize(const Vector<T, N>& v, const Vector<T, N>& fallback);
 template <typename T, size_t N> Vector<T, N> safe_normalize(const Vector<T, N>& v);
 
-// Bring the norm of a nearly-unit vector closer to 1.
-template <typename T, size_t N> Vector<T, N> improve_normalization(const Vector<T, N>& v);
+// Bring the norm of a nearly-unit vector closer to 1 by performing a single Newton-Raphson step.
+template <typename T, size_t N>
+Vector<T, N> improve_normalization(const Vector<T, N>& v);
+
+// Bring the norm of a nearly-unit vector closer to 1 by performing a set number of Newton-Raphson steps.
+template <size_t Steps, typename T, size_t N>
+Vector<T, N> improve_normalization(const Vector<T, N>& v);
 
 // Return true if a vector is normalized (unit-length), false otherwise.
 template <typename T, size_t N> bool is_normalized(const Vector<T, N>& v);
@@ -757,13 +762,24 @@ inline Vector<T, N> safe_normalize(const Vector<T, N>& v)
 template <typename T, size_t N>
 inline Vector<T, N> improve_normalization(const Vector<T, N>& v)
 {
-    return v * (T(3.0) - square_norm(v)) * T(0.5);
+    return improve_normalization<1, T, N>(v);
+}
+
+template <size_t Steps, typename T, size_t N>
+inline Vector<T, N> improve_normalization(const Vector<T, N>& v)
+{
+    Vector<T, N> result = v;
+
+    for (size_t i = 0; i < Steps; ++i)
+        result *= (T(3.0) - square_norm(result)) * T(0.5);
+
+    return result;
 }
 
 template <typename T, size_t N>
 inline bool is_normalized(const Vector<T, N>& v)
 {
-    return feq(square_norm(v), T(1.0));
+    return feq(square_norm(v), T(1.0), make_eps<T>(1.0e-4f, 1.0e-5));
 }
 
 template <typename T, size_t N>

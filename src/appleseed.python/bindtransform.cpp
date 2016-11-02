@@ -88,7 +88,7 @@ namespace
 
     void transform_seq_set_transform(
         TransformSequence*              seq,
-        const double                    time,
+        const float                     time,
         const UnalignedTransformd&      transform)
     {
         const Transformd xform(
@@ -102,7 +102,7 @@ namespace
         const TransformSequence*        seq,
         const size_t                    index)
     {
-        double time;
+        float time;
         Transformd xform;
         seq->get_transform(index, time, xform);
         return bpy::make_tuple(time, UnalignedTransformd(xform));
@@ -114,7 +114,7 @@ namespace
 
         for (size_t i = 0, e = seq->size(); i < e; ++i)
         {
-            double time;
+            float time;
             Transformd xform;
             seq->get_transform(i, time, xform);
             bpy::tuple t = bpy::make_tuple(time, UnalignedTransformd(xform));

@@ -76,7 +76,7 @@ class TextureSource
     virtual void evaluate(
         TextureCache&                       texture_cache,
         const foundation::Vector2f&         uv,
-        ScalarInput&                        scalar) const APPLESEED_OVERRIDE;
+        float&                              scalar) const APPLESEED_OVERRIDE;
     virtual void evaluate(
         TextureCache&                       texture_cache,
         const foundation::Vector2f&         uv,
@@ -155,11 +155,10 @@ inline const TextureInstance& TextureSource::get_texture_instance() const
 inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
     const foundation::Vector2f&             uv,
-    ScalarInput&                            scalar) const
+    float&                                  scalar) const
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
-
-    scalar = static_cast<ScalarInput>(color[0]);
+    scalar = color[0];
 }
 
 inline void TextureSource::evaluate(
@@ -168,7 +167,6 @@ inline void TextureSource::evaluate(
     foundation::Color3f&                    linear_rgb) const
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
-
     linear_rgb = color.rgb();
 }
 
@@ -178,7 +176,6 @@ inline void TextureSource::evaluate(
     Spectrum&                               spectrum) const
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
-
     spectrum = color.rgb();
 }
 
@@ -188,7 +185,6 @@ inline void TextureSource::evaluate(
     Alpha&                                  alpha) const
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
-
     evaluate_alpha(color, alpha);
 }
 
@@ -199,9 +195,7 @@ inline void TextureSource::evaluate(
     Alpha&                                  alpha) const
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
-
     linear_rgb = color.rgb();
-
     evaluate_alpha(color, alpha);
 }
 
@@ -212,9 +206,7 @@ inline void TextureSource::evaluate(
     Alpha&                                  alpha) const
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
-
     spectrum = color.rgb();
-
     evaluate_alpha(color, alpha);
 }
 

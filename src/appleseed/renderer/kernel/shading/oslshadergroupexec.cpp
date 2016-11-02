@@ -131,10 +131,10 @@ void OSLShaderGroupExec::execute_emission(
 void OSLShaderGroupExec::execute_bump(
     const ShaderGroup&              shader_group,
     const ShadingPoint&             shading_point,
-    const Vector2d&                 s) const
+    const Vector2f&                 s) const
 {
     // Choose between BSSRDF and BSDF.
-    if (shader_group.has_subsurface() && s[0] < 0.5)
+    if (shader_group.has_subsurface() && s[0] < 0.5f)
     {
         do_execute(
             shader_group,
@@ -142,7 +142,7 @@ void OSLShaderGroupExec::execute_bump(
             VisibilityFlags::SubsurfaceRay);
 
         CompositeSubsurfaceClosure c(
-            shading_point.get_shading_basis(),
+            Basis3f(shading_point.get_shading_basis()),
             shading_point.get_osl_shader_globals().Ci);
 
         // Pick a shading basis from one of the BSSRDF closures.
@@ -150,7 +150,7 @@ void OSLShaderGroupExec::execute_bump(
         {
             const size_t index = c.choose_closure(s[1]);
             shading_point.set_shading_basis(
-                c.get_closure_shading_basis(index));
+                Basis3d(c.get_closure_shading_basis(index)));
         }
     }
     else
@@ -161,7 +161,7 @@ void OSLShaderGroupExec::execute_bump(
             VisibilityFlags::CameraRay);
 
         CompositeSurfaceClosure c(
-            shading_point.get_shading_basis(),
+            Basis3f(shading_point.get_shading_basis()),
             shading_point.get_osl_shader_globals().Ci);
 
         // Pick a shading basis from one of the BSDF closures.
@@ -169,7 +169,7 @@ void OSLShaderGroupExec::execute_bump(
         {
             const size_t index = c.choose_closure(s[1]);
             shading_point.set_shading_basis(
-                c.get_closure_shading_basis(index));
+                Basis3d(c.get_closure_shading_basis(index)));
         }
     }
 }
@@ -177,7 +177,7 @@ void OSLShaderGroupExec::execute_bump(
 void OSLShaderGroupExec::choose_subsurface_normal(
     const ShadingPoint&             shading_point,
     const void*                     bssrdf_data,
-    const double                    s) const
+    const float                     s) const
 {
     const CompositeSubsurfaceClosure* c =
         reinterpret_cast<const CompositeSubsurfaceClosure*>(bssrdf_data);
@@ -186,20 +186,20 @@ void OSLShaderGroupExec::choose_subsurface_normal(
     {
         const size_t index = c->choose_closure(s);
         shading_point.set_shading_basis(
-            c->get_closure_shading_basis(index));
+            Basis3d(c->get_closure_shading_basis(index)));
     }
 }
 
 Color3f OSLShaderGroupExec::execute_background(
     const ShaderGroup&              shader_group,
-    const Vector3d&                 outgoing) const
+    const Vector3f&                 outgoing) const
 {
     assert(m_osl_shading_context);
     assert(m_osl_thread_info);
 
     OSL::ShaderGlobals sg;
     memset(&sg, 0, sizeof(OSL::ShaderGlobals));
-    sg.I = Vector3f(outgoing);
+    sg.I = outgoing;
     sg.renderer = m_osl_shading_system.renderer();
     sg.raytype = VisibilityFlags::CameraRay;
 

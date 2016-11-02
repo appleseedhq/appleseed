@@ -130,16 +130,16 @@ class ShadingContext
     void execute_osl_bump(
         const ShaderGroup&          shader_group,
         const ShadingPoint&         shading_point,
-        const foundation::Vector2d& s) const;
+        const foundation::Vector2f& s) const;
 
     void choose_osl_subsurface_normal(
         const ShadingPoint&         shading_point,
         const void*                 bssrdf_data,
-        const double                s) const;
+        const float                 s) const;
 
     void execute_osl_background(
         const ShaderGroup&          shader_group,
-        const foundation::Vector3d& outgoing,
+        const foundation::Vector3f& outgoing,
         Spectrum&                   value) const;
 
     void* osl_mem_alloc(const size_t size) const;

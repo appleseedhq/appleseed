@@ -61,7 +61,6 @@ class ShadingRay
 {
   public:
     // Types.
-    typedef double                  ValueType;
     typedef foundation::Vector3d    VectorType;
     typedef foundation::Ray3d       RayType;
     typedef foundation::RayInfo3d   RayInfoType;
@@ -70,20 +69,20 @@ class ShadingRay
     class Time
     {
       public:
-        double                      m_absolute;                     // absolute time of the ray
-        double                      m_normalized;                   // time of the ray, relative to shutter open / close times
+        float                       m_absolute;                     // absolute time of the ray
+        float                       m_normalized;                   // time of the ray, relative to shutter open / close times
 
         static Time create_with_normalized_time(
-            const double            time,
-            const double            shutter_open,
-            const double            shutter_close);
+            const float             time,
+            const float             shutter_open,
+            const float             shutter_close);
 
         Time();                     // leave all fields uninitialized
 
       private:
         Time(
-            const double            absolute,
-            const double            normalized);
+            const float             absolute,
+            const float             normalized);
     };
 
     enum { MaxMediumCount = 8 };
@@ -92,7 +91,7 @@ class ShadingRay
     {
         const ObjectInstance*       m_object_instance;
         const BSDF*                 m_bsdf;
-        double                      m_ior;
+        float                       m_ior;
     };
 
     // Public members, in an order that optimizes packing.
@@ -116,8 +115,8 @@ class ShadingRay
     ShadingRay(
         const VectorType&           org,
         const VectorType&           dir,
-        const ValueType             tmin,
-        const ValueType             tmax,
+        const double                tmin,
+        const double                tmax,
         const Time&                 time,
         const VisibilityFlags::Type flags,
         const DepthType             depth);
@@ -130,7 +129,7 @@ class ShadingRay
         const ShadingRay&           source,
         const ObjectInstance*       object_instance,
         const BSDF*                 bsdf,
-        const double                ior);
+        const float                 ior);
 
     // Copy all media from the source ray except a given medium.
     void remove_medium(
@@ -144,10 +143,10 @@ class ShadingRay
     const ShadingRay::Medium* get_previous_medium() const;
 
     // Return the IOR of the medium the ray is currently in.
-    double get_current_ior() const;
+    float get_current_ior() const;
 
     // Return the IOR of the medium the ray would be in if it would leave the currently active medium.
-    double get_previous_ior() const;
+    float get_previous_ior() const;
 };
 
 
@@ -179,8 +178,8 @@ inline ShadingRay::ShadingRay(
 inline ShadingRay::ShadingRay(
     const VectorType&               org,
     const VectorType&               dir,
-    const ValueType                 tmin,
-    const ValueType                 tmax,
+    const double                    tmin,
+    const double                    tmax,
     const Time&                     time,
     const VisibilityFlags::Type     flags,
     const DepthType                 depth)
@@ -203,14 +202,14 @@ inline const ShadingRay::Medium* ShadingRay::get_previous_medium() const
     return m_medium_count > 1 ? &m_media[1] : 0;
 }
 
-inline double ShadingRay::get_current_ior() const
+inline float ShadingRay::get_current_ior() const
 {
-    return m_medium_count > 0 ? m_media[0].m_ior : 1.0;
+    return m_medium_count > 0 ? m_media[0].m_ior : 1.0f;
 }
 
-inline double ShadingRay::get_previous_ior() const
+inline float ShadingRay::get_previous_ior() const
 {
-    return m_medium_count > 1 ? m_media[1].m_ior : 1.0;
+    return m_medium_count > 1 ? m_media[1].m_ior : 1.0f;
 }
 
 
@@ -219,9 +218,9 @@ inline double ShadingRay::get_previous_ior() const
 //
 
 inline ShadingRay::Time ShadingRay::Time::create_with_normalized_time(
-    const double                    time,
-    const double                    shutter_open,
-    const double                    shutter_close)
+    const float                     time,
+    const float                     shutter_open,
+    const float                     shutter_close)
 {
     return
         Time(
@@ -234,13 +233,13 @@ inline ShadingRay::Time::Time()
 }
 
 inline ShadingRay::Time::Time(
-    const double                    absolute,
-    const double                    normalized)
+    const float                     absolute,
+    const float                     normalized)
   : m_absolute(absolute)
   , m_normalized(normalized)
 {
-    assert(m_normalized >= 0.0);
-    assert(m_normalized < 1.0);
+    assert(m_normalized >= 0.0f);
+    assert(m_normalized < 1.0f);
 }
 
 }       // namespace renderer

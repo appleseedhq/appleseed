@@ -243,11 +243,11 @@ namespace
         }
 
       private:
-        static double max_variation_to_quality(const double variation)
+        static float max_variation_to_quality(const float variation)
         {
-            const double q = -log(variation, 10.0);
-            const int n = static_cast<int>(q * 10.0);
-            return static_cast<double>(n) / 10.0;
+            const float q = -log(variation, 10.0f);
+            const int n = static_cast<int>(q * 10.0f);
+            return static_cast<float>(n) / 10.0f;
         }
 
         void introduce_pixel_renderers()
@@ -274,7 +274,7 @@ namespace
                     copy_if_exist(apr, gtr, "min_samples");
                     copy_if_exist(apr, gtr, "max_samples");
                     if (gtr.strings().exist("max_variation"))
-                        apr.insert("quality", max_variation_to_quality(gtr.get<double>("max_variation")));
+                        apr.insert("quality", max_variation_to_quality(gtr.get<float>("max_variation")));
                     copy_if_exist(apr, "enable_diagnostics", gtr, "enable_adaptive_sampler_diagnostics");
                     root.insert("adaptive_pixel_renderer", apr);
                 }
@@ -458,18 +458,18 @@ namespace
         class BlinnExponentFunction
         {
           public:
-            explicit BlinnExponentFunction(const double e)
+            explicit BlinnExponentFunction(const float e)
               : m_e(e)
             {
             }
 
-            double operator()(const double x) const
+            float operator()(const float x) const
             {
-                return 100.0 * pow_int<3>(x) + 9900.0 * pow_int<30>(x) - m_e;
+                return 100.0f * pow_int<3>(x) + 9900.0f * pow_int<30>(x) - m_e;
             }
 
           private:
-            const double m_e;
+            const float m_e;
         };
 
         static void update_assemblies(const AssemblyContainer& assemblies)
@@ -498,10 +498,10 @@ namespace
                 if (mdf_param.empty())
                     continue;
 
-                double mdf_param_value;
+                float mdf_param_value;
                 if (try_parse_scalar(mdf_param, mdf_param_value))
                 {
-                    double glossiness;
+                    float glossiness;
                     if (!mdf_param_to_glossiness(mdf, mdf_param_value, glossiness))
                     {
                         RENDERER_LOG_ERROR(
@@ -521,10 +521,10 @@ namespace
                     {
                         const ColorSource source(*color);
 
-                        double mdf_param_value;
+                        float mdf_param_value;
                         source.evaluate_uniform(mdf_param_value);
 
-                        double glossiness;
+                        float glossiness;
                         if (!mdf_param_to_glossiness(mdf, mdf_param_value, glossiness))
                         {
                             RENDERER_LOG_ERROR(
@@ -569,11 +569,11 @@ namespace
             }
         }
 
-        static bool try_parse_scalar(const string& s, double& value)
+        static bool try_parse_scalar(const string& s, float& value)
         {
             try
             {
-                value = from_string<double>(s);
+                value = from_string<float>(s);
                 return true;
             }
             catch (const ExceptionStringConversionError&)
@@ -612,16 +612,16 @@ namespace
             return 0;
         }
 
-        static bool mdf_param_to_glossiness(const string& mdf, const double mdf_param, double& glossiness)
+        static bool mdf_param_to_glossiness(const string& mdf, const float mdf_param, float& glossiness)
         {
             if (mdf == "blinn")
             {
                 const BlinnExponentFunction f(mdf_param);
-                return find_root_bisection(f, 0.0, 1.0, 1.0e-6, 100, glossiness);
+                return find_root_bisection(f, 0.0f, 1.0f, 1.0e-6f, 100, glossiness);
             }
             else
             {
-                glossiness = saturate(1.0 - mdf_param);
+                glossiness = saturate(1.0f - mdf_param);
                 return true;
             }
         }
@@ -852,8 +852,8 @@ namespace
             string      m_bsdf_transmittance;
             string      m_bsdf_transmittance_multiplier;
             string      m_bsdf_fresnel_multiplier;
-            double      m_bsdf_from_ior;
-            double      m_bsdf_to_ior;
+            float       m_bsdf_from_ior;
+            float       m_bsdf_to_ior;
             string      m_bssrdf;
             string      m_edf;
             string      m_alpha_map;
@@ -984,8 +984,8 @@ namespace
                 info.m_bsdf_transmittance = bsdf_params.get<string>("transmittance");
                 info.m_bsdf_transmittance_multiplier = bsdf_params.get_optional<string>("transmittance_multiplier", "1.0");
                 info.m_bsdf_fresnel_multiplier = bsdf_params.get_optional<string>("fresnel_multiplier", "1.0");
-                info.m_bsdf_from_ior = bsdf_params.get<double>("from_ior");
-                info.m_bsdf_to_ior = bsdf_params.get<double>("to_ior");
+                info.m_bsdf_from_ior = bsdf_params.get<float>("from_ior");
+                info.m_bsdf_to_ior = bsdf_params.get<float>("to_ior");
                 info.m_bssrdf = material_params.get_optional<string>("bssrdf", "");
                 info.m_edf = material_params.get_optional<string>("edf", "");
                 info.m_alpha_map = material_params.get_optional<string>("alpha_map", "");
@@ -1062,8 +1062,8 @@ namespace
             bsdf_params.strings().remove("from_ior");
             bsdf_params.strings().remove("to_ior");
 
-            const double ior =
-                feq(info.m_bsdf_from_ior, 1.0) ? info.m_bsdf_to_ior : info.m_bsdf_from_ior;
+            const float ior =
+                feq(info.m_bsdf_from_ior, 1.0f) ? info.m_bsdf_to_ior : info.m_bsdf_from_ior;
             bsdf_params.strings().insert("ior", ior);
 
             cleanup_entity_name(*info.m_bsdf);

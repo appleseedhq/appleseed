@@ -81,16 +81,16 @@ class APPLESEED_DLLSYMBOL Camera
     const TransformSequence& transform_sequence() const;
 
     // Get the shutter open time.
-    double get_shutter_open_time() const;
+    float get_shutter_open_time() const;
 
     // Get the shutter close time.
-    double get_shutter_close_time() const;
+    float get_shutter_close_time() const;
 
     // Get the time at the middle of the shutter interval.
-    double get_shutter_middle_time() const;
+    float get_shutter_middle_time() const;
 
     // Get the amount of time the shutter is open.
-    double get_shutter_open_time_interval() const;
+    float get_shutter_open_time_interval() const;
 
     // This method is called once before rendering.
     // Returns true on success, false otherwise.
@@ -126,7 +126,7 @@ class APPLESEED_DLLSYMBOL Camera
     // world space. Returns true if the connection was possible, false otherwise.
     virtual bool connect_vertex(
         SamplingContext&                sampling_context,
-        const double                    time,
+        const float                     time,
         const foundation::Vector3d&     point,
         foundation::Vector2d&           ndc,
         foundation::Vector3d&           outgoing,
@@ -136,7 +136,7 @@ class APPLESEED_DLLSYMBOL Camera
     // world space. The returned point is expressed in normalized device coordinates.
     // Returns true if the projection was possible, false otherwise.
     bool project_point(
-        const double                    time,
+        const float                     time,
         const foundation::Vector3d&     point,
         foundation::Vector2d&           ndc) const;
 
@@ -149,7 +149,7 @@ class APPLESEED_DLLSYMBOL Camera
     // world space. The returned segment is expressed in normalized device coordinates.
     // Returns true if the projection was possible, false otherwise.
     virtual bool project_segment(
-        const double                    time,
+        const float                     time,
         const foundation::Vector3d&     a,
         const foundation::Vector3d&     b,
         foundation::Vector2d&           a_ndc,
@@ -157,9 +157,9 @@ class APPLESEED_DLLSYMBOL Camera
 
   protected:
     TransformSequence   m_transform_sequence;
-    double              m_shutter_open_time;
-    double              m_shutter_close_time;
-    double              m_shutter_open_time_interval;
+    float               m_shutter_open_time;
+    float               m_shutter_close_time;
+    float               m_shutter_open_time_interval;
 
     // Utility function to retrieve the film dimensions (in meters) from the camera parameters.
     foundation::Vector2d extract_film_dimensions() const;
@@ -221,22 +221,22 @@ inline const TransformSequence& Camera::transform_sequence() const
     return m_transform_sequence;
 }
 
-inline double Camera::get_shutter_open_time() const
+inline float Camera::get_shutter_open_time() const
 {
     return m_shutter_open_time;
 }
 
-inline double Camera::get_shutter_close_time() const
+inline float Camera::get_shutter_close_time() const
 {
     return m_shutter_close_time;
 }
 
-inline double Camera::get_shutter_middle_time() const
+inline float Camera::get_shutter_middle_time() const
 {
-    return 0.5 * (m_shutter_open_time + m_shutter_close_time);
+    return 0.5f * (m_shutter_open_time + m_shutter_close_time);
 }
 
-inline double Camera::get_shutter_open_time_interval() const
+inline float Camera::get_shutter_open_time_interval() const
 {
     return m_shutter_open_time_interval;
 }

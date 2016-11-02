@@ -57,23 +57,23 @@ namespace renderer
 APPLESEED_DECLARE_INPUT_VALUES(GlassBSDFInputValues)
 {
     Spectrum    m_surface_transmittance;
-    ScalarInput m_surface_transmittance_multiplier;
+    float       m_surface_transmittance_multiplier;
     Spectrum    m_reflection_tint;
     Spectrum    m_refraction_tint;
-    ScalarInput m_roughness;
-    ScalarInput m_anisotropic;
-    ScalarInput m_ior;
+    float       m_roughness;
+    float       m_anisotropic;
+    float       m_ior;
     Spectrum    m_volume_transmittance;
-    ScalarInput m_volume_transmittance_distance;
+    float       m_volume_transmittance_distance;
 
     // Precomputed values.
     bool        m_backfacing;
-    ScalarInput m_eta;
+    float       m_eta;
     Spectrum    m_reflection_color;
     Spectrum    m_refraction_color;
     Spectrum    m_absorption;
-    ScalarInput m_reflection_weight;
-    ScalarInput m_refraction_weight;
+    float       m_reflection_weight;
+    float       m_refraction_weight;
 };
 
 

@@ -294,12 +294,12 @@ void Basis3<T>::checks()
     assert(is_normalized(m_u));
     assert(is_normalized(m_n));
     assert(is_normalized(m_v));
-    assert(fz(dot(m_u, m_n)));
-    assert(fz(dot(m_u, m_v)));
-    assert(fz(dot(m_n, m_v)));
+    assert(fz(dot(m_u, m_n), make_eps<T>(1.0e-4f, 1.0e-6)));
+    assert(fz(dot(m_u, m_v), make_eps<T>(1.0e-4f, 1.0e-6)));
+    assert(fz(dot(m_n, m_v), make_eps<T>(1.0e-4f, 1.0e-6)));
 
     // Make sure (m_u, m_n, m_v) is right-handed.
-    assert(feq(dot(cross(m_u, m_n), m_v), T(1.0)));
+    assert(feq(dot(cross(m_u, m_n), m_v), T(1.0), make_eps<T>(1.0e-4f, 1.0e-5)));
 }
 
 #endif

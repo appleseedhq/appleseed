@@ -70,13 +70,13 @@ namespace
           : BSDF(name, Transmissive, ScatteringMode::Specular, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("transmittance", InputFormatSpectralReflectance);
-            m_inputs.declare("transmittance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("fresnel_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("ior", InputFormatScalar);
-            m_inputs.declare("density", InputFormatScalar, "0.0");
-            m_inputs.declare("scale", InputFormatScalar, "1.0");
+            m_inputs.declare("transmittance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("fresnel_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("ior", InputFormatFloat);
+            m_inputs.declare("density", InputFormatFloat, "0.0");
+            m_inputs.declare("scale", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -102,10 +102,10 @@ namespace
         {
             InputValues* values = static_cast<InputValues*>(data);
 
-            if (shading_point.is_entering())
-                values->m_eta = shading_point.get_ray().get_current_ior() / values->m_ior;
-            else
-                values->m_eta = values->m_ior / shading_point.get_ray().get_previous_ior();
+            values->m_eta =
+                shading_point.is_entering()
+                    ? shading_point.get_ray().get_current_ior() / values->m_ior
+                    : values->m_ior / shading_point.get_ray().get_previous_ior();
         }
 
         APPLESEED_FORCE_INLINE virtual void sample(
@@ -117,51 +117,51 @@ namespace
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            const Vector3d& shading_normal = sample.get_shading_normal();
-            const double cos_theta_i = dot(sample.m_outgoing.get_value(), shading_normal);
-            const double sin_theta_i2 = 1.0 - square(cos_theta_i);
-            const double sin_theta_t2 = sin_theta_i2 * square(values->m_eta);
-            const double cos_theta_t2 = 1.0 - sin_theta_t2;
+            const Vector3f& shading_normal = sample.m_shading_basis.get_normal();
+            const float cos_theta_i = dot(sample.m_outgoing.get_value(), shading_normal);
+            const float sin_theta_i2 = 1.0f - square(cos_theta_i);
+            const float sin_theta_t2 = sin_theta_i2 * square(values->m_eta);
+            const float cos_theta_t2 = 1.0f - sin_theta_t2;
 
-            Vector3d incoming;
+            Vector3f incoming;
             bool refract_differentials = true;
 
-            if (cos_theta_t2 < 0.0)
+            if (cos_theta_t2 < 0.0f)
             {
                 // Total internal reflection: compute the reflected direction and radiance.
                 incoming = reflect(sample.m_outgoing.get_value(), shading_normal);
                 sample.m_value = values->m_transmittance;
-                sample.m_value *= static_cast<float>(values->m_transmittance_multiplier);
+                sample.m_value *= values->m_transmittance_multiplier;
                 refract_differentials = false;
             }
             else
             {
                 // Compute the Fresnel reflection factor.
-                const double cos_theta_t = sqrt(cos_theta_t2);
-                double fresnel_reflection;
+                const float cos_theta_t = sqrt(cos_theta_t2);
+                float fresnel_reflection;
                 fresnel_reflectance_dielectric(
                     fresnel_reflection,
-                    1.0 / values->m_eta,
+                    1.0f / values->m_eta,
                     abs(cos_theta_i),
                     cos_theta_t);
                 fresnel_reflection *= values->m_fresnel_multiplier;
 
                 sampling_context.split_in_place(1, 1);
-                const double s = sampling_context.next_double2();
+                const float s = sampling_context.next2<float>();
 
                 if (s < fresnel_reflection)
                 {
                     // Fresnel reflection: compute the reflected direction and radiance.
                     incoming = reflect(sample.m_outgoing.get_value(), shading_normal);
                     sample.m_value = values->m_reflectance;
-                    sample.m_value *= static_cast<float>(values->m_reflectance_multiplier);
+                    sample.m_value *= values->m_reflectance_multiplier;
                     refract_differentials = false;
                 }
                 else
                 {
                     // Compute the refracted direction.
                     incoming =
-                        cos_theta_i > 0.0
+                        cos_theta_i > 0.0f
                             ? (values->m_eta * cos_theta_i - cos_theta_t) * shading_normal - values->m_eta * sample.m_outgoing.get_value()
                             : (values->m_eta * cos_theta_i + cos_theta_t) * shading_normal - values->m_eta * sample.m_outgoing.get_value();
 
@@ -169,14 +169,14 @@ namespace
                     sample.m_value = values->m_transmittance;
                     sample.m_value *=
                         adjoint
-                            ? static_cast<float>(values->m_transmittance_multiplier)
-                            : static_cast<float>(square(values->m_eta) * values->m_transmittance_multiplier);
+                            ? values->m_transmittance_multiplier
+                            : square(values->m_eta) * values->m_transmittance_multiplier;
                 }
             }
 
             // todo: we could get rid of this by not wrapping this BTDF in BSDFWrapper<>.
-            const double cos_in = abs(dot(incoming, shading_normal));
-            sample.m_value /= static_cast<float>(cos_in);
+            const float cos_in = abs(dot(incoming, shading_normal));
+            sample.m_value /= cos_in;
 
             // The probability density of the sampled direction is the Dirac delta.
             sample.m_probability = DiracDelta;
@@ -186,7 +186,7 @@ namespace
 
             // Set the incoming direction.
             incoming = improve_normalization(incoming);
-            sample.m_incoming = Dual3d(incoming);
+            sample.m_incoming = Dual3f(incoming);
 
             // Compute the ray differentials.
             if (refract_differentials)
@@ -194,45 +194,45 @@ namespace
             else sample.compute_reflected_differentials();
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate(
+        APPLESEED_FORCE_INLINE virtual float evaluate(
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing,
-            const Vector3d&         incoming,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing,
+            const Vector3f&         incoming,
             const int               modes,
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
-            return 0.0;
+            return 0.0f;
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
+        APPLESEED_FORCE_INLINE virtual float evaluate_pdf(
             const void*             data,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing,
-            const Vector3d&         incoming,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing,
+            const Vector3f&         incoming,
             const int               modes) const APPLESEED_OVERRIDE
         {
-            return 0.0;
+            return 0.0f;
         }
 
-        double sample_ior(
+        virtual float sample_ior(
             SamplingContext&        sampling_context,
             const void*             data) const APPLESEED_OVERRIDE
         {
-            return static_cast<const InputValues*>(data)->m_ior;
+            return static_cast<float>(static_cast<const InputValues*>(data)->m_ior);
         }
 
         void compute_absorption(
             const void*             data,
-            const double            distance,
+            const float             distance,
             Spectrum&               absorption) const APPLESEED_OVERRIDE
         {
             const InputValues* values = static_cast<const InputValues*>(data);
-            const float d = static_cast<float>(values->m_density * values->m_scale * distance);
+            const float d = values->m_density * values->m_scale * distance;
 
             absorption.resize(values->m_transmittance.size());
 
@@ -245,7 +245,7 @@ namespace
                 //   https://en.wikipedia.org/wiki/Beer%E2%80%93Lambert_law
                 //
 
-                const float a = 1.0f - static_cast<float>(values->m_transmittance[i] * values->m_transmittance_multiplier);
+                const float a = 1.0f - (values->m_transmittance[i] * values->m_transmittance_multiplier);
                 const float optical_depth = a * d;
                 absorption[i] = exp(-optical_depth);
             }

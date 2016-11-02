@@ -158,7 +158,7 @@ namespace
                     vertex.m_sampling_context.split_in_place(1, 1);
                     const uint32 wavelength =
                         truncate<uint32>(
-                            vertex.m_sampling_context.next_double2() * Spectrum::Samples);
+                            vertex.m_sampling_context.next2<double>() * Spectrum::Samples);
 
                     // Make sure the path throughput is spectral.
                     Spectrum spectral_throughput;
@@ -305,21 +305,21 @@ namespace
         const size_t                m_pass_hash;
         IAbortSwitch&               m_abort_switch;
         SPPMPhotonVector            m_local_photons;
-        double                      m_shutter_open_time;
-        double                      m_shutter_close_time;
+        float                       m_shutter_open_time;
+        float                       m_shutter_close_time;
 
         void trace_light_photon(
             const ShadingContext&   shading_context,
             SamplingContext&        sampling_context)
         {
-            const Vector4d s = sampling_context.next_vector2<4>();
+            const Vector4f s = sampling_context.next2<Vector4f>();
             LightSample light_sample;
             m_light_sampler.sample(
                 ShadingRay::Time::create_with_normalized_time(
                     s[0],
                     m_shutter_open_time,
                     m_shutter_close_time),
-                Vector3d(s[1], s[2], s[3]),
+                Vector3f(s[1], s[2], s[3]),
                 light_sample);
 
             if (light_sample.m_triangle)
@@ -375,15 +375,15 @@ namespace
 
             // Sample the EDF.
             SamplingContext child_sampling_context = sampling_context.split(2, 1);
-            Vector3d emission_direction;
+            Vector3f emission_direction;
             Spectrum edf_value;
-            double edf_prob;
+            float edf_prob;
             edf->sample(
                 sampling_context,
                 input_evaluator.data(),
-                light_sample.m_geometric_normal,
-                Basis3d(light_sample.m_shading_normal),
-                child_sampling_context.next_vector2<2>(),
+                Vector3f(light_sample.m_geometric_normal),
+                Basis3f(Vector3f(light_sample.m_shading_normal)),
+                child_sampling_context.next2<Vector2f>(),
                 emission_direction,
                 edf_value,
                 edf_prob);
@@ -391,24 +391,23 @@ namespace
             // Compute the initial particle weight.
             Spectrum initial_flux = edf_value;
             initial_flux *=
-                static_cast<float>(
-                    dot(emission_direction, light_sample.m_shading_normal)
-                        / (light_sample.m_probability * edf_prob * m_params.m_light_photon_count));
+                dot(emission_direction, Vector3f(light_sample.m_shading_normal)) /
+                (light_sample.m_probability * edf_prob * m_params.m_light_photon_count);
 
             // Make a shading point that will be used to avoid self-intersections with the light sample.
             ShadingPoint parent_shading_point;
             light_sample.make_shading_point(
                 parent_shading_point,
-                emission_direction,
+                Vector3d(emission_direction),
                 m_intersector);
 
             // Build the photon ray.
             child_sampling_context.split_in_place(1, 1);
             const ShadingRay ray(
                 light_sample.m_point,
-                emission_direction,
+                Vector3d(emission_direction),
                 ShadingRay::Time::create_with_normalized_time(
-                    child_sampling_context.next_double2(),
+                    child_sampling_context.next2<float>(),
                     m_shutter_open_time,
                     m_shutter_close_time),
                 VisibilityFlags::LightRay,
@@ -448,11 +447,11 @@ namespace
             SamplingContext child_sampling_context = sampling_context.split(2, 1);
             Vector3d emission_position, emission_direction;
             Spectrum light_value;
-            double light_prob;
+            float light_prob;
             light_sample.m_light->sample(
                 input_evaluator,
                 light_sample.m_light_transform,
-                child_sampling_context.next_vector2<2>(),
+                child_sampling_context.next2<Vector2d>(),
                 m_photon_targets,
                 emission_position,
                 emission_direction,
@@ -461,7 +460,7 @@ namespace
 
             // Compute the initial particle weight.
             Spectrum initial_flux = light_value;
-            initial_flux /= static_cast<float>(light_sample.m_probability * light_prob * m_params.m_light_photon_count);
+            initial_flux /= light_sample.m_probability * light_prob * m_params.m_light_photon_count;
 
             // Build the photon ray.
             child_sampling_context.split_in_place(1, 1);
@@ -469,7 +468,7 @@ namespace
                 emission_position,
                 emission_direction,
                 ShadingRay::Time::create_with_normalized_time(
-                    child_sampling_context.next_double2(),
+                    child_sampling_context.next2<float>(),
                     m_shutter_open_time,
                     m_shutter_close_time),
                 VisibilityFlags::LightRay,
@@ -614,8 +613,8 @@ namespace
         const size_t                m_pass_hash;
         IAbortSwitch&               m_abort_switch;
         SPPMPhotonVector            m_local_photons;
-        double                      m_shutter_open_time;
-        double                      m_shutter_close_time;
+        float                       m_shutter_open_time;
+        float                       m_shutter_close_time;
 
         Vector3d                    m_scene_center;         // world space
         double                      m_scene_radius;         // world space
@@ -627,19 +626,19 @@ namespace
         {
             // Sample the environment.
             InputEvaluator input_evaluator(m_texture_cache);
-            Vector3d outgoing;
+            Vector3f outgoing;
             Spectrum env_edf_value;
-            double env_edf_prob;
+            float env_edf_prob;
             m_env_edf.sample(
                 shading_context,
                 input_evaluator,
-                sampling_context.next_vector2<2>(),
+                sampling_context.next2<Vector2f>(),
                 outgoing,                                   // points toward the environment
                 env_edf_value,
                 env_edf_prob);
 
             SamplingContext child_sampling_context = sampling_context.split(2, 1);
-            Vector2d s = child_sampling_context.next_vector2<2>();
+            Vector2d s = child_sampling_context.next2<Vector2d>();
 
             // Compute the center and radius of the target disk.
             Vector3d disk_center;
@@ -662,7 +661,7 @@ namespace
             }
 
             // Compute the origin of the photon ray.
-            const Basis3d basis(-outgoing);
+            const Basis3d basis(-Vector3d(outgoing));
             const Vector2d p = sample_disk_uniform(s);
             const Vector3d ray_origin =
                   disk_center
@@ -670,19 +669,19 @@ namespace
                 + disk_radius * p[0] * basis.get_tangent_u() +
                 + disk_radius * p[1] * basis.get_tangent_v();
 
-            const double disk_point_prob = 1.0 / (Pi<double>() * disk_radius * disk_radius);
+            const float disk_point_prob = 1.0f / (Pi<float>() * square(static_cast<float>(disk_radius)));
 
             // Compute the initial particle weight.
             Spectrum initial_flux = env_edf_value;
-            initial_flux /= static_cast<float>(disk_point_prob * env_edf_prob * m_params.m_env_photon_count);
+            initial_flux /= disk_point_prob * env_edf_prob * m_params.m_env_photon_count;
 
             // Build the photon ray.
             child_sampling_context.split_in_place(1, 1);
             const ShadingRay ray(
                 ray_origin,
-                -outgoing,
+                -Vector3d(outgoing),
                 ShadingRay::Time::create_with_normalized_time(
-                    child_sampling_context.next_double2(),
+                    child_sampling_context.next2<float>(),
                     m_shutter_open_time,
                     m_shutter_close_time),
                 VisibilityFlags::LightRay,

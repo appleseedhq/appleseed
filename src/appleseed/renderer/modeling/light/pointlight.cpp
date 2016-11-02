@@ -75,8 +75,8 @@ namespace
           : Light(name, params)
         {
             m_inputs.declare("intensity", InputFormatSpectralIlluminance);
-            m_inputs.declare("intensity_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("exposure", InputFormatScalar, "0.0");
+            m_inputs.declare("intensity_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("exposure", InputFormatFloat, "0.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -123,12 +123,12 @@ namespace
             Vector3d&               position,
             Vector3d&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
             position = light_transform.get_parent_origin();
             outgoing = sample_sphere_uniform(s);
             value = m_values.m_intensity;
-            probability = RcpFourPi<double>();
+            probability = RcpFourPi<float>();
         }
 
         virtual void evaluate(
@@ -137,26 +137,26 @@ namespace
             const Vector3d&         target,
             Vector3d&               position,
             Vector3d&               outgoing,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+            Spectrum&               value) const APPLESEED_OVERRIDE
         {
             position = light_transform.get_parent_origin();
             outgoing = normalize(target - position);
             value = m_values.m_intensity;
         }
 
-        double compute_distance_attenuation(
+        float compute_distance_attenuation(
             const Vector3d&         target,
             const Vector3d&         position) const APPLESEED_OVERRIDE
         {
-            return 1.0 / square_distance(target, position);
+            return 1.0f / static_cast<float>(square_distance(target, position));
         }
 
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_intensity;                // emitted intensity in W.sr^-1
-            ScalarInput m_intensity_multiplier;     // emitted intensity multiplier
-            ScalarInput m_exposure;                 // emitted intensity multiplier in f-stops
+            float       m_intensity_multiplier;     // emitted intensity multiplier
+            float       m_exposure;                 // emitted intensity multiplier in f-stops
         };
 
         InputValues     m_values;

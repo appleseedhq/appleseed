@@ -78,8 +78,8 @@ namespace
             const ParamArray&       params)
           : BSDF(name, Reflective, ScatteringMode::All, params)
         {
-            m_inputs.declare("weight0", InputFormatScalar);
-            m_inputs.declare("weight1", InputFormatScalar);
+            m_inputs.declare("weight0", InputFormatFloat);
+            m_inputs.declare("weight1", InputFormatFloat);
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -173,16 +173,16 @@ namespace
 
             // Retrieve the blending weights.
             const InputValues* values = static_cast<const InputValues*>(data);
-            const double w[2] = { values->m_weight[0], values->m_weight[1] };
+            const float w[2] = { values->m_weight[0], values->m_weight[1] };
 
             // Handle absorption.
-            const double total_weight = w[0] + w[1];
-            if (total_weight == 0.0)
+            const float total_weight = w[0] + w[1];
+            if (total_weight == 0.0f)
                 return;
 
             // Choose which of the two BSDFs to sample.
             sampling_context.split_in_place(1, 1);
-            const double s = sampling_context.next_double2();
+            const float s = sampling_context.next2<float>();
             const size_t bsdf_index = s * total_weight < w[0] ? 0 : 1;
 
             // Sample the chosen BSDF.
@@ -194,14 +194,14 @@ namespace
                 sample);
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate(
+        APPLESEED_FORCE_INLINE virtual float evaluate(
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing,
-            const Vector3d&         incoming,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing,
+            const Vector3f&         incoming,
             const int               modes,
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
@@ -209,22 +209,22 @@ namespace
 
             // Retrieve the blending weights.
             const InputValues* values = static_cast<const InputValues*>(data);
-            double w0 = values->m_weight[0];
-            double w1 = values->m_weight[1];
-            const double total_weight = w0 + w1;
+            float w0 = values->m_weight[0];
+            float w1 = values->m_weight[1];
+            const float total_weight = w0 + w1;
 
             // Handle absorption.
-            if (total_weight == 0.0)
-                return 0.0;
+            if (total_weight == 0.0f)
+                return 0.0f;
 
             // Normalize the blending weights.
-            const double rcp_total_weight = 1.0 / total_weight;
+            const float rcp_total_weight = 1.0f / total_weight;
             w0 *= rcp_total_weight;
             w1 *= rcp_total_weight;
 
             // Evaluate the first BSDF.
             Spectrum bsdf0_value;
-            const double bsdf0_prob =
+            const float bsdf0_prob =
                 w0 > 0.0
                     ? m_bsdf[0]->evaluate(
                         get_bsdf_data(data, 0),
@@ -236,11 +236,11 @@ namespace
                         incoming,
                         modes,
                         bsdf0_value)
-                    : 0.0;
+                    : 0.0f;
 
             // Evaluate the second BSDF.
             Spectrum bsdf1_value;
-            const double bsdf1_prob =
+            const float bsdf1_prob =
                 w1 > 0.0
                     ? m_bsdf[1]->evaluate(
                           get_bsdf_data(data, 1),
@@ -252,41 +252,41 @@ namespace
                           incoming,
                           modes,
                           bsdf1_value)
-                    : 0.0;
+                    : 0.0f;
 
             // Blend BSDF values.
             value.set(0.0f);
-            if (bsdf0_prob > 0.0)
-                madd(value, bsdf0_value, static_cast<float>(w0));
-            if (bsdf1_prob > 0.0)
-                madd(value, bsdf1_value, static_cast<float>(w1));
+            if (bsdf0_prob > 0.0f)
+                madd(value, bsdf0_value, w0);
+            if (bsdf1_prob > 0.0f)
+                madd(value, bsdf1_value, w1);
 
             // Blend PDF values.
             return bsdf0_prob * w0 + bsdf1_prob * w1;
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
+        APPLESEED_FORCE_INLINE virtual float evaluate_pdf(
             const void*             data,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing,
-            const Vector3d&         incoming,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing,
+            const Vector3f&         incoming,
             const int               modes) const APPLESEED_OVERRIDE
         {
             assert(m_bsdf[0] && m_bsdf[1]);
 
             // Retrieve the blending weights.
             const InputValues* values = static_cast<const InputValues*>(data);
-            const double w0 = values->m_weight[0];
-            const double w1 = values->m_weight[1];
-            const double total_weight = w0 + w1;
+            const float w0 = values->m_weight[0];
+            const float w1 = values->m_weight[1];
+            const float total_weight = w0 + w1;
 
             // Handle absorption.
-            if (total_weight == 0.0)
-                return 0.0;
+            if (total_weight == 0.0f)
+                return 0.0f;
 
             // Evaluate the PDF of the first BSDF.
-            const double bsdf0_prob =
+            const float bsdf0_prob =
                 w0 > 0.0
                     ? m_bsdf[0]->evaluate_pdf(
                           get_bsdf_data(data, 0),
@@ -295,10 +295,10 @@ namespace
                           outgoing,
                           incoming,
                           modes)
-                    : 0.0;
+                    : 0.0f;
 
             // Evaluate the PDF of the second BSDF.
-            const double bsdf1_prob =
+            const float bsdf1_prob =
                 w1 > 0.0
                     ? m_bsdf[1]->evaluate_pdf(
                           get_bsdf_data(data, 1),
@@ -307,7 +307,7 @@ namespace
                           outgoing,
                           incoming,
                           modes)
-                    : 0.0;
+                    : 0.0f;
 
             // Blend PDF values.
             return (bsdf0_prob * w0 + bsdf1_prob * w1) / total_weight;
@@ -316,7 +316,7 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            ScalarInput  m_weight[2];
+            float   m_weight[2];
         };
 
         const BSDF* m_bsdf[2];

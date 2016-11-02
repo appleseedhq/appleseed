@@ -101,7 +101,7 @@ class PathTracer
         enum { MaxSampleCount = 16 };
 
         ShadingPoint            m_incoming_points[MaxSampleCount];
-        double                  m_probabilities[MaxSampleCount];
+        float                   m_probabilities[MaxSampleCount];
         size_t                  m_sample_count;
 
         SubsurfaceSampleVisitor();
@@ -109,7 +109,7 @@ class PathTracer
         bool visit(
             const BSSRDFSample& bssrdf_sample,
             const ShadingPoint& incoming_point,
-            const double        probability);
+            const float         probability);
     };
 
     PathVisitor&                m_path_visitor;
@@ -190,6 +190,14 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
     while (true)
     {
+#ifndef NDEBUG
+        // Save the sampling context at the beginning of the iteration.
+        const SamplingContext backup_sampling_context(sampling_context);
+
+        // Resume execution here to reliably reproduce problems downstream.
+        sampling_context = backup_sampling_context;
+#endif
+
         // Put a hard limit on the number of iterations.
         if (++iterations >= m_max_iterations)
         {
@@ -279,7 +287,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                     shading_context,
                     input_evaluator,
                     *vertex.m_shading_point);
-                const double ior =
+                const float ior =
                     material_data.m_bsdf->sample_ior(
                         sampling_context,
                         input_evaluator.data());
@@ -376,7 +384,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         if (vertex.m_bsdf && vertex.m_bssrdf)
         {
             sampling_context.split_in_place(1, 1);
-            if (sampling_context.next_double2() < 0.5)
+            if (sampling_context.next2<float>() < 0.5f)
                 vertex.m_bsdf = 0;
             else vertex.m_bssrdf = 0;
             vertex.m_throughput *= 2.0f;
@@ -426,7 +434,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
             // Select one of the incoming points at random.
             sampling_context.split_in_place(1, 1);
-            const double s = sampling_context.next_double2();
+            const float s = sampling_context.next2<float>();
             const size_t i = foundation::truncate<size_t>(s * subsurf_visitor.m_sample_count);
             vertex.m_incoming_point = &subsurf_visitor.m_incoming_points[i];
             vertex.m_incoming_point_prob = subsurf_visitor.m_probabilities[i] / subsurf_visitor.m_sample_count;
@@ -466,7 +474,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             // Compute the path throughput multiplier.
             value = sample.m_value;
             if (sample.m_probability != BSDF::DiracDelta)
-                value /= static_cast<float>(sample.m_probability);
+                value /= sample.m_probability;
 
             // Properties of this scattering event.
             vertex.m_prev_mode = sample.m_mode;
@@ -474,33 +482,35 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
             // Origin and direction of the scattered ray.
             parent_shading_point = vertex.m_shading_point;
-            incoming = sample.m_incoming;
+            incoming = foundation::Dual3d(sample.m_incoming);
         }
         else if (vertex.m_bssrdf)
         {
             // Pick the direction of the scattered ray at random.
             sampling_context.split_in_place(2, 1);
-            const foundation::Vector2d s = sampling_context.next_vector2<2>();
-            foundation::Vector3d incoming_vector =
-                foundation::sample_hemisphere_cosine(foundation::Vector2d(s[0], s[1]));
-            const double cos_in = incoming_vector.y;
-            const double incoming_prob = cos_in * foundation::RcpPi<double>();
-            incoming_vector = vertex.m_incoming_point->get_shading_basis().transform_to_parent(incoming_vector);
+            const foundation::Vector2f s = sampling_context.next2<foundation::Vector2f>();
+            foundation::Vector3f incoming_vector = foundation::sample_hemisphere_cosine(s);
+            const float cos_in = incoming_vector.y;
+            const float incoming_prob = cos_in * foundation::RcpPi<float>();
+            incoming_vector =
+                foundation::Vector3f(
+                    vertex.m_incoming_point->get_shading_basis().transform_to_parent(
+                        foundation::Vector3d(incoming_vector)));
             if (vertex.m_incoming_point->get_side() == ObjectInstance::BackSide)
                 incoming_vector = -incoming_vector;
-            incoming = foundation::Dual3d(incoming_vector);
+            incoming = foundation::Dual3d(foundation::Vector3d(incoming_vector));
 
             // Evaluate the BSSRDF.
             vertex.m_bssrdf->evaluate(
                 vertex.m_bssrdf_data,
                 *vertex.m_shading_point,
-                vertex.m_outgoing.get_value(),
+                foundation::Vector3f(vertex.m_outgoing.get_value()),
                 *vertex.m_incoming_point,
                 incoming_vector,
                 value);
 
             // Compute the path throughput multiplier.
-            value *= static_cast<float>(cos_in / vertex.m_incoming_point_prob);
+            value *= cos_in / vertex.m_incoming_point_prob;
 
             // Properties of this scattering event.
             vertex.m_prev_mode = ScatteringMode::Diffuse;
@@ -523,21 +533,18 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         {
             // Generate a uniform sample in [0,1).
             sampling_context.split_in_place(1, 1);
-            const double s = sampling_context.next_double2();
+            const float s = sampling_context.next2<float>();
 
             // Compute the probability of extending this path.
-            const double scattering_prob =
-                std::min(
-                    static_cast<double>(foundation::max_value(value)),
-                    1.0);
+            const float scattering_prob = std::min(foundation::max_value(value), 1.0f);
 
             // Russian Roulette.
             if (!foundation::pass_rr(scattering_prob, s))
                 break;
 
             // Adjust throughput to account for terminated paths.
-            assert(scattering_prob > 0.0);
-            vertex.m_throughput /= static_cast<float>(scattering_prob);
+            assert(scattering_prob > 0.0f);
+            vertex.m_throughput /= scattering_prob;
         }
 
         // Keep track of the number of bounces.
@@ -550,6 +557,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             ray.m_time,
             ScatteringMode::get_vis_flags(vertex.m_prev_mode),
             ray.m_depth + 1);
+        next_ray.m_dir = foundation::improve_normalization<2>(next_ray.m_dir);
 
         // Compute scattered ray differentials.
         if (incoming.has_derivatives())
@@ -571,7 +579,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             // Refracted ray: inherit the medium list of the parent ray and add/remove the current medium.
             if (entering)
             {
-                const double ior =
+                const float ior =
                     vertex.m_bsdf->sample_ior(
                         sampling_context,
                         bsdf_input_evaluator.data());
@@ -589,7 +597,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                     shading_context,
                     bsdf_input_evaluator,
                     *vertex.m_shading_point);
-                const double distance = norm(vertex.get_point() - medium_start);
+                const float distance = static_cast<float>(norm(vertex.get_point() - medium_start));
                 Spectrum absorption;
                 prev_medium->m_bsdf->compute_absorption(
                     bsdf_input_evaluator.data(),
@@ -634,7 +642,7 @@ inline bool PathTracer<PathVisitor, Adjoint>::pass_through(
 
     sampling_context.split_in_place(1, 1);
 
-    return sampling_context.next_double2() >= alpha[0];
+    return sampling_context.next2<float>() >= alpha[0];
 }
 
 
@@ -652,7 +660,7 @@ template <typename PathVisitor, bool Adjoint>
 bool PathTracer<PathVisitor, Adjoint>::SubsurfaceSampleVisitor::visit(
     const BSSRDFSample&         bssrdf_sample,
     const ShadingPoint&         incoming_point,
-    const double                probability)
+    const float                 probability)
 {
     if (m_sample_count >= MaxSampleCount)
     {

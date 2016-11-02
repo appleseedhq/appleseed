@@ -65,7 +65,7 @@ namespace
           : BSDF(name, Reflective, ScatteringMode::Specular, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -86,26 +86,26 @@ namespace
             BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
             // No reflection below the shading surface.
-            const Vector3d& shading_normal = sample.get_shading_normal();
-            const double cos_on = dot(sample.m_outgoing.get_value(), shading_normal);
-            if (cos_on < 0.0)
+            const Vector3f& shading_normal = sample.m_shading_basis.get_normal();
+            const float cos_on = dot(sample.m_outgoing.get_value(), shading_normal);
+            if (cos_on < 0.0f)
                 return;
 
             // Compute the incoming direction.
-            const Vector3d incoming(
+            const Vector3f incoming(
                 force_above_surface(
                     reflect(sample.m_outgoing.get_value(), shading_normal),
-                    sample.get_geometric_normal()));
+                    sample.m_geometric_normal));
 
             // No reflection below the shading surface.
-            const double cos_in = dot(incoming, shading_normal);
-            if (cos_in < 0.0)
+            const float cos_in = dot(incoming, shading_normal);
+            if (cos_in < 0.0f)
                 return;
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
             sample.m_value = values->m_reflectance;
-            sample.m_value *= static_cast<float>(values->m_reflectance_multiplier / cos_in);
+            sample.m_value *= values->m_reflectance_multiplier / cos_in;
 
             // The probability density of the sampled direction is the Dirac delta.
             sample.m_probability = DiracDelta;
@@ -113,33 +113,33 @@ namespace
             // Set the scattering mode.
             sample.m_mode = ScatteringMode::Specular;
 
-            sample.m_incoming = Dual3d(incoming);
+            sample.m_incoming = Dual3f(incoming);
             sample.compute_reflected_differentials();
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate(
+        APPLESEED_FORCE_INLINE virtual float evaluate(
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
+            const Vector3f&     geometric_normal,
+            const Basis3f&      shading_basis,
+            const Vector3f&     outgoing,
+            const Vector3f&     incoming,
             const int           modes,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
-            return 0.0;
+            return 0.0f;
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
+        APPLESEED_FORCE_INLINE virtual float evaluate_pdf(
             const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
+            const Vector3f&     geometric_normal,
+            const Basis3f&      shading_basis,
+            const Vector3f&     outgoing,
+            const Vector3f&     incoming,
             const int           modes) const APPLESEED_OVERRIDE
         {
-            return 0.0;
+            return 0.0f;
         }
 
       private:

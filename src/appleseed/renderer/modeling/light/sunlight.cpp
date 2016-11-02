@@ -94,8 +94,8 @@ namespace
           : Light(name, params)
         {
             m_inputs.declare("environment_edf", InputFormatEntity, "");
-            m_inputs.declare("turbidity", InputFormatScalar);
-            m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("turbidity", InputFormatFloat);
+            m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -145,7 +145,7 @@ namespace
             Vector3d&               position,
             Vector3d&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
             sample_disk(
                 light_transform,
@@ -166,7 +166,7 @@ namespace
             Vector3d&               position,
             Vector3d&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
             const size_t target_count = targets.size();
 
@@ -221,18 +221,18 @@ namespace
             value *= SunSolidAngle;
         }
 
-        virtual double compute_distance_attenuation(
+        virtual float compute_distance_attenuation(
             const Vector3d&         target,
             const Vector3d&         position) const APPLESEED_OVERRIDE
         {
-            return 1.0;
+            return 1.0f;
         }
 
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            ScalarInput m_turbidity;                // atmosphere turbidity
-            ScalarInput m_radiance_multiplier;      // emitted radiance multiplier
+            float       m_turbidity;                // atmosphere turbidity
+            float       m_radiance_multiplier;      // emitted radiance multiplier
         };
 
         Vector3d        m_scene_center;             // world space
@@ -252,7 +252,7 @@ namespace
             if (sun_theta_src && sun_theta_src->is_uniform() &&
                 sun_phi_src && sun_phi_src->is_uniform())
             {
-                double sun_theta, sun_phi;
+                float sun_theta, sun_phi;
                 sun_theta_src->evaluate_uniform(sun_theta);
                 sun_phi_src->evaluate_uniform(sun_phi);
                 set_transform(
@@ -269,7 +269,7 @@ namespace
             if (turbidity_src && turbidity_src->is_uniform() &&
                 turbidity_multiplier_src && turbidity_multiplier_src->is_uniform())
             {
-                double turbidity_multiplier;
+                float turbidity_multiplier;
                 turbidity_multiplier_src->evaluate_uniform(turbidity_multiplier);
                 turbidity_src->evaluate_uniform(m_values.m_turbidity);
                 m_values.m_turbidity *= turbidity_multiplier;
@@ -405,7 +405,7 @@ namespace
             Vector3d&               position,
             Vector3d&               outgoing,
             Spectrum&               value,
-            double&                 probability) const
+            float&                  probability) const
         {
             outgoing = -normalize(light_transform.get_parent_z());
 
@@ -418,7 +418,7 @@ namespace
                 + disk_radius * p[0] * basis.get_tangent_u()
                 + disk_radius * p[1] * basis.get_tangent_v();
 
-            probability = 1.0 / (Pi<double>() * disk_radius * disk_radius);
+            probability = 1.0f / (Pi<float>() * square(static_cast<float>(disk_radius)));
 
             compute_sun_radiance(
                 outgoing,

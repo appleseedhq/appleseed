@@ -251,11 +251,11 @@ TEST_SUITE(Foundation_Math_Vector)
     TEST_CASE(TestImproveNormalization)
     {
         Vector3d v(-0.48859909517572381, 0.021669236596684682, -0.87223928390023286);
-        ASSERT_FALSE(is_normalized(v));
+        ASSERT_FALSE(is_normalized(v, 1.0e-14));
 
         v = improve_normalization(v);
 
-        EXPECT_TRUE(is_normalized(v));
+        EXPECT_TRUE(is_normalized(v, 1.0e-14));
     }
 
     TEST_CASE(TestIsNormalized)

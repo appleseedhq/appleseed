@@ -188,7 +188,7 @@ namespace
 
         virtual bool connect_vertex(
             SamplingContext&    sampling_context,
-            const double        time,
+            const float         time,
             const Vector3d&     point,
             Vector2d&           ndc,
             Vector3d&           outgoing,
@@ -238,7 +238,7 @@ namespace
         }
 
         virtual bool project_segment(
-            const double        time,
+            const float         time,
             const Vector3d&     a,
             const Vector3d&     b,
             Vector2d&           a_ndc,

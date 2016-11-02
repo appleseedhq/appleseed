@@ -133,7 +133,7 @@ inline ShadingFragmentStack& ShadingFragmentStack::operator+=(const ShadingFragm
 {
     assert(m_size == rhs.m_size);
 
-    for (size_t i = 0; i < m_size; ++i)
+    for (size_t i = 0, e = m_size; i < e; ++i)
         m_fragments[i] += rhs.m_fragments[i];
 
     return *this;
@@ -141,7 +141,7 @@ inline ShadingFragmentStack& ShadingFragmentStack::operator+=(const ShadingFragm
 
 inline ShadingFragmentStack& ShadingFragmentStack::operator*=(const float rhs)
 {
-    for (size_t i = 0; i < m_size; ++i)
+    for (size_t i = 0, e = m_size; i < e; ++i)
         m_fragments[i] *= rhs;
 
     return *this;
@@ -166,7 +166,7 @@ inline ShadingFragmentStack::ColorProxy::ColorProxy(ShadingFragmentStack& parent
 
 inline void ShadingFragmentStack::ColorProxy::set(const float val)
 {
-    for (size_t i = 0; i < m_parent.m_size; ++i)
+    for (size_t i = 0, e = m_parent.m_size; i < e; ++i)
         m_parent.m_fragments[i].m_color.set(val);
 }
 
@@ -174,7 +174,7 @@ inline ShadingFragmentStack::ColorProxy& ShadingFragmentStack::ColorProxy::opera
 {
     assert(m_parent.m_size == rhs.size());
 
-    for (size_t i = 0; i < m_parent.m_size; ++i)
+    for (size_t i = 0, e = m_parent.m_size; i < e; ++i)
         m_parent.m_fragments[i].m_color = rhs[i];
 
     return *this;
@@ -182,7 +182,7 @@ inline ShadingFragmentStack::ColorProxy& ShadingFragmentStack::ColorProxy::opera
 
 inline ShadingFragmentStack::ColorProxy& ShadingFragmentStack::ColorProxy::operator*=(const float rhs)
 {
-    for (size_t i = 0; i < m_parent.m_size; ++i)
+    for (size_t i = 0, e = m_parent.m_size; i < e; ++i)
         m_parent.m_fragments[i].m_color *= rhs;
 
     return *this;
@@ -195,13 +195,13 @@ inline ShadingFragmentStack::AlphaProxy::AlphaProxy(ShadingFragmentStack& parent
 
 inline void ShadingFragmentStack::AlphaProxy::set(const float val)
 {
-    for (size_t i = 0; i < m_parent.m_size; ++i)
+    for (size_t i = 0, e = m_parent.m_size; i < e; ++i)
         m_parent.m_fragments[i].m_alpha.set(val);
 }
 
 inline ShadingFragmentStack::AlphaProxy& ShadingFragmentStack::AlphaProxy::operator*=(const float rhs)
 {
-    for (size_t i = 0; i < m_parent.m_size; ++i)
+    for (size_t i = 0, e = m_parent.m_size; i < e; ++i)
         m_parent.m_fragments[i].m_alpha *= rhs;
 
     return *this;

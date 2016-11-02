@@ -52,14 +52,14 @@ class ScalarSource
 {
   public:
     // Constructor.
-    explicit ScalarSource(const ScalarInput scalar);
+    explicit ScalarSource(const float scalar);
 
     // Compute a signature unique to this source.
     virtual foundation::uint64 compute_signature() const APPLESEED_OVERRIDE;
 
     // Evaluate the source.
     virtual void evaluate_uniform(
-        ScalarInput&                scalar) const APPLESEED_OVERRIDE;
+        float&                      scalar) const APPLESEED_OVERRIDE;
     virtual void evaluate_uniform(
         foundation::Color3f&        linear_rgb) const APPLESEED_OVERRIDE;
     virtual void evaluate_uniform(
@@ -74,7 +74,7 @@ class ScalarSource
         Alpha&                      alpha) const APPLESEED_OVERRIDE;
 
   private:
-    const ScalarInput    m_scalar;
+    const float m_scalar;
 };
 
 
@@ -82,7 +82,7 @@ class ScalarSource
 // ScalarSource class implementation.
 //
 
-inline ScalarSource::ScalarSource(const ScalarInput scalar)
+inline ScalarSource::ScalarSource(const float scalar)
   : Source(true)
   , m_scalar(scalar)
 {
@@ -94,7 +94,7 @@ inline foundation::uint64 ScalarSource::compute_signature() const
 }
 
 inline void ScalarSource::evaluate_uniform(
-    ScalarInput&                    scalar) const
+    float&                          scalar) const
 {
     scalar = m_scalar;
 }
@@ -102,26 +102,26 @@ inline void ScalarSource::evaluate_uniform(
 inline void ScalarSource::evaluate_uniform(
     foundation::Color3f&            linear_rgb) const
 {
-    linear_rgb.set(static_cast<float>(m_scalar));
+    linear_rgb.set(m_scalar);
 }
 
 inline void ScalarSource::evaluate_uniform(
     Spectrum&                       spectrum) const
 {
-    spectrum.set(static_cast<float>(m_scalar));
+    spectrum.set(m_scalar);
 }
 
 inline void ScalarSource::evaluate_uniform(
     Alpha&                          alpha) const
 {
-    alpha.set(static_cast<float>(m_scalar));
+    alpha.set(m_scalar);
 }
 
 inline void ScalarSource::evaluate_uniform(
     foundation::Color3f&            linear_rgb,
     Alpha&                          alpha) const
 {
-    linear_rgb.set(static_cast<float>(m_scalar));
+    linear_rgb.set(m_scalar);
     alpha.set(1.0f);
 }
 
@@ -129,7 +129,7 @@ inline void ScalarSource::evaluate_uniform(
     Spectrum&                       spectrum,
     Alpha&                          alpha) const
 {
-    spectrum.set(static_cast<float>(m_scalar));
+    spectrum.set(m_scalar);
     alpha.set(1.0f);
 }
 

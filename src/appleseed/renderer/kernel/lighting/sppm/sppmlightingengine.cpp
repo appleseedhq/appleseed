@@ -445,18 +445,18 @@ namespace
 
                     // Evaluate the BSDF for this photon.
                     Spectrum bsdf_value;
-                    const double bsdf_prob =
+                    const float bsdf_prob =
                         vertex.m_bsdf->evaluate(
                             vertex.m_bsdf_data,
                             false,                                      // not adjoint
                             true,                                       // multiply by |cos(incoming, normal)|
-                            vertex.get_geometric_normal(),
-                            vertex.get_shading_basis(),
-                            vertex.m_outgoing.get_value(),              // toward the camera
-                            normalize(Vector3d(photon.m_incoming)),     // toward the light
+                            Vector3f(vertex.get_geometric_normal()),
+                            Basis3f(vertex.get_shading_basis()),
+                            Vector3f(vertex.m_outgoing.get_value()),    // toward the camera
+                            normalize(photon.m_incoming),               // toward the light
                             ScatteringMode::Diffuse,
                             bsdf_value);
-                    if (bsdf_prob == 0.0)
+                    if (bsdf_prob == 0.0f)
                         continue;
 
                     // Make sure the BSDF value is spectral.
@@ -521,18 +521,18 @@ namespace
 
                     // Evaluate the BSDF for this photon.
                     Spectrum bsdf_value;
-                    const double bsdf_prob =
+                    const float bsdf_prob =
                         vertex.m_bsdf->evaluate(
                             vertex.m_bsdf_data,
                             false,                                      // not adjoint
                             true,                                       // multiply by |cos(incoming, normal)|
-                            vertex.get_geometric_normal(),
-                            vertex.get_shading_basis(),
-                            vertex.m_outgoing.get_value(),              // toward the camera
-                            normalize(Vector3d(photon.m_incoming)),     // toward the light
+                            Vector3f(vertex.get_geometric_normal()),
+                            Basis3f(vertex.get_shading_basis()),
+                            Vector3f(vertex.m_outgoing.get_value()),    // toward the camera
+                            normalize(photon.m_incoming),               // toward the light
                             ScatteringMode::Diffuse,
                             bsdf_value);
-                    if (bsdf_prob == 0.0)
+                    if (bsdf_prob == 0.0f)
                         continue;
 
                     // The photons store flux but we are computing reflected radiance.
@@ -581,11 +581,11 @@ namespace
                 // Evaluate the environment EDF.
                 InputEvaluator input_evaluator(m_texture_cache);
                 Spectrum env_radiance;
-                double env_prob;
+                float env_prob;
                 m_env_edf->evaluate(
                     m_shading_context,
                     input_evaluator,
-                    -vertex.m_outgoing.get_value(),
+                    -Vector3f(vertex.m_outgoing.get_value()),
                     env_radiance,
                     env_prob);
 

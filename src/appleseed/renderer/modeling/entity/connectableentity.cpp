@@ -50,10 +50,10 @@ bool ConnectableEntity::is_uniform_zero_scalar(const Source* source)
 
     if (source->is_uniform())
     {
-        double value;
+        float value;
         source->evaluate_uniform(value);
 
-        if (value == 0.0)
+        if (value == 0.0f)
             return true;
     }
 

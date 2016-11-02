@@ -76,7 +76,7 @@ namespace
           : Light(name, params)
         {
             m_inputs.declare("intensity", InputFormatSpectralIlluminance);
-            m_inputs.declare("intensity_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("intensity_multiplier", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -106,8 +106,8 @@ namespace
             m_inputs.evaluate_uniforms(&m_values);
             m_values.m_intensity *= static_cast<float>(m_values.m_intensity_multiplier);
 
-            m_decay_start = m_params.get_optional<double>("decay_start", 0.0);
-            m_decay_exponent = m_params.get_optional<double>("decay_exponent", 2.0);
+            m_decay_start = m_params.get_optional<float>("decay_start", 0.0f);
+            m_decay_exponent = m_params.get_optional<float>("decay_exponent", 2.0f);
 
             return true;
         }
@@ -119,12 +119,12 @@ namespace
             Vector3d&               position,
             Vector3d&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
             position = light_transform.get_parent_origin();
             outgoing = sample_sphere_uniform(s);
             value = m_values.m_intensity;
-            probability = RcpFourPi<double>();
+            probability = RcpFourPi<float>();
         }
 
         virtual void evaluate(
@@ -140,13 +140,13 @@ namespace
             value = m_values.m_intensity;
         }
 
-        double compute_distance_attenuation(
+        float compute_distance_attenuation(
             const Vector3d&         target,
             const Vector3d&         position) const APPLESEED_OVERRIDE
         {
             return
                 autodesk_max_decay(
-                    sqrt(square_distance(target, position)),
+                    sqrt(static_cast<float>(square_distance(target, position))),
                     m_decay_start,
                     m_decay_exponent);
         }
@@ -155,13 +155,13 @@ namespace
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_intensity;                // emitted intensity in W.sr^-1
-            ScalarInput m_intensity_multiplier;     // emitted intensity multiplier
+            float       m_intensity_multiplier;     // emitted intensity multiplier
         };
 
         InputValues     m_values;
 
-        double          m_decay_start;              // distance at which light decay starts
-        double          m_decay_exponent;           // exponent of the light decay function
+        float           m_decay_start;              // distance at which light decay starts
+        float           m_decay_exponent;           // exponent of the light decay function
     };
 }
 

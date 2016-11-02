@@ -89,12 +89,12 @@ namespace
         virtual void sample(
             SamplingContext&        sampling_context,
             const void*             data,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector2d&         s,
-            Vector3d&               outgoing,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector2f&         s,
+            Vector3f&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
             const CompositeEmissionClosure* c =
                 reinterpret_cast<const CompositeEmissionClosure*>(data);
@@ -112,9 +112,9 @@ namespace
 
         virtual void evaluate(
             const void*             data,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing,
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
             const CompositeEmissionClosure* c =
@@ -130,11 +130,11 @@ namespace
 
         virtual void evaluate(
             const void*             data,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
             const CompositeEmissionClosure* c =
                 reinterpret_cast<const CompositeEmissionClosure*>(data);
@@ -148,11 +148,11 @@ namespace
                 probability);
         }
 
-        virtual double evaluate_pdf(
+        virtual float evaluate_pdf(
             const void*             data,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing) const APPLESEED_OVERRIDE
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing) const APPLESEED_OVERRIDE
         {
             const CompositeEmissionClosure* c =
                 reinterpret_cast<const CompositeEmissionClosure*>(data);

@@ -1890,7 +1890,7 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation(
     // http://www.geometrictools.com
     //
 
-    assert(is_normalized(q, make_eps<T>(1.0e-4f, 1.0e-6)));
+    assert(is_normalized(q));
 
     const ValueType tx  = q.v[0] + q.v[0];
     const ValueType ty  = q.v[1] + q.v[1];

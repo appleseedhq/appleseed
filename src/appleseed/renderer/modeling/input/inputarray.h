@@ -55,13 +55,14 @@ namespace renderer
 
 enum InputFormat
 {
-    InputFormatScalar,
+    InputFormatFloat,
     InputFormatSpectralReflectance,
     InputFormatSpectralIlluminance,
     InputFormatSpectralReflectanceWithAlpha,
     InputFormatSpectralIlluminanceWithAlpha,
     InputFormatEntity
 };
+
 
 //
 // Input types.
@@ -240,9 +241,9 @@ class APPLESEED_DLLSYMBOL InputArray
 //
 //     APPLESEED_DECLARE_INPUT_VALUES(InputValues)
 //     {
-//         Spectrum         m_color;
-//         Alpha            m_alpha;
-//         ScalarInput      m_multiplier;
+//         Spectrum m_color;
+//         Alpha    m_alpha;
+//         float    m_multiplier;
 //     };
 //
 

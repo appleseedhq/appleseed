@@ -234,23 +234,26 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         size_t offset = 0;
 
         // parent_bsdf mixing weights.
-        EXPECT_EQ(0.6, get_value<double>(input_evaluator, offset)); offset += sizeof(double);
-        EXPECT_EQ(0.4, get_value<double>(input_evaluator, offset)); offset += sizeof(double);
+        EXPECT_EQ(0.6f, get_value<float>(input_evaluator, offset)); offset += sizeof(float);
+        EXPECT_EQ(0.4f, get_value<float>(input_evaluator, offset)); offset += sizeof(float);
+        offset = align(offset, 16);
 
         // child0_bsdf mixing weights.
-        EXPECT_EQ(0.2, get_value<double>(input_evaluator, offset)); offset += sizeof(double);
-        EXPECT_EQ(0.8, get_value<double>(input_evaluator, offset)); offset += sizeof(double);
+        EXPECT_EQ(0.2f, get_value<float>(input_evaluator, offset)); offset += sizeof(float);
+        EXPECT_EQ(0.8f, get_value<float>(input_evaluator, offset)); offset += sizeof(float);
+        offset = align(offset, 16);
 
         // child0_child0_bsdf reflectance.
-        EXPECT_EQ(Spectrum(0.5f), get_value<Spectrum>(input_evaluator, offset));
-        offset = align(offset + sizeof(Spectrum) + sizeof(double), 16);
+        EXPECT_EQ(Spectrum(0.5f), get_value<Spectrum>(input_evaluator, offset)); offset += sizeof(Spectrum) + sizeof(float);
+        offset = align(offset, 16);
 
         // child0_child1_bsdf reflectance.
-        EXPECT_EQ(Spectrum(0.1f), get_value<Spectrum>(input_evaluator, offset));
-        offset = align(offset + sizeof(Spectrum) + sizeof(double), 16);
+        EXPECT_EQ(Spectrum(0.1f), get_value<Spectrum>(input_evaluator, offset)); offset += sizeof(Spectrum) + sizeof(float);
+        offset = align(offset, 16);
 
         // child1_bsdf reflectance.
-        EXPECT_EQ(Spectrum(1.0f), get_value<Spectrum>(input_evaluator, offset));
+        EXPECT_EQ(Spectrum(1.0f), get_value<Spectrum>(input_evaluator, offset)); offset += sizeof(Spectrum) + sizeof(float);
+        offset = align(offset, 16);
 
         recorder.on_frame_end(project.ref());
     }

@@ -324,7 +324,7 @@ namespace
 
         virtual bool connect_vertex(
             SamplingContext&        sampling_context,
-            const double            time,
+            const float             time,
             const Vector3d&         point,
             Vector2d&               ndc,
             Vector3d&               outgoing,
@@ -387,7 +387,7 @@ namespace
         }
 
         virtual bool project_segment(
-            const double            time,
+            const float             time,
             const Vector3d&         a,
             const Vector3d&         b,
             Vector2d&               a_ndc,
@@ -498,7 +498,7 @@ namespace
         double get_autofocus_focal_distance(const Intersector& intersector) const
         {
             // The autofocus considers the scene at the middle of the shutter interval.
-            const double time = get_shutter_middle_time();
+            const float time = get_shutter_middle_time();
             const Transformd transform = m_transform_sequence.evaluate(time);
 
             // Create a ray that goes through the center of the lens.
@@ -509,7 +509,7 @@ namespace
             ray.m_tmax = numeric_limits<double>::max();
             ray.m_time =
                 ShadingRay::Time::create_with_normalized_time(
-                    0.5,
+                    0.5f,
                     get_shutter_open_time(),
                     get_shutter_close_time());
             ray.m_flags = VisibilityFlags::ProbeRay;
@@ -600,7 +600,7 @@ namespace
             if (m_diaphragm_map_bound)
             {
                 sampling_context.split_in_place(2, 1);
-                const Vector2d s = sampling_context.next_vector2<2>();
+                const Vector2d s = sampling_context.next2<Vector2d>();
 
                 Vector2d v;
                 size_t y;
@@ -613,14 +613,14 @@ namespace
             else if (m_diaphragm_blade_count == 0)
             {
                 sampling_context.split_in_place(2, 1);
-                const Vector2d s = sampling_context.next_vector2<2>();
+                const Vector2d s = sampling_context.next2<Vector2d>();
                 const Vector2d lens_point = m_lens_radius * sample_disk_uniform(s);
                 return Vector3d(lens_point.x, lens_point.y, 0.0);
             }
             else
             {
                 sampling_context.split_in_place(3, 1);
-                const Vector3d s = sampling_context.next_vector2<3>();
+                const Vector3d s = sampling_context.next2<Vector3d>();
                 const Vector2d lens_point =
                     m_lens_radius *
                     sample_regular_polygon_uniform(

@@ -58,16 +58,16 @@ namespace renderer
 APPLESEED_DECLARE_INPUT_VALUES(SpecularBTDFInputValues)
 {
     Spectrum    m_reflectance;                  // specular reflectance
-    ScalarInput m_reflectance_multiplier;       // specular reflectance multiplier
+    float       m_reflectance_multiplier;       // specular reflectance multiplier
     Spectrum    m_transmittance;                // specular transmittance
-    ScalarInput m_transmittance_multiplier;     // specular transmittance multiplier
-    ScalarInput m_fresnel_multiplier;           // Fresnel multiplier
-    ScalarInput m_ior;                          // index of refraction inside the medium
-    ScalarInput m_density;                      // medium density
-    ScalarInput m_scale;                        // distance scaling factor
+    float       m_transmittance_multiplier;     // specular transmittance multiplier
+    float       m_fresnel_multiplier;           // Fresnel multiplier
+    float       m_ior;                          // index of refraction inside the medium
+    float       m_density;                      // medium density
+    float       m_scale;                        // distance scaling factor
 
     // Precomputed values.
-    ScalarInput m_eta;
+    float       m_eta;
 };
 
 

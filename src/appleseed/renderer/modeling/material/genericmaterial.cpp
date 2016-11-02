@@ -62,7 +62,7 @@ namespace
             m_inputs.declare("bsdf", InputFormatEntity, "");
             m_inputs.declare("bssrdf", InputFormatEntity, "");
             m_inputs.declare("edf", InputFormatEntity, "");
-            m_inputs.declare("alpha_map", InputFormatScalar, "");
+            m_inputs.declare("alpha_map", InputFormatFloat, "");
             m_inputs.declare("displacement_map", InputFormatSpectralReflectance, "");
         }
 

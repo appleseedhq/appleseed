@@ -211,7 +211,7 @@ namespace
             m_scene_center = Vector3d(scene_data.m_center);
             m_scene_radius = scene_data.m_radius;
             m_safe_scene_diameter = scene_data.m_safe_diameter;
-            m_disk_point_prob = 1.0 / (Pi<double>() * m_scene_radius * m_scene_radius);
+            m_disk_point_prob = 1.0f / (Pi<float>() * square(static_cast<float>(m_scene_radius)));
 
             const Camera* camera = project.get_uncached_active_camera();
 
@@ -332,7 +332,7 @@ namespace
 
                 // Compute the transmission factor between the light vertex and the camera.
                 // Prevent self-intersections by letting the ray originate from the camera.
-                const double transmission =
+                const float transmission =
                     m_shading_context.get_tracer().trace_between(
                         light_sample.m_point - camera_outgoing,
                         light_sample.m_point,
@@ -341,7 +341,7 @@ namespace
                         0);
 
                 // Ignore occluded vertices.
-                if (transmission == 0.0)
+                if (transmission == 0.0f)
                     return;
 
                 // Adjust cos(alpha) to account for the fact that the camera outgoing direction was not unit-length.
@@ -373,7 +373,7 @@ namespace
                     return;
 
                 // Compute the transmission factor between the light vertex and the camera.
-                const double transmission =
+                const float transmission =
                     m_shading_context.get_tracer().trace_between(
                         light_vertex - camera_outgoing,
                         light_vertex,
@@ -382,7 +382,7 @@ namespace
                         0);
 
                 // Ignore occluded vertices.
-                if (transmission == 0.0)
+                if (transmission == 0.0f)
                     return;
 
                 // Store the contribution of this vertex.
@@ -417,7 +417,7 @@ namespace
 
                 // Compute the transmission factor between the path vertex and the camera.
                 // Prevent self-intersections by letting the ray originate from the camera.
-                const double transmission =
+                const float transmission =
                     m_shading_context.get_tracer().trace_between(
                         vertex.get_point() - camera_outgoing,
                         vertex.get_point(),
@@ -426,7 +426,7 @@ namespace
                         static_cast<ShadingRay::DepthType>(vertex.m_path_length));  // ray depth = (path length - 1) + 1
 
                 // Ignore occluded vertices.
-                if (transmission == 0.0)
+                if (transmission == 0.0f)
                     return;
 
                 // Normalize the camera outgoing direction.
@@ -441,18 +441,18 @@ namespace
 
                 // Evaluate the BSDF at the vertex position.
                 Spectrum bsdf_value;
-                const double bsdf_prob =
+                const float bsdf_prob =
                     vertex.m_bsdf->evaluate(
                         vertex.m_bsdf_data,
-                        true,                           // adjoint
-                        true,                           // multiply by |cos(incoming, normal)|
-                        geometric_normal,
-                        vertex.get_shading_basis(),
-                        vertex.m_outgoing.get_value(),  // outgoing (toward the light)
-                        -camera_outgoing,               // incoming (toward the camera)
-                        ScatteringMode::All,            // todo: likely incorrect
+                        true,                                       // adjoint
+                        true,                                       // multiply by |cos(incoming, normal)|
+                        Vector3f(geometric_normal),
+                        Basis3f(vertex.get_shading_basis()),
+                        Vector3f(vertex.m_outgoing.get_value()),    // outgoing (toward the light)
+                        -Vector3f(camera_outgoing),                 // incoming (toward the camera)
+                        ScatteringMode::All,                        // todo: likely incorrect
                         bsdf_value);
-                if (bsdf_prob == 0.0)
+                if (bsdf_prob == 0.0f)
                     return;
 
                 // Store the contribution of this vertex.
@@ -504,7 +504,7 @@ namespace
         Vector3d                        m_scene_center;         // world space
         double                          m_scene_radius;         // world space
         double                          m_safe_scene_diameter;  // world space
-        double                          m_disk_point_prob;
+        float                           m_disk_point_prob;
 
         const LightSampler&             m_light_sampler;
         TextureCache                    m_texture_cache;
@@ -522,8 +522,8 @@ namespace
         uint64                          m_path_count;
         Population<uint64>              m_path_length;
 
-        double                          m_shutter_open_time;
-        double                          m_shutter_close_time;
+        float                           m_shutter_open_time;
+        float                           m_shutter_close_time;
 
         virtual size_t generate_samples(
             const size_t                sequence_index,
@@ -563,14 +563,14 @@ namespace
         {
             // Sample the light sources.
             sampling_context.split_in_place(4, 1);
-            const Vector4d s = sampling_context.next_vector2<4>();
+            const Vector4f s = sampling_context.next2<Vector4f>();
             LightSample light_sample;
             m_light_sampler.sample(
                 ShadingRay::Time::create_with_normalized_time(
                     s[0],
                     m_shutter_open_time,
                     m_shutter_close_time),
-                Vector3d(s[1], s[2], s[3]),
+                Vector3f(s[1], s[2], s[3]),
                 light_sample);
 
             return
@@ -615,15 +615,15 @@ namespace
 
             // Sample the EDF.
             sampling_context.split_in_place(2, 1);
-            Vector3d emission_direction;
+            Vector3f emission_direction;
             Spectrum edf_value;
-            double edf_prob;
+            float edf_prob;
             material_data.m_edf->sample(
                 sampling_context,
                 input_evaluator.data(),
-                light_sample.m_geometric_normal,
-                Basis3d(light_sample.m_shading_normal),
-                sampling_context.next_vector2<2>(),
+                Vector3f(light_sample.m_geometric_normal),
+                Basis3f(Vector3f(light_sample.m_shading_normal)),
+                sampling_context.next2<Vector2f>(),
                 emission_direction,
                 edf_value,
                 edf_prob);
@@ -631,27 +631,26 @@ namespace
             // Compute the initial particle weight.
             Spectrum initial_flux = edf_value;
             initial_flux *=
-                static_cast<float>(
-                    dot(emission_direction, light_sample.m_shading_normal)
-                        / (light_sample.m_probability * edf_prob));
+                dot(emission_direction, Vector3f(light_sample.m_shading_normal)) /
+                (light_sample.m_probability * edf_prob);
 
             // Make a shading point that will be used to avoid self-intersections with the light sample.
             ShadingPoint parent_shading_point;
             light_sample.make_shading_point(
                 parent_shading_point,
-                emission_direction,
+                Vector3d(emission_direction),
                 m_intersector);
 
             // Build the light ray.
             sampling_context.split_in_place(1, 1);
             const ShadingRay::Time time =
                 ShadingRay::Time::create_with_normalized_time(
-                    sampling_context.next_double2(),
+                    sampling_context.next2<float>(),
                     m_shutter_open_time,
                     m_shutter_close_time);
             const ShadingRay light_ray(
                 light_sample.m_point,
-                emission_direction,
+                Vector3d(emission_direction),
                 time,
                 VisibilityFlags::LightRay,
                 0);
@@ -674,7 +673,7 @@ namespace
 
             // Handle the light vertex separately.
             Spectrum light_particle_flux = edf_value;       // todo: only works for diffuse EDF? What we need is the light exitance
-            light_particle_flux /= static_cast<float>(light_sample.m_probability);
+            light_particle_flux /= light_sample.m_probability;
             path_visitor.visit_area_light_vertex(
                 light_sample,
                 light_particle_flux,
@@ -706,11 +705,11 @@ namespace
             sampling_context.split_in_place(2, 1);
             Vector3d emission_position, emission_direction;
             Spectrum light_value;
-            double light_prob;
+            float light_prob;
             light_sample.m_light->sample(
                 input_evaluator,
                 light_sample.m_light_transform,
-                sampling_context.next_vector2<2>(),
+                sampling_context.next2<Vector2d>(),
                 emission_position,
                 emission_direction,
                 light_value,
@@ -718,13 +717,13 @@ namespace
 
             // Compute the initial particle weight.
             Spectrum initial_flux = light_value;
-            initial_flux /= static_cast<float>(light_sample.m_probability * light_prob);
+            initial_flux /= light_sample.m_probability * light_prob;
 
             // Build the light ray.
             sampling_context.split_in_place(1, 1);
             const ShadingRay::Time time =
                 ShadingRay::Time::create_with_normalized_time(
-                    sampling_context.next_double2(),
+                    sampling_context.next2<float>(),
                     m_shutter_open_time,
                     m_shutter_close_time);
             const ShadingRay light_ray(
@@ -751,7 +750,7 @@ namespace
 
             // Handle the light vertex separately.
             Spectrum light_particle_flux = light_value;
-            light_particle_flux /= static_cast<float>(light_sample.m_probability);
+            light_particle_flux /= light_sample.m_probability;
             path_visitor.visit_non_physical_light_vertex(
                 emission_position,
                 light_particle_flux,
@@ -780,13 +779,13 @@ namespace
             // Sample the environment.
             sampling_context.split_in_place(2, 1);
             InputEvaluator input_evaluator(m_texture_cache);
-            Vector3d outgoing;
+            Vector3f outgoing;
             Spectrum env_edf_value;
-            double env_edf_prob;
+            float env_edf_prob;
             env_edf->sample(
                 m_shading_context,
                 input_evaluator,
-                sampling_context.next_vector2<2>(),
+                sampling_context.next2<Vector2f>(),
                 outgoing,               // points toward the environment
                 env_edf_value,
                 env_edf_prob);
@@ -795,10 +794,10 @@ namespace
             sampling_context.split_in_place(2, 1);
             const Vector2d p =
                   m_scene_radius
-                * sample_disk_uniform(sampling_context.next_vector2<2>());
+                * sample_disk_uniform(sampling_context.next2<Vector2d>());
 
             // Compute the origin of the light ray.
-            const Basis3d basis(-outgoing);
+            const Basis3d basis(-Vector3d(outgoing));
             const Vector3d ray_origin =
                   m_scene_center
                 - m_safe_scene_diameter * basis.get_normal()    // a safe radius would have been sufficient
@@ -807,18 +806,18 @@ namespace
 
             // Compute the initial particle weight.
             Spectrum initial_flux = env_edf_value;
-            initial_flux /= static_cast<float>(m_disk_point_prob * env_edf_prob);
+            initial_flux /= m_disk_point_prob * env_edf_prob;
 
             // Build the light ray.
             sampling_context.split_in_place(1, 1);
             const ShadingRay::Time time =
                 ShadingRay::Time::create_with_normalized_time(
-                    sampling_context.next_double2(),
+                    sampling_context.next2<float>(),
                     m_shutter_open_time,
                     m_shutter_close_time);
             const ShadingRay light_ray(
                 ray_origin,
-                -outgoing,
+                -Vector3d(outgoing),
                 time,
                 VisibilityFlags::LightRay,
                 0);

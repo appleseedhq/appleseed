@@ -75,7 +75,7 @@ namespace
           : BSDF(name, Reflective, ScatteringMode::Diffuse, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -97,20 +97,20 @@ namespace
         {
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);
-            const Vector2d s = sampling_context.next_vector2<2>();
-            const Vector3d wi = sample_hemisphere_cosine(s);
+            const Vector2f s = sampling_context.next2<Vector2f>();
+            const Vector3f wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
-            sample.m_incoming = Dual3d(sample.get_shading_basis().transform_to_parent(wi));
+            sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
             sample.m_value = values->m_reflectance;
-            sample.m_value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi<double>());
+            sample.m_value *= values->m_reflectance_multiplier * RcpPi<float>();
 
             // Compute the probability density of the sampled direction.
-            sample.m_probability = wi.y * RcpPi<double>();
-            assert(sample.m_probability > 0.0);
+            sample.m_probability = wi.y * RcpPi<float>();
+            assert(sample.m_probability > 0.0f);
 
             // Set the scattering mode.
             sample.m_mode = ScatteringMode::Diffuse;
@@ -118,60 +118,60 @@ namespace
             sample.compute_reflected_differentials();
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate(
+        APPLESEED_FORCE_INLINE virtual float evaluate(
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
+            const Vector3f&     geometric_normal,
+            const Basis3f&      shading_basis,
+            const Vector3f&     outgoing,
+            const Vector3f&     incoming,
             const int           modes,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_diffuse(modes))
-                return 0.0;
+                return 0.0f;
 
             // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            if (cos_in < 0.0)
-                return 0.0;
+            const Vector3f& n = shading_basis.get_normal();
+            const float cos_in = dot(incoming, n);
+            if (cos_in < 0.0f)
+                return 0.0f;
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_reflectance;
-            value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi<double>());
+            value *= values->m_reflectance_multiplier * RcpPi<float>();
 
             // Return the probability density of the sampled direction.
-            return cos_in * RcpPi<double>();
+            return cos_in * RcpPi<float>();
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
+        APPLESEED_FORCE_INLINE virtual float evaluate_pdf(
             const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
+            const Vector3f&     geometric_normal,
+            const Basis3f&      shading_basis,
+            const Vector3f&     outgoing,
+            const Vector3f&     incoming,
             const int           modes) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_diffuse(modes))
-                return 0.0;
+                return 0.0f;
 
             // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            if (cos_in < 0.0)
-                return 0.0;
+            const Vector3f& n = shading_basis.get_normal();
+            const float cos_in = dot(incoming, n);
+            if (cos_in < 0.0f)
+                return 0.0f;
 
-            return cos_in * RcpPi<double>();
+            return cos_in * RcpPi<float>();
         }
 
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_reflectance;              // diffuse reflectance (albedo, technically)
-            ScalarInput m_reflectance_multiplier;
+            float       m_reflectance_multiplier;
         };
     };
 

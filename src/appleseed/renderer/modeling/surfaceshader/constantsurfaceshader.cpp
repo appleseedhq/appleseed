@@ -74,8 +74,8 @@ namespace
           : SurfaceShader(name, params)
         {
             m_inputs.declare("color", InputFormatSpectralIlluminanceWithAlpha);
-            m_inputs.declare("color_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("alpha_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("color_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("alpha_multiplier", InputFormatFloat, "1.0");
 
             const string alpha_source = m_params.get_optional<string>("alpha_source", "color");
             if (alpha_source == "color")
@@ -136,8 +136,8 @@ namespace
         {
             Spectrum    m_color;
             Alpha       m_alpha;
-            ScalarInput m_color_multiplier;
-            ScalarInput m_alpha_multiplier;
+            float       m_color_multiplier;
+            float       m_alpha_multiplier;
         };
 
         enum AlphaSource

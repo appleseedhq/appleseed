@@ -75,8 +75,8 @@ namespace
           : EDF(name, params)
         {
             m_inputs.declare("radiance", InputFormatSpectralIlluminance);
-            m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("angle", InputFormatScalar, "90.0");
+            m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("angle", InputFormatFloat, "90.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -100,7 +100,7 @@ namespace
 
             check_non_zero_emission("radiance", "radiance_multiplier");
 
-            m_cos_half_angle = cos(deg_to_rad(m_params.get_required<double>("angle", 90.0) / 2.0));
+            m_cos_half_angle = cos(deg_to_rad(m_params.get_required<float>("angle", 90.0f) / 2.0f));
 
             return true;
         }
@@ -108,38 +108,38 @@ namespace
         virtual void sample(
             SamplingContext&        sampling_context,
             const void*             data,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector2d&         s,
-            Vector3d&               outgoing,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector2f&         s,
+            Vector3f&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(geometric_normal));
 
-            const Vector3d wo = sample_cone_uniform(s, m_cos_half_angle);
+            const Vector3f wo = sample_cone_uniform(s, m_cos_half_angle);
             outgoing = shading_basis.transform_to_parent(wo);
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= static_cast<float>(values->m_radiance_multiplier);
+            value *= values->m_radiance_multiplier;
 
             probability = sample_cone_uniform_pdf(m_cos_half_angle);
-            assert(probability > 0.0);
+            assert(probability > 0.0f);
         }
 
         virtual void evaluate(
             const void*             data,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing,
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
 
             // No emission outside the cone.
-            const double cos_on = dot(outgoing, shading_basis.get_normal());
+            const float cos_on = dot(outgoing, shading_basis.get_normal());
             if (cos_on <= m_cos_half_angle)
             {
                 value.set(0.0f);
@@ -148,49 +148,49 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= static_cast<float>(values->m_radiance_multiplier);
+            value *= values->m_radiance_multiplier;
         }
 
         virtual void evaluate(
             const void*             data,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
 
             // No emission outside the cone.
-            const double cos_on = dot(outgoing, shading_basis.get_normal());
+            const float cos_on = dot(outgoing, shading_basis.get_normal());
             if (cos_on <= m_cos_half_angle)
             {
                 value.set(0.0f);
-                probability = 0.0;
+                probability = 0.0f;
                 return;
             }
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= static_cast<float>(values->m_radiance_multiplier);
+            value *= values->m_radiance_multiplier;
 
             probability = sample_cone_uniform_pdf(m_cos_half_angle);
         }
 
-        virtual double evaluate_pdf(
+        virtual float evaluate_pdf(
             const void*             data,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing) const APPLESEED_OVERRIDE
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
 
             // No emission outside the cone.
-            const double cos_on = dot(outgoing, shading_basis.get_normal());
+            const float cos_on = dot(outgoing, shading_basis.get_normal());
             if (cos_on <= m_cos_half_angle)
-                return 0.0;
+                return 0.0f;
 
             return sample_cone_uniform_pdf(m_cos_half_angle);
         }
@@ -198,7 +198,7 @@ namespace
       private:
         typedef ConeEDFInputValues InputValues;
 
-        double m_cos_half_angle;
+        float m_cos_half_angle;
     };
 }
 

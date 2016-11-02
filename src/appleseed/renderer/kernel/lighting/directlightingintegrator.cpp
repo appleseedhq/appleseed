@@ -223,7 +223,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
 
         for (size_t i = 0; i < m_light_sample_count; ++i)
         {
-            const Vector3d s = sampling_context.next_vector2<3>();
+            const Vector3f s = sampling_context.next2<Vector3f>();
 
             LightSample sample;
             m_light_sampler.sample_emitting_triangles(m_time, s, sample);
@@ -245,24 +245,16 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
     }
 
     // Sample non-physical light sources.
-    const size_t light_count = m_light_sampler.get_non_physical_light_count();
-    if (light_count > 0)
+    for (size_t i = 0, e = m_light_sampler.get_non_physical_light_count(); i < e; ++i)
     {
-        sampling_context.split_in_place(2, light_count);
+        LightSample sample;
+        m_light_sampler.sample_non_physical_light(m_time, i, sample);
 
-        for (size_t i = 0; i < light_count; ++i)
-        {
-            const Vector2d s = sampling_context.next_vector2<2>();
-
-            LightSample sample;
-            m_light_sampler.sample_non_physical_light(m_time, s, i, sample);
-
-            add_non_physical_light_sample_contribution(
-                sample,
-                outgoing,
-                radiance,
-                aovs);
-        }
+        add_non_physical_light_sample_contribution(
+            sample,
+            outgoing,
+            radiance,
+            aovs);
     }
 }
 
@@ -333,7 +325,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_single_sample(
     {
         sampling_context.split_in_place(1, 1);
 
-        if (sampling_context.next_double2() < 0.5)
+        if (sampling_context.next2<float>() < 0.5f)
         {
             sampling_context.split_in_place(3, 1);
             take_single_light_sample(
@@ -370,17 +362,19 @@ void DirectLightingIntegrator::compute_outgoing_radiance_single_sample(
 bool DirectLightingIntegrator::compute_incoming_radiance(
     SamplingContext&            sampling_context,
     Vector3d&                   incoming,
-    double&                     incoming_prob,
+    float&                      incoming_prob,
     Spectrum&                   radiance) const
 {
     if (!m_light_sampler.has_lights_or_emitting_triangles())
         return false;
 
     sampling_context.split_in_place(3, 1);
-    const Vector3d s = sampling_context.next_vector2<3>();
 
     LightSample sample;
-    m_light_sampler.sample(m_time, s, sample);
+    m_light_sampler.sample(
+        m_time,
+        sampling_context.next2<Vector3f>(),
+        sample);
 
     if (sample.m_triangle)
     {
@@ -401,14 +395,14 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
             return false;
 
         // Compute the transmission factor between the light sample and the shading point.
-        const double transmission =
+        const float transmission =
             m_shading_context.get_tracer().trace_between(
                 m_shading_point,
                 sample.m_point,
                 VisibilityFlags::ShadowRay);
 
         // Discard occluded samples.
-        if (transmission == 0.0)
+        if (transmission == 0.0f)
             return false;
 
         // Don't use this sample if we're closer than the light near start value.
@@ -445,17 +439,17 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
         // Evaluate the EDF.
         edf->evaluate(
             edf_input_evaluator.data(),
-            sample.m_geometric_normal,
-            Basis3d(sample.m_shading_normal),
-            -incoming,
+            Vector3f(sample.m_geometric_normal),
+            Basis3f(Vector3f(sample.m_shading_normal)),
+            -Vector3f(incoming),
             radiance);
 
         // Compute probability with respect to solid angle of incoming direction.
-        const double g = cos_on_light * rcp_square_distance;
+        const float g = static_cast<float>(cos_on_light * rcp_square_distance);
         incoming_prob = sample.m_probability / g;
 
         // Compute and return the incoming radiance.
-        radiance *= static_cast<float>(transmission * g / sample.m_probability);
+        radiance *= transmission * g / sample.m_probability;
     }
     else
     {
@@ -477,14 +471,14 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
             radiance);
 
         // Compute the transmission factor between the light sample and the shading point.
-        const double transmission =
+        const float transmission =
             m_shading_context.get_tracer().trace_between(
                 m_shading_point,
                 emission_position,
                 VisibilityFlags::ShadowRay);
 
         // Discard occluded samples.
-        if (transmission == 0.0)
+        if (transmission == 0.0f)
             return false;
 
         // Compute the incoming direction in world space.
@@ -492,8 +486,8 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
         incoming_prob = BSDF::DiracDelta;
 
         // Compute and return the incoming radiance.
-        const double attenuation = light->compute_distance_attenuation(m_point, emission_position);
-        radiance *= static_cast<float>(transmission * attenuation / sample.m_probability);
+        const float attenuation = light->compute_distance_attenuation(m_point, emission_position);
+        radiance *= transmission * attenuation / sample.m_probability;
     }
 
     return true;
@@ -522,11 +516,11 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
         return;
 
     // Trace a ray in the direction of the reflection.
-    double weight;
+    float weight;
     const ShadingPoint& light_shading_point =
         m_shading_context.get_tracer().trace(
             m_shading_point,
-            sample.m_incoming.get_value(),
+            Vector3d(sample.m_incoming.get_value()),
             VisibilityFlags::ShadowRay,
             weight);
 
@@ -550,8 +544,8 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
         return;
 
     // Cull the samples on the back side of the lights' shading surface.
-    const double cos_on = dot(-sample.m_incoming.get_value(), light_shading_point.get_shading_normal());
-    if (cos_on <= 0.0)
+    const float cos_on = dot(-sample.m_incoming.get_value(), Vector3f(light_shading_point.get_shading_normal()));
+    if (cos_on <= 0.0f)
         return;
 
 #ifdef APPLESEED_WITH_OSL
@@ -569,15 +563,15 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
 
     // Evaluate emitted radiance.
     Spectrum edf_value;
-    double edf_prob;
+    float edf_prob;
     edf->evaluate(
         edf_input_evaluator.data(),
-        light_shading_point.get_geometric_normal(),
-        light_shading_point.get_shading_basis(),
+        Vector3f(light_shading_point.get_geometric_normal()),
+        Basis3f(light_shading_point.get_shading_basis()),
         -sample.m_incoming.get_value(),
         edf_value,
         edf_prob);
-    if (edf_prob == 0.0)
+    if (edf_prob == 0.0f)
         return;
 
     // Compute the square distance between the light sample and the shading point.
@@ -592,10 +586,10 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
         square_distance > 0.0)
     {
         // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
-        const double bsdf_prob_area = sample.m_probability * cos_on / square_distance;
+        const float bsdf_prob_area = sample.m_probability * cos_on / static_cast<float>(square_distance);
 
         // Compute the probability density wrt. surface area mesure of the light sample.
-        const double light_prob_area = m_light_sampler.evaluate_pdf(light_shading_point);
+        const float light_prob_area = m_light_sampler.evaluate_pdf(light_shading_point);
 
         // Apply the weighting function.
         weight *=
@@ -606,7 +600,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     }
 
     // Add the contribution of this sample to the illumination.
-    edf_value *= static_cast<float>(weight / sample.m_probability);
+    edf_value *= weight / sample.m_probability;
     edf_value *= sample.m_value;
     radiance += edf_value;
     aovs.add(edf->get_render_layer_index(), edf_value);
@@ -626,10 +620,11 @@ void DirectLightingIntegrator::take_single_light_sample(
     if (!m_light_sampler.has_lights_or_emitting_triangles())
         return;
 
-    const Vector3d s = sampling_context.next_vector2<3>();
-
     LightSample sample;
-    m_light_sampler.sample(m_time, s, sample);
+    m_light_sampler.sample(
+        m_time,
+        sampling_context.next2<Vector3f>(),
+        sample);
 
     if (sample.m_triangle)
     {
@@ -685,14 +680,14 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
         return;
 
     // Compute the transmission factor between the light sample and the shading point.
-    const double transmission =
+    const float transmission =
         m_shading_context.get_tracer().trace_between(
             m_shading_point,
             sample.m_point,
             VisibilityFlags::ShadowRay);
 
     // Discard occluded samples.
-    if (transmission == 0.0)
+    if (transmission == 0.0f)
         return;
 
     // Compute the square distance between the light sample and the shading point.
@@ -710,18 +705,18 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
 
     // Evaluate the BSDF.
     Spectrum bsdf_value;
-    const double bsdf_prob =
+    const float bsdf_prob =
         m_bsdf.evaluate(
             m_bsdf_data,
             false,              // not adjoint
             true,               // multiply by |cos(incoming, normal)|
-            m_geometric_normal,
-            m_shading_basis,
-            outgoing.get_value(),
-            incoming,
+            Vector3f(m_geometric_normal),
+            Basis3f(m_shading_basis),
+            Vector3f(outgoing.get_value()),
+            Vector3f(incoming),
             m_light_sampling_modes,
             bsdf_value);
-    if (bsdf_prob == 0.0)
+    if (bsdf_prob == 0.0f)
         return;
 
     // Build a shading point on the light source.
@@ -748,13 +743,13 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     Spectrum edf_value;
     edf->evaluate(
         edf_input_evaluator.data(),
-        sample.m_geometric_normal,
-        Basis3d(sample.m_shading_normal),
-        -incoming,
+        Vector3f(sample.m_geometric_normal),
+        Basis3f(Vector3f(sample.m_shading_normal)),
+        -Vector3f(incoming),
         edf_value);
 
-    const double g = cos_on * rcp_sample_square_distance;
-    double weight = transmission * g / sample.m_probability;
+    const float g = static_cast<float>(cos_on * rcp_sample_square_distance);
+    float weight = transmission * g / sample.m_probability;
 
     // Apply MIS weighting.
     weight *=
@@ -764,7 +759,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
             m_bsdf_sample_count * bsdf_prob * g);
 
     // Add the contribution of this sample to the illumination.
-    edf_value *= static_cast<float>(weight);
+    edf_value *= weight;
     edf_value *= bsdf_value;
     radiance += edf_value;
     aovs.add(edf->get_render_layer_index(), edf_value);
@@ -809,36 +804,36 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     }
 
     // Compute the transmission factor between the light sample and the shading point.
-    const double transmission =
+    const float transmission =
         m_shading_context.get_tracer().trace_between(
             m_shading_point,
             emission_position,
             VisibilityFlags::ShadowRay);
 
     // Discard occluded samples.
-    if (transmission == 0.0)
+    if (transmission == 0.0f)
         return;
 
     // Evaluate the BSDF.
     Spectrum bsdf_value;
-    const double bsdf_prob =
+    const float bsdf_prob =
         m_bsdf.evaluate(
             m_bsdf_data,
             false,              // not adjoint
             true,               // multiply by |cos(incoming, normal)|
-            m_geometric_normal,
-            m_shading_basis,
-            outgoing.get_value(),
-            incoming,
+            Vector3f(m_geometric_normal),
+            Basis3f(m_shading_basis),
+            Vector3f(outgoing.get_value()),
+            Vector3f(incoming),
             m_light_sampling_modes,
             bsdf_value);
-    if (bsdf_prob == 0.0)
+    if (bsdf_prob == 0.0f)
         return;
 
     // Add the contribution of this sample to the illumination.
-    const double attenuation = light->compute_distance_attenuation(m_point, emission_position);
-    const double weight = transmission * attenuation / sample.m_probability;
-    light_value *= static_cast<float>(weight);
+    const float attenuation = light->compute_distance_attenuation(m_point, emission_position);
+    const float weight = transmission * attenuation / sample.m_probability;
+    light_value *= weight;
     light_value *= bsdf_value;
     radiance += light_value;
     aovs.add(light->get_render_layer_index(), light_value);

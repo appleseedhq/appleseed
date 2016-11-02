@@ -83,9 +83,9 @@ Light::~Light()
     delete impl;
 }
 
-double Light::get_uncached_importance_multiplier() const
+float Light::get_uncached_importance_multiplier() const
 {
-    return m_params.get_optional<double>("importance_multiplier", 1.0);
+    return m_params.get_optional<float>("importance_multiplier", 1.0f);
 }
 
 void Light::set_transform(const Transformd& transform)
@@ -131,7 +131,7 @@ void Light::sample(
     Vector3d&               position,
     Vector3d&               outgoing,
     Spectrum&               value,
-    double&                 probability) const
+    float&                  probability) const
 {
     // By default we ignore the light targets.
     return

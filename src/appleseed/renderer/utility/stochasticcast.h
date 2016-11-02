@@ -46,20 +46,20 @@ namespace renderer
 // Randomly cast a non-negative scalar n to an integer such that the expected value of that integer is n.
 //
 
-template <typename Int>
-inline Int stochastic_cast(SamplingContext& sampling_context, const double n)
+template <typename Int, typename Float>
+inline Int stochastic_cast(SamplingContext& sampling_context, const Float n)
 {
-    assert(n >= 0.0);
+    assert(n >= Float(0.0));
 
     Int i = foundation::truncate<Int>(n);
 
-    const double r = n - i;
+    const Float r = n - i;
 
-    if (r > 0.0)
+    if (r > Float(0.0))
     {
         sampling_context.split_in_place(1, 1);
 
-        if (sampling_context.next_double2() < n - i)
+        if (sampling_context.next2<Float>() < n - i)
             ++i;
     }
 

@@ -95,8 +95,8 @@ class EmittingTriangle
     foundation::Vector3d        m_n0, m_n1, m_n2;               // world space vertex normals
     foundation::Vector3d        m_geometric_normal;             // world space geometric normal, unit-length
     TriangleSupportPlaneType    m_triangle_support_plane;       // support plane of the triangle in assembly space
-    double                      m_rcp_area;                     // world space triangle area reciprocal
-    double                      m_triangle_prob;                // probability density of this triangle
+    float                       m_rcp_area;                     // world space triangle area reciprocal
+    float                       m_triangle_prob;                // probability density of this triangle
     const Material*             m_material;
 };
 
@@ -159,7 +159,7 @@ class LightSample
     foundation::Transformd      m_light_transform;              // light space to world space transform
 
     // Data common to all sample types.
-    double                      m_probability;                  // probability density of this sample
+    float                       m_probability;                  // probability density of this sample
 
     // Construct a shading point out of this light sample and a given direction.
     void make_shading_point(
@@ -195,30 +195,29 @@ class LightSampler
     // Sample the set of non-physical lights.
     void sample_non_physical_lights(
         const ShadingRay::Time&             time,
-        const foundation::Vector3d&         s,
+        const foundation::Vector3f&         s,
         LightSample&                        light_sample) const;
 
     // Sample a single given non-physical light.
     void sample_non_physical_light(
         const ShadingRay::Time&             time,
-        const foundation::Vector2d&         s,
         const size_t                        light_index,
         LightSample&                        light_sample) const;
 
     // Sample the set of emitting triangles.
     void sample_emitting_triangles(
         const ShadingRay::Time&             time,
-        const foundation::Vector3d&         s,
+        const foundation::Vector3f&         s,
         LightSample&                        light_sample) const;
 
     // Sample the sets of non-physical lights and emitting triangles.
     void sample(
         const ShadingRay::Time&             time,
-        const foundation::Vector3d&         s,
+        const foundation::Vector3f&         s,
         LightSample&                        light_sample) const;
 
     // Compute the probability density in area measure of a given light sample.
-    double evaluate_pdf(const ShadingPoint& shading_point) const;
+    float evaluate_pdf(const ShadingPoint& shading_point) const;
 
   private:
     struct Parameters
@@ -230,7 +229,7 @@ class LightSampler
 
     typedef std::vector<NonPhysicalLightInfo> NonPhysicalLightVector;
     typedef std::vector<EmittingTriangle> EmittingTriangleVector;
-    typedef foundation::CDF<size_t, double> EmitterCDF;
+    typedef foundation::CDF<size_t, float> EmitterCDF;
 
     const Parameters            m_params;
 
@@ -272,24 +271,23 @@ class LightSampler
     // Sample a given non-physical light.
     void sample_non_physical_light(
         const ShadingRay::Time&             time,
-        const foundation::Vector2d&         s,
         const size_t                        light_index,
-        const double                        light_prob,
+        const float                         light_prob,
         LightSample&                        sample) const;
 
     // Sample a given emitting triangle.
     void sample_emitting_triangle(
         const ShadingRay::Time&             time,
-        const foundation::Vector2d&         s,
+        const foundation::Vector2f&         s,
         const size_t                        triangle_index,
-        const double                        triangle_prob,
+        const float                         triangle_prob,
         LightSample&                        sample) const;
 
 #ifdef APPLESEED_WITH_OSL
     void store_object_area_in_shadergroups(
         const AssemblyInstance*             assembly_instance,
         const ObjectInstance*               object_instance,
-        const double                        object_area,
+        const float                         object_area,
         const MaterialArray&                materials);
 #endif
 };
@@ -361,11 +359,10 @@ inline bool LightSampler::has_lights_or_emitting_triangles() const
 
 inline void LightSampler::sample_non_physical_light(
     const ShadingRay::Time&                 time,
-    const foundation::Vector2d&             s,
     const size_t                            light_index,
     LightSample&                            sample) const
 {
-    sample_non_physical_light(time, s, light_index, 1.0, sample);
+    sample_non_physical_light(time, light_index, 1.0, sample);
 }
 
 }       // namespace renderer

@@ -58,12 +58,12 @@ namespace renderer
 APPLESEED_DECLARE_INPUT_VALUES(AshikhminBRDFInputValues)
 {
     Spectrum    m_rd;               // diffuse reflectance of the substrate
-    ScalarInput m_rd_multiplier;    // diffuse reflectance multiplier
+    float       m_rd_multiplier;    // diffuse reflectance multiplier
     Spectrum    m_rg;               // glossy reflectance at normal incidence
-    ScalarInput m_rg_multiplier;    // glossy reflectance multiplier
-    ScalarInput m_fr_multiplier;    // Fresnel multiplier
-    ScalarInput m_nu;               // Phong-like exponent in first tangent direction
-    ScalarInput m_nv;               // Phong-like exponent in second tangent direction
+    float       m_rg_multiplier;    // glossy reflectance multiplier
+    float       m_fr_multiplier;    // Fresnel multiplier
+    float       m_nu;               // Phong-like exponent in first tangent direction
+    float       m_nv;               // Phong-like exponent in second tangent direction
 };
 
 

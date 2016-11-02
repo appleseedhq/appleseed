@@ -56,21 +56,20 @@ namespace renderer
 APPLESEED_DECLARE_INPUT_VALUES(DisneyBRDFInputValues)
 {
     Spectrum    m_base_color;
-    ScalarInput m_subsurface;
-    ScalarInput m_metallic;
-    ScalarInput m_specular;
-    ScalarInput m_specular_tint;
-    ScalarInput m_anisotropic;
-    ScalarInput m_roughness;
-    ScalarInput m_sheen;
-    ScalarInput m_sheen_tint;
-    ScalarInput m_clearcoat;
-    ScalarInput m_clearcoat_gloss;
+    float       m_subsurface;
+    float       m_metallic;
+    float       m_specular;
+    float       m_specular_tint;
+    float       m_anisotropic;
+    float       m_roughness;
+    float       m_sheen;
+    float       m_sheen_tint;
+    float       m_clearcoat;
+    float       m_clearcoat_gloss;
 
-    // These are not a real params of the BRDF.
-    // Instead, they are used to hold some temporary values.
+    // These are not real params of the BRDF, but temporary values.
     Spectrum    m_tint_color;
-    ScalarInput m_base_color_luminance;
+    float       m_base_color_luminance;
 };
 
 

@@ -142,7 +142,7 @@ class DirectLightingIntegrator
     bool compute_incoming_radiance(
         SamplingContext&                sampling_context,
         foundation::Vector3d&           incoming,
-        double&                         incoming_prob,
+        float&                          incoming_prob,
         Spectrum&                       radiance) const;
 
   private:

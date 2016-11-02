@@ -54,61 +54,61 @@ class FlipBackfacingNormalsPolicy
 {
   public:
     FlipBackfacingNormalsPolicy(
-        const foundation::Basis3d&  basis,
+        const foundation::Basis3f&  basis,
         const bool                  backfacing)
       : m_basis(
             backfacing
-                ? foundation::Basis3d(-basis.get_normal(), basis.get_tangent_u(), -basis.get_tangent_v())
+                ? foundation::Basis3f(-basis.get_normal(), basis.get_tangent_u(), -basis.get_tangent_v())
                 : basis)
     {
     }
 
-    const foundation::Vector3d& get_normal() const
+    const foundation::Vector3f& get_normal() const
     {
         return m_basis.get_normal();
     }
 
-    const foundation::Vector3d transform_to_local(const foundation::Vector3d& v) const
+    const foundation::Vector3f transform_to_local(const foundation::Vector3f& v) const
     {
         return m_basis.transform_to_local(v);
     }
 
-    const foundation::Vector3d transform_to_parent(const foundation::Vector3d& v) const
+    const foundation::Vector3f transform_to_parent(const foundation::Vector3f& v) const
     {
         return m_basis.transform_to_parent(v);
     }
 
   private:
-    const foundation::Basis3d m_basis;
+    const foundation::Basis3f m_basis;
 };
 
 class UseOriginalNormalsPolicy
 {
   public:
     UseOriginalNormalsPolicy(
-        const foundation::Basis3d&  basis,
+        const foundation::Basis3f&  basis,
         const bool                  backfacing)
       : m_basis(basis)
     {
     }
 
-    const foundation::Vector3d& get_normal() const
+    const foundation::Vector3f& get_normal() const
     {
         return m_basis.get_normal();
     }
 
-    const foundation::Vector3d transform_to_local(const foundation::Vector3d& v) const
+    const foundation::Vector3f transform_to_local(const foundation::Vector3f& v) const
     {
         return m_basis.transform_to_local(v);
     }
 
-    const foundation::Vector3d transform_to_parent(const foundation::Vector3d& v) const
+    const foundation::Vector3f transform_to_parent(const foundation::Vector3f& v) const
     {
         return m_basis.transform_to_parent(v);
     }
 
   private:
-    const foundation::Basis3d& m_basis;
+    const foundation::Basis3f& m_basis;
 };
 
 }       // namespace renderer

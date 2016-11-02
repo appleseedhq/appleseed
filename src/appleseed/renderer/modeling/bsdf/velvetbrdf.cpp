@@ -78,12 +78,12 @@ namespace
             const ParamArray&   params)
           : BSDF(name, Reflective, ScatteringMode::Glossy, params)
         {
-            m_inputs.declare("roughness", InputFormatScalar);
-            m_inputs.declare("roughness_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("roughness", InputFormatFloat);
+            m_inputs.declare("roughness_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("fresnel_normal_reflectance", InputFormatScalar, "1.0");
-            m_inputs.declare("fresnel_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("fresnel_normal_reflectance", InputFormatFloat, "1.0");
+            m_inputs.declare("fresnel_multiplier", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -103,22 +103,22 @@ namespace
             const bool          cosine_mult,
             BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
-            const Vector3d& n = sample.get_shading_normal();
-            const double cos_on = min(dot(sample.m_outgoing.get_value(), n), 1.0);
-            if (cos_on < 0.0)
+            const Vector3f& n = sample.m_shading_basis.get_normal();
+            const float cos_on = min(dot(sample.m_outgoing.get_value(), n), 1.0f);
+            if (cos_on < 0.0f)
                 return;
 
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);
-            const Vector2d s = sampling_context.next_vector2<2>();
-            const Vector3d wi = sample_hemisphere_uniform(s);
+            const Vector2f s = sampling_context.next2<Vector2f>();
+            const Vector3f wi = sample_hemisphere_uniform(s);
 
             // Transform the incoming direction to parent space.
-            const Vector3d incoming = sample.get_shading_basis().transform_to_parent(wi);
+            const Vector3f incoming = sample.m_shading_basis.transform_to_parent(wi);
 
             // No reflection below the shading surface.
-            const double cos_in = dot(incoming, n);
-            if (cos_in < 0.0)
+            const float cos_in = dot(incoming, n);
+            if (cos_in < 0.0f)
                 return;
 
             // Compute the BRDF value.
@@ -133,35 +133,35 @@ namespace
                 sample.m_value);
 
             // Compute the probability density of the sampled direction.
-            sample.m_probability = RcpTwoPi<double>();
+            sample.m_probability = RcpTwoPi<float>();
 
             // Set the scattering mode.
             sample.m_mode = ScatteringMode::Glossy;
 
-            sample.m_incoming = Dual3d(incoming);
+            sample.m_incoming = Dual3f(incoming);
             sample.compute_reflected_differentials();
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate(
+        APPLESEED_FORCE_INLINE virtual float evaluate(
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
+            const Vector3f&     geometric_normal,
+            const Basis3f&      shading_basis,
+            const Vector3f&     outgoing,
+            const Vector3f&     incoming,
             const int           modes,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_glossy(modes))
-                return 0.0;
+                return 0.0f;
 
             // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            const double cos_on = min(dot(outgoing, n), 1.0);
-            if (cos_in < 0.0 || cos_on < 0.0)
-                return 0.0;
+            const Vector3f& n = shading_basis.get_normal();
+            const float cos_in = dot(incoming, n);
+            const float cos_on = min(dot(outgoing, n), 1.0f);
+            if (cos_in < 0.0f || cos_on < 0.0f)
+                return 0.0f;
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
@@ -175,83 +175,83 @@ namespace
                 value);
 
             // Return the probability density of the sampled direction.
-            return RcpTwoPi<double>();
+            return RcpTwoPi<float>();
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
+        APPLESEED_FORCE_INLINE virtual float evaluate_pdf(
             const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
+            const Vector3f&     geometric_normal,
+            const Basis3f&      shading_basis,
+            const Vector3f&     outgoing,
+            const Vector3f&     incoming,
             const int           modes) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_glossy(modes))
-                return 0.0;
+                return 0.0f;
 
             // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            if (cos_in < 0.0)
-                return 0.0;
+            const Vector3f& n = shading_basis.get_normal();
+            const float cos_in = dot(incoming, n);
+            if (cos_in < 0.0f)
+                return 0.0f;
 
-            return RcpTwoPi<double>();
+            return RcpTwoPi<float>();
         }
 
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            ScalarInput m_roughness;
-            ScalarInput m_roughness_multiplier;
+            float       m_roughness;
+            float       m_roughness_multiplier;
             Spectrum    m_reflectance;
-            ScalarInput m_reflectance_multiplier;
-            ScalarInput m_fresnel_normal_reflectance;
-            ScalarInput m_fresnel_multiplier;
+            float       m_reflectance_multiplier;
+            float       m_fresnel_normal_reflectance;
+            float       m_fresnel_multiplier;
         };
 
         void eval_velvet(
             const InputValues*  values,
-            const Vector3d&     n,
-            const Vector3d&     incoming,
-            const Vector3d&     outgoing,
-            const double        cos_in,
-            const double        cos_on,
+            const Vector3f&     n,
+            const Vector3f&     incoming,
+            const Vector3f&     outgoing,
+            const float        cos_in,
+            const float        cos_on,
             Spectrum&           value) const
         {
             value = values->m_reflectance;
-            const Vector3d h = normalize(incoming + outgoing);
-            const double roughness = values->m_roughness * values->m_roughness_multiplier;
-            const double D = velvet_distribution(dot(n, h), roughness);
-            const double denom = velvet_denom(cos_in, cos_on);
-            double F = fresnel_factor(values, n, outgoing);
-            value *= static_cast<float>(values->m_reflectance_multiplier * D * F / denom);
+            const Vector3f h = normalize(incoming + outgoing);
+            const float roughness = values->m_roughness * values->m_roughness_multiplier;
+            const float D = velvet_distribution(dot(n, h), roughness);
+            const float denom = velvet_denom(cos_in, cos_on);
+            float F = fresnel_factor(values, n, outgoing);
+            value *= values->m_reflectance_multiplier * D * F / denom;
         }
 
-        const double velvet_distribution(const double cos_nh, const double roughness) const
+        const float velvet_distribution(const float cos_nh, const float roughness) const
         {
             // [1] equation 22.
-            const double cos_nh2 = square(cos_nh);
-            const double sin2 = 1.0 - cos_nh2;
-            const double cot2 = cos_nh2 / sin2;
-            const double m2 = max(square(roughness), 0.000001);
-            const double A = 4.0;
-            const double cnorm = 1.0 / (Pi<double>() * (1 + A * m2));
-            return cnorm * (1.0 + (A * exp(-cot2 / m2) / square(sin2)));
+            const float cos_nh2 = square(cos_nh);
+            const float sin2 = 1.0f - cos_nh2;
+            const float cot2 = cos_nh2 / sin2;
+            const float m2 = max(square(roughness), 0.000001f);
+            const float A = 4.0f;
+            const float cnorm = 1.0f / (Pi<float>() * (1 + A * m2));
+            return cnorm * (1.0f + (A * exp(-cot2 / m2) / square(sin2)));
         }
 
-        const double velvet_denom(const double cos_in, const double cos_on) const
+        const float velvet_denom(const float cos_in, const float cos_on) const
         {
             // [1] equation 23.
-            return 4.0 * (cos_in + cos_on - cos_in * cos_on);
+            return 4.0f * (cos_in + cos_on - cos_in * cos_on);
         }
 
-        double fresnel_factor(
+        float fresnel_factor(
             const InputValues*  values,
-            const Vector3d&     n,
-            const Vector3d&     outgoing) const
+            const Vector3f&     n,
+            const Vector3f&     outgoing) const
         {
-            double F = 1.0;
-            if (values->m_fresnel_normal_reflectance != 1.0)
+            float F = 1.0f;
+            if (values->m_fresnel_normal_reflectance != 1.0f)
             {
                 fresnel_reflectance_dielectric_schlick(
                     F,

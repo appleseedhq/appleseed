@@ -67,7 +67,7 @@ namespace
           : Material(name, params)
         {
             m_inputs.declare("osl_surface", InputFormatEntity, "");
-            m_inputs.declare("alpha_map", InputFormatScalar, "");
+            m_inputs.declare("alpha_map", InputFormatFloat, "");
 
             m_osl_bsdf = OSLBSDFFactory().create();
             m_osl_bssrdf = OSLBSSRDFFactory().create();

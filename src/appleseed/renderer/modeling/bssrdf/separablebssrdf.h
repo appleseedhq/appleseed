@@ -65,20 +65,20 @@ class SeparableBSSRDF
     virtual void evaluate(
         const void*                 data,
         const ShadingPoint&         outgoing_point,
-        const foundation::Vector3d& outgoing_dir,
+        const foundation::Vector3f& outgoing_dir,
         const ShadingPoint&         incoming_point,
-        const foundation::Vector3d& incoming_dir,
+        const foundation::Vector3f& incoming_dir,
         Spectrum&                   value) const APPLESEED_OVERRIDE;
 
   protected:
     // Return the relative index of refraction.
-    virtual double get_eta(
+    virtual float get_eta(
         const void*                 data) const = 0;
 
     // Evaluate the profile for a given (square) radius.
     virtual void evaluate_profile(
         const void*                 data,
-        const double                square_radius,
+        const float                square_radius,
         Spectrum&                   value) const = 0;
 };
 
@@ -97,9 +97,9 @@ inline SeparableBSSRDF::SeparableBSSRDF(
 inline void SeparableBSSRDF::evaluate(
     const void*                     data,
     const ShadingPoint&             outgoing_point,
-    const foundation::Vector3d&     outgoing_dir,
+    const foundation::Vector3f&     outgoing_dir,
     const ShadingPoint&             incoming_point,
-    const foundation::Vector3d&     incoming_dir,
+    const foundation::Vector3f&     incoming_dir,
     Spectrum&                       value) const
 {
     //
@@ -135,21 +135,21 @@ inline void SeparableBSSRDF::evaluate(
     //     http://www.ci.i.u-tokyo.ac.jp/~hachisuka/dirpole.pdf
     //
 
-    const double eta = get_eta(data);
+    const float eta = get_eta(data);
 
-    double fo;
-    const double cos_on = std::abs(foundation::dot(outgoing_dir, outgoing_point.get_shading_normal()));
+    float fo;
+    const float cos_on = std::abs(foundation::dot(outgoing_dir, foundation::Vector3f(outgoing_point.get_shading_normal())));
     foundation::fresnel_transmittance_dielectric(fo, eta, cos_on);
 
-    double fi;
-    const double cos_in = std::abs(foundation::dot(incoming_dir, incoming_point.get_shading_normal()));
+    float fi;
+    const float cos_in = std::abs(foundation::dot(incoming_dir, foundation::Vector3f(incoming_point.get_shading_normal())));
     foundation::fresnel_transmittance_dielectric(fi, eta, cos_in);
 
-    const double square_radius =
-        foundation::square_norm(outgoing_point.get_point() - incoming_point.get_point());
+    const float square_radius =
+        static_cast<float>(foundation::square_norm(outgoing_point.get_point() - incoming_point.get_point()));
     evaluate_profile(data, square_radius, value);
 
-    value *= static_cast<float>(foundation::RcpPi<double>() * fo * fi);
+    value *= foundation::RcpPi<float>() * fo * fi;
 }
 
 }       // namespace renderer

@@ -132,7 +132,7 @@ class APPLESEED_DLLSYMBOL ShaderGroup
 
     // Return the surface area of an object.
     // Can only be called if the shader group has emission closures.
-    double get_surface_area(const AssemblyInstance* ass, const ObjectInstance* obj) const;
+    float get_surface_area(const AssemblyInstance* ass, const ObjectInstance* obj) const;
 
     // Return a reference-counted (but opaque) reference to the internal OSL shader group.
     OSL::ShaderGroupRef& shader_group_ref() const;
@@ -184,7 +184,7 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     void set_surface_area(
         const AssemblyInstance* ass,
         const ObjectInstance*   obj,
-        const double            area) const;
+        const float             area) const;
 };
 
 

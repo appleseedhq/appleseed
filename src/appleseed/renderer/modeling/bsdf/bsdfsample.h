@@ -46,13 +46,14 @@ class BSDFSample
 {
   public:
     // Inputs.
-    const ShadingPoint&             m_shading_point;        // shading point at which the sampling is done
-    const foundation::Dual3d        m_outgoing;             // world space outgoing direction, unit-length
+    const foundation::Vector3f      m_geometric_normal;     // world space geometric normal at the point where sampling is done, unit-length
+    const foundation::Basis3f&      m_shading_basis;        // world space shading basis at the point where sampling is done
+    const foundation::Dual3f        m_outgoing;             // world space outgoing direction, unit-length
 
     // Outputs.
     ScatteringMode::Mode            m_mode;                 // scattering mode
-    foundation::Dual3d              m_incoming;             // world space incoming direction, unit-length, defined only if m_mode != Absorption
-    double                          m_probability;          // PDF value, defined only if m_mode != Absorption
+    foundation::Dual3f              m_incoming;             // world space incoming direction, unit-length, defined only if m_mode != Absorption
+    float                           m_probability;          // PDF value, defined only if m_mode != Absorption
     Spectrum                        m_value;                // BSDF value, defined only if m_mode != Absorption
 
     // Constructor.
@@ -60,20 +61,20 @@ class BSDFSample
         const ShadingPoint&         shading_point,
         const foundation::Dual3d&   outgoing);
 
-    const foundation::Vector3d& get_geometric_normal() const;
-    const foundation::Vector3d& get_shading_normal() const;
-    const foundation::Basis3d& get_shading_basis() const;
-    void set_shading_basis(const foundation::Basis3d& basis);
+    void set_shading_basis(const foundation::Basis3f& basis);
 
     void compute_reflected_differentials();
-    void compute_transmitted_differentials(const double eta);
+    void compute_transmitted_differentials(const float eta);
 
   private:
+    const ShadingPoint&             m_shading_point;
+    foundation::Basis3f             m_local_shading_basis;
+
     void compute_normal_derivatives(
-        foundation::Vector3d&       dndx,
-        foundation::Vector3d&       dndy,
-        double&                     ddndx,
-        double&                     ddndy) const;
+        foundation::Vector3f&       dndx,
+        foundation::Vector3f&       dndy,
+        float&                      ddndx,
+        float&                      ddndy) const;
 
     void apply_pdf_differentials_heuristic();
 };
@@ -86,30 +87,19 @@ class BSDFSample
 inline BSDFSample::BSDFSample(
     const ShadingPoint&             shading_point,
     const foundation::Dual3d&       outgoing)
-  : m_shading_point(shading_point)
+  : m_geometric_normal(shading_point.get_geometric_normal())
+  , m_shading_basis(m_local_shading_basis)
   , m_outgoing(outgoing)
   , m_mode(ScatteringMode::Absorption)
+  , m_shading_point(shading_point)
+  , m_local_shading_basis(shading_point.get_shading_basis())
 {
 }
 
-inline const foundation::Vector3d& BSDFSample::get_geometric_normal() const
+inline void BSDFSample::set_shading_basis(const foundation::Basis3f& basis)
 {
-    return m_shading_point.get_geometric_normal();
-}
-
-inline const foundation::Vector3d& BSDFSample::get_shading_normal() const
-{
-    return m_shading_point.get_shading_normal();
-}
-
-inline const foundation::Basis3d& BSDFSample::get_shading_basis() const
-{
-    return m_shading_point.get_shading_basis();
-}
-
-inline void BSDFSample::set_shading_basis(const foundation::Basis3d& basis)
-{
-    m_shading_point.set_shading_basis(basis);
+    m_local_shading_basis = basis;
+    m_shading_point.set_shading_basis(foundation::Basis3d(basis));
 }
 
 }       // namespace renderer

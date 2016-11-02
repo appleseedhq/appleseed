@@ -86,7 +86,7 @@ class APPLESEED_DLLSYMBOL Light
     int get_flags() const;
 
     // Retrieve the importance multiplier.
-    double get_uncached_importance_multiplier() const;
+    float get_uncached_importance_multiplier() const;
 
     // Set the light transformation.
     void set_transform(const foundation::Transformd& transform);
@@ -111,7 +111,7 @@ class APPLESEED_DLLSYMBOL Light
         foundation::Vector3d&           position,                   // world space emission position
         foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
         Spectrum&                       value,                      // light value
-        double&                         probability) const = 0;     // PDF value
+        float&                          probability) const = 0;     // PDF value
     virtual void sample(
         InputEvaluator&                 input_evaluator,
         const foundation::Transformd&   light_transform,            // light space to world space transform
@@ -120,7 +120,7 @@ class APPLESEED_DLLSYMBOL Light
         foundation::Vector3d&           position,                   // world space emission position
         foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
         Spectrum&                       value,                      // light value
-        double&                         probability) const;         // PDF value
+        float&                          probability) const;         // PDF value
 
     // Evaluate the light for a given target point.
     virtual void evaluate(
@@ -132,7 +132,7 @@ class APPLESEED_DLLSYMBOL Light
         Spectrum&                       value) const = 0;           // light value
 
     // Compute the distance attenuation of this light.
-    virtual double compute_distance_attenuation(
+    virtual float compute_distance_attenuation(
         const foundation::Vector3d&     target,                     // world space target point
         const foundation::Vector3d&     position) const = 0;        // world space emission position
 

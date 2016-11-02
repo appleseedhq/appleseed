@@ -67,7 +67,7 @@ inline void microfacet_alpha_from_roughness(
     T&         alpha_x,
     T&         alpha_y)
 {
-    if (anisotropic >= 0.0)
+    if (anisotropic >= T(0.0))
     {
         const T aspect = std::sqrt(T(1.0) - anisotropic * T(0.9));
         alpha_x = std::max(T(0.001), foundation::square(roughness) / aspect);
@@ -102,9 +102,13 @@ class FresnelDielectricFun
         const foundation::Vector<T, 3>& n,
         Spectrum&                       value) const
     {
+        T f;
+        foundation::fresnel_reflectance_dielectric(
+            f,
+            m_eta,
+            foundation::clamp(foundation::dot(o, h), T(-1.0), T(1.0)));
+
         value = m_reflectance;
-        double f;
-        foundation::fresnel_reflectance_dielectric(f, m_eta, foundation::dot(o, h));
         value *= static_cast<float>(f * m_reflectance_multiplier);
     }
 
@@ -212,30 +216,29 @@ class MicrofacetBRDFHelper
     {
         // Compute the incoming direction by sampling the MDF.
         sampling_context.split_in_place(3, 1);
-        const VectorType s = sampling_context.next_vector2<3>();
-        const VectorType wo = sample.get_shading_basis().transform_to_local(sample.m_outgoing.get_value());
+        const VectorType s = sampling_context.next2<VectorType>();
+        const VectorType wo = sample.m_shading_basis.transform_to_local(sample.m_outgoing.get_value());
         const VectorType m = mdf.sample(wo, s, alpha_x, alpha_y);
-        const VectorType h = sample.get_shading_basis().transform_to_parent(m);
+        const VectorType h = sample.m_shading_basis.transform_to_parent(m);
         const VectorType incoming = foundation::reflect(sample.m_outgoing.get_value(), h);
         const T cos_oh = foundation::dot(sample.m_outgoing.get_value(), h);
 
         // No reflection below the shading surface.
-        const VectorType& n = sample.get_shading_normal();
-        const T cos_in = foundation::dot(incoming, n);
-        if (cos_in < T(0.0))
+        const T cos_in = foundation::dot(incoming, sample.m_shading_basis.get_normal());
+        if (cos_in <= T(0.0))
             return;
 
         const T D = mdf.D(m, alpha_x, alpha_y);
 
         const T G =
             mdf.G(
-                sample.get_shading_basis().transform_to_local(incoming),
+                sample.m_shading_basis.transform_to_local(incoming),
                 wo,
                 m,
                 g_alpha_x,
                 g_alpha_y);
 
-        f(sample.m_outgoing.get_value(), h, sample.get_shading_normal(), sample.m_value);
+        f(sample.m_outgoing.get_value(), h, sample.m_shading_basis.get_normal(), sample.m_value);
         sample.m_value *= static_cast<float>(D * G / (T(4.0) * cos_on * cos_in));
         sample.m_probability = mdf.pdf(wo, m, alpha_x, alpha_y) / (T(4.0) * cos_oh);
         sample.m_mode = ScatteringMode::Glossy;

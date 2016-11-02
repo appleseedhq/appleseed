@@ -58,8 +58,8 @@ namespace renderer
 APPLESEED_DECLARE_INPUT_VALUES(ConeEDFInputValues)
 {
     Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
-    ScalarInput m_radiance_multiplier;  // emitted radiance multiplier
-    ScalarInput m_angle;                // cone angle
+    float       m_radiance_multiplier;  // emitted radiance multiplier
+    float       m_angle;                // cone angle
 };
 
 

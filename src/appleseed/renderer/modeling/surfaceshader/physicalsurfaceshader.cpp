@@ -92,8 +92,8 @@ namespace
           : SurfaceShader(name, params)
           , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
         {
-            m_inputs.declare("color_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("alpha_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("color_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("alpha_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("translucency", InputFormatSpectralReflectance, "0.0");
             m_inputs.declare("aerial_persp_sky_color", InputFormatSpectralIlluminance, "");
 
@@ -222,8 +222,8 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            ScalarInput m_color_multiplier;
-            ScalarInput m_alpha_multiplier;
+            float       m_color_multiplier;
+            float       m_alpha_multiplier;
             Spectrum    m_translucency;
             Spectrum    m_aerial_persp_sky_color;
         };
