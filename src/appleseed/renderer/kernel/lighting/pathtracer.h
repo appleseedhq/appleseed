@@ -498,13 +498,13 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                         foundation::Vector3d(incoming_vector)));
             if (vertex.m_incoming_point->get_side() == ObjectInstance::BackSide)
                 incoming_vector = -incoming_vector;
-            incoming = foundation::Dual3d(Vector3d(incoming_vector));
+            incoming = foundation::Dual3d(foundation::Vector3d(incoming_vector));
 
             // Evaluate the BSSRDF.
             vertex.m_bssrdf->evaluate(
                 vertex.m_bssrdf_data,
                 *vertex.m_shading_point,
-                Vector3f(vertex.m_outgoing.get_value()),
+                foundation::Vector3f(vertex.m_outgoing.get_value()),
                 *vertex.m_incoming_point,
                 incoming_vector,
                 value);
