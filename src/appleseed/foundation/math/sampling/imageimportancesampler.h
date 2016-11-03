@@ -32,6 +32,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/image/color.h"
+#include "foundation/image/colorspace.h"
+#include "foundation/image/image.h"
 #include "foundation/math/cdf.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -106,6 +109,22 @@ class ImageImportanceSampler
 
 
 //
+// A foundation::Image sampler.
+//
+
+class ImageSampler
+{
+  public:
+    explicit ImageSampler(const Image& image);
+
+    void sample(const size_t x, const size_t y, size_t& payload, float& importance) const;
+
+  private:
+    const Image& m_image;
+};
+
+
+//
 // ImageImportanceSampler class implementation.
 //
 
@@ -135,7 +154,7 @@ void ImageImportanceSampler<Payload, Importance>::rebuild(
     m_cdf_y.clear();
     m_cdf_y.reserve(m_height);
 
-    for (size_t y = 0; y < m_height; ++y)
+    for (size_t y = 0, ye = m_height; y < ye; ++y)
     {
         if (is_aborted(abort_switch))
         {
@@ -146,7 +165,7 @@ void ImageImportanceSampler<Payload, Importance>::rebuild(
         m_cdf_x[y].clear();
         m_cdf_x[y].reserve(m_width);
 
-        for (size_t x = 0; x < m_width; ++x)
+        for (size_t x = 0, xe = m_width; x < xe; ++x)
         {
             Payload payload;
             Importance importance;
@@ -175,21 +194,25 @@ inline void ImageImportanceSampler<Payload, Importance>::sample(
 {
     if (m_cdf_y.valid())
     {
+        // Select a row.
         const typename YCDF::ItemWeightPair ry = m_cdf_y.sample(s[1]);
-        const typename XCDF::ItemWeightPair rx = m_cdf_x[ry.first].sample(s[0]);
-
-        payload = rx.first;
+        assert(ry.second != Importance(0.0));
         y = ry.first;
+
+        // Select a column within this row.
+        const typename XCDF::ItemWeightPair rx = m_cdf_x[y].sample(s[0]);
+        assert(rx.second != Importance(0.0));
+        payload = rx.first;
 
         probability = rx.second * ry.second;
     }
     else
     {
+        // Uniform random sampling.
         const size_t x = truncate<size_t>(s[0] * m_width);
-
         y = truncate<size_t>(s[1] * m_height);
-        payload = m_cdf_x[y][x].first;
 
+        payload = m_cdf_x[y][x].first;
         probability = m_rcp_pixel_count;
     }
 }
@@ -217,6 +240,25 @@ inline Importance ImageImportanceSampler<Payload, Importance>::get_pdf(
     {
         return m_rcp_pixel_count;
     }
+}
+
+
+//
+// ImageSampler class implementation.
+//
+
+inline ImageSampler::ImageSampler(const Image& image)
+  : m_image(image)
+{
+}
+
+inline void ImageSampler::sample(const size_t x, const size_t y, size_t& payload, float& importance) const
+{
+    Color3f color;
+    m_image.get_pixel(x, y, color);
+
+    payload = x;
+    importance = luminance(color);
 }
 
 }       // namespace foundation

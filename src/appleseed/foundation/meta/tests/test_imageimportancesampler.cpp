@@ -30,7 +30,6 @@
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
-#include "foundation/image/colorspace.h"
 #include "foundation/image/drawing.h"
 #include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/genericimagefilewriter.h"
@@ -87,27 +86,6 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
 
         EXPECT_FEQ(prob_xy, pdf);
     }
-
-    class ImageSampler
-    {
-      public:
-        explicit ImageSampler(const Image& image)
-          : m_image(image)
-        {
-        }
-
-        void sample(const size_t x, const size_t y, size_t& payload, float& importance) const
-        {
-            Color3f color;
-            m_image.get_pixel(x, y, color);
-
-            payload = x;
-            importance = luminance(color);
-        }
-
-      private:
-        const Image&    m_image;
-    };
 
     void generate_image(
         const char*     input_filename,
@@ -191,7 +169,7 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
             256);
     }
 
-    struct UniformBlackSampler
+    struct UniformBlackImageSampler
     {
         void sample(const size_t x, const size_t y, size_t& payload, double& importance) const
         {
@@ -203,7 +181,7 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
     TEST_CASE(Sample_GivenUniformBlackImage)
     {
         ImageImportanceSampler<size_t, double> importance_sampler(2, 2);
-        UniformBlackSampler sampler;
+        UniformBlackImageSampler sampler;
         importance_sampler.rebuild(sampler);
 
         size_t x, y;
@@ -218,7 +196,7 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
     TEST_CASE(GetPDF_GivenUniformBlackImage)
     {
         ImageImportanceSampler<size_t, double> importance_sampler(2, 2);
-        UniformBlackSampler sampler;
+        UniformBlackImageSampler sampler;
         importance_sampler.rebuild(sampler);
 
         const double pdf = importance_sampler.get_pdf(0, 1);
