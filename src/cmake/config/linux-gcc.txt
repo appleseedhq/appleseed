@@ -77,6 +77,13 @@ if (WARNINGS_AS_ERRORS)
     )
 endif ()
 
+if (USE_CPP11)
+    set (cxx_compiler_flags_common
+        ${cxx_compiler_flags_common}
+        -std=c++11                                      # enable C++ 11
+    )
+endif ()
+
 # SIMD compiler flags.
 if (is_x86)
     if (USE_SSE)
