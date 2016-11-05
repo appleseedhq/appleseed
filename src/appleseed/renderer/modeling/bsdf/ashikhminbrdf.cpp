@@ -201,7 +201,7 @@ namespace
                 return;
 
             // Compute dot products.
-            const float cos_oh = abs(dot(sample.m_outgoing.get_value(), h));
+            const float cos_oh = min(abs(dot(sample.m_outgoing.get_value(), h)), 1.0f);
             const float cos_hn = dot(h, sample.m_shading_basis.get_normal());
 
             // Evaluate the diffuse component of the BRDF (equation 5).

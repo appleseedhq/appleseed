@@ -124,7 +124,7 @@ namespace
     //                                        Z = 0
     //
 
-    typedef ImageImportanceSampler<Vector2d, double> ImageImportanceSamplerType;
+    typedef ImageImportanceSampler<Vector2d, float> ImageImportanceSamplerType;
 
     class ImageSampler
     {
@@ -142,7 +142,7 @@ namespace
         {
         }
 
-        void sample(const size_t x, const size_t y, Vector2d& payload, double& importance) const
+        void sample(const size_t x, const size_t y, Vector2d& payload, float& importance) const
         {
             payload = Vector2d(
                 (2.0 * x + 1.0 - m_width) / (m_width - 1.0),
@@ -160,7 +160,7 @@ namespace
             Color3f color;
             m_texture_source->evaluate(m_texture_cache, uv, color);
 
-            importance = static_cast<double>(luminance(color));
+            importance = luminance(color);
         }
 
       private:
@@ -600,14 +600,14 @@ namespace
             if (m_diaphragm_map_bound)
             {
                 sampling_context.split_in_place(2, 1);
-                const Vector2d s = sampling_context.next2<Vector2d>();
+                const Vector2f s = sampling_context.next2<Vector2f>();
 
-                Vector2d v;
-                size_t y;
-                double prob_xy;
-                m_importance_sampler->sample(s, v, y, prob_xy);
+                size_t x, y;
+                Vector2d payload;
+                float prob_xy;
+                m_importance_sampler->sample(s, x, y, payload, prob_xy);
 
-                const Vector2d lens_point = m_lens_radius * v;
+                const Vector2d lens_point = m_lens_radius * payload;
                 return Vector3d(lens_point.x, lens_point.y, 0.0);
             }
             else if (m_diaphragm_blade_count == 0)

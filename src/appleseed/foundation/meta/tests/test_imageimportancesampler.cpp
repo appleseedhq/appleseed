@@ -52,16 +52,17 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
     class HorizontalGradientSampler
     {
       public:
+        struct Payload {};
+
         HorizontalGradientSampler(const size_t width, const size_t height)
           : m_width(width)
           , m_height(height)
         {
         }
 
-        void sample(const size_t x, const size_t y, size_t& payload, double& importance) const
+        void sample(const size_t x, const size_t y, Payload& payload, float& importance) const
         {
-            payload = x;
-            importance = static_cast<double>(x) / (m_width - 1);
+            importance = static_cast<float>(x) / (m_width - 1);
         }
 
       private:
@@ -74,17 +75,17 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
         const size_t Width = 5;
         const size_t Height = 5;
 
-        ImageImportanceSampler<size_t, double> importance_sampler(Width, Height);
+        ImageImportanceSampler<HorizontalGradientSampler::Payload, float> importance_sampler(Width, Height);
         HorizontalGradientSampler sampler(Width, Height);
         importance_sampler.rebuild(sampler);
 
         size_t x, y;
-        double prob_xy;
-        importance_sampler.sample(Vector2d(0.3, 0.7), x, y, prob_xy);
+        float prob_xy;
+        importance_sampler.sample(Vector2f(0.3f, 0.7f), x, y, prob_xy);
 
-        const double pdf = importance_sampler.get_pdf(x, y);
+        const float pdf = importance_sampler.get_pdf(x, y);
 
-        EXPECT_FEQ(prob_xy, pdf);
+        EXPECT_EQ(prob_xy, pdf);
     }
 
     void generate_image(
@@ -98,7 +99,7 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
         const size_t width = image->properties().m_canvas_width;
         const size_t height = image->properties().m_canvas_height;
 
-        ImageImportanceSampler<size_t, float> importance_sampler(width, height);
+        ImageImportanceSampler<ImageSampler::Payload, float> importance_sampler(width, height);
         ImageSampler sampler(*image.get());
         importance_sampler.rebuild(sampler);
 
@@ -171,36 +172,37 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
 
     struct UniformBlackImageSampler
     {
-        void sample(const size_t x, const size_t y, size_t& payload, double& importance) const
+        struct Payload {};
+
+        void sample(const size_t x, const size_t y, Payload& payload, float& importance) const
         {
-            payload = x;
-            importance = 0.0;
+            importance = 0.0f;
         }
     };
 
     TEST_CASE(Sample_GivenUniformBlackImage)
     {
-        ImageImportanceSampler<size_t, double> importance_sampler(2, 2);
+        ImageImportanceSampler<UniformBlackImageSampler::Payload, float> importance_sampler(2, 2);
         UniformBlackImageSampler sampler;
         importance_sampler.rebuild(sampler);
 
         size_t x, y;
-        double prob_xy;
-        importance_sampler.sample(Vector2d(0.0, 0.0), x, y, prob_xy);
+        float prob_xy;
+        importance_sampler.sample(Vector2f(0.0f, 0.0f), x, y, prob_xy);
 
         EXPECT_EQ(0, x);
         EXPECT_EQ(0, y);
-        EXPECT_EQ(0.25, prob_xy);
+        EXPECT_EQ(0.25f, prob_xy);
     }
 
     TEST_CASE(GetPDF_GivenUniformBlackImage)
     {
-        ImageImportanceSampler<size_t, double> importance_sampler(2, 2);
+        ImageImportanceSampler<UniformBlackImageSampler::Payload, float> importance_sampler(2, 2);
         UniformBlackImageSampler sampler;
         importance_sampler.rebuild(sampler);
 
-        const double pdf = importance_sampler.get_pdf(0, 1);
+        const float pdf = importance_sampler.get_pdf(0, 1);
 
-        EXPECT_EQ(0.25, pdf);
+        EXPECT_EQ(0.25f, pdf);
     }
 }
