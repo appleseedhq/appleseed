@@ -5,10 +5,11 @@ set -e
 THISDIR=`pwd`
 DEPSDIR=$THISDIR/travis-linux-deps
 
-mkdir build-$GCC_VERSION
-cd build-$GCC_VERSION
+mkdir build
+cd build
 
 cmake \
+    -D USE_CPP11=$USE_CPP11 \
     -D WITH_CLI=ON \
     -D WITH_STUDIO=OFF \
     -D WITH_TOOLS=OFF \
