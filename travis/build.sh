@@ -3,15 +3,10 @@
 set -e
 
 THISDIR=`pwd`
-
-git clone https://github.com/appleseedhq/travis-linux-deps.git
 DEPSDIR=$THISDIR/travis-linux-deps
 
-mkdir build
-cd build
-
-export CC=gcc-4.8
-export CXX=g++-4.8
+mkdir build-$GCC_VERSION
+cd build-$GCC_VERSION
 
 cmake \
     -D WITH_CLI=ON \
@@ -47,7 +42,7 @@ cmake \
     -D SEEXPR_LIBRARY=$DEPSDIR/lib/libSeExpr.so \
     -D USE_EXTERNAL_OIIO=ON \
     -D OPENIMAGEIO_INCLUDE_DIR=$DEPSDIR/include \
-    -D OPENIMAGEIO_LIBRARY=$DEPSDIR/lib/libOpenImageIO.so.1.5 \
+    -D OPENIMAGEIO_LIBRARY=$DEPSDIR/lib/libOpenImageIO.so.1.7 \
     -D USE_EXTERNAL_OSL=ON \
     -D OSL_INCLUDE_DIR=$DEPSDIR/include \
     -D OSL_COMP_LIBRARY=$DEPSDIR/lib/liboslcomp.so \
