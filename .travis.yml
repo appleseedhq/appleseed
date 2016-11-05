@@ -2,8 +2,8 @@ sudo: false
 
 language: cpp
 
-compiler:
-  - gcc
+os:
+  - linux
 
 addons:
   apt:
@@ -13,5 +13,39 @@ addons:
       - libxerces-c-dev
       - gcc-4.8
       - g++-4.8
+      - gcc-5
+      - g++-5
 
-script: ./travis-ci-build.sh
+before_install:
+  - git clone https://github.com/appleseedhq/travis-linux-deps.git
+
+install:
+  - if [ -n "$GCC_VERSION" ]; then export CC="${CC}-${GCC_VERSION}"; fi
+  - if [ -n "$GCC_VERSION" ]; then export CXX="${CXX}-${GCC_VERSION}"; fi
+
+compiler:
+  - gcc
+
+env:
+    - GCC_VERSION=4.8 USE_CPP11=OFF
+
+matrix:
+    include:
+        - os: linux
+          compiler: gcc
+          env: GCC_VERSION= USE_CPP11=OFF
+
+        - os: linux
+          compiler: gcc
+          env: GCC_VERSION=5 USE_CPP11=OFF
+
+#        - os: linux
+#          compiler: gcc
+#          env: GCC_VERSION=4.8 USE_CPP11=ON
+
+#        - os: linux
+#          compiler: gcc
+#          env: GCC_VERSION=5 USE_CPP11=ON
+
+script:
+  - ./travis/build.sh

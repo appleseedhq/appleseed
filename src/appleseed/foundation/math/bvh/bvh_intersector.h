@@ -125,7 +125,7 @@ class Intersector
 // Intersector class implementation.
 //
 
-#ifndef __clang__
+#if defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)))
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
@@ -258,7 +258,7 @@ void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect_no_motion(
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_discarded_nodes.insert(discarded_nodes));
 }
 
-#ifndef __clang__
+#if defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)))
 #pragma GCC diagnostic pop
 #endif
 
