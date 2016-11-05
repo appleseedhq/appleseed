@@ -31,13 +31,22 @@ env:
 
 matrix:
     include:
-    include:
+        - os: linux
+          compiler: gcc
+          env: GCC_VERSION=4.8 USE_CPP11=OFF
+
+        - os: linux
+          compiler: gcc
+          env: GCC_VERSION= USE_CPP11=OFF
+
         - os: linux
           compiler: gcc
           env: GCC_VERSION=5 USE_CPP11=OFF
+
         - os: linux
           compiler: gcc
           env: GCC_VERSION=4.8 USE_CPP11=ON
+
         - os: linux
           compiler: gcc
           env: GCC_VERSION=5 USE_CPP11=ON
