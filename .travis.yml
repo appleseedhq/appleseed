@@ -27,7 +27,7 @@ compiler:
   - gcc
 
 env:
-    - GCC_VERSION=4.8 USE_CPP11=OFF
+  - GCC_VERSION=4.8 USE_CPP11=OFF
 
 matrix:
     include:
