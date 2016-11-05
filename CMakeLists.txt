@@ -114,6 +114,7 @@ option (WITH_DISNEY_MATERIAL                "Build Disney material"             
 option (WITH_NORMALIZED_DIFFUSION_BSSRDF    "Build Normalized Diffusion BSSRDF (patented)"          OFF)
 option (WITH_PARTIO                         "Build Partio support (used in unit tests)"             OFF)
 
+option (USE_CPP11                           "Use C++ 11"                                            OFF)
 option (USE_STATIC_BOOST                    "Use static Boost libraries"                            ON)
 option (USE_STATIC_OIIO                     "Use static OpenImageIO libraries"                      ON)
 option (USE_STATIC_OSL                      "Use static OpenShadingLanguage libraries"              ON)
@@ -141,6 +142,12 @@ else ()
     # Unknown architecture: No SIMD.
 endif ()
 
+if (USE_CPP11)
+    message ("Building in C++11 mode.")
+    add_definitions (-DAPPLESEED_USE_CPP11)
+else ()
+    message ("Building in C++03 mode.")
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Common settings.
