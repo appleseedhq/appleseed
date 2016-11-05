@@ -31,9 +31,9 @@ env:
 
 matrix:
     include:
-#        - os: linux
-#          compiler: gcc
-#          env: GCC_VERSION= USE_CPP11=OFF
+        - os: linux
+          compiler: gcc
+          env: GCC_VERSION= USE_CPP11=OFF
 
         - os: linux
           compiler: gcc
