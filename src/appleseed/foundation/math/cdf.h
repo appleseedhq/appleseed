@@ -206,7 +206,14 @@ void CDF<Item, Weight>::prepare()
         cumulated_weight += m_items[i].second;
         m_densities[i] = cumulated_weight;
     }
-    m_densities[item_count - 1] = Weight(1.0);
+
+    // Post-process the CDF to fix numerical errors.
+    for (size_t i = item_count - 1; ; --i)
+    {
+        m_densities[i] = Weight(1.0);
+        if (m_items[i].second > Weight(0.0))
+            break;
+    }
 }
 
 template <typename Item, typename Weight>

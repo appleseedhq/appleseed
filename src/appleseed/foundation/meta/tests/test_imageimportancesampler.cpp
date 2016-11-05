@@ -205,4 +205,27 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
 
         EXPECT_EQ(0.25f, pdf);
     }
+
+    TEST_CASE(Sample_SinglePrecision)
+    {
+        // With single precision weights and this particular image, we used to hit an assertion
+        // checking that begin != end in sample_cdf(). This was due to the last few entries in
+        // the CDF to be smaller than 1 while corresponding to items with null importance.
+
+        GenericImageFileReader reader;
+        auto_ptr<Image> image(reader.read("unit tests/inputs/test_imageimportancesampler_doge2.exr"));
+
+        const size_t width = image->properties().m_canvas_width;
+        const size_t height = image->properties().m_canvas_height;
+
+        ImageImportanceSampler<ImageSampler::Payload, float> importance_sampler(width, height);
+        ImageSampler sampler(*image.get());
+        importance_sampler.rebuild(sampler);
+
+        size_t x, y;
+        float prob_xy;
+        importance_sampler.sample(Vector2f(0.466647536f, 0.999999762f), x, y, prob_xy);
+
+        EXPECT_GT(0.0f, prob_xy);
+    }
 }
