@@ -794,7 +794,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         for (size_t i = 0; i < CircleCount; ++i)
         {
-            const float phi = fit<size_t, float>(i, 0, CircleCount - 1, 0.0f, TwoPi);
+            const float phi = fit<size_t, float>(i, 0, CircleCount - 1, 0.0f, TwoPi<float>());
             const Vector3d c(max_radius * cos(phi), 0.0f, max_radius * sin(phi));
 
             Partio::ParticleIndex p = particles.add_particle();
