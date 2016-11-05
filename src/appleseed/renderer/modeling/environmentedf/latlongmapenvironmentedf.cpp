@@ -91,13 +91,7 @@ namespace
     //   http://www.cs.kuleuven.be/~graphics/index.php/environment-maps
     //
 
-    struct Payload
-    {
-        uint32  m_x;
-        Color3f m_color;
-    };
-
-    typedef ImageImportanceSampler<Payload, float> ImageImportanceSamplerType;
+    typedef ImageImportanceSampler<Color3f, float> ImageImportanceSamplerType;
 
     class ImageSampler
     {
@@ -118,13 +112,11 @@ namespace
         {
         }
 
-        void sample(const size_t x, const size_t y, Payload& payload, float& importance)
+        void sample(const size_t x, const size_t y, Color3f& payload, float& importance)
         {
-            payload.m_x = static_cast<uint32>(x);
-
             if (m_radiance_source == 0)
             {
-                payload.m_color.set(0.0f);
+                payload.set(0.0f);
                 importance = 0.0f;
                 return;
             }
@@ -133,16 +125,16 @@ namespace
                 (x + 0.5f) * m_rcp_width,
                 1.0f - (y + 0.5f) * m_rcp_height);
 
-            m_radiance_source->evaluate(m_texture_cache, uv, payload.m_color);
-
             float multiplier;
             m_multiplier_source->evaluate(m_texture_cache, uv, multiplier);
 
             float exposure;
             m_exposure_source->evaluate(m_texture_cache, uv, exposure);
-            payload.m_color *= multiplier * pow(2.0f, exposure);
 
-            importance = luminance(payload.m_color);
+            m_radiance_source->evaluate(m_texture_cache, uv, payload);
+            payload *= multiplier * pow(2.0f, exposure);
+
+            importance = luminance(payload);
         }
 
       private:
@@ -227,13 +219,13 @@ namespace
             }
 
             // Sample the importance map.
-            Payload payload;
-            size_t y;
+            size_t x, y;
+            Color3f payload;
             float prob_xy;
-            m_importance_sampler->sample(s, payload, y, prob_xy);
+            m_importance_sampler->sample(s, x, y, payload, prob_xy);
 
             // Compute the coordinates in [0,1]^2 of the sample.
-            const float u = (payload.m_x + 0.5f) * m_rcp_importance_map_width;
+            const float u = (x + 0.5f) * m_rcp_importance_map_width;
             const float v = (y + 0.5f) * m_rcp_importance_map_height;
 
             // Compute the spherical coordinates of the sample.
@@ -255,7 +247,7 @@ namespace
             outgoing = transform.vector_to_parent(local_outgoing);
 
             // Return the emitted radiance.
-            value = payload.m_color;
+            value = payload;
 
             // Compute the probability density of this direction.
             probability = prob_xy * m_probability_scale / sin_theta;
