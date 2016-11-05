@@ -144,6 +144,7 @@ endif ()
 
 if (USE_CPP11)
     message ("Building in C++11 mode.")
+    add_definitions (-DAPPLESEED_USE_CPP11)
 else ()
     message ("Building in C++03 mode.")
 endif ()

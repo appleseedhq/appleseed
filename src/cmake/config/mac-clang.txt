@@ -73,6 +73,7 @@ if (USE_CPP11)
     set (cxx_compiler_flags_common
         ${cxx_compiler_flags_common}
         -std=c++11                                      # enable C++ 11
+        -Wno-deprecated-declarations                    # remove when C++ 11 support improves.
     )
 endif ()
 if (USE_SSE)
