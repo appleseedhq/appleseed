@@ -65,10 +65,12 @@ set (c_compiler_flags_common
     -Wno-unknown-pragmas
     -Wno-sign-compare
     -Wno-unused-function
-    -Wno-reorder
     -Wno-strict-aliasing
     -fno-math-errno                                     # ignore errno when calling math functions
     -fPIC                                               # emit position-independent code
+)
+set (cxx_compiler_flags_common
+    -Wno-reorder
 )
 if (WARNINGS_AS_ERRORS)
     set (c_compiler_flags_common
