@@ -98,7 +98,8 @@ namespace
             void*                   data) const APPLESEED_OVERRIDE
         {
             InputValues* values = static_cast<InputValues*>(data);
-            values->m_backfacing = !shading_point.is_entering();
+            new (&values->m_precomputed) InputValues::Precomputed();
+            values->m_precomputed.m_backfacing = !shading_point.is_entering();
         }
 
         APPLESEED_FORCE_INLINE virtual void sample(
@@ -109,7 +110,7 @@ namespace
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
             const InputValues* values = static_cast<const InputValues*>(data);
-            const BackfacingPolicy backfacing_policy(sample.m_shading_basis, values->m_backfacing);
+            const BackfacingPolicy backfacing_policy(sample.m_shading_basis, values->m_precomputed.m_backfacing);
             const Vector3f wo = backfacing_policy.transform_to_local(sample.m_outgoing.get_value());
 
             // Compute the incoming direction in local space.
@@ -150,7 +151,7 @@ namespace
                 return 0.0f;
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            const BackfacingPolicy backfacing_policy(shading_basis, values->m_backfacing);
+            const BackfacingPolicy backfacing_policy(shading_basis, values->m_precomputed.m_backfacing);
 
             const Vector3f& n = backfacing_policy.get_normal();
             const float cos_in = dot(incoming, n);
@@ -184,7 +185,7 @@ namespace
                 return 0.0f;
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            const BackfacingPolicy backfacing_policy(shading_basis, values->m_backfacing);
+            const BackfacingPolicy backfacing_policy(shading_basis, values->m_precomputed.m_backfacing);
 
             const Vector3f& n = backfacing_policy.get_normal();
             const float cos_in = dot(incoming, n);

@@ -111,8 +111,10 @@ namespace
             NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<NormalizedDiffusionBSSRDFInputValues*>(data);
 
+            new (&values->m_precomputed) NormalizedDiffusionBSSRDFInputValues::Precomputed();
+
             // Precompute the relative index of refraction.
-            values->m_eta = compute_eta(shading_point, values->m_ior);
+            values->m_precomputed.m_eta = compute_eta(shading_point, values->m_ior);
 
             make_reflectance_and_mfp_compatible(values->m_reflectance, values->m_mfp);
 
@@ -126,38 +128,38 @@ namespace
 
             // Build a CDF for channel sampling.
 
-            values->m_s.resize(values->m_reflectance.size());
-            values->m_channel_pdf.resize(values->m_reflectance.size());
-            values->m_channel_cdf.resize(values->m_reflectance.size());
+            values->m_precomputed.m_s.resize(values->m_reflectance.size());
+            values->m_precomputed.m_channel_pdf.resize(values->m_reflectance.size());
+            values->m_precomputed.m_channel_cdf.resize(values->m_reflectance.size());
 
             float cumulated_pdf = 0.0f;
-            for (size_t i = 0, e = values->m_channel_pdf.size(); i < e; ++i)
+            for (size_t i = 0, e = values->m_precomputed.m_channel_pdf.size(); i < e; ++i)
             {
                 const float a = values->m_reflectance[i];
-                values->m_s[i] = normalized_diffusion_s_mfp(a);
+                values->m_precomputed.m_s[i] = normalized_diffusion_s_mfp(a);
 
-                values->m_channel_pdf[i] = a;
+                values->m_precomputed.m_channel_pdf[i] = a;
                 cumulated_pdf += a;
-                values->m_channel_cdf[i] = cumulated_pdf;
+                values->m_precomputed.m_channel_cdf[i] = cumulated_pdf;
             }
 
             const float rcp_cumulated_pdf = 1.0f / cumulated_pdf;
-            values->m_channel_pdf *= rcp_cumulated_pdf;
-            values->m_channel_cdf *= rcp_cumulated_pdf;
-            values->m_channel_cdf[values->m_channel_cdf.size() - 1] = 1.0f;
+            values->m_precomputed.m_channel_pdf *= rcp_cumulated_pdf;
+            values->m_precomputed.m_channel_cdf *= rcp_cumulated_pdf;
+            values->m_precomputed.m_channel_cdf[values->m_precomputed.m_channel_cdf.size() - 1] = 1.0f;
 
             // Precompute the (square of the) max radius.
-            values->m_rmax2 = 0.0f;
+            values->m_precomputed.m_rmax2 = 0.0f;
             for (size_t i = 0, e = values->m_mfp.size(); i < e; ++i)
             {
                 const float l = values->m_mfp[i];
-                values->m_rmax2 =
+                values->m_precomputed.m_rmax2 =
                     max(
-                        normalized_diffusion_max_radius(l, values->m_s[i]),
-                        values->m_rmax2);
+                        normalized_diffusion_max_radius(l, values->m_precomputed.m_s[i]),
+                        values->m_precomputed.m_rmax2);
             }
 
-            values->m_rmax2 *= values->m_rmax2;
+            values->m_precomputed.m_rmax2 *= values->m_precomputed.m_rmax2;
         }
 
         virtual bool sample(
@@ -175,25 +177,25 @@ namespace
             const Vector3f s = sampling_context.next2<Vector3f>();
 
             // Sample a channel.
-            const float* cdf_begin = &values->m_channel_cdf[0];
+            const float* cdf_begin = &values->m_precomputed.m_channel_cdf[0];
             const size_t channel =
                 sample_cdf(
                     cdf_begin,
-                    cdf_begin + values->m_channel_cdf.size(),
+                    cdf_begin + values->m_precomputed.m_channel_cdf.size(),
                     s[0]);
 
             // Sample a radius.
             const float l = values->m_mfp[channel];
             const float radius =
-                normalized_diffusion_sample(s[1], l, values->m_s[channel]);
+                normalized_diffusion_sample(s[1], l, values->m_precomputed.m_s[channel]);
 
             // Sample an angle.
             const float phi = TwoPi<float>() * s[2];
 
-            sample.m_eta = values->m_eta;
+            sample.m_eta = values->m_precomputed.m_eta;
             sample.m_channel = channel;
             sample.m_point = Vector2f(radius * cos(phi), radius * sin(phi));
-            sample.m_rmax2 = values->m_rmax2;
+            sample.m_rmax2 = values->m_precomputed.m_rmax2;
 
             return true;
         }
@@ -201,7 +203,7 @@ namespace
         virtual float get_eta(
             const void*         data) const APPLESEED_OVERRIDE
         {
-            return reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data)->m_eta;
+            return reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data)->m_precomputed.m_eta;
         }
 
         virtual void evaluate_profile(
@@ -219,7 +221,7 @@ namespace
             for (size_t i = 0, e = value.size(); i < e; ++i)
             {
                 const float a = values->m_reflectance[i];
-                const float s = values->m_s[i];
+                const float s = values->m_precomputed.m_s[i];
                 const float l = values->m_mfp[i];
                 value[i] = static_cast<float>(normalized_diffusion_profile(radius, l, s, a));
             }
@@ -242,8 +244,8 @@ namespace
             {
                 const float l = values->m_mfp[i];
                 pdf_radius +=
-                      normalized_diffusion_pdf(radius, l, values->m_s[i])
-                    * values->m_channel_pdf[i];
+                      normalized_diffusion_pdf(radius, l, values->m_precomputed.m_s[i])
+                    * values->m_precomputed.m_channel_pdf[i];
             }
 
             // PDF of the sampled angle.

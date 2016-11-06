@@ -151,11 +151,13 @@ namespace
             GaussianBSSRDFInputValues* values =
                 reinterpret_cast<GaussianBSSRDFInputValues*>(data);
 
+            new (&values->m_precomputed) GaussianBSSRDFInputValues::Precomputed();
+
             // Precompute the relative index of refraction.
-            values->m_eta = compute_eta(shading_point, values->m_ior);
+            values->m_precomputed.m_eta = compute_eta(shading_point, values->m_ior);
 
             // Precompute the (square of the) max radius.
-            values->m_rmax2 = values->m_v * RMax2Constant;
+            values->m_precomputed.m_rmax2 = values->m_v * RMax2Constant;
         }
 
         virtual bool sample(
@@ -166,7 +168,7 @@ namespace
             const GaussianBSSRDFInputValues* values =
                 reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
 
-            const float rmax2 = values->m_rmax2;
+            const float rmax2 = values->m_precomputed.m_rmax2;
 
             if (rmax2 <= 0.0f)
                 return false;
@@ -178,7 +180,7 @@ namespace
             const float radius = sqrt(-2.0f * v * log(1.0f - s[0] * (1.0f - exp(-rmax2 / (2.0f * v)))));
             const float phi = TwoPi<float>() * s[1];
 
-            sample.m_eta = values->m_eta;
+            sample.m_eta = values->m_precomputed.m_eta;
             sample.m_channel = 0;
             sample.m_point = Vector2f(radius * cos(phi), radius * sin(phi));
             sample.m_rmax2 = rmax2;
@@ -189,7 +191,7 @@ namespace
         virtual float get_eta(
             const void*         data) const APPLESEED_OVERRIDE
         {
-            return reinterpret_cast<const GaussianBSSRDFInputValues*>(data)->m_eta;
+            return reinterpret_cast<const GaussianBSSRDFInputValues*>(data)->m_precomputed.m_eta;
         }
 
         virtual void evaluate_profile(
@@ -200,7 +202,7 @@ namespace
             const GaussianBSSRDFInputValues* values =
                 reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
 
-            const float rmax2 = values->m_rmax2;
+            const float rmax2 = values->m_precomputed.m_rmax2;
 
             if (square_radius > rmax2)
             {
@@ -223,7 +225,7 @@ namespace
             const GaussianBSSRDFInputValues* values =
                 reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
 
-            const float rmax2 = values->m_rmax2;
+            const float rmax2 = values->m_precomputed.m_rmax2;
             const float r2 = radius * radius;
 
             if (r2 > rmax2)

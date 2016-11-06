@@ -66,8 +66,12 @@ APPLESEED_DECLARE_INPUT_VALUES(SpecularBTDFInputValues)
     float       m_density;                      // medium density
     float       m_scale;                        // distance scaling factor
 
-    // Precomputed values.
-    float       m_eta;
+    struct Precomputed
+    {
+        float   m_eta;
+    };
+
+    Precomputed m_precomputed;
 };
 
 

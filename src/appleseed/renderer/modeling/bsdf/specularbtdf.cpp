@@ -101,8 +101,8 @@ namespace
             void*                   data) const APPLESEED_OVERRIDE
         {
             InputValues* values = static_cast<InputValues*>(data);
-
-            values->m_eta =
+            new (&values->m_precomputed) InputValues::Precomputed();
+            values->m_precomputed.m_eta =
                 shading_point.is_entering()
                     ? shading_point.get_ray().get_current_ior() / values->m_ior
                     : values->m_ior / shading_point.get_ray().get_previous_ior();
@@ -120,7 +120,7 @@ namespace
             const Vector3f& shading_normal = sample.m_shading_basis.get_normal();
             const float cos_theta_i = dot(sample.m_outgoing.get_value(), shading_normal);
             const float sin_theta_i2 = 1.0f - square(cos_theta_i);
-            const float sin_theta_t2 = sin_theta_i2 * square(values->m_eta);
+            const float sin_theta_t2 = sin_theta_i2 * square(values->m_precomputed.m_eta);
             const float cos_theta_t2 = 1.0f - sin_theta_t2;
 
             Vector3f incoming;
@@ -141,7 +141,7 @@ namespace
                 float fresnel_reflection;
                 fresnel_reflectance_dielectric(
                     fresnel_reflection,
-                    1.0f / values->m_eta,
+                    1.0f / values->m_precomputed.m_eta,
                     abs(cos_theta_i),
                     cos_theta_t);
                 fresnel_reflection *= values->m_fresnel_multiplier;
@@ -160,17 +160,18 @@ namespace
                 else
                 {
                     // Compute the refracted direction.
+                    const float eta = values->m_precomputed.m_eta;
                     incoming =
                         cos_theta_i > 0.0f
-                            ? (values->m_eta * cos_theta_i - cos_theta_t) * shading_normal - values->m_eta * sample.m_outgoing.get_value()
-                            : (values->m_eta * cos_theta_i + cos_theta_t) * shading_normal - values->m_eta * sample.m_outgoing.get_value();
+                            ? (eta * cos_theta_i - cos_theta_t) * shading_normal - eta * sample.m_outgoing.get_value()
+                            : (eta * cos_theta_i + cos_theta_t) * shading_normal - eta * sample.m_outgoing.get_value();
 
                     // Compute the refracted radiance.
                     sample.m_value = values->m_transmittance;
                     sample.m_value *=
                         adjoint
                             ? values->m_transmittance_multiplier
-                            : square(values->m_eta) * values->m_transmittance_multiplier;
+                            : square(eta) * values->m_transmittance_multiplier;
                 }
             }
 
@@ -190,7 +191,7 @@ namespace
 
             // Compute the ray differentials.
             if (refract_differentials)
-                sample.compute_transmitted_differentials(values->m_eta);
+                sample.compute_transmitted_differentials(values->m_precomputed.m_eta);
             else sample.compute_reflected_differentials();
         }
 
