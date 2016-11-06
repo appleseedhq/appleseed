@@ -244,8 +244,8 @@ namespace
                 const float sigma_t = sigma_s + sigma_a;
                 const float sigma_s_prime = sigma_s * (1.0f - values->m_g);
                 const float sigma_t_prime = sigma_s_prime + sigma_a;
-                const float alpha_prime = values->m_precomputed.m_alpha_prime[i];                     // reduced scattering albedo
-                const float sigma_tr = values->m_precomputed.m_sigma_tr[i];                           // effective transport coefficient
+                const float alpha_prime = values->m_precomputed.m_alpha_prime[i];       // reduced scattering albedo
+                const float sigma_tr = values->m_precomputed.m_sigma_tr[i];             // effective transport coefficient
 
                 // Compute extrapolation distance ([1] equation 21).
                 const float D = 1.0f / (3.0f * sigma_t_prime);                          // diffusion coefficient

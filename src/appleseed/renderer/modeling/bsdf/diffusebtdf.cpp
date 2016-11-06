@@ -68,8 +68,8 @@ namespace
     {
       public:
         DiffuseBTDFImpl(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : BSDF(name, Transmissive, ScatteringMode::Diffuse, params)
         {
             m_inputs.declare("transmittance", InputFormatSpectralReflectance);
@@ -102,11 +102,11 @@ namespace
         }
 
         APPLESEED_FORCE_INLINE virtual void sample(
-            SamplingContext&    sampling_context,
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            BSDFSample&         sample) const APPLESEED_OVERRIDE
+            SamplingContext&        sampling_context,
+            const void*             data,
+            const bool              adjoint,
+            const bool              cosine_mult,
+            BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
             const InputValues* values = static_cast<const InputValues*>(data);
             const BackfacingPolicy backfacing_policy(sample.m_shading_basis, values->m_backfacing);
@@ -136,15 +136,15 @@ namespace
         }
 
         APPLESEED_FORCE_INLINE virtual float evaluate(
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            const Vector3f&     geometric_normal,
-            const Basis3f&      shading_basis,
-            const Vector3f&     outgoing,
-            const Vector3f&     incoming,
-            const int           modes,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+            const void*             data,
+            const bool              adjoint,
+            const bool              cosine_mult,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing,
+            const Vector3f&         incoming,
+            const int               modes,
+            Spectrum&               value) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0f;
@@ -173,12 +173,12 @@ namespace
         }
 
         APPLESEED_FORCE_INLINE virtual float evaluate_pdf(
-            const void*         data,
-            const Vector3f&     geometric_normal,
-            const Basis3f&      shading_basis,
-            const Vector3f&     outgoing,
-            const Vector3f&     incoming,
-            const int           modes) const APPLESEED_OVERRIDE
+            const void*             data,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing,
+            const Vector3f&         incoming,
+            const int               modes) const APPLESEED_OVERRIDE
         {
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0f;

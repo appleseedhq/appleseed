@@ -57,29 +57,28 @@ namespace renderer
 
 APPLESEED_DECLARE_INPUT_VALUES(DipoleBSSRDFInputValues)
 {
-    float       m_weight;
-    Spectrum    m_reflectance;
-    float       m_reflectance_multiplier;
-    Spectrum    m_mfp;
-    float       m_mfp_multiplier;
-    Spectrum    m_sigma_a;
-    Spectrum    m_sigma_s;
-    float       m_g;
-    float       m_ior;
+    float               m_weight;
+    Spectrum            m_reflectance;
+    float               m_reflectance_multiplier;
+    Spectrum            m_mfp;
+    float               m_mfp_multiplier;
+    Spectrum            m_sigma_a;
+    Spectrum            m_sigma_s;
+    float               m_g;
+    float               m_ior;
 
-    // Precomputed values.
     struct PrecomputedValues
     {
-        Spectrum    m_alpha_prime;
-        Spectrum    m_sigma_tr;
-        Spectrum    m_channel_pdf;
-        Spectrum    m_channel_cdf;
-        float       m_rmax2;
-        float       m_eta;
-        Spectrum    m_dirpole_reparam_weight;
+        Spectrum        m_alpha_prime;
+        Spectrum        m_sigma_tr;
+        Spectrum        m_channel_pdf;
+        Spectrum        m_channel_cdf;
+        float           m_rmax2;
+        float           m_eta;
+        Spectrum        m_dirpole_reparam_weight;
     };
 
-    PrecomputedValues m_precomputed;
+    PrecomputedValues   m_precomputed;
 };
 
 
@@ -114,7 +113,7 @@ class DipoleBSSRDF
         const void*                 data) const APPLESEED_OVERRIDE;
 
   protected:
-    template<typename ComputeRdFun>
+    template <typename ComputeRdFun>
     void do_prepare_inputs(
         const ShadingPoint&         shading_point,
         DipoleBSSRDFInputValues*    values) const
