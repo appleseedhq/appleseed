@@ -106,7 +106,7 @@ namespace
             const DipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
 
-            const float fdr = fresnel_internal_diffuse_reflectance(values->m_eta);
+            const float fdr = fresnel_internal_diffuse_reflectance(values->m_precomputed.m_eta);
             const float a = (1.0f + fdr) / (1.0f - fdr);
 
             value.resize(values->m_sigma_a.size());
@@ -117,8 +117,8 @@ namespace
                 const float sigma_s = values->m_sigma_s[i];
                 const float sigma_s_prime = sigma_s * (1.0f - values->m_g);
                 const float sigma_t_prime = sigma_s_prime + sigma_a;
-                const float alpha_prime = values->m_alpha_prime[i];
-                const float sigma_tr = values->m_sigma_tr[i];
+                const float alpha_prime = values->m_precomputed.m_alpha_prime[i];
+                const float sigma_tr = values->m_precomputed.m_sigma_tr[i];
 
                 //
                 // The extended source represented by the refracted ray in the medium is approximated

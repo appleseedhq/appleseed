@@ -68,13 +68,18 @@ APPLESEED_DECLARE_INPUT_VALUES(DipoleBSSRDFInputValues)
     float       m_ior;
 
     // Precomputed values.
-    Spectrum    m_alpha_prime;
-    Spectrum    m_sigma_tr;
-    Spectrum    m_channel_pdf;
-    Spectrum    m_channel_cdf;
-    float       m_rmax2;
-    float       m_eta;
-    Spectrum    m_dirpole_reparam_weight;
+    struct PrecomputedValues
+    {
+        Spectrum    m_alpha_prime;
+        Spectrum    m_sigma_tr;
+        Spectrum    m_channel_pdf;
+        Spectrum    m_channel_cdf;
+        float       m_rmax2;
+        float       m_eta;
+        Spectrum    m_dirpole_reparam_weight;
+    };
+
+    PrecomputedValues m_precomputed;
 };
 
 
@@ -114,8 +119,10 @@ class DipoleBSSRDF
         const ShadingPoint&         shading_point,
         DipoleBSSRDFInputValues*    values) const
     {
+        new (&values->m_precomputed) DipoleBSSRDFInputValues::PrecomputedValues();
+
         // Precompute the relative index of refraction.
-        values->m_eta = compute_eta(shading_point, values->m_ior);
+        values->m_precomputed.m_eta = compute_eta(shading_point, values->m_ior);
 
         if (m_inputs.source("sigma_a") == 0 || m_inputs.source("sigma_s") == 0)
         {
@@ -135,7 +142,7 @@ class DipoleBSSRDF
             foundation::clamp_low_in_place(values->m_mfp, 1.0e-6f);
 
             // Compute sigma_a and sigma_s.
-            const ComputeRdFun rd_fun(values->m_eta);
+            const ComputeRdFun rd_fun(values->m_precomputed.m_eta);
             compute_absorption_and_scattering_mfp(
                 rd_fun,
                 values->m_reflectance,
@@ -158,32 +165,32 @@ class DipoleBSSRDF
             values->m_sigma_a,
             values->m_sigma_s,
             values->m_g,
-            values->m_sigma_tr);
+            values->m_precomputed.m_sigma_tr);
 
         // Precompute some coefficients and build a CDF for channel sampling.
-        values->m_alpha_prime.resize(values->m_reflectance.size());
-        values->m_channel_pdf.resize(values->m_reflectance.size());
-        values->m_channel_cdf.resize(values->m_reflectance.size());
+        values->m_precomputed.m_alpha_prime.resize(values->m_reflectance.size());
+        values->m_precomputed.m_channel_pdf.resize(values->m_reflectance.size());
+        values->m_precomputed.m_channel_cdf.resize(values->m_reflectance.size());
 
         float cumulated_pdf = 0.0f;
-        for (size_t i = 0, e = values->m_channel_cdf.size(); i < e; ++i)
+        for (size_t i = 0, e = values->m_precomputed.m_channel_cdf.size(); i < e; ++i)
         {
             const float sigma_s_prime = values->m_sigma_s[i] * static_cast<float>(1.0 - values->m_g);
             const float sigma_t_prime = sigma_s_prime + values->m_sigma_a[i];
-            values->m_alpha_prime[i] = sigma_s_prime / sigma_t_prime;
+            values->m_precomputed.m_alpha_prime[i] = sigma_s_prime / sigma_t_prime;
 
-            values->m_channel_pdf[i] = values->m_alpha_prime[i];
-            cumulated_pdf += values->m_channel_pdf[i];
-            values->m_channel_cdf[i] = cumulated_pdf;
+            values->m_precomputed.m_channel_pdf[i] = values->m_precomputed.m_alpha_prime[i];
+            cumulated_pdf += values->m_precomputed.m_channel_pdf[i];
+            values->m_precomputed.m_channel_cdf[i] = cumulated_pdf;
         }
 
         const float rcp_cumulated_pdf = 1.0f / cumulated_pdf;
-        values->m_channel_pdf *= rcp_cumulated_pdf;
-        values->m_channel_cdf *= rcp_cumulated_pdf;
-        values->m_channel_cdf[values->m_channel_cdf.size() - 1] = 1.0f;
+        values->m_precomputed.m_channel_pdf *= rcp_cumulated_pdf;
+        values->m_precomputed.m_channel_cdf *= rcp_cumulated_pdf;
+        values->m_precomputed.m_channel_cdf[values->m_precomputed.m_channel_cdf.size() - 1] = 1.0f;
 
         // Precompute the (square of the) max radius.
-        values->m_rmax2 = foundation::square(dipole_max_radius(foundation::min_value(values->m_sigma_tr)));
+        values->m_precomputed.m_rmax2 = foundation::square(dipole_max_radius(foundation::min_value(values->m_precomputed.m_sigma_tr)));
     }
 };
 
@@ -201,7 +208,7 @@ inline size_t DipoleBSSRDF::compute_input_data_size(
 inline float DipoleBSSRDF::get_eta(
     const void*             data) const
 {
-    return reinterpret_cast<const DipoleBSSRDFInputValues*>(data)->m_eta;
+    return reinterpret_cast<const DipoleBSSRDFInputValues*>(data)->m_precomputed.m_eta;
 }
 
 }       // namespace renderer
