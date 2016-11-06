@@ -122,7 +122,8 @@ namespace
             void*                   data) const APPLESEED_OVERRIDE
         {
             InputValues* values = reinterpret_cast<InputValues*>(data);
-            values->m_outside_ior = shading_point.get_ray().get_current_ior();
+            new (&values->m_precomputed) InputValues::Precomputed();
+            values->m_precomputed.m_outside_ior = shading_point.get_ray().get_current_ior();
         }
 
         virtual bool on_frame_begin(
@@ -173,7 +174,7 @@ namespace
             const FresnelDielectricFun<float> f(
                 values->m_reflectance,
                 values->m_reflectance_multiplier,
-                values->m_outside_ior / values->m_ior);
+                values->m_precomputed.m_outside_ior / values->m_ior);
 
             if (m_mdf == GGX)
             {
@@ -234,7 +235,7 @@ namespace
             FresnelDielectricFun<float> f(
                 values->m_reflectance,
                 values->m_reflectance_multiplier,
-                values->m_outside_ior / values->m_ior);
+                values->m_precomputed.m_outside_ior / values->m_ior);
 
             if (m_mdf == GGX)
             {

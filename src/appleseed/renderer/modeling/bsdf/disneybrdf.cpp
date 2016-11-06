@@ -114,7 +114,11 @@ namespace
             const Vector3f& n,
             Spectrum&       value) const
         {
-            mix_spectra(Color3f(1.0f), m_values.m_tint_color, static_cast<float>(m_values.m_specular_tint), value);
+            mix_spectra(
+                Color3f(1.0f),
+                m_values.m_precomputed.m_tint_color,
+                static_cast<float>(m_values.m_specular_tint),
+                value);
             value *= static_cast<float>(m_values.m_specular) * 0.08f;
             mix_spectra(value, m_values.m_base_color, static_cast<float>(m_values.m_metallic), value);
             mix_spectra(value, Color3f(1.0f), schlick_fresnel(dot(o, h)), value);
@@ -281,7 +285,7 @@ namespace
 
             mix_spectra(
                 Color3f(1.0f),
-                values->m_tint_color,
+                values->m_precomputed.m_tint_color,
                 values->m_sheen_tint,
                 value);
             const float fh = schlick_fresnel(cos_ih);
@@ -370,17 +374,19 @@ namespace
             DisneyBRDFInputValues* values =
                 reinterpret_cast<DisneyBRDFInputValues*>(data);
 
+            new (&values->m_precomputed) DisneyBRDFInputValues::Precomputed();
+
             const Color3f tint_xyz =
                 values->m_base_color.is_rgb()
                     ? linear_rgb_to_ciexyz(values->m_base_color.rgb())
                     : spectrum_to_ciexyz<float>(g_std_lighting_conditions, values->m_base_color);
 
-            values->m_tint_color =
+            values->m_precomputed.m_tint_color =
                 tint_xyz[1] > 0.0f
                     ? ciexyz_to_linear_rgb(tint_xyz / tint_xyz[1])
                     : Color3f(1.0f);
 
-            values->m_base_color_luminance = tint_xyz[1];
+            values->m_precomputed.m_base_color_luminance = tint_xyz[1];
         }
 
         virtual void sample(
@@ -648,14 +654,10 @@ namespace
             const DisneyBRDFInputValues*    values,
             float                           weights[NumComponents]) const
         {
-            weights[DiffuseComponent] =
-                lerp(values->m_base_color_luminance, 0.0f, values->m_metallic);
-            weights[SheenComponent] =
-                lerp(values->m_sheen, 0.0f, values->m_metallic);
-            weights[SpecularComponent] =
-                lerp(values->m_specular, 1.0f, values->m_metallic);
-            weights[CleatcoatComponent] =
-                values->m_clearcoat * 0.25f;
+            weights[DiffuseComponent]   = lerp(values->m_precomputed.m_base_color_luminance, 0.0f, values->m_metallic);
+            weights[SheenComponent]     = lerp(values->m_sheen, 0.0f, values->m_metallic);
+            weights[SpecularComponent]  = lerp(values->m_specular, 1.0f, values->m_metallic);
+            weights[CleatcoatComponent] = values->m_clearcoat * 0.25f;
 
             const float total_weight =
                 weights[DiffuseComponent] +

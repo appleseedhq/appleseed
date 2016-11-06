@@ -62,8 +62,12 @@ APPLESEED_DECLARE_INPUT_VALUES(GlossyBRDFInputValues)
     float       m_anisotropic;
     float       m_ior;
 
-    // Precomputed values.
-    float       m_outside_ior;
+    struct Precomputed
+    {
+        float   m_outside_ior;
+    };
+
+    Precomputed m_precomputed;
 };
 
 

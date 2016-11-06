@@ -103,8 +103,8 @@ namespace
             const DipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
 
-            const float two_c1 = fresnel_first_moment(values->m_eta);
-            const float three_c2 = fresnel_second_moment(values->m_eta);
+            const float two_c1 = fresnel_first_moment(values->m_precomputed.m_eta);
+            const float three_c2 = fresnel_second_moment(values->m_precomputed.m_eta);
             const float A = (1.0f + three_c2) / (1.0f - two_c1);
             const float cphi = 0.25f * (1.0f - two_c1);
             const float ce = 0.5f * (1.0f - three_c2);
@@ -117,8 +117,8 @@ namespace
                 const float sigma_s = values->m_sigma_s[i];
                 const float sigma_s_prime = sigma_s * (1.0f - values->m_g);
                 const float sigma_t_prime = sigma_s_prime + sigma_a;
-                const float alpha_prime = values->m_alpha_prime[i];
-                const float sigma_tr = values->m_sigma_tr[i];
+                const float alpha_prime = values->m_precomputed.m_alpha_prime[i];
+                const float sigma_tr = values->m_precomputed.m_sigma_tr[i];
 
                 const float D = (2.0f * sigma_a + sigma_s_prime) / (3.0f * square(sigma_t_prime));
                 const float zr = 1.0f / sigma_t_prime;

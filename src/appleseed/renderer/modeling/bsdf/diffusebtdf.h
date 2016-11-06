@@ -60,8 +60,12 @@ APPLESEED_DECLARE_INPUT_VALUES(DiffuseBTDFInputValues)
     Spectrum    m_transmittance;                // diffuse transmittance
     float       m_transmittance_multiplier;     // diffuse transmittance multiplier
 
-    // Precomputed values.
-    bool        m_backfacing;
+    struct Precomputed
+    {
+        bool    m_backfacing;
+    };
+
+    Precomputed m_precomputed;
 };
 
 

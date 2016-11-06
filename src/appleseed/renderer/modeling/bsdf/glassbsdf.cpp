@@ -156,30 +156,32 @@ namespace
         {
             InputValues* values = static_cast<InputValues*>(data);
 
+            new (&values->m_precomputed) InputValues::Precomputed();
+
             if (shading_point.is_entering())
             {
-                values->m_backfacing = false;
-                values->m_eta = shading_point.get_ray().get_current_ior() / values->m_ior;
+                values->m_precomputed.m_backfacing = false;
+                values->m_precomputed.m_eta = shading_point.get_ray().get_current_ior() / values->m_ior;
             }
             else
             {
-                values->m_backfacing = true;
-                values->m_eta = values->m_ior / shading_point.get_ray().get_previous_ior();
+                values->m_precomputed.m_backfacing = true;
+                values->m_precomputed.m_eta = values->m_ior / shading_point.get_ray().get_previous_ior();
             }
 
-            values->m_reflection_color  = values->m_surface_transmittance;
-            values->m_reflection_color *= values->m_reflection_tint;
-            values->m_reflection_color *= values->m_surface_transmittance_multiplier;
+            values->m_precomputed.m_reflection_color  = values->m_surface_transmittance;
+            values->m_precomputed.m_reflection_color *= values->m_reflection_tint;
+            values->m_precomputed.m_reflection_color *= values->m_surface_transmittance_multiplier;
 
             // [2] Surface absorption, page 5.
-            values->m_refraction_color  = values->m_surface_transmittance;
-            values->m_refraction_color *= values->m_refraction_tint;
-            values->m_refraction_color *= values->m_surface_transmittance_multiplier;
-            values->m_refraction_color  = sqrt(values->m_refraction_color);
+            values->m_precomputed.m_refraction_color  = values->m_surface_transmittance;
+            values->m_precomputed.m_refraction_color *= values->m_refraction_tint;
+            values->m_precomputed.m_refraction_color *= values->m_surface_transmittance_multiplier;
+            values->m_precomputed.m_refraction_color  = sqrt(values->m_precomputed.m_refraction_color);
 
             // Weights used when choosing reflection or refraction.
-            values->m_reflection_weight = max(max_value(values->m_reflection_color), 0.0f);
-            values->m_refraction_weight = max(max_value(values->m_refraction_color), 0.0f);
+            values->m_precomputed.m_reflection_weight = max(max_value(values->m_precomputed.m_reflection_color), 0.0f);
+            values->m_precomputed.m_refraction_weight = max(max_value(values->m_precomputed.m_refraction_color), 0.0f);
         }
 
         APPLESEED_FORCE_INLINE virtual void sample(
@@ -190,7 +192,7 @@ namespace
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
             const InputValues* values = static_cast<const InputValues*>(data);
-            const BackfacingPolicy backfacing_policy(sample.m_shading_basis, values->m_backfacing);
+            const BackfacingPolicy backfacing_policy(sample.m_shading_basis, values->m_precomputed.m_backfacing);
 
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
@@ -210,7 +212,7 @@ namespace
 
             const float cos_wom = clamp(dot(wo, m), -1.0f, 1.0f);
             float cos_theta_t;
-            const float F = fresnel_reflectance(cos_wom, values->m_eta, cos_theta_t);
+            const float F = fresnel_reflectance(cos_wom, values->m_precomputed.m_eta, cos_theta_t);
             const float r_probability = choose_reflection_probability(values, F);
 
             bool is_refraction;
@@ -252,8 +254,8 @@ namespace
                 // Compute the refracted direction.
                 wi =
                     cos_wom > 0.0f
-                        ? (values->m_eta * cos_wom - cos_theta_t) * m - values->m_eta * wo
-                        : (values->m_eta * cos_wom + cos_theta_t) * m - values->m_eta * wo;
+                        ? (values->m_precomputed.m_eta * cos_wom - cos_theta_t) * m - values->m_precomputed.m_eta * wo
+                        : (values->m_precomputed.m_eta * cos_wom + cos_theta_t) * m - values->m_precomputed.m_eta * wo;
                 wi = improve_normalization(wi);
 
                 // If incoming and outgoing are on the same side
@@ -274,7 +276,7 @@ namespace
 
                 sample.m_probability =
                     (1.0f - r_probability) *
-                    refraction_pdf(wi, wo, m, alpha_x, alpha_y, values->m_eta);
+                    refraction_pdf(wi, wo, m, alpha_x, alpha_y, values->m_precomputed.m_eta);
             }
 
             if (sample.m_probability < 1.0e-9f)
@@ -284,7 +286,7 @@ namespace
             sample.m_incoming = Dual3f(backfacing_policy.transform_to_parent(wi));
 
             if (is_refraction)
-                sample.compute_transmitted_differentials(values->m_eta);
+                sample.compute_transmitted_differentials(values->m_precomputed.m_eta);
             else sample.compute_reflected_differentials();
         }
 
@@ -303,7 +305,7 @@ namespace
                 return 0.0f;
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            const BackfacingPolicy backfacing_policy(shading_basis, values->m_backfacing);
+            const BackfacingPolicy backfacing_policy(shading_basis, values->m_precomputed.m_backfacing);
 
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
@@ -320,7 +322,7 @@ namespace
                 // Reflection.
                 const Vector3f m = half_reflection_vector(wi, wo);
                 const float cos_wom = dot(wo, m);
-                const float F = fresnel_reflectance(cos_wom, values->m_eta);
+                const float F = fresnel_reflectance(cos_wom, values->m_precomputed.m_eta);
 
                 evaluate_reflection(
                     values,
@@ -339,9 +341,9 @@ namespace
             else
             {
                 // Refraction.
-                const Vector3f m = half_refraction_vector(wi, wo, values->m_eta);
+                const Vector3f m = half_refraction_vector(wi, wo, values->m_precomputed.m_eta);
                 const float cos_wom = dot(wo, m);
-                const float F = fresnel_reflectance(cos_wom, values->m_eta);
+                const float F = fresnel_reflectance(cos_wom, values->m_precomputed.m_eta);
 
                 evaluate_refraction(
                     values,
@@ -356,7 +358,7 @@ namespace
 
                 return
                     (1.0f - choose_reflection_probability(values, F)) *
-                    refraction_pdf(wi, wo, m, alpha_x, alpha_y, values->m_eta);
+                    refraction_pdf(wi, wo, m, alpha_x, alpha_y, values->m_precomputed.m_eta);
             }
         }
 
@@ -372,7 +374,7 @@ namespace
                 return 0.0f;
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            const BackfacingPolicy backfacing_policy(shading_basis, values->m_backfacing);
+            const BackfacingPolicy backfacing_policy(shading_basis, values->m_precomputed.m_backfacing);
 
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
@@ -389,7 +391,7 @@ namespace
                 // Reflection.
                 const Vector3f m = half_reflection_vector(wi, wo);
                 const float cos_wom = dot(wo, m);
-                const float F = fresnel_reflectance(cos_wom, values->m_eta);
+                const float F = fresnel_reflectance(cos_wom, values->m_precomputed.m_eta);
 
                 return
                     choose_reflection_probability(values, F) *
@@ -398,13 +400,13 @@ namespace
             else
             {
                 // Refraction.
-                const Vector3f m = half_refraction_vector(wi, wo, values->m_eta);
+                const Vector3f m = half_refraction_vector(wi, wo, values->m_precomputed.m_eta);
                 const float cos_wom = dot(wo, m);
-                const float F = fresnel_reflectance(cos_wom, values->m_eta);
+                const float F = fresnel_reflectance(cos_wom, values->m_precomputed.m_eta);
 
                 return
                     (1.0f - choose_reflection_probability(values, F)) *
-                    refraction_pdf(wi, wo, m, alpha_x, alpha_y, values->m_eta);
+                    refraction_pdf(wi, wo, m, alpha_x, alpha_y, values->m_precomputed.m_eta);
             }
         }
 
@@ -446,8 +448,8 @@ namespace
             const InputValues*      values,
             const float             F)
         {
-            const float r_probability = F * values->m_reflection_weight;
-            const float t_probability = (1.0f - F) * values->m_refraction_weight;
+            const float r_probability = F * values->m_precomputed.m_reflection_weight;
+            const float t_probability = (1.0f - F) * values->m_precomputed.m_refraction_weight;
             const float sum_probabilities = r_probability + t_probability;
 
             if (sum_probabilities == 0.0f)
@@ -518,7 +520,7 @@ namespace
             const float D = m_mdf->D(h, alpha_x, alpha_y);
             const float G = m_mdf->G(wi, wo, h, alpha_x, alpha_y);
 
-            value = values->m_reflection_color;
+            value = values->m_precomputed.m_reflection_color;
             value *= F * D * G / denom;
         }
 
@@ -563,7 +565,7 @@ namespace
             const float cos_oh = dot(h, wo);
             const float dots = (cos_ih * cos_oh) / (wi.y * wo.y);
 
-            const float sqrt_denom = cos_oh + values->m_eta * cos_ih;
+            const float sqrt_denom = cos_oh + values->m_precomputed.m_eta * cos_ih;
             if (abs(sqrt_denom) < 1.0e-9f)
             {
                 value.set(0.0f);
@@ -572,13 +574,13 @@ namespace
 
             const float D = m_mdf->D(h, alpha_x, alpha_y);
             const float G = m_mdf->G(wi, wo, h, alpha_x, alpha_y);
-            float multiplier = abs(dots) * square(values->m_eta / sqrt_denom) * T * D * G;
+            float multiplier = abs(dots) * square(values->m_precomputed.m_eta / sqrt_denom) * T * D * G;
 
             // [2] eq. 2.
             if (adjoint)
-                multiplier /= square(values->m_eta);
+                multiplier /= square(values->m_precomputed.m_eta);
 
-            value = values->m_refraction_color;
+            value = values->m_precomputed.m_refraction_color;
             value *= multiplier;
         }
 

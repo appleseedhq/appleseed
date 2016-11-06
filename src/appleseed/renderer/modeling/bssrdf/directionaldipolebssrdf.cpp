@@ -115,16 +115,18 @@ namespace
                 // This was derived by numerically integrating both models for different alpha_prime values,
                 // comparing the resulting Rd curves, fitting a quadratic to the difference between them
                 // and scaling by an empirical magic factor.
-                values->m_dirpole_reparam_weight.resize(values->m_alpha_prime.size());
-                for (size_t i = 0, e = values->m_dirpole_reparam_weight.size(); i < e; ++i)
+                values->m_precomputed.m_dirpole_reparam_weight.resize(values->m_precomputed.m_alpha_prime.size());
+                for (size_t i = 0, e = values->m_precomputed.m_dirpole_reparam_weight.size(); i < e; ++i)
                 {
-                    const float a = values->m_alpha_prime[i];
+                    const float a = values->m_precomputed.m_alpha_prime[i];
                     const float w = 0.2605589f * square(a) + 0.2622902f * a + 0.007895145f;
-                    values->m_dirpole_reparam_weight[i] = w * 1.44773351f;
+                    values->m_precomputed.m_dirpole_reparam_weight[i] = w * 1.44773351f;
                 }
             }
             else
-                values->m_dirpole_reparam_weight.set(1.0f);
+            {
+                values->m_precomputed.m_dirpole_reparam_weight.set(1.0f);
+            }
         }
 
         virtual void evaluate_profile(
@@ -177,16 +179,16 @@ namespace
 
             float fo;
             const float cos_on = abs(dot(outgoing_dir, Vector3f(outgoing_point.get_shading_normal())));
-            fresnel_transmittance_dielectric(fo, values->m_eta, cos_on);
+            fresnel_transmittance_dielectric(fo, values->m_precomputed.m_eta, cos_on);
 
             float fi;
             const float cos_in = abs(dot(incoming_dir, Vector3f(incoming_point.get_shading_normal())));
-            fresnel_transmittance_dielectric(fi, values->m_eta, cos_in);
+            fresnel_transmittance_dielectric(fi, values->m_precomputed.m_eta, cos_in);
 
             const float radius = static_cast<float>(norm(incoming_point.get_point() - outgoing_point.get_point()));
             value *= radius * fo * fi * values->m_weight;
 
-            value *= values->m_dirpole_reparam_weight;
+            value *= values->m_precomputed.m_dirpole_reparam_weight;
         }
 
       private:
@@ -208,9 +210,9 @@ namespace
                 value.set(0.0f);
                 return;
             }
-            const float rcp_eta = 1.0f / values->m_eta;
+            const float rcp_eta = 1.0f / values->m_precomputed.m_eta;
             const float cphi_eta = 0.25f * (1.0f - fresnel_first_moment(rcp_eta));
-            const float cphi_rcp_eta = 0.25f * (1.0f - fresnel_first_moment(values->m_eta));
+            const float cphi_rcp_eta = 0.25f * (1.0f - fresnel_first_moment(values->m_precomputed.m_eta));
             const float ce_eta = 0.5f * (1.0f - fresnel_second_moment(rcp_eta));
             const float A = (1.0f - ce_eta) / (2.0f * cphi_eta);                        // reflection parameter
 
@@ -220,7 +222,7 @@ namespace
 
             // Compute direction of real ray source.
             Vector3f wr;
-            APPLESEED_UNUSED const bool successful = refract(wi, ni, values->m_eta, wr);
+            APPLESEED_UNUSED const bool successful = refract(wi, ni, values->m_precomputed.m_eta, wr);
             assert(successful);
             assert(is_normalized(wr));
 
@@ -242,8 +244,8 @@ namespace
                 const float sigma_t = sigma_s + sigma_a;
                 const float sigma_s_prime = sigma_s * (1.0f - values->m_g);
                 const float sigma_t_prime = sigma_s_prime + sigma_a;
-                const float alpha_prime = values->m_alpha_prime[i];                     // reduced scattering albedo
-                const float sigma_tr = values->m_sigma_tr[i];                           // effective transport coefficient
+                const float alpha_prime = values->m_precomputed.m_alpha_prime[i];       // reduced scattering albedo
+                const float sigma_tr = values->m_precomputed.m_sigma_tr[i];             // effective transport coefficient
 
                 // Compute extrapolation distance ([1] equation 21).
                 const float D = 1.0f / (3.0f * sigma_t_prime);                          // diffusion coefficient

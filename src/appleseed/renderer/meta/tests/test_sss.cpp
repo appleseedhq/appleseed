@@ -126,7 +126,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         const float get_sigma_tr() const
         {
-            return m_values.m_sigma_tr[0];
+            return m_values.m_precomputed.m_sigma_tr[0];
         }
 
         float evaluate(const float r) const

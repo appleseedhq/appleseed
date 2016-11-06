@@ -60,9 +60,13 @@ APPLESEED_DECLARE_INPUT_VALUES(GaussianBSSRDFInputValues)
     float       m_v;
     float       m_ior;
 
-    // Precomputed values.
-    float       m_rmax2;
-    float       m_eta;
+    struct Precomputed
+    {
+        float   m_rmax2;
+        float   m_eta;
+    };
+
+    Precomputed m_precomputed;
 };
 
 
