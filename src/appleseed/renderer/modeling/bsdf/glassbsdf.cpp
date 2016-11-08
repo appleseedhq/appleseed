@@ -201,8 +201,7 @@ namespace
                 alpha_x,
                 alpha_y);
 
-            const Vector3f wo = backfacing_policy.transform_to_local(
-                sample.m_outgoing.get_value());
+            const Vector3f wo = backfacing_policy.transform_to_local(sample.m_outgoing.get_value());
 
             // Compute the microfacet normal by sampling the MDF.
             sampling_context.split_in_place(4, 1);

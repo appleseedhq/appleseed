@@ -253,7 +253,7 @@ void compute_ibl_bssrdf_sampling(
         Vector3f incoming = sample_hemisphere_cosine(s);
         const float cos_in = incoming.y;
         const float bssrdf_prob = cos_in * RcpPi<float>();
-        incoming = Vector3f(incoming_point.get_shading_basis().transform_to_parent(Vector3d(incoming)));
+        incoming = incoming_point.get_shading_basis().transform_to_parent(incoming);
         if (incoming_point.get_side() == ObjectInstance::BackSide)
             incoming = -incoming;
         assert(is_normalized(incoming));
