@@ -115,7 +115,7 @@ namespace
 
             // Precompute pixel area.
             const size_t pixel_count = project.get_frame()->image().properties().m_pixel_count;
-            m_rcp_pixel_area = pixel_count / (m_film_dimensions[0] * m_film_dimensions[1]);
+            m_rcp_pixel_area = static_cast<float>(pixel_count / (m_film_dimensions[0] * m_film_dimensions[1]));
 
             print_settings();
 
@@ -161,7 +161,7 @@ namespace
             const Vector3d&     point,
             Vector2d&           ndc,
             Vector3d&           outgoing,
-            double&             importance) const APPLESEED_OVERRIDE
+            float&              importance) const APPLESEED_OVERRIDE
         {
             // Retrieve the camera transform.
             Transformd scratch;
@@ -240,7 +240,7 @@ namespace
         double      m_safe_scene_diameter;  // scene diameter plus a safety margin
         double      m_rcp_film_width;       // film width reciprocal in camera space
         double      m_rcp_film_height;      // film height reciprocal in camera space
-        double      m_rcp_pixel_area;       // reciprocal of pixel area in camera space
+        float       m_rcp_pixel_area;       // reciprocal of pixel area in camera space
 
         void print_settings() const
         {

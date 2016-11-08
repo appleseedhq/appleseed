@@ -130,7 +130,7 @@ class APPLESEED_DLLSYMBOL Camera
         const foundation::Vector3d&     point,
         foundation::Vector2d&           ndc,
         foundation::Vector3d&           outgoing,
-        double&                         importance) const = 0;
+        float&                          importance) const = 0;
 
     // Project a 3D point back to the film plane. The input point is expressed in
     // world space. The returned point is expressed in normalized device coordinates.
