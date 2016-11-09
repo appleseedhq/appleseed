@@ -28,6 +28,7 @@
 
 import unittest
 
+from testbasis import *
 from testdict2dict import *
 from testentitymap import *
 from testentityvector import *
