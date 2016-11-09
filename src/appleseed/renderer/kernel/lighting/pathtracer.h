@@ -492,10 +492,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             foundation::Vector3f incoming_vector = foundation::sample_hemisphere_cosine(s);
             const float cos_in = incoming_vector.y;
             const float incoming_prob = cos_in * foundation::RcpPi<float>();
-            incoming_vector =
-                foundation::Vector3f(
-                    vertex.m_incoming_point->get_shading_basis().transform_to_parent(
-                        foundation::Vector3d(incoming_vector)));
+            incoming_vector = vertex.m_incoming_point->get_shading_basis().transform_to_parent(incoming_vector);
             if (vertex.m_incoming_point->get_side() == ObjectInstance::BackSide)
                 incoming_vector = -incoming_vector;
             incoming = foundation::Dual3d(foundation::Vector3d(incoming_vector));

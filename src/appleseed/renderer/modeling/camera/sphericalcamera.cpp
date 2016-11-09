@@ -146,7 +146,7 @@ namespace
             const Vector3d&     point,
             Vector2d&           ndc,
             Vector3d&           outgoing,
-            double&             importance) const APPLESEED_OVERRIDE
+            float&              importance) const APPLESEED_OVERRIDE
         {
             // Retrieve the camera transform.
             Transformd scratch;
@@ -167,7 +167,7 @@ namespace
             const Vector3d q2 = ndc_to_camera(Vector2d(ndc.x + m_half_pixel_width, ndc.y + m_half_pixel_height));
             const Vector3d q3 = ndc_to_camera(Vector2d(ndc.x - m_half_pixel_width, ndc.y + m_half_pixel_height));
             const double solid_angle = 0.5 * norm(cross(q2 - q0, q3 - q1));
-            importance = 1.0 / (square_norm(outgoing) * solid_angle);
+            importance = 1.0f / static_cast<float>(square_norm(outgoing) * solid_angle);
 
             // The connection was possible.
             return true;

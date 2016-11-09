@@ -5,7 +5,7 @@
 #
 # This software is released under the MIT license.
 #
-# Copyright (c) 2015-2016 Esteban Tovagliari, The appleseedhq Organization
+# Copyright (c) 2016 Francois Beaune, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,10 +27,32 @@
 #
 
 import unittest
+import appleseed as asr
 
-from testbasis import *
-from testdict2dict import *
-from testentitymap import *
-from testentityvector import *
+class TestBasis(unittest.TestCase):
+    def setUp(self):
+        pass
 
-unittest.TestProgram(testRunner = unittest.TextTestRunner())
+    def test_transform_to_local(self):
+        basis = asr.Basis3f(asr.Vector3f(1.0, 0.0, 0.0),    # normal
+                            asr.Vector3f(0.0, 0.0, 1.0),    # u
+                            asr.Vector3f(0.0, 1.0, 0.0))    # v
+
+        v = basis.transform_to_local(asr.Vector3f(1.0, 2.0, 3.0))
+
+        self.assertEqual(asr.Vector3f(3.0, 1.0, 2.0), v)
+
+    def test_transform_to_parent(self):
+        basis = asr.Basis3f(asr.Vector3f(1.0, 0.0, 0.0),    # normal
+                            asr.Vector3f(0.0, 0.0, 1.0),    # u
+                            asr.Vector3f(0.0, 1.0, 0.0))    # v
+
+        v = basis.transform_to_parent(asr.Vector3f(3.0, 1.0, 2.0))
+
+        self.assertEqual(asr.Vector3f(1.0, 2.0, 3.0), v)
+
+    def tearDown(self):
+        pass
+
+if __name__ == "__main__":
+    unittest.main()

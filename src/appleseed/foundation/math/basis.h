@@ -90,6 +90,12 @@ class Basis3
     VectorType transform_to_local(const VectorType& v) const;
     VectorType transform_to_parent(const VectorType& v) const;
 
+    // Transform a 3D vector of a different type.
+    template <typename U>
+    Vector<U, 3> transform_to_local(const Vector<U, 3>& v) const;
+    template <typename U>
+    Vector<U, 3> transform_to_parent(const Vector<U, 3>& v) const;
+
     // Retrieve the individual basis vectors.
     const VectorType& get_normal() const;
     const VectorType& get_tangent_u() const;
@@ -258,13 +264,41 @@ inline void Basis3<T>::build(
 template <typename T>
 inline Vector<T, 3> Basis3<T>::transform_to_local(const VectorType& v) const
 {
-    return Vector<T, 3>(dot(v, m_u), dot(v, m_n), dot(v, m_v));
+    return
+        Vector<T, 3>(
+            dot(v, m_u),
+            dot(v, m_n),
+            dot(v, m_v));
 }
 
 template <typename T>
 inline Vector<T, 3> Basis3<T>::transform_to_parent(const VectorType& v) const
 {
-    return v[0] * m_u + v[1] * m_n + v[2] * m_v;
+    return
+        v[0] * m_u +
+        v[1] * m_n +
+        v[2] * m_v;
+}
+
+template <typename T>
+template <typename U>
+inline Vector<U, 3> Basis3<T>::transform_to_local(const Vector<U, 3>& v) const
+{
+    return
+        Vector<U, 3>(
+            dot(v, Vector<U, 3>(m_u)),
+            dot(v, Vector<U, 3>(m_n)),
+            dot(v, Vector<U, 3>(m_v)));
+}
+
+template <typename T>
+template <typename U>
+inline Vector<U, 3> Basis3<T>::transform_to_parent(const Vector<U, 3>& v) const
+{
+    return
+        v[0] * Vector<U, 3>(m_u) +
+        v[1] * Vector<U, 3>(m_n) +
+        v[2] * Vector<U, 3>(m_v);
 }
 
 template <typename T>

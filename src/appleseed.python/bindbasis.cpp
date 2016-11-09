@@ -44,6 +44,18 @@ using namespace std;
 namespace
 {
     template <typename T>
+    Vector<T, 3> transform_to_local(const Basis3<T>& basis, const Vector<T, 3>& v)
+    {
+        return basis.transform_to_local(v);
+    }
+
+    template <typename T>
+    Vector<T, 3> transform_to_parent(const Basis3<T>& basis, const Vector<T, 3>& v)
+    {
+        return basis.transform_to_parent(v);
+    }
+
+    template <typename T>
     void do_bind_basis(const char* class_name)
     {
         bpy::class_<Basis3<T> >(class_name)
@@ -52,8 +64,8 @@ namespace
             .def(bpy::init<Vector<T, 3>, Vector<T, 3> >())
             .def(bpy::init<Vector<T, 3>, Vector<T, 3>, Vector<T, 3> >())
 
-            .def("transform_to_local", &Basis3<T>::transform_to_local)
-            .def("transform_to_parent", &Basis3<T>::transform_to_parent)
+            .def("transform_to_local", &transform_to_local<T>)
+            .def("transform_to_parent", &transform_to_parent<T>)
             .def("get_normal", &Basis3<T>::get_normal, bpy::return_value_policy<bpy::copy_const_reference>())
             .def("get_tangent_u", &Basis3<T>::get_tangent_u, bpy::return_value_policy<bpy::copy_const_reference>())
             .def("get_tangent_v", &Basis3<T>::get_tangent_v, bpy::return_value_policy<bpy::copy_const_reference>())

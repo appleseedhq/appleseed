@@ -192,7 +192,7 @@ namespace
             const Vector3d&     point,
             Vector2d&           ndc,
             Vector3d&           outgoing,
-            double&             importance) const APPLESEED_OVERRIDE
+            float&              importance) const APPLESEED_OVERRIDE
         {
             // Project the point onto the film plane.
             if (!project_point(time, point, ndc))
@@ -216,7 +216,7 @@ namespace
             const double dist_film_lens = sqrt(square_dist_film_lens);
             const double cos_theta = m_focal_length / dist_film_lens;
             const double solid_angle = m_pixel_area * cos_theta / square_dist_film_lens;
-            importance = 1.0 / (square_norm(outgoing) * solid_angle);
+            importance = 1.0f / static_cast<float>(square_norm(outgoing) * solid_angle);
 
             // The connection was possible.
             return true;

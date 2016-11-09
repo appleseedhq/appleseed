@@ -315,7 +315,7 @@ namespace
                 // Connect the light vertex with the camera.
                 Vector2d sample_position;
                 Vector3d camera_outgoing;
-                double importance;
+                float importance;
                 if (!m_camera.connect_vertex(
                         m_sampling_context,
                         time.m_absolute,
@@ -362,7 +362,7 @@ namespace
                 // Connect the light vertex with the camera.
                 Vector2d sample_position;
                 Vector3d camera_outgoing;
-                double importance;
+                float importance;
                 if (!m_camera.connect_vertex(
                         m_sampling_context,
                         time.m_absolute,
@@ -387,7 +387,7 @@ namespace
 
                 // Store the contribution of this vertex.
                 Spectrum radiance = light_particle_flux;
-                radiance *= static_cast<float>(transmission * importance);
+                radiance *= transmission * importance;
                 emit_sample(sample_position, norm(camera_outgoing), radiance);
             }
 
@@ -400,7 +400,7 @@ namespace
                 // Connect the path vertex with the camera.
                 Vector2d sample_position;
                 Vector3d camera_outgoing;
-                double importance;
+                float importance;
                 if (!m_camera.connect_vertex(
                         m_sampling_context,
                         vertex.get_time().m_absolute,
@@ -459,7 +459,7 @@ namespace
                 Spectrum radiance = m_initial_flux;
                 radiance *= vertex.m_throughput;
                 radiance *= bsdf_value;
-                radiance *= static_cast<float>(transmission * importance);
+                radiance *= transmission * importance;
                 emit_sample(sample_position, distance, radiance);
             }
 
