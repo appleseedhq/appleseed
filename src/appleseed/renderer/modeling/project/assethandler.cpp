@@ -137,8 +137,8 @@ AssetHandler::AssetHandler(
   : m_project(project)
   , m_project_old_root_path(absolute(project.get_path()))
   , m_project_new_root_path(absolute(filepath))
-  , m_project_old_root_dir(m_project_old_root_path.parent_path())
-  , m_project_new_root_dir(m_project_new_root_path.parent_path())
+  , m_project_old_root_dir(canonical(m_project_old_root_path.parent_path()))
+  , m_project_new_root_dir(canonical(m_project_new_root_path.parent_path()))
   , m_mode(mode)
 {
 }
@@ -213,7 +213,8 @@ bool AssetHandler::handle_asset(string& asset_path) const
     if (search_path.empty() || path(search_path).is_relative())
     {
         // Relative asset path, found in a relative search path or in the root directory.
-        if (is_extension_of(qualified_asset_path, m_project.search_paths().get_root_path()))
+        if (m_project_old_root_dir == m_project_new_root_dir ||
+            is_extension_of(qualified_asset_path, m_project.search_paths().get_root_path()))
         {
             // Relative asset/search path, below the project's root path.
             return copy_relative_asset(asset_path);
