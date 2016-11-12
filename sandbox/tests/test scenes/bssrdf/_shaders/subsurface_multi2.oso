@@ -62,9 +62,9 @@ code ___main___
 #     Ci = color(0.35, 0.5, 0.75) * diff + 0.65 * as_glossy("ggx", N, 0.2, 1.3);
 	mul		$tmp15 diff $const14 	%line{10} %argrw{"wrr"}
 	functioncall	$const16 15 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:515
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/as_osl_extensions.h:90
 #     float   roughness,
-	closure		$tmp16 $const16 $const15 N $const17 $const10 $const18 $const5 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{515} %argrw{"wrrrrrrr"}
+	closure		$tmp16 $const16 $const15 N $const17 $const10 $const18 $const5 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/as_osl_extensions.h"} %line{90} %argrw{"wrrrrrrr"}
 # subsurface_multi2.osl:10
 #     Ci = color(0.35, 0.5, 0.75) * diff + 0.65 * as_glossy("ggx", N, 0.2, 1.3);
 	mul		$tmp18 $tmp16 $const19 	%filename{"subsurface_multi2.osl"} %line{10} %argrw{"wrr"}
