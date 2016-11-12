@@ -17,14 +17,14 @@ local	vector	dpdx	%read{14,31} %write{6,6}
 local	vector	dpdy	%read{18,29} %write{7,7}
 local	float	dhx	%read{16,33} %write{9,9}
 local	float	dhy	%read{20,34} %write{11,11}
-local	vector	___300_new_tn	%read{22,22} %write{17,17}
-local	vector	___300_new_bn	%read{22,22} %write{21,21}
-local	int	___301_has_diffs	%read{26,26} %write{23,23}
-local	int	___301_get_attr_ok	%read{24,24} %write{23,23}
-local	vector	___302_rx	%read{31,33} %write{29,29}
-local	vector	___302_ry	%read{34,34} %write{30,30}
-local	float	___302_det	%read{32,37} %write{31,31}
-local	vector	___302_surf_grad	%read{39,39} %write{36,36}
+local	vector	___320_new_tn	%read{22,22} %write{17,17}
+local	vector	___320_new_bn	%read{22,22} %write{21,21}
+local	int	___321_has_diffs	%read{26,26} %write{23,23}
+local	int	___321_get_attr_ok	%read{24,24} %write{23,23}
+local	vector	___322_rx	%read{31,33} %write{29,29}
+local	vector	___322_ry	%read{34,34} %write{30,30}
+local	float	___322_det	%read{32,37} %write{31,31}
+local	vector	___322_surf_grad	%read{39,39} %write{36,36}
 const	float	$const1	0		%read{3,44} %write{2147483647,-1}
 temp	int	$tmp1	%read{4,4} %write{3,3}
 temp	float	$tmp2	%read{9,9} %write{8,8}
@@ -94,47 +94,47 @@ code ___main___
 	length		$tmp5 dpdx 	%line{84} %argrw{"wr"}
 	mul		$tmp6 Tn $tmp5 	%argrw{"wrr"}
 	mul		$tmp7 Normal dhx 	%argrw{"wrr"}
-	add		___300_new_tn $tmp6 $tmp7 	%argrw{"wrr"}
+	add		___320_new_tn $tmp6 $tmp7 	%argrw{"wrr"}
 # ./normal/as_bump_map.osl:85
 #         vector new_bn = Bn * length(dpdy) + Normal * dhy;
 	length		$tmp8 dpdy 	%line{85} %argrw{"wr"}
 	mul		$tmp9 Bn $tmp8 	%argrw{"wrr"}
 	mul		$tmp10 Normal dhy 	%argrw{"wrr"}
-	add		___300_new_bn $tmp9 $tmp10 	%argrw{"wrr"}
+	add		___320_new_bn $tmp9 $tmp10 	%argrw{"wrr"}
 # ./normal/as_bump_map.osl:86
 #         NormalOut = cross(new_bn, new_tn);
-	cross		NormalOut ___300_new_bn ___300_new_tn 	%line{86} %argrw{"wrr"}
+	cross		NormalOut ___320_new_bn ___320_new_tn 	%line{86} %argrw{"wrr"}
 # ./normal/as_bump_map.osl:101
 #         int get_attr_ok = getattribute("path:ray_has_differentials", has_diffs);
-	getattribute	___301_get_attr_ok $const3 ___301_has_diffs 	%line{101} %argrw{"wrw"}
+	getattribute	___321_get_attr_ok $const3 ___321_has_diffs 	%line{101} %argrw{"wrw"}
 # ./normal/as_bump_map.osl:104
 #         if (get_attr_ok && has_diffs)
-	neq		$tmp11 ___301_get_attr_ok $const4 	%line{104} %argrw{"wrr"}
+	neq		$tmp11 ___321_get_attr_ok $const4 	%line{104} %argrw{"wrr"}
 	if		$tmp11 28 28 	%argrw{"r"}
-	neq		$tmp12 ___301_has_diffs $const4 	%argrw{"wrr"}
+	neq		$tmp12 ___321_has_diffs $const4 	%argrw{"wrr"}
 	assign		$tmp11 $tmp12 	%argrw{"wr"}
 	if		$tmp11 40 40 	%argrw{"r"}
 # ./normal/as_bump_map.osl:106
 #             vector rx = cross(dpdy, Normal);
-	cross		___302_rx dpdy Normal 	%line{106} %argrw{"wrr"}
+	cross		___322_rx dpdy Normal 	%line{106} %argrw{"wrr"}
 # ./normal/as_bump_map.osl:107
 #             vector ry = cross(Normal, dpdx);
-	cross		___302_ry Normal dpdx 	%line{107} %argrw{"wrr"}
+	cross		___322_ry Normal dpdx 	%line{107} %argrw{"wrr"}
 # ./normal/as_bump_map.osl:109
 #             float det = dot(dpdx, rx);
-	dot		___302_det dpdx ___302_rx 	%line{109} %argrw{"wrr"}
+	dot		___322_det dpdx ___322_rx 	%line{109} %argrw{"wrr"}
 # ./normal/as_bump_map.osl:110
 #             vector surf_grad = sign(det) * (dhx * rx + dhy * ry);
-	sign		$tmp13 ___302_det 	%line{110} %argrw{"wr"}
-	mul		$tmp14 dhx ___302_rx 	%argrw{"wrr"}
-	mul		$tmp15 dhy ___302_ry 	%argrw{"wrr"}
+	sign		$tmp13 ___322_det 	%line{110} %argrw{"wr"}
+	mul		$tmp14 dhx ___322_rx 	%argrw{"wrr"}
+	mul		$tmp15 dhy ___322_ry 	%argrw{"wrr"}
 	add		$tmp16 $tmp14 $tmp15 	%argrw{"wrr"}
-	mul		___302_surf_grad $tmp13 $tmp16 	%argrw{"wrr"}
+	mul		___322_surf_grad $tmp13 $tmp16 	%argrw{"wrr"}
 # ./normal/as_bump_map.osl:112
 #             NormalOut = abs(det) * Normal - surf_grad;
-	abs		$tmp17 ___302_det 	%line{112} %argrw{"wr"}
+	abs		$tmp17 ___322_det 	%line{112} %argrw{"wr"}
 	mul		$tmp18 $tmp17 Normal 	%argrw{"wrr"}
-	sub		NormalOut $tmp18 ___302_surf_grad 	%argrw{"wrr"}
+	sub		NormalOut $tmp18 ___322_surf_grad 	%argrw{"wrr"}
 # ./normal/as_bump_map.osl:116
 #     NormalOut = normalize(NormalOut);
 	normalize	NormalOut NormalOut 	%line{116} %argrw{"wr"}

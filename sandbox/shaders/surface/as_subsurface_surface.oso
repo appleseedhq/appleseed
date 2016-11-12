@@ -46,9 +46,9 @@ code ___main___
 # ./surface/as_subsurface_surface.osl:68
 #         BSSRDF = Reflectance * Color * diffuse(Normal);
 	functioncall	$const3 9 	%line{68} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:647
-#         distribution,
-	closure		$tmp5 $const6 Normal $const5 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{647} %argrw{"wrrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:513
+#         if      (x <= -eps)                result = 0;
+	closure		$tmp5 $const6 Normal $const5 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{513} %argrw{"wrrr"}
 # ./surface/as_subsurface_surface.osl:68
 #         BSSRDF = Reflectance * Color * diffuse(Normal);
 	mul		$tmp6 Reflectance Color 	%filename{"./surface/as_subsurface_surface.osl"} %line{68} %argrw{"wrr"}

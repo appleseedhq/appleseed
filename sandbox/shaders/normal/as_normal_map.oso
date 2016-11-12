@@ -12,7 +12,7 @@ oparam	vector	NormalOut	0 0 0		%read{34,34} %write{32,33}
 oparam	vector	TangentOut	0 0 0		%read{2147483647,-1} %write{35,35}
 global	normal	N	%read{0,0} %write{2147483647,-1}
 local	normal	n	%read{11,33} %write{8,28}
-local	float	___300_tmp	%read{14,14} %write{11,11}
+local	float	___320_tmp	%read{14,14} %write{11,11}
 local	vector	bn	%read{24,34} %write{15,15}
 const	float	$const2	-1		%read{1,1} %write{2147483647,-1}
 temp	normal	$tmp1	%read{8,8} %write{1,1}
@@ -58,9 +58,9 @@ code ___main___
 	assign		$tmp4 $const6 	%argrw{"wr"}
 	assign		$tmp5 $const4 	%argrw{"wr"}
 	functioncall	$const7 8 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:156
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:148
 # float  degrees (float x)  { return x*(180.0/M_PI); }
-	min		$tmp6 Color $tmp5 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{156} %argrw{"wrr"}
+	min		$tmp6 Color $tmp5 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{148} %argrw{"wrr"}
 	max		$tmp3 $tmp6 $tmp4 	%argrw{"wrr"}
 # ./normal/as_normal_map.osl:60
 #     normal n = (normal) mix(-1, 1, clamp(Color, 0, 1));
@@ -71,14 +71,14 @@ code ___main___
 	if		$tmp7 15 15 	%argrw{"r"}
 # ./normal/as_normal_map.osl:64
 #         float tmp = n[2];
-	compref		___300_tmp n $const9 	%line{64} %argrw{"wrr"}
+	compref		___320_tmp n $const9 	%line{64} %argrw{"wrr"}
 # ./normal/as_normal_map.osl:65
 #         n[2] = n[1];
 	compref		$tmp8 n $const3 	%line{65} %argrw{"wrr"}
 	compassign	n $const9 $tmp8 	%argrw{"wrr"}
 # ./normal/as_normal_map.osl:66
 #         n[1] = tmp;
-	compassign	n $const3 ___300_tmp 	%line{66} %argrw{"wrr"}
+	compassign	n $const3 ___320_tmp 	%line{66} %argrw{"wrr"}
 # ./normal/as_normal_map.osl:69
 #     vector bn = cross(Tn, Normal);
 	cross		bn Tn Normal 	%line{69} %argrw{"wrr"}

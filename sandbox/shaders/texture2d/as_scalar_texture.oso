@@ -23,9 +23,9 @@ local	string[100]	mari_filenames	%read{509,509} %write{6,501}
 local	string	tx_filename	%read{517,517} %write{502,514}
 local	float	uu	%read{517,517} %write{511,515} %derivs
 local	float	vv	%read{517,517} %write{513,516} %derivs
-local	int	___300_utile	%read{508,510} %write{505,505} %derivs
-local	int	___300_vtile	%read{507,512} %write{506,506} %derivs
-local	int	___300_offset	%read{509,509} %write{508,508}
+local	int	___320_utile	%read{508,510} %write{505,505} %derivs
+local	int	___320_vtile	%read{507,512} %write{506,506} %derivs
+local	int	___320_offset	%read{509,509} %write{508,508}
 local	color	c	%read{519,521} %write{517,517}
 temp	string	$tmp1	%read{6,6} %write{5,5}
 const	string	$const1	"%s%d%s"		%read{5,500} %write{2147483647,-1}
@@ -1064,24 +1064,24 @@ code ___main___
 	if		$tmp401 514 517 	%argrw{"r"}
 # ./texture2d/as_scalar_texture.osl:85
 #         int utile  = int(U); 
-	assign		___300_utile U 	%line{85} %argrw{"wr"}
+	assign		___320_utile U 	%line{85} %argrw{"wr"}
 # ./texture2d/as_scalar_texture.osl:86
 #         int vtile  = int(V); 
-	assign		___300_vtile V 	%line{86} %argrw{"wr"}
+	assign		___320_vtile V 	%line{86} %argrw{"wr"}
 # ./texture2d/as_scalar_texture.osl:87
 #         int offset = 10 * vtile + utile;
-	mul		$tmp402 $const2 ___300_vtile 	%line{87} %argrw{"wrr"}
-	add		___300_offset $tmp402 ___300_utile 	%argrw{"wrr"}
+	mul		$tmp402 $const2 ___320_vtile 	%line{87} %argrw{"wrr"}
+	add		___320_offset $tmp402 ___320_utile 	%argrw{"wrr"}
 # ./texture2d/as_scalar_texture.osl:88
 #         tx_filename = mari_filenames[offset];
-	aref		tx_filename mari_filenames ___300_offset 	%line{88} %argrw{"wrr"}
+	aref		tx_filename mari_filenames ___320_offset 	%line{88} %argrw{"wrr"}
 # ./texture2d/as_scalar_texture.osl:89
 #         uu = U - utile;
-	assign		$tmp403 ___300_utile 	%line{89} %argrw{"wr"}
+	assign		$tmp403 ___320_utile 	%line{89} %argrw{"wr"}
 	sub		uu U $tmp403 	%argrw{"wrr"}
 # ./texture2d/as_scalar_texture.osl:90
 #         vv = V - vtile;
-	assign		$tmp404 ___300_vtile 	%line{90} %argrw{"wr"}
+	assign		$tmp404 ___320_vtile 	%line{90} %argrw{"wr"}
 	sub		vv V $tmp404 	%argrw{"wrr"}
 # ./texture2d/as_scalar_texture.osl:94
 #         tx_filename = Filename;
