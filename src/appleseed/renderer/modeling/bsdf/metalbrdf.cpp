@@ -33,7 +33,9 @@
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
+#include "renderer/modeling/bsdf/fresnel.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
+#include "renderer/modeling/bsdf/specularhelper.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
@@ -66,40 +68,6 @@ namespace renderer
 
 namespace
 {
-    template <typename T>
-    class FresnelFriendlyConductorFun
-    {
-      public:
-        FresnelFriendlyConductorFun(
-            const Spectrum& normal_reflectance,
-            const Spectrum& edge_tint,
-            const T         reflectance_multiplier)
-          : m_r(normal_reflectance)
-          , m_g(edge_tint)
-          , m_reflectance_multiplier(reflectance_multiplier)
-        {
-        }
-
-        void operator()(
-            const foundation::Vector<T, 3>& o,
-            const foundation::Vector<T, 3>& h,
-            const foundation::Vector<T, 3>& n,
-            Spectrum&                       value) const
-        {
-            artist_friendly_fresnel_reflectance_conductor(
-                value,
-                m_r,
-                m_g,
-                foundation::dot(o, h));
-            value *= static_cast<float>(m_reflectance_multiplier);
-        }
-
-      private:
-        const Spectrum& m_r;
-        const Spectrum& m_g;
-        const float     m_reflectance_multiplier;
-    };
-
     //
     // Metal BRDF.
     //
@@ -130,7 +98,7 @@ namespace
         MetalBRDFImpl(
             const char*             name,
             const ParamArray&       params)
-          : BSDF(name, Reflective, ScatteringMode::Glossy, params)
+          : BSDF(name, Reflective, ScatteringMode::Glossy | ScatteringMode::Specular, params)
         {
             m_inputs.declare("normal_reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("edge_tint", InputFormatSpectralReflectance);
@@ -179,11 +147,24 @@ namespace
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
             const Vector3f& n = sample.m_shading_basis.get_normal();
-            const float cos_on = std::min(dot(sample.m_outgoing.get_value(), n), 1.0f);
+            const Vector3f& outgoing = sample.m_outgoing.get_value();
+            const float cos_on = std::min(dot(outgoing, n), 1.0f);
             if (cos_on < 0.0f)
                 return;
 
             const InputValues* values = reinterpret_cast<const InputValues*>(data);
+
+            FresnelFriendlyConductorFun<float> f(
+                values->m_normal_reflectance,
+                values->m_edge_tint,
+                values->m_reflectance_multiplier);
+
+            // If roughness is zero use reflection.
+            if (values->m_roughness == 0.0f)
+            {
+                SpecularBRDFHelper::sample(f, sample);
+                return;
+            }
 
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
@@ -191,11 +172,6 @@ namespace
                 values->m_anisotropic,
                 alpha_x,
                 alpha_y);
-
-            FresnelFriendlyConductorFun<float> f(
-                values->m_normal_reflectance,
-                values->m_edge_tint,
-                values->m_reflectance_multiplier);
 
             if (m_mdf == GGX)
             {

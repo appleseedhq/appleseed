@@ -659,6 +659,18 @@ closure color phong(normal N, float exponent)
         1.0);
 }
 
+closure color reflection(normal N, float eta)
+{
+    return as_glossy(
+        "beckmann", // MDF
+        N,
+        vector(0),  // U
+        0.0,        // roughness
+        0.0,        // anisotropy
+        eta
+        );
+}
+
 closure color subsurface(float eta, float g, color mfp, color albedo)
 {
     return as_subsurface("better_dipole", N, albedo, mfp, eta);

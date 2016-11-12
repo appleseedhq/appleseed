@@ -38,7 +38,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
-#include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 
@@ -80,44 +79,6 @@ inline void microfacet_alpha_from_roughness(
         alpha_y = std::max(T(0.001), foundation::square(roughness) / aspect);
     }
 }
-
-
-template <typename T>
-class FresnelDielectricFun
-{
-  public:
-    FresnelDielectricFun(
-        const Spectrum& reflectance,
-        const T         reflectance_multiplier,
-        const T         eta)
-      : m_reflectance(reflectance)
-      , m_reflectance_multiplier(reflectance_multiplier)
-      , m_eta(eta)
-    {
-    }
-
-    void operator()(
-        const foundation::Vector<T, 3>& o,
-        const foundation::Vector<T, 3>& h,
-        const foundation::Vector<T, 3>& n,
-        Spectrum&                       value) const
-    {
-        T f;
-        foundation::fresnel_reflectance_dielectric(
-            f,
-            m_eta,
-            foundation::clamp(foundation::dot(o, h), T(-1.0), T(1.0)));
-
-        value = m_reflectance;
-        value *= static_cast<float>(f * m_reflectance_multiplier);
-    }
-
-  private:
-    const Spectrum& m_reflectance;
-    const T         m_reflectance_multiplier;
-    const T         m_eta;
-};
-
 
 template <typename T>
 class MicrofacetBRDFHelper

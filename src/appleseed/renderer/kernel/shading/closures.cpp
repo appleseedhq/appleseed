@@ -521,7 +521,7 @@ namespace
 
             values->m_reflectance.set(1.0f);
             values->m_reflectance_multiplier = 1.0;
-            values->m_roughness = max(p->roughness, 0.0001f);
+            values->m_roughness = max(p->roughness, 0.0f);
             values->m_anisotropic = clamp(p->anisotropic, -1.0f, 1.0f);
             values->m_ior = max(p->ior, 0.001f);
         }
@@ -638,7 +638,7 @@ namespace
             values->m_normal_reflectance = Color3f(p->normal_reflectance);
             values->m_edge_tint = Color3f(p->edge_tint);
             values->m_reflectance_multiplier = 1.0;
-            values->m_roughness = max(p->roughness, 0.0001f);
+            values->m_roughness = max(p->roughness, 0.0f);
             values->m_anisotropic = clamp(p->anisotropic, -1.0f, 1.0f);
         }
     };

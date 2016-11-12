@@ -1284,6 +1284,7 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/glassbsdf.h
     renderer/modeling/bsdf/glossybrdf.cpp
     renderer/modeling/bsdf/glossybrdf.h
+    renderer/modeling/bsdf/fresnel.h
     renderer/modeling/bsdf/ibsdffactory.h
     renderer/modeling/bsdf/kelemenbrdf.cpp
     renderer/modeling/bsdf/kelemenbrdf.h
@@ -1303,6 +1304,7 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/specularbrdf.h
     renderer/modeling/bsdf/specularbtdf.cpp
     renderer/modeling/bsdf/specularbtdf.h
+    renderer/modeling/bsdf/specularhelper.h
     renderer/modeling/bsdf/velvetbrdf.cpp
     renderer/modeling/bsdf/velvetbrdf.h
 )
