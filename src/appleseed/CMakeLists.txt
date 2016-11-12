@@ -1851,7 +1851,8 @@ if (WITH_OSL)
     set (appleseed_osl_headers
         renderer/kernel/shading/oslutil.h
         renderer/kernel/shading/stdosl.h
-    )
+        renderer/kernel/shading/as_osl_extensions.h
+        )
 endif ()
 
 

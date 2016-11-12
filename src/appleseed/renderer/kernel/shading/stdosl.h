@@ -1,7 +1,3 @@
-// This file is part of OpenShadingLanguage.
-// Modified by Esteban Tovagliari, The appleseedhq Organization.
-// Original license follows.
-
 /////////////////////////////////////////////////////////////////////////////
 // Copyright (c) 2009-2010 Sony Pictures Imageworks Inc., et al.  All Rights Reserved.
 //
@@ -33,15 +29,6 @@
 #ifndef STDOSL_H
 #define STDOSL_H
 
-// appleseed version
-#define APPLESEED_VERSION_MAJOR     ${appleseed_version_major}
-#define APPLESEED_VERSION_MINOR     ${appleseed_version_minor}
-#define APPLESEED_VERSION_PATCH     ${appleseed_version_patch}
-
-#define APPLESEED_VERSION               \
-    APPLESEED_VERSION_MAJOR * 10000 +   \
-    APPLESEED_VERSION_MINOR * 100 +     \
-    APPLESEED_VERSION_PATCH
 
 #ifndef M_PI
 #define M_PI       3.1415926535897932        /* pi */
@@ -65,6 +52,11 @@
 // Declaration of built-in functions and closures
 #define BUILTIN [[ int builtin = 1 ]]
 #define BUILTIN_DERIV [[ int builtin = 1, int deriv = 1 ]]
+
+// Appleseed OSL extensions.
+// Must be included after BUILTIN is defined.
+#include "as_osl_extensions.h"
+
 
 #define PERCOMP1(name)                          \
     normal name (normal x) BUILTIN;             \
@@ -432,6 +424,35 @@ normal step (normal edge, normal x) BUILTIN;
 float step (float edge, float x) BUILTIN;
 float smoothstep (float edge0, float edge1, float x) BUILTIN;
 
+float linearstep (float edge0, float edge1, float x) {
+    float result;
+    if (edge0 != edge1) {
+        float xclamped = clamp (x, edge0, edge1);
+        result = (xclamped - edge0) / (edge1 - edge0);
+    } else {  // special case: edges coincide
+        result = step (edge0, x);
+    }
+    return result;
+}
+
+float smooth_linearstep (float edge0, float edge1, float x_, float eps_) {
+    float result;
+    if (edge0 != edge1) {
+        float rampup (float x, float r) { return 0.5/r * x*x; }
+        float width_inv = 1.0 / (edge1 - edge0);
+        float eps = eps_ * width_inv;
+        float x = (x_ - edge0) * width_inv;
+        if      (x <= -eps)                result = 0;
+        else if (x >= eps && x <= 1.0-eps) result = x;
+        else if (x >= 1.0+eps)             result = 1;
+        else if (x < eps)                  result = rampup (x+eps, 2.0*eps);
+        else /* if (x < 1.0+eps) */        result = 1.0 - rampup (1.0+eps - x, 2.0*eps);
+    } else {
+        result = step (edge0, x_);
+    }
+    return result;
+}
+
 float aastep (float edge, float s, float dedge, float ds) {
     // Box filtered AA step
     float width = fabs(dedge) + fabs(ds);
@@ -454,8 +475,9 @@ float aastep (float edge, float s) {
 
 
 // String functions
-
 int strlen (string s) BUILTIN;
+int hash (string s) BUILTIN;
+int getchar (string s, int index) BUILTIN;
 int startswith (string s, string prefix) BUILTIN;
 int endswith (string s, string suffix) BUILTIN;
 string substr (string s, int start, int len) BUILTIN;
@@ -478,175 +500,19 @@ string concat (string a, string b, string c, string d, string e, string f) {
 }
 
 
-/*************************************************************/
+// Texture
+
+
 // Closures
-/*************************************************************/
-
-
-/***************************************/
-// diffuse
-/***************************************/
-
-closure color oren_nayar(normal N, float roughness) BUILTIN;
-
-closure color translucent(normal N) BUILTIN;
-
-closure color as_sheen(normal N) BUILTIN;
-
-
-/***************************************/
-// glossy
-/***************************************/
-
-closure color as_glossy(
-    string  distribution,
-    normal  N,
-    vector  T,
-    float   roughness,
-    float   anisotropic,
-    float   ior) BUILTIN;
-
-closure color as_glossy(
-    string  distribution,
-    normal  N,
-    float   roughness,
-    float   ior)
-{
-    return as_glossy(distribution, N, vector(0), roughness, 0.0, ior);
-}
-
-
-/***************************************/
-// metal
-/***************************************/
-
-closure color as_metal(
-    string  distribution,
-    normal  N,
-    vector  T,
-    color   normal_reflectance,
-    color   edge_tint,
-    float   roughness,
-    float   anisotropic) BUILTIN;
-
-closure color as_metal(
-    string  distribution,
-    normal  N,
-    color   normal_reflectance,
-    color   edge_tint,
-    float   roughness)
-{
-    return as_metal(
-        distribution,
-        N,
-        vector(0),
-        normal_reflectance,
-        edge_tint,
-        roughness,
-        0.0);
-}
-
-
-/***************************************/
-// glass
-/***************************************/
-
-closure color as_glass(
-    string  distribution,
-    normal  N,
-    vector  T,
-    color   surface_transmittance,
-    color   reflection_tint,
-    color   refraction_tint,
-    float   roughness,
-    float   anisotropic,
-    float   ior,
-    color   volume_transmittance,
-    float   volume_transmittance_distance) BUILTIN;
-
-closure color as_glass(
-    string  distribution,
-    normal  N,
-    color   surface_transmittance,
-    color   reflection_tint,
-    color   refraction_tint,
-    float   roughness,
-    float   ior,
-    color   volume_transmittance,
-    float   volume_transmittance_distance)
-{
-    return as_glass(
-        distribution,
-        N,
-        vector(0),
-        surface_transmittance,
-        reflection_tint,
-        refraction_tint,
-        roughness,
-        0.0,
-        ior,
-        volume_transmittance,
-        volume_transmittance_distance);
-}
-
-
-/***************************************/
-// subsurface
-/***************************************/
-
-closure color as_subsurface(
-    string  profile,
-    normal  N,
-    color   reflectance,
-    color   mean_free_path,
-    float   ior) BUILTIN;
-
-
-/***************************************/
-// composite closures
-/***************************************/
-
-closure color as_ashikhmin_shirley(
-    normal  N,
-    vector  T,
-    color   diffuse_reflectance,
-    color   glossy_reflectance,
-    float   exponent_u,                     // Phong-like exponent in first tangent direction
-    float   exponent_v,                     // Phong-like exponent in second tangent direction
-    float   fresnel_multiplier) BUILTIN;    // Fresnel multiplier
-
-closure color as_disney(
-    normal  N,
-    vector  T,
-    color   base_color,
-    float   subsurface,
-    float   metallic,
-    float   specular,
-    float   specular_tint,
-    float   anisotropic,
-    float   roughness,
-    float   sheen,
-    float   sheen_tint,
-    float   clearcoat,
-    float   clearcoat_gloss) BUILTIN;
-
-
-/***************************************/
-// emission
-/***************************************/
 
 closure color emission() BUILTIN;
-
-
-/***************************************/
-// compatibility with the OSL spec
-/***************************************/
-
+closure color background() BUILTIN;
+closure color oren_nayar (normal N, float sigma) BUILTIN;
 closure color diffuse(normal N)
 {
     return oren_nayar(N, 0);
 }
-
+closure color translucent(normal N) BUILTIN;
 closure color phong(normal N, float exponent)
 {
     return as_ashikhmin_shirley(
@@ -658,7 +524,49 @@ closure color phong(normal N, float exponent)
         exponent,
         1.0);
 }
+closure color microfacet(
+    string  distribution,
+    normal  N,
+    vector  U,
+    float   xalpha,
+    float   yalpha,
+    float   eta,
+    int     refract)
+{
+    float anisotropy = (yalpha > 0.0) ? 1.0 - (xalpha / yalpha) : 0.0;
 
+    if (refract)
+    {
+        return as_glass(
+            distribution,
+            N,
+            U,
+            color(1),   // surface transmittance
+            color(0),   // reflection tint
+            color(1),   // refraction tint
+            xalpha,     // roughness
+            anisotropy, // anisotropic
+            eta,
+            color(1),   // volume transmittance
+            0.0);       // volume transmittance distance
+    }
+    else
+    {
+        return as_glossy(
+            distribution,
+            N,
+            U,
+            xalpha,     // roughness
+            anisotropy, // anisotropy
+            eta);
+    }
+}
+
+closure color microfacet(string distribution, normal N, float alpha, float eta,
+                         int refr)
+{
+    return microfacet(distribution, N, vector(0), alpha, alpha, eta, refr);
+}
 closure color reflection(normal N, float eta)
 {
     return as_glossy(
@@ -670,31 +578,32 @@ closure color reflection(normal N, float eta)
         eta
         );
 }
-
+closure color reflection(normal N) { return reflection (N, 50.0); }
+closure color refraction(normal N, float eta)
+{
+    return as_glass(
+        "beckmann",
+        N,
+        vector(0), // U
+        color(1),  // surface transmittance
+        color(0),  // reflection tint
+        color(1),  // refraction tint
+        0.0,       // roughness
+        0.0,       // anisotropy
+        eta,
+        color(1), // volume transmittance
+        0.0);     // volume transmittance distance
+}
+closure color transparent() BUILTIN;
+closure color debug(string tag) BUILTIN;
+closure color holdout() BUILTIN;
 closure color subsurface(float eta, float g, color mfp, color albedo)
 {
     return as_subsurface("better_dipole", N, albedo, mfp, eta);
 }
 
-
-/***************************************/
-// misc
-/***************************************/
-
-closure color background() BUILTIN;
-closure color transparent() BUILTIN;
-
-
-/***************************************/
-// unsupported
-/***************************************/
-
-closure color debug(string tag) BUILTIN;
-closure color holdout() BUILTIN;
-
-
-/*************************************************************/
-
+// Not supported.
+//closure color ward(normal N, vector T,float ax, float ay) BUILTIN;
 
 // Renderer state
 int backfacing () BUILTIN;
