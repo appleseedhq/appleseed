@@ -1161,6 +1161,7 @@ if (WITH_OSL)
         renderer/kernel/shading/oslshadergroupexec.cpp
         renderer/kernel/shading/oslshadergroupexec.h
         renderer/kernel/shading/oslutil.h
+        renderer/kernel/shading/stdosl.h
     )
 endif ()
 list (APPEND appleseed_sources

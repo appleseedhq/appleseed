@@ -90,11 +90,15 @@ enum ClosureID
 {
     // BSDF closures.
     AshikhminShirleyID,
+    DiffuseID,
     DisneyID,
     OrenNayarID,
+    PhongID,
+    ReflectionID,
     SheenID,
     TranslucentID,
 
+    // Microfacet closures.
     GlassID,
     GlassBeckmannID,
     GlassGGXID,

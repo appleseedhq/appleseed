@@ -226,6 +226,58 @@ namespace
         }
     };
 
+    struct DiffuseClosure
+    {
+        typedef OrenNayarBRDFInputValues InputValues;
+
+        struct Params
+        {
+            OSL::Vec3   N;
+        };
+
+        static const char* name()
+        {
+            return "diffuse";
+        }
+
+        static ClosureID id()
+        {
+            return DiffuseID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, 0, 0);
+
+            g_closure_convert_funs[id()] = &convert_closure;
+        }
+
+        static void convert_closure(
+            CompositeSurfaceClosure&    composite_closure,
+            const Basis3f&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight)
+        {
+            const Params* p = reinterpret_cast<const Params*>(osl_params);
+            InputValues* values =
+                composite_closure.add_closure<InputValues>(
+                    OrenNayarID,
+                    shading_basis,
+                    weight,
+                    p->N);
+
+            values->m_reflectance.set(1.0f);
+            values->m_reflectance_multiplier = 1.0;
+            values->m_roughness = 0.0f;
+        }
+    };
+
     struct DisneyClosure
     {
         typedef DisneyBRDFInputValues InputValues;
@@ -694,6 +746,123 @@ namespace
             values->m_reflectance.set(1.0f);
             values->m_reflectance_multiplier = 1.0;
             values->m_roughness = max(p->roughness, 0.0f);
+        }
+    };
+
+    struct PhongClosure
+    {
+        typedef AshikhminBRDFInputValues InputValues;
+
+        struct Params
+        {
+            OSL::Vec3   N;
+            float       exponent;
+        };
+
+        static const char* name()
+        {
+            return "phong";
+        }
+
+        static ClosureID id()
+        {
+            return PhongID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_FLOAT_PARAM(Params, exponent),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, 0, 0);
+
+            g_closure_convert_funs[id()] = &convert_closure;
+        }
+
+        static void convert_closure(
+            CompositeSurfaceClosure&    composite_closure,
+            const Basis3f&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight)
+        {
+            const Params* p = reinterpret_cast<const Params*>(osl_params);
+            InputValues* values =
+                composite_closure.add_closure<InputValues>(
+                    AshikhminShirleyID,
+                    shading_basis,
+                    weight,
+                    p->N);
+
+            values->m_rd = Color3f(1.0f);
+            values->m_rd_multiplier = 1.0;
+            values->m_rg = Color3f(1.0f);
+            values->m_rg_multiplier = 1.0;
+            values->m_nu = max(p->exponent, 0.01f);
+            values->m_nv = max(p->exponent, 0.01f);
+            values->m_fr_multiplier = 1.0f;
+        }
+    };
+
+    struct ReflectionClosure
+    {
+        typedef GlossyBRDFInputValues InputValues;
+
+        struct Params
+        {
+            OSL::Vec3       N;
+            float           ior;
+        };
+
+        static const char* name()
+        {
+            return "reflection";
+        }
+
+        static ClosureID id()
+        {
+            return ReflectionID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_FLOAT_PARAM(Params, ior),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, 0, 0);
+
+            g_closure_convert_funs[id()] = &convert_closure;
+        }
+
+        static void convert_closure(
+            CompositeSurfaceClosure&    composite_closure,
+            const Basis3f&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight)
+        {
+            const Params* p = reinterpret_cast<const Params*>(osl_params);
+
+            InputValues* values;
+
+            values =
+                composite_closure.add_closure<InputValues>(
+                    GlossyBeckmannID,
+                    shading_basis,
+                    weight,
+                    p->N);
+
+            values->m_reflectance.set(1.0f);
+            values->m_reflectance_multiplier = 1.0;
+            values->m_roughness = 0.0f;
+            values->m_anisotropic = 0.0f;
+            values->m_ior = max(p->ior, 0.001f);
         }
     };
 
@@ -1481,6 +1650,7 @@ void register_closures(OSL::ShadingSystem& shading_system)
     register_closure<AshikhminShirleyClosure>(shading_system);
     register_closure<BackgroundClosure>(shading_system);
     register_closure<DebugClosure>(shading_system);
+    register_closure<DiffuseClosure>(shading_system);
     register_closure<DisneyClosure>(shading_system);
     register_closure<EmissionClosure>(shading_system);
     register_closure<GlassClosure>(shading_system);
@@ -1488,6 +1658,8 @@ void register_closures(OSL::ShadingSystem& shading_system)
     register_closure<HoldoutClosure>(shading_system);
     register_closure<MetalClosure>(shading_system);
     register_closure<OrenNayarClosure>(shading_system);
+    register_closure<PhongClosure>(shading_system);
+    register_closure<ReflectionClosure>(shading_system);
     register_closure<SheenClosure>(shading_system);
     register_closure<SubsurfaceClosure>(shading_system);
     register_closure<TranslucentClosure>(shading_system);

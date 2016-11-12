@@ -507,23 +507,10 @@ string concat (string a, string b, string c, string d, string e, string f) {
 
 closure color emission() BUILTIN;
 closure color background() BUILTIN;
+closure color diffuse(normal N) BUILTIN;
 closure color oren_nayar (normal N, float sigma) BUILTIN;
-closure color diffuse(normal N)
-{
-    return oren_nayar(N, 0);
-}
 closure color translucent(normal N) BUILTIN;
-closure color phong(normal N, float exponent)
-{
-    return as_ashikhmin_shirley(
-        N,
-        vector(0),
-        color(0),
-        color(1),
-        exponent,
-        exponent,
-        1.0);
-}
+closure color phong(normal N, float exponent) BUILTIN;
 closure color microfacet(
     string  distribution,
     normal  N,
@@ -567,17 +554,7 @@ closure color microfacet(string distribution, normal N, float alpha, float eta,
 {
     return microfacet(distribution, N, vector(0), alpha, alpha, eta, refr);
 }
-closure color reflection(normal N, float eta)
-{
-    return as_glossy(
-        "beckmann", // MDF
-        N,
-        vector(0),  // U
-        0.0,        // roughness
-        0.0,        // anisotropy
-        eta
-        );
-}
+closure color reflection(normal N, float eta) BUILTIN;
 closure color reflection(normal N) { return reflection (N, 50.0); }
 closure color refraction(normal N, float eta)
 {
