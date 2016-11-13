@@ -50,7 +50,7 @@ import zipfile
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.4.3"
+VERSION = "2.4.4"
 SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 
 

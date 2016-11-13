@@ -1281,11 +1281,11 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/diffusebtdf.h
     renderer/modeling/bsdf/disneybrdf.cpp
     renderer/modeling/bsdf/disneybrdf.h
+    renderer/modeling/bsdf/fresnel.h
     renderer/modeling/bsdf/glassbsdf.cpp
     renderer/modeling/bsdf/glassbsdf.h
     renderer/modeling/bsdf/glossybrdf.cpp
     renderer/modeling/bsdf/glossybrdf.h
-    renderer/modeling/bsdf/fresnel.h
     renderer/modeling/bsdf/ibsdffactory.h
     renderer/modeling/bsdf/kelemenbrdf.cpp
     renderer/modeling/bsdf/kelemenbrdf.h
