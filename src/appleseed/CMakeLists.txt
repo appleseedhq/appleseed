@@ -1735,6 +1735,8 @@ set (renderer_modeling_surfaceshader_sources
     renderer/modeling/surfaceshader/diagnosticsurfaceshader.cpp
     renderer/modeling/surfaceshader/diagnosticsurfaceshader.h
     renderer/modeling/surfaceshader/isurfaceshaderfactory.h
+    renderer/modeling/surfaceshader/oslsurfaceshader.cpp
+    renderer/modeling/surfaceshader/oslsurfaceshader.h
     renderer/modeling/surfaceshader/physicalsurfaceshader.cpp
     renderer/modeling/surfaceshader/physicalsurfaceshader.h
     renderer/modeling/surfaceshader/surfaceshader.cpp

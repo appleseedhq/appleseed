@@ -121,6 +121,8 @@ RendererServices::RendererServices(
     m_global_attr_getters[OIIO::ustring("appleseed:version_minor")] = &RendererServices::get_attr_appleseed_version_minor;
     m_global_attr_getters[OIIO::ustring("appleseed:version_patch")] = &RendererServices::get_attr_appleseed_version_patch;
     m_global_attr_getters[OIIO::ustring("appleseed:version")] = &RendererServices::get_attr_appleseed_version;
+    m_global_attr_getters[OIIO::ustring("surface_shader:color")] = &RendererServices::get_attr_surface_shader_color;
+    m_global_attr_getters[OIIO::ustring("surface_shader:alpha")] = &RendererServices::get_attr_surface_shader_alpha;
 
     // Set up user data getters.
     m_global_user_data_getters[OIIO::ustring("Tn")] = &RendererServices::get_user_data_tn;
@@ -359,18 +361,14 @@ bool RendererServices::transform_points(
     if (to == g_NDC_ustr || to == g_raster_ustr)
     {
         if (from == g_world_ustr || from == g_common_ustr || from == g_shader_ustr)
-        {
-            // Copy the points to Pout.
-            for (size_t i = 0; i < npoints; ++i)
-                Pout[i] = Pin[i];
-        }
+            memcpy(Pout, Pin, npoints * sizeof(OSL::Vec3));
         else if (from == g_object_ustr)
         {
             OSL::Matrix44 m;
             get_matrix(sg, m, sg->object2common, time);
 
             // Convert from object to world.
-            for (size_t i = 0; i < npoints; ++i)
+            for (int i = 0; i < npoints; ++i)
                 Pout[i] = Pin[i] * m;
 
             from = g_world_ustr;
@@ -381,7 +379,7 @@ bool RendererServices::transform_points(
             get_matrix(sg, m, g_camera_ustr, time);
 
             // Convert from camera to world.
-            for (size_t i = 0; i < npoints; ++i)
+            for (int i = 0; i < npoints; ++i)
                 Pout[i] = Pin[i] * m;
 
             from = g_world_ustr;
@@ -406,7 +404,7 @@ bool RendererServices::transform_points(
         if (to == g_raster_ustr)
         {
             // Transform from NDC to raster.
-            for (size_t i = 0; i < npoints; ++i)
+            for (int i = 0; i < npoints; ++i)
             {
                 Pout[i] = OSL::Vec3(
                     Pout[i].x * m_resolution[0],
@@ -951,6 +949,42 @@ IMPLEMENT_ATTR_GETTER(appleseed_version)
     if (type == OIIO::TypeDesc::TypeInt)
     {
         reinterpret_cast<int*>(val)[0] = APPLESEED_VERSION;
+
+        if (derivs)
+            clear_derivatives(type, val);
+
+        return true;
+    }
+
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(surface_shader_color)
+{
+    if (type == OIIO::TypeDesc::TypeColor)
+    {
+        const ShadingPoint* shading_point =
+            reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+        reinterpret_cast<float*>(val)[0] = shading_point->m_surface_shader_color[0];
+        reinterpret_cast<float*>(val)[1] = shading_point->m_surface_shader_color[1];
+        reinterpret_cast<float*>(val)[2] = shading_point->m_surface_shader_color[2];
+
+        if (derivs)
+            clear_derivatives(type, val);
+
+        return true;
+    }
+
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(surface_shader_alpha)
+{
+    if (type == OIIO::TypeDesc::TypeFloat)
+    {
+        const ShadingPoint* shading_point =
+            reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+        reinterpret_cast<float*>(val)[0] = shading_point->m_surface_shader_alpha;
 
         if (derivs)
             clear_derivatives(type, val);
