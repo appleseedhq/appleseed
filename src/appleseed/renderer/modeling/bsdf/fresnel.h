@@ -5,9 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_FRESNEL_FUNCTIONS_H
-#define APPLESEED_RENDERER_MODELING_BSDF_FRESNEL_FUNCTIONS_H
+#ifndef APPLESEED_RENDERER_MODELING_BSDF_FRESNEL_H
+#define APPLESEED_RENDERER_MODELING_BSDF_FRESNEL_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -39,18 +37,42 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 
-
 namespace renderer
 {
 
-template <typename T>
+class NoFresnelFun
+{
+  public:
+    NoFresnelFun(
+        const Spectrum&             reflectance,
+        const float                 reflectance_multiplier)
+      : m_reflectance(reflectance)
+      , m_reflectance_multiplier(reflectance_multiplier)
+    {
+    }
+
+    void operator()(
+        const foundation::Vector3f& o,
+        const foundation::Vector3f& h,
+        const foundation::Vector3f& n,
+        Spectrum&                   value) const
+    {
+        value = m_reflectance;
+        value *= m_reflectance_multiplier;
+    }
+
+  private:
+    const Spectrum& m_reflectance;
+    const float     m_reflectance_multiplier;
+};
+
 class FresnelDielectricFun
 {
   public:
     FresnelDielectricFun(
-        const Spectrum& reflectance,
-        const T         reflectance_multiplier,
-        const T         eta)
+        const Spectrum&             reflectance,
+        const float                 reflectance_multiplier,
+        const float                 eta)
       : m_reflectance(reflectance)
       , m_reflectance_multiplier(reflectance_multiplier)
       , m_eta(eta)
@@ -58,35 +80,34 @@ class FresnelDielectricFun
     }
 
     void operator()(
-        const foundation::Vector<T, 3>& o,
-        const foundation::Vector<T, 3>& h,
-        const foundation::Vector<T, 3>& n,
-        Spectrum&                       value) const
+        const foundation::Vector3f& o,
+        const foundation::Vector3f& h,
+        const foundation::Vector3f& n,
+        Spectrum&                   value) const
     {
-        T f;
+        float f;
         foundation::fresnel_reflectance_dielectric(
             f,
             m_eta,
-            foundation::clamp(foundation::dot(o, h), T(-1.0), T(1.0)));
+            foundation::clamp(foundation::dot(o, h), -1.0f, 1.0f));
 
         value = m_reflectance;
-        value *= static_cast<float>(f * m_reflectance_multiplier);
+        value *= f * m_reflectance_multiplier;
     }
 
   private:
     const Spectrum& m_reflectance;
-    const T         m_reflectance_multiplier;
-    const T         m_eta;
+    const float     m_reflectance_multiplier;
+    const float     m_eta;
 };
 
-template <typename T>
 class FresnelFriendlyConductorFun
 {
   public:
     FresnelFriendlyConductorFun(
-        const Spectrum& normal_reflectance,
-        const Spectrum& edge_tint,
-        const T         reflectance_multiplier)
+        const Spectrum&             normal_reflectance,
+        const Spectrum&             edge_tint,
+        const float                 reflectance_multiplier)
       : m_r(normal_reflectance)
       , m_g(edge_tint)
       , m_reflectance_multiplier(reflectance_multiplier)
@@ -94,17 +115,17 @@ class FresnelFriendlyConductorFun
     }
 
     void operator()(
-        const foundation::Vector<T, 3>& o,
-        const foundation::Vector<T, 3>& h,
-        const foundation::Vector<T, 3>& n,
-        Spectrum&                       value) const
+        const foundation::Vector3f& o,
+        const foundation::Vector3f& h,
+        const foundation::Vector3f& n,
+        Spectrum&                   value) const
     {
         foundation::artist_friendly_fresnel_reflectance_conductor(
             value,
             m_r,
             m_g,
             foundation::dot(o, h));
-        value *= static_cast<float>(m_reflectance_multiplier);
+        value *= m_reflectance_multiplier;
     }
 
   private:
@@ -115,4 +136,4 @@ class FresnelFriendlyConductorFun
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_FRESNEL_FUNCTIONS_H
+#endif  // !APPLESEED_RENDERER_MODELING_BSDF_FRESNEL_H

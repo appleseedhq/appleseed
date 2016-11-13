@@ -34,6 +34,7 @@
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
+#include "renderer/modeling/bsdf/fresnel.h"
 #include "renderer/modeling/bsdf/specularhelper.h"
 
 // appleseed.foundation headers.
@@ -50,33 +51,6 @@ namespace renderer
 
 namespace
 {
-    template <typename T>
-    class NoFresnelFun
-    {
-      public:
-        NoFresnelFun(
-            const Spectrum& reflectance,
-            const T         reflectance_multiplier)
-          : m_reflectance(reflectance)
-          , m_reflectance_multiplier(reflectance_multiplier)
-        {
-        }
-
-        void operator()(
-            const foundation::Vector<T, 3>& o,
-            const foundation::Vector<T, 3>& h,
-            const foundation::Vector<T, 3>& n,
-            Spectrum&                       value) const
-        {
-            value = m_reflectance;
-            value *= static_cast<float>(m_reflectance_multiplier);
-        }
-
-      private:
-        const Spectrum& m_reflectance;
-        const T         m_reflectance_multiplier;
-    };
-
     //
     // Specular BRDF.
     //
@@ -121,7 +95,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            const NoFresnelFun<float> f(
+            const NoFresnelFun f(
                 values->m_reflectance,
                 values->m_reflectance_multiplier);
 

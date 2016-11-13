@@ -45,18 +45,16 @@ namespace renderer
 class SpecularBRDFHelper
 {
   public:
-    typedef foundation::Vector3f VectorType;
-
     template <typename FresnelFun>
     static void sample(
         FresnelFun          f,
         BSDFSample&         sample)
     {
-        const VectorType& n = sample.m_shading_basis.get_normal();
-        const VectorType& outgoing = sample.m_outgoing.get_value();
+        const foundation::Vector3f& n = sample.m_shading_basis.get_normal();
+        const foundation::Vector3f& outgoing = sample.m_outgoing.get_value();
 
         // Compute the incoming direction.
-        const VectorType incoming(
+        const foundation::Vector3f incoming(
             BSDF::force_above_surface(
                 foundation::reflect(outgoing, n),
                 sample.m_geometric_normal));

@@ -167,7 +167,7 @@ namespace
 
             const InputValues* values = reinterpret_cast<const InputValues*>(data);
 
-            const FresnelDielectricFun<float> f(
+            const FresnelDielectricFun f(
                 values->m_reflectance,
                 values->m_reflectance_multiplier,
                 values->m_precomputed.m_outside_ior / values->m_ior);
@@ -189,7 +189,7 @@ namespace
             if (m_mdf == GGX)
             {
                 const GGXMDF<float> mdf;
-                MicrofacetBRDFHelper<float>::sample(
+                MicrofacetBRDFHelper::sample(
                     sampling_context,
                     mdf,
                     alpha_x,
@@ -201,7 +201,7 @@ namespace
             else
             {
                 const BeckmannMDF<float> mdf;
-                MicrofacetBRDFHelper<float>::sample(
+                MicrofacetBRDFHelper::sample(
                     sampling_context,
                     mdf,
                     alpha_x,
@@ -242,7 +242,7 @@ namespace
                 alpha_x,
                 alpha_y);
 
-            FresnelDielectricFun<float> f(
+            FresnelDielectricFun f(
                 values->m_reflectance,
                 values->m_reflectance_multiplier,
                 values->m_precomputed.m_outside_ior / values->m_ior);
@@ -250,7 +250,7 @@ namespace
             if (m_mdf == GGX)
             {
                 const GGXMDF<float> mdf;
-                return MicrofacetBRDFHelper<float>::evaluate(
+                return MicrofacetBRDFHelper::evaluate(
                     mdf,
                     alpha_x,
                     alpha_y,
@@ -265,7 +265,7 @@ namespace
             else
             {
                 const BeckmannMDF<float> mdf;
-                return MicrofacetBRDFHelper<float>::evaluate(
+                return MicrofacetBRDFHelper::evaluate(
                     mdf,
                     alpha_x,
                     alpha_y,
@@ -309,7 +309,7 @@ namespace
             if (m_mdf == GGX)
             {
                 const GGXMDF<float> mdf;
-                return MicrofacetBRDFHelper<float>::pdf(
+                return MicrofacetBRDFHelper::pdf(
                     mdf,
                     alpha_x,
                     alpha_y,
@@ -320,7 +320,7 @@ namespace
             else
             {
                 const BeckmannMDF<float> mdf;
-                return MicrofacetBRDFHelper<float>::pdf(
+                return MicrofacetBRDFHelper::pdf(
                     mdf,
                     alpha_x,
                     alpha_y,
