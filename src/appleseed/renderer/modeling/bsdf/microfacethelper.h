@@ -194,7 +194,7 @@ class MicrofacetBRDFHelper
                 g_alpha_y);
 
         f(sample.m_outgoing.get_value(), h, sample.m_shading_basis.get_normal(), sample.m_value);
-        sample.m_value *= static_cast<float>(D * G / (4.0f * cos_on * cos_in));
+        sample.m_value *= D * G / (4.0f * cos_on * cos_in);
         sample.m_probability = mdf.pdf(wo, m, alpha_x, alpha_y) / (4.0f * cos_oh);
         sample.m_mode = ScatteringMode::Glossy;
         sample.m_incoming = foundation::Dual<foundation::Vector3f>(incoming);
@@ -231,7 +231,7 @@ class MicrofacetBRDFHelper
 
         const float cos_oh = foundation::dot(outgoing, h);
         f(outgoing, h, shading_basis.get_normal(), value);
-        value *= static_cast<float>(D * G / (4.0f * cos_on * cos_in));
+        value *= D * G / (4.0f * cos_on * cos_in);
         return mdf.pdf(wo, m, alpha_x, alpha_y) / (4.0f * cos_oh);
     }
 };

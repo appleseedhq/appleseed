@@ -161,9 +161,9 @@ namespace
                     p->T);
 
             values->m_rd = Color3f(p->diffuse_reflectance);
-            values->m_rd_multiplier = 1.0;
+            values->m_rd_multiplier = 1.0f;
             values->m_rg = Color3f(p->glossy_reflectance);
-            values->m_rg_multiplier = 1.0;
+            values->m_rg_multiplier = 1.0f;
             values->m_nu = max(p->exponent_u, 0.01f);
             values->m_nv = max(p->exponent_v, 0.01f);
             values->m_fr_multiplier = p->fresnel_multiplier;
@@ -273,7 +273,7 @@ namespace
                     p->N);
 
             values->m_reflectance.set(1.0f);
-            values->m_reflectance_multiplier = 1.0;
+            values->m_reflectance_multiplier = 1.0f;
             values->m_roughness = 0.0f;
         }
     };
@@ -480,7 +480,7 @@ namespace
             }
 
             values->m_surface_transmittance = Color3f(p->surface_transmittance);
-            values->m_surface_transmittance_multiplier = 1.0;
+            values->m_surface_transmittance_multiplier = 1.0f;
             values->m_reflection_tint = Color3f(p->reflection_tint);
             values->m_refraction_tint = Color3f(p->refraction_tint);
             values->m_roughness = max(p->roughness, 0.0001f);
@@ -572,7 +572,7 @@ namespace
             }
 
             values->m_reflectance.set(1.0f);
-            values->m_reflectance_multiplier = 1.0;
+            values->m_reflectance_multiplier = 1.0f;
             values->m_roughness = max(p->roughness, 0.0f);
             values->m_anisotropic = clamp(p->anisotropic, -1.0f, 1.0f);
             values->m_ior = max(p->ior, 0.001f);
@@ -689,7 +689,7 @@ namespace
 
             values->m_normal_reflectance = Color3f(p->normal_reflectance);
             values->m_edge_tint = Color3f(p->edge_tint);
-            values->m_reflectance_multiplier = 1.0;
+            values->m_reflectance_multiplier = 1.0f;
             values->m_roughness = max(p->roughness, 0.0f);
             values->m_anisotropic = clamp(p->anisotropic, -1.0f, 1.0f);
         }
@@ -744,7 +744,7 @@ namespace
                     p->N);
 
             values->m_reflectance.set(1.0f);
-            values->m_reflectance_multiplier = 1.0;
+            values->m_reflectance_multiplier = 1.0f;
             values->m_roughness = max(p->roughness, 0.0f);
         }
     };
@@ -798,9 +798,9 @@ namespace
                     p->N);
 
             values->m_rd = Color3f(1.0f);
-            values->m_rd_multiplier = 1.0;
+            values->m_rd_multiplier = 1.0f;
             values->m_rg = Color3f(1.0f);
-            values->m_rg_multiplier = 1.0;
+            values->m_rg_multiplier = 1.0f;
             values->m_nu = max(p->exponent, 0.01f);
             values->m_nv = max(p->exponent, 0.01f);
             values->m_fr_multiplier = 1.0f;
@@ -859,7 +859,7 @@ namespace
                     p->N);
 
             values->m_reflectance.set(1.0f);
-            values->m_reflectance_multiplier = 1.0;
+            values->m_reflectance_multiplier = 1.0f;
             values->m_roughness = 0.0f;
             values->m_anisotropic = 0.0f;
             values->m_ior = max(p->ior, 0.001f);
@@ -913,7 +913,7 @@ namespace
                     p->N);
 
             values->m_reflectance.set(1.0f);
-            values->m_reflectance_multiplier = 1.0;
+            values->m_reflectance_multiplier = 1.0f;
         }
     };
 
@@ -971,11 +971,11 @@ namespace
                         weight,
                         p->N);
 
-                values->m_weight = 1.0;
+                values->m_weight = 1.0f;
                 values->m_reflectance = Color3f(p->reflectance);
-                values->m_reflectance_multiplier = 1.0;
+                values->m_reflectance_multiplier = 1.0f;
                 values->m_mfp = Color3f(p->mean_free_path);
-                values->m_mfp_multiplier = 1.0;
+                values->m_mfp_multiplier = 1.0f;
                 values->m_ior = p->ior;
 #else
                 throw ExceptionOSLRuntimeError("unknown subsurface profile: normalized_diffusion");
@@ -1019,11 +1019,11 @@ namespace
                     throw ExceptionOSLRuntimeError(msg.c_str());
                 }
 
-                values->m_weight = 1.0;
+                values->m_weight = 1.0f;
                 values->m_reflectance = Color3f(p->reflectance);
-                values->m_reflectance_multiplier = 1.0;
+                values->m_reflectance_multiplier = 1.0f;
                 values->m_mfp = Color3f(p->mean_free_path);
-                values->m_mfp_multiplier = 1.0;
+                values->m_mfp_multiplier = 1.0f;
                 values->m_g = 0.0;
                 values->m_ior = p->ior;
             }
@@ -1501,7 +1501,7 @@ CompositeEmissionClosure::CompositeEmissionClosure(
     else
     {
         m_edf_values.m_radiance.set(0.0f);
-        m_edf_values.m_radiance_multiplier = 1.0;
+        m_edf_values.m_radiance_multiplier = 1.0f;
     }
 }
 
