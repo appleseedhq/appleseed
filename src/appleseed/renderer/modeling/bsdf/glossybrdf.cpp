@@ -33,7 +33,9 @@
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
+#include "renderer/modeling/bsdf/fresnel.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
+#include "renderer/modeling/bsdf/specularhelper.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
@@ -91,7 +93,7 @@ namespace
         GlossyBRDFImpl(
             const char*             name,
             const ParamArray&       params)
-          : BSDF(name, Reflective, ScatteringMode::Glossy, params)
+          : BSDF(name, Reflective, ScatteringMode::Glossy | ScatteringMode::Specular, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
@@ -158,11 +160,24 @@ namespace
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
             const Vector3f& n = sample.m_shading_basis.get_normal();
-            const float cos_on = std::min(dot(sample.m_outgoing.get_value(), n), 1.0f);
+            const Vector3f& outgoing = sample.m_outgoing.get_value();
+            const float cos_on = std::min(dot(outgoing, n), 1.0f);
             if (cos_on < 0.0f)
                 return;
 
             const InputValues* values = reinterpret_cast<const InputValues*>(data);
+
+            const FresnelDielectricFun f(
+                values->m_reflectance,
+                values->m_reflectance_multiplier,
+                values->m_precomputed.m_outside_ior / values->m_ior);
+
+            // If roughness is zero use reflection.
+            if (values->m_roughness == 0.0f)
+            {
+                SpecularBRDFHelper::sample(f, sample);
+                return;
+            }
 
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
@@ -171,15 +186,10 @@ namespace
                 alpha_x,
                 alpha_y);
 
-            const FresnelDielectricFun<float> f(
-                values->m_reflectance,
-                values->m_reflectance_multiplier,
-                values->m_precomputed.m_outside_ior / values->m_ior);
-
             if (m_mdf == GGX)
             {
                 const GGXMDF<float> mdf;
-                MicrofacetBRDFHelper<float>::sample(
+                MicrofacetBRDFHelper::sample(
                     sampling_context,
                     mdf,
                     alpha_x,
@@ -191,7 +201,7 @@ namespace
             else
             {
                 const BeckmannMDF<float> mdf;
-                MicrofacetBRDFHelper<float>::sample(
+                MicrofacetBRDFHelper::sample(
                     sampling_context,
                     mdf,
                     alpha_x,
@@ -232,7 +242,7 @@ namespace
                 alpha_x,
                 alpha_y);
 
-            FresnelDielectricFun<float> f(
+            FresnelDielectricFun f(
                 values->m_reflectance,
                 values->m_reflectance_multiplier,
                 values->m_precomputed.m_outside_ior / values->m_ior);
@@ -240,7 +250,7 @@ namespace
             if (m_mdf == GGX)
             {
                 const GGXMDF<float> mdf;
-                return MicrofacetBRDFHelper<float>::evaluate(
+                return MicrofacetBRDFHelper::evaluate(
                     mdf,
                     alpha_x,
                     alpha_y,
@@ -255,7 +265,7 @@ namespace
             else
             {
                 const BeckmannMDF<float> mdf;
-                return MicrofacetBRDFHelper<float>::evaluate(
+                return MicrofacetBRDFHelper::evaluate(
                     mdf,
                     alpha_x,
                     alpha_y,
@@ -299,7 +309,7 @@ namespace
             if (m_mdf == GGX)
             {
                 const GGXMDF<float> mdf;
-                return MicrofacetBRDFHelper<float>::pdf(
+                return MicrofacetBRDFHelper::pdf(
                     mdf,
                     alpha_x,
                     alpha_y,
@@ -310,7 +320,7 @@ namespace
             else
             {
                 const BeckmannMDF<float> mdf;
-                return MicrofacetBRDFHelper<float>::pdf(
+                return MicrofacetBRDFHelper::pdf(
                     mdf,
                     alpha_x,
                     alpha_y,

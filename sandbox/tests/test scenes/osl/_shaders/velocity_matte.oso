@@ -1,17 +1,16 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.9
+# Compiled by oslc 1.7.4
+# options: 
 surface velocity_matte
-global	normal	N	%read{4,4} %write{2147483647,-1}
-global	closure color	Ci	%read{2147483647,-1} %write{5,5}
+global	normal	N	%read{3,3} %write{2147483647,-1}
+global	closure color	Ci	%read{2147483647,-1} %write{4,4}
 global	vector	dPdtime	%read{0,0} %write{2147483647,-1}
-local	color	Cs	%read{5,5} %write{2,2}
+local	color	Cs	%read{4,4} %write{2,2}
 temp	color	$tmp1	%read{2,2} %write{1,1}
 temp	color	$tmp2	%read{1,1} %write{0,0}
 const	float	$const1	0.30000001		%read{2,2} %write{2147483647,-1}
-temp	closure color	$tmp3	%read{5,5} %write{4,4}
+temp	closure color	$tmp3	%read{4,4} %write{3,3}
 const	string	$const2	"diffuse"		%read{3,3} %write{2147483647,-1}
-const	float	$const4	0		%read{4,4} %write{2147483647,-1}
-const	string	$const5	"oren_nayar"		%read{4,4} %write{2147483647,-1}
 code ___main___
 # velocity_matte.osl:4
 #     color Cs = abs(color(dPdtime)) * 0.3;
@@ -20,11 +19,6 @@ code ___main___
 	mul		Cs $tmp1 $const1 	%argrw{"wrr"}
 # velocity_matte.osl:5
 #     Ci = Cs * diffuse(N);
-	functioncall	$const2 5 	%line{5} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:658
-# // compatibility with the OSL spec
-	closure		$tmp3 $const5 N $const4 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{658} %argrw{"wrrr"}
-# velocity_matte.osl:5
-#     Ci = Cs * diffuse(N);
-	mul		Ci $tmp3 Cs 	%filename{"velocity_matte.osl"} %line{5} %argrw{"wrr"}
+	closure		$tmp3 $const2 N 	%line{5} %argrw{"wrr"}
+	mul		Ci $tmp3 Cs 	%argrw{"wrr"}
 	end

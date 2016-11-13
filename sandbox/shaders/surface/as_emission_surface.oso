@@ -7,7 +7,7 @@ param	float	Emission	1		%meta{float,min,0}  %read{2,2} %write{2147483647,-1}
 param	color	Color	1 1 1		%read{2,2} %write{2147483647,-1}
 param	int	Normalize	0		%meta{string,help,"normalize light emission"} %meta{string,widget,"checkBox"}  %read{3,3} %write{2147483647,-1}
 oparam	closure color	BSDF			%read{2147483647,-1} %write{8,9}
-local	color	___300_E	%read{6,8} %write{2,6}
+local	color	___320_E	%read{6,8} %write{2,6}
 temp	int	$tmp1	%read{1,1} %write{0,0}
 const	string	$const1	"light"		%read{0,0} %write{2147483647,-1}
 temp	float	$tmp2	%read{5,5} %write{4,4}
@@ -22,7 +22,7 @@ code ___main___
 	if		$tmp1 9 10 	%argrw{"r"}
 # ./surface/as_emission_surface.osl:47
 #         color E = Emission * Color;
-	mul		___300_E Emission Color 	%line{47} %argrw{"wrr"}
+	mul		___320_E Emission Color 	%line{47} %argrw{"wrr"}
 # ./surface/as_emission_surface.osl:49
 #         if (Normalize)
 	if		Normalize 7 7 	%line{49} %argrw{"r"}
@@ -30,11 +30,11 @@ code ___main___
 #             E /= surfacearea() * M_PI;
 	surfacearea	$tmp2 	%line{50} %argrw{"w"}
 	mul		$tmp3 $tmp2 $const2 	%argrw{"wrr"}
-	div		___300_E ___300_E $tmp3 	%argrw{"wrr"}
+	div		___320_E ___320_E $tmp3 	%argrw{"wrr"}
 # ./surface/as_emission_surface.osl:52
 #         BSDF = E * emission();
 	closure		$tmp4 $const3 	%line{52} %argrw{"wr"}
-	mul		BSDF $tmp4 ___300_E 	%argrw{"wrr"}
+	mul		BSDF $tmp4 ___320_E 	%argrw{"wrr"}
 # ./surface/as_emission_surface.osl:55
 #         BSDF = BSDF1;
 	assign		BSDF BSDF1 	%line{55} %argrw{"wr"}

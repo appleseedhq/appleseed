@@ -1,5 +1,6 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.9
+# Compiled by oslc 1.7.4
+# options: 
 surface test_emission
 param	float	Kl	1		%read{9,9} %write{2147483647,-1}
 param	color	Cl	1 1 1		%read{10,10} %write{2147483647,-1}

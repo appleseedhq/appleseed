@@ -23,9 +23,9 @@ code ___main___
 	sub		$tmp2 FromHigh FromLow 	%argrw{"wrr"}
 	div		$tmp3 $tmp1 $tmp2 	%argrw{"wrr"}
 	functioncall	$const3 6 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:157
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:149
 # point  log (point a,  float b) { return log(a)/log(b); }
-	min		$tmp4 $tmp3 $const2 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{157} %argrw{"wrr"}
+	min		$tmp4 $tmp3 $const2 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{149} %argrw{"wrr"}
 	max		t $tmp4 $const1 	%argrw{"wrr"}
 # ./float/as_float_remap.osl:41
 #     Result = mix(ToLow, ToHigh, t);

@@ -34,6 +34,8 @@
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
+#include "renderer/modeling/bsdf/fresnel.h"
+#include "renderer/modeling/bsdf/specularhelper.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -91,30 +93,13 @@ namespace
             if (cos_on < 0.0f)
                 return;
 
-            // Compute the incoming direction.
-            const Vector3f incoming(
-                force_above_surface(
-                    reflect(sample.m_outgoing.get_value(), shading_normal),
-                    sample.m_geometric_normal));
-
-            // No reflection below the shading surface.
-            const float cos_in = dot(incoming, shading_normal);
-            if (cos_in < 0.0f)
-                return;
-
-            // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
-            sample.m_value = values->m_reflectance;
-            sample.m_value *= values->m_reflectance_multiplier / cos_in;
 
-            // The probability density of the sampled direction is the Dirac delta.
-            sample.m_probability = DiracDelta;
+            const NoFresnelFun f(
+                values->m_reflectance,
+                values->m_reflectance_multiplier);
 
-            // Set the scattering mode.
-            sample.m_mode = ScatteringMode::Specular;
-
-            sample.m_incoming = Dual3f(incoming);
-            sample.compute_reflected_differentials();
+            SpecularBRDFHelper::sample(f, sample);
         }
 
         APPLESEED_FORCE_INLINE virtual float evaluate(

@@ -187,7 +187,6 @@ class APPLESEED_DLLSYMBOL BSDF
         const float                 distance,
         Spectrum&                   absorption) const;
 
-  protected:
     // Force a given direction to lie above a surface described by its normal vector.
     static foundation::Vector3f force_above_surface(
         const foundation::Vector3f& direction,

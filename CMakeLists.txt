@@ -186,8 +186,8 @@ configure_file (${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/version.h.in
                 ${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/version.h)
 
 if (WITH_OSL)
-    configure_file (${PROJECT_SOURCE_DIR}/src/appleseed/renderer/kernel/shading/stdosl.h.in
-                    ${PROJECT_SOURCE_DIR}/src/appleseed/renderer/kernel/shading/stdosl.h)
+    configure_file (${PROJECT_SOURCE_DIR}/src/appleseed/renderer/kernel/shading/as_osl_extensions.h.in
+                    ${PROJECT_SOURCE_DIR}/src/appleseed/renderer/kernel/shading/as_osl_extensions.h)
 endif ()
 
 

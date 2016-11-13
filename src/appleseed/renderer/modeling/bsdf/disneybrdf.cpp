@@ -438,7 +438,7 @@ namespace
                         alpha_y);
 
                     const GGXMDF<float> ggx_mdf;
-                    MicrofacetBRDFHelper<float>::sample(
+                    MicrofacetBRDFHelper::sample(
                         sampling_context,
                         ggx_mdf,
                         alpha_x,
@@ -451,7 +451,7 @@ namespace
                 {
                     const float alpha = clearcoat_roughness(values);
                     const BerryMDF<float> berry_mdf;
-                    MicrofacetBRDFHelper<float>::sample(
+                    MicrofacetBRDFHelper::sample(
                         sampling_context,
                         berry_mdf,
                         alpha,
@@ -530,7 +530,7 @@ namespace
                         alpha_y);
 
                     const GGXMDF<float> ggx_mdf;
-                    pdf += MicrofacetBRDFHelper<float>::evaluate(
+                    pdf += MicrofacetBRDFHelper::evaluate(
                         ggx_mdf,
                         alpha_x,
                         alpha_y,
@@ -549,7 +549,7 @@ namespace
                     Spectrum clear;
                     const float alpha = clearcoat_roughness(values);
                     const BerryMDF<float> berry_mdf;
-                    pdf += MicrofacetBRDFHelper<float>::evaluate(
+                    pdf += MicrofacetBRDFHelper::evaluate(
                         berry_mdf,
                         alpha,
                         alpha,
@@ -621,7 +621,7 @@ namespace
                         alpha_y);
 
                     const GGXMDF<float> ggx_mdf;
-                    pdf += MicrofacetBRDFHelper<float>::pdf(
+                    pdf += MicrofacetBRDFHelper::pdf(
                         ggx_mdf,
                         alpha_x,
                         alpha_y,
@@ -634,7 +634,7 @@ namespace
                 {
                     const float alpha = clearcoat_roughness(values);
                     const BerryMDF<float> berry_mdf;
-                    pdf += MicrofacetBRDFHelper<float>::pdf(
+                    pdf += MicrofacetBRDFHelper::pdf(
                         berry_mdf,
                         alpha,
                         alpha,

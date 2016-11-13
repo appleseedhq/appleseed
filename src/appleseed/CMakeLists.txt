@@ -1161,6 +1161,7 @@ if (WITH_OSL)
         renderer/kernel/shading/oslshadergroupexec.cpp
         renderer/kernel/shading/oslshadergroupexec.h
         renderer/kernel/shading/oslutil.h
+        renderer/kernel/shading/stdosl.h
     )
 endif ()
 list (APPEND appleseed_sources
@@ -1280,6 +1281,7 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/diffusebtdf.h
     renderer/modeling/bsdf/disneybrdf.cpp
     renderer/modeling/bsdf/disneybrdf.h
+    renderer/modeling/bsdf/fresnel.h
     renderer/modeling/bsdf/glassbsdf.cpp
     renderer/modeling/bsdf/glassbsdf.h
     renderer/modeling/bsdf/glossybrdf.cpp
@@ -1303,6 +1305,7 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/specularbrdf.h
     renderer/modeling/bsdf/specularbtdf.cpp
     renderer/modeling/bsdf/specularbtdf.h
+    renderer/modeling/bsdf/specularhelper.h
     renderer/modeling/bsdf/velvetbrdf.cpp
     renderer/modeling/bsdf/velvetbrdf.h
 )
@@ -1849,7 +1852,8 @@ if (WITH_OSL)
     set (appleseed_osl_headers
         renderer/kernel/shading/oslutil.h
         renderer/kernel/shading/stdosl.h
-    )
+        renderer/kernel/shading/as_osl_extensions.h
+        )
 endif ()
 
 
