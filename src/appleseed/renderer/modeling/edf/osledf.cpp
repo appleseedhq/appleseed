@@ -99,15 +99,20 @@ namespace
             const CompositeEmissionClosure* c =
                 reinterpret_cast<const CompositeEmissionClosure*>(data);
 
-            m_diffuse_edf->sample(
-                sampling_context,
-                &c->edf_input_values(),
-                geometric_normal,
-                shading_basis,
-                s,
-                outgoing,
-                value,
-                probability);
+            if (c->get_num_closures() > 0)
+            {
+                const size_t closure_index = c->choose_closure(sampling_context);
+                const EDF& edf = edf_from_closure_id(c->get_closure_type(closure_index));
+                edf.sample(
+                    sampling_context,
+                    c->get_closure_input_values(closure_index),
+                    geometric_normal,
+                    shading_basis,
+                    s,
+                    outgoing,
+                    value,
+                    probability);
+            }
         }
 
         virtual void evaluate(
@@ -120,12 +125,21 @@ namespace
             const CompositeEmissionClosure* c =
                 reinterpret_cast<const CompositeEmissionClosure*>(data);
 
-            m_diffuse_edf->evaluate(
-                &c->edf_input_values(),
-                geometric_normal,
-                shading_basis,
-                outgoing,
-                value);
+            value.set(0.0f);
+
+            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
+            {
+                Spectrum s;
+
+                const EDF& edf = edf_from_closure_id(c->get_closure_type(i));
+                edf.evaluate(
+                    c->get_closure_input_values(i),
+                    geometric_normal,
+                    shading_basis,
+                    outgoing,
+                    s);
+                value += s;
+            }
         }
 
         virtual void evaluate(
@@ -139,13 +153,29 @@ namespace
             const CompositeEmissionClosure* c =
                 reinterpret_cast<const CompositeEmissionClosure*>(data);
 
-            m_diffuse_edf->evaluate(
-                &c->edf_input_values(),
-                geometric_normal,
-                shading_basis,
-                outgoing,
-                value,
-                probability);
+            probability = 0.0f;
+            value.set(0.0f);
+
+            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
+            {
+                Spectrum s;
+                float edf_prob = 0.0f;
+
+                const EDF& edf = edf_from_closure_id(c->get_closure_type(i));
+                edf.evaluate(
+                    c->get_closure_input_values(i),
+                    geometric_normal,
+                    shading_basis,
+                    outgoing,
+                    s,
+                    edf_prob);
+
+                if (edf_prob > 0.0f)
+                {
+                    value += s;
+                    probability += edf_prob * c->get_closure_pdf_weight(i);
+                }
+            }
         }
 
         virtual float evaluate_pdf(
@@ -157,16 +187,32 @@ namespace
             const CompositeEmissionClosure* c =
                 reinterpret_cast<const CompositeEmissionClosure*>(data);
 
-            return
-                m_diffuse_edf->evaluate_pdf(
-                    &c->edf_input_values(),
+            float probability = 0.0f;
+
+            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
+            {
+                const EDF& edf = edf_from_closure_id(c->get_closure_type(i));
+                float edf_prob = edf.evaluate_pdf(
+                    c->get_closure_input_values(i),
                     geometric_normal,
                     shading_basis,
                     outgoing);
+
+                if (edf_prob > 0.0f)
+                    probability += edf_prob * c->get_closure_pdf_weight(i);
+            }
+
+            return probability;
         }
 
       private:
         auto_release_ptr<EDF> m_diffuse_edf;
+
+        const EDF& edf_from_closure_id(const ClosureID cid) const
+        {
+            assert(cid == EmissionID);
+            return *m_diffuse_edf;
+        }
     };
 }
 

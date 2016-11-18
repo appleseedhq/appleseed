@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
@@ -365,6 +366,8 @@ namespace
 
     struct EmissionClosure
     {
+        typedef DiffuseEDFInputValues InputValues;
+
         struct Params
         {
         };
@@ -387,6 +390,23 @@ namespace
             };
 
             shading_system.register_closure(name(), id(), params, 0, 0);
+        }
+
+        static void convert_closure(
+            CompositeEmissionClosure&   composite_closure,
+            const void*                 osl_params,
+            const Color3f&              weight,
+            const float                 max_weight_component)
+        {
+            InputValues* values =
+                composite_closure.add_closure<InputValues>(
+                    id(),
+                    weight,
+                    max_weight_component);
+
+            const float rcp_max_weight_component = 1.0f / max_weight_component;
+            values->m_radiance = weight * rcp_max_weight_component;
+            values->m_radiance_multiplier = max_weight_component;
         }
     };
 
@@ -1166,6 +1186,18 @@ void CompositeClosure::compute_cdf()
     }
 }
 
+size_t CompositeClosure::choose_closure(SamplingContext& sampling_context) const
+{
+    assert(get_num_closures() > 0);
+
+    if (get_num_closures() == 1)
+        return 0;
+
+    sampling_context.split_in_place(1, 1);
+    const float s = sampling_context.next2<float>();
+    return choose_closure(s);
+}
+
 size_t CompositeClosure::choose_closure(const float w) const
 {
     return sample_cdf_linear_search(m_cdf, w);
@@ -1488,27 +1520,47 @@ BOOST_STATIC_ASSERT(sizeof(CompositeEmissionClosure) <= InputEvaluator::DataSize
 CompositeEmissionClosure::CompositeEmissionClosure(
     const OSL::ClosureColor*    ci)
 {
-    Color3f total_weight(0.0f);
-    process_closure_tree(ci, Color3f(1.0f), total_weight);
+    process_closure_tree(ci, Color3f(1.0f));
+    compute_cdf();
+}
 
-    const float max_comp = max_value(total_weight);
+template <typename InputValues>
+InputValues* CompositeEmissionClosure::add_closure(
+    const ClosureID             closure_type,
+    const Color3f&              weight,
+    const float                 max_weight_component)
+{
+    // Check that InputValues is included in our type list.
+    typedef typename boost::mpl::contains<InputValuesTypeList, InputValues>::type value_in_list;
+    BOOST_STATIC_ASSERT(value_in_list::value);
 
-    if (max_comp != 0.0f)
+    // Make sure we have enough space.
+    if APPLESEED_UNLIKELY(get_num_closures() >= MaxClosureEntries)
     {
-        m_edf_values.m_radiance = total_weight / max_comp;
-        m_edf_values.m_radiance_multiplier = max_comp;
+        throw ExceptionOSLRuntimeError(
+            "maximum number of closures in OSL shader group exceeded.");
     }
-    else
-    {
-        m_edf_values.m_radiance.set(0.0f);
-        m_edf_values.m_radiance_multiplier = 1.0f;
-    }
+
+    assert(m_num_bytes + sizeof(InputValues) <= MaxPoolSize);
+
+    m_pdf_weights[m_num_closures] = max_weight_component;
+    m_weights[m_num_closures] = weight;
+
+    m_closure_types[m_num_closures] = closure_type;
+
+    char* values_ptr = m_pool + m_num_bytes;
+    assert(is_aligned(values_ptr, InputValuesAlignment));
+    new (values_ptr) InputValues();
+    m_input_values[m_num_closures] = values_ptr;
+    m_num_bytes += align(sizeof(InputValues), InputValuesAlignment);
+    ++m_num_closures;
+
+    return reinterpret_cast<InputValues*>(values_ptr);
 }
 
 void CompositeEmissionClosure::process_closure_tree(
     const OSL::ClosureColor*    closure,
-    const Color3f&              weight,
-    Color3f&                    total_weight)
+    const Color3f&              weight)
 {
     if (closure == 0)
         return;
@@ -1522,15 +1574,15 @@ void CompositeEmissionClosure::process_closure_tree(
       case OSL::ClosureColor::MUL:
         {
             const OSL::ClosureMul* c = reinterpret_cast<const OSL::ClosureMul*>(closure);
-            process_closure_tree(c->closure, weight * Color3f(c->weight), total_weight);
+            process_closure_tree(c->closure, weight * Color3f(c->weight));
         }
         break;
 
       case OSL::ClosureColor::ADD:
         {
             const OSL::ClosureAdd* c = reinterpret_cast<const OSL::ClosureAdd*>(closure);
-            process_closure_tree(c->closureA, weight, total_weight);
-            process_closure_tree(c->closureB, weight, total_weight);
+            process_closure_tree(c->closureA, weight);
+            process_closure_tree(c->closureB, weight);
         }
         break;
 
@@ -1538,13 +1590,26 @@ void CompositeEmissionClosure::process_closure_tree(
         {
             const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
 
-            if (c->id == EmissionID)
-                total_weight += weight * Color3f(c->w);
-            else if (c->id >= FirstLayeredClosure)
+            const Color3f w = weight * Color3f(c->w);
+            const float max_weight_component = max_value(w);
+
+            if (max_weight_component > 0.0f)
             {
-                // For now, we just recurse.
-                const OSL::ClosureColor* nested = get_nested_closure_color(c->id, c->data());
-                process_closure_tree(nested, weight * Color3f(c->w), total_weight);
+                if (c->id == EmissionID)
+                {
+
+                    EmissionClosure::convert_closure(
+                        *this,
+                        c->data(),
+                        w,
+                        max_weight_component);
+                }
+                else if (c->id >= FirstLayeredClosure)
+                {
+                    // For now, we just recurse.
+                    const OSL::ClosureColor* nested = get_nested_closure_color(c->id, c->data());
+                    process_closure_tree(nested, w);
+                }
             }
         }
         break;
