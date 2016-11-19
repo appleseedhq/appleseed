@@ -1167,6 +1167,13 @@ void CompositeClosure::compute_cdf()
     const size_t closure_count = get_num_closures();
     if (closure_count > 0)
     {
+        if (closure_count == 1)
+        {
+            m_pdf_weights[0] = 1.0f;
+            m_cdf[0] = 1.0f;
+            return;
+        }
+
         float total_weight = 0.0f;
         for (size_t i = 0; i < closure_count; ++i)
         {
@@ -1390,6 +1397,8 @@ void CompositeSurfaceClosure::add_ior(
 
 float CompositeSurfaceClosure::choose_ior(const float w) const
 {
+    assert(m_num_iors > 0);
+
     if APPLESEED_LIKELY(m_num_iors == 1)
         return m_iors[0];
 
@@ -1597,7 +1606,6 @@ void CompositeEmissionClosure::process_closure_tree(
             {
                 if (c->id == EmissionID)
                 {
-
                     EmissionClosure::convert_closure(
                         *this,
                         c->data(),
