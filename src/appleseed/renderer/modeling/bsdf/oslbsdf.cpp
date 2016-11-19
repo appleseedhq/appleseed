@@ -204,10 +204,7 @@ namespace
 
             if (c->get_num_closures() > 0)
             {
-                sampling_context.split_in_place(1, 1);
-                const float s = sampling_context.next2<float>();
-
-                const size_t closure_index = c->choose_closure(s);
+                const size_t closure_index = c->choose_closure(sampling_context);
                 sample.set_shading_basis(c->get_closure_shading_basis(closure_index));
                 bsdf_from_closure_id(c->get_closure_type(closure_index))
                     .sample(
