@@ -190,11 +190,6 @@
             </parameters>
         </configuration>
         <configuration name="interactive" base="base_interactive">
-            <parameter name="frame_renderer" value="progressive" />
-            <parameter name="lighting_engine" value="pt" />
-            <parameter name="sample_generator" value="generic" />
-            <parameter name="sample_renderer" value="generic" />
-            <parameter name="tile_renderer" value="generic" />
         </configuration>
     </configurations>
 </project>
