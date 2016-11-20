@@ -404,8 +404,7 @@ namespace
                     weight,
                     max_weight_component);
 
-            const float rcp_max_weight_component = 1.0f / max_weight_component;
-            values->m_radiance = weight * rcp_max_weight_component;
+            values->m_radiance = weight / max_weight_component;
             values->m_radiance_multiplier = max_weight_component;
         }
     };
@@ -1165,15 +1164,14 @@ CompositeClosure::CompositeClosure()
 void CompositeClosure::compute_cdf()
 {
     const size_t closure_count = get_num_closures();
-    if (closure_count > 0)
-    {
-        if (closure_count == 1)
-        {
-            m_pdf_weights[0] = 1.0f;
-            m_cdf[0] = 1.0f;
-            return;
-        }
 
+    if (closure_count == 1)
+    {
+        m_pdf_weights[0] = 1.0f;
+        m_cdf[0] = 1.0f;
+    }
+    else if (closure_count > 1)
+    {
         float total_weight = 0.0f;
         for (size_t i = 0; i < closure_count; ++i)
         {
