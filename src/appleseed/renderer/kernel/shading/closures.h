@@ -118,10 +118,12 @@ enum ClosureID
     SubsurfaceDirectionalDipoleID,
     SubsurfaceNormalizedDiffusionID,
 
+    // Emission closures.
+    EmissionID,
+
     // Special closures.
     BackgroundID,
     DebugID,
-    EmissionID,
     HoldoutID,
     TransparentID,
 
@@ -160,6 +162,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
     float get_closure_pdf_weight(const size_t index) const;
     void* get_closure_input_values(const size_t index) const;
 
+    size_t choose_closure(SamplingContext& sampling_context) const;
     size_t choose_closure(const float w) const;
 
     const foundation::Basis3f& get_closure_shading_basis(const size_t index) const;
@@ -192,6 +195,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
     typedef boost::mpl::vector<
         AshikhminBRDFInputValues,
         DiffuseBTDFInputValues,
+        DiffuseEDFInputValues,
         DipoleBSSRDFInputValues,
         DisneyBRDFInputValues,
         GlassBSDFInputValues,
@@ -287,6 +291,7 @@ class APPLESEED_ALIGN(16) CompositeSubsurfaceClosure
         const OSL::ClosureColor*    closure,
         const foundation::Basis3f&  original_shading_basis,
         const foundation::Color3f&  weight);
+
 };
 
 
@@ -295,20 +300,22 @@ class APPLESEED_ALIGN(16) CompositeSubsurfaceClosure
 //
 
 class APPLESEED_ALIGN(16) CompositeEmissionClosure
-  : public foundation::NonCopyable
+  : public CompositeClosure
 {
   public:
-    explicit CompositeEmissionClosure(const OSL::ClosureColor* ci);
+    explicit CompositeEmissionClosure(
+        const OSL::ClosureColor*    ci);
 
-    const DiffuseEDFInputValues& edf_input_values() const;
+    template <typename InputValues>
+    InputValues* add_closure(
+        const ClosureID             closure_type,
+        const foundation::Color3f&  weight,
+        const float                 max_weight_component);
 
   private:
-    DiffuseEDFInputValues           m_edf_values;
-
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
-        const foundation::Color3f&  weight,
-        foundation::Color3f&        total_weight);
+        const foundation::Color3f&  weight);
 };
 
 
@@ -365,16 +372,6 @@ inline const foundation::Basis3f& CompositeClosure::get_closure_shading_basis(co
 {
     assert(index < get_num_closures());
     return m_bases[index];
-}
-
-
-//
-// CompositeEmissionClosure class implementation.
-//
-
-inline const DiffuseEDFInputValues& CompositeEmissionClosure::edf_input_values() const
-{
-    return m_edf_values;
 }
 
 }       // namespace renderer
