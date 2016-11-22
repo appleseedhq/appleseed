@@ -44,6 +44,7 @@
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
 #include "foundation/math/scalar.h"
+#include "foundation/platform/atomic.h"
 #include "foundation/platform/timers.h"
 #include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/stopwatch.h"
@@ -100,7 +101,7 @@ LocalSampleAccumulationBuffer::LocalSampleAccumulationBuffer(
         level_height = max(level_height / 2, MinSize);
     }
 
-    m_remaining_pixels = new atomic<int32>[m_levels.size()];
+    m_remaining_pixels = new boost::atomic<int32>[m_levels.size()];
 
     clear();
 }
