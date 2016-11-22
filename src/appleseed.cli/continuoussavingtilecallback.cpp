@@ -77,7 +77,7 @@ namespace
           : ProgressTileCallback(logger)
           , m_output_path(output_path)
         {
-            mt19937 rng(static_cast<uint32_t>(time(0)));
+            boost::mt19937 rng(static_cast<uint32_t>(time(0)));
             const uuids::uuid u = uuids::basic_random_generator<boost::mt19937>(&rng)();
             const bf::path ext = m_output_path.extension();
             const string tmp_filename = uuids::to_string(u) + ext.string();
