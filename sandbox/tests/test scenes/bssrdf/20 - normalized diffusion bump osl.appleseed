@@ -6,7 +6,7 @@
             _textures
         </search_path>
         <search_path>
-            ../../../shaders
+            ../../../shaders/gaffer
         </search_path>
     </search_paths>
     <scene>

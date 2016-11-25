@@ -3,7 +3,7 @@
 <project format_revision="13">
     <search_paths>
         <search_path>
-            ../../../shaders
+            ../../../shaders/gaffer
         </search_path>
     </search_paths>
     <scene>
