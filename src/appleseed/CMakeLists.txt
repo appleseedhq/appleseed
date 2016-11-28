@@ -1919,18 +1919,12 @@ if (WITH_OSL)
     # Copy OSL and OIIO tools to the sandbox.
     if (USE_EXTERNAL_OSL)
         add_custom_command (TARGET appleseed PRE_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${OSL_COMPILER} ${PROJECT_SOURCE_DIR}/sandbox/bin/
-        )
-        add_custom_command (TARGET appleseed PRE_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy ${OSL_QUERY_INFO} ${PROJECT_SOURCE_DIR}/sandbox/bin/
         )
         add_custom_command (TARGET appleseed PRE_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy ${OSL_MAKETX} ${PROJECT_SOURCE_DIR}/sandbox/bin/
         )
     else ()
-        add_custom_command (TARGET appleseed PRE_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/osl-release/bin/oslc${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
-        )
         add_custom_command (TARGET appleseed PRE_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/osl-release/bin/oslinfo${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
         )
