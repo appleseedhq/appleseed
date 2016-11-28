@@ -1,0 +1,121 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/condition.html
+
+shader as_maya_condition
+[[
+    string maya_node_name = "condition",
+    string maya_classification = "utility/general"
+]]
+(
+    int in_operation = 0
+    [[
+        string maya_attribute_name = "operation",
+        string maya_attribute_type = "enum",
+        string label = "Operation",
+        string widget = "mapper",
+        string options = "Equal:0|Not Equal:1|Greater Than:2|Greater Or Equal:3|Less Than:4|Less Or Equal:5"
+    ]],
+    float in_firstTerm = 0.0
+    [[
+        string maya_attribute_name = "firstTerm",
+        string maya_attribute_type = "float",
+        string label = "First Term"
+    ]],
+    float in_secondTerm = 0.0
+    [[
+        string maya_attribute_name = "secondTerm",
+        string maya_attribute_type = "float",
+        string label = "Second Term"
+    ]],
+    color in_colorIfTrue = color(0)
+    [[
+        string maya_attribute_name = "colorIfTrue",
+        string maya_attribute_type = "color",
+        string label = "Color If True"
+    ]],
+    color in_colorIfFalse = color(0)
+    [[
+        string maya_attribute_name = "colorIfFalse",
+        string maya_attribute_type = "color",
+        string label = "Color If False"
+    ]],
+
+    output color out_outColor = color(0)
+    [[
+        string maya_attribute_name = "outColor",
+        string maya_attribute_type = "color",
+        string lable = "Output Color",
+        string widget = "null"
+    ]]
+)
+{
+    if ( in_operation == 0 )
+    {
+        out_outColor = (in_firstTerm == in_secondTerm) ?
+        in_colorIfTrue : in_colorIfFalse;
+    }
+    else if ( in_operation == 1 )
+    {
+        out_outColor = (in_firstTerm != in_secondTerm) ?
+        in_colorIfTrue : in_colorIfFalse;
+    }
+    else if ( in_operation == 2 )
+    {
+        out_outColor = (in_firstTerm > in_secondTerm) ?
+        in_colorIfTrue : in_colorIfFalse;
+    }
+    else if ( in_operation == 3 )
+    {
+        out_outColor = (in_firstTerm >= in_secondTerm) ?
+        in_colorIfTrue : in_colorIfFalse;
+    }
+    else if ( in_operation == 4 )
+    {
+        out_outColor = (in_firstTerm < in_secondTerm) ?
+        in_colorIfTrue : in_colorIfFalse;
+    }
+    else if ( in_operation == 5 )
+    {
+        out_outColor = (in_firstTerm <= in_secondTerm) ?
+        in_colorIfTrue : in_colorIfFalse ;
+    }
+    else
+    {
+#ifdef DEBUG
+        warning( "[WARNING]: %s:%d : invalid operation, passed = %d\n",
+        __FILE__, __LINE__, in_operation );
+#endif
+        out_outColor = color(0);
+    }
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
