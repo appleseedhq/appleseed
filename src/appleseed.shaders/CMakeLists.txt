@@ -1,0 +1,221 @@
+
+#
+# This source file is part of appleseed.
+# Visit http://appleseedhq.net/ for additional information and resources.
+#
+# This software is released under the MIT license.
+#
+# Copyright (c) 2016 Esteban Tovagliari, The appleseedhq Organization
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+
+
+#--------------------------------------------------------------------------------------------------
+# Auto-generate OSL extensions header.
+#--------------------------------------------------------------------------------------------------
+
+configure_file (
+    ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/as_osl_extensions.h.in
+    ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/as_osl_extensions.h
+)
+
+
+#--------------------------------------------------------------------------------------------------
+# Header files.
+#--------------------------------------------------------------------------------------------------
+
+set (standard_osl_headers
+    oslutil.h
+    stdosl.h
+    as_osl_extensions.h
+)
+
+set (gaffer_osl_headers
+    include/appleseed/gaffer/color.h
+    include/appleseed/gaffer/microfacet.h
+    include/appleseed/gaffer/transform.h
+    include/appleseed/gaffer/udim.h
+)
+list (APPEND appleseed_osl_headers ${gaffer_osl_headers})
+
+list (APPEND osl_headers
+    ${standard_osl_headers}
+    ${appleseed_osl_headers}
+)
+
+
+#--------------------------------------------------------------------------------------------------
+# Source files.
+#--------------------------------------------------------------------------------------------------
+
+set (gaffer_osl_sources
+     src/gaffer/color/as_blackbody.osl
+     src/gaffer/color/as_color_build.osl
+     src/gaffer/color/as_color_multiply.osl
+     src/gaffer/color/as_color_split.osl
+     src/gaffer/color/as_wavelength.osl
+     src/gaffer/color/as_color_add.osl
+     src/gaffer/color/as_color_mix.osl
+     src/gaffer/color/as_color_saturation.osl
+     src/gaffer/color/as_luminance.osl
+     src/gaffer/float/as_float_add.osl
+     src/gaffer/float/as_float_cast.osl
+     src/gaffer/float/as_float_mix.osl
+     src/gaffer/float/as_float_multiply.osl
+     src/gaffer/float/as_float_pow.osl
+     src/gaffer/float/as_float_remap.osl
+     src/gaffer/input/as_globals.osl
+     src/gaffer/input/as_input.osl
+     src/gaffer/input/as_object_input.osl
+     src/gaffer/input/as_ray_info.osl
+     src/gaffer/material/as_disney_material.osl
+     src/gaffer/material/as_material_builder.osl
+     src/gaffer/normal/as_bump_map.osl
+     src/gaffer/normal/as_normal_map.osl
+     src/gaffer/surface/as_diffuse_surface.osl
+     src/gaffer/surface/as_metal_surface.osl
+     src/gaffer/surface/as_surface_mix.osl
+     src/gaffer/surface/as_transparency_surface.osl
+     src/gaffer/surface/as_emission_surface.osl
+     src/gaffer/surface/as_sheen_surface.osl
+     src/gaffer/surface/as_surface_multiply.osl
+     src/gaffer/surface/as_glass_surface.osl
+     src/gaffer/surface/as_subsurface_surface.osl
+     src/gaffer/surface/as_surface_switch.osl
+     src/gaffer/surface/as_glossy_surface.osl
+     src/gaffer/surface/as_surface_add.osl
+     src/gaffer/surface/as_translucent_surface.osl
+     src/gaffer/texture2d/as_color_texture.osl
+     src/gaffer/texture2d/as_noise2d.osl
+     src/gaffer/texture2d/as_scalar_texture.osl
+     src/gaffer/texture3d/as_noise3d.osl
+     src/gaffer/texture3d/as_noise4d.osl
+     src/gaffer/transform/as_map2d.osl
+     src/gaffer/transform/as_map3d.osl
+     src/gaffer/transform/as_transform.osl
+     src/gaffer/utility/as_condition.osl
+     src/gaffer/utility/as_switch.osl
+     src/gaffer/vector/as_anisotropy_dir.osl
+     src/gaffer/vector/as_vector_build.osl
+     src/gaffer/vector/as_vector_dot.osl
+     src/gaffer/vector/as_vector_multiply.osl
+     src/gaffer/vector/as_vector_split.osl
+     src/gaffer/vector/as_vector_add.osl
+     src/gaffer/vector/as_vector_cross.osl
+     src/gaffer/vector/as_vector_mix.osl
+     src/gaffer/vector/as_vector_normalize.osl
+)
+list (APPEND osl_sources ${gaffer_osl_sources})
+
+
+#--------------------------------------------------------------------------------------------------
+# Compile shaders.
+#--------------------------------------------------------------------------------------------------
+
+macro (osl_compile osl_src oso_obj headers)
+    # Get the absolute path to the osl source file.
+    get_filename_component (osl_src_abs ${osl_src} ABSOLUTE)
+
+    # Build the .oso destination file name.
+    get_filename_component (osl_src_we ${osl_src} NAME_WE)
+    set (oso_filename "${osl_src_we}.oso")
+
+    # Build the sandbox destination directory.
+    get_filename_component (osl_dir ${osl_src} PATH)
+    string (
+        REGEX REPLACE
+        "src/"
+        "${PROJECT_SOURCE_DIR}/sandbox/shaders/"
+        oso_dir
+        ${osl_dir}
+    )
+
+    # Return the compiled oso shader filename.
+    set (oso_obj "${oso_dir}/${oso_filename}")
+
+    set (osl_include_path "${PROJECT_SOURCE_DIR}/src/appleseed.shaders/include")
+    set (oslc ${PROJECT_SOURCE_DIR}/sandbox/bin/oslc)
+
+    add_custom_command (
+        OUTPUT "${oso_dir}/${oso_filename}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${oso_dir}"
+        COMMAND "${oslc}" -I"${osl_include_path}" -o "${oso_dir}/${oso_filename}" "${osl_src_abs}"
+        MAIN_DEPENDENCY ${osl_src_abs}
+        DEPENDS ${${headers}} ${osl_src_abs} "${oslc}"
+    )
+endmacro ()
+
+# Build a list of absolute paths to OSL headers.
+foreach (osl_header ${osl_headers})
+    list (APPEND abs_osl_headers "${PROJECT_SOURCE_DIR}/src/appleseed.shaders/${osl_header}")
+endforeach ()
+
+# Compile all shaders.
+foreach (osl_shader ${osl_sources})
+    osl_compile (${osl_shader} oso_obj abs_osl_headers)
+    list (APPEND oso_objs "${oso_obj}")
+endforeach ()
+
+add_custom_target (
+    appleseed.shaders ALL
+    DEPENDS ${oso_objs}
+    SOURCES ${osl_sources} ${abs_osl_headers}
+)
+
+
+#--------------------------------------------------------------------------------------------------
+# Copy OSL headers to the sandbox.
+#--------------------------------------------------------------------------------------------------
+
+# Copy standard headers.
+foreach (osl_header ${standard_osl_headers})
+    get_filename_component (osl_header_filename ${osl_header} NAME)
+    file (
+        COPY ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/${osl_header_filename}
+        DESTINATION ${PROJECT_SOURCE_DIR}/sandbox/shaders/
+    )
+endforeach ()
+
+# Copy include directory.
+add_custom_command (
+    TARGET appleseed.shaders
+    COMMAND echo "Copying appleseed.shaders includes to sandbox."
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/include
+        ${PROJECT_SOURCE_DIR}/sandbox/shaders/
+    MAIN_DEPENDENCY "${appleseed_osl_headers}"
+)
+
+
+#--------------------------------------------------------------------------------------------------
+# Copy the OSL compiler to the sandbox.
+#--------------------------------------------------------------------------------------------------
+
+if (USE_EXTERNAL_OSL)
+    add_custom_command (
+        OUTPUT "${PROJECT_SOURCE_DIR}/sandbox/bin/oslc"
+        COMMAND ${CMAKE_COMMAND} -E copy ${OSL_COMPILER} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+    )
+else ()
+    add_custom_command (
+        OUTPUT "${PROJECT_SOURCE_DIR}/sandbox/bin/oslc"
+        COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/osl-release/bin/oslc${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+    )
+endif ()

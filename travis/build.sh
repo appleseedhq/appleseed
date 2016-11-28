@@ -5,6 +5,8 @@ set -e
 THISDIR=`pwd`
 DEPSDIR=$THISDIR/travis-linux-deps
 
+export LD_LIBRARY_PATH=$DEPSDIR/lib:../sandbox/lib/Debug:$LD_LIBRARY_PATH
+
 mkdir build
 cd build
 
@@ -65,8 +67,6 @@ cmake \
 
 make -j 2
 
-export LD_LIBRARY_PATH=$DEPSDIR/lib:../sandbox/lib/Debug:$LD_LIBRARY_PATH
-
 echo "Running appleseed tests:"
 echo "------------------------"
 
@@ -77,9 +77,5 @@ echo "-------------------------------"
 
 export PYTHONPATH=$PYTHONPATH:../sandbox/lib/Debug/python2.7
 python ../sandbox/lib/Debug/python2.7/appleseed/test/runtests.py
-
-# compile OSL shader lib
-cd ../sandbox/shaders/src
-python compile_shaders.py ../../bin/oslc
 
 set +e

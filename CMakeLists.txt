@@ -185,11 +185,6 @@ set (appleseed_version_maturity beta)
 configure_file (${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/version.h.in
                 ${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/version.h)
 
-if (WITH_OSL)
-    configure_file (${PROJECT_SOURCE_DIR}/src/appleseed/renderer/kernel/shading/as_osl_extensions.h.in
-                    ${PROJECT_SOURCE_DIR}/src/appleseed/renderer/kernel/shading/as_osl_extensions.h)
-endif ()
-
 
 #--------------------------------------------------------------------------------------------------
 # Boost libraries.
@@ -615,6 +610,10 @@ add_subdirectory (src/lz4)
 
 if (WITH_CLI OR WITH_STUDIO OR WITH_TOOLS)
     add_subdirectory (src/appleseed.shared)
+endif ()
+
+if (WITH_OSL)
+    add_subdirectory (src/appleseed.shaders)
 endif ()
 
 if (WITH_CLI)

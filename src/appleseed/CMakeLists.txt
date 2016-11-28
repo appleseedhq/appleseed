@@ -1160,8 +1160,6 @@ if (WITH_OSL)
         renderer/kernel/shading/closures.h
         renderer/kernel/shading/oslshadergroupexec.cpp
         renderer/kernel/shading/oslshadergroupexec.h
-        renderer/kernel/shading/oslutil.h
-        renderer/kernel/shading/stdosl.h
     )
 endif ()
 list (APPEND appleseed_sources
@@ -1847,15 +1845,6 @@ set_source_files_properties (${appleseed_schema_files} PROPERTIES
     HEADER_FILE_ONLY TRUE
 )
 
-# Collect all OSL headers.
-if (WITH_OSL)
-    set (appleseed_osl_headers
-        renderer/kernel/shading/oslutil.h
-        renderer/kernel/shading/stdosl.h
-        renderer/kernel/shading/as_osl_extensions.h
-        )
-endif ()
-
 
 #--------------------------------------------------------------------------------------------------
 # Target.
@@ -1923,6 +1912,36 @@ target_link_libraries (appleseed
 
 
 #--------------------------------------------------------------------------------------------------
+# Pre-build commands.
+#--------------------------------------------------------------------------------------------------
+
+if (WITH_OSL)
+    # Copy OSL and OIIO tools to the sandbox.
+    if (USE_EXTERNAL_OSL)
+        add_custom_command (TARGET appleseed PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${OSL_COMPILER} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+        )
+        add_custom_command (TARGET appleseed PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${OSL_QUERY_INFO} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+        )
+        add_custom_command (TARGET appleseed PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${OSL_MAKETX} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+        )
+    else ()
+        add_custom_command (TARGET appleseed PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/osl-release/bin/oslc${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+        )
+        add_custom_command (TARGET appleseed PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/osl-release/bin/oslinfo${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+        )
+        add_custom_command (TARGET appleseed PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/bin/maketx${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+        )
+    endif ()
+endif ()
+
+
+#--------------------------------------------------------------------------------------------------
 # Post-build commands.
 #--------------------------------------------------------------------------------------------------
 
@@ -1934,38 +1953,6 @@ foreach (schema_file ${appleseed_schema_files})
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${schema_file} ${PROJECT_SOURCE_DIR}/sandbox/schemas/
     )
 endforeach ()
-
-if (WITH_OSL)
-    # Copy OSL headers to the sandbox.
-    foreach (osl_header ${appleseed_osl_headers})
-        add_custom_command (TARGET appleseed POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${osl_header} ${PROJECT_SOURCE_DIR}/sandbox/shaders/
-        )
-    endforeach ()
-
-    # Copy OSL and OIIO tools to the sandbox.
-    if (USE_EXTERNAL_OSL)
-        add_custom_command (TARGET appleseed POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${OSL_COMPILER} ${PROJECT_SOURCE_DIR}/sandbox/bin/
-        )
-        add_custom_command (TARGET appleseed POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${OSL_QUERY_INFO} ${PROJECT_SOURCE_DIR}/sandbox/bin/
-        )
-        add_custom_command (TARGET appleseed POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${OSL_MAKETX} ${PROJECT_SOURCE_DIR}/sandbox/bin/
-        )
-    else ()
-        add_custom_command (TARGET appleseed POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/osl-release/bin/oslc${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
-        )
-        add_custom_command (TARGET appleseed POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/osl-release/bin/oslinfo${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
-        )
-        add_custom_command (TARGET appleseed POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/bin/maketx${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
-        )
-    endif ()
-endif ()
 
 
 #--------------------------------------------------------------------------------------------------
