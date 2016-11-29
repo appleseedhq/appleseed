@@ -37,37 +37,37 @@
 // our use will be D60, D65, DCI
 
 // ITU-R/BT.601 https://www.itu.int/rec/R-REC-BT.601-7-201103-I/en
-#define BT601_CHROMATICITIES_xyz            0.640, 0.330, 0.030,        \
-                                            0.290, 0.600, 0.110,        \
-                                            0.150, 0.060, 0.790
+#define BT601_CHROMATICITIES_x              0.640, 0.330, 0.030
+#define BT601_CHROMATICITIES_y              0.290, 0.600, 0.110
+#define BT601_CHROMATICITIES_z              0.150, 0.060, 0.790
 
 #define BT601_LUMINANCE_COEFFS              0.299, 0.587, 0.114
 
 // ITU-R/BT.1886 https://www.itu.int/rec/R-REC-BT.1886-0-201103-I/en
-#define BT1886_CHROMATICITIES_xyz           0.640, 0.330, 0.030,        \
-                                            0.300, 0.600, 0.100,        \
-                                            0.150, 0.060, 0.790
+#define BT1886_CHROMATICITIES_x             0.640, 0.330, 0.030
+#define BT1886_CHROMATICITIES_y             0.300, 0.600, 0.100
+#define BT1886_CHROMATICITIES_z             0.150, 0.060, 0.790
 
 #define BT1886_LUMINANCE_COEFFS             0.2627, 0.6780, 0.0593
 
 // ITU-R/BT.2020 https://www.itu.int/rec/R-REC-BT.2020/en
-#define BT2020_CHROMATICITIES_xyz           0.708, 0.292, 0.000,        \
-                                            0.170, 0.797, 0.033,        \
-                                            0.131, 0.046, 0.823
+#define BT2020_CHROMATICITIES_x             0.708, 0.292, 0.000
+#define BT2020_CHROMATICITIES_y             0.170, 0.797, 0.033
+#define BT2020_CHROMATICITIES_w             0.131, 0.046, 0.823
 
 #define BT2020_LUMINANCE_COEFFS             0.2627, 0.6780, 0.0593
 
 // ITU-R/BT.2100https://www.itu.int/rec/R-REC-BT.2100
-#define BT2100_CHROMATICITIES_xyz           0.708, 0.292, 0.000,        \
-                                            0.170, 0.797, 0.033,        \
-                                            0.131, 0.046, 0.823
+#define BT2100_CHROMATICITIES_x             0.708, 0.292, 0.000
+#define BT2100_CHROMATICITIES_y             0.170, 0.797, 0.033
+#define BT2100_CHROMATICITIES_w             0.131, 0.046, 0.823
 
 #define BT2100_LUMINANCE_COEFFS             0.2627, 0.6780, 0.0593
 
 // ITU-R/BT.709 https://www.itu.int/rec/R-REC-BT.709/en
-#define BT709_CHROMATICITIES_xyz            0.640, 0.330, 0.030,        \
-                                            0.300, 0.600, 0.100,        \
-                                            0.150, 0.060, 0.790
+#define BT709_CHROMATICITIES_x              0.640, 0.330, 0.030
+#define BT709_CHROMATICITIES_y              0.300, 0.600, 0.100
+#define BT709_CHROMATICITIES_w              0.150, 0.060, 0.790
 
 #define BT709_LUMINANCE_COEFFS              0.212656, 0.715158, 0.072186
 
@@ -76,9 +76,9 @@
 #define SRGB_LUMINANCE_COEFFS               BT709_LUMINANCE_COEFFS
 
 // AdobeRGB98 http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
-#define ADOBERGB98_CHROMATICITIES_xyz       0.640, 0.330, 0.030,        \
-                                            0.210, 0.710, 0.080,        \
-                                            0.150, 0.060, 0.790
+#define ADOBERGB98_CHROMATICITIES_x         0.640, 0.330, 0.030
+#define ADOBERGB98_CHROMATICITIES_y         0.210, 0.710, 0.080
+#define ADOBERGB98_CHROMATICITIES_w         0.150, 0.060, 0.790
 
 #define ADOBERGB98_LUMINANCE_COEFFS         0.297361, 0.627355, 0.075285
 
