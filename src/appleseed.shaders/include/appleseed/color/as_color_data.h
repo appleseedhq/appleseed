@@ -31,6 +31,71 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// The xyz chromaticity coordinates for the RGB color spaces (z=1-x-y),
+// followed by the Y coefficients
+// TODO: Bradford transform, Von Kries, for most common whitepoints, which for
+// our use will be D60, D65, DCI
+
+// ITU-R/BT.601 https://www.itu.int/rec/R-REC-BT.601-7-201103-I/en
+#define BT601_CHROMATICITIES_xyz            0.640, 0.330, 0.030,        \
+                                            0.290, 0.600, 0.110,        \
+                                            0.150, 0.060, 0.790
+
+#define BT601_LUMINANCE_COEFFS              0.299, 0.587, 0.114
+
+// ITU-R/BT.1886 https://www.itu.int/rec/R-REC-BT.1886-0-201103-I/en
+#define BT1886_CHROMATICITIES_xyz           0.640, 0.330, 0.030,        \
+                                            0.300, 0.600, 0.100,        \
+                                            0.150, 0.060, 0.790
+
+#define BT1886_LUMINANCE_COEFFS             0.2627, 0.6780, 0.0593
+
+// ITU-R/BT.2020 https://www.itu.int/rec/R-REC-BT.2020/en
+#define BT2020_CHROMATICITIES_xyz           0.708, 0.292, 0.000,        \
+                                            0.170, 0.797, 0.033,        \
+                                            0.131, 0.046, 0.823
+
+#define BT2020_LUMINANCE_COEFFS             0.2627, 0.6780, 0.0593
+
+// ITU-R/BT.2100https://www.itu.int/rec/R-REC-BT.2100
+#define BT2100_CHROMATICITIES_xyz           0.708, 0.292, 0.000,        \
+                                            0.170, 0.797, 0.033,        \
+                                            0.131, 0.046, 0.823
+
+#define BT2100_LUMINANCE_COEFFS             0.2627, 0.6780, 0.0593
+
+// ITU-R/BT.709 https://www.itu.int/rec/R-REC-BT.709/en
+#define BT709_CHROMATICITIES_xyz            0.640, 0.330, 0.030,        \
+                                            0.300, 0.600, 0.100,        \
+                                            0.150, 0.060, 0.790
+
+#define BT709_LUMINANCE_COEFFS              0.212656, 0.715158, 0.072186
+
+// sRGB = BT.709 primaries
+#define SRGB_CHROMATICITIES_xyz             BT709_CHROMATICITIES_xyz
+#define SRGB_LUMINANCE_COEFFS               BT709_LUMINANCE_COEFFS
+
+// AdobeRGB98 http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
+#define ADOBERGB98_CHROMATICITIES_xyz       0.640, 0.330, 0.030,        \
+                                            0.210, 0.710, 0.080,        \
+                                            0.150, 0.060, 0.790
+
+#define ADOBERGB98_LUMINANCE_COEFFS         0.297361, 0.627355, 0.075285
+
+// White point xyz chromaticity coordinates, and XYZ coordinates,
+// CIE1931 2° standard observer, Hernandez 1999 method
+// WXYZ = (1/Wy)Wxyz
+//
+#define D55_WHITEPOINT_CIE1931_2DEG_xyz     0.33242, 0.34743, 0.32015
+#define D60_WHITEPOINT_CIE1931_2DEG_xyz     0.32168, 0.33767, 0.34065
+#define D65_WHITEPOINT_CIE1931_2DEG_xyz     0.31270, 0.32900, 0.35830
+#define DCIP3_WHITEPOINT_CIE1931_2DEG_xyz   0.31400, 0.35100, 0.33500
+
+#define D55_WHITEPOINT_CIE1931_2DEG_XYZ     0.956797, 1.000000, 0.921480
+#define D60_WHITEPOINT_CIE1931_2DEG_XYZ     0.952646, 1.000000, 1.008825
+#define D65_WHITEPOINT_CIE1931_2DEG_XYZ     0.950455, 1.000000, 1.089057
+#define DCIP3_WHITEPOINT_CIE1931_2DEG_XYZ   0.894586, 1.000000, 0.954415
+                                                                                
 // 3x3 matrices to transform from XYZ to RGB and vice-versa, given relative
 // to respective whitepoints. Changing white point requires another 
 // transformation with an chromatic adaptation (i.e: Bradford, Von Kries)
@@ -67,46 +132,6 @@
     2.0415879, -0.5650070, -0.3447314,      \
    -0.9692436,  1.8759675,  0.0415551,      \
     0.0134443, -0.1183624,  1.0151750
-
-// chromaticity coordinates, xR,yR, xG,yG, xB,yB
-// followed by white point for D65 illuminant, xy
-// followed by Y' coefficients
-// TODO: Bradford transform / CAT, for most common whitepoints, which for
-// our use will be D60, D65, DCI.
-
-// CIE1931 2° standard observer, Hernandez 1999 method
-#define D55_WHITEPOINT_CIE1931_2_DEG    0.33242, 0.34743
-#define D60_WHITEPOINT_CIE1931_2_DEG    0.32168, 0.33767
-#define D65_WHITEPOINT_CIE1931_2_DEG    0.31270, 0.32900
-#define DCIP3_WHITEPOINT_CIE1931_2_DEG  0.31400, 0.35100
-
-// ITU-R/BT.601 https://www.itu.int/rec/R-REC-BT.601-7-201103-I/en
-#define BT601_PRIMARIES             0.640, 0.330, 0.290, 0.600, 0.150, 0.060
-#define BT601_LUMINANCE_COEFFS      0.299, 0.587, 0.114
-
-// ITU-R/BT.1886 https://www.itu.int/rec/R-REC-BT.1886-0-201103-I/en
-#define BT1886_PRIMARIES            0.640, 0.330, 0.300, 0.600, 0.150, 0.060
-#define BT1886_LUMINANCE_COEFFS     0.2627, 0.6780, 0.0593
-
-// ITU-R/BT.2020 https://www.itu.int/rec/R-REC-BT.2020/en
-#define BT2020_PRIMARIES            0.708, 0.292, 0.170, 0.797, 0.131, 0.046
-#define BT2020_LUMINANCE_COEFFS     0.2627, 0.6780, 0.0593
-
-// ITU-R/BT.2100https://www.itu.int/rec/R-REC-BT.2100
-#define BT2100_PRIMARIES            0.708, 0.292, 0.170, 0.797, 0.131, 0.046
-#define BT2100_LUMINANCE_COEFFS     0.2627, 0.6780, 0.0593
-
-// ITU-R/BT.709 https://www.itu.int/rec/R-REC-BT.709/en
-#define BT709_PRIMARIES             0.640, 0.330, 0.300, 0.600, 0.150, 0.060
-#define BT709_LUMINANCE_COEFFS      0.212656, 0.715158, 0.072186
-
-// sRGB = BT.709 primaries
-#define SRGB_PRIMARIES              BT709_PRIMARIES
-#define SRGB_LUMINANCE_COEFFS       BT709_LUMINANCE_COEFFS
-
-// AdobeRGB98 http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
-#define ADOBERGB98_PRIMARIES_       0.640, 0.330, 0.210, 0.710, 0.150, 0.060
-#define ADOBERGB98_LUMINANCE_COEFFS 0.297361, 0.627355, 0.075285
 
 ///////////////////////////////////////////////////////////////////////////////
 #endif /// AS_COLOR_DATA_H
