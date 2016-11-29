@@ -34,40 +34,41 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // Color space aware luminance function
-float as_luminance(color in_C, string primaries)
+float as_luminance(color in_C, string colorspace)
 {
     color coeffs;
 
-    if (primaries == "rec601")
+    if (colorspace == "Rec.601")
     {
         coeffs = color(BT601_LUMINANCE_COEFFS);
     }
-    else if (primaries == "rec1886")
+    else if (colorspace == "Rec.1886")
     {
         coeffs = color(BT1886_LUMINANCE_COEFFS);
     }
-    else if (primaries == "rec2020")
+    else if (colorspace == "Rec.2020")
     {
         coeffs = color(BT2020_LUMINANCE_COEFFS);
     }
-    else if (primaries == "rec2100")
+    else if (colorspace == "Rec.2100")
     {
         coeffs = color(BT2100_LUMINANCE_COEFFS);
     }
-    else if (primaries == "adobergb") 
+    else if (colorspace == "AdobeRGB98") 
     {
         coeffs = color(ADOBERGB98_LUMINANCE_COEFFS);
     }
-    else if (primaries == "rec709" || primaries == "srgb")
+    else if (colorspace == "Rec.709" || colorspace == "sRGB")
     {
         coeffs = color(BT709_LUMINANCE_COEFFS);
     }
     else
     {
-        coeffs = color(0) ;
 #ifdef DEBUG
-        warning("Unspecified colorspace in %s\n", __FILE__);
+        warning("[WARNING]: Unknown color space in %s:%s:%d\n",
+                __FUNCTION__, __FILE__, __LINE__);
 #endif
+        coeffs = color(0);
     }
     return coeffs[0] * in_C[0] +
            coeffs[1] * in_C[1] +
@@ -390,6 +391,59 @@ color DCIP3_OETF(color value)
 {
     return gamma_OETF(value, 2.6);
 }
+
+void xyzChromaticityCoords(string space, output vector xyz[3])
+{
+    if ( space == "Rec.601" )
+    {
+        xyz[0] = BT601_CHROMATICITIES_x;
+        xyz[1] = BT601_CHROMATICITIES_y;
+        xyz[2] = BT601_CHROMATICITIES_z;
+    }
+    else if ( space == "Rec.2020" || space == "Rec.2100" )
+    {
+        xyz[0] = BT2020_CHROMATICITIES_x;
+        xyz[1] = BT2020_CHROMATICITIES_y;
+        xyz[2] = BT2020_CHROMATICITIES_z;
+    }
+    else if ( space == "rec709" || space == "sRGB" || space == "Rec.1886" )
+    {
+        xyz[0] = BT709_CHROMATICITIES_x;
+        xyz[1] = BT709_CHROMATICITIES_y;
+        xyz[2] = BT709_CHROMATICITIES_z;
+    }
+    else if ( space == "AdobeRGB98" )
+    {
+        xyz[0] = ADOBERGB98_CHROMATICITIES_x;
+        xyz[1] = ADOBERGB98_CHROMATICITIES_y;
+        xyz[2] = ADOBERGB98_CHROMATICITIES_z;
+    }
+    else
+    {
+#ifdef DEBUG
+        warning("[WARNING]: Unknown color space in %s:%s:%d\n",
+                __FUNCTION__, __FILE__, __LINE__);
+#endif
+        xyz[0] = vector(0);
+        xyz[1] = vector(0);
+        xyz[2] = vector(0);
+    }
+}  
+
+// Transform from RGB to XYZ, color space aware
+// 1. get chromaticity coordinates xy for RGB
+// 2. get z coordinate (z=1-x-y)
+// 3. get chromaticity coordinates for white point
+// 4. get z coordinate (z=1-x-y)
+// 5. get XYZ whitepoint = (1/Wy) Wxyz
+// 6. get inverse of RGBxyz 3x3 matrix (Rxyz, Gxyz, Bxyz columns)
+// 7. solve for the (X+Y+Z) values that xform each xyz primary to XYZ 
+//    (product of RGB_xyz matrix inverse by W_XYZ vector)
+// 8. reconstruct the matrix M that xforms from linear <space> to XYZ
+//    product of RGBxyz matrix by known W_XYZ value
+//    | (rx+ry+rz)      0              0   |
+//    |   0         (gx+gy+gz)         0   |
+//    |   0             0       (bx+by+bz) |
 
 ///////////////////////////////////////////////////////////////////////////////
 #endif // AS_COLOR_HELPERS_H
