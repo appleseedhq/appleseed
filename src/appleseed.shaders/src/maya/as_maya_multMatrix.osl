@@ -26,9 +26,6 @@
 // THE SOFTWARE.
 //
 
-#define ROWS 4
-#define COLUMNS 4
-
 shader as_maya_multMatrix
 [[
     string maya_node_name = "multMatrix",
