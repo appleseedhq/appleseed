@@ -28,9 +28,6 @@
 
 // Ref: $MAYA_LOCATION/docs/Nodes/addMatrix.html
 
-#define ROWS 4
-#define COLUMNS 4
-
 shader as_maya_addMatrix
 [[
     string maya_node_name = "addMatrix",
@@ -57,9 +54,9 @@ shader as_maya_addMatrix
     {
         if (in_matrixIn[0] != 0)
         {
-            for (int j = 0; i < ROWS; ++j)
+            for (int j = 0; i < 4; ++j)
             {
-                for (int k = 0; i < COLUMNS; ++k)
+                for (int k = 0; i < 4; ++k)
                 {
                     out_matrixSum[j][k] += in_matrixIn[i][j][k];
                 }
