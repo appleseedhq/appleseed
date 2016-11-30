@@ -33,7 +33,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// Color space aware luminance function
+// Color space aware luminance function (some spaces share coefficients).
 float as_luminance(color in_C, string colorspace)
 {
     color coeffs;
@@ -42,31 +42,42 @@ float as_luminance(color in_C, string colorspace)
     {
         coeffs = color(BT601_LUMINANCE_COEFFS);
     }
-    else if (colorspace == "Rec.1886")
+    else if (colorspace == "Rec.709")
     {
-        coeffs = color(BT1886_LUMINANCE_COEFFS);
+        coeffs = color(BT709_LUMINANCE_COEFFS);
+    }
+    else if (colorspace == "sRGB")
+    {
+        coeffs = color(SRGB_LUMINANCE_COEFFS);
     }
     else if (colorspace == "Rec.2020")
     {
         coeffs = color(BT2020_LUMINANCE_COEFFS);
     }
+    else if (colorspace == "Rec.1886")
+    {
+        coeffs = color(BT1886_LUMINANCE_COEFFS);
+    }
     else if (colorspace == "Rec.2100")
     {
         coeffs = color(BT2100_LUMINANCE_COEFFS);
     }
-    else if (colorspace == "AdobeRGB98") 
+    else if (colorspace == "sRGB")
+    {
+        coeffs = color(SRGB_LUMINANCE_COEFFS);
+    }
+    else if (colorspace == "AdobeRGB98")
     {
         coeffs = color(ADOBERGB98_LUMINANCE_COEFFS);
-    }
-    else if (colorspace == "Rec.709" || colorspace == "sRGB")
-    {
-        coeffs = color(BT709_LUMINANCE_COEFFS);
     }
     else
     {
 #ifdef DEBUG
-        warning("[WARNING]: Unknown color space in %s:%s:%d\n",
-                __FUNCTION__, __FILE__, __LINE__);
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
+
+        warning("[WARNING]: Unknown color space in shader %s, %s:%i\n",
+                shadername, __FILE__, __LINE__);
 #endif
         coeffs = color(0);
     }
@@ -84,13 +95,13 @@ float sRGB_EOTF(float value)
     {
         linear_out = pow((value + 0.055) / 1.055, 2.4);
     }
-    else if (value > 0.0)
+    else if (value > 0)
     {
         linear_out = value / 12.92;
     }
     else
     {
-        linear_out = 0.0;
+        linear_out = 0;
     }
     return linear_out;
 }
@@ -102,7 +113,7 @@ float sRGB_OETF(float value)
 
     if (value > 0.0031308)
     {
-        prime_out = 1.055 * pow(value, 1.0 / 2.4) - 0.055;
+        prime_out = 1.055 * pow(value, 1 / 2.4) - 0.055;
     }
     else if (value > 0)
     {
@@ -110,7 +121,7 @@ float sRGB_OETF(float value)
     }
     else
     {
-        prime_out = 0.0;
+        prime_out = 0;
     }
     return prime_out;
 }
@@ -140,15 +151,15 @@ float BT709_EOTF(float value)
 
     if (value > 0.081)
     {
-        linear_out = pow((value + 0.099) / 1.099, (1.0 / 0.45));
+        linear_out = pow((value + 0.099) / 1.099, (1 / 0.45));
     }
-    else if (value > 0.0)
+    else if (value > 0)
     {
         linear_out = (1.0 / 4.5) * value;
     }
     else
     {
-        linear_out = 0.0;
+        linear_out = 0;
     }
     return linear_out;
 }
@@ -162,13 +173,13 @@ float BT709_OETF(float value)
     {
         prime_out = 1.099 * pow(value, 0.45) - 0.099;
     }
-    else if (value > 0.0)
+    else if (value > 0)
     {
         prime_out = value * 4.5;
     }
     else
     {
-        prime_out = 0.0;
+        prime_out = 0;
     }
     return prime_out;
 }
@@ -191,13 +202,13 @@ color BT709_OETF(color value)
         );
 }
 
-// ITU-R BT.2020 electro-optical transfer function
-// bitdepth: 10 bits system, 12bits system.
+// ITU-R BT.2020 electro-optical transfer function, bitdepth:
+// 10 bits system, 12bits system.
 float BT2020_EOTF(float value, int bitdepth)
 {
     float linear_out;
 
-    if (value > 0.0)
+    if (value > 0)
     {
         float alpha, beta;
 
@@ -218,12 +229,12 @@ float BT2020_EOTF(float value, int bitdepth)
         }
         else
         {
-            linear_out = pow((value + (alpha - 1.0)) / alpha, 1.0 / 0.45);
+            linear_out = pow((value + (alpha - 1)) / alpha, 1 / 0.45);
         }
     }
     else
     {
-        linear_out = 0.0;
+        linear_out = 0;
     }
     return linear_out ;
 }
@@ -233,7 +244,7 @@ float BT2020_OETF(float value, int bitdepth)
 {
     float prime_out ;
 
-    if (value > 0.0)
+    if (value > 0)
     {
         float alpha, beta;
 
@@ -254,12 +265,12 @@ float BT2020_OETF(float value, int bitdepth)
         }
         else
         {
-            prime_out = alpha * pow(value, 0.45) - (alpha - 1.0);
+            prime_out = alpha * pow(value, 0.45) - (alpha - 1);
         }
     }
     else
     {
-        prime_out = 0.0;
+        prime_out = 0;
     }
     return prime_out;
 }
@@ -288,10 +299,10 @@ float BT1886_EOTF(float value, float black_luminance, float white_luminance)
 {
     float linear_out;
 
-    if (value > 0.0)
+    if (value > 0)
     {
         float gamma = 2.4;
-        float gamma_denom = 1.0 / gamma;
+        float gamma_denom = 1 / gamma;
 
         float tmp = pow(white_luminance, gamma_denom) -
                     pow(black_luminance, gamma_denom);
@@ -303,7 +314,7 @@ float BT1886_EOTF(float value, float black_luminance, float white_luminance)
     }
     else
     {
-        linear_out = 0.0;
+        linear_out = 0;
     }
     return linear_out;
 }
@@ -314,10 +325,10 @@ float BT1886_OETF(float value, float black_luminance, float white_luminance)
 {
     float prime_out;
 
-    if (value > 0.0)
+    if (value > 0)
     {
         float gamma = 2.4;
-        float gamma_denom = 1.0 / gamma;
+        float gamma_denom = 1 / gamma;
 
         float tmp = pow(white_luminance, gamma_denom) -
                     pow(black_luminance, gamma_denom);
@@ -329,7 +340,7 @@ float BT1886_OETF(float value, float black_luminance, float white_luminance)
     }
     else
     {
-        prime_out = 0.0;
+        prime_out = 0;
     }
     return prime_out;
 }
@@ -355,7 +366,7 @@ color BT1886_OETF(color value, float black_luminance, float white_luminance)
 // General pow(x,gamma) encoding/decoding.
 float gamma_EOTF(float value, float gamma)
 {
-    return (value > 0.0) ? pow(value, gamma) : 0.0;
+    return (value > 0) ? pow(value, gamma) : 0;
 }
 
 color gamma_EOTF(color value, color gamma)
@@ -369,7 +380,7 @@ color gamma_EOTF(color value, color gamma)
 
 float gamma_OETF(float value, float gamma)
 {
-    return (value > 0.0) ? pow(value, 1.0 / gamma) : 0.0;
+    return (value > 0) ? pow(value, 1 / gamma) : 0;
 }
 
 color gamma_OETF(color value, color gamma)
@@ -381,69 +392,88 @@ color gamma_OETF(color value, color gamma)
         );
 }
 
-// DCIP3 uses gamma=2.6.
+// DCIP3 EOTF/OETF, simple power law function with gamma=2.6.
 color DCIP3_EOTF(color value)
 {
-    return gamma_EOTF(value, 2.6);
+    return gamma_EOTF(value, DCIP3_GAMMA);
 }
 
 color DCIP3_OETF(color value)
 {
-    return gamma_OETF(value, 2.6);
+    return gamma_OETF(value, DCIP3_GAMMA);
 }
 
+// AdobeRGB1998 EOTF/OETF, simple power law function with gamma=2.19921875. 
+color AdobeRGB_EOTF(color value)
+{
+    return gamma_EOTF(value, ADOBERGB98_GAMMA);
+}
+
+// AdobeRGB opto-e
+color AdobeRGB_OETF(color value)
+{
+    return gamma_EOTF(value, ADOBERGB98_GAMMA);
+}
+
+// Get primaries xyz coordinates for given space (some are shared).
 void xyzChromaticityCoords(string space, output vector xyz[3])
 {
-    if ( space == "Rec.601" )
+    if (space == "Rec.601")
     {
-        xyz[0] = BT601_CHROMATICITIES_x;
-        xyz[1] = BT601_CHROMATICITIES_y;
-        xyz[2] = BT601_CHROMATICITIES_z;
+        xyz[0] = BT601_CHROMATICITIES_Rxyz;
+        xyz[1] = BT601_CHROMATICITIES_Gxyz;
+        xyz[2] = BT601_CHROMATICITIES_Bxyz;
     }
-    else if ( space == "Rec.2020" || space == "Rec.2100" )
+    else if (space == "Rec.709")
     {
-        xyz[0] = BT2020_CHROMATICITIES_x;
-        xyz[1] = BT2020_CHROMATICITIES_y;
-        xyz[2] = BT2020_CHROMATICITIES_z;
+        xyz[0] = BT709_CHROMATICITIES_Rxyz:
+        xyz[1] = BT709_CHROMATICITIES_Gxyz;
+        xyz[2] = BT709_CHROMATICITIES_Bxyz;
     }
-    else if ( space == "rec709" || space == "sRGB" || space == "Rec.1886" )
+    else if (space == "Rec.2020")
     {
-        xyz[0] = BT709_CHROMATICITIES_x;
-        xyz[1] = BT709_CHROMATICITIES_y;
-        xyz[2] = BT709_CHROMATICITIES_z;
+        xyz[0] = BT2020_CHROMATICITIES_Rxyz;
+        xyz[1] = BT2020_CHROMATICITIES_Gxyz;
+        xyz[2] = BT2020_CHROMATICITIES_Bxyz;
     }
-    else if ( space == "AdobeRGB98" )
+    else if (space == "Rec.1886")
     {
-        xyz[0] = ADOBERGB98_CHROMATICITIES_x;
-        xyz[1] = ADOBERGB98_CHROMATICITIES_y;
-        xyz[2] = ADOBERGB98_CHROMATICITIES_z;
+        xyz[0] = BT1886_CHROMATICITIES_Rxyz;
+        xyz[1] = BT1886_CHROMATICITIES_Gxyz;
+        xyz[2] = BT1886_CHROMATICITIES_Bxyz;
+    }
+    else if (space == "Rec.2100")
+    {
+        xyz[0] = BT2100_CHROMATICITIES_Rxyz;
+        xyz[1] = BT2100_CHROMATICITIES_Gxyz;
+        xyz[2] = BT2100_CHROMATICITIES_Bxyz;
+    }
+    else if (space == "sRGB")
+    {
+        xyz[0] = SRGB_CHROMATICITIES_Rxyz;
+        xyz[1] = SRGB_CHROMATICITIES_Gxyz;
+        xyz[2] = SRGB_CHROMATICITIES_Bxyz;
+    }
+    else if (space == "AdobeRGB98")
+    {
+        xyz[0] = ADOBERGB98_CHROMATICITIES_Rxyz;
+        xyz[1] = ADOBERGB98_CHROMATICITIES_Gxyz;
+        xyz[2] = ADOBERGB98_CHROMATICITIES_Bxyz;
     }
     else
     {
 #ifdef DEBUG
-        warning("[WARNING]: Unknown color space in %s:%s:%d\n",
-                __FUNCTION__, __FILE__, __LINE__);
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
+
+        warning("[WARNING]: Unknown color space in shader %s, %s:%i\n",
+                 shadername, __FILE__, __LINE__);
 #endif
         xyz[0] = vector(0);
         xyz[1] = vector(0);
         xyz[2] = vector(0);
     }
-}  
-
-// Transform from RGB to XYZ, color space aware
-// 1. get chromaticity coordinates xy for RGB
-// 2. get z coordinate (z=1-x-y)
-// 3. get chromaticity coordinates for white point
-// 4. get z coordinate (z=1-x-y)
-// 5. get XYZ whitepoint = (1/Wy) Wxyz
-// 6. get inverse of RGBxyz 3x3 matrix (Rxyz, Gxyz, Bxyz columns)
-// 7. solve for the (X+Y+Z) values that xform each xyz primary to XYZ 
-//    (product of RGB_xyz matrix inverse by W_XYZ vector)
-// 8. reconstruct the matrix M that xforms from linear <space> to XYZ
-//    product of RGBxyz matrix by known W_XYZ value
-//    | (rx+ry+rz)      0              0   |
-//    |   0         (gx+gy+gz)         0   |
-//    |   0             0       (bx+by+bz) |
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 #endif // AS_COLOR_HELPERS_H
