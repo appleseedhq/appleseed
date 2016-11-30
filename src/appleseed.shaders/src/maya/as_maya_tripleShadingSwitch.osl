@@ -65,8 +65,7 @@ shader as_maya_tripleShadingSwitch
     string shape = "";
     out_output = in_default;
 
-    // tentative object name to query from maya
-    if (getattribute("maya:objectname", shape))
+    if (getattribute("object:object_instance_id", shape))
     {
         for (int i = 0; i < arraylength(in_inShape); ++i)
         {

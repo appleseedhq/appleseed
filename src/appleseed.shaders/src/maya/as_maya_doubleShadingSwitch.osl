@@ -66,8 +66,7 @@ shader as_maya_doubleShadingSwitch
     out_output[0] = in_default[0];
     out_output[1] = in_default[1];
 
-    // tentative object name to query from maya
-    if (getattribute("maya:objectname", shape))
+    if (getattribute("object:object_instance_id", shape))
     {
         for (int i = 0; i < arraylength(in_inShape); ++i)
         {
