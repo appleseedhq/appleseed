@@ -139,8 +139,11 @@ shader as_maya_plusMinusAverage
     else
     {
 #ifdef DEBUG
-        warning( "[WARNING]: %s:%d : invalid operation" ,
-                 __FILE__, __LINE__ );
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
+
+        warning("[WARNING]: invalid operation in shader %s, %s:%i\n",
+                shadername, __FILE__, __LINE__);
 #endif
         out_output1D = 0.0;
         // interesting
