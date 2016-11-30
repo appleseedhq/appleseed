@@ -87,8 +87,11 @@ shader as_maya_multiplyDivide
     else
     {
 #ifdef DEBUG
-        warning( "WARNING: %s:%d : invalid operation passed\n",
-                 __FILE__, __LINE__ );
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
+
+        warning("[WARNING]: invalid operation passed in shader %s, %s:%i\n",
+                shadername, __FILE__, __LINE__);
 #endif
         out_output = 0.0;
     }
