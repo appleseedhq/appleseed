@@ -65,11 +65,11 @@ shader as_maya_tripleShadingSwitch
     string shape = "";
     out_output = in_default;
 
-    if ( getattribute("object:object_instance_id", shape) )
+    if (getattribute("object:object_instance_id", shape))
     {
-        for ( int i = 0; i < arraylength(in_inShape); ++i )
+        for (int i = 0; i < arraylength(in_inShape); ++i)
         {
-            if ( in_inShape[i] == shape )
+            if (in_inShape[i] == shape)
             {
                 out_output = in_inTriple[i];
                 exit();

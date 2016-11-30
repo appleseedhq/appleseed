@@ -79,21 +79,21 @@ shader as_maya_vectorProduct
     ]]
 )
 {
-    if ( in_operation == 0 )
+    if (in_operation == 0)
     {
         out_output = in_input1;
     }
-    else if ( in_operation == 1 )
+    else if (in_operation == 1)
     {
         out_output = (in_normalizeOutput)
             ? dot(normalize(in_input1), normalize(in_input2))
             : dot(in_input1, in_input2);
     }
-    else if ( in_operation == 2 )
+    else if (in_operation == 2)
     {
         out_output = cross(in_input1, in_input2);
     }
-    else if ( in_operation == 3 )
+    else if (in_operation == 3)
     {
         out_output = (vector) transform(in_matrix, in_input1);
     }
@@ -103,7 +103,7 @@ shader as_maya_vectorProduct
         out_output = (vector) tmp;
     }
 
-    if ( in_normalizeOutput && in_operation != 1 )
+    if (in_normalizeOutput && in_operation != 1)
     {
         out_output = normalize(out_output);
     }
