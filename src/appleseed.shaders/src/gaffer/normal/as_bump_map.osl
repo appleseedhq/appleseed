@@ -88,13 +88,13 @@ shader as_bump_map
     else
     {
         //
-        // Surface gradients
+        // Surface gradients.
         //
         // Reference:
         //
-        //     Bump Mapping Unparametrized Surfaces on the GPU
-        //     Morten S. Mikkelsen
-        //     https://dl.dropbox.com/u/55891920/papers/mm_sfgrad_bump.pdf
+        //    Bump Mapping Unparametrized Surfaces on the GPU
+        //    Morten S. Mikkelsen
+        //    https://dl.dropbox.com/u/55891920/papers/mm_sfgrad_bump.pdf
         //
 
         int has_diffs;
