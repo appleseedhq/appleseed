@@ -35,20 +35,25 @@ shader as_maya_addDoubleLinear
 ]]
 (
     float in_input1 = 0.0
-        [[  string maya_attribute_name = "input1",
-            string maya_attribute_type = "float",
-            string label = "Input 1" ]],
-
+    [[
+        string maya_attribute_name = "input1",
+        string maya_attribute_type = "float",
+        string label = "Input 1"
+    ]],
     float in_input2 = 0.0
-        [[  string maya_attribute_name = "input2",
-            string maya_attribute_type = "float",
-            string label = "Input 2" ]],
+    [[
+        string maya_attribute_name = "input2",
+        string maya_attribute_type = "float",
+        string label = "Input 2"
+    ]],
 
     output float out_output = 0.0
-        [[  string maya_attribute_name = "output",
-            string maya_attribute_type = "float",
-            string label = "Output",
-            string widget = "null" ]]
+    [[
+        string maya_attribute_name = "output",
+        string maya_attribute_type = "float",
+        string label = "Output",
+        string widget = "null"
+    ]]
 )
 {
     out_output = in_input1 + in_input2 ;
