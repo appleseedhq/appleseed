@@ -68,11 +68,13 @@ shader as_maya_distanceBetween
     ]]
 )
 {
-    point p1 = (in_inMatrix1 != matrix(1)) ?
-        transform(in_inMatrix1, in_point1) : in_point1;
+    point p1 = (in_inMatrix1 != matrix(1))
+        ? transform(in_inMatrix1, in_point1)
+        : in_point1;
 
-    point p2 = (in_inMatrix2 != matrix(1)) ?
-        transform(in_inMatrix2, in_point2) : in_point2;
+    point p2 = (in_inMatrix2 != matrix(1))
+        ? transform(in_inMatrix2, in_point2)
+        : in_point2;
 
     out_distance = distance(p1, p2);
 }

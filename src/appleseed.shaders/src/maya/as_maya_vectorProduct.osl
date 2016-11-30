@@ -86,10 +86,8 @@ shader as_maya_vectorProduct
     else if ( in_operation == 1 )
     {
         out_output = (in_normalizeOutput)
-            ?
-            dot(normalize(in_input1), normalize(in_input2))
-            :
-            dot(in_input1, in_input2);
+            ? dot(normalize(in_input1), normalize(in_input2))
+            : dot(in_input1, in_input2);
     }
     else if ( in_operation == 2 )
     {

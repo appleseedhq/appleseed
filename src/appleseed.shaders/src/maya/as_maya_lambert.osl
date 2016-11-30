@@ -237,8 +237,9 @@ shader as_maya_lambert
 
             if (raydepth <= in_refractionLimit)
             {
-                float eta = (backfacing()) ? 
-                    1 / in_refractiveIndex : in_refractiveIndex;
+                float eta = (backfacing())
+                    ? 1 / in_refractiveIndex
+                    : in_refractiveIndex;
                     
                 refraction_term = opacity * refraction(Nn, eta);
             }

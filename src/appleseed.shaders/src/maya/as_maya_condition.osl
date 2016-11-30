@@ -78,33 +78,39 @@ shader as_maya_condition
 {
     if ( in_operation == 0 )
     {
-        out_outColor = (in_firstTerm == in_secondTerm) ?
-        in_colorIfTrue : in_colorIfFalse;
+        out_outColor = (in_firstTerm == in_secondTerm)
+            ? in_colorIfTrue
+            : in_colorIfFalse;
     }
     else if ( in_operation == 1 )
     {
-        out_outColor = (in_firstTerm != in_secondTerm) ?
-        in_colorIfTrue : in_colorIfFalse;
+        out_outColor = (in_firstTerm != in_secondTerm)
+            ? in_colorIfTrue
+            : in_colorIfFalse;
     }
     else if ( in_operation == 2 )
     {
-        out_outColor = (in_firstTerm > in_secondTerm) ?
-        in_colorIfTrue : in_colorIfFalse;
+        out_outColor = (in_firstTerm > in_secondTerm)
+            ? in_colorIfTrue
+            : in_colorIfFalse;
     }
     else if ( in_operation == 3 )
     {
-        out_outColor = (in_firstTerm >= in_secondTerm) ?
-        in_colorIfTrue : in_colorIfFalse;
+        out_outColor = (in_firstTerm >= in_secondTerm)
+            ? in_colorIfTrue
+            : in_colorIfFalse;
     }
     else if ( in_operation == 4 )
     {
-        out_outColor = (in_firstTerm < in_secondTerm) ?
-        in_colorIfTrue : in_colorIfFalse;
+        out_outColor = (in_firstTerm < in_secondTerm)
+            ? in_colorIfTrue
+            : in_colorIfFalse;
     }
     else if ( in_operation == 5 )
     {
-        out_outColor = (in_firstTerm <= in_secondTerm) ?
-        in_colorIfTrue : in_colorIfFalse ;
+        out_outColor = (in_firstTerm <= in_secondTerm)
+            ? in_colorIfTrue
+            : in_colorIfFalse ;
     }
     else
     {
