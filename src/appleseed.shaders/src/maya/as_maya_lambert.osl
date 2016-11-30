@@ -195,12 +195,12 @@ shader as_maya_lambert
     ]]
 )
 {   
-    if (raytype("shadow"))
+    if ( raytype("shadow") )
     {
         color transparency = in_transparency ;
 
         // Shadow attenuation: 0=constant, 1=fake caustics.
-        if (in_transparency != 0 && in_shadowAttenuation > 0)
+        if ( in_transparency != 0 && in_shadowAttenuation > 0 )
         {
             transparency *= mix(
                 transparency,
@@ -230,7 +230,7 @@ shader as_maya_lambert
         closure color refraction_term ;
 
         // Maya refraction (BTDF only).
-        if (in_refractions)
+        if ( in_refractions )
         {
             int raydepth = 0;
             int status = getattribute("path:ray_depth", raydepth);
@@ -246,11 +246,11 @@ shader as_maya_lambert
 
         float matte_opacity;
 
-        if (in_matteOpacityMode == 0)
+        if ( in_matteOpacityMode == 0 )
         {
             matte_opacity = 0.0;
         }
-        else if (in_matteOpacityMode == 1)
+        else if ( in_matteOpacityMode == 1 )
         {
             matte_opacity = 1.0;
         }
@@ -265,7 +265,7 @@ shader as_maya_lambert
 
         closure color glow_term = 0;
 
-        if (in_glowIntensity)
+        if ( in_glowIntensity )
         {
             // glow_term = opacity * in_glowIntensity * post_glow();
             // out_outGlowColor = glow_term;

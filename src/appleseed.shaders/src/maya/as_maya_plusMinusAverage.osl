@@ -88,31 +88,30 @@ shader as_maya_plusMinusAverage
     int size_2d = arraylength(in_input2D);
     int size_3d = arraylength(in_input3D);
 
-    if (in_operation == 0)
+    if ( in_operation == 0 )
     {
         out_output1D    = (size_1d) ? in_input1D[0] : 0.0;
         out_output2D[0] = (size_2d) ? in_input2D[0][0] : 0.0;
         out_output2D[1] = (size_2d) ? in_input2D[0][1] : 0.0;
-
-        out_output3D = (size_3d) ? in_input3D[0] : 0.0;
+        out_output3D    = (size_3d) ? in_input3D[0] : 0.0;
     }
-    else if (in_operation == 1 || in_operation == 3)
+    else if ( in_operation == 1 || in_operation == 3 )
     {
-        for (int i = 0; i < size_1d; ++i)
+        for ( int i = 0; i < size_1d; ++i )
         {
             out_output1D += in_input1D[i];
         }
-        for (int i = 0; i < size_2d; ++i)
+        for ( int i = 0; i < size_2d; ++i )
         {
             out_output2D[0] += in_input2D[i][0];
             out_output2D[1] += in_input2D[i][1];
         }
-        for (int i = 0; i < size_3d; ++i)
+        for ( int i = 0; i < size_3d; ++i )
         {
             out_output3D += in_input3D[i];
         }
 
-        if (in_operation == 3)
+        if ( in_operation == 3 )
         {
             out_output1D    /= size_1d;
             out_output2D[0] /= size_2d;
@@ -120,18 +119,18 @@ shader as_maya_plusMinusAverage
             out_output3D    /= size_3d;
         }
     }
-    else if (in_operation == 2)
+    else if ( in_operation == 2 )
     {
-        for (int i = 0; i < size_1d; ++i)
+        for ( int i = 0; i < size_1d; ++i )
         {
             out_output1D -= in_input1D[i];
         }
-        for (int i = 0; i < size_2d; ++i)
+        for ( int i = 0; i < size_2d; ++i )
         {
             out_output2D[0] -= in_input2D[i][0];
             out_output2D[1] -= in_input2D[i][0];
         }
-        for (int i = 0; i < size_3d; ++i)
+        for ( int i = 0; i < size_3d; ++i )
         {
             out_output3D -= in_input3D[i];
         }
