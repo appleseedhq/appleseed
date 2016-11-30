@@ -196,7 +196,6 @@ endforeach ()
 # Copy include directory.
 add_custom_command (
     TARGET appleseed.shaders
-    COMMAND echo "Copying appleseed.shaders includes to sandbox."
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/include
         ${PROJECT_SOURCE_DIR}/sandbox/shaders/
