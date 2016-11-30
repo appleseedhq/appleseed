@@ -35,25 +35,31 @@ shader as_maya_clamp
 ]]
 (
     float in_min = 0.0
-        [[  string maya_attribute_name = "min",
-            string maya_attribute_type = "float",
-            string label = "Lower Bound" ]],
-
+    [[
+        string maya_attribute_name = "min",
+        string maya_attribute_type = "float",
+        string label = "Lower Bound"
+    ]],
     float in_max = 0.0
-        [[  string maya_attribute_name = "max",
-            string maya_attribute_type = "float",
-            string label = "Upper Bound" ]],
-
+    [[
+        string maya_attribute_name = "max",
+        string maya_attribute_type = "float",
+        string label = "Upper Bound"
+    ]],
     color in_input = color(0)
-        [[  string maya_attribute_name = "input",
-            string maya_attribute_type = "color",
-            string label = "Input Color" ]],
+    [[
+        string maya_attribute_name = "input",
+        string maya_attribute_type = "color",
+        string label = "Input Color"
+    ]],
 
     output color out_output = color(0)
-        [[  string maya_attribute_name = "output",
-            string maya_attribute_type = "color",
-            string label = "Output Color",
-            string widget = "null" ]]
+    [[
+        string maya_attribute_name = "output",
+        string maya_attribute_type = "color",
+        string label = "Output Color",
+        string widget = "null"
+    ]]
 )
 {
     out_output = clamp(in_input, in_min, in_max);
