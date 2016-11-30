@@ -37,6 +37,7 @@ configure_file (
     ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/as_osl_extensions.h
 )
 
+
 #--------------------------------------------------------------------------------------------------
 # Header files.
 #--------------------------------------------------------------------------------------------------
@@ -65,6 +66,7 @@ list (APPEND osl_headers
     ${appleseed_osl_headers}
     ${appleseed_library_osl_headers}
 )
+
 
 #--------------------------------------------------------------------------------------------------
 # Source files.
@@ -160,6 +162,7 @@ set (appleseed_maya2_osl_sources
      src/maya/as_maya_vectorProduct.osl
 )
 list (APPEND osl_sources ${appleseed_maya2_osl_sources})
+
 
 #--------------------------------------------------------------------------------------------------
 # Compile shaders.
