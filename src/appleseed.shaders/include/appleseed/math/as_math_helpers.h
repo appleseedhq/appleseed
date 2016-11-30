@@ -30,13 +30,11 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef SQR
-#define SQR(X) ( (X) * (X) )
-#endif
-
 #ifndef EPS
 #define EPS 1.0e-6
 #endif
+
+float sqr(float x) { return x * x; }
 
 // Perlin bias
 float bias(float value, float b)
@@ -47,9 +45,8 @@ float bias(float value, float b)
 float gain(float value, float g)
 {
     return (value < 0.5)
-        ?
-        bias(value * 2, 1 - g) * 0.5 :
-        1 - bias(2 - (value * 2), 1 - g) * 0.5;
+        ? bias(value * 2, 1 - g) * 0.5
+        : 1 - bias(2 - (value * 2), 1 - g) * 0.5;
 }
 
 // Schlick's bias function: http://dept-info.labri.fr/~schlick/DOC/gem2.ps.gz
@@ -60,10 +57,9 @@ float fast_bias(float value, float b)
 
 float fast_gain(float value, float g)
 {
-    return ( value < 0.5 )
-        ?
-        fast_bias(value * 2, g) * 0.5 :
-        fast_bias(value * 2 - 1, 1 - g) * 0.5 + 0.5 ;
+    return (value < 0.5)
+        ? fast_bias(value * 2, g) * 0.5
+        : fast_bias(value * 2 - 1, 1 - g) * 0.5 + 0.5;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
