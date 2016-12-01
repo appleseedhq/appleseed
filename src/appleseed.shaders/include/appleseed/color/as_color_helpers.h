@@ -86,7 +86,6 @@ float as_luminance(color in_C, string colorspace)
            coeffs[2] + in_C[2] ;
 }
 
-// sRGB electro-optical transfer function
 float sRGB_EOTF(float value)
 {
     float linear_out;
@@ -106,7 +105,6 @@ float sRGB_EOTF(float value)
     return linear_out;
 }
 
-// sRGB opto-electrical transfer function
 float sRGB_OETF(float value)
 {
     float prime_out;
@@ -144,7 +142,6 @@ color sRGB_OETF(color value)
         );
 }
 
-// ITU-R BT.709 electro-optical transfer function
 float BT709_EOTF(float value)
 {
     float linear_out;
@@ -164,7 +161,6 @@ float BT709_EOTF(float value)
     return linear_out;
 }
 
-// ITU-R BT.709 opto-electrical transfer function
 float BT709_OETF(float value)
 {
     float prime_out ;
@@ -202,8 +198,7 @@ color BT709_OETF(color value)
         );
 }
 
-// ITU-R BT.2020 electro-optical transfer function, bitdepth:
-// 10 bits system, 12bits system.
+// ITU-R BT.2020 transfer functions for bitdepth: 10|12bit system.
 float BT2020_EOTF(float value, int bitdepth)
 {
     float linear_out;
@@ -239,7 +234,6 @@ float BT2020_EOTF(float value, int bitdepth)
     return linear_out ;
 }
 
-// ITU-R BT.2020 opto-electrical transfer function.
 float BT2020_OETF(float value, int bitdepth)
 {
     float prime_out ;
@@ -293,8 +287,7 @@ color BT2020_OETF(color value, int bitdepth)
         );
 }
 
-// ITU-R BT.1886 electro-optical transfer function
-// black luminance = 64cd/m^2, white luminance = 940cd/m^2.
+// ITU-R BT.1886 black luminance = 64cd/m², white luminance = 940cd/m².
 float BT1886_EOTF(float value, float black_luminance, float white_luminance)
 {
     float linear_out;
@@ -319,8 +312,6 @@ float BT1886_EOTF(float value, float black_luminance, float white_luminance)
     return linear_out;
 }
 
-// ITU-R BT.1886 opto-electrical transfer function
-// black luminance = 64cd/m^2, white luminance = 940cd/m^2.
 float BT1886_OETF(float value, float black_luminance, float white_luminance)
 {
     float prime_out;
@@ -363,10 +354,20 @@ color BT1886_OETF(color value, float black_luminance, float white_luminance)
         );
 }
 
-// General pow(x,gamma) encoding/decoding.
 float gamma_EOTF(float value, float gamma)
 {
-    return (value > 0) ? pow(value, gamma) : 0;
+    if (value == 0)
+    {
+        return 0;
+    }
+    else if (value == 1)
+    {
+        return value;
+    }
+    else
+    {
+        return pow(value, gamma);
+    }
 }
 
 color gamma_EOTF(color value, color gamma)
@@ -380,7 +381,14 @@ color gamma_EOTF(color value, color gamma)
 
 float gamma_OETF(float value, float gamma)
 {
-    return (value > 0) ? pow(value, 1 / gamma) : 0;
+    if (value == 0)
+    {
+        return 0;
+    }
+    else
+    {
+        return pow(value, 1 / gamma);
+    }
 }
 
 color gamma_OETF(color value, color gamma)
@@ -392,7 +400,6 @@ color gamma_OETF(color value, color gamma)
         );
 }
 
-// DCIP3 EOTF/OETF, simple power law function with gamma=2.6.
 color DCIP3_EOTF(color value)
 {
     return gamma_EOTF(value, DCIP3_GAMMA);
@@ -403,13 +410,11 @@ color DCIP3_OETF(color value)
     return gamma_OETF(value, DCIP3_GAMMA);
 }
 
-// AdobeRGB1998 EOTF/OETF, simple power law function with gamma=2.19921875. 
 color AdobeRGB_EOTF(color value)
 {
     return gamma_EOTF(value, ADOBERGB98_GAMMA);
 }
 
-// AdobeRGB opto-e
 color AdobeRGB_OETF(color value)
 {
     return gamma_EOTF(value, ADOBERGB98_GAMMA);
@@ -472,6 +477,68 @@ void xyzChromaticityCoords(string space, output vector xyz[3])
         xyz[0] = vector(0);
         xyz[1] = vector(0);
         xyz[2] = vector(0);
+    }
+}
+
+color transformRGB2XYZ(color C, string space)
+{
+    if (space == "sRGB")
+    {
+        return color(
+            dot(vector(RGB2XYZ_D65_SRGB_R0), vector(C)),
+            dot(vector(RGB2XYZ_D65_SRGB_R1), vector(C)),
+            dot(vector(RGB2XYZ_D65_SRGB_R1), vector(C))
+            );
+    }
+    else if (space == "AdobeRGB98")
+    {
+        return color(
+            dot(vector(RGB2XYZ_D65_ADOBERGB98_R0), vector(C)),
+            dot(vector(RGB2XYZ_D65_ADOBERGB98_R1), vector(C)),
+            dot(vector(RGB2XYZ_D65_ADOBERGB98_R2), vector(C))
+            );
+    }
+    else
+    {
+#ifdef DEBUG
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
+
+        warning("[WARNING]: invalid space selected in %s, %s:%i\n",
+                shadername, __FILE__, __LINE__);
+#endif
+        return color(0);
+    }
+}
+
+color transformXYZ2RGB(color C, string space)
+{
+    if (space == "sRGB")
+    {
+        return color(
+            dot(vector(XYZ2RGB_D65_SRGB_R0), vector(C)),
+            dot(vector(XYZ2RGB_D65_SRGB_R1), vector(C)),
+            dot(vector(XYZ2RGB_D65_SRGB_R1), vector(C))
+            );
+    }
+    else if (space == "AdobeRGB98")
+    {
+        return color(
+            dot(vector(XYZ2RGB_D65_ADOBERGB98_R0), vector(C)),
+            dot(vector(XYZ2RGB_D65_ADOBERGB98_R1), vector(C)),
+            dot(vector(XYZ2RGB_D65_ADOBERGB98_R2), vector(C))
+            );
+    }
+    else
+    {
+#ifdef DEBUG
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
+
+        warning("[WARNING]: invalid space selected in %s, %s:%i\n",
+                shadername, __FILE__, __LINE__);
+#endif
+        return color(0);
     }
 }
 

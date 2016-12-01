@@ -32,6 +32,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // The xyz chromaticity coordinates for the RGB color spaces (z=1-x-y), and Y.
+// OSL does not support 3x3 matrices, use vector[3] instead.
 
 // ITU-R/BT.601 Ref: https://www.itu.int/rec/R-REC-BT.601-7-201103-I/en
 #define BT601_CHROMATICITIES_Rxyz           0.640, 0.330, 0.030
