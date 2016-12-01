@@ -336,10 +336,7 @@ class PackageBuilder:
 
     def add_shaders_to_stage(self):
         progress("Adding shaders to staging directory")
-
-        if os.path.exists("appleseed/shaders"):
-            shutil.rmtree("appleseed/shaders")
-
+        shutil.rmtree("appleseed/shaders")
         shutil.copytree(os.path.join(self.settings.appleseed_path, "sandbox/shaders"), "appleseed/shaders")
 
     def add_scripts_to_stage(self):
