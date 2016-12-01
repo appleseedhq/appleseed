@@ -85,7 +85,7 @@ shader as_maya_quadShadingSwitch
     out_outTriple = in_defTriple;
     out_outSingle = in_defSingle;
 
-    if (getattribute("object:object_instance_id", shape))
+    if (getattribute("object:object_name", shape))
     {
         for (int i = 0; i < arraylength(in_inShape); ++i)
         {
