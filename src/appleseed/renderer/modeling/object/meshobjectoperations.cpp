@@ -77,7 +77,7 @@ void compute_smooth_vertex_normals_base_pose(MeshObject& object)
     object.reserve_vertex_normals(vertex_count);
 
     for (size_t i = 0; i < vertex_count; ++i)
-        object.push_vertex_normal(normalize(normals[i]));
+        object.push_vertex_normal(safe_normalize(normals[i]));
 }
 
 void compute_smooth_vertex_normals_pose(MeshObject& object, const size_t motion_segment_index)
@@ -102,7 +102,7 @@ void compute_smooth_vertex_normals_pose(MeshObject& object, const size_t motion_
     }
 
     for (size_t i = 0; i < vertex_count; ++i)
-        object.set_vertex_normal_pose(i, motion_segment_index, normalize(normals[i]));
+        object.set_vertex_normal_pose(i, motion_segment_index, safe_normalize(normals[i]));
 }
 
 void compute_smooth_vertex_normals(MeshObject& object)
@@ -162,7 +162,7 @@ void compute_smooth_vertex_tangents_base_pose(MeshObject& object)
     object.reserve_vertex_tangents(vertex_count);
 
     for (size_t i = 0; i < vertex_count; ++i)
-        object.push_vertex_tangent(normalize(tangents[i]));
+        object.push_vertex_tangent(safe_normalize(tangents[i]));
 }
 
 void compute_smooth_vertex_tangents_pose(MeshObject& object, const size_t motion_segment_index)
@@ -211,7 +211,7 @@ void compute_smooth_vertex_tangents_pose(MeshObject& object, const size_t motion
     }
 
     for (size_t i = 0; i < vertex_count; ++i)
-        object.set_vertex_tangent_pose(i, motion_segment_index, normalize(tangents[i]));
+        object.set_vertex_tangent_pose(i, motion_segment_index, safe_normalize(tangents[i]));
 }
 
 void compute_smooth_vertex_tangents(MeshObject& object)
