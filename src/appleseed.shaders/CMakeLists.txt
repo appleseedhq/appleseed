@@ -56,7 +56,7 @@ set (gaffer_osl_headers
 )
 list (APPEND appleseed_osl_headers ${gaffer_osl_headers})
 
-set(appleseed_library_osl_headers
+set (appleseed_library_osl_headers
     include/appleseed/math/as_math_helpers.h
 )
 list (APPEND appleseed_osl_headers ${appleseed_library_osl_headers})
@@ -74,14 +74,14 @@ list (APPEND osl_headers
 
 set (gaffer_osl_sources
      src/gaffer/color/as_blackbody.osl
-     src/gaffer/color/as_color_build.osl
-     src/gaffer/color/as_color_multiply.osl
-     src/gaffer/color/as_color_split.osl
-     src/gaffer/color/as_wavelength.osl
      src/gaffer/color/as_color_add.osl
+     src/gaffer/color/as_color_build.osl
      src/gaffer/color/as_color_mix.osl
+     src/gaffer/color/as_color_multiply.osl
      src/gaffer/color/as_color_saturation.osl
+     src/gaffer/color/as_color_split.osl
      src/gaffer/color/as_luminance.osl
+     src/gaffer/color/as_wavelength.osl
      src/gaffer/float/as_float_add.osl
      src/gaffer/float/as_float_cast.osl
      src/gaffer/float/as_float_mix.osl
@@ -97,18 +97,18 @@ set (gaffer_osl_sources
      src/gaffer/normal/as_bump_map.osl
      src/gaffer/normal/as_normal_map.osl
      src/gaffer/surface/as_diffuse_surface.osl
-     src/gaffer/surface/as_metal_surface.osl
-     src/gaffer/surface/as_surface_mix.osl
-     src/gaffer/surface/as_transparency_surface.osl
      src/gaffer/surface/as_emission_surface.osl
-     src/gaffer/surface/as_sheen_surface.osl
-     src/gaffer/surface/as_surface_multiply.osl
      src/gaffer/surface/as_glass_surface.osl
-     src/gaffer/surface/as_subsurface_surface.osl
-     src/gaffer/surface/as_surface_switch.osl
      src/gaffer/surface/as_glossy_surface.osl
+     src/gaffer/surface/as_metal_surface.osl
+     src/gaffer/surface/as_sheen_surface.osl
+     src/gaffer/surface/as_subsurface_surface.osl
      src/gaffer/surface/as_surface_add.osl
+     src/gaffer/surface/as_surface_mix.osl
+     src/gaffer/surface/as_surface_multiply.osl
+     src/gaffer/surface/as_surface_switch.osl
      src/gaffer/surface/as_translucent_surface.osl
+     src/gaffer/surface/as_transparency_surface.osl
      src/gaffer/texture2d/as_color_texture.osl
      src/gaffer/texture2d/as_noise2d.osl
      src/gaffer/texture2d/as_scalar_texture.osl
@@ -120,14 +120,14 @@ set (gaffer_osl_sources
      src/gaffer/utility/as_condition.osl
      src/gaffer/utility/as_switch.osl
      src/gaffer/vector/as_anisotropy_dir.osl
-     src/gaffer/vector/as_vector_build.osl
-     src/gaffer/vector/as_vector_dot.osl
-     src/gaffer/vector/as_vector_multiply.osl
-     src/gaffer/vector/as_vector_split.osl
      src/gaffer/vector/as_vector_add.osl
+     src/gaffer/vector/as_vector_build.osl
      src/gaffer/vector/as_vector_cross.osl
+     src/gaffer/vector/as_vector_dot.osl
      src/gaffer/vector/as_vector_mix.osl
+     src/gaffer/vector/as_vector_multiply.osl
      src/gaffer/vector/as_vector_normalize.osl
+     src/gaffer/vector/as_vector_split.osl
 )
 list (APPEND osl_sources ${gaffer_osl_sources})
 
@@ -148,8 +148,8 @@ set (appleseed_maya2_osl_sources
      src/maya/as_maya_lambert.osl
      src/maya/as_maya_matrixInverse.osl
      src/maya/as_maya_multDoubleLinear.osl
-     src/maya/as_maya_multiplyDivide.osl
      src/maya/as_maya_multMatrix.osl
+     src/maya/as_maya_multiplyDivide.osl
      src/maya/as_maya_plusMinusAverage.osl
      src/maya/as_maya_quadShadingSwitch.osl
      src/maya/as_maya_reverse.osl
