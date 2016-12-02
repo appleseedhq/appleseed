@@ -183,7 +183,7 @@ source_group ("src\\maya" FILES
 #--------------------------------------------------------------------------------------------------
 
 macro (osl_compile osl_src oso_obj headers)
-    # Get the absolute path to the osl source file.
+    # Get the absolute path to the .osl source file.
     get_filename_component (osl_src_abs ${osl_src} ABSOLUTE)
 
     # Build the .oso destination file name.
@@ -200,16 +200,10 @@ macro (osl_compile osl_src oso_obj headers)
         ${osl_dir}
     )
 
-    # Return the compiled oso shader filename.
-    set (oso_obj ${oso_dir}/${oso_filename})
-
-    set (osl_include_path ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/include)
-    set (oslc ${PROJECT_SOURCE_DIR}/sandbox/bin/oslc)
-
     add_custom_command (
         OUTPUT ${oso_dir}/${oso_filename}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${oso_dir}
-        COMMAND ${oslc} -I"${osl_include_path}" -o "${oso_dir}/${oso_filename}" "${osl_src_abs}"
+        COMMAND ${PROJECT_SOURCE_DIR}/sandbox/bin/oslc -I"${PROJECT_SOURCE_DIR}/src/appleseed.shaders/include" -o "${oso_dir}/${oso_filename}" "${osl_src_abs}"
         MAIN_DEPENDENCY ${osl_src_abs}
         DEPENDS ${${headers}} ${osl_src_abs}
     )
