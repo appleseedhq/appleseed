@@ -211,7 +211,7 @@ macro (osl_compile osl_src oso_obj headers)
         COMMAND ${CMAKE_COMMAND} -E make_directory "${oso_dir}"
         COMMAND "${oslc}" -I"${osl_include_path}" -o "${oso_dir}/${oso_filename}" "${osl_src_abs}"
         MAIN_DEPENDENCY ${osl_src_abs}
-        DEPENDS ${${headers}} ${osl_src_abs} "${oslc}"
+        DEPENDS ${${headers}} ${osl_src_abs}
     )
 endmacro ()
 
@@ -262,12 +262,14 @@ add_custom_command (
 
 if (USE_EXTERNAL_OSL)
     add_custom_command (
-        OUTPUT "${PROJECT_SOURCE_DIR}/sandbox/bin/oslc"
+        TARGET appleseed.shaders
+        PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${OSL_COMPILER} ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
 else ()
     add_custom_command (
-        OUTPUT "${PROJECT_SOURCE_DIR}/sandbox/bin/oslc"
+        TARGET appleseed.shaders
+        PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/osl-release/bin/oslc${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
 endif ()
