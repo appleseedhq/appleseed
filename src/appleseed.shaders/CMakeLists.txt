@@ -163,6 +163,7 @@ set (appleseed_maya2_osl_sources
      src/maya/as_maya_matrixInverse.osl
      src/maya/as_maya_multDoubleLinear.osl
      src/maya/as_maya_multMatrix.osl
+     src/maya/as_maya_place2dTexture.osl
      src/maya/as_maya_multiplyDivide.osl
      src/maya/as_maya_plusMinusAverage.osl
      src/maya/as_maya_quadShadingSwitch.osl
