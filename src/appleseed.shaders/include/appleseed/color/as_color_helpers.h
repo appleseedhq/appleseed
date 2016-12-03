@@ -419,7 +419,7 @@ void xyzChromaticityCoords(string space, output vector xyz[3])
     }
     else if (space == "Rec.709")
     {
-        xyz[0] = BT709_CHROMATICITIES_Rxyz:
+        xyz[0] = BT709_CHROMATICITIES_Rxyz;
         xyz[1] = BT709_CHROMATICITIES_Gxyz;
         xyz[2] = BT709_CHROMATICITIES_Bxyz;
     }
