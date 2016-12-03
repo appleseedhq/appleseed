@@ -28,8 +28,6 @@
 #ifndef AS_MATH_HELPERS_H
 #define AS_MATH_HELPERS_H
 
-///////////////////////////////////////////////////////////////////////////////
-
 #ifndef EPS
 #define EPS 1.0e-6
 #endif
@@ -62,6 +60,5 @@ float fast_gain(float value, float g)
         : fast_bias(value * 2 - 1, 1 - g) * 0.5 + 0.5;
 }
 
-///////////////////////////////////////////////////////////////////////////////
 #endif // AS_MATH_HELPERS_H
 

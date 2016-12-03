@@ -33,8 +33,6 @@
 #include "appleseed/color/as_color_helpers.h"
 #include "appleseed/math/as_math_helpers.h"
 
-///////////////////////////////////////////////////////////////////////////////
-
 #define OUTSIDE_UVFRAME 999999
 
 #define MAYA_COLORBALANCE_PARAMETERS                        \
@@ -167,6 +165,5 @@ color maya_contrast(
     return color(R, G, B);
 }
 
-///////////////////////////////////////////////////////////////////////////////
 #endif // AS_MAYA_HELPERS_H
 
