@@ -252,7 +252,7 @@ add_custom_command (
 
 
 #--------------------------------------------------------------------------------------------------
-# Copy the OSL compiler to the sandbox.
+# Copy the OSL compiler to the sandbox before compiling the shaders.
 #--------------------------------------------------------------------------------------------------
 
 if (USE_EXTERNAL_OSL)
