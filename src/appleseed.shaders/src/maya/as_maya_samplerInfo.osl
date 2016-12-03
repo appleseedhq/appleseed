@@ -161,8 +161,6 @@ shader as_maya_samplerInfo
 
     out_flippedNormal = backfacing();
 
-    out_facingRatio = max(0.0, dot(normalize(-I), normalize(N)));
+    out_facingRatio = max(0, dot(normalize(-I), normalize(N)));
 }
-
-///////////////////////////////////////////////////////////////////////////////
 

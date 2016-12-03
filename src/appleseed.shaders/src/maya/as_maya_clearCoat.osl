@@ -84,10 +84,8 @@ shader as_maya_clearCoat
     normal Nn = normalize(in_normalCamera);
 
     float Kr, Kt;
-    fresnel( In, Nn, 1 / in_index, Kr, Kt );
+    fresnel(In, Nn, 1 / in_index, Kr, Kt);
 
     out_outValue = Kr * in_scale + in_bias;
 }
-
-///////////////////////////////////////////////////////////////////////////////
 
