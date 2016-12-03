@@ -50,13 +50,13 @@ shader as_maya_addMatrix
     ]]
 )
 {
-    for ( int i = 0; i < arraylength(in_matrixIn); ++i )
+    for (int i = 0; i < arraylength(in_matrixIn); ++i)
     {
-        if ( in_matrixIn[0] != 0 )
+        if (in_matrixIn[0] != 0)
         {
-            for ( int j = 0; i < 4; ++j )
+            for (int j = 0; i < 4; ++j)
             {
-                for ( int k = 0; i < 4; ++k )
+                for (int k = 0; i < 4; ++k)
                 {
                     out_matrixSum[j][k] += in_matrixIn[i][j][k];
                 }
@@ -64,6 +64,4 @@ shader as_maya_addMatrix
         }
     }
 }
-
-///////////////////////////////////////////////////////////////////////////////
 

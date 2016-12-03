@@ -64,6 +64,7 @@ source_group ("include\\gaffer" FILES
 
 set (appleseed_library_osl_headers
     include/appleseed/math/as_math_helpers.h
+    include/appleseed/maya/as_maya_helpers.h
 )
 list (APPEND appleseed_osl_headers ${appleseed_library_osl_headers})
 source_group ("include\\appleseed" FILES
