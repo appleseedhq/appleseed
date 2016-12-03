@@ -31,8 +31,6 @@
 
 #include "appleseed/color/as_color_data.h"
 
-///////////////////////////////////////////////////////////////////////////////
-
 // Color space aware luminance function (some spaces share coefficients).
 float as_luminance(color in_C, string colorspace)
 {
@@ -83,7 +81,7 @@ float as_luminance(color in_C, string colorspace)
     }
     return coeffs[0] * in_C[0] +
            coeffs[1] * in_C[1] +
-           coeffs[2] + in_C[2] ;
+           coeffs[2] + in_C[2];
 }
 
 float sRGB_EOTF(float value)
@@ -129,8 +127,7 @@ color sRGB_EOTF(color value)
     return color(
         sRGB_EOTF(value[0]),
         sRGB_EOTF(value[1]),
-        sRGB_EOTF(value[2])
-        );
+        sRGB_EOTF(value[2]));
 }
 
 color sRGB_OETF(color value)
@@ -138,8 +135,7 @@ color sRGB_OETF(color value)
     return color(
         sRGB_OETF(value[0]),
         sRGB_OETF(value[1]),
-        sRGB_OETF(value[2])
-        );
+        sRGB_OETF(value[2]));
 }
 
 float BT709_EOTF(float value)
@@ -185,8 +181,7 @@ color BT709_EOTF(color value)
     return color(
         BT709_EOTF(value[0]),
         BT709_EOTF(value[1]),
-        BT709_EOTF(value[2])
-        );
+        BT709_EOTF(value[2]));
 }
 
 color BT709_OETF(color value)
@@ -194,8 +189,7 @@ color BT709_OETF(color value)
     return color(
         BT709_OETF(value[0]),
         BT709_OETF(value[1]),
-        BT709_OETF(value[2])
-        );
+        BT709_OETF(value[2]));
 }
 
 // ITU-R BT.2020 transfer functions for bitdepth: 10|12bit system.
@@ -274,8 +268,7 @@ color BT2020_EOTF(color value, int bitdepth)
     return color(
         BT2020_EOTF(value[0], bitdepth),
         BT2020_EOTF(value[1], bitdepth),
-        BT2020_EOTF(value[2], bitdepth)
-        );
+        BT2020_EOTF(value[2], bitdepth));
 }
 
 color BT2020_OETF(color value, int bitdepth)
@@ -283,8 +276,7 @@ color BT2020_OETF(color value, int bitdepth)
     return color(
         BT2020_OETF(value[0], bitdepth),
         BT2020_OETF(value[1], bitdepth),
-        BT2020_OETF(value[2], bitdepth)
-        );
+        BT2020_OETF(value[2], bitdepth));
 }
 
 // ITU-R BT.1886 black luminance = 64cd/m², white luminance = 940cd/m².
@@ -341,8 +333,7 @@ color BT1886_EOTF(color value, float black_luminance, float white_luminance)
     return color(
         BT1886_EOTF(value[0], black_luminance, white_luminance),
         BT1886_EOTF(value[1], black_luminance, white_luminance),
-        BT1886_EOTF(value[2], black_luminance, white_luminance)
-        );
+        BT1886_EOTF(value[2], black_luminance, white_luminance));
 }
 
 color BT1886_OETF(color value, float black_luminance, float white_luminance)
@@ -350,8 +341,7 @@ color BT1886_OETF(color value, float black_luminance, float white_luminance)
     return color(
         BT1886_OETF(value[0], black_luminance, white_luminance),
         BT1886_OETF(value[1], black_luminance, white_luminance),
-        BT1886_OETF(value[2], black_luminance, white_luminance)
-        );
+        BT1886_OETF(value[2], black_luminance, white_luminance));
 }
 
 float gamma_EOTF(float value, float gamma)
@@ -375,8 +365,7 @@ color gamma_EOTF(color value, color gamma)
     return color(
         gamma_EOTF(value[0], gamma[0]),
         gamma_EOTF(value[1], gamma[1]),
-        gamma_EOTF(value[2], gamma[2])
-        );
+        gamma_EOTF(value[2], gamma[2]));
 }
 
 float gamma_OETF(float value, float gamma)
@@ -396,8 +385,7 @@ color gamma_OETF(color value, color gamma)
     return color(
         gamma_OETF(value[0], gamma[0]),
         gamma_OETF(value[1], gamma[1]),
-        gamma_OETF(value[2], gamma[2])
-        );
+        gamma_OETF(value[2], gamma[2]));
 }
 
 color DCIP3_EOTF(color value)
@@ -487,16 +475,14 @@ color transformRGB2XYZ(color C, string space)
         return color(
             dot(vector(RGB2XYZ_D65_SRGB_R0), vector(C)),
             dot(vector(RGB2XYZ_D65_SRGB_R1), vector(C)),
-            dot(vector(RGB2XYZ_D65_SRGB_R1), vector(C))
-            );
+            dot(vector(RGB2XYZ_D65_SRGB_R1), vector(C)));
     }
     else if (space == "AdobeRGB98")
     {
         return color(
             dot(vector(RGB2XYZ_D65_ADOBERGB98_R0), vector(C)),
             dot(vector(RGB2XYZ_D65_ADOBERGB98_R1), vector(C)),
-            dot(vector(RGB2XYZ_D65_ADOBERGB98_R2), vector(C))
-            );
+            dot(vector(RGB2XYZ_D65_ADOBERGB98_R2), vector(C)));
     }
     else
     {
@@ -518,16 +504,14 @@ color transformXYZ2RGB(color C, string space)
         return color(
             dot(vector(XYZ2RGB_D65_SRGB_R0), vector(C)),
             dot(vector(XYZ2RGB_D65_SRGB_R1), vector(C)),
-            dot(vector(XYZ2RGB_D65_SRGB_R1), vector(C))
-            );
+            dot(vector(XYZ2RGB_D65_SRGB_R1), vector(C)));
     }
     else if (space == "AdobeRGB98")
     {
         return color(
             dot(vector(XYZ2RGB_D65_ADOBERGB98_R0), vector(C)),
             dot(vector(XYZ2RGB_D65_ADOBERGB98_R1), vector(C)),
-            dot(vector(XYZ2RGB_D65_ADOBERGB98_R2), vector(C))
-            );
+            dot(vector(XYZ2RGB_D65_ADOBERGB98_R2), vector(C)));
     }
     else
     {
@@ -542,6 +526,5 @@ color transformXYZ2RGB(color C, string space)
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////
 #endif // AS_COLOR_HELPERS_H
 

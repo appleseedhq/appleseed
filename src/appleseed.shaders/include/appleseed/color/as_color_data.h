@@ -29,8 +29,6 @@
 #ifndef AS_COLOR_DATA_H
 #define AS_COLOR_DATA_H
 
-///////////////////////////////////////////////////////////////////////////////
-
 // The xyz chromaticity coordinates for the RGB color spaces (z=1-x-y), and Y.
 // OSL does not support 3x3 matrices, use vector[3] instead.
 
@@ -146,6 +144,5 @@
     vector(XYZ2RGB_D65_SRGB_R2)             \
     }
     
-///////////////////////////////////////////////////////////////////////////////
 #endif /// AS_COLOR_DATA_H
     
