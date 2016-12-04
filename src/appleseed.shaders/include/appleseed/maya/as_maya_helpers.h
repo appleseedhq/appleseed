@@ -109,8 +109,6 @@
         string label = "UV Filter Size"                     \
     ]]
 
-// Maya luminance uses Rec.601 chromaticity coordinates and Y coefficients,
-// see: https://www.itu.int/rec/R-REC-BT.601-7-201103-I/en
 float maya_luminance(color in_C)
 {
     return as_luminance(in_C, "Rec.601");
