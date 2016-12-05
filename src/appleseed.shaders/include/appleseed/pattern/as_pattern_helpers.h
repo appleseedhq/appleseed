@@ -26,7 +26,7 @@
 // THE SOFTWARE.
 //
 
-// Taken from patterns.h, adjusted to better suite Appleseed (and OSL)
+// Taken from patterns.h, adjusted to better suite Appleseed (and OSL).
 
 /************************************************************************
  * patterns.h - Some handy functions for various patterns.  Wherever
@@ -42,6 +42,32 @@
 #define AS_PATTERN_HELPERS_H
 
 #include "appleseed/math/as_math_helpers.h"
+
+// Ref: Towards Automatic Band-Limited Procedural Shaders, from
+// https://www.cs.virginia.edu/~connelly/publications/2015_bandlimit.pdf 
+
+float filtered_abs(float x, float dx)
+{
+    float A = x * erf(x / dx * M_SQRT2);
+    float B = dx * sqrt(M_2_PI) * exp(-sqr(x) / 2 * sqr(dx));
+    return A * B;
+}
+
+float filtered_step(float a, float x, float dx)
+{
+    return 0.5 * (1 + erf((x - a) / dx * M_SQRT2));
+}
+
+float filtered_clamp(float x, float dx)
+{
+    float A = x * erf(x / dx * M_SQRT2);
+    float B = (x - 1) * erf((x - 1) / dx * M_SQRT2);
+
+    float C = exp(-sqr(x) / 2 * sqr(dx));
+    float D = exp(-sqr(x - 1) / 2 * sqr(dx));
+
+    return 0.5 * (A - B + dx * sqrt(M_2_PI) * (C - D) + 1);
+}
 
 float filtered_smoothstep(
     float edge0,
