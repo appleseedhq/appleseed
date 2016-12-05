@@ -167,15 +167,17 @@ shader as_maya_place2dTexture
     // Maya applies 2D noise 1st, xforms UV frame, then framed UV coords.
     if (in_noiseUV[0] || in_noiseUV[1])
     {
-        // TODO: add & match 2D noise
+        // It's not matching 100%, but it's close and it'll do for now.
+        vector uvnoise = noise("snoise", st[0] * 15, st[1] * 15);
 
         if (in_noiseUV[0])
         {
-            ;
+            st[0] += in_noiseUV[0] * uvnoise[0];
         }
+
         if (in_noiseUV[1])
         {
-            ;
+            st[1] += in_noiseUV[1] * uvnoise[1];
         }
     }
 
