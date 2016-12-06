@@ -26,7 +26,7 @@
 // THE SOFTWARE.
 //
 
-// Taken from patterns.h, adjusted to better suite Appleseed (and OSL).
+// Taken from patterns.h, adjusted to better suite appleseed (and OSL).
 
 /************************************************************************
  * patterns.h - Some handy functions for various patterns.  Wherever
