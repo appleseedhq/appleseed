@@ -67,5 +67,3 @@ shader as_maya_contrast
     out_outValue = maya_contrast(in_value, in_contrast, in_bias);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
