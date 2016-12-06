@@ -26,7 +26,7 @@
 // THE SOFTWARE.
 //
 
-// Ref: $MAYA_LOCATION/docs/Nodes/checker.html
+// Ref: $MAYA_LOCATION/docs/Nodes/grid.html
 
 #include "appleseed/maya/as_maya_helpers.h"
 #include "appleseed/pattern/as_pattern_helpers.h"
