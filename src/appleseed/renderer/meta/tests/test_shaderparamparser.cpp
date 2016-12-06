@@ -105,6 +105,15 @@ TEST_SUITE(Renderer_Modeling_ShaderParamParser)
         EXPECT_EQ(7, values.size());
     }
 
+    TEST_CASE(ShaderParamParserIntArray)
+    {
+        ShaderParamParser parser("int[] 1 2 3 4 5 6 7");
+        EXPECT_EQ(OSLParamTypeIntArray, parser.param_type());
+        std::vector<int> values;
+        parser.parse_int_array(values);
+        EXPECT_EQ(7, values.size());
+    }
+
     TEST_CASE(ShaderParamParserEmptyFloatArray)
     {
         ShaderParamParser parser("float[] ");

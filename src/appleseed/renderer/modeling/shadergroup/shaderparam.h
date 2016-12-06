@@ -67,6 +67,7 @@ enum OSLParamType
     OSLParamTypeFloat,
     OSLParamTypeFloatArray,
     OSLParamTypeInt,
+    OSLParamTypeIntArray,
     OSLParamTypeMatrix,
     OSLParamTypeMatrixArray,
     OSLParamTypeNormal,
@@ -90,7 +91,7 @@ class APPLESEED_DLLSYMBOL ShaderParam
     // Delete this instance.
     virtual void release() APPLESEED_OVERRIDE;
 
-    // TODO: std classes cannot be used in DLL-exported classes.
+    // TODO: STL classes cannot be used in DLL-exported classes.
     std::string get_value_as_string() const;
 
   private:
@@ -109,6 +110,11 @@ class APPLESEED_DLLSYMBOL ShaderParam
     static foundation::auto_release_ptr<ShaderParam> create_int_param(
         const char*         name,
         const int           value);
+
+    // Create an int array param.
+    static foundation::auto_release_ptr<ShaderParam> create_int_array_param(
+        const char*         name,
+        std::vector<int>&   value);
 
     // Create a float param.
     static foundation::auto_release_ptr<ShaderParam> create_float_param(
