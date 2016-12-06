@@ -27,39 +27,11 @@
 //
 
 shader as_maya_vector2Components
-[[
-    string maya_node_name = "vector2Components",
-    string maya_classification = "appleseed/utility:utility/scalar"
-]]
 (
-    vector comp = vector(0)
-    [[
-        string maya_attribute_name = "comp",
-        string maya_attribute_type = "vector",
-        string label = "Input Vector, Normal or Point"
-    ]],
-
-    output float compX = comp[0]
-    [[
-        string maya_attribute_name = "compX",
-        string maya_attribute_type = "float",
-        string label = "X Component",
-        string widget = "null"
-    ]],
-    output float compY = comp[1]
-    [[
-        string maya_attribute_name = "compY",
-        string maya_attribute_type = "float",
-        string label = "Y Component",
-        string widget = "null"
-    ]],
+    vector comp = vector(0),
+    output float compX = comp[0],
+    output float compY = comp[1],
     output float compZ = comp[2]
-    [[
-        string maya_attribute_name = "compZ",
-        string maya_attribute_type = "float",
-        string label = "Z Component",
-        string widget = "null"
-    ]]
 )
 {
     compX = comp[0];

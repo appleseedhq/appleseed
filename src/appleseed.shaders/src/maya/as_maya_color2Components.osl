@@ -27,39 +27,11 @@
 //
 
 shader as_maya_color2Components
-[[
-    string maya_node_name = "color2Components",
-    string maya_classification = "appleseed/utility:utility/scalar"
-]]
 (
-    color comp = color(0)
-    [[
-        string maya_attribute_name = "comp",
-        string maya_attribute_type = "color",
-        string label = "Input Color"
-    ]],
-
-    output float compR = comp[0]
-    [[
-        string maya_attribute_name = "compR",
-        string maya_attribute_type = "float",
-        string label = "Red Component",
-        string widget = "null"
-    ]],
-    output float compG = comp[1]
-    [[
-        string maya_attribute_name = "compG",
-        string maya_attribute_type = "float",
-        string label = "Green Component",
-        string widget = "null"
-    ]],
+    color comp = color(0),
+    output float compR = comp[0],
+    output float compG = comp[1],
     output float compB = comp[2]
-    [[
-        string maya_attribute_name = "compB",
-        string maya_attribute_type = "float",
-        string label = "Blue Component",
-        string widget = "null"
-    ]]
 )
 {
     compR = comp[0];
