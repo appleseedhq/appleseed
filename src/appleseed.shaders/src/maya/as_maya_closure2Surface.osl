@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,11 @@
 // THE SOFTWARE.
 //
 
-shader as_maya_components2Color
+surface as_maya_closure2Surface
 (
-    float compR = 0.0,
-    float compG = 0.0,
-    float compB = 0.0,
-    output color comp = color(compR, compG, compB)
+    closure color in_input = 0
 )
 {
-    comp = color(compR, compG, compB);
+    Ci = in_input;
 }
 

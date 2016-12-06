@@ -153,6 +153,7 @@ set (appleseed_maya2_osl_sources
      src/maya/as_maya_checker.osl
      src/maya/as_maya_clamp.osl
      src/maya/as_maya_clearCoat.osl
+     src/maya/as_maya_closure2Surface.osl
      src/maya/as_maya_color2Components.osl
      src/maya/as_maya_components2Color.osl
      src/maya/as_maya_components2Vector.osl
