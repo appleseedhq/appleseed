@@ -63,9 +63,9 @@ source_group ("include\\gaffer" FILES
 )
 
 set (appleseed_library_osl_headers
-    include/appleseed/math/as_math_helpers.h
     include/appleseed/color/as_color_data.h
     include/appleseed/color/as_color_helpers.h
+    include/appleseed/math/as_math_helpers.h
     include/appleseed/maya/as_maya_helpers.h
 )
 list (APPEND appleseed_osl_headers ${appleseed_library_osl_headers})
@@ -149,22 +149,28 @@ set (appleseed_maya2_osl_sources
      src/maya/as_maya_addDoubleLinear.osl
      src/maya/as_maya_addMatrix.osl
      src/maya/as_maya_blendColors.osl
+     src/maya/as_maya_bulge.osl
+     src/maya/as_maya_checker.osl
      src/maya/as_maya_clamp.osl
      src/maya/as_maya_clearCoat.osl
      src/maya/as_maya_color2Components.osl
      src/maya/as_maya_components2Color.osl
      src/maya/as_maya_components2Vector.osl
      src/maya/as_maya_condition.osl
+     src/maya/as_maya_contrast.osl
      src/maya/as_maya_distanceBetween.osl
      src/maya/as_maya_doubleShadingSwitch.osl
      src/maya/as_maya_fourByFourMatrix.osl
+     src/maya/as_maya_gammaCorrect.osl
+     src/maya/as_maya_grid.osl
      src/maya/as_maya_hsvToRgb.osl
      src/maya/as_maya_lambert.osl
+     src/maya/as_maya_luminance.osl
      src/maya/as_maya_matrixInverse.osl
      src/maya/as_maya_multDoubleLinear.osl
+     src/maya/as_maya_multiplyDivide.osl
      src/maya/as_maya_multMatrix.osl
      src/maya/as_maya_place2dTexture.osl
-     src/maya/as_maya_multiplyDivide.osl
      src/maya/as_maya_plusMinusAverage.osl
      src/maya/as_maya_quadShadingSwitch.osl
      src/maya/as_maya_reverse.osl
@@ -172,9 +178,12 @@ set (appleseed_maya2_osl_sources
      src/maya/as_maya_samplerInfo.osl
      src/maya/as_maya_setRange.osl
      src/maya/as_maya_singleShadingSwitch.osl
+     src/maya/as_maya_stencil.osl
+     src/maya/as_maya_transposeMatrix.osl
      src/maya/as_maya_tripleShadingSwitch.osl
      src/maya/as_maya_vector2Components.osl
      src/maya/as_maya_vectorProduct.osl
+     src/maya/as_maya_wtAddMatrix.osl
 )
 list (APPEND osl_sources ${appleseed_maya2_osl_sources})
 source_group ("src\\maya" FILES
