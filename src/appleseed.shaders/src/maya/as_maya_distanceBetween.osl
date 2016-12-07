@@ -78,4 +78,3 @@ shader as_maya_distanceBetween
 
     out_distance = distance(p1, p2);
 }
-
