@@ -27,37 +27,11 @@
 //
 
 shader as_maya_components2Vector
-[[
-    string maya_node_name = "components2Vector",
-    string maya_classification = "appleseed/utility:utility/scalar"
-]]
 (
-    float compX = 0.0
-    [[
-        string maya_attribute_name = "compX",
-        string maya_attribute_type = "float",
-        string label = "X Component"
-    ]],
-    float compY = 0.0
-    [[
-        string maya_attribute_name = "compY",
-        string maya_attribute_type = "float",
-        string label = "Y Component"
-    ]],
-    float compZ = 0.0
-    [[
-        string maya_attribute_name = "compZ",
-        string maya_attribute_type = "float",
-        string label = "Z Component"
-    ]],
-
+    float compX = 0.0,
+    float compY = 0.0,
+    float compZ = 0.0,
     output vector comp = color(compX, compY, compZ)
-    [[
-        string maya_attribute_name = "comp",
-        string maya_attribute_type = "color",
-        string label = "Output Color",
-        string widget = "null"
-    ]]
 )
 {
     comp = vector(compX, compY, compZ);

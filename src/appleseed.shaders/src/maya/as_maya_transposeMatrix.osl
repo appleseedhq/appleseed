@@ -26,14 +26,27 @@
 // THE SOFTWARE.
 //
 
-shader as_maya_components2Color
+shader as_maya_transposeMatrix
+[[
+    string maya_node_name = "transposeMatrix",
+    string maya_classification = "utility/scalar"
+]]
 (
-    float compR = 0.0,
-    float compG = 0.0,
-    float compB = 0.0,
-    output color comp = color(compR, compG, compB)
+    matrix in_inputMatrix = matrix(1)
+    [[
+        string maya_attribute_name = "inputMatrix",
+        string maya_attribute_type = "matrix",
+        string label = "Input Matrix"
+    ]],
+
+    output matrix out_outputMatrix = matrix(1)
+    [[
+        string maya_attribute_name = "outputMatrix",
+        string maya_attribute_type = "matrix",
+        string label = "Output Matrix"
+    ]]
 )
 {
-    comp = color(compR, compG, compB);
+    out_outputMatrix = transpose(in_inputMatrix);
 }
 

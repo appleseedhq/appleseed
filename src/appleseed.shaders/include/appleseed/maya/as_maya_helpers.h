@@ -109,8 +109,6 @@
         string label = "UV Filter Size"                     \
     ]]
 
-// Maya luminance uses Rec.601 chromaticity coordinates and Y coefficients,
-// see: https://www.itu.int/rec/R-REC-BT.601-7-201103-I/en
 float maya_luminance(color in_C)
 {
     return as_luminance(in_C, "Rec.601");
@@ -125,8 +123,7 @@ void maya_colorBalance(
     int in_invert,
     int in_alphaIsLuminance,
     output color out_outColor,
-    output float out_outAlpha
-    )
+    output float out_outAlpha)
 {
     if (in_invert)
     {
@@ -146,8 +143,7 @@ void maya_colorBalance(
 float maya_contrast(
     float in_value,
     float in_contrast,
-    float in_bias
-    )
+    float in_bias)
 {
     return fast_gain(fast_bias(in_value, in_bias), in_contrast);
 }
@@ -155,8 +151,7 @@ float maya_contrast(
 color maya_contrast(
     color in_value,
     color in_contrast,
-    color in_bias
-    )
+    color in_bias)
 {
     float R = maya_contrast(in_value[0], in_contrast[0], in_bias[0]);
     float G = maya_contrast(in_value[1], in_contrast[1], in_bias[1]);

@@ -26,14 +26,38 @@
 // THE SOFTWARE.
 //
 
-shader as_maya_components2Color
+// Ref: $MAYA_LOCATION/docs/Nodes/gammaCorrect.html
+
+#include "appleseed/color/as_color_helpers.h"
+
+shader as_maya_gammaCorrect
+[[
+    string maya_node_name = "gammaCorrect",
+    string maya_classification = "utility/color"
+]]
 (
-    float compR = 0.0,
-    float compG = 0.0,
-    float compB = 0.0,
-    output color comp = color(compR, compG, compB)
+    color in_value = color(0)
+    [[
+        string maya_attribute_name = "value",
+        string maya_attribute_type = "vector",
+        string label = "Input Value"
+    ]],
+    color in_gamma = color(1)
+    [[
+        string maya_attribute_name = "gamma",
+        string maya_attribute_type = "vector",
+        string label = "Gamma Correction"
+    ]],
+
+    output color out_outValue = color(0)
+    [[
+        string maya_attribute_name = "outValue",
+        string maya_attribute_type = "vector",
+        string label = "Output Color",
+        string widget = "null"
+    ]]
 )
 {
-    comp = color(compR, compG, compB);
+    out_outValue = gamma_OETF(in_value, in_gamma);
 }
 

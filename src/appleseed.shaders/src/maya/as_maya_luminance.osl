@@ -26,14 +26,32 @@
 // THE SOFTWARE.
 //
 
-shader as_maya_components2Color
+// Ref: $MAYA_LOCATION/docs/Nodes/luminance.html
+
+#include "appleseed/maya/as_maya_helpers.h"
+
+shader as_maya_luminance
+[[
+    string maya_node_name = "luminance",
+    string maya_classification = "utility/color"
+]]
 (
-    float compR = 0.0,
-    float compG = 0.0,
-    float compB = 0.0,
-    output color comp = color(compR, compG, compB)
+    color in_value = color(0)
+    [[
+        string maya_attribute_name = "value",
+        string maya_attribute_type = "vector",
+        string label = "Input Color"
+    ]],
+
+    output float out_outValue = 0
+    [[
+        string maya_attribute_name = "outValue",
+        string maya_attribute_type = "float",
+        string label = "Output Color",
+        string widget = "null"
+    ]]
 )
 {
-    comp = color(compR, compG, compB);
+    out_outValue = maya_luminance(in_value);
 }
 

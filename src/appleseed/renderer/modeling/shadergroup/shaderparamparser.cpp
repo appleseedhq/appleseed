@@ -62,6 +62,8 @@ ShaderParamParser::ShaderParamParser(const string& s)
         m_param_type = OSLParamTypeFloatArray;
     else if (tok == "int")
         m_param_type = OSLParamTypeInt;
+    else if (tok == "int[]")
+        m_param_type = OSLParamTypeIntArray;
     else if (tok == "matrix")
         m_param_type = OSLParamTypeMatrix;
     else if (tok == "matrix[]")
@@ -84,6 +86,17 @@ ShaderParamParser::ShaderParamParser(const string& s)
         throw ExceptionOSLParamParseError();
 
     ++m_tok_it;
+}
+
+void ShaderParamParser::parse_int_array(std::vector<int>& values)
+{
+    values.clear();
+
+    while (m_tok_it != m_tok_end)
+        values.push_back(parse_one_value<int>(false));
+
+    if (values.empty())
+        throw ExceptionOSLParamParseError();
 }
 
 void ShaderParamParser::parse_float_array(std::vector<float>& values)

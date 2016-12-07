@@ -63,6 +63,7 @@ struct ShaderParam::Impl
     string          m_string_storage;
     const char*     m_string_value;
     vector<float>   m_float_array_value;
+    vector<int>     m_int_array_value;
 };
 
 ShaderParam::ShaderParam(const char* name)
@@ -86,6 +87,8 @@ const void* ShaderParam::get_value() const
 {
     if (!impl->m_float_array_value.empty())
         return &impl->m_float_array_value.front();
+    if (!impl->m_int_array_value.empty())
+        return &impl->m_int_array_value.front();
     if (impl->m_type_desc == OSL::TypeDesc::TypeInt)
         return &impl->m_int_value;
     if (impl->m_type_desc == OSL::TypeDesc::TypeString)
@@ -116,6 +119,12 @@ string ShaderParam::get_value_as_string() const
 
         for (size_t i = 0, e = impl->m_float_array_value.size(); i < e; ++i)
             ss << impl->m_float_array_value[i] << " ";
+    }
+    else if (!impl->m_int_array_value.empty())
+    {
+        ss << "int[] ";
+        for (size_t i = 0, e = impl->m_int_array_value.size(); i < e; ++i)
+            ss << impl->m_int_array_value[i] << " ";
     }
     else
     {
@@ -153,6 +162,16 @@ auto_release_ptr<ShaderParam> ShaderParam::create_int_param(
     auto_release_ptr<ShaderParam> p(new ShaderParam(name));
     p->impl->m_type_desc = OSL::TypeDesc::TypeInt;
     p->impl->m_int_value = value;
+    return p;
+}
+
+auto_release_ptr<ShaderParam> ShaderParam::create_int_array_param(
+    const char*         name,
+    std::vector<int>&   value)
+{
+    auto_release_ptr<ShaderParam> p(new ShaderParam(name));
+    p->impl->m_type_desc = OSL::TypeDesc(OSL::TypeDesc::INT, static_cast<int>(value.size()));
+    p->impl->m_int_array_value.swap(value);
     return p;
 }
 

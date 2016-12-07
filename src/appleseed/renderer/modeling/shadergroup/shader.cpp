@@ -115,6 +115,14 @@ struct Shader::Impl
                     }
                     break;
 
+                case OSLParamTypeIntArray:
+                  {
+                      vector<int> values;
+                      parser.parse_int_array(values);
+                      m_params.insert(ShaderParam::create_int_array_param(i.it().key(), values));
+                  }
+                  break;
+
                   case OSLParamTypeMatrix:
                     {
                         float val[16];

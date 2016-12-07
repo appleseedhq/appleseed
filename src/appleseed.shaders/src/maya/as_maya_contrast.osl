@@ -26,14 +26,44 @@
 // THE SOFTWARE.
 //
 
-shader as_maya_components2Color
+// Ref: $MAYA_LOCATION/docs/Nodes/contrast.html
+
+#include "appleseed/maya/as_maya_helpers.h"
+
+shader as_maya_contrast
+[[
+    string maya_node_name = "contrast",
+    string maya_classification = "utility/color"
+]]
 (
-    float compR = 0.0,
-    float compG = 0.0,
-    float compB = 0.0,
-    output color comp = color(compR, compG, compB)
+    color in_value = color(0)
+    [[
+        string maya_attribute_name = "value",
+        string maya_attribute_type = "color",
+        string label = "Input Color"
+    ]],
+    color in_contrast = color(0)
+    [[
+        string maya_attribute_name = "contrast",
+        string maya_attribute_type = "color",
+        string label = "Contrast"
+    ]],
+    color in_bias = color(0)
+    [[
+        string maya_attribute_name = "bias",
+        string maya_attribute_type = "color",
+        string label = "Bias"
+    ]],
+
+    output color out_outValue = color(0)
+    [[
+        string maya_attribute_name = "outValue",
+        string maya_attribute_type = "color",
+        string label = "Output Color",
+        string widget = "null"
+    ]]
 )
 {
-    comp = color(compR, compG, compB);
+    out_outValue = maya_contrast(in_value, in_contrast, in_bias);
 }
 
