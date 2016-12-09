@@ -129,6 +129,8 @@ set (gaffer_osl_sources
      src/gaffer/transform/as_map3d.osl
      src/gaffer/transform/as_transform.osl
      src/gaffer/utility/as_condition.osl
+     src/gaffer/utility/as_float2_build.osl
+     src/gaffer/utility/as_float2_split.osl
      src/gaffer/utility/as_switch.osl
      src/gaffer/vector/as_anisotropy_dir.osl
      src/gaffer/vector/as_vector_add.osl
