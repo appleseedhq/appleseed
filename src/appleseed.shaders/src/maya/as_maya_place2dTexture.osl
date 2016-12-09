@@ -37,7 +37,7 @@ shader as_maya_place2dTexture
     string maya_classification = "utility/general/placement/2d"
 ]]
 (
-    float in_uvCoord[2] = {0.0, 0.0}
+    float in_uvCoord[2] = {u, v}
     [[
         string maya_attribute_name = "uvCoord",
         string maya_attribute_type = "float2",
@@ -102,7 +102,7 @@ shader as_maya_place2dTexture
         string label = "Wrap V",
         string widget = "checkBox"
     ]],
-    int in_repeatUV[2] = {1, 1}
+    float in_repeatUV[2] = {1.0, 1.0}
     [[
         string maya_attribute_name = "repeatUV",
         string maya_attribute_type = "float2",
@@ -157,12 +157,7 @@ shader as_maya_place2dTexture
     ]]
 )
 {
-    // The user might override input UV coords for the placement node.
-    float st[2] =
-    {
-        isconnected(in_uvCoord[0]) ? in_uvCoord[0] : u,
-        isconnected(in_uvCoord[1]) ? in_uvCoord[1] : v
-    };
+    float st[2] = {in_uvCoord[0], in_uvCoord[1]};
 
     // Maya applies 2D noise 1st, xforms UV frame, then framed UV coords.
     if (in_noiseUV[0] || in_noiseUV[1])
@@ -188,7 +183,7 @@ shader as_maya_place2dTexture
             radians(in_rotateFrame),
             point(0.5, 0.5, 0.0),
             point(0.5, 0.5, 1.0));
-        
+
         st[0] = rot[0];
         st[1] = rot[1];
     }
@@ -199,7 +194,7 @@ shader as_maya_place2dTexture
         max(EPS, in_coverage[0]),
         max(EPS, in_coverage[1])
     };
-    
+
     if (coverage[0] < 1.0 || coverage[1] < 1.0)
     {
         st[0] /= coverage[0];
@@ -236,7 +231,7 @@ shader as_maya_place2dTexture
         st[1] *= in_repeatUV[1];
         st[0] += in_offset[0];
         st[1] += in_offset[1];
-        
+
         if (in_stagger && mod(st[1], 2) >= 1)
         {
             st[0] += 0.5;
@@ -278,6 +273,6 @@ shader as_maya_place2dTexture
         in_offset[0] || in_offset[1] || in_rotateUV )
     {
         out_doTransform = 1;
-    }    
+    }
 }
 
