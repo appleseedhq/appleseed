@@ -32,6 +32,9 @@
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Forward declarations.
 namespace renderer  { class MeshObject; }
 namespace renderer  { class ParamArray; }
@@ -39,7 +42,7 @@ namespace renderer  { class ParamArray; }
 namespace renderer
 {
 
-foundation::auto_release_ptr<MeshObject> create_primitive_mesh(
+APPLESEED_DLLSYMBOL foundation::auto_release_ptr<MeshObject> create_primitive_mesh(
     const char*         name,
     const ParamArray&   params);
 
