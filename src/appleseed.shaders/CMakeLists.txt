@@ -150,6 +150,7 @@ source_group ("src\\gaffer" FILES
 set (appleseed_maya2_osl_sources
      src/maya/as_maya_addDoubleLinear.osl
      src/maya/as_maya_addMatrix.osl
+     src/maya/as_maya_area_light.osl
      src/maya/as_maya_blendColors.osl
      src/maya/as_maya_bulge.osl
      src/maya/as_maya_checker.osl
