@@ -36,6 +36,7 @@
 #include "renderer/modeling/object/curveobjectwriter.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/meshobjectoperations.h"
+#include "renderer/modeling/object/meshobjectprimitives.h"
 #include "renderer/modeling/object/meshobjectreader.h"
 #include "renderer/modeling/object/meshobjectwriter.h"
 #include "renderer/modeling/object/object.h"
