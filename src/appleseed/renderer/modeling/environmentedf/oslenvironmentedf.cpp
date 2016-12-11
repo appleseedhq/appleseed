@@ -134,7 +134,7 @@ namespace
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             outgoing = transform.vector_to_parent(local_outgoing);
 
-            evaluate(shading_context, input_evaluator, local_outgoing, value);
+            evaluate_osl_background(shading_context, local_outgoing, value);
         }
 
         virtual void evaluate(
@@ -149,9 +149,7 @@ namespace
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
 
-            if (m_shader_group)
-                shading_context.execute_osl_background(*m_shader_group, local_outgoing, value);
-            else value.set(0.0f);
+            evaluate_osl_background(shading_context, local_outgoing, value);
         }
 
         virtual void evaluate(
@@ -167,7 +165,7 @@ namespace
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
 
-            evaluate(shading_context, input_evaluator, local_outgoing, value);
+            evaluate_osl_background(shading_context, local_outgoing, value);
             probability = evaluate_pdf(input_evaluator, outgoing);
         }
 
@@ -180,6 +178,16 @@ namespace
         }
 
       private:
+        void evaluate_osl_background(
+            const ShadingContext&   shading_context,
+            const Vector3f&         local_outgoing,
+            Spectrum&               value) const
+        {
+            if (m_shader_group)
+                shading_context.execute_osl_background(*m_shader_group, local_outgoing, value);
+            else value.set(0.0f);
+        }
+
         ShaderGroup* m_shader_group;
     };
 }
