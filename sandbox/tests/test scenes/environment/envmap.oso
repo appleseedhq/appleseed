@@ -1,0 +1,55 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.7.4
+# options: 
+surface envmap
+param	string	filename	""		%read{10,10} %write{2147483647,-1}
+global	vector	I	%read{0,0} %write{2147483647,-1} %derivs
+global	closure color	Ci	%read{2147483647,-1} %write{12,12}
+local	vector	dir	%read{1,4} %write{0,0} %derivs
+local	float	theta	%read{8,8} %write{2,2} %derivs
+local	float	phi	%read{6,6} %write{5,5} %derivs
+local	float	tu	%read{10,10} %write{7,7} %derivs
+local	float	tv	%read{10,10} %write{9,9} %derivs
+local	color	c	%read{12,12} %write{10,10}
+const	int	$const1	1		%read{1,1} %write{2147483647,-1}
+temp	float	$tmp1	%read{2,2} %write{1,1} %derivs
+const	int	$const2	2		%read{3,3} %write{2147483647,-1}
+temp	float	$tmp2	%read{5,5} %write{3,3} %derivs
+const	int	$const3	0		%read{4,4} %write{2147483647,-1}
+temp	float	$tmp3	%read{5,5} %write{4,4} %derivs
+const	float	$const4	3.1415927		%read{6,8} %write{2147483647,-1}
+temp	float	$tmp4	%read{7,7} %write{6,6} %derivs
+const	float	$const5	6.2831855		%read{7,7} %write{2147483647,-1}
+const	float	$const6	1		%read{9,9} %write{2147483647,-1}
+temp	float	$tmp5	%read{9,9} %write{8,8} %derivs
+temp	closure color	$tmp6	%read{12,12} %write{11,11}
+const	string	$const7	"background"		%read{11,11} %write{2147483647,-1}
+code ___main___
+# envmap.osl:4
+#     vector dir = normalize(I);
+	normalize	dir I 	%filename{"envmap.osl"} %line{4} %argrw{"wr"}
+# envmap.osl:6
+#     float theta = acos(dir[1]);
+	compref		$tmp1 dir $const1 	%line{6} %argrw{"wrr"}
+	acos		theta $tmp1 	%argrw{"wr"}
+# envmap.osl:7
+#     float phi = atan2(dir[2], dir[0]);
+	compref		$tmp2 dir $const2 	%line{7} %argrw{"wrr"}
+	compref		$tmp3 dir $const3 	%argrw{"wrr"}
+	atan2		phi $tmp2 $tmp3 	%argrw{"wrr"}
+# envmap.osl:9
+#     float tu = (phi + M_PI) / M_2PI;
+	add		$tmp4 phi $const4 	%line{9} %argrw{"wrr"}
+	div		tu $tmp4 $const5 	%argrw{"wrr"}
+# envmap.osl:10
+#     float tv = 1.0 - (theta / M_PI);
+	div		$tmp5 theta $const4 	%line{10} %argrw{"wrr"}
+	sub		tv $const6 $tmp5 	%argrw{"wrr"}
+# envmap.osl:11
+#     color c = texture(filename, tu, tv);
+	texture		c filename tu tv 	%line{11} %argrw{"wrrr"} %argderivs{2,3}
+# envmap.osl:12
+#     Ci = c * background();
+	closure		$tmp6 $const7 	%line{12} %argrw{"wr"}
+	mul		Ci $tmp6 c 	%argrw{"wrr"}
+	end

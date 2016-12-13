@@ -1,0 +1,13 @@
+
+surface envmap(string filename = "")
+{
+    vector dir = normalize(I);
+
+    float theta = acos(dir[1]);
+    float phi = atan2(dir[2], dir[0]);
+
+    float tu = (phi + M_PI) / M_2PI;
+    float tv = 1.0 - (theta / M_PI);
+    color c = texture(filename, tu, tv);
+    Ci = c * background();
+}
