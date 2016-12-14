@@ -86,11 +86,12 @@ if (WARNINGS_AS_ERRORS)
     )
 endif ()
 set (cxx_compiler_flags_common
-    /wd4290                                 # Disable warning C4290: C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
-    /wd4355                                 # Disable warning C4355: 'this' : used in base member initializer list
-    /wd4503                                 # Disable warning C4503: decorated name length exceeded, name was truncated
     /wd4068                                 # Disable warning C4068: unknown pragma
     /wd4091                                 # Disable warning C4091: 'typedef' : ignored on left of X when no variable is declared
+    /wd4290                                 # Disable warning C4290: C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
+    /wd4345                                 # Disable warning C4345: behavior change: an object of POD type constructed with an initializer of the form () will be default-initialized
+    /wd4355                                 # Disable warning C4355: 'this' : used in base member initializer list
+    /wd4503                                 # Disable warning C4503: decorated name length exceeded, name was truncated
 )
 if (CMAKE_SIZEOF_VOID_P EQUAL 8)
     set (c_compiler_flags_common

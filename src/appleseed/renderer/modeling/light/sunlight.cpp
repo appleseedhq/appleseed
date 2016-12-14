@@ -78,7 +78,7 @@ namespace
     const char* Model = "sun_light";
 
     // The smallest valid turbidity value.
-    const double BaseTurbidity = 2.0;
+    const float BaseTurbidity = 2.0f;
 
     // Solid angle sustained by the Sun, as seen from Earth (in steradians).
     // Reference: http://en.wikipedia.org/wiki/Solid_angle#Sun_and_Moon
