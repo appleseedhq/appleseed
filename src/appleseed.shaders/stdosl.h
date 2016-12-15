@@ -53,7 +53,7 @@
 #define BUILTIN [[ int builtin = 1 ]]
 #define BUILTIN_DERIV [[ int builtin = 1, int deriv = 1 ]]
 
-// Appleseed OSL extensions.
+// appleseed OSL extensions.
 // Must be included after BUILTIN is defined.
 #include "as_osl_extensions.h"
 
