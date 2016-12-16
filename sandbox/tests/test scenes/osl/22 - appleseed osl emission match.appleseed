@@ -71,7 +71,7 @@
                 <parameter name="shade_alpha_cutouts" value="false" />
             </material>
             <object name="osl_as_edf_compare" model="mesh_object">
-                <parameter name="filename" value="/home/est/Devel/appleseedhq/appleseed/sandbox/tests/test scenes/osl/_geometry/osl_as_edf_compare.obj" />
+                <parameter name="filename" value="osl_as_edf_compare.obj" />
             </object>
             <object_instance name="osl_as_edf_compare.floor_floor_mesh_inst" object="osl_as_edf_compare.floor_floor_mesh">
                 <assign_material slot="default" side="front" material="diffuse_material" />
