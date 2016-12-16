@@ -72,7 +72,7 @@
         string maya_attribute_type = "int",                 \
         string label = "Alpha Is Luminance",                \
         string widget = "checkBox"                          \
-    ]]
+    ]],                                                     
 
 #define MAYA_EFFECTS_PARAMETERS                             \
     float in_filter = 1.0                                   \
