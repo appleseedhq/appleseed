@@ -124,8 +124,8 @@ shader as_maya_grid
         color color_blend = mix(in_fillerColor, in_lineColor, 0.5);
         float alpha_blend = 0.5;
 
-        color A = mix(color_blend, in_fillerColor, in_contrast);
-        color B = mix(color_blend, in_lineColor, in_contrast);
+        color A = mix(color_blend, in_lineColor, in_contrast);
+        color B = mix(color_blend, in_fillerColor, in_contrast);
 
         float weight =
             filtered_pulsetrain(width[0], 1, st[0] + width[0] * .5, dsdt[0]) *
