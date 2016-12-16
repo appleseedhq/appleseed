@@ -104,8 +104,8 @@ shader as_maya_checker
             dsdt[1] *= in_filter;
         }
 
-        dsdt[0] += in_filterOffset;
-        dsdt[1] += in_filterOffset;
+        dsdt[0] += 2 * in_filterOffset; // double to match Maya
+        dsdt[1] += 2 * in_filterOffset;
 
         // Contrast default 1, with 0 being full blend of input colors+alpha.
         color color_blend = mix(in_color1, in_color2, 0.5);
