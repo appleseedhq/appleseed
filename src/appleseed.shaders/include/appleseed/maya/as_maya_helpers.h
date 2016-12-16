@@ -96,7 +96,7 @@
     ]]
 
 #define MAYA_UV_PARAMETERS                                  \
-    float in_uvCoord[2] = {0.0, 0.0}                        \
+    float in_uvCoord[2] = {u, v}                            \
     [[                                                      \
         string maya_attribute_name = "uvCoord",             \
         string maya_attribute_type = "float[]",             \
