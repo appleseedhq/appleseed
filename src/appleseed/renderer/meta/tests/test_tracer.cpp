@@ -69,12 +69,10 @@
 #include "foundation/utility/test.h"
 
 // OpenImageIO headers.
-#ifdef APPLESEED_WITH_OIIO
 #include "foundation/platform/oiioheaderguards.h"
 BEGIN_OIIO_INCLUDES
 #include "OpenImageIO/texture.h"
 END_OIIO_INCLUDES
-#endif
 
 // Boost headers.
 #include "boost/bind.hpp"
@@ -219,9 +217,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         TextureStore                            m_texture_store;
         TextureCache                            m_texture_cache;
         Intersector                             m_intersector;
-#ifdef APPLESEED_WITH_OIIO
         boost::shared_ptr<OIIO::TextureSystem>  m_texture_system;
-#endif
 #ifdef APPLESEED_WITH_OSL
         boost::shared_ptr<RendererServices>     m_renderer_services;
         boost::shared_ptr<OSL::ShadingSystem>   m_shading_system;
@@ -235,11 +231,9 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
           , m_texture_cache(m_texture_store)
           , m_intersector(m_trace_context, m_texture_cache)
         {
-#ifdef APPLESEED_WITH_OIIO
             m_texture_system.reset(
                 OIIO::TextureSystem::create(),
                 boost::bind(&OIIO::TextureSystem::destroy, _1));
-#endif
 #ifdef APPLESEED_WITH_OSL
             m_renderer_services.reset(
                 new RendererServices(*Base::m_project, *m_texture_system));

@@ -51,9 +51,7 @@ ShadingContext::ShadingContext(
     const Intersector&      intersector,
     Tracer&                 tracer,
     TextureCache&           texture_cache,
-#ifdef APPLESEED_WITH_OIIO
     OIIO::TextureSystem&    oiio_texture_system,
-#endif
 #ifdef APPLESEED_WITH_OSL
     OSLShaderGroupExec&     osl_shadergroup_exec,
 #endif
@@ -64,9 +62,7 @@ ShadingContext::ShadingContext(
   : m_intersector(intersector)
   , m_tracer(tracer)
   , m_texture_cache(texture_cache)
-#ifdef APPLESEED_WITH_OIIO
   , m_oiio_texture_system(oiio_texture_system)
-#endif
 #ifdef APPLESEED_WITH_OSL
   , m_shadergroup_exec(osl_shadergroup_exec)
 #endif
@@ -77,14 +73,10 @@ ShadingContext::ShadingContext(
 {
 }
 
-#ifdef APPLESEED_WITH_OIIO
-
 OIIO::TextureSystem& ShadingContext::get_oiio_texture_system() const
 {
     return m_oiio_texture_system;
 }
-
-#endif
 
 #ifdef APPLESEED_WITH_OSL
 

@@ -97,9 +97,7 @@ namespace
             TextureStore&           texture_store,
             ILightingEngineFactory* lighting_engine_factory,
             ShadingEngine&          shading_engine,
-#ifdef APPLESEED_WITH_OIIO
             OIIO::TextureSystem&    oiio_texture_system,
-#endif
 #ifdef APPLESEED_WITH_OSL
             OSL::ShadingSystem&     shading_system,
 #endif
@@ -112,9 +110,7 @@ namespace
           , m_texture_cache(texture_store)
           , m_lighting_engine(lighting_engine_factory->create())
           , m_shading_engine(shading_engine)
-#ifdef APPLESEED_WITH_OIIO
           , m_oiio_texture_system(oiio_texture_system)
-#endif
 #ifdef APPLESEED_WITH_OSL
           , m_shadergroup_exec(shading_system)
 #endif
@@ -137,9 +133,7 @@ namespace
                 m_intersector,
                 m_tracer,
                 m_texture_cache,
-#ifdef APPLESEED_WITH_OIIO
                 m_oiio_texture_system,
-#endif
 #ifdef APPLESEED_WITH_OSL
                 m_shadergroup_exec,
 #endif
@@ -330,9 +324,7 @@ namespace
         TextureCache                m_texture_cache;
         ILightingEngine*            m_lighting_engine;
         ShadingEngine&              m_shading_engine;
-#ifdef APPLESEED_WITH_OIIO
         OIIO::TextureSystem&        m_oiio_texture_system;
-#endif
         const size_t                m_thread_index;
 
 #ifdef APPLESEED_WITH_OSL
@@ -359,9 +351,7 @@ GenericSampleRendererFactory::GenericSampleRendererFactory(
     TextureStore&           texture_store,
     ILightingEngineFactory* lighting_engine_factory,
     ShadingEngine&          shading_engine,
-#ifdef APPLESEED_WITH_OIIO
     OIIO::TextureSystem&    oiio_texture_system,
-#endif
 #ifdef APPLESEED_WITH_OSL
     OSL::ShadingSystem&     shading_system,
 #endif
@@ -372,9 +362,7 @@ GenericSampleRendererFactory::GenericSampleRendererFactory(
   , m_texture_store(texture_store)
   , m_lighting_engine_factory(lighting_engine_factory)
   , m_shading_engine(shading_engine)
-#ifdef APPLESEED_WITH_OIIO
   , m_oiio_texture_system(oiio_texture_system)
-#endif
 #ifdef APPLESEED_WITH_OSL
   , m_shading_system(shading_system)
 #endif
@@ -397,9 +385,7 @@ ISampleRenderer* GenericSampleRendererFactory::create(const size_t thread_index)
             m_texture_store,
             m_lighting_engine_factory,
             m_shading_engine,
-#ifdef APPLESEED_WITH_OIIO
             m_oiio_texture_system,
-#endif
 #ifdef APPLESEED_WITH_OSL
             m_shading_system,
 #endif

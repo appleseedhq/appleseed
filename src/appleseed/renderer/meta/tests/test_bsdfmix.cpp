@@ -71,12 +71,10 @@ END_OSL_INCLUDES
 #endif
 
 // OpenImageIO headers.
-#ifdef APPLESEED_WITH_OIIO
 #include "foundation/platform/oiioheaderguards.h"
 BEGIN_OIIO_INCLUDES
 #include "OpenImageIO/texture.h"
 END_OIIO_INCLUDES
-#endif
 
 // Boost headers.
 #include "boost/bind.hpp"
@@ -122,11 +120,10 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
 
         TextureStore texture_store(scene);
 
-#ifdef APPLESEED_WITH_OIIO
         boost::shared_ptr<OIIO::TextureSystem> texture_system(
             OIIO::TextureSystem::create(),
             boost::bind(&OIIO::TextureSystem::destroy, _1));
-#endif
+
 #ifdef APPLESEED_WITH_OSL
         RendererServices renderer_services(*project, *texture_system);
 
@@ -211,10 +208,8 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         ShadingContext shading_context(
             intersector,
             tracer,
-            texture_cache
-#ifdef APPLESEED_WITH_OIIO
-            , *texture_system
-#endif
+            texture_cache,
+            *texture_system
 #ifdef APPLESEED_WITH_OSL
             , sg_exec
 #endif

@@ -52,12 +52,10 @@ END_OSL_INCLUDES
 #endif
 
 // OpenImageIO headers.
-#ifdef APPLESEED_WITH_OIIO
 #include "foundation/platform/oiioheaderguards.h"
 BEGIN_OIIO_INCLUDES
 #include "OpenImageIO/texture.h"
 END_OIIO_INCLUDES
-#endif
 
 // Standard headers.
 #include <cstddef>
@@ -89,9 +87,7 @@ class SPPMPassCallback
         const LightSampler&         light_sampler,
         const TraceContext&         trace_context,
         TextureStore&               texture_store,
-#ifdef APPLESEED_WITH_OIIO
         OIIO::TextureSystem&        oiio_texture_system,
-#endif
 #ifdef APPLESEED_WITH_OSL
         OSL::ShadingSystem&         shading_system,
 #endif

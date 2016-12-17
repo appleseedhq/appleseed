@@ -40,12 +40,10 @@
 #include "foundation/math/vector.h"
 
 // OpenImageIO headers.
-#ifdef APPLESEED_WITH_OIIO
 #include "foundation/platform/oiioheaderguards.h"
 BEGIN_OIIO_INCLUDES
 #include "OpenImageIO/texture.h"
 END_OIIO_INCLUDES
-#endif
 
 // Standard headers.
 #include <cstddef>
@@ -73,9 +71,7 @@ class ShadingContext
         const Intersector&          intersector,
         Tracer&                     tracer,
         TextureCache&               texture_cache,
-#ifdef APPLESEED_WITH_OIIO
         OIIO::TextureSystem&        oiio_texture_system,
-#endif
 #ifdef APPLESEED_WITH_OSL
         OSLShaderGroupExec&         osl_shadergroup_exec,
 #endif
@@ -90,9 +86,7 @@ class ShadingContext
 
     TextureCache& get_texture_cache() const;
 
-#ifdef APPLESEED_WITH_OIIO
     OIIO::TextureSystem& get_oiio_texture_system() const;
-#endif
 
     ILightingEngine* get_lighting_engine() const;
 
@@ -149,9 +143,7 @@ class ShadingContext
     const Intersector&              m_intersector;
     Tracer&                         m_tracer;
     TextureCache&                   m_texture_cache;
-#ifdef APPLESEED_WITH_OIIO
     OIIO::TextureSystem&            m_oiio_texture_system;
-#endif
 #ifdef APPLESEED_WITH_OSL
     OSLShaderGroupExec&             m_shadergroup_exec;
 #endif
