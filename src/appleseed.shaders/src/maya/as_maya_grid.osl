@@ -99,8 +99,8 @@ shader as_maya_grid
         float st[2] = {in_uvCoord[0], 1 - in_uvCoord[1]};
         float width[2] = {in_uWidth, in_vWidth};
 
-        st[0] = mod(st[0], 1);
-        st[1] = mod(st[1], 1);
+        st[0] = mod(st[0], UVWRAP);
+        st[1] = mod(st[1], UVWRAP);
         
         if (in_filter)
         {
