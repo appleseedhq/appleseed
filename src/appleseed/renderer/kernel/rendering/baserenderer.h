@@ -39,12 +39,10 @@
 #include "main/dllsymbol.h"
 
 // OpenImageIO headers.
-#ifdef APPLESEED_WITH_OIIO
 #include "foundation/platform/oiioheaderguards.h"
 BEGIN_OIIO_INCLUDES
 #include "OpenImageIO/texture.h"
 END_OIIO_INCLUDES
-#endif
 
 // OSL headers.
 #ifdef APPLESEED_WITH_OSL
@@ -56,9 +54,7 @@ END_OSL_INCLUDES
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-#ifdef APPLESEED_WITH_OIIO
 namespace renderer      { class OIIOErrorHandler; }
-#endif
 namespace renderer      { class Project; }
 #ifdef APPLESEED_WITH_OSL
 namespace renderer      { class RendererServices; }
@@ -90,11 +86,8 @@ class APPLESEED_DLLSYMBOL BaseRenderer
   protected:
     Project&                        m_project;
     ParamArray                      m_params;
-
-#ifdef APPLESEED_WITH_OIIO
     OIIOErrorHandler*               m_error_handler;
     OIIO::TextureSystem*            m_texture_system;
-#endif
 
 #ifdef APPLESEED_WITH_OSL
     RendererServices*               m_renderer_services;
@@ -107,9 +100,7 @@ class APPLESEED_DLLSYMBOL BaseRenderer
         const ParamArray&           params);
 
   private:
-#ifdef APPLESEED_WITH_OIIO
     void initialize_oiio();
-#endif
 
 #ifdef APPLESEED_WITH_OSL
     bool initialize_osl(

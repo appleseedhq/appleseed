@@ -1094,6 +1094,8 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/masterrenderer.h
     renderer/kernel/rendering/nulltilecallback.cpp
     renderer/kernel/rendering/nulltilecallback.h
+    renderer/kernel/rendering/oiioerrorhandler.cpp
+    renderer/kernel/rendering/oiioerrorhandler.h
     renderer/kernel/rendering/permanentshadingresultframebufferfactory.cpp
     renderer/kernel/rendering/permanentshadingresultframebufferfactory.h
     renderer/kernel/rendering/pixelcontext.h
@@ -1117,12 +1119,6 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/timedrenderercontroller.cpp
     renderer/kernel/rendering/timedrenderercontroller.h
 )
-if (WITH_OIIO)
-    list (APPEND renderer_kernel_rendering_sources
-        renderer/kernel/rendering/oiioerrorhandler.cpp
-        renderer/kernel/rendering/oiioerrorhandler.h
-    )
-endif ()
 if (WITH_OSL)
     list (APPEND renderer_kernel_rendering_sources
         renderer/kernel/rendering/rendererservices.cpp
@@ -1888,9 +1884,7 @@ endif ()
 link_against_openexr (appleseed)
 link_against_zlib (appleseed)
 
-if (WITH_OIIO)
-    link_against_oiio (appleseed)
-endif ()
+link_against_oiio (appleseed)
 
 if (WITH_OSL)
     link_against_osl (appleseed)

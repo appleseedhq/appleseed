@@ -45,12 +45,10 @@
 #include "application/application.h"
 
 // OpenImageIO headers.
-#ifdef APPLESEED_WITH_OIIO
 #include "foundation/platform/oiioheaderguards.h"
 BEGIN_OIIO_INCLUDES
 #include "OpenImageIO/texture.h"
 END_OIIO_INCLUDES
-#endif
 
 // Qt headers.
 #include <QDir>
@@ -83,8 +81,6 @@ namespace appleseed {
 namespace studio {
 
 const QString g_bitmap_files_filter = "Bitmap Files (*.png;*.exr);;OpenEXR (*.exr);;PNG (*.png);;All Files (*.*)";
-
-#ifdef APPLESEED_WITH_OIIO
 
 QString compute_oiio_files_filter()
 {
@@ -121,8 +117,6 @@ QString compute_oiio_files_filter()
 
     return QString::fromStdString(sstr.str());
 }
-
-#endif
 
 QString combine_paths(const QString& lhs, const QString& rhs)
 {

@@ -45,12 +45,10 @@
 #include "foundation/utility/autoreleaseptr.h"
 
 // OpenImageIO headers.
-#ifdef APPLESEED_WITH_OIIO
 #include "foundation/platform/oiioheaderguards.h"
 BEGIN_OIIO_INCLUDES
 #include "OpenImageIO/texture.h"
 END_OIIO_INCLUDES
-#endif
 
 // OSL headers.
 #ifdef APPLESEED_WITH_OSL
@@ -88,10 +86,8 @@ class RendererComponents
         const Project&          project,
         const ParamArray&       params,
         ITileCallbackFactory*   tile_callback_factory,
-        TextureStore&           texture_store
-#ifdef APPLESEED_WITH_OIIO
-        , OIIO::TextureSystem&  texture_system
-#endif
+        TextureStore&           texture_store,
+        OIIO::TextureSystem&    texture_system
 #ifdef APPLESEED_WITH_OSL
         , OSL::ShadingSystem&   shading_system
 #endif
@@ -111,9 +107,7 @@ class RendererComponents
     LightSampler                m_light_sampler;
     ShadingEngine               m_shading_engine;
     TextureStore&               m_texture_store;
-#ifdef APPLESEED_WITH_OIIO
     OIIO::TextureSystem&        m_texture_system;
-#endif
 #ifdef APPLESEED_WITH_OSL
     OSL::ShadingSystem&         m_shading_system;
 #endif

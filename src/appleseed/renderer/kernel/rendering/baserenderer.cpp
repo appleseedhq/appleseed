@@ -31,9 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
-#ifdef APPLESEED_WITH_OIIO
 #include "renderer/kernel/rendering/oiioerrorhandler.h"
-#endif
 #ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/rendering/rendererservices.h"
 #include "renderer/kernel/shading/closures.h"
@@ -63,8 +61,6 @@ BaseRenderer::BaseRenderer(
   : m_project(project)
   , m_params(params)
 {
-#ifdef APPLESEED_WITH_OIIO
-
     m_error_handler = new OIIOErrorHandler();
 #ifndef NDEBUG
     m_error_handler->verbosity(OIIO::ErrorHandler::VERBOSE);
@@ -79,8 +75,6 @@ BaseRenderer::BaseRenderer(
     m_texture_system->attribute("latlong_up", "y");
 #if OIIO_VERSION >= 10703
     m_texture_system->attribute("flip_t", 1);
-#endif
-
 #endif
 
 #ifdef APPLESEED_WITH_OSL
@@ -134,8 +128,6 @@ BaseRenderer::~BaseRenderer()
 
 #endif
 
-#ifdef APPLESEED_WITH_OIIO
-
     const string stats = m_texture_system->getstats();
     const string trimmed_stats = trim_right(stats, "\r\n");
     RENDERER_LOG_DEBUG("oiio: %s", trimmed_stats.c_str());
@@ -143,8 +135,6 @@ BaseRenderer::~BaseRenderer()
     RENDERER_LOG_DEBUG("destroying openimageio texture system...");
     OIIO::TextureSystem::destroy(m_texture_system);
     delete m_error_handler;
-
-#endif
 }
 
 ParamArray& BaseRenderer::get_parameters()
@@ -161,9 +151,7 @@ bool BaseRenderer::initialize_shading_system(
     TextureStore& texture_store,
     IAbortSwitch& abort_switch)
 {
-#ifdef APPLESEED_WITH_OIIO
     initialize_oiio();
-#endif
 
 #ifdef APPLESEED_WITH_OSL
     return initialize_osl(texture_store, abort_switch);
@@ -171,8 +159,6 @@ bool BaseRenderer::initialize_shading_system(
     return true;
 #endif
 }
-
-#ifdef APPLESEED_WITH_OIIO
 
 void BaseRenderer::initialize_oiio()
 {
@@ -198,8 +184,6 @@ void BaseRenderer::initialize_oiio()
         m_texture_system->attribute("searchpath", new_search_path);
     }
 }
-
-#endif
 
 #ifdef APPLESEED_WITH_OSL
 

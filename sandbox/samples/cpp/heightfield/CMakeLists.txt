@@ -48,7 +48,7 @@ set (CMAKE_MODULE_PATH
 
 option (USE_EXTERNAL_OIIO                   "Use external OpenImageIO library"                      OFF)
 option (USE_EXTERNAL_OSL                    "Use external OpenShadingLanguage library"              OFF)
-            
+
 option (WITH_OSL                            "Build OSL support"                                     OFF)
 
 option (USE_STATIC_BOOST                    "Use static Boost libraries"                            ON)
@@ -84,18 +84,12 @@ find_package (Appleseed)
 find_package (Imath)
 find_package (OpenEXR)
 
-if (WITH_OSL)
-    set (WITH_OIIO TRUE)
-endif ()
 
-if (WITH_OIIO)
-    add_definitions (-DAPPLESEED_WITH_OIIO)
-    if (USE_STATIC_OIIO)
-        add_definitions (-DOIIO_STATIC_BUILD)
-    endif ()
-    if (USE_EXTERNAL_OIIO)
-        find_package (OpenImageIO REQUIRED)
-    endif ()
+if (USE_STATIC_OIIO)
+    add_definitions (-DOIIO_STATIC_BUILD)
+endif ()
+if (USE_EXTERNAL_OIIO)
+    find_package (OpenImageIO REQUIRED)
 endif ()
 
 if (WITH_OSL)
@@ -117,12 +111,10 @@ include_directories (${APPLESEED_INCLUDE_DIRS})
 include_directories (${IMATH_INCLUDE_DIRS})
 include_directories (${OPENEXR_INCLUDE_DIRS})
 
-if (WITH_OIIO)
-    if (USE_EXTERNAL_OIIO)
-        include_directories (${OPENIMAGEIO_INCLUDE_DIRS})
-    else ()
-        include_directories (${APPLESEED_DEPS_STAGE_DIR}/oiio-debug/include)
-    endif ()
+if (USE_EXTERNAL_OIIO)
+    include_directories (${OPENIMAGEIO_INCLUDE_DIRS})
+else ()
+    include_directories (${APPLESEED_DEPS_STAGE_DIR}/oiio-debug/include)
 endif ()
 
 if (WITH_OSL)
