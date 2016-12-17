@@ -60,12 +60,10 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shader.h"
 #include "renderer/modeling/shadergroup/shaderconnection.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #include "renderer/modeling/shadergroup/shaderparam.h"
-#endif
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/texture/texture.h"
 #include "renderer/utility/transformsequence.h"
@@ -329,9 +327,7 @@ namespace
                 !assembly.bsdfs().empty() ||
                 !assembly.bssrdfs().empty() ||
                 !assembly.edfs().empty() ||
-#ifdef APPLESEED_WITH_OSL
                 !assembly.shader_groups().empty() ||
-#endif
                 !assembly.surface_shaders().empty() ||
                 !assembly.materials().empty() ||
                 !assembly.lights().empty() ||
@@ -350,9 +346,7 @@ namespace
             write_collection(assembly.bsdfs());
             write_collection(assembly.bssrdfs());
             write_collection(assembly.edfs());
-#ifdef APPLESEED_WITH_OSL
             write_collection(assembly.shader_groups());
-#endif
             write_collection(assembly.surface_shaders());
             write_collection(assembly.materials());
             write_collection(assembly.lights());
@@ -743,9 +737,7 @@ namespace
                 !scene.environment_edfs().empty() ||
                 !scene.environment_shaders().empty() ||
                 scene.get_environment() != 0 ||
-#ifdef APPLESEED_WITH_OSL
                 !scene.shader_groups().empty() ||
-#endif
                 !scene.assemblies().empty() ||
                 !scene.assembly_instances().empty()
                     ? XMLElement::HasChildElements
@@ -763,9 +755,7 @@ namespace
             if (scene.get_environment())
                 write(*scene.get_environment());
 
-#ifdef APPLESEED_WITH_OSL
             write_collection(scene.shader_groups());
-#endif
             write_collection(scene.assemblies());
             write_collection(scene.assembly_instances());
         }
@@ -793,8 +783,6 @@ namespace
                     write_search_path(search_paths[i]);
             }
         }
-
-#ifdef APPLESEED_WITH_OSL
 
         // Write a shader's <parameter> element.
         void write(const ShaderParam& param)
@@ -842,8 +830,6 @@ namespace
             for (const_each<ShaderConnectionContainer> i = shader_group.shader_connections(); i; ++i)
                 write(*i);
         }
-
-#endif
 
         // Write a <surface_shader> element.
         void write(const SurfaceShader& surface_shader)

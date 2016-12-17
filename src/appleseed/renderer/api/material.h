@@ -39,8 +39,6 @@
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/material/materialfactoryregistrar.h"
 #include "renderer/modeling/material/materialtraits.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/material/oslmaterial.h"
-#endif
 
 #endif  // !APPLESEED_RENDERER_API_MATERIAL_H

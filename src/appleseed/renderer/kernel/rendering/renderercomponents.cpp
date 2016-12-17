@@ -92,10 +92,8 @@ RendererComponents::RendererComponents(
     const ParamArray&       params,
     ITileCallbackFactory*   tile_callback_factory,
     TextureStore&           texture_store,
-    OIIO::TextureSystem&    texture_system
-#ifdef APPLESEED_WITH_OSL
-    , OSL::ShadingSystem&   shading_system
-#endif
+    OIIO::TextureSystem&    texture_system,
+    OSL::ShadingSystem&     shading_system
     )
   : m_project(project)
   , m_params(params)
@@ -107,9 +105,7 @@ RendererComponents::RendererComponents(
   , m_shading_engine(get_child_and_inherit_globals(params, "shading_engine"))
   , m_texture_store(texture_store)
   , m_texture_system(texture_system)
-#ifdef APPLESEED_WITH_OSL
   , m_shading_system(shading_system)
-#endif
 {
 }
 
@@ -180,9 +176,7 @@ bool RendererComponents::create_lighting_engine_factory()
                 m_trace_context,
                 m_texture_store,
                 m_texture_system,
-#ifdef APPLESEED_WITH_OSL
                 m_shading_system,
-#endif
                 sppm_params);
 
         m_pass_callback.reset(sppm_pass_callback);
@@ -223,9 +217,7 @@ bool RendererComponents::create_sample_renderer_factory()
                 m_lighting_engine_factory.get(),
                 m_shading_engine,
                 m_texture_system,
-#ifdef APPLESEED_WITH_OSL
                 m_shading_system,
-#endif
                 get_child_and_inherit_globals(m_params, "generic_sample_renderer")));
         return true;
     }
@@ -281,9 +273,7 @@ bool RendererComponents::create_sample_generator_factory()
                 m_texture_store,
                 m_light_sampler,
                 m_texture_system,
-#ifdef APPLESEED_WITH_OSL
                 m_shading_system,
-#endif
                 get_child_and_inherit_globals(m_params, "lighttracing_sample_generator")));
         return true;
     }

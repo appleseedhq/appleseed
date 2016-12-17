@@ -37,12 +37,10 @@
 #include "main/dllsymbol.h"
 
 // OSL headers.
-#ifdef APPLESEED_WITH_OSL
 #include "foundation/platform/oslheaderguards.h"
 BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
 END_OSL_INCLUDES
-#endif
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
@@ -75,8 +73,6 @@ class APPLESEED_DLLSYMBOL BaseGroup
     // Access the texture instances.
     TextureInstanceContainer& texture_instances() const;
 
-#ifdef APPLESEED_WITH_OSL
-
     // Access the OSL shader groups.
     ShaderGroupContainer& shader_groups() const;
 
@@ -87,8 +83,6 @@ class APPLESEED_DLLSYMBOL BaseGroup
 
     // Release internal OSL shader groups.
     void release_optimized_osl_shader_groups();
-
-#endif
 
     // Access the assemblies.
     AssemblyContainer& assemblies() const;

@@ -32,16 +32,12 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/shading/oslshadergroupexec.h"
-#endif
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/scene.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
-#endif
 
 // appleseed.foundation headers.
 #include "foundation/utility/string.h"
@@ -58,17 +54,13 @@ Tracer::Tracer(
     const Scene&                scene,
     const Intersector&          intersector,
     TextureCache&               texture_cache,
-#ifdef APPLESEED_WITH_OSL
     OSLShaderGroupExec&         shadergroup_exec,
-#endif
     const float                 transparency_threshold,
     const size_t                max_iterations,
     const bool                  print_details)
   : m_intersector(intersector)
   , m_texture_cache(texture_cache)
-#ifdef APPLESEED_WITH_OSL
   , m_shadergroup_exec(shadergroup_exec)
-#endif
   , m_assume_no_alpha_mapping(!scene.uses_alpha_mapping())
   , m_transmission_threshold(transparency_threshold)
   , m_max_iterations(max_iterations)
@@ -248,7 +240,6 @@ void Tracer::evaluate_alpha(
 {
     alpha = shading_point.get_alpha();
 
-#ifdef APPLESEED_WITH_OSL
     // Apply OSL transparency if needed.
     if (const ShaderGroup* sg = material.get_render_data().m_shader_group)
     {
@@ -259,7 +250,6 @@ void Tracer::evaluate_alpha(
             alpha *= a;
         }
     }
-#endif
 }
 
 }   // namespace renderer

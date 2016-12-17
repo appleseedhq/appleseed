@@ -45,20 +45,16 @@ BEGIN_OIIO_INCLUDES
 END_OIIO_INCLUDES
 
 // OSL headers.
-#ifdef APPLESEED_WITH_OSL
 #include "foundation/platform/oslheaderguards.h"
 BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
 END_OSL_INCLUDES
-#endif
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class OIIOErrorHandler; }
 namespace renderer      { class Project; }
-#ifdef APPLESEED_WITH_OSL
 namespace renderer      { class RendererServices; }
-#endif
 namespace renderer      { class TextureStore; }
 
 namespace renderer
@@ -89,10 +85,8 @@ class APPLESEED_DLLSYMBOL BaseRenderer
     OIIOErrorHandler*               m_error_handler;
     OIIO::TextureSystem*            m_texture_system;
 
-#ifdef APPLESEED_WITH_OSL
     RendererServices*               m_renderer_services;
     OSL::ShadingSystem*             m_shading_system;
-#endif
 
     // Constructor.
     BaseRenderer(
@@ -102,11 +96,9 @@ class APPLESEED_DLLSYMBOL BaseRenderer
   private:
     void initialize_oiio();
 
-#ifdef APPLESEED_WITH_OSL
     bool initialize_osl(
         TextureStore&               texture_store,
         foundation::IAbortSwitch&   abort_switch);
-#endif
 };
 
 }       // namespace renderer

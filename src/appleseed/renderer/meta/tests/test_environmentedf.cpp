@@ -31,10 +31,8 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/lighting/tracer.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/rendering/rendererservices.h"
 #include "renderer/kernel/shading/oslshadergroupexec.h"
-#endif
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
@@ -64,12 +62,10 @@
 #include "foundation/utility/test.h"
 
 // OSL headers.
-#ifdef APPLESEED_WITH_OSL
 #include "foundation/platform/oslheaderguards.h"
 BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
 END_OSL_INCLUDES
-#endif
 
 // OpenImageIO headers.
 #include "foundation/platform/oiioheaderguards.h"
@@ -201,40 +197,31 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
                 OIIO::TextureSystem::create(),
                 boost::bind(&OIIO::TextureSystem::destroy, _1));
 
-#ifdef APPLESEED_WITH_OSL
             RendererServices renderer_services(
                 m_project,
                 *texture_system);
 
             boost::shared_ptr<OSL::ShadingSystem> shading_system(
                 new OSL::ShadingSystem(&renderer_services, texture_system.get()));
-#endif
 
             Intersector intersector(
                 m_project.get_trace_context(),
                 texture_cache);
 
-#ifdef APPLESEED_WITH_OSL
             OSLShaderGroupExec sg_exec(*shading_system);
-#endif
 
             Tracer tracer(
                 m_scene,
                 intersector,
-                texture_cache
-#ifdef APPLESEED_WITH_OSL
-                , sg_exec
-#endif
-                );
+                texture_cache,
+                sg_exec);
 
             ShadingContext shading_context(
                 intersector,
                 tracer,
                 texture_cache,
                 *texture_system,
-#ifdef APPLESEED_WITH_OSL
                 sg_exec,
-#endif
                 0);
 
             InputEvaluator input_evaluator(texture_cache);

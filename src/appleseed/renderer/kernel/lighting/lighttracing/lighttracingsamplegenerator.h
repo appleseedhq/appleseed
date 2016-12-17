@@ -38,12 +38,10 @@
 #include "foundation/platform/compiler.h"
 
 // OSL headers.
-#ifdef APPLESEED_WITH_OSL
 #include "foundation/platform/oslheaderguards.h"
 BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
 END_OSL_INCLUDES
-#endif
 
 // OpenImageIO headers.
 #include "foundation/platform/oiioheaderguards.h"
@@ -77,9 +75,7 @@ class LightTracingSampleGeneratorFactory
         TextureStore&           texture_store,
         const LightSampler&     light_sampler,
         OIIO::TextureSystem&    oiio_texture_system,
-#ifdef APPLESEED_WITH_OSL
         OSL::ShadingSystem&     shading_system,
-#endif
         const ParamArray&       params);
 
     // Delete this instance.
@@ -100,9 +96,7 @@ class LightTracingSampleGeneratorFactory
     TextureStore&               m_texture_store;
     const LightSampler&         m_light_sampler;
     OIIO::TextureSystem&        m_oiio_texture_system;
-#ifdef APPLESEED_WITH_OSL
     OSL::ShadingSystem&         m_shading_system;
-#endif
     const ParamArray            m_params;
 };
 

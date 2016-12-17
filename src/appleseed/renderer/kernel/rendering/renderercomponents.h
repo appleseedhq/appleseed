@@ -51,12 +51,10 @@ BEGIN_OIIO_INCLUDES
 END_OIIO_INCLUDES
 
 // OSL headers.
-#ifdef APPLESEED_WITH_OSL
 #include "foundation/platform/oslheaderguards.h"
 BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
 END_OSL_INCLUDES
-#endif
 
 // Standard headers.
 #include <memory>
@@ -87,11 +85,8 @@ class RendererComponents
         const ParamArray&       params,
         ITileCallbackFactory*   tile_callback_factory,
         TextureStore&           texture_store,
-        OIIO::TextureSystem&    texture_system
-#ifdef APPLESEED_WITH_OSL
-        , OSL::ShadingSystem&   shading_system
-#endif
-        );
+        OIIO::TextureSystem&    texture_system,
+        OSL::ShadingSystem&     shading_system);
 
     bool initialize();
 
@@ -108,9 +103,7 @@ class RendererComponents
     ShadingEngine               m_shading_engine;
     TextureStore&               m_texture_store;
     OIIO::TextureSystem&        m_texture_system;
-#ifdef APPLESEED_WITH_OSL
     OSL::ShadingSystem&         m_shading_system;
-#endif
 
     std::auto_ptr<ILightingEngineFactory>               m_lighting_engine_factory;
     std::auto_ptr<ISampleRendererFactory>               m_sample_renderer_factory;

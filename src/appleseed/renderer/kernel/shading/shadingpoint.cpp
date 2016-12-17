@@ -36,9 +36,7 @@
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/scene/scene.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
-#endif
 
 // appleseed.foundation headers.
 #include "foundation/math/intersection/rayplane.h"
@@ -806,8 +804,6 @@ void ShadingPoint::compute_alpha() const
     }
 }
 
-#ifdef APPLESEED_WITH_OSL
-
 void ShadingPoint::initialize_osl_shader_globals(
     const ShaderGroup&          sg,
     const VisibilityFlags::Type ray_flags,
@@ -986,7 +982,5 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform(const 
 
     return Matrix4f(m);
 }
-
-#endif
 
 }   // namespace renderer

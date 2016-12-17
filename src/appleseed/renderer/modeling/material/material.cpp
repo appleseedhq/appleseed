@@ -139,14 +139,10 @@ const Source* Material::get_uncached_alpha_map() const
     return m_inputs.source("alpha_map");
 }
 
-#ifdef APPLESEED_WITH_OSL
-
 const ShaderGroup* Material::get_uncached_osl_surface() const
 {
     return 0;
 }
-
-#endif
 
 bool Material::on_frame_begin(
     const Project&          project,
@@ -166,9 +162,7 @@ bool Material::on_frame_begin(
     m_render_data.m_bssrdf = 0;
     m_render_data.m_edf = 0;
     m_render_data.m_alpha_map = get_uncached_alpha_map();
-#ifdef APPLESEED_WITH_OSL
     m_render_data.m_shader_group = 0;
-#endif
     m_render_data.m_basis_modifier = 0;
     m_has_render_data = true;
 

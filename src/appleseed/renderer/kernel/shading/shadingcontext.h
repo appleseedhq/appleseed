@@ -31,9 +31,7 @@
 #define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGCONTEXT_H
 
 // appleseed.renderer headers.
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/shading/oslshadergroupexec.h"
-#endif
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -72,9 +70,7 @@ class ShadingContext
         Tracer&                     tracer,
         TextureCache&               texture_cache,
         OIIO::TextureSystem&        oiio_texture_system,
-#ifdef APPLESEED_WITH_OSL
         OSLShaderGroupExec&         osl_shadergroup_exec,
-#endif
         const size_t                thread_index,
         ILightingEngine*            lighting_engine = 0,
         const float                 transparency_threshold = 0.001f,
@@ -98,8 +94,6 @@ class ShadingContext
 
     // Return the maximum number of iterations in ray/path tracing loops.
     size_t get_max_iterations() const;
-
-#ifdef APPLESEED_WITH_OSL
 
     void execute_osl_shading(
         const ShaderGroup&          shader_group,
@@ -137,16 +131,13 @@ class ShadingContext
         Spectrum&                   value) const;
 
     void* osl_mem_alloc(const size_t size) const;
-#endif
 
   private:
     const Intersector&              m_intersector;
     Tracer&                         m_tracer;
     TextureCache&                   m_texture_cache;
     OIIO::TextureSystem&            m_oiio_texture_system;
-#ifdef APPLESEED_WITH_OSL
     OSLShaderGroupExec&             m_shadergroup_exec;
-#endif
     const size_t                    m_thread_index;
     ILightingEngine*                m_lighting_engine;
     const float                     m_transparency_threshold;

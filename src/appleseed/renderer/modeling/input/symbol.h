@@ -67,9 +67,7 @@ class SymbolTable
         SymbolLight,
         SymbolObject,
         SymbolObjectInstance,
-#ifdef APPLESEED_WITH_OSL
         SymbolShaderGroup,
-#endif
         SymbolSurfaceShader,
         SymbolTexture,
         SymbolTextureInstance
@@ -127,9 +125,7 @@ inline const char* SymbolTable::symbol_name(const SymbolID symbol_id)
         { SymbolLight,              "light" },
         { SymbolObject,             "object" },
         { SymbolObjectInstance,     "object instance" },
-#ifdef APPLESEED_WITH_OSL
         { SymbolShaderGroup,        "shader group" },
-#endif
         { SymbolSurfaceShader,      "surface shader" },
         { SymbolTexture,            "texture" },
         { SymbolTextureInstance,    "texture instance" }

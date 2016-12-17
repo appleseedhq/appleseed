@@ -40,9 +40,7 @@
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/textureinstance.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
-#endif
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/texture/texture.h"
 #include "renderer/utility/bbox.h"
@@ -273,9 +271,7 @@ bool Assembly::on_frame_begin(
     success = success && invoke_on_frame_begin(project, this, colors(), recorder, abort_switch);
     success = success && invoke_on_frame_begin(project, this, textures(), recorder, abort_switch);
     success = success && invoke_on_frame_begin(project, this, texture_instances(), recorder, abort_switch);
-#ifdef APPLESEED_WITH_OSL
     success = success && invoke_on_frame_begin(project, this, shader_groups(), recorder, abort_switch);
-#endif
     success = success && invoke_on_frame_begin(project, this, bsdfs(), recorder, abort_switch);
     success = success && invoke_on_frame_begin(project, this, bssrdfs(), recorder, abort_switch);
     success = success && invoke_on_frame_begin(project, this, edfs(), recorder, abort_switch);

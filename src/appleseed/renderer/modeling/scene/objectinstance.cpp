@@ -36,9 +36,7 @@
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/visibilityflags.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
-#endif
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
@@ -82,10 +80,8 @@ bool uses_alpha_mapping(const MaterialArray& materials)
             if (materials[i]->has_alpha_map())
                 return true;
 
-#ifdef APPLESEED_WITH_OSL
             if (const ShaderGroup* sg = materials[i]->get_uncached_osl_surface())
                 return sg->has_transparency();
-#endif
         }
     }
 

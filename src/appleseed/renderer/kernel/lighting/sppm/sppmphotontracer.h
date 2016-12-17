@@ -37,12 +37,10 @@
 #include "foundation/core/concepts/noncopyable.h"
 
 // OSL headers.
-#ifdef APPLESEED_WITH_OSL
 #include "foundation/platform/oslheaderguards.h"
 BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
 END_OSL_INCLUDES
-#endif
 
 // OpenImageIO headers.
 #include "foundation/platform/oiioheaderguards.h"
@@ -76,9 +74,7 @@ class SPPMPhotonTracer
         const TraceContext&         trace_context,
         TextureStore&               texture_store,
         OIIO::TextureSystem&        oiio_texture_system,
-#ifdef APPLESEED_WITH_OSL
         OSL::ShadingSystem&         shading_system,
-#endif
         const SPPMParameters&       params);
 
     void trace_photons(
@@ -96,9 +92,7 @@ class SPPMPhotonTracer
     size_t                          m_total_emitted_photon_count;
     size_t                          m_total_stored_photon_count;
     OIIO::TextureSystem&            m_oiio_texture_system;
-#ifdef APPLESEED_WITH_OSL
     OSL::ShadingSystem&             m_shading_system;
-#endif
 
     void schedule_light_photon_tracing_jobs(
         const LightTargetArray&     photon_targets,
