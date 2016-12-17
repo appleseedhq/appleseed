@@ -76,7 +76,9 @@ shader as_maya_bulge
     }
     else
     {
-        float st[2] = {in_uvCoord[0], 1 - in_uvCoord[1]};
+        float st[2] = {
+            mod(in_uvCoord[0], UVWRAP),
+            mod(in_uvCoord[1], UVWRAP)};
 
         float a = smoothstep(in_uWidth / 2, 0.5, st[0]) *
             ( 1 - smoothstep(0.5, 1 - (in_uWidth / 2), st[0]));

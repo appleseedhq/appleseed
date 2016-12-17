@@ -34,6 +34,7 @@
 #include "appleseed/math/as_math_helpers.h"
 
 #define OUTSIDE_UVFRAME 999999
+#define UVWRAP          1.00001
 
 #define MAYA_COLORBALANCE_PARAMETERS                        \
     color in_defaultColor = color(0.5)                      \
@@ -72,7 +73,7 @@
         string maya_attribute_type = "int",                 \
         string label = "Alpha Is Luminance",                \
         string widget = "checkBox"                          \
-    ]],                                                     
+    ]]
 
 #define MAYA_EFFECTS_PARAMETERS                             \
     float in_filter = 1.0                                   \
@@ -96,7 +97,7 @@
     ]]
 
 #define MAYA_UV_PARAMETERS                                  \
-    float in_uvCoord[2] = {0.0, 0.0}                        \
+    float in_uvCoord[2] = {u, v}                            \
     [[                                                      \
         string maya_attribute_name = "uvCoord",             \
         string maya_attribute_type = "float[]",             \
