@@ -44,12 +44,10 @@
 #include "foundation/utility/stopwatch.h"
 
 // OSL headers.
-#ifdef APPLESEED_WITH_OSL
 #include "foundation/platform/oslheaderguards.h"
 BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
 END_OSL_INCLUDES
-#endif
 
 // OpenImageIO headers.
 #include "foundation/platform/oiioheaderguards.h"
@@ -88,9 +86,7 @@ class SPPMPassCallback
         const TraceContext&         trace_context,
         TextureStore&               texture_store,
         OIIO::TextureSystem&        oiio_texture_system,
-#ifdef APPLESEED_WITH_OSL
         OSL::ShadingSystem&         shading_system,
-#endif
         const SPPMParameters&       params);
 
     // Delete this instance.

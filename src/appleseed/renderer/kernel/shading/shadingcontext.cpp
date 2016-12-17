@@ -33,10 +33,8 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/input/inputevaluator.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
-#endif
 
 using namespace foundation;
 
@@ -52,9 +50,7 @@ ShadingContext::ShadingContext(
     Tracer&                 tracer,
     TextureCache&           texture_cache,
     OIIO::TextureSystem&    oiio_texture_system,
-#ifdef APPLESEED_WITH_OSL
     OSLShaderGroupExec&     osl_shadergroup_exec,
-#endif
     const size_t            thread_index,
     ILightingEngine*        lighting_engine,
     const float             transparency_threshold,
@@ -63,9 +59,7 @@ ShadingContext::ShadingContext(
   , m_tracer(tracer)
   , m_texture_cache(texture_cache)
   , m_oiio_texture_system(oiio_texture_system)
-#ifdef APPLESEED_WITH_OSL
   , m_shadergroup_exec(osl_shadergroup_exec)
-#endif
   , m_thread_index(thread_index)
   , m_lighting_engine(lighting_engine)
   , m_transparency_threshold(transparency_threshold)
@@ -77,8 +71,6 @@ OIIO::TextureSystem& ShadingContext::get_oiio_texture_system() const
 {
     return m_oiio_texture_system;
 }
-
-#ifdef APPLESEED_WITH_OSL
 
 void ShadingContext::execute_osl_shading(
     const ShaderGroup&      shader_group,
@@ -157,7 +149,5 @@ void* ShadingContext::osl_mem_alloc(const size_t size) const
 {
     return m_shadergroup_exec.osl_mem_alloc(size);
 }
-
-#endif
 
 }   // namespace renderer

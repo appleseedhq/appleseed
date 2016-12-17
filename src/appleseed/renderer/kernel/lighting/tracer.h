@@ -46,9 +46,7 @@
 
 // Forward declarations.
 namespace renderer  { class Material;}
-#ifdef APPLESEED_WITH_OSL
 namespace renderer  { class OSLShaderGroupExec; }
-#endif
 namespace renderer  { class Scene; }
 namespace renderer  { class TextureCache; }
 
@@ -71,9 +69,7 @@ class Tracer
         const Scene&                    scene,
         const Intersector&              intersector,
         TextureCache&                   texture_cache,
-#ifdef APPLESEED_WITH_OSL
         OSLShaderGroupExec&             shadergroup_exec,
-#endif
         const float                     transparency_threshold = 0.001f,
         const size_t                    max_iterations = 1000,
         const bool                      print_details = true);
@@ -143,9 +139,7 @@ class Tracer
   private:
     const Intersector&                  m_intersector;
     TextureCache&                       m_texture_cache;
-#ifdef APPLESEED_WITH_OSL
     OSLShaderGroupExec&                 m_shadergroup_exec;
-#endif
     const bool                          m_assume_no_alpha_mapping;
     const float                         m_transmission_threshold;
     const size_t                        m_max_iterations;

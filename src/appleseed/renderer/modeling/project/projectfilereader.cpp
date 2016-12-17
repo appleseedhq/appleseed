@@ -85,9 +85,7 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
-#endif
 #include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.h"
@@ -403,11 +401,9 @@ namespace
         ElementScene,
         ElementSearchPath,
         ElementSearchPaths,
-#ifdef APPLESEED_WITH_OSL
         ElementShader,
         ElementShaderConnection,
         ElementShaderGroup,
-#endif
         ElementSurfaceShader,
         ElementTexture,
         ElementTextureInstance,
@@ -1839,8 +1835,6 @@ namespace
     };
 
 
-#ifdef APPLESEED_WITH_OSL
-
     //
     // <shader> element handler.
     //
@@ -2002,8 +1996,6 @@ namespace
         auto_release_ptr<ShaderGroup>   m_shader_group;
     };
 
-#endif
-
 
     //
     // Base class for assembly and scene element handlers.
@@ -2070,9 +2062,7 @@ namespace
             m_materials.clear();
             m_objects.clear();
             m_object_instances.clear();
-#ifdef APPLESEED_WITH_OSL
             m_shader_groups.clear();
-#endif
             m_surface_shaders.clear();
             m_textures.clear();
             m_texture_instances.clear();
@@ -2102,9 +2092,7 @@ namespace
                 m_assembly->materials().swap(m_materials);
                 m_assembly->objects().swap(m_objects);
                 m_assembly->object_instances().swap(m_object_instances);
-#ifdef APPLESEED_WITH_OSL
                 m_assembly->shader_groups().swap(m_shader_groups);
-#endif
                 m_assembly->surface_shaders().swap(m_surface_shaders);
                 m_assembly->textures().swap(m_textures);
                 m_assembly->texture_instances().swap(m_texture_instances);
@@ -2185,13 +2173,11 @@ namespace
                     static_cast<ObjectInstanceElementHandler*>(handler)->get_object_instance());
                 break;
 
-#ifdef APPLESEED_WITH_OSL
               case ElementShaderGroup:
                 insert(
                     m_shader_groups,
                     static_cast<ShaderGroupElementHandler*>(handler)->get_shader_group());
                 break;
-#endif
 
               case ElementSurfaceShader:
                 insert(
@@ -2236,9 +2222,7 @@ namespace
         MaterialContainer           m_materials;
         ObjectContainer             m_objects;
         ObjectInstanceContainer     m_object_instances;
-#ifdef APPLESEED_WITH_OSL
         ShaderGroupContainer        m_shader_groups;
-#endif
         SurfaceShaderContainer      m_surface_shaders;
         TextureContainer            m_textures;
         TextureInstanceContainer    m_texture_instances;
@@ -2366,13 +2350,12 @@ namespace
                     static_cast<TextureInstanceElementHandler*>(handler)->get_texture_instance());
                 break;
 
-#ifdef APPLESEED_WITH_OSL
               case ElementShaderGroup:
                 insert(
                     m_scene->shader_groups(),
                     static_cast<ShaderGroupElementHandler*>(handler)->get_shader_group());
                 break;
-#endif
+
               default:
                 ParametrizedElementHandler::end_child_element(element, handler);
                 break;
@@ -2953,9 +2936,7 @@ namespace
             register_factory_helper<ColorElementHandler>("color", ElementColor);
             register_factory_helper<ConfigurationElementHandler>("configuration", ElementConfiguration);
             register_factory_helper<ConfigurationsElementHandler>("configurations", ElementConfigurations);
-#ifdef APPLESEED_WITH_OSL
             register_factory_helper<ShaderConnectionElementHandler>("connect_shaders", ElementShaderConnection);
-#endif
             register_factory_helper<DisplayElementHandler>("display", ElementDisplay);
             register_factory_helper<EDFElementHandler>("edf", ElementEDF);
             register_factory_helper<EnvironmentElementHandler>("environment", ElementEnvironment);
@@ -2978,10 +2959,8 @@ namespace
             register_factory_helper<SceneElementHandler>("scene", ElementScene);
             register_factory_helper<SearchPathElementHandler>("search_path", ElementSearchPath);
             register_factory_helper<SearchPathsElementHandler>("search_paths", ElementSearchPaths);
-#ifdef APPLESEED_WITH_OSL
             register_factory_helper<ShaderElementHandler>("shader", ElementShader);
             register_factory_helper<ShaderGroupElementHandler>("shader_group", ElementShaderGroup);
-#endif
             register_factory_helper<SurfaceShaderElementHandler>("surface_shader", ElementSurfaceShader);
             register_factory_helper<TextureElementHandler>("texture", ElementTexture);
             register_factory_helper<TextureInstanceElementHandler>("texture_instance", ElementTextureInstance);

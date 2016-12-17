@@ -58,9 +58,7 @@ void bind_project();
 void bind_quaternion();
 void bind_renderer_controller();
 void bind_scene();
-#ifdef APPLESEED_WITH_OSL
 void bind_shader_group();
-#endif
 void bind_surface_shader();
 void bind_texture();
 void bind_tile_callback();
@@ -94,9 +92,8 @@ BOOST_PYTHON_MODULE(_appleseedpython)
     bind_bsdf();
     bind_bssrdf();
     bind_edf();
-#ifdef APPLESEED_WITH_OSL
     bind_shader_group();
-#endif
+
     bind_surface_shader();
     bind_material();
     bind_light();

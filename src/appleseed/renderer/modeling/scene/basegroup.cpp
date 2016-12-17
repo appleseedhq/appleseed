@@ -35,9 +35,7 @@
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/textureinstance.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
-#endif
 #include "renderer/modeling/texture/texture.h"
 
 // appleseed.foundation headers.
@@ -54,9 +52,7 @@ struct BaseGroup::Impl
     ColorContainer              m_colors;
     TextureContainer            m_textures;
     TextureInstanceContainer    m_texture_instances;
-#ifdef APPLESEED_WITH_OSL
     ShaderGroupContainer        m_shader_groups;
-#endif
     AssemblyContainer           m_assemblies;
     AssemblyInstanceContainer   m_assembly_instances;
 
@@ -64,9 +60,7 @@ struct BaseGroup::Impl
       : m_colors(parent)
       , m_textures(parent)
       , m_texture_instances(parent)
-#ifdef APPLESEED_WITH_OSL
       , m_shader_groups(parent)
-#endif
       , m_assemblies(parent)
       , m_assembly_instances(parent)
     {
@@ -97,8 +91,6 @@ TextureInstanceContainer& BaseGroup::texture_instances() const
 {
     return impl->m_texture_instances;
 }
-
-#ifdef APPLESEED_WITH_OSL
 
 ShaderGroupContainer& BaseGroup::shader_groups() const
 {
@@ -143,8 +135,6 @@ void BaseGroup::release_optimized_osl_shader_groups()
         i->release_optimized_osl_shader_group();
 }
 
-#endif
-
 AssemblyContainer& BaseGroup::assemblies() const
 {
     return impl->m_assemblies;
@@ -181,9 +171,7 @@ void BaseGroup::collect_asset_paths(StringArray& paths) const
     do_collect_asset_paths(paths, colors());
     do_collect_asset_paths(paths, textures());
     do_collect_asset_paths(paths, texture_instances());
-#ifdef APPLESEED_WITH_OSL
     do_collect_asset_paths(paths, shader_groups());
-#endif
     do_collect_asset_paths(paths, assemblies());
     do_collect_asset_paths(paths, assembly_instances());
 }
@@ -193,9 +181,7 @@ void BaseGroup::update_asset_paths(const StringDictionary& mappings)
     do_update_asset_paths(mappings, colors());
     do_update_asset_paths(mappings, textures());
     do_update_asset_paths(mappings, texture_instances());
-#ifdef APPLESEED_WITH_OSL
     do_update_asset_paths(mappings, shader_groups());
-#endif
     do_update_asset_paths(mappings, assemblies());
     do_update_asset_paths(mappings, assembly_instances());
 }

@@ -55,13 +55,11 @@
 #include "foundation/platform/types.h"
 
 // OSL headers.
-#ifdef APPLESEED_WITH_OSL
 #include "foundation/platform/oslheaderguards.h"
 BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
 #include "OSL/shaderglobals.h"
 END_OSL_INCLUDES
-#endif
 
 // Standard headers.
 #include <cassert>
@@ -69,10 +67,8 @@ END_OSL_INCLUDES
 
 // Forward declarations.
 namespace renderer  { class Object; }
-#ifdef APPLESEED_WITH_OSL
 namespace renderer  { class OSLShaderGroupExec; }
 namespace renderer  { class ShaderGroup; }
-#endif
 namespace renderer  { class Scene; }
 namespace renderer  { class TextureCache; }
 
@@ -228,7 +224,6 @@ class ShadingPoint
     // Return whether surface shaders should be invoked for fully transparent shading points.
     bool shade_alpha_cutouts() const;
 
-#ifdef APPLESEED_WITH_OSL
     OSL::ShaderGlobals& get_osl_shader_globals() const;
 
     struct OSLObjectTransformInfo
@@ -256,16 +251,13 @@ class ShadingPoint
         float       m_u;
         float       m_v;
     };
-#endif
 
   private:
     friend class AssemblyLeafProbeVisitor;
     friend class AssemblyLeafVisitor;
     friend class CurveLeafVisitor;
     friend class Intersector;
-#ifdef APPLESEED_WITH_OSL
     friend class OSLShaderGroupExec;
-#endif
     friend class RegionLeafVisitor;
     friend class ShadingPointBuilder;
     friend class TriangleLeafVisitor;
@@ -306,10 +298,8 @@ class ShadingPoint
         HasMaterials                     = 1 << 12,
         HasWorldSpacePointVelocity       = 1 << 13,
         HasAlpha                         = 1 << 14,
-        HasScreenSpacePartialDerivatives = 1 << 15
-#ifdef APPLESEED_WITH_OSL
-        , HasOSLShaderGlobals            = 1 << 16
-#endif
+        HasScreenSpacePartialDerivatives = 1 << 15,
+        HasOSLShaderGlobals              = 1 << 16
     };
     mutable foundation::uint32          m_members;
 
@@ -351,11 +341,9 @@ class ShadingPoint
     mutable foundation::Vector3d        m_front_point;                  // hit point refined to front, in assembly instance space
     mutable foundation::Vector3d        m_back_point;                   // hit point refined to back, in assembly instance space
 
-#ifdef APPLESEED_WITH_OSL
     mutable OSLObjectTransformInfo      m_obj_transform_info;
     mutable OSLTraceData                m_osl_trace_data;
     mutable OSL::ShaderGlobals          m_shader_globals;
-#endif
 
     // Fetch and cache the source geometry.
     void cache_source_geometry() const;
@@ -381,12 +369,10 @@ class ShadingPoint
 
     void fetch_materials() const;
 
-#ifdef APPLESEED_WITH_OSL
     void initialize_osl_shader_globals(
         const ShaderGroup&              sg,
         const VisibilityFlags::Type     ray_flags,
         OSL::RendererServices*          renderer) const;
-#endif
 };
 
 
@@ -869,14 +855,12 @@ inline bool ShadingPoint::shade_alpha_cutouts() const
     return m_shade_alpha_cutouts;
 }
 
-#ifdef APPLESEED_WITH_OSL
 inline OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
 {
     assert(hit());
     assert(m_members & HasOSLShaderGlobals);
     return m_shader_globals;
 }
-#endif
 
 inline void ShadingPoint::cache_source_geometry() const
 {

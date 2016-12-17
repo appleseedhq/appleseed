@@ -46,9 +46,7 @@
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/objectinstance.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
-#endif
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -273,7 +271,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             // Initialize the ray's medium list.
             if (entering)
             {
-#ifdef APPLESEED_WITH_OSL
                 // Execute the OSL shader if there is one.
                 if (material_data.m_shader_group)
                 {
@@ -281,7 +278,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                         *material_data.m_shader_group,
                         *vertex.m_shading_point);
                 }
-#endif
+
                 InputEvaluator input_evaluator(shading_context.get_texture_cache());
                 material_data.m_bsdf->evaluate_inputs(
                     shading_context,
@@ -313,7 +310,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         {
             Alpha alpha = vertex.m_shading_point->get_alpha();
 
-#ifdef APPLESEED_WITH_OSL
             // Apply OSL transparency if needed.
             if (material_data.m_shader_group &&
                 material_data.m_shader_group->has_transparency())
@@ -325,7 +321,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                     a);
                 alpha *= a;
             }
-#endif
 
             if (pass_through(sampling_context, alpha))
             {
@@ -364,7 +359,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             }
         }
 
-#ifdef APPLESEED_WITH_OSL
         // Execute the OSL shader if there is one.
         if (material_data.m_shader_group)
         {
@@ -372,7 +366,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 *material_data.m_shader_group,
                 *vertex.m_shading_point);
         }
-#endif
 
         // Retrieve the EDF, the BSDF and the BSSRDF.
         vertex.m_edf =

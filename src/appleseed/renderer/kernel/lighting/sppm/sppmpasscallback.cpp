@@ -61,9 +61,7 @@ SPPMPassCallback::SPPMPassCallback(
     const TraceContext&     trace_context,
     TextureStore&           texture_store,
     OIIO::TextureSystem&    oiio_texture_system,
-#ifdef APPLESEED_WITH_OSL
     OSL::ShadingSystem&     shading_system,
-#endif
     const SPPMParameters&   params)
   : m_params(params)
   , m_photon_tracer(
@@ -72,9 +70,7 @@ SPPMPassCallback::SPPMPassCallback(
         trace_context,
         texture_store,
         oiio_texture_system,
-#ifdef APPLESEED_WITH_OSL
         shading_system,
-#endif
         params)
   , m_pass_number(0)
 {

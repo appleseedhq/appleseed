@@ -423,14 +423,12 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
             sample.m_shading_normal,
             m_shading_context.get_intersector());
 
-#ifdef APPLESEED_WITH_OSL
         if (material_data.m_shader_group)
         {
             m_shading_context.execute_osl_emission(
                 *material_data.m_shader_group,
                 light_shading_point);
         }
-#endif
 
         // Evaluate the EDF inputs.
         InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
@@ -548,14 +546,12 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     if (cos_on <= 0.0f)
         return;
 
-#ifdef APPLESEED_WITH_OSL
     if (material_data.m_shader_group)
     {
         m_shading_context.execute_osl_emission(
             *material_data.m_shader_group,
             light_shading_point);
     }
-#endif
 
     // Evaluate the EDF inputs.
     InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
@@ -726,14 +722,12 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
         sample.m_shading_normal,
         m_shading_context.get_intersector());
 
-#ifdef APPLESEED_WITH_OSL
     if (material_data.m_shader_group)
     {
         m_shading_context.execute_osl_emission(
             *material_data.m_shader_group,
             light_shading_point);
     }
-#endif
 
     // Evaluate the EDF inputs.
     InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());

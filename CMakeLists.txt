@@ -109,7 +109,6 @@ option (WITH_STUDIO                         "Build appleseed.studio"            
 option (WITH_TOOLS                          "Build appleseed tools"                                 ON)
 option (WITH_PYTHON                         "Build Python bindings"                                 ON)
 option (WITH_ALEMBIC                        "Build Alembic support"                                 OFF)
-option (WITH_OSL                            "Build OSL support"                                     OFF)
 option (WITH_DISNEY_MATERIAL                "Build Disney material"                                 OFF)
 option (WITH_NORMALIZED_DIFFUSION_BSSRDF    "Build Normalized Diffusion BSSRDF (patented)"          OFF)
 option (WITH_PARTIO                         "Build Partio support (used in unit tests)"             OFF)
@@ -196,11 +195,7 @@ if (USE_STATIC_BOOST)
     set (Boost_USE_STATIC_LIBS TRUE)
 endif ()
 
-set (BOOST_NEEDED_LIBS chrono date_time filesystem regex system thread)
-
-if (WITH_OSL)
-    set (BOOST_NEEDED_LIBS ${BOOST_NEEDED_LIBS} wave)
-endif ()
+set (BOOST_NEEDED_LIBS chrono date_time filesystem regex system thread wave)
 
 find_package (Boost 1.55 REQUIRED ${BOOST_NEEDED_LIBS})
 
@@ -253,14 +248,11 @@ if (USE_EXTERNAL_OIIO)
     find_package (OpenImageIO REQUIRED)
 endif ()
 
-if (WITH_OSL)
-    add_definitions (-DAPPLESEED_WITH_OSL)
-    if (USE_STATIC_OSL)
-        add_definitions (-DOSL_STATIC_LIBRARY)
-    endif ()
-    if (USE_EXTERNAL_OSL)
-        find_package (OSL REQUIRED)
-    endif ()
+if (USE_STATIC_OSL)
+    add_definitions (-DOSL_STATIC_LIBRARY)
+endif ()
+if (USE_EXTERNAL_OSL)
+    find_package (OSL REQUIRED)
 endif ()
 
 if (WITH_DISNEY_MATERIAL)
@@ -345,12 +337,10 @@ else ()
     include_directories (${APPLESEED_DEPS_STAGE_DIR}/oiio-debug/include)
 endif ()
 
-if (WITH_OSL)
-    if (USE_EXTERNAL_OSL)
-        include_directories (${OSL_INCLUDE_DIRS})
-    else ()
-        include_directories (${APPLESEED_DEPS_STAGE_DIR}/osl-debug/include)
-    endif ()
+if (USE_EXTERNAL_OSL)
+    include_directories (${OSL_INCLUDE_DIRS})
+else ()
+    include_directories (${APPLESEED_DEPS_STAGE_DIR}/osl-debug/include)
 endif ()
 
 if (WITH_DISNEY_MATERIAL)
@@ -598,13 +588,10 @@ endmacro ()
 
 add_subdirectory (src/appleseed)
 add_subdirectory (src/lz4)
+add_subdirectory (src/appleseed.shaders)
 
 if (WITH_CLI OR WITH_STUDIO OR WITH_TOOLS)
     add_subdirectory (src/appleseed.shared)
-endif ()
-
-if (WITH_OSL)
-    add_subdirectory (src/appleseed.shaders)
 endif ()
 
 if (WITH_CLI)
@@ -665,20 +652,18 @@ install (
     DESTINATION schemas
 )
 
-if (WITH_OSL)
-    install (
-        FILES
-            ${OSL_COMPILER}
-            ${OSL_QUERY_INFO}
-            ${OSL_MAKETX}
-        DESTINATION bin
-    )
+install (
+    FILES
+        ${OSL_COMPILER}
+        ${OSL_QUERY_INFO}
+        ${OSL_MAKETX}
+    DESTINATION bin
+)
 
-    install (
-        DIRECTORY sandbox/shaders
-        DESTINATION .
-    )
-endif ()
+install (
+    DIRECTORY sandbox/shaders
+    DESTINATION .
+)
 
 install (
     DIRECTORY

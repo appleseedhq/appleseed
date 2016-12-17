@@ -49,9 +49,7 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/visibilityflags.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
-#endif
 
 // appleseed.foundation headers.
 #include "foundation/math/sampling/mappings.h"
@@ -388,7 +386,6 @@ void LightSampler::collect_emitting_triangles(
             }
         }
 
-#ifdef APPLESEED_WITH_OSL
         store_object_area_in_shadergroups(
             &assembly_instance,
             object_instance,
@@ -400,7 +397,6 @@ void LightSampler::collect_emitting_triangles(
             object_instance,
             static_cast<float>(object_area),
             back_materials);
-#endif
     }
 }
 
@@ -577,8 +573,6 @@ void LightSampler::sample_emitting_triangle(
     light_sample.m_probability = triangle_prob * emitting_triangle.m_rcp_area;
 }
 
-#ifdef APPLESEED_WITH_OSL
-
 void LightSampler::store_object_area_in_shadergroups(
     const AssemblyInstance*             assembly_instance,
     const ObjectInstance*               object_instance,
@@ -597,8 +591,6 @@ void LightSampler::store_object_area_in_shadergroups(
         }
     }
 }
-
-#endif
 
 
 //

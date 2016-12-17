@@ -49,8 +49,6 @@ set (CMAKE_MODULE_PATH
 option (USE_EXTERNAL_OIIO                   "Use external OpenImageIO library"                      OFF)
 option (USE_EXTERNAL_OSL                    "Use external OpenShadingLanguage library"              OFF)
 
-option (WITH_OSL                            "Build OSL support"                                     OFF)
-
 option (USE_STATIC_BOOST                    "Use static Boost libraries"                            ON)
 option (USE_STATIC_OIIO                     "Use static OpenImageIO libraries"                      ON)
 option (USE_STATIC_OSL                      "Use static OpenShadingLanguage libraries"              ON)
@@ -91,14 +89,11 @@ if (USE_EXTERNAL_OIIO)
     find_package (OpenImageIO REQUIRED)
 endif ()
 
-if (WITH_OSL)
-    add_definitions (-DAPPLESEED_WITH_OSL)
-    if (USE_STATIC_OSL)
-        add_definitions (-DOSL_STATIC_LIBRARY)
-    endif ()
-    if (USE_EXTERNAL_OSL)
-        find_package (OSL REQUIRED)
-    endif ()
+if (USE_STATIC_OSL)
+    add_definitions (-DOSL_STATIC_LIBRARY)
+endif ()
+if (USE_EXTERNAL_OSL)
+    find_package (OSL REQUIRED)
 endif ()
 
 
@@ -116,12 +111,10 @@ else ()
     include_directories (${APPLESEED_DEPS_STAGE_DIR}/oiio-debug/include)
 endif ()
 
-if (WITH_OSL)
-    if (USE_EXTERNAL_OSL)
-        include_directories (${OSL_INCLUDE_DIRS})
-    else ()
-        include_directories (${APPLESEED_DEPS_STAGE_DIR}/osl-debug/include)
-    endif ()
+if (USE_EXTERNAL_OSL)
+    include_directories (${OSL_INCLUDE_DIRS})
+else ()
+    include_directories (${APPLESEED_DEPS_STAGE_DIR}/osl-debug/include)
 endif ()
 
 
