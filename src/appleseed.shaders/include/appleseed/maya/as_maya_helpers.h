@@ -34,7 +34,7 @@
 #include "appleseed/math/as_math_helpers.h"
 
 #define OUTSIDE_UVFRAME 999999
-#define UVWRAP          1.00001
+#define UVWRAP          1.0001
 
 #define MAYA_COLORBALANCE_PARAMETERS                        \
     color in_defaultColor = color(0.5)                      \
