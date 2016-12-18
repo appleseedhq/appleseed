@@ -217,7 +217,6 @@ shader as_maya_lambert
             incandescence_term +
             diffuse_term +
             translucence_term +
-            refraction_term +
             matte_term +
             glow_term +
             transparency_term;
