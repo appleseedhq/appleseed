@@ -115,49 +115,6 @@ shader as_maya_lambert
         string maya_attribute_type = "float",
         string label = "Glow Intensity"
     ]],
-    int in_refractions = 0
-    [[
-        string maya_attribute_name = "refractions",
-        string maya_attribute_type = "bool",
-        string label = "Toggle Refractions",
-        string widget = "checkBox"
-    ]],
-    float in_refractiveIndex = 1.0
-    [[
-        string maya_attribute_name = "refractiveIndex",
-        string maya_attribute_type = "float",
-        string label = "Refractive Index",
-        float min = 0.010,
-        float max = 3.0,
-        string widget = "slider",
-        int slider = 1,
-        float slidermin = 0.010,
-        float slidermax = 3.0
-    ]],
-    int in_refractionLimit = 6
-    [[
-        string maya_attribute_name = "refractionLimit",
-        string maya_attribute_type = "int",
-        string label = "Refraction Limit",
-        int min = 0,
-        int max = 10,
-        string widget = "slider",
-        int slider = 1,
-        int slidermin = 0,
-        int slidermax = 10
-    ]],
-    float in_lightAbsorbance = 0.0
-    [[
-        string maya_attribute_name = "lightAbsorbance",
-        string maya_attribute_type = "float",
-        string label = "lightAbsorbance",
-        float min = 0.0,
-        float max = 10.0,
-        string widget = "slider",
-        int slider = 1,
-        float slidermin = 0.0,
-        float slidermax = 10.0
-    ]],
     float in_shadowAttenuation = 0.5
     [[
         string maya_attribute_name = "shadowAttenuation",
@@ -228,24 +185,6 @@ shader as_maya_lambert
         // Translucence focus and depth (light wrapping) parameters ignored.
         closure color translucence_term = opacity *
             in_translucence * in_color * translucent(Nn);
-
-        closure color refraction_term ;
-
-        // Maya refraction (BTDF only).
-        if (in_refractions)
-        {
-            int raydepth = 0;
-            int status = getattribute("path:ray_depth", raydepth);
-
-            if (raydepth <= in_refractionLimit)
-            {
-                float eta = (backfacing())
-                    ? 1 / in_refractiveIndex
-                    : in_refractiveIndex;
-                    
-                refraction_term = opacity * refraction(Nn, eta);
-            }
-        }
 
         float matte_opacity;
 
