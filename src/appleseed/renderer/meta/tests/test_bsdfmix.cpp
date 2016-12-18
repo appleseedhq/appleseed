@@ -31,10 +31,8 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/lighting/tracer.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/rendering/rendererservices.h"
 #include "renderer/kernel/shading/oslshadergroupexec.h"
-#endif
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingpointbuilder.h"
@@ -63,20 +61,16 @@
 #include "foundation/utility/test.h"
 
 // OSL headers.
-#ifdef APPLESEED_WITH_OSL
 #include "foundation/platform/oslheaderguards.h"
 BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
 END_OSL_INCLUDES
-#endif
 
 // OpenImageIO headers.
-#ifdef APPLESEED_WITH_OIIO
 #include "foundation/platform/oiioheaderguards.h"
 BEGIN_OIIO_INCLUDES
 #include "OpenImageIO/texture.h"
 END_OIIO_INCLUDES
-#endif
 
 // Boost headers.
 #include "boost/bind.hpp"
@@ -122,17 +116,14 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
 
         TextureStore texture_store(scene);
 
-#ifdef APPLESEED_WITH_OIIO
         boost::shared_ptr<OIIO::TextureSystem> texture_system(
             OIIO::TextureSystem::create(),
             boost::bind(&OIIO::TextureSystem::destroy, _1));
-#endif
-#ifdef APPLESEED_WITH_OSL
+
         RendererServices renderer_services(*project, *texture_system);
 
         boost::shared_ptr<OSL::ShadingSystem> shading_system(
             new OSL::ShadingSystem(&renderer_services, texture_system.get()));
-#endif
 
         scene.assemblies().insert(
             AssemblyFactory().create("assembly", ParamArray()));
@@ -196,29 +187,20 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
             project->get_trace_context(),
             texture_cache);
 
-#ifdef APPLESEED_WITH_OSL
         OSLShaderGroupExec sg_exec(*shading_system);
-#endif
         Tracer tracer(
             *project->get_scene(),
             intersector,
-            texture_cache
-#ifdef APPLESEED_WITH_OSL
-            , sg_exec
-#endif
-            );
+            texture_cache,
+            sg_exec);
 
         ShadingContext shading_context(
             intersector,
             tracer,
-            texture_cache
-#ifdef APPLESEED_WITH_OIIO
-            , *texture_system
-#endif
-#ifdef APPLESEED_WITH_OSL
-            , sg_exec
-#endif
-            , 0);
+            texture_cache,
+            *texture_system,
+            sg_exec,
+            0);
 
         ShadingPoint shading_point;
         ShadingPointBuilder builder(shading_point);

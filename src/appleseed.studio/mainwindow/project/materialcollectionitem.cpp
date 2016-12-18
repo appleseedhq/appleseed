@@ -121,9 +121,7 @@ QMenu* MaterialCollectionItem::get_single_item_context_menu() const
 
     menu->addSeparator();
     menu->addAction("Create Generic Material...", this, SLOT(slot_create_generic()));
-#ifdef APPLESEED_WITH_OSL
     menu->addAction("Create OSL Material...", this, SLOT(slot_create_osl()));
-#endif
 
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
     menu->addSeparator();
@@ -235,9 +233,7 @@ void MaterialCollectionItem::slot_import_disney()
 
 void MaterialCollectionItem::slot_create_osl()
 {
-#ifdef APPLESEED_WITH_OSL
     do_create_material("osl_material");
-#endif
 }
 
 void MaterialCollectionItem::do_create_material(const char* model)

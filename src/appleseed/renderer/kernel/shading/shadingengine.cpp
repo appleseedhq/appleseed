@@ -46,9 +46,7 @@
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
-#endif
 #include "renderer/modeling/surfaceshader/diagnosticsurfaceshader.h"
 #include "renderer/utility/paramarray.h"
 
@@ -95,7 +93,6 @@ void ShadingEngine::shade_hit_point(
     // Retrieve the material of the intersected surface.
     const Material* material = shading_point.get_material();
 
-#ifdef APPLESEED_WITH_OSL
     // Apply OSL transparency if needed.
     if (material &&
         material->get_render_data().m_shader_group &&
@@ -108,7 +105,6 @@ void ShadingEngine::shade_hit_point(
             alpha);
         shading_result.m_main.m_alpha *= alpha;
     }
-#endif
 
     // Shade the sample if it isn't fully transparent.
     if (shading_result.m_main.m_alpha[0] > 0.0f || shading_point.shade_alpha_cutouts())

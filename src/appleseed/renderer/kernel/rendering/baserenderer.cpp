@@ -31,13 +31,9 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
-#ifdef APPLESEED_WITH_OIIO
 #include "renderer/kernel/rendering/oiioerrorhandler.h"
-#endif
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/rendering/rendererservices.h"
 #include "renderer/kernel/shading/closures.h"
-#endif
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 
@@ -63,8 +59,6 @@ BaseRenderer::BaseRenderer(
   : m_project(project)
   , m_params(params)
 {
-#ifdef APPLESEED_WITH_OIIO
-
     m_error_handler = new OIIOErrorHandler();
 #ifndef NDEBUG
     m_error_handler->verbosity(OIIO::ErrorHandler::VERBOSE);
@@ -80,10 +74,6 @@ BaseRenderer::BaseRenderer(
 #if OIIO_VERSION >= 10703
     m_texture_system->attribute("flip_t", 1);
 #endif
-
-#endif
-
-#ifdef APPLESEED_WITH_OSL
 
     m_renderer_services = new RendererServices(m_project, *m_texture_system);
 
@@ -114,14 +104,10 @@ BaseRenderer::BaseRenderer(
 
     // Register appleseed's closures into OSL's shading system.
     register_closures(*m_shading_system);
-
-#endif
 }
 
 BaseRenderer::~BaseRenderer()
 {
-#ifdef APPLESEED_WITH_OSL
-
     RENDERER_LOG_DEBUG("destroying osl shading system...");
     m_project.get_scene()->release_optimized_osl_shader_groups();
 #if OSL_LIBRARY_VERSION_CODE >= 10700
@@ -132,10 +118,6 @@ BaseRenderer::~BaseRenderer()
 
     delete m_renderer_services;
 
-#endif
-
-#ifdef APPLESEED_WITH_OIIO
-
     const string stats = m_texture_system->getstats();
     const string trimmed_stats = trim_right(stats, "\r\n");
     RENDERER_LOG_DEBUG("oiio: %s", trimmed_stats.c_str());
@@ -143,8 +125,6 @@ BaseRenderer::~BaseRenderer()
     RENDERER_LOG_DEBUG("destroying openimageio texture system...");
     OIIO::TextureSystem::destroy(m_texture_system);
     delete m_error_handler;
-
-#endif
 }
 
 ParamArray& BaseRenderer::get_parameters()
@@ -161,18 +141,9 @@ bool BaseRenderer::initialize_shading_system(
     TextureStore& texture_store,
     IAbortSwitch& abort_switch)
 {
-#ifdef APPLESEED_WITH_OIIO
     initialize_oiio();
-#endif
-
-#ifdef APPLESEED_WITH_OSL
     return initialize_osl(texture_store, abort_switch);
-#else
-    return true;
-#endif
 }
-
-#ifdef APPLESEED_WITH_OIIO
 
 void BaseRenderer::initialize_oiio()
 {
@@ -199,10 +170,6 @@ void BaseRenderer::initialize_oiio()
     }
 }
 
-#endif
-
-#ifdef APPLESEED_WITH_OSL
-
 bool BaseRenderer::initialize_osl(TextureStore& texture_store, IAbortSwitch& abort_switch)
 {
     m_renderer_services->initialize(texture_store);
@@ -224,7 +191,5 @@ bool BaseRenderer::initialize_osl(TextureStore& texture_store, IAbortSwitch& abo
             *m_shading_system,
             &abort_switch);
 }
-
-#endif
 
 }   // namespace renderer

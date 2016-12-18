@@ -55,9 +55,7 @@ namespace renderer      { class MessageContext; }
 namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
-#ifdef APPLESEED_WITH_OSL
 namespace renderer      { class ShaderGroup; }
-#endif
 namespace renderer      { class Source; }
 namespace renderer      { class SurfaceShader; }
 
@@ -111,10 +109,8 @@ class APPLESEED_DLLSYMBOL Material
     // Return the source bound to the alpha map input, or 0 if the material doesn't have an alpha map.
     const Source* get_uncached_alpha_map() const;
 
-#ifdef APPLESEED_WITH_OSL
     // Return the OSL surface shader of the material, or 0 if the material doesn't have one.
     virtual const ShaderGroup* get_uncached_osl_surface() const;
-#endif
 
     // Return true if the material emits light.
     virtual bool has_emission() const;
@@ -139,9 +135,7 @@ class APPLESEED_DLLSYMBOL Material
         const BSSRDF*               m_bssrdf;
         const EDF*                  m_edf;
         const Source*               m_alpha_map;
-#ifdef APPLESEED_WITH_OSL
         const ShaderGroup*          m_shader_group;
-#endif
         const IBasisModifier*       m_basis_modifier;   // owned by RenderData
     };
 

@@ -38,9 +38,7 @@
 #include "renderer/modeling/environmentedf/ienvironmentedffactory.h"
 #include "renderer/modeling/environmentedf/latlongmapenvironmentedf.h"
 #include "renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/environmentedf/oslenvironmentedf.h"
-#endif
 #include "renderer/modeling/environmentedf/preethamenvironmentedf.h"
 
 // appleseed.foundation headers.
@@ -73,9 +71,7 @@ EnvironmentEDFFactoryRegistrar::EnvironmentEDFFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new HosekEnvironmentEDFFactory()));
     register_factory(auto_ptr<FactoryType>(new LatLongMapEnvironmentEDFFactory()));
     register_factory(auto_ptr<FactoryType>(new MirrorBallMapEnvironmentEDFFactory()));
-#ifdef APPLESEED_WITH_OSL
     register_factory(auto_ptr<FactoryType>(new OSLEnvironmentEDFFactory()));
-#endif
     register_factory(auto_ptr<FactoryType>(new PreethamEnvironmentEDFFactory()));
 }
 

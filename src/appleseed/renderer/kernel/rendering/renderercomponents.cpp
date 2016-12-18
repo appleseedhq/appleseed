@@ -91,13 +91,9 @@ RendererComponents::RendererComponents(
     const Project&          project,
     const ParamArray&       params,
     ITileCallbackFactory*   tile_callback_factory,
-    TextureStore&           texture_store
-#ifdef APPLESEED_WITH_OIIO
-    , OIIO::TextureSystem&  texture_system
-#endif
-#ifdef APPLESEED_WITH_OSL
-    , OSL::ShadingSystem&   shading_system
-#endif
+    TextureStore&           texture_store,
+    OIIO::TextureSystem&    texture_system,
+    OSL::ShadingSystem&     shading_system
     )
   : m_project(project)
   , m_params(params)
@@ -108,12 +104,8 @@ RendererComponents::RendererComponents(
   , m_light_sampler(m_scene, get_child_and_inherit_globals(params, "light_sampler"))
   , m_shading_engine(get_child_and_inherit_globals(params, "shading_engine"))
   , m_texture_store(texture_store)
-#ifdef APPLESEED_WITH_OIIO
   , m_texture_system(texture_system)
-#endif
-#ifdef APPLESEED_WITH_OSL
   , m_shading_system(shading_system)
-#endif
 {
 }
 
@@ -183,12 +175,8 @@ bool RendererComponents::create_lighting_engine_factory()
                 m_light_sampler,
                 m_trace_context,
                 m_texture_store,
-#ifdef APPLESEED_WITH_OIIO
                 m_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
                 m_shading_system,
-#endif
                 sppm_params);
 
         m_pass_callback.reset(sppm_pass_callback);
@@ -228,12 +216,8 @@ bool RendererComponents::create_sample_renderer_factory()
                 m_texture_store,
                 m_lighting_engine_factory.get(),
                 m_shading_engine,
-#ifdef APPLESEED_WITH_OIIO
                 m_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
                 m_shading_system,
-#endif
                 get_child_and_inherit_globals(m_params, "generic_sample_renderer")));
         return true;
     }
@@ -288,12 +272,8 @@ bool RendererComponents::create_sample_generator_factory()
                 m_trace_context,
                 m_texture_store,
                 m_light_sampler,
-#ifdef APPLESEED_WITH_OIIO
                 m_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
                 m_shading_system,
-#endif
                 get_child_and_inherit_globals(m_params, "lighttracing_sample_generator")));
         return true;
     }

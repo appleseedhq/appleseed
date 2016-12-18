@@ -60,9 +60,7 @@ namespace renderer  { class MaterialArray; }
 namespace renderer  { class ObjectInstance; }
 namespace renderer  { class ParamArray; }
 namespace renderer  { class Scene; }
-#ifdef APPLESEED_WITH_OSL
 namespace renderer  { class ShaderGroup; }
-#endif
 namespace renderer  { class ShadingPoint; }
 
 namespace renderer
@@ -283,13 +281,11 @@ class LightSampler
         const float                         triangle_prob,
         LightSample&                        sample) const;
 
-#ifdef APPLESEED_WITH_OSL
     void store_object_area_in_shadergroups(
         const AssemblyInstance*             assembly_instance,
         const ObjectInstance*               object_instance,
         const float                         object_area,
         const MaterialArray&                materials);
-#endif
 };
 
 

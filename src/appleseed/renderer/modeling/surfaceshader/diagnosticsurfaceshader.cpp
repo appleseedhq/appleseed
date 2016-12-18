@@ -232,7 +232,6 @@ void DiagnosticSurfaceShader::evaluate(
             {
                 const Material::RenderData& material_data = material->get_render_data();
 
-#ifdef APPLESEED_WITH_OSL
                 // Execute the OSL shader if there is one.
                 if (material_data.m_shader_group)
                 {
@@ -240,7 +239,6 @@ void DiagnosticSurfaceShader::evaluate(
                         *material_data.m_shader_group,
                         shading_point);
                 }
-#endif
 
                 if (material_data.m_bsdf)
                 {
@@ -286,7 +284,6 @@ void DiagnosticSurfaceShader::evaluate(
       case Bitangent:
       case ShadingNormal:
         {
-#ifdef APPLESEED_WITH_OSL
             const Material* material = shading_point.get_material();
             if (material)
             {
@@ -302,7 +299,6 @@ void DiagnosticSurfaceShader::evaluate(
                         sampling_context.next2<Vector2f>());
                 }
             }
-#endif
 
             const Vector3d v =
                 m_shading_mode == ShadingNormal ? shading_point.get_shading_basis().get_normal() :
@@ -505,7 +501,6 @@ void DiagnosticSurfaceShader::evaluate(
             {
                 const Material::RenderData& material_data = material->get_render_data();
 
-#ifdef APPLESEED_WITH_OSL
                 // Execute the OSL shader if there is one.
                 if (material_data.m_shader_group)
                 {
@@ -513,7 +508,6 @@ void DiagnosticSurfaceShader::evaluate(
                         *material_data.m_shader_group,
                         shading_point);
                 }
-#endif
 
                 if (material_data.m_bsdf)
                 {

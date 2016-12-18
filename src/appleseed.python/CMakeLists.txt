@@ -90,6 +90,7 @@ set (sources
     bindquaternion.cpp
     bindrenderercontroller.cpp
     bindscene.cpp
+    bindshadergroup.cpp
     bindsurfaceshader.cpp
     bindtexture.cpp
     bindtilecallback.cpp
@@ -107,11 +108,6 @@ set (sources
     unalignedmatrix44.h
     unalignedtransform.h
 )
-if (WITH_OSL)
-    list (APPEND sources
-        bindshadergroup.cpp
-    )
-endif ()
 list (APPEND appleseed.python_sources
     ${sources}
 )

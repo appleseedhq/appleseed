@@ -833,6 +833,7 @@ set (renderer_api_sources
     renderer/api/project.h
     renderer/api/rendering.h
     renderer/api/scene.h
+    renderer/api/shadergroup.h
     renderer/api/surfaceshader.h
     renderer/api/texture.h
     renderer/api/trace.h
@@ -840,11 +841,6 @@ set (renderer_api_sources
     renderer/api/utility.h
     renderer/api/version.h
 )
-if (WITH_OSL)
-    list (APPEND renderer_api_sources
-        renderer/api/shadergroup.h
-    )
-endif ()
 list (APPEND appleseed_sources
     ${renderer_api_sources}
 )
@@ -1095,6 +1091,8 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/masterrenderer.h
     renderer/kernel/rendering/nulltilecallback.cpp
     renderer/kernel/rendering/nulltilecallback.h
+    renderer/kernel/rendering/oiioerrorhandler.cpp
+    renderer/kernel/rendering/oiioerrorhandler.h
     renderer/kernel/rendering/permanentshadingresultframebufferfactory.cpp
     renderer/kernel/rendering/permanentshadingresultframebufferfactory.h
     renderer/kernel/rendering/pixelcontext.h
@@ -1102,6 +1100,8 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/pixelrendererbase.h
     renderer/kernel/rendering/renderercomponents.cpp
     renderer/kernel/rendering/renderercomponents.h
+    renderer/kernel/rendering/rendererservices.cpp
+    renderer/kernel/rendering/rendererservices.h
     renderer/kernel/rendering/sample.h
     renderer/kernel/rendering/sampleaccumulationbuffer.h
     renderer/kernel/rendering/samplegeneratorbase.cpp
@@ -1118,18 +1118,6 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/timedrenderercontroller.cpp
     renderer/kernel/rendering/timedrenderercontroller.h
 )
-if (WITH_OIIO)
-    list (APPEND renderer_kernel_rendering_sources
-        renderer/kernel/rendering/oiioerrorhandler.cpp
-        renderer/kernel/rendering/oiioerrorhandler.h
-    )
-endif ()
-if (WITH_OSL)
-    list (APPEND renderer_kernel_rendering_sources
-        renderer/kernel/rendering/rendererservices.cpp
-        renderer/kernel/rendering/rendererservices.h
-    )
-endif ()
 list (APPEND appleseed_sources
     ${renderer_kernel_rendering_sources}
 )
@@ -1139,8 +1127,12 @@ source_group ("renderer\\kernel\\rendering" FILES
 
 set (renderer_kernel_shading_sources
     renderer/kernel/shading/ambientocclusion.h
+    renderer/kernel/shading/closures.cpp
+    renderer/kernel/shading/closures.h
     renderer/kernel/shading/fastambientocclusion.cpp
     renderer/kernel/shading/fastambientocclusion.h
+    renderer/kernel/shading/oslshadergroupexec.cpp
+    renderer/kernel/shading/oslshadergroupexec.h
     renderer/kernel/shading/shadingcontext.cpp
     renderer/kernel/shading/shadingcontext.h
     renderer/kernel/shading/shadingengine.cpp
@@ -1155,14 +1147,6 @@ set (renderer_kernel_shading_sources
     renderer/kernel/shading/shadingresult.cpp
     renderer/kernel/shading/shadingresult.h
 )
-if (WITH_OSL)
-    list (APPEND renderer_kernel_shading_sources
-        renderer/kernel/shading/closures.cpp
-        renderer/kernel/shading/closures.h
-        renderer/kernel/shading/oslshadergroupexec.cpp
-        renderer/kernel/shading/oslshadergroupexec.h
-    )
-endif ()
 list (APPEND appleseed_sources
     ${renderer_kernel_shading_sources}
 )
@@ -1240,6 +1224,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_samplecounthistory.cpp
     renderer/meta/tests/test_samplegeneratorjob.cpp
     renderer/meta/tests/test_scene.cpp
+    renderer/meta/tests/test_shaderparamparser.cpp
     renderer/meta/tests/test_shadingresult.cpp
     renderer/meta/tests/test_sphericalcamera.cpp
     renderer/meta/tests/test_sss.cpp
@@ -1248,11 +1233,6 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_transformsequence.cpp
     renderer/meta/tests/test_variationtracker.cpp
 )
-if (WITH_OSL)
-    list (APPEND renderer_meta_tests_sources
-        renderer/meta/tests/test_shaderparamparser.cpp
-    )
-endif ()
 list (APPEND appleseed_sources
     ${renderer_meta_tests_sources}
 )
@@ -1298,6 +1278,8 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/nullbsdf.h
     renderer/modeling/bsdf/orennayarbrdf.cpp
     renderer/modeling/bsdf/orennayarbrdf.h
+    renderer/modeling/bsdf/oslbsdf.cpp
+    renderer/modeling/bsdf/oslbsdf.h
     renderer/modeling/bsdf/sheenbrdf.cpp
     renderer/modeling/bsdf/sheenbrdf.h
     renderer/modeling/bsdf/specularbrdf.cpp
@@ -1312,12 +1294,6 @@ if (WITH_DISNEY_MATERIAL)
     list (APPEND renderer_modeling_bsdf_sources
         renderer/modeling/bsdf/disneylayeredbrdf.cpp
         renderer/modeling/bsdf/disneylayeredbrdf.h
-    )
-endif ()
-if (WITH_OSL)
-    list (APPEND renderer_modeling_bsdf_sources
-        renderer/modeling/bsdf/oslbsdf.cpp
-        renderer/modeling/bsdf/oslbsdf.h
     )
 endif ()
 list (APPEND appleseed_sources
@@ -1344,6 +1320,8 @@ set (renderer_modeling_bssrdf_sources
     renderer/modeling/bssrdf/gaussianbssrdf.cpp
     renderer/modeling/bssrdf/gaussianbssrdf.h
     renderer/modeling/bssrdf/ibssrdffactory.h
+    renderer/modeling/bssrdf/oslbssrdf.cpp
+    renderer/modeling/bssrdf/oslbssrdf.h
     renderer/modeling/bssrdf/separablebssrdf.h
     renderer/modeling/bssrdf/sss.cpp
     renderer/modeling/bssrdf/sss.h
@@ -1354,12 +1332,6 @@ if (WITH_NORMALIZED_DIFFUSION_BSSRDF)
     list (APPEND renderer_modeling_bssrdf_sources
         renderer/modeling/bssrdf/normalizeddiffusionbssrdf.cpp
         renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h
-    )
-endif ()
-if (WITH_OSL)
-    list (APPEND renderer_modeling_bssrdf_sources
-        renderer/modeling/bssrdf/oslbssrdf.cpp
-        renderer/modeling/bssrdf/oslbssrdf.h
     )
 endif ()
 list (APPEND appleseed_sources
@@ -1431,13 +1403,9 @@ set (renderer_modeling_edf_sources
     renderer/modeling/edf/edftraits.h
     renderer/modeling/edf/iedffactory.cpp
     renderer/modeling/edf/iedffactory.h
+    renderer/modeling/edf/osledf.cpp
+    renderer/modeling/edf/osledf.h
 )
-if (WITH_OSL)
-    list (APPEND renderer_modeling_edf_sources
-        renderer/modeling/edf/osledf.cpp
-        renderer/modeling/edf/osledf.h
-    )
-endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_edf_sources}
 )
@@ -1498,16 +1466,12 @@ set (renderer_modeling_environmentedf_sources
     renderer/modeling/environmentedf/latlongmapenvironmentedf.h
     renderer/modeling/environmentedf/mirrorballmapenvironmentedf.cpp
     renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h
+    renderer/modeling/environmentedf/oslenvironmentedf.cpp
+    renderer/modeling/environmentedf/oslenvironmentedf.h
     renderer/modeling/environmentedf/preethamenvironmentedf.cpp
     renderer/modeling/environmentedf/preethamenvironmentedf.h
     renderer/modeling/environmentedf/sphericalcoordinates.h
 )
-if (WITH_OSL)
-    list (APPEND renderer_modeling_environmentedf_sources
-        renderer/modeling/environmentedf/oslenvironmentedf.cpp
-        renderer/modeling/environmentedf/oslenvironmentedf.h
-    )
-endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_environmentedf_sources}
 )
@@ -1612,13 +1576,9 @@ set (renderer_modeling_material_sources
     renderer/modeling/material/materialtraits.h
     renderer/modeling/material/normalmappingmodifier.cpp
     renderer/modeling/material/normalmappingmodifier.h
+    renderer/modeling/material/oslmaterial.cpp
+    renderer/modeling/material/oslmaterial.h
 )
-if (WITH_OSL)
-    list (APPEND renderer_modeling_material_sources
-        renderer/modeling/material/oslmaterial.cpp
-        renderer/modeling/material/oslmaterial.h
-    )
-endif ()
 if (WITH_DISNEY_MATERIAL)
     list (APPEND renderer_modeling_material_sources
         renderer/modeling/material/disneymaterial.cpp
@@ -1740,28 +1700,26 @@ source_group ("renderer\\modeling\\scene" FILES
     ${renderer_modeling_scene_sources}
 )
 
-if (WITH_OSL)
-    set (renderer_modeling_shadergroup
-        renderer/modeling/shadergroup/shader.cpp
-        renderer/modeling/shadergroup/shader.h
-        renderer/modeling/shadergroup/shaderconnection.cpp
-        renderer/modeling/shadergroup/shaderconnection.h
-        renderer/modeling/shadergroup/shadergroup.cpp
-        renderer/modeling/shadergroup/shadergroup.h
-        renderer/modeling/shadergroup/shaderparam.cpp
-        renderer/modeling/shadergroup/shaderparam.h
-        renderer/modeling/shadergroup/shaderquery.cpp
-        renderer/modeling/shadergroup/shaderquery.h
-        renderer/modeling/shadergroup/shaderparamparser.cpp
-        renderer/modeling/shadergroup/shaderparamparser.h
-    )
-    list (APPEND appleseed_sources
-        ${renderer_modeling_shadergroup}
-    )
-    source_group ("renderer\\modeling\\shadergroup" FILES
-        ${renderer_modeling_shadergroup}
-    )
-endif ()
+set (renderer_modeling_shadergroup
+    renderer/modeling/shadergroup/shader.cpp
+    renderer/modeling/shadergroup/shader.h
+    renderer/modeling/shadergroup/shaderconnection.cpp
+    renderer/modeling/shadergroup/shaderconnection.h
+    renderer/modeling/shadergroup/shadergroup.cpp
+    renderer/modeling/shadergroup/shadergroup.h
+    renderer/modeling/shadergroup/shaderparam.cpp
+    renderer/modeling/shadergroup/shaderparam.h
+    renderer/modeling/shadergroup/shaderquery.cpp
+    renderer/modeling/shadergroup/shaderquery.h
+    renderer/modeling/shadergroup/shaderparamparser.cpp
+    renderer/modeling/shadergroup/shaderparamparser.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_shadergroup}
+)
+source_group ("renderer\\modeling\\shadergroup" FILES
+    ${renderer_modeling_shadergroup}
+)
 
 set (renderer_modeling_surfaceshader_sources
     renderer/modeling/surfaceshader/aosurfaceshader.cpp
@@ -1889,13 +1847,8 @@ endif ()
 link_against_openexr (appleseed)
 link_against_zlib (appleseed)
 
-if (WITH_OIIO)
-    link_against_oiio (appleseed)
-endif ()
-
-if (WITH_OSL)
-    link_against_osl (appleseed)
-endif ()
+link_against_oiio (appleseed)
+link_against_osl (appleseed)
 
 if (WITH_DISNEY_MATERIAL)
     link_against_seexpr (appleseed)
@@ -1916,23 +1869,21 @@ target_link_libraries (appleseed
 # Pre-build commands.
 #--------------------------------------------------------------------------------------------------
 
-if (WITH_OSL)
-    # Copy OSL and OIIO tools to the sandbox.
-    if (USE_EXTERNAL_OSL)
-        add_custom_command (TARGET appleseed PRE_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${OSL_QUERY_INFO} ${PROJECT_SOURCE_DIR}/sandbox/bin/
-        )
-        add_custom_command (TARGET appleseed PRE_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${OSL_MAKETX} ${PROJECT_SOURCE_DIR}/sandbox/bin/
-        )
-    else ()
-        add_custom_command (TARGET appleseed PRE_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/osl-release/bin/oslinfo${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
-        )
-        add_custom_command (TARGET appleseed PRE_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/bin/maketx${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
-        )
-    endif ()
+# Copy OSL and OIIO tools to the sandbox.
+if (USE_EXTERNAL_OSL)
+    add_custom_command (TARGET appleseed PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${OSL_QUERY_INFO} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+    )
+    add_custom_command (TARGET appleseed PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${OSL_MAKETX} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+    )
+else ()
+    add_custom_command (TARGET appleseed PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/osl-release/bin/oslinfo${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+    )
+    add_custom_command (TARGET appleseed PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/bin/maketx${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+    )
 endif ()
 
 

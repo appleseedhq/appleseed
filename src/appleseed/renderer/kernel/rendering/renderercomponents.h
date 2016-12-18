@@ -45,20 +45,16 @@
 #include "foundation/utility/autoreleaseptr.h"
 
 // OpenImageIO headers.
-#ifdef APPLESEED_WITH_OIIO
 #include "foundation/platform/oiioheaderguards.h"
 BEGIN_OIIO_INCLUDES
 #include "OpenImageIO/texture.h"
 END_OIIO_INCLUDES
-#endif
 
 // OSL headers.
-#ifdef APPLESEED_WITH_OSL
 #include "foundation/platform/oslheaderguards.h"
 BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
 END_OSL_INCLUDES
-#endif
 
 // Standard headers.
 #include <memory>
@@ -88,14 +84,9 @@ class RendererComponents
         const Project&          project,
         const ParamArray&       params,
         ITileCallbackFactory*   tile_callback_factory,
-        TextureStore&           texture_store
-#ifdef APPLESEED_WITH_OIIO
-        , OIIO::TextureSystem&  texture_system
-#endif
-#ifdef APPLESEED_WITH_OSL
-        , OSL::ShadingSystem&   shading_system
-#endif
-        );
+        TextureStore&           texture_store,
+        OIIO::TextureSystem&    texture_system,
+        OSL::ShadingSystem&     shading_system);
 
     bool initialize();
 
@@ -111,12 +102,8 @@ class RendererComponents
     LightSampler                m_light_sampler;
     ShadingEngine               m_shading_engine;
     TextureStore&               m_texture_store;
-#ifdef APPLESEED_WITH_OIIO
     OIIO::TextureSystem&        m_texture_system;
-#endif
-#ifdef APPLESEED_WITH_OSL
     OSL::ShadingSystem&         m_shading_system;
-#endif
 
     std::auto_ptr<ILightingEngineFactory>               m_lighting_engine_factory;
     std::auto_ptr<ISampleRendererFactory>               m_sample_renderer_factory;

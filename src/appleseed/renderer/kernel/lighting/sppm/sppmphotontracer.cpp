@@ -40,9 +40,7 @@
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/lighting/tracer.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/shading/oslshadergroupexec.h"
-#endif
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/texturing/texturecache.h"
@@ -211,12 +209,8 @@ namespace
             const LightSampler&     light_sampler,
             const TraceContext&     trace_context,
             TextureStore&           texture_store,
-#ifdef APPLESEED_WITH_OIIO
             OIIO::TextureSystem&    oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
             OSL::ShadingSystem&     shading_system,
-#endif
             const SPPMParameters&   params,
             SPPMPhotonVector&       global_photons,
             const size_t            photon_begin,
@@ -228,20 +222,14 @@ namespace
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache)
-#ifdef APPLESEED_WITH_OIIO
           , m_oiio_texture_system(oiio_texture_system)
-#endif
-#ifdef APPLESEED_WITH_OSL
           , m_shadergroup_exec(shading_system)
-#endif
           , m_params(params)
           , m_tracer(
                 m_scene,
                 m_intersector,
                 m_texture_cache,
-#ifdef APPLESEED_WITH_OSL
                 m_shadergroup_exec,
-#endif
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations,
                 false)
@@ -262,12 +250,8 @@ namespace
                 m_intersector,
                 m_tracer,
                 m_texture_cache,
-#ifdef APPLESEED_WITH_OIIO
                 m_oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
                 m_shadergroup_exec,
-#endif
                 thread_index);
 
             const uint32 instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
@@ -291,12 +275,8 @@ namespace
         const LightSampler&         m_light_sampler;
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
-#ifdef APPLESEED_WITH_OIIO
         OIIO::TextureSystem&        m_oiio_texture_system;
-#endif
-#ifdef APPLESEED_WITH_OSL
         OSLShaderGroupExec          m_shadergroup_exec;
-#endif
         const SPPMParameters        m_params;
         Tracer                      m_tracer;
         SPPMPhotonVector&           m_global_photons;
@@ -360,14 +340,12 @@ namespace
                 light_sample.m_shading_normal,
                 shading_context.get_intersector());
 
-#ifdef APPLESEED_WITH_OSL
             if (material_data.m_shader_group)
             {
                 shading_context.execute_osl_emission(
                     *material_data.m_shader_group,
                     light_shading_point);
             }
-#endif
 
             // Evaluate the EDF inputs.
             InputEvaluator input_evaluator(m_texture_cache);
@@ -512,12 +490,8 @@ namespace
             const LightSampler&     light_sampler,
             const TraceContext&     trace_context,
             TextureStore&           texture_store,
-#ifdef APPLESEED_WITH_OIIO
             OIIO::TextureSystem&    oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
             OSL::ShadingSystem&     shading_system,
-#endif
             const SPPMParameters&   params,
             SPPMPhotonVector&       global_photons,
             const size_t            photon_begin,
@@ -530,20 +504,14 @@ namespace
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache)
-#ifdef APPLESEED_WITH_OIIO
           , m_oiio_texture_system(oiio_texture_system)
-#endif
-#ifdef APPLESEED_WITH_OSL
           , m_shadergroup_exec(shading_system)
-#endif
           , m_params(params)
           , m_tracer(
                 m_scene,
                 m_intersector,
                 m_texture_cache,
-#ifdef APPLESEED_WITH_OSL
                 m_shadergroup_exec,
-#endif
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations,
                 false)
@@ -569,12 +537,8 @@ namespace
                 m_intersector,
                 m_tracer,
                 m_texture_cache,
-#ifdef APPLESEED_WITH_OIIO
                 m_oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
                 m_shadergroup_exec,
-#endif
                 thread_index);
 
             const uint32 instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
@@ -599,12 +563,8 @@ namespace
         const LightSampler&         m_light_sampler;
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
-#ifdef APPLESEED_WITH_OIIO
         OIIO::TextureSystem&        m_oiio_texture_system;
-#endif
-#ifdef APPLESEED_WITH_OSL
         OSLShaderGroupExec          m_shadergroup_exec;
-#endif
         const SPPMParameters        m_params;
         Tracer                      m_tracer;
         SPPMPhotonVector&           m_global_photons;
@@ -721,12 +681,8 @@ SPPMPhotonTracer::SPPMPhotonTracer(
     const LightSampler&     light_sampler,
     const TraceContext&     trace_context,
     TextureStore&           texture_store,
-#ifdef APPLESEED_WITH_OIIO
     OIIO::TextureSystem&    oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
     OSL::ShadingSystem&     shading_system,
-#endif
     const SPPMParameters&   params)
   : m_params(params)
   , m_scene(scene)
@@ -735,12 +691,8 @@ SPPMPhotonTracer::SPPMPhotonTracer(
   , m_texture_store(texture_store)
   , m_total_emitted_photon_count(0)
   , m_total_stored_photon_count(0)
-#ifdef APPLESEED_WITH_OIIO
   , m_oiio_texture_system(oiio_texture_system)
-#endif
-#ifdef APPLESEED_WITH_OSL
   , m_shading_system(shading_system)
-#endif
 {
 }
 
@@ -894,12 +846,8 @@ void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
                 m_light_sampler,
                 m_trace_context,
                 m_texture_store,
-#ifdef APPLESEED_WITH_OIIO
                 m_oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
                 m_shading_system,
-#endif
                 m_params,
                 photons,
                 photon_begin,
@@ -938,12 +886,8 @@ void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
                 m_light_sampler,
                 m_trace_context,
                 m_texture_store,
-#ifdef APPLESEED_WITH_OIIO
                 m_oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
                 m_shading_system,
-#endif
                 m_params,
                 photons,
                 photon_begin,

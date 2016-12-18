@@ -42,9 +42,7 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/scene/visibilityflags.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
-#endif
 #include "renderer/modeling/surfaceshader/physicalsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/texture/texture.h"
@@ -333,9 +331,7 @@ bool Scene::on_frame_begin(
     success = success && invoke_on_frame_begin(project, this, colors(), recorder, abort_switch);
     success = success && invoke_on_frame_begin(project, this, textures(), recorder, abort_switch);
     success = success && invoke_on_frame_begin(project, this, texture_instances(), recorder, abort_switch);
-#ifdef APPLESEED_WITH_OSL
     success = success && invoke_on_frame_begin(project, this, shader_groups(), recorder, abort_switch);
-#endif
 
     success = success && invoke_on_frame_begin(project, this, cameras(), recorder, abort_switch);
     success = success && invoke_on_frame_begin(project, this, environment_edfs(), recorder, abort_switch);

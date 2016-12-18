@@ -42,9 +42,7 @@
 #include "renderer/kernel/rendering/globalsampleaccumulationbuffer.h"
 #include "renderer/kernel/rendering/sample.h"
 #include "renderer/kernel/rendering/samplegeneratorbase.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/shading/oslshadergroupexec.h"
-#endif
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
@@ -164,12 +162,8 @@ namespace
             const LightSampler&         light_sampler,
             const size_t                generator_index,
             const size_t                generator_count,
-#ifdef APPLESEED_WITH_OIIO
             OIIO::TextureSystem&        oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
             OSL::ShadingSystem&         shading_system,
-#endif
             const ParamArray&           params)
           : SampleGeneratorBase(generator_index, generator_count)
           , m_params(params)
@@ -178,28 +172,20 @@ namespace
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache, m_params.m_report_self_intersections)
-#ifdef APPLESEED_WITH_OSL
           , m_shadergroup_exec(shading_system)
-#endif
           , m_tracer(
                 m_scene,
                 m_intersector,
                 m_texture_cache,
-#ifdef APPLESEED_WITH_OSL
                 m_shadergroup_exec,
-#endif
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations)
           , m_shading_context(
                 m_intersector,
                 m_tracer,
                 m_texture_cache,
-#ifdef APPLESEED_WITH_OIIO
                 oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
                 m_shadergroup_exec,
-#endif
                 generator_index,
                 0,
                 m_params.m_transparency_threshold,
@@ -509,9 +495,7 @@ namespace
         const LightSampler&             m_light_sampler;
         TextureCache                    m_texture_cache;
         Intersector                     m_intersector;
-#ifdef APPLESEED_WITH_OSL
         OSLShaderGroupExec              m_shadergroup_exec;
-#endif
         Tracer                          m_tracer;
         const ShadingContext            m_shading_context;
 
@@ -600,14 +584,12 @@ namespace
                 light_sample.m_shading_normal,
                 m_shading_context.get_intersector());
 
-#ifdef APPLESEED_WITH_OSL
             if (material_data.m_shader_group)
             {
                 m_shading_context.execute_osl_emission(
                     *material_data.m_shader_group,
                     light_shading_point);
             }
-#endif
 
             // Evaluate the EDF inputs.
             InputEvaluator input_evaluator(m_texture_cache);
@@ -865,24 +847,16 @@ LightTracingSampleGeneratorFactory::LightTracingSampleGeneratorFactory(
     const TraceContext&     trace_context,
     TextureStore&           texture_store,
     const LightSampler&     light_sampler,
-#ifdef APPLESEED_WITH_OIIO
     OIIO::TextureSystem&    oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
     OSL::ShadingSystem&     shading_system,
-#endif
     const ParamArray&       params)
   : m_project(project)
   , m_frame(frame)
   , m_trace_context(trace_context)
   , m_texture_store(texture_store)
   , m_light_sampler(light_sampler)
-#ifdef APPLESEED_WITH_OIIO
   , m_oiio_texture_system(oiio_texture_system)
-#endif
-#ifdef APPLESEED_WITH_OSL
   , m_shading_system(shading_system)
-#endif
   , m_params(params)
 {
     LightTracingSampleGenerator::Parameters(params).print();
@@ -906,12 +880,8 @@ ISampleGenerator* LightTracingSampleGeneratorFactory::create(
             m_light_sampler,
             generator_index,
             generator_count,
-#ifdef APPLESEED_WITH_OIIO
             m_oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
             m_shading_system,
-#endif
             m_params);
 }
 

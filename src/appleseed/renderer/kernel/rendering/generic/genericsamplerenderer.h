@@ -38,20 +38,16 @@
 #include "foundation/platform/compiler.h"
 
 // OSL headers.
-#ifdef APPLESEED_WITH_OSL
 #include "foundation/platform/oslheaderguards.h"
 BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
 END_OSL_INCLUDES
-#endif
 
 // OpenImageIO headers.
-#ifdef APPLESEED_WITH_OIIO
 #include "foundation/platform/oiioheaderguards.h"
 BEGIN_OIIO_INCLUDES
 #include "OpenImageIO/texture.h"
 END_OIIO_INCLUDES
-#endif
 
 // Forward declarations.
 namespace renderer  { class Frame; }
@@ -80,12 +76,8 @@ class GenericSampleRendererFactory
         TextureStore&           texture_store,
         ILightingEngineFactory* lighting_engine_factory,
         ShadingEngine&          shading_engine,
-#ifdef APPLESEED_WITH_OIIO
         OIIO::TextureSystem&    oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
         OSL::ShadingSystem&     shading_system,
-#endif
         const ParamArray&       params);
 
     // Delete this instance.
@@ -102,12 +94,8 @@ class GenericSampleRendererFactory
     TextureStore&               m_texture_store;
     ILightingEngineFactory*     m_lighting_engine_factory;
     ShadingEngine&              m_shading_engine;
-#ifdef APPLESEED_WITH_OIIO
     OIIO::TextureSystem&        m_oiio_texture_system;
-#endif
-#ifdef APPLESEED_WITH_OSL
     OSL::ShadingSystem&         m_shading_system;
-#endif
     const ParamArray            m_params;
 };
 

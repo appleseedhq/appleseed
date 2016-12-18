@@ -54,10 +54,8 @@ void PathVertex::compute_emitted_radiance(
         return;
     }
 
-#ifdef APPLESEED_WITH_OSL
     if (const ShaderGroup* sg = get_material()->get_render_data().m_shader_group)
         shading_context.execute_osl_emission(*sg, *m_shading_point);
-#endif
 
     // Evaluate the EDF inputs.
     InputEvaluator input_evaluator(texture_cache);

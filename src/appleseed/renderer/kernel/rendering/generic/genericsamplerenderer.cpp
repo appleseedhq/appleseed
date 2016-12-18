@@ -38,9 +38,7 @@
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/kernel/lighting/tracer.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/shading/oslshadergroupexec.h"
-#endif
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingengine.h"
 #include "renderer/kernel/shading/shadingfragment.h"
@@ -97,12 +95,8 @@ namespace
             TextureStore&           texture_store,
             ILightingEngineFactory* lighting_engine_factory,
             ShadingEngine&          shading_engine,
-#ifdef APPLESEED_WITH_OIIO
             OIIO::TextureSystem&    oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
             OSL::ShadingSystem&     shading_system,
-#endif
             const size_t            thread_index,
             const ParamArray&       params)
           : m_params(params)
@@ -112,12 +106,8 @@ namespace
           , m_texture_cache(texture_store)
           , m_lighting_engine(lighting_engine_factory->create())
           , m_shading_engine(shading_engine)
-#ifdef APPLESEED_WITH_OIIO
           , m_oiio_texture_system(oiio_texture_system)
-#endif
-#ifdef APPLESEED_WITH_OSL
           , m_shadergroup_exec(shading_system)
-#endif
           , m_thread_index(thread_index)
           , m_intersector(
                 trace_context,
@@ -127,9 +117,7 @@ namespace
                 m_scene,
                 m_intersector,
                 m_texture_cache,
-#ifdef APPLESEED_WITH_OSL
                 m_shadergroup_exec,
-#endif
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations,
                 thread_index == 0)
@@ -137,12 +125,8 @@ namespace
                 m_intersector,
                 m_tracer,
                 m_texture_cache,
-#ifdef APPLESEED_WITH_OIIO
                 m_oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
                 m_shadergroup_exec,
-#endif
                 m_thread_index,
                 m_lighting_engine,
                 m_params.m_transparency_threshold,
@@ -330,14 +314,10 @@ namespace
         TextureCache                m_texture_cache;
         ILightingEngine*            m_lighting_engine;
         ShadingEngine&              m_shading_engine;
-#ifdef APPLESEED_WITH_OIIO
         OIIO::TextureSystem&        m_oiio_texture_system;
-#endif
         const size_t                m_thread_index;
 
-#ifdef APPLESEED_WITH_OSL
         OSLShaderGroupExec          m_shadergroup_exec;
-#endif
         const Intersector           m_intersector;
         Tracer                      m_tracer;
         const ShadingContext        m_shading_context;
@@ -359,12 +339,8 @@ GenericSampleRendererFactory::GenericSampleRendererFactory(
     TextureStore&           texture_store,
     ILightingEngineFactory* lighting_engine_factory,
     ShadingEngine&          shading_engine,
-#ifdef APPLESEED_WITH_OIIO
     OIIO::TextureSystem&    oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
     OSL::ShadingSystem&     shading_system,
-#endif
     const ParamArray&       params)
   : m_scene(scene)
   , m_frame(frame)
@@ -372,12 +348,8 @@ GenericSampleRendererFactory::GenericSampleRendererFactory(
   , m_texture_store(texture_store)
   , m_lighting_engine_factory(lighting_engine_factory)
   , m_shading_engine(shading_engine)
-#ifdef APPLESEED_WITH_OIIO
   , m_oiio_texture_system(oiio_texture_system)
-#endif
-#ifdef APPLESEED_WITH_OSL
   , m_shading_system(shading_system)
-#endif
   , m_params(params)
 {
 }
@@ -397,12 +369,8 @@ ISampleRenderer* GenericSampleRendererFactory::create(const size_t thread_index)
             m_texture_store,
             m_lighting_engine_factory,
             m_shading_engine,
-#ifdef APPLESEED_WITH_OIIO
             m_oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
             m_shading_system,
-#endif
             thread_index,
             m_params);
 }

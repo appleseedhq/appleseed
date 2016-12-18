@@ -32,10 +32,8 @@
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/lighting/tracer.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/rendering/rendererservices.h"
 #include "renderer/kernel/shading/oslshadergroupexec.h"
-#endif
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/texturing/texturecache.h"
@@ -69,12 +67,10 @@
 #include "foundation/utility/test.h"
 
 // OpenImageIO headers.
-#ifdef APPLESEED_WITH_OIIO
 #include "foundation/platform/oiioheaderguards.h"
 BEGIN_OIIO_INCLUDES
 #include "OpenImageIO/texture.h"
 END_OIIO_INCLUDES
-#endif
 
 // Boost headers.
 #include "boost/bind.hpp"
@@ -219,14 +215,10 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         TextureStore                            m_texture_store;
         TextureCache                            m_texture_cache;
         Intersector                             m_intersector;
-#ifdef APPLESEED_WITH_OIIO
         boost::shared_ptr<OIIO::TextureSystem>  m_texture_system;
-#endif
-#ifdef APPLESEED_WITH_OSL
         boost::shared_ptr<RendererServices>     m_renderer_services;
         boost::shared_ptr<OSL::ShadingSystem>   m_shading_system;
         boost::shared_ptr<OSLShaderGroupExec>   m_shading_group_exec;
-#endif
         OnFrameBeginRecorder                    m_recorder;
 
         Fixture()
@@ -235,12 +227,9 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
           , m_texture_cache(m_texture_store)
           , m_intersector(m_trace_context, m_texture_cache)
         {
-#ifdef APPLESEED_WITH_OIIO
             m_texture_system.reset(
                 OIIO::TextureSystem::create(),
                 boost::bind(&OIIO::TextureSystem::destroy, _1));
-#endif
-#ifdef APPLESEED_WITH_OSL
             m_renderer_services.reset(
                 new RendererServices(*Base::m_project, *m_texture_system));
             m_shading_system.reset(
@@ -248,7 +237,6 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                     m_renderer_services.get(),
                     m_texture_system.get()));
             m_shading_group_exec.reset(new OSLShaderGroupExec(*m_shading_system));
-#endif
 
             Base::m_scene->on_frame_begin(Base::m_project.ref(), 0, m_recorder);
         }
@@ -269,11 +257,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer tracer(
             *m_scene,
             m_intersector,
-            m_texture_cache
-#ifdef APPLESEED_WITH_OSL
-            , *m_shading_group_exec
-#endif
-            );
+            m_texture_cache,
+            *m_shading_group_exec);
 
         float transmission;
         const ShadingPoint& shading_point =
@@ -294,11 +279,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer tracer(
             *m_scene,
             m_intersector,
-            m_texture_cache
-#ifdef APPLESEED_WITH_OSL
-            , *m_shading_group_exec
-#endif
-            );
+            m_texture_cache,
+            *m_shading_group_exec);
 
         const float transmission =
             tracer.trace(
@@ -316,11 +298,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer tracer(
             *m_scene,
             m_intersector,
-            m_texture_cache
-#ifdef APPLESEED_WITH_OSL
-            , *m_shading_group_exec
-#endif
-            );
+            m_texture_cache,
+            *m_shading_group_exec);
 
         float transmission;
         const ShadingPoint& shading_point =
@@ -341,11 +320,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer tracer(
             *m_scene,
             m_intersector,
-            m_texture_cache
-#ifdef APPLESEED_WITH_OSL
-            , *m_shading_group_exec
-#endif
-            );
+            m_texture_cache,
+            *m_shading_group_exec);
 
         const float transmission =
             tracer.trace_between(
@@ -372,11 +348,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer tracer(
             *m_scene,
             m_intersector,
-            m_texture_cache
-#ifdef APPLESEED_WITH_OSL
-            , *m_shading_group_exec
-#endif
-            );
+            m_texture_cache,
+            *m_shading_group_exec);
 
         float transmission;
         const ShadingPoint& shading_point =
@@ -398,11 +371,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer tracer(
             *m_scene,
             m_intersector,
-            m_texture_cache
-#ifdef APPLESEED_WITH_OSL
-            , *m_shading_group_exec
-#endif
-            );
+            m_texture_cache,
+            *m_shading_group_exec);
 
         const float transmission =
             tracer.trace(
@@ -420,11 +390,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer tracer(
             *m_scene,
             m_intersector,
-            m_texture_cache
-#ifdef APPLESEED_WITH_OSL
-            , *m_shading_group_exec
-#endif
-            );
+            m_texture_cache,
+            *m_shading_group_exec);
 
         float transmission;
         const ShadingPoint& shading_point =
@@ -446,11 +413,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer tracer(
             *m_scene,
             m_intersector,
-            m_texture_cache
-#ifdef APPLESEED_WITH_OSL
-            , *m_shading_group_exec
-#endif
-            );
+            m_texture_cache,
+            *m_shading_group_exec);
 
         const float transmission =
             tracer.trace_between(
@@ -477,11 +441,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer tracer(
             *m_scene,
             m_intersector,
-            m_texture_cache
-#ifdef APPLESEED_WITH_OSL
-            , *m_shading_group_exec
-#endif
-            );
+            m_texture_cache,
+            *m_shading_group_exec);
 
         float transmission;
         const ShadingPoint& shading_point =
@@ -502,11 +463,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer tracer(
             *m_scene,
             m_intersector,
-            m_texture_cache
-#ifdef APPLESEED_WITH_OSL
-            , *m_shading_group_exec
-#endif
-            );
+            m_texture_cache,
+            *m_shading_group_exec);
 
         const float transmission =
             tracer.trace(
@@ -524,11 +482,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer tracer(
             *m_scene,
             m_intersector,
-            m_texture_cache
-#ifdef APPLESEED_WITH_OSL
-            , *m_shading_group_exec
-#endif
-            );
+            m_texture_cache,
+            *m_shading_group_exec);
 
         float transmission;
         const ShadingPoint& shading_point =
@@ -549,11 +504,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer tracer(
             *m_scene,
             m_intersector,
-            m_texture_cache
-#ifdef APPLESEED_WITH_OSL
-            , *m_shading_group_exec
-#endif
-            );
+            m_texture_cache,
+            *m_shading_group_exec);
 
         const float transmission =
             tracer.trace_between(
@@ -581,11 +533,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer tracer(
             *m_scene,
             m_intersector,
-            m_texture_cache
-#ifdef APPLESEED_WITH_OSL
-            , *m_shading_group_exec
-#endif
-            );
+            m_texture_cache,
+            *m_shading_group_exec);
 
         float transmission;
         const ShadingPoint& shading_point =
@@ -607,11 +556,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer tracer(
             *m_scene,
             m_intersector,
-            m_texture_cache
-#ifdef APPLESEED_WITH_OSL
-            , *m_shading_group_exec
-#endif
-            );
+            m_texture_cache,
+            *m_shading_group_exec);
 
         const float transmission =
             tracer.trace(
@@ -629,11 +575,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer tracer(
             *m_scene,
             m_intersector,
-            m_texture_cache
-#ifdef APPLESEED_WITH_OSL
-            , *m_shading_group_exec
-#endif
-            );
+            m_texture_cache,
+            *m_shading_group_exec);
 
         float transmission;
         const ShadingPoint& shading_point =
@@ -655,11 +598,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer tracer(
             *m_scene,
             m_intersector,
-            m_texture_cache
-#ifdef APPLESEED_WITH_OSL
-            , *m_shading_group_exec
-#endif
-            );
+            m_texture_cache,
+            *m_shading_group_exec);
 
         const float transmission =
             tracer.trace_between(
@@ -677,11 +617,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer tracer(
             *m_scene,
             m_intersector,
-            m_texture_cache
-#ifdef APPLESEED_WITH_OSL
-            , *m_shading_group_exec
-#endif
-            );
+            m_texture_cache,
+            *m_shading_group_exec);
 
         float transmission;
         const ShadingPoint& shading_point =
@@ -702,11 +639,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer tracer(
             *m_scene,
             m_intersector,
-            m_texture_cache
-#ifdef APPLESEED_WITH_OSL
-            , *m_shading_group_exec
-#endif
-            );
+            m_texture_cache,
+            *m_shading_group_exec);
 
         const float transmission =
             tracer.trace_between(
@@ -734,11 +668,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer parent_tracer(
             *m_scene,
             m_intersector,
-            m_texture_cache
-#ifdef APPLESEED_WITH_OSL
-            , *m_shading_group_exec
-#endif
-            );
+            m_texture_cache,
+            *m_shading_group_exec);
 
         float parent_transmission;
         const ShadingPoint& parent_shading_point =
@@ -756,11 +687,9 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer tracer(
             *m_scene,
             m_intersector,
-            m_texture_cache
-#ifdef APPLESEED_WITH_OSL
-            , *m_shading_group_exec
-#endif
-            );
+            m_texture_cache,
+            *m_shading_group_exec);
+
         const float transmission =
             tracer.trace_between(
                 parent_shading_point,
@@ -787,11 +716,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer parent_tracer(
             *m_scene,
             m_intersector,
-            m_texture_cache
-#ifdef APPLESEED_WITH_OSL
-            , *m_shading_group_exec
-#endif
-            );
+            m_texture_cache,
+            *m_shading_group_exec);
 
         float parent_transmission;
         const ShadingPoint& parent_shading_point =
@@ -809,11 +735,9 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer tracer(
             *m_scene,
             m_intersector,
-            m_texture_cache
-#ifdef APPLESEED_WITH_OSL
-            , *m_shading_group_exec
-#endif
-            );
+            m_texture_cache,
+            *m_shading_group_exec);
+
         const float transmission =
             tracer.trace_between(
                 parent_shading_point,

@@ -246,14 +246,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         m_project,
         m_params,
         m_tile_callback_factory,
-        texture_store
-#ifdef APPLESEED_WITH_OIIO
-        , *m_texture_system
-#endif
-#ifdef APPLESEED_WITH_OSL
-        , *m_shading_system
-#endif
-        );
+        texture_store,
+        *m_texture_system,
+        *m_shading_system);
     if (!components.initialize())
         return IRendererController::AbortRendering;
 
