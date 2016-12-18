@@ -38,6 +38,10 @@ using namespace std;
 
 TEST_SUITE(Foundation_Math_MIS)
 {
+#pragma warning (push)
+#pragma warning (disable : 4723)    // potential division by 0
+#pragma warning (disable : 4756)    // overflow in constant arithmetic)
+
     const float Huge = std::numeric_limits<float>::max();
 
     TEST_CASE(MisBalance)
@@ -93,4 +97,6 @@ TEST_SUITE(Foundation_Math_MIS)
         EXPECT_FEQ(1.0f,        mis_power2(Huge, 1.0f));
         EXPECT_FEQ(0.5f,        mis_power2(Huge, Huge));
     }
+
+#pragma warning (pop)
 }
