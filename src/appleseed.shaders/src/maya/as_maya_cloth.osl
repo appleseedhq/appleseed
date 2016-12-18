@@ -39,7 +39,7 @@ shader as_maya_cloth
 (
     color in_gapColor = color(0)
     [[
-        string maya_attribute_name = "outColor",
+        string maya_attribute_name = "gapColor",
         string maya_attribute_type = "vector",
         string label = "Gap Color"
     ]],
