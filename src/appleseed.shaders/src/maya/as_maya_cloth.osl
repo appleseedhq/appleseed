@@ -124,7 +124,6 @@ shader as_maya_cloth
     ]]
 )
 {
-#if 0
     if (in_uvCoord[0] == OUTSIDE_UVFRAME || in_uvCoord[1] == OUTSIDE_UVFRAME)
     {
         out_outColor = in_defaultColor;
@@ -289,8 +288,5 @@ shader as_maya_cloth
             out_outColor,
             out_outAlpha);
     }
-#endif
-    out_outColor = color(1, 0.5, 0.25);
-    out_outAlpha = maya_luminance(out_outColor);
 }
 
