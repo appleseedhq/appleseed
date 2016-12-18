@@ -480,7 +480,7 @@ namespace
             const Vector3f& n = shading_basis.get_normal();
             const float cos_in = dot(incoming, n);
             const float cos_on = dot(outgoing, n);
-            if (cos_in < 0.0f || cos_on < 0.0f)
+            if (cos_in <= 0.0f || cos_on <= 0.0f)
                 return 0.0f;
 
             const DisneyBRDFInputValues* values =
