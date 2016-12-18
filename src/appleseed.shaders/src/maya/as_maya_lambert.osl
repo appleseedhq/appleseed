@@ -215,6 +215,8 @@ shader as_maya_lambert
     {
         normal Nn = normalize(in_normalCamera);
 
+        closure color transparency_term = in_transparency * transparent();
+
         color opacity = 1 - in_transparency;
 
         closure color incandescence_term = opacity *
@@ -278,7 +280,8 @@ shader as_maya_lambert
             translucence_term +
             refraction_term +
             matte_term +
-            glow_term;
+            glow_term +
+            transparency_term;
     }
 }
 
