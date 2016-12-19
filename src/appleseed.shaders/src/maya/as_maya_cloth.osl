@@ -132,19 +132,14 @@ shader as_maya_cloth
     else
     {
         float st[2] = {in_uvCoord[0], in_uvCoord[1]};
-
-        st[0] = mod(st[0], UVWRAP);
-        st[1] = mod(st[1], UVWRAP);
-
         float value = st[1];
 
         if (in_randomness)
         {
-            value = st[1] + in_randomness *
-                (float) noise("uperlin", st[0] / 23, st[1] / 23);
+            vector vnoise = noise("perlin", point(st[0], st[1], 0));
 
-            st[0] = st[0] + in_randomness *
-                (float) noise("uperlin", st[0] / 22, st[1] / 24);
+            value = st[1] + vnoise[1] * in_randomness;
+            st[0] = st[0] + vnoise[0] * in_randomness;
         }
 
         st[1] = value;
@@ -166,21 +161,15 @@ shader as_maya_cloth
 
         if (in_widthSpread)
         {
-            spread = (float) noise("uperlin", st[1] / 123.5 +
-                cellnoise(int(st[0] * 2)));
+            spread = noise("noise",point(st[0], st[1] / 4, 0));
+            u_width -= in_widthSpread * spread;
 
-            spread = in_widthSpread * (spread - 0.5);
-            u_width += spread;
-
-            spread = (float) noise("uperlin", st[0] / 123.5 *
-                cellnoise(int(st[1] * 2) + 100));
-
-            spread = in_widthSpread * (spread - 0.5),
-            v_width += spread;
+            spread = noise("noise",point(st[0] / 4, st[1], 1));
+            v_width -= in_widthSpread * spread;
         }
 
-        float uu = mod(st[0], UVWRAP);
-        float vv = mod(st[1], UVWRAP);
+        float uu = mod(st[0], 1);
+        float vv = mod(st[1], 1);
         int flipped, u_thread;
 
         if ((vv < 0.5 && uu >= 0.5) || (vv >= 0.5 && uu <= 0.5))
@@ -251,13 +240,11 @@ shader as_maya_cloth
             {
                 if (u_thread)
                 {
-                    spread = (float) noise("uperlin", st[1] / 100 +
-                        cellnoise(int(st[0] * 2)));
+                    spread = (float) noise("uperlin", st[1] / 1);
                 }
                 else
                 {
-                    spread = (float) noise("uperlin", st[1] / 100 +
-                        cellnoise(1000 + int(st[1] * 2)));
+                    spread = (float) noise("uperlin", st[0] / 1);
                 }
 
                 spread *= in_brightSpread + (1 - in_brightSpread * 0.5);
