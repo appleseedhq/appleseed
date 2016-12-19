@@ -31,7 +31,6 @@
 #define APPLESEED_FOUNDATION_UTILITY_SEARCHPATHS_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/string.h"
 
 // appleseed.main headers.
@@ -52,7 +51,6 @@ namespace foundation
 //
 
 class APPLESEED_DLLSYMBOL SearchPaths
-  : public NonCopyable
 {
   public:
     // Return the default environment path separator for the platform.
@@ -68,8 +66,17 @@ class APPLESEED_DLLSYMBOL SearchPaths
     // Initializes search paths with the contents of the specified environment variable.
     SearchPaths(const char* envvar, const char separator);
 
+    // Copy constructor.
+    SearchPaths(const SearchPaths& other);
+
     // Destructor.
     ~SearchPaths();
+
+    // Assignment.
+    SearchPaths& operator=(const SearchPaths& other);
+
+    // Swap.
+    void swap(SearchPaths& other);
 
     // Set the root path used to resolve relative search paths.
     void set_root_path(const char* path);

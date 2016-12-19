@@ -109,9 +109,26 @@ SearchPaths::SearchPaths(const char* envvar, const char separator)
     }
 }
 
+SearchPaths::SearchPaths(const SearchPaths& other)
+  : impl(new Impl(*other.impl))
+{
+}
+
 SearchPaths::~SearchPaths()
 {
     delete impl;
+}
+
+SearchPaths& SearchPaths::operator=(const SearchPaths& other)
+{
+    SearchPaths tmp(other);
+    swap(tmp);
+    return *this;
+}
+
+void SearchPaths::swap(SearchPaths& other)
+{
+    std::swap(impl, other.impl);
 }
 
 void SearchPaths::set_root_path(const char* path)
