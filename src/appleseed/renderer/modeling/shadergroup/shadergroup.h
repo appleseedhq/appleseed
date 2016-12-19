@@ -118,9 +118,6 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Return true if the shader group contains at least one subsurface closure.
     bool has_subsurface() const;
 
-    // Return true if the shader group contains at least one dielectric closure.
-    bool has_refraction() const;
-
     // Return true if the shader group contains at least one holdout closure.
     bool has_holdout() const;
 
@@ -151,15 +148,13 @@ class APPLESEED_DLLSYMBOL ShaderGroup
         HasEmission     = 1 << 1,
         HasTransparency = 1 << 2,
         HasSubsurface   = 1 << 3,
-        HasRefraction   = 1 << 4,
-        HasHoldout      = 1 << 5,
-        HasDebug        = 1 << 6,
+        HasHoldout      = 1 << 4,
+        HasDebug        = 1 << 5,
         HasAllClosures  =
             HasBSDFs        |
             HasEmission     |
             HasTransparency |
             HasSubsurface   |
-            HasRefraction   |
             HasHoldout      |
             HasDebug,
 
@@ -225,11 +220,6 @@ inline bool ShaderGroup::has_transparency() const
 inline bool ShaderGroup::has_subsurface() const
 {
     return (m_flags & HasSubsurface) != 0;
-}
-
-inline bool ShaderGroup::has_refraction() const
-{
-    return (m_flags & HasRefraction) != 0;
 }
 
 inline bool ShaderGroup::has_holdout() const
