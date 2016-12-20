@@ -319,6 +319,19 @@ namespace
             if (strcmp(assembly.get_model(), AssemblyFactory().get_model()) != 0)
                 element.add_attribute("model", assembly.get_model());
 
+            // Don't write the contents of the assembly if they were
+            // generated procedurally.
+            if(assembly.is_procedural())
+            {
+                element.write(
+                    !assembly.get_parameters().empty()
+                        ? XMLElement::HasChildElements
+                        : XMLElement::HasNoContent);
+
+                write_params(assembly.get_parameters());
+                return;
+            }
+
             element.write(
                 !assembly.get_parameters().empty() ||
                 !assembly.colors().empty() ||
