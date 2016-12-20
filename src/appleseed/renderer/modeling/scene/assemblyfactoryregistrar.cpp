@@ -30,6 +30,7 @@
 #include "assemblyfactoryregistrar.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/scene/archiveassembly.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/iassemblyfactory.h"
 
@@ -57,6 +58,7 @@ struct AssemblyFactoryRegistrar::Impl
 AssemblyFactoryRegistrar::AssemblyFactoryRegistrar()
   : impl(new Impl())
 {
+    register_factory(auto_ptr<FactoryType>(new ArchiveAssemblyFactory()));
     register_factory(auto_ptr<FactoryType>(new AssemblyFactory()));
 }
 
