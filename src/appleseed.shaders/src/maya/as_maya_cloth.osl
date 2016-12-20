@@ -104,7 +104,7 @@ shader as_maya_cloth
         string label = "Invert",
         string widget = "checkBox"
     ]],
-    
+
     MAYA_COLORBALANCE_PARAMETERS,
     MAYA_UV_PARAMETERS,
 
@@ -132,44 +132,41 @@ shader as_maya_cloth
     else
     {
         float st[2] = {in_uvCoord[0], in_uvCoord[1]};
-        float value = st[1];
 
         if (in_randomness)
         {
             vector vnoise = noise("perlin", point(st[0], st[1], 0));
 
-            value = st[1] + vnoise[1] * in_randomness;
-            st[0] = st[0] + vnoise[0] * in_randomness;
+            st[1] += vnoise[1] * in_randomness;
+            st[0] += vnoise[0] * in_randomness;
         }
-
-        st[1] = value;
 
         if (in_vWave)
         {
-            value = st[1] + sin(st[0] * M_2PI) * in_vWave;
+            st[1] += sin(st[0] * M_2PI) * in_vWave;
         }
         if (in_uWave)
         {
-            st[0] = st[0] - sin(st[1] * M_2PI) * in_uWave;
+            st[0] -= sin(st[1] * M_2PI) * in_uWave;
         }
 
-        st[1] = value;
-
-        float spread;
         float u_width = in_uWidth;
         float v_width = in_vWidth;
 
         if (in_widthSpread)
         {
-            spread = noise("noise",point(st[0], st[1] / 4, 0));
-            u_width -= in_widthSpread * spread;
+            float spread = noise("perlin", point(st[0], st[1] / 4, 0));
 
-            spread = noise("noise",point(st[0] / 4, st[1], 1));
-            v_width -= in_widthSpread * spread;
+            u_width += (spread - 0.5) * in_widthSpread;
+
+            spread = noise("perlin", point(st[0] / 4, st[1], 1));
+
+            v_width += (spread - 0.5) * in_widthSpread;
         }
 
         float uu = mod(st[0], 1);
         float vv = mod(st[1], 1);
+        
         int flipped, u_thread;
 
         if ((vv < 0.5 && uu >= 0.5) || (vv >= 0.5 && uu <= 0.5))
@@ -194,22 +191,28 @@ shader as_maya_cloth
         uu -= floor(uu);
         vv -= floor(vv);
 
+        float value;
+
         if (vv <= v_width)
         {
-            value = (vv - v_width * 0.5) / (v_width * 0.5);
-            value = sqr(value);
+            float tmp = v_width * 0.5;
 
-            float tmp = uu - u_width * 0.5;
+            value = (vv - tmp) / tmp;
+            value *= value;
+
+            tmp = uu - u_width * 0.5;
             value = (sqr(tmp) + value) * 0.75;
 
             u_thread = flipped;
         }
         else if (uu <= u_width)
         {
-            value = (uu - u_width * 0.5) / (u_width * 0.5);
-            value = sqr(value);
+            float tmp = u_width * 0.5;
 
-            float tmp = (vv - 1.0 - v_width * 0.5);
+            value = (uu - tmp) / tmp;
+            value *= value;
+
+            tmp = (vv - 1.0 - v_width * 0.5);
             value = (sqr(tmp) + value) * 0.75;
 
             u_thread = !flipped;
@@ -218,7 +221,7 @@ shader as_maya_cloth
         {
             value = 1.0;
         }
-        
+
         if (value >= 1)
         {
             out_outColor = in_gapColor;
@@ -235,33 +238,26 @@ shader as_maya_cloth
             }
 
             value = 1 - value;
+            float spread;
 
             if (in_brightSpread)
             {
                 if (u_thread)
                 {
-                    spread = (float) noise("uperlin", st[1] / 1);
+                    spread = noise("uperlin", 0.5 * st[0]);
                 }
                 else
                 {
-                    spread = (float) noise("uperlin", st[0] / 1);
+                    spread = noise("uperlin", 0.5 * st[1]);
                 }
+                spread *= spread; // match Maya, roughly
 
                 spread *= in_brightSpread + (1 - in_brightSpread * 0.5);
-
-                value *= spread;
-
-                if (value > 1)
-                {
-                    value = 1;
-                }
+                value *= clamp(spread, 0, 1);
             }
-
-            float inv_value = 1 - value;
-
-            out_outColor *= value + in_gapColor * inv_value;
+            out_outColor = mix(in_gapColor, out_outColor, value);
         }
-        
+
         out_outAlpha = maya_luminance(out_outColor);
 
         maya_colorBalance(
