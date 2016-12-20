@@ -64,7 +64,7 @@ BaseRenderer::BaseRenderer(
     m_error_handler->verbosity(OIIO::ErrorHandler::VERBOSE);
 #endif
 
-    RENDERER_LOG_DEBUG("creating openimageio texture system...");
+    RENDERER_LOG_DEBUG("creating oiio texture system...");
     m_texture_system = OIIO::TextureSystem::create(false);
     m_texture_system->attribute("automip", 0);
     m_texture_system->attribute("accept_untiled", 1);
@@ -122,7 +122,7 @@ BaseRenderer::~BaseRenderer()
     const string trimmed_stats = trim_right(stats, "\r\n");
     RENDERER_LOG_DEBUG("oiio: %s", trimmed_stats.c_str());
 
-    RENDERER_LOG_DEBUG("destroying openimageio texture system...");
+    RENDERER_LOG_DEBUG("destroying oiio texture system...");
     OIIO::TextureSystem::destroy(m_texture_system);
     delete m_error_handler;
 }
@@ -152,7 +152,7 @@ void BaseRenderer::initialize_oiio()
     const size_t texture_cache_size_bytes =
         params.get_optional<size_t>("max_size", 256 * 1024 * 1024);
     RENDERER_LOG_INFO(
-        "setting openimageio texture cache size to %s.",
+        "setting oiio texture cache size to %s.",
         pretty_size(texture_cache_size_bytes).c_str());
     const float texture_cache_size_mb =
         static_cast<float>(texture_cache_size_bytes) / (1024 * 1024);
@@ -164,7 +164,7 @@ void BaseRenderer::initialize_oiio()
     const string new_search_path = m_project.make_search_path_string();
     if (new_search_path != prev_search_path)
     {
-        RENDERER_LOG_INFO("setting openimageio search path to %s", new_search_path.c_str());
+        RENDERER_LOG_INFO("setting oiio search path to %s", new_search_path.c_str());
         m_texture_system->invalidate_all(true);
         m_texture_system->attribute("searchpath", new_search_path);
     }
