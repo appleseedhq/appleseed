@@ -102,6 +102,9 @@ class APPLESEED_DLLSYMBOL Assembly
     // Return true if this assembly is tagged as flushable.
     bool is_flushable() const;
 
+    // Return true if the contents of this assembly are proceduraly generated.
+    virtual bool is_procedural() const;
+
     // Compute the local space bounding box of the assembly, including all child assemblies,
     // over the shutter interval.
     GAABB3 compute_local_bbox() const;
@@ -122,6 +125,15 @@ class APPLESEED_DLLSYMBOL Assembly
         OnFrameBeginRecorder&       recorder,
         foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
 
+  protected:
+    // Constructor.
+    Assembly(
+        const char*                 name,
+        const ParamArray&           params);
+
+    // Destructor.
+    ~Assembly();
+
   private:
     friend class AssemblyFactory;
 
@@ -130,14 +142,6 @@ class APPLESEED_DLLSYMBOL Assembly
 
     // Derogate to the private implementation rule, for performance reasons.
     bool m_flushable;
-
-    // Constructor.
-    Assembly(
-        const char*                 name,
-        const ParamArray&           params);
-
-    // Destructor.
-    ~Assembly();
 };
 
 
