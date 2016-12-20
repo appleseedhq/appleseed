@@ -305,7 +305,9 @@ void bind_project()
     bpy::enum_<ProjectFileReader::Options>("ProjectFileReaderOptions")
         .value("Defaults", ProjectFileReader::Defaults)
         .value("OmitReadingMeshFiles", ProjectFileReader::OmitReadingMeshFiles)
-        .value("OmitProjectFileUpdate", ProjectFileReader::OmitProjectFileUpdate);
+        .value("OmitProjectFileUpdate", ProjectFileReader::OmitProjectFileUpdate)
+        .value("OmitSearchPaths", ProjectFileReader::OmitSearchPaths)
+        .value("OmitProjectSchemaValidation", ProjectFileReader::OmitProjectSchemaValidation);
 
     bpy::class_<ProjectFileReader>("ProjectFileReader")
         .def("read", &project_file_reader_read_default_opts)
