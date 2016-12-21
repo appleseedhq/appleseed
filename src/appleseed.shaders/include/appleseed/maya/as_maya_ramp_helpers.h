@@ -90,7 +90,7 @@ color color_ramp(
 {
     int len = arraylength(positions);
 
-    if (len && len == arraylength(colors) && len == arraylength(interpolate))
+    if (len && len == arraylength(colors))
     {
         int index = -1;
         float lower_bound = -1;
@@ -132,13 +132,18 @@ color color_ramp(
             C1 = (index >= 0) ? colors[index] : color(0);
         }
 
+        int interpolation =
+            (arraylength(interpolate) && index >= 0)
+                ? interpolate[index]
+                : 0;
+
         return interpolate_color(
             value,
             C1,
             C2,
             lower_bound,
             upper_bound,
-            interpolate[(index >= 0) ? index : 0]);
+            interpolation);
     }
     else
     {
