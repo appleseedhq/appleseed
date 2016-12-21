@@ -83,10 +83,10 @@ color interpolate_color(
 }
 
 color color_ramp(
-    float value,
     color colors[],
     float positions[],
-    int interpolate[])
+    int interpolate[],
+    float value)
 {
     int len = arraylength(positions);
 
