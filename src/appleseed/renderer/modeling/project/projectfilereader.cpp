@@ -55,6 +55,7 @@
 #include "renderer/modeling/environmentshader/environmentshaderfactoryregistrar.h"
 #include "renderer/modeling/environmentshader/ienvironmentshaderfactory.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/light/ilightfactory.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/light/lightfactoryregistrar.h"
@@ -3144,6 +3145,12 @@ auto_release_ptr<Assembly> ProjectFileReader::read_archive(
 
     if (project->get_scene())
     {
+        InputBinder input_binder;
+        input_binder.bind(*project->get_scene());
+
+        if (input_binder.get_error_count() != 0)
+            return auto_release_ptr<Assembly>(0);
+
         if (Assembly* assembly = project->get_scene()->assemblies().get_by_name("assembly"))
         {
             return auto_release_ptr<Assembly>(
@@ -3218,11 +3225,11 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
     // Create the parser.
     auto_ptr<SAX2XMLReader> parser(XMLReaderFactory::createXMLReader());
     parser->setFeature(XMLUni::fgSAX2CoreNameSpaces, true);         // perform namespace processing
-    parser->setFeature(XMLUni::fgSAX2CoreValidation, true);         // report all validation errors
 
     if ((options & OmitProjectSchemaValidation) == false)
     {
         assert(schema_filepath);
+        parser->setFeature(XMLUni::fgSAX2CoreValidation, true);         // report all validation errors
         parser->setFeature(XMLUni::fgXercesSchema, true);       // enable the parser's schema support
         parser->setProperty(
             XMLUni::fgXercesSchemaExternalNoNameSpaceSchemaLocation,
@@ -3231,7 +3238,10 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
                     transcode(schema_filepath).c_str())));
     }
     else
-        parser->setFeature(XMLUni::fgXercesSchema, false);      // disable the parser's schema support
+    {
+        parser->setFeature(XMLUni::fgSAX2CoreValidation, false); // report all validation errors
+        parser->setFeature(XMLUni::fgXercesSchema, false);       // disable the parser's schema support
+    }
 
     parser->setErrorHandler(error_handler.get());
     parser->setContentHandler(content_handler.get());
