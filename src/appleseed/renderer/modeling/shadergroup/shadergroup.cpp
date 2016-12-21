@@ -66,7 +66,6 @@ namespace
     const OIIO::ustring g_emission_str("emission");
     const OIIO::ustring g_transparent_str("transparent");
     const OIIO::ustring g_subsurface_str("as_subsurface");
-    const OIIO::ustring g_glass_str("as_glass");
     const OIIO::ustring g_holdout_str("holdout");
     const OIIO::ustring g_debug_str("debug");
     const OIIO::ustring g_dPdtime_str("dPdtime");
@@ -211,7 +210,6 @@ bool ShaderGroup::create_optimized_osl_shader_group(
         report_has_closure("emission", HasEmission);
         report_has_closure("transparent", HasTransparency);
         report_has_closure("subsurface", HasSubsurface);
-        report_has_closure("refraction", HasRefraction);
         report_has_closure("holdout", HasHoldout);
         report_has_closure("debug", HasDebug);
 
@@ -330,12 +328,7 @@ void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_syst
             else if (closures[i] == g_debug_str)
                 m_flags |= HasDebug;
             else
-            {
                 m_flags |= HasBSDFs;
-
-                if (closures[i] == g_glass_str)
-                    m_flags |= HasRefraction;
-            }
         }
     }
     else
