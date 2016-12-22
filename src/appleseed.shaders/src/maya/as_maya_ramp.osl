@@ -208,12 +208,16 @@ shader as_maya_ramp
         }
         else if (in_type == 3)
         {
-            float tmp_st[2] = {st[0] - 0.5, st[1] - 0.5};
+            float value = atan2(st[0], st[1]) / M_2PI + 0.5;
+#ifdef DEBUG
+            string shadername = "";
+            getattribute("shader:shadername", shadername);
 
-            float value = (tmp_st[0] == 0 && tmp_st[1] == 0)
-                ? 0
-                : atan2(tmp_st[0], tmp_st[1]) / M_2PI + 0.5;
-
+            if (isnan(value) || isinf(value))
+            {
+                warning("[WARNING]: NaN or Inf in %s, %s:%i\n",
+                        shadername, __FILE__, __LINE__);
+#endif
             out_outColor = color_ramp(
                 in_color,
                 in_position,
