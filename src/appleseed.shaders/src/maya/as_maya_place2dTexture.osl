@@ -37,18 +37,8 @@ shader as_maya_place2dTexture
     string maya_classification = "utility/general/placement/2d"
 ]]
 (
-    float in_uvCoord[2] = {u, v}
-    [[
-        string maya_attribute_name = "uvCoord",
-        string maya_attribute_type = "float2",
-        string label = "Input UV Coords"
-    ]],
-    float in_uvFilterSize[2] = {0.0, 0.0}
-    [[
-        string maya_attribute_name = "uvFilterSize",
-        string maya_attribute_type = "float2",
-        string label = "Input UV Filter Size"
-    ]],
+    MAYA_UV_PARAMETERS,
+
     float in_coverage[2] = {1.0, 1.0}
     [[
         string maya_attribute_name = "coverage",

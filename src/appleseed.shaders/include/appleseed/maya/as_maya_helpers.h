@@ -34,45 +34,51 @@
 #include "appleseed/math/as_math_helpers.h"
 
 #define OUTSIDE_UVFRAME 999999
-#define UVWRAP          1.00001
+#define UVWRAP          1.0001
 
 #define MAYA_COLORBALANCE_PARAMETERS                        \
     color in_defaultColor = color(0.5)                      \
     [[                                                      \
         string maya_attribute_name = "defaultColor",        \
         string maya_attribute_type = "vector",              \
-        string label = "Default Color"                      \
+        string label = "Default Color",                     \
+        string page = "Color Balance"                       \
     ]],                                                     \
     color in_colorGain = color(1.0)                         \
     [[                                                      \
         string maya_attribute_name = "colorGain",           \
         string maya_attribute_type = "vector",              \
-        string label = "Color Gain"                         \
+        string label = "Color Gain",                        \
+        string page = "Color Balance"                       \
     ]],                                                     \
     color in_colorOffset = color(0.0)                       \
     [[                                                      \
         string maya_attribute_name = "colorOffset",         \
         string maya_attribute_type = "vector",              \
-        string label = "Color Offset"                       \
+        string label = "Color Offset",                      \
+        string page = "Color Balance"                       \
     ]],                                                     \
     float in_alphaGain = 1.0                                \
     [[                                                      \
         string maya_attribute_name = "alphaGain",           \
         string maya_attribute_type = "float",               \
-        string label = "Alpha Gain"                         \
+        string label = "Alpha Gain",                        \
+        string page = "Color Balance"                       \
     ]],                                                     \
     float in_alphaOffset = 0.0                              \
     [[                                                      \
         string maya_attribute_name = "alphaOffset",         \
         string maya_attribute_type = "float",               \
-        string label = "Alpha Offset"                       \
+        string label = "Alpha Offset",                      \
+        string page = "Color Balance"                       \
     ]],                                                     \
     int in_alphaIsLuminance = 1                             \
     [[                                                      \
         string maya_attribute_name = "alphaIsLuminance",    \
         string maya_attribute_type = "int",                 \
         string label = "Alpha Is Luminance",                \
-        string widget = "checkBox"                          \
+        string widget = "checkBox",                         \
+        string page = "Color Balance"                       \
     ]]
 
 #define MAYA_EFFECTS_PARAMETERS                             \
@@ -80,20 +86,23 @@
     [[                                                      \
         string maya_attribute_name = "filter",              \
         string maya_attribute_type = "float",               \
-        string label = "Filter"                             \
+        string label = "Filter",                            \
+        string page = "Effects"                             \
     ]],                                                     \
     float in_filterOffset = 0.0                             \
     [[                                                      \
         string maya_attribute_name = "filterOffset",        \
         string maya_attribute_type = "float",               \
-        string label = "Filter Offset"                      \
+        string label = "Filter Offset",                     \
+        string page = "Effects"                             \
     ]],                                                     \
     int in_invert = 0                                       \
     [[                                                      \
         string maya_attribute_name = "invert",              \
         string maya_attribute_type = "bool",                \
         string label = "Invert",                            \
-        string widget = "checkBox"                          \
+        string widget = "checkBox",                         \
+        string page = "Effects"                             \
     ]]
 
 #define MAYA_UV_PARAMETERS                                  \
@@ -101,13 +110,15 @@
     [[                                                      \
         string maya_attribute_name = "uvCoord",             \
         string maya_attribute_type = "float[]",             \
-        string label = "UV Coordinates"                     \
+        string label = "UV Coordinates",                    \
+        string page = "UV Coordinates"                      \
     ]],                                                     \
     float in_uvFilterSize[2] = {0.0, 0.0}                   \
     [[                                                      \
         string maya_attribute_name = "uvFilterSize",        \
         string maya_attribute_type = "float[]",             \
-        string label = "UV Filter Size"                     \
+        string label = "UV Filter Size",                    \
+        string page = "UV Coordinates"                      \
     ]]
 
 float maya_luminance(color in_C)
