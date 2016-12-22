@@ -217,7 +217,11 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     // Construct an abort switch based on the renderer controller.
     RendererControllerAbortSwitch abort_switch(*m_renderer_controller);
 
-    // We start by binding entities inputs. This must be done before creating/updating the trace context.
+    // We start by expanding all procedural assemblies.
+    if (!m_project.get_scene()->expand_procedural_assemblies(m_project, &abort_switch))
+        return IRendererController::AbortRendering;
+
+    // Bind entities inputs. This must be done before creating/updating the trace context.
     if (!bind_scene_entities_inputs())
         return IRendererController::AbortRendering;
 
