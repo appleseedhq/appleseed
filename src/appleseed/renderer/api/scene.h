@@ -31,6 +31,7 @@
 #define APPLESEED_RENDERER_API_SCENE_H
 
 // API headers.
+#include "renderer/modeling/scene/archiveassembly.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/assemblyinstancetraits.h"
@@ -38,6 +39,7 @@
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/objectinstancetraits.h"
+#include "renderer/modeling/scene/proceduralassembly.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/scene/textureinstancetraits.h"
