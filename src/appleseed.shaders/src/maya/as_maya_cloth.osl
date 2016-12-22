@@ -115,7 +115,7 @@ shader as_maya_cloth
         string label = "Output Color",
         string widget = "null"
     ]],
-    output float out_outAlpha = 0.0
+    output float out_outAlpha = 1.0
     [[
         string maya_attribute_name = "outAlpha",
         string maya_attribute_type = "float",
