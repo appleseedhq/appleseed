@@ -31,7 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/proceduralassembly.h"
 #include "renderer/modeling/scene/basegroup.h"
 #include "renderer/modeling/scene/iassemblyfactory.h"
 
@@ -59,7 +59,7 @@ namespace renderer
 //
 
 class APPLESEED_DLLSYMBOL ArchiveAssembly
-  : public Assembly
+  : public ProceduralAssembly
 {
   public:
     // Return a string identifying the model of this entity.
@@ -68,12 +68,11 @@ class APPLESEED_DLLSYMBOL ArchiveAssembly
     // Delete this instance.
     virtual void release() APPLESEED_OVERRIDE;
 
-    virtual bool is_procedural() const APPLESEED_OVERRIDE;
-
     // Expose asset file paths referenced by this entity to the outside.
     virtual void collect_asset_paths(foundation::StringArray& paths) const APPLESEED_OVERRIDE;
     virtual void update_asset_paths(const foundation::StringDictionary& mappings) APPLESEED_OVERRIDE;
 
+    /*
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
@@ -86,6 +85,7 @@ class APPLESEED_DLLSYMBOL ArchiveAssembly
     virtual void on_frame_end(
         const Project&                  project,
         const BaseGroup*                parent) APPLESEED_OVERRIDE;
+    */
 
   private:
     friend class ArchiveAssemblyFactory;

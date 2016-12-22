@@ -65,7 +65,7 @@ const char* Model = "archive_assembly";
 ArchiveAssembly::ArchiveAssembly(
     const char*         name,
     const ParamArray&   params)
-  : Assembly(name, params)
+  : ProceduralAssembly(name, params)
   , m_archive_opened(false)
 {
 }
@@ -73,11 +73,6 @@ ArchiveAssembly::ArchiveAssembly(
 void ArchiveAssembly::release()
 {
     delete this;
-}
-
-bool ArchiveAssembly::is_procedural() const
-{
-    return true;
 }
 
 const char* ArchiveAssembly::get_model() const
@@ -96,6 +91,7 @@ void ArchiveAssembly::update_asset_paths(const StringDictionary& mappings)
     m_params.set("filename", mappings.get(m_params.get("filename")));
 }
 
+/*
 bool ArchiveAssembly::on_frame_begin(
     const Project&          project,
     const BaseGroup*        parent,
@@ -144,6 +140,7 @@ void ArchiveAssembly::on_frame_end(
 {
     Assembly::on_frame_end(project, parent);
 }
+*/
 
 //
 // ArchiveAssemblyFactory class implementation.
