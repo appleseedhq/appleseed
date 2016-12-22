@@ -117,6 +117,11 @@ class APPLESEED_DLLSYMBOL Scene
     // Perform post-render rendering actions.
     void on_render_end(const Project& project);
 
+    // Expand all procedural assemblies in the scene.
+    virtual bool expand_procedural_assemblies(
+        const Project&              project,
+        foundation::IAbortSwitch*   abort_switch = 0);
+
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(

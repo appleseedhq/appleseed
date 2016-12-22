@@ -40,6 +40,7 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer
@@ -54,8 +55,11 @@ class APPLESEED_DLLSYMBOL ProceduralAssembly
   : public Assembly
 {
   public:
-    virtual bool is_procedural() const APPLESEED_OVERRIDE;
-
+    // Expand the contents of the assembly.
+    virtual bool expand_contents(
+        const Project&              project,
+        const Assembly*             parent,
+        foundation::IAbortSwitch*   abort_switch = 0) = 0;
 
   protected:
     // Constructor.

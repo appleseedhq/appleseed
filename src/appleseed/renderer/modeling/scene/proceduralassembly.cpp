@@ -52,9 +52,4 @@ ProceduralAssembly::ProceduralAssembly(
 {
 }
 
-bool ProceduralAssembly::is_procedural() const
-{
-    return true;
-}
-
 }   // namespace renderer
