@@ -91,11 +91,9 @@ void ArchiveAssembly::update_asset_paths(const StringDictionary& mappings)
     m_params.set("filename", mappings.get(m_params.get("filename")));
 }
 
-/*
-bool ArchiveAssembly::on_frame_begin(
+bool ArchiveAssembly::expand_contents(
     const Project&          project,
-    const BaseGroup*        parent,
-    OnFrameBeginRecorder&   recorder,
+    const Assembly*         parent,
     IAbortSwitch*           abort_switch)
 {
     if (!m_archive_opened)
@@ -131,16 +129,9 @@ bool ArchiveAssembly::on_frame_begin(
         }
     }
 
-    return Assembly::on_frame_begin(project, parent, recorder, abort_switch);
+    return true;
 }
 
-void ArchiveAssembly::on_frame_end(
-    const Project&                  project,
-    const BaseGroup*                parent)
-{
-    Assembly::on_frame_end(project, parent);
-}
-*/
 
 //
 // ArchiveAssemblyFactory class implementation.
