@@ -55,7 +55,6 @@
 #include "renderer/modeling/environmentshader/environmentshaderfactoryregistrar.h"
 #include "renderer/modeling/environmentshader/ienvironmentshaderfactory.h"
 #include "renderer/modeling/frame/frame.h"
-#include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/light/ilightfactory.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/light/lightfactoryregistrar.h"
@@ -3145,12 +3144,6 @@ auto_release_ptr<Assembly> ProjectFileReader::read_archive(
 
     if (project->get_scene())
     {
-        InputBinder input_binder;
-        input_binder.bind(*project->get_scene());
-
-        if (input_binder.get_error_count() != 0)
-            return auto_release_ptr<Assembly>(0);
-
         if (Assembly* assembly = project->get_scene()->assemblies().get_by_name("assembly"))
         {
             return auto_release_ptr<Assembly>(
