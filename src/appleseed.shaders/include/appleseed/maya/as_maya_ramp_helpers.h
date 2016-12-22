@@ -151,5 +151,16 @@ color color_ramp(
     }
 }
 
+color color_ramp(
+    color colors[],
+    float positions[],
+    int interpolation,
+    float value)
+{
+    int interpolate[1] = {interpolation};
+
+    return color_ramp(colors, positions, interpolate, value);
+}
+
 #endif // AS_MAYA_RAMP_HELPERS_H
 
