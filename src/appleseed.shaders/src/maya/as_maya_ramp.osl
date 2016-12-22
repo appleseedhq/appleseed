@@ -266,37 +266,21 @@ shader as_maya_ramp
         }
         else if (in_type == 7)
         {
-            out_outColor = color_ramp(
-                in_color,
-                in_position,
-                interpolation,
-                (1 - st[0]) * (1 - st[1]));
+            out_outColor = in_color[0] * (1 - st[0]) * (1 - st[1]);
 
             int len = arraylength(in_position);
 
             if (len > 1)
             {
-                out_outColor += color_ramp(
-                    in_color,
-                    in_position,
-                    interpolation,
-                    st[0] * (1 - st[1]));
+                out_outColor += in_color[1] * st[0] * (1 - st[1]);
             }
             if (len > 2)
             {
-                out_outColor += color_ramp(
-                    in_color,
-                    in_position,
-                    interpolation,
-                    (1 - st[0]) * st[1]);
+                out_outColor += in_color[2] * (1 - st[0]) * st[1];
             }
             if (len > 3)
             {
-                out_outColor += color_ramp(
-                    in_color,
-                    in_position,
-                    interpolation,
-                    st[0] * st[1]);
+                out_outColor += in_color[3] * st[0] * st[1];
             }
         }
         else if (in_type == 8)
