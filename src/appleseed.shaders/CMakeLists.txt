@@ -67,6 +67,8 @@ set (appleseed_library_osl_headers
     include/appleseed/color/as_color_helpers.h
     include/appleseed/math/as_math_helpers.h
     include/appleseed/maya/as_maya_helpers.h
+    include/appleseed/maya/as_maya_ramp_helpers.h
+    include/appleseed/pattern/as_pattern_helpers.h
 )
 list (APPEND appleseed_osl_headers ${appleseed_library_osl_headers})
 source_group ("include\\appleseed" FILES
@@ -152,11 +154,13 @@ set (appleseed_maya2_osl_sources
      src/maya/as_maya_addMatrix.osl
      src/maya/as_maya_area_light.osl
      src/maya/as_maya_blendColors.osl
+     src/maya/as_maya_blinn.osl
      src/maya/as_maya_bulge.osl
      src/maya/as_maya_checker.osl
      src/maya/as_maya_clamp.osl
      src/maya/as_maya_clearCoat.osl
      src/maya/as_maya_closure2Surface.osl
+     src/maya/as_maya_cloth.osl
      src/maya/as_maya_color2Components.osl
      src/maya/as_maya_components2Color.osl
      src/maya/as_maya_components2Vector.osl
@@ -164,6 +168,7 @@ set (appleseed_maya2_osl_sources
      src/maya/as_maya_contrast.osl
      src/maya/as_maya_distanceBetween.osl
      src/maya/as_maya_doubleShadingSwitch.osl
+     src/maya/as_maya_file.osl
      src/maya/as_maya_fourByFourMatrix.osl
      src/maya/as_maya_gammaCorrect.osl
      src/maya/as_maya_grid.osl
@@ -177,6 +182,7 @@ set (appleseed_maya2_osl_sources
      src/maya/as_maya_place2dTexture.osl
      src/maya/as_maya_plusMinusAverage.osl
      src/maya/as_maya_quadShadingSwitch.osl
+     src/maya/as_maya_ramp.osl
      src/maya/as_maya_reverse.osl
      src/maya/as_maya_rgbToHsv.osl
      src/maya/as_maya_samplerInfo.osl

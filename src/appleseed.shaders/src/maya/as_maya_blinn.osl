@@ -26,11 +26,11 @@
 // THE SOFTWARE.
 //
 
-// Ref: $MAYA_LOCATION/docs/Nodes/lambert.html
+// Ref: $MAYA_LOCATION/docs/Nodes/blinn.html
 
-shader as_maya_lambert
+shader as_maya_blinn
 [[
-    string maya_node_name = "lambert",
+    string maya_node_name = "blinn",
     string maya_classification = "shader/surface"
 ]]
 (
@@ -38,55 +38,99 @@ shader as_maya_lambert
     [[
         string maya_attribute_name = "color",
         string maya_attribute_type = "vector",
-        string label = "Color"
+        string label = "Color",
+        string page = "Common Material Attributes"
     ]],
     color in_transparency = color(0)
     [[
         string maya_attribute_name = "transparency",
         string maya_attribute_type = "vector",
-        string label = "Transparency"
+        string label = "Transparency",
+        string page = "Common Material Attributes"        
     ]],
     color in_ambientColor = color(0)
     [[
         string maya_attribute_name = "ambientColor",
         string maya_attribute_type = "vector",
-        string label = "Ambient Color"
+        string label = "Ambient Color",
+        string page = "Common Material Attributes"
     ]],
     color in_incandescence = color(0)
     [[
         string maya_attribute_name = "incandescence",
         string maya_attribute_type = "vector",
-        string label = "Incandescence Color"
+        string label = "Incandescence Color",
+        string page = "Common Material Attributes"
     ]],
     normal in_normalCamera = N
     [[
         string maya_attribute_name = "normalCamera",
         string maya_attribute_type = "vector",
-        string label = "Bump Mapping Normal"
+        string label = "Bump Mapping Normal",
+        string page = "Common Material Attributes"
     ]],
     float in_diffuse = 0.8
     [[
         string maya_attribute_name = "diffuse",
         string maya_attribute_type = "float",
-        string label = "Diffuse Intensity"
+        string label = "Diffuse Intensity",
+        string page = "Common Material Attributes"
     ]],
     float in_translucence = 0.0
     [[
         string maya_attribute_name = "translucence",
         string maya_attribute_type = "float",
-        string label = "Translucence"
+        string label = "Translucence",
+        string page = "Common Material Attributes"
     ]],
     float in_translucenceDepth = 0.5
     [[
         string maya_attribute_name = "translucenceDepth",
         string maya_attribute_type = "float",
-        string label = "Translucence Depth"
+        string label = "Translucence Depth",
+        string page = "Common Material Attributes"
     ]],  
     float in_translucenceFocus = 0.5
     [[
         string maya_attribute_name = "translucenceFocus",
         string maya_attribute_type = "float",
-        string label = "Translucence Focus"
+        string label = "Translucence Focus",
+        string page = "Common Material Attributes"
+    ]],
+    float in_eccentricity = 0.3
+    [[
+        string maya_attribute_name = "eccentricity",
+        string maya_attribute_type = "float",
+        string label = "Eccentricity",
+        string page = "Specular Shading"
+    ]],
+    float in_specularRolloff = 0.7
+    [[
+        string maya_attribute_name = "specularRolloff",
+        string maya_attribute_type = "float",
+        string label = "Specular Rolloff",
+        string page = "Specular Shading"
+    ]],
+    color in_specularColor = color(0.5)
+    [[
+        string maya_attribute_name = "specularColor",
+        string maya_attribute_type = "color",
+        string label = "Specular Color",
+        string page = "Specular Shading"
+    ]],
+    float in_reflectivity = 0.5
+    [[
+        string maya_attribute_name = "reflectivity",
+        string maya_attribute_type = "float",
+        string label = "Reflectivity",
+        string page = "Specular Shading"
+    ]],
+    color in_reflectedColor = color(0)
+    [[
+        string maya_attribute_name = "reflectedColor",
+        string maya_attribute_type = "color",
+        string label = "Reflected Color",
+        string page = "Specular Shading"
     ]],
     int in_matteOpacityMode = 2
     [[
@@ -94,32 +138,37 @@ shader as_maya_lambert
         string maya_attribute_type = "enum",
         string label = "Matte Opacity Mode",
         string widget = "mapper",
-        string options = "Black Hole:0|Solid Matte:1|Opacity Gain:2"
+        string options = "Black Hole:0|Solid Matte:1|Opacity Gain:2",
+        string page = "Matte Opacity"
     ]],
     float in_matteOpacity = 1.0
     [[
         string maya_attribute_name = "matteOpacity",
         string maya_attribute_type = "float",
-        string label = "Matte Opacity"
+        string label = "Matte Opacity",
+        string page = "Matte Opacity"
     ]],
     int in_hideSource = 0
     [[
         string maya_attribute_name = "hideSource",
         string maya_attribute_type = "bool",
         string label = "Hide Glow Source",
-        string widget = "checkBox"
+        string widget = "checkBox",
+        string page = "Special Effects"
     ]],
     float in_glowIntensity = 0.0
     [[
         string maya_attribute_name = "glowIntensity",
         string maya_attribute_type = "float",
-        string label = "Glow Intensity"
+        string label = "Glow Intensity",
+        string page = "Special Effects"
     ]],
     float in_shadowAttenuation = 0.5
     [[
         string maya_attribute_name = "shadowAttenuation",
         string maya_attribute_type = "float",
-        string label = "Shadow Attenuation"
+        string label = "Shadow Attenuation",
+        string page = "Raytrace Options"
     ]],
 
     output closure color out_outColor = 0
@@ -186,6 +235,25 @@ shader as_maya_lambert
         closure color translucence_term = opacity *
             in_translucence * in_color * translucent(Nn);
 
+        closure color specular_term = 0;
+
+        if (in_specularColor)
+        {
+            // Specular roll-off is a simple Fresnel term, get eta, solve
+            // f0=(eta-1)^2/(eta+1)^2 for eta.
+
+            float tmp = sqrt(in_specularRolloff);
+            float eta = (1 + tmp) / (1 - tmp);
+
+            specular_term = opacity * in_specularColor *
+                microfacet(
+                    "ggx",
+                    Nn,
+                    0.5,
+                    500.0,
+                    0);
+        }
+        
         float matte_opacity;
 
         if (in_matteOpacityMode == 0)
@@ -217,6 +285,7 @@ shader as_maya_lambert
             incandescence_term +
             diffuse_term +
             translucence_term +
+            specular_term +
             matte_term +
             glow_term +
             transparency_term;
