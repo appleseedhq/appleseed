@@ -58,6 +58,7 @@
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
+#include "renderer/modeling/scene/proceduralassembly.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/shadergroup/shader.h"
@@ -321,7 +322,7 @@ namespace
 
             // Don't write the contents of the assembly if they were
             // generated procedurally.
-            if(assembly.is_procedural())
+            if (dynamic_cast<const ProceduralAssembly*>(&assembly))
             {
                 element.write(
                     !assembly.get_parameters().empty()

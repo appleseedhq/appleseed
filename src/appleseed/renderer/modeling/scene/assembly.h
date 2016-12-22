@@ -102,9 +102,6 @@ class APPLESEED_DLLSYMBOL Assembly
     // Return true if this assembly is tagged as flushable.
     bool is_flushable() const;
 
-    // Return true if the contents of this assembly are proceduraly generated.
-    virtual bool is_procedural() const;
-
     // Compute the local space bounding box of the assembly, including all child assemblies,
     // over the shutter interval.
     GAABB3 compute_local_bbox() const;

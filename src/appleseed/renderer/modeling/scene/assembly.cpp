@@ -165,11 +165,6 @@ ObjectInstanceContainer& Assembly::object_instances() const
     return impl->m_object_instances;
 }
 
-bool Assembly::is_procedural() const
-{
-    return false;
-}
-
 GAABB3 Assembly::compute_local_bbox() const
 {
     GAABB3 bbox = compute_non_hierarchical_local_bbox();
