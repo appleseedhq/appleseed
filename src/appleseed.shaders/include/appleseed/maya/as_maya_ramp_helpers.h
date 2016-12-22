@@ -64,7 +64,7 @@ color interpolate_color(
         }
         else if (interpolate == 4)
         {
-            weight = 0.5 * (cos((weight + 1) * M_PI) + 1);
+            weight = 0.5 * (cos((delta + 1) * M_PI) + 1);
         }
         else if (interpolate == 5)
         {
