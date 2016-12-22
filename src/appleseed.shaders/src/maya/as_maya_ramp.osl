@@ -57,14 +57,14 @@ shader as_maya_ramp
     ]],
     float in_position[] = {0}
     [[
-        string maya_attribute_name = "colorEntryList[].position",
+        string maya_attribute_name = "colorEntryList",
         string maya_attribute_type = "float[]",
         string label = "Position",
         string page = "Ramp Attributes"
     ]],
     color in_color[] = {0}
     [[
-        string maya_attribute_name = "colorEntryList[].color",
+        string maya_attribute_name = "colorEntryList",
         string maya_attribute_type = "color[]",
         string label = "Color",
         string page = "Ramp Attributes"
@@ -208,9 +208,11 @@ shader as_maya_ramp
         }
         else if (in_type == 3)
         {
-            float value = (st[0] == 0 && st[1] == 0)
+            float tmp_st[2] = {st[0] - 0.5, st[1] - 0.5};
+
+            float value = (tmp_st[0] == 0 && tmp_st[1] == 0)
                 ? 0
-                : atan2(st[0], st[1]) / M_2PI + 0.5;
+                : atan2(tmp_st[0], tmp_st[1]) / M_2PI + 0.5;
 
             out_outColor = color_ramp(
                 in_color,
