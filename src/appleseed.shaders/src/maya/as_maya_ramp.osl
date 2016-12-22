@@ -313,6 +313,40 @@ shader as_maya_ramp
             out_outColor *= 0.5;
         }
 
+        if (in_hueNoise || in_satNoise || in_valNoise)
+        {
+            color C_hsv = transformc("rgb", "hsv", out_outColor);
+
+            if (in_hueNoise)
+            {
+                C_hsv[0] += in_hueNoise * noise(
+                    "perlin",
+                    in_hueNoiseFreq * st[0] * 15,
+                    in_hueNoiseFreq * st[1] * 15);
+
+                C_hsv[0] = clamp(C_hsv[0], 0, 1);
+            }
+            if (in_satNoise)
+            {
+                C_hsv[1] += in_satNoise * noise(
+                    "perlin",
+                    in_satNoiseFreq * st[0] * 15,
+                    in_hueNoiseFreq * st[1] * 15);
+
+                C_hsv[1] = clamp(C_hsv[1], 0, 1);
+            }
+            if (in_valNoise)
+            {
+                C_hsv[2] += in_valNoise * noise(
+                    "perlin",
+                    in_valNoiseFreq * st[0] * 15,
+                    in_valNoiseFreq * st[1] * 15);
+
+                C_hsv[2] = clamp(C_hsv[2], 0, 1);
+            }
+            out_outColor = transformc("hsv", "rgb", C_hsv);
+        }
+
         maya_colorBalance(
             in_colorGain,
             in_colorOffset,
