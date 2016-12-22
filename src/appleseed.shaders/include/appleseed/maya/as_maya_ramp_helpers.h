@@ -68,13 +68,13 @@ color interpolate_color(
         }
         else if (interpolate == 5)
         {
-            weight = (maya_luminance(C1) > maya_luminance(C2))
+            weight = (luminance(C1) < luminance(C2))
                 ? sin(delta * M_PI_2)
                 : sin((delta - 1) * M_PI_2) + 1;
         }
         else
         {
-            weight = (maya_luminance(C1) < maya_luminance(C2))
+            weight = (luminance(C1) > luminance(C2))
                 ? sin(delta * M_PI_2)
                 : sin((delta - 1) * M_PI_2) + 1;
         }
