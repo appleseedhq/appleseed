@@ -41,10 +41,10 @@ TEST_SUITE(Foundation_Utility_Otherwise)
         {
             switch (1)
             {
-                case 0:
-                  break;
+              case 0:
+                break;
 
-                throw_otherwise;
+              throw_otherwise;
             }
         });
     }
