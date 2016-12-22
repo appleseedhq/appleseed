@@ -1687,6 +1687,8 @@ set (renderer_modeling_scene_sources
     renderer/modeling/scene/objectinstance.cpp
     renderer/modeling/scene/objectinstance.h
     renderer/modeling/scene/objectinstancetraits.h
+    renderer/modeling/scene/proceduralassembly.cpp
+    renderer/modeling/scene/proceduralassembly.h
     renderer/modeling/scene/scene.cpp
     renderer/modeling/scene/scene.h
     renderer/modeling/scene/textureinstance.cpp
