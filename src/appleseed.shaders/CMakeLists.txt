@@ -53,7 +53,6 @@ source_group ("include\\standard" FILES
 
 set (gaffer_osl_headers
     include/appleseed/gaffer/color.h
-    include/appleseed/gaffer/microfacet.h
     include/appleseed/gaffer/transform.h
     include/appleseed/gaffer/udim.h
 )
@@ -65,6 +64,7 @@ source_group ("include\\gaffer" FILES
 set (appleseed_library_osl_headers
     include/appleseed/color/as_color_data.h
     include/appleseed/color/as_color_helpers.h
+    include/appleseed/material/as_material_helpers.h
     include/appleseed/math/as_math_helpers.h
     include/appleseed/maya/as_maya_helpers.h
     include/appleseed/maya/as_maya_ramp_helpers.h
