@@ -35,7 +35,7 @@
 #define APPLESEED_VERSION_PATH      ${appleseed_version_patch}
 
 #define APPLESEED_VERSION               \
-    APPLESEED_VERSION_MAJOR + 10000 +   \
+    APPLESEED_VERSION_MAJOR * 10000 +   \
     APPLESEED_VERSION_MINOR * 100 +     \
     APPLESEED_VERSION_PATCH
 
