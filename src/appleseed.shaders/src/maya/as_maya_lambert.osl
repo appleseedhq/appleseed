@@ -222,4 +222,3 @@ shader as_maya_lambert
             transparency_term;
     }
 }
-

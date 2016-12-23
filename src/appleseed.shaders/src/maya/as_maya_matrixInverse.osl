@@ -49,4 +49,3 @@ shader as_maya_matrixInverse
 {
     out_outputMatrix = inverse(in_inputMatrix);
 }
-

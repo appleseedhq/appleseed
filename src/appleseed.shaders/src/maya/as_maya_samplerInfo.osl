@@ -163,4 +163,3 @@ shader as_maya_samplerInfo
 
     out_facingRatio = max(0, dot(normalize(-I), normalize(N)));
 }
-

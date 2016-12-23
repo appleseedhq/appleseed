@@ -124,4 +124,3 @@ shader as_maya_condition
         out_outColor = color(0);
     }
 }
-

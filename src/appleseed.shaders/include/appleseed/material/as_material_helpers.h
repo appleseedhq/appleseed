@@ -55,4 +55,3 @@ float ior_from_normal_reflectance(float f0)
 }
 
 #endif // AS_MATERIAL_HELPERS_H
-

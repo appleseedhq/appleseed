@@ -101,4 +101,3 @@ shader as_maya_bulge
             out_outAlpha);
     }
 }
-

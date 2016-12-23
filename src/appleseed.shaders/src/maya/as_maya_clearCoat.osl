@@ -88,4 +88,3 @@ shader as_maya_clearCoat
 
     out_outValue = Kr * in_scale + in_bias;
 }
-

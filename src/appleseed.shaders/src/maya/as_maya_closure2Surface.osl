@@ -33,4 +33,3 @@ surface as_maya_closure2Surface
 {
     Ci = in_input;
 }
-

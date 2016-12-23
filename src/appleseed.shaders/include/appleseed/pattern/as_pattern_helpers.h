@@ -141,4 +141,3 @@ float filtered_pulsetrain(
 }
 
 #endif // AS_PATTERN_HELPERS_H
-

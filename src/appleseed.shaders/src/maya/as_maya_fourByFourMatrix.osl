@@ -160,4 +160,3 @@ shader as_maya_fourByFourMatrix
                          in_in20, in_in21, in_in22, in_in23,
                          in_in30, in_in31, in_in32, in_in33 );
 }
-

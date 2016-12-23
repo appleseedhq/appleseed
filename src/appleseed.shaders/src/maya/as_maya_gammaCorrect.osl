@@ -60,4 +60,3 @@ shader as_maya_gammaCorrect
 {
     out_outValue = gamma_OETF(in_value, in_gamma);
 }
-

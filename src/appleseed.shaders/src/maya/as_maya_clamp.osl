@@ -64,4 +64,3 @@ shader as_maya_clamp
 {
     out_output = clamp(in_input, in_min, in_max);
 }
-

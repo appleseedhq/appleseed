@@ -272,4 +272,3 @@ shader as_maya_cloth
             out_outAlpha);
     }
 }
-

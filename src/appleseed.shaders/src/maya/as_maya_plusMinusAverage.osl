@@ -152,4 +152,3 @@ shader as_maya_plusMinusAverage
         out_output3D = 0.0;
     }
 }
-

@@ -64,4 +64,3 @@ shader as_maya_blendColors
 {
     out_output = mix(in_color2, in_color1, in_blender);
 }
-

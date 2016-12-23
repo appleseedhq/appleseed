@@ -133,4 +133,3 @@ shader as_maya_checker
             out_outAlpha);
     }
 }
-

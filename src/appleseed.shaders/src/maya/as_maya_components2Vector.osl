@@ -36,4 +36,3 @@ shader as_maya_components2Vector
 {
     comp = vector(compX, compY, compZ);
 }
-

@@ -31,7 +31,6 @@
 
 #include "appleseed/color/as_color_data.h"
 
-// Color space aware luminance function (some spaces share coefficients).
 float as_luminance(color in_C, string colorspace)
 {
     color coeffs;
@@ -409,7 +408,7 @@ color AdobeRGB_OETF(color value)
 }
 
 // Get primaries xyz coordinates for given space (some are shared).
-void xyzChromaticityCoords(string space, output vector xyz[3])
+void XYZ_chromaticity_coords(string space, output vector xyz[3])
 {
     if (space == "Rec.601")
     {
@@ -468,7 +467,7 @@ void xyzChromaticityCoords(string space, output vector xyz[3])
     }
 }
 
-color transformRGB2XYZ(color C, string space)
+color transform_RGB2XYZ(color C, string space)
 {
     if (space == "sRGB")
     {
@@ -497,7 +496,7 @@ color transformRGB2XYZ(color C, string space)
     }
 }
 
-color transformXYZ2RGB(color C, string space)
+color transform_XYZ2RGB(color C, string space)
 {
     if (space == "sRGB")
     {
@@ -527,4 +526,3 @@ color transformXYZ2RGB(color C, string space)
 }
 
 #endif // AS_COLOR_HELPERS_H
-
