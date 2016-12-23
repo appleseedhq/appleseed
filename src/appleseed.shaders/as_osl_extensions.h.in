@@ -30,9 +30,6 @@
 #ifndef AS_OSL_EXTENSIONS_H
 #define AS_OSL_EXTENSIONS_H
 
-///////////////////////////////////////////////////////////////////////////////
-
-// appleseed version
 #define APPLESEED_VERSION_MAJOR     ${appleseed_version_major}
 #define APPLESEED_VERSION_MINOR     ${appleseed_version_minor}
 #define APPLESEED_VERSION_PATCH     ${appleseed_version_patch}
@@ -43,7 +40,7 @@
     APPLESEED_VERSION_PATCH
 
 #ifndef M_1_PI
-#define M_1_PI      0.3183098861837907      // 1/pi
+#define M_1_PI      0.3183098861837907      // 1/PI
 #endif
 
 matrix inverse(matrix m) { return 1 / m; }
@@ -58,20 +55,7 @@ closure color mix(closure color A, closure color B, color w)
     return (1.0 - w) * A + w * B;
 }
 
-
-/*************************************************************/
-// Custom appleseed closures
-/*************************************************************/
-
-
-/***************************************/
-// diffuse
-
 closure color as_sheen(normal N) BUILTIN;
-
-
-/***************************************/
-// glossy
 
 closure color as_glossy(
     string  distribution,
@@ -89,10 +73,6 @@ closure color as_glossy(
 {
     return as_glossy(distribution, N, vector(0), roughness, 0.0, ior);
 }
-
-
-/***************************************/
-// metal
 
 closure color as_metal(
     string  distribution,
@@ -119,10 +99,6 @@ closure color as_metal(
         roughness,
         0.0);
 }
-
-
-/***************************************/
-// glass
 
 closure color as_glass(
     string  distribution,
@@ -162,10 +138,6 @@ closure color as_glass(
         volume_transmittance_distance);
 }
 
-
-/***************************************/
-// subsurface
-
 closure color as_subsurface(
     string  profile,
     normal  N,
@@ -173,18 +145,14 @@ closure color as_subsurface(
     color   mean_free_path,
     float   ior) BUILTIN;
 
-
-/***************************************/
-// composite closures
-
 closure color as_ashikhmin_shirley(
     normal  N,
     vector  T,
     color   diffuse_reflectance,
     color   glossy_reflectance,
-    float   exponent_u,                     // Phong-like exponent in first tangent direction
-    float   exponent_v,                     // Phong-like exponent in second tangent direction
-    float   fresnel_multiplier) BUILTIN;    // Fresnel multiplier
+    float   exponent_u, // Phong-like exponent along U direction
+    float   exponent_v, // Phong-like exponent along V direction
+    float   fresnel_multiplier) BUILTIN;
 
 closure color as_disney(
     normal  N,
