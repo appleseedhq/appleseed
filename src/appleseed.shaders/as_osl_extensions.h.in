@@ -170,4 +170,3 @@ closure color as_disney(
     float   clearcoat_gloss) BUILTIN;
 
 #endif // AS_OSL_EXTENSIONS_H
-
