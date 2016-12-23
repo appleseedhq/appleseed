@@ -87,4 +87,3 @@ shader as_maya_setRange
         out_outValue = in_value;
     }     
 }
-

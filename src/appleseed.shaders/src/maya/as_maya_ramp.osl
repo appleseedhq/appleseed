@@ -350,4 +350,3 @@ shader as_maya_ramp
             out_outAlpha);
     }
 }
-

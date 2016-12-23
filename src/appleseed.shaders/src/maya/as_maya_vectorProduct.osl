@@ -108,4 +108,3 @@ shader as_maya_vectorProduct
         out_output = normalize(out_output);
     }
 }
-

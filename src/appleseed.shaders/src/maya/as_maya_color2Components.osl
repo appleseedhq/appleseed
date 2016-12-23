@@ -38,4 +38,3 @@ shader as_maya_color2Components
     compG = comp[1];
     compB = comp[2];
 }
-

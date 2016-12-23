@@ -49,4 +49,3 @@ shader as_maya_transposeMatrix
 {
     out_outputMatrix = transpose(in_inputMatrix);
 }
-

@@ -291,4 +291,3 @@ shader as_maya_blinn
             transparency_term;
     }
 }
-

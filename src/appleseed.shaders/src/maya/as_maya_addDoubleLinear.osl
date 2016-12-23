@@ -58,4 +58,3 @@ shader as_maya_addDoubleLinear
 {
     out_output = in_input1 + in_input2 ;
 }
-

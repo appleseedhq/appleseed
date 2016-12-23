@@ -163,4 +163,3 @@ color color_ramp(
 }
 
 #endif // AS_MAYA_RAMP_HELPERS_H
-

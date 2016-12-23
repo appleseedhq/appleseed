@@ -173,4 +173,3 @@ color maya_contrast(
 }
 
 #endif // AS_MAYA_HELPERS_H
-

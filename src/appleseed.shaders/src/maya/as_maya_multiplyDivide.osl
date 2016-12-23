@@ -96,4 +96,3 @@ shader as_maya_multiplyDivide
         out_output = 0.0;
     }
 }
-

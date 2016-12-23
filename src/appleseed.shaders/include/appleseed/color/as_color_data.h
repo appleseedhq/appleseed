@@ -143,6 +143,5 @@
     vector(XYZ2RGB_D65_SRGB_R1),            \
     vector(XYZ2RGB_D65_SRGB_R2)             \
     }
-    
+
 #endif /// AS_COLOR_DATA_H
-    

@@ -54,4 +54,3 @@ shader as_maya_luminance
 {
     out_outValue = maya_luminance(in_value);
 }
-

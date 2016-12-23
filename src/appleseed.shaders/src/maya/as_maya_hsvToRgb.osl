@@ -52,4 +52,3 @@ shader as_maya_hsvToRgb
 {
     out_outRgb = transformc("hsv", "rgb", in_inHsv);
 }
-

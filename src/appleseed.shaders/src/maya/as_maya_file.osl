@@ -270,9 +270,11 @@ shader as_maya_file
 
         out_outSize[0] = size[0];
         out_outSize[1] = size[1];
+
         out_fileHasAlpha = (channels > 3) ? 1 : 0;
 
         float st[2] = {in_uvCoord[0], in_uvCoord[1]}, dsdt[4];
+
         string filter = "";
 
         if (in_filterType)
@@ -381,4 +383,3 @@ shader as_maya_file
         out_outAlpha
         );
 }
-

@@ -61,4 +61,3 @@ float fast_gain(float value, float g)
 }
 
 #endif // AS_MATH_HELPERS_H
-

@@ -146,4 +146,3 @@ shader as_maya_grid
             out_outAlpha);
     }
 }
-
