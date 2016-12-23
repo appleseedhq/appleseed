@@ -5,7 +5,8 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016 The masked shader writer, The appleseedhq Organization
+// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,21 +27,25 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_SHADERS_MICROFACET_H
-#define APPLESEED_SHADERS_MICROFACET_H
+#ifndef AS_MATERIAL_HELPERS_H
+#define AS_MATERIAL_HELPERS_H
 
-float microfacet_roughness(float Roughness, float DepthScale)
+float microfacet_roughness(float roughness, float depth_scale)
 {
-    if (DepthScale > 1.0)
+    float out = roughness;
+
+    if (depth_scale > 1)
     {
-        int RayDepth;
-        getattribute("path:ray_depth", RayDepth);
+        int ray_depth;
+        getattribute("path:ray_depth", ray_depth);
 
-        if (RayDepth != 0)
-            return Roughness * DepthScale * RayDepth;
+        if (ray_depth)
+        {
+            out = roughness * depth_scale * ray_depth;
+        }
     }
-
-    return Roughness;
+    return out;
 }
 
-#endif
+#endif // AS_MATERIAL_HELPERS_H
+
