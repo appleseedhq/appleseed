@@ -49,7 +49,6 @@ surface as_maya_areaLight
     ]],
 
     output point out_center = point("shader", 0, 0, 0)
-
     [[
         string maya_attribute_name = "center",
         string maya_attribute_type = "vector",
