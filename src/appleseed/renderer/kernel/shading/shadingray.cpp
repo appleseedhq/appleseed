@@ -52,7 +52,7 @@ void ShadingRay::copy_media_from(const ShadingRay& source)
 void ShadingRay::add_medium(
     const ShadingRay&       source,
     const ObjectInstance*   object_instance,
-    const BSDF*             bsdf,
+    const Material*         material,
     const float             ior)
 {
     assert(m_medium_count == 0);
@@ -67,7 +67,7 @@ void ShadingRay::add_medium(
     if (j < MaxMediumCount)
     {
         m_media[j].m_object_instance = object_instance;
-        m_media[j].m_bsdf = bsdf;
+        m_media[j].m_material = material;
         m_media[j].m_ior = ior;
         ++j;
     }

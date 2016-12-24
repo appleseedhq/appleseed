@@ -45,7 +45,7 @@
 #include <cassert>
 
 // Forward declarations.
-namespace renderer  { class BSDF; }
+namespace renderer  { class Material; }
 
 namespace renderer
 {
@@ -90,7 +90,7 @@ class ShadingRay
     struct Medium
     {
         const ObjectInstance*       m_object_instance;
-        const BSDF*                 m_bsdf;
+        const Material*             m_material;
         float                       m_ior;
     };
 
@@ -128,7 +128,7 @@ class ShadingRay
     void add_medium(
         const ShadingRay&           source,
         const ObjectInstance*       object_instance,
-        const BSDF*                 bsdf,
+        const Material*             material,
         const float                 ior);
 
     // Copy all media from the source ray except a given medium.
