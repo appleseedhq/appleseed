@@ -118,6 +118,8 @@ shader as_maya_checker
             (filtered_pulsetrain(0.5, 1, st[0], dsdt[0]) - 0.5) *
             (filtered_pulsetrain(0.5, 1, st[1], dsdt[1]) - 0.5);
 
+        weight = clamp(weight, 0, 1);
+
         out_outColor = mix(A, B, weight);
         out_outAlpha = mix(alpha_blend, 1 - weight, in_contrast);
 

@@ -1,0 +1,111 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2016 Esteban Tovagliari, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+surface as_maya_areaLight
+[[
+    string maya_node_name = "areaLight",
+    string maya_classification = "light"
+]]
+(
+    color in_color = color(1)
+    [[
+        string maya_attribute_name = "color",
+        string maya_attribute_type = "vector",
+        string label = "Color",
+        string page = "Area Light Attributes"
+    ]],
+    float in_intensity = 1.0
+    [[
+        string maya_attribute_name = "intensity",
+        string maya_attribute_type = "float",
+        string label = "intensity",
+        string page = "Area Light Attributes"
+    ]],
+
+    output point out_center = point("shader", 0, 0, 0)
+    [[
+        string maya_attribute_name = "center",
+        string maya_attribute_type = "vector",
+        string label = "Center"
+    ]],
+    output matrix out_matrix = matrix("object", "camera")
+    [[
+        string maya_attribute_name = "matrix",
+        string maya_attribute_type = "matrix",
+        string label = "Matrix",
+        string widget = "null"
+    ]],
+    output matrix out_inverseMatrix = inverse(matrix("object", "camera"))
+    [[
+        string maya_attribute_name = "inverseMatrix",
+        string maya_attribute_type = "matrix",
+        string label = "Inverse Matrix",
+        string widget = "null"
+    ]],
+    output matrix out_worldMatrix = matrix("object", "world")
+    [[
+        string maya_attribute_name = "worldMatrix",
+        string maya_attribute_type = "matrix",
+        string label = "World Matrix",
+        string widget = "null"
+    ]],
+    output matrix out_worldInverseMatrix = inverse(matrix("object", "world"))
+    [[
+        string maya_attribute_name = "worldInverseMatrix",
+        string maya_attribute_type = "matrix",
+        string label = "World Inverse Matrix",
+        string widget = "null"
+    ]],
+    output normal out_normalCamera = N
+    [[
+        string maya_attribute_name = "normalCamera",
+        string maya_attribute_type = "vector",
+        string label = "Surface Normal",
+        string widget = "null"
+    ]],
+    output float out_uvCoord[2] = {u, v}
+    [[
+        string maya_attribut_name = "uvCoord",
+        string maya_attribute_type = "float2",
+        string label = "UV Coordinates",
+        string widget = "null"
+    ]],
+    // compound object lightData, member lightIntensity
+    output closure color out_lightIntensity = 0
+    [[
+        string maya_attribute_name = "lightData",
+        string maya_attribute_type = "vector",
+        string label = "Light Intensity",
+        string widget = "null"
+    ]],
+)
+{
+    out_lightIntensity = in_intensity * in_color * emission();
+    Ci = out_lightIntensity;
+}
