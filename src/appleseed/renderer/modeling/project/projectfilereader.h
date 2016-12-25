@@ -57,8 +57,8 @@ class APPLESEED_DLLSYMBOL ProjectFileReader
         Defaults                    = 0,        // none of the flags below
         OmitReadingMeshFiles        = 1 << 0,   // do not read mesh files from disk
         OmitProjectFileUpdate       = 1 << 1,   // do not update the project file format to the latest revision
-        OmitSearchPaths             = 1 << 2,   // do not read search paths from the project.
-        OmitProjectSchemaValidation = 1 << 3    // do not validate project against schema.
+        OmitSearchPaths             = 1 << 2,   // do not read search paths from the project
+        OmitProjectSchemaValidation = 1 << 3    // do not validate project against schema
     };
 
     // Read a project from disk (or load a built-in project).

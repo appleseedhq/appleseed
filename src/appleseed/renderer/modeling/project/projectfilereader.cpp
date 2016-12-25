@@ -3063,7 +3063,7 @@ auto_release_ptr<Project> ProjectFileReader::read(
     if ((options & OmitProjectSchemaValidation) == false && schema_filepath == 0)
     {
         RENDERER_LOG_ERROR(
-            "Project schema validation enabled, but no schema filepath provided.");
+            "project schema validation enabled, but no schema filepath provided.");
         return auto_release_ptr<Project>(0);
     }
 
@@ -3107,7 +3107,7 @@ auto_release_ptr<Assembly> ProjectFileReader::read_archive(
     if ((options & OmitProjectSchemaValidation) == false && schema_filepath == 0)
     {
         RENDERER_LOG_ERROR(
-            "Archive schema validation enabled, but no schema filepath provided.");
+            "archive schema validation enabled, but no schema filepath provided.");
         return auto_release_ptr<Assembly>(0);
     }
 
@@ -3222,8 +3222,8 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
     if ((options & OmitProjectSchemaValidation) == false)
     {
         assert(schema_filepath);
-        parser->setFeature(XMLUni::fgSAX2CoreValidation, true);         // report all validation errors
-        parser->setFeature(XMLUni::fgXercesSchema, true);       // enable the parser's schema support
+        parser->setFeature(XMLUni::fgSAX2CoreValidation, true);     // report all validation errors
+        parser->setFeature(XMLUni::fgXercesSchema, true);           // enable the parser's schema support
         parser->setProperty(
             XMLUni::fgXercesSchemaExternalNoNameSpaceSchemaLocation,
             const_cast<void*>(
@@ -3232,7 +3232,7 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
     }
     else
     {
-        parser->setFeature(XMLUni::fgSAX2CoreValidation, false); // report all validation errors
+        parser->setFeature(XMLUni::fgSAX2CoreValidation, false); // ignore all validation errors
         parser->setFeature(XMLUni::fgXercesSchema, false);       // disable the parser's schema support
     }
 

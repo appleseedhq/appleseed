@@ -320,7 +320,7 @@ namespace
             if (strcmp(assembly.get_model(), AssemblyFactory().get_model()) != 0)
                 element.add_attribute("model", assembly.get_model());
 
-            // Don't write the contents of the assembly if they were
+            // Don't write the content of the assembly if it was
             // generated procedurally.
             if (dynamic_cast<const ProceduralAssembly*>(&assembly))
             {

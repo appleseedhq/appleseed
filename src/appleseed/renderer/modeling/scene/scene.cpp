@@ -298,15 +298,13 @@ namespace
 
         if (proc_assembly)
         {
-            const bool ok = proc_assembly->expand_contents(project, parent, abort_switch);
-            if (!ok)
+            if (!proc_assembly->expand_contents(project, parent, abort_switch))
                 return false;
         }
 
         for (each<AssemblyContainer> i = assembly.assemblies(); i; ++i)
         {
-            const bool ok = invoke_procedural_expand(*i, project, &assembly, abort_switch);
-            if (!ok)
+            if (!invoke_procedural_expand(*i, project, &assembly, abort_switch))
                 return false;
         }
 
@@ -320,8 +318,7 @@ bool Scene::expand_procedural_assemblies(
 {
     for (each<AssemblyContainer> i = assemblies(); i; ++i)
     {
-        const bool ok = invoke_procedural_expand(*i, project, 0, abort_switch);
-        if (!ok)
+        if (!invoke_procedural_expand(*i, project, 0, abort_switch))
             return false;
     }
 

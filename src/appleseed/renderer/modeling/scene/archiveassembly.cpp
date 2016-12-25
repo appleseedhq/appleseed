@@ -30,7 +30,7 @@
 #include "archiveassembly.h"
 
 // Standard headers.
-#include<string>
+#include <string>
 
 // appleseed.renderer headers.
 #include "renderer/modeling/project/project.h"
@@ -58,7 +58,7 @@ namespace renderer
 namespace
 {
 
-const char* Model = "archive_assembly";
+    const char* Model = "archive_assembly";
 
 }
 
@@ -100,7 +100,7 @@ bool ArchiveAssembly::expand_contents(
     {
         // Establish and store the qualified path to the archive project.
         const SearchPaths& search_paths = project.search_paths();
-        std::string filepath = search_paths.qualify(m_params.get_required<string>("filename", ""));
+        string filepath = search_paths.qualify(m_params.get_required<string>("filename", ""));
 
         ProjectFileReader reader;
         auto_release_ptr<Assembly> assembly = reader.read_archive(

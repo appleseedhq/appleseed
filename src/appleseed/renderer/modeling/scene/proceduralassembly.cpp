@@ -30,13 +30,10 @@
 #include "proceduralassembly.h"
 
 // Standard headers.
-#include<string>
+#include <string>
 
 // appleseed.renderer headers.
 #include "renderer/utility/paramarray.h"
-
-using namespace foundation;
-using namespace std;
 
 namespace renderer
 {

@@ -26,14 +26,14 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SCENE_ARCHIVE_ASSEMBLY_H
-#define APPLESEED_RENDERER_MODELING_SCENE_ARCHIVE_ASSEMBLY_H
+#ifndef APPLESEED_RENDERER_MODELING_SCENE_ARCHIVEASSEMBLY_H
+#define APPLESEED_RENDERER_MODELING_SCENE_ARCHIVEASSEMBLY_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/scene/proceduralassembly.h"
 #include "renderer/modeling/scene/basegroup.h"
 #include "renderer/modeling/scene/iassemblyfactory.h"
+#include "renderer/modeling/scene/proceduralassembly.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -89,9 +89,8 @@ class APPLESEED_DLLSYMBOL ArchiveAssembly
 
 
 //
-// ArchiveAssemblyFactory factory.
+// ArchiveAssembly factory.
 //
-
 
 class APPLESEED_DLLSYMBOL ArchiveAssemblyFactory
   : public IAssemblyFactory
@@ -113,4 +112,4 @@ class APPLESEED_DLLSYMBOL ArchiveAssemblyFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_SCENE_ASSEMBLY_H
+#endif  // !APPLESEED_RENDERER_MODELING_SCENE_ARCHIVEASSEMBLY_H
