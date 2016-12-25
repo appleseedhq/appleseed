@@ -65,10 +65,8 @@ class Transform
 
     // Constructors.
     Transform();                                // leave the transformation uninitialized
-
-    // Throws a foundation::ExceptionSingularMatrix exception if local_to_parent is singular.
-    explicit Transform(const MatrixType& local_to_parent);
-
+    explicit Transform(                         // throws a foundation::ExceptionSingularMatrix exception if local_to_parent is singular
+        const MatrixType& local_to_parent);
     Transform(
         const MatrixType& local_to_parent,
         const MatrixType& parent_to_local);     // must be equal to inverse(local_to_parent)
@@ -231,7 +229,11 @@ inline Transform<T>::Transform(
   : m_local_to_parent(local_to_parent)
   , m_parent_to_local(parent_to_local)
 {
-    assert(feq(m_local_to_parent * m_parent_to_local, MatrixType::make_identity(), make_eps<T>(1.0e-4f, 1.0e-6)));
+    assert(
+        feq(
+            m_local_to_parent * m_parent_to_local,
+            MatrixType::make_identity(),
+            make_eps<T>(1.0e-4f, 1.0e-6)));
 }
 
 template <typename T>
