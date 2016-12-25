@@ -53,8 +53,8 @@ namespace renderer
 {
 
 //
-// An assembly is either entirely self-contained, or it references colors,
-// textures and texture instances defined in the parent scene or assembly.
+// An archive assembly loads and references geometries, materials and lights
+// from other appleseed projects.
 //
 
 class APPLESEED_DLLSYMBOL ArchiveAssembly

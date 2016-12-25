@@ -47,8 +47,7 @@ namespace renderer
 {
 
 //
-// An assembly is either entirely self-contained, or it references colors,
-// textures and texture instances defined in the parent scene or assembly.
+// An assembly that generates its contents procedurally.
 //
 
 class APPLESEED_DLLSYMBOL ProceduralAssembly
