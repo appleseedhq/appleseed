@@ -48,34 +48,34 @@ surface as_maya_areaLight
         string page = "Area Light Attributes"
     ]],
 
-    output point out_center = point("shader", 0, 0, 0)
+    output point out_center = 0
     [[
         string maya_attribute_name = "center",
         string maya_attribute_type = "vector",
         string label = "Center"
     ]],
-    output matrix out_matrix = matrix("object", "camera")
+    output matrix out_matrix = 0
     [[
         string maya_attribute_name = "matrix",
         string maya_attribute_type = "matrix",
         string label = "Matrix",
         string widget = "null"
     ]],
-    output matrix out_inverseMatrix = inverse(matrix("object", "camera"))
+    output matrix out_inverseMatrix = 0
     [[
         string maya_attribute_name = "inverseMatrix",
         string maya_attribute_type = "matrix",
         string label = "Inverse Matrix",
         string widget = "null"
     ]],
-    output matrix out_worldMatrix = matrix("object", "world")
+    output matrix out_worldMatrix = 0
     [[
         string maya_attribute_name = "worldMatrix",
         string maya_attribute_type = "matrix",
         string label = "World Matrix",
         string widget = "null"
     ]],
-    output matrix out_worldInverseMatrix = inverse(matrix("object", "world"))
+    output matrix out_worldInverseMatrix = 0
     [[
         string maya_attribute_name = "worldInverseMatrix",
         string maya_attribute_type = "matrix",
@@ -89,7 +89,7 @@ surface as_maya_areaLight
         string label = "Surface Normal",
         string widget = "null"
     ]],
-    output float out_uvCoord[2] = {u, v}
+    output float out_uvCoord[2] = {0}
     [[
         string maya_attribut_name = "uvCoord",
         string maya_attribute_type = "float2",
@@ -106,6 +106,23 @@ surface as_maya_areaLight
     ]],
 )
 {
+    out_center = point("center", 0, 0, 0);
+
+    out_matrix = matrix("object", "camera");
+    out_inverseMatrix = inverse(out_matrix);
+
+    out_worldMatrix = matrix("object", "world");
+    out_worldInverseMatrix = inverse(out_worldMatrix);
+
+    out_normalCamera = N;
+
+    out_uvCoord[0] = u;
+    out_uvCoord[1] = v;
+
+    warning("mats = %e,\n = %e,\n = %e,\n = %e\n",
+        out_matrix, out_inverseMatrix, out_worldMatrix,
+        out_worldInverseMatrix);
+
     out_lightIntensity = in_intensity * in_color * emission();
     Ci = out_lightIntensity;
 }
