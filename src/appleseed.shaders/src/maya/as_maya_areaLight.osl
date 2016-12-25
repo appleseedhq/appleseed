@@ -119,10 +119,6 @@ surface as_maya_areaLight
     out_uvCoord[0] = u;
     out_uvCoord[1] = v;
 
-    warning("mats = %e,\n = %e,\n = %e,\n = %e\n",
-        out_matrix, out_inverseMatrix, out_worldMatrix,
-        out_worldInverseMatrix);
-
     out_lightIntensity = in_intensity * in_color * emission();
     Ci = out_lightIntensity;
 }
