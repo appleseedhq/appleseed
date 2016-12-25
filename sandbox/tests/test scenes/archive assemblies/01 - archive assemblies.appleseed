@@ -53,7 +53,11 @@
             <parameter name="environment_edf" value="environment_edf" />
         </environment>
         <assembly name="assembly" model="archive_assembly">
+<<<<<<< HEAD
             <parameter name="filename" value="skip - archive.appleseed" />
+=======
+            <parameter name="filename" value="archive.appleseed" />
+>>>>>>> 49b42c3f8f66e0c72dbf5f667a306fd52efc20a2
         </assembly>
         <assembly_instance name="assembly_inst" assembly="assembly">
         </assembly_instance>
@@ -66,6 +70,7 @@
         </frame>
     </output>
     <configurations>
+<<<<<<< HEAD
         <configuration name="final" base="base_final">
             <parameter name="lighting_engine" value="pt" />
             <parameter name="pixel_renderer" value="uniform" />
@@ -117,6 +122,9 @@
                 <parameter name="samples" value="4" />
             </parameters>
         </configuration>
+=======
+        <configuration name="final" base="base_final" />
+>>>>>>> 49b42c3f8f66e0c72dbf5f667a306fd52efc20a2
         <configuration name="interactive" base="base_interactive" />
     </configurations>
 </project>
