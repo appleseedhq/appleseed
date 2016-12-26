@@ -126,11 +126,12 @@ TEST_SUITE(Foundation_Utility_Poison)
         EXPECT_FALSE(b == true);
     }
 
+    // gcc < 6.1 fails when Enum is local to the Poison_Enum test case.
+    enum Enum { A, B, C };
+
     TEST_CASE(Poison_Enum)
     {
-        enum E { A, B, C };
-
-        E actual = A;
+        Enum actual = A;
         poison(actual);
 
         int expected = 0;
