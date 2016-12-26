@@ -122,11 +122,10 @@ TEST_SUITE(Foundation_Utility_Poison)
 
         poison(b);
 
-        EXPECT_FALSE(b == false);
-        EXPECT_FALSE(b == true);
+        // We can't expect much here.
     }
 
-    // gcc < 6.1 fails when Enum is local to the Poison_Enum test case.
+    // Templates cannot take local types in C++03.
     enum Enum { A, B, C };
 
     TEST_CASE(Poison_Enum)
