@@ -122,8 +122,8 @@ template <typename T, size_t M, size_t N> bool feq(const Matrix<T, M, N>& lhs, c
 template <typename T, size_t M, size_t N> bool feq(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs, const T eps);
 
 // Approximate zero tests.
-template <typename T, size_t M, size_t N> bool fz(const Matrix<T, M, N>& v);
-template <typename T, size_t M, size_t N> bool fz(const Matrix<T, M, N>& v, const T eps);
+template <typename T, size_t M, size_t N> bool fz(const Matrix<T, M, N>& m);
+template <typename T, size_t M, size_t N> bool fz(const Matrix<T, M, N>& m, const T eps);
 
 // Matrix arithmetic.
 template <typename T, size_t M, size_t N> Matrix<T, M, N>  operator+ (const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs);
@@ -591,11 +591,11 @@ inline bool feq(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs, const T 
 }
 
 template <typename T, size_t M, size_t N>
-inline bool fz(const Matrix<T, M, N>& v)
+inline bool fz(const Matrix<T, M, N>& m)
 {
-    for (size_t i = 0; i < v.Components; ++i)
+    for (size_t i = 0; i < m.Components; ++i)
     {
-        if (!fz(v[i]))
+        if (!fz(m[i]))
             return false;
     }
 
@@ -603,11 +603,11 @@ inline bool fz(const Matrix<T, M, N>& v)
 }
 
 template <typename T, size_t M, size_t N>
-inline bool fz(const Matrix<T, M, N>& v, const T eps)
+inline bool fz(const Matrix<T, M, N>& m, const T eps)
 {
-    for (size_t i = 0; i < v.Components; ++i)
+    for (size_t i = 0; i < m.Components; ++i)
     {
-        if (!fz(v[i], eps))
+        if (!fz(m[i], eps))
             return false;
     }
 
@@ -830,6 +830,9 @@ inline Matrix<T, N, M> transpose(const Matrix<T, M, N>& mat)
 //
 
 template <typename T, size_t N>
+const Matrix<T, N, N> Matrix<T, N, N>::m_identity(Matrix<T, N, N>::make_identity());
+
+template <typename T, size_t N>
 inline Matrix<T, N, N>::Matrix()
 {
 }
@@ -857,9 +860,6 @@ inline Matrix<T, N, N>::Matrix(const Matrix<U, N, N>& rhs)
     for (size_t i = 0; i < Components; ++i)
         m_comp[i] = static_cast<ValueType>(rhs[i]);
 }
-
-template <typename T, size_t N>
-const Matrix<T, N, N> Matrix<T, N, N>::m_identity(Matrix<T, N, N>::make_identity());
 
 template <typename T, size_t N>
 Matrix<T, N, N> Matrix<T, N, N>::make_identity()
@@ -1026,6 +1026,9 @@ Matrix<T, N, N> inverse(
 //
 
 template <typename T>
+const Matrix<T, 3, 3> Matrix<T, 3, 3>::m_identity(Matrix<T, 3, 3>::make_identity());
+
+template <typename T>
 inline Matrix<T, 3, 3>::Matrix()
 {
 }
@@ -1084,9 +1087,6 @@ inline Matrix<T, 3, 3>::operator Imath::Matrix33<T>() const
 }
 
 #endif
-
-template <typename T>
-const Matrix<T, 3, 3> Matrix<T, 3, 3>::m_identity(Matrix<T, 3, 3>::make_identity());
 
 template <typename T>
 Matrix<T, 3, 3> Matrix<T, 3, 3>::make_identity()
@@ -1557,6 +1557,9 @@ inline Vector<T, 3> operator*(
 //
 
 template <typename T>
+const Matrix<T, 4, 4> Matrix<T, 4, 4>::m_identity(Matrix<T, 4, 4>::make_identity());
+
+template <typename T>
 inline Matrix<T, 4, 4>::Matrix()
 {
 }
@@ -1614,9 +1617,6 @@ inline Matrix<T, 4, 4>::operator Imath::Matrix44<T>() const
 }
 
 #endif
-
-template <typename T>
-const Matrix<T, 4, 4> Matrix<T, 4, 4>::m_identity(Matrix<T, 4, 4>::make_identity());
 
 template <typename T>
 Matrix<T, 4, 4> Matrix<T, 4, 4>::make_identity()

@@ -220,6 +220,9 @@ typedef TransformInterpolator<double> TransformInterpolatord;
 //
 
 template <typename T>
+const Transform<T> Transform<T>::m_identity(Transform<T>::make_identity());
+
+template <typename T>
 inline Transform<T>::Transform()
 {
 }
@@ -251,9 +254,6 @@ void PoisonImpl<Transform<T> >::do_poison(Transform<T>& transform)
     poison(transform.m_local_to_parent);
     poison(transform.m_parent_to_local);
 }
-
-template <typename T>
-const Transform<T> Transform<T>::m_identity(Transform<T>::make_identity());
 
 template <typename T>
 Transform<T> Transform<T>::make_identity()
