@@ -192,9 +192,12 @@ namespace
                 sample_position,
                 shading_result);
 
-            // Ignore invalid samples.
+            // Report then ignore invalid samples.
             if (!shading_result.is_valid_linear_rgb())
+            {
+                signal_invalid_sample();
                 return 0;
+            }
 
             // Create a single sample.
             Sample sample;

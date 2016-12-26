@@ -32,6 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
+#include "foundation/utility/poison.h"
 
 // Imath headers.
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
@@ -81,6 +82,14 @@ class Vector
   private:
     // Vector components.
     ValueType m_comp[N];
+};
+
+// Poisoning.
+template <typename T, size_t N>
+class PoisonImpl<Vector<T, N> >
+{
+  public:
+    static void do_poison(Vector<T, N>& v);
 };
 
 // Exact inequality and equality tests.
@@ -463,6 +472,13 @@ inline const T& Vector<T, N>::operator[](const size_t i) const
 {
     assert(i < Dimension);
     return m_comp[i];
+}
+
+template <typename T, size_t N>
+void PoisonImpl<Vector<T, N> >::do_poison(Vector<T, N>& v)
+{
+    for (size_t i = 0; i < N; ++i)
+        poison(v[i]);
 }
 
 template <typename T, size_t N>

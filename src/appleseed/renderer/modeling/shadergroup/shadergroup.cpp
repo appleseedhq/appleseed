@@ -342,14 +342,14 @@ void ShaderGroup::report_has_closure(const char* closure_name, const Flags flag)
 {
     if (m_flags & flag)
     {
-        RENDERER_LOG_INFO(
+        RENDERER_LOG_DEBUG(
             "shader group \"%s\" has %s closures.",
             get_path().c_str(),
             closure_name);
     }
     else
     {
-        RENDERER_LOG_INFO(
+        RENDERER_LOG_DEBUG(
             "shader group \"%s\" does not have %s closures.",
             get_path().c_str(),
             closure_name);
@@ -411,14 +411,14 @@ void ShaderGroup::report_uses_global(const char* global_name, const Flags flag) 
 {
     if (m_flags & flag)
     {
-        RENDERER_LOG_INFO(
+        RENDERER_LOG_DEBUG(
             "shader group \"%s\" uses the %s global.",
             get_path().c_str(),
             global_name);
     }
     else
     {
-        RENDERER_LOG_INFO(
+        RENDERER_LOG_DEBUG(
             "shader group \"%s\" does not use the %s global.",
             get_path().c_str(),
             global_name);

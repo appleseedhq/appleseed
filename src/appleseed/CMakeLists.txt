@@ -432,6 +432,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_path.cpp
     foundation/meta/tests/test_permutation.cpp
     foundation/meta/tests/test_pixel.cpp
+    foundation/meta/tests/test_poison.cpp
     foundation/meta/tests/test_poolallocator.cpp
     foundation/meta/tests/test_population.cpp
     foundation/meta/tests/test_preprocessor.cpp
@@ -741,6 +742,7 @@ set (foundation_utility_sources
     foundation/utility/numerictype.h
     foundation/utility/otherwise.h
     foundation/utility/path.h
+    foundation/utility/poison.h
     foundation/utility/poolallocator.h
     foundation/utility/preprocessor.cpp
     foundation/utility/preprocessor.h

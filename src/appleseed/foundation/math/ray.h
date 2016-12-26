@@ -34,6 +34,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/poison.h"
 
 // Standard headers.
 #include <cassert>
@@ -84,6 +85,14 @@ class Ray
 
     // Return the point of the ray at abscissa t, t >= 0.
     VectorType point_at(const ValueType t) const;
+};
+
+// Poisoning.
+template <typename T, size_t N>
+class PoisonImpl<Ray<T, N> >
+{
+  public:
+    static void do_poison(Ray<T, N>& ray);
 };
 
 // Exact inequality and equality tests.
@@ -224,6 +233,15 @@ template <typename T, size_t N>
 inline typename Ray<T, N>::VectorType Ray<T, N>::point_at(const ValueType t) const
 {
     return m_org + t * m_dir;
+}
+
+template <typename T, size_t N>
+void PoisonImpl<Ray<T, N> >::do_poison(Ray<T, N>& ray)
+{
+    poison(ray.m_org);
+    poison(ray.m_dir);
+    poison(ray.m_tmin);
+    poison(ray.m_tmax);
 }
 
 template <typename T, size_t N>

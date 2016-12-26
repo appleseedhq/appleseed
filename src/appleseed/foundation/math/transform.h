@@ -37,6 +37,7 @@
 #include "foundation/math/ray.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/poison.h"
 
 // Standard headers.
 #include <cassert>
@@ -65,10 +66,8 @@ class Transform
 
     // Constructors.
     Transform();                                // leave the transformation uninitialized
-
-    // Throws a foundation::ExceptionSingularMatrix exception if local_to_parent is singular.
-    explicit Transform(const MatrixType& local_to_parent);
-
+    explicit Transform(                         // throws a foundation::ExceptionSingularMatrix exception if local_to_parent is singular
+        const MatrixType& local_to_parent);
     Transform(
         const MatrixType& local_to_parent,
         const MatrixType& parent_to_local);     // must be equal to inverse(local_to_parent)
@@ -127,14 +126,22 @@ class Transform
     bool swaps_handedness() const;
 
   private:
-    template <typename>
-    friend class TransformInterpolator;
+    template <typename> friend class TransformInterpolator;
+    template <typename> friend class PoisonImpl;
 
     MatrixType  m_local_to_parent;
     MatrixType  m_parent_to_local;
 
     // The identity transform returned by identity().
     static const TransformType m_identity;
+};
+
+// Poisoning.
+template <typename T>
+class PoisonImpl<Transform<T> >
+{
+  public:
+    static void do_poison(Transform<T>& transform);
 };
 
 // Exact inequality and equality tests.
@@ -213,6 +220,9 @@ typedef TransformInterpolator<double> TransformInterpolatord;
 //
 
 template <typename T>
+const Transform<T> Transform<T>::m_identity(Transform<T>::make_identity());
+
+template <typename T>
 inline Transform<T>::Transform()
 {
 }
@@ -231,11 +241,19 @@ inline Transform<T>::Transform(
   : m_local_to_parent(local_to_parent)
   , m_parent_to_local(parent_to_local)
 {
-    assert(feq(m_local_to_parent * m_parent_to_local, MatrixType::make_identity(), make_eps<T>(1.0e-4f, 1.0e-6)));
+    assert(
+        feq(
+            m_local_to_parent * m_parent_to_local,
+            MatrixType::make_identity(),
+            make_eps<T>(1.0e-4f, 1.0e-6)));
 }
 
 template <typename T>
-const Transform<T> Transform<T>::m_identity(Transform<T>::make_identity());
+void PoisonImpl<Transform<T> >::do_poison(Transform<T>& transform)
+{
+    poison(transform.m_local_to_parent);
+    poison(transform.m_parent_to_local);
+}
 
 template <typename T>
 Transform<T> Transform<T>::make_identity()

@@ -31,6 +31,7 @@
 #include "samplegeneratorbase.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/kernel/rendering/sampleaccumulationbuffer.h"
 
 // appleseed.foundation headers.
@@ -66,6 +67,7 @@ void SampleGeneratorBase::reset()
 {
     m_sequence_index = m_generator_index * SampleBatchSize;
     m_current_batch_size = 0;
+    m_invalid_sample_count = 0;
 }
 
 void SampleGeneratorBase::generate_samples(
@@ -97,6 +99,20 @@ void SampleGeneratorBase::generate_samples(
 
     if (stored > 0)
         buffer.store_samples(stored, &m_samples[0], abort_switch);
+}
+
+void SampleGeneratorBase::signal_invalid_sample()
+{
+    // todo: mark pixel as faulty in the diagnostic map.
+
+    ++m_invalid_sample_count;
+
+    const size_t MaxWarningsPerThread = 5;
+
+    if (m_invalid_sample_count <= MaxWarningsPerThread)
+        RENDERER_LOG_WARNING("a sample had NaN, negative or infinite components and was ignored.");
+    else if (m_invalid_sample_count == MaxWarningsPerThread + 1)
+        RENDERER_LOG_WARNING("more invalid samples found, omitting warning messages for brevity.");
 }
 
 }   // namespace renderer

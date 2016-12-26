@@ -31,7 +31,6 @@
 #include "shadingresult.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/fp.h"
 #include "foundation/utility/otherwise.h"
 
 // Standard headers.
@@ -224,36 +223,6 @@ void ShadingResult::apply_alpha_premult_linear_rgb()
         aov.m_color[0] *= aov.m_alpha[0];
         aov.m_color[1] *= aov.m_alpha[0];
         aov.m_color[2] *= aov.m_alpha[0];
-    }
-}
-
-namespace
-{
-    void poison_spectrum(Spectrum& s)
-    {
-        s.resize(Spectrum::Samples);
-
-        for (size_t i = 0; i < Spectrum::Samples; ++i)
-            s[i] = FP<float>::snan();
-    }
-
-    void poison_alpha(Alpha& a)
-    {
-        a.set(FP<float>::snan());
-    }
-}
-
-void ShadingResult::poison()
-{
-    m_color_space = static_cast<ColorSpace>(~0);
-
-    poison_spectrum(m_main.m_color);
-    poison_alpha(m_main.m_alpha);
-
-    for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
-    {
-        poison_spectrum(m_aovs[i].m_color);
-        poison_alpha(m_aovs[i].m_alpha);
     }
 }
 

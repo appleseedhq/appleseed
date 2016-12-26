@@ -33,6 +33,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/poison.h"
 
 // Standard headers.
 #include <cassert>
@@ -102,8 +103,8 @@ class Basis3
     const VectorType& get_tangent_v() const;
 
   private:
-    template <typename U>
-    friend class Basis3;
+    template <typename> friend class Basis3;
+    template <typename> friend class PoisonImpl;
 
     VectorType m_n, m_u, m_v;
 
@@ -111,6 +112,14 @@ class Basis3
     // Run a bunch of assertions on the basis vectors.
     void checks();
 #endif
+};
+
+// Poisoning.
+template <typename T>
+class PoisonImpl<Basis3<T> >
+{
+  public:
+    static void do_poison(Basis3<T>& basis);
 };
 
 
@@ -317,6 +326,14 @@ template <typename T>
 inline const Vector<T, 3>& Basis3<T>::get_tangent_v() const
 {
     return m_v;
+}
+
+template <typename T>
+void PoisonImpl<Basis3<T> >::do_poison(Basis3<T>& basis)
+{
+    poison(basis.m_n);
+    poison(basis.m_u);
+    poison(basis.m_v);
 }
 
 #ifndef NDEBUG
