@@ -74,12 +74,6 @@ void poison(T& x);
 //
 
 template <typename T>
-inline void poison(T& x)
-{
-    PoisonImpl<T>::do_poison(x);
-}
-
-template <typename T>
 class PoisonImpl
 {
   public:
@@ -88,6 +82,12 @@ class PoisonImpl
         std::memset(&x, 0xADU, sizeof(x));
     }
 };
+
+template <typename T>
+inline void poison(T& x)
+{
+    PoisonImpl<T>::do_poison(x);
+}
 
 template <typename T>
 class PoisonImpl<T*>
