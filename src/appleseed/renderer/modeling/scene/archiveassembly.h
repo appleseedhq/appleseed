@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,20 +26,18 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SCENE_ASSEMBLY_H
-#define APPLESEED_RENDERER_MODELING_SCENE_ASSEMBLY_H
+#ifndef APPLESEED_RENDERER_MODELING_SCENE_ARCHIVEASSEMBLY_H
+#define APPLESEED_RENDERER_MODELING_SCENE_ARCHIVEASSEMBLY_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/scene/basegroup.h"
-#include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/iassemblyfactory.h"
+#include "renderer/modeling/scene/proceduralassembly.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/uid.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -49,7 +46,6 @@
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
-namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 
@@ -57,97 +53,46 @@ namespace renderer
 {
 
 //
-// An assembly is either entirely self-contained, or it references colors,
-// textures and texture instances defined in the parent scene or assembly.
+// An archive assembly loads and references geometries, materials and lights
+// from other appleseed projects.
 //
 
-class APPLESEED_DLLSYMBOL Assembly
-  : public Entity
-  , public BaseGroup
+class APPLESEED_DLLSYMBOL ArchiveAssembly
+  : public ProceduralAssembly
 {
   public:
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const;
 
-    // Return the unique ID of this class of entities.
-    static foundation::UniqueID get_class_uid();
-
     // Delete this instance.
     virtual void release() APPLESEED_OVERRIDE;
-
-    // Access the BSDFs.
-    BSDFContainer& bsdfs() const;
-
-    // Access the BSSRDFs.
-    BSSRDFContainer& bssrdfs() const;
-
-    // Access the EDFs.
-    EDFContainer& edfs() const;
-
-    // Access the surface shaders.
-    SurfaceShaderContainer& surface_shaders() const;
-
-    // Access the materials.
-    MaterialContainer& materials() const;
-
-    // Access the lights.
-    LightContainer& lights() const;
-
-    // Access the objects.
-    ObjectContainer& objects() const;
-
-    // Access the object instances.
-    ObjectInstanceContainer& object_instances() const;
-
-    // Return true if this assembly is tagged as flushable.
-    bool is_flushable() const;
-
-    // Compute the local space bounding box of the assembly, including all child assemblies,
-    // over the shutter interval.
-    GAABB3 compute_local_bbox() const;
-
-    // Compute the local space bounding box of this assembly, excluding all child assemblies,
-    // over the shutter interval.
-    GAABB3 compute_non_hierarchical_local_bbox() const;
 
     // Expose asset file paths referenced by this entity to the outside.
     virtual void collect_asset_paths(foundation::StringArray& paths) const APPLESEED_OVERRIDE;
     virtual void update_asset_paths(const foundation::StringDictionary& mappings) APPLESEED_OVERRIDE;
 
-    // This method is called once before rendering each frame.
-    // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
+    virtual bool expand_contents(
         const Project&              project,
-        const BaseGroup*            parent,
-        OnFrameBeginRecorder&       recorder,
+        const Assembly*             parent,
         foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
 
-  protected:
+  private:
+    friend class ArchiveAssemblyFactory;
+
     // Constructor.
-    Assembly(
+    ArchiveAssembly(
         const char*                 name,
         const ParamArray&           params);
 
-    // Destructor.
-    ~Assembly();
-
-  private:
-    friend class AssemblyFactory;
-
-    struct Impl;
-    Impl* impl;
-
-    // Derogate to the private implementation rule, for performance reasons.
-    bool m_flushable;
+    bool m_archive_opened;
 };
 
 
 //
-// Assembly factory.
+// ArchiveAssembly factory.
 //
 
-
-class APPLESEED_DLLSYMBOL AssemblyFactory
+class APPLESEED_DLLSYMBOL ArchiveAssemblyFactory
   : public IAssemblyFactory
 {
   public:
@@ -165,16 +110,6 @@ class APPLESEED_DLLSYMBOL AssemblyFactory
         const ParamArray&   params = ParamArray());
 };
 
-
-//
-// Assembly class implementation.
-//
-
-inline bool Assembly::is_flushable() const
-{
-    return m_flushable;
-}
-
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_SCENE_ASSEMBLY_H
+#endif  // !APPLESEED_RENDERER_MODELING_SCENE_ARCHIVEASSEMBLY_H

@@ -58,6 +58,7 @@
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
+#include "renderer/modeling/scene/proceduralassembly.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/shadergroup/shader.h"
@@ -318,6 +319,19 @@ namespace
             // to preserve compatibility with older appleseed versions.
             if (strcmp(assembly.get_model(), AssemblyFactory().get_model()) != 0)
                 element.add_attribute("model", assembly.get_model());
+
+            // Don't write the content of the assembly if it was
+            // generated procedurally.
+            if (dynamic_cast<const ProceduralAssembly*>(&assembly))
+            {
+                element.write(
+                    !assembly.get_parameters().empty()
+                        ? XMLElement::HasChildElements
+                        : XMLElement::HasNoContent);
+
+                write_params(assembly.get_parameters());
+                return;
+            }
 
             element.write(
                 !assembly.get_parameters().empty() ||

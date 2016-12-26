@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,22 +26,47 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_SCENE_H
-#define APPLESEED_RENDERER_API_SCENE_H
+#ifndef APPLESEED_RENDERER_MODELING_SCENE_PROCEDURALASSEMBLY_H
+#define APPLESEED_RENDERER_MODELING_SCENE_PROCEDURALASSEMBLY_H
 
-// API headers.
-#include "renderer/modeling/scene/archiveassembly.h"
+// appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/scene/assembly.h"
-#include "renderer/modeling/scene/assemblyinstance.h"
-#include "renderer/modeling/scene/assemblyinstancetraits.h"
-#include "renderer/modeling/scene/basegroup.h"
-#include "renderer/modeling/scene/containers.h"
-#include "renderer/modeling/scene/objectinstance.h"
-#include "renderer/modeling/scene/objectinstancetraits.h"
-#include "renderer/modeling/scene/proceduralassembly.h"
-#include "renderer/modeling/scene/scene.h"
-#include "renderer/modeling/scene/textureinstance.h"
-#include "renderer/modeling/scene/textureinstancetraits.h"
-#include "renderer/modeling/scene/visibilityflags.h"
 
-#endif  // !APPLESEED_RENDERER_API_SCENE_H
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Forward declarations.
+namespace foundation    { class IAbortSwitch; }
+namespace renderer      { class ParamArray; }
+
+namespace renderer
+{
+
+//
+// An assembly that generates its contents procedurally.
+//
+
+class APPLESEED_DLLSYMBOL ProceduralAssembly
+  : public Assembly
+{
+  public:
+    // Expand the contents of the assembly.
+    virtual bool expand_contents(
+        const Project&              project,
+        const Assembly*             parent,
+        foundation::IAbortSwitch*   abort_switch = 0) = 0;
+
+  protected:
+    // Constructor.
+    ProceduralAssembly(
+        const char*                 name,
+        const ParamArray&           params);
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_SCENE_PROCEDURALASSEMBLY_H

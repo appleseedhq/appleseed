@@ -1670,6 +1670,8 @@ source_group ("renderer\\modeling\\project-builtin" FILES
 )
 
 set (renderer_modeling_scene_sources
+    renderer/modeling/scene/archiveassembly.cpp
+    renderer/modeling/scene/archiveassembly.h
     renderer/modeling/scene/assembly.cpp
     renderer/modeling/scene/assembly.h
     renderer/modeling/scene/assemblyfactoryregistrar.cpp
@@ -1685,6 +1687,8 @@ set (renderer_modeling_scene_sources
     renderer/modeling/scene/objectinstance.cpp
     renderer/modeling/scene/objectinstance.h
     renderer/modeling/scene/objectinstancetraits.h
+    renderer/modeling/scene/proceduralassembly.cpp
+    renderer/modeling/scene/proceduralassembly.h
     renderer/modeling/scene/scene.cpp
     renderer/modeling/scene/scene.h
     renderer/modeling/scene/textureinstance.cpp
