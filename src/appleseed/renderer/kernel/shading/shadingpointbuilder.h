@@ -46,8 +46,8 @@ namespace renderer
 {
 
 //
-// Utility class to initialize a renderer::ShadingPoint "by hand".
-// This is typically used to handcraft shading points in unit tests.
+// Utility class to initialize a renderer::ShadingPoint by hand.
+// This is used to handcraft shading points in unit tests.
 //
 
 class ShadingPointBuilder
