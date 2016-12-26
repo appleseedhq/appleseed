@@ -34,6 +34,9 @@
 #include "renderer/kernel/rendering/isamplegenerator.h"
 #include "renderer/kernel/rendering/sample.h"
 
+// appleseed.foundation headers.
+#include "foundation/platform/types.h"
+
 // Standard headers.
 #include <cstddef>
 #include <vector>
@@ -75,12 +78,15 @@ class SampleGeneratorBase
         const size_t                sequence_index,
         SampleVector&               samples) = 0;
 
+    void signal_invalid_sample();
+
   private:
     const size_t                    m_generator_index;
     const size_t                    m_stride;
     size_t                          m_sequence_index;
     size_t                          m_current_batch_size;
     SampleVector                    m_samples;
+    foundation::uint64              m_invalid_sample_count;
 };
 
 }       // namespace renderer
