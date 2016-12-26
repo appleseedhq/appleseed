@@ -105,6 +105,36 @@
         string page = "Effects"                             \
     ]]
 
+#define MAYA_EFFECTS_3DTEX_PARAMETERS                       \
+    int in_wrap = 1                                         \
+    [[                                                      \
+        string maya_attribute_name = "wrap",                \
+        string maya_attribute_type = "bool",                \
+        string label = "Wrap",                              \
+        string widget = "checkBox",                         \
+        string page = "Effects"                             \
+    ]],                                                     \
+    int in_local = 0                                        \
+    [[                                                      \
+        string maya_attribute_name = "local",               \
+        string maya_attribute_type = "bool",                \
+        string label = "Local",                             \
+        string widget = "checkBox",                         \
+        string page = "Effects"                             \
+    ]],                                                     \
+    float in_blend = 0.0                                    \
+    [[                                                      \
+        string maya_attribute_name = "blend",               \
+        string maya_attribute_type = "float",               \
+        string label = "Blend",                             \
+        string widget = "slider",                           \
+        float min = 0.0,                                    \
+        float max = 1.0,                                    \
+        float slidermin = 0.0,                              \
+        float slidermax = 1.0,                              \
+        string page = "Effects"                             \
+    ]]
+
 #define MAYA_UV_PARAMETERS                                  \
     float in_uvCoord[2] = {u, v}                            \
     [[                                                      \
