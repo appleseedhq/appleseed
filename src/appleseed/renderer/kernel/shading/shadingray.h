@@ -40,6 +40,7 @@
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/poison.h"
 
 // Standard headers.
 #include <cassert>
@@ -243,5 +244,34 @@ inline ShadingRay::Time::Time(
 }
 
 }       // namespace renderer
+
+namespace foundation
+{
+    template <>
+    class PoisonImpl<renderer::ShadingRay>
+    {
+      public:
+        static void do_poison(renderer::ShadingRay& ray)
+        {
+            poison(ray.m_rx);
+            poison(ray.m_ry);
+            poison(ray.m_time.m_absolute);
+            poison(ray.m_time.m_normalized);
+
+            for (size_t i = 0; i < renderer::ShadingRay::MaxMediumCount; ++i)
+            {
+                poison(ray.m_media[i].m_object_instance);
+                poison(ray.m_media[i].m_bsdf);
+                poison(ray.m_media[i].m_ior);
+            }
+
+            poison(ray.m_flags);
+            poison(ray.m_depth);
+
+            // Don't poison m_medium_count or m_has_differentials since
+            // they are properly initialized by the default constructor.
+        }
+    };
+}       // namespace foundation
 
 #endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRAY_H

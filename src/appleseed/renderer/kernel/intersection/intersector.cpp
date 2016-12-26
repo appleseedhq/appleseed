@@ -42,6 +42,7 @@
 #include "foundation/utility/cache.h"
 #include "foundation/utility/casts.h"
 #include "foundation/utility/lazy.h"
+#include "foundation/utility/poison.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
@@ -356,6 +357,11 @@ void Intersector::manufacture_hit(
     const size_t                        primitive_index,
     const TriangleSupportPlaneType&     triangle_support_plane) const
 {
+#ifdef DEBUG
+    // This helps finding bugs if manufacture_hit() is called on a previously used shading point.
+    poison(shading_point);
+#endif
+
     shading_point.m_region_kit_cache = &m_region_kit_cache;
     shading_point.m_tess_cache = &m_tess_cache;
     shading_point.m_texture_cache = &m_texture_cache;
@@ -369,6 +375,7 @@ void Intersector::manufacture_hit(
     shading_point.m_region_index = region_index;
     shading_point.m_primitive_index = primitive_index;
     shading_point.m_triangle_support_plane = triangle_support_plane;
+    shading_point.m_members = 0;
 }
 
 namespace

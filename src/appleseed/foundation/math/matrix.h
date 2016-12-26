@@ -40,6 +40,7 @@
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
+#include "foundation/utility/poison.h"
 
 // Imath headers.
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
@@ -102,6 +103,14 @@ class Matrix
 
   private:
     ValueType m_comp[Components];
+};
+
+// Poisoning.
+template <typename T, size_t M, size_t N>
+class PoisonImpl<Matrix<T, M, N> >
+{
+  public:
+    static void do_poison(Matrix<T, M, N>& m);
 };
 
 // Exact inequality and equality tests.
@@ -530,6 +539,13 @@ inline const T& Matrix<T, M, N>::operator()(const size_t row, const size_t col) 
     assert(row < Rows);
     assert(col < Columns);
     return m_comp[row * Columns + col];
+}
+
+template <typename T, size_t M, size_t N>
+void PoisonImpl<Matrix<T, M, N> >::do_poison(Matrix<T, M, N>& m)
+{
+    for (size_t i = 0; i < m.Components; ++i)
+        poison(m[i]);
 }
 
 template <typename T, size_t M, size_t N>

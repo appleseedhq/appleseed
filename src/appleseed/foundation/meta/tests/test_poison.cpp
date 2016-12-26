@@ -42,7 +42,7 @@ TEST_SUITE(Foundation_Utility_Poison)
 
         poison(x);
 
-        ASSERT_EQ(int8(0xADU), x);
+        EXPECT_EQ(int8(0xADU), x);
     }
 
     TEST_CASE(Poison_UInt8)
@@ -51,7 +51,7 @@ TEST_SUITE(Foundation_Utility_Poison)
 
         poison(x);
 
-        ASSERT_EQ(0xADU, x);
+        EXPECT_EQ(0xADU, x);
     }
 
     TEST_CASE(Poison_Int32)
@@ -60,7 +60,7 @@ TEST_SUITE(Foundation_Utility_Poison)
 
         poison(x);
 
-        ASSERT_EQ(int32(0xADADADADU), x);
+        EXPECT_EQ(int32(0xADADADADU), x);
     }
 
     TEST_CASE(Poison_UInt32)
@@ -69,19 +69,32 @@ TEST_SUITE(Foundation_Utility_Poison)
 
         poison(x);
 
-        ASSERT_EQ(0xADADADADU, x);
+        EXPECT_EQ(0xADADADADU, x);
     }
 
-    TEST_CASE(Poison_Pointer)
+    TEST_CASE(Poison_VoidPointer)
     {
         void* p = 0;
 
         poison(p);
 
 #ifdef APPLESEED_ARCH32
-        ASSERT_EQ(reinterpret_cast<void*>(0xDEADBEEFUL), p);
+        EXPECT_EQ(reinterpret_cast<void*>(0xDEADBEEFUL), p);
 #else
-        ASSERT_EQ(reinterpret_cast<void*>(0xDEADBEEFDEADBEEFULL), p);
+        EXPECT_EQ(reinterpret_cast<void*>(0xDEADBEEFDEADBEEFULL), p);
+#endif
+    }
+
+    TEST_CASE(Poison_IntPointer)
+    {
+        int* p = 0;
+
+        poison(p);
+
+#ifdef APPLESEED_ARCH32
+        EXPECT_EQ(reinterpret_cast<void*>(0xDEADBEEFUL), p);
+#else
+        EXPECT_EQ(reinterpret_cast<void*>(0xDEADBEEFDEADBEEFULL), p);
 #endif
     }
 
@@ -91,7 +104,7 @@ TEST_SUITE(Foundation_Utility_Poison)
 
         poison(x);
 
-        ASSERT_FALSE(x == x);
+        EXPECT_FALSE(x == x);
     }
 
     TEST_CASE(Poison_Double)
@@ -100,6 +113,29 @@ TEST_SUITE(Foundation_Utility_Poison)
 
         poison(x);
 
-        ASSERT_FALSE(x == x);
+        EXPECT_FALSE(x == x);
+    }
+
+    TEST_CASE(Poison_Bool)
+    {
+        bool b = false;
+
+        poison(b);
+
+        EXPECT_FALSE(b == false);
+        EXPECT_FALSE(b == true);
+    }
+
+    TEST_CASE(Poison_Enum)
+    {
+        enum E { A, B, C };
+
+        E actual = A;
+        poison(actual);
+
+        int expected = 0;
+        poison(expected);
+
+        EXPECT_EQ(expected, actual);
     }
 }

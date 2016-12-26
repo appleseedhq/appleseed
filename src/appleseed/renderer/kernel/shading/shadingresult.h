@@ -40,6 +40,7 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
+#include "foundation/utility/poison.h"
 
 namespace renderer
 {
@@ -98,10 +99,6 @@ class ShadingResult
 
     // Multiply main and AOV colors by their respective alpha channels.
     void apply_alpha_premult_linear_rgb();
-
-  private:
-    // Set all values to NaN.
-    void poison();
 };
 
 
@@ -113,7 +110,7 @@ inline ShadingResult::ShadingResult(const size_t aov_count)
   : m_aovs(aov_count)
 {
 #ifdef DEBUG
-    poison();
+    poison(*this);
 #endif
 
     set_aovs_to_transparent_black_linear_rgba();
@@ -156,5 +153,27 @@ inline void ShadingResult::set_entity_aov(
 }
 
 }       // namespace renderer
+
+namespace foundation
+{
+    template <>
+    class PoisonImpl<renderer::ShadingResult>
+    {
+      public:
+        static void do_poison(renderer::ShadingResult& result)
+        {
+            poison(result.m_color_space);
+
+            poison(result.m_main.m_color);
+            poison(result.m_main.m_alpha);
+
+            for (size_t i = 0, e = result.m_aovs.size(); i < e; ++i)
+            {
+                poison(result.m_aovs[i].m_color);
+                poison(result.m_aovs[i].m_alpha);
+            }
+        }
+    };
+}
 
 #endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRESULT_H

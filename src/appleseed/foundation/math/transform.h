@@ -37,6 +37,7 @@
 #include "foundation/math/ray.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/poison.h"
 
 // Standard headers.
 #include <cassert>
@@ -125,14 +126,22 @@ class Transform
     bool swaps_handedness() const;
 
   private:
-    template <typename>
-    friend class TransformInterpolator;
+    template <typename> friend class TransformInterpolator;
+    template <typename> friend class PoisonImpl;
 
     MatrixType  m_local_to_parent;
     MatrixType  m_parent_to_local;
 
     // The identity transform returned by identity().
     static const TransformType m_identity;
+};
+
+// Poisoning.
+template <typename T>
+class PoisonImpl<Transform<T> >
+{
+  public:
+    static void do_poison(Transform<T>& transform);
 };
 
 // Exact inequality and equality tests.
@@ -234,6 +243,13 @@ inline Transform<T>::Transform(
             m_local_to_parent * m_parent_to_local,
             MatrixType::make_identity(),
             make_eps<T>(1.0e-4f, 1.0e-6)));
+}
+
+template <typename T>
+void PoisonImpl<Transform<T> >::do_poison(Transform<T>& transform)
+{
+    poison(transform.m_local_to_parent);
+    poison(transform.m_parent_to_local);
 }
 
 template <typename T>

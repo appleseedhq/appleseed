@@ -39,7 +39,32 @@
 namespace foundation
 {
 
-// Set x to a remarkable value that will help detect cases where it is used without being initialized.
+//
+// Poisoning is the act of setting a variable or an object to a remarkable value
+// that will help detect when it is used without being initialized.
+//
+// To poison a variable or object x:
+//
+//     foundation::poison(x);
+//
+// To implement poisoning of custom objects, specialize foundation::PoisonImpl:
+//
+//     namespace foundation
+//     {
+//         template <>
+//         class PoisonImpl<ns::MyObject>
+//         {
+//           public:
+//             static void do_poison(ns::MyObject& object)
+//             {
+//                 poison(object.x);
+//                 poison(object.y);
+//                 poison(object.z);
+//             }
+//         };
+//     }
+//
+
 template <typename T>
 void poison(T& x);
 
@@ -51,30 +76,52 @@ void poison(T& x);
 template <typename T>
 inline void poison(T& x)
 {
-    std::memset(&x, 0xADU, sizeof(x));
+    PoisonImpl<T>::do_poison(x);
 }
 
-template <>
-inline void poison(void*& p)
+template <typename T>
+class PoisonImpl
 {
+  public:
+    static void do_poison(T& x)
+    {
+        std::memset(&x, 0xADU, sizeof(x));
+    }
+};
+
+template <typename T>
+class PoisonImpl<T*>
+{
+  public:
+    static void do_poison(T*& p)
+    {
 #ifdef APPLESEED_ARCH32
-    p = reinterpret_cast<void*>(0xDEADBEEFUL);
+        p = reinterpret_cast<T*>(0xDEADBEEFUL);
 #else
-    p = reinterpret_cast<void*>(0xDEADBEEFDEADBEEFULL);
+        p = reinterpret_cast<T*>(0xDEADBEEFDEADBEEFULL);
 #endif
-}
+    }
+};
 
 template <>
-inline void poison(float& x)
+class PoisonImpl<float>
 {
-    x = FP<float>::snan();
-}
+  public:
+    static void do_poison(float& x)
+    {
+        x = FP<float>::snan();
+    }
+};
 
 template <>
-inline void poison(double& x)
+class PoisonImpl<double>
 {
-    x = FP<double>::snan();
-}
+  public:
+    static void do_poison(double& x)
+    {
+        x = FP<double>::snan();
+    }
+};
 
 }       // namespace foundation
 

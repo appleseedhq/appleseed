@@ -984,3 +984,134 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform(const 
 }
 
 }   // namespace renderer
+
+namespace foundation
+{
+
+template <>
+class PoisonImpl<OSL::Vec3>
+{
+  public:
+    static void do_poison(OSL::Vec3& v)
+    {
+        poison(v.x);
+        poison(v.y);
+        poison(v.z);
+    }
+};
+
+void PoisonImpl<renderer::ShadingPoint>::do_poison(renderer::ShadingPoint& point)
+{
+    poison(point.m_region_kit_cache);
+    poison(point.m_tess_cache);
+    poison(point.m_texture_cache);
+    poison(point.m_scene);
+    poison(point.m_ray);
+
+    poison(point.m_primitive_type);
+    poison(point.m_bary);
+    poison(point.m_assembly_instance);
+    poison(point.m_assembly_instance_transform);
+    poison(point.m_assembly_instance_transform_seq);
+    poison(point.m_object_instance_index);
+    poison(point.m_region_index);
+    poison(point.m_primitive_index);
+    poison(point.m_triangle_support_plane);
+
+    poison(point.m_members);
+
+    poison(point.m_assembly);
+    poison(point.m_object_instance);
+    poison(point.m_object);
+    poison(point.m_primitive_pa);
+    poison(point.m_v0_uv);
+    poison(point.m_v1_uv);
+    poison(point.m_v2_uv);
+    poison(point.m_v0);
+    poison(point.m_v1);
+    poison(point.m_v2);
+    poison(point.m_n0);
+    poison(point.m_n1);
+    poison(point.m_n2);
+    poison(point.m_t0);
+    poison(point.m_t1);
+    poison(point.m_t2);
+
+    poison(point.m_uv);
+    poison(point.m_duvdx);
+    poison(point.m_duvdy);
+    poison(point.m_point);
+    poison(point.m_biased_point);
+    poison(point.m_dpdu);
+    poison(point.m_dpdv);
+    poison(point.m_dndu);
+    poison(point.m_dndv);
+    poison(point.m_dpdx);
+    poison(point.m_dpdy);
+    poison(point.m_geometric_normal);
+    poison(point.m_original_shading_normal);
+    poison(point.m_shading_basis);
+    poison(point.m_side);
+    poison(point.m_v0_w);
+    poison(point.m_v1_w);
+    poison(point.m_v2_w);
+    poison(point.m_point_velocity);
+    poison(point.m_material);
+    poison(point.m_opposite_material);
+    poison(point.m_alpha);
+    poison(point.m_shade_alpha_cutouts);
+
+    poison(point.m_asm_geo_normal);
+    poison(point.m_front_point);
+    poison(point.m_back_point);
+
+    poison(point.m_obj_transform_info.m_assembly_instance_transform);
+    poison(point.m_obj_transform_info.m_object_instance_transform);
+
+    poison(point.m_osl_trace_data.m_traced);
+    poison(point.m_osl_trace_data.m_hit);
+    poison(point.m_osl_trace_data.m_hit_distance);
+    poison(point.m_osl_trace_data.m_P);
+    poison(point.m_osl_trace_data.m_N);
+    poison(point.m_osl_trace_data.m_Ng);
+    poison(point.m_osl_trace_data.m_u);
+    poison(point.m_osl_trace_data.m_v);
+
+    poison(point.m_shader_globals.P);
+    poison(point.m_shader_globals.dPdx);
+    poison(point.m_shader_globals.dPdy);
+    poison(point.m_shader_globals.dPdz);
+    poison(point.m_shader_globals.I);
+    poison(point.m_shader_globals.dIdx);
+    poison(point.m_shader_globals.dIdy);
+    poison(point.m_shader_globals.N);
+    poison(point.m_shader_globals.Ng);
+    poison(point.m_shader_globals.u);
+    poison(point.m_shader_globals.dudx);
+    poison(point.m_shader_globals.dudy);
+    poison(point.m_shader_globals.v);
+    poison(point.m_shader_globals.dvdx);
+    poison(point.m_shader_globals.dvdy);
+    poison(point.m_shader_globals.dPdu);
+    poison(point.m_shader_globals.dPdv);
+    poison(point.m_shader_globals.time);
+    poison(point.m_shader_globals.dtime);
+    poison(point.m_shader_globals.dPdtime);
+    poison(point.m_shader_globals.Ps);
+    poison(point.m_shader_globals.dPsdx);
+    poison(point.m_shader_globals.dPsdy);
+    poison(point.m_shader_globals.renderstate);
+    poison(point.m_shader_globals.tracedata);
+    poison(point.m_shader_globals.objdata);
+    poison(point.m_shader_globals.context);
+    poison(point.m_shader_globals.renderer);
+    poison(point.m_shader_globals.object2common);
+    poison(point.m_shader_globals.shader2common);
+    poison(point.m_shader_globals.Ci);
+    poison(point.m_shader_globals.surfacearea);
+    poison(point.m_shader_globals.raytype);
+    poison(point.m_shader_globals.flipHandedness);
+    poison(point.m_shader_globals.backfacing);
+}
+
+}   // namespace foundation
