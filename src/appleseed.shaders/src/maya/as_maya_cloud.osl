@@ -1,0 +1,189 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/cloud.html
+
+#include "appleseed/color/as_color_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
+
+shader as_maya_cloud
+[[
+    string maya_node_name = "cloud",
+    string maya_classification = "texture/3d"
+]]
+(
+    // Some parameter names from the documentation are wrong, namely the
+    // placement matrix is referred to as eyeToTextureMatrix, which is also
+    // hidden from the UI, and also an output.
+    matrix in_placementMatrix = matrix(1)
+    [[
+        string maya_attribute_name = "placementMatrix",
+        string maya_attribute_type = "matrix",
+        string label = "Placement Matrix"
+    ]],
+    color in_color1 = color(0)
+    [[
+        string maya_attribute_name = "color1",
+        string maya_attribute_type = "vector",
+        string label = "Color 1",
+        string page = "Cloud Attributes"
+    ]],
+    color in_color2 = color(1)
+    [[
+        string maya_attribute_name = "color2",
+        string maya_attribute_type = "vector",
+        string label = "Color 2",
+        string page = "Cloud Attributes"
+    ]],
+    float in_contrast = 0.5
+    [[
+        string maya_attribute_name = "contrast",
+        string maya_attribute_type = "float",
+        string label = "Contrast",
+        string page = "Cloud Attributes"
+    ]],
+    float in_amplitude = 1.0
+    [[
+        string maya_attribute_name = "amplitude",
+        string maya_attribute_type = "float",
+        string label = "Amplitude",
+        float min = 0.0,
+        float max = 5.0,
+        float slidermin = 0.0,
+        float slidermax = 5.0,
+        string page = "Cloud Attributes"
+    ]],
+    float in_depth[2] = {0.0, 0.8}
+    [[
+        string maya_attribute_name = "depth",
+        string maya_attribute_type = "float2",
+        string label = "XY Recursion Depth",
+        string page = "Cloud Attributes"
+    ]],
+    // Problem: this connects as vector, but instead of 1 slider, there are
+    // 3 sliders for the X,Y,Z components, and the connection to vector
+    // overrides the components (which might be mapped to expressions, etc).
+    // For now, add the connectable ripples vector, _and_ the components for
+    // the UI.
+    vector in_ripples = vector(1)
+    [[
+        string maya_attribute_name = "ripples",
+        string maya_attribute_type = "vector",
+        string label = "Ripples",
+        string page = "Cloud Attributes"
+    ]],
+    float in_ripplesX = 0.0
+    [[
+        string maya_attribute_name = "ripplesX",
+        string maya_attribute_type = "float",
+        string label = "Ripples X",
+        string widget = "number",
+        string page = "Cloud Attributes"
+    ]],
+    float in_ripplesY = 0.0
+    [[
+        string maya_attribute_name = "ripplesY",
+        string maya_attribute_type = "float",
+        string label = "Ripples Y",
+        string widget = "number",
+        string page = "Cloud Attributes"
+    ]],
+    float in_ripplesZ = 0.0
+    [[
+        string maya_attribute_name = "ripplesZ",
+        string maya_attribute_type = "float",
+        string label = "Ripples Z",
+        string widget = "number",
+        string page = "Cloud Attributes"
+    ]],
+    int in_softEdges = 1
+    [[
+        string maya_attribute_name = "softEdges",
+        string maya_attribute_type = "bool",
+        string label = "Soft Edges",
+        string widget = "checkBox",
+        string page = "Cloud Attributes"
+    ]],
+    float in_edgeThresh = 1.0
+    [[
+        string maya_attribute_name = "edgeThresh",
+        string maya_attribute_type = "float",
+        string label = "Edge Threshold",
+        string page = "Cloud Attributes"
+    ]],
+    float in_centerThresh = 0.0
+    [[
+        string maya_attribute_name = "centerThresh",
+        string maya_attribute_type = "float",
+        string label = "Center Threshold",
+        string page = "Cloud Attributes"
+    ]],
+    float in_transpRange = 0.5
+    [[
+        string maya_attribute_name = "transpRange",
+        string maya_attribute_type = "float",
+        string label = "Transparency Range",
+        string page = "Cloud Attributes"
+    ]],
+    float in_ratio = 0.707
+    [[
+        string maya_attribute_name = "ratio",
+        string maya_attribute_type = "float",
+        string label = "Ratio",
+        string page = "Cloud Attributes"
+    ]],
+
+    MAYA_COLORBALANCE_PARAMETERS,
+    MAYA_EFFECTS_PARAMETERS,
+    MAYA_EFFECTS_3DTEX_PARAMETERS,
+
+    output color out_outColor = color(0)
+    [[
+        string maya_attribute_name = "outColor",
+        string maya_attribute_type = "vector",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string maya_attribute_name = "outAlpha",
+        string maya_attribute_type = "float",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]]
+)
+{
+    // Completely unmatched, this is the initial work to test the 
+    // functions for point P being inside, outside placement box, and blending
+    // towards edges of placement box.
+
+    point Pp = transform(in_placementMatrix, P);
+
+    out_outColor = noise("uperlin", Pp);
+    out_outAlpha = maya_luminance(out_outColor);
+}

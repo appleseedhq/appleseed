@@ -161,6 +161,7 @@ set (appleseed_maya2_osl_sources
      src/maya/as_maya_clearCoat.osl
      src/maya/as_maya_closure2Surface.osl
      src/maya/as_maya_cloth.osl
+     src/maya/as_maya_cloud.osl
      src/maya/as_maya_color2Components.osl
      src/maya/as_maya_components2Color.osl
      src/maya/as_maya_components2Vector.osl
@@ -180,6 +181,7 @@ set (appleseed_maya2_osl_sources
      src/maya/as_maya_multiplyDivide.osl
      src/maya/as_maya_multMatrix.osl
      src/maya/as_maya_place2dTexture.osl
+     src/maya/as_maya_place3dTexture.osl
      src/maya/as_maya_plusMinusAverage.osl
      src/maya/as_maya_quadShadingSwitch.osl
      src/maya/as_maya_ramp.osl
