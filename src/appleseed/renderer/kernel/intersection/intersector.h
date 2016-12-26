@@ -110,6 +110,7 @@ class Intersector
         ShadingPoint&                       shading_point,
         const ShadingRay&                   shading_ray,
         const ShadingPoint::PrimitiveType   primitive_type,
+        const foundation::Vector2f&         bary,
         const AssemblyInstance*             assembly_instance,
         const foundation::Transformd&       assembly_instance_transform,
         const size_t                        object_instance_index,

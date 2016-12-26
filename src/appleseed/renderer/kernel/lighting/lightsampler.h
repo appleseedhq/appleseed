@@ -147,7 +147,7 @@ class LightSample
   public:
     // Data for a light-emitting triangle sample.
     const EmittingTriangle*     m_triangle;
-    foundation::Vector2d        m_bary;                         // barycentric coordinates of the sample
+    foundation::Vector2f        m_bary;                         // barycentric coordinates of the sample
     foundation::Vector3d        m_point;                        // world space position of the sample
     foundation::Vector3d        m_shading_normal;               // world space shading normal at the sample, unit-length
     foundation::Vector3d        m_geometric_normal;             // world space geometric normal at the sample, unit-length

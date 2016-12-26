@@ -264,7 +264,7 @@ class ShadingPoint
     friend class TriangleLeafVisitor;
     friend class foundation::PoisonImpl<ShadingPoint>;
 
-    // Environment and setup.
+    // Context.
     RegionKitAccessCache*               m_region_kit_cache;
     StaticTriangleTessAccessCache*      m_tess_cache;
     TextureCache*                       m_texture_cache;
