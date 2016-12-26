@@ -106,7 +106,7 @@ surface as_maya_areaLight
     ]],
 )
 {
-    out_center = point("center", 0, 0, 0);
+    out_center = point("object", 0, 0, 0);
 
     out_matrix = matrix("object", "camera");
     out_inverseMatrix = inverse(out_matrix);
