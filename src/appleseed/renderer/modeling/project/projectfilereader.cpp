@@ -2720,6 +2720,10 @@ namespace
             {
               case ElementSearchPath:
                 {
+                    // Skip search paths if asked to do so.
+                    if (m_context.get_options() & ProjectFileReader::OmitSearchPaths)
+                        return;
+
                     SearchPathElementHandler* path_handler =
                         static_cast<SearchPathElementHandler*>(handler);
                     const string& path = path_handler->get_path();
@@ -3046,7 +3050,6 @@ auto_release_ptr<Project> ProjectFileReader::read(
     const int               options)
 {
     assert(project_filepath);
-    assert(schema_filepath);
 
     // Handle built-in projects.
     string project_name;
@@ -3056,6 +3059,13 @@ auto_release_ptr<Project> ProjectFileReader::read(
     XercesCContext xerces_context(global_logger());
     if (!xerces_context.is_initialized())
         return auto_release_ptr<Project>(0);
+
+    if ((options & OmitProjectSchemaValidation) == false && schema_filepath == 0)
+    {
+        RENDERER_LOG_ERROR(
+            "project schema validation enabled, but no schema filepath provided.");
+        return auto_release_ptr<Project>(0);
+    }
 
     Stopwatch<DefaultWallclockTimer> stopwatch;
     stopwatch.start();
@@ -3080,6 +3090,68 @@ auto_release_ptr<Project> ProjectFileReader::read(
         stopwatch.get_seconds());
 
     return event_counters.has_errors() ? auto_release_ptr<Project>(0) : project;
+}
+
+auto_release_ptr<Assembly> ProjectFileReader::read_archive(
+    const char*             archive_filepath,
+    const char*             schema_filepath,
+    const SearchPaths&      search_paths,
+    const int               options)
+{
+    assert(archive_filepath);
+
+    XercesCContext xerces_context(global_logger());
+    if (!xerces_context.is_initialized())
+        return auto_release_ptr<Assembly>(0);
+
+    if ((options & OmitProjectSchemaValidation) == false && schema_filepath == 0)
+    {
+        RENDERER_LOG_ERROR(
+            "archive schema validation enabled, but no schema filepath provided.");
+        return auto_release_ptr<Assembly>(0);
+    }
+
+    Stopwatch<DefaultWallclockTimer> stopwatch;
+    stopwatch.start();
+
+    EventCounters event_counters;
+    auto_release_ptr<Project> project(
+        load_project_file(
+            archive_filepath,
+            schema_filepath,
+            options | OmitSearchPaths,
+            event_counters,
+            &search_paths));
+
+    if (project.get())
+    {
+        if (!event_counters.has_errors() &&
+            !(options & OmitProjectFileUpdate) &&
+            project->get_format_revision() < ProjectFormatRevision)
+            upgrade_project(*project, event_counters);
+    }
+
+    stopwatch.measure();
+
+    print_loading_results(
+        archive_filepath,
+        false,
+        event_counters,
+        stopwatch.get_seconds());
+
+    if (event_counters.has_errors())
+        return auto_release_ptr<Assembly>(0);
+
+    if (project->get_scene())
+    {
+        if (Assembly* assembly = project->get_scene()->assemblies().get_by_name("assembly"))
+        {
+            return auto_release_ptr<Assembly>(
+                project->get_scene()->assemblies().remove(assembly));
+        }
+    }
+
+    return auto_release_ptr<Assembly>(0);
 }
 
 auto_release_ptr<Project> ProjectFileReader::load_builtin(
@@ -3109,16 +3181,26 @@ auto_release_ptr<Project> ProjectFileReader::load_builtin(
 }
 
 auto_release_ptr<Project> ProjectFileReader::load_project_file(
-    const char*             project_filepath,
-    const char*             schema_filepath,
-    const int               options,
-    EventCounters&          event_counters) const
+    const char*                     project_filepath,
+    const char*                     schema_filepath,
+    const int                       options,
+    EventCounters&                  event_counters,
+    const foundation::SearchPaths*  search_paths) const
 {
     // Create an empty project.
     auto_release_ptr<Project> project(ProjectFactory::create(project_filepath));
     project->set_path(project_filepath);
-    project->search_paths().set_root_path(
-        bf::absolute(project_filepath).parent_path().string());
+
+    if ((options & OmitSearchPaths) == false)
+    {
+        project->search_paths().set_root_path(
+            bf::absolute(project_filepath).parent_path().string());
+    }
+    else
+    {
+        assert(search_paths);
+        project->search_paths() = *search_paths;
+    }
 
     // Create the error handler.
     auto_ptr<ErrorLogger> error_handler(
@@ -3136,13 +3218,24 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
     // Create the parser.
     auto_ptr<SAX2XMLReader> parser(XMLReaderFactory::createXMLReader());
     parser->setFeature(XMLUni::fgSAX2CoreNameSpaces, true);         // perform namespace processing
-    parser->setFeature(XMLUni::fgSAX2CoreValidation, true);         // report all validation errors
-    parser->setFeature(XMLUni::fgXercesSchema, true);               // enable the parser's schema support
-    parser->setProperty(
-        XMLUni::fgXercesSchemaExternalNoNameSpaceSchemaLocation,
-        const_cast<void*>(
-            static_cast<const void*>(
-                transcode(schema_filepath).c_str())));
+
+    if ((options & OmitProjectSchemaValidation) == false)
+    {
+        assert(schema_filepath);
+        parser->setFeature(XMLUni::fgSAX2CoreValidation, true);     // report all validation errors
+        parser->setFeature(XMLUni::fgXercesSchema, true);           // enable the parser's schema support
+        parser->setProperty(
+            XMLUni::fgXercesSchemaExternalNoNameSpaceSchemaLocation,
+            const_cast<void*>(
+                static_cast<const void*>(
+                    transcode(schema_filepath).c_str())));
+    }
+    else
+    {
+        parser->setFeature(XMLUni::fgSAX2CoreValidation, false); // ignore all validation errors
+        parser->setFeature(XMLUni::fgXercesSchema, false);       // disable the parser's schema support
+    }
+
     parser->setErrorHandler(error_handler.get());
     parser->setContentHandler(content_handler.get());
 
