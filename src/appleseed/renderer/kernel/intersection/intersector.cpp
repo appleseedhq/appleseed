@@ -42,6 +42,7 @@
 #include "foundation/utility/cache.h"
 #include "foundation/utility/casts.h"
 #include "foundation/utility/lazy.h"
+#include "foundation/utility/poison.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
@@ -349,6 +350,7 @@ void Intersector::manufacture_hit(
     ShadingPoint&                       shading_point,
     const ShadingRay&                   shading_ray,
     const ShadingPoint::PrimitiveType   primitive_type,
+    const Vector2f&                     bary,
     const AssemblyInstance*             assembly_instance,
     const Transformd&                   assembly_instance_transform,
     const size_t                        object_instance_index,
@@ -356,12 +358,21 @@ void Intersector::manufacture_hit(
     const size_t                        primitive_index,
     const TriangleSupportPlaneType&     triangle_support_plane) const
 {
+#ifdef DEBUG
+    // This helps finding bugs if manufacture_hit() is called on a previously used shading point.
+    poison(shading_point);
+#endif
+
+    // Context.
     shading_point.m_region_kit_cache = &m_region_kit_cache;
     shading_point.m_tess_cache = &m_tess_cache;
     shading_point.m_texture_cache = &m_texture_cache;
     shading_point.m_scene = &m_trace_context.get_scene();
     shading_point.m_ray = shading_ray;
+
+    // Primary intersection results.
     shading_point.m_primitive_type = primitive_type;
+    shading_point.m_bary = bary;
     shading_point.m_assembly_instance = assembly_instance;
     shading_point.m_assembly_instance_transform = assembly_instance_transform;
     shading_point.m_assembly_instance_transform_seq = &assembly_instance->transform_sequence();
@@ -369,6 +380,9 @@ void Intersector::manufacture_hit(
     shading_point.m_region_index = region_index;
     shading_point.m_primitive_index = primitive_index;
     shading_point.m_triangle_support_plane = triangle_support_plane;
+
+    // Available on-demand results: none.
+    shading_point.m_members = 0;
 }
 
 namespace

@@ -104,10 +104,13 @@ class Intersector
         const ShadingPoint*             parent_shading_point = 0) const;
 
     // Manufacture a hit "by hand".
+    // There is no restriction placed on the shading point passed to this method.
+    // For instance it may have been previously initialized and used.
     void manufacture_hit(
         ShadingPoint&                       shading_point,
         const ShadingRay&                   shading_ray,
         const ShadingPoint::PrimitiveType   primitive_type,
+        const foundation::Vector2f&         bary,
         const AssemblyInstance*             assembly_instance,
         const foundation::Transformd&       assembly_instance_transform,
         const size_t                        object_instance_index,

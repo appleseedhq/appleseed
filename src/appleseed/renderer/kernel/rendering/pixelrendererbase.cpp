@@ -81,11 +81,10 @@ void PixelRendererBase::on_pixel_end(const Vector2i& pi)
         if (m_invalid_pixel_count <= MaxWarningsPerThread)
         {
             RENDERER_LOG_WARNING(
-                FMT_SIZE_T " sample%s at pixel (%d, %d) had NaN, negative or infinite value%s and %s ignored.",
+                FMT_SIZE_T " sample%s at pixel (%d, %d) had NaN, negative or infinite components and %s ignored.",
                 m_invalid_sample_count,
                 m_invalid_sample_count > 1 ? "s" : "",
                 pi.x, pi.y,
-                m_invalid_sample_count > 1 ? "s" : "",
                 m_invalid_sample_count > 1 ? "were" : "was");
         }
         else if (m_invalid_pixel_count == MaxWarningsPerThread + 1)

@@ -38,6 +38,7 @@
 #include "foundation/platform/sse.h"
 #endif
 #include "foundation/platform/types.h"
+#include "foundation/utility/poison.h"
 
 // Standard headers.
 #include <cassert>
@@ -125,6 +126,14 @@ struct TriangleSSKSupportPlane
     ValueType intersect(
         const VectorType&   org,
         const VectorType&   dir) const;
+};
+
+// Poisoning.
+template <typename T>
+class PoisonImpl<TriangleSSKSupportPlane<T> >
+{
+  public:
+    static void do_poison(TriangleSSKSupportPlane<T>& plane);
 };
 
 
@@ -454,6 +463,15 @@ inline T TriangleSSKSupportPlane<T>::intersect(
     const ValueType det = du * m_nu + dv * m_nv + dw;
     const ValueType tprime = m_np - (ou * m_nu + ov * m_nv + ow);
     return tprime / det;
+}
+
+template <typename T>
+void PoisonImpl<TriangleSSKSupportPlane<T> >::do_poison(TriangleSSKSupportPlane<T>& plane)
+{
+    poison(plane.m_nu);
+    poison(plane.m_nv);
+    poison(plane.m_np);
+    poison(plane.m_ci);
 }
 
 }       // namespace foundation

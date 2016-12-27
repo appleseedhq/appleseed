@@ -89,6 +89,7 @@ void LightSample::make_shading_point(
             ShadingRay::Time(),
             VisibilityFlags::CameraRay, 0),
         ShadingPoint::PrimitiveTriangle,    // note: we assume light samples are always on triangles (and not on curves)
+        m_bary,
         m_triangle->m_assembly_instance,
         m_triangle->m_assembly_instance->transform_sequence().get_earliest_transform(),
         m_triangle->m_object_instance_index,
@@ -550,8 +551,8 @@ void LightSampler::sample_emitting_triangle(
     const Vector3d bary = sample_triangle_uniform(Vector2d(s));
 
     // Set the barycentric coordinates.
-    light_sample.m_bary[0] = bary[0];
-    light_sample.m_bary[1] = bary[1];
+    light_sample.m_bary[0] = static_cast<float>(bary[0]);
+    light_sample.m_bary[1] = static_cast<float>(bary[1]);
 
     // Compute the world space position of the sample.
     light_sample.m_point =

@@ -39,6 +39,7 @@
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
+#include "foundation/utility/poison.h"
 
 // Standard headers.
 #include <algorithm>
@@ -1529,6 +1530,17 @@ inline renderer::DynamicSpectrum<T, N> exp(const renderer::DynamicSpectrum<T, N>
 
     return result;
 }
+
+template <typename T, size_t N>
+class PoisonImpl<renderer::DynamicSpectrum<T, N> >
+{
+  public:
+    static void do_poison(renderer::DynamicSpectrum<T, N>& s)
+    {
+        for (size_t i = 0, e = s.size(); i < e; ++i)
+            poison(s[i]);
+    }
+};
 
 }       // namespace foundation
 

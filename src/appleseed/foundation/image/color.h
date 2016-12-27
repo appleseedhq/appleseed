@@ -33,6 +33,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/poison.h"
 
 // Imath headers.
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
@@ -82,6 +83,14 @@ class Color
   private:
     // Color components.
     ValueType m_comp[N];
+};
+
+// Poisoning.
+template <typename T, size_t N>
+class PoisonImpl<Color<T, N> >
+{
+  public:
+    static void do_poison(Color<T, N>& c);
 };
 
 // Exact inequality and equality tests.
@@ -324,6 +333,13 @@ inline const T& Color<T, N>::operator[](const size_t i) const
 {
     assert(i < Components);
     return m_comp[i];
+}
+
+template <typename T, size_t N>
+void PoisonImpl<Color<T, N> >::do_poison(Color<T, N>& c)
+{
+    for (size_t i = 0; i < N; ++i)
+        poison(c[i]);
 }
 
 template <typename T, size_t N>

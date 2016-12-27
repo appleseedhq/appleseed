@@ -34,6 +34,7 @@
 #include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/poison.h"
 
 namespace foundation
 {
@@ -105,6 +106,14 @@ struct TriangleMTSupportPlane
     ValueType intersect(
         const VectorType&   org,
         const VectorType&   dir) const;
+};
+
+// Poisoning.
+template <typename T>
+class PoisonImpl<TriangleMTSupportPlane<T> >
+{
+  public:
+    static void do_poison(TriangleMTSupportPlane<T>& plane);
 };
 
 
@@ -292,6 +301,14 @@ inline T TriangleMTSupportPlane<T>::intersect(
     const VectorType qvec = cross(tvec, m_e0);
     const VectorType pvec = cross(dir, m_e1);
     return dot(m_e1, qvec) / dot(m_e0, pvec);
+}
+
+template <typename T>
+void PoisonImpl<TriangleMTSupportPlane<T> >::do_poison(TriangleMTSupportPlane<T>& plane)
+{
+    poison(plane.m_v0);
+    poison(plane.m_e0);
+    poison(plane.m_e1);
 }
 
 }       // namespace foundation

@@ -53,6 +53,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/poison.h"
 
 // OSL headers.
 #include "foundation/platform/oslheaderguards.h"
@@ -261,15 +262,16 @@ class ShadingPoint
     friend class RegionLeafVisitor;
     friend class ShadingPointBuilder;
     friend class TriangleLeafVisitor;
+    friend class foundation::PoisonImpl<ShadingPoint>;
 
+    // Context.
     RegionKitAccessCache*               m_region_kit_cache;
     StaticTriangleTessAccessCache*      m_tess_cache;
     TextureCache*                       m_texture_cache;
-
     const Scene*                        m_scene;
     mutable ShadingRay                  m_ray;                              // world space ray (m_tmax = distance to intersection)
 
-    // Intersection results.
+    // Primary intersection results.
     PrimitiveType                       m_primitive_type;                   // type of the hit primitive
     foundation::Vector2f                m_bary;                             // barycentric coordinates of intersection point
     const AssemblyInstance*             m_assembly_instance;                // hit assembly instance
@@ -303,7 +305,7 @@ class ShadingPoint
     };
     mutable foundation::uint32          m_members;
 
-    // Source geometry.
+    // Source geometry (derived from primary intersection results).
     mutable const Assembly*             m_assembly;                     // hit assembly
     mutable const ObjectInstance*       m_object_instance;              // hit object instance
     mutable Object*                     m_object;                       // hit object
@@ -313,7 +315,7 @@ class ShadingPoint
     mutable GVector3                    m_n0, m_n1, m_n2;               // object instance space triangle vertex normals
     mutable GVector3                    m_t0, m_t1, m_t2;               // object instance space triangle vertex tangents
 
-    // Additional intersection results, computed on demand.
+    // On-demand intersection results (derived from primary intersection results).
     mutable foundation::Vector2f        m_uv;                           // texture coordinates from UV set #0
     mutable foundation::Vector2f        m_duvdx;                        // screen space partial derivative of the texture coords wrt. X
     mutable foundation::Vector2f        m_duvdy;                        // screen space partial derivative of the texture coords wrt. Y
@@ -382,6 +384,10 @@ class ShadingPoint
 
 APPLESEED_FORCE_INLINE ShadingPoint::ShadingPoint()
 {
+#ifdef DEBUG
+    foundation::poison(*this);
+#endif
+
     clear();
 }
 
@@ -910,5 +916,15 @@ inline void ShadingPoint::fetch_materials() const
 }
 
 }       // namespace renderer
+
+namespace foundation
+{
+    template <>
+    class PoisonImpl<renderer::ShadingPoint>
+    {
+      public:
+        static void do_poison(renderer::ShadingPoint& point);
+    };
+}
 
 #endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGPOINT_H
