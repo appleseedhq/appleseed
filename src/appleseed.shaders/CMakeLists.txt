@@ -65,6 +65,7 @@ set (appleseed_library_osl_headers
     include/appleseed/color/as_color_data.h
     include/appleseed/color/as_color_helpers.h
     include/appleseed/fractal/as_fractal_helpers.h
+    include/appleseed/fractal/as_noise_helpers.h
     include/appleseed/material/as_material_helpers.h
     include/appleseed/math/as_math_helpers.h
     include/appleseed/maya/as_maya_helpers.h
