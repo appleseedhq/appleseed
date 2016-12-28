@@ -84,11 +84,6 @@ shader as_maya_cloud
         string label = "XY Recursion Depth",
         string page = "Cloud Attributes"
     ]],
-    // Problem: this connects as vector, but instead of 1 slider, there are
-    // 3 sliders for the X,Y,Z components, and the connection to vector
-    // overrides the components (which might be mapped to expressions, etc).
-    // For now, add the connectable ripples vector, _and_ the components for
-    // the UI.
     vector in_ripples = vector(1)
     [[
         string maya_attribute_name = "ripples",
@@ -221,12 +216,9 @@ shader as_maya_cloud
             2.17, // lacunarity default
             in_ratio);
 
-        // Finally alpha, and color.
-
         out_outAlpha = 0.5 * (weight + 1);
 
-        // Contrast adjust color.
-        weight = clamp(weight * 0.5 + 0.5, 0, 1);
+        weight = clamp(weight * 0.5 + 0.5, 0, 1);  
         
         color color_blend = mix(in_color2, in_color1, in_contrast);
 
@@ -292,4 +284,3 @@ shader as_maya_cloud
         out_outAlpha = 1 - 0.5 * in_contrast;
     }
 }
-

@@ -60,4 +60,3 @@
     filter_width)
 
 #endif // AS_NOISE_HELPERS_H
-

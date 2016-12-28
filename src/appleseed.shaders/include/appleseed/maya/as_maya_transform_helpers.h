@@ -67,4 +67,3 @@ int outside_place3d_volume(
 }
 
 #endif // AS_MAYA_TRANSFORM_HELPERS_H
-

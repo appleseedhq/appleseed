@@ -58,4 +58,3 @@ float fBm(
 }
 
 #endif // AS_PATTERN_HELPERS_H
-
