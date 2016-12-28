@@ -35,9 +35,8 @@ shader as_maya_place3dTexture
     string maya_classification = "utility/general/placement/3d"
 ]]
 (
-    matrix in_inversePlacementMatrix = matrix(1)
+    matrix inclusiveMatrixInverse
     [[
-        string maya_attribute_name = "inversePlacementMatrix",
         string maya_attribute_type = "matrix",
         string widget = "null"
     ]],
@@ -51,5 +50,5 @@ shader as_maya_place3dTexture
     ]]
 )
 {
-    out_worldInverseMatrix = in_inversePlacementMatrix;
+    out_worldInverseMatrix = inclusiveMatrixInverse;
 }
