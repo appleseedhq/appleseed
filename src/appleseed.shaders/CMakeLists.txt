@@ -69,7 +69,7 @@ set (appleseed_library_osl_headers
     include/appleseed/math/as_math_helpers.h
     include/appleseed/maya/as_maya_helpers.h
     include/appleseed/maya/as_maya_ramp_helpers.h
-    include/appleseed/maya/as/maya_transform_helpers.h
+    include/appleseed/maya/as_maya_transform_helpers.h
     include/appleseed/pattern/as_pattern_helpers.h
 )
 list (APPEND appleseed_osl_headers ${appleseed_library_osl_headers})
