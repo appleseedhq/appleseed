@@ -35,7 +35,7 @@ shader as_maya_place3dTexture
     string maya_classification = "utility/general/placement/3d"
 ]]
 (
-    matrix inclusiveMatrixInverse
+    matrix inclusiveMatrixInverse = matrix(1)
     [[
         string maya_attribute_type = "matrix",
         string widget = "null"
