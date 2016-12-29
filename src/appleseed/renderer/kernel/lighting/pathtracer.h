@@ -635,11 +635,11 @@ inline bool PathTracer<PathVisitor, Adjoint>::pass_through(
     SamplingContext&            sampling_context,
     const Alpha                 alpha)
 {
-    if (alpha[0] <= 0.0f)
-        return true;
-
     if (alpha[0] >= 1.0f)
         return false;
+
+    if (alpha[0] <= 0.0f)
+        return true;
 
     sampling_context.split_in_place(1, 1);
 

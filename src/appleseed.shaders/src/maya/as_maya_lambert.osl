@@ -154,7 +154,7 @@ shader as_maya_lambert
 {   
     if (raytype("shadow"))
     {
-        color transparency = in_transparency ;
+        color transparency = in_transparency;
 
         // Shadow attenuation: 0=constant, 1=fake caustics.
         if (in_transparency != 0 && in_shadowAttenuation > 0)
