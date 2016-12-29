@@ -121,6 +121,13 @@ namespace
     {
         return MeshObjectWriter::write(*object, object_name.c_str(), filename.c_str());
     }
+
+    auto_release_ptr<MeshObject> create_mesh_prim(
+        const string&       name,
+        const bpy::dict&    params)
+    {
+        return create_primitive_mesh(name.c_str(), bpy_dict_to_param_array(params));
+    }
 }
 
 void bind_mesh_object()
@@ -200,4 +207,5 @@ void bind_mesh_object()
 
     bpy::def("compute_smooth_vertex_normals", compute_smooth_vertex_normals);
     bpy::def("compute_smooth_vertex_tangents", compute_smooth_vertex_tangents);
+    bpy::def("create_primitive_mesh", create_mesh_prim);
 }
