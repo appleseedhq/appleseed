@@ -261,7 +261,7 @@ namespace foundation
             for (size_t i = 0; i < renderer::ShadingRay::MaxMediumCount; ++i)
             {
                 poison(ray.m_media[i].m_object_instance);
-                poison(ray.m_media[i].m_bsdf);
+                poison(ray.m_media[i].m_material);
                 poison(ray.m_media[i].m_ior);
             }
 
