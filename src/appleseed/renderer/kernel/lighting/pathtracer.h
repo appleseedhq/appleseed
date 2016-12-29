@@ -288,7 +288,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                     material_data.m_bsdf->sample_ior(
                         sampling_context,
                         input_evaluator.data());
-                next_ray.add_medium(ray, &object_instance, material_data.m_bsdf, ior);
+                next_ray.add_medium(ray, &object_instance, material, ior);
             }
             else next_ray.remove_medium(ray, &object_instance);
 
@@ -573,27 +573,38 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                     vertex.m_bsdf->sample_ior(
                         sampling_context,
                         bsdf_input_evaluator.data());
-                next_ray.add_medium(ray, &object_instance, vertex.m_bsdf, ior);
+                next_ray.add_medium(ray, &object_instance, vertex.get_material(), ior);
             }
             else next_ray.remove_medium(ray, &object_instance);
 
             // Compute absorption for the segment inside the medium the path is leaving.
             const ShadingRay::Medium* prev_medium = ray.get_current_medium();
-            if (prev_medium != 0 &&
-                prev_medium != next_ray.get_current_medium() &&
-                prev_medium->m_bsdf != 0)
+            if (prev_medium != 0 && prev_medium != next_ray.get_current_medium())
             {
-                prev_medium->m_bsdf->evaluate_inputs(
-                    shading_context,
-                    bsdf_input_evaluator,
-                    *vertex.m_shading_point);
-                const float distance = static_cast<float>(norm(vertex.get_point() - medium_start));
-                Spectrum absorption;
-                prev_medium->m_bsdf->compute_absorption(
-                    bsdf_input_evaluator.data(),
-                    distance,
-                    absorption);
-                vertex.m_throughput *= absorption;
+                const Material::RenderData& render_data = prev_medium->m_material->get_render_data();
+
+                if (render_data.m_bsdf)
+                {
+                    // Execute the OSL shader if there is one.
+                    if (render_data.m_shader_group)
+                    {
+                        shading_context.execute_osl_shading(
+                            *render_data.m_shader_group,
+                            *vertex.m_shading_point);
+                    }
+
+                    render_data.m_bsdf->evaluate_inputs(
+                        shading_context,
+                        bsdf_input_evaluator,
+                        *vertex.m_shading_point);
+                    const float distance = static_cast<float>(norm(vertex.get_point() - medium_start));
+                    Spectrum absorption;
+                    render_data.m_bsdf->compute_absorption(
+                        bsdf_input_evaluator.data(),
+                        distance,
+                        absorption);
+                    vertex.m_throughput *= absorption;
+                }
             }
 
             medium_start = vertex.get_point();
