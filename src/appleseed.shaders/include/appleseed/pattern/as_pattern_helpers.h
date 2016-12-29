@@ -53,11 +53,6 @@ float filtered_abs(float x, float dx)
     return A * B;
 }
 
-float filtered_step(float a, float x, float dx)
-{
-    return 0.5 * (1 + erf((x - a) / dx * M_SQRT2));
-}
-
 float filtered_clamp(float x, float dx)
 {
     float A = x * erf(x / dx * M_SQRT2);
@@ -67,6 +62,11 @@ float filtered_clamp(float x, float dx)
     float D = exp(-sqr(x - 1) / 2 * sqr(dx));
 
     return 0.5 * (A - B + dx * sqrt(M_2_PI) * (C - D) + 1);
+}
+
+float filtered_step(float a, float x, float dx)
+{
+    return 0.5 * (1 + erf((x - a) / dx * M_SQRT2));
 }
 
 float filtered_smoothstep(
@@ -98,6 +98,18 @@ float filtered_smoothstep(
         out += x1 - max(1, x0);
     }
     return out / fw;
+}
+
+float filtered_pulse(
+    float edge0,
+    float edge1,
+    float x,
+    float dx)
+{
+    float x0 = x - dx * 0.5;
+    float x1 = x0 + dx;
+
+    return max(0, (min(x1, edge1) - max(x0, edge0)) / dx);
 }
 
 float filtered_smoothpulse(

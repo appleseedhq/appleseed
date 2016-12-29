@@ -1,0 +1,286 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/cloud.html
+
+#include "appleseed/fractal/as_fractal_helpers.h"
+#include "appleseed/math/as_math_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/maya/as_maya_transform_helpers.h"
+
+shader as_maya_cloud
+[[
+    string maya_node_name = "cloud",
+    string maya_classification = "texture/3d"
+]]
+(
+    matrix in_placementMatrix = matrix(1)
+    [[
+        string maya_attribute_name = "placementMatrix",
+        string maya_attribute_type = "matrix",
+        string label = "Placement Matrix"
+    ]],
+    color in_color1 = color(0)
+    [[
+        string maya_attribute_name = "color1",
+        string maya_attribute_type = "vector",
+        string label = "Color 1",
+        string page = "Cloud Attributes"
+    ]],
+    color in_color2 = color(1)
+    [[
+        string maya_attribute_name = "color2",
+        string maya_attribute_type = "vector",
+        string label = "Color 2",
+        string page = "Cloud Attributes"
+    ]],
+    float in_contrast = 0.5
+    [[
+        string maya_attribute_name = "contrast",
+        string maya_attribute_type = "float",
+        string label = "Contrast",
+        string page = "Cloud Attributes"
+    ]],
+    float in_amplitude = 1.0
+    [[
+        string maya_attribute_name = "amplitude",
+        string maya_attribute_type = "float",
+        string label = "Amplitude",
+        float min = 0.0,
+        float max = 5.0,
+        float slidermin = 0.0,
+        float slidermax = 5.0,
+        string page = "Cloud Attributes"
+    ]],
+    float in_depth[2] = {0.0, 0.8}
+    [[
+        string maya_attribute_name = "depth",
+        string maya_attribute_type = "float2",
+        string label = "XY Recursion Depth",
+        string page = "Cloud Attributes"
+    ]],
+    vector in_ripples = vector(1)
+    [[
+        string maya_attribute_name = "ripples",
+        string maya_attribute_type = "vector",
+        string label = "Ripples",
+        string page = "Cloud Attributes"
+    ]],
+    float in_ripplesX = 0.0
+    [[
+        string maya_attribute_name = "ripplesX",
+        string maya_attribute_type = "float",
+        string label = "Ripples X",
+        string widget = "number",
+        string page = "Cloud Attributes"
+    ]],
+    float in_ripplesY = 0.0
+    [[
+        string maya_attribute_name = "ripplesY",
+        string maya_attribute_type = "float",
+        string label = "Ripples Y",
+        string widget = "number",
+        string page = "Cloud Attributes"
+    ]],
+    float in_ripplesZ = 0.0
+    [[
+        string maya_attribute_name = "ripplesZ",
+        string maya_attribute_type = "float",
+        string label = "Ripples Z",
+        string widget = "number",
+        string page = "Cloud Attributes"
+    ]],
+    int in_softEdges = 1
+    [[
+        string maya_attribute_name = "softEdges",
+        string maya_attribute_type = "bool",
+        string label = "Soft Edges",
+        string widget = "checkBox",
+        string page = "Cloud Attributes"
+    ]],
+    float in_edgeThresh = 1.0
+    [[
+        string maya_attribute_name = "edgeThresh",
+        string maya_attribute_type = "float",
+        string label = "Edge Threshold",
+        string page = "Cloud Attributes"
+    ]],
+    float in_centerThresh = 0.0
+    [[
+        string maya_attribute_name = "centerThresh",
+        string maya_attribute_type = "float",
+        string label = "Center Threshold",
+        string page = "Cloud Attributes"
+    ]],
+    float in_transpRange = 0.5
+    [[
+        string maya_attribute_name = "transpRange",
+        string maya_attribute_type = "float",
+        string label = "Transparency Range",
+        string page = "Cloud Attributes"
+    ]],
+    float in_ratio = 0.707
+    [[
+        string maya_attribute_name = "ratio",
+        string maya_attribute_type = "float",
+        string label = "Ratio",
+        string page = "Cloud Attributes"
+    ]],
+
+    MAYA_COLORBALANCE_PARAMETERS,
+    MAYA_EFFECTS_PARAMETERS,
+    MAYA_EFFECTS_3DTEX_PARAMETERS,
+
+    output color out_outColor = color(0)
+    [[
+        string maya_attribute_name = "outColor",
+        string maya_attribute_type = "vector",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string maya_attribute_name = "outAlpha",
+        string maya_attribute_type = "float",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]]
+)
+{
+    matrix placement = (in_local)
+        ? inverse(matrix("object", "world")) * in_placementMatrix
+        : in_placementMatrix;
+
+    point Pp = transform(placement, P);
+
+    float box_blending = 0.0;
+
+    int outside_box = outside_place3d_volume(
+        Pp,
+        in_wrap,
+        in_blend,
+        box_blending);
+
+    if (outside_box)
+    {
+        out_outColor = in_defaultColor;
+        out_outAlpha = maya_luminance(out_outColor);
+        return;
+    }
+    else if (in_amplitude)
+    {
+        vector ripples_freq = (isconnected(in_ripples))
+            ? in_ripples
+            : vector(in_ripplesX, in_ripplesY, in_ripplesZ);
+
+        Pp *= ripples_freq * 0.5; // frequency seems cut off by half roughly
+
+        float filter_width = 0.0;
+
+        if (in_filter)
+        {
+            filter_width = max(EPS, sqrt(area(Pp)));
+            filter_width *= in_filter + in_filterOffset;
+        }
+
+        float weight = fBm(
+            Pp,
+            filter_width,
+            in_amplitude,
+            (int) max(in_depth[0], in_depth[1]),
+            2.17, // lacunarity default
+            in_ratio);
+
+        out_outAlpha = 0.5 * (weight + 1);
+
+        weight = clamp(weight * 0.5 + 0.5, 0, 1);  
+        
+        color color_blend = mix(in_color2, in_color1, in_contrast);
+
+        out_outColor = mix(in_color2, color_blend, 1 - weight);
+
+        float cos_wo = dot(normalize(-I), normalize(N)), dp = 1.0;
+
+        if (cos_wo >= EPS)
+        {
+            dp = sqrt(clamp(1 - sqr(cos_wo), 0, 1));
+        }
+
+        float threshold = mix(in_centerThresh, in_edgeThresh, dp);
+        float transparency_range = max(EPS, in_transpRange);
+
+        float tmp = (threshold - out_outAlpha) / transparency_range;
+
+        if (tmp > 1)
+        {
+            out_outAlpha = 1;
+        }
+        else if (tmp < 10)
+        {
+            out_outAlpha = 0;
+        }
+        else
+        {
+            out_outAlpha = clamp(exp(tmp), 0, 1);
+        }
+        
+        if (in_softEdges)
+        {
+            out_outColor *= 1 - out_outAlpha;
+        }
+
+        if (!in_wrap && in_blend)
+        {
+            // Totally arbitrary values for the lower and upper bounds in 
+            // order to match (roughly) Maya's results, and it still isn't
+            // quite right.
+            float blend_factor = clamp(
+                smoothstep(in_blend * 0.05, in_blend * 0.65, box_blending),
+                0, 1);
+
+            out_outColor = mix(in_defaultColor, out_outColor, blend_factor);
+            out_outAlpha *= (1 - blend_factor);
+        }
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha);
+    }
+    else
+    {
+        out_outColor = color(0);
+        out_outAlpha = 1 - 0.5 * in_contrast;
+    }
+}

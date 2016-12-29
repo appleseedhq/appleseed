@@ -34,6 +34,19 @@ shader as_maya_samplerInfo
     string maya_classification = "utility/general"
 ]]
 (
+    vector Tn = vector(0)
+    [[
+        string label = "Tangent",
+        string widget = "null",
+        int lockgeom = 0
+    ]],
+    vector Bn = vector(0)
+    [[
+        string label = "Bitangent",
+        string widget = "null",
+        int lockgeom = 0
+    ]],
+
     output point out_pointCamera = P
     [[
         string maya_attribute_name = "pointCamera",
@@ -142,8 +155,8 @@ shader as_maya_samplerInfo
     out_uvCoord[1] = 1.0 - v;
 
     out_rayDirection = normalize(transform("common", "camera", -I));
-    out_tangentUCamera = normalize(transform("common", "camera", dPdu));
-    out_tangentVCamera = normalize(transform("common", "camera", dPdv));
+    out_tangentUCamera = transform("common", "camera", Tn);
+    out_tangentVCamera = transform("common", "camera", Bn);
 
     out_matrixEyeToWorld = matrix("camera", "world");
 
