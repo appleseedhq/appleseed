@@ -26,7 +26,7 @@
 // THE SOFTWARE.
 //
 
-// Ref: Texturing & Modelling: A Procedural Approach, 3rd edition,
+// Ref: Texturing & Modeling: A Procedural Approach, 3rd edition,
 // David Ebert, F.Kenton Musgrave, Darwyn Peachey, Ken Perlin, Steve Worley.
 // ISBN: 9781558608481 
 

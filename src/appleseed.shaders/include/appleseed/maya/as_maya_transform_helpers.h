@@ -42,7 +42,7 @@ int outside_place3d_volume(
     {
         if (!wrap)
         {
-            // Default placement box bottom = (-1,-1,-1), top = (1,1,1), Δ=2.
+            // Default placement box bottom = (-1,-1,-1), top = (1,1,1)
             if (surface_point[0] < -1 || surface_point[0] > 1 ||
                 surface_point[1] < -1 || surface_point[1] > 1 ||
                 surface_point[2] < -1 || surface_point[2] > 1)
@@ -59,7 +59,7 @@ int outside_place3d_volume(
                         abs(surface_point[i] - 1),
                         abs(surface_point[i] + 1)));
                 }
-                blend_factor = min_distance * 0.5; // Δ=2
+                blend_factor = min_distance * 0.5; // delta = 2
             }
         }
     }
