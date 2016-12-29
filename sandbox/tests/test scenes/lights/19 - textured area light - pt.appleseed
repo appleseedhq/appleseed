@@ -266,7 +266,7 @@
                 <parameter name="enable_dl" value="true" />
                 <parameter name="enable_ibl" value="true" />
                 <parameter name="ibl_env_samples" value="1.000000" />
-                <parameter name="max_path_length" value="0" />
+                <parameter name="max_path_length" value="9" />
                 <parameter name="next_event_estimation" value="true" />
                 <parameter name="rr_min_path_length" value="3" />
             </parameters>
@@ -315,7 +315,7 @@
                 <parameter name="enable_dl" value="true" />
                 <parameter name="enable_ibl" value="true" />
                 <parameter name="ibl_env_samples" value="1.000000" />
-                <parameter name="max_path_length" value="0" />
+                <parameter name="max_path_length" value="9" />
                 <parameter name="next_event_estimation" value="true" />
                 <parameter name="rr_min_path_length" value="3" />
             </parameters>
