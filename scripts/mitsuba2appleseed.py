@@ -180,7 +180,7 @@ def convert_colormap(assembly, parent_name, element):
         color_name = "{0}_{1}".format(parent_name, reflectance_name)
         rgb, multiplier = get_rgb(element)
         color_params = {
-            "color_space" : "srgb",
+            "color_space" : "linear_rgb",
             "multiplier" : multiplier
         }
         assembly.colors().insert(asr.ColorEntity(color_name, color_params, rgb))
@@ -199,41 +199,37 @@ def convert_diffuse_bsdf(assembly, bsdf_name, element):
 def convert_plastic_bsdf(assembly, bsdf_name, element):
     bsdf_params = {}
 
-    bsdf_params["specular"] = 0.0
-    bsdf_params["roughness"] = 0.0
-    bsdf_params["clearcoat"] = 10.0     # todo: check if this is valid
-
     reflectance = element.find("*[@name='diffuseReflectance']")
     bsdf_params["base_color"] = convert_colormap(assembly, bsdf_name, reflectance)
+
+    bsdf_params["specular"] = 1.0
+    bsdf_params["roughness"] = 0.0
 
     assembly.bsdfs().insert(asr.BSDF("disney_brdf", bsdf_name, bsdf_params))
 
 def convert_roughplastic_bsdf(assembly, bsdf_name, element):
     bsdf_params = {}
 
-    bsdf_params["roughness"] = float(element.find("float[@name='alpha']").attrib["value"])
-
-    distrib = element.find("string[@name='distribution']").attrib["value"]
-    if distrib == "beckmann":
-        bsdf_params["mdf"] = "beckmann"
-    elif distrib == "ggx":
-        bsdf_params["mdf"] = "ggx"
-    else:
-        warning("Microfacet distribution {0} not supported, using beckmann".format(distrib))
-        bsdf_params["mdf"] = "beckmann"
-
-    bsdf_params["ior"] = float(element.find("float[@name='intIOR']").attrib["value"])
-
     reflectance = element.find("*[@name='diffuseReflectance']")
-    bsdf_params["reflectance"] = convert_colormap(assembly, bsdf_name, reflectance)
+    bsdf_params["base_color"] = convert_colormap(assembly, bsdf_name, reflectance)
 
-    assembly.bsdfs().insert(asr.BSDF("glossy_brdf", bsdf_name, bsdf_params))
+    bsdf_params["specular"] = 0.5
+    bsdf_params["roughness"] = min(1.0, float(element.find("float[@name='alpha']").attrib["value"]) * 3.0)
+
+    assembly.bsdfs().insert(asr.BSDF("disney_brdf", bsdf_name, bsdf_params))
 
 def convert_conductor_bsdf(assembly, bsdf_name, element):
     bsdf_params = {}
 
     reflectance = element.find("*[@name='specularReflectance']")
-    bsdf_params["normal_reflectance"] = convert_colormap(assembly, bsdf_name, reflectance)
+    if reflectance is not None:
+        bsdf_params["normal_reflectance"] = convert_colormap(assembly, bsdf_name, reflectance)
+
+    material = element.find("string[@name='material']")
+    if material is not None:
+        material_name = material.attrib["value"]
+        if material_name == "none":
+            bsdf_params["normal_reflectance"] = 1.0
 
     # todo: fix.
     bsdf_params["edge_tint"] = 1
@@ -260,8 +256,9 @@ def convert_dielectric_bsdf(assembly, bsdf_name, element):
     bsdf_params["ior"] = float(element.find("float[@name='intIOR']").attrib["value"])
 
     # todo: fix.
-    bsdf_params["surface_transmittance"] = 1
+    bsdf_params["surface_transmittance"] = 1.0
     bsdf_params["mdf"] = "ggx"
+    bsdf_params["roughness"] = 0.0
 
     assembly.bsdfs().insert(asr.BSDF("glass_bsdf", bsdf_name, bsdf_params))
 
@@ -298,14 +295,18 @@ def convert_envmap_emitter(scene, assembly, emitter_name, element):
 
     texture_instance_name = create_texture(scene, "environment_map", filepath)
 
-    matrix = element.find("matrix")
-    if matrix is not None:
-        env_edf_matrix = get_matrix(matrix)
-        # todo: complete when environment EDF transforms can be set from Python.
-
-    scene.environment_edfs().insert(asr.EnvironmentEDF("latlong_map_environment_edf", "environment_edf", {
+    env_edf = asr.EnvironmentEDF("latlong_map_environment_edf", "environment_edf", {
         "radiance" : texture_instance_name
-    }))
+    })
+
+    matrix = element.find("transform/matrix")
+    if matrix is not None:
+        roty = asr.Matrix4d.make_rotation(asr.Vector3d(0.0, 1.0, 0.0), math.radians(-90.0))
+        bob = get_matrix(matrix)
+        bob = bob * roty
+        env_edf.transform_sequence().set_transform(0.0, asr.Transformd(bob))
+
+    scene.environment_edfs().insert(env_edf)
 
     scene.environment_shaders().insert(asr.EnvironmentShader("edf_environment_shader", "environment_shader", {
         "environment_edf" : 'environment_edf'
@@ -317,7 +318,10 @@ def convert_envmap_emitter(scene, assembly, emitter_name, element):
     }))
 
 def convert_sun_emitter(scene, assembly, emitter_name, element):
-    sun_params = { "turbidity" : 4.0 }
+    sun_params = {}
+
+    turbidity = element.find("float[@name='turbidity']")
+    sun_params["turbidity"] = float(turbidity) - 2.0 if turbidity is not None else 1.0
 
     scale = element.find("float[@name='scale']")
     if scale is not None:
@@ -327,8 +331,8 @@ def convert_sun_emitter(scene, assembly, emitter_name, element):
 
     sun_direction = element.find("vector[@name='sunDirection']")
     if sun_direction is not None:
-        from_direction = asr.Vector3d(0.0, 0.0, -1.0)
-        to_direction = asr.Vector3d([-x for x in get_vector(sun_direction)])
+        from_direction = asr.Vector3d(0.0, 0.0, 1.0)
+        to_direction = asr.Vector3d(get_vector(sun_direction))
         sun.set_transform( \
             asr.Transformd( \
                 asr.Matrix4d.make_rotation( \
@@ -481,6 +485,10 @@ def convert(tree):
 
     # Add default configurations to the project.
     project.add_default_configurations()
+
+    # Enable caustics.
+    project.configurations().get_by_name("final").insert_path("pt.enable_caustics", True)
+    project.configurations().get_by_name("interactive").insert_path("pt.enable_caustics", True)
 
     # Create a scene.
     scene = asr.Scene()
