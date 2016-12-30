@@ -56,9 +56,9 @@ namespace boost
 namespace
 {
     auto_release_ptr<EnvironmentEDF> create_environment_edf(
-        const string&    model,
-        const string&    name,
-        const bpy::dict& params)
+        const string&       model,
+        const string&       name,
+        const bpy::dict&    params)
     {
         EnvironmentEDFFactoryRegistrar factories;
         const IEnvironmentEDFFactory* factory = factories.lookup(model.c_str());
@@ -75,9 +75,9 @@ namespace
     }
 
     auto_release_ptr<EnvironmentShader> create_environment_shader(
-        const std::string& env_shader_type,
-        const std::string& name,
-        const bpy::dict&   params)
+        const string&       env_shader_type,
+        const string&       name,
+        const bpy::dict&    params)
     {
         EnvironmentShaderFactoryRegistrar factories;
         const IEnvironmentShaderFactory* factory = factories.lookup(env_shader_type.c_str());
@@ -94,8 +94,8 @@ namespace
     }
 
     auto_release_ptr<Environment> create_environment(
-        const std::string& name,
-        const bpy::dict&   params)
+        const string&       name,
+        const bpy::dict&    params)
     {
         return EnvironmentFactory::create(name.c_str(), bpy_dict_to_param_array(params));
     }
