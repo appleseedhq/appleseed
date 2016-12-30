@@ -73,7 +73,7 @@ def build_project():
 
     # Create a material called "gray_material" and insert it into the assembly.
     assembly.materials().insert(asr.Material("generic_material", "gray_material", { "surface_shader" : "physical_surface_shader",
-                                                                "bsdf" : "diffuse_gray_brdf" }))
+                                                                                    "bsdf" : "diffuse_gray_brdf" }))
 
     #------------------------------------------------------------------------
     # Geometry
