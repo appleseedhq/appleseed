@@ -35,6 +35,7 @@ import threading
 
 import appleseed as asr
 
+
 def build_project():
     # Create an empty project.
     project = asr.Project('test project')
@@ -63,30 +64,30 @@ def build_project():
 
     # Create a color called "gray" and insert it into the assembly.
     GrayReflectance = [0.5, 0.5, 0.5]
-    assembly.colors().insert(asr.ColorEntity("gray", { 'color_space' : 'srgb' }, GrayReflectance))
+    assembly.colors().insert(asr.ColorEntity("gray", {'color_space': 'srgb'}, GrayReflectance))
 
     # Create a BRDF called "diffuse_gray_brdf" and insert it into the assembly.
-    assembly.bsdfs().insert(asr.BSDF("lambertian_brdf", "diffuse_gray_brdf", { 'reflectance' : 'gray' }))
+    assembly.bsdfs().insert(asr.BSDF("lambertian_brdf", "diffuse_gray_brdf", {'reflectance': 'gray'}))
 
     # Create a physical surface shader and insert it into the assembly.
     assembly.surface_shaders().insert(asr.SurfaceShader("physical_surface_shader", "physical_surface_shader"))
 
     # Create a material called "gray_material" and insert it into the assembly.
-    assembly.materials().insert(asr.Material("generic_material", "gray_material", { "surface_shader" : "physical_surface_shader",
-                                                                                    "bsdf" : "diffuse_gray_brdf" }))
+    assembly.materials().insert(asr.Material("generic_material", "gray_material", {"surface_shader": "physical_surface_shader",
+                                                                                   "bsdf": "diffuse_gray_brdf"}))
 
     #------------------------------------------------------------------------
     # Geometry
     #------------------------------------------------------------------------
 
     # Load the scene geometry from disk.
-    objects = asr.MeshObjectReader.read(project.get_search_paths(), "cube", { 'filename' : 'scene.obj' })
+    objects = asr.MeshObjectReader.read(project.get_search_paths(), "cube", {'filename': 'scene.obj'})
 
     # Insert all the objects into the assembly.
     for object in objects:
         # Create an instance of this object and insert it into the assembly.
         instance_name = object.get_name() + "_inst"
-        material_names = { "default" : "gray_material", "default2" : "gray_material" }
+        material_names = {"default": "gray_material", "default2": "gray_material"}
         instance = asr.ObjectInstance(instance_name, {}, object.get_name(), asr.Transformd(asr.Matrix4d.identity()), material_names)
         assembly.object_instances().insert(instance)
 
@@ -99,10 +100,10 @@ def build_project():
 
     # Create a color called "light_intensity" and insert it into the assembly.
     LightRadiance = [1.0, 1.0, 1.0]
-    assembly.colors().insert(asr.ColorEntity("light_intensity", { 'color_space' : 'srgb', 'multiplier' : 30.0 }, LightRadiance))
+    assembly.colors().insert(asr.ColorEntity("light_intensity", {'color_space': 'srgb', 'multiplier': 30.0}, LightRadiance))
 
     # Create a point light called "light" and insert it into the assembly.
-    light = asr.Light("point_light", "light", { 'intensity' : 'light_intensity' })
+    light = asr.Light("point_light", "light", {'intensity': 'light_intensity'})
     light.set_transform(asr.Transformd(asr.Matrix4d.make_translation(asr.Vector3d(0.6, 2.0, 1.0))))
     assembly.lights().insert(light)
 
@@ -124,23 +125,23 @@ def build_project():
 
     # Create a color called "sky_radiance" and insert it into the scene.
     SkyRadiance = [0.75, 0.80, 1.0]
-    scene.colors().insert(asr.ColorEntity("sky_radiance", { 'color_space' : 'srgb', 'multiplier' : 0.5 }, SkyRadiance))
+    scene.colors().insert(asr.ColorEntity("sky_radiance", {'color_space': 'srgb', 'multiplier': 0.5}, SkyRadiance))
 
     # Create an environment EDF called "sky_edf" and insert it into the scene.
-    scene.environment_edfs().insert(asr.EnvironmentEDF("constant_environment_edf", "sky_edf", { 'radiance' : 'sky_radiance' }))
+    scene.environment_edfs().insert(asr.EnvironmentEDF("constant_environment_edf", "sky_edf", {'radiance': 'sky_radiance'}))
 
     # Create an environment shader called "sky_shader" and insert it into the scene.
-    scene.environment_shaders().insert(asr.EnvironmentShader("edf_environment_shader", "sky_shader", { 'environment_edf' : 'sky_edf' }))
+    scene.environment_shaders().insert(asr.EnvironmentShader("edf_environment_shader", "sky_shader", {'environment_edf': 'sky_edf'}))
 
     # Create an environment called "sky" and bind it to the scene.
-    scene.set_environment(asr.Environment("sky", { "environment_edf" : "sky_edf", "environment_shader" : "sky_shader" }))
+    scene.set_environment(asr.Environment("sky", {"environment_edf": "sky_edf", "environment_shader": "sky_shader"}))
 
     #------------------------------------------------------------------------
     # Camera
     #------------------------------------------------------------------------
 
     # Create a pinhole camera with film dimensions 0.980 x 0.735 in (24.892 x 18.669 mm).
-    params = { 'film_dimensions' : asr.Vector2f(0.024892, 0.018669), 'focal_length' : 0.035 }
+    params = {'film_dimensions': asr.Vector2f(0.024892, 0.018669), 'focal_length': 0.035}
     camera = asr.Camera("pinhole_camera", "camera", params)
 
     # Place and orient the camera. By default cameras are located in (0.0, 0.0, 0.0)
@@ -157,10 +158,10 @@ def build_project():
     #------------------------------------------------------------------------
 
     # Create a frame and bind it to the project.
-    params = { 'camera' : scene.get_camera().get_name(),
-               'resolution' : asr.Vector2i(640, 480),
-               'color_space' : 'srgb',
-               'camera' : 'camera' }
+    params = {'camera': scene.get_camera().get_name(),
+              'resolution': asr.Vector2i(640, 480),
+              'color_space': 'srgb',
+              'camera': 'camera'}
     project.set_frame(asr.Frame("beauty", params))
 
     # Bind the scene to the project.
@@ -168,7 +169,9 @@ def build_project():
 
     return project
 
+
 class RendererController(asr.IRendererController):
+
     def __init__(self):
         super(RendererController, self).__init__()
         self.__abort = False
@@ -209,7 +212,9 @@ class RendererController(asr.IRendererController):
         else:
             return asr.IRenderControllerStatus.ContinueRendering
 
+
 class TileCallback(asr.ITileCallback):
+
     def __init__(self):
         super(TileCallback, self).__init__()
 
@@ -225,7 +230,9 @@ class TileCallback(asr.ITileCallback):
     def post_render(self, frame):
         pass
 
+
 class RenderThread(threading.Thread):
+
     def __init__(self, renderer):
         super(RenderThread, self).__init__()
         self.__renderer = renderer
@@ -234,6 +241,7 @@ class RenderThread(threading.Thread):
         self.__renderer.render()
 
 RENDER_ON_THREAD = True
+
 
 def main():
     # Create a log target that outputs to stderr, and binds it to the renderer's global logger.
@@ -267,7 +275,7 @@ def main():
         render_thread.start()
 
         while render_thread.isAlive():
-            render_thread.join(0.5) # seconds
+            render_thread.join(0.5)  # seconds
     else:
         renderer.render()
 

@@ -29,7 +29,9 @@
 import unittest
 import appleseed as asr
 
+
 class TestBasis(unittest.TestCase):
+
     def setUp(self):
         pass
 

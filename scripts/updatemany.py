@@ -86,7 +86,7 @@ def update_project_files(tool_path, directory, recursive):
 #--------------------------------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="normalize multiple project files and update " \
+    parser = argparse.ArgumentParser(description="normalize multiple project files and update "
                                      "them to the latest format revision if necessary.")
     parser.add_argument("-t", "--tool-path", metavar="tool-path",
                         help="set the path to the updateprojectfile tool")

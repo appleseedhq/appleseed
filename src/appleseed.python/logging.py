@@ -36,7 +36,9 @@ else:
     # Python 3.x
     from ._appleseedpython import ILogTarget
 
+
 class ConsoleLogTarget(ILogTarget):
+
     def __init__(self, stream):
         ILogTarget.__init__(self)
         self.__stream = stream
@@ -46,7 +48,9 @@ class ConsoleLogTarget(ILogTarget):
         for line in lines:
             self.__stream.write(header + line + '\n')
 
+
 class FileLogTarget(ILogTarget):
+
     def __init__(self):
         ILogTarget.__init__(self)
         self.__file = None

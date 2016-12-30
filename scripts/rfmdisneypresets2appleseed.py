@@ -36,7 +36,8 @@ import sys
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-DISNEY_BRDF_KEYS = set([ "anisotropic", "baseColorB", "baseColorG", "baseColorR", "clearcoat", "clearcoatGloss", "metallic", "roughness", "sheen", "sheenTint", "specular", "specularTint", "subsurface", "subsurfaceColorB", "subsurfaceColorG", "subsurfaceColorR"])
+DISNEY_BRDF_KEYS = set(["anisotropic", "baseColorB", "baseColorG", "baseColorR", "clearcoat", "clearcoatGloss", "metallic", "roughness",
+                        "sheen", "sheenTint", "specular", "specularTint", "subsurface", "subsurfaceColorB", "subsurfaceColorG", "subsurfaceColorR"])
 
 
 #--------------------------------------------------------------------------------------------------
@@ -46,7 +47,7 @@ DISNEY_BRDF_KEYS = set([ "anisotropic", "baseColorB", "baseColorG", "baseColorR"
 def main():
     parser = argparse.ArgumentParser(description="Converts RFM Disney BRDF presets to appleseed Disney Materials.")
     parser.add_argument("-s", "--stop-error", dest="stop_error", action="store_true", help="stop on errors")
-    parser.add_argument("-o" ,"--output", metavar="output-directory", dest="output_directory",
+    parser.add_argument("-o", "--output", metavar="output-directory", dest="output_directory",
                         required=True, help="directory where appleseed materials will be stored.")
     parser.add_argument("directory", help="directory to scan for RFM Disney BRDF preset files.")
     args = parser.parse_args()
