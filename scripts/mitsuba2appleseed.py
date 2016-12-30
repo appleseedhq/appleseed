@@ -60,6 +60,13 @@ def fatal(message):
 # Conversion code.
 #--------------------------------------------------------------------------------------------------
 
+def get_vector(element):
+    return [
+        float(element.attrib["x"]),
+        float(element.attrib["y"]),
+        float(element.attrib["z"])
+    ]
+
 def get_matrix(element):
     values = [ float(x) for x in element.attrib["value"].split() ]
     if len(values) != 16:
@@ -104,7 +111,10 @@ def convert_sampler(project, element):
 def convert_sensor(project, scene, element):
     camera_params = {}
     camera_matrix = None
-    frame_params = { "camera": "camera" }
+    frame_params = {
+        "camera" : "camera",
+        "color_space" : "srgb"
+    }
 
     for child in element:
         if child.tag == "float":
@@ -189,8 +199,9 @@ def convert_diffuse_bsdf(assembly, bsdf_name, element):
 def convert_plastic_bsdf(assembly, bsdf_name, element):
     bsdf_params = {}
 
-    bsdf_params["specular"] = 0.3
-    bsdf_params["clearcoat"] = 1.0
+    bsdf_params["specular"] = 0.0
+    bsdf_params["roughness"] = 0.0
+    bsdf_params["clearcoat"] = 10.0     # todo: check if this is valid
 
     reflectance = element.find("*[@name='diffuseReflectance']")
     bsdf_params["base_color"] = convert_colormap(assembly, bsdf_name, reflectance)
@@ -293,7 +304,7 @@ def convert_envmap_emitter(scene, assembly, emitter_name, element):
         # todo: complete when environment EDF transforms can be set from Python.
 
     scene.environment_edfs().insert(asr.EnvironmentEDF("latlong_map_environment_edf", "environment_edf", {
-        "radiance": texture_instance_name
+        "radiance" : texture_instance_name
     }))
 
     scene.environment_shaders().insert(asr.EnvironmentShader("edf_environment_shader", "environment_shader", {
@@ -305,15 +316,37 @@ def convert_envmap_emitter(scene, assembly, emitter_name, element):
         "environment_shader" : "environment_shader"
     }))
 
+def convert_sun_emitter(scene, assembly, emitter_name, element):
+    sun_params = { "turbidity" : 4.0 }
+
+    scale = element.find("float[@name='scale']")
+    if scale is not None:
+        sun_params["radiance_multiplier"] = float(scale.attrib["value"])
+
+    sun = asr.Light("sun_light", "sun_light", sun_params)
+
+    sun_direction = element.find("vector[@name='sunDirection']")
+    if sun_direction is not None:
+        from_direction = asr.Vector3d(0.0, 0.0, -1.0)
+        to_direction = asr.Vector3d([-x for x in get_vector(sun_direction)])
+        sun.set_transform( \
+            asr.Transformd( \
+                asr.Matrix4d.make_rotation( \
+                    asr.Quaterniond.make_rotation(from_direction, to_direction))))
+
+    assembly.lights().insert(sun)
+
 def convert_emitter(scene, assembly, emitter_name, element):
     type = element.attrib["type"]
     if type == "area":
         convert_area_emitter(assembly, emitter_name, element)
     elif type == "envmap":
         convert_envmap_emitter(scene, assembly, emitter_name, element)
+    elif type == "sun":
+        convert_sun_emitter(scene, assembly, emitter_name, element)
     else:
         warning("Don't know how to convert emitter of type {0}".format(type))
-        
+
 def convert_twosided_material(assembly, material_name, edf_name, element):
     # todo: somehow mark the material as two-sided.
     if material_name is None and "id" in element.attrib:
