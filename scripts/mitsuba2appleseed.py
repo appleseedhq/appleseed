@@ -126,28 +126,46 @@ def convert_sensor(project, scene, element):
 
     project.set_frame(asr.Frame("beauty", frame_params))
 
-def convert_texture(assembly, texture_name, texture_inst_name, element):
-    if element.attrib["type"] == "bitmap":
-        filepath = element.find("string[@name='filename']").attrib["value"]
-        if filepath.endswith(".jpg"):
-            # Hack because appleseed doesn't currently support JPEG in built-in materials.
-            filepath += ".png"
-        texture = asr.Texture("disk_texture_2d", texture_name, {
-            "filename": filepath,
-            "color_space": "linear" if filepath.endswith(".exr") else "srgb"
-        }, [])
-        assembly.textures().insert(texture)
+def create_texture(base_group, texture_name, filepath):
+    if filepath.endswith(".jpg"):
+        # Hack because appleseed doesn't currently support JPEG images in built-in materials.
+        filepath += ".png"
 
-        texture_instance = asr.TextureInstance(texture_inst_name, {}, texture_name, asr.Transformf.identity())
-        assembly.texture_instances().insert(texture_instance)
+    if filepath.endswith(".hdr"):
+        # Hack because appleseed doesn't currently support HDR images in built-in materials.
+        filepath += ".exr"
+
+    color_space = "linear_rgb" if filepath.endswith(".exr") or \
+                                  filepath.endswith(".hdr") else "srgb"
+    base_group.textures().insert(asr.Texture("disk_texture_2d", texture_name, {
+        "filename": filepath,
+        "color_space": color_space
+    }, []))
+
+    texture_instance_name = "{0}_inst".format(texture_name)
+    texture_instance = asr.TextureInstance(texture_instance_name, {}, texture_name, asr.Transformf.identity())
+    base_group.texture_instances().insert(texture_instance)
+    return texture_instance_name
+
+def convert_texture(assembly, texture_name, element):
+    type = element.attrib["type"]
+    if type == "bitmap":
+        filepath = element.find("string[@name='filename']").attrib["value"]
+        return create_texture(assembly, texture_name, filepath)
+    else:
+        warning("Don't know how to convert texture of type {0}".format(type))
+        color_params = {
+            "color_space" : "srgb",
+            "multiplier" : 1.0
+        }
+        assembly.colors().insert(asr.ColorEntity(texture_name, color_params, [0.7, 0.7, 0.7]))
+        return texture_name
 
 def convert_colormap(assembly, parent_name, element):
     reflectance_name = element.attrib["name"]
     if element.tag == "texture":
         texture_name = "{0}_{1}".format(parent_name, reflectance_name)
-        texture_inst_name = "{0}_inst".format(texture_name)
-        convert_texture(assembly, texture_name, texture_inst_name, element)
-        return texture_inst_name
+        return convert_texture(assembly, texture_name, element)
     elif element.tag == "rgb":
         color_name = "{0}_{1}".format(parent_name, reflectance_name)
         rgb, multiplier = get_rgb(element)
@@ -167,6 +185,17 @@ def convert_diffuse_bsdf(assembly, bsdf_name, element):
     bsdf_params["reflectance"] = convert_colormap(assembly, bsdf_name, reflectance)
 
     assembly.bsdfs().insert(asr.BSDF("lambertian_brdf", bsdf_name, bsdf_params))
+
+def convert_plastic_bsdf(assembly, bsdf_name, element):
+    bsdf_params = {}
+
+    bsdf_params["specular"] = 0.3
+    bsdf_params["clearcoat"] = 1.0
+
+    reflectance = element.find("*[@name='diffuseReflectance']")
+    bsdf_params["base_color"] = convert_colormap(assembly, bsdf_name, reflectance)
+
+    assembly.bsdfs().insert(asr.BSDF("disney_brdf", bsdf_name, bsdf_params))
 
 def convert_roughplastic_bsdf(assembly, bsdf_name, element):
     bsdf_params = {}
@@ -229,6 +258,8 @@ def convert_bsdf(assembly, bsdf_name, element):
     type = element.attrib["type"]
     if type == "diffuse":
         convert_diffuse_bsdf(assembly, bsdf_name, element)
+    elif type == "plastic":
+        convert_plastic_bsdf(assembly, bsdf_name, element)
     elif type == "roughplastic":
         convert_roughplastic_bsdf(assembly, bsdf_name, element)
     elif type == "conductor":
@@ -240,18 +271,46 @@ def convert_bsdf(assembly, bsdf_name, element):
     else:
         warning("Don't know how to convert BSDF of type {0}".format(type))
 
-def convert_area_emitter(assembly, edf_name, element):
+def convert_area_emitter(assembly, emitter_name, element):
+    if emitter_name is None:
+        fatal("Area emitters must have a name")
+
     edf_params = {}
 
     radiance = element.find("*[@name='radiance']")
-    edf_params["radiance"] = convert_colormap(assembly, edf_name, radiance)
+    edf_params["radiance"] = convert_colormap(assembly, emitter_name, radiance)
 
-    assembly.edfs().insert(asr.EDF("diffuse_edf", edf_name, edf_params))
+    assembly.edfs().insert(asr.EDF("diffuse_edf", emitter_name, edf_params))
 
-def convert_emitter(assembly, edf_name, element):
+def convert_envmap_emitter(scene, assembly, emitter_name, element):
+    filepath = element.find("string[@name='filename']").attrib["value"]
+
+    texture_instance_name = create_texture(scene, "environment_map", filepath)
+
+    matrix = element.find("matrix")
+    if matrix is not None:
+        env_edf_matrix = get_matrix(matrix)
+        # todo: complete when environment EDF transforms can be set from Python.
+
+    scene.environment_edfs().insert(asr.EnvironmentEDF("latlong_map_environment_edf", "environment_edf", {
+        "radiance": texture_instance_name
+    }))
+
+    scene.environment_shaders().insert(asr.EnvironmentShader("edf_environment_shader", "environment_shader", {
+        "environment_edf" : 'environment_edf'
+    }))
+
+    scene.set_environment(asr.Environment("sky", {
+        "environment_edf" : "environment_edf",
+        "environment_shader" : "environment_shader"
+    }))
+
+def convert_emitter(scene, assembly, emitter_name, element):
     type = element.attrib["type"]
     if type == "area":
-        convert_area_emitter(assembly, edf_name, element)
+        convert_area_emitter(assembly, emitter_name, element)
+    elif type == "envmap":
+        convert_envmap_emitter(scene, assembly, emitter_name, element)
     else:
         warning("Don't know how to convert emitter of type {0}".format(type))
         
@@ -312,7 +371,7 @@ def convert_obj_shape(project, assembly, element):
                                                               front_material_mappings, back_material_mappings))
         assembly.objects().insert(object)
 
-def convert_rectangle_shape(project, assembly, element):
+def convert_rectangle_shape(scene, assembly, element):
     object_count = len(assembly.objects())
     object_name = "object_{0}".format(object_count)
     instance_name = "{0}_inst".format(object_name)
@@ -336,7 +395,7 @@ def convert_rectangle_shape(project, assembly, element):
     emitter = element.find("emitter")
     if emitter is not None:
         edf_name = "{0}_edf".format(instance_name)
-        convert_emitter(assembly, edf_name, emitter)
+        convert_emitter(scene, assembly, edf_name, emitter)
 
     # Embedded BSDF.
     bsdf = element.find("bsdf")
@@ -358,12 +417,12 @@ def convert_rectangle_shape(project, assembly, element):
                                                           front_material_mappings, back_material_mappings))
     assembly.objects().insert(object)
 
-def convert_shape(project, assembly, element):
+def convert_shape(project, scene, assembly, element):
     type = element.attrib["type"]
     if type == "obj":
         convert_obj_shape(project, assembly, element)
     elif type == "rectangle":
-        convert_rectangle_shape(project, assembly, element)
+        convert_rectangle_shape(scene, assembly, element)
 
 def convert_scene(project, scene, assembly, element):
     for child in element:
@@ -374,7 +433,9 @@ def convert_scene(project, scene, assembly, element):
         elif child.tag == "bsdf":
             convert_material(assembly, None, None, child)
         elif child.tag == "shape":
-            convert_shape(project, assembly, child)
+            convert_shape(project, scene, assembly, child)
+        elif child.tag == "emitter":
+            convert_emitter(scene, assembly, None, child)
 
 def convert(tree):
     project = asr.Project("project")
