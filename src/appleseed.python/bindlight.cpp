@@ -71,14 +71,14 @@ namespace
         return auto_release_ptr<Light>();
     }
 
-    UnalignedTransformd light_get_transform(const Light* l)
+    UnalignedTransformd light_get_transform(const Light* light)
     {
-        return UnalignedTransformd(l->get_transform());
+        return UnalignedTransformd(light->get_transform());
     }
 
-    void light_set_transform(Light* l, const UnalignedTransformd& xform)
+    void light_set_transform(Light* light, const UnalignedTransformd& xform)
     {
-        l->set_transform(xform.as_foundation_transform());
+        light->set_transform(xform.as_foundation_transform());
     }
 }
 

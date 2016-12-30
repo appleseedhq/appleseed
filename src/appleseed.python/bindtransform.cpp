@@ -71,9 +71,9 @@ namespace
 
             .def(bpy::self * bpy::self)
 
-            .def("point_to_local"  , &UnalignedTransform<T>::point_to_local)
-            .def("point_to_parent" , &UnalignedTransform<T>::point_to_parent)
-            .def("vector_to_local" , &UnalignedTransform<T>::vector_to_local)
+            .def("point_to_local",   &UnalignedTransform<T>::point_to_local)
+            .def("point_to_parent",  &UnalignedTransform<T>::point_to_parent)
+            .def("vector_to_local",  &UnalignedTransform<T>::vector_to_local)
             .def("vector_to_parent", &UnalignedTransform<T>::vector_to_parent)
             .def("normal_to_local" , &UnalignedTransform<T>::normal_to_local)
             .def("normal_to_parent", &UnalignedTransform<T>::normal_to_parent)
