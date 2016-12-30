@@ -141,6 +141,8 @@ void bind_logger()
 
     bpy::class_<Logger, boost::noncopyable>("Logger", bpy::no_init)
         .def("set_enabled", &Logger::set_enabled)
+        .def("set_verbosity_level", &Logger::set_verbosity_level)
+        .def("get_verbosity_level", &Logger::get_verbosity_level)
         .def("reset_all_formats", &Logger::reset_all_formats)
         .def("reset_format", &Logger::reset_format)
         .def("set_all_formats", logger_set_all_formats)
