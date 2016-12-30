@@ -398,7 +398,7 @@ def convert_obj_shape(project, assembly, element):
     # Material reference.
     ref = element.find("ref")
     if ref is not None:
-        front_material_mappings = { "default": element.find("ref").attrib["id"] }
+        front_material_mappings = { "default" : element.find("ref").attrib["id"] }
         back_material_mappings = front_material_mappings
 
     objects = asr.MeshObjectReader.read(project.get_search_paths(), object_name, { "filename" : filepath })
@@ -424,7 +424,7 @@ def convert_rectangle_shape(scene, assembly, element):
     # Material reference.
     ref = element.find("ref")
     if ref is not None:
-        front_material_mappings = { "default": element.find("ref").attrib["id"] }
+        front_material_mappings = { "default" : element.find("ref").attrib["id"] }
         back_material_mappings = front_material_mappings
 
     # Embedded emitter.
@@ -439,7 +439,7 @@ def convert_rectangle_shape(scene, assembly, element):
     if bsdf is not None:
         material_name = "{0}_material".format(instance_name)
         convert_material(assembly, material_name, edf_name, bsdf)
-        front_material_mappings = { "default": material_name }
+        front_material_mappings = { "default" : material_name }
         back_material_mappings = front_material_mappings
 
     object = asr.create_primitive_mesh(object_name, {
