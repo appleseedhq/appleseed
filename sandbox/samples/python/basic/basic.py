@@ -106,6 +106,10 @@ def build_project():
     light.set_transform(asr.Transformd(asr.Matrix4d.make_translation(asr.Vector3d(0.6, 2.0, 1.0))))
     assembly.lights().insert(light)
 
+    #------------------------------------------------------------------------
+    # Assembly instance
+    #------------------------------------------------------------------------
+
     # Create an instance of the assembly and insert it into the scene.
     assembly_inst = asr.AssemblyInstance("assembly_inst", {}, assembly.get_name())
     assembly_inst.transform_sequence().set_transform(0.0, asr.Transformd(asr.Matrix4d.identity()))
