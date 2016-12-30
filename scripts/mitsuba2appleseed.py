@@ -186,7 +186,7 @@ def convert_colormap(assembly, parent_name, element):
         assembly.colors().insert(asr.ColorEntity(color_name, color_params, rgb))
         return color_name
     else:
-        warning("Don't know how to convert diffuse reflectance of type {0}".format(element.tag))
+        warning("Don't know how to convert color map of type {0}".format(element.tag))
 
 def convert_diffuse_bsdf(assembly, bsdf_name, element):
     bsdf_params = {}
@@ -460,6 +460,8 @@ def convert_shape(project, scene, assembly, element):
         convert_obj_shape(project, assembly, element)
     elif type == "rectangle":
         convert_rectangle_shape(scene, assembly, element)
+    else:
+        warning("Don't know how to convert shape of type {0}".format(type))
 
 def convert_scene(project, scene, assembly, element):
     for child in element:
