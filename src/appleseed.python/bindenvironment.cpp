@@ -74,6 +74,11 @@ namespace
         return auto_release_ptr<EnvironmentEDF>();
     }
 
+    TransformSequence* environment_edf_get_transform_sequence(EnvironmentEDF* environment)
+    {
+        return &(environment->transform_sequence());
+    }
+
     auto_release_ptr<EnvironmentShader> create_environment_shader(
         const string&       env_shader_type,
         const string&       name,
@@ -108,6 +113,7 @@ void bind_environment()
         .def("get_input_metadata", &detail::get_entity_input_metadata<EnvironmentEDFFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_environment_edf))
         .def("get_model", &EnvironmentEDF::get_model)
+        .def("transform_sequence", environment_edf_get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
         ;
 
     bind_typed_entity_vector<EnvironmentEDF>("EnvironmentEDFContainer");

@@ -167,6 +167,7 @@ set (appleseed_maya2_osl_sources
      src/maya/as_maya_cloud.osl
      src/maya/as_maya_color2Components.osl
      src/maya/as_maya_components2Color.osl
+     src/maya/as_maya_components2UV.osl
      src/maya/as_maya_components2Vector.osl
      src/maya/as_maya_condition.osl
      src/maya/as_maya_contrast.osl
@@ -196,6 +197,7 @@ set (appleseed_maya2_osl_sources
      src/maya/as_maya_stencil.osl
      src/maya/as_maya_transposeMatrix.osl
      src/maya/as_maya_tripleShadingSwitch.osl
+     src/maya/as_maya_uv2Components.osl
      src/maya/as_maya_vector2Components.osl
      src/maya/as_maya_vectorProduct.osl
      src/maya/as_maya_wtAddMatrix.osl
