@@ -31,7 +31,7 @@ import appleseed as asr
 
 class TestEntityVector(unittest.TestCase):
     """
-        Basic entity vector tests.
+    Basic entity vector tests.
     """
 
     def setUp(self):

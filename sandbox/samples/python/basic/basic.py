@@ -73,7 +73,7 @@ def build_project():
 
     # Create a material called "gray_material" and insert it into the assembly.
     assembly.materials().insert(asr.Material("generic_material", "gray_material", { "surface_shader" : "physical_surface_shader",
-                                                                "bsdf" : "diffuse_gray_brdf" }))
+                                                                                    "bsdf" : "diffuse_gray_brdf" }))
 
     #------------------------------------------------------------------------
     # Geometry
@@ -105,6 +105,10 @@ def build_project():
     light = asr.Light("point_light", "light", { 'intensity' : 'light_intensity' })
     light.set_transform(asr.Transformd(asr.Matrix4d.make_translation(asr.Vector3d(0.6, 2.0, 1.0))))
     assembly.lights().insert(light)
+
+    #------------------------------------------------------------------------
+    # Assembly instance
+    #------------------------------------------------------------------------
 
     # Create an instance of the assembly and insert it into the scene.
     assembly_inst = asr.AssemblyInstance("assembly_inst", {}, assembly.get_name())

@@ -50,7 +50,7 @@ import zipfile
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.4.4"
+VERSION = "2.4.5"
 SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 
 
@@ -346,6 +346,7 @@ class PackageBuilder:
         shutil.copy("updatemany.py", "appleseed/bin/")
         shutil.copy("rendernode.py", "appleseed/bin/")
         shutil.copy("rendermanager.py", "appleseed/bin/")
+        shutil.copy("mitsuba2appleseed.py", "appleseed/bin/")
 
     def add_local_schema_files_to_stage(self):
         progress("Adding local schema files to staging directory")

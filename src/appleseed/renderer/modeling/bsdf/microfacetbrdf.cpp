@@ -99,6 +99,8 @@ namespace
     //
     // Microfacet BRDF.
     //
+    // This model is deprecated in favor of the glossy, glass and metal BRDFs.
+    //
 
     const char* Model = "microfacet_brdf";
 
