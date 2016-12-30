@@ -320,12 +320,12 @@ def convert_envmap_emitter(scene, assembly, emitter_name, element):
         "radiance": texture_instance_name
     })
 
-    matrix = element.find("transform/matrix")
-    if matrix is not None:
+    matrix_element = element.find("transform/matrix")
+    if matrix_element is not None:
+        matrix = get_matrix(matrix_element)
         roty = asr.Matrix4d.make_rotation(asr.Vector3d(0.0, 1.0, 0.0), math.radians(-90.0))
-        bob = get_matrix(matrix)
-        bob = bob * roty
-        env_edf.transform_sequence().set_transform(0.0, asr.Transformd(bob))
+        matrix = matrix * roty
+        env_edf.transform_sequence().set_transform(0.0, asr.Transformd(matrix))
 
     scene.environment_edfs().insert(env_edf)
 
@@ -436,16 +436,7 @@ def convert_obj_shape(project, assembly, element):
         assembly.objects().insert(object)
 
 
-def convert_rectangle_shape(scene, assembly, element):
-    object_count = len(assembly.objects())
-    object_name = "object_{0}".format(object_count)
-    instance_name = "{0}_inst".format(object_name)
-
-    matrix = get_matrix(element.find("transform/matrix"))
-    rotx = asr.Matrix4d.make_rotation(asr.Vector3d(1.0, 0.0, 0.0), math.radians(90.0))
-    matrix = matrix * rotx
-    transform = asr.Transformd(matrix)
-
+def process_embedded_material(scene, assembly, instance_name, element):
     front_material_mappings = {}
     back_material_mappings = {}
 
@@ -470,6 +461,22 @@ def convert_rectangle_shape(scene, assembly, element):
         front_material_mappings = {"default": material_name}
         back_material_mappings = front_material_mappings
 
+    return front_material_mappings, back_material_mappings
+
+
+def convert_rectangle_shape(scene, assembly, element):
+    object_count = len(assembly.objects())
+    object_name = "object_{0}".format(object_count)
+    instance_name = "{0}_inst".format(object_name)
+
+    front_material_mappings, back_material_mappings = \
+        process_embedded_material(scene, assembly, instance_name, element)
+
+    matrix = get_matrix(element.find("transform/matrix"))
+    rotx = asr.Matrix4d.make_rotation(asr.Vector3d(1.0, 0.0, 0.0), math.radians(90.0))
+    matrix = matrix * rotx
+    transform = asr.Transformd(matrix)
+
     object = asr.create_primitive_mesh(object_name, {
         "primitive": "grid",
         "resolution_u": 1,
@@ -483,12 +490,48 @@ def convert_rectangle_shape(scene, assembly, element):
     assembly.objects().insert(object)
 
 
+def convert_sphere_shape(scene, assembly, element):
+    object_count = len(assembly.objects())
+    object_name = "object_{0}".format(object_count)
+    instance_name = "{0}_inst".format(object_name)
+
+    front_material_mappings, back_material_mappings = \
+        process_embedded_material(scene, assembly, instance_name, element)
+
+    radius_element = element.find("float[@name='radius']")
+    radius = float(radius_element.attrib["value"]) if radius_element is not None else 1.0
+
+    center_element = element.find("point[@name='center']")
+    center = asr.Vector3d(get_vector(center_element)) if center_element is not None else asr.Vector3d(0.0)
+
+    matrix = asr.Matrix4d.make_translation(center)
+
+    matrix_element = element.find("transform/matrix")
+    if matrix_element is not None:
+        # todo: no idea what is the right multiplication order, untested.
+        matrix = matrix * get_matrix(matrix_element)
+    transform = asr.Transformd(matrix)
+
+    object = asr.create_primitive_mesh(object_name, {
+        "primitive": "sphere",
+        "resolution_u": 32,
+        "resolution_v": 16,
+        "radius": radius
+    })
+
+    assembly.object_instances().insert(asr.ObjectInstance(instance_name, {}, object.get_name(), transform,
+                                                          front_material_mappings, back_material_mappings))
+    assembly.objects().insert(object)
+
+
 def convert_shape(project, scene, assembly, element):
     type = element.attrib["type"]
     if type == "obj":
         convert_obj_shape(project, assembly, element)
     elif type == "rectangle":
         convert_rectangle_shape(scene, assembly, element)
+    elif type == "sphere":
+        convert_sphere_shape(scene, assembly, element)
     else:
         warning("Don't know how to convert shape of type {0}".format(type))
 
@@ -566,6 +609,7 @@ def main():
     # take ownership of it. In this example, we do that by removing the log target
     # when no longer needed, at the end of this function.
     asr.global_logger().add_target(log_target)
+    asr.global_logger().set_verbosity_level(asr.LogMessageCategory.Warning)
 
     tree = ElementTree()
     try:
