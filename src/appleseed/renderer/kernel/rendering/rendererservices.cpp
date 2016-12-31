@@ -83,9 +83,10 @@ namespace
     OIIO::ustring g_camera_ustr("camera");
     OIIO::ustring g_common_ustr("common");
     OIIO::ustring g_NDC_ustr("NDC");
+    OIIO::ustring g_object_ustr("object");
     OIIO::ustring g_raster_ustr("raster");
     OIIO::ustring g_screen_ustr("screen");
-    OIIO::ustring g_shader_usrt("shader");
+    OIIO::ustring g_shader_ustr("shader");
     OIIO::ustring g_world_ustr("world");
 }
 
@@ -145,6 +146,10 @@ void RendererServices::initialize(TextureStore& texture_store)
         m_shutter[1] = m_camera->get_shutter_close_time();
         m_shutter_interval = m_camera->get_shutter_open_time_interval();
     }
+
+    const CanvasProperties& props = m_project.get_frame()->image().properties();
+    m_resolution[0] = static_cast<int>(props.m_canvas_width);
+    m_resolution[1] = static_cast<int>(props.m_canvas_height);
 }
 
 OIIO::TextureSystem* RendererServices::texturesys() const
@@ -347,6 +352,72 @@ bool RendererServices::transform_points(
     int                         npoints,
     OSL::TypeDesc::VECSEMANTICS vectype)
 {
+    // We only transform points for now.
+    if (vectype != OSL::TypeDesc::POINT)
+        return false;
+
+    if (to == g_NDC_ustr || to == g_raster_ustr)
+    {
+        if (from == g_world_ustr || from == g_common_ustr || from == g_shader_ustr)
+        {
+            // Copy the points to Pout.
+            for (size_t i = 0; i < npoints; ++i)
+                Pout[i] = Pin[i];
+        }
+        else if (from == g_object_ustr)
+        {
+            OSL::Matrix44 m;
+            get_matrix(sg, m, sg->object2common, time);
+
+            // Convert from object to world.
+            for (size_t i = 0; i < npoints; ++i)
+                Pout[i] = Pin[i] * m;
+
+            from = g_world_ustr;
+        }
+        else if (from == g_camera_ustr)
+        {
+            OSL::Matrix44 m;
+            get_matrix(sg, m, g_camera_ustr, time);
+
+            // Convert from camera to world.
+            for (size_t i = 0; i < npoints; ++i)
+                Pout[i] = Pin[i] * m;
+
+            from = g_world_ustr;
+        }
+        else return false;
+
+        // Transform to NDC.
+        for (size_t i = 0; i < npoints; ++i)
+        {
+            Vector2d ndc;
+            if (m_camera->project_point(time, Vector3d(Pout[0].x, Pout[0].y, Pout[0].z), ndc))
+            {
+                Pout[i] = OSL::Vec3(
+                    static_cast<float>(ndc[0]),
+                    static_cast<float>(ndc[1]),
+                    0.0f);
+            }
+            else
+                Pout[i] = OSL::Vec3(-1.0f, -1.0f, 0.0f);
+        }
+
+        if (to == g_raster_ustr)
+        {
+            // Transform from NDC to raster.
+            for (size_t i = 0; i < npoints; ++i)
+            {
+                Pout[i] = OSL::Vec3(
+                    Pout[i].x * m_resolution[0],
+                    Pout[i].y * m_resolution[1],
+                    Pout[i].z);
+            }
+        }
+
+        return true;
+    }
+
     return false;
 }
 
@@ -608,9 +679,8 @@ IMPLEMENT_ATTR_GETTER(camera_resolution)
 {
     if (type == g_int_array2_typedesc)
     {
-        const CanvasProperties& props = m_project.get_frame()->image().properties();
-        reinterpret_cast<int*>(val)[0] = static_cast<int>(props.m_canvas_width);
-        reinterpret_cast<int*>(val)[1] = static_cast<int>(props.m_canvas_height);
+        reinterpret_cast<int*>(val)[0] = m_resolution[0];
+        reinterpret_cast<int*>(val)[1] = m_resolution[1];
 
         if (derivs)
             clear_derivatives(type, val);
@@ -748,8 +818,7 @@ IMPLEMENT_ATTR_GETTER(camera_screen_window)
 {
     if (type == g_float_array4_typedesc)
     {
-        const CanvasProperties& props = m_project.get_frame()->image().properties();
-        const float aspect = static_cast<float>(props.m_canvas_width) / props.m_canvas_height;
+        const float aspect = static_cast<float>(m_resolution[0]) / m_resolution[1];
         reinterpret_cast<float*>(val)[0] = -aspect;
         reinterpret_cast<float*>(val)[1] = -1.0f;
         reinterpret_cast<float*>(val)[2] =  aspect;
