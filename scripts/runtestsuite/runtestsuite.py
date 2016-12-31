@@ -57,11 +57,13 @@ def safe_mkdir(dir):
     if not os.path.exists(dir):
         os.mkdir(dir)
 
+
 def safe_remove(filepath):
     try:
         os.remove(filepath)
     except OSError:
         pass
+
 
 def walk(directory, recursive):
     if recursive:
@@ -70,8 +72,10 @@ def walk(directory, recursive):
     else:
         yield os.walk(directory).next()
 
+
 def should_skip(path):
     return path.startswith("skip - ")
+
 
 def format_duration(duration):
     total_seconds = duration.total_seconds()
@@ -80,9 +84,11 @@ def format_duration(duration):
     seconds = total_seconds % 60
     return "{0:02}:{1:02}:{2:09.6f}".format(hours, minutes, seconds)
 
+
 def load_file(filepath):
     with open(filepath, "rt") as file:
         return file.read()
+
 
 def read_png_file(filepath):
     data = png.Reader(filename=filepath).asRGBA8()
@@ -91,6 +97,7 @@ def read_png_file(filepath):
     rows = list(data[2])
     return width, height, rows
 
+
 def write_rgba_png_file(filepath, rows):
     width = len(rows[0]) / 4
     height = len(rows)
@@ -98,12 +105,13 @@ def write_rgba_png_file(filepath, rows):
     with open(filepath, 'wb') as file:
         writer.write(file, rows)
 
-    
+
 #--------------------------------------------------------------------------------------------------
 # Utility class to log progress.
 #--------------------------------------------------------------------------------------------------
 
 class Logger:
+
     def __init__(self, args):
         self.args = args
 
@@ -133,6 +141,7 @@ class Logger:
 #--------------------------------------------------------------------------------------------------
 
 class ReportWriter:
+
     def __init__(self, template_directory):
         self.header_template = load_file(os.path.join(template_directory, "header_template.html"))
         self.footer_template = load_file(os.path.join(template_directory, "footer_template.html"))
@@ -157,13 +166,13 @@ class ReportWriter:
         self.all_commands.append(command)
 
         self.file.write(self.__render(self.simple_failure_template,
-                                      { 'project-path': scene,
-                                        'ref-image-url': urllib.pathname2url(reference_filepath),
-                                        'output-image-url': urllib.pathname2url(output_filepath),
-                                        'failure-reason': error_message,
-                                        'log-file-url': urllib.pathname2url(log_filepath),
-                                        'log-file-path': os.path.basename(log_filepath),
-                                        'update-command': command }))
+                                      {'project-path': scene,
+                                       'ref-image-url': urllib.pathname2url(reference_filepath),
+                                       'output-image-url': urllib.pathname2url(output_filepath),
+                                       'failure-reason': error_message,
+                                       'log-file-url': urllib.pathname2url(log_filepath),
+                                       'log-file-path': os.path.basename(log_filepath),
+                                       'update-command': command}))
         self.file.flush()
 
     def report_detailed_failure(self, scene, reference_filepath, output_filepath, log_filepath, error_message, num_diff, max_diff, num_comps, diff_filepath):
@@ -173,25 +182,25 @@ class ReportWriter:
         self.all_commands.append(command)
 
         self.file.write(self.__render(self.detailed_failure_template,
-                                      { 'project-path': scene,
-                                        'ref-image-url': urllib.pathname2url(reference_filepath),
-                                        'diff-image-url': urllib.pathname2url(diff_filepath) if diff_filepath is not None else "",
-                                        'output-image-url': urllib.pathname2url(output_filepath),
-                                        'failure-reason': error_message,
-                                        'log-file-url': urllib.pathname2url(log_filepath),
-                                        'log-file-path': os.path.basename(log_filepath),
-                                        'max-abs-diff': max_diff,
-                                        'diff-comps-count': num_diff,
-                                        'diff-comps-percents': "{0:.2f}".format(100.0 * num_diff / num_comps),
-                                        'update-command': command }))
+                                      {'project-path': scene,
+                                       'ref-image-url': urllib.pathname2url(reference_filepath),
+                                       'diff-image-url': urllib.pathname2url(diff_filepath) if diff_filepath is not None else "",
+                                       'output-image-url': urllib.pathname2url(output_filepath),
+                                       'failure-reason': error_message,
+                                       'log-file-url': urllib.pathname2url(log_filepath),
+                                       'log-file-path': os.path.basename(log_filepath),
+                                       'max-abs-diff': max_diff,
+                                       'diff-comps-count': num_diff,
+                                       'diff-comps-percents': "{0:.2f}".format(100.0 * num_diff / num_comps),
+                                       'update-command': command}))
         self.file.flush()
 
     def __write_header(self, args):
         self.file.write(self.__render(self.header_template,
-                                      { 'test-date': datetime.datetime.now(),
-                                        'appleseed-binary-path': args.tool_path,
-                                        'max-abs-diff-allowed': VALUE_THRESHOLD,
-                                        'max-diff-comps-count-allowed': MAX_DIFFERING_COMPONENTS }))
+                                      {'test-date': datetime.datetime.now(),
+                                       'appleseed-binary-path': args.tool_path,
+                                       'max-abs-diff-allowed': VALUE_THRESHOLD,
+                                       'max-diff-comps-count-allowed': MAX_DIFFERING_COMPONENTS}))
         self.file.flush()
 
     def __write_footer(self):
@@ -243,17 +252,19 @@ def compare_images(rows1, rows2, value_threshold):
     diff_image = []
 
     for row1, row2 in zip(rows1, rows2):
-        diff_row = [ abs(val1 - val2) for val1, val2 in zip(row1, row2) ]
+        diff_row = [abs(val1 - val2) for val1, val2 in zip(row1, row2)]
         num_diff += sum(d > value_threshold for d in diff_row)
         max_diff = max(max_diff, max(diff_row))
         diff_image.append(diff_row)
 
     return num_diff, max_diff, diff_image
 
+
 def fit(x, min_x, max_x, min_y, max_y):
     assert min_x != max_x
     k = (x - min_x) / (max_x - min_x)
     return min_y * (1 - k) + max_y * k
+
 
 def transform_to_false_color(rows):
     image_min = 255
@@ -281,7 +292,7 @@ def transform_to_false_color(rows):
             a = row[i + 3]
 
             m = max(r, g, b, a)
-            
+
             if m == 0:
                 row[i + 0] = 0
                 row[i + 1] = 0
@@ -452,11 +463,11 @@ def main():
 
     success = 100.0 * passing_scene_count / rendered_scene_count if rendered_scene_count > 0 else 0.0
 
-    print("{0} out of {1} test scene(s) passed ({2:.2f} %), total rendering time {3}." \
-        .format(passing_scene_count,
-                rendered_scene_count,
-                success,
-                format_duration(end_time - start_time)))
+    print("{0} out of {1} test scene(s) passed ({2:.2f} %), total rendering time {3}."
+          .format(passing_scene_count,
+                  rendered_scene_count,
+                  success,
+                  format_duration(end_time - start_time)))
 
 if __name__ == '__main__':
     main()

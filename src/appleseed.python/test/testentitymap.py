@@ -29,6 +29,7 @@
 import unittest
 import appleseed as asr
 
+
 class TestEntityMap(unittest.TestCase):
     """
     Basic entity map tests.

@@ -61,8 +61,10 @@ SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 def info(message):
     print("  " + message)
 
+
 def progress(message):
     print("  " + message + "...")
+
 
 def fatal(message):
     print("Fatal: " + message + ". Aborting.")
@@ -70,8 +72,10 @@ def fatal(message):
         print(traceback.format_exc())
     sys.exit(1)
 
+
 def exe(filepath):
     return filepath + ".exe" if os.name == "nt" else filepath
+
 
 def safe_delete_file(path):
     try:
@@ -80,18 +84,20 @@ def safe_delete_file(path):
     except OSError:
         fatal("Failed to delete file '" + path + "'")
 
+
 def on_rmtree_error(func, path, exc_info):
     # path contains the path of the file that couldn't be removed.
     # Let's just assume that it's read-only and unlink it.
     os.chmod(path, stat.S_IWRITE)
     os.unlink(path)
 
+
 def safe_delete_directory(path):
     Attempts = 10
     for attempt in range(Attempts):
         try:
             if os.path.exists(path):
-                shutil.rmtree(path, onerror = on_rmtree_error)
+                shutil.rmtree(path, onerror=on_rmtree_error)
             return
         except OSError:
             if attempt < Attempts - 1:
@@ -99,23 +105,28 @@ def safe_delete_directory(path):
             else:
                 fatal("Failed to delete directory '" + path + "'")
 
+
 def safe_make_directory(path):
     if not os.path.isdir(path):
         os.makedirs(path)
+
 
 def pushd(path):
     old_path = os.getcwd()
     os.chdir(path)
     return old_path
 
+
 def extract_zip_file(zip_path, output_path):
     zf = zipfile.ZipFile(zip_path)
     zf.extractall(output_path)
     zf.close()
 
+
 def copy_glob(input_pattern, output_path):
     for input_file in glob.glob(input_pattern):
         shutil.copy(input_file, output_path)
+
 
 def make_writable(filepath):
     os.chmod(filepath, S_IRUSR | S_IWUSR)
@@ -126,6 +137,7 @@ def make_writable(filepath):
 #--------------------------------------------------------------------------------------------------
 
 class Settings:
+
     def load(self):
         print("Loading settings from " + SETTINGS_FILENAME + "...")
         tree = ElementTree()
@@ -169,6 +181,7 @@ class Settings:
 #--------------------------------------------------------------------------------------------------
 
 class PackageInfo:
+
     def __init__(self, settings):
         self.settings = settings
 
@@ -199,6 +212,7 @@ class PackageInfo:
 #--------------------------------------------------------------------------------------------------
 
 class PackageBuilder:
+
     def __init__(self, settings, package_info):
         self.settings = settings
         self.package_info = package_info
@@ -330,9 +344,9 @@ class PackageBuilder:
         # appleseed headers.
         safe_make_directory("appleseed/include")
         ignore_files = shutil.ignore_patterns("*.cpp", "*.c", "*.xsd", "snprintf", "version.h.in")
-        shutil.copytree(os.path.join(self.settings.appleseed_headers_path, "foundation"), "appleseed/include/foundation", ignore = ignore_files)
-        shutil.copytree(os.path.join(self.settings.appleseed_headers_path, "main"), "appleseed/include/main", ignore = ignore_files)
-        shutil.copytree(os.path.join(self.settings.appleseed_headers_path, "renderer"), "appleseed/include/renderer", ignore = ignore_files)
+        shutil.copytree(os.path.join(self.settings.appleseed_headers_path, "foundation"), "appleseed/include/foundation", ignore=ignore_files)
+        shutil.copytree(os.path.join(self.settings.appleseed_headers_path, "main"), "appleseed/include/main", ignore=ignore_files)
+        shutil.copytree(os.path.join(self.settings.appleseed_headers_path, "renderer"), "appleseed/include/renderer", ignore=ignore_files)
 
     def add_shaders_to_stage(self):
         progress("Adding shaders to staging directory")
@@ -401,6 +415,7 @@ class PackageBuilder:
 #--------------------------------------------------------------------------------------------------
 
 class WindowsPackageBuilder(PackageBuilder):
+
     def alter_stage(self):
         self.add_dependencies_to_stage()
 
@@ -421,6 +436,7 @@ class WindowsPackageBuilder(PackageBuilder):
 #--------------------------------------------------------------------------------------------------
 
 class MacPackageBuilder(PackageBuilder):
+
     def __init__(self, settings, package_info):
         PackageBuilder.__init__(self, settings, package_info)
         self.shared_lib_ext = ".dylib"
@@ -496,7 +512,7 @@ class MacPackageBuilder(PackageBuilder):
 
     # Can be used on executables and dynamic libraries.
     def change_library_paths_in_binary(self, bin_path):
-        for lib_path in self.get_dependencies_for_file(bin_path, fix_paths = False):
+        for lib_path in self.get_dependencies_for_file(bin_path, fix_paths=False):
             lib_name = os.path.basename(lib_path)
             self.change_library_path(bin_path, lib_path, "@executable_path/../lib/" + lib_name)
 
@@ -517,7 +533,7 @@ class MacPackageBuilder(PackageBuilder):
     def change_library_path(self, target, old, new):
         self.run('install_name_tool -change "{0}" "{1}" {2}'.format(old, new, target))
 
-    def get_dependencies_for_file(self, filename, fix_paths = True):
+    def get_dependencies_for_file(self, filename, fix_paths=True):
         returncode, out, err = self.run_subprocess(["otool", "-L", filename])
         if returncode != 0:
             fatal("Failed to invoke otool(1) to get dependencies for {0}: {1}".format(filename, err))
@@ -560,7 +576,7 @@ class MacPackageBuilder(PackageBuilder):
 
         return libs
 
-    def get_qt_frameworks_for_file(self, filename, fix_paths = True):
+    def get_qt_frameworks_for_file(self, filename, fix_paths=True):
         returncode, out, err = self.run_subprocess(["otool", "-L", filename])
         if returncode != 0:
             fatal("Failed to invoke otool(1) to get dependencies for {0}: {1}".format(filename, err))
@@ -601,6 +617,7 @@ class MacPackageBuilder(PackageBuilder):
 #--------------------------------------------------------------------------------------------------
 
 class LinuxPackageBuilder(PackageBuilder):
+
     def __init__(self, settings, package_info):
         PackageBuilder.__init__(self, settings, package_info)
         self.shared_lib_ext = ".so"

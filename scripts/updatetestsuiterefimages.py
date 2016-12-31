@@ -41,6 +41,7 @@ def safe_mkdir(dir):
     if not os.path.exists(dir):
         os.mkdir(dir)
 
+
 def walk(directory, recursive):
     if recursive:
         for dirpath, dirnames, filenames in os.walk(directory):

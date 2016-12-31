@@ -43,11 +43,14 @@ import traceback
 def info(message):
     print(message)
 
+
 def progress(message):
     print(message + "...")
 
+
 def warning(message):
     print("Warning: {0}.".format(message))
+
 
 def fatal(message):
     print("Fatal: {0}. Aborting.".format(message))
@@ -67,8 +70,9 @@ def get_vector(element):
         float(element.attrib["z"])
     ]
 
+
 def get_matrix(element):
-    values = [ float(x) for x in element.attrib["value"].split() ]
+    values = [float(x) for x in element.attrib["value"].split()]
     if len(values) != 16:
         fatal("Matrix was expected to contain 16 coefficients but contained {0} instead".format(len(values)))
     matrix = asr.Matrix4d()
@@ -76,15 +80,17 @@ def get_matrix(element):
         matrix[i / 4, i % 4] = values[i]
     return matrix
 
+
 def get_rgb(element):
-    values = [ float(x) for x in element.attrib["value"].split(",") ]
+    values = [float(x) for x in element.attrib["value"].split(",")]
     if len(values) != 3:
         fatal("RGB color was expected to contain 3 coefficients but contained {0} instead".format(len(values)))
     max_value = max(values)
     if max_value > 1.0:
-        return [ x / max_value for x in values ], max_value
+        return [x / max_value for x in values], max_value
     else:
         return values, 1.0
+
 
 def convert_integrator(project, element):
     for child in element:
@@ -94,12 +100,14 @@ def convert_integrator(project, element):
                 project.configurations().get_by_name("final").insert_path("pt.max_path_length", max_depth)
                 project.configurations().get_by_name("interactive").insert_path("pt.max_path_length", max_depth)
 
+
 def convert_film(camera_params, frame_params, element):
     width = int(element.find("integer[@name='width']").attrib["value"])
     height = int(element.find("integer[@name='height']").attrib["value"])
     dimensions = "{0} {1}".format(width, height)
     camera_params["film_dimensions"] = dimensions
     frame_params["resolution"] = dimensions
+
 
 def convert_sampler(project, element):
     for child in element:
@@ -108,12 +116,13 @@ def convert_sampler(project, element):
                 sample_count = int(child.attrib["value"])
                 project.configurations().get_by_name("final").insert_path("uniform_pixel_renderer.samples", sample_count)
 
+
 def convert_sensor(project, scene, element):
     camera_params = {}
     camera_matrix = None
     frame_params = {
-        "camera" : "camera",
-        "color_space" : "srgb"
+        "camera": "camera",
+        "color_space": "srgb"
     }
 
     for child in element:
@@ -136,6 +145,7 @@ def convert_sensor(project, scene, element):
 
     project.set_frame(asr.Frame("beauty", frame_params))
 
+
 def create_texture(base_group, texture_name, filepath):
     if filepath.endswith(".jpg"):
         # Hack because appleseed doesn't currently support JPEG images in built-in materials.
@@ -146,7 +156,7 @@ def create_texture(base_group, texture_name, filepath):
         filepath += ".exr"
 
     color_space = "linear_rgb" if filepath.endswith(".exr") or \
-                                  filepath.endswith(".hdr") else "srgb"
+        filepath.endswith(".hdr") else "srgb"
     base_group.textures().insert(asr.Texture("disk_texture_2d", texture_name, {
         "filename": filepath,
         "color_space": color_space
@@ -157,6 +167,7 @@ def create_texture(base_group, texture_name, filepath):
     base_group.texture_instances().insert(texture_instance)
     return texture_instance_name
 
+
 def convert_texture(assembly, texture_name, element):
     type = element.attrib["type"]
     if type == "bitmap":
@@ -165,11 +176,12 @@ def convert_texture(assembly, texture_name, element):
     else:
         warning("Don't know how to convert texture of type {0}".format(type))
         color_params = {
-            "color_space" : "srgb",
-            "multiplier" : 1.0
+            "color_space": "srgb",
+            "multiplier": 1.0
         }
         assembly.colors().insert(asr.ColorEntity(texture_name, color_params, [0.7, 0.7, 0.7]))
         return texture_name
+
 
 def convert_colormap(assembly, parent_name, element):
     reflectance_name = element.attrib["name"]
@@ -180,13 +192,14 @@ def convert_colormap(assembly, parent_name, element):
         color_name = "{0}_{1}".format(parent_name, reflectance_name)
         rgb, multiplier = get_rgb(element)
         color_params = {
-            "color_space" : "linear_rgb",
-            "multiplier" : multiplier
+            "color_space": "linear_rgb",
+            "multiplier": multiplier
         }
         assembly.colors().insert(asr.ColorEntity(color_name, color_params, rgb))
         return color_name
     else:
         warning("Don't know how to convert color map of type {0}".format(element.tag))
+
 
 def convert_diffuse_bsdf(assembly, bsdf_name, element):
     bsdf_params = {}
@@ -195,6 +208,7 @@ def convert_diffuse_bsdf(assembly, bsdf_name, element):
     bsdf_params["reflectance"] = convert_colormap(assembly, bsdf_name, reflectance)
 
     assembly.bsdfs().insert(asr.BSDF("lambertian_brdf", bsdf_name, bsdf_params))
+
 
 def convert_plastic_bsdf(assembly, bsdf_name, element):
     bsdf_params = {}
@@ -207,6 +221,7 @@ def convert_plastic_bsdf(assembly, bsdf_name, element):
 
     assembly.bsdfs().insert(asr.BSDF("disney_brdf", bsdf_name, bsdf_params))
 
+
 def convert_roughplastic_bsdf(assembly, bsdf_name, element):
     bsdf_params = {}
 
@@ -217,6 +232,7 @@ def convert_roughplastic_bsdf(assembly, bsdf_name, element):
     bsdf_params["roughness"] = min(1.0, float(element.find("float[@name='alpha']").attrib["value"]) * 3.0)
 
     assembly.bsdfs().insert(asr.BSDF("disney_brdf", bsdf_name, bsdf_params))
+
 
 def convert_conductor_bsdf(assembly, bsdf_name, element):
     bsdf_params = {}
@@ -237,6 +253,7 @@ def convert_conductor_bsdf(assembly, bsdf_name, element):
 
     assembly.bsdfs().insert(asr.BSDF("metal_brdf", bsdf_name, bsdf_params))
 
+
 def convert_roughconductor_bsdf(assembly, bsdf_name, element):
     bsdf_params = {}
 
@@ -248,6 +265,7 @@ def convert_roughconductor_bsdf(assembly, bsdf_name, element):
     bsdf_params["mdf"] = "ggx"
 
     assembly.bsdfs().insert(asr.BSDF("metal_brdf", bsdf_name, bsdf_params))
+
 
 def convert_dielectric_bsdf(assembly, bsdf_name, element):
     bsdf_params = {}
@@ -261,6 +279,7 @@ def convert_dielectric_bsdf(assembly, bsdf_name, element):
     bsdf_params["roughness"] = 0.0
 
     assembly.bsdfs().insert(asr.BSDF("glass_bsdf", bsdf_name, bsdf_params))
+
 
 def convert_bsdf(assembly, bsdf_name, element):
     type = element.attrib["type"]
@@ -279,6 +298,7 @@ def convert_bsdf(assembly, bsdf_name, element):
     else:
         warning("Don't know how to convert BSDF of type {0}".format(type))
 
+
 def convert_area_emitter(assembly, emitter_name, element):
     if emitter_name is None:
         fatal("Area emitters must have a name")
@@ -290,32 +310,34 @@ def convert_area_emitter(assembly, emitter_name, element):
 
     assembly.edfs().insert(asr.EDF("diffuse_edf", emitter_name, edf_params))
 
+
 def convert_envmap_emitter(scene, assembly, emitter_name, element):
     filepath = element.find("string[@name='filename']").attrib["value"]
 
     texture_instance_name = create_texture(scene, "environment_map", filepath)
 
     env_edf = asr.EnvironmentEDF("latlong_map_environment_edf", "environment_edf", {
-        "radiance" : texture_instance_name
+        "radiance": texture_instance_name
     })
 
-    matrix = element.find("transform/matrix")
-    if matrix is not None:
+    matrix_element = element.find("transform/matrix")
+    if matrix_element is not None:
+        matrix = get_matrix(matrix_element)
         roty = asr.Matrix4d.make_rotation(asr.Vector3d(0.0, 1.0, 0.0), math.radians(-90.0))
-        bob = get_matrix(matrix)
-        bob = bob * roty
-        env_edf.transform_sequence().set_transform(0.0, asr.Transformd(bob))
+        matrix = matrix * roty
+        env_edf.transform_sequence().set_transform(0.0, asr.Transformd(matrix))
 
     scene.environment_edfs().insert(env_edf)
 
     scene.environment_shaders().insert(asr.EnvironmentShader("edf_environment_shader", "environment_shader", {
-        "environment_edf" : 'environment_edf'
+        "environment_edf": 'environment_edf'
     }))
 
     scene.set_environment(asr.Environment("sky", {
-        "environment_edf" : "environment_edf",
-        "environment_shader" : "environment_shader"
+        "environment_edf": "environment_edf",
+        "environment_shader": "environment_shader"
     }))
+
 
 def convert_sun_emitter(scene, assembly, emitter_name, element):
     sun_params = {}
@@ -333,12 +355,13 @@ def convert_sun_emitter(scene, assembly, emitter_name, element):
     if sun_direction is not None:
         from_direction = asr.Vector3d(0.0, 0.0, 1.0)
         to_direction = asr.Vector3d(get_vector(sun_direction))
-        sun.set_transform( \
-            asr.Transformd( \
-                asr.Matrix4d.make_rotation( \
+        sun.set_transform(
+            asr.Transformd(
+                asr.Matrix4d.make_rotation(
                     asr.Quaterniond.make_rotation(from_direction, to_direction))))
 
     assembly.lights().insert(sun)
+
 
 def convert_emitter(scene, assembly, emitter_name, element):
     type = element.attrib["type"]
@@ -351,17 +374,20 @@ def convert_emitter(scene, assembly, emitter_name, element):
     else:
         warning("Don't know how to convert emitter of type {0}".format(type))
 
+
 def convert_twosided_material(assembly, material_name, edf_name, element):
     # todo: somehow mark the material as two-sided.
     if material_name is None and "id" in element.attrib:
         material_name = element.attrib["id"]
     convert_material(assembly, material_name, edf_name, element.find("bsdf"))
 
+
 def convert_bumpmap_material(assembly, material_name, edf_name, element):
     # todo: add bump mapping support.
     if material_name is None and "id" in element.attrib:
         material_name = element.attrib["id"]
     convert_material(assembly, material_name, edf_name, element.find("bsdf"))
+
 
 def convert_material(assembly, material_name, edf_name, element):
     type = element.attrib["type"]
@@ -375,12 +401,13 @@ def convert_material(assembly, material_name, edf_name, element):
         bsdf_name = "{0}_bsdf".format(material_name)
         convert_bsdf(assembly, bsdf_name, element)
         material_params = {
-            "surface_shader" : "physical_surface_shader",
-            "bsdf" : bsdf_name
+            "surface_shader": "physical_surface_shader",
+            "bsdf": bsdf_name
         }
         if edf_name is not None:
             material_params["edf"] = edf_name
         assembly.materials().insert(asr.Material("generic_material", material_name, material_params))
+
 
 def convert_obj_shape(project, assembly, element):
     object_count = len(assembly.objects())
@@ -398,33 +425,25 @@ def convert_obj_shape(project, assembly, element):
     # Material reference.
     ref = element.find("ref")
     if ref is not None:
-        front_material_mappings = { "default" : element.find("ref").attrib["id"] }
+        front_material_mappings = {"default": element.find("ref").attrib["id"]}
         back_material_mappings = front_material_mappings
 
-    objects = asr.MeshObjectReader.read(project.get_search_paths(), object_name, { "filename" : filepath })
+    objects = asr.MeshObjectReader.read(project.get_search_paths(), object_name, {"filename": filepath})
 
     for object in objects:
         assembly.object_instances().insert(asr.ObjectInstance(instance_name, {}, object.get_name(), transform,
                                                               front_material_mappings, back_material_mappings))
         assembly.objects().insert(object)
 
-def convert_rectangle_shape(scene, assembly, element):
-    object_count = len(assembly.objects())
-    object_name = "object_{0}".format(object_count)
-    instance_name = "{0}_inst".format(object_name)
 
-    matrix = get_matrix(element.find("transform/matrix"))
-    rotx = asr.Matrix4d.make_rotation(asr.Vector3d(1.0, 0.0, 0.0), math.radians(90.0))
-    matrix = matrix * rotx
-    transform = asr.Transformd(matrix)
-
+def process_embedded_material(scene, assembly, instance_name, element):
     front_material_mappings = {}
     back_material_mappings = {}
 
     # Material reference.
     ref = element.find("ref")
     if ref is not None:
-        front_material_mappings = { "default" : element.find("ref").attrib["id"] }
+        front_material_mappings = {"default": element.find("ref").attrib["id"]}
         back_material_mappings = front_material_mappings
 
     # Embedded emitter.
@@ -439,8 +458,24 @@ def convert_rectangle_shape(scene, assembly, element):
     if bsdf is not None:
         material_name = "{0}_material".format(instance_name)
         convert_material(assembly, material_name, edf_name, bsdf)
-        front_material_mappings = { "default" : material_name }
+        front_material_mappings = {"default": material_name}
         back_material_mappings = front_material_mappings
+
+    return front_material_mappings, back_material_mappings
+
+
+def convert_rectangle_shape(scene, assembly, element):
+    object_count = len(assembly.objects())
+    object_name = "object_{0}".format(object_count)
+    instance_name = "{0}_inst".format(object_name)
+
+    front_material_mappings, back_material_mappings = \
+        process_embedded_material(scene, assembly, instance_name, element)
+
+    matrix = get_matrix(element.find("transform/matrix"))
+    rotx = asr.Matrix4d.make_rotation(asr.Vector3d(1.0, 0.0, 0.0), math.radians(90.0))
+    matrix = matrix * rotx
+    transform = asr.Transformd(matrix)
 
     object = asr.create_primitive_mesh(object_name, {
         "primitive": "grid",
@@ -454,14 +489,52 @@ def convert_rectangle_shape(scene, assembly, element):
                                                           front_material_mappings, back_material_mappings))
     assembly.objects().insert(object)
 
+
+def convert_sphere_shape(scene, assembly, element):
+    object_count = len(assembly.objects())
+    object_name = "object_{0}".format(object_count)
+    instance_name = "{0}_inst".format(object_name)
+
+    front_material_mappings, back_material_mappings = \
+        process_embedded_material(scene, assembly, instance_name, element)
+
+    radius_element = element.find("float[@name='radius']")
+    radius = float(radius_element.attrib["value"]) if radius_element is not None else 1.0
+
+    center_element = element.find("point[@name='center']")
+    center = asr.Vector3d(get_vector(center_element)) if center_element is not None else asr.Vector3d(0.0)
+
+    matrix = asr.Matrix4d.make_translation(center)
+
+    matrix_element = element.find("transform/matrix")
+    if matrix_element is not None:
+        # todo: no idea what is the right multiplication order, untested.
+        matrix = matrix * get_matrix(matrix_element)
+    transform = asr.Transformd(matrix)
+
+    object = asr.create_primitive_mesh(object_name, {
+        "primitive": "sphere",
+        "resolution_u": 32,
+        "resolution_v": 16,
+        "radius": radius
+    })
+
+    assembly.object_instances().insert(asr.ObjectInstance(instance_name, {}, object.get_name(), transform,
+                                                          front_material_mappings, back_material_mappings))
+    assembly.objects().insert(object)
+
+
 def convert_shape(project, scene, assembly, element):
     type = element.attrib["type"]
     if type == "obj":
         convert_obj_shape(project, assembly, element)
     elif type == "rectangle":
         convert_rectangle_shape(scene, assembly, element)
+    elif type == "sphere":
+        convert_sphere_shape(scene, assembly, element)
     else:
         warning("Don't know how to convert shape of type {0}".format(type))
+
 
 def convert_scene(project, scene, assembly, element):
     for child in element:
@@ -475,6 +548,7 @@ def convert_scene(project, scene, assembly, element):
             convert_shape(project, scene, assembly, child)
         elif child.tag == "emitter":
             convert_emitter(scene, assembly, None, child)
+
 
 def convert(tree):
     project = asr.Project("project")
@@ -535,6 +609,7 @@ def main():
     # take ownership of it. In this example, we do that by removing the log target
     # when no longer needed, at the end of this function.
     asr.global_logger().add_target(log_target)
+    asr.global_logger().set_verbosity_level(asr.LogMessageCategory.Warning)
 
     tree = ElementTree()
     try:

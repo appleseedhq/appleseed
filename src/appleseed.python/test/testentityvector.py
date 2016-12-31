@@ -29,6 +29,7 @@
 import unittest
 import appleseed as asr
 
+
 class TestEntityVector(unittest.TestCase):
     """
     Basic entity vector tests.
@@ -77,7 +78,7 @@ class TestEntityVector(unittest.TestCase):
         self.color_vec.insert(col)
         self.assertEqual(len(self.color_vec), 1)
 
-        c= self.color_vec.get_by_name("color")
+        c = self.color_vec.get_by_name("color")
         col = self.color_vec.remove(c)
         self.assertEqual(len(self.color_vec), 0)
 

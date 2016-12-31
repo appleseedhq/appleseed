@@ -90,7 +90,7 @@ def convert_mesh_files(tool_path, directory, recursive, input_pattern, output_fo
 #--------------------------------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="convert multiple mesh files from one format " \
+    parser = argparse.ArgumentParser(description="convert multiple mesh files from one format "
                                      "to another.")
     parser.add_argument("-t", "--tool-path", metavar="tool-path",
                         help="set the path to the convertmeshfile tool")

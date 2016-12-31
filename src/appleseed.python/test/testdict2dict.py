@@ -29,6 +29,7 @@
 import unittest
 import appleseed as asr
 
+
 class TestDict2Dict(unittest.TestCase):
     """
     Test conversions between Python dictionaries and appleseed's ParamArrays
@@ -39,8 +40,8 @@ class TestDict2Dict(unittest.TestCase):
 
     def test_roundtrip(self):
         src_params = {
-            'int'   : 1,
-            'float' : 2.0,
+            'int': 1,
+            'float': 2.0,
             'string': 'string'
         }
 
