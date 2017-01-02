@@ -176,13 +176,13 @@ class RendererController(asr.IRendererController):
         self.__abort = False
 
     def abort_rendering(self):
-        sys.stdout.write("Aborting rendering\n")
+        sys.stdout.write("aborting rendering...     \n")
         sys.stdout.flush()
         self.__abort = True
 
     # This method is called before rendering begins.
     def on_rendering_begin(self):
-        pass
+        self.__abort = False
 
     # This method is called after rendering has succeeded.
     def on_rendering_success(self):
