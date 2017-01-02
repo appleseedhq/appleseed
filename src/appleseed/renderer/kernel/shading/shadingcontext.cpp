@@ -72,6 +72,16 @@ OIIO::TextureSystem& ShadingContext::get_oiio_texture_system() const
     return m_oiio_texture_system;
 }
 
+OSL::ShadingSystem& ShadingContext::get_osl_shading_system() const
+{
+    return m_shadergroup_exec.m_osl_shading_system;
+}
+
+OSL::ShadingContext* ShadingContext::get_osl_shading_context() const
+{
+    return m_shadergroup_exec.m_osl_shading_context;
+}
+
 void ShadingContext::execute_osl_shading(
     const ShaderGroup&      shader_group,
     const ShadingPoint&     shading_point) const
@@ -143,6 +153,19 @@ void ShadingContext::execute_osl_background(
         m_shadergroup_exec.execute_background(
             shader_group,
             outgoing);
+}
+
+void ShadingContext::execute_osl_surface_shader(
+    const ShaderGroup&      shader_group,
+    const ShadingPoint&     shading_point,
+    const Color3f&          color,
+    const float             alpha) const
+{
+    m_shadergroup_exec.execute_surface_shader(
+        shader_group,
+        shading_point,
+        color,
+        alpha);
 }
 
 void* ShadingContext::osl_mem_alloc(const size_t size) const
