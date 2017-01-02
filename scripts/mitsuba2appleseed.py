@@ -315,7 +315,7 @@ def convert_envmap_emitter(scene, assembly, emitter_name, element):
         "environment_edf": 'environment_edf'
     }))
 
-    scene.set_environment(asr.Environment("sky", {
+    scene.set_environment(asr.Environment("environment", {
         "environment_edf": "environment_edf",
         "environment_shader": "environment_shader"
     }))
@@ -347,6 +347,44 @@ def convert_sun_emitter(scene, assembly, emitter_name, element):
     assembly.lights().insert(sun)
 
 
+def convert_sunsky_emitter(scene, assembly, emitter_name, element):
+    turbidity_element = element.find("float[@name='turbidity']")
+    if turbidity_element is not None:
+        turbidity = float(turbidity_element.attrib["value"]) - 2.0
+    else: turbidity = 1.0
+
+    # Sky.
+    sun_direction = element.find("vector[@name='sunDirection']")
+    if sun_direction is not None:
+        d = get_vector(sun_direction)
+        sun_theta = math.acos(d[1])
+        sun_phi = math.atan2(d[2], d[0])
+    else:
+        sun_theta = 0.0
+        sun_phi = 0.0
+    env_edf = asr.EnvironmentEDF("hosek_environment_edf", "environment_edf", {
+        "sun_theta": math.degrees(sun_theta),
+        "sun_phi": math.degrees(sun_phi),
+        "turbidity": turbidity
+    })
+    scene.environment_edfs().insert(env_edf)
+    scene.environment_shaders().insert(asr.EnvironmentShader("edf_environment_shader", "environment_shader", {
+        "environment_edf": 'environment_edf'
+    }))
+    scene.set_environment(asr.Environment("environment", {
+        "environment_edf": "environment_edf",
+        "environment_shader": "environment_shader"
+    }))
+
+    # Sun.
+    sun_params = { "environment_edf": "environment_edf", "turbidity": turbidity }
+    sun_scale = element.find("float[@name='sunScale']")
+    if sun_scale is not None:
+        sun_params["radiance_multiplier"] = float(sun_scale.attrib["value"])
+    sun = asr.Light("sun_light", "sun_light", sun_params)
+    assembly.lights().insert(sun)
+
+
 def convert_emitter(scene, assembly, emitter_name, element):
     type = element.attrib["type"]
     if type == "area":
@@ -355,6 +393,8 @@ def convert_emitter(scene, assembly, emitter_name, element):
         convert_envmap_emitter(scene, assembly, emitter_name, element)
     elif type == "sun":
         convert_sun_emitter(scene, assembly, emitter_name, element)
+    elif type == "sunsky":
+        convert_sunsky_emitter(scene, assembly, emitter_name, element)
     else:
         warning("Don't know how to convert emitter of type {0}".format(type))
 
@@ -373,8 +413,8 @@ def convert_material(assembly, material_name, material_params, element):
         # todo: add bump mapping support.
         return convert_material(assembly, material_name, material_params, element.find("bsdf"))
 
+    # BSDF.
     bsdf_name = "{0}_bsdf".format(material_name)
-
     if type == "diffuse":
         convert_diffuse_bsdf(assembly, bsdf_name, element)
     elif type == "plastic":
@@ -390,11 +430,13 @@ def convert_material(assembly, material_name, material_params, element):
         convert_dielectric_bsdf(assembly, bsdf_name, element)
     else:
         warning("Don't know how to convert BSDF of type {0}".format(type))
+        return
 
-    # todo: hack, force light-emitting materials to be single-sided.
+    # Hack: force light-emitting materials to be single-sided.
     if "edf" in material_params:
         material_params["__two_sided"] = False
 
+    # Material.
     material_params["bsdf"] = bsdf_name
     material_params["surface_shader"] = "physical_surface_shader"
     assembly.materials().insert(asr.Material("generic_material", material_name, material_params))
