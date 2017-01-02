@@ -470,7 +470,7 @@ def process_shape_material(scene, assembly, instance_name, element):
 
 def make_object_instance(assembly, object, instance_name, material_name, transform):
     material = assembly.materials().get_by_name(material_name)
-    two_sided = material.get_parameters().get("__two_sided", False)
+    two_sided = material.get_parameters().get("__two_sided", False) if material is not None else False
 
     slots = object.material_slots()
     if len(slots) == 0:
