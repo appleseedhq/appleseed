@@ -325,7 +325,9 @@ def convert_sun_emitter(scene, assembly, emitter_name, element):
     sun_params = {}
 
     turbidity = element.find("float[@name='turbidity']")
-    sun_params["turbidity"] = float(turbidity) - 2.0 if turbidity is not None else 1.0
+    if turbidity is not None:
+        sun_params["turbidity"] = float(turbidity.attrib["value"]) - 2.0
+    else: sun_params["turbidity"] = 1.0
 
     scale = element.find("float[@name='scale']")
     if scale is not None:
