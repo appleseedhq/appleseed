@@ -281,24 +281,6 @@ def convert_dielectric_bsdf(assembly, bsdf_name, element):
     assembly.bsdfs().insert(asr.BSDF("glass_bsdf", bsdf_name, bsdf_params))
 
 
-def convert_bsdf(assembly, bsdf_name, element):
-    type = element.attrib["type"]
-    if type == "diffuse":
-        convert_diffuse_bsdf(assembly, bsdf_name, element)
-    elif type == "plastic":
-        convert_plastic_bsdf(assembly, bsdf_name, element)
-    elif type == "roughplastic":
-        convert_roughplastic_bsdf(assembly, bsdf_name, element)
-    elif type == "conductor":
-        convert_conductor_bsdf(assembly, bsdf_name, element)
-    elif type == "roughconductor":
-        convert_roughconductor_bsdf(assembly, bsdf_name, element)
-    elif type == "dielectric":
-        convert_dielectric_bsdf(assembly, bsdf_name, element)
-    else:
-        warning("Don't know how to convert BSDF of type {0}".format(type))
-
-
 def convert_area_emitter(assembly, emitter_name, element):
     if emitter_name is None:
         fatal("Area emitters must have a name")
@@ -375,93 +357,107 @@ def convert_emitter(scene, assembly, emitter_name, element):
         warning("Don't know how to convert emitter of type {0}".format(type))
 
 
-def convert_twosided_material(assembly, material_name, edf_name, element):
-    # todo: somehow mark the material as two-sided.
+def convert_material(assembly, material_name, material_params, element):
     if material_name is None and "id" in element.attrib:
         material_name = element.attrib["id"]
-    convert_material(assembly, material_name, edf_name, element.find("bsdf"))
 
-
-def convert_bumpmap_material(assembly, material_name, edf_name, element):
-    # todo: add bump mapping support.
-    if material_name is None and "id" in element.attrib:
-        material_name = element.attrib["id"]
-    convert_material(assembly, material_name, edf_name, element.find("bsdf"))
-
-
-def convert_material(assembly, material_name, edf_name, element):
     type = element.attrib["type"]
-    if material_name is None and "id" in element.attrib:
-        material_name = element.attrib["id"]
+
     if type == "twosided":
-        convert_twosided_material(assembly, material_name, edf_name, element)
-    elif type == "bumpmap":
-        convert_bumpmap_material(assembly, material_name, edf_name, element)
+        material_params["__two_sided"] = True
+        return convert_material(assembly, material_name, material_params, element.find("bsdf"))
+
+    if type == "bumpmap":
+        # todo: add bump mapping support.
+        return convert_material(assembly, material_name, material_params, element.find("bsdf"))
+
+    bsdf_name = "{0}_bsdf".format(material_name)
+
+    if type == "diffuse":
+        convert_diffuse_bsdf(assembly, bsdf_name, element)
+    elif type == "plastic":
+        convert_plastic_bsdf(assembly, bsdf_name, element)
+    elif type == "roughplastic":
+        convert_roughplastic_bsdf(assembly, bsdf_name, element)
+    elif type == "conductor":
+        convert_conductor_bsdf(assembly, bsdf_name, element)
+    elif type == "roughconductor":
+        convert_roughconductor_bsdf(assembly, bsdf_name, element)
+    elif type == "dielectric":
+        material_params["__two_sided"] = True
+        convert_dielectric_bsdf(assembly, bsdf_name, element)
     else:
-        bsdf_name = "{0}_bsdf".format(material_name)
-        convert_bsdf(assembly, bsdf_name, element)
-        material_params = {
-            "surface_shader": "physical_surface_shader",
-            "bsdf": bsdf_name
-        }
-        if edf_name is not None:
+        warning("Don't know how to convert BSDF of type {0}".format(type))
+
+    # todo: hack, force light-emitting materials to be single-sided.
+    if "edf" in material_params:
+        material_params["__two_sided"] = False
+
+    material_params["bsdf"] = bsdf_name
+    material_params["surface_shader"] = "physical_surface_shader"
+    assembly.materials().insert(asr.Material("generic_material", material_name, material_params))
+
+
+def process_shape_material(scene, assembly, instance_name, element):
+    # Material reference.
+    ref = element.find("ref")
+    if ref is not None:
+        return element.find("ref").attrib["id"]
+
+    # Embedded material.
+    bsdf = element.find("bsdf")
+    if bsdf is not None:
+        material_params = {}
+
+        # Embedded emitter.
+        emitter = element.find("emitter")
+        if emitter is not None:
+            edf_name = "{0}_edf".format(instance_name)
+            convert_emitter(scene, assembly, edf_name, emitter)
             material_params["edf"] = edf_name
-        assembly.materials().insert(asr.Material("generic_material", material_name, material_params))
+
+        material_name = "{0}_material".format(instance_name)
+        convert_material(assembly, material_name, material_params, bsdf)
+        return material_name
+
+    # No material for this shape.
+    return None
 
 
-def convert_obj_shape(project, assembly, element):
+def make_object_instance(assembly, object, instance_name, material_name, transform):
+    material = assembly.materials().get_by_name(material_name)
+    two_sided = material.get_parameters().get("__two_sided", False)
+
+    slots = object.material_slots()
+    if len(slots) == 0:
+        slots = [ "default" ]
+
+    front_mappings = dict([ (slot, material_name) for slot in slots ])
+    back_mappings = front_mappings if two_sided else {}
+
+    return asr.ObjectInstance(instance_name, {}, object.get_name(), transform, front_mappings, back_mappings)
+
+
+def convert_obj_shape(project, scene, assembly, element):
     object_count = len(assembly.objects())
     object_name = "object_{0}".format(object_count)
     instance_name = "{0}_inst".format(object_name)
 
+    # Objects.
     filepath = element.find("string[@name='filename']").attrib["value"]
+    objects = asr.MeshObjectReader.read(project.get_search_paths(), object_name, {"filename": filepath})
 
+    # Instance transform.
     matrix = get_matrix(element.find("transform/matrix"))
     transform = asr.Transformd(matrix)
 
-    front_material_mappings = {}
-    back_material_mappings = {}
-
-    # Material reference.
-    ref = element.find("ref")
-    if ref is not None:
-        front_material_mappings = {"default": element.find("ref").attrib["id"]}
-        back_material_mappings = front_material_mappings
-
-    objects = asr.MeshObjectReader.read(project.get_search_paths(), object_name, {"filename": filepath})
+    # Instance material.
+    material_name = process_shape_material(scene, assembly, instance_name, element)
 
     for object in objects:
-        assembly.object_instances().insert(asr.ObjectInstance(instance_name, {}, object.get_name(), transform,
-                                                              front_material_mappings, back_material_mappings))
+        instance = make_object_instance(assembly, object, instance_name, material_name, transform)
+        assembly.object_instances().insert(instance)
         assembly.objects().insert(object)
-
-
-def process_embedded_material(scene, assembly, instance_name, element):
-    front_material_mappings = {}
-    back_material_mappings = {}
-
-    # Material reference.
-    ref = element.find("ref")
-    if ref is not None:
-        front_material_mappings = {"default": element.find("ref").attrib["id"]}
-        back_material_mappings = front_material_mappings
-
-    # Embedded emitter.
-    edf_name = None
-    emitter = element.find("emitter")
-    if emitter is not None:
-        edf_name = "{0}_edf".format(instance_name)
-        convert_emitter(scene, assembly, edf_name, emitter)
-
-    # Embedded BSDF.
-    bsdf = element.find("bsdf")
-    if bsdf is not None:
-        material_name = "{0}_material".format(instance_name)
-        convert_material(assembly, material_name, edf_name, bsdf)
-        front_material_mappings = {"default": material_name}
-        back_material_mappings = front_material_mappings
-
-    return front_material_mappings, back_material_mappings
 
 
 def convert_rectangle_shape(scene, assembly, element):
@@ -469,14 +465,7 @@ def convert_rectangle_shape(scene, assembly, element):
     object_name = "object_{0}".format(object_count)
     instance_name = "{0}_inst".format(object_name)
 
-    front_material_mappings, back_material_mappings = \
-        process_embedded_material(scene, assembly, instance_name, element)
-
-    matrix = get_matrix(element.find("transform/matrix"))
-    rotx = asr.Matrix4d.make_rotation(asr.Vector3d(1.0, 0.0, 0.0), math.radians(90.0))
-    matrix = matrix * rotx
-    transform = asr.Transformd(matrix)
-
+    # Object.
     object = asr.create_primitive_mesh(object_name, {
         "primitive": "grid",
         "resolution_u": 1,
@@ -485,8 +474,17 @@ def convert_rectangle_shape(scene, assembly, element):
         "height": 2.0
     })
 
-    assembly.object_instances().insert(asr.ObjectInstance(instance_name, {}, object.get_name(), transform,
-                                                          front_material_mappings, back_material_mappings))
+    # Instance transform.
+    matrix = get_matrix(element.find("transform/matrix"))
+    rotx = asr.Matrix4d.make_rotation(asr.Vector3d(1.0, 0.0, 0.0), math.radians(90.0))
+    matrix = matrix * rotx
+    transform = asr.Transformd(matrix)
+
+    # Instance material.
+    material_name = process_shape_material(scene, assembly, instance_name, element)
+
+    instance = make_object_instance(assembly, object, instance_name, material_name, transform)
+    assembly.object_instances().insert(instance)
     assembly.objects().insert(object)
 
 
@@ -495,23 +493,15 @@ def convert_sphere_shape(scene, assembly, element):
     object_name = "object_{0}".format(object_count)
     instance_name = "{0}_inst".format(object_name)
 
-    front_material_mappings, back_material_mappings = \
-        process_embedded_material(scene, assembly, instance_name, element)
-
+    # Radius.
     radius_element = element.find("float[@name='radius']")
     radius = float(radius_element.attrib["value"]) if radius_element is not None else 1.0
 
+    # Center.
     center_element = element.find("point[@name='center']")
     center = asr.Vector3d(get_vector(center_element)) if center_element is not None else asr.Vector3d(0.0)
 
-    matrix = asr.Matrix4d.make_translation(center)
-
-    matrix_element = element.find("transform/matrix")
-    if matrix_element is not None:
-        # todo: no idea what is the right multiplication order, untested.
-        matrix = matrix * get_matrix(matrix_element)
-    transform = asr.Transformd(matrix)
-
+    # Object.
     object = asr.create_primitive_mesh(object_name, {
         "primitive": "sphere",
         "resolution_u": 32,
@@ -519,15 +509,26 @@ def convert_sphere_shape(scene, assembly, element):
         "radius": radius
     })
 
-    assembly.object_instances().insert(asr.ObjectInstance(instance_name, {}, object.get_name(), transform,
-                                                          front_material_mappings, back_material_mappings))
+    # Instance transform.
+    matrix = asr.Matrix4d.make_translation(center)
+    matrix_element = element.find("transform/matrix")
+    if matrix_element is not None:
+        # todo: no idea what is the right multiplication order, untested.
+        matrix = matrix * get_matrix(matrix_element)
+    transform = asr.Transformd(matrix)
+
+    # Instance material.
+    material_name = process_shape_material(scene, assembly, instance_name, element)
+
+    instance = make_object_instance(assembly, object, instance_name, material_name, transform)
+    assembly.object_instances().insert(instance)
     assembly.objects().insert(object)
 
 
 def convert_shape(project, scene, assembly, element):
     type = element.attrib["type"]
     if type == "obj":
-        convert_obj_shape(project, assembly, element)
+        convert_obj_shape(project, scene, assembly, element)
     elif type == "rectangle":
         convert_rectangle_shape(scene, assembly, element)
     elif type == "sphere":
@@ -543,7 +544,7 @@ def convert_scene(project, scene, assembly, element):
         elif child.tag == "sensor":
             convert_sensor(project, scene, child)
         elif child.tag == "bsdf":
-            convert_material(assembly, None, None, child)
+            convert_material(assembly, None, {}, child)
         elif child.tag == "shape":
             convert_shape(project, scene, assembly, child)
         elif child.tag == "emitter":
