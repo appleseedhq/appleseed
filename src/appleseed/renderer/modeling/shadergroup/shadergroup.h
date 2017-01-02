@@ -134,6 +134,10 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Return a reference-counted (but opaque) reference to the internal OSL shader group.
     OSL::ShaderGroupRef& shader_group_ref() const;
 
+    // OSL symbols.
+    const OSL::ShaderSymbol* surface_shader_color_symbol() const;
+    const OSL::ShaderSymbol* surface_shader_alpha_symbol() const;
+
   private:
     friend class LightSampler;
     friend class ShaderGroupFactory;

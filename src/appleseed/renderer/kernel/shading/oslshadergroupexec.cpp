@@ -215,6 +215,20 @@ Color3f OSLShaderGroupExec::execute_background(
     return process_background_tree(sg.Ci);
 }
 
+void OSLShaderGroupExec::execute_surface_shader(
+    const ShaderGroup&              shader_group,
+    const ShadingPoint&             shading_point,
+    const Color3f&                  color,
+    const float                     alpha) const
+{
+    shading_point.m_surface_shader_color = color;
+    shading_point.m_surface_shader_alpha = alpha;
+    do_execute(
+        shader_group,
+        shading_point,
+        shading_point.get_ray().m_flags);
+}
+
 void OSLShaderGroupExec::do_execute(
     const ShaderGroup&              shader_group,
     const ShadingPoint&             shading_point,

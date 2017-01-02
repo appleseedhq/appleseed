@@ -32,6 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 
 // OSL headers.
@@ -324,14 +325,15 @@ class RendererServices
     typedef boost::unordered_map<OIIO::ustring, UserDataGetterFun, OIIO::ustringHash> UserDataGetterMapType;
 
     OIIO::TextureSystem&            m_texture_sys;
-    const Project&                  m_project;
     AttrGetterMapType               m_global_attr_getters;
     UserDataGetterMapType           m_global_user_data_getters;
     const Camera*                   m_camera;
-    TextureStore*                   m_texture_store;
+    foundation::Vector2i            m_resolution;
     OIIO::ustring                   m_cam_projection_str;
     float                           m_shutter[2];
     float                           m_shutter_interval;
+    const Project&                  m_project;
+    TextureStore*                   m_texture_store;
 
     #define DECLARE_ATTR_GETTER(name)           \
         bool get_attr_##name(                   \
@@ -371,6 +373,10 @@ class RendererServices
     DECLARE_ATTR_GETTER(appleseed_version_minor);
     DECLARE_ATTR_GETTER(appleseed_version_patch);
     DECLARE_ATTR_GETTER(appleseed_version);
+
+    // Surface shader attributes.
+    DECLARE_ATTR_GETTER(surface_shader_color);
+    DECLARE_ATTR_GETTER(surface_shader_alpha);
 
     #undef DECLARE_ATTR_GETTER
 

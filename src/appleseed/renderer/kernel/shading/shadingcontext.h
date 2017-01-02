@@ -95,6 +95,9 @@ class ShadingContext
     // Return the maximum number of iterations in ray/path tracing loops.
     size_t get_max_iterations() const;
 
+    OSL::ShadingSystem& get_osl_shading_system() const;
+    OSL::ShadingContext* get_osl_shading_context() const;
+
     void execute_osl_shading(
         const ShaderGroup&          shader_group,
         const ShadingPoint&         shading_point) const;
@@ -129,6 +132,12 @@ class ShadingContext
         const ShaderGroup&          shader_group,
         const foundation::Vector3f& outgoing,
         Spectrum&                   value) const;
+
+    void execute_osl_surface_shader(
+        const ShaderGroup&          shader_group,
+        const ShadingPoint&         shading_point,
+        const foundation::Color3f&  color,
+        const float                 alpha) const;
 
     void* osl_mem_alloc(const size_t size) const;
 

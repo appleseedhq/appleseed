@@ -80,6 +80,8 @@ struct ShaderGroup::Impl
     ShaderConnectionContainer   m_connections;
     mutable OSL::ShaderGroupRef m_shader_group_ref;
     mutable SurfaceAreaMap      m_surface_areas;
+    const OSL::ShaderSymbol*    m_surface_shader_color_sym;
+    const OSL::ShaderSymbol*    m_surface_shader_alpha_sym;
 };
 
 ShaderGroup::ShaderGroup(const char* name)
@@ -111,6 +113,8 @@ void ShaderGroup::clear()
     impl->m_connections.clear();
     impl->m_shader_group_ref.reset();
     m_flags = 0;
+    impl->m_surface_shader_color_sym = 0;
+    impl->m_surface_shader_alpha_sym = 0;
 }
 
 void ShaderGroup::add_shader(
@@ -205,6 +209,53 @@ bool ShaderGroup::create_optimized_osl_shader_group(
 
         impl->m_shader_group_ref = shader_group_ref;
 
+        // Set the shadergroup outputs and get symbols if needed.
+        for (each<ShaderContainer> i = impl->m_shaders; i; ++i)
+        {
+            if (strcmp(i->get_type(), "surface_shader") == 0)
+            {
+                // Renderer outputs.
+                const char* renderer_outputs[] =
+                {
+                    "Cout",
+                    "Aout",
+                };
+
+                if (shading_system.attribute(
+                        impl->m_shader_group_ref.get(),
+                        "renderer_outputs",
+                        OIIO::TypeDesc(OIIO::TypeDesc::STRING, 2),
+                        &renderer_outputs[0]))
+                {
+                    OSL::ShadingContext *ctx = shading_system.get_context();
+                    OSL::ShaderGlobals sg;
+                    memset(&sg, 0, sizeof(OSL::ShaderGlobals));
+
+                    if (shading_system.execute(
+#if OSL_LIBRARY_VERSION_CODE >= 10700
+                            ctx,
+#else
+                            *ctx,
+#endif
+                            *impl->m_shader_group_ref,
+                            sg,
+                            false))
+                    {
+                        impl->m_surface_shader_color_sym =
+                            shading_system.find_symbol(
+                                *impl->m_shader_group_ref,
+                                OIIO::ustring("Cout"));
+
+                        impl->m_surface_shader_alpha_sym =
+                            shading_system.find_symbol(
+                                *impl->m_shader_group_ref,
+                                OIIO::ustring("Aout"));
+                    }
+                }
+                break;
+            }
+        }
+
         get_shadergroup_closures_info(shading_system);
         report_has_closure("bsdf", HasBSDFs);
         report_has_closure("emission", HasEmission);
@@ -254,6 +305,16 @@ float ShaderGroup::get_surface_area(const AssemblyInstance* ass, const ObjectIns
 OSL::ShaderGroupRef& ShaderGroup::shader_group_ref() const
 {
     return impl->m_shader_group_ref;
+}
+
+const OSL::ShaderSymbol* ShaderGroup::surface_shader_color_symbol() const
+{
+    return impl->m_surface_shader_color_sym;
+}
+
+const OSL::ShaderSymbol* ShaderGroup::surface_shader_alpha_symbol() const
+{
+    return impl->m_surface_shader_alpha_sym;
 }
 
 void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_system)
