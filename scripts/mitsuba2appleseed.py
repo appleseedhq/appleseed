@@ -92,6 +92,18 @@ def get_rgb(element):
         return values, 1.0
 
 
+def set_private_param(params, key, value):
+    params.setdefault("mitsuba2appleseed", {})[key] = value
+
+
+def get_private_param(params, key, default):
+    return params.setdefault("mitsuba2appleseed", {}).get(key, default)
+
+
+def clear_private_params(params):
+    params.pop("mitsuba2appleseed", None)
+
+
 def convert_integrator(project, element):
     for child in element:
         if child.tag == "integer":
@@ -408,7 +420,7 @@ def convert_material(assembly, material_name, material_params, element):
     type = element.attrib["type"]
 
     if type == "twosided":
-        material_params["__two_sided"] = True
+        set_private_param(material_params, "two_sided", True)
         return convert_material(assembly, material_name, material_params, element.find("bsdf"))
 
     if type == "bumpmap":
@@ -428,7 +440,7 @@ def convert_material(assembly, material_name, material_params, element):
     elif type == "roughconductor":
         convert_roughconductor_bsdf(assembly, bsdf_name, element)
     elif type == "dielectric":
-        material_params["__two_sided"] = True
+        set_private_param(material_params, "two_sided", True)
         convert_dielectric_bsdf(assembly, bsdf_name, element)
     else:
         warning("Don't know how to convert BSDF of type {0}".format(type))
@@ -436,7 +448,7 @@ def convert_material(assembly, material_name, material_params, element):
 
     # Hack: force light-emitting materials to be single-sided.
     if "edf" in material_params:
-        material_params["__two_sided"] = False
+        set_private_param(material_params, "two_sided", False)
 
     # Material.
     material_params["bsdf"] = bsdf_name
@@ -472,7 +484,7 @@ def process_shape_material(scene, assembly, instance_name, element):
 
 def make_object_instance(assembly, object, instance_name, material_name, transform):
     material = assembly.materials().get_by_name(material_name)
-    two_sided = material.get_parameters().get("__two_sided", False) if material is not None else False
+    two_sided = get_private_param(material.get_parameters(), "two_sided", False) if material is not None else False
 
     slots = object.material_slots()
     if len(slots) == 0:
