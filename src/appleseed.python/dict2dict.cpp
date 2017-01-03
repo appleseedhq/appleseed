@@ -238,11 +238,9 @@ bpy::dict dictionary_to_bpy_dict(const Dictionary& dict)
     for (const_each<StringDictionary> it = dict.strings(); it; ++it)
         result[it->key()] = obj_from_string(it->value());
 
+    // Recurse into subdictionaries.
     for (const_each<DictionaryDictionary> it = dict.dictionaries(); it; ++it)
-    {
-        // Recurse.
         result[it->key()] = dictionary_to_bpy_dict(it->value());
-    }
 
     return result;
 }
