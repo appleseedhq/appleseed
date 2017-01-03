@@ -158,10 +158,9 @@ def build_project():
     #------------------------------------------------------------------------
 
     # Create a frame and bind it to the project.
-    params = {'camera': scene.get_camera().get_name(),
+    params = {'camera': 'camera',
               'resolution': asr.Vector2i(640, 480),
-              'color_space': 'srgb',
-              'camera': 'camera'}
+              'color_space': 'srgb'}
     project.set_frame(asr.Frame("beauty", params))
 
     # Bind the scene to the project.
@@ -177,13 +176,13 @@ class RendererController(asr.IRendererController):
         self.__abort = False
 
     def abort_rendering(self):
-        sys.stdout.write("Aborting rendering\n")
+        sys.stdout.write("aborting rendering...     \n")
         sys.stdout.flush()
         self.__abort = True
 
     # This method is called before rendering begins.
     def on_rendering_begin(self):
-        pass
+        self.__abort = False
 
     # This method is called after rendering has succeeded.
     def on_rendering_success(self):
@@ -217,6 +216,7 @@ class TileCallback(asr.ITileCallback):
 
     def __init__(self):
         super(TileCallback, self).__init__()
+        self.rendered_pixels = 0
 
     # This method is called before a region is rendered.
     def pre_render(self, x, y, width, height):
@@ -224,7 +224,16 @@ class TileCallback(asr.ITileCallback):
 
     # This method is called after a tile is rendered.
     def post_render_tile(self, frame, tile_x, tile_y):
-        sys.stdout.write('.')
+        # Keep track of the total number of rendered pixels.
+        tile = frame.image().tile(tile_x, tile_y)
+        self.rendered_pixels += tile.get_pixel_count()
+
+        # Retrieve the total number of pixels in the frame.
+        total_pixels = frame.image().properties().pixel_count
+
+        # Print a progress message.
+        percent = (100.0 * self.rendered_pixels) / total_pixels
+        sys.stdout.write("rendering, {0:.2f}% done   \r".format(percent))
 
     # This method is called after a whole frame is rendered.
     def post_render(self, frame):

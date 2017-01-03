@@ -327,7 +327,8 @@ def convert_sun_emitter(scene, assembly, emitter_name, element):
     turbidity = element.find("float[@name='turbidity']")
     if turbidity is not None:
         sun_params["turbidity"] = float(turbidity.attrib["value"]) - 2.0
-    else: sun_params["turbidity"] = 1.0
+    else:
+        sun_params["turbidity"] = 1.0
 
     scale = element.find("float[@name='scale']")
     if scale is not None:
@@ -351,7 +352,8 @@ def convert_sunsky_emitter(scene, assembly, emitter_name, element):
     turbidity_element = element.find("float[@name='turbidity']")
     if turbidity_element is not None:
         turbidity = float(turbidity_element.attrib["value"]) - 2.0
-    else: turbidity = 1.0
+    else:
+        turbidity = 1.0
 
     # Sky.
     sun_direction = element.find("vector[@name='sunDirection']")
@@ -377,7 +379,7 @@ def convert_sunsky_emitter(scene, assembly, emitter_name, element):
     }))
 
     # Sun.
-    sun_params = { "environment_edf": "environment_edf", "turbidity": turbidity }
+    sun_params = {"environment_edf": "environment_edf", "turbidity": turbidity}
     sun_scale = element.find("float[@name='sunScale']")
     if sun_scale is not None:
         sun_params["radiance_multiplier"] = float(sun_scale.attrib["value"])
@@ -474,9 +476,9 @@ def make_object_instance(assembly, object, instance_name, material_name, transfo
 
     slots = object.material_slots()
     if len(slots) == 0:
-        slots = [ "default" ]
+        slots = ["default"]
 
-    front_mappings = dict([ (slot, material_name) for slot in slots ])
+    front_mappings = dict([(slot, material_name) for slot in slots])
     back_mappings = front_mappings if two_sided else {}
 
     return asr.ObjectInstance(instance_name, {}, object.get_name(), transform, front_mappings, back_mappings)
