@@ -83,9 +83,11 @@
             </object>
             <object_instance name="two squares.back_square_inst" object="two squares.back_square">
                 <assign_material slot="Default" side="front" material="back_square_material" />
+                <assign_material slot="Default" side="back" material="back_square_material" />
             </object_instance>
             <object_instance name="two squares.front_square_inst" object="two squares.front_square">
                 <assign_material slot="Default" side="front" material="front_square_material" />
+                <assign_material slot="Default" side="back" material="front_square_material" />
             </object_instance>
         </assembly>
         <assembly_instance name="assembly_inst" assembly="assembly">

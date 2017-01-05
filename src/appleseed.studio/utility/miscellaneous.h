@@ -48,10 +48,10 @@ namespace appleseed {
 namespace studio {
 
 // File dialog filter string for bitmap files supported by appleseed's own image subsystem.
-extern const QString g_bitmap_files_filter;
+extern const QString g_appleseed_image_files_filter;
 
-// Compute and return the file dialog filter string for bitmap files supported by OpenImageIO.
-QString compute_oiio_files_filter();
+// Return the file dialog filter string for image file formats supported by OpenImageIO.
+QString get_oiio_image_files_filter();
 
 // Combine two filesystem paths and convert the result to native separators.
 QString combine_paths(const QString& lhs, const QString& rhs);

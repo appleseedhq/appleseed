@@ -31,19 +31,16 @@
 #include "genericimagefilereader.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
-#include "foundation/image/exrimagefilereader.h"
-#include "foundation/image/pngimagefilereader.h"
-#include "foundation/utility/string.h"
-
-// Boost headers.
-#include "boost/filesystem/path.hpp"
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/genericprogressiveimagefilereader.h"
+#include "foundation/image/image.h"
+#include "foundation/image/tile.h"
 
 // Standard headers.
-#include <string>
+#include <cstddef>
+#include <memory>
 
 using namespace std;
-namespace bf = boost::filesystem;
 
 namespace foundation
 {
@@ -56,24 +53,36 @@ Image* GenericImageFileReader::read(
     const char*         filename,
     ImageAttributes*    image_attributes)
 {
-    const bf::path filepath(filename);
-    const string extension = lower_case(filepath.extension().string());
+    GenericProgressiveImageFileReader reader;
+    reader.open(filename);
 
-    if (extension == ".exr")
+    CanvasProperties props;
+    reader.read_canvas_properties(props);
+
+    if (image_attributes)
+        reader.read_image_attributes(*image_attributes);
+
+    auto_ptr<Image> image(
+        new Image(
+            props.m_canvas_width,
+            props.m_canvas_height,
+            props.m_tile_width,
+            props.m_tile_height,
+            props.m_channel_count,
+            props.m_pixel_format));
+
+    for (size_t tile_y = 0; tile_y < props.m_tile_count_y; ++tile_y)
     {
-        EXRImageFileReader reader;
-        return reader.read(filename, image_attributes);
+        for (size_t tile_x = 0; tile_x < props.m_tile_count_x; ++tile_x)
+        {
+            auto_ptr<Tile> tile(reader.read_tile(tile_x, tile_y));
+            image->set_tile(tile_x, tile_y, tile.release());
+        }
     }
-    else if (extension == ".png")
-    {
-        PNGImageFileReader reader;
-        return reader.read(filename, image_attributes);
-    }
-    else
-    {
-        throw ExceptionUnsupportedFileFormat(filename);
-        return 0;
-    }
+
+    reader.close();
+
+    return image.release();
 }
 
 }   // namespace foundation

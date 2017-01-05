@@ -44,7 +44,7 @@ namespace foundation
 {
 
 //
-// Read an image file using the right reader based on the extension of the image file name.
+// A non-progressive image file reader based on OpenImageIO.
 //
 
 class APPLESEED_DLLSYMBOL GenericImageFileReader

@@ -1531,7 +1531,7 @@ namespace
             get_save_filename(
                 parent,
                 caption,
-                g_bitmap_files_filter,
+                g_appleseed_image_files_filter,
                 settings,
                 SETTINGS_FILE_DIALOG_FRAMES);
 

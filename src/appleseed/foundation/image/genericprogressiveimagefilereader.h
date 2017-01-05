@@ -49,22 +49,15 @@ namespace foundation
 {
 
 //
-// Generic progressive image file reader interface.
+// A progressive image file reader based on OpenImageIO.
 //
 
 class APPLESEED_DLLSYMBOL GenericProgressiveImageFileReader
   : public IProgressiveImageFileReader
 {
   public:
-    // Constructors.
+    // Constructor.
     explicit GenericProgressiveImageFileReader(Logger* logger = 0);
-    GenericProgressiveImageFileReader(
-        const size_t        default_tile_width,
-        const size_t        default_tile_height);
-    GenericProgressiveImageFileReader(
-        Logger*             logger,
-        const size_t        default_tile_width,
-        const size_t        default_tile_height);
 
     // Destructor.
     ~GenericProgressiveImageFileReader();

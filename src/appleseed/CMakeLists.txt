@@ -79,8 +79,6 @@ set (foundation_image_sources
     foundation/image/colorspace.h
     foundation/image/drawing.h
     foundation/image/exceptionunsupportedimageformat.h
-    foundation/image/exrimagefilereader.cpp
-    foundation/image/exrimagefilereader.h
     foundation/image/exrimagefilewriter.cpp
     foundation/image/exrimagefilewriter.h
     foundation/image/exrutils.cpp
@@ -101,21 +99,12 @@ set (foundation_image_sources
     foundation/image/imageattributes.cpp
     foundation/image/imageattributes.h
     foundation/image/iprogressiveimagefilereader.h
-    foundation/image/iprogressiveimagefilewriter.h
     foundation/image/nativedrawing.cpp
     foundation/image/nativedrawing.h
     foundation/image/pixel.cpp
     foundation/image/pixel.h
-    foundation/image/pngimagefilereader.cpp
-    foundation/image/pngimagefilereader.h
     foundation/image/pngimagefilewriter.cpp
     foundation/image/pngimagefilewriter.h
-    foundation/image/progressiveexrimagefilereader.cpp
-    foundation/image/progressiveexrimagefilereader.h
-    foundation/image/progressiveexrimagefilewriter.cpp
-    foundation/image/progressiveexrimagefilewriter.h
-    foundation/image/progressivepngimagefilereader.cpp
-    foundation/image/progressivepngimagefilereader.h
     foundation/image/regularspectrum.h
     foundation/image/tile.cpp
     foundation/image/tile.h

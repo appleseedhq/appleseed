@@ -31,21 +31,24 @@
 #include "genericprogressiveimagefilereader.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
-#include "foundation/image/progressiveexrimagefilereader.h"
-#include "foundation/image/progressivepngimagefilereader.h"
-#include "foundation/utility/string.h"
+#include "foundation/core/exceptions/exceptionioerror.h"
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/exceptionunsupportedimageformat.h"
+#include "foundation/image/pixel.h"
+#include "foundation/image/tile.h"
 
-// Boost headers.
-#include "boost/filesystem/path.hpp"
+// OpenImageIO headers.
+#include "foundation/platform/oiioheaderguards.h"
+BEGIN_OIIO_INCLUDES
+#include "OpenImageIO/imageio.h"
+END_OIIO_INCLUDES
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
 #include <memory>
-#include <string>
 
 using namespace std;
-namespace bf = boost::filesystem;
 
 namespace foundation
 {
@@ -57,42 +60,17 @@ namespace foundation
 struct GenericProgressiveImageFileReader::Impl
 {
     Logger*                                 m_logger;
-    bool                                    m_has_default_tile_size;
-    size_t                                  m_default_tile_width;
-    size_t                                  m_default_tile_height;
-    auto_ptr<IProgressiveImageFileReader>   m_reader;
+    OIIO::ImageInput*                       m_image;
+    bool                                    m_tiled;
+    CanvasProperties                        m_props;
 };
 
 GenericProgressiveImageFileReader::GenericProgressiveImageFileReader(Logger* logger)
   : impl(new Impl())
 {
     impl->m_logger = logger;
-    impl->m_has_default_tile_size = false;
-    impl->m_default_tile_width = 0;
-    impl->m_default_tile_height = 0;
-}
-
-GenericProgressiveImageFileReader::GenericProgressiveImageFileReader(
-    const size_t        default_tile_width,
-    const size_t        default_tile_height)
-  : impl(new Impl())
-{
-    impl->m_logger = 0;
-    impl->m_has_default_tile_size = true;
-    impl->m_default_tile_width = default_tile_width;
-    impl->m_default_tile_height = default_tile_height;
-}
-
-GenericProgressiveImageFileReader::GenericProgressiveImageFileReader(
-    Logger*             logger,
-    const size_t        default_tile_width,
-    const size_t        default_tile_height)
-  : impl(new Impl())
-{
-    impl->m_logger = logger;
-    impl->m_has_default_tile_size = true;
-    impl->m_default_tile_width = default_tile_width;
-    impl->m_default_tile_height = default_tile_height;
+    impl->m_image = 0;
+    impl->m_tiled = false;
 }
 
 GenericProgressiveImageFileReader::~GenericProgressiveImageFileReader()
@@ -108,63 +86,106 @@ void GenericProgressiveImageFileReader::open(const char* filename)
     assert(filename);
     assert(!is_open());
 
-    const bf::path filepath(filename);
-    const string extension = lower_case(filepath.extension().string());
+    impl->m_image = OIIO::ImageInput::open(filename);
 
-    if (extension == ".exr")
+    if (impl->m_image == 0)
+        throw ExceptionIOError();
+
+    const OIIO::ImageSpec& spec = impl->m_image->spec();
+
+    impl->m_tiled = spec.tile_width > 0 && spec.tile_height > 0 && spec.tile_depth > 0;
+
+    size_t tile_width, tile_height;
+    if (impl->m_tiled)
     {
-        impl->m_reader.reset(
-            impl->m_has_default_tile_size
-                ? new ProgressiveEXRImageFileReader(
-                      impl->m_logger,
-                      impl->m_default_tile_width,
-                      impl->m_default_tile_height)
-                : new ProgressiveEXRImageFileReader(
-                      impl->m_logger));
-    }
-    else if (extension == ".png")
-    {
-        impl->m_reader.reset(
-            impl->m_has_default_tile_size
-                ? new ProgressivePNGImageFileReader(
-                      impl->m_logger,
-                      impl->m_default_tile_width,
-                      impl->m_default_tile_height)
-                : new ProgressivePNGImageFileReader(
-                      impl->m_logger));
+        // Tiled image.
+        tile_width = static_cast<size_t>(spec.tile_width);
+        tile_height = static_cast<size_t>(spec.tile_height);
     }
     else
     {
-        throw ExceptionUnsupportedFileFormat(filename);
+        // Scanline image.
+        tile_width = static_cast<size_t>(spec.width);
+        tile_height = static_cast<size_t>(spec.height);
     }
 
-    impl->m_reader->open(filename);
+    PixelFormat pixel_format;
+    switch (spec.format.basetype)
+    {
+      case OIIO::TypeDesc::UINT8:
+      case OIIO::TypeDesc::INT8:
+        pixel_format = PixelFormatUInt8;
+        break;
+
+      case OIIO::TypeDesc::UINT16:
+      case OIIO::TypeDesc::INT16:
+        pixel_format = PixelFormatUInt16;
+        break;
+
+      case OIIO::TypeDesc::UINT32:
+      case OIIO::TypeDesc::INT32:
+        pixel_format = PixelFormatUInt32;
+        break;
+
+      case OIIO::TypeDesc::HALF:
+        pixel_format = PixelFormatHalf;
+        break;
+
+      case OIIO::TypeDesc::FLOAT:
+        pixel_format = PixelFormatFloat;
+        break;
+
+      case OIIO::TypeDesc::DOUBLE:
+        pixel_format = PixelFormatDouble;
+        break;
+
+      default:
+        throw ExceptionUnsupportedImageFormat();
+    }
+
+    impl->m_props = CanvasProperties(
+        static_cast<size_t>(spec.width),
+        static_cast<size_t>(spec.height),
+        tile_width,
+        tile_height,
+        static_cast<size_t>(spec.nchannels),
+        pixel_format);
 }
 
 void GenericProgressiveImageFileReader::close()
 {
     assert(is_open());
-    impl->m_reader->close();
-    impl->m_reader.reset();
+
+    impl->m_image->close();
+
+    // todo: we should really be calling OIIO::ImageInput::destroy(impl->m_image)
+    // but OpenImageIO 1.5.20 (the version included in appleseed-deps at the time
+    // of writing) is too old to have this method. Since on Windows we link to
+    // OpenImageIO statically, this should be safe anyway.
+    delete impl->m_image;
+
+    impl->m_image = 0;
 }
 
 bool GenericProgressiveImageFileReader::is_open() const
 {
-    return impl->m_reader.get() && impl->m_reader->is_open();
+    return impl->m_image != 0;
 }
 
 void GenericProgressiveImageFileReader::read_canvas_properties(
     CanvasProperties&   props)
 {
     assert(is_open());
-    impl->m_reader->read_canvas_properties(props);
+
+    props = impl->m_props;
 }
 
 void GenericProgressiveImageFileReader::read_image_attributes(
     ImageAttributes&    attrs)
 {
     assert(is_open());
-    impl->m_reader->read_image_attributes(attrs);
+
+    // todo: implement.
 }
 
 Tile* GenericProgressiveImageFileReader::read_tile(
@@ -172,7 +193,84 @@ Tile* GenericProgressiveImageFileReader::read_tile(
     const size_t        tile_y)
 {
     assert(is_open());
-    return impl->m_reader->read_tile(tile_x, tile_y);
+
+    const OIIO::ImageSpec& spec = impl->m_image->spec();
+
+    if (impl->m_tiled)
+    {
+        //
+        // Tiled image.
+        //
+        // In appleseed, for images whose width or height are not multiples
+        // of the tile's width or height, border tiles are actually smaller.
+        // In OpenImageIO, border tiles have the same size as other tiles,
+        // and the image's pixel data window defines which pixels of those
+        // tiles actually belong to the image.
+        //
+        // Since in appleseed we don't propagate pixel data windows through
+        // the whole image pipeline, we make sure here to return tiles of
+        // the correct dimensions, at some expenses.
+        //
+
+        auto_ptr<Tile> source_tile(
+            new Tile(
+                impl->m_props.m_tile_width,
+                impl->m_props.m_tile_height,
+                impl->m_props.m_channel_count,
+                impl->m_props.m_pixel_format));
+
+        const size_t origin_x = tile_x * impl->m_props.m_tile_width;
+        const size_t origin_y = tile_y * impl->m_props.m_tile_height;
+
+        if (!impl->m_image->read_tile(
+                static_cast<int>(origin_x),
+                static_cast<int>(origin_y),
+                0, // z
+                spec.format,
+                source_tile->get_storage()))
+            throw ExceptionIOError();
+
+        const size_t tile_width = min(impl->m_props.m_tile_width, impl->m_props.m_canvas_width - origin_x);
+        const size_t tile_height = min(impl->m_props.m_tile_height, impl->m_props.m_canvas_height - origin_y);
+
+        if (tile_width == impl->m_props.m_tile_width && tile_height == impl->m_props.m_tile_height)
+            return source_tile.release();
+
+        Tile* shrunk_tile =
+            new Tile(
+                tile_width,
+                tile_height,
+                impl->m_props.m_channel_count,
+                impl->m_props.m_pixel_format);
+
+        for (size_t y = 0; y < tile_height; ++y)
+        {
+            memcpy(
+                shrunk_tile->pixel(0, y),
+                source_tile->pixel(0, y),
+                tile_width * impl->m_props.m_pixel_size);
+        }
+
+        return shrunk_tile;
+    }
+    else
+    {
+        //
+        // Scanline image.
+        //
+
+        Tile* tile =
+            new Tile(
+                impl->m_props.m_canvas_width,
+                impl->m_props.m_canvas_height,
+                impl->m_props.m_channel_count,
+                impl->m_props.m_pixel_format);
+
+        if (!impl->m_image->read_image(spec.format, tile->get_storage()))
+            throw ExceptionIOError();
+
+        return tile;
+    }
 }
 
 }   // namespace foundation
