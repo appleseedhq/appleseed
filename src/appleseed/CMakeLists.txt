@@ -99,7 +99,6 @@ set (foundation_image_sources
     foundation/image/imageattributes.cpp
     foundation/image/imageattributes.h
     foundation/image/iprogressiveimagefilereader.h
-    foundation/image/iprogressiveimagefilewriter.h
     foundation/image/nativedrawing.cpp
     foundation/image/nativedrawing.h
     foundation/image/pixel.cpp
