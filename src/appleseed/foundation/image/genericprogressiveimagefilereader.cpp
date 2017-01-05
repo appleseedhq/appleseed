@@ -233,7 +233,10 @@ Tile* GenericProgressiveImageFileReader::read_tile(
         const size_t tile_width = min(impl->m_props.m_tile_width, impl->m_props.m_canvas_width - origin_x);
         const size_t tile_height = min(impl->m_props.m_tile_height, impl->m_props.m_canvas_height - origin_y);
 
-        Tile* tile =
+        if (tile_width == impl->m_props.m_tile_width && tile_height == impl->m_props.m_tile_height)
+            return source_tile.release();
+
+        Tile* shrunk_tile =
             new Tile(
                 tile_width,
                 tile_height,
@@ -241,9 +244,14 @@ Tile* GenericProgressiveImageFileReader::read_tile(
                 impl->m_props.m_pixel_format);
 
         for (size_t y = 0; y < tile_height; ++y)
-            memcpy(tile->pixel(0, y), source_tile->pixel(0, y), tile_width * impl->m_props.m_pixel_size);
+        {
+            memcpy(
+                shrunk_tile->pixel(0, y),
+                source_tile->pixel(0, y),
+                tile_width * impl->m_props.m_pixel_size);
+        }
 
-        return tile;
+        return shrunk_tile;
     }
     else
     {
