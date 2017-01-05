@@ -159,14 +159,6 @@ def convert_sensor(project, scene, element):
 
 
 def create_texture(base_group, texture_name, filepath):
-    if filepath.endswith(".jpg"):
-        # Hack because appleseed doesn't currently support JPEG images in built-in materials.
-        filepath += ".png"
-
-    if filepath.endswith(".hdr"):
-        # Hack because appleseed doesn't currently support HDR images in built-in materials.
-        filepath += ".exr"
-
     color_space = "linear_rgb" if filepath.endswith(".exr") or \
         filepath.endswith(".hdr") else "srgb"
     base_group.textures().insert(asr.Texture("disk_texture_2d", texture_name, {
