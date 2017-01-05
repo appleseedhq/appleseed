@@ -27,7 +27,6 @@
 // THE SOFTWARE.
 //
 
-
 // Interface header.
 #include "continuoussavingtilecallback.h"
 
@@ -40,7 +39,6 @@
 // appleseed.foundation headers.
 #include "foundation/image/image.h"
 #include "foundation/image/imageattributes.h"
-#include "foundation/image/progressiveexrimagefilewriter.h"
 #include "foundation/platform/thread.h"
 
 // Boost headers.
