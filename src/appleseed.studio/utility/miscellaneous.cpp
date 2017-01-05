@@ -59,6 +59,8 @@ END_OIIO_INCLUDES
 #include <QLayout>
 #include <QLayoutItem>
 #include <QMessageBox>
+#include <QMutex>
+#include <QMutexLocker>
 #include <QPixmap>
 #include <QShortcut>
 #include <QSpacerItem>
@@ -80,42 +82,52 @@ using namespace std;
 namespace appleseed {
 namespace studio {
 
-const QString g_bitmap_files_filter = "Bitmap Files (*.png;*.exr);;OpenEXR (*.exr);;PNG (*.png);;All Files (*.*)";
+const QString g_appleseed_image_files_filter = "Bitmap Files (*.png;*.exr);;OpenEXR (*.exr);;PNG (*.png);;All Files (*.*)";
 
-QString compute_oiio_files_filter()
+QString get_oiio_image_files_filter()
 {
-    stringstream sstr;
+    static QString filter;
+    static QMutex mutex;
 
-    string extensions;
-    OIIO::getattribute("extension_list", extensions);
+    QMutexLocker locker(&mutex);
 
-    vector<string> formats;
-    split(extensions, ";", formats);
-
-    for (const_each<vector<string> > i = formats; i; ++i)
+    if (filter.isEmpty())
     {
-        const string::size_type sep = i->find_first_of(':');
-        const string format = i->substr(0, sep);
-        const string extlist = i->substr(sep + 1);
+        stringstream sstr;
 
-        vector<string> exts;
-        split(extlist, ",", exts);
+        string extensions;
+        OIIO::getattribute("extension_list", extensions);
 
-        sstr << upper_case(format) << " Files (";
+        vector<string> formats;
+        split(extensions, ";", formats);
 
-        for (const_each<vector<string> > e = exts; e; ++e)
+        for (const_each<vector<string> > i = formats; i; ++i)
         {
-            if (e.it() != exts.begin())
-                sstr << ";";
-            sstr << "*." << *e;
+            const string::size_type sep = i->find_first_of(':');
+            const string format = i->substr(0, sep);
+            const string extlist = i->substr(sep + 1);
+
+            vector<string> exts;
+            split(extlist, ",", exts);
+
+            sstr << upper_case(format) << " Files (";
+
+            for (const_each<vector<string> > e = exts; e; ++e)
+            {
+                if (e.it() != exts.begin())
+                    sstr << ";";
+                sstr << "*." << *e;
+            }
+
+            sstr << ");;";
         }
 
-        sstr << ");;";
+        sstr << "All Files (*.*)";
+
+        filter = QString::fromStdString(sstr.str());
     }
 
-    sstr << "All Files (*.*)";
-
-    return QString::fromStdString(sstr.str());
+    return filter;
 }
 
 QString combine_paths(const QString& lhs, const QString& rhs)

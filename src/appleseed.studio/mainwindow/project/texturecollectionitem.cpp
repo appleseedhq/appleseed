@@ -134,7 +134,7 @@ void TextureCollectionItem::slot_import_textures()
         get_open_filenames(
             treeWidget(),
             "Import Textures...",
-            g_bitmap_files_filter,
+            get_oiio_image_files_filter(),
             m_editor_context.m_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 
