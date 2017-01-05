@@ -46,6 +46,7 @@ END_OIIO_INCLUDES
 // Standard headers.
 #include <algorithm>
 #include <cassert>
+#include <memory>
 
 using namespace std;
 
