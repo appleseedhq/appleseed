@@ -6,7 +6,7 @@
             ../_assets/textures
         </search_path>
         <search_path>
-            archives/
+            skip - archives/
         </search_path>
     </search_paths>
     <scene>
@@ -53,7 +53,7 @@
             <parameter name="environment_edf" value="environment_edf" />
         </environment>
         <assembly name="assembly" model="archive_assembly">
-            <parameter name="filename" value="archives/archive.appleseed" />
+            <parameter name="filename" value="archive.appleseed" />
         </assembly>
         <assembly_instance name="assembly_inst" assembly="assembly">
         </assembly_instance>
