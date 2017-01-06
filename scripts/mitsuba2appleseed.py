@@ -27,6 +27,7 @@
 # THE SOFTWARE.
 #
 
+from __future__ import division
 from __future__ import print_function
 from xml.etree.ElementTree import ElementTree
 import appleseed as asr
@@ -77,7 +78,7 @@ def get_matrix(element):
         fatal("Matrix was expected to contain 16 coefficients but contained {0} instead".format(len(values)))
     matrix = asr.Matrix4d()
     for i in range(16):
-        matrix[i / 4, i % 4] = values[i]
+        matrix[int(i / 4), i % 4] = values[i]
     return matrix
 
 
@@ -125,7 +126,9 @@ def convert_sampler(project, element):
     for child in element:
         if child.tag == "integer":
             if child.attrib["name"] == "sampleCount":
-                sample_count = int(child.attrib["value"])
+                sample_count = 16
+                pass_count = int(math.ceil(int(child.attrib["value"]) / sample_count))
+                project.configurations().get_by_name("final").insert_path("generic_frame_renderer.passes", pass_count)
                 project.configurations().get_by_name("final").insert_path("uniform_pixel_renderer.samples", sample_count)
 
 
@@ -134,7 +137,8 @@ def convert_sensor(project, scene, element):
     camera_matrix = None
     frame_params = {
         "camera": "camera",
-        "color_space": "srgb"
+        "color_space": "srgb",
+        "tile_size": "32 32"
     }
 
     for child in element:
@@ -203,6 +207,10 @@ def convert_colormap(assembly, parent_name, element):
         warning("Don't know how to convert color map of type {0}".format(element.tag))
 
 
+def convert_alpha_to_roughness(element):
+    return math.sqrt(float(element.find("float[@name='alpha']").attrib["value"]))
+
+
 def convert_diffuse_bsdf(assembly, bsdf_name, element):
     bsdf_params = {}
 
@@ -231,7 +239,7 @@ def convert_roughplastic_bsdf(assembly, bsdf_name, element):
     bsdf_params["base_color"] = convert_colormap(assembly, bsdf_name, reflectance)
 
     bsdf_params["specular"] = 0.5
-    bsdf_params["roughness"] = math.sqrt(float(element.find("float[@name='alpha']").attrib["value"]))
+    bsdf_params["roughness"] = convert_alpha_to_roughness(element)
 
     assembly.bsdfs().insert(asr.BSDF("disney_brdf", bsdf_name, bsdf_params))
 
@@ -249,9 +257,9 @@ def convert_conductor_bsdf(assembly, bsdf_name, element):
         if material_name == "none":
             bsdf_params["normal_reflectance"] = 1.0
 
-    # todo: fix.
-    bsdf_params["edge_tint"] = 1
     bsdf_params["mdf"] = "ggx"
+    bsdf_params["edge_tint"] = 1.0
+    bsdf_params["roughness"] = 0.0
 
     assembly.bsdfs().insert(asr.BSDF("metal_brdf", bsdf_name, bsdf_params))
 
@@ -262,9 +270,9 @@ def convert_roughconductor_bsdf(assembly, bsdf_name, element):
     reflectance = element.find("*[@name='specularReflectance']")
     bsdf_params["normal_reflectance"] = convert_colormap(assembly, bsdf_name, reflectance)
 
-    # todo: fix.
-    bsdf_params["edge_tint"] = 1
     bsdf_params["mdf"] = "ggx"
+    bsdf_params["edge_tint"] = 1.0
+    bsdf_params["roughness"] = convert_alpha_to_roughness(element)
 
     assembly.bsdfs().insert(asr.BSDF("metal_brdf", bsdf_name, bsdf_params))
 
@@ -275,10 +283,22 @@ def convert_dielectric_bsdf(assembly, bsdf_name, element):
     # todo: support textured IOR.
     bsdf_params["ior"] = float(element.find("float[@name='intIOR']").attrib["value"])
 
-    # todo: fix.
-    bsdf_params["surface_transmittance"] = 1.0
     bsdf_params["mdf"] = "ggx"
+    bsdf_params["surface_transmittance"] = 1.0
     bsdf_params["roughness"] = 0.0
+
+    assembly.bsdfs().insert(asr.BSDF("glass_bsdf", bsdf_name, bsdf_params))
+
+
+def convert_roughdielectric_bsdf(assembly, bsdf_name, element):
+    bsdf_params = {}
+
+    # todo: support textured IOR.
+    bsdf_params["ior"] = float(element.find("float[@name='intIOR']").attrib["value"])
+
+    bsdf_params["mdf"] = "ggx"
+    bsdf_params["surface_transmittance"] = 1.0
+    bsdf_params["roughness"] = convert_alpha_to_roughness(element)
 
     assembly.bsdfs().insert(asr.BSDF("glass_bsdf", bsdf_name, bsdf_params))
 
@@ -304,7 +324,7 @@ def convert_envmap_emitter(scene, assembly, emitter_name, element):
         "radiance": texture_instance_name
     })
 
-    matrix_element = element.find("transform/matrix")
+    matrix_element = element.find("transform[@name='toWorld']/matrix")
     if matrix_element is not None:
         matrix = get_matrix(matrix_element)
         roty = asr.Matrix4d.make_rotation(asr.Vector3d(0.0, 1.0, 0.0), math.radians(-90.0))
@@ -436,6 +456,9 @@ def convert_material(assembly, material_name, material_params, element):
     elif type == "dielectric":
         set_private_param(material_params, "two_sided", True)
         convert_dielectric_bsdf(assembly, bsdf_name, element)
+    elif type == "roughdielectric":
+        set_private_param(material_params, "two_sided", True)
+        convert_roughdielectric_bsdf(assembly, bsdf_name, element)
     elif type == "thindielectric":
         set_private_param(material_params, "two_sided", True)
         set_private_param(material_params, "thin_dielectric", True)
@@ -482,7 +505,9 @@ def process_shape_material(scene, assembly, instance_name, element):
     return material.get_name() if material is not None else None
 
 
-def make_object_instance(assembly, object, instance_name, material_name, transform):
+def make_object_instance(assembly, object, material_name, transform):
+    instance_name = "{0}_inst".format(object.get_name())
+
     front_mappings = {}
     back_mappings = {}
     instance_params = {}
@@ -505,34 +530,32 @@ def make_object_instance(assembly, object, instance_name, material_name, transfo
     return asr.ObjectInstance(instance_name, instance_params, object.get_name(), transform, front_mappings, back_mappings)
 
 
-def convert_obj_shape(project, scene, assembly, element):
-    object_count = len(assembly.objects())
-    object_name = "object_{0}".format(object_count)
-    instance_name = "{0}_inst".format(object_name)
+def make_new_object_name(assembly):
+    return "object_{0}".format(len(assembly.objects()))
 
-    # Objects.
+
+def convert_obj_shape(project, scene, assembly, element):
+    # Read OBJ file from disk and create objects.
+    object_name = make_new_object_name(assembly)
     filepath = element.find("string[@name='filename']").attrib["value"]
     objects = asr.MeshObjectReader.read(project.get_search_paths(), object_name, {"filename": filepath})
 
     # Instance transform.
-    matrix = get_matrix(element.find("transform/matrix"))
+    matrix = get_matrix(element.find("transform[@name='toWorld']/matrix"))
     transform = asr.Transformd(matrix)
 
     # Instance material.
-    material_name = process_shape_material(scene, assembly, instance_name, element)
+    material_name = process_shape_material(scene, assembly, object_name, element)
 
     for object in objects:
-        instance = make_object_instance(assembly, object, instance_name, material_name, transform)
+        instance = make_object_instance(assembly, object, material_name, transform)
         assembly.object_instances().insert(instance)
         assembly.objects().insert(object)
 
 
 def convert_rectangle_shape(scene, assembly, element):
-    object_count = len(assembly.objects())
-    object_name = "object_{0}".format(object_count)
-    instance_name = "{0}_inst".format(object_name)
-
     # Object.
+    object_name = make_new_object_name(assembly)
     object = asr.create_primitive_mesh(object_name, {
         "primitive": "grid",
         "resolution_u": 1,
@@ -542,24 +565,48 @@ def convert_rectangle_shape(scene, assembly, element):
     })
 
     # Instance transform.
-    matrix = get_matrix(element.find("transform/matrix"))
+    matrix = get_matrix(element.find("transform[@name='toWorld']/matrix"))
     rotx = asr.Matrix4d.make_rotation(asr.Vector3d(1.0, 0.0, 0.0), math.radians(90.0))
     matrix = matrix * rotx
     transform = asr.Transformd(matrix)
 
     # Instance material.
-    material_name = process_shape_material(scene, assembly, instance_name, element)
+    material_name = process_shape_material(scene, assembly, object_name, element)
 
-    instance = make_object_instance(assembly, object, instance_name, material_name, transform)
+    instance = make_object_instance(assembly, object, material_name, transform)
+    assembly.object_instances().insert(instance)
+    assembly.objects().insert(object)
+
+
+def convert_disk_shape(scene, assembly, element):
+    # Radius.
+    radius_element = element.find("float[@name='radius']")
+    radius = float(radius_element.attrib["value"]) if radius_element is not None else 1.0
+
+    # Object.
+    object_name = make_new_object_name(assembly)
+    object = asr.create_primitive_mesh(object_name, {
+        "primitive": "disk",
+        "resolution_u": 1,
+        "resolution_v": 32,
+        "radius": radius
+    })
+
+    # Instance transform.
+    matrix = get_matrix(element.find("transform[@name='toWorld']/matrix"))
+    rotx = asr.Matrix4d.make_rotation(asr.Vector3d(1.0, 0.0, 0.0), math.radians(90.0))
+    matrix = matrix * rotx
+    transform = asr.Transformd(matrix)
+
+    # Instance material.
+    material_name = process_shape_material(scene, assembly, object_name, element)
+
+    instance = make_object_instance(assembly, object, material_name, transform)
     assembly.object_instances().insert(instance)
     assembly.objects().insert(object)
 
 
 def convert_sphere_shape(scene, assembly, element):
-    object_count = len(assembly.objects())
-    object_name = "object_{0}".format(object_count)
-    instance_name = "{0}_inst".format(object_name)
-
     # Radius.
     radius_element = element.find("float[@name='radius']")
     radius = float(radius_element.attrib["value"]) if radius_element is not None else 1.0
@@ -569,6 +616,7 @@ def convert_sphere_shape(scene, assembly, element):
     center = asr.Vector3d(get_vector(center_element)) if center_element is not None else asr.Vector3d(0.0)
 
     # Object.
+    object_name = make_new_object_name(assembly)
     object = asr.create_primitive_mesh(object_name, {
         "primitive": "sphere",
         "resolution_u": 32,
@@ -578,16 +626,16 @@ def convert_sphere_shape(scene, assembly, element):
 
     # Instance transform.
     matrix = asr.Matrix4d.make_translation(center)
-    matrix_element = element.find("transform/matrix")
+    matrix_element = element.find("transform[@name='toWorld']/matrix")
     if matrix_element is not None:
         # todo: no idea what is the right multiplication order, untested.
         matrix = matrix * get_matrix(matrix_element)
     transform = asr.Transformd(matrix)
 
     # Instance material.
-    material_name = process_shape_material(scene, assembly, instance_name, element)
+    material_name = process_shape_material(scene, assembly, object_name, element)
 
-    instance = make_object_instance(assembly, object, instance_name, material_name, transform)
+    instance = make_object_instance(assembly, object, material_name, transform)
     assembly.object_instances().insert(instance)
     assembly.objects().insert(object)
 
@@ -598,6 +646,8 @@ def convert_shape(project, scene, assembly, element):
         convert_obj_shape(project, scene, assembly, element)
     elif type == "rectangle":
         convert_rectangle_shape(scene, assembly, element)
+    elif type == "disk":
+        convert_disk_shape(scene, assembly, element)
     elif type == "sphere":
         convert_sphere_shape(scene, assembly, element)
     else:
