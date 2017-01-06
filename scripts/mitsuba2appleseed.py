@@ -159,11 +159,9 @@ def convert_sensor(project, scene, element):
 
 
 def create_texture(base_group, texture_name, filepath):
-    color_space = "linear_rgb" if filepath.endswith(".exr") or \
-        filepath.endswith(".hdr") else "srgb"
     base_group.textures().insert(asr.Texture("disk_texture_2d", texture_name, {
         "filename": filepath,
-        "color_space": color_space
+        "color_space": "linear_rgb" if filepath.endswith(".exr") or filepath.endswith(".hdr") else "srgb"
     }, []))
 
     texture_instance_name = "{0}_inst".format(texture_name)
@@ -419,6 +417,10 @@ def convert_material(assembly, material_name, material_params, element):
         # todo: add bump mapping support.
         return convert_material(assembly, material_name, material_params, element.find("bsdf"))
 
+    if type == "mask":
+        # todo: add masking support.
+        return convert_material(assembly, material_name, material_params, element.find("bsdf"))
+
     # BSDF.
     bsdf_name = "{0}_bsdf".format(material_name)
     if type == "diffuse":
@@ -433,6 +435,10 @@ def convert_material(assembly, material_name, material_params, element):
         convert_roughconductor_bsdf(assembly, bsdf_name, element)
     elif type == "dielectric":
         set_private_param(material_params, "two_sided", True)
+        convert_dielectric_bsdf(assembly, bsdf_name, element)
+    elif type == "thindielectric":
+        set_private_param(material_params, "two_sided", True)
+        set_private_param(material_params, "thin_dielectric", True)
         convert_dielectric_bsdf(assembly, bsdf_name, element)
     else:
         warning("Don't know how to convert BSDF of type {0}".format(type))
@@ -449,43 +455,54 @@ def convert_material(assembly, material_name, material_params, element):
 
 
 def process_shape_material(scene, assembly, instance_name, element):
+    material = None
+
     # Material reference.
-    ref = element.find("ref")
-    if ref is not None:
-        return element.find("ref").attrib["id"]
+    ref_element = element.find("ref")
+    if ref_element is not None:
+        material_name = ref_element.attrib["id"]
+        material = assembly.materials().get_by_name(material_name)
 
-    # Embedded material.
-    bsdf = element.find("bsdf")
-    if bsdf is not None:
-        material_params = {}
-
-        # Embedded emitter.
-        emitter = element.find("emitter")
-        if emitter is not None:
-            edf_name = "{0}_edf".format(instance_name)
-            convert_emitter(scene, assembly, edf_name, emitter)
-            material_params["edf"] = edf_name
-
+    # Embedded material (has priority over the referenced material).
+    bsdf_element = element.find("bsdf")
+    if bsdf_element is not None:
         material_name = "{0}_material".format(instance_name)
-        convert_material(assembly, material_name, material_params, bsdf)
-        return material_name
+        convert_material(assembly, material_name, {}, bsdf_element)
+        material = assembly.materials().get_by_name(material_name)
 
-    # No material for this shape.
-    return None
+    # Embedded emitter (we suppose it's an area emitter).
+    emitter_element = element.find("emitter")
+    if emitter_element is not None:
+        edf_name = "{0}_edf".format(instance_name)
+        convert_emitter(scene, assembly, edf_name, emitter_element)
+        params = material.get_parameters()
+        params["edf"] = edf_name
+        material.set_parameters(params)
+
+    return material.get_name() if material is not None else None
 
 
 def make_object_instance(assembly, object, instance_name, material_name, transform):
-    material = assembly.materials().get_by_name(material_name)
-    two_sided = get_private_param(material.get_parameters(), "two_sided", False) if material is not None else False
+    front_mappings = {}
+    back_mappings = {}
+    instance_params = {}
 
-    slots = object.material_slots()
-    if len(slots) == 0:
-        slots = ["default"]
+    if material_name is not None:
+        material = assembly.materials().get_by_name(material_name)
+        two_sided = get_private_param(material.get_parameters(), "two_sided", False) if material is not None else False
+        thin_dielectric = get_private_param(material.get_parameters(), "thin_dielectric", False) if material is not None else False
 
-    front_mappings = dict([(slot, material_name) for slot in slots])
-    back_mappings = front_mappings if two_sided else {}
+        slots = object.material_slots()
+        if len(slots) == 0:
+            slots = ["default"]
 
-    return asr.ObjectInstance(instance_name, {}, object.get_name(), transform, front_mappings, back_mappings)
+        front_mappings = dict([(slot, material_name) for slot in slots])
+        back_mappings = front_mappings if two_sided else {}
+
+        if thin_dielectric:
+            instance_params = {"visibility": {"shadow": False}}
+
+    return asr.ObjectInstance(instance_name, instance_params, object.get_name(), transform, front_mappings, back_mappings)
 
 
 def convert_obj_shape(project, scene, assembly, element):
@@ -664,14 +681,12 @@ def main():
 
     tree = ElementTree()
     try:
-        progress("Loading {0}".format(args.input_file))
         tree.parse(args.input_file)
     except IOError:
         fatal("Failed to load {0}".format(args.input_file))
 
     project = convert(tree)
 
-    progress("Writing {0}".format(args.output_file))
     asr.ProjectFileWriter().write(project, args.output_file,
                                   asr.ProjectFileWriterOptions.OmitHandlingAssetFiles)
 
