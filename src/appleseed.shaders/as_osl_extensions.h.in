@@ -169,4 +169,18 @@ closure color as_disney(
     float   clearcoat,
     float   clearcoat_gloss) BUILTIN;
 
+closure color as_alsurface_layer(
+    closure color   substrate,
+    string          distribution,
+    normal          N,
+    vector          T,
+    color           reflectance,
+    float           roughness,
+    float           anisotropy,
+    float           rotation,
+    string          fresnel_mode,
+    color           ior0,
+    color           ior1
+    ) BUILTIN;
+
 #endif // AS_OSL_EXTENSIONS_H

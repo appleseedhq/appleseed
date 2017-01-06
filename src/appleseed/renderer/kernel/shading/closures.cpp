@@ -1136,6 +1136,97 @@ namespace
         void* substrate;
     };
 
+    struct AlSurfaceLayerClosure
+    {
+        typedef AlSurfaceLayerBRDFInputValues InputValues;
+
+        struct Params : public LayeredClosureBaseParams
+        {
+            OSL::ustring    dist;
+            OSL::Vec3       N;
+            OSL::Vec3       T;
+            OSL::Color3     reflectance;
+            float           roughness;
+            float           anisotropy;
+            float           rotation;
+            OSL::ustring    fresnel_mode;
+            OSL::Color3     ior0;
+            OSL::Color3     ior1;
+        };
+
+        static const char* name()
+        {
+            return "as_alsurface_layer";
+        }
+
+        static ClosureID id()
+        {
+            return AlSurfaceLayerID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_CLOSURE_PARAM(Params, substrate),
+                CLOSURE_STRING_PARAM(Params, dist),
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_VECTOR_PARAM(Params, T),
+                CLOSURE_COLOR_PARAM(Params, reflectance),
+                CLOSURE_FLOAT_PARAM(Params, roughness),
+                CLOSURE_FLOAT_PARAM(Params, anisotropy),
+                CLOSURE_FLOAT_PARAM(Params, rotation),
+                CLOSURE_STRING_PARAM(Params, fresnel_mode),
+                CLOSURE_COLOR_PARAM(Params, ior0),
+                CLOSURE_COLOR_PARAM(Params, ior1),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, 0, 0);
+
+            g_closure_convert_funs[id()] = &convert_closure;
+        }
+
+        static void convert_closure(
+            CompositeSurfaceClosure&    composite_closure,
+            const Basis3f&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight)
+        {
+            const Params* p = reinterpret_cast<const Params*>(osl_params);
+
+            InputValues* values =
+                composite_closure.add_closure<InputValues>(
+                    AlSurfaceLayerID,
+                    p->anisotropy != 0.5f && p->rotation != 0.0f
+                        ? rotate_shading_basis(shading_basis, p->rotation)
+                        : shading_basis,
+                    weight,
+                    p->N,
+                    p->T);
+
+            values->m_substrate = p->substrate;
+            values->m_closure_data = 0;
+
+            values->m_distribution = p->dist;
+            values->m_reflectance = p->reflectance;
+            values->m_roughness = p->roughness;
+            values->m_anisotropy = clamp(p->anisotropy, 0.0f, 1.0f);
+
+            values->m_fresnel_mode = p->fresnel_mode;
+            values->m_ior0 = p->ior0;
+            values->m_ior1 = p->ior1;
+
+            values->m_osl_bsdf = 0;
+        }
+
+        static Basis3f rotate_shading_basis(const Basis3f& basis, const float angle)
+        {
+            // todo: implement this...
+            return basis;
+        }
+    };
+
     const OSL::ClosureColor* get_nested_closure_color(
         const size_t    closure_id,
         const void*     params)
@@ -1700,7 +1791,20 @@ void inject_layered_closure_values(
     const BSDF*     osl_bsdf,
     void*           data)
 {
-    // todo: implement.
+    assert(closure_id >= FirstLayeredClosure);
+
+    switch (closure_id)
+    {
+        case AlSurfaceLayerID:
+        {
+            AlSurfaceLayerBRDFInputValues* values =
+                reinterpret_cast<AlSurfaceLayerBRDFInputValues*>(data);
+            values->m_osl_bsdf = osl_bsdf;
+        }
+        break;
+
+        assert_otherwise;
+    }
 }
 
 namespace
@@ -1718,6 +1822,7 @@ void register_closures(OSL::ShadingSystem& shading_system)
     for (size_t i = 0; i < NumClosuresIDs; ++i)
         g_closure_convert_funs[i] = &convert_closure_nop;
 
+    register_closure<AlSurfaceLayerClosure>(shading_system);
     register_closure<AshikhminShirleyClosure>(shading_system);
     register_closure<BackgroundClosure>(shading_system);
     register_closure<DebugClosure>(shading_system);

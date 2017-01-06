@@ -34,6 +34,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/bsdf/alsurfacelayerbrdf.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
@@ -83,9 +84,7 @@ namespace
             memset(m_all_bsdfs, 0, sizeof(BSDF*) * NumClosuresIDs);
 
             m_ashikhmin_shirley_brdf =
-                create_and_register_bsdf(
-                    AshikhminShirleyID,
-                    "ashikhmin_brdf");
+                create_and_register_bsdf(AshikhminShirleyID, "ashikhmin_brdf");
 
             m_diffuse_btdf = create_and_register_diffuse_btdf();
 
@@ -115,6 +114,8 @@ namespace
 
             m_sheen_brdf =
                 create_and_register_bsdf(SheenID, "sheen_brdf");
+
+            m_alsurface_layer_brdf = create_and_register_alsurface_layer_bsdf();
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -160,6 +161,8 @@ namespace
             const ShadingPoint&     shading_point,
             const size_t            offset) const APPLESEED_OVERRIDE
         {
+            assert(offset == 0);
+
             CompositeSurfaceClosure* c = reinterpret_cast<CompositeSurfaceClosure*>(input_evaluator.data());
             new (c) CompositeSurfaceClosure(
                 Basis3f(shading_point.get_shading_basis()),
@@ -326,6 +329,7 @@ namespace
 
       private:
         BSDF*                       m_all_bsdfs[NumClosuresIDs];
+        auto_release_ptr<BSDF>      m_alsurface_layer_brdf;
         auto_release_ptr<BSDF>      m_ashikhmin_shirley_brdf;
         auto_release_ptr<BSDF>      m_diffuse_btdf;
         auto_release_ptr<BSDF>      m_disney_brdf;
@@ -394,6 +398,17 @@ namespace
                     ParamArray().insert("mdf", mdf_name));
 
             m_all_bsdfs[cid] = bsdf.get();
+            return bsdf;
+        }
+
+        auto_release_ptr<BSDF> create_and_register_alsurface_layer_bsdf()
+        {
+            auto_release_ptr<BSDF> bsdf =
+                AlSurfaceLayerBRDFFactory().create(
+                    "alsurface_layer",
+                    ParamArray());
+
+            m_all_bsdfs[AlSurfaceLayerID] = bsdf.get();
             return bsdf;
         }
 

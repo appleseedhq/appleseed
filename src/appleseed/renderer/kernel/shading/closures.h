@@ -30,6 +30,7 @@
 #define APPLESEED_RENDERER_KERNEL_SHADING_CLOSURES_H
 
 // appleseed.renderer headers.
+#include "renderer/modeling/bsdf/alsurfacelayerbrdf.h"
 #include "renderer/modeling/bsdf/ashikhminbrdf.h"
 #include "renderer/modeling/bsdf/diffusebtdf.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
@@ -129,6 +130,7 @@ enum ClosureID
 
     // Layered BSDF closures. (Must be last.)
     FirstLayeredClosure,
+    AlSurfaceLayerID,
 
     NumClosuresIDs
 };
@@ -193,6 +195,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
 
   protected:
     typedef boost::mpl::vector<
+        AlSurfaceLayerBRDFInputValues,
         AshikhminBRDFInputValues,
         DiffuseBTDFInputValues,
         DiffuseEDFInputValues,
