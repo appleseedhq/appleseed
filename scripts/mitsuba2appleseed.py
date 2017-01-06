@@ -231,7 +231,7 @@ def convert_roughplastic_bsdf(assembly, bsdf_name, element):
     bsdf_params["base_color"] = convert_colormap(assembly, bsdf_name, reflectance)
 
     bsdf_params["specular"] = 0.5
-    bsdf_params["roughness"] = min(1.0, float(element.find("float[@name='alpha']").attrib["value"]) * 3.0)
+    bsdf_params["roughness"] = math.sqrt(float(element.find("float[@name='alpha']").attrib["value"]))
 
     assembly.bsdfs().insert(asr.BSDF("disney_brdf", bsdf_name, bsdf_params))
 
