@@ -38,12 +38,6 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 
-// OSL headers.
-#include "foundation/platform/oiioheaderguards.h"
-BEGIN_OIIO_INCLUDES
-#include "OpenImageIO/ustring.h"
-END_OIIO_INCLUDES
-
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
@@ -61,25 +55,23 @@ APPLESEED_DECLARE_INPUT_VALUES(AlSurfaceLayerBRDFInputValues)
 {
     // Substrate.
     void*           m_substrate;
-    void*           m_closure_data;
+    void*           m_substrate_closure_data;
+    const BSDF*     m_osl_bsdf;
 
     // Microfacet.
-    OIIO::ustring   m_distribution;
+    int             m_distribution;
     Spectrum        m_reflectance;
     float           m_roughness;
     float           m_anisotropy;
 
     // Fresnel.
-    OIIO::ustring   m_fresnel_mode;
-    Spectrum        m_ior0;
-    Spectrum        m_ior1;
-
-    // Internal.
-    const BSDF* m_osl_bsdf;
+    int             m_fresnel_mode;
+    float           m_ior;
+    Spectrum        m_normal_reflectance;
+    Spectrum        m_edge_tint;
 
     struct Precomputed
     {
-        float   m_reflection_weight;
         float   m_alpha_x;
         float   m_alpha_y;
     };

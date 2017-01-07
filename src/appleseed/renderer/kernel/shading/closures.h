@@ -130,7 +130,7 @@ enum ClosureID
 
     // Layered BSDF closures. (Must be last.)
     FirstLayeredClosure,
-    AlSurfaceLayerID,
+    AlSurfaceLayerID = FirstLayeredClosure,
 
     NumClosuresIDs
 };

@@ -1142,16 +1142,16 @@ namespace
 
         struct Params : public LayeredClosureBaseParams
         {
-            OSL::ustring    dist;
+            int             distribution;
             OSL::Vec3       N;
             OSL::Vec3       T;
             OSL::Color3     reflectance;
             float           roughness;
             float           anisotropy;
-            float           rotation;
-            OSL::ustring    fresnel_mode;
-            OSL::Color3     ior0;
-            OSL::Color3     ior1;
+            int             fresnel_mode;
+            float           ior;
+            OSL::Color3     normal_reflectance;
+            OSL::Color3     edge_tint;
         };
 
         static const char* name()
@@ -1169,16 +1169,16 @@ namespace
             const OSL::ClosureParam params[] =
             {
                 CLOSURE_CLOSURE_PARAM(Params, substrate),
-                CLOSURE_STRING_PARAM(Params, dist),
+                CLOSURE_INT_PARAM(Params, distribution),
                 CLOSURE_VECTOR_PARAM(Params, N),
                 CLOSURE_VECTOR_PARAM(Params, T),
                 CLOSURE_COLOR_PARAM(Params, reflectance),
                 CLOSURE_FLOAT_PARAM(Params, roughness),
                 CLOSURE_FLOAT_PARAM(Params, anisotropy),
-                CLOSURE_FLOAT_PARAM(Params, rotation),
-                CLOSURE_STRING_PARAM(Params, fresnel_mode),
-                CLOSURE_COLOR_PARAM(Params, ior0),
-                CLOSURE_COLOR_PARAM(Params, ior1),
+                CLOSURE_INT_PARAM(Params, fresnel_mode),
+                CLOSURE_FLOAT_PARAM(Params, ior),
+                CLOSURE_COLOR_PARAM(Params, normal_reflectance),
+                CLOSURE_COLOR_PARAM(Params, edge_tint),
                 CLOSURE_FINISH_PARAM(Params)
             };
 
@@ -1198,32 +1198,24 @@ namespace
             InputValues* values =
                 composite_closure.add_closure<InputValues>(
                     AlSurfaceLayerID,
-                    p->anisotropy != 0.5f && p->rotation != 0.0f
-                        ? rotate_shading_basis(shading_basis, p->rotation)
-                        : shading_basis,
+                    shading_basis,
                     weight,
                     p->N,
                     p->T);
 
             values->m_substrate = p->substrate;
-            values->m_closure_data = 0;
+            values->m_substrate_closure_data = 0;
+            values->m_osl_bsdf = 0;
 
-            values->m_distribution = p->dist;
+            values->m_distribution = p->distribution;
             values->m_reflectance = p->reflectance;
             values->m_roughness = p->roughness;
-            values->m_anisotropy = clamp(p->anisotropy, 0.0f, 1.0f);
+            values->m_anisotropy = saturate(p->anisotropy);
 
             values->m_fresnel_mode = p->fresnel_mode;
-            values->m_ior0 = p->ior0;
-            values->m_ior1 = p->ior1;
-
-            values->m_osl_bsdf = 0;
-        }
-
-        static Basis3f rotate_shading_basis(const Basis3f& basis, const float angle)
-        {
-            // todo: implement this...
-            return basis;
+            values->m_ior = p->ior;
+            values->m_normal_reflectance = p->normal_reflectance;
+            values->m_edge_tint = p->edge_tint;
         }
     };
 
@@ -1795,15 +1787,15 @@ void inject_layered_closure_values(
 
     switch (closure_id)
     {
-        case AlSurfaceLayerID:
-        {
-            AlSurfaceLayerBRDFInputValues* values =
-                reinterpret_cast<AlSurfaceLayerBRDFInputValues*>(data);
-            values->m_osl_bsdf = osl_bsdf;
-        }
-        break;
+      case AlSurfaceLayerID:
+      {
+          AlSurfaceLayerBRDFInputValues* values =
+              reinterpret_cast<AlSurfaceLayerBRDFInputValues*>(data);
+          values->m_osl_bsdf = osl_bsdf;
+      }
+      break;
 
-        assert_otherwise;
+      assert_otherwise;
     }
 }
 

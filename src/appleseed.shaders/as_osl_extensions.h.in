@@ -169,18 +169,24 @@ closure color as_disney(
     float   clearcoat,
     float   clearcoat_gloss) BUILTIN;
 
+//
+// AlSurface specular layer.
+//
+//  We use ints instead of strings for closure params
+//  to match the parameter types used in the original Arnold shader.
+
 closure color as_alsurface_layer(
     closure color   substrate,
-    string          distribution,
+    int             distribution,       // 0 = beckmann, 1 = GGX.
     normal          N,
     vector          T,
     color           reflectance,
     float           roughness,
     float           anisotropy,
-    float           rotation,
-    string          fresnel_mode,
-    color           ior0,
-    color           ior1
+    int             fresnel_mode,       // 0 = dielectric, 1 = metallic.
+    float           ior,                // ior for dielectric fresnel.
+    color           normal_reflectance, // normal reflectance for metallic fresnel.
+    color           edge_tint           // edge tint for metallic fresnel.
     ) BUILTIN;
 
 #endif // AS_OSL_EXTENSIONS_H
