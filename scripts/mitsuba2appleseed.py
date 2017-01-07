@@ -498,13 +498,17 @@ def process_shape_material(scene, assembly, instance_name, element):
     if emitter_element is not None:
         edf_name = "{0}_edf".format(instance_name)
         convert_emitter(scene, assembly, edf_name, emitter_element)
-        params = material.get_parameters()
-        params["edf"] = edf_name
+
+        material_params = material.get_parameters()
+        material_params["edf"] = edf_name
 
         # Hack: force light-emitting materials to be single-sided.
-        set_private_param(params, "two_sided", False)
+        set_private_param(material_params, "two_sided", False)
 
-        material.set_parameters(params)
+        material_name = instance_name + "_material"
+        material = asr.Material("generic_material", material_name, material_params)
+        assembly.materials().insert(material)
+        material = assembly.materials().get_by_name(material_name)
 
     return material.get_name() if material is not None else None
 
