@@ -126,8 +126,10 @@ def convert_sampler(project, element):
     for child in element:
         if child.tag == "integer":
             if child.attrib["name"] == "sampleCount":
-                sample_count = 16
-                pass_count = int(math.ceil(int(child.attrib["value"]) / sample_count))
+                # sample_count = 16
+                # pass_count = int(math.ceil(int(child.attrib["value"]) / sample_count))
+                sample_count = int(child.attrib["value"])
+                pass_count = 1
                 project.configurations().get_by_name("final").insert_path("generic_frame_renderer.passes", pass_count)
                 project.configurations().get_by_name("final").insert_path("uniform_pixel_renderer.samples", sample_count)
 
