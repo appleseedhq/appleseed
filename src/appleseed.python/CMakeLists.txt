@@ -53,9 +53,9 @@ endif ()
 #--------------------------------------------------------------------------------------------------
 
 if (PYTHON_MAJOR_VERSION STREQUAL "3")
-    find_package (Boost 1.47 COMPONENTS python3)
+    find_package (Boost 1.55 COMPONENTS python3)
 else ()
-    find_package (Boost 1.47 COMPONENTS python)
+    find_package (Boost 1.55 COMPONENTS python)
 endif ()
 
 
