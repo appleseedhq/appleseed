@@ -500,6 +500,10 @@ def process_shape_material(scene, assembly, instance_name, element):
         convert_emitter(scene, assembly, edf_name, emitter_element)
         params = material.get_parameters()
         params["edf"] = edf_name
+
+        # Hack: force light-emitting materials to be single-sided.
+        set_private_param(params, "two_sided", False)
+
         material.set_parameters(params)
 
     return material.get_name() if material is not None else None
