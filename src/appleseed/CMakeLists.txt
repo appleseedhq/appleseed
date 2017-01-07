@@ -1232,6 +1232,8 @@ source_group ("renderer\\meta\\tests" FILES
 )
 
 set (renderer_modeling_bsdf_sources
+    renderer/modeling/bsdf/alsurfacelayerbrdf.cpp
+    renderer/modeling/bsdf/alsurfacelayerbrdf.h
     renderer/modeling/bsdf/ashikhminbrdf.cpp
     renderer/modeling/bsdf/ashikhminbrdf.h
     renderer/modeling/bsdf/backfacingpolicy.h
