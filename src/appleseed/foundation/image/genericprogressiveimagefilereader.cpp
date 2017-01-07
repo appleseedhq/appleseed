@@ -89,7 +89,7 @@ void GenericProgressiveImageFileReader::open(const char* filename)
     impl->m_image = OIIO::ImageInput::open(filename);
 
     if (impl->m_image == 0)
-        throw ExceptionIOError();
+        throw ExceptionIOError(OIIO::geterror().c_str());
 
     const OIIO::ImageSpec& spec = impl->m_image->spec();
 
@@ -228,7 +228,7 @@ Tile* GenericProgressiveImageFileReader::read_tile(
                 0, // z
                 spec.format,
                 source_tile->get_storage()))
-            throw ExceptionIOError();
+            throw ExceptionIOError(impl->m_image->geterror().c_str());
 
         const size_t tile_width = min(impl->m_props.m_tile_width, impl->m_props.m_canvas_width - origin_x);
         const size_t tile_height = min(impl->m_props.m_tile_height, impl->m_props.m_canvas_height - origin_y);
@@ -267,7 +267,7 @@ Tile* GenericProgressiveImageFileReader::read_tile(
                 impl->m_props.m_pixel_format);
 
         if (!impl->m_image->read_image(spec.format, tile->get_storage()))
-            throw ExceptionIOError();
+            throw ExceptionIOError(impl->m_image->geterror().c_str());
 
         return tile;
     }
