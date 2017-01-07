@@ -562,6 +562,11 @@ void EntityEditor::slot_open_file_picker(const QString& widget_name)
 
     if (metadata.get<string>("file_picker_mode") == "open")
     {
+        const QString file_picker_type = metadata.get<QString>("file_picker_type");
+        const QString filter =
+            file_picker_type == "image" ? get_oiio_image_files_filter() :
+            QString();
+
         const bf::path project_root_path = bf::path(m_project.get_path()).parent_path();
         const bf::path file_path = absolute(widget_proxy->get(), project_root_path);
         const bf::path file_root_path = file_path.parent_path();
@@ -574,7 +579,7 @@ void EntityEditor::slot_open_file_picker(const QString& widget_name)
                 m_parent,
                 "Open...",
                 QString::fromStdString(file_root_path.string()),
-                metadata.get<QString>("file_picker_filter"),
+                filter,
                 &selected_filter,
                 options);
 
