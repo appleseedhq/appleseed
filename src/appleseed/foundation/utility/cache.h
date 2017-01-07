@@ -787,8 +787,10 @@ get(const KeyType& key)
             m_element_swapper.unload(entry->m_key, entry->m_element);
 
         // Load the new element.
+        m_element_swapper.load(key, entry->m_element);
+
+        // Set the entry's key only after loading succeeded (it might have failed with an exception).
         entry->m_key = key;
-        m_element_swapper.load(entry->m_key, entry->m_element);
     }
 
     // Update the timestamp of this entry.
