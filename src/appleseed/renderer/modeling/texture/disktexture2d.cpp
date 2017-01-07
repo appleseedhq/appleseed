@@ -105,6 +105,14 @@ namespace
             return Model;
         }
 
+        virtual void on_frame_end(
+            const Project&      project,
+            const BaseGroup*    parent) APPLESEED_OVERRIDE
+        {
+            if (m_reader.is_open())
+                m_reader.close();
+        }
+
         virtual ColorSpace get_color_space() const APPLESEED_OVERRIDE
         {
             return m_color_space;
