@@ -302,13 +302,25 @@ void BenchmarkSuite::run(
 #ifdef NDEBUG
         catch (const exception& e)
         {
-            suite_result.write(
-                *this,
-                *benchmark.get(),
-                __FILE__,
-                __LINE__,
-                "an unexpected exception was caught: %s.",
-                e.what());
+            if (e.what()[0] != '\0')
+            {
+                suite_result.write(
+                    *this,
+                    *benchmark.get(),
+                    __FILE__,
+                    __LINE__,
+                    "an unexpected exception was caught: %s.",
+                    e.what());
+            }
+            else
+            {
+                suite_result.write(
+                    *this,
+                    *benchmark.get(),
+                    __FILE__,
+                    __LINE__,
+                    "an unexpected exception was caught (no details available).");
+            }
 
             suite_result.signal_case_failure();
         }

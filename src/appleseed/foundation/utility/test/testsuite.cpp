@@ -204,15 +204,29 @@ void TestSuite::run_case(
 #ifdef NDEBUG
     catch (const exception& e)
     {
-        TestListenerHelper::write(
-            test_listener,
-            *this,
-            test_case_factory.get_name(),
-            __FILE__,
-            __LINE__,
-            TestMessage::TestCaseFailure,
-            "an unexpected exception was caught: %s.",
-            e.what());
+        if (e.what()[0] != '\0')
+        {
+            TestListenerHelper::write(
+                test_listener,
+                *this,
+                test_case_factory.get_name(),
+                __FILE__,
+                __LINE__,
+                TestMessage::TestCaseFailure,
+                "an unexpected exception was caught: %s.",
+                e.what());
+        }
+        else
+        {
+            TestListenerHelper::write(
+                test_listener,
+                *this,
+                test_case_factory.get_name(),
+                __FILE__,
+                __LINE__,
+                TestMessage::TestCaseFailure,
+                "an unexpected exception was caught (no details available).");
+        }
 
         test_case_result.signal_case_failure();
     }
