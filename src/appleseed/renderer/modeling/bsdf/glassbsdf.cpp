@@ -78,11 +78,11 @@ namespace
     //
     // References:
     //
-    //   [1] Microfacet Models for Refraction through Rough Surfaces.
+    //   [1] Microfacet Models for Refraction through Rough Surfaces
     //       http://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.pdf
     //
-    //   [2] Extending the Disney BRDF to a BSDF with Integrated Subsurface Scattering.
-    //       http://blog.selfshadow.com/publications/s2015-shading-course/burley/s2015_pbs_disney_bsdf_slides.pdf
+    //   [2] Extending the Disney BRDF to a BSDF with Integrated Subsurface Scattering
+    //       http://blog.selfshadow.com/publications/s2015-shading-course/burley/s2015_pbs_disney_bsdf_notes.pdf
     //
 
     const char* Model = "glass_bsdf";
