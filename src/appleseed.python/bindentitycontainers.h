@@ -157,6 +157,7 @@ void bind_typed_entity_map(const char* name)
         .def("remove_by_uid", &detail::typed_entity_map_remove_by_uid<T>)
 
         .def("__iter__", &detail::typed_entity_map_get_iter<T>)
+
         .def("keys", &detail::typed_entity_map_get_keys<T>)
         .def("values", &detail::typed_entity_map_get_values<T>);
 }
