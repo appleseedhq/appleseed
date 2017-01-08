@@ -574,11 +574,7 @@ namespace
 
             const float D = m_mdf->D(h, alpha_x, alpha_y);
             const float G = m_mdf->G(wi, wo, h, alpha_x, alpha_y);
-            float multiplier = abs(dots) * square(values->m_precomputed.m_eta / sqrt_denom) * T * D * G;
-
-            // [2] eq. 2.
-            if (adjoint)
-                multiplier /= square(values->m_precomputed.m_eta);
+            const float multiplier = abs(dots) * square(values->m_precomputed.m_eta / sqrt_denom) * T * D * G;
 
             value = values->m_precomputed.m_refraction_color;
             value *= multiplier;
