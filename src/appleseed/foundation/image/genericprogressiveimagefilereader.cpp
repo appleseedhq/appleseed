@@ -236,12 +236,12 @@ Tile* GenericProgressiveImageFileReader::read_tile(
         if (tile_width == impl->m_props.m_tile_width && tile_height == impl->m_props.m_tile_height)
             return source_tile.release();
 
-        Tile* shrunk_tile =
+        auto_ptr<Tile> shrunk_tile(
             new Tile(
                 tile_width,
                 tile_height,
                 impl->m_props.m_channel_count,
-                impl->m_props.m_pixel_format);
+                impl->m_props.m_pixel_format));
 
         for (size_t y = 0; y < tile_height; ++y)
         {
@@ -251,7 +251,7 @@ Tile* GenericProgressiveImageFileReader::read_tile(
                 tile_width * impl->m_props.m_pixel_size);
         }
 
-        return shrunk_tile;
+        return shrunk_tile.release();
     }
     else
     {
@@ -259,17 +259,17 @@ Tile* GenericProgressiveImageFileReader::read_tile(
         // Scanline image.
         //
 
-        Tile* tile =
+        auto_ptr<Tile> tile(
             new Tile(
                 impl->m_props.m_canvas_width,
                 impl->m_props.m_canvas_height,
                 impl->m_props.m_channel_count,
-                impl->m_props.m_pixel_format);
+                impl->m_props.m_pixel_format));
 
         if (!impl->m_image->read_image(spec.format, tile->get_storage()))
             throw ExceptionIOError(impl->m_image->geterror().c_str());
 
-        return tile;
+        return tile.release();
     }
 }
 
