@@ -39,7 +39,6 @@
 #include "foundation/utility/log.h"
 
 // Standard headers.
-#include <cstring>
 #include <exception>
 
 using namespace boost;
@@ -203,7 +202,7 @@ bool WorkerThread::execute_job(IJob& job)
             m_logger,
             "worker thread " FMT_SIZE_T ": job was terminated (%s).",
             m_index,
-            strlen(e.what()) > 0 ? e.what() : "no details");
+            e.what()[0] != '\0' ? e.what() : "no details available");
 
         return false;
     }
