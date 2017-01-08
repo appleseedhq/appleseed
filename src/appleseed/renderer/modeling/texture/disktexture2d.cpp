@@ -105,6 +105,14 @@ namespace
             return Model;
         }
 
+        virtual void on_frame_end(
+            const Project&      project,
+            const BaseGroup*    parent) APPLESEED_OVERRIDE
+        {
+            if (m_reader.is_open())
+                m_reader.close();
+        }
+
         virtual ColorSpace get_color_space() const APPLESEED_OVERRIDE
         {
             return m_color_space;
@@ -197,7 +205,7 @@ DictionaryArray DiskTexture2dFactory::get_input_metadata() const
             .insert("label", "File Path")
             .insert("type", "file")
             .insert("file_picker_mode", "open")
-            .insert("file_picker_filter", "Texture Files (*.png;*.exr);;OpenEXR (*.exr);;PNG (*.png);;All Files (*.*)")
+            .insert("file_picker_type", "image")
             .insert("use", "required"));
 
     metadata.push_back(

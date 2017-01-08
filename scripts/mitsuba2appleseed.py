@@ -126,8 +126,10 @@ def convert_sampler(project, element):
     for child in element:
         if child.tag == "integer":
             if child.attrib["name"] == "sampleCount":
-                sample_count = 16
-                pass_count = int(math.ceil(int(child.attrib["value"]) / sample_count))
+                # sample_count = 16
+                # pass_count = int(math.ceil(int(child.attrib["value"]) / sample_count))
+                sample_count = int(child.attrib["value"])
+                pass_count = 1
                 project.configurations().get_by_name("final").insert_path("generic_frame_renderer.passes", pass_count)
                 project.configurations().get_by_name("final").insert_path("uniform_pixel_renderer.samples", sample_count)
 
@@ -498,13 +500,17 @@ def process_shape_material(scene, assembly, instance_name, element):
     if emitter_element is not None:
         edf_name = "{0}_edf".format(instance_name)
         convert_emitter(scene, assembly, edf_name, emitter_element)
-        params = material.get_parameters()
-        params["edf"] = edf_name
+
+        material_params = material.get_parameters()
+        material_params["edf"] = edf_name
 
         # Hack: force light-emitting materials to be single-sided.
-        set_private_param(params, "two_sided", False)
+        set_private_param(material_params, "two_sided", False)
 
-        material.set_parameters(params)
+        material_name = instance_name + "_material"
+        material = asr.Material("generic_material", material_name, material_params)
+        assembly.materials().insert(material)
+        material = assembly.materials().get_by_name(material_name)
 
     return material.get_name() if material is not None else None
 

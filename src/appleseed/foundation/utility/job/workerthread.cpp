@@ -202,7 +202,7 @@ bool WorkerThread::execute_job(IJob& job)
             m_logger,
             "worker thread " FMT_SIZE_T ": job was terminated (%s).",
             m_index,
-            e.what());
+            e.what()[0] != '\0' ? e.what() : "no details available");
 
         return false;
     }
