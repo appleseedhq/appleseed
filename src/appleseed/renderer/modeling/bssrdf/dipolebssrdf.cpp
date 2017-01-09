@@ -57,6 +57,7 @@ DipoleBSSRDF::DipoleBSSRDF(
     const char*         name,
     const ParamArray&   params)
   : SeparableBSSRDF(name, params)
+  , m_has_sigma_sources(false)
 {
     m_inputs.declare("weight", InputFormatFloat, "1.0");
     m_inputs.declare("reflectance", InputFormatSpectralReflectance);
