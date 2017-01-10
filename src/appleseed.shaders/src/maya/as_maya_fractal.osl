@@ -278,7 +278,6 @@ shader as_maya_fractal
         }
 
         out_outAlpha = min(1.0, 0.5 * (1 + c) + in_threshold);
-
         out_outColor = color(out_outAlpha);
 
         maya_colorBalance(
