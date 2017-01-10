@@ -877,6 +877,7 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
         Dictionary()
             .insert("type", "bool")
             .insert("default", "true")
+            .insert("label", "Enable Direct Lighting")
             .insert("help", "Enable direct lighting"));
 
     metadata.dictionaries().insert(
@@ -903,6 +904,7 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("type", "int")
             .insert("default", "6")
             .insert("min", "1")
+            .insert("label", "Russian Roulette Start Bounce")
             .insert("help", "Consider pruning low contribution paths starting with this bounce"));
 
     metadata.dictionaries().insert(
