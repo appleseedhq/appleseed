@@ -298,7 +298,7 @@ Dictionary UniformPixelRendererFactory::get_params_metadata()
             .insert("label", "Force Anti-Aliasing")
             .insert(
                 "help",
-                "When using 1 sample/pixel and force_antialiasing is disabled, samples are placed in the middle of the pixels"));
+                "When using 1 sample/pixel and Force Anti-Aliasing is disabled, samples are placed at the center of pixels"));
 
     return metadata;
 }
