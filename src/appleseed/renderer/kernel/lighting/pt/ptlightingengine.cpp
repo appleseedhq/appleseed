@@ -120,7 +120,7 @@ namespace
               , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
               , m_enable_caustics(params.get_optional<bool>("enable_caustics", false))
               , m_max_path_length(nz(params.get_optional<size_t>("max_path_length", 0)))
-              , m_rr_min_path_length(nz(params.get_optional<size_t>("rr_min_path_length", 3)))
+              , m_rr_min_path_length(nz(params.get_optional<size_t>("rr_min_path_length", 6)))
               , m_next_event_estimation(params.get_optional<bool>("next_event_estimation", true))
               , m_dl_light_sample_count(params.get_optional<float>("dl_light_samples", 1.0f))
               , m_ibl_env_sample_count(params.get_optional<float>("ibl_env_samples", 1.0f))
@@ -901,7 +901,7 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
         "rr_min_path_length",
         Dictionary()
             .insert("type", "int")
-            .insert("default", "3")
+            .insert("default", "6")
             .insert("min", "1")
             .insert("help", "Consider pruning low contribution paths starting with this bounce"));
 
