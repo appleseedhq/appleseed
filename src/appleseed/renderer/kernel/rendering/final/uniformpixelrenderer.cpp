@@ -282,6 +282,7 @@ IPixelRenderer* UniformPixelRendererFactory::create(
 Dictionary UniformPixelRendererFactory::get_params_metadata()
 {
     Dictionary metadata;
+
     metadata.dictionaries().insert(
         "samples",
         Dictionary()
