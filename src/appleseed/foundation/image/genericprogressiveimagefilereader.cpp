@@ -47,6 +47,7 @@ END_OIIO_INCLUDES
 #include <algorithm>
 #include <cassert>
 #include <memory>
+#include <string>
 
 using namespace std;
 
@@ -60,17 +61,90 @@ namespace foundation
 struct GenericProgressiveImageFileReader::Impl
 {
     Logger*                                 m_logger;
-    OIIO::ImageInput*                       m_image;
-    bool                                    m_tiled;
+    string                                  m_filename;
+    OIIO::ImageInput*                       m_input;
+    bool                                    m_supports_random_access;
+    bool                                    m_is_tiled;
     CanvasProperties                        m_props;
+
+    void open()
+    {
+        m_input = OIIO::ImageInput::open(m_filename);
+
+        if (m_input == 0)
+            throw ExceptionIOError(OIIO::geterror().c_str());
+
+        m_supports_random_access = m_input->supports("random_access");
+
+        const OIIO::ImageSpec& spec = m_input->spec();
+
+        m_is_tiled = spec.tile_width > 0 && spec.tile_height > 0 && spec.tile_depth > 0;
+
+        size_t tile_width, tile_height;
+        if (m_is_tiled)
+        {
+            // Tiled image.
+            tile_width = static_cast<size_t>(spec.tile_width);
+            tile_height = static_cast<size_t>(spec.tile_height);
+        }
+        else
+        {
+            // Scanline image.
+            tile_width = static_cast<size_t>(spec.width);
+            tile_height = static_cast<size_t>(spec.height);
+        }
+
+        PixelFormat pixel_format;
+        switch (spec.format.basetype)
+        {
+          case OIIO::TypeDesc::UINT8:
+          case OIIO::TypeDesc::INT8:
+            pixel_format = PixelFormatUInt8;
+            break;
+
+          case OIIO::TypeDesc::UINT16:
+          case OIIO::TypeDesc::INT16:
+            pixel_format = PixelFormatUInt16;
+            break;
+
+          case OIIO::TypeDesc::UINT32:
+          case OIIO::TypeDesc::INT32:
+            pixel_format = PixelFormatUInt32;
+            break;
+
+          case OIIO::TypeDesc::HALF:
+            pixel_format = PixelFormatHalf;
+            break;
+
+          case OIIO::TypeDesc::FLOAT:
+            pixel_format = PixelFormatFloat;
+            break;
+
+          case OIIO::TypeDesc::DOUBLE:
+            pixel_format = PixelFormatDouble;
+            break;
+
+          default:
+            throw ExceptionUnsupportedImageFormat();
+        }
+
+        m_props = CanvasProperties(
+            static_cast<size_t>(spec.width),
+            static_cast<size_t>(spec.height),
+            tile_width,
+            tile_height,
+            static_cast<size_t>(spec.nchannels),
+            pixel_format);
+    }
 };
 
 GenericProgressiveImageFileReader::GenericProgressiveImageFileReader(Logger* logger)
   : impl(new Impl())
 {
     impl->m_logger = logger;
-    impl->m_image = 0;
-    impl->m_tiled = false;
+    impl->m_input = 0;
+    impl->m_supports_random_access = false;
+    impl->m_is_tiled = false;
 }
 
 GenericProgressiveImageFileReader::~GenericProgressiveImageFileReader()
@@ -86,90 +160,28 @@ void GenericProgressiveImageFileReader::open(const char* filename)
     assert(filename);
     assert(!is_open());
 
-    impl->m_image = OIIO::ImageInput::open(filename);
-
-    if (impl->m_image == 0)
-        throw ExceptionIOError(OIIO::geterror().c_str());
-
-    const OIIO::ImageSpec& spec = impl->m_image->spec();
-
-    impl->m_tiled = spec.tile_width > 0 && spec.tile_height > 0 && spec.tile_depth > 0;
-
-    size_t tile_width, tile_height;
-    if (impl->m_tiled)
-    {
-        // Tiled image.
-        tile_width = static_cast<size_t>(spec.tile_width);
-        tile_height = static_cast<size_t>(spec.tile_height);
-    }
-    else
-    {
-        // Scanline image.
-        tile_width = static_cast<size_t>(spec.width);
-        tile_height = static_cast<size_t>(spec.height);
-    }
-
-    PixelFormat pixel_format;
-    switch (spec.format.basetype)
-    {
-      case OIIO::TypeDesc::UINT8:
-      case OIIO::TypeDesc::INT8:
-        pixel_format = PixelFormatUInt8;
-        break;
-
-      case OIIO::TypeDesc::UINT16:
-      case OIIO::TypeDesc::INT16:
-        pixel_format = PixelFormatUInt16;
-        break;
-
-      case OIIO::TypeDesc::UINT32:
-      case OIIO::TypeDesc::INT32:
-        pixel_format = PixelFormatUInt32;
-        break;
-
-      case OIIO::TypeDesc::HALF:
-        pixel_format = PixelFormatHalf;
-        break;
-
-      case OIIO::TypeDesc::FLOAT:
-        pixel_format = PixelFormatFloat;
-        break;
-
-      case OIIO::TypeDesc::DOUBLE:
-        pixel_format = PixelFormatDouble;
-        break;
-
-      default:
-        throw ExceptionUnsupportedImageFormat();
-    }
-
-    impl->m_props = CanvasProperties(
-        static_cast<size_t>(spec.width),
-        static_cast<size_t>(spec.height),
-        tile_width,
-        tile_height,
-        static_cast<size_t>(spec.nchannels),
-        pixel_format);
+    impl->m_filename = filename;
+    impl->open();
 }
 
 void GenericProgressiveImageFileReader::close()
 {
     assert(is_open());
 
-    impl->m_image->close();
+    impl->m_input->close();
 
-    // todo: we should really be calling OIIO::ImageInput::destroy(impl->m_image)
+    // todo: we should really be calling OIIO::ImageInput::destroy(impl->m_input)
     // but OpenImageIO 1.5.20 (the version included in appleseed-deps at the time
     // of writing) is too old to have this method. Since on Windows we link to
     // OpenImageIO statically, this should be safe anyway.
-    delete impl->m_image;
+    delete impl->m_input;
 
-    impl->m_image = 0;
+    impl->m_input = 0;
 }
 
 bool GenericProgressiveImageFileReader::is_open() const
 {
-    return impl->m_image != 0;
+    return impl->m_input != 0;
 }
 
 void GenericProgressiveImageFileReader::read_canvas_properties(
@@ -194,9 +206,7 @@ Tile* GenericProgressiveImageFileReader::read_tile(
 {
     assert(is_open());
 
-    const OIIO::ImageSpec& spec = impl->m_image->spec();
-
-    if (impl->m_tiled)
+    if (impl->m_is_tiled)
     {
         //
         // Tiled image.
@@ -222,13 +232,13 @@ Tile* GenericProgressiveImageFileReader::read_tile(
         const size_t origin_x = tile_x * impl->m_props.m_tile_width;
         const size_t origin_y = tile_y * impl->m_props.m_tile_height;
 
-        if (!impl->m_image->read_tile(
+        if (!impl->m_input->read_tile(
                 static_cast<int>(origin_x),
                 static_cast<int>(origin_y),
                 0, // z
-                spec.format,
+                impl->m_input->spec().format,
                 source_tile->get_storage()))
-            throw ExceptionIOError(impl->m_image->geterror().c_str());
+            throw ExceptionIOError(impl->m_input->geterror().c_str());
 
         const size_t tile_width = min(impl->m_props.m_tile_width, impl->m_props.m_canvas_width - origin_x);
         const size_t tile_height = min(impl->m_props.m_tile_height, impl->m_props.m_canvas_height - origin_y);
@@ -266,8 +276,16 @@ Tile* GenericProgressiveImageFileReader::read_tile(
                 impl->m_props.m_channel_count,
                 impl->m_props.m_pixel_format));
 
-        if (!impl->m_image->read_image(spec.format, tile->get_storage()))
-            throw ExceptionIOError(impl->m_image->geterror().c_str());
+        if (!impl->m_supports_random_access)
+        {
+            close();
+            impl->open();
+        }
+
+        if (!impl->m_input->read_image(
+                impl->m_input->spec().format,
+                tile->get_storage()))
+            throw ExceptionIOError(impl->m_input->geterror().c_str());
 
         return tile.release();
     }
