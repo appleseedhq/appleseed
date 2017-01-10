@@ -921,7 +921,7 @@ namespace
                 set_widget("lighting_components.dl.sppm", true);
             else set_widget("lighting_components.dl.off", true);
 
-            const string photon_type = get_config<string>(config, "sppm.photon_type", "mono");
+            const string photon_type = get_config<string>(config, "sppm.photon_type", "poly");
             if (photon_type == "mono")
                 set_widget("photon_type.mono", true);
             else set_widget("photon_type.poly", true);

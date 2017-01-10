@@ -320,8 +320,8 @@ namespace
 
             explicit Parameters(const ParamArray& params)
               : m_sampling_mode(get_sampling_context_mode(params))
-              , m_min_samples(params.get_required<size_t>("min_samples", 1))
-              , m_max_samples(params.get_required<size_t>("max_samples", 1))
+              , m_min_samples(params.get_required<size_t>("min_samples", 16))
+              , m_max_samples(params.get_required<size_t>("max_samples", 256))
               , m_max_variation(pow(10.0f, -params.get_optional<float>("quality", 2.0f)))
               , m_diagnostics(params.get_optional<bool>("enable_diagnostics", false))
             {
@@ -384,7 +384,7 @@ Dictionary AdaptivePixelRendererFactory::get_params_metadata()
         "min_samples",
         Dictionary()
             .insert("type", "int")
-            .insert("default", "1")
+            .insert("default", "16")
             .insert("label", "Min Samples")
             .insert("help", "Minimum number of anti-aliasing samples"));
 
@@ -392,7 +392,7 @@ Dictionary AdaptivePixelRendererFactory::get_params_metadata()
         "max_samples",
         Dictionary()
             .insert("type", "int")
-            .insert("default", "1")
+            .insert("default", "256")
             .insert("label", "Max Samples")
             .insert("help", "Maximum number of anti-aliasing samples"));
 
