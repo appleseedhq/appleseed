@@ -300,6 +300,16 @@ Dictionary UniformPixelRendererFactory::get_params_metadata()
                 "help",
                 "When using 1 sample/pixel and Force Anti-Aliasing is disabled, samples are placed at the center of pixels"));
 
+    metadata.dictionaries().insert(
+        "decorrelate_pixels",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("default", "true")
+            .insert("label", "Decorrelate Pixels")
+            .insert(
+                "help",
+                "Avoid correlation patterns at the expense of slightly more sampling noise"));
+
     return metadata;
 }
 

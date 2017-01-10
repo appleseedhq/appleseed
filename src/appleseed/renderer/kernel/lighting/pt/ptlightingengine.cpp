@@ -908,6 +908,14 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("help", "Consider pruning low contribution paths starting with this bounce"));
 
     metadata.dictionaries().insert(
+        "next_event_estimation",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("default", "true")
+            .insert("label", "Next Event Estimation")
+            .insert("help", "Explicitly connect path vertices to light sources to improve efficiency"));
+
+    metadata.dictionaries().insert(
         "max_ray_intensity",
         Dictionary()
             .insert("type", "float")
