@@ -63,8 +63,7 @@ class DRTLightingEngineFactory
     // Return a new DRT lighting engine instance.
     virtual ILightingEngine* create() APPLESEED_OVERRIDE;
 
-    // Get the metadata dictionary describing
-    // the DRT lighting engine params.
+    // Return the metadata of the DRT lighting engine parameters.
     static foundation::Dictionary get_params_metadata();
 
   private:
