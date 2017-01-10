@@ -742,7 +742,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
         "photon_tracing_rr_min_path_length",
         Dictionary()
             .insert("type", "int")
-            .insert("default", "3")
+            .insert("default", "6")
             .insert("help", "Consider pruning low contribution photons starting with this bounce"));
 
     metadata.dictionaries().insert(
@@ -758,7 +758,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
         "path_tracing_rr_min_path_length",
         Dictionary()
             .insert("type", "int")
-            .insert("default", "3")
+            .insert("default", "6")
             .insert("help", "Consider pruning low contribution paths starting with this bounce"));
 
     metadata.dictionaries().insert(

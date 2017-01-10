@@ -240,7 +240,7 @@ namespace
 
             explicit Parameters(const ParamArray& params)
               : m_sampling_mode(get_sampling_context_mode(params))
-              , m_samples(params.get_required<size_t>("samples", 1))
+              , m_samples(params.get_required<size_t>("samples", 64))
               , m_force_aa(params.get_optional<bool>("force_antialiasing", false))
               , m_decorrelate(params.get_optional<bool>("decorrelate_pixels", true))
             {
