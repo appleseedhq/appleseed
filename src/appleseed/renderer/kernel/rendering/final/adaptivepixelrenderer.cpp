@@ -323,7 +323,7 @@ namespace
               , m_min_samples(params.get_required<size_t>("min_samples", 1))
               , m_max_samples(params.get_required<size_t>("max_samples", 1))
               , m_max_variation(pow(10.0f, -params.get_optional<float>("quality", 2.0f)))
-              , m_diagnostics(params.get_optional<bool>("enable_diagnostics"))
+              , m_diagnostics(params.get_optional<bool>("enable_diagnostics", false))
             {
             }
         };
