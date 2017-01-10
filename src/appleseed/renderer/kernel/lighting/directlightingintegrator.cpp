@@ -577,26 +577,28 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     if (square_distance < square(edf->get_light_near_start()))
         return;
 
-    if (sample.m_probability != BSDF::DiracDelta &&
-        mis_heuristic != MISNone &&
-        square_distance > 0.0)
+    if (sample.m_probability != BSDF::DiracDelta)
     {
-        // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
-        const float bsdf_prob_area = sample.m_probability * cos_on / static_cast<float>(square_distance);
+        if (mis_heuristic != MISNone && square_distance > 0.0)
+        {
+            // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
+            const float bsdf_prob_area = sample.m_probability * cos_on / static_cast<float>(square_distance);
 
-        // Compute the probability density wrt. surface area mesure of the light sample.
-        const float light_prob_area = m_light_sampler.evaluate_pdf(light_shading_point);
+            // Compute the probability density wrt. surface area mesure of the light sample.
+            const float light_prob_area = m_light_sampler.evaluate_pdf(light_shading_point);
 
-        // Apply the weighting function.
-        weight *=
-            mis(
-                mis_heuristic,
-                m_bsdf_sample_count * bsdf_prob_area,
-                m_light_sample_count * light_prob_area);
+            // Apply the weighting function.
+            weight *=
+                mis(
+                    mis_heuristic,
+                    m_bsdf_sample_count * bsdf_prob_area,
+                    m_light_sample_count * light_prob_area);
+        }
+
+        edf_value *= weight / sample.m_probability;
     }
 
     // Add the contribution of this sample to the illumination.
-    edf_value *= weight / sample.m_probability;
     edf_value *= sample.m_value;
     radiance += edf_value;
     aovs.add(edf->get_render_layer_index(), edf_value);
