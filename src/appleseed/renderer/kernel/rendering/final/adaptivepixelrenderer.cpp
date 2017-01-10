@@ -57,6 +57,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/statistics.h"
 
 // Standard headers.
@@ -373,6 +374,47 @@ IPixelRenderer* AdaptivePixelRendererFactory::create(
         m_factory,
         m_params,
         thread_index);
+}
+
+Dictionary AdaptivePixelRendererFactory::get_params_metadata()
+{
+    Dictionary metadata;
+
+    metadata.dictionaries().insert(
+        "min_samples",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "1")
+            .insert("label", "Min Samples")
+            .insert("help", "Minimum number of anti-aliasing samples"));
+
+    metadata.dictionaries().insert(
+        "max_samples",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "1")
+            .insert("label", "Max Samples")
+            .insert("help", "Maximum number of anti-aliasing samples"));
+
+    metadata.dictionaries().insert(
+        "quality",
+        Dictionary()
+            .insert("type", "float")
+            .insert("default", "2.0")
+            .insert("label", "Quality")
+            .insert("help", "Quality factor"));
+
+    metadata.dictionaries().insert(
+        "enable_diagnostics",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("default", "false")
+            .insert("label", "Enable Diagnostics")
+            .insert(
+                "help",
+                "Enable adaptive sampling diagnostics"));
+
+    return metadata;
 }
 
 }   // namespace renderer

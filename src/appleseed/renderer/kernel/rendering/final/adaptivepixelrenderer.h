@@ -41,8 +41,9 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class Frame; }
-namespace renderer  { class ISampleRendererFactory; }
+namespace foundation    { class Dictionary; }
+namespace renderer      { class Frame; }
+namespace renderer      { class ISampleRendererFactory; }
 
 namespace renderer
 {
@@ -67,6 +68,9 @@ class AdaptivePixelRendererFactory
     // Return a new adaptive pixel renderer instance.
     virtual IPixelRenderer* create(
         const size_t                thread_index) APPLESEED_OVERRIDE;
+
+    // Return the metadata of the adaptive pixel renderer parameters.
+    static foundation::Dictionary get_params_metadata();
 
   private:
     const Frame&                    m_frame;
