@@ -295,7 +295,7 @@ Dictionary UniformPixelRendererFactory::get_params_metadata()
         Dictionary()
             .insert("type", "bool")
             .insert("default", "false")
-            .insert("label", "Force Anti-aliasing")
+            .insert("label", "Force Anti-Aliasing")
             .insert(
                 "help",
                 "When using 1 sample/pixel and force_antialiasing is disabled, samples are placed in the middle of the pixels"));
