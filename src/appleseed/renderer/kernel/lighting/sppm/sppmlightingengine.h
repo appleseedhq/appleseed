@@ -65,8 +65,7 @@ class SPPMLightingEngineFactory
     // Return a new SPPM lighting engine instance.
     virtual ILightingEngine* create() APPLESEED_OVERRIDE;
 
-    // Get the metadata dictionary describing
-    // the SPPM lighting engine params.
+    // Return the metadata of the SPPM lighting engine parameters.
     static foundation::Dictionary get_params_metadata();
 
   private:

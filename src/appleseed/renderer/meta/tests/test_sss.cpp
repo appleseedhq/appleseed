@@ -38,8 +38,10 @@
 #endif
 #include "renderer/modeling/bssrdf/sss.h"
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
+#include "renderer/modeling/entity/onframebeginrecorder.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/scalarsource.h"
+#include "renderer/modeling/project/project.h"
 #include "renderer/utility/iostreamop.h"
 #include "renderer/utility/paramarray.h"
 
@@ -56,6 +58,7 @@
 #ifdef APPLESEED_WITH_PARTIO
 #include "foundation/utility/partiofile.h"
 #endif
+#include "foundation/utility/poison.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
@@ -79,7 +82,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     {
       public:
         DipoleBSSRDFEvaluator()
-          : m_bssrdf(BSSRDFFactory().create("bssrdf", ParamArray()))
+          : m_project(ProjectFactory::create("test"))
+          , m_bssrdf(BSSRDFFactory().create("bssrdf", ParamArray()))
         {
             ShadingPointBuilder outgoing_builder(m_outgoing_point);
             outgoing_builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
@@ -89,21 +93,31 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             outgoing_builder.set_shading_basis(Basis3d(Vector3d(0.0, 1.0, 0.0)));
         }
 
+        ~DipoleBSSRDFEvaluator()
+        {
+            m_recorder.on_frame_end(m_project.ref());
+        }
+
         void set_values_from_sigmas(
             const float     sigma_a,
             const float     sigma_s,
             const float     eta,
             const float     g)
         {
-            m_values.m_weight = 1.0;
+            m_bssrdf->get_inputs().find("sigma_a").bind(new ScalarSource(sigma_a));
+            m_bssrdf->get_inputs().find("sigma_s").bind(new ScalarSource(sigma_s));
+
+            m_bssrdf->on_frame_begin(m_project.ref(), 0, m_recorder);
+
+            m_values.m_weight = 1.0f;
+            poison(m_values.m_reflectance);
+            poison(m_values.m_reflectance_multiplier);
+            poison(m_values.m_mfp);
+            poison(m_values.m_mfp_multiplier);
+            m_bssrdf->get_inputs().find("sigma_a").source()->evaluate_uniform(m_values.m_sigma_a);
+            m_bssrdf->get_inputs().find("sigma_s").source()->evaluate_uniform(m_values.m_sigma_s);
             m_values.m_g = g;
             m_values.m_ior = eta;
-
-            m_bssrdf->get_inputs().find("sigma_a").bind(new ScalarSource(sigma_a));
-            m_bssrdf->get_inputs().find("sigma_a").source()->evaluate_uniform(m_values.m_sigma_a);
-
-            m_bssrdf->get_inputs().find("sigma_s").bind(new ScalarSource(sigma_s));
-            m_bssrdf->get_inputs().find("sigma_s").source()->evaluate_uniform(m_values.m_sigma_s);
 
             m_bssrdf->prepare_inputs(m_outgoing_point, &m_values);
         }
@@ -113,12 +127,16 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const float     mfp,
             const float     eta)
         {
-            m_values.m_weight = 1.0;
+            m_bssrdf->on_frame_begin(m_project.ref(), 0, m_recorder);
+
+            m_values.m_weight = 1.0f;
             m_values.m_reflectance.set(rd);
-            m_values.m_reflectance_multiplier = 1.0;
+            m_values.m_reflectance_multiplier = 1.0f;
             m_values.m_mfp.set(mfp);
-            m_values.m_mfp_multiplier = 1.0;
-            m_values.m_g = 0.0;
+            m_values.m_mfp_multiplier = 1.0f;
+            poison(m_values.m_sigma_a);
+            poison(m_values.m_sigma_s);
+            m_values.m_g = 0.0f;
             m_values.m_ior = eta;
 
             m_bssrdf->prepare_inputs(m_outgoing_point, &m_values);
@@ -152,9 +170,11 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         }
 
       private:
+        auto_release_ptr<Project>   m_project;
         auto_release_ptr<BSSRDF>    m_bssrdf;
         ShadingPoint                m_outgoing_point;
         DipoleBSSRDFInputValues     m_values;
+        OnFrameBeginRecorder        m_recorder;
     };
 
     template <typename BSSRDFEvaluator>
@@ -837,13 +857,14 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
     TEST_CASE(StdDipoleMaxRadius)
     {
-        DipoleBSSRDFEvaluator<StandardDipoleBSSRDFFactory> bssrdf_eval;
         MersenneTwister rng;
 
         for (size_t i = 0; i < 1000; ++i)
         {
             const float rd = static_cast<float>(rand_double1(rng));
             const float mfp = static_cast<float>(rand_double1(rng, 0.001, 10.0));
+
+            DipoleBSSRDFEvaluator<StandardDipoleBSSRDFFactory> bssrdf_eval;
             bssrdf_eval.set_values_from_rd_mfp(rd, mfp, 1.0f);
 
             const float r = dipole_max_radius(bssrdf_eval.get_sigma_tr());
@@ -916,10 +937,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             points.push_back(Vector2d(r, result * Pi<float>() / abs(r)));
         }
 
-        plotfile
-            .new_plot()
-            .set_points(points);
-
+        plotfile.new_plot().set_points(points);
         plotfile.write(filename);
     }
 
@@ -949,13 +967,14 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
     TEST_CASE(DirpoleMaxRadius)
     {
-        DipoleBSSRDFEvaluator<DirectionalDipoleBSSRDFFactory> bssrdf_eval;
         MersenneTwister rng;
 
         for (size_t i = 0; i < 1000; ++i)
         {
             const float rd = static_cast<float>(rand_double1(rng));
             const float mfp = static_cast<float>(rand_double1(rng, 0.001, 100.0));
+
+            DipoleBSSRDFEvaluator<DirectionalDipoleBSSRDFFactory> bssrdf_eval;
             bssrdf_eval.set_values_from_rd_mfp(rd, mfp, 1.0f);
 
             const float r = dipole_max_radius(bssrdf_eval.get_sigma_tr());

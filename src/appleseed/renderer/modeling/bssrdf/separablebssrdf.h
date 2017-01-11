@@ -138,15 +138,24 @@ inline void SeparableBSSRDF::evaluate(
     const float eta = get_eta(data);
 
     float fo;
-    const float cos_on = std::abs(foundation::dot(outgoing_dir, foundation::Vector3f(outgoing_point.get_shading_normal())));
+    const float cos_on =
+        std::abs(
+            foundation::dot(
+                outgoing_dir,
+                foundation::Vector3f(outgoing_point.get_shading_normal())));
     foundation::fresnel_transmittance_dielectric(fo, eta, cos_on);
 
     float fi;
-    const float cos_in = std::abs(foundation::dot(incoming_dir, foundation::Vector3f(incoming_point.get_shading_normal())));
+    const float cos_in =
+        std::abs(
+            foundation::dot(
+                incoming_dir,
+                foundation::Vector3f(incoming_point.get_shading_normal())));
     foundation::fresnel_transmittance_dielectric(fi, eta, cos_in);
 
     const float square_radius =
-        static_cast<float>(foundation::square_norm(outgoing_point.get_point() - incoming_point.get_point()));
+        static_cast<float>(
+            foundation::square_norm(outgoing_point.get_point() - incoming_point.get_point()));
     evaluate_profile(data, square_radius, value);
 
     value *= foundation::RcpPi<float>() * fo * fi;

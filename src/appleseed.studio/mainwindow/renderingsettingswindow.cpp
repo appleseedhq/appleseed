@@ -175,6 +175,7 @@ class RenderSettingsPanel
   public:
     RenderSettingsPanel(const QString& title, QWidget* parent = 0)
       : FoldablePanelWidget(title, parent)
+      , m_params_metadata(Configuration::get_metadata())
     {
     }
 
@@ -201,6 +202,8 @@ class RenderSettingsPanel
     };
 
     typedef vector<DirectLink> DirectLinkCollection;
+
+    const ParamArray            m_params_metadata;
 
     WidgetProxyCollection       m_widget_proxies;
     DirectLinkCollection        m_direct_links;
@@ -333,23 +336,27 @@ class RenderSettingsPanel
         return combobox;
     }
 
-    template <typename T>
     void create_direct_link(
         const string&           widget_key,
         const string&           param_path,
-        const T&                default_value)
+        const string&           default_value = string())
     {
         DirectLink direct_link;
         direct_link.m_widget_key = widget_key;
         direct_link.m_param_path = param_path;
-        direct_link.m_default_value = to_string(default_value);
+        direct_link.m_default_value = default_value;
         m_direct_links.push_back(direct_link);
     }
 
     void load_directly_linked_values(const Configuration& config)
     {
         for (const_each<DirectLinkCollection> i = m_direct_links; i; ++i)
-            set_widget(i->m_widget_key, get_config<string>(config, i->m_param_path, i->m_default_value));
+        {
+            const string default_value_path = i->m_param_path + ".default";
+            const string default_value = m_params_metadata.get_path_optional<string>(default_value_path.c_str(), i->m_default_value);
+            const string value = get_config<string>(config, i->m_param_path, default_value);
+            set_widget(i->m_widget_key, value);
+        }
     }
 
     void save_directly_linked_values(Configuration& config) const
@@ -416,15 +423,18 @@ namespace
             create_image_plane_sampling_general_settings(layout);
             create_image_plane_sampling_sampler_settings(layout);
 
-            create_direct_link("general.sampler", "pixel_renderer", "uniform");
-            create_direct_link("general.passes", "generic_frame_renderer.passes", 1);
-            create_direct_link("uniform_sampler.samples", "uniform_pixel_renderer.samples", 64);
-            create_direct_link("uniform_sampler.force_antialiasing", "uniform_pixel_renderer.force_antialiasing", false);
-            create_direct_link("uniform_sampler.decorrelate_pixels", "uniform_pixel_renderer.decorrelate_pixels", true);
-            create_direct_link("adaptive_sampler.min_samples", "adaptive_pixel_renderer.min_samples", 16);
-            create_direct_link("adaptive_sampler.max_samples", "adaptive_pixel_renderer.max_samples", 64);
-            create_direct_link("adaptive_sampler.quality", "adaptive_pixel_renderer.quality", 2.0);
-            create_direct_link("adaptive_sampler.enable_diagnostics", "adaptive_pixel_renderer.enable_diagnostics", false);
+            create_direct_link("general.sampler",                       "pixel_renderer", "uniform");
+
+            create_direct_link("general.passes",                        "generic_frame_renderer.passes");
+
+            create_direct_link("uniform_sampler.samples",               "uniform_pixel_renderer.samples");
+            create_direct_link("uniform_sampler.force_antialiasing",    "uniform_pixel_renderer.force_antialiasing");
+            create_direct_link("uniform_sampler.decorrelate_pixels",    "uniform_pixel_renderer.decorrelate_pixels");
+
+            create_direct_link("adaptive_sampler.min_samples",          "adaptive_pixel_renderer.min_samples");
+            create_direct_link("adaptive_sampler.max_samples",          "adaptive_pixel_renderer.max_samples");
+            create_direct_link("adaptive_sampler.quality",              "adaptive_pixel_renderer.quality");
+            create_direct_link("adaptive_sampler.enable_diagnostics",   "adaptive_pixel_renderer.enable_diagnostics");
 
             load_directly_linked_values(config);
         }
@@ -706,10 +716,10 @@ namespace
             create_bounce_settings_group(layout, "drt");
             create_drt_advanced_settings(layout);
 
-            create_direct_link("lighting_components.ibl", "drt.enable_ibl", true);
-            create_direct_link("drt.bounces.rr_start_bounce", "drt.rr_min_path_length", 3);
-            create_direct_link("advanced.dl.light_samples", "drt.dl_light_samples", 1);
-            create_direct_link("advanced.ibl.env_samples", "drt.ibl_env_samples", 1);
+            create_direct_link("lighting_components.ibl",     "drt.enable_ibl");
+            create_direct_link("drt.bounces.rr_start_bounce", "drt.rr_min_path_length");
+            create_direct_link("advanced.dl.light_samples",   "drt.dl_light_samples");
+            create_direct_link("advanced.ibl.env_samples",    "drt.ibl_env_samples");
 
             load_directly_linked_values(config);
 
@@ -794,13 +804,13 @@ namespace
             create_bounce_settings_group(layout, "pt");
             create_pt_advanced_settings(layout);
 
-            create_direct_link("lighting_components.dl", "pt.enable_dl", true);
-            create_direct_link("lighting_components.ibl", "pt.enable_ibl", true);
-            create_direct_link("lighting_components.caustics", "pt.enable_caustics", false);
-            create_direct_link("pt.bounces.rr_start_bounce", "pt.rr_min_path_length", 3);
-            create_direct_link("advanced.next_event_estimation", "pt.next_event_estimation", true);
-            create_direct_link("advanced.dl.light_samples", "pt.dl_light_samples", 1);
-            create_direct_link("advanced.ibl.env_samples", "pt.ibl_env_samples", 1);
+            create_direct_link("lighting_components.dl",           "pt.enable_dl");
+            create_direct_link("lighting_components.ibl",          "pt.enable_ibl");
+            create_direct_link("lighting_components.caustics",     "pt.enable_caustics");
+            create_direct_link("pt.bounces.rr_start_bounce",       "pt.rr_min_path_length");
+            create_direct_link("advanced.next_event_estimation",   "pt.next_event_estimation");
+            create_direct_link("advanced.dl.light_samples",        "pt.dl_light_samples");
+            create_direct_link("advanced.ibl.env_samples",         "pt.ibl_env_samples");
 
             load_directly_linked_values(config);
 
@@ -899,15 +909,15 @@ namespace
             create_photon_tracing_settings(layout);
             create_radiance_estimation_settings(layout);
 
-            create_direct_link("lighting_components.ibl", "sppm.enable_ibl", true);
-            create_direct_link("lighting_components.caustics", "sppm.enable_caustics", true);
-            create_direct_link("photon_tracing.bounces.rr_start_bounce", "sppm.photon_tracing_rr_min_path_length", 3);
-            create_direct_link("photon_tracing.light_photons", "sppm.light_photons_per_pass", 1000000);
-            create_direct_link("photon_tracing.env_photons", "sppm.env_photons_per_pass", 1000000);
-            create_direct_link("radiance_estimation.bounces.rr_start_bounce", "sppm.path_tracing_rr_min_path_length", 3);
-            create_direct_link("radiance_estimation.initial_radius", "sppm.initial_radius", 1.0);
-            create_direct_link("radiance_estimation.max_photons", "sppm.max_photons_per_estimate", 100);
-            create_direct_link("radiance_estimation.alpha", "sppm.alpha", 0.7);
+            create_direct_link("lighting_components.ibl",                        "sppm.enable_ibl");
+            create_direct_link("lighting_components.caustics",                   "sppm.enable_caustics");
+            create_direct_link("photon_tracing.bounces.rr_start_bounce",         "sppm.photon_tracing_rr_min_path_length");
+            create_direct_link("photon_tracing.light_photons",                   "sppm.light_photons_per_pass");
+            create_direct_link("photon_tracing.env_photons",                     "sppm.env_photons_per_pass");
+            create_direct_link("radiance_estimation.bounces.rr_start_bounce",    "sppm.path_tracing_rr_min_path_length");
+            create_direct_link("radiance_estimation.initial_radius",             "sppm.initial_radius");
+            create_direct_link("radiance_estimation.max_photons",                "sppm.max_photons_per_estimate");
+            create_direct_link("radiance_estimation.alpha",                      "sppm.alpha");
 
             load_directly_linked_values(config);
 
@@ -921,7 +931,7 @@ namespace
                 set_widget("lighting_components.dl.sppm", true);
             else set_widget("lighting_components.dl.off", true);
 
-            const string photon_type = get_config<string>(config, "sppm.photon_type", "mono");
+            const string photon_type = get_config<string>(config, "sppm.photon_type", "poly");
             if (photon_type == "mono")
                 set_widget("photon_type.mono", true);
             else set_widget("photon_type.poly", true);

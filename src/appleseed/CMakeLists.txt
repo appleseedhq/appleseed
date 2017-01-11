@@ -395,6 +395,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_filteredtile.cpp
     foundation/meta/tests/test_fp.cpp
     foundation/meta/tests/test_fresnel.cpp
+    foundation/meta/tests/test_genericprogressiveimagefilereader.cpp
     foundation/meta/tests/test_image.cpp
     foundation/meta/tests/test_imageimportancesampler.cpp
     foundation/meta/tests/test_intersection_frustumaabb.cpp
@@ -817,7 +818,6 @@ set (renderer_api_sources
     renderer/api/environmentshader.h
     renderer/api/frame.h
     renderer/api/light.h
-    renderer/api/lighting.h
     renderer/api/log.h
     renderer/api/material.h
     renderer/api/object.h

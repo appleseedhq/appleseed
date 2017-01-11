@@ -75,7 +75,7 @@ class APPLESEED_DLLSYMBOL Configuration
     // from the base configuration and the ones of this configuration.
     ParamArray get_inherited_parameters() const;
 
-    // Get the metadata dictionary describing the configuration settings.
+    // Return the metadata of the configuration settings.
     static foundation::Dictionary get_metadata();
 
   private:

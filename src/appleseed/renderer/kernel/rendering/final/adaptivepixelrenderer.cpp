@@ -57,6 +57,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/statistics.h"
 
 // Standard headers.
@@ -319,10 +320,10 @@ namespace
 
             explicit Parameters(const ParamArray& params)
               : m_sampling_mode(get_sampling_context_mode(params))
-              , m_min_samples(params.get_required<size_t>("min_samples", 1))
-              , m_max_samples(params.get_required<size_t>("max_samples", 1))
+              , m_min_samples(params.get_required<size_t>("min_samples", 16))
+              , m_max_samples(params.get_required<size_t>("max_samples", 256))
               , m_max_variation(pow(10.0f, -params.get_optional<float>("quality", 2.0f)))
-              , m_diagnostics(params.get_optional<bool>("enable_diagnostics"))
+              , m_diagnostics(params.get_optional<bool>("enable_diagnostics", false))
             {
             }
         };
@@ -373,6 +374,47 @@ IPixelRenderer* AdaptivePixelRendererFactory::create(
         m_factory,
         m_params,
         thread_index);
+}
+
+Dictionary AdaptivePixelRendererFactory::get_params_metadata()
+{
+    Dictionary metadata;
+
+    metadata.dictionaries().insert(
+        "min_samples",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "16")
+            .insert("label", "Min Samples")
+            .insert("help", "Minimum number of anti-aliasing samples"));
+
+    metadata.dictionaries().insert(
+        "max_samples",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "256")
+            .insert("label", "Max Samples")
+            .insert("help", "Maximum number of anti-aliasing samples"));
+
+    metadata.dictionaries().insert(
+        "quality",
+        Dictionary()
+            .insert("type", "float")
+            .insert("default", "2.0")
+            .insert("label", "Quality")
+            .insert("help", "Quality factor"));
+
+    metadata.dictionaries().insert(
+        "enable_diagnostics",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("default", "false")
+            .insert("label", "Enable Diagnostics")
+            .insert(
+                "help",
+                "Enable adaptive sampling diagnostics"));
+
+    return metadata;
 }
 
 }   // namespace renderer
