@@ -134,7 +134,7 @@ shader as_maya_mountain
     {
         float st[2] = {in_uvCoord[0], in_uvCoord[1]};
 
-        float dst[2] = {
+        float dsdt[2] = {
             in_filter *
                 (in_uvFilterSize[0] == UNDEFINED_UVFILTER
                     ? filterwidth(st[0])
@@ -144,8 +144,8 @@ shader as_maya_mountain
                     ? filterwidth(st[1])
                     : in_uvFilterSize[1])};
 
-        dst[0] += in_filterOffset;
-        dst[1] += in_filterOffset;
+        dsdt[0] += 2 * in_filterOffset; // double offset to match Maya (test)
+        dsdt[1] += 2 * in_filterOffset;
 
         // The following frequency value seems to match Maya's results roughly.
 
@@ -156,7 +156,7 @@ shader as_maya_mountain
         st[0] *= MAYA_FRACTAL_FREQ;
         st[1] *= MAYA_FRACTAL_FREQ;
 
-        float filter_size = abs(max(dst[0], dst[1]));
+        float filter_size = abs(max(dsdt[0], dsdt[1]));
         
         filter_size = clamp(
             MAYA_FRACTAL_FREQ * filter_size,
