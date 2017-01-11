@@ -144,7 +144,8 @@
         string label = "UV Coordinates",                    \
         string page = "UV Coordinates"                      \
     ]],                                                     \
-    float in_uvFilterSize[2] = {0.0, 0.0}                   \
+    float in_uvFilterSize[2] = {                            \
+        UNDEFINED_UVFILTER, UNDEFINED_UVFILTER}             \
     [[                                                      \
         string maya_attribute_name = "uvFilterSize",        \
         string maya_attribute_type = "float[]",             \

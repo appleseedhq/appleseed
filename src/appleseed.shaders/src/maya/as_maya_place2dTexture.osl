@@ -131,7 +131,8 @@ shader as_maya_place2dTexture
         string label = "Output UV",
         string widget = "null"
     ]],
-    output float out_outUvFilterSize[2] = {0.0, 0.0}
+    output float out_outUvFilterSize[2] = {
+        UNDEFINED_UVFILTER, UNDEFINED_UVFILTER}
     [[
         string maya_attribute_name = "outUvFilterSize",
         string maya_attribute_type = "float2",
@@ -251,6 +252,8 @@ shader as_maya_place2dTexture
             st[0] = rot[0];
             st[1] = rot[1];
         }
+        out_outUvFilterSize[0] = filterwidth(st[0]);
+        out_outUvFilterSize[1] = filterwidth(st[1]);
     }
     out_outUV[0] = st[0];
     out_outUV[1] = st[1];
