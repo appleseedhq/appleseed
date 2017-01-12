@@ -329,9 +329,7 @@ namespace
 
         virtual void update() APPLESEED_OVERRIDE
         {
-            const Scene* scene = m_project.get_scene();
-
-            if (scene)
+            if (Scene* scene = m_project.get_scene())
             {
                 for (each<EnvironmentEDFContainer> i = scene->environment_edfs(); i; ++i)
                     rename_exitance_inputs(*i);
@@ -448,9 +446,7 @@ namespace
 
         virtual void update() APPLESEED_OVERRIDE
         {
-            const Scene* scene = m_project.get_scene();
-
-            if (scene)
+            if (Scene* scene = m_project.get_scene())
                 update_assemblies(scene->assemblies());
         }
 
@@ -643,9 +639,7 @@ namespace
 
         virtual void update() APPLESEED_OVERRIDE
         {
-            const Scene* scene = m_project.get_scene();
-
-            if (scene)
+            if (Scene* scene = m_project.get_scene())
             {
                 update_collection(scene->environment_edfs());
                 update_collection(scene->environment_shaders());
@@ -720,9 +714,7 @@ namespace
 
         virtual void update() APPLESEED_OVERRIDE
         {
-            const Scene* scene = m_project.get_scene();
-
-            if (scene)
+            if (Scene* scene = m_project.get_scene())
                 update_collection(scene->assemblies());
         }
 
@@ -781,9 +773,7 @@ namespace
 
         virtual void update() APPLESEED_OVERRIDE
         {
-            const Scene* scene = m_project.get_scene();
-
-            if (scene)
+            if (Scene* scene = m_project.get_scene())
                 rename_radiance_inputs(scene->assemblies());
         }
 
@@ -835,9 +825,7 @@ namespace
 
         virtual void update() APPLESEED_OVERRIDE
         {
-            const Scene* scene = m_project.get_scene();
-
-            if (scene)
+            if (Scene* scene = m_project.get_scene())
                 visit(scene->assemblies());
         }
 
@@ -1086,9 +1074,7 @@ namespace
 
         virtual void update() APPLESEED_OVERRIDE
         {
-            const Scene* scene = m_project.get_scene();
-
-            if (scene)
+            if (Scene* scene = m_project.get_scene())
                 update_bssrdf_ior_inputs(scene->assemblies());
         }
 

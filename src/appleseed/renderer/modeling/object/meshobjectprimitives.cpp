@@ -432,16 +432,17 @@ auto_release_ptr<MeshObject> create_primitive_mesh(const char* name, const Param
 
     const char* primitive_type = params.get("primitive");
 
-    if (strcmp(primitive_type, "sphere") == 0)
+    if (strcmp(primitive_type, "grid") == 0)
     {
-        const float radius = params.get_optional<float>("radius", 1.0f);
-        if (radius <= 0.0f)
+        const float width = params.get_optional<float>("width", 1.0f);
+        const float height = params.get_optional<float>("height", 1.0f);
+        if (width <= 0.0f || height <= 0.0f)
         {
-            RENDERER_LOG_ERROR("radius must be greater than zero.");
+            RENDERER_LOG_ERROR("width and height must be greater than zero.");
             return auto_release_ptr<MeshObject>();
         }
-        const ParametricSphere sphere(radius, resolution_u);
-        create_primitive(*mesh, sphere, resolution_u, resolution_v);
+        const ParametricGrid grid(width, height);
+        create_primitive(*mesh, grid, resolution_u, resolution_v);
     }
     else if (strcmp(primitive_type, "disk") == 0)
     {
@@ -454,17 +455,16 @@ auto_release_ptr<MeshObject> create_primitive_mesh(const char* name, const Param
         const ParametricDisk disk(radius);
         create_primitive(*mesh, disk, resolution_u, resolution_v);
     }
-    else if (strcmp(primitive_type, "grid") == 0)
+    else if (strcmp(primitive_type, "sphere") == 0)
     {
-        const float width = params.get_optional<float>("width", 1.0f);
-        const float height = params.get_optional<float>("height", 1.0f);
-        if (width <= 0.0f || height <= 0.0f)
+        const float radius = params.get_optional<float>("radius", 1.0f);
+        if (radius <= 0.0f)
         {
-            RENDERER_LOG_ERROR("width and height must be greater than zero.");
+            RENDERER_LOG_ERROR("radius must be greater than zero.");
             return auto_release_ptr<MeshObject>();
         }
-        const ParametricGrid grid(width, height);
-        create_primitive(*mesh, grid, resolution_u, resolution_v);
+        const ParametricSphere sphere(radius, resolution_u);
+        create_primitive(*mesh, sphere, resolution_u, resolution_v);
     }
     else if (strcmp(primitive_type, "torus") == 0)
     {
