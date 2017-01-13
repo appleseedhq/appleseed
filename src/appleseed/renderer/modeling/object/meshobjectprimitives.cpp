@@ -61,11 +61,18 @@ namespace
     class ParametricGrid
     {
       public:
-        ParametricGrid(const float width, const float height)
-          : m_width(width)
-          , m_height(height)
-          , m_transform(Matrix4f::make_rotation_x(-HalfPi<float>()))
+        static auto_ptr<ParametricGrid> create(const size_t res_u, const size_t res_v, const ParamArray& params)
         {
+            const float width = params.get_optional<float>("width", 1.0f);
+            const float height = params.get_optional<float>("height", 1.0f);
+
+            if (width <= 0.0f || height <= 0.0f)
+            {
+                RENDERER_LOG_ERROR("width and height must be greater than zero.");
+                return auto_ptr<ParametricGrid>();
+            }
+
+            return auto_ptr<ParametricGrid>(new ParametricGrid(width, height));
         }
 
         const Transformf& transform() const
@@ -136,6 +143,13 @@ namespace
         const float         m_width;
         const float         m_height;
         const Transformf    m_transform;
+
+        ParametricGrid(const float width, const float height)
+          : m_width(width)
+          , m_height(height)
+          , m_transform(Matrix4f::make_rotation_x(-HalfPi<float>()))
+        {
+        }
     };
 
 
@@ -146,10 +160,17 @@ namespace
     class ParametricDisk
     {
       public:
-        explicit ParametricDisk(const float radius)
-          : m_radius(radius)
-          , m_transform(Matrix4f::make_rotation_x(-HalfPi<float>()))
+        static auto_ptr<ParametricDisk> create(const size_t res_u, const size_t res_v, const ParamArray& params)
         {
+            const float radius = params.get_optional<float>("radius", 1.0f);
+
+            if (radius <= 0.0f)
+            {
+                RENDERER_LOG_ERROR("radius must be greater than zero.");
+                return auto_ptr<ParametricDisk>();
+            }
+
+            return auto_ptr<ParametricDisk>(new ParametricDisk(radius));
         }
 
         const Transformf& transform() const
@@ -211,6 +232,12 @@ namespace
       private:
         const float         m_radius;
         const Transformf    m_transform;
+
+        explicit ParametricDisk(const float radius)
+          : m_radius(radius)
+          , m_transform(Matrix4f::make_rotation_x(-HalfPi<float>()))
+        {
+        }
     };
 
 
@@ -221,11 +248,17 @@ namespace
     class ParametricSphere
     {
       public:
-        ParametricSphere(const float radius, const size_t resolution_u)
-          : m_radius(radius)
-          , m_h(1.0f / (resolution_u * 4.0f))
-          , m_transform(Matrix4f::make_rotation_x(Pi<float>()))
+        static auto_ptr<ParametricSphere> create(const size_t res_u, const size_t res_v, const ParamArray& params)
         {
+            const float radius = params.get_optional<float>("radius", 1.0f);
+
+            if (radius <= 0.0f)
+            {
+                RENDERER_LOG_ERROR("radius must be greater than zero.");
+                return auto_ptr<ParametricSphere>();
+            }
+
+            return auto_ptr<ParametricSphere>(new ParametricSphere(res_u, radius));
         }
 
         const Transformf& transform() const
@@ -262,6 +295,13 @@ namespace
         const float         m_radius;
         const float         m_h;
         const Transformf    m_transform;
+
+        ParametricSphere(const size_t res_u, const float radius)
+          : m_radius(radius)
+          , m_h(1.0f / (res_u * 4.0f))
+          , m_transform(Matrix4f::make_rotation_x(Pi<float>()))
+        {
+        }
     };
 
 
@@ -272,17 +312,18 @@ namespace
     class ParametricTorus
     {
       public:
-        ParametricTorus(
-            const float     major_radius,
-            const float     minor_radius,
-            const size_t    resolution_u,
-            const size_t    resolution_v)
-          : m_circle_radius(0.5f * (major_radius + minor_radius))
-          , m_tube_radius(0.5f * (major_radius - minor_radius))
-          , m_hs(1.0f / (resolution_u * 4.0f))
-          , m_ht(1.0f / (resolution_v * 4.0f))
-          , m_transform(Matrix4f::make_rotation_x(-HalfPi<float>()))
+        static auto_ptr<ParametricTorus> create(const size_t res_u, const size_t res_v, const ParamArray& params)
         {
+            const float major_radius = params.get_optional<float>("major_radius", 1.0f);
+            const float minor_radius = params.get_optional<float>("minor_radius", 0.2f);
+
+            if (major_radius <= 0.0f || minor_radius <= 0.0f)
+            {
+                RENDERER_LOG_ERROR("torus radii must be greater than zero.");
+                return auto_ptr<ParametricTorus>();
+            }
+
+            return auto_ptr<ParametricTorus>(new ParametricTorus(res_u, res_v, major_radius, minor_radius));
         }
 
         const Transformf& transform() const
@@ -334,21 +375,34 @@ namespace
         const float         m_tube_radius;
         const float         m_hs, m_ht;
         const Transformf    m_transform;
+
+        ParametricTorus(
+            const size_t    res_u,
+            const size_t    res_v,
+            const float     major_radius,
+            const float     minor_radius)
+          : m_circle_radius(0.5f * (major_radius + minor_radius))
+          , m_tube_radius(0.5f * (major_radius - minor_radius))
+          , m_hs(1.0f / (res_u * 4.0f))
+          , m_ht(1.0f / (res_v * 4.0f))
+          , m_transform(Matrix4f::make_rotation_x(-HalfPi<float>()))
+        {
+        }
     };
 
 
     //
-    // Mesh generation.
+    // Parametric surface generation.
     //
 
     template <typename ParametricSurface>
     void create_vertices(
         MeshObject&                 mesh,
         const ParametricSurface&    surface,
-        const size_t                resolution_u,
-        const size_t                resolution_v)
+        const size_t                res_u,
+        const size_t                res_v)
     {
-        const size_t vertex_count = (resolution_u + 1) * (resolution_v + 1);
+        const size_t vertex_count = (res_u + 1) * (res_v + 1);
 
         mesh.reserve_vertices(vertex_count);
         mesh.reserve_vertex_normals(vertex_count);
@@ -357,13 +411,13 @@ namespace
 
         const Transformf& transform = surface.transform();
 
-        for (size_t j = 0; j <= resolution_v; ++j)
+        for (size_t j = 0; j <= res_v; ++j)
         {
-            const float t = fit<size_t, float>(j, 0, resolution_v, 0.0f, 1.0f);
+            const float t = fit<size_t, float>(j, 0, res_v, 0.0f, 1.0f);
 
-            for (size_t i = 0; i <= resolution_u; ++i)
+            for (size_t i = 0; i <= res_u; ++i)
             {
-                const float s = fit<size_t, float>(i, 0, resolution_u, 0.0f, 1.0f);
+                const float s = fit<size_t, float>(i, 0, res_u, 0.0f, 1.0f);
 
                 mesh.push_vertex(transform.point_to_parent(surface.evaluate(s, t)));
                 mesh.push_vertex_normal(transform.normal_to_parent(surface.evaluate_normal(s, t)));
@@ -373,26 +427,26 @@ namespace
         }
     }
 
-    size_t convert_to_index(const size_t resolution_u, const size_t i, const size_t j)
+    size_t convert_to_index(const size_t res_u, const size_t i, const size_t j)
     {
-        return (resolution_u + 1) * j + i;
+        return (res_u + 1) * j + i;
     }
 
     void create_triangles(
         MeshObject&                 mesh,
-        const size_t                resolution_u,
-        const size_t                resolution_v)
+        const size_t                res_u,
+        const size_t                res_v)
     {
-        mesh.reserve_triangles(2 * (resolution_u - 1) * (resolution_v - 1));
+        mesh.reserve_triangles(2 * (res_u - 1) * (res_v - 1));
 
-        for (size_t j = 0; j < resolution_v; ++j)
+        for (size_t j = 0; j < res_v; ++j)
         {
-            for (size_t i = 0; i < resolution_u; ++i)
+            for (size_t i = 0; i < res_u; ++i)
             {
-                const size_t v0 = convert_to_index(resolution_u, i    , j);
-                const size_t v1 = convert_to_index(resolution_u, i + 1, j);
-                const size_t v2 = convert_to_index(resolution_u, i + 1, j + 1);
-                const size_t v3 = convert_to_index(resolution_u, i    , j + 1);
+                const size_t v0 = convert_to_index(res_u, i    , j);
+                const size_t v1 = convert_to_index(res_u, i + 1, j);
+                const size_t v2 = convert_to_index(res_u, i + 1, j + 1);
+                const size_t v3 = convert_to_index(res_u, i    , j + 1);
 
                 mesh.push_triangle(Triangle(v3, v1, v0, v3, v1, v0, v3, v1, v0, 0));
                 mesh.push_triangle(Triangle(v3, v2, v1, v3, v2, v1, v3, v2, v1, 0));
@@ -401,15 +455,91 @@ namespace
     }
 
     template <typename ParametricSurface>
-    void create_primitive(
-        MeshObject&                 mesh,
-        const ParametricSurface&    surface,
-        const size_t                resolution_u,
-        const size_t                resolution_v)
+    auto_release_ptr<MeshObject> create_parametric_surface(const char* name, const ParamArray& params)
     {
-        create_vertices(mesh, surface, resolution_u, resolution_v);
-        create_triangles(mesh, resolution_u, resolution_v);
-        mesh.push_material_slot("default");
+        const size_t res_u  = params.get_optional<size_t>("resolution_u", 32);
+        const size_t res_v = params.get_optional<size_t>("resolution_v", 32);
+
+        if (res_u < 1 || res_v < 1)
+        {
+            RENDERER_LOG_ERROR("resolution must be greater than zero.");
+            return auto_release_ptr<MeshObject>();
+        }
+
+        auto_ptr<ParametricSurface> surface = ParametricSurface::create(res_u, res_v, params);
+
+        if (surface.get() == 0)
+            return auto_release_ptr<MeshObject>();
+
+        auto_release_ptr<MeshObject> mesh = MeshObjectFactory::create(name, params);
+
+        create_vertices(mesh.ref(), *surface.get(), res_u, res_v);
+        create_triangles(mesh.ref(), res_u, res_v);
+        mesh->push_material_slot("default");
+
+        return mesh;
+    }
+
+
+    //
+    // Cube.
+    //
+
+    auto_release_ptr<MeshObject> create_cube(const char* name, const ParamArray& params)
+    {
+        auto_release_ptr<MeshObject> mesh = MeshObjectFactory::create(name, params);
+
+        mesh->reserve_vertices(8);
+        mesh->push_vertex(GVector3(-1.0f, -1.0f,  1.0f));
+        mesh->push_vertex(GVector3( 1.0f, -1.0f,  1.0f));
+        mesh->push_vertex(GVector3(-1.0f,  1.0f,  1.0f));
+        mesh->push_vertex(GVector3( 1.0f,  1.0f,  1.0f));
+        mesh->push_vertex(GVector3(-1.0f,  1.0f, -1.0f));
+        mesh->push_vertex(GVector3( 1.0f,  1.0f, -1.0f));
+        mesh->push_vertex(GVector3(-1.0f, -1.0f, -1.0f));
+        mesh->push_vertex(GVector3( 1.0f, -1.0f, -1.0f));
+
+        mesh->reserve_vertex_normals(6);
+        mesh->push_vertex_normal(GVector3( 0.0f,  0.0f,  1.0f));
+        mesh->push_vertex_normal(GVector3( 0.0f,  1.0f,  0.0f));
+        mesh->push_vertex_normal(GVector3( 0.0f,  0.0f, -1.0f));
+        mesh->push_vertex_normal(GVector3( 0.0f, -1.0f,  0.0f));
+        mesh->push_vertex_normal(GVector3( 1.0f,  0.0f,  0.0f));
+        mesh->push_vertex_normal(GVector3(-1.0f,  0.0f,  0.0f));
+
+        mesh->reserve_tex_coords(14);
+        mesh->push_tex_coords(GVector2(0.375f, 0.000f));
+        mesh->push_tex_coords(GVector2(0.625f, 0.000f));
+        mesh->push_tex_coords(GVector2(0.375f, 0.250f));
+        mesh->push_tex_coords(GVector2(0.625f, 0.250f));
+        mesh->push_tex_coords(GVector2(0.375f, 0.500f));
+        mesh->push_tex_coords(GVector2(0.625f, 0.500f));
+        mesh->push_tex_coords(GVector2(0.375f, 0.750f));
+        mesh->push_tex_coords(GVector2(0.625f, 0.750f));
+        mesh->push_tex_coords(GVector2(0.375f, 1.000f));
+        mesh->push_tex_coords(GVector2(0.625f, 1.000f));
+        mesh->push_tex_coords(GVector2(0.875f, 0.000f));
+        mesh->push_tex_coords(GVector2(0.875f, 0.250f));
+        mesh->push_tex_coords(GVector2(0.125f, 0.000f));
+        mesh->push_tex_coords(GVector2(0.125f, 0.250f));
+
+        mesh->reserve_triangles(12);
+        mesh->push_triangle(Triangle(0, 1, 2,   0, 0, 0,    0, 1,   2,   0));
+        mesh->push_triangle(Triangle(2, 1, 3,   0, 0, 0,    2, 1,   3,   0));
+        mesh->push_triangle(Triangle(2, 3, 4,   1, 1, 1,    2, 3,   4,   0));
+        mesh->push_triangle(Triangle(4, 3, 5,   1, 1, 1,    4, 3,   5,   0));
+        mesh->push_triangle(Triangle(4, 5, 6,   2, 2, 2,    4, 5,   6,   0));
+        mesh->push_triangle(Triangle(6, 5, 7,   2, 2, 2,    6, 5,   7,   0));
+        mesh->push_triangle(Triangle(6, 7, 0,   3, 3, 3,    6, 7,   8,   0));
+        mesh->push_triangle(Triangle(0, 7, 1,   3, 3, 3,    8, 7,   9,   0));
+        mesh->push_triangle(Triangle(1, 7, 3,   4, 4, 4,    1, 10,  3,   0));
+        mesh->push_triangle(Triangle(3, 7, 5,   4, 4, 4,    3, 10, 11,   0));
+        mesh->push_triangle(Triangle(6, 0, 4,   5, 5, 5,   12,  0, 13,   0));
+        mesh->push_triangle(Triangle(4, 0, 2,   5, 5, 5,   13,  0,  2,   0));
+
+        mesh->push_material_slot("default");
+
+        return mesh;
     }
 }
 
@@ -420,71 +550,29 @@ namespace
 
 auto_release_ptr<MeshObject> create_primitive_mesh(const char* name, const ParamArray& params)
 {
-    auto_release_ptr<MeshObject> mesh = MeshObjectFactory::create(name, params);
-    const size_t resolution_u  = params.get_optional<size_t>("resolution_u", 32);
-    const size_t resolution_v = params.get_optional<size_t>("resolution_v", 32);
-
-    if (resolution_u < 1 || resolution_v < 1)
-    {
-        RENDERER_LOG_ERROR("resolution must be greater than zero.");
-        return auto_release_ptr<MeshObject>();
-    }
-
     const char* primitive_type = params.get("primitive");
 
-    if (strcmp(primitive_type, "sphere") == 0)
-    {
-        const float radius = params.get_optional<float>("radius", 1.0f);
-        if (radius <= 0.0f)
-        {
-            RENDERER_LOG_ERROR("radius must be greater than zero.");
-            return auto_release_ptr<MeshObject>();
-        }
-        const ParametricSphere sphere(radius, resolution_u);
-        create_primitive(*mesh, sphere, resolution_u, resolution_v);
-    }
-    else if (strcmp(primitive_type, "disk") == 0)
-    {
-        const float radius = params.get_optional<float>("radius", 1.0f);
-        if (radius <= 0.0f)
-        {
-            RENDERER_LOG_ERROR("radius must be greater than zero.");
-            return auto_release_ptr<MeshObject>();
-        }
-        const ParametricDisk disk(radius);
-        create_primitive(*mesh, disk, resolution_u, resolution_v);
-    }
-    else if (strcmp(primitive_type, "grid") == 0)
-    {
-        const float width = params.get_optional<float>("width", 1.0f);
-        const float height = params.get_optional<float>("height", 1.0f);
-        if (width <= 0.0f || height <= 0.0f)
-        {
-            RENDERER_LOG_ERROR("width and height must be greater than zero.");
-            return auto_release_ptr<MeshObject>();
-        }
-        const ParametricGrid grid(width, height);
-        create_primitive(*mesh, grid, resolution_u, resolution_v);
-    }
-    else if (strcmp(primitive_type, "torus") == 0)
-    {
-        const float major_radius = params.get_optional<float>("major_radius", 1.0f);
-        const float minor_radius = params.get_optional<float>("minor_radius", 0.2f);
-        if (major_radius <= 0.0f || minor_radius <= 0.0f)
-        {
-            RENDERER_LOG_ERROR("torus radii must be greater than zero.");
-            return auto_release_ptr<MeshObject>();
-        }
-        const ParametricTorus torus(major_radius, minor_radius, resolution_u, resolution_v);
-        create_primitive(*mesh, torus, resolution_u, resolution_v);
-    }
-    else
-    {
-        RENDERER_LOG_ERROR("unknown primitive type: %s", primitive_type);
-        return auto_release_ptr<MeshObject>();
-    }
+    // Parametric surfaces.
 
-    return mesh;
+    if (strcmp(primitive_type, "grid") == 0)
+        return create_parametric_surface<ParametricGrid>(name, params);
+
+    if (strcmp(primitive_type, "disk") == 0)
+        return create_parametric_surface<ParametricDisk>(name, params);
+
+    if (strcmp(primitive_type, "sphere") == 0)
+        return create_parametric_surface<ParametricSphere>(name, params);
+
+    if (strcmp(primitive_type, "torus") == 0)
+        return create_parametric_surface<ParametricTorus>(name, params);
+
+    // Other, non-parametric primitives.
+
+    if (strcmp(primitive_type, "cube") == 0)
+        return create_cube(name, params);
+
+    RENDERER_LOG_ERROR("unknown primitive type: %s", primitive_type);
+    return auto_release_ptr<MeshObject>();
 }
 
 }   // namespace renderer
