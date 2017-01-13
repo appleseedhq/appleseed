@@ -450,10 +450,10 @@ namespace
                 else
                 {
                     const float alpha = clearcoat_roughness(values);
-                    const BerryMDF<float> berry_mdf;
+                    const GTR1MDF<float> gtr1_mdf;
                     MicrofacetBRDFHelper::sample(
                         sampling_context,
-                        berry_mdf,
+                        gtr1_mdf,
                         alpha,
                         alpha,
                         DisneyClearcoatFresnelFun(*values),
@@ -546,9 +546,9 @@ namespace
                 {
                     Spectrum clear;
                     const float alpha = clearcoat_roughness(values);
-                    const BerryMDF<float> berry_mdf;
+                    const GTR1MDF<float> gtr1_mdf;
                     pdf += MicrofacetBRDFHelper::evaluate(
-                        berry_mdf,
+                        gtr1_mdf,
                         alpha,
                         alpha,
                         shading_basis,
@@ -629,9 +629,9 @@ namespace
                 if (weights[CleatcoatComponent] != 0.0f)
                 {
                     const float alpha = clearcoat_roughness(values);
-                    const BerryMDF<float> berry_mdf;
+                    const GTR1MDF<float> gtr1_mdf;
                     pdf += MicrofacetBRDFHelper::pdf(
-                        berry_mdf,
+                        gtr1_mdf,
                         alpha,
                         alpha,
                         shading_basis,

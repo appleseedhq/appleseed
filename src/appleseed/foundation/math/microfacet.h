@@ -829,7 +829,7 @@ class WardMDF
 
 
 //
-// Berry Microfacet Distribution Function.
+// GTR1 Microfacet Distribution Function.
 //
 // References:
 //
@@ -841,11 +841,11 @@ class WardMDF
 //
 
 template <typename T>
-class BerryMDF
+class GTR1MDF
   : public MDF<T>
 {
   public:
-    BerryMDF() {}
+    GTR1MDF() {}
 
     virtual T D(
         const Vector<T, 3>&     h,
