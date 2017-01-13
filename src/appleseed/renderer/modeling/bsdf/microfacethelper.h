@@ -91,84 +91,6 @@ class MicrofacetBRDFHelper
         const float                     cos_on,
         BSDFSample&                     sample)
     {
-        // gcc needs the qualifier, otherwise
-        // it complains about missing operator() for BSDFSample.
-        MicrofacetBRDFHelper::sample(
-            sampling_context,
-            mdf,
-            alpha_x,
-            alpha_y,
-            alpha_x,
-            alpha_y,
-            f,
-            cos_on,
-            sample);
-    }
-
-    template <typename MDF, typename FresnelFun>
-    static float evaluate(
-        const MDF&                      mdf,
-        const float                     alpha_x,
-        const float                     alpha_y,
-        const foundation::Basis3f&      shading_basis,
-        const foundation::Vector3f&     outgoing,
-        const foundation::Vector3f&     incoming,
-        FresnelFun                      f,
-        const float                     cos_in,
-        const float                     cos_on,
-        Spectrum&                       value)
-    {
-        return evaluate(
-            mdf,
-            alpha_x,
-            alpha_y,
-            alpha_x,
-            alpha_y,
-            shading_basis,
-            outgoing,
-            incoming,
-            f,
-            cos_in,
-            cos_on,
-            value);
-    }
-
-    template <typename MDF>
-    static float pdf(
-        const MDF&                      mdf,
-        const float                     alpha_x,
-        const float                     alpha_y,
-        const foundation::Basis3f&      shading_basis,
-        const foundation::Vector3f&     outgoing,
-        const foundation::Vector3f&     incoming)
-    {
-        const foundation::Vector3f h = foundation::normalize(incoming + outgoing);
-        const float cos_oh = foundation::dot(outgoing, h);
-        return
-            mdf.pdf(
-                shading_basis.transform_to_local(outgoing),
-                shading_basis.transform_to_local(h),
-                alpha_x,
-                alpha_y) / (4.0f * cos_oh);
-    }
-
-    //
-    // Decoupled distribution and shadowing alpha parameters.
-    // They are used in the Disney BRDF implementation.
-    //
-
-    template <typename MDF, typename FresnelFun>
-    static void sample(
-        SamplingContext&                sampling_context,
-        const MDF&                      mdf,
-        const float                     alpha_x,
-        const float                     alpha_y,
-        const float                     g_alpha_x,
-        const float                     g_alpha_y,
-        FresnelFun                      f,
-        const float                     cos_on,
-        BSDFSample&                     sample)
-    {
         // Compute the incoming direction by sampling the MDF.
         sampling_context.split_in_place(3, 1);
         const foundation::Vector3f s = sampling_context.next2<foundation::Vector3f>();
@@ -190,8 +112,8 @@ class MicrofacetBRDFHelper
                 sample.m_shading_basis.transform_to_local(incoming),
                 wo,
                 m,
-                g_alpha_x,
-                g_alpha_y);
+                alpha_x,
+                alpha_y);
 
         f(sample.m_outgoing.get_value(), h, sample.m_shading_basis.get_normal(), sample.m_value);
         sample.m_value *= D * G / (4.0f * cos_on * cos_in);
@@ -206,8 +128,6 @@ class MicrofacetBRDFHelper
         const MDF&                      mdf,
         const float                     alpha_x,
         const float                     alpha_y,
-        const float                     g_alpha_x,
-        const float                     g_alpha_y,
         const foundation::Basis3f&      shading_basis,
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,
@@ -226,13 +146,32 @@ class MicrofacetBRDFHelper
                 shading_basis.transform_to_local(incoming),
                 wo,
                 m,
-                g_alpha_x,
-                g_alpha_y);
+                alpha_x,
+                alpha_y);
 
         const float cos_oh = foundation::dot(outgoing, h);
         f(outgoing, h, shading_basis.get_normal(), value);
         value *= D * G / (4.0f * cos_on * cos_in);
         return mdf.pdf(wo, m, alpha_x, alpha_y) / (4.0f * cos_oh);
+    }
+
+    template <typename MDF>
+    static float pdf(
+        const MDF&                      mdf,
+        const float                     alpha_x,
+        const float                     alpha_y,
+        const foundation::Basis3f&      shading_basis,
+        const foundation::Vector3f&     outgoing,
+        const foundation::Vector3f&     incoming)
+    {
+        const foundation::Vector3f h = foundation::normalize(incoming + outgoing);
+        const float cos_oh = foundation::dot(outgoing, h);
+        return
+            mdf.pdf(
+                shading_basis.transform_to_local(outgoing),
+                shading_basis.transform_to_local(h),
+                alpha_x,
+                alpha_y) / (4.0f * cos_oh);
     }
 };
 

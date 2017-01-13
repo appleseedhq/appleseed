@@ -456,8 +456,6 @@ namespace
                         berry_mdf,
                         alpha,
                         alpha,
-                        0.25f,
-                        0.25f,
                         DisneyClearcoatFresnelFun(*values),
                         cos_on,
                         sample);
@@ -553,8 +551,6 @@ namespace
                         berry_mdf,
                         alpha,
                         alpha,
-                        0.25f,
-                        0.25f,
                         shading_basis,
                         outgoing,
                         incoming,
