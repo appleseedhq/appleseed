@@ -829,16 +829,23 @@ class WardMDF
 
 
 //
-// Berry Microfacet Distribution Function.
-// Used in the Disney BRDF clearcoat layer.
+// GTR1 Microfacet Distribution Function.
+//
+// References:
+//
+//   [1] Physically-Based Shading at Disney
+//       https://disney-animation.s3.amazonaws.com/library/s2012_pbs_disney_brdf_notes_v2.pdf
+//
+//   [2] Deriving the Smith shadowing function G1 for gamma (0, 4]
+//       https://docs.chaosgroup.com/download/attachments/7147732/gtr_shadowing.pdf?version=2&modificationDate=1434539612000&api=v2
 //
 
 template <typename T>
-class BerryMDF
+class GTR1MDF
   : public MDF<T>
 {
   public:
-    BerryMDF() {}
+    GTR1MDF() {}
 
     virtual T D(
         const Vector<T, 3>&     h,
@@ -859,9 +866,7 @@ class BerryMDF
         const T                 alpha_x,
         const T                 alpha_y) const APPLESEED_OVERRIDE
     {
-        return
-            G1(outgoing, h, alpha_x, alpha_y) *
-            G1(incoming, h, alpha_x, alpha_y);
+        return T(1.0) / (T(1.0) + lambda(outgoing, alpha_x, alpha_y) + lambda(incoming, alpha_x, alpha_y));
     }
 
     virtual T G1(
@@ -870,20 +875,35 @@ class BerryMDF
         const T                 alpha_x,
         const T                 alpha_y) const APPLESEED_OVERRIDE
     {
-        if (dot(v, m) * v.y <= T(0.0))
+        return T(1.0) / (T(1.0) + lambda(v, alpha_x, alpha_y));
+    }
+
+    T lambda(
+        const Vector<T, 3>&     v,
+        const T                 alpha_x,
+        const T                 alpha_y) const
+    {
+        const T cos_theta = std::abs(v.y);
+
+        if (cos_theta == T(0.0))
             return T(0.0);
 
-        const T cos_theta = std::abs(v.y);
-        const T cos_theta_2 = square(cos_theta);
-        const T sin_theta = MDF<T>::sin_theta(v);
-        const T tan_theta_2 = square(sin_theta) / cos_theta_2;
-
-        if (tan_theta_2 == T(0.0))
+        if (cos_theta == T(1.0))
             return T(1.0);
 
-        const T a2_rcp = square(alpha_x) * tan_theta_2;
-        const T lambda = (T(-1.0) + std::sqrt(T(1.0) + a2_rcp)) * T(0.5);
-        return T(1.0) / (T(1.0) + lambda);
+        // [2] section 3.2.
+        const T cos_theta_2 = square(cos_theta);
+        const T sin_theta = MDF<T>::sin_theta(v);
+        const T cot_theta_2 = cos_theta_2 / square(sin_theta);
+        const T cot_theta = std::sqrt(cot_theta_2);
+        const T alpha_2 = square(alpha_x);
+
+        const T a = std::sqrt(cot_theta_2 + alpha_2);
+        const T b = std::sqrt(cot_theta_2 + T(1.0));
+        const T c = std::log(cot_theta + b);
+        const T d = std::log(cot_theta + a);
+
+        return (a - b + cot_theta * (c - d)) / (cot_theta * std::log(alpha_2));
     }
 
     virtual Vector<T, 3> sample(
@@ -892,9 +912,9 @@ class BerryMDF
         const T                 alpha_x,
         const T                 alpha_y) const APPLESEED_OVERRIDE
     {
-        const T alpha_x_2 = square(alpha_x);
-        const T a = T(1.0) - std::pow(alpha_x_2, T(1.0) - s[0]);
-        const T cos_theta = std::sqrt(a / (T(1.0) - alpha_x_2));
+        const T alpha2 = square(alpha_x);
+        const T a = T(1.0) - std::pow(alpha2, T(1.0) - s[0]);
+        const T cos_theta = std::sqrt(a / (T(1.0) - alpha2));
         const T sin_theta  = std::sqrt(T(1.0) - square(cos_theta));
 
         T cos_phi, sin_phi;
