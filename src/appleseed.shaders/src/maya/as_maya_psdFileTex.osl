@@ -26,13 +26,13 @@
 // THE SOFTWARE.
 //
 
-// Ref: $MAYA_LOCATION/docs/Nodes/file.html
+// Ref: $MAYA_LOCATION/docs/Nodes/psdFileTex.html
 
 #include "appleseed/maya/as_maya_helpers.h"
 
-shader as_maya_file
+shader as_maya_psdFileTex
 [[
-    string maya_node_name = "file",
+    string maya_node_name = "psdFileTex",
     string maya_classification = "texture/2d"
 ]]
 (
@@ -111,42 +111,35 @@ shader as_maya_file
         string label = "Use Maximum Res",
         string widget = "checkBox"
     ]],
-    float in_ptexFilterBlur = 0.0
+    // We have no mechanism to load channels by string names in OSL/OIIO,
+    // so don't expose the (multi)channel options, assume RGBA for now.
+    string in_layerSetName = ""
     [[
-        string maya_attribute_name = "ptexFilterBlur",
-        string maya_attribute_type = "float",
-        string label = "PTex Filter Blur",
-        int slider = 1
+        string maya_attribute_name = "layerSetName",
+        string maya_attribute_type = "string",
+        string label = "Layer Set Name",
+        string widget = "null"
     ]],
-    float in_ptexFilterWidth = 0.0
+    string in_layerSets[] = {""}
     [[
-        string maya_attribute_name = "ptexFilterWidth",
-        string maya_attribute_type = "float",
-        string label = "PTex Filter Width",
-        int slider = 1
+        string maya_attribute_name = "layerSets",
+        string maya_attribute_type = "string[]",
+        string label = "Layer Sets",
+        string widget = "null"
     ]],
-    int in_ptexFilterType = 3
+    string in_alpha = ""
     [[
-        string maya_attribute_name = "ptexFilterType",
-        string maya_attribute_type = "enum",
-        string label = "PTex Filter Type",
-        string widget = "mapper",
-        string options =
-        "Point:0|Bilinear:1|Box:2|Gaussian:3|Bicubic:4|B-Spline:5|Catmull-Rom:6|Mitchell:7"
+        string maya_attribute_name = "alpha",
+        string maya_attribute_type = "string",
+        string label = "Alpha",
+        string widget = "null"
     ]],
-    int in_ptexFilterInterpolateLevels = 0
+    string in_alphaList[] = {""}
     [[
-        string maya_attribute_name = "ptexFilterInterpolateLevels",
-        string maya_attribute_type = "bool",
-        string label = "PTex Filter Interpolate Levels",
-        string widget = "checkBox"
-    ]],
-
-    float in_exposure = 0.0
-    [[
-        string maya_attribute_name = "exposure",
-        string maya_attribute_type = "float",
-        string label = "Exposure"
+        string maya_attribute_name = "alphaList",
+        string maya_attribute_type = "string[]",
+        string label = "Alpha List",
+        string widget = "null"
     ]],
 
     MAYA_COLORBALANCE_PARAMETERS,
@@ -207,55 +200,8 @@ shader as_maya_file
 
         return;
     }
-
-    // UV frame coverage is meaningless in Ptex.
-    // No Ptex queries supported in gettextureinfo(), check extension instead.
-
-    if (endswith(in_fileTextureName, ".ptx") ||
-        endswith(in_fileTextureName, ".ptex")||
-        endswith(in_fileTextureName, ".penv"))
-    {
-#if 0
-        int facendx = 0;
-        int status = getattribute("object:faceindex", facendx);
-
-        if (!status)
-        {
-#ifdef DEBUG
-            string shadername = "";
-            getattribute("shader:shadername", shadername);
-
-            error("[WARNING]: No face indices found for Ptex in %s, %s:%i\n",
-                    shadername, __FILE__, __LINE__);
-#endif
-            exit();
-        }
-
-        // No supported Ptex queries in gettextureinfo(), assume alpha present.
-
-        float ptex_alpha = 1;
-
-        // Placeholder for what could be support for Ptex in OSL texture(),
-        // which extra parameters being "ptexfilter".
-
-        float fw = (in_ptexFilterType == 0) ? 0 : in_ptexFilterWidth;
-
-        out_outColor =
-            texture(
-                in_fileTextureName,
-                0,
-                facendx,
-                "blur", in_ptexFilterBlur,
-                "width", fw,
-                "missingalpha", 1,
-                "alpha", ptex_alpha,
-                "ptexfilter", in_ptexFilterType,
-                "ptexinterpolate", in_ptexFilterInterpolateLevels
-                );
-#endif
-    }
-    else if (in_uvCoord[0] == OUTSIDE_UVFRAME ||
-             in_uvCoord[1] == OUTSIDE_UVFRAME)
+    
+    if (in_uvCoord[0] == OUTSIDE_UVFRAME || in_uvCoord[1] == OUTSIDE_UVFRAME)
     {
         out_outColor = in_defaultColor;
         out_outAlpha = maya_luminance(in_defaultColor);
@@ -364,11 +310,6 @@ shader as_maya_file
                     "alpha", out_outAlpha,
                     "interp", filter);
         }
-    }
-
-    if (in_exposure)
-    {
-        out_outColor *= pow(2, in_exposure);
     }
 
     maya_colorBalance(
