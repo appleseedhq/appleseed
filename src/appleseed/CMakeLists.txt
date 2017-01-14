@@ -1273,6 +1273,8 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/orennayarbrdf.h
     renderer/modeling/bsdf/oslbsdf.cpp
     renderer/modeling/bsdf/oslbsdf.h
+    renderer/modeling/bsdf/plasticbrdf.cpp
+    renderer/modeling/bsdf/plasticbrdf.h
     renderer/modeling/bsdf/sheenbrdf.cpp
     renderer/modeling/bsdf/sheenbrdf.h
     renderer/modeling/bsdf/specularbrdf.cpp
