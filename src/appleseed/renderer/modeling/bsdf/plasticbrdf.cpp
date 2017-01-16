@@ -75,11 +75,11 @@ namespace
     //
     // References:
     //
-    //   [1] Microfacet Models for Refraction through Rough Surfaces
-    //       http://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.pdf
-    //
-    //   [2] A Physically-Based Reflectance Model Combining Reflection and Diffraction
+    //   [1] A Physically-Based Reflectance Model Combining Reflection and Diffraction
     //       https://hal.inria.fr/hal-01386157
+    //
+    //   [2] Mitsuba renderer
+    //       https://github.com/mitsuba-renderer/mitsuba
     //
 
     const char* Model = "plastic_bsdf";
@@ -99,6 +99,7 @@ namespace
             m_inputs.declare("ior", InputFormatFloat, "1.5");
             m_inputs.declare("diffuse_reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("diffuse_reflectance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("internal_scattering", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -217,6 +218,7 @@ namespace
                 evaluate_diffuse(
                     values->m_diffuse_reflectance,
                     values->m_precomputed.m_eta,
+                    values->m_internal_scattering,
                     0.0f,
                     0.0f,
                     sample.m_value);
@@ -285,6 +287,7 @@ namespace
                 evaluate_diffuse(
                     values->m_diffuse_reflectance,
                     values->m_precomputed.m_eta,
+                    values->m_internal_scattering,
                     Fo,
                     Fi,
                     substrate_value);
@@ -393,23 +396,24 @@ namespace
         static void evaluate_diffuse(
             const Spectrum&         diffuse_reflectance,
             const float             eta,
+            const float             internal_scattering,
             const float             Fo,
             const float             Fi,
             Spectrum&               value)
         {
-            const float rcp_eta = 1.0f / eta;
-            const float fdr = fresnel_internal_diffuse_reflectance(eta);
+            const float eta2 = square(eta);
+            const float fdr = fresnel_internal_diffuse_reflectance(1.0f / eta);
             const float T = (1.0f - Fo) * (1.0f - Fi);
 
             value.resize(diffuse_reflectance.size());
             for (size_t i = 0, e = diffuse_reflectance.size(); i < e; ++i)
             {
-                const float pd_over_pi = diffuse_reflectance[i] * RcpPi<float>();
-                const float non_linear_term = 1.0f - pd_over_pi * fdr * rcp_eta;
-                value[i] = T * pd_over_pi / non_linear_term;
+                const float pd = diffuse_reflectance[i];
+                const float non_linear_term =
+                    1.0f - (internal_scattering * pd) * fdr;
+                value[i] = (T * pd * eta2 * RcpPi<float>()) / non_linear_term;
             }
         }
-
 
         auto_ptr<MDF<float> >   m_mdf;
     };
@@ -517,6 +521,16 @@ DictionaryArray PlasticBRDFFactory::get_input_metadata() const
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "internal_scattering")
+            .insert("label", "Internal Scattering")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
             .insert("use", "optional")
             .insert("default", "1.0"));
 

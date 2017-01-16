@@ -63,6 +63,7 @@ APPLESEED_DECLARE_INPUT_VALUES(PlasticBRDFInputValues)
 
     Spectrum    m_diffuse_reflectance;
     float       m_diffuse_reflectance_multiplier;
+    float       m_internal_scattering;
 
     struct Precomputed
     {
