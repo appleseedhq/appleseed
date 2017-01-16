@@ -29,6 +29,8 @@
 #ifndef AS_NOISE_TABLES_H
 #define AS_NOISE_TABLES_H
 
+// Generated via srand48/drand48 with seed 21393, mapped to [-1,1] range.
+
 #define RNG_TABLE                                               \
       0.676386,  0.514013,  0.324582, -0.892593, -0.510765,     \
       0.235190,  0.658318,  0.416452,  0.370413,  0.963623,     \
