@@ -289,7 +289,6 @@
         <frame name="beauty">
             <parameter name="camera" value="Camera" />
             <parameter name="color_space" value="srgb" />
-            <parameter name="crop_window" value="401 180 572 368" />
             <parameter name="resolution" value="640 480" />
         </frame>
     </output>
