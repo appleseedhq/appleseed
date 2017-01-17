@@ -353,19 +353,19 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
 
     //
-    // Berry MDF.
+    // GTR1 MDF.
     //
 
-    TEST_CASE(BerryMDF_Evaluate_ReturnsNonNegativeValues)
+    TEST_CASE(GTR1MDF_Evaluate_ReturnsNonNegativeValues)
     {
-        const BerryMDF<double> mdf;
+        const GTR1MDF<double> mdf;
 
         EXPECT_TRUE(is_positive(mdf, 10.0, 10.0, PositivityTestSampleCount));
     }
 
-    TEST_CASE(BerryMDF_Integral_EqualsOne)
+    TEST_CASE(GTR1MDF_Integral_EqualsOne)
     {
-        const BerryMDF<double> mdf;
+        const GTR1MDF<double> mdf;
 
         const double integral = integrate(mdf, 10.0, IntegrationSampleCount);
 
