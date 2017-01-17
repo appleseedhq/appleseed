@@ -75,7 +75,7 @@
                     1.000000
                 </alpha>
             </color>
-            <bsdf name="blue_plastic_brdf" model="plastic_bsdf">
+            <bsdf name="blue_plastic_brdf" model="plastic_brdf">
                 <parameter name="diffuse_reflectance" value="blue" />
                 <parameter name="diffuse_reflectance_multiplier" value="0.8" />
                 <parameter name="internal_scattering" value="1" />
@@ -89,7 +89,7 @@
                 <parameter name="reflectance" value="1" />
                 <parameter name="reflectance_multiplier" value="0.35" />
             </bsdf>
-            <bsdf name="green_plastic_brdf" model="plastic_bsdf">
+            <bsdf name="green_plastic_brdf" model="plastic_brdf">
                 <parameter name="diffuse_reflectance" value="green" />
                 <parameter name="diffuse_reflectance_multiplier" value="0.8" />
                 <parameter name="internal_scattering" value="1" />
@@ -99,7 +99,7 @@
                 <parameter name="specular_reflectance" value="1" />
                 <parameter name="specular_reflectance_multiplier" value="1.0" />
             </bsdf>
-            <bsdf name="white_plastic_brdf" model="plastic_bsdf">
+            <bsdf name="white_plastic_brdf" model="plastic_brdf">
                 <parameter name="diffuse_reflectance" value="0.5" />
                 <parameter name="diffuse_reflectance_multiplier" value="1" />
                 <parameter name="internal_scattering" value="1" />
@@ -109,7 +109,7 @@
                 <parameter name="specular_reflectance" value="1" />
                 <parameter name="specular_reflectance_multiplier" value="1.0" />
             </bsdf>
-            <bsdf name="yellow_plastic_brdf" model="plastic_bsdf">
+            <bsdf name="yellow_plastic_brdf" model="plastic_brdf">
                 <parameter name="diffuse_reflectance" value="yellow" />
                 <parameter name="diffuse_reflectance_multiplier" value="0.8" />
                 <parameter name="internal_scattering" value="0.5" />
