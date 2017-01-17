@@ -2256,23 +2256,15 @@ namespace
             m_scene->get_parameters() = m_params;
 
             const GAABB3 scene_bbox = m_scene->compute_bbox();
+            const Vector3d scene_center(scene_bbox.center());
 
-            if (scene_bbox.is_valid())
-            {
-                const Vector3d scene_center(scene_bbox.center());
-
-                RENDERER_LOG_INFO(
-                    "scene bounding box: (%f, %f, %f)-(%f, %f, %f).\n"
-                    "scene bounding sphere: center (%f, %f, %f), diameter %f.",
-                    scene_bbox.min[0], scene_bbox.min[1], scene_bbox.min[2],
-                    scene_bbox.max[0], scene_bbox.max[1], scene_bbox.max[2],
-                    scene_center[0], scene_center[1], scene_center[2],
-                    scene_bbox.diameter());
-            }
-            else
-            {
-                RENDERER_LOG_INFO("scene bounding box is empty.");
-            }
+            RENDERER_LOG_INFO(
+                "scene bounding box: (%f, %f, %f)-(%f, %f, %f).\n"
+                "scene bounding sphere: center (%f, %f, %f), diameter %f.",
+                scene_bbox.min[0], scene_bbox.min[1], scene_bbox.min[2],
+                scene_bbox.max[0], scene_bbox.max[1], scene_bbox.max[2],
+                scene_center[0], scene_center[1], scene_center[2],
+                scene_bbox.diameter());
         }
 
         virtual void end_child_element(

@@ -802,6 +802,11 @@ namespace
                     env_radiance,
                     env_prob);
 
+                // This may happen for points of the environment map with infinite components,
+                // which are then excluded from importance sampling and thus have zero weight.
+                if (env_prob == 0.0)
+                    return;
+
                 // Multiple importance sampling.
                 if (vertex.m_prev_mode != ScatteringMode::Specular)
                 {

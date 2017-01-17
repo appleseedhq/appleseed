@@ -765,6 +765,24 @@ def convert_sphere_shape(scene, assembly, element):
     assembly.objects().insert(object)
 
 
+def convert_cube_shape(scene, assembly, element):
+    # Object.
+    object_name = make_new_object_name(assembly)
+    object = asr.create_primitive_mesh(object_name, {"primitive": "cube"})
+
+    # Instance transform.
+    matrix_element = element.find("transform[@name='toWorld']/matrix")
+    matrix = get_matrix(matrix_element) if matrix_element is not None else asr.Matrix4d.identity()
+    transform = asr.Transformd(matrix)
+
+    # Instance material.
+    material_name = process_shape_material(scene, assembly, object_name, element)
+
+    instance = make_object_instance(assembly, object, material_name, transform)
+    assembly.object_instances().insert(instance)
+    assembly.objects().insert(object)
+
+
 def convert_shape(project, scene, assembly, element):
     type = element.attrib["type"]
     if type == "obj":
@@ -775,6 +793,8 @@ def convert_shape(project, scene, assembly, element):
         convert_disk_shape(scene, assembly, element)
     elif type == "sphere":
         convert_sphere_shape(scene, assembly, element)
+    elif type == "cube":
+        convert_cube_shape(scene, assembly, element)
     else:
         warning("Don't know how to convert shape of type {0}".format(type))
 

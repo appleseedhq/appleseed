@@ -127,6 +127,9 @@ struct FP<float>
     // Return true if x equals quiet NaN.
     static bool is_qnan(float x);
 
+    // Return true if x is neither NaN nor infinite.
+    static bool is_finite(float x);
+
     // Construct a 32-bit floating-point value given a sign, an exponent and a mantissa.
     static float construct(
         const uint32    sign,
@@ -204,6 +207,9 @@ struct FP<double>
     // Return true if x equals quiet NaN.
     static bool is_qnan(double x);
 
+    // Return true if x is neither NaN nor infinite.
+    static bool is_finite(double x);
+
     // Construct a 64-bit floating-point value given a sign, an exponent and a mantissa.
     static double construct(
         const uint64    sign,
@@ -228,6 +234,51 @@ T shift(const T x, const typename TypeConv<T>::Int n);
 //
 // FP<float> class implementation.
 //
+
+inline float FP<float>::pos_zero()
+{
+    return binary_cast<float>(PosZero);
+}
+
+inline float FP<float>::neg_zero()
+{
+    return binary_cast<float>(NegZero);
+}
+
+inline float FP<float>::pos_min()
+{
+    return binary_cast<float>(PosMin);
+}
+
+inline float FP<float>::neg_min()
+{
+    return binary_cast<float>(NegMin);
+}
+
+inline float FP<float>::pos_inf()
+{
+    return binary_cast<float>(PosInf);
+}
+
+inline float FP<float>::neg_inf()
+{
+    return binary_cast<float>(NegInf);
+}
+
+inline float FP<float>::snan()
+{
+    return binary_cast<float>(SNaN);
+}
+
+inline float FP<float>::qnan()
+{
+    return binary_cast<float>(QNaN);
+}
+
+inline float FP<float>::indefinite()
+{
+    return binary_cast<float>(QNaN);
+}
 
 inline uint32 FP<float>::sign(float x)
 {
@@ -299,6 +350,11 @@ inline bool FP<float>::is_qnan(float x)
     return sign(x) == 1 && is_nan(x);
 }
 
+inline bool FP<float>::is_finite(float x)
+{
+    return !is_inf(x) && !is_nan(x);
+}
+
 inline float FP<float>::construct(
     const uint32    sign,
     const uint32    exponent,
@@ -316,55 +372,55 @@ inline float FP<float>::construct(
     return binary_cast<float>(value);
 }
 
-inline float FP<float>::pos_zero()
-{
-    return binary_cast<float>(PosZero);
-}
-
-inline float FP<float>::neg_zero()
-{
-    return binary_cast<float>(NegZero);
-}
-
-inline float FP<float>::pos_min()
-{
-    return binary_cast<float>(PosMin);
-}
-
-inline float FP<float>::neg_min()
-{
-    return binary_cast<float>(NegMin);
-}
-
-inline float FP<float>::pos_inf()
-{
-    return binary_cast<float>(PosInf);
-}
-
-inline float FP<float>::neg_inf()
-{
-    return binary_cast<float>(NegInf);
-}
-
-inline float FP<float>::snan()
-{
-    return binary_cast<float>(SNaN);
-}
-
-inline float FP<float>::qnan()
-{
-    return binary_cast<float>(QNaN);
-}
-
-inline float FP<float>::indefinite()
-{
-    return binary_cast<float>(QNaN);
-}
-
 
 //
 // FP<double> class implementation.
 //
+
+inline double FP<double>::pos_zero()
+{
+    return binary_cast<double>(PosZero);
+}
+
+inline double FP<double>::neg_zero()
+{
+    return binary_cast<double>(NegZero);
+}
+
+inline double FP<double>::pos_min()
+{
+    return binary_cast<double>(PosMin);
+}
+
+inline double FP<double>::neg_min()
+{
+    return binary_cast<double>(NegMin);
+}
+
+inline double FP<double>::pos_inf()
+{
+    return binary_cast<double>(PosInf);
+}
+
+inline double FP<double>::neg_inf()
+{
+    return binary_cast<double>(NegInf);
+}
+
+inline double FP<double>::snan()
+{
+    return binary_cast<double>(SNaN);
+}
+
+inline double FP<double>::qnan()
+{
+    return binary_cast<double>(QNaN);
+}
+
+inline double FP<double>::indefinite()
+{
+    return binary_cast<double>(QNaN);
+}
 
 inline uint64 FP<double>::sign(double x)
 {
@@ -436,6 +492,11 @@ inline bool FP<double>::is_qnan(double x)
     return sign(x) == 1 && is_nan(x);
 }
 
+inline bool FP<double>::is_finite(double x)
+{
+    return !is_inf(x) && !is_nan(x);
+}
+
 inline double FP<double>::construct(
     const uint64    sign,
     const uint64    exponent,
@@ -451,51 +512,6 @@ inline double FP<double>::construct(
         |  mantissa;
 
     return binary_cast<double>(value);
-}
-
-inline double FP<double>::pos_zero()
-{
-    return binary_cast<double>(PosZero);
-}
-
-inline double FP<double>::neg_zero()
-{
-    return binary_cast<double>(NegZero);
-}
-
-inline double FP<double>::pos_min()
-{
-    return binary_cast<double>(PosMin);
-}
-
-inline double FP<double>::neg_min()
-{
-    return binary_cast<double>(NegMin);
-}
-
-inline double FP<double>::pos_inf()
-{
-    return binary_cast<double>(PosInf);
-}
-
-inline double FP<double>::neg_inf()
-{
-    return binary_cast<double>(NegInf);
-}
-
-inline double FP<double>::snan()
-{
-    return binary_cast<double>(SNaN);
-}
-
-inline double FP<double>::qnan()
-{
-    return binary_cast<double>(QNaN);
-}
-
-inline double FP<double>::indefinite()
-{
-    return binary_cast<double>(QNaN);
 }
 
 
