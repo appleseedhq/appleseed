@@ -31,6 +31,7 @@
 #define APPLESEED_FOUNDATION_IMAGE_COLOR_H
 
 // appleseed.foundation headers.
+#include "foundation/math/fp.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/poison.h"
@@ -163,6 +164,9 @@ template <typename T, size_t N> T average_value(const Color<T, N>& c);
 
 // Return true if a color contains at least one NaN value.
 template <typename T, size_t N> bool has_nan(const Color<T, N>& c);
+
+// Return true if all components of a color are finite (not NaN, not infinite).
+template <typename T, size_t N> bool is_finite(const Color<T, N>& c);
 
 
 //
@@ -811,6 +815,18 @@ inline bool has_nan(const Color<T, N>& c)
     }
 
     return false;
+}
+
+template <typename T, size_t N>
+inline bool is_finite(const Color<T, N>& c)
+{
+    for (size_t i = 0; i < N; ++i)
+    {
+        if (!FP<T>::is_finite(c[i]))
+            return false;
+    }
+
+    return true;
 }
 
 

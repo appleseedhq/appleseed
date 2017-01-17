@@ -33,6 +33,7 @@
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/regularspectrum.h"
+#include "foundation/math/fp.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
@@ -224,6 +225,9 @@ template <typename T, size_t N> T average_value(const renderer::DynamicSpectrum<
 
 // Return true if a spectrum contains at least one NaN value.
 template <typename T, size_t N> bool has_nan(const renderer::DynamicSpectrum<T, N>& s);
+
+// Return true if all components of a spectrum are finite (not NaN, not infinite).
+template <typename T, size_t N> bool is_finite(const renderer::DynamicSpectrum<T, N>& s);
 
 // Return the square root of a spectrum.
 template <typename T, size_t N> renderer::DynamicSpectrum<T, N> sqrt(const renderer::DynamicSpectrum<T, N>& s);
@@ -1439,6 +1443,18 @@ inline bool has_nan(const renderer::DynamicSpectrum<T, N>& s)
     }
 
     return false;
+}
+
+template <typename T, size_t N>
+inline bool is_finite(const renderer::DynamicSpectrum<T, N>& s)
+{
+    for (size_t i = 0, e = s.size(); i < e; ++i)
+    {
+        if (!FP<T>::is_finite(s[i]))
+            return false;
+    }
+
+    return true;
 }
 
 template <typename T, size_t N>
