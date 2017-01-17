@@ -52,6 +52,7 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
+#include "foundation/math/fp.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/sampling/imageimportancesampler.h"
 #include "foundation/math/scalar.h"
@@ -125,16 +126,24 @@ namespace
                 (x + 0.5f) * m_rcp_width,
                 1.0f - (y + 0.5f) * m_rcp_height);
 
-            float multiplier;
-            m_multiplier_source->evaluate(m_texture_cache, uv, multiplier);
-
-            float exposure;
-            m_exposure_source->evaluate(m_texture_cache, uv, exposure);
-
             m_radiance_source->evaluate(m_texture_cache, uv, payload);
-            payload *= multiplier * pow(2.0f, exposure);
 
-            importance = luminance(payload);
+            if (is_finite(payload))
+            {
+                float multiplier;
+                m_multiplier_source->evaluate(m_texture_cache, uv, multiplier);
+
+                float exposure;
+                m_exposure_source->evaluate(m_texture_cache, uv, exposure);
+
+                payload *= multiplier * pow(2.0f, exposure);
+                importance = luminance(payload);
+            }
+            else
+            {
+                payload.set(0.0f);
+                importance = 0.0f;
+            }
         }
 
       private:
@@ -446,8 +455,12 @@ namespace
             const InputValues* values =
                 input_evaluator.evaluate<InputValues>(m_inputs, Vector2f(u, 1.0f - v));
 
-            value = values->m_radiance;
-            value *= values->m_radiance_multiplier * pow(2.0f, values->m_exposure);
+            if (is_finite(values->m_radiance))
+            {
+                value = values->m_radiance;
+                value *= values->m_radiance_multiplier * pow(2.0f, values->m_exposure);
+            }
+            else value.set(0.0f);
         }
 
         float compute_pdf(
