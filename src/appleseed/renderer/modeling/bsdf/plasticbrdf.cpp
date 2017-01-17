@@ -82,7 +82,7 @@ namespace
     //       https://github.com/mitsuba-renderer/mitsuba
     //
 
-    const char* Model = "plastic_bsdf";
+    const char* Model = "plastic_brdf";
 
     class PlasticBRDFImpl
       : public BSDF
@@ -175,7 +175,7 @@ namespace
             const Basis3f& shading_basis(sample.m_shading_basis);
             const Vector3f& n = shading_basis.get_normal();
             const Vector3f& outgoing = sample.m_outgoing.get_value();
-            const float cos_on = std::min(dot(outgoing, n), 1.0f);
+            const float cos_on = min(dot(outgoing, n), 1.0f);
             if (cos_on < 0.0f)
                 return;
 
@@ -183,10 +183,10 @@ namespace
             const float alpha = microfacet_alpha_from_roughness(values->m_roughness);
 
             // Compute the microfacet normal by sampling the MDF.
-            Vector3f wo = shading_basis.transform_to_local(outgoing);
+            const Vector3f wo = shading_basis.transform_to_local(outgoing);
             sampling_context.split_in_place(4, 1);
             const Vector4f s = sampling_context.next2<Vector4f>();
-            Vector3f m = m_mdf->sample(wo, Vector3f(s[0], s[1], s[2]), alpha, alpha);
+            const Vector3f m = m_mdf->sample(wo, Vector3f(s[0], s[1], s[2]), alpha, alpha);
 
             const float F = fresnel_term(values->m_precomputed.m_eta, wo, m);
 
@@ -259,7 +259,7 @@ namespace
 
             const float alpha = microfacet_alpha_from_roughness(values->m_roughness);
 
-            float probability = 0.0;
+            float probability = 0.0f;
             value.resize(values->m_specular_reflectance.size());
             value.set(0.0f);
 
@@ -326,8 +326,10 @@ namespace
             float probability = 0.0f;
 
             if (ScatteringMode::has_glossy(modes))
+            {
                 probability =
                     Fo * values->m_precomputed.m_specular_weight * specular_pdf(*m_mdf, alpha, wo, m);
+            }
 
             if (ScatteringMode::has_diffuse(modes))
             {
@@ -349,10 +351,10 @@ namespace
             const Vector3f&         m)
         {
             float f;
-            foundation::fresnel_reflectance_dielectric(
+            fresnel_reflectance_dielectric(
                 f,
                 eta,
-                foundation::clamp(foundation::dot(wo, m), 0.0f, 1.0f));
+                clamp(dot(wo, m), 0.0f, 1.0f));
             return f;
         }
 
