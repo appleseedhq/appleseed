@@ -146,12 +146,9 @@ template <typename T, size_t N> DynamicSpectrum<T, N>& operator*=(DynamicSpectru
 template <typename T, size_t N> DynamicSpectrum<T, N>& operator/=(DynamicSpectrum<T, N>& lhs, const T rhs);
 template <typename T, size_t N> DynamicSpectrum<T, N>& operator/=(DynamicSpectrum<T, N>& lhs, const DynamicSpectrum<T, N>& rhs);
 
-// Multiply-Add, a = a + b * c.
-template <typename T, size_t N>
-void madd(DynamicSpectrum<T, N>& a, const DynamicSpectrum<T, N>& b, const DynamicSpectrum<T, N>& c);
-
-template <typename T, size_t N>
-void madd(DynamicSpectrum<T, N>& a, const DynamicSpectrum<T, N>& b, const T c);
+// Multiply-add: a = a + b * c.
+template <typename T, size_t N> void madd(DynamicSpectrum<T, N>& a, const DynamicSpectrum<T, N>& b, const DynamicSpectrum<T, N>& c);
+template <typename T, size_t N> void madd(DynamicSpectrum<T, N>& a, const DynamicSpectrum<T, N>& b, const T c);
 
 
 //
