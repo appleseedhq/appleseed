@@ -160,7 +160,8 @@ SurfaceShader* Scene::get_default_surface_shader() const
 GAABB3 Scene::compute_bbox() const
 {
     const AssemblyInstanceContainer& instances = assembly_instances();
-    return compute_parent_bbox<GAABB3>(instances.begin(), instances.end());
+    const GAABB3 bbox = compute_parent_bbox<GAABB3>(instances.begin(), instances.end());
+    return bbox.is_valid() ? bbox : GAABB3(GVector3(0.0f), GVector3(0.0f));
 }
 
 namespace
@@ -400,21 +401,10 @@ void Scene::create_render_data()
     assert(!m_has_render_data);
 
     m_render_data.m_bbox = compute_bbox();
-
-    if (m_render_data.m_bbox.is_valid())
-    {
-        m_render_data.m_center = m_render_data.m_bbox.center();
-        m_render_data.m_radius = m_render_data.m_bbox.radius();
-        m_render_data.m_diameter = m_render_data.m_bbox.diameter();
-        m_render_data.m_safe_diameter = m_render_data.m_diameter * GScalar(1.01);
-    }
-    else
-    {
-        m_render_data.m_center = GVector3(0.0);
-        m_render_data.m_radius = GScalar(0.0);
-        m_render_data.m_diameter = GScalar(0.0);
-        m_render_data.m_safe_diameter = GScalar(0.0);
-    }
+    m_render_data.m_center = m_render_data.m_bbox.center();
+    m_render_data.m_radius = m_render_data.m_bbox.radius();
+    m_render_data.m_diameter = m_render_data.m_bbox.diameter();
+    m_render_data.m_safe_diameter = m_render_data.m_diameter * GScalar(1.01);
 
     m_has_render_data = true;
 }

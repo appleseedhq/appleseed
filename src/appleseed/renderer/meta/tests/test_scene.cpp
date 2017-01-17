@@ -52,13 +52,15 @@ using namespace renderer;
 
 TEST_SUITE(Renderer_Modeling_Scene_Scene)
 {
-    TEST_CASE(ComputeBbox_GivenEmptyScene_ReturnsInvalidBoundingBox)
+    TEST_CASE(ComputeBbox_GivenEmptyScene_ReturnsEmptyBoundingBox)
     {
         auto_release_ptr<Scene> scene(SceneFactory::create());
 
         const GAABB3 bbox = scene->compute_bbox();
 
-        EXPECT_FALSE(bbox.is_valid());
+        ASSERT_TRUE(bbox.is_valid());
+        EXPECT_EQ(GVector3(0.0), bbox.min);
+        EXPECT_EQ(GVector3(0.0), bbox.max);
     }
 
     TEST_CASE(ComputeBbox_GivenSceneWithOneAssemblyInstance_ReturnsBoundingBox)
