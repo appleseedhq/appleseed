@@ -42,6 +42,7 @@
 // Standard headers.
 #include <cstddef>
 #include <limits>
+#include <vector>
 
 using namespace foundation;
 using namespace std;
@@ -362,7 +363,47 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
             BezierCurve3f(ControlPoints2, Widths)
         };
 
-        render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_multiplebezier3curves_variablewidth.png", false);
+        render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_twoconnectedbezier3curves_variablewidth.png", false);
+    }
+
+    TEST_CASE(RenderMultipleBezier3Curves)
+    {
+        const Vector3f ControlPoints[] =
+        {
+            Vector3f(-0.827751f, -0.269373f, 0.0f),
+            Vector3f(-0.614035f,  0.557196f, 0.0f),
+            Vector3f(-0.298246f, -0.505535f, 0.0f),
+            Vector3f(-0.094099f,  0.586716f, 0.0f),
+            Vector3f( 0.199362f, -0.173432f, 0.0f),
+            Vector3f( 0.416268f,  0.704797f, 0.0f),
+            Vector3f( 0.642743f, -0.682657f, 0.0f),
+            Vector3f( 0.897927f,  0.468635f, 0.0f)
+        };
+
+        //
+        // Create a new set of control points by adding midpoints between every other pairs
+        // of control points. See http://stackoverflow.com/a/3516110/393756 for details.
+        //
+
+        vector<Vector3f> new_points;
+
+        for (size_t i = 0; i < countof(ControlPoints); ++i)
+        {
+            new_points.push_back(ControlPoints[i]);
+
+            if (i > 0 && i % 2 == 0 && i + 1 < countof(ControlPoints))
+            {
+                // Add a midpoint.
+                new_points.push_back(0.5f * (ControlPoints[i] + ControlPoints[i + 1]));
+            }
+        }
+
+        vector<BezierCurve3f> curves;
+
+        for (size_t i = 0, e = new_points.size(); i + 3 < e; i += 3)
+            curves.push_back(BezierCurve3f(&new_points[i], 0.05f));
+
+        render_curves_to_image(&curves[0], curves.size(), "unit tests/outputs/test_beziercurveintersector_multiplebezier3curves.png", false);
     }
 
 
