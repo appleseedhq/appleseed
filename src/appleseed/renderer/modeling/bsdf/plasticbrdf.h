@@ -69,6 +69,7 @@ APPLESEED_DECLARE_INPUT_VALUES(PlasticBRDFInputValues)
     {
         float       m_eta;
         float       m_specular_weight;
+        float       m_diffuse_weight;
         Spectrum    m_alpha;
     };
 
