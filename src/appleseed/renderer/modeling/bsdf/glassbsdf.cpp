@@ -726,7 +726,7 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
     metadata.push_back(
         Dictionary()
             .insert("name", "volume_transmittance")
-            .insert("label", "Volume Transmittace")
+            .insert("label", "Volume Transmittance")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
