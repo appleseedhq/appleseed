@@ -67,7 +67,12 @@ class APPLESEED_DLLSYMBOL CurveObjectReader
         const char*                     name,
         const ParamArray&               params);
 
-    static foundation::auto_release_ptr<CurveObject> load_curve_file(
+    static foundation::auto_release_ptr<CurveObject> load_text_curve_file(
+        const foundation::SearchPaths&  search_paths,
+        const char*                     name,
+        const ParamArray&               params);
+
+    static foundation::auto_release_ptr<CurveObject> load_mitsuba_curve_file(
         const foundation::SearchPaths&  search_paths,
         const char*                     name,
         const ParamArray&               params);
