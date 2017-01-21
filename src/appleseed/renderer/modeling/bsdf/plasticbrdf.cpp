@@ -91,7 +91,7 @@ namespace
         PlasticBRDFImpl(
             const char*             name,
             const ParamArray&       params)
-          : BSDF(name, Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy, params)
+          : BSDF(name, Reflective, ScatteringMode::All, params)
         {
             m_inputs.declare("specular_reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("specular_reflectance_multiplier", InputFormatFloat, "1.0");
@@ -158,11 +158,11 @@ namespace
             values->m_diffuse_reflectance *= values->m_diffuse_reflectance_multiplier;
 
             new (&values->m_precomputed) InputValues::Precomputed();
-            values->m_precomputed.m_eta =
-                shading_point.get_ray().get_current_ior() / values->m_ior;
+            const float outside_ior = shading_point.get_ray().get_current_ior();
+            values->m_precomputed.m_eta = outside_ior / values->m_ior;
 
-            values->m_precomputed.m_specular_weight =
-                saturate(max_value(values->m_specular_reflectance));
+            values->m_precomputed.m_specular_weight = max(max_value(values->m_specular_reflectance), 0.0f);
+            values->m_precomputed.m_diffuse_weight = max(max_value(values->m_diffuse_reflectance), 0.0f);
         }
 
         APPLESEED_FORCE_INLINE virtual void sample(
@@ -186,48 +186,64 @@ namespace
             const Vector3f wo = shading_basis.transform_to_local(outgoing);
             sampling_context.split_in_place(4, 1);
             const Vector4f s = sampling_context.next2<Vector4f>();
-            const Vector3f m = m_mdf->sample(wo, Vector3f(s[0], s[1], s[2]), alpha, alpha);
 
-            const float F = fresnel_term(values->m_precomputed.m_eta, wo, m);
+            const Vector3f m = alpha == 0.0f ?
+                Vector3f(0.0f, 1.0f, 0.0f) :
+                m_mdf->sample(wo, Vector3f(s[0], s[1], s[2]), alpha, alpha);
 
-            // Choose between glossy and diffuse.
-            if (s[3] < (F * values->m_precomputed.m_specular_weight))
+            const float F = fresnel_reflectance(wo, m, values->m_precomputed.m_eta);
+            const float specular_probability = choose_specular_probability(*values, F);
+
+            Vector3f wi;
+
+            // Choose between specular and diffuse.
+            if (s[3] < specular_probability)
             {
-                const Vector3f wi = improve_normalization(reflect(wo, m));
+                wi = improve_normalization(reflect(wo, m));
                 if (wi.y <= 0.0f)
                     return;
 
-                evaluate_specular(
-                    values->m_specular_reflectance,
-                    *m_mdf,
-                    alpha,
-                    wi,
-                    wo,
-                    m,
-                    F,
-                    sample.m_value);
+                if (alpha == 0.0f)
+                {
+                    sample.m_value = values->m_specular_reflectance;
+                    sample.m_value *= F;
+                    sample.m_probability = DiracDelta;
+                    sample.m_mode = ScatteringMode::Specular;
+                }
+                else
+                {
+                    evaluate_specular(
+                        values->m_specular_reflectance,
+                        *m_mdf,
+                        alpha,
+                        wi,
+                        wo,
+                        m,
+                        F,
+                        sample.m_value);
 
-                sample.m_probability = specular_pdf(*m_mdf, alpha, wo, m);
-                sample.m_mode = ScatteringMode::Glossy;
-                sample.m_incoming = Dual3f(shading_basis.transform_to_parent(wi));
-                sample.compute_reflected_differentials();
+                    sample.m_probability = specular_pdf(*m_mdf, alpha, wo, m) * specular_probability;
+                    sample.m_mode = ScatteringMode::Glossy;
+                }
             }
             else
             {
-                const Vector3f wi = sample_hemisphere_cosine(Vector2f(s[0], s[1]));
+                wi = sample_hemisphere_cosine(Vector2f(s[0], s[1]));
+                const float Fi = fresnel_reflectance(wi, m, values->m_precomputed.m_eta);
                 evaluate_diffuse(
                     values->m_diffuse_reflectance,
                     values->m_precomputed.m_eta,
                     values->m_internal_scattering,
-                    0.0f,
-                    0.0f,
+                    F,
+                    Fi,
                     sample.m_value);
 
                 sample.m_mode = ScatteringMode::Diffuse;
-                sample.m_incoming = Dual3f(shading_basis.transform_to_parent(wi));
-                sample.m_probability = wi.y * RcpPi<float>();
-                sample.compute_reflected_differentials();
+                sample.m_probability = wi.y * RcpPi<float>() * (1.0f - specular_probability);
             }
+
+            sample.m_incoming = Dual3f(shading_basis.transform_to_parent(wi));
+            sample.compute_reflected_differentials();
         }
 
         APPLESEED_FORCE_INLINE virtual float evaluate(
@@ -249,15 +265,18 @@ namespace
                 return 0.0f;
 
             const InputValues* values = reinterpret_cast<const InputValues*>(data);
+            const float alpha = microfacet_alpha_from_roughness(values->m_roughness);
 
             const Vector3f wo = shading_basis.transform_to_local(outgoing);
             const Vector3f wi = shading_basis.transform_to_local(incoming);
 
-            const Vector3f m = normalize(wi + wo);
-            const float Fo = fresnel_term(values->m_precomputed.m_eta, wo, m);
-            const float Fi = fresnel_term(values->m_precomputed.m_eta, wi, m);
+            const Vector3f m = alpha == 0.0f ?
+                Vector3f(0.0f, 1.0f, 0.0f) :
+                normalize(wi + wo);
 
-            const float alpha = microfacet_alpha_from_roughness(values->m_roughness);
+            const float Fo = fresnel_reflectance(wo, m, values->m_precomputed.m_eta);
+            const float Fi = fresnel_reflectance(wi, m, values->m_precomputed.m_eta);
+            const float specular_probability = choose_specular_probability(*values, Fo);
 
             float probability = 0.0f;
             value.resize(values->m_specular_reflectance.size());
@@ -275,14 +294,11 @@ namespace
                     Fo,
                     value);
 
-                probability =
-                    Fo * values->m_precomputed.m_specular_weight * specular_pdf(*m_mdf, alpha, wo, m);
+                probability = specular_probability * specular_pdf(*m_mdf, alpha, wo, m);
             }
 
             if (ScatteringMode::has_diffuse(modes))
             {
-                const float substrate_probability =
-                    1.0f - (Fo * values->m_precomputed.m_specular_weight);
                 Spectrum substrate_value;
                 evaluate_diffuse(
                     values->m_diffuse_reflectance,
@@ -292,7 +308,7 @@ namespace
                     Fi,
                     substrate_value);
 
-                probability += wi.y * RcpPi<float>() * substrate_probability;
+                probability += wi.y * RcpPi<float>() * (1.0f - specular_probability);
                 value += substrate_value;
             }
 
@@ -319,25 +335,21 @@ namespace
 
             const Vector3f wo = shading_basis.transform_to_local(outgoing);
             const Vector3f wi = shading_basis.transform_to_local(incoming);
-            const Vector3f m = normalize(wi + wo);
 
-            const float Fo = fresnel_term(values->m_precomputed.m_eta, wo, m);
+            const Vector3f m = alpha == 0.0f ?
+                Vector3f(0.0f, 1.0f, 0.0f) :
+                normalize(wi + wo);
+
+            const float F = fresnel_reflectance(wo, m, values->m_precomputed.m_eta);
+            const float specular_probability = choose_specular_probability(*values, F);
 
             float probability = 0.0f;
 
             if (ScatteringMode::has_glossy(modes))
-            {
-                probability =
-                    Fo * values->m_precomputed.m_specular_weight * specular_pdf(*m_mdf, alpha, wo, m);
-            }
+                probability = specular_probability * specular_pdf(*m_mdf, alpha, wo, m);
 
             if (ScatteringMode::has_diffuse(modes))
-            {
-                const float substrate_probability =
-                    1.0f - (Fo * values->m_precomputed.m_specular_weight);
-
-                probability += wi.y * RcpPi<float>() * substrate_probability;
-            }
+                probability += wi.y * RcpPi<float>() * (1.0f - specular_probability);
 
             return probability;
         }
@@ -345,17 +357,38 @@ namespace
       private:
         typedef PlasticBRDFInputValues InputValues;
 
-        static float fresnel_term(
-            const float&            eta,
-            Vector3f                wo,
-            const Vector3f&         m)
+        static float choose_specular_probability(
+            const InputValues&      values,
+            const float             F)
         {
-            float f;
+            const float specular_weight = F * values.m_precomputed.m_specular_weight;
+            const float diffuse_weight = (1.0f - F) * values.m_precomputed.m_diffuse_weight;
+
+            // Normalize weights.
+            const float total_weight = specular_weight + diffuse_weight;
+
+            if (total_weight == 0.0f)
+                return 1.0f;
+
+            return specular_weight / total_weight;
+        }
+
+        static float fresnel_reflectance(
+            const Vector3f&         w,
+            const Vector3f&         m,
+            const float             eta)
+        {
+            const float cos_wm(dot(w, m));
+
+            if (cos_wm < 0.0f)
+                return 0.0f;
+
+            float F;
             fresnel_reflectance_dielectric(
-                f,
+                F,
                 eta,
-                clamp(dot(wo, m), 0.0f, 1.0f));
-            return f;
+                min(dot(w, m), 1.0f));
+            return F;
         }
 
         static void evaluate_specular(
@@ -368,6 +401,9 @@ namespace
             const float             F,
             Spectrum&               value)
         {
+            if (alpha == 0.0f)
+                return;
+
             const float denom = abs(4.0f * wo.y * wi.y);
             if (denom == 0.0f)
             {
@@ -387,6 +423,9 @@ namespace
             const Vector3f&         wo,
             const Vector3f&         m)
         {
+            if (alpha == 0.0f)
+                return 0.0f;
+
             const float cos_wom = dot(wo, m);
             if (cos_wom == 0.0f)
                 return 0.0f;
@@ -410,9 +449,8 @@ namespace
             value.resize(diffuse_reflectance.size());
             for (size_t i = 0, e = diffuse_reflectance.size(); i < e; ++i)
             {
-                const float pd = diffuse_reflectance[i];
-                const float non_linear_term =
-                    1.0f - (internal_scattering * pd) * fdr;
+                float pd = diffuse_reflectance[i];
+                const float non_linear_term = 1.0f - lerp(1.0f, pd, internal_scattering) * fdr;
                 value[i] = (T * pd * eta2 * RcpPi<float>()) / non_linear_term;
             }
         }
