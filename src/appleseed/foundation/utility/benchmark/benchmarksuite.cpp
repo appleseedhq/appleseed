@@ -309,7 +309,7 @@ void BenchmarkSuite::run(
                     *benchmark.get(),
                     __FILE__,
                     __LINE__,
-                    "an unexpected exception was caught: %s.",
+                    "an unexpected exception was caught: %s",
                     e.what());
             }
             else
