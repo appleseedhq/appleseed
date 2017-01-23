@@ -59,6 +59,7 @@ def fatal(message):
     #     print(traceback.format_exc())
     sys.exit(1)
 
+
 def square(x):
     return x * x
 
@@ -318,28 +319,42 @@ def convert_diffuse_bsdf(assembly, bsdf_name, element):
     assembly.bsdfs().insert(asr.BSDF("lambertian_brdf", bsdf_name, bsdf_params))
 
 
-def convert_plastic_bsdf(assembly, bsdf_name, element):
+def convert_plastic_bsdf(assembly, bsdf_name, element, roughness=0.0):
     bsdf_params = {}
 
-    reflectance = element.find("*[@name='diffuseReflectance']")
-    bsdf_params["base_color"] = convert_colormap(assembly, bsdf_name, reflectance)
+    distribution_element = element.find("string[@name='distribution']")
+    if distribution_element is not None:
+        distribution = distribution_element.attrib["value"]
+        if distribution == "phong":
+            warning("Phong distribution not supported by appleseed's plastic BRDF, defaulting to GGX")
+            distribution = "ggx"
+        bsdf_params["mdf"] = distribution
+    else:
+        bsdf_params["mdf"] = "beckmann"
 
-    bsdf_params["specular"] = 1.0
-    bsdf_params["roughness"] = 0.0
+    specular_reflectance_element = element.find("*[@name='specularReflectance']")
+    bsdf_params["specular_reflectance"] = convert_colormap(assembly, bsdf_name, specular_reflectance_element) \
+        if specular_reflectance_element is not None else 1.0
 
-    assembly.bsdfs().insert(asr.BSDF("disney_brdf", bsdf_name, bsdf_params))
+    bsdf_params["roughness"] = roughness
+
+    diffuse_reflectance_element = element.find("*[@name='diffuseReflectance']")
+    bsdf_params["diffuse_reflectance"] = convert_colormap(assembly, bsdf_name, diffuse_reflectance_element) \
+        if diffuse_reflectance_element is not None else 0.5
+
+    ior_element = element.find("float[@name='intIOR']")
+    bsdf_params["ior"] = float(ior_element.attrib["value"]) if ior_element is not None else 1.49
+
+    nonlinear_element = element.find("boolean[@name='nonlinear']")
+    bsdf_params["internal_scattering"] = 1.0 if nonlinear_element is not None and \
+        nonlinear_element.attrib["value"] == "true" else 0.0
+
+    assembly.bsdfs().insert(asr.BSDF("plastic_brdf", bsdf_name, bsdf_params))
 
 
 def convert_roughplastic_bsdf(assembly, bsdf_name, element):
-    bsdf_params = {}
-
-    reflectance = element.find("*[@name='diffuseReflectance']")
-    bsdf_params["base_color"] = convert_colormap(assembly, bsdf_name, reflectance)
-
-    bsdf_params["specular"] = 0.5
-    bsdf_params["roughness"] = convert_alpha_to_roughness(element)
-
-    assembly.bsdfs().insert(asr.BSDF("disney_brdf", bsdf_name, bsdf_params))
+    roughness = convert_alpha_to_roughness(element)
+    return convert_plastic_bsdf(assembly, bsdf_name, element, roughness)
 
 
 def convert_conductor_bsdf(assembly, bsdf_name, element, roughness=0.0):
