@@ -246,10 +246,14 @@ def create_linear_rgb_color(parent, color_name, rgb, multiplier):
     parent.colors().insert(asr.ColorEntity(color_name, color_params, rgb))
 
 
+def is_hdri_file(filepath):
+    return filepath.endswith(".exr") or filepath.endswith(".hdr") or filepath.endswith(".pfm")
+
+
 def create_texture(parent, texture_name, filepath):
     parent.textures().insert(asr.Texture("disk_texture_2d", texture_name, {
         "filename": filepath,
-        "color_space": "linear_rgb" if filepath.endswith(".exr") or filepath.endswith(".hdr") else "srgb"
+        "color_space": "linear_rgb" if is_hdri_file(filepath) else "srgb"
     }, []))
 
     texture_instance_name = "{0}_inst".format(texture_name)
