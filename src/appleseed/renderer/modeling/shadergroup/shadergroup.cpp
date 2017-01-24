@@ -66,6 +66,7 @@ namespace
     const OIIO::ustring g_emission_str("emission");
     const OIIO::ustring g_transparent_str("transparent");
     const OIIO::ustring g_subsurface_str("as_subsurface");
+    const OIIO::ustring g_subsurface_gaussian_str("as_subsurface_gaussian");
     const OIIO::ustring g_holdout_str("holdout");
     const OIIO::ustring g_debug_str("debug");
     const OIIO::ustring g_dPdtime_str("dPdtime");
@@ -383,6 +384,8 @@ void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_syst
             else if (closures[i] == g_transparent_str)
                 m_flags |= HasTransparency;
             else if (closures[i] == g_subsurface_str)
+                m_flags |= HasSubsurface;
+            else if (closures[i] == g_subsurface_gaussian_str)
                 m_flags |= HasSubsurface;
             else if (closures[i] == g_holdout_str)
                 m_flags |= HasHoldout;

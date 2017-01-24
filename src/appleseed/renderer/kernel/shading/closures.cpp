@@ -1049,6 +1049,61 @@ namespace
         }
     };
 
+    struct SubsurfaceGaussianClosure
+    {
+        struct Params
+        {
+            OSL::Vec3       N;
+            OSL::Color3     reflectance;
+            float           radius;
+            float           ior;
+        };
+
+        static const char* name()
+        {
+            return "as_subsurface_gaussian";
+        }
+
+        static ClosureID id()
+        {
+            return SubsurfaceGaussianID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_COLOR_PARAM(Params, reflectance),
+                CLOSURE_FLOAT_PARAM(Params, radius),
+                CLOSURE_FLOAT_PARAM(Params, ior),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, 0, 0);
+        }
+
+        static void convert_closure(
+            CompositeSubsurfaceClosure&     composite_closure,
+            const Basis3f&                  shading_basis,
+            const void*                     osl_params,
+            const Color3f&                  weight)
+        {
+            const Params* p = reinterpret_cast<const Params*>(osl_params);
+            GaussianBSSRDFInputValues* values =
+                composite_closure.add_closure<GaussianBSSRDFInputValues>(
+                    id(),
+                    shading_basis,
+                    weight,
+                    p->N);
+
+            values->m_reflectance = Color3f(p->reflectance);
+            values->m_reflectance_multiplier = 1.0f;
+            values->m_v = p->radius;
+            values->m_ior = p->ior;
+        }
+    };
+
     struct TranslucentClosure
     {
         typedef DiffuseBTDFInputValues InputValues;
@@ -1589,6 +1644,18 @@ void CompositeSubsurfaceClosure::process_closure_tree(
                         w);
                 }
             }
+            else if (c->id == SubsurfaceGaussianID)
+            {
+                const Color3f w = weight * Color3f(c->w);
+                if (luminance(w) > 0.0f)
+                {
+                    SubsurfaceGaussianClosure::convert_closure(
+                        *this,
+                        original_shading_basis,
+                        c->data(),
+                        w);
+                }
+            }
             else if (c->id >= FirstLayeredClosure)
             {
                 // For now, we just recurse.
@@ -1830,6 +1897,7 @@ void register_closures(OSL::ShadingSystem& shading_system)
     register_closure<ReflectionClosure>(shading_system);
     register_closure<SheenClosure>(shading_system);
     register_closure<SubsurfaceClosure>(shading_system);
+    register_closure<SubsurfaceGaussianClosure>(shading_system);
     register_closure<TranslucentClosure>(shading_system);
     register_closure<TransparentClosure>(shading_system);
 }

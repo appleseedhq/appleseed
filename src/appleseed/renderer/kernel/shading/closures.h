@@ -41,6 +41,7 @@
 #include "renderer/modeling/bsdf/sheenbrdf.h"
 #include "renderer/modeling/bssrdf/dipolebssrdf.h"
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
+#include "renderer/modeling/bssrdf/gaussianbssrdf.h"
 #ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
 #endif
@@ -118,6 +119,7 @@ enum ClosureID
     SubsurfaceStandardDipoleID,
     SubsurfaceDirectionalDipoleID,
     SubsurfaceNormalizedDiffusionID,
+    SubsurfaceGaussianID,
 
     // Emission closures.
     EmissionID,
@@ -201,6 +203,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
         DiffuseEDFInputValues,
         DipoleBSSRDFInputValues,
         DisneyBRDFInputValues,
+        GaussianBSSRDFInputValues,
         GlassBSDFInputValues,
         GlossyBRDFInputValues,
         MetalBRDFInputValues,
