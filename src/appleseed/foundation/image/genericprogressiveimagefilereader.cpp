@@ -74,7 +74,7 @@ struct GenericProgressiveImageFileReader::Impl
         if (m_input == 0)
             throw ExceptionIOError(OIIO::geterror().c_str());
 
-        m_supports_random_access = m_input->supports("random_access");
+        m_supports_random_access = m_input->supports("random_access") != 0;
 
         const OIIO::ImageSpec& spec = m_input->spec();
 
