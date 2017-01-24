@@ -31,12 +31,16 @@
 
 #if defined _MSC_VER
 
-    // C4305: truncation from 'double' to 'float', possible loss of data
+    // C4005: 'copysign': macro redefinition
     // C4244: conversion from 'double' to 'float', possible loss of data
+    // C4305: truncation from 'double' to 'float', possible loss of data
+    // C4800: 'int': forcing value to bool 'true' or 'false' (performance warning)
     #define BEGIN_OIIO_INCLUDES             \
         __pragma(warning(push))             \
+        __pragma(warning(disable: 4005))    \
         __pragma(warning(disable: 4244))    \
-        __pragma(warning(disable: 4305))
+        __pragma(warning(disable: 4305))    \
+        __pragma(warning(disable: 4800))
 
     #define END_OIIO_INCLUDES               \
         __pragma(warning(pop))

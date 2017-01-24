@@ -29,19 +29,20 @@
 #ifndef APPLESEED_FOUNDATION_PLATFORM_OSLHEADERGUARDS_H
 #define APPLESEED_FOUNDATION_PLATFORM_OSLHEADERGUARDS_H
 
+// appleseed.foundation headers.
+#include "oiioheaderguards.h"
+
 #if defined _MSC_VER
 
-    // C4305: truncation from 'double' to 'float', possible loss of data
     // C4290: C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
-    // C4244: conversion from 'double' to 'float', possible loss of data
     #define BEGIN_OSL_INCLUDES              \
+        BEGIN_OIIO_INCLUDES                 \
         __pragma(warning(push))             \
-        __pragma(warning(disable: 4244))    \
-        __pragma(warning(disable: 4290))    \
-        __pragma(warning(disable: 4305))
+        __pragma(warning(disable: 4290))
 
     #define END_OSL_INCLUDES                \
-        __pragma(warning(pop))
+        __pragma(warning(pop))              \
+        END_OIIO_INCLUDES
 
 #else
 

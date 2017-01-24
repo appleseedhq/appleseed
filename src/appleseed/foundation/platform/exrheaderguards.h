@@ -32,7 +32,7 @@
 #if defined _MSC_VER
 
     // C4244: conversion from 'std::streamsize' to 'int', possible loss of data
-    // C4800: forcing value to bool 'true' or 'false'
+    // C4800: 'int': forcing value to bool 'true' or 'false' (performance warning)
     #define BEGIN_EXR_INCLUDES              \
         __pragma(warning(push))             \
         __pragma(warning(disable: 4244))    \
