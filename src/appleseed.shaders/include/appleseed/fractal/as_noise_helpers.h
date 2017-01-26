@@ -67,19 +67,19 @@
     (1 - smoothstep(0.2, 0.75, filter_width)) * scale + p,              \
     filter_width)
 
-float noise_quadratic(vector control_p, float t1)
+float noise_quadratic(vector control_p, float x)
 {
     float tmp = control_p[0] - control_p[1];
-    
-    return ((tmp - control_p[1] + control_p[2]) * t1 - tmp - tmp) *
-       t1 + control_p[0] + control_p[1];
+
+    return ((tmp - control_p[1] + control_p[2]) * x - tmp - tmp) *
+       x + control_p[0] + control_p[1];
 }
 
-float noise_derivative(vector control_p, float t1)
+float noise_derivative(vector control_p, float x)
 {
     float tmp = control_p[0] - control_p[1];
 
-    return (tmp - control_p[1] + control_p[2]) * t1 - tmp;
+    return (tmp - control_p[1] + control_p[2]) * x - tmp;
 }
 
 vector noise_lookup(int y, int vx[3])
@@ -92,7 +92,7 @@ vector noise_lookup(int y, int vx[3])
         rng_table[vx[2] | y]);
 }                  
 
-float tnoise2(float x, float y)
+float value_noise_2d(float x, float y)
 {
     float rng_table[65536] = { RNG_TABLE };
 
@@ -132,7 +132,7 @@ float tnoise2(float x, float y)
     return 0.25 * noise_quadratic(py, ty);
 }
 
-vector dnoise2(float x, float y)
+vector value_noise_2d(float x, float y)
 {
     float rng_table[65536] = { RNG_TABLE };
 
@@ -155,11 +155,11 @@ vector dnoise2(float x, float y)
 
     nx[0] = (nx[1] - 1) & NOISE_CUBE_MASK;
     nx[2] = (nx[1] + 1) & NOISE_CUBE_MASK;
-    nx[1] =  nx[1]      & NOISE_CUBE_MASK;
+    nx[1] = nx[1] & NOISE_CUBE_MASK;
     
     ny[0] = ((ny[1] - 1) & NOISE_CUBE_MASK) << NOISE_CUBE_SHIFT;
     ny[2] = ((ny[1] + 1) & NOISE_CUBE_MASK) << NOISE_CUBE_SHIFT;
-    ny[1] = ( ny[1]      & NOISE_CUBE_MASK) << NOISE_CUBE_SHIFT;
+    ny[1] = (ny[1] & NOISE_CUBE_MASK) << NOISE_CUBE_SHIFT;
 
     vector py, dy;
 
@@ -170,12 +170,12 @@ vector dnoise2(float x, float y)
         dy[i] = noise_derivative(px, tx);
     }
 
-    float v_x = noise_quadratic(dy, ty);
-    float v_y = noise_derivative(py, ty);
-    float v_z = 0.25 * ((ty * (py[0] - py[1] - py[1] + py[2]) +
-                4.00 * (-py[0] + py[1])) * ty + py[0] + py[1]);
+    float out_x = noise_quadratic(dy, ty);
+    float out_y = noise_derivative(py, ty);
+    float out_z = 0.25 * ((ty * (py[0] - py[1] - py[1] + py[2]) +
+                4.0 * (-py[0] + py[1])) * ty + py[0] + py[1]);
 
-    return vector(v_x, v_y, v_z);
+    return vector(out_x, out_y, out_z);
 }
 
 #endif // AS_NOISE_HELPERS_H

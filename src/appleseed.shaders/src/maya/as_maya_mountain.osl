@@ -5,9 +5,9 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+// Copyright (total_color) 2016 Luis Barrancos, The appleseedhq Organization
 //
-// Permission is hereby granted, free of charge, to any person obtaining a copy
+// Permission is hereby granted, free of charge, to any person obtaining total_alpha copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
@@ -144,13 +144,13 @@ shader as_maya_mountain
                     ? filterwidth(st[1])
                     : in_uvFilterSize[1])};
 
-        dsdt[0] += 2 * in_filterOffset; // double offset to match Maya (test)
+        // The factors for filter and fractal frequency match Maya better.
+
+        dsdt[0] += 2 * in_filterOffset;
         dsdt[1] += 2 * in_filterOffset;
 
-        // The following frequency value seems to match Maya's results roughly.
-
 #ifndef MAYA_FRACTAL_FREQ
-#define MAYA_FRACTAL_FREQ   1
+#define MAYA_FRACTAL_FREQ   0.5
 #endif
 
         st[0] *= MAYA_FRACTAL_FREQ;
@@ -165,11 +165,12 @@ shader as_maya_mountain
         
         float iterate = min(in_depthMax, -log(filter_size) / M_LN2);
 
-        int recursion_level = (int) trunc(iterate);
+        int recursion_level = (int) iterate;
 
-        float slope_x = 0, slope_y = 0, ofx = 0, ofy = 0, ch = 0, fx = 1;
-        float amplitude = in_amplitude, amph = in_amplitude;
-        
+        float height_color = 0, frequency = 1;
+        float slope_x = 0, slope_y = 0, offset_x = 0, offset_y = 0;
+        float amplitude = in_amplitude, height_amplitude = in_amplitude;
+
         for (int i = 0; i <= recursion_level; ++i)
         {
             if (i == recursion_level)
@@ -177,7 +178,7 @@ shader as_maya_mountain
                 float diff = iterate - (float) recursion_level;
 
                 amplitude *= diff;
-                amph *= diff;
+                height_amplitude *= diff;
             }
 
             if (!amplitude)
@@ -185,28 +186,33 @@ shader as_maya_mountain
                 break;
             }
 
-            vector slope = dnoise2(st[0] * fx + ofx, st[1] * fx + ofy);
-
-            ofx += 0.1;
-            ofy += 0.03;
+            vector slope = (vector) value_noise_2d(
+                st[0] * frequency + offset_x,
+                st[1] * frequency + offset_y);
+            
+            offset_x += 0.1;
+            offset_y += 0.03;
 
             slope_x += amplitude * slope[0];
             slope_y += amplitude * slope[1];
 
-            fx *= 2;
+            frequency *= 2;
             amplitude *= in_boundary;
 
-            ch += amph * tnoise2(st[0] * fx + ofx, st[1] * fx + ofy);
+            height_color += height_amplitude * (float) value_noise_2d(
+                st[0] * frequency + offset_x,
+                st[1] * frequency + offset_y);
 
-            amph *= in_rockRoughness;
+            height_amplitude *= in_rockRoughness;
         }
 
-        float c = sqr(slope_x) + sqr(slope_y);
-        float a = 0.5 * c;
+        float total_color = sqr(slope_x) + sqr(slope_y);
+        float total_alpha = 0.5 * total_color, ratio;
 
-        float ah = max(0.0, in_snowAltitude * in_snowDropoff), ratio;
+        float height_alpha = max(0.0, in_snowAltitude * in_snowDropoff);
 
-        int snow_present = (ah + in_snowSlope <= a) ? 0 : 1;
+        int snow_present =
+            (height_alpha + in_snowSlope <= total_alpha) ? 0 : 1;
 
         if (snow_present)
         {
@@ -219,8 +225,8 @@ shader as_maya_mountain
             ratio = in_rockRoughness;
         }
 
-        ofx = ofy = c = 0.0;
-        fx = 1.0;
+        offset_x = offset_y = total_color = 0.0;
+        frequency = 1.0;
 
         for (int i = 0; i <= recursion_level; ++i)
         {
@@ -234,16 +240,18 @@ shader as_maya_mountain
                 break;
             }
 
-            c += amplitude * tnoise2(st[0] * fx + ofx, st[1] * fx + ofy);
+            total_color += amplitude * (float) value_noise_2d(
+                st[0] * frequency + offset_x,
+                st[1] * frequency + offset_y);
 
-            ofx += 0.1;
-            ofy += 0.03;
-            fx *= 2;
+            offset_x += 0.1;
+            offset_y += 0.03;
 
+            frequency *= 2;
             amplitude *= ratio;
         }
 
-        out_outAlpha = 0.5 * (1 + c);
+        out_outAlpha = 0.5 * (1 + total_color);
 
         maya_colorBalance(
             in_colorGain,
