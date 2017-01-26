@@ -50,6 +50,7 @@
 
 #include "appleseed/fractal/as_noise_tables.h"
 #include "appleseed/math/as_math_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
 
 #define filtered_noise(p, filter_width)                                 \
     (noise(p) * (1 - smoothstep(0.2, 0.75, filter_width)))
@@ -65,8 +66,8 @@
     (filtered_snoise((vector) noise(p) *                                \
     (1 - smoothstep(0.2, 0.75, filter_width)) * scale + p,              \
     filter_width)
-    
-float noise_quadratic(float control_p[3], float t1)
+
+float noise_quadratic(vector control_p, float t1)
 {
     float tmp = control_p[0] - control_p[1];
     
@@ -74,46 +75,43 @@ float noise_quadratic(float control_p[3], float t1)
        t1 + control_p[0] + control_p[1];
 }
 
-float noise_derivative(float control_p[3], float t1)
+float noise_derivative(vector control_p, float t1)
 {
     float tmp = control_p[0] - control_p[1];
 
     return (tmp - control_p[1] + control_p[2]) * t1 - tmp;
 }
 
-void noise_lookup(int y, int vx[3], output float px[3])
+vector noise_lookup(int y, int vx[3])
 {
     float rng_table[65536] = { RNG_TABLE };
 
-    px[0] = rng_table[vx[0] | y];
-    px[1] = rng_table[vx[1] | y];
-    px[2] = rng_table[vx[2] | y];
-}
+    return vector(
+        rng_table[vx[0] | y],
+        rng_table[vx[1] | y],
+        rng_table[vx[2] | y]);
+}                  
 
 float tnoise2(float x, float y)
 {
     float rng_table[65536] = { RNG_TABLE };
-
-    float result, tmp, p1x, p2x, p3x, tx, p1y, p2y, p3y, ty;
-
-    int x1, x2, x3, y1, y2, y3;
 
     float xx = (x > 1.0e9) ? 0 : x;
     float yy = (y > 1.0e9) ? 0 : y;
 
     int nx[3], ny[3];
 
-    tx = (float) xx;
-    tx = mod(tx, 1.0001) * NOISE_CUBE_SIDE;
+    float tx = xx;
+    tx = mod(tx, UVWRAP) * NOISE_CUBE_SIDE;
 
-    ty = (float) yy;
-    ty = mod(ty, 1.0001) * NOISE_CUBE_SIDE; 
+    float ty = yy;
+    ty = mod(ty, UVWRAP) * NOISE_CUBE_SIDE; 
 
     nx[1] = (int) tx;
     ny[1] = (int) ty;
 
-    tx -= (float) nx[1];
-    ty -= (float) ny[1];  
+    tx -= nx[1];
+    ty -= ny[1];  
 
     nx[0] = (nx[1] - 1) & NOISE_CUBE_MASK;
     nx[2] = (nx[1] + 1) & NOISE_CUBE_MASK;
@@ -123,16 +121,61 @@ float tnoise2(float x, float y)
     ny[2] = ((ny[1] + 1) & NOISE_CUBE_MASK) << NOISE_CUBE_SHIFT;
     ny[1] = (ny[1] & NOISE_CUBE_MASK) << NOISE_CUBE_SHIFT;
 
-    vector px, py;
+    vector py;
 
     for (int i = 0; i < 3; ++i)
     {
-        noise_lookup(ny[i], nx, px);
+        vector px = noise_lookup(ny[i], nx);
         py[i] = noise_quadratic(px, tx);
     }
-    float out = noise_quadratic(py, ty);
 
-    return out * 0.25;
+    return 0.25 * noise_quadratic(py, ty);
+}
+
+vector dnoise2(float x, float y)
+{
+    float rng_table[65536] = { RNG_TABLE };
+
+    float xx = (x > 1.0e9) ? 0 : x;
+    float yy = (y > 1.0e9) ? 0 : y;
+
+    int nx[3], ny[3];
+
+    float tx = xx;
+    tx = mod(tx, UVWRAP) * NOISE_CUBE_SIDE;
+
+    float ty = yy;
+    ty = mod(ty, UVWRAP) * NOISE_CUBE_SIDE;
+
+    nx[1] = (int) tx;
+    ny[1] = (int) ty;
+
+    tx -= nx[1];
+    ty -= ny[1];
+
+    nx[0] = (nx[1] - 1) & NOISE_CUBE_MASK;
+    nx[2] = (nx[1] + 1) & NOISE_CUBE_MASK;
+    nx[1] =  nx[1]      & NOISE_CUBE_MASK;
+    
+    ny[0] = ((ny[1] - 1) & NOISE_CUBE_MASK) << NOISE_CUBE_SHIFT;
+    ny[2] = ((ny[1] + 1) & NOISE_CUBE_MASK) << NOISE_CUBE_SHIFT;
+    ny[1] = ( ny[1]      & NOISE_CUBE_MASK) << NOISE_CUBE_SHIFT;
+
+    vector py, dy;
+
+    for (int i = 0; i < 3; ++i)
+    {
+        vector px = noise_lookup(ny[i], nx);
+        py[i] = noise_quadratic(px, tx);
+        dy[i] = noise_derivative(px, tx);
+    }
+
+    float v_x = noise_quadratic(dy, ty);
+    float v_y = noise_derivative(py, ty);
+    float v_z = 0.25 * ((ty * (py[0] - py[1] - py[1] + py[2]) +
+                4.00 * (-py[0] + py[1])) * ty + py[0] + py[1]);
+
+    return vector(v_x, v_y, v_z);
 }
 
 #endif // AS_NOISE_HELPERS_H
