@@ -74,6 +74,13 @@ float noise_quadratic(float control_p[3], float t1)
        t1 + control_p[0] + control_p[1];
 }
 
+float noise_derivative(float control_p[3], float t1)
+{
+    float tmp = control_p[0] - control_p[1];
+
+    return (tmp - control_p[1] + control_p[2]) * t1 - tmp;
+}
+
 void noise_lookup(int y, int vx[3], output float px[3])
 {
     float rng_table[65536] = { RNG_TABLE };
