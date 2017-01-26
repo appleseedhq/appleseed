@@ -187,6 +187,7 @@ set (appleseed_maya2_osl_sources
      src/maya/as_maya_place2dTexture.osl
      src/maya/as_maya_place3dTexture.osl
      src/maya/as_maya_plusMinusAverage.osl
+     src/maya/as_maya_psdFileTex.osl
      src/maya/as_maya_quadShadingSwitch.osl
      src/maya/as_maya_ramp.osl
      src/maya/as_maya_reverse.osl
