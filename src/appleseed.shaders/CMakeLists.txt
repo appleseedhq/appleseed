@@ -180,6 +180,7 @@ set (appleseed_maya2_osl_sources
      src/maya/as_maya_lambert.osl
      src/maya/as_maya_luminance.osl
      src/maya/as_maya_matrixInverse.osl
+     src/maya/as_maya_mountain.osl
      src/maya/as_maya_multDoubleLinear.osl
      src/maya/as_maya_multiplyDivide.osl
      src/maya/as_maya_multMatrix.osl
