@@ -150,7 +150,7 @@ shader as_maya_mountain
         // The following frequency value seems to match Maya's results roughly.
 
 #ifndef MAYA_FRACTAL_FREQ
-#define MAYA_FRACTAL_FREQ   14
+#define MAYA_FRACTAL_FREQ   1
 #endif
 
         st[0] *= MAYA_FRACTAL_FREQ;
@@ -162,7 +162,7 @@ shader as_maya_mountain
             MAYA_FRACTAL_FREQ * filter_size,
             MAYA_FRACTAL_FREQ * 1.0e-8,
             0.5);
-
+        
         float iterate = min(in_depthMax, -log(filter_size) / M_LN2);
 
         int recursion_level = (int) trunc(iterate);
@@ -185,10 +185,7 @@ shader as_maya_mountain
                 break;
             }
 
-            vector slope = (vector) noise(
-                "perlin",
-                st[0] * fx + ofx,
-                st[1] * fx + ofy);
+            vector slope = dnoise2(st[0] * fx + ofx, st[1] * fx + ofy);
 
             ofx += 0.1;
             ofy += 0.03;
@@ -199,10 +196,7 @@ shader as_maya_mountain
             fx *= 2;
             amplitude *= in_boundary;
 
-            ch += amph * (float) noise(
-                "perlin",
-                st[0] * fx + ofx,
-                st[1] * fx + ofy);
+            ch += amph * tnoise2(st[0] * fx + ofx, st[1] * fx + ofy);
 
             amph *= in_rockRoughness;
         }
@@ -240,10 +234,7 @@ shader as_maya_mountain
                 break;
             }
 
-            c += amplitude * (float) noise(
-                "perlin",
-                st[0] * fx + ofx,
-                st[1] * fx + ofy);
+            c += amplitude * tnoise2(st[0] * fx + ofx, st[1] * fx + ofy);
 
             ofx += 0.1;
             ofy += 0.03;
@@ -253,8 +244,6 @@ shader as_maya_mountain
         }
 
         out_outAlpha = 0.5 * (1 + c);
-
-        out_outColor = color(out_outAlpha);
 
         maya_colorBalance(
             in_colorGain,
