@@ -168,11 +168,11 @@ shader as_maya_fractal
                 (in_uvFilterSize[1] == UNDEFINED_UVFILTER
                     ? filterwidth(st[1])
                     : in_uvFilterSize[1])};
-                
-        dsdt[0] += 2 * in_filterOffset; // double offset to match Maya (test)
-        dsdt[1] += 2 * in_filterOffset;
 
-        // The following frequency value seems to match Maya's results roughly.
+        // The filter size factors seem to match Maya's result better.
+                
+        dsdt[0] += 2 * in_filterOffset;
+        dsdt[1] += 2 * in_filterOffset;
 
 #ifndef MAYA_FRACTAL_FREQ
 #define MAYA_FRACTAL_FREQ   14
