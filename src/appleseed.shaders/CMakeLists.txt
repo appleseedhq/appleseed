@@ -174,6 +174,7 @@ set (appleseed_maya2_osl_sources
      src/maya/as_maya_doubleShadingSwitch.osl
      src/maya/as_maya_file.osl
      src/maya/as_maya_fourByFourMatrix.osl
+     src/maya/as_maya_fractal.osl
      src/maya/as_maya_gammaCorrect.osl
      src/maya/as_maya_grid.osl
      src/maya/as_maya_hsvToRgb.osl
