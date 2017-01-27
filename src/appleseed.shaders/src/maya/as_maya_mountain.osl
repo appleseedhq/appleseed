@@ -144,23 +144,16 @@ shader as_maya_mountain
                     ? filterwidth(st[1])
                     : in_uvFilterSize[1])};
 
-        // The factors for filter and fractal frequency match Maya better.
+        // The factors for filter size and offset match Maya's result better.
 
         dsdt[0] += 2 * in_filterOffset;
         dsdt[1] += 2 * in_filterOffset;
 
-#ifndef MAYA_FRACTAL_FREQ
-#define MAYA_FRACTAL_FREQ   0.5
-#endif
-
-        st[0] *= MAYA_FRACTAL_FREQ;
-        st[1] *= MAYA_FRACTAL_FREQ;
-
         float filter_size = abs(max(dsdt[0], dsdt[1]));
-        
+
         filter_size = clamp(
-            MAYA_FRACTAL_FREQ * filter_size,
-            MAYA_FRACTAL_FREQ * 1.0e-8,
+            NOISE_CUBE_SIDE * filter_size,
+            NOISE_CUBE_SIDE * 1.0e-8,
             0.5);
         
         float iterate = min(in_depthMax, -log(filter_size) / M_LN2);
