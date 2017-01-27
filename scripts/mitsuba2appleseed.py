@@ -407,6 +407,10 @@ def convert_conductor_bsdf(assembly, bsdf_name, element, roughness=0.0):
     bsdf_params["edge_tint"] = edge_tint_color_name
     bsdf_params["roughness"] = roughness
 
+    specular_reflectance_element = element.find("*[@name='specularReflectance']")
+    bsdf_params["reflectance_multiplier"] = convert_colormap(assembly, bsdf_name, specular_reflectance_element) \
+        if specular_reflectance_element is not None else 1.0
+
     assembly.bsdfs().insert(asr.BSDF("metal_brdf", bsdf_name, bsdf_params))
 
 
@@ -424,6 +428,14 @@ def convert_dielectric_bsdf(assembly, bsdf_name, element, roughness=0.0):
     bsdf_params["mdf"] = "ggx"
     bsdf_params["surface_transmittance"] = 1.0
     bsdf_params["roughness"] = roughness
+
+    specular_reflectance_element = element.find("*[@name='specularReflectance']")
+    bsdf_params["reflection_tint"] = convert_colormap(assembly, bsdf_name, specular_reflectance_element) \
+        if specular_reflectance_element is not None else 1.0
+
+    specular_transmittance_element = element.find("*[@name='specularTransmittance']")
+    bsdf_params["refraction_tint"] = convert_colormap(assembly, bsdf_name, specular_transmittance_element) \
+        if specular_transmittance_element is not None else 1.0
 
     assembly.bsdfs().insert(asr.BSDF("glass_bsdf", bsdf_name, bsdf_params))
 
