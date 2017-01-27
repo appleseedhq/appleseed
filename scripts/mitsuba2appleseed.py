@@ -278,12 +278,12 @@ def convert_texture(parent, texture_name, element):
 
 
 def convert_colormap(parent, parent_name, element):
-    reflectance_name = element.attrib["name"]
+    map_name = element.attrib["name"]
     if element.tag == "texture":
-        texture_name = "{0}_{1}".format(parent_name, reflectance_name)
+        texture_name = "{0}_{1}".format(parent_name, map_name)
         return convert_texture(parent, texture_name, element)
     elif element.tag == "rgb":
-        color_name = "{0}_{1}".format(parent_name, reflectance_name)
+        color_name = "{0}_{1}".format(parent_name, map_name)
         rgb, multiplier = get_rgb_and_multiplier(element)
         create_linear_rgb_color(parent, color_name, rgb, multiplier)
         return color_name
