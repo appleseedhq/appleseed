@@ -325,6 +325,17 @@ def convert_diffuse_bsdf(assembly, bsdf_name, element):
     assembly.bsdfs().insert(asr.BSDF("lambertian_brdf", bsdf_name, bsdf_params))
 
 
+def convert_roughdiffuse_bsdf(assembly, bsdf_name, element):
+    bsdf_params = {}
+
+    reflectance = element.find("*[@name='reflectance']")
+    bsdf_params["reflectance"] = convert_colormap(assembly, bsdf_name, reflectance)
+
+    bsdf_params["roughness"] = convert_alpha_to_roughness(element, 0.2)
+
+    assembly.bsdfs().insert(asr.BSDF("orennayar_brdf", bsdf_name, bsdf_params))
+
+
 def convert_plastic_bsdf(assembly, bsdf_name, element, roughness=0.0):
     bsdf_params = {}
 
@@ -583,6 +594,8 @@ def convert_material(assembly, material_name, material_params, element):
     bsdf_name = "{0}_bsdf".format(material_name)
     if type == "diffuse":
         convert_diffuse_bsdf(assembly, bsdf_name, element)
+    elif type == "roughdiffuse":
+        convert_roughdiffuse_bsdf(assembly, bsdf_name, element)
     elif type == "plastic":
         convert_plastic_bsdf(assembly, bsdf_name, element)
     elif type == "roughplastic":
