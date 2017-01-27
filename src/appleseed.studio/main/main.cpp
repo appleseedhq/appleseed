@@ -61,7 +61,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
-#include <locale>
 #include <sstream>
 #include <string>
 
@@ -289,7 +288,6 @@ int main(int argc, char* argv[])
 
     // The locale must be set after the construction of QApplication.
     QLocale::setDefault(QLocale::C);
-    setlocale(LC_ALL, "C");
 
     check_installation();
 

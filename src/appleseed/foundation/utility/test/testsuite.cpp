@@ -213,7 +213,7 @@ void TestSuite::run_case(
                 __FILE__,
                 __LINE__,
                 TestMessage::TestCaseFailure,
-                "an unexpected exception was caught: %s.",
+                "an unexpected exception was caught: %s",
                 e.what());
         }
         else

@@ -31,6 +31,7 @@
 #define APPLESEED_FOUNDATION_IMAGE_REGULARSPECTRUM_H
 
 // appleseed.foundation headers.
+#include "foundation/math/fp.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/compiler.h"
 #ifdef APPLESEED_USE_SSE
@@ -158,6 +159,9 @@ template <typename T, size_t N> T average_value(const RegularSpectrum<T, N>& s);
 
 // Return true if a spectrum contains at least one NaN value.
 template <typename T, size_t N> bool has_nan(const RegularSpectrum<T, N>& s);
+
+// Return true if all components of a spectrum are finite (not NaN, not infinite).
+template <typename T, size_t N> bool is_finite(const RegularSpectrum<T, N>& s);
 
 
 //
@@ -865,6 +869,18 @@ inline bool has_nan(const RegularSpectrum<T, N>& s)
     }
 
     return false;
+}
+
+template <typename T, size_t N>
+inline bool is_finite(const RegularSpectrum<T, N>& s)
+{
+    for (size_t i = 0; i < N; ++i)
+    {
+        if (!FP<T>::is_finite(s[i]))
+            return false;
+    }
+
+    return true;
 }
 
 }       // namespace foundation

@@ -770,6 +770,7 @@ IFrameRenderer* ProgressiveFrameRendererFactory::create(
 Dictionary ProgressiveFrameRendererFactory::get_params_metadata()
 {
     Dictionary metadata;
+
     metadata.dictionaries().insert(
         "max_fps",
         Dictionary()

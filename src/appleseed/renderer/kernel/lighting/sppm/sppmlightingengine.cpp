@@ -742,7 +742,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
         "photon_tracing_rr_min_path_length",
         Dictionary()
             .insert("type", "int")
-            .insert("default", "3")
+            .insert("default", "6")
             .insert("help", "Consider pruning low contribution photons starting with this bounce"));
 
     metadata.dictionaries().insert(
@@ -758,7 +758,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
         "path_tracing_rr_min_path_length",
         Dictionary()
             .insert("type", "int")
-            .insert("default", "3")
+            .insert("default", "6")
             .insert("help", "Consider pruning low contribution paths starting with this bounce"));
 
     metadata.dictionaries().insert(
@@ -766,7 +766,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
         Dictionary()
             .insert("type", "int")
             .insert("default", "1000000")
-            .insert("label", "Light Photons Per Pass")
+            .insert("label", "Light Photons per Pass")
             .insert("help", "Number of photons per render pass"));
 
     metadata.dictionaries().insert(
@@ -774,7 +774,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
         Dictionary()
             .insert("type", "int")
             .insert("default", "1000000")
-            .insert("label", "IBL Photons Per Pass")
+            .insert("label", "IBL Photons per Pass")
             .insert("help", "Number of environment photons per render pass"));
 
     metadata.dictionaries().insert(
@@ -794,7 +794,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
             .insert("type", "int")
             .insert("default", "100")
             .insert("min", "1")
-            .insert("label", "Max Photons Per Estimate")
+            .insert("label", "Max Photons per Estimate")
             .insert("help", "Maximum number of photons used to estimate radiance"));
 
     metadata.dictionaries().insert(

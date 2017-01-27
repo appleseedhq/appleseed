@@ -120,7 +120,7 @@ class TextureStore
     // Retrieve performance statistics.
     foundation::StatisticsVector get_statistics() const;
 
-    // Get the metadata dictionary describing the texture store params.
+    // Return the metadata of the texture store parameters.
     static foundation::Dictionary get_params_metadata();
 
   private:

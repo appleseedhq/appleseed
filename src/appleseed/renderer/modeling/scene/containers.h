@@ -236,7 +236,7 @@ inline std::string make_unique_name(
 {
     int max_number = 0;
 
-    for (size_t i = 0; i < entity_names.size(); ++i)
+    for (size_t i = 0, e = entity_names.size(); i < e; ++i)
     {
         const std::string& entity_name = entity_names[i];
 

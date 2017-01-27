@@ -41,6 +41,11 @@
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/paramarray.h"
 
+// appleseed.foundation headers.
+#include "foundation/math/matrix.h"
+#include "foundation/math/transform.h"
+#include "foundation/math/vector.h"
+
 using namespace foundation;
 
 namespace renderer
@@ -75,12 +80,19 @@ auto_release_ptr<Project> DefaultProjectFactory::create()
     scene->assemblies().insert(assembly);
 
     // Create a pinhole camera and attach it to the scene.
-    scene->cameras().insert(
+    auto_release_ptr<Camera> camera(
         PinholeCameraFactory().create(
             "camera",
             ParamArray()
                 .insert("film_dimensions", "0.01024 0.00576")
                 .insert("focal_length", "0.035")));
+    camera->transform_sequence().set_transform(0.0f,
+        Transformd(
+            Matrix4d::make_lookat(
+                Vector3d(1.0, 1.0, 1.0),        // origin
+                Vector3d(0.0, 0.0, 0.0),        // target
+                Vector3d(0.0, 1.0, 0.0))));     // up
+    scene->cameras().insert(camera);
 
     // Create a frame (quarter 2K resolution) and attach it to the project.
     project->set_frame(

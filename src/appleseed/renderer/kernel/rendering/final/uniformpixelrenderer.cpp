@@ -240,7 +240,7 @@ namespace
 
             explicit Parameters(const ParamArray& params)
               : m_sampling_mode(get_sampling_context_mode(params))
-              , m_samples(params.get_required<size_t>("samples", 1))
+              , m_samples(params.get_required<size_t>("samples", 64))
               , m_force_aa(params.get_optional<bool>("force_antialiasing", false))
               , m_decorrelate(params.get_optional<bool>("decorrelate_pixels", true))
             {
@@ -282,6 +282,7 @@ IPixelRenderer* UniformPixelRendererFactory::create(
 Dictionary UniformPixelRendererFactory::get_params_metadata()
 {
     Dictionary metadata;
+
     metadata.dictionaries().insert(
         "samples",
         Dictionary()
@@ -295,10 +296,20 @@ Dictionary UniformPixelRendererFactory::get_params_metadata()
         Dictionary()
             .insert("type", "bool")
             .insert("default", "false")
-            .insert("label", "Force Anti-aliasing")
+            .insert("label", "Force Anti-Aliasing")
             .insert(
                 "help",
-                "When using 1 sample/pixel and force_antialiasing is disabled, samples are placed in the middle of the pixels"));
+                "When using 1 sample/pixel and Force Anti-Aliasing is disabled, samples are placed at the center of pixels"));
+
+    metadata.dictionaries().insert(
+        "decorrelate_pixels",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("default", "true")
+            .insert("label", "Decorrelate Pixels")
+            .insert(
+                "help",
+                "Avoid correlation patterns at the expense of slightly more sampling noise"));
 
     return metadata;
 }

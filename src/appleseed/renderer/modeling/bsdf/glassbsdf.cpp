@@ -78,11 +78,11 @@ namespace
     //
     // References:
     //
-    //   [1] Microfacet Models for Refraction through Rough Surfaces.
+    //   [1] Microfacet Models for Refraction through Rough Surfaces
     //       http://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.pdf
     //
-    //   [2] Extending the Disney BRDF to a BSDF with Integrated Subsurface Scattering.
-    //       http://blog.selfshadow.com/publications/s2015-shading-course/burley/s2015_pbs_disney_bsdf_slides.pdf
+    //   [2] Extending the Disney BRDF to a BSDF with Integrated Subsurface Scattering
+    //       http://blog.selfshadow.com/publications/s2015-shading-course/burley/s2015_pbs_disney_bsdf_notes.pdf
     //
 
     const char* Model = "glass_bsdf";
@@ -574,11 +574,7 @@ namespace
 
             const float D = m_mdf->D(h, alpha_x, alpha_y);
             const float G = m_mdf->G(wi, wo, h, alpha_x, alpha_y);
-            float multiplier = abs(dots) * square(values->m_precomputed.m_eta / sqrt_denom) * T * D * G;
-
-            // [2] eq. 2.
-            if (adjoint)
-                multiplier /= square(values->m_precomputed.m_eta);
+            const float multiplier = abs(dots) * square(values->m_precomputed.m_eta / sqrt_denom) * T * D * G;
 
             value = values->m_precomputed.m_refraction_color;
             value *= multiplier;
@@ -730,7 +726,7 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
     metadata.push_back(
         Dictionary()
             .insert("name", "volume_transmittance")
-            .insert("label", "Volume Transmittace")
+            .insert("label", "Volume Transmittance")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()

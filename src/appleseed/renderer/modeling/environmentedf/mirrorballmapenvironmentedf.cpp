@@ -189,8 +189,12 @@ namespace
 
             // Evaluate the input.
             const InputValues* values = input_evaluator.evaluate<InputValues>(m_inputs, uv);
-            value = values->m_radiance;
-            value *= values->m_radiance_multiplier;
+            if (is_finite(values->m_radiance))
+            {
+                value = values->m_radiance;
+                value *= values->m_radiance_multiplier;
+            }
+            else value.set(0.0f);
         }
     };
 }

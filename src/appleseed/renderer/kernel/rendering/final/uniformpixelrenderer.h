@@ -67,7 +67,7 @@ class UniformPixelRendererFactory
     virtual IPixelRenderer* create(
         const size_t                thread_index) APPLESEED_OVERRIDE;
 
-    // Get the metadata dictionary describing the uniform pixel renderer params.
+    // Return the metadata of the uniform pixel renderer parameters.
     static foundation::Dictionary get_params_metadata();
 
   private:

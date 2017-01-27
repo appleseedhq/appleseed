@@ -74,8 +74,7 @@ class ProgressiveFrameRendererFactory
         ITileCallbackFactory*       callback_factory,       // may be 0
         const ParamArray&           params);
 
-    // Get the metadata dictionary describing
-    // the progressive frame renderer params.
+    // Return the metadata of the progressive frame renderer parameters.
     static foundation::Dictionary get_params_metadata();
 
   private:

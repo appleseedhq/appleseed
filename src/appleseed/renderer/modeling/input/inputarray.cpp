@@ -151,8 +151,7 @@ namespace
 
                     if (m_source)
                         m_source->evaluate(texture_cache, uv, *out_spectrum);
-                    else
-                        out_spectrum->set(0.0f);
+                    else out_spectrum->set(0.0f);
 
                     ptr += sizeof(Spectrum);
                 }
@@ -218,8 +217,7 @@ namespace
 
                     if (m_source && m_source->is_uniform())
                         m_source->evaluate_uniform(*out_spectrum);
-                    else
-                        out_spectrum->set(0.0f);
+                    else out_spectrum->set(0.0f);
 
                     ptr += sizeof(Spectrum);
                 }

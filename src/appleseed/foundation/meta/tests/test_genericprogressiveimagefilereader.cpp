@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,12 +26,30 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_LIGHTING_H
-#define APPLESEED_RENDERER_API_LIGHTING_H
+// appleseed.foundation headers.
+#include "foundation/image/genericprogressiveimagefilereader.h"
+#include "foundation/image/tile.h"
+#include "foundation/utility/test.h"
 
-// API headers.
-#include "renderer/kernel/lighting/drt/drtlightingengine.h"
-#include "renderer/kernel/lighting/ilightingengine.h"
-#include "renderer/kernel/lighting/pt/ptlightingengine.h"
+// Standard headers.
+#include <memory>
 
-#endif  // !APPLESEED_RENDERER_API_LIGHTING_H
+using namespace foundation;
+using namespace std;
+
+TEST_SUITE(Foundation_Image_GenericProgressiveImageFileReader)
+{
+    TEST_CASE(ReadTile_CalledASecondTimeOnTheSamePFMFile_ThrowsIOException)
+    {
+        GenericProgressiveImageFileReader reader;
+        reader.open("unit tests/inputs/test_genericprogressiveimagefilereader_image.pnm");
+
+        // Read the image a first time, then delete it.
+        delete reader.read_tile(0, 0);
+
+        // Read the image a second time, then delete it.
+        // With OpenImageIO 1.5.20, reading a second time fails and this line throws a foundation::IOException.
+        // See https://github.com/OpenImageIO/oiio/issues/1600 for details.
+        delete reader.read_tile(0, 0);
+    }
+}

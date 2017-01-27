@@ -113,7 +113,7 @@ bool Display::open(const Project& project)
     }
     catch (const ExceptionDictionaryKeyNotFound&)
     {
-        RENDERER_LOG_ERROR("%s", "cannot open display: missing plugin_name parameter.");
+        RENDERER_LOG_ERROR("cannot open display: missing \"plugin_name\" parameter.");
         return false;
     }
 

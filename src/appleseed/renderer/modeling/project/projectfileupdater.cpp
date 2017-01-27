@@ -329,9 +329,7 @@ namespace
 
         virtual void update() APPLESEED_OVERRIDE
         {
-            const Scene* scene = m_project.get_scene();
-
-            if (scene)
+            if (Scene* scene = m_project.get_scene())
             {
                 for (each<EnvironmentEDFContainer> i = scene->environment_edfs(); i; ++i)
                     rename_exitance_inputs(*i);
@@ -448,9 +446,7 @@ namespace
 
         virtual void update() APPLESEED_OVERRIDE
         {
-            const Scene* scene = m_project.get_scene();
-
-            if (scene)
+            if (Scene* scene = m_project.get_scene())
                 update_assemblies(scene->assemblies());
         }
 
@@ -643,9 +639,7 @@ namespace
 
         virtual void update() APPLESEED_OVERRIDE
         {
-            const Scene* scene = m_project.get_scene();
-
-            if (scene)
+            if (Scene* scene = m_project.get_scene())
             {
                 update_collection(scene->environment_edfs());
                 update_collection(scene->environment_shaders());
@@ -720,9 +714,7 @@ namespace
 
         virtual void update() APPLESEED_OVERRIDE
         {
-            const Scene* scene = m_project.get_scene();
-
-            if (scene)
+            if (Scene* scene = m_project.get_scene())
                 update_collection(scene->assemblies());
         }
 
@@ -781,9 +773,7 @@ namespace
 
         virtual void update() APPLESEED_OVERRIDE
         {
-            const Scene* scene = m_project.get_scene();
-
-            if (scene)
+            if (Scene* scene = m_project.get_scene())
                 rename_radiance_inputs(scene->assemblies());
         }
 
@@ -835,9 +825,7 @@ namespace
 
         virtual void update() APPLESEED_OVERRIDE
         {
-            const Scene* scene = m_project.get_scene();
-
-            if (scene)
+            if (Scene* scene = m_project.get_scene())
                 visit(scene->assemblies());
         }
 
@@ -1086,9 +1074,7 @@ namespace
 
         virtual void update() APPLESEED_OVERRIDE
         {
-            const Scene* scene = m_project.get_scene();
-
-            if (scene)
+            if (Scene* scene = m_project.get_scene())
                 update_bssrdf_ior_inputs(scene->assemblies());
         }
 
@@ -1168,14 +1154,13 @@ namespace
 
         virtual void update() APPLESEED_OVERRIDE
         {
-            // Add camera param to frame.
             Frame* frame = m_project.get_frame();
             const Scene* scene = m_project.get_scene();
 
             if (frame == 0 || scene == 0 || scene->cameras().empty())
                 return;
 
-            // Check if we already have a camera param in the frame.
+            // Check if we already have a camera parameter in the frame.
             ParamArray& frame_params = frame->get_parameters();
             if (frame_params.strings().exist("camera"))
                 return;

@@ -36,6 +36,7 @@
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
 #include "foundation/utility/iostreamop.h"
 
@@ -106,7 +107,9 @@ void CameraController::slot_entity_picked(ScenePicker::PickingResult result)
         m_pivot = Vector3d(object_instance_world_bbox.center());
     }
     else
+    {
         m_pivot = Vector3d(m_project.get_scene()->compute_bbox().center());
+    }
 }
 
 void CameraController::slot_frame_modified()
@@ -144,29 +147,39 @@ bool CameraController::eventFilter(QObject* object, QEvent* event)
 
 void CameraController::configure_controller()
 {
+    // By default, the pivot point is the scene's center.
+    m_pivot = Vector3d(m_project.get_scene()->compute_bbox().center());
+
     Camera* camera = m_project.get_uncached_active_camera();
 
-    if (!camera)
-        return;
-
-    // Set the controller orientation and position based on the scene camera.
-    m_controller.set_transform(
-        camera->transform_sequence().get_earliest_transform().get_local_to_parent());
-
-    if (camera->get_parameters().strings().exist("controller_target"))
+    // Set the controller orientation and position.
+    if (camera)
     {
-        // The camera already has a target position, use it.
-        m_controller.set_target(
-            camera->get_parameters().get_optional<Vector3d>(
-                "controller_target",
-                Vector3d(0.0)));
+        // Use the scene's camera.
+        m_controller.set_transform(
+            camera->transform_sequence().get_earliest_transform().get_local_to_parent());
     }
     else
     {
-        // Otherwise, if the scene is not empty, use its center as the target position.
-        const GAABB3 scene_bbox = m_project.get_scene()->compute_bbox();
-        if (scene_bbox.is_valid())
-            m_controller.set_target(Vector3d(scene_bbox.center()));
+        // Otherwise use a default orientation and position.
+        m_controller.set_transform(
+            Matrix4d::make_lookat(
+                Vector3d(1.0, 1.0, 1.0),    // origin
+                Vector3d(0.0, 0.0, 0.0),    // target
+                Vector3d(0.0, 1.0, 0.0)));  // up
+    }
+
+    // Set the controller target.
+    if (camera && camera->get_parameters().strings().exist("controller_target"))
+    {
+        // The scene's camera already has a target position, use it.
+        m_controller.set_target(
+            camera->get_parameters().get<Vector3d>("controller_target"));
+    }
+    else
+    {
+        // Otherwise use the pivot point.
+        m_controller.set_target(m_pivot);
     }
 }
 

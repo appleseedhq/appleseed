@@ -717,7 +717,7 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
     metadata.push_back(
         Dictionary()
             .insert("name", "f_stop")
-            .insert("label", "F-number")
+            .insert("label", "F-Number")
             .insert("type", "text")
             .insert("use", "required")
             .insert("default", "8.0"));
