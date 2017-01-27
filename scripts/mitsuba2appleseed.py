@@ -590,16 +590,31 @@ def convert_material(assembly, material_name, material_params, element):
 
     type = element.attrib["type"]
 
+    # Two-sided adapter.
     if type == "twosided":
         set_private_param(material_params, "two_sided", True)
         return convert_material(assembly, material_name, material_params, element.find("bsdf"))
 
+    # Bump mapping adapter.
+    # todo: add bump mapping support.
     if type == "bumpmap":
-        # todo: add bump mapping support.
         return convert_material(assembly, material_name, material_params, element.find("bsdf"))
 
+    # Opacity adapter.
     if type == "mask":
-        # todo: add masking support.
+        opacity_element = element.find("*[@name='opacity']")
+        opacity = 0.5
+        if opacity_element is not None:
+            if opacity_element.tag == "rgb":
+                opacity_rgb = get_rgb(opacity_element)
+                if opacity_rgb[0] == opacity_rgb[1] and opacity_rgb[0] == opacity_rgb[2]:
+                    opacity = opacity_rgb[0]
+                else:
+                    warning("Colored opacity not supported, using average opacity")
+                    opacity = (opacity_rgb[0] + opacity_rgb[1] + opacity_rgb[2]) / 3
+            else:
+                warning("Textured opacity not supported")
+        material_params["alpha_map"] = opacity
         return convert_material(assembly, material_name, material_params, element.find("bsdf"))
 
     # BSDF.
