@@ -291,8 +291,10 @@ def convert_colormap(parent, parent_name, element):
         warning("Don't know how to convert color map of type {0}".format(element.tag))
 
 
-def convert_alpha_to_roughness(element):
-    return math.sqrt(float(element.find("float[@name='alpha']").attrib["value"]))
+def convert_alpha_to_roughness(element, default_alpha):
+    alpha_element = element.find("float[@name='alpha']")
+    alpha = float(alpha_element.attrib["value"]) if alpha_element is not None else default_alpha
+    return math.sqrt(alpha)
 
 
 def fresnel_conductor_inverse_reparam(n, k):
@@ -357,7 +359,7 @@ def convert_plastic_bsdf(assembly, bsdf_name, element, roughness=0.0):
 
 
 def convert_roughplastic_bsdf(assembly, bsdf_name, element):
-    roughness = convert_alpha_to_roughness(element)
+    roughness = convert_alpha_to_roughness(element, 0.1)
     return convert_plastic_bsdf(assembly, bsdf_name, element, roughness)
 
 
@@ -398,7 +400,7 @@ def convert_conductor_bsdf(assembly, bsdf_name, element, roughness=0.0):
 
 
 def convert_roughconductor_bsdf(assembly, bsdf_name, element):
-    roughness = convert_alpha_to_roughness(element)
+    roughness = convert_alpha_to_roughness(element, 0.1)
     return convert_conductor_bsdf(assembly, bsdf_name, element, roughness)
 
 
@@ -416,7 +418,7 @@ def convert_dielectric_bsdf(assembly, bsdf_name, element, roughness=0.0):
 
 
 def convert_roughdielectric_bsdf(assembly, bsdf_name, element):
-    roughness = convert_alpha_to_roughness(element)
+    roughness = convert_alpha_to_roughness(element, 0.1)
     return convert_dielectric_bsdf(assembly, bsdf_name, element, roughness)
 
 
