@@ -278,12 +278,12 @@ def convert_texture(parent, texture_name, element):
 
 
 def convert_colormap(parent, parent_name, element):
-    reflectance_name = element.attrib["name"]
+    map_name = element.attrib["name"]
     if element.tag == "texture":
-        texture_name = "{0}_{1}".format(parent_name, reflectance_name)
+        texture_name = "{0}_{1}".format(parent_name, map_name)
         return convert_texture(parent, texture_name, element)
     elif element.tag == "rgb":
-        color_name = "{0}_{1}".format(parent_name, reflectance_name)
+        color_name = "{0}_{1}".format(parent_name, map_name)
         rgb, multiplier = get_rgb_and_multiplier(element)
         create_linear_rgb_color(parent, color_name, rgb, multiplier)
         return color_name
@@ -291,8 +291,10 @@ def convert_colormap(parent, parent_name, element):
         warning("Don't know how to convert color map of type {0}".format(element.tag))
 
 
-def convert_alpha_to_roughness(element):
-    return math.sqrt(float(element.find("float[@name='alpha']").attrib["value"]))
+def convert_alpha_to_roughness(element, default_alpha):
+    alpha_element = element.find("float[@name='alpha']")
+    alpha = float(alpha_element.attrib["value"]) if alpha_element is not None else default_alpha
+    return math.sqrt(alpha)
 
 
 def fresnel_conductor_inverse_reparam(n, k):
@@ -321,6 +323,17 @@ def convert_diffuse_bsdf(assembly, bsdf_name, element):
     bsdf_params["reflectance"] = convert_colormap(assembly, bsdf_name, reflectance)
 
     assembly.bsdfs().insert(asr.BSDF("lambertian_brdf", bsdf_name, bsdf_params))
+
+
+def convert_roughdiffuse_bsdf(assembly, bsdf_name, element):
+    bsdf_params = {}
+
+    reflectance = element.find("*[@name='reflectance']")
+    bsdf_params["reflectance"] = convert_colormap(assembly, bsdf_name, reflectance)
+
+    bsdf_params["roughness"] = convert_alpha_to_roughness(element, 0.2)
+
+    assembly.bsdfs().insert(asr.BSDF("orennayar_brdf", bsdf_name, bsdf_params))
 
 
 def convert_plastic_bsdf(assembly, bsdf_name, element, roughness=0.0):
@@ -357,7 +370,7 @@ def convert_plastic_bsdf(assembly, bsdf_name, element, roughness=0.0):
 
 
 def convert_roughplastic_bsdf(assembly, bsdf_name, element):
-    roughness = convert_alpha_to_roughness(element)
+    roughness = convert_alpha_to_roughness(element, 0.1)
     return convert_plastic_bsdf(assembly, bsdf_name, element, roughness)
 
 
@@ -394,11 +407,15 @@ def convert_conductor_bsdf(assembly, bsdf_name, element, roughness=0.0):
     bsdf_params["edge_tint"] = edge_tint_color_name
     bsdf_params["roughness"] = roughness
 
+    specular_reflectance_element = element.find("*[@name='specularReflectance']")
+    bsdf_params["reflectance_multiplier"] = convert_colormap(assembly, bsdf_name, specular_reflectance_element) \
+        if specular_reflectance_element is not None else 1.0
+
     assembly.bsdfs().insert(asr.BSDF("metal_brdf", bsdf_name, bsdf_params))
 
 
 def convert_roughconductor_bsdf(assembly, bsdf_name, element):
-    roughness = convert_alpha_to_roughness(element)
+    roughness = convert_alpha_to_roughness(element, 0.1)
     return convert_conductor_bsdf(assembly, bsdf_name, element, roughness)
 
 
@@ -412,11 +429,19 @@ def convert_dielectric_bsdf(assembly, bsdf_name, element, roughness=0.0):
     bsdf_params["surface_transmittance"] = 1.0
     bsdf_params["roughness"] = roughness
 
+    specular_reflectance_element = element.find("*[@name='specularReflectance']")
+    bsdf_params["reflection_tint"] = convert_colormap(assembly, bsdf_name, specular_reflectance_element) \
+        if specular_reflectance_element is not None else 1.0
+
+    specular_transmittance_element = element.find("*[@name='specularTransmittance']")
+    bsdf_params["refraction_tint"] = convert_colormap(assembly, bsdf_name, specular_transmittance_element) \
+        if specular_transmittance_element is not None else 1.0
+
     assembly.bsdfs().insert(asr.BSDF("glass_bsdf", bsdf_name, bsdf_params))
 
 
 def convert_roughdielectric_bsdf(assembly, bsdf_name, element):
-    roughness = convert_alpha_to_roughness(element)
+    roughness = convert_alpha_to_roughness(element, 0.1)
     return convert_dielectric_bsdf(assembly, bsdf_name, element, roughness)
 
 
@@ -565,22 +590,39 @@ def convert_material(assembly, material_name, material_params, element):
 
     type = element.attrib["type"]
 
+    # Two-sided adapter.
     if type == "twosided":
         set_private_param(material_params, "two_sided", True)
         return convert_material(assembly, material_name, material_params, element.find("bsdf"))
 
+    # Bump mapping adapter.
+    # todo: add bump mapping support.
     if type == "bumpmap":
-        # todo: add bump mapping support.
         return convert_material(assembly, material_name, material_params, element.find("bsdf"))
 
+    # Opacity adapter.
     if type == "mask":
-        # todo: add masking support.
+        opacity_element = element.find("*[@name='opacity']")
+        opacity = 0.5
+        if opacity_element is not None:
+            if opacity_element.tag == "rgb":
+                opacity_rgb = get_rgb(opacity_element)
+                if opacity_rgb[0] == opacity_rgb[1] and opacity_rgb[0] == opacity_rgb[2]:
+                    opacity = opacity_rgb[0]
+                else:
+                    warning("Colored opacity not supported, using average opacity")
+                    opacity = (opacity_rgb[0] + opacity_rgb[1] + opacity_rgb[2]) / 3
+            else:
+                warning("Textured opacity not supported")
+        material_params["alpha_map"] = opacity
         return convert_material(assembly, material_name, material_params, element.find("bsdf"))
 
     # BSDF.
     bsdf_name = "{0}_bsdf".format(material_name)
     if type == "diffuse":
         convert_diffuse_bsdf(assembly, bsdf_name, element)
+    elif type == "roughdiffuse":
+        convert_roughdiffuse_bsdf(assembly, bsdf_name, element)
     elif type == "plastic":
         convert_plastic_bsdf(assembly, bsdf_name, element)
     elif type == "roughplastic":
