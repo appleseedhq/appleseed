@@ -174,18 +174,21 @@ set (appleseed_maya2_osl_sources
      src/maya/as_maya_doubleShadingSwitch.osl
      src/maya/as_maya_file.osl
      src/maya/as_maya_fourByFourMatrix.osl
+     src/maya/as_maya_fractal.osl
      src/maya/as_maya_gammaCorrect.osl
      src/maya/as_maya_grid.osl
      src/maya/as_maya_hsvToRgb.osl
      src/maya/as_maya_lambert.osl
      src/maya/as_maya_luminance.osl
      src/maya/as_maya_matrixInverse.osl
+     src/maya/as_maya_mountain.osl
      src/maya/as_maya_multDoubleLinear.osl
      src/maya/as_maya_multiplyDivide.osl
      src/maya/as_maya_multMatrix.osl
      src/maya/as_maya_place2dTexture.osl
      src/maya/as_maya_place3dTexture.osl
      src/maya/as_maya_plusMinusAverage.osl
+     src/maya/as_maya_psdFileTex.osl
      src/maya/as_maya_quadShadingSwitch.osl
      src/maya/as_maya_ramp.osl
      src/maya/as_maya_reverse.osl
