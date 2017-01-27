@@ -33,8 +33,9 @@
 #include "appleseed/color/as_color_helpers.h"
 #include "appleseed/math/as_math_helpers.h"
 
-#define OUTSIDE_UVFRAME 999999
-#define UVWRAP          1.0001
+#define OUTSIDE_UVFRAME     999999
+#define UVWRAP              1.0001
+#define UNDEFINED_UVFILTER -1
 
 #define MAYA_COLORBALANCE_PARAMETERS                        \
     color in_defaultColor = color(0.5)                      \
@@ -143,7 +144,8 @@
         string label = "UV Coordinates",                    \
         string page = "UV Coordinates"                      \
     ]],                                                     \
-    float in_uvFilterSize[2] = {0.0, 0.0}                   \
+    float in_uvFilterSize[2] = {                            \
+        UNDEFINED_UVFILTER, UNDEFINED_UVFILTER}             \
     [[                                                      \
         string maya_attribute_name = "uvFilterSize",        \
         string maya_attribute_type = "float[]",             \
