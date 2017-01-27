@@ -291,7 +291,7 @@ shader as_maya_psdFileTex
                     "wrap", "periodic",
                     "subimage", 0,
                     "missingcolor", in_defaultColor,
-                    "missingalpha", 1,
+                    "missingalpha", 1.0,
                     "alpha", out_outAlpha,
                     "interp", filter);
         }
@@ -306,7 +306,7 @@ shader as_maya_psdFileTex
                     "width", in_filter,
                     "wrap", "periodic",
                     "missingcolor", in_defaultColor,
-                    "missingalpha", 1,
+                    "missingalpha", 1.0,
                     "alpha", out_outAlpha,
                     "interp", filter);
         }
