@@ -168,7 +168,10 @@ void EntityEditor::rebuild_form(const Dictionary& values)
     // Create corresponding input widgets.
     create_form_layout();
     for (const_each<InputMetadataCollection> i = m_input_metadata; i; ++i)
-        create_input_widgets(*i);
+    {
+        if (is_input_widget_visible(*i, values))
+            create_input_widgets(*i);
+    }
 
     if (m_custom_ui.get())
         m_custom_ui->create_widgets(m_top_layout, values);
@@ -185,6 +188,23 @@ Dictionary EntityEditor::get_input_metadata(const string& name) const
     }
 
     return Dictionary();
+}
+
+bool EntityEditor::is_input_widget_visible(const Dictionary& metadata, const Dictionary& values) const
+{
+    if (!metadata.dictionaries().exist("visible_if"))
+        return true;
+
+    const StringDictionary& visible_if = metadata.dictionary("visible_if").strings();
+    assert(visible_if.size() == 1);
+
+    const char* key = visible_if.begin().key();
+    const char* value = visible_if.begin().value();
+
+    return
+        values.strings().exist(key)
+            ? values.strings().get<string>(key) == value
+            : get_input_metadata(key).get<string>("default") == value;
 }
 
 void EntityEditor::create_input_widgets(const Dictionary& metadata)
@@ -398,9 +418,11 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_color_input_widgets(const Dicti
         metadata.strings().exist("wavelength_range_widget"))
     {
         const string value = metadata.strings().get<string>("value");
-        const string wavelength_range_widget = metadata.get<string>("wavelength_range_widget");
-        const string wavelength_range = m_widget_proxies.get(wavelength_range_widget)->get();
-        widget_proxy->set(value, wavelength_range);
+        const string wr_widget = metadata.get<string>("wavelength_range_widget");
+        const IInputWidgetProxy* wr_widget_proxy = m_widget_proxies.get(wr_widget);
+        if (wr_widget_proxy)
+            widget_proxy->set(value, wr_widget_proxy->get());
+        else widget_proxy->set(value);
     }
     else widget_proxy->set("0.0 0.0 0.0");
 
