@@ -65,6 +65,9 @@ APPLESEED_DECLARE_INPUT_VALUES(GlassBSDFInputValues)
     float           m_ior;
     Spectrum        m_volume_transmittance;
     float           m_volume_transmittance_distance;
+    Spectrum        m_volume_absorption;
+    float           m_volume_density;
+    float           m_volume_scale;
 
     struct Precomputed
     {

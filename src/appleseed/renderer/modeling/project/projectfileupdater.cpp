@@ -1228,10 +1228,14 @@ namespace
 
         static void update_bsdf_inputs(BSDF& bsdf)
         {
-            if (strcmp(bsdf.get_model(), GlassBSDFFactory().get_model()) == 0 ||
-                strcmp(bsdf.get_model(), GlossyBRDFFactory().get_model()) == 0 ||
-                strcmp(bsdf.get_model(), MetalBRDFFactory().get_model()) == 0 ||
-                strcmp(bsdf.get_model(), SpecularBTDFFactory().get_model()) == 0)
+            if (strcmp(bsdf.get_model(), GlassBSDFFactory().get_model()) == 0)
+            {
+                bsdf.get_parameters().insert("volume_parameterization", "transmittance");
+                move_if_exist(bsdf, "anisotropy", "anisotropic");
+            }
+            else if (strcmp(bsdf.get_model(), GlossyBRDFFactory().get_model()) == 0 ||
+                     strcmp(bsdf.get_model(), MetalBRDFFactory().get_model()) == 0 ||
+                     strcmp(bsdf.get_model(), SpecularBTDFFactory().get_model()) == 0)
             {
                 move_if_exist(bsdf, "anisotropy", "anisotropic");
             }
