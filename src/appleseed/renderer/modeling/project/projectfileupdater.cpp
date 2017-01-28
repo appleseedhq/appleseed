@@ -1143,6 +1143,10 @@ namespace
         }
     };
 
+    //
+    // Update from revision 12 to revision 13.
+    //
+
     class UpdateFromRevision_12
       : public Updater
     {
@@ -1160,15 +1164,26 @@ namespace
             if (frame == 0 || scene == 0 || scene->cameras().empty())
                 return;
 
-            // Check if we already have a camera parameter in the frame.
             ParamArray& frame_params = frame->get_parameters();
-            if (frame_params.strings().exist("camera"))
-                return;
 
-            // Use the first camera as the active camera.
-            frame_params.insert(
-                "camera",
-                scene->cameras().get_by_index(0)->get_name());
+            if (!frame_params.strings().exist("camera"))
+            {
+                // The frame does not reference any camera: use the first camera.
+                frame_params.insert(
+                    "camera",
+                    scene->cameras().get_by_index(0)->get_name());
+            }
+            else
+            {
+                const char* camera_name = frame_params.strings().get("camera");
+                if (scene->cameras().get_by_name(camera_name) == 0)
+                {
+                    // The frame references a non-existing camera: use the first camera.
+                    frame_params.insert(
+                        "camera",
+                        scene->cameras().get_by_index(0)->get_name());
+                }
+            }
         }
     };
 }
