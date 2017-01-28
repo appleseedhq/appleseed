@@ -132,7 +132,7 @@ class EntityEditor
 
     void rebuild_form(const foundation::Dictionary& values);
 
-    foundation::Dictionary get_input_metadata(const std::string& name) const;
+    const foundation::Dictionary& get_input_metadata(const std::string& name) const;
 
     // Return whether a widget should be visible, based on the visible_if predicate and the current parameter values.
     bool is_input_widget_visible(
