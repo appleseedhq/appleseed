@@ -545,10 +545,13 @@ void EntityEditor::slot_open_color_picker(const QString& widget_name)
 {
     IInputWidgetProxy* widget_proxy = m_widget_proxies.get(widget_name.toStdString());
 
-    const string wavelength_range = m_widget_proxies.get("wavelength_range")->get();
-
+    const Dictionary metadata = get_input_metadata(widget_name.toStdString());
+    const string wr_widget = metadata.get<string>("wavelength_range_widget");
+    const IInputWidgetProxy* wr_widget_proxy = m_widget_proxies.get(wr_widget);
     const Color3d initial_color =
-        ColorPickerProxy::get_color_from_string(widget_proxy->get(), wavelength_range);
+        wr_widget_proxy
+            ? ColorPickerProxy::get_color_from_string(widget_proxy->get(), wr_widget_proxy->get())
+            : ColorPickerProxy::get_color_from_string(widget_proxy->get());
 
     QColorDialog* dialog =
         new QColorDialog(
