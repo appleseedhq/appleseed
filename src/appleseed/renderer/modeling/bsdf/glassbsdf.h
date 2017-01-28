@@ -72,7 +72,6 @@ APPLESEED_DECLARE_INPUT_VALUES(GlassBSDFInputValues)
         float       m_eta;
         Spectrum    m_reflection_color;
         Spectrum    m_refraction_color;
-        Spectrum    m_absorption;
         float       m_reflection_weight;
         float       m_refraction_weight;
     };
