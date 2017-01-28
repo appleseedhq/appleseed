@@ -33,6 +33,10 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bsdf/glassbsdf.h"
+#include "renderer/modeling/bsdf/glossybrdf.h"
+#include "renderer/modeling/bsdf/metalbrdf.h"
+#include "renderer/modeling/bsdf/specularbtdf.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/color/colorentity.h"
@@ -1186,6 +1190,53 @@ namespace
             }
         }
     };
+
+    //
+    // Update from revision 13 to revision 14.
+    //
+
+    class UpdateFromRevision_13
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_13(Project& project)
+          : Updater(project, 13)
+        {
+        }
+
+        virtual void update() APPLESEED_OVERRIDE
+        {
+            if (Scene* scene = m_project.get_scene())
+                update_bsdfs_inputs(scene->assemblies());
+        }
+
+      private:
+        static void update_bsdfs_inputs(AssemblyContainer& assemblies)
+        {
+            for (each<AssemblyContainer> i = assemblies; i; ++i)
+            {
+                update_bsdfs_inputs(*i);
+                update_bsdfs_inputs(i->assemblies());
+            }
+        }
+
+        static void update_bsdfs_inputs(Assembly& assembly)
+        {
+            for (each<BSDFContainer> i = assembly.bsdfs(); i; ++i)
+                update_bsdf_inputs(*i);
+        }
+
+        static void update_bsdf_inputs(BSDF& bsdf)
+        {
+            if (strcmp(bsdf.get_model(), GlassBSDFFactory().get_model()) == 0 ||
+                strcmp(bsdf.get_model(), GlossyBRDFFactory().get_model()) == 0 ||
+                strcmp(bsdf.get_model(), MetalBRDFFactory().get_model()) == 0 ||
+                strcmp(bsdf.get_model(), SpecularBTDFFactory().get_model()) == 0)
+            {
+                move_if_exist(bsdf, "anisotropy", "anisotropic");
+            }
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(Project& project, const size_t to_revision)
@@ -1222,8 +1273,9 @@ bool ProjectFileUpdater::update(Project& project, const size_t to_revision)
       CASE_UPDATE_FROM_REVISION(10);
       CASE_UPDATE_FROM_REVISION(11);
       CASE_UPDATE_FROM_REVISION(12);
+      CASE_UPDATE_FROM_REVISION(13);
 
-      case 13:
+      case 14:
         // Project is up-to-date.
         break;
 

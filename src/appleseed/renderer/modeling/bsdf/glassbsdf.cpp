@@ -102,7 +102,7 @@ namespace
             m_inputs.declare("reflection_tint", InputFormatSpectralReflectance, "1.0");
             m_inputs.declare("refraction_tint", InputFormatSpectralReflectance, "1.0");
             m_inputs.declare("roughness", InputFormatFloat, "0.15");
-            m_inputs.declare("anisotropic", InputFormatFloat, "0.0");
+            m_inputs.declare("anisotropy", InputFormatFloat, "0.0");
             m_inputs.declare("ior", InputFormatFloat, "1.5");
             m_inputs.declare("volume_transmittance", InputFormatSpectralReflectance, "1.0");
             m_inputs.declare("volume_transmittance_distance", InputFormatFloat, "0.0");
@@ -198,7 +198,7 @@ namespace
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
                 values->m_roughness,
-                values->m_anisotropic,
+                values->m_anisotropy,
                 alpha_x,
                 alpha_y);
 
@@ -310,7 +310,7 @@ namespace
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
                 values->m_roughness,
-                values->m_anisotropic,
+                values->m_anisotropy,
                 alpha_x,
                 alpha_y);
 
@@ -379,7 +379,7 @@ namespace
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
                 values->m_roughness,
-                values->m_anisotropic,
+                values->m_anisotropy,
                 alpha_x,
                 alpha_y);
 
@@ -711,8 +711,8 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "anisotropic")
-            .insert("label", "Anisotropic")
+            .insert("name", "anisotropy")
+            .insert("label", "Anisotropy")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()

@@ -503,7 +503,7 @@ namespace
             values->m_reflection_tint = Color3f(p->reflection_tint);
             values->m_refraction_tint = Color3f(p->refraction_tint);
             values->m_roughness = max(p->roughness, 0.0001f);
-            values->m_anisotropic = clamp(p->anisotropic, -1.0f, 1.0f);
+            values->m_anisotropy = clamp(p->anisotropic, -1.0f, 1.0f);
             values->m_ior = max(p->ior, 0.001f);
             values->m_volume_transmittance = Color3f(p->volume_transmittance);
             values->m_volume_transmittance_distance = p->volume_transmittance_distance;
@@ -593,7 +593,7 @@ namespace
             values->m_reflectance.set(1.0f);
             values->m_reflectance_multiplier = 1.0f;
             values->m_roughness = max(p->roughness, 0.0f);
-            values->m_anisotropic = clamp(p->anisotropic, -1.0f, 1.0f);
+            values->m_anisotropy = clamp(p->anisotropic, -1.0f, 1.0f);
             values->m_ior = max(p->ior, 0.001f);
         }
     };
@@ -710,7 +710,7 @@ namespace
             values->m_edge_tint = Color3f(p->edge_tint);
             values->m_reflectance_multiplier = 1.0f;
             values->m_roughness = max(p->roughness, 0.0f);
-            values->m_anisotropic = clamp(p->anisotropic, -1.0f, 1.0f);
+            values->m_anisotropy = clamp(p->anisotropic, -1.0f, 1.0f);
         }
     };
 
@@ -880,7 +880,7 @@ namespace
             values->m_reflectance.set(1.0f);
             values->m_reflectance_multiplier = 1.0f;
             values->m_roughness = 0.0f;
-            values->m_anisotropic = 0.0f;
+            values->m_anisotropy = 0.0f;
             values->m_ior = max(p->ior, 0.001f);
         }
     };
