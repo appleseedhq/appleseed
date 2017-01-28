@@ -1235,6 +1235,11 @@ namespace
             {
                 move_if_exist(bsdf, "anisotropy", "anisotropic");
             }
+            else if (strcmp(bsdf.get_model(), SpecularBTDFFactory().get_model()) == 0)
+            {
+                move_if_exist(bsdf, "volume_density", "density");
+                move_if_exist(bsdf, "volume_scale", "scale");
+            }
         }
     };
 }
