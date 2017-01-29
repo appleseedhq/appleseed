@@ -532,7 +532,7 @@ closure color microfacet(
             color(0),   // reflection tint
             color(1),   // refraction tint
             xalpha,     // roughness
-            anisotropy, // anisotropic
+            anisotropy,
             eta,
             color(1),   // volume transmittance
             0.0);       // volume transmittance distance
@@ -544,7 +544,7 @@ closure color microfacet(
             N,
             U,
             xalpha,     // roughness
-            anisotropy, // anisotropy
+            anisotropy,
             eta);
     }
 }
@@ -561,15 +561,15 @@ closure color refraction(normal N, float eta)
     return as_glass(
         "beckmann",
         N,
-        vector(0), // U
-        color(1),  // surface transmittance
-        color(0),  // reflection tint
-        color(1),  // refraction tint
-        0.0,       // roughness
-        0.0,       // anisotropy
+        vector(0),      // U
+        color(1),       // surface transmittance
+        color(0),       // reflection tint
+        color(1),       // refraction tint
+        0.0,            // roughness
+        0.0,            // anisotropy
         eta,
-        color(1), // volume transmittance
-        0.0);     // volume transmittance distance
+        color(1),       // volume transmittance
+        0.0);           // volume transmittance distance
 }
 closure color transparent() BUILTIN;
 closure color debug(string tag) BUILTIN;

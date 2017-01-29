@@ -369,7 +369,9 @@ namespace
             auto_release_ptr<BSDF> bsdf =
                 GlassBSDFFactory().create_osl(
                     "glass_bsdf",
-                    ParamArray().insert("mdf", mdf_name));
+                    ParamArray()
+                        .insert("mdf", mdf_name)
+                        .insert("volume_parameterization", "transmittance"));
 
             m_all_bsdfs[cid] = bsdf.get();
             return bsdf;
