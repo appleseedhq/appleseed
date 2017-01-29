@@ -102,10 +102,13 @@ namespace
             m_inputs.declare("reflection_tint", InputFormatSpectralReflectance, "1.0");
             m_inputs.declare("refraction_tint", InputFormatSpectralReflectance, "1.0");
             m_inputs.declare("roughness", InputFormatFloat, "0.15");
-            m_inputs.declare("anisotropic", InputFormatFloat, "0.0");
+            m_inputs.declare("anisotropy", InputFormatFloat, "0.0");
             m_inputs.declare("ior", InputFormatFloat, "1.5");
             m_inputs.declare("volume_transmittance", InputFormatSpectralReflectance, "1.0");
             m_inputs.declare("volume_transmittance_distance", InputFormatFloat, "0.0");
+            m_inputs.declare("volume_absorption", InputFormatSpectralReflectance, "0.0");
+            m_inputs.declare("volume_density", InputFormatFloat, "0.0");
+            m_inputs.declare("volume_scale", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -128,6 +131,7 @@ namespace
                 return false;
 
             const EntityDefMessageContext context("bsdf", this);
+
             const string mdf =
                 m_params.get_required<string>(
                     "mdf",
@@ -139,6 +143,19 @@ namespace
                 m_mdf.reset(new GGXMDF<float>());
             else if (mdf == "beckmann")
                 m_mdf.reset(new BeckmannMDF<float>());
+            else return false;
+
+            const string volume_parameterization =
+                m_params.get_required<string>(
+                    "volume_parameterization",
+                    "transmittance",
+                    make_vector("transmittance", "absorption"),
+                    context);
+
+            if (volume_parameterization == "transmittance")
+                m_volume_parameterization = TransmittanceParameterization;
+            else if (volume_parameterization == "absorption")
+                m_volume_parameterization = AbsorptionParameterization;
             else return false;
 
             return true;
@@ -198,7 +215,7 @@ namespace
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
                 values->m_roughness,
-                values->m_anisotropic,
+                values->m_anisotropy,
                 alpha_x,
                 alpha_y);
 
@@ -310,7 +327,7 @@ namespace
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
                 values->m_roughness,
-                values->m_anisotropic,
+                values->m_anisotropy,
                 alpha_x,
                 alpha_y);
 
@@ -379,7 +396,7 @@ namespace
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
                 values->m_roughness,
-                values->m_anisotropic,
+                values->m_anisotropy,
                 alpha_x,
                 alpha_y);
 
@@ -424,25 +441,56 @@ namespace
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            if (values->m_volume_transmittance_distance != 0.0f)
+            if (m_volume_parameterization == TransmittanceParameterization)
             {
-                // [2] Volumetric absorption reparameterization, page 5.
-                absorption.resize(values->m_volume_transmittance.size());
-                const float d = distance / values->m_volume_transmittance_distance;
-                for (size_t i = 0, e = absorption.size(); i < e; ++i)
+                if (values->m_volume_transmittance_distance == 0.0f)
+                    absorption.set(1.0f);
+                else
                 {
-                    const float a = log(max(values->m_volume_transmittance[i], 0.01f));
-                    absorption[i] = exp(a * d);
+                    // [2] Volumetric absorption reparameterization, page 5.
+                    absorption.resize(values->m_volume_transmittance.size());
+                    const float d = distance / values->m_volume_transmittance_distance;
+                    for (size_t i = 0, e = absorption.size(); i < e; ++i)
+                    {
+                        const float a = log(max(values->m_volume_transmittance[i], 0.01f));
+                        absorption[i] = exp(a * d);
+                    }
                 }
             }
             else
-                absorption.set(1.0f);
+            {
+                const float d = values->m_volume_density * values->m_volume_scale * distance;
+
+                absorption.resize(values->m_volume_absorption.size());
+
+                for (size_t i = 0, e = absorption.size(); i < e; ++i)
+                {
+                    //
+                    // Reference:
+                    //
+                    //   Beer-Lambert law:
+                    //   https://en.wikipedia.org/wiki/Beer%E2%80%93Lambert_law
+                    //
+
+                    const float a = values->m_volume_absorption[i];
+                    const float optical_depth = a * d;
+                    absorption[i] = exp(-optical_depth);
+                }
+            }
         }
 
       private:
         typedef GlassBSDFInputValues InputValues;
 
-        auto_ptr<MDF<float> > m_mdf;
+        auto_ptr<MDF<float> >   m_mdf;
+
+        enum VolumeParameterization
+        {
+            TransmittanceParameterization,
+            AbsorptionParameterization
+        };
+
+        VolumeParameterization  m_volume_parameterization;
 
         static float choose_reflection_probability(
             const InputValues*      values,
@@ -711,8 +759,8 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "anisotropic")
-            .insert("label", "Anisotropic")
+            .insert("name", "anisotropy")
+            .insert("label", "Anisotropy")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
@@ -725,6 +773,19 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
+            .insert("name", "volume_parameterization")
+            .insert("label", "Volume Absorption Parameterization")
+            .insert("type", "enumeration")
+            .insert("items",
+                Dictionary()
+                    .insert("Transmittance", "transmittance")
+                    .insert("Absorption", "absorption"))
+            .insert("use", "required")
+            .insert("default", "transmittance")
+            .insert("on_change", "rebuild_form"));
+
+    metadata.push_back(
+        Dictionary()
             .insert("name", "volume_transmittance")
             .insert("label", "Volume Transmittance")
             .insert("type", "colormap")
@@ -733,7 +794,10 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "1.0"));
+            .insert("default", "1.0")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("volume_parameterization", "transmittance")));
 
     metadata.push_back(
         Dictionary()
@@ -746,7 +810,51 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional")
             .insert("min_value", "0.0")
-            .insert("default", "0.0"));
+            .insert("default", "0.0")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("volume_parameterization", "transmittance")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "volume_absorption")
+            .insert("label", "Volume Absorption")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "0.0")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("volume_parameterization", "absorption")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "volume_density")
+            .insert("label", "Volume Density")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "10.0")
+            .insert("use", "optional")
+            .insert("default", "0.0")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("volume_parameterization", "absorption")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "volume_scale")
+            .insert("label", "Volume Scale")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "10.0")
+            .insert("use", "optional")
+            .insert("default", "1.0")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("volume_parameterization", "absorption")));
 
     return metadata;
 }

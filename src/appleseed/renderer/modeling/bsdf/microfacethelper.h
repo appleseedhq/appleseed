@@ -60,19 +60,19 @@ inline float microfacet_alpha_from_roughness(const float& roughness)
 
 inline void microfacet_alpha_from_roughness(
     const float&   roughness,
-    const float&   anisotropic,
+    const float&   anisotropy,
     float&         alpha_x,
     float&         alpha_y)
 {
-    if (anisotropic >= 0.0f)
+    if (anisotropy >= 0.0f)
     {
-        const float aspect = std::sqrt(1.0f - anisotropic * 0.9f);
+        const float aspect = std::sqrt(1.0f - anisotropy * 0.9f);
         alpha_x = std::max(0.001f, foundation::square(roughness) / aspect);
         alpha_y = std::max(0.001f, foundation::square(roughness) * aspect);
     }
     else
     {
-        const float aspect = std::sqrt(1.0f + anisotropic * 0.9f);
+        const float aspect = std::sqrt(1.0f + anisotropy * 0.9f);
         alpha_x = std::max(0.001f, foundation::square(roughness) * aspect);
         alpha_y = std::max(0.001f, foundation::square(roughness) / aspect);
     }

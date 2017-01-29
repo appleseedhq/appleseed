@@ -61,10 +61,13 @@ APPLESEED_DECLARE_INPUT_VALUES(GlassBSDFInputValues)
     Spectrum        m_reflection_tint;
     Spectrum        m_refraction_tint;
     float           m_roughness;
-    float           m_anisotropic;
+    float           m_anisotropy;
     float           m_ior;
     Spectrum        m_volume_transmittance;
     float           m_volume_transmittance_distance;
+    Spectrum        m_volume_absorption;
+    float           m_volume_density;
+    float           m_volume_scale;
 
     struct Precomputed
     {
@@ -72,7 +75,6 @@ APPLESEED_DECLARE_INPUT_VALUES(GlassBSDFInputValues)
         float       m_eta;
         Spectrum    m_reflection_color;
         Spectrum    m_refraction_color;
-        Spectrum    m_absorption;
         float       m_reflection_weight;
         float       m_refraction_weight;
     };

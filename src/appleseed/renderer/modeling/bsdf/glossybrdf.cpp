@@ -98,7 +98,7 @@ namespace
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("roughness", InputFormatFloat, "0.15");
-            m_inputs.declare("anisotropic", InputFormatFloat, "0.0");
+            m_inputs.declare("anisotropy", InputFormatFloat, "0.0");
             m_inputs.declare("ior", InputFormatFloat, "1.5");
         }
 
@@ -182,7 +182,7 @@ namespace
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
                 values->m_roughness,
-                values->m_anisotropic,
+                values->m_anisotropy,
                 alpha_x,
                 alpha_y);
 
@@ -238,7 +238,7 @@ namespace
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
                 values->m_roughness,
-                values->m_anisotropic,
+                values->m_anisotropy,
                 alpha_x,
                 alpha_y);
 
@@ -302,7 +302,7 @@ namespace
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
                 values->m_roughness,
-                values->m_anisotropic,
+                values->m_anisotropy,
                 alpha_x,
                 alpha_y);
 
@@ -413,8 +413,8 @@ DictionaryArray GlossyBRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "anisotropic")
-            .insert("label", "Anisotropic")
+            .insert("name", "anisotropy")
+            .insert("label", "Anisotropy")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()

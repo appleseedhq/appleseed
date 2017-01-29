@@ -59,7 +59,7 @@ APPLESEED_DECLARE_INPUT_VALUES(GlossyBRDFInputValues)
     Spectrum    m_reflectance;
     float       m_reflectance_multiplier;
     float       m_roughness;
-    float       m_anisotropic;
+    float       m_anisotropy;
     float       m_ior;
 
     struct Precomputed

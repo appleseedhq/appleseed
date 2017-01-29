@@ -63,8 +63,8 @@ APPLESEED_DECLARE_INPUT_VALUES(SpecularBTDFInputValues)
     float       m_transmittance_multiplier;     // specular transmittance multiplier
     float       m_fresnel_multiplier;           // Fresnel multiplier
     float       m_ior;                          // index of refraction inside the medium
-    float       m_density;                      // medium density
-    float       m_scale;                        // distance scaling factor
+    float       m_volume_density;               // volume density
+    float       m_volume_scale;                 // volume scaling factor
 
     struct Precomputed
     {

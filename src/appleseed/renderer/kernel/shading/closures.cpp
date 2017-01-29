@@ -422,7 +422,7 @@ namespace
             OSL::Color3     reflection_tint;
             OSL::Color3     refraction_tint;
             float           roughness;
-            float           anisotropic;
+            float           anisotropy;
             float           ior;
             OSL::Color3     volume_transmittance;
             float           volume_transmittance_distance;
@@ -449,7 +449,7 @@ namespace
                 CLOSURE_COLOR_PARAM(Params, reflection_tint),
                 CLOSURE_COLOR_PARAM(Params, refraction_tint),
                 CLOSURE_FLOAT_PARAM(Params, roughness),
-                CLOSURE_FLOAT_PARAM(Params, anisotropic),
+                CLOSURE_FLOAT_PARAM(Params, anisotropy),
                 CLOSURE_FLOAT_PARAM(Params, ior),
                 CLOSURE_COLOR_PARAM(Params, volume_transmittance),
                 CLOSURE_FLOAT_PARAM(Params, volume_transmittance_distance),
@@ -503,7 +503,7 @@ namespace
             values->m_reflection_tint = Color3f(p->reflection_tint);
             values->m_refraction_tint = Color3f(p->refraction_tint);
             values->m_roughness = max(p->roughness, 0.0001f);
-            values->m_anisotropic = clamp(p->anisotropic, -1.0f, 1.0f);
+            values->m_anisotropy = clamp(p->anisotropy, -1.0f, 1.0f);
             values->m_ior = max(p->ior, 0.001f);
             values->m_volume_transmittance = Color3f(p->volume_transmittance);
             values->m_volume_transmittance_distance = p->volume_transmittance_distance;
@@ -521,7 +521,7 @@ namespace
             OSL::Vec3       N;
             OSL::Vec3       T;
             float           roughness;
-            float           anisotropic;
+            float           anisotropy;
             float           ior;
         };
 
@@ -543,7 +543,7 @@ namespace
                 CLOSURE_VECTOR_PARAM(Params, N),
                 CLOSURE_VECTOR_PARAM(Params, T),
                 CLOSURE_FLOAT_PARAM(Params, roughness),
-                CLOSURE_FLOAT_PARAM(Params, anisotropic),
+                CLOSURE_FLOAT_PARAM(Params, anisotropy),
                 CLOSURE_FLOAT_PARAM(Params, ior),
                 CLOSURE_FINISH_PARAM(Params)
             };
@@ -593,7 +593,7 @@ namespace
             values->m_reflectance.set(1.0f);
             values->m_reflectance_multiplier = 1.0f;
             values->m_roughness = max(p->roughness, 0.0f);
-            values->m_anisotropic = clamp(p->anisotropic, -1.0f, 1.0f);
+            values->m_anisotropy = clamp(p->anisotropy, -1.0f, 1.0f);
             values->m_ior = max(p->ior, 0.001f);
         }
     };
@@ -637,7 +637,7 @@ namespace
             OSL::Color3     normal_reflectance;
             OSL::Color3     edge_tint;
             float           roughness;
-            float           anisotropic;
+            float           anisotropy;
         };
 
         static const char* name()
@@ -660,7 +660,7 @@ namespace
                 CLOSURE_COLOR_PARAM(Params, normal_reflectance),
                 CLOSURE_COLOR_PARAM(Params, edge_tint),
                 CLOSURE_FLOAT_PARAM(Params, roughness),
-                CLOSURE_FLOAT_PARAM(Params, anisotropic),
+                CLOSURE_FLOAT_PARAM(Params, anisotropy),
                 CLOSURE_FINISH_PARAM(Params)
             };
 
@@ -710,7 +710,7 @@ namespace
             values->m_edge_tint = Color3f(p->edge_tint);
             values->m_reflectance_multiplier = 1.0f;
             values->m_roughness = max(p->roughness, 0.0f);
-            values->m_anisotropic = clamp(p->anisotropic, -1.0f, 1.0f);
+            values->m_anisotropy = clamp(p->anisotropy, -1.0f, 1.0f);
         }
     };
 
@@ -880,7 +880,7 @@ namespace
             values->m_reflectance.set(1.0f);
             values->m_reflectance_multiplier = 1.0f;
             values->m_roughness = 0.0f;
-            values->m_anisotropic = 0.0f;
+            values->m_anisotropy = 0.0f;
             values->m_ior = max(p->ior, 0.001f);
         }
     };

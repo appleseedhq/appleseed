@@ -75,8 +75,8 @@ namespace
             m_inputs.declare("transmittance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("fresnel_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("ior", InputFormatFloat);
-            m_inputs.declare("density", InputFormatFloat, "0.0");
-            m_inputs.declare("scale", InputFormatFloat, "1.0");
+            m_inputs.declare("volume_density", InputFormatFloat, "0.0");
+            m_inputs.declare("volume_scale", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -233,7 +233,7 @@ namespace
             Spectrum&               absorption) const APPLESEED_OVERRIDE
         {
             const InputValues* values = static_cast<const InputValues*>(data);
-            const float d = values->m_density * values->m_scale * distance;
+            const float d = values->m_volume_density * values->m_volume_scale * distance;
 
             absorption.resize(values->m_transmittance.size());
 
@@ -347,8 +347,8 @@ DictionaryArray SpecularBTDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "density")
-            .insert("label", "Density")
+            .insert("name", "volume_density")
+            .insert("label", "Volume Density")
             .insert("type", "numeric")
             .insert("min_value", "0.0")
             .insert("max_value", "10.0")
@@ -357,8 +357,8 @@ DictionaryArray SpecularBTDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "scale")
-            .insert("label", "Scale")
+            .insert("name", "volume_scale")
+            .insert("label", "Volume Scale")
             .insert("type", "numeric")
             .insert("min_value", "0.0")
             .insert("max_value", "10.0")

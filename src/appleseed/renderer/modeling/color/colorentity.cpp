@@ -285,7 +285,9 @@ DictionaryArray ColorEntityFactory::get_input_metadata()
             .insert("type", "text")
             .insert("default", "400.0 700.0")
             .insert("use", "optional")
-            .insert("on_change", "rebuild_form"));
+            .insert("visible_if",
+                Dictionary()
+                    .insert("color_space", "spectral")));
 
     metadata.push_back(
         Dictionary()
