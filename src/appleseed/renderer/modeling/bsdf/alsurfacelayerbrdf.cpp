@@ -131,6 +131,9 @@ namespace
                     values->m_precomputed.m_alpha_y = lerp(alpha, 1.0f, t);
             }
 
+            values->m_precomputed.m_alpha_x = clamp(values->m_precomputed.m_alpha_x, 0.001f, 0.999f);
+            values->m_precomputed.m_alpha_y = clamp(values->m_precomputed.m_alpha_y, 0.001f, 0.999f);
+
             // Allocate memory and initialize the nested closure tree.
             values->m_substrate_closure_data = shading_context.osl_mem_alloc(sizeof(CompositeSurfaceClosure));
 
@@ -176,9 +179,11 @@ namespace
                 values->m_precomputed.m_alpha_y);
             assert(m.y > 0.0f);
 
-            // Choose between layer and substrate.
-            const float layer_probability = fresnel_term(*values, wo, m, sample.m_value);
+            float layer_weight;
+            float layer_probability;
+            fresnel_term(*values, wo, m, sample.m_value, layer_weight, layer_probability);
 
+            // Choose between layer and substrate.
             if (s[3] < layer_probability)
             {
                 // Compute the reflected direction.
@@ -194,20 +199,21 @@ namespace
                     m,
                     sample.m_value);
 
-                sample.m_probability = reflection_pdf(*values, mdf, wo, m);
+                sample.m_probability = reflection_pdf(*values, mdf, wo, m) * layer_probability;
                 sample.m_mode = ScatteringMode::Glossy;
                 sample.m_incoming = Dual3f(shading_basis.transform_to_parent(wi));
                 sample.compute_reflected_differentials();
             }
             else
             {
-                // Sample the substrate.
                 values->m_osl_bsdf->sample(
                     sampling_context,
                     values->m_substrate_closure_data,
                     adjoint,
                     false, // do not multiply by |cos(incoming, normal)|
                     sample);
+                sample.m_value *= 1.0f - layer_weight;
+                sample.m_probability *= 1.0f - layer_probability;
             }
         }
 
@@ -227,9 +233,31 @@ namespace
             const Vector3f wi = shading_basis.transform_to_local(incoming);
             const Vector3f wo = shading_basis.transform_to_local(outgoing);
 
-            if ((!ScatteringMode::has_glossy(modes)) || (wi.y * wo.y < 0.0f))
+            const Vector3f m = half_reflection_vector(wi, wo);
+
+            float probability = 0.0f;
+            value.resize(values->m_reflectance.size());
+            value.set(0.0f);
+
+            float layer_weight;
+            float layer_probability;
+            Spectrum f_value;
+            fresnel_term(*values, wo, m, f_value, layer_weight, layer_probability);
+
+            if (ScatteringMode::has_glossy(modes) && (wi.y * wo.y >= 0.0f))
             {
-                return values->m_osl_bsdf->evaluate(
+                const MDF<float>& mdf = pick_mdf(values->m_distribution);
+                value = f_value;
+                evaluate_reflection(*values, mdf, wi, wo, m, value);
+                probability = layer_probability * reflection_pdf(*values, mdf, wo, m);
+            }
+
+            const float substrate_probability = 1.0f - layer_probability;
+
+            if (substrate_probability > 0.0f)
+            {
+                Spectrum substrate_value;
+                probability += values->m_osl_bsdf->evaluate(
                     values->m_substrate_closure_data,
                     adjoint,
                     false, // do not multiply by |cos(incoming, normal)|
@@ -238,32 +266,10 @@ namespace
                     outgoing,
                     incoming,
                     modes,
-                    value);
+                    substrate_value) * substrate_probability;
+                madd(value, substrate_value, (1.0f - layer_weight));
             }
 
-            const Vector3f m = half_reflection_vector(wi, wo);
-            const float layer_weight = fresnel_term(*values, wo, m, value);
-
-            const MDF<float>& mdf = pick_mdf(values->m_distribution);
-            evaluate_reflection(*values, mdf, wi, wo, m, value);
-
-            float probability = layer_weight * reflection_pdf(*values, mdf, wo, m);
-
-            Spectrum substrate_value;
-            const float substrate_weight = 1.0f - layer_weight;
-
-            probability += values->m_osl_bsdf->evaluate(
-                values->m_substrate_closure_data,
-                adjoint,
-                false, // do not multiply by |cos(incoming, normal)|
-                geometric_normal,
-                shading_basis,
-                outgoing,
-                incoming,
-                modes,
-                substrate_value) * substrate_weight;
-
-            madd(value, substrate_value, substrate_weight);
             return probability;
         }
 
@@ -279,32 +285,33 @@ namespace
 
             const Vector3f wi = shading_basis.transform_to_local(incoming);
             const Vector3f wo = shading_basis.transform_to_local(outgoing);
+            const Vector3f m = half_reflection_vector(wi, wo);
 
-            if ((!ScatteringMode::has_glossy(modes)) || (wi.y * wo.y < 0.0f))
+            float layer_weight;
+            float layer_probability;
+            Spectrum value;
+            fresnel_term(*values, wo, m, value, layer_weight, layer_probability);
+
+            float probability = 0.0f;
+
+            if (ScatteringMode::has_glossy(modes) && (wi.y * wo.y >= 0.0f))
             {
-                return values->m_osl_bsdf->evaluate_pdf(
+                const MDF<float>& mdf = pick_mdf(values->m_distribution);
+                probability = layer_probability * reflection_pdf(*values, mdf, wo, m);
+            }
+
+            const float substrate_probability = 1.0f - layer_probability;
+
+            if (substrate_probability > 0.0f)
+            {
+                probability += values->m_osl_bsdf->evaluate_pdf(
                     values->m_substrate_closure_data,
                     geometric_normal,
                     shading_basis,
                     outgoing,
                     incoming,
-                    modes);
+                    modes) * substrate_probability;
             }
-
-            const Vector3f m = half_reflection_vector(wi, wo);
-            Spectrum f_value;
-            const float layer_probability = fresnel_term(*values, wo, m, f_value);
-
-            const MDF<float>& mdf = pick_mdf(values->m_distribution);
-            float probability = layer_probability * reflection_pdf(*values, mdf, wo, m);
-
-            probability += values->m_osl_bsdf->evaluate_pdf(
-                values->m_substrate_closure_data,
-                geometric_normal,
-                shading_basis,
-                outgoing,
-                incoming,
-                modes) * (1.0f - layer_probability);
 
             return probability;
         }
@@ -356,27 +363,41 @@ namespace
                 return m_ggx_mdf;
         }
 
-        static float fresnel_term(
+        static void fresnel_term(
             const InputValues&  values,
             Vector3f            wo,
             const Vector3f&     m,
-            Spectrum&           value)
+            Spectrum&           value,
+            float&              weight,
+            float&              probability)
         {
-            const Vector3f n(0.0f, 1.0f, 0.0f);
-
             if (wo.y < 0.0f)
                 wo = -wo;
 
             if (values.m_fresnel_mode == Dielectric)
             {
-                const FresnelDielectricFun f(
-                    values.m_reflectance,
-                    1.0f,
-                    1.0f / values.m_ior);
-                f(wo, m, n, value);
+                value.resize(values.m_reflectance.size());
+
+                const float cos_wom = dot(wo, m);
+                if (cos_wom < 0.0f)
+                {
+                    value.set(0.0f);
+                    weight = probability = 0.0f;
+                    return;
+                }
+
+                float f;
+                fresnel_reflectance_dielectric(
+                    f,
+                    1.0f / values.m_ior,
+                    min(cos_wom, 1.0f));
+
+                value = values.m_reflectance;
+                value *= f;
             }
             else
             {
+                const Vector3f n(0.0f, 1.0f, 0.0f);
                 const FresnelFriendlyConductorFun f(
                     values.m_normal_reflectance,
                     values.m_edge_tint,
@@ -385,7 +406,11 @@ namespace
                 value *= values.m_reflectance;
             }
 
-            return saturate(max_value(value));
+            weight = saturate(max_value(value));
+            // Use more samples for the layer.
+            probability = sqrt(weight);
+            const float total = probability + sqrt(1.0f - weight);
+            probability /= total;
         }
 
         static Vector3f half_reflection_vector(
