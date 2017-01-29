@@ -676,7 +676,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
         "enable_caustics",
         Dictionary()
             .insert("type", "bool")
-            .insert("default", "false")
+            .insert("default", "true")
             .insert("label", "Enable Caustics")
             .insert("help", "Enable caustics"));
 
@@ -781,7 +781,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
         "initial_radius",
         Dictionary()
             .insert("type", "float")
-            .insert("default", "1.0")
+            .insert("default", "0.1")
             .insert("unit", "percent")
             .insert("min", "0.0")
             .insert("max", "100.0")
