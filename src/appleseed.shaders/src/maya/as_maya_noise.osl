@@ -204,13 +204,14 @@ shader as_maya_noise
         filter_size = clamp(filter_size, 1.0e-8, 0.5);
 
         float val = 0;
+        point coords = in_frequency * point(st[0], st[1], 0);
 
         if (in_noiseType == 0)
         {
             if (in_inflection)
             {
-                val = fBm(
-                    point(st[0], st[1], 0),
+                val = turbulence(
+                    coords,
                     in_time,
                     filter_size,
                     in_amplitude,
@@ -220,14 +221,14 @@ shader as_maya_noise
             }
             else
             {
-                val = turbulence(
-                    point(st[0], st[1], 0),
+                val = fBm(
+                    coords,
                     in_time,
                     filter_size,
                     in_amplitude,
                     in_depthMax,
                     in_frequencyRatio,
-                    in_ratio);
+                    in_ratio) * .5 + .5;
             }
         }
         else if (in_noiseType == 1)
@@ -256,5 +257,7 @@ shader as_maya_noise
                     shadername, __FILE__, __LINE__);
 #endif
         }
+        out_outAlpha = clamp(val, 0, 1);
+        out_outColor = color(out_outAlpha);
     }
 }
