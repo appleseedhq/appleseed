@@ -35,6 +35,7 @@
 
 #include "appleseed/fractal/as_noise_helpers.h"
 #include "appleseed/math/as_math_helpers.h"
+#include "appleseed/pattern/as_pattern_helpers.h"
 
 float fBm(
     point surface_point,
@@ -50,6 +51,28 @@ float fBm(
     for (int i = 0; i < octaves; ++i)
     {
         sum += amp * filtered_snoise(pp, fw);
+        amp *= gain;
+        pp *= lacunarity;
+        fw *= lacunarity;
+    }
+    return sum;
+}
+
+float turbulence(
+    point surface_point,
+    float filter_width,
+    float amplitude,
+    int octaves,
+    float lacunarity,
+    float gain)
+{
+    point pp = surface_point;
+    float amp = amplitude, fw = filter_width, sum = 0.0;
+
+    for (int i = 0; i < octaves; ++i)
+    {
+        float tmp = amplitude * filtered_snoise(pp, fw);
+        sum += filtered_abs(tmp, fw);
         amp *= gain;
         pp *= lacunarity;
         fw *= lacunarity;
