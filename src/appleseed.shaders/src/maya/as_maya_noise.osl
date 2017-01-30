@@ -173,5 +173,66 @@ shader as_maya_noise
     ]]
 )
 {
-    ;
+    if (in_uvCoord[0] == OUTSIDE_UVFRAME || in_uvCoord[1] == OUTSIDE_UVFRAME)
+    {
+        out_outcolor = in_defaultColor;
+        out_outAlpha = maya_luminance(in_defaultColor);
+    }
+    else
+    {
+        float st[2] = {in_uvCoord[0], in_uvCoord[1]};
+
+        float dsdt[2] = {
+            in_filter *
+                (in_uvFilterSize[0] == UNDEFINED_UVFILTER
+                    ? filterwidth(st[0])
+                    : in_uvFilterSize[0]),
+            in_filter *
+                (in_uvFilterSize[1] == UNDEFINED_UVFILTER
+                    ? filterwidth(st[1])
+                    : in_uvFilterSize[1])};
+
+
+        // The filter size factors seem to match Maya's result better.
+
+        dsdt[0] += 2 * in_filterOffset;
+        dsdt[1] += 2 * in_filterOffset;
+
+        float filter_size = abs(max(dsdt[0], dsdt[1]));
+
+        filter_size = clamp(filter_size, 1.0e-8, 0.5);
+
+        float val = 0;
+
+        if (in_noiseType == 0)
+        {
+            val = noise("perlin", st[0], st[1]);
+        }
+        else if (in_noiseType == 1)
+        {
+            // billow
+        }
+        else if (in_noiseType == 2)
+        {
+            // wave
+        }
+        else if (in_noiseType == 3)
+        {
+            // wispy
+        }
+        else if (in_noiseType == 4)
+        {
+            // space-time
+        }
+        else
+        {
+#ifdef DEBUG
+            string shadername = "";
+            getattribute("shader:shadername", shadername);
+
+            warning("[WARNING]: invalid noise type in %s, %s:%i\n",
+                    shadername, __FILE__, __LINE__);
+#endif
+        }
+    }
 }
