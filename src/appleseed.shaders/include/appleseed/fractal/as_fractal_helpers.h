@@ -39,6 +39,7 @@
 
 float fBm(
     point surface_point,
+    float itime,
     float filter_width,
     float amplitude,
     int octaves,
@@ -50,7 +51,7 @@ float fBm(
 
     for (int i = 0; i < octaves; ++i)
     {
-        sum += amp * filtered_snoise(pp, fw);
+        sum += amp * filtered_snoise(pp, itime, fw);
         amp *= gain;
         pp *= lacunarity;
         fw *= lacunarity;
@@ -60,6 +61,7 @@ float fBm(
 
 float turbulence(
     point surface_point,
+    float itime,
     float filter_width,
     float amplitude,
     int octaves,
@@ -71,7 +73,7 @@ float turbulence(
 
     for (int i = 0; i < octaves; ++i)
     {
-        float tmp = amplitude * filtered_snoise(pp, fw);
+        float tmp = amplitude * filtered_snoise(pp, itime, fw);
         sum += filtered_abs(tmp, fw);
         amp *= gain;
         pp *= lacunarity;

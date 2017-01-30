@@ -26,7 +26,7 @@
 // THE SOFTWARE.
 //
 
-// Taken from noises.h, slightly tweaked for OSL
+// Filtered noise macros from noises.h, slightly tweaked for OSL
 
 /************************************************************************
  * noises.h - various noise-based patterns
@@ -52,20 +52,11 @@
 #include "appleseed/math/as_math_helpers.h"
 #include "appleseed/maya/as_maya_helpers.h"
 
-#define filtered_noise(p, filter_width)                                 \
-    (noise(p) * (1 - smoothstep(0.2, 0.75, filter_width)))
+#define filtered_noise(p, itime, filter_width)                          \
+    (noise(p,itime) * (1 - smoothstep(0.2, 0.75, filter_width)))
 
-#define filtered_snoise(p, filter_width)                                \
-    (snoise(p) * (1 - smoothstep(0.2, 0.75, filter_width)))
-
-// Variable lacunarity noise.
-#define vlnoise(p, scale)                                               \
-    (snoise((vector) snoise(p) * scale + p))
-
-#define filtered_vlnoise(p, scale)                                      \
-    (filtered_snoise((vector) noise(p) *                                \
-    (1 - smoothstep(0.2, 0.75, filter_width)) * scale + p,              \
-    filter_width)
+#define filtered_snoise(p, itime, filter_width)                         \
+    (snoise(p, itime) * (1 - smoothstep(0.2, 0.75, filter_width)))
 
 float noise_quadratic(vector control_p, float x)
 {
