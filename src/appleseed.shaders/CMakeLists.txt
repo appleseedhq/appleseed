@@ -151,7 +151,7 @@ source_group ("src\\gaffer" FILES
     ${gaffer_osl_sources}
 )
 
-set (appleseed_maya2_osl_sources
+set (appleseed_maya_osl_sources
      src/maya/as_maya_addDoubleLinear.osl
      src/maya/as_maya_addMatrix.osl
      src/maya/as_maya_areaLight.osl
@@ -204,9 +204,25 @@ set (appleseed_maya2_osl_sources
      src/maya/as_maya_vectorProduct.osl
      src/maya/as_maya_wtAddMatrix.osl
 )
-list (APPEND osl_sources ${appleseed_maya2_osl_sources})
+list (APPEND osl_sources ${appleseed_maya_osl_sources})
 source_group ("src\\maya" FILES
-    ${appleseed_maya2_osl_sources}
+    ${appleseed_maya_osl_sources}
+)
+
+set (appleseed_alshaders_osl_sources
+     src/alshaders/alCombineColor.osl
+     src/alshaders/alCombineFloat.osl
+     src/alshaders/alJitterColor.osl
+     src/alshaders/alLayerColor.osl
+     src/alshaders/alLayerFloat.osl
+     src/alshaders/alRemapColor.osl
+     src/alshaders/alSurface.osl
+     src/alshaders/alSwitchColor.osl
+     src/alshaders/alSwitchFloat.osl
+)
+list (APPEND osl_sources ${appleseed_alshaders_osl_sources})
+source_group ("src\\alshaders" FILES
+    ${appleseed_alshaders_osl_sources}
 )
 
 
