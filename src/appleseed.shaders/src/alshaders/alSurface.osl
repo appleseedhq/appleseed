@@ -237,30 +237,28 @@ shader alSurface
         sssWeight2_ *= normweight;
         sssWeight3_ *= normweight;
 
+        color sssColor = diffuseColor_ * sssMix;
         float sssIor = 1.3;
 
         if (sssMode == SSSMODE_CUBIC)
         {
             if (sssWeight1_ > IMPORTANCE_EPS)
             {
-                float radiusFactor = 30;
-                float weightFactor = 1.15;
-
                 color radius = max(
                     color(0.0001),
-                    sssRadius * sssRadiusColor / (sssDensityScale * radiusFactor));
+                    sssRadius * sssRadiusColor / sssDensityScale);
 
-                rgb += diffuseColor_ * sssMix * weightFactor * red * sssWeight1_ * as_subsurface_gaussian(
+                rgb += sssColor * red * sssWeight1_ * as_subsurface_gaussian(
                     diffuseNormal_,
                     white,
                     radius[0],
                     sssIor);
-                rgb += diffuseColor_ * sssMix * weightFactor * green * sssWeight1_ * as_subsurface_gaussian(
+                rgb += sssColor * green * sssWeight1_ * as_subsurface_gaussian(
                     diffuseNormal_,
                     white,
                     radius[1],
                     sssIor);
-                rgb += diffuseColor_ * sssMix * weightFactor * blue * sssWeight1_ * as_subsurface_gaussian(
+                rgb += sssColor * blue * sssWeight1_ * as_subsurface_gaussian(
                     diffuseNormal_,
                     white,
                     radius[2],
@@ -269,20 +267,13 @@ shader alSurface
         }
         else if (sssMode == SSSMODE_EMPIRICAL)
         {
-            float radiusFactor = 7 * 1.0;
-            float weightFactor = 1.0;
-            float radiusSaturation = 0.33;
-
             if (sssWeight1_ > IMPORTANCE_EPS)
             {
                 color radius = max(
                     color(0.0001),
-                    sssRadius * sssRadiusColor / (sssDensityScale * radiusFactor));
+                    sssRadius * sssRadiusColor / (sssDensityScale * 7.0));
 
-                float radiusAvg = (radius[0] + radius[1] + radius[2]) / 3.0;
-                radius = mix(color(radiusAvg), radius, radiusSaturation);
-
-                rgb += diffuseColor_ * sssMix * weightFactor * sssWeight1_ * as_subsurface(
+                rgb += sssColor * sssWeight1_ * as_subsurface(
                     "normalized_diffusion",
                     diffuseNormal_,
                     white,
