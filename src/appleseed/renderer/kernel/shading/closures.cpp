@@ -1099,7 +1099,7 @@ namespace
 
             values->m_reflectance = Color3f(p->reflectance);
             values->m_reflectance_multiplier = 1.0f;
-            values->m_v = p->radius;
+            values->m_radius = p->radius;
             values->m_ior = p->ior;
         }
     };

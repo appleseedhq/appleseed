@@ -124,7 +124,7 @@ namespace
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("v", InputFormatFloat);
+            m_inputs.declare("radius", InputFormatFloat);
             m_inputs.declare("ior", InputFormatFloat);
         }
 
@@ -156,8 +156,11 @@ namespace
             // Precompute the relative index of refraction.
             values->m_precomputed.m_eta = compute_eta(shading_point, values->m_ior);
 
+            // The remapping deom radius to v comes from Cycles.
+            values->m_precomputed.m_v = square(values->m_radius) * square(0.25f);
+
             // Precompute the (square of the) max radius.
-            values->m_precomputed.m_rmax2 = values->m_v * RMax2Constant;
+            values->m_precomputed.m_rmax2 = values->m_precomputed.m_v * RMax2Constant;
         }
 
         virtual bool sample(
@@ -176,7 +179,7 @@ namespace
             sampling_context.split_in_place(2, 1);
             const Vector2f s = sampling_context.next2<Vector2f>();
 
-            const float v = values->m_v;
+            const float v = values->m_precomputed.m_v;
             const float radius = sqrt(-2.0f * v * log(1.0f - s[0] * (1.0f - exp(-rmax2 / (2.0f * v)))));
             const float phi = TwoPi<float>() * s[1];
 
@@ -210,7 +213,7 @@ namespace
                 return;
             }
 
-            const float v = values->m_v;
+            const float v = values->m_precomputed.m_v;
             const float rd = exp(-square_radius / (2.0f * v)) / (TwoPi<float>() * v * RIntegralThreshold);
 
             value = values->m_reflectance;
@@ -231,7 +234,7 @@ namespace
             if (r2 > rmax2)
                 return 0.0f;
 
-            const float v = values->m_v;
+            const float v = values->m_precomputed.m_v;
             return exp(-r2 / (2.0f * v)) / (TwoPi<float>() * v * RIntegralThreshold);
         }
     };
@@ -283,8 +286,8 @@ DictionaryArray GaussianBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "v")
-            .insert("label", "V")
+            .insert("name", "radius")
+            .insert("label", "Radius")
             .insert("type", "numeric")
             .insert("min_value", "0.0")
             .insert("max_value", "10.0")
