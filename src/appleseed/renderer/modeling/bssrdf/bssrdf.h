@@ -135,6 +135,8 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const size_t                channel,
         const float                 radius) const = 0;
 
+    virtual float get_fresnel_weight(const void* data) const;
+
   protected:
     struct Impl;
     Impl* impl;

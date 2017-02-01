@@ -114,6 +114,11 @@ void BSSRDF::prepare_inputs(
 {
 }
 
+float BSSRDF::get_fresnel_weight(const void* data) const
+{
+    return 1.0f;
+}
+
 float BSSRDF::compute_eta(
     const ShadingPoint&     shading_point,
     const float             ior) const
