@@ -241,7 +241,11 @@ void DipoleBSSRDF::do_prepare_inputs(
         values->m_precomputed.m_channel_pdf);
 
     // Precompute the (square of the) max radius.
-    values->m_precomputed.m_rmax2 = foundation::square(dipole_max_radius(foundation::min_value(values->m_precomputed.m_sigma_tr)));
+    values->m_precomputed.m_rmax2 =
+        foundation::square(
+            dipole_max_radius(
+                foundation::min_value(
+                    values->m_precomputed.m_sigma_tr)));
 }
 
 }       // namespace renderer

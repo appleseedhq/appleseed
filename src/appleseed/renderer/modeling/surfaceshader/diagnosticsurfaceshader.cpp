@@ -550,10 +550,8 @@ void DiagnosticSurfaceShader::evaluate(
       case FacingRatio:
         {
             const Vector3d& normal = shading_point.get_shading_normal();
-            const Vector3d& view   = shading_point.get_ray().m_dir;
-
+            const Vector3d& view = shading_point.get_ray().m_dir;
             const double facing = abs(dot(normal, view));
-
             shading_result.set_main_to_linear_rgb(Color3f(static_cast<float>(facing)));
         }
         break;

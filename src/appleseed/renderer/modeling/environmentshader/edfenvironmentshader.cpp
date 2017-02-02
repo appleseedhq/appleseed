@@ -114,7 +114,6 @@ namespace
                     "cannot find environment edf \"%s\".",
                     get_path().c_str(),
                     name.c_str());
-
                 return false;
             }
 

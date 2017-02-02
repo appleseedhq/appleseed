@@ -102,8 +102,7 @@ namespace
 
     struct DisneySpecularFresnelFun
     {
-        explicit DisneySpecularFresnelFun(
-            const DisneyBRDFInputValues& values)
+        explicit DisneySpecularFresnelFun(const DisneyBRDFInputValues& values)
           : m_values(values)
         {
         }
@@ -129,8 +128,7 @@ namespace
 
     struct DisneyClearcoatFresnelFun
     {
-        explicit DisneyClearcoatFresnelFun(
-            const DisneyBRDFInputValues& values)
+        explicit DisneyClearcoatFresnelFun(const DisneyBRDFInputValues& values)
           : m_values(values)
         {
         }
