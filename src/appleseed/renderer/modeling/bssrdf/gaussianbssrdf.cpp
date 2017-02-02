@@ -36,6 +36,7 @@
 #include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/cdf.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
@@ -124,7 +125,8 @@ namespace
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("radius", InputFormatFloat);
+            m_inputs.declare("radius", InputFormatSpectralReflectance);
+            m_inputs.declare("radius_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("ior", InputFormatFloat);
         }
 
@@ -156,11 +158,42 @@ namespace
             // Precompute the relative index of refraction.
             values->m_precomputed.m_eta = compute_eta(shading_point, values->m_ior);
 
-            // The remapping deom radius to v comes from Cycles.
-            values->m_precomputed.m_v = square(values->m_radius) * square(0.25f);
+            make_reflectance_and_mfp_compatible(values->m_reflectance, values->m_radius);
 
-            // Precompute the (square of the) max radius.
-            values->m_precomputed.m_rmax2 = values->m_precomputed.m_v * RMax2Constant;
+            // Apply multipliers to input values.
+            values->m_reflectance *= values->m_reflectance_multiplier;
+            values->m_radius *= values->m_radius_multiplier;
+
+            // Build a CDF for channel sampling.
+            values->m_precomputed.m_channel_pdf.resize(values->m_reflectance.size());
+            values->m_precomputed.m_channel_cdf.resize(values->m_reflectance.size());
+
+            float cumulated_pdf = 0.0f;
+            for (size_t i = 0, e = values->m_precomputed.m_channel_pdf.size(); i < e; ++i)
+            {
+                const float r = values->m_reflectance[i];
+                values->m_precomputed.m_channel_pdf[i] = r;
+                cumulated_pdf += r;
+                values->m_precomputed.m_channel_cdf[i] = cumulated_pdf;
+            }
+
+            const float rcp_cumulated_pdf = 1.0f / cumulated_pdf;
+            values->m_precomputed.m_channel_pdf *= rcp_cumulated_pdf;
+            values->m_precomputed.m_channel_cdf *= rcp_cumulated_pdf;
+            values->m_precomputed.m_channel_cdf[values->m_precomputed.m_channel_cdf.size() - 1] = 1.0f;
+
+            // Precompute v and the (square of the) max radius.
+            float max_v = 0.0f;
+            values->m_precomputed.m_v.resize(values->m_radius.size());
+            for (size_t i = 0, e = values->m_precomputed.m_channel_pdf.size(); i < e; ++i)
+            {
+                // The remapping deom radius to v comes from Cycles.
+                const float v = square(values->m_radius[i]) * square(0.25f);
+                values->m_precomputed.m_v[i] = v;
+                max_v = max(max_v, v);
+            }
+
+            values->m_precomputed.m_rmax2 = max_v * RMax2Constant;
         }
 
         virtual bool sample(
@@ -176,15 +209,23 @@ namespace
             if (rmax2 <= 0.0f)
                 return false;
 
-            sampling_context.split_in_place(2, 1);
-            const Vector2f s = sampling_context.next2<Vector2f>();
+            sampling_context.split_in_place(3, 1);
+            const Vector3f s = sampling_context.next2<Vector3f>();
 
-            const float v = values->m_precomputed.m_v;
+            // Sample a channel.
+            const float* cdf_begin = &values->m_precomputed.m_channel_cdf[0];
+            const size_t channel =
+                sample_cdf(
+                    cdf_begin,
+                    cdf_begin + values->m_precomputed.m_channel_cdf.size(),
+                    s[0]);
+
+            const float v = values->m_precomputed.m_v[channel];
             const float radius = sqrt(-2.0f * v * log(1.0f - s[0] * (1.0f - exp(-rmax2 / (2.0f * v)))));
             const float phi = TwoPi<float>() * s[1];
 
             sample.m_eta = values->m_precomputed.m_eta;
-            sample.m_channel = 0;
+            sample.m_channel = channel;
             sample.m_point = Vector2f(radius * cos(phi), radius * sin(phi));
             sample.m_rmax2 = rmax2;
 
@@ -213,11 +254,13 @@ namespace
                 return;
             }
 
-            const float v = values->m_precomputed.m_v;
-            const float rd = exp(-square_radius / (2.0f * v)) / (TwoPi<float>() * v * RIntegralThreshold);
-
             value = values->m_reflectance;
-            value *= values->m_reflectance_multiplier * rd;
+            for (size_t i = 0, e = value.size(); i < e; ++i)
+            {
+                const float v = values->m_precomputed.m_v[i];
+                const float rd = exp(-square_radius / (2.0f * v)) / (TwoPi<float>() * v * RIntegralThreshold);
+                value[i] *= rd;
+            }
         }
 
         virtual float evaluate_pdf(
@@ -234,8 +277,16 @@ namespace
             if (r2 > rmax2)
                 return 0.0f;
 
-            const float v = values->m_precomputed.m_v;
-            return exp(-r2 / (2.0f * v)) / (TwoPi<float>() * v * RIntegralThreshold);
+            float pdf = 0.0f;
+            for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
+            {
+                const float v = values->m_precomputed.m_v[i];
+                pdf +=
+                      exp(-r2 / (2.0f * v)) / (TwoPi<float>() * v * RIntegralThreshold)
+                    * values->m_precomputed.m_channel_pdf[i];
+            }
+
+            return pdf;
         }
     };
 }
@@ -288,11 +339,23 @@ DictionaryArray GaussianBSSRDFFactory::get_input_metadata() const
         Dictionary()
             .insert("name", "radius")
             .insert("label", "Radius")
-            .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "10.0")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", "0.5"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "radius_multiplier")
+            .insert("label", "Radius Multiplier")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()

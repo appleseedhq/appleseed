@@ -1055,7 +1055,7 @@ namespace
         {
             OSL::Vec3       N;
             OSL::Color3     reflectance;
-            float           radius;
+            OSL::Color3     radius;
             float           ior;
         };
 
@@ -1075,7 +1075,7 @@ namespace
             {
                 CLOSURE_VECTOR_PARAM(Params, N),
                 CLOSURE_COLOR_PARAM(Params, reflectance),
-                CLOSURE_FLOAT_PARAM(Params, radius),
+                CLOSURE_COLOR_PARAM(Params, radius),
                 CLOSURE_FLOAT_PARAM(Params, ior),
                 CLOSURE_FINISH_PARAM(Params)
             };
@@ -1099,7 +1099,8 @@ namespace
 
             values->m_reflectance = Color3f(p->reflectance);
             values->m_reflectance_multiplier = 1.0f;
-            values->m_radius = p->radius;
+            values->m_radius = Color3f(p->radius);
+            values->m_reflectance_multiplier = 1.0f;
             values->m_ior = p->ior;
         }
     };
