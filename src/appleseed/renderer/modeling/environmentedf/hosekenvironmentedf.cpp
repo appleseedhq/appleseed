@@ -44,7 +44,6 @@
 #include "foundation/image/colorspace.h"
 #include "foundation/image/regularspectrum.h"
 #include "foundation/math/fastmath.h"
-#include "foundation/math/matrix.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
@@ -169,7 +168,6 @@ namespace
             float&                  probability) const APPLESEED_OVERRIDE
         {
             const Vector3f local_outgoing = sample_hemisphere_cosine(s);
-            probability = local_outgoing.y * RcpPi<float>();
 
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
@@ -179,6 +177,8 @@ namespace
             if (shifted_outgoing.y > 0.0f)
                 compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
+
+            probability = shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
         }
 
         virtual void evaluate(
@@ -217,7 +217,7 @@ namespace
                 compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
 
-            probability = local_outgoing.y > 0.0f ? local_outgoing.y * RcpPi<float>() : 0.0f;
+            probability = shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
         }
 
         virtual float evaluate_pdf(
@@ -228,13 +228,10 @@ namespace
 
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
-            const Transformd::MatrixType& parent_to_local = transform.get_parent_to_local();
-            const float local_outgoing_y =
-                static_cast<float>(parent_to_local[ 4]) * outgoing.x +
-                static_cast<float>(parent_to_local[ 5]) * outgoing.y +
-                static_cast<float>(parent_to_local[ 6]) * outgoing.z;
+            const Vector3f local_outgoing = transform.vector_to_local(outgoing);
+            const Vector3f shifted_outgoing = shift(local_outgoing);
 
-            return local_outgoing_y > 0.0f ? local_outgoing_y * RcpPi<float>() : 0.0f;
+            return shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
         }
 
       private:
