@@ -174,8 +174,8 @@ namespace
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             outgoing = transform.vector_to_parent(local_outgoing);
-
             const Vector3f shifted_outgoing = shift(local_outgoing);
+
             if (shifted_outgoing.y > 0.0f)
                 compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
@@ -192,8 +192,8 @@ namespace
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
-
             const Vector3f shifted_outgoing = shift(local_outgoing);
+
             if (shifted_outgoing.y > 0.0f)
                 compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
@@ -211,8 +211,8 @@ namespace
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
-
             const Vector3f shifted_outgoing = shift(local_outgoing);
+
             if (shifted_outgoing.y > 0.0f)
                 compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
@@ -369,10 +369,10 @@ namespace
             // There is an error in the paper, coeffs[7] (H) and coeffs[8] (I) are reversed.
             const float u = 1.0f + coeffs[0] * exp(coeffs[1] / (cos_theta + 0.01f));
             const float v =   coeffs[2]
-                             + coeffs[3] * exp(coeffs[4] * gamma)
-                             + coeffs[5] * cos_gamma * cos_gamma
-                             + coeffs[6] * chi(coeffs[8], cos_gamma)
-                             + coeffs[7] * sqrt_cos_theta;
+                            + coeffs[3] * exp(coeffs[4] * gamma)
+                            + coeffs[5] * cos_gamma * cos_gamma
+                            + coeffs[6] * chi(coeffs[8], cos_gamma)
+                            + coeffs[7] * sqrt_cos_theta;
             return u * v;
         }
 

@@ -170,8 +170,8 @@ namespace
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             outgoing = transform.vector_to_parent(local_outgoing);
-
             const Vector3f shifted_outgoing = shift(local_outgoing);
+
             if (shifted_outgoing.y > 0.0f)
                 compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
@@ -188,8 +188,8 @@ namespace
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
-
             const Vector3f shifted_outgoing = shift(local_outgoing);
+
             if (shifted_outgoing.y > 0.0f)
                 compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
@@ -207,8 +207,8 @@ namespace
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
-
             const Vector3f shifted_outgoing = shift(local_outgoing);
+
             if (shifted_outgoing.y > 0.0f)
                 compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
@@ -316,7 +316,7 @@ namespace
             const float a = ( 0.00166f * turbidity - 0.02903f) * turbidity + 0.11693f;
             const float b = (-0.00375f * turbidity + 0.06377f) * turbidity - 0.21196f;
             const float c = ( 0.00209f * turbidity - 0.03202f) * turbidity + 0.06052f;
-            const float d = (                       0.00394f) * turbidity + 0.25886f;
+            const float d = (                        0.00394f) * turbidity + 0.25886f;
             return ((a * sun_theta + b) * sun_theta + c) * sun_theta + d;
         }
 
@@ -328,7 +328,7 @@ namespace
             const float e = ( 0.00275f * turbidity - 0.04214f) * turbidity + 0.15346f;
             const float f = (-0.00610f * turbidity + 0.08970f) * turbidity - 0.26756f;
             const float g = ( 0.00317f * turbidity - 0.04153f) * turbidity + 0.06670f;
-            const float h = (                       0.00516f) * turbidity + 0.26688f;
+            const float h = (                        0.00516f) * turbidity + 0.26688f;
             return ((e * sun_theta + f) * sun_theta + g) * sun_theta + h;
         }
 
