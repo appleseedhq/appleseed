@@ -276,10 +276,10 @@ void compute_absorption_and_scattering_dmfp(
 
         // Compute scattering coefficient.
         const float sigma_s_prime = alpha_prime * sigma_t_prime;
-        sigma_s[i] = static_cast<float>(sigma_s_prime * rcp_g_complement);
+        sigma_s[i] = sigma_s_prime * rcp_g_complement;
 
         // Compute absorption coefficient.
-        sigma_a[i] = static_cast<float>(sigma_t_prime - sigma_s_prime);
+        sigma_a[i] = sigma_t_prime - sigma_s_prime;
     }
 }
 
@@ -310,10 +310,10 @@ void compute_absorption_and_scattering_mfp(
         const float sigma_t = 1.0f / mfp[i];
 
         // Compute scattering coefficient.
-        sigma_s[i] = static_cast<float>(alpha * sigma_t);
+        sigma_s[i] = alpha * sigma_t;
 
         // Compute absorption coefficient.
-        sigma_a[i] = static_cast<float>(sigma_t - sigma_s[i]);
+        sigma_a[i] = sigma_t - sigma_s[i];
     }
 }
 

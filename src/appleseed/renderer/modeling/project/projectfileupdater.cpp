@@ -540,7 +540,7 @@ namespace
                         new_color_params.remove_path("multiplier");
 
                         ColorValueArray new_color_values;
-                        new_color_values.push_back(static_cast<float>(glossiness));
+                        new_color_values.push_back(glossiness);
 
                         auto_release_ptr<ColorEntity> new_color_entity(
                             ColorEntityFactory::create(

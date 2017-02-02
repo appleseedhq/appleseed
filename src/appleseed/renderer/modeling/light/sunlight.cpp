@@ -291,8 +291,8 @@ namespace
 
         void compute_sun_radiance(
             const Vector3d&         outgoing,
-            const double            turbidity,
-            const double            radiance_multiplier,
+            const float             turbidity,
+            const float             radiance_multiplier,
             Spectrum&               radiance) const
         {
             // Compute the relative optical mass.
@@ -307,7 +307,7 @@ namespace
                 tau_r[i] = exp(m * m_k1[i]);
 
             // Compute transmittance due to aerosols.
-            const float beta = 0.04608f * static_cast<float>(turbidity) - 0.04586f;
+            const float beta = 0.04608f * turbidity - 0.04586f;
             Spectrum tau_a;
             tau_a.resize(Spectrum::Samples);
             for (size_t i = 0; i < 31; ++i)
@@ -394,7 +394,7 @@ namespace
             radiance *= tau_g;      // always 1.0
 #endif
             radiance *= tau_wa;
-            radiance *= static_cast<float>(radiance_multiplier);
+            radiance *= radiance_multiplier;
         }
 
         void sample_disk(

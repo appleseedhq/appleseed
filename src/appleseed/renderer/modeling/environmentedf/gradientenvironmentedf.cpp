@@ -194,11 +194,10 @@ namespace
             const float blend = angle * (1.0f / HalfPi<float>());
 
             // Blend the horizon and zenith radiances.
-            const float k = static_cast<float>(blend);
             Spectrum horizon_radiance = m_values.m_horizon_radiance;
-            horizon_radiance *= k;
+            horizon_radiance *= blend;
             output = m_values.m_zenith_radiance;
-            output *= 1.0f - k;
+            output *= 1.0f - blend;
             output += horizon_radiance;
         }
     };

@@ -229,7 +229,7 @@ void DipoleBSSRDF::do_prepare_inputs(
 
     for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
     {
-        const float sigma_s_prime = values->m_sigma_s[i] * static_cast<float>(1.0 - values->m_g);
+        const float sigma_s_prime = values->m_sigma_s[i] * (1.0f - values->m_g);
         const float sigma_t_prime = sigma_s_prime + values->m_sigma_a[i];
         values->m_precomputed.m_alpha_prime[i] = sigma_s_prime / sigma_t_prime;
     }

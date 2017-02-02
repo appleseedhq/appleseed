@@ -117,10 +117,10 @@ namespace
             mix_spectra(
                 Color3f(1.0f),
                 m_values.m_precomputed.m_tint_color,
-                static_cast<float>(m_values.m_specular_tint),
+                m_values.m_specular_tint,
                 value);
-            value *= static_cast<float>(m_values.m_specular) * 0.08f;
-            mix_spectra(value, m_values.m_base_color, static_cast<float>(m_values.m_metallic), value);
+            value *= m_values.m_specular * 0.08f;
+            mix_spectra(value, m_values.m_base_color, m_values.m_metallic, value);
             mix_spectra(value, Color3f(1.0f), schlick_fresnel(dot(o, h)), value);
         }
 
@@ -141,7 +141,7 @@ namespace
             const Vector3f& n,
             Spectrum&       value) const
         {
-            value.set(mix(0.04f, 1.0f, schlick_fresnel(dot(o, h))) * 0.25f * static_cast<float>(m_values.m_clearcoat));
+            value.set(mix(0.04f, 1.0f, schlick_fresnel(dot(o, h))) * 0.25f * m_values.m_clearcoat);
         }
 
         const DisneyBRDFInputValues& m_values;

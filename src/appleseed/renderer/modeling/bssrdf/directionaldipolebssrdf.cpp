@@ -282,7 +282,7 @@ namespace
                 const float result = max((sdr - sdv) / (4.0f * cphi_rcp_eta), 0.0f);
 
                 // Store result.
-                value[i] = static_cast<float>(result);
+                value[i] = result;
             }
 
             // todo: add reduced intensity component here (S_sigma_E term).

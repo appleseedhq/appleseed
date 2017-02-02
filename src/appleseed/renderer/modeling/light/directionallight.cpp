@@ -117,9 +117,7 @@ namespace
             m_safe_scene_diameter = scene_data.m_safe_diameter;
 
             m_inputs.evaluate_uniforms(&m_values);
-            m_values.m_irradiance *=
-                static_cast<float>(
-                    m_values.m_irradiance_multiplier * pow(2.0, m_values.m_exposure));
+            m_values.m_irradiance *= m_values.m_irradiance_multiplier * pow(2.0f, m_values.m_exposure);
 
             return true;
         }

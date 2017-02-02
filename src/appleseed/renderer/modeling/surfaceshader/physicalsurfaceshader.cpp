@@ -202,10 +202,10 @@ namespace
             }
 
             // Apply multipliers.
-            shading_result.m_main.m_color *= static_cast<float>(values.m_color_multiplier);
-            shading_result.m_main.m_alpha *= static_cast<float>(values.m_alpha_multiplier);
-            shading_result.m_aovs.m_color *= static_cast<float>(values.m_color_multiplier);
-            shading_result.m_aovs.m_alpha *= static_cast<float>(values.m_alpha_multiplier);
+            shading_result.m_main.m_color *= values.m_color_multiplier;
+            shading_result.m_main.m_alpha *= values.m_alpha_multiplier;
+            shading_result.m_aovs.m_color *= values.m_color_multiplier;
+            shading_result.m_aovs.m_alpha *= values.m_alpha_multiplier;
 
             // Optionally apply fake aerial perspective.
             if (m_aerial_persp_mode != AerialPerspNone)
@@ -268,7 +268,7 @@ namespace
 
             if (m_front_lighting_samples > 1)
             {
-                const float rcp_sample_count = 1.0f / static_cast<float>(m_front_lighting_samples);
+                const float rcp_sample_count = 1.0f / m_front_lighting_samples;
                 radiance *= rcp_sample_count;
                 aovs *= rcp_sample_count;
             }
@@ -316,7 +316,7 @@ namespace
             back_aovs *= values.m_translucency;
 
             // Divide by the number of samples.
-            const float rcp_sample_count = 1.0f / static_cast<float>(m_back_lighting_samples);
+            const float rcp_sample_count = 1.0f / m_back_lighting_samples;
             back_radiance *= rcp_sample_count;
             back_aovs *= rcp_sample_count;
 

@@ -554,8 +554,7 @@ void DiagnosticSurfaceShader::evaluate(
 
             const double facing = abs(dot(normal, view));
 
-            shading_result.set_main_to_linear_rgb(
-                Color3f(static_cast<float>(facing)));
+            shading_result.set_main_to_linear_rgb(Color3f(static_cast<float>(facing)));
         }
         break;
 
