@@ -1409,7 +1409,7 @@ InputValues* CompositeClosure::do_add_closure(
     const Basis3f&              original_shading_basis,
     const Color3f&              weight,
     const Vector3f&             normal,
-    bool                        has_tangent,
+    const bool                  has_tangent,
     const Vector3f&             tangent)
 {
     // Check that InputValues is included in our type list.

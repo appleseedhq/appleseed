@@ -245,7 +245,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
         const foundation::Basis3f&  original_shading_basis,
         const foundation::Color3f&  weight,
         const foundation::Vector3f& normal,
-        bool                        has_tangent,
+        const bool                  has_tangent,
         const foundation::Vector3f& tangent);
 };
 

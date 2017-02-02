@@ -138,6 +138,7 @@ namespace
                     shading_basis,
                     outgoing,
                     s);
+
                 value += s;
             }
         }
@@ -153,8 +154,8 @@ namespace
             const CompositeEmissionClosure* c =
                 reinterpret_cast<const CompositeEmissionClosure*>(data);
 
-            probability = 0.0f;
             value.set(0.0f);
+            probability = 0.0f;
 
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
@@ -192,11 +193,12 @@ namespace
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
                 const EDF& edf = edf_from_closure_id(c->get_closure_type(i));
-                float edf_prob = edf.evaluate_pdf(
-                    c->get_closure_input_values(i),
-                    geometric_normal,
-                    shading_basis,
-                    outgoing);
+                const float edf_prob =
+                    edf.evaluate_pdf(
+                        c->get_closure_input_values(i),
+                        geometric_normal,
+                        shading_basis,
+                        outgoing);
 
                 if (edf_prob > 0.0f)
                     probability += edf_prob * c->get_closure_pdf_weight(i);
