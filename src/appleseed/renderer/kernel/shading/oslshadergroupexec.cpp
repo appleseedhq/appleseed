@@ -146,7 +146,7 @@ void OSLShaderGroupExec::execute_bump(
             shading_point.get_osl_shader_globals().Ci);
 
         // Pick a shading basis from one of the BSSRDF closures.
-        if (c.get_num_closures() > 0)
+        if (c.get_closure_count() > 0)
         {
             const size_t index = c.choose_closure(s[1]);
             shading_point.set_shading_basis(
@@ -165,7 +165,7 @@ void OSLShaderGroupExec::execute_bump(
             shading_point.get_osl_shader_globals().Ci);
 
         // Pick a shading basis from one of the BSDF closures.
-        if (c.get_num_closures() > 0)
+        if (c.get_closure_count() > 0)
         {
             const size_t index = c.choose_closure(s[1]);
             shading_point.set_shading_basis(
@@ -182,7 +182,7 @@ void OSLShaderGroupExec::choose_subsurface_normal(
     const CompositeSubsurfaceClosure* c =
         reinterpret_cast<const CompositeSubsurfaceClosure*>(bssrdf_data);
 
-    if (c->get_num_closures() > 0)
+    if (c->get_closure_count() > 0)
     {
         const size_t index = c->choose_closure(s);
         shading_point.set_shading_basis(

@@ -121,9 +121,9 @@ namespace
             return m_shader_query->get_shader_type();
         }
 
-        size_t get_num_params() const
+        size_t get_param_count() const
         {
-            return m_shader_query->get_num_params();
+            return m_shader_query->get_param_count();
         }
 
         bpy::dict get_param_info(const size_t param_index) const
@@ -159,7 +159,7 @@ void bind_shader_group()
         .def("open", &ShaderQueryWrapper::open)
         .def("get_shader_name", &ShaderQueryWrapper::get_shader_name)
         .def("get_shader_type", &ShaderQueryWrapper::get_shader_type)
-        .def("get_num_params", &ShaderQueryWrapper::get_num_params)
+        .def("get_num_params", &ShaderQueryWrapper::get_param_count)
         .def("get_param_info", &ShaderQueryWrapper::get_param_info)
         .def("get_metadata", &ShaderQueryWrapper::get_metadata)
         ;

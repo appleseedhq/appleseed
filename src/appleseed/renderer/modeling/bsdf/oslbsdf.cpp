@@ -169,7 +169,7 @@ namespace
                 shading_point.get_osl_shader_globals().Ci);
 
             // Inject values into any children layered closure.
-            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
+            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
                 const ClosureID cid = c->get_closure_type(i);
                 if (cid >= FirstLayeredClosure)
@@ -186,7 +186,7 @@ namespace
         {
             CompositeSurfaceClosure* c = reinterpret_cast<CompositeSurfaceClosure*>(data);
 
-            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
+            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
                 bsdf_from_closure_id(c->get_closure_type(i))
                     .prepare_inputs(
@@ -205,7 +205,7 @@ namespace
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
 
-            if (c->get_num_closures() > 0)
+            if (c->get_closure_count() > 0)
             {
                 const size_t closure_index = c->choose_closure(sampling_context);
                 sample.set_shading_basis(c->get_closure_shading_basis(closure_index));
@@ -237,7 +237,7 @@ namespace
 
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
 
-            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
+            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
                 Spectrum s;
                 const float bsdf_prob =
@@ -274,7 +274,7 @@ namespace
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
             float prob = 0.0f;
 
-            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
+            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
                 const float bsdf_prob =
                     bsdf_from_closure_id(c->get_closure_type(i))
@@ -309,7 +309,7 @@ namespace
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
             absorption.set(0.0f);
-            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
+            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
                 Spectrum a;
                 bsdf_from_closure_id(c->get_closure_type(i))

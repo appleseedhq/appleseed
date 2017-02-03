@@ -1265,15 +1265,15 @@ namespace
 //
 
 CompositeClosure::CompositeClosure()
-  : m_num_closures(0)
-  , m_num_bytes(0)
+  : m_closure_count(0)
+  , m_byte_count(0)
 {
     assert(is_aligned(m_pool, InputValuesAlignment));
 }
 
 void CompositeClosure::compute_cdf()
 {
-    const size_t closure_count = get_num_closures();
+    const size_t closure_count = get_closure_count();
 
     if (closure_count == 1)
     {
@@ -1303,9 +1303,9 @@ void CompositeClosure::compute_cdf()
 
 size_t CompositeClosure::choose_closure(SamplingContext& sampling_context) const
 {
-    assert(get_num_closures() > 0);
+    assert(get_closure_count() > 0);
 
-    if (get_num_closures() == 1)
+    if (get_closure_count() == 1)
         return 0;
 
     sampling_context.split_in_place(1, 1);
@@ -1326,7 +1326,7 @@ void CompositeClosure::compute_closure_shading_basis(
     if APPLESEED_LIKELY(normal_square_norm != 0.0f)
     {
         const float rcp_normal_norm = 1.0f / sqrt(normal_square_norm);
-        m_bases[m_num_closures] =
+        m_bases[m_closure_count] =
             Basis3f(
                 normal * rcp_normal_norm,
                 original_shading_basis.get_tangent_u());
@@ -1334,7 +1334,7 @@ void CompositeClosure::compute_closure_shading_basis(
     else
     {
         // Fallback to the original shading basis if the normal is zero.
-        m_bases[m_num_closures] = original_shading_basis;
+        m_bases[m_closure_count] = original_shading_basis;
     }
 }
 
@@ -1351,7 +1351,7 @@ void CompositeClosure::compute_closure_shading_basis(
         {
             const float rcp_normal_norm = 1.0f / sqrt(normal_square_norm);
             const float rcp_tangent_norm = 1.0f / sqrt(tangent_square_norm);
-            m_bases[m_num_closures] =
+            m_bases[m_closure_count] =
                 Basis3f(
                     normal * rcp_normal_norm,
                     tangent * rcp_tangent_norm);
@@ -1359,7 +1359,7 @@ void CompositeClosure::compute_closure_shading_basis(
         else
         {
             // Fallback to the original shading basis if the normal is zero.
-            m_bases[m_num_closures] = original_shading_basis;
+            m_bases[m_closure_count] = original_shading_basis;
         }
     }
     else
@@ -1417,33 +1417,33 @@ InputValues* CompositeClosure::do_add_closure(
     BOOST_STATIC_ASSERT(value_in_list::value);
 
     // Make sure we have enough space.
-    if APPLESEED_UNLIKELY(get_num_closures() >= MaxClosureEntries)
+    if APPLESEED_UNLIKELY(get_closure_count() >= MaxClosureEntries)
     {
         throw ExceptionOSLRuntimeError(
             "maximum number of closures in OSL shader group exceeded.");
     }
 
-    assert(m_num_bytes + sizeof(InputValues) <= MaxPoolSize);
+    assert(m_byte_count + sizeof(InputValues) <= MaxPoolSize);
 
     // We use the luminance of the weight as the BSDF weight.
     const float w = luminance(weight);
     assert(w > 0.0f);
 
-    m_pdf_weights[m_num_closures] = w;
-    m_weights[m_num_closures] = weight;
+    m_pdf_weights[m_closure_count] = w;
+    m_weights[m_closure_count] = weight;
 
     if (!has_tangent)
         compute_closure_shading_basis(normal, original_shading_basis);
     else compute_closure_shading_basis(normal, tangent, original_shading_basis);
 
-    m_closure_types[m_num_closures] = closure_type;
+    m_closure_types[m_closure_count] = closure_type;
 
-    char* values_ptr = m_pool + m_num_bytes;
+    char* values_ptr = m_pool + m_byte_count;
     assert(is_aligned(values_ptr, InputValuesAlignment));
     new (values_ptr) InputValues();
-    m_input_values[m_num_closures] = values_ptr;
-    m_num_bytes += align(sizeof(InputValues), InputValuesAlignment);
-    ++m_num_closures;
+    m_input_values[m_closure_count] = values_ptr;
+    m_byte_count += align(sizeof(InputValues), InputValuesAlignment);
+    ++m_closure_count;
 
     return reinterpret_cast<InputValues*>(values_ptr);
 }
@@ -1652,25 +1652,25 @@ InputValues* CompositeEmissionClosure::add_closure(
     BOOST_STATIC_ASSERT(value_in_list::value);
 
     // Make sure we have enough space.
-    if APPLESEED_UNLIKELY(get_num_closures() >= MaxClosureEntries)
+    if APPLESEED_UNLIKELY(get_closure_count() >= MaxClosureEntries)
     {
         throw ExceptionOSLRuntimeError(
             "maximum number of closures in OSL shader group exceeded.");
     }
 
-    assert(m_num_bytes + sizeof(InputValues) <= MaxPoolSize);
+    assert(m_byte_count + sizeof(InputValues) <= MaxPoolSize);
 
-    m_pdf_weights[m_num_closures] = max_weight_component;
-    m_weights[m_num_closures] = weight;
+    m_pdf_weights[m_closure_count] = max_weight_component;
+    m_weights[m_closure_count] = weight;
 
-    m_closure_types[m_num_closures] = closure_type;
+    m_closure_types[m_closure_count] = closure_type;
 
-    char* values_ptr = m_pool + m_num_bytes;
+    char* values_ptr = m_pool + m_byte_count;
     assert(is_aligned(values_ptr, InputValuesAlignment));
     new (values_ptr) InputValues();
-    m_input_values[m_num_closures] = values_ptr;
-    m_num_bytes += align(sizeof(InputValues), InputValuesAlignment);
-    ++m_num_closures;
+    m_input_values[m_closure_count] = values_ptr;
+    m_byte_count += align(sizeof(InputValues), InputValuesAlignment);
+    ++m_closure_count;
 
     return reinterpret_cast<InputValues*>(values_ptr);
 }

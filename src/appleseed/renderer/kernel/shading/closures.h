@@ -160,7 +160,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
   : public foundation::NonCopyable
 {
   public:
-    size_t get_num_closures() const;
+    size_t get_closure_count() const;
     ClosureID get_closure_type(const size_t index) const;
     const Spectrum& get_closure_weight(const size_t index) const;
     float get_closure_pdf_weight(const size_t index) const;
@@ -228,8 +228,8 @@ class APPLESEED_ALIGN(16) CompositeClosure
     char                            m_pool[MaxPoolSize];
     void*                           m_input_values[MaxClosureEntries];
     ClosureID                       m_closure_types[MaxClosureEntries];
-    size_t                          m_num_closures;
-    size_t                          m_num_bytes;
+    size_t                          m_closure_count;
+    size_t                          m_byte_count;
     Spectrum                        m_weights[MaxClosureEntries];
     float                           m_cdf[MaxClosureEntries];
     float                           m_pdf_weights[MaxClosureEntries];
@@ -345,38 +345,38 @@ void register_closures(OSL::ShadingSystem& shading_system);
 // CompositeClosure class implementation.
 //
 
-inline size_t CompositeClosure::get_num_closures() const
+inline size_t CompositeClosure::get_closure_count() const
 {
-    return m_num_closures;
+    return m_closure_count;
 }
 
 inline ClosureID CompositeClosure::get_closure_type(const size_t index) const
 {
-    assert(index < get_num_closures());
+    assert(index < get_closure_count());
     return m_closure_types[index];
 }
 
 inline const Spectrum& CompositeClosure::get_closure_weight(const size_t index) const
 {
-    assert(index < get_num_closures());
+    assert(index < get_closure_count());
     return m_weights[index];
 }
 
 inline float CompositeClosure::get_closure_pdf_weight(const size_t index) const
 {
-    assert(index < get_num_closures());
+    assert(index < get_closure_count());
     return m_pdf_weights[index];
 }
 
 inline void* CompositeClosure::get_closure_input_values(const size_t index) const
 {
-    assert(index < get_num_closures());
+    assert(index < get_closure_count());
     return m_input_values[index];
 }
 
 inline const foundation::Basis3f& CompositeClosure::get_closure_shading_basis(const size_t index) const
 {
-    assert(index < get_num_closures());
+    assert(index < get_closure_count());
     return m_bases[index];
 }
 

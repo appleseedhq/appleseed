@@ -149,7 +149,7 @@ namespace
                 Basis3f(shading_point.get_shading_basis()),
                 shading_point.get_osl_shader_globals().Ci);
 
-            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
+            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
                 bssrdf_from_closure_id(c->get_closure_type(i))
                     .prepare_inputs(
@@ -166,7 +166,7 @@ namespace
             const CompositeSubsurfaceClosure* c =
                 reinterpret_cast<const CompositeSubsurfaceClosure*>(data);
 
-            if (c->get_num_closures() > 0)
+            if (c->get_closure_count() > 0)
             {
                 const size_t closure_index = c->choose_closure(sampling_context);
 
@@ -197,7 +197,7 @@ namespace
 
             value.set(0.0f);
 
-            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
+            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
                 Spectrum s;
                 bssrdf_from_closure_id(c->get_closure_type(i))
@@ -223,7 +223,7 @@ namespace
 
             float pdf = 0.0f;
 
-            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
+            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
                 pdf +=
                     bssrdf_from_closure_id(c->get_closure_type(i))
