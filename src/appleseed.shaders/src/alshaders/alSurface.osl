@@ -222,6 +222,7 @@ shader alSurface
 
     if (do_sss)
     {
+        color sssColor = diffuseColor_ * sssMix;
         color white = color(1, 1, 1);
         color red   = color(1, 0, 0);
         color green = color(0, 1, 0);
@@ -237,35 +238,13 @@ shader alSurface
         sssWeight2_ *= normweight;
         sssWeight3_ *= normweight;
 
-        color sssColor = diffuseColor_ * sssMix;
         float sssIor = 1.3;
 
-        if (sssMode == SSSMODE_CUBIC)
+        if (sssMode == SSSMODE_DIFFUSION || sssMode == SSSMODE_DIRECTIONAL)
         {
-            if (sssWeight1_ > IMPORTANCE_EPS)
-            {
-                color radius = max(
-                    color(0.0001),
-                    sssRadius * sssRadiusColor / sssDensityScale);
-
-                rgb += sssColor * red * sssWeight1_ * as_subsurface_gaussian(
-                    diffuseNormal_,
-                    white,
-                    radius[0],
-                    sssIor);
-                rgb += sssColor * green * sssWeight1_ * as_subsurface_gaussian(
-                    diffuseNormal_,
-                    white,
-                    radius[1],
-                    sssIor);
-                rgb += sssColor * blue * sssWeight1_ * as_subsurface_gaussian(
-                    diffuseNormal_,
-                    white,
-                    radius[2],
-                    sssIor);
-            }
+            // TODO: implement this.
         }
-        else if (sssMode == SSSMODE_EMPIRICAL)
+        else // SSSMODE_CUBIC || SSSMODE_EMPIRICAL
         {
             if (sssWeight1_ > IMPORTANCE_EPS)
             {
@@ -274,15 +253,14 @@ shader alSurface
                     sssRadius * sssRadiusColor / (sssDensityScale * 7.0));
 
                 rgb += sssColor * sssWeight1_ * as_subsurface(
-                    "normalized_diffusion",
+                    sssMode == SSSMODE_CUBIC ? "gaussian" : "normalized_diffusion",
                     diffuseNormal_,
                     white,
                     radius,
                     sssIor);
             }
-        }
-        else // SSSMODE_DIFFUSION || SSSMODE_DIRECTIONAL
-        {
+
+            // TODO: add lobes 2 and 3.
         }
     }
 
