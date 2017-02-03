@@ -164,23 +164,11 @@ namespace
             values->m_reflectance *= values->m_reflectance_multiplier;
             values->m_radius *= values->m_radius_multiplier;
 
-            // Build a CDF for channel sampling.
-            values->m_precomputed.m_channel_pdf.resize(values->m_reflectance.size());
-            values->m_precomputed.m_channel_cdf.resize(values->m_reflectance.size());
-
-            float cumulated_pdf = 0.0f;
-            for (size_t i = 0, e = values->m_precomputed.m_channel_pdf.size(); i < e; ++i)
-            {
-                const float r = values->m_reflectance[i];
-                values->m_precomputed.m_channel_pdf[i] = r;
-                cumulated_pdf += r;
-                values->m_precomputed.m_channel_cdf[i] = cumulated_pdf;
-            }
-
-            const float rcp_cumulated_pdf = 1.0f / cumulated_pdf;
-            values->m_precomputed.m_channel_pdf *= rcp_cumulated_pdf;
-            values->m_precomputed.m_channel_cdf *= rcp_cumulated_pdf;
-            values->m_precomputed.m_channel_cdf[values->m_precomputed.m_channel_cdf.size() - 1] = 1.0f;
+            // Build a CDF and PDF for channel sampling.
+            build_cdf_and_pdf(
+                values->m_reflectance,
+                values->m_precomputed.m_channel_cdf,
+                values->m_precomputed.m_channel_pdf);
 
             // Precompute v and the (square of the) max radius.
             float max_v = 0.0f;

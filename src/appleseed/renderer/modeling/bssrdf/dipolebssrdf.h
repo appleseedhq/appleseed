@@ -214,27 +214,21 @@ void DipoleBSSRDF::do_prepare_inputs(
         values->m_g,
         values->m_precomputed.m_sigma_tr);
 
-    // Precompute some coefficients and build a CDF for channel sampling.
+    // Precompute some coefficients.
     values->m_precomputed.m_alpha_prime.resize(values->m_reflectance.size());
-    values->m_precomputed.m_channel_pdf.resize(values->m_reflectance.size());
-    values->m_precomputed.m_channel_cdf.resize(values->m_reflectance.size());
 
-    float cumulated_pdf = 0.0f;
-    for (size_t i = 0, e = values->m_precomputed.m_channel_cdf.size(); i < e; ++i)
+    for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
     {
         const float sigma_s_prime = values->m_sigma_s[i] * static_cast<float>(1.0 - values->m_g);
         const float sigma_t_prime = sigma_s_prime + values->m_sigma_a[i];
         values->m_precomputed.m_alpha_prime[i] = sigma_s_prime / sigma_t_prime;
-
-        values->m_precomputed.m_channel_pdf[i] = values->m_precomputed.m_alpha_prime[i];
-        cumulated_pdf += values->m_precomputed.m_channel_pdf[i];
-        values->m_precomputed.m_channel_cdf[i] = cumulated_pdf;
     }
 
-    const float rcp_cumulated_pdf = 1.0f / cumulated_pdf;
-    values->m_precomputed.m_channel_pdf *= rcp_cumulated_pdf;
-    values->m_precomputed.m_channel_cdf *= rcp_cumulated_pdf;
-    values->m_precomputed.m_channel_cdf[values->m_precomputed.m_channel_cdf.size() - 1] = 1.0f;
+    // Build a CDF and PDF for channel sampling.
+    build_cdf_and_pdf(
+        values->m_precomputed.m_alpha_prime,
+        values->m_precomputed.m_channel_cdf,
+        values->m_precomputed.m_channel_pdf);
 
     // Precompute the (square of the) max radius.
     values->m_precomputed.m_rmax2 = foundation::square(dipole_max_radius(foundation::min_value(values->m_precomputed.m_sigma_tr)));

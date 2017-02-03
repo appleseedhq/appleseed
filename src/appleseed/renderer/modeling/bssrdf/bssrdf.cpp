@@ -157,4 +157,26 @@ void BSSRDF::make_reflectance_and_mfp_compatible(
     }
 }
 
+void BSSRDF::build_cdf_and_pdf(
+    const Spectrum&         src,
+    Spectrum&               cdf,
+    Spectrum&               pdf) const
+{
+    pdf.resize(src.size());
+    cdf.resize(src.size());
+
+    float cumulated_pdf = 0.0f;
+    for (size_t i = 0, e = src.size(); i < e; ++i)
+    {
+        pdf[i] = src[i];
+        cumulated_pdf += pdf[i];
+        cdf[i] = cumulated_pdf;
+    }
+
+    const float rcp_cumulated_pdf = 1.0f / cumulated_pdf;
+    pdf *= rcp_cumulated_pdf;
+    cdf *= rcp_cumulated_pdf;
+    cdf[src.size() - 1] = 1.0f;
+}
+
 }   // namespace renderer

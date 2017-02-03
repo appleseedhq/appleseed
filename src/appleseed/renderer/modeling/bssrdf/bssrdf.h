@@ -148,6 +148,11 @@ class APPLESEED_DLLSYMBOL BSSRDF
     void make_reflectance_and_mfp_compatible(
         Spectrum&                   reflectance,
         const Spectrum&             mfp) const;
+
+    void build_cdf_and_pdf(
+        const Spectrum&             src,
+        Spectrum&                   cdf,
+        Spectrum&                   pdf) const;
 };
 
 }       // namespace renderer
