@@ -39,7 +39,7 @@ using namespace foundation;
 namespace renderer
 {
 
-void IMaterialFactory::add_common_input_metadata(DictionaryArray& metadata)
+void IMaterialFactory::add_surface_shader_metadata(DictionaryArray& metadata)
 {
     metadata.push_back(
         Dictionary()
@@ -57,6 +57,73 @@ void IMaterialFactory::add_common_input_metadata(DictionaryArray& metadata)
             .insert("entity_types",
                 Dictionary().insert("surface_shader", "Surface Shaders"))
             .insert("use", "optional"));
+}
+
+void IMaterialFactory::add_alpha_map_metadata(DictionaryArray& metadata)
+{
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "alpha_map")
+            .insert("label", "Alpha Map")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "optional"));
+}
+
+void IMaterialFactory::add_displacement_metadata(DictionaryArray& metadata)
+{
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "displacement_map")
+            .insert("label", "Displacement Map")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "displacement_method")
+            .insert("label", "Displacement Method")
+            .insert("type", "enumeration")
+            .insert("items",
+                Dictionary()
+                    .insert("Bump Mapping", "bump")
+                    .insert("Normal Mapping", "normal"))
+            .insert("use", "required")
+            .insert("default", "bump")
+            .insert("on_change", "rebuild_form"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "bump_amplitude")
+            .insert("label", "Bump Amplitude")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
+            .insert("use", "optional")
+            .insert("default", "1.0")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("displacement_method", "bump")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "normal_map_up")
+            .insert("label", "Normal Map Up Vector")
+            .insert("type", "enumeration")
+            .insert("items",
+                Dictionary()
+                    .insert("Green Channel (Y)", "y")
+                    .insert("Blue Channel (Z)", "z"))
+            .insert("use", "optional")
+            .insert("default", "z")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("displacement_method", "normal")));
 }
 
 }   // namespace renderer

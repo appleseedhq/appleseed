@@ -818,7 +818,7 @@ DictionaryArray DisneyMaterialFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
 
-    add_common_input_metadata(metadata);
+    add_surface_shader_metadata(metadata);
 
     metadata.push_back(
         Dictionary()
@@ -828,57 +828,8 @@ DictionaryArray DisneyMaterialFactory::get_input_metadata() const
             .insert("entity_types", Dictionary().insert("edf", "EDF"))
             .insert("use", "optional"));
 
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "alpha_map")
-            .insert("label", "Alpha Map")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary()
-                    .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "displacement_map")
-            .insert("label", "Displacement Map")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "displacement_method")
-            .insert("label", "Displacement Method")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("Bump Mapping", "bump")
-                    .insert("Normal Mapping", "normal"))
-            .insert("use", "required")
-            .insert("default", "bump"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "bump_amplitude")
-            .insert("label", "Bump Amplitude")
-            .insert("type", "text")
-            .insert("use", "optional")
-            .insert("default", "1.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "normal_map_up")
-            .insert("label", "Normal Map Up Vector")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("Green Channel (Y)", "y")
-                    .insert("Blue Channel (Z)", "z"))
-            .insert("use", "optional")
-            .insert("default", "z"));
+    add_alpha_map_metadata(metadata);
+    add_displacement_metadata(metadata);
 
     return metadata;
 }
