@@ -145,12 +145,6 @@ closure color as_subsurface(
     color   mean_free_path,
     float   ior) BUILTIN;
 
-closure color as_subsurface_gaussian(
-    normal  N,
-    color   reflectance,
-    color   radius,
-    float   ior) BUILTIN;
-
 closure color as_ashikhmin_shirley(
     normal  N,
     vector  T,

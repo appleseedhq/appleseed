@@ -57,8 +57,8 @@ APPLESEED_DECLARE_INPUT_VALUES(GaussianBSSRDFInputValues)
 {
     Spectrum        m_reflectance;
     float           m_reflectance_multiplier;
-    Spectrum        m_radius;
-    float           m_radius_multiplier;
+    Spectrum        m_mfp;
+    float           m_mfp_multiplier;
     float           m_ior;
 
     struct Precomputed

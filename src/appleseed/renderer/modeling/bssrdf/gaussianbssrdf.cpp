@@ -125,8 +125,8 @@ namespace
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("radius", InputFormatSpectralReflectance);
-            m_inputs.declare("radius_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("mfp", InputFormatSpectralReflectance);
+            m_inputs.declare("mfp_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("ior", InputFormatFloat);
         }
 
@@ -158,11 +158,11 @@ namespace
             // Precompute the relative index of refraction.
             values->m_precomputed.m_eta = compute_eta(shading_point, values->m_ior);
 
-            make_reflectance_and_mfp_compatible(values->m_reflectance, values->m_radius);
+            make_reflectance_and_mfp_compatible(values->m_reflectance, values->m_mfp);
 
             // Apply multipliers to input values.
             values->m_reflectance *= values->m_reflectance_multiplier;
-            values->m_radius *= values->m_radius_multiplier;
+            values->m_mfp *= values->m_mfp_multiplier;
 
             // Build a CDF and PDF for channel sampling.
             build_cdf_and_pdf(
@@ -172,11 +172,14 @@ namespace
 
             // Precompute v and the (square of the) max radius.
             float max_v = 0.0f;
-            values->m_precomputed.m_v.resize(values->m_radius.size());
+            values->m_precomputed.m_v.resize(values->m_mfp.size());
             for (size_t i = 0, e = values->m_precomputed.m_channel_pdf.size(); i < e; ++i)
             {
-                // The remapping deom radius to v comes from Cycles.
-                const float v = square(values->m_radius[i]) * square(0.25f);
+                // The remapping from mfp to radius comes from alSurface.
+                const float radius = values->m_mfp[i] * 7.0f;
+
+                // The remapping from radius to v comes from Cycles.
+                const float v = square(radius) * square(0.25f);
                 values->m_precomputed.m_v[i] = v;
                 max_v = max(max_v, v);
             }
@@ -325,8 +328,8 @@ DictionaryArray GaussianBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "radius")
-            .insert("label", "Radius")
+            .insert("name", "mfp")
+            .insert("label", "Mean Free Path")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
@@ -337,8 +340,8 @@ DictionaryArray GaussianBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "radius_multiplier")
-            .insert("label", "Radius Multiplier")
+            .insert("name", "mfp_multiplier")
+            .insert("label", "Mean Free Path Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
