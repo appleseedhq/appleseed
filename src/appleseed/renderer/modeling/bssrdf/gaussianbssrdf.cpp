@@ -128,6 +128,7 @@ namespace
             m_inputs.declare("mfp", InputFormatSpectralReflectance);
             m_inputs.declare("mfp_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("ior", InputFormatFloat);
+            m_inputs.declare("fresnel_weight", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -227,6 +228,12 @@ namespace
             const void*         data) const APPLESEED_OVERRIDE
         {
             return reinterpret_cast<const GaussianBSSRDFInputValues*>(data)->m_precomputed.m_eta;
+        }
+
+        virtual float get_fresnel_weight(
+            const void*         data) const APPLESEED_OVERRIDE
+        {
+            return reinterpret_cast<const GaussianBSSRDFInputValues*>(data)->m_fresnel_weight;
         }
 
         virtual void evaluate_profile(
@@ -357,6 +364,16 @@ DictionaryArray GaussianBSSRDFFactory::get_input_metadata() const
             .insert("max_value", "2.5")
             .insert("use", "required")
             .insert("default", "1.3"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "fresnel_weight")
+            .insert("label", "Fresnel Weight")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     return metadata;
 }

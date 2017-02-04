@@ -60,6 +60,7 @@ APPLESEED_DECLARE_INPUT_VALUES(GaussianBSSRDFInputValues)
     Spectrum        m_mfp;
     float           m_mfp_multiplier;
     float           m_ior;
+    float           m_fresnel_weight;
 
     struct Precomputed
     {

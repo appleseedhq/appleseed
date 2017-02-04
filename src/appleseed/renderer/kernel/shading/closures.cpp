@@ -946,6 +946,7 @@ namespace
             OSL::Color3     reflectance;
             OSL::Color3     mean_free_path;
             float           ior;
+            float           fresnel_weight;
         };
 
         static const char* name()
@@ -958,6 +959,16 @@ namespace
             return SubsurfaceID;
         }
 
+        static void prepare_closure(
+            OSL::RendererServices*          render_services,
+            int                             id,
+            void*                           data)
+        {
+            // Initialize keyword parameter defaults.
+            Params* params = new (data) Params();
+            params->fresnel_weight = 1.0f;
+        }
+
         static void register_closure(OSL::ShadingSystem& shading_system)
         {
             const OSL::ClosureParam params[] =
@@ -967,10 +978,11 @@ namespace
                 CLOSURE_COLOR_PARAM(Params, reflectance),
                 CLOSURE_COLOR_PARAM(Params, mean_free_path),
                 CLOSURE_FLOAT_PARAM(Params, ior),
+                CLOSURE_FLOAT_KEYPARAM(Params, fresnel_weight, "fresnel_weight"),
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, 0, 0);
+            shading_system.register_closure(name(), id(), params, &prepare_closure, 0);
         }
 
         static void convert_closure(
@@ -991,12 +1003,7 @@ namespace
                         weight,
                         p->N);
 
-                values->m_weight = 1.0f;
-                values->m_reflectance = Color3f(p->reflectance);
-                values->m_reflectance_multiplier = 1.0f;
-                values->m_mfp = Color3f(p->mean_free_path);
-                values->m_mfp_multiplier = 1.0f;
-                values->m_ior = p->ior;
+                copy_parameters(p, values);
 #else
                 throw ExceptionOSLRuntimeError("unknown subsurface profile: normalized_diffusion");
 #endif
@@ -1010,12 +1017,7 @@ namespace
                         weight,
                         p->N);
 
-                values->m_reflectance = Color3f(p->reflectance);
-                values->m_reflectance_multiplier = 1.0f;
-                values->m_mfp = Color3f(p->mean_free_path);
-                values->m_mfp_multiplier = 1.0f;
-                values->m_reflectance_multiplier = 1.0f;
-                values->m_ior = p->ior;
+                copy_parameters(p, values);
             }
             else
             {
@@ -1055,14 +1057,22 @@ namespace
                     throw ExceptionOSLRuntimeError(msg.c_str());
                 }
 
-                values->m_weight = 1.0f;
-                values->m_reflectance = Color3f(p->reflectance);
-                values->m_reflectance_multiplier = 1.0f;
-                values->m_mfp = Color3f(p->mean_free_path);
-                values->m_mfp_multiplier = 1.0f;
-                values->m_g = 0.0;
-                values->m_ior = p->ior;
+                copy_parameters(p, values);
             }
+        }
+
+        template <typename InputValues>
+        static void copy_parameters(
+            const Params*                   p,
+            InputValues*                    values)
+        {
+            values->m_weight = 1.0f;
+            values->m_reflectance = Color3f(p->reflectance);
+            values->m_reflectance_multiplier = 1.0f;
+            values->m_mfp = Color3f(p->mean_free_path);
+            values->m_mfp_multiplier = 1.0f;
+            values->m_ior = p->ior;
+            values->m_fresnel_weight = saturate(p->fresnel_weight);
         }
     };
 
