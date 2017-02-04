@@ -123,6 +123,7 @@ namespace
             const ParamArray&   params)
           : SeparableBSSRDF(name, params)
         {
+            m_inputs.declare("weight", InputFormatFloat, "1.0");
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("mfp", InputFormatSpectralReflectance);
@@ -162,7 +163,7 @@ namespace
             make_reflectance_and_mfp_compatible(values->m_reflectance, values->m_mfp);
 
             // Apply multipliers to input values.
-            values->m_reflectance *= values->m_reflectance_multiplier;
+            values->m_reflectance *= values->m_reflectance_multiplier * values->m_weight;
             values->m_mfp *= values->m_mfp_multiplier;
 
             // Build a CDF and PDF for channel sampling.
@@ -310,6 +311,16 @@ Dictionary GaussianBSSRDFFactory::get_model_metadata() const
 DictionaryArray GaussianBSSRDFFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "weight")
+            .insert("label", "Weight")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()
