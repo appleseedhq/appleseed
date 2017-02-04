@@ -163,7 +163,6 @@ inline const TransformSequence& AssemblyInstance::transform_sequence() const
 inline Assembly& AssemblyInstance::get_assembly() const
 {
     assert(m_assembly);
-
     return *m_assembly;
 }
 
