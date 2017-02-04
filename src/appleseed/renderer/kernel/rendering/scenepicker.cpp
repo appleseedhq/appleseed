@@ -41,13 +41,17 @@
 #include "renderer/modeling/bssrdf/bssrdftraits.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/edf/edftraits.h"
+#include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/material/materialtraits.h"
 #include "renderer/modeling/project/project.h"
-#include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/surfaceshader/surfaceshadertraits.h"
+
+// appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
 
 // Standard headers.
 #include <limits>
@@ -88,70 +92,99 @@ ScenePicker::~ScenePicker()
 
 ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
 {
-    SamplingContext::RNGType rng;
-    SamplingContext sampling_context(rng, SamplingContext::QMCMode);
-
-    const Camera* camera = impl->m_project.get_uncached_active_camera();
-    ShadingRay ray;
-    ShadingPoint shading_point;
     PickingResult result;
 
-    if (camera)
-    {
-        camera->spawn_ray(sampling_context, Dual2d(ndc), ray);
+    result.m_hit = false;
+    result.m_primitive_type = ShadingPoint::PrimitiveNone;
+    result.m_distance = numeric_limits<double>::max();
 
-        impl->m_intersector.trace(ray, shading_point);
+    result.m_bary = Vector2f(0.0);
+    result.m_uv = Vector2f(0.0);
+    result.m_duvdx = Vector2f(0.0);
+    result.m_duvdy = Vector2f(0.0);
+    result.m_point = Vector3d(0.0);
+    result.m_dpdu = Vector3d(0.0);
+    result.m_dpdv = Vector3d(0.0);
+    result.m_dndu = Vector3d(0.0);
+    result.m_dndv = Vector3d(0.0);
+    result.m_dpdx = Vector3d(0.0);
+    result.m_dpdy = Vector3d(0.0);
+    result.m_geometric_normal = Vector3d(0.0);
+    result.m_original_shading_normal = Vector3d(0.0);
+    result.m_side = ObjectInstance::FrontSide;
 
-        result.m_hit = shading_point.hit();
-        result.m_primitive_type = shading_point.get_primitive_type();
-    }
-    else
-        result.m_hit = false;
-
-    if (result.m_hit)
-    {
-        result.m_point = shading_point.get_point();
-        result.m_distance = shading_point.get_distance() * norm(ray.m_dir);
-        result.m_assembly_instance_transform = shading_point.get_assembly_instance_transform();
-        result.m_assembly_instance = &shading_point.get_assembly_instance();
-        result.m_assembly = &shading_point.get_assembly();
-        result.m_object_instance = &shading_point.get_object_instance();
-        result.m_object = &shading_point.get_object();
-    }
-    else
-    {
-        result.m_point = Vector3d(0.0);
-        result.m_distance = numeric_limits<double>::max();
-        result.m_assembly_instance_transform = Transformd::identity();
-        result.m_assembly_instance = 0;
-        result.m_assembly = 0;
-        result.m_object_instance = 0;
-        result.m_object = 0;
-    }
-
-    result.m_camera = camera;
+    result.m_camera = impl->m_project.get_uncached_active_camera();
+    result.m_assembly_instance = 0;
+    result.m_assembly = 0;
+    result.m_object_instance = 0;
+    result.m_object = 0;
     result.m_material = 0;
     result.m_surface_shader = 0;
     result.m_bsdf = 0;
     result.m_bssrdf = 0;
     result.m_edf = 0;
 
-    if (result.m_hit)
+    if (result.m_camera == 0)
+        return result;
+
+    SamplingContext::RNGType rng;
+    SamplingContext sampling_context(rng, SamplingContext::QMCMode);
+
+    const CanvasProperties& c = impl->m_project.get_frame()->image().properties();
+    const Vector2d ndc_dx(1.0 / (4.0 * c.m_canvas_width), 0.0);
+    const Vector2d ndc_dy(0.0, -1.0 / (4.0 * c.m_canvas_height));
+
+    ShadingRay ray;
+    result.m_camera->spawn_ray(
+        sampling_context,
+        Dual2d(ndc, ndc_dx, ndc_dy),
+        ray);
+
+    ShadingPoint shading_point;
+    impl->m_intersector.trace(ray, shading_point);
+
+    result.m_hit = shading_point.hit();
+
+    if (!result.m_hit)
+        return result;
+
+    result.m_primitive_type = shading_point.get_primitive_type();
+    result.m_distance = shading_point.get_distance() * norm(ray.m_dir);
+
+    result.m_bary = shading_point.get_bary();
+    result.m_uv = shading_point.get_uv(0);
+    result.m_duvdx = shading_point.get_duvdx(0);
+    result.m_duvdy = shading_point.get_duvdy(0);
+    result.m_point = shading_point.get_point();
+    result.m_dpdu = shading_point.get_dpdu(0);
+    result.m_dpdv = shading_point.get_dpdv(0);
+    result.m_dndu = shading_point.get_dndu(0);
+    result.m_dndv = shading_point.get_dndv(0);
+    result.m_dpdx = shading_point.get_dpdx();
+    result.m_dpdy = shading_point.get_dpdy();
+    result.m_geometric_normal = shading_point.get_geometric_normal();
+    result.m_original_shading_normal = shading_point.get_original_shading_normal();
+    result.m_side = shading_point.get_side();
+
+    result.m_assembly_instance = &shading_point.get_assembly_instance();
+    result.m_assembly_instance_transform = shading_point.get_assembly_instance_transform();
+    result.m_assembly = &shading_point.get_assembly();
+    result.m_object_instance = &shading_point.get_object_instance();
+    result.m_object = &shading_point.get_object();
+
+    const size_t pa_index = shading_point.get_primitive_attribute_index();
+
+    if (pa_index != Triangle::None)
     {
-        const size_t pa_index = shading_point.get_primitive_attribute_index();
+        const char* material_name =
+            result.m_object_instance->get_material_name(pa_index, shading_point.get_side());
 
-        if (pa_index != Triangle::None)
+        if (material_name)
         {
-            const char* material_name =
-                result.m_object_instance->get_material_name(pa_index, shading_point.get_side());
-
-            if (material_name)
-            {
-                result.m_material =
-                    InputBinder::find_entity<Material>(
-                        material_name,
-                        result.m_object_instance->get_parent());
-            }
+            result.m_material =
+                InputBinder::find_entity<Material>(
+                    material_name,
+                    result.m_object_instance->get_parent());
         }
     }
 
