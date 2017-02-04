@@ -125,10 +125,10 @@ class DipoleBSSRDF
     virtual float get_eta(
         const void*                 data) const APPLESEED_OVERRIDE;
 
+  protected:
     virtual float get_fresnel_weight(
         const void*                 data) const APPLESEED_OVERRIDE;
 
-  protected:
     template <typename ComputeRdFun>
     void do_prepare_inputs(
         const ShadingPoint&         shading_point,
