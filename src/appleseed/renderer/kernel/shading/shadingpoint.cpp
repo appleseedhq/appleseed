@@ -261,7 +261,7 @@ void ShadingPoint::fetch_triangle_source_geometry() const
 
 void ShadingPoint::fetch_curve_source_geometry() const
 {
-    // Set primitive attribute to default value of 0.
+    // Set primitive attribute to default value 0.
     // todo: fix.
     m_primitive_pa = 0;
 }
@@ -801,7 +801,7 @@ void ShadingPoint::compute_alpha() const
     {
         assert(is_curve_primitive());
 
-        // TODO: interpolate per vertex alpha for curves here...
+        // todo: interpolate per vertex alpha for curves here...
     }
 }
 
