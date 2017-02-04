@@ -257,7 +257,8 @@ shader alSurface
                     diffuseNormal_,
                     white,
                     radius,
-                    sssIor);
+                    sssIor,
+                    "fresnel_weight", 0);
             }
 
             // TODO: add lobes 2 and 3.
