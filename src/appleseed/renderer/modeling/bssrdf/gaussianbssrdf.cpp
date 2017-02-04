@@ -178,7 +178,7 @@ namespace
             for (size_t i = 0, e = values->m_precomputed.m_channel_pdf.size(); i < e; ++i)
             {
                 // The remapping from mfp to radius comes from alSurface.
-                const float radius = values->m_mfp[i] * 7.0f;
+                const float radius = max(values->m_mfp[i], 0.0001f) * 7.0f;
 
                 // The remapping from radius to v comes from Cycles.
                 const float v = square(radius) * square(0.25f);
@@ -198,9 +198,6 @@ namespace
                 reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
 
             const float rmax2 = values->m_precomputed.m_rmax2;
-
-            if (rmax2 <= 0.0f)
-                return false;
 
             sampling_context.split_in_place(3, 1);
             const Vector3f s = sampling_context.next2<Vector3f>();
