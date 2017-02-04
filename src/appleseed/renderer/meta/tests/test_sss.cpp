@@ -118,6 +118,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             m_bssrdf->get_inputs().find("sigma_s").source()->evaluate_uniform(m_values.m_sigma_s);
             m_values.m_g = g;
             m_values.m_ior = eta;
+            m_values.m_fresnel_weight = 1.0f;
 
             m_bssrdf->prepare_inputs(m_outgoing_point, &m_values);
         }
@@ -138,6 +139,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             poison(m_values.m_sigma_s);
             m_values.m_g = 0.0f;
             m_values.m_ior = eta;
+            m_values.m_fresnel_weight = 1.0f;
 
             m_bssrdf->prepare_inputs(m_outgoing_point, &m_values);
         }
