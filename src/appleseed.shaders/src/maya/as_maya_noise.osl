@@ -212,16 +212,7 @@ shader as_maya_noise
             coords = implode_2d(in_implode, in_implodeCenter, coords);
         }
 
-        coords *= in_frequency;
-            val = maya_perlin(
-                coords,
-                in_time + time,
-                filter_size,
-                in_amplitude,
-                in_depthMax,
-                in_frequencyRatio,
-                in_ratio,
-                in_inflection);    
+        coords *= in_frequency;  
              
         if (in_noiseType == 0)
         {
@@ -258,7 +249,30 @@ shader as_maya_noise
         }
         else if (in_noiseType == 3)
         {
-            // wispy
+            coords += (vector) noise("uperlin", coords * 0.2) * 2.5;
+            
+            if (in_inflection)
+            {
+                val = maya_turbulence(
+                    coords,
+                    in_time + time,
+                    filter_size,
+                    in_amplitude,
+                    in_depthMax,
+                    in_frequencyRatio,
+                    in_ratio);
+            }
+            else
+            {
+                val = maya_fBm(
+                    coords,
+                    in_time,
+                    filter_size,
+                    in_amplitude,
+                    in_depthMax,
+                    in_frequencyRatio,
+                    in_ratio);
+            }
         }
         else if (in_noiseType == 4)
         {
