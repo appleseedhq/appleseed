@@ -1,0 +1,288 @@
+
+//
+// This software is released under the MIT licence
+//
+// Copyright (c) 2013 Anders Langlands
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of
+// this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+// the Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+
+// This code comes from alshaders's OSL branch, with minimal changes.
+// https://bitbucket.org/anderslanglands/alshaders/branch/osl
+
+#define BM_NORMAL         0
+#define BM_LIGHTEN        1
+#define BM_DARKEN         2
+#define BM_MULTIPLY       3
+#define BM_AVERAGE        4
+#define BM_ADD            5
+#define BM_SUBTRACT       6
+#define BM_DIFFERENCE     7
+#define BM_NEGATION       8
+#define BM_EXCLUSION      9
+#define BM_SCREEN        10
+#define BM_OVERLAY       11
+#define BM_SOFTLIGHT     12
+#define BM_HARDLIGHT     13
+#define BM_COLORDODGE    14
+#define BM_COLORBURN     15
+#define BM_LINEARDODGE   16
+#define BM_LINEARBURN    17
+#define BM_LINEARLIGHT   18
+#define BM_VIVIDLIGHT    19
+#define BM_PINLIGHT      20
+#define BM_HARDMIX       21
+#define BM_REFLECT       22
+#define BM_GLOW          23
+#define BM_PHOENIX       24
+
+color overlay(color l1, color l2)
+{
+    color result;
+    for (int i=0; i < 3; ++i)
+    {
+        l1[i] < 0.5 ? result[i] = 2.0 * l1[i] * l2[i] : result[i] = (1.0 - 2.0 * (1.0-l1[i]) * (1.0-l2[i]));
+    }
+
+    return result;
+}
+
+color softlight(color l1, color l2)
+{
+    color result;
+    for (int i=0; i < 3; ++i)
+    {
+        if (l2[i] < 0.5)
+            result[i] = 2.0 * l1[i] * l2[i] + (l1[i]*l1[i]) * (1.0 - 2.0 * l2[i]);
+        else
+            result[i] = sqrt(l1[i]) * (2.0 * l2[i] - 1.0) + 2.0 * l1[i] * (1.0 - l2[i]);
+    }
+
+    return result;
+}
+
+float colordodgef(float l1, float l2)
+{
+    if (l2 == 1.0)
+        return l2;
+    else
+        return min(l1 / (1.0 - l2), 1.0);
+}
+
+color colordodge(color l1, color l2)
+{
+    color result;
+    for (int i=0; i < 3; ++i)
+    {
+        result[i] = colordodgef(l1[i], l2[i]);
+    }
+
+    return result;
+}
+
+float colorburnf(float l1, float l2)
+{
+    if (l2 == 0.0)
+        return l2;
+    else
+        return max(1.0 - (1.0 - l1) / l2, 0.0);
+}
+
+color colorburn(color l1, color l2)
+{
+    color result;
+    for (int i=0; i < 3; ++i)
+    {
+        result[i] = colorburnf(l1[i], l2[i]);
+    }
+
+    return result;
+}
+
+color linearlight(color l1, color l2)
+{
+    color result;
+    for (int i=0; i < 3; ++i)
+    {
+        if (l2[i] < 0.5)
+            result[i] = max(l1[i] + 2.0 * l2[i] - 1.0, 0.0);
+        else
+            result[i] = min(l1[i] + 2.0 * (l2[i] - 0.5), 1.0);
+    }
+
+    return result;
+}
+
+color vividlight(color l1, color l2)
+{
+    color result;
+    for (int i=0; i < 3; ++i)
+    {
+        if (l2[i] < 0.5)
+            result[i] = colorburnf(l1[i], 2.0 * l2[i]);
+        else
+            result[i] = colordodgef(l1[i], 2.0 * (l2[i] - 0.5));
+    }
+
+    return result;
+}
+
+color pinlight(color l1, color l2)
+{
+    color result;
+    for (int i=0; i < 3; ++i)
+    {
+        if (l2[i] < 0.5)
+            result[i] = min(l1[i], 2.0 * l2[i]);
+        else
+            result[i] = max(l1[i], 2.0 * (l2[i] - 0.5));
+    }
+
+    return result;
+}
+
+color hardmix(color l1, color l2)
+{
+    color result = vividlight(l1, l2);
+    for (int i=0; i < 3; ++i)
+    {
+        result[i] < 0.5 ? result[i] = 0.0 : result[i] = 1.0;
+    }
+
+    return result;
+}
+
+color reflect(color l1, color l2)
+{
+    color result;
+    for (int i=0; i < 3; ++i)
+    {
+        if (l2[i] == 1.0)
+            result[i] = l2[i];
+        else
+            result[i] = min((l1[i]*l1[i]) / (1.0 - l2[i]), 1.0);
+    }
+
+    return result;
+}
+
+color blend(color l1, color l2, float a, int mode)
+{
+    color result = l2;
+    if (mode == BM_LIGHTEN)
+        result = max(l1, l2);
+    else if (mode == BM_DARKEN)
+        result = min(l1, l2);
+    else if (mode == BM_MULTIPLY)
+        result = l1 * l2;
+    else if (mode == BM_AVERAGE)
+        result = (l1 + l2) * 0.5;
+    else if (mode == BM_ADD || mode == BM_LINEARDODGE)
+        result = min(l1 + l2, color(1));
+    else if (mode == BM_SUBTRACT || mode == BM_LINEARBURN)
+        result = max(l1 + l2 - color(1), color(0));
+    else if (mode == BM_DIFFERENCE)
+        result = fabs(l1 - l2);
+    else if (mode == BM_NEGATION)
+        result = color(1) - fabs(color(1) - l1 - l2);
+    else if (mode == BM_EXCLUSION)
+        result = l1 + l2 - (2.0 * l1 * l2);
+    else if (mode == BM_SCREEN)
+        result = color(1) - ((color(1)-l1) * (color(1)-l2));
+    else if (mode == BM_OVERLAY)
+        result = overlay(l1, l2);
+    else if (mode == BM_SOFTLIGHT)
+        result = softlight(l1, l2);
+    else if (mode == BM_HARDLIGHT)
+        result = overlay(l2, l1);
+    else if (mode == BM_COLORDODGE)
+        result = colordodge(l1, l2);
+    else if (mode == BM_COLORBURN)
+        result = colorburn(l1, l2);
+    else if (mode == BM_LINEARLIGHT)
+        result = linearlight(l1, l2);
+    else if (mode == BM_VIVIDLIGHT)
+        result = vividlight(l1, l2);
+    else if (mode == BM_PINLIGHT)
+        result = pinlight(l1, l2);
+    else if (mode == BM_HARDMIX)
+        result = hardmix(l1, l2);
+    else if (mode == BM_REFLECT)
+        result = reflect(l1, l2);
+    else if (mode == BM_GLOW)
+        result = reflect(l2, l1);
+    else if (mode == BM_PHOENIX)
+        result = min(l1, l2) - max(l1, l2) + color(1);
+
+    return result;
+}
+
+shader alLayerColor
+[[
+    string maya_node_name = "alLayerColor"
+]]
+(
+    color layer1 = color(0),
+    float layer1a = 0,
+    int layer1Blend = 0,
+
+    color layer2 = color(0),
+    float layer2a = 0,
+    int layer2Blend = 0,
+
+    color layer3 = color(0),
+    float layer3a = 0,
+    int layer3Blend = 0,
+
+    color layer4 = color(0),
+    float layer4a = 0,
+    int layer4Blend = 0,
+
+    color layer5 = color(0),
+    float layer5a = 0,
+    int layer5Blend = 0,
+
+    color layer6 = color(0),
+    float layer6a = 0,
+    int layer6Blend = 0,
+
+    color layer7 = color(0),
+    float layer7a = 0,
+    int layer7Blend = 0,
+
+    color layer8 = color(0),
+    float layer8a = 0,
+    int layer8Blend = 0,
+
+    output color result = 0
+    [[
+        string maya_attribute_name = "outColor",
+        string maya_attribute_short_name = "oc"
+    ]]
+)
+{
+    result = blend(result, layer1, layer1a, layer1Blend);
+    result = blend(result, layer2, layer2a, layer2Blend);
+    result = blend(result, layer3, layer3a, layer3Blend);
+    result = blend(result, layer4, layer4a, layer4Blend);
+    result = blend(result, layer5, layer5a, layer5Blend);
+    result = blend(result, layer6, layer6a, layer6Blend);
+    result = blend(result, layer7, layer7a, layer7Blend);
+    result = blend(result, layer8, layer8a, layer8Blend);
+
+}

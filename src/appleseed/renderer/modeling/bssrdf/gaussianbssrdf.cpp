@@ -36,6 +36,7 @@
 #include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/cdf.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
@@ -122,10 +123,13 @@ namespace
             const ParamArray&   params)
           : SeparableBSSRDF(name, params)
         {
+            m_inputs.declare("weight", InputFormatFloat, "1.0");
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("v", InputFormatFloat);
+            m_inputs.declare("mfp", InputFormatSpectralReflectance);
+            m_inputs.declare("mfp_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("ior", InputFormatFloat);
+            m_inputs.declare("fresnel_weight", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -156,8 +160,33 @@ namespace
             // Precompute the relative index of refraction.
             values->m_precomputed.m_eta = compute_eta(shading_point, values->m_ior);
 
-            // Precompute the (square of the) max radius.
-            values->m_precomputed.m_rmax2 = values->m_v * RMax2Constant;
+            make_reflectance_and_mfp_compatible(values->m_reflectance, values->m_mfp);
+
+            // Apply multipliers to input values.
+            values->m_reflectance *= values->m_reflectance_multiplier * values->m_weight;
+            values->m_mfp *= values->m_mfp_multiplier;
+
+            // Build a CDF and PDF for channel sampling.
+            build_cdf_and_pdf(
+                values->m_reflectance,
+                values->m_precomputed.m_channel_cdf,
+                values->m_precomputed.m_channel_pdf);
+
+            // Precompute v and the (square of the) max radius.
+            float max_v = 0.0f;
+            values->m_precomputed.m_v.resize(values->m_mfp.size());
+            for (size_t i = 0, e = values->m_precomputed.m_channel_pdf.size(); i < e; ++i)
+            {
+                // The remapping from mfp to radius comes from alSurface.
+                const float radius = max(values->m_mfp[i], 0.0001f) * 7.0f;
+
+                // The remapping from radius to v comes from Cycles.
+                const float v = square(radius) * square(0.25f);
+                values->m_precomputed.m_v[i] = v;
+                max_v = max(max_v, v);
+            }
+
+            values->m_precomputed.m_rmax2 = max_v * RMax2Constant;
         }
 
         virtual bool sample(
@@ -170,18 +199,23 @@ namespace
 
             const float rmax2 = values->m_precomputed.m_rmax2;
 
-            if (rmax2 <= 0.0f)
-                return false;
+            sampling_context.split_in_place(3, 1);
+            const Vector3f s = sampling_context.next2<Vector3f>();
 
-            sampling_context.split_in_place(2, 1);
-            const Vector2f s = sampling_context.next2<Vector2f>();
+            // Sample a channel.
+            const float* cdf_begin = &values->m_precomputed.m_channel_cdf[0];
+            const size_t channel =
+                sample_cdf(
+                    cdf_begin,
+                    cdf_begin + values->m_precomputed.m_channel_cdf.size(),
+                    s[0]);
 
-            const float v = values->m_v;
+            const float v = values->m_precomputed.m_v[channel];
             const float radius = sqrt(-2.0f * v * log(1.0f - s[0] * (1.0f - exp(-rmax2 / (2.0f * v)))));
             const float phi = TwoPi<float>() * s[1];
 
             sample.m_eta = values->m_precomputed.m_eta;
-            sample.m_channel = 0;
+            sample.m_channel = channel;
             sample.m_point = Vector2f(radius * cos(phi), radius * sin(phi));
             sample.m_rmax2 = rmax2;
 
@@ -192,6 +226,12 @@ namespace
             const void*         data) const APPLESEED_OVERRIDE
         {
             return reinterpret_cast<const GaussianBSSRDFInputValues*>(data)->m_precomputed.m_eta;
+        }
+
+        virtual float get_fresnel_weight(
+            const void*         data) const APPLESEED_OVERRIDE
+        {
+            return reinterpret_cast<const GaussianBSSRDFInputValues*>(data)->m_fresnel_weight;
         }
 
         virtual void evaluate_profile(
@@ -210,11 +250,13 @@ namespace
                 return;
             }
 
-            const float v = values->m_v;
-            const float rd = exp(-square_radius / (2.0f * v)) / (TwoPi<float>() * v * RIntegralThreshold);
-
             value = values->m_reflectance;
-            value *= values->m_reflectance_multiplier * rd;
+            for (size_t i = 0, e = value.size(); i < e; ++i)
+            {
+                const float v = values->m_precomputed.m_v[i];
+                const float rd = exp(-square_radius / (2.0f * v)) / (TwoPi<float>() * v * RIntegralThreshold);
+                value[i] *= rd;
+            }
         }
 
         virtual float evaluate_pdf(
@@ -231,8 +273,16 @@ namespace
             if (r2 > rmax2)
                 return 0.0f;
 
-            const float v = values->m_v;
-            return exp(-r2 / (2.0f * v)) / (TwoPi<float>() * v * RIntegralThreshold);
+            float pdf = 0.0f;
+            for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
+            {
+                const float v = values->m_precomputed.m_v[i];
+                pdf +=
+                      exp(-r2 / (2.0f * v)) / (TwoPi<float>() * v * RIntegralThreshold)
+                    * values->m_precomputed.m_channel_pdf[i];
+            }
+
+            return pdf;
         }
     };
 }
@@ -261,6 +311,16 @@ DictionaryArray GaussianBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
+            .insert("name", "weight")
+            .insert("label", "Weight")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
             .insert("name", "reflectance")
             .insert("label", "Reflectance")
             .insert("type", "colormap")
@@ -283,13 +343,25 @@ DictionaryArray GaussianBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "v")
-            .insert("label", "V")
-            .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "10.0")
+            .insert("name", "mfp")
+            .insert("label", "Mean Free Path")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", "0.5"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "mfp_multiplier")
+            .insert("label", "Mean Free Path Multiplier")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()
@@ -300,6 +372,16 @@ DictionaryArray GaussianBSSRDFFactory::get_input_metadata() const
             .insert("max_value", "2.5")
             .insert("use", "required")
             .insert("default", "1.3"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "fresnel_weight")
+            .insert("label", "Fresnel Weight")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     return metadata;
 }

@@ -47,7 +47,18 @@ surface as_maya_areaLight
         string label = "intensity",
         string page = "Area Light Attributes"
     ]],
-
+    float in_intensity_scale = 1.0
+    [[
+        string maya_attribute_name = "asIntensityScale"
+    ]],
+    float in_exposure = 0.0
+    [[
+        string maya_attribute_name = "asExposure"
+    ]],
+    int in_normalize = 0
+    [[
+        string maya_attribute_name = "asNormalize"
+    ]],
     output point out_center = 0
     [[
         string maya_attribute_name = "center",
@@ -119,6 +130,11 @@ surface as_maya_areaLight
     out_uvCoord[0] = u;
     out_uvCoord[1] = v;
 
-    out_lightIntensity = in_intensity * in_color * emission();
+    float power = in_intensity * in_intensity_scale * pow(2.0, in_exposure);
+
+    if (in_normalize)
+        power /= surfacearea();
+
+    out_lightIntensity = power * in_color * emission();
     Ci = out_lightIntensity;
 }

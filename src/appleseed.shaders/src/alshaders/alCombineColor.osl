@@ -1,0 +1,88 @@
+
+//
+// This software is released under the MIT licence
+//
+// Copyright (c) 2013 Anders Langlands
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of
+// this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+// the Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+
+// This code comes from alshaders's OSL branch, with minimal changes.
+// https://bitbucket.org/anderslanglands/alshaders/branch/osl
+
+shader alCombineColor
+[[
+    string maya_node_name = "alCombineColor"
+]]
+(
+    color input1 = color(0),
+    color input2 = color(1),
+    float input3 = 0,
+    int combineOp = 0,
+    output color result = color(0)
+    [[
+        string maya_attribute_name = "outColor",
+        string maya_attribute_short_name = "oc"
+    ]]
+)
+{
+    if (combineOp == 0)
+    {
+        // multiply
+        result = input1*input2;
+    }
+    else if (combineOp == 1)
+    {
+        // add
+        result = input1+input2;
+    }
+    else if (combineOp == 2)
+    {
+        // divide
+        result = input1/input2;
+    }
+    else if (combineOp == 3)
+    {
+        // subtract
+        result = input1-input2;
+    }
+    else if (combineOp == 4)
+    {
+        // lerp
+        if (input3 <= 0) result = input1;
+        else if (input3 >= 1) result = input2;
+        else result = mix(input1, input2, input3);
+    }
+    else if (combineOp == 5)
+    {
+        // dot
+        result = dot(input1, input2);
+    }
+    else if (combineOp == 6)
+    {
+        // distance
+        result = distance(input1, input2);
+    }
+    else if (combineOp == 7)
+    {
+        // cross
+        result = cross(input1, input2);
+    }
+    else
+        result = input1;
+}

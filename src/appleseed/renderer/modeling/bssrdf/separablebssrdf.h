@@ -136,22 +136,29 @@ inline void SeparableBSSRDF::evaluate(
     //
 
     const float eta = get_eta(data);
+    const float fresnel_weight = foundation::saturate(get_fresnel_weight(data));
 
-    float fo;
-    const float cos_on =
-        std::abs(
-            foundation::dot(
-                outgoing_dir,
-                foundation::Vector3f(outgoing_point.get_shading_normal())));
-    foundation::fresnel_transmittance_dielectric(fo, eta, cos_on);
+    float fi = 1.0f;
+    float fo = 1.0f;
 
-    float fi;
-    const float cos_in =
-        std::abs(
-            foundation::dot(
-                incoming_dir,
-                foundation::Vector3f(incoming_point.get_shading_normal())));
-    foundation::fresnel_transmittance_dielectric(fi, eta, cos_in);
+    if (fresnel_weight != 0.0f)
+    {
+        const float cos_on =
+            std::abs(
+                foundation::dot(
+                    outgoing_dir,
+                    foundation::Vector3f(outgoing_point.get_shading_normal())));
+        foundation::fresnel_transmittance_dielectric(fo, eta, cos_on);
+        fo = foundation::lerp(1.0f, fo, fresnel_weight);
+
+        const float cos_in =
+            std::abs(
+                foundation::dot(
+                    incoming_dir,
+                    foundation::Vector3f(incoming_point.get_shading_normal())));
+        foundation::fresnel_transmittance_dielectric(fi, eta, cos_in);
+        fi = foundation::lerp(1.0f, fi, fresnel_weight);
+    }
 
     const float square_radius =
         static_cast<float>(

@@ -143,7 +143,14 @@ closure color as_subsurface(
     normal  N,
     color   reflectance,
     color   mean_free_path,
-    float   ior) BUILTIN;
+    float   ior
+//
+//  keyword arguments:
+//  ==================
+//
+//      float "fresnel_weight" = 1
+//
+    ) BUILTIN;
 
 closure color as_ashikhmin_shirley(
     normal  N,

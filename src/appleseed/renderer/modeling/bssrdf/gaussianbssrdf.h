@@ -55,15 +55,21 @@ namespace renderer
 
 APPLESEED_DECLARE_INPUT_VALUES(GaussianBSSRDFInputValues)
 {
-    Spectrum    m_reflectance;
-    float       m_reflectance_multiplier;
-    float       m_v;
-    float       m_ior;
+    float           m_weight;
+    Spectrum        m_reflectance;
+    float           m_reflectance_multiplier;
+    Spectrum        m_mfp;
+    float           m_mfp_multiplier;
+    float           m_ior;
+    float           m_fresnel_weight;
 
     struct Precomputed
     {
-        float   m_rmax2;
-        float   m_eta;
+        Spectrum    m_v;
+        float       m_rmax2;
+        float       m_eta;
+        Spectrum    m_channel_pdf;
+        Spectrum    m_channel_cdf;
     };
 
     Precomputed m_precomputed;

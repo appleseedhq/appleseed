@@ -124,9 +124,7 @@ namespace
                 }
             }
             else
-            {
                 values->m_precomputed.m_dirpole_reparam_weight.set(1.0f);
-            }
         }
 
         virtual void evaluate_profile(
@@ -177,13 +175,21 @@ namespace
             value *= 0.5f;
 #endif
 
-            float fo;
-            const float cos_on = abs(dot(outgoing_dir, Vector3f(outgoing_point.get_shading_normal())));
-            fresnel_transmittance_dielectric(fo, values->m_precomputed.m_eta, cos_on);
+            float fi = 1.0f;
+            float fo = 1.0f;
 
-            float fi;
-            const float cos_in = abs(dot(incoming_dir, Vector3f(incoming_point.get_shading_normal())));
-            fresnel_transmittance_dielectric(fi, values->m_precomputed.m_eta, cos_in);
+            const float fresnel_weight = saturate(get_fresnel_weight(data));
+
+            if (fresnel_weight != 0.0f)
+            {
+                const float cos_on = abs(dot(outgoing_dir, Vector3f(outgoing_point.get_shading_normal())));
+                fresnel_transmittance_dielectric(fo, values->m_precomputed.m_eta, cos_on);
+                fo = lerp(1.0f, fo, fresnel_weight);
+
+                const float cos_in = abs(dot(incoming_dir, Vector3f(incoming_point.get_shading_normal())));
+                fresnel_transmittance_dielectric(fi, values->m_precomputed.m_eta, cos_in);
+                fi = lerp(1.0f, fi, fresnel_weight);
+            }
 
             const float radius = static_cast<float>(norm(incoming_point.get_point() - outgoing_point.get_point()));
             value *= radius * fo * fi * values->m_weight;

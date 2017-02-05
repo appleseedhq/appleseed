@@ -86,6 +86,7 @@ namespace
             m_inputs.declare("mfp", InputFormatSpectralReflectance);
             m_inputs.declare("mfp_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("ior", InputFormatFloat);
+            m_inputs.declare("fresnel_weight", InputFormatFloat, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -126,27 +127,19 @@ namespace
             clamp_in_place(values->m_reflectance, 0.001f, 0.999f);
             clamp_low_in_place(values->m_mfp, 1.0e-6f);
 
-            // Build a CDF for channel sampling.
-
             values->m_precomputed.m_s.resize(values->m_reflectance.size());
-            values->m_precomputed.m_channel_pdf.resize(values->m_reflectance.size());
-            values->m_precomputed.m_channel_cdf.resize(values->m_reflectance.size());
 
-            float cumulated_pdf = 0.0f;
-            for (size_t i = 0, e = values->m_precomputed.m_channel_pdf.size(); i < e; ++i)
+            for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
             {
                 const float a = values->m_reflectance[i];
                 values->m_precomputed.m_s[i] = normalized_diffusion_s_mfp(a);
-
-                values->m_precomputed.m_channel_pdf[i] = a;
-                cumulated_pdf += a;
-                values->m_precomputed.m_channel_cdf[i] = cumulated_pdf;
             }
 
-            const float rcp_cumulated_pdf = 1.0f / cumulated_pdf;
-            values->m_precomputed.m_channel_pdf *= rcp_cumulated_pdf;
-            values->m_precomputed.m_channel_cdf *= rcp_cumulated_pdf;
-            values->m_precomputed.m_channel_cdf[values->m_precomputed.m_channel_cdf.size() - 1] = 1.0f;
+            // Build a CDF and PDF for channel sampling.
+            build_cdf_and_pdf(
+                values->m_reflectance,
+                values->m_precomputed.m_channel_cdf,
+                values->m_precomputed.m_channel_pdf);
 
             // Precompute the (square of the) max radius.
             values->m_precomputed.m_rmax2 = 0.0f;
@@ -204,6 +197,12 @@ namespace
             const void*         data) const APPLESEED_OVERRIDE
         {
             return reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data)->m_precomputed.m_eta;
+        }
+
+        virtual float get_fresnel_weight(
+            const void*         data) const APPLESEED_OVERRIDE
+        {
+            return reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data)->m_fresnel_weight;
         }
 
         virtual void evaluate_profile(
@@ -342,6 +341,16 @@ DictionaryArray NormalizedDiffusionBSSRDFFactory::get_input_metadata() const
             .insert("max_value", "2.5")
             .insert("use", "required")
             .insert("default", "1.3"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "fresnel_weight")
+            .insert("label", "Fresnel Weight")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     return metadata;
 }

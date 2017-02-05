@@ -38,6 +38,7 @@
 #include "renderer/modeling/bsdf/metalbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
+#include "renderer/modeling/bssrdf/gaussianbssrdf.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/edf/diffuseedf.h"
@@ -1207,7 +1208,10 @@ namespace
         virtual void update() APPLESEED_OVERRIDE
         {
             if (Scene* scene = m_project.get_scene())
+            {
                 update_bsdfs_inputs(scene->assemblies());
+                update_gaussian_bssrdfs(scene->assemblies());
+            }
         }
 
       private:
@@ -1243,6 +1247,43 @@ namespace
             {
                 move_if_exist(bsdf, "volume_density", "density");
                 move_if_exist(bsdf, "volume_scale", "scale");
+            }
+        }
+
+        static void update_gaussian_bssrdfs(AssemblyContainer& assemblies)
+        {
+            for (each<AssemblyContainer> i = assemblies; i; ++i)
+            {
+                update_gaussian_bssrdfs(*i);
+                update_gaussian_bssrdfs(i->assemblies());
+            }
+        }
+
+        static void update_gaussian_bssrdfs(Assembly& assembly)
+        {
+            for (each<BSSRDFContainer> i = assembly.bssrdfs(); i; ++i)
+            {
+                if (strcmp(i->get_model(), GaussianBSSRDFFactory().get_model()) == 0)
+                    update_gaussian_bssrdf(*i);
+            }
+        }
+
+        static void update_gaussian_bssrdf(BSSRDF& bssrdf)
+        {
+            ParamArray& params = bssrdf.get_parameters();
+
+            try
+            {
+                const float v = params.get<float>("v");
+                const float mfp = sqrt(v * 16.0f) / 7.0f;
+                params.insert("mfp", mfp);
+                params.remove_path("v");
+            }
+            catch (const Exception&)
+            {
+                RENDERER_LOG_ERROR(
+                    "while updating gaussianbssrdf \"%s\", failed to convert v parameter.",
+                    bssrdf.get_name());
             }
         }
     };

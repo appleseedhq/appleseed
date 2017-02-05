@@ -135,6 +135,8 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const size_t                channel,
         const float                 radius) const = 0;
 
+    virtual float get_fresnel_weight(const void* data) const;
+
   protected:
     struct Impl;
     Impl* impl;
@@ -146,6 +148,11 @@ class APPLESEED_DLLSYMBOL BSSRDF
     void make_reflectance_and_mfp_compatible(
         Spectrum&                   reflectance,
         const Spectrum&             mfp) const;
+
+    void build_cdf_and_pdf(
+        const Spectrum&             src,
+        Spectrum&                   cdf,
+        Spectrum&                   pdf) const;
 };
 
 }       // namespace renderer

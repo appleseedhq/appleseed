@@ -68,6 +68,7 @@ DipoleBSSRDF::DipoleBSSRDF(
     m_inputs.declare("sigma_s", InputFormatSpectralReflectance, "");
     m_inputs.declare("g", InputFormatFloat, "0.0");
     m_inputs.declare("ior", InputFormatFloat);
+    m_inputs.declare("fresnel_weight", InputFormatFloat, "1.0");
 }
 
 bool DipoleBSSRDF::sample(
@@ -203,6 +204,16 @@ DictionaryArray DipoleBSSRDFFactory::get_input_metadata() const
             .insert("max_value", "2.5")
             .insert("use", "required")
             .insert("default", "1.3"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "fresnel_weight")
+            .insert("label", "Fresnel Weight")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     return metadata;
 }

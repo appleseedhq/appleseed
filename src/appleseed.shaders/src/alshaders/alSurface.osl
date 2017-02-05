@@ -1,0 +1,367 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 The masked shader writer, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/material/as_material_helpers.h"
+
+
+#define IMPORTANCE_EPS 1e-5
+
+#define SSSMODE_CUBIC       0
+#define SSSMODE_DIFFUSION   1
+#define SSSMODE_DIRECTIONAL 2
+#define SSSMODE_EMPIRICAL   3
+
+
+float minh(color c)
+{
+    return min(c[0], min(c[1], c[2]));
+}
+
+float maxh(color c)
+{
+    return max(c[0], max(c[1], c[2]));
+}
+
+shader alSurface
+[[
+    string maya_node_name = "alSurface"
+]]
+(
+    normal globalNormal = N
+    [[
+        string maya_attribute_name = "normalCamera",
+        string maya_attribute_short_name = "n"
+    ]],
+    vector Tn = 0
+    [[
+        int    lockgeom = 0
+    ]],
+
+    normal diffuseNormal = normal(0),
+    float diffuseStrength = 1,
+    color diffuseColor =  color(0.5),
+    float diffuseRoughness = 0,
+
+    float backlightStrength = 0,
+    color backlightColor = color(0.18),
+
+    float sssMix = 0,
+    int sssMode = 0,
+    float sssRadius = 1.5,
+    float sssWeight1 = 1,
+    color sssRadiusColor = color(0.439, 0.156, 0.078),
+    float sssRadius2 = 4.0,
+    float sssWeight2 = 0,
+    color sssRadiusColor2 = color(0.439, 0.08, 0.018),
+    float sssRadius3 = 0.75,
+    float sssWeight3 = 0,
+    color sssRadiusColor3 = color(0.523, 0.637, 0.667),
+    float sssDensityScale = 1,
+
+    normal specular1Normal = normal(0),
+    float specular1Strength = 1,
+    color specular1Color = color(1),
+    float specular1Roughness = 0.3,
+    float specular1Anisotropy = 0,
+    float specular1Rotation = 0,
+    int specular1FresnelMode = 0,
+    float specular1Ior= 1.4,
+    color specular1Reflectivity = color(0.548, 0.549, 0.570),
+    color specular1EdgeTint = color(0.579, 0.598, 0.620),
+    float specular1RoughnessDepthScale = 1,
+    int specular1Distribution = 0,
+
+    normal specular2Normal = normal(0),
+    float specular2Strength = 0,
+    color specular2Color = color(1),
+    float specular2Roughness = 0,
+    float specular2Anisotropy = 0,
+    float specular2Rotation = 0,
+    int specular2FresnelMode = 0,
+    float specular2Ior = 1.4,
+    color specular2Reflectivity = color(0.548, 0.549, 0.570),
+    color specular2EdgeTint = color(0.579, 0.598, 0.620),
+    float specular2RoughnessDepthScale = 1,
+    int specular2Distribution = 0,
+
+    normal transmissionNormal = normal(0),
+    float transmissionStrength = 0,
+    color transmissionColor = color(1),
+    int transmissionLinkToSpecular1 = 1,
+    float transmissionRoughness = 0,
+    float transmissionIor = 1.4,
+    float transmissionRoughnessDepthScale = 1,
+
+    color ssAttenuationColor = color(1),
+    float ssDensityScale = 1,
+
+    float emissionStrength = 0,
+    color emissionColor = color(1),
+
+    color opacity = 1,
+
+    output closure color rgb = 0
+    [[
+        string maya_attribute_name = "outColor",
+        string maya_attribute_short_name = "oc"
+    ]]
+)
+{
+    if (raytype("transparency"))
+    {
+        rgb = (color(1) - opacity) * transparent();
+        return;
+    }
+
+    int do_diffuse = 1;
+    int do_backlight = 1;
+    int do_sss = 1;
+    int do_transmission = 1;
+    int do_emission = 1;
+    int do_glossy2 = 1;
+    int do_glossy = 1;
+
+    if (raytype("shadow"))
+    {
+        do_diffuse = 0;
+        do_backlight = 0;
+        do_sss = 0;
+        do_transmission = 1;
+        do_emission = 0;
+        do_glossy2 = 0;
+        do_glossy = 0;
+    }
+    else if (raytype("light"))
+    {
+        do_diffuse = 0;
+        do_backlight = 0;
+        do_sss = 0;
+        do_transmission = 0;
+        do_emission = 1;
+        do_glossy2 = 1;
+        do_glossy = 1;
+    }
+
+    // balance diffuse, transmission and backlight
+    color transmissionColor_ = transmissionColor * transmissionStrength;
+    color diffuseColor_ = diffuseColor * diffuseStrength;
+    color backlightColor_ = backlightColor * backlightStrength;
+    float t_sum = maxh(transmissionColor_) + maxh(diffuseColor_) + maxh(backlightColor_);
+
+    if (t_sum > 1.0)
+    {
+        float t_sum_inv = 1.0 / t_sum;
+        transmissionColor_ *= t_sum_inv;
+        diffuseColor_      *= t_sum_inv;
+        backlightColor_    *= t_sum_inv;
+    }
+
+    if (maxh(diffuseColor_) < IMPORTANCE_EPS || sssMix == 1.0)
+        do_diffuse = 0;
+
+    if (maxh(backlightColor_) < IMPORTANCE_EPS || sssMix == 1.0)
+        do_backlight = 0;
+
+    if (sssMix == 0.0 || maxh(diffuseColor_) < IMPORTANCE_EPS)
+        do_sss = 0;
+
+    if (maxh(transmissionColor_) < IMPORTANCE_EPS || sssMix == 1.0)
+        do_transmission = 0;
+
+    color emissionColor_ = emissionColor * emissionStrength;
+    if (maxh(emissionColor_) < IMPORTANCE_EPS)
+        do_emission = 0;
+
+    color specular1Color_ = specular1Color * specular1Strength;
+    if (maxh(specular1Color_) < IMPORTANCE_EPS)
+        do_glossy = 0;
+
+    color specular2Color_ = specular2Color * specular2Strength;
+    if (maxh(specular2Color_) < IMPORTANCE_EPS)
+        do_glossy2 = 0;
+
+    // Create closures.
+    normal globalNormal_ = normalize(globalNormal);
+
+    normal diffuseNormal_ = globalNormal_;
+    if (isconnected(diffuseNormal) == 1)
+        diffuseNormal_ = normalize(diffuseNormal);
+
+    if (do_diffuse)
+    {
+        rgb += diffuseColor_ * (1.0 - sssMix) * oren_nayar(diffuseNormal_, diffuseRoughness);
+    }
+
+    if (do_backlight)
+        rgb += backlightColor_ * (1.0 - sssMix) * translucent(diffuseNormal_);
+
+    if (do_sss)
+    {
+        color sssColor = diffuseColor_ * sssMix;
+        color white = color(1, 1, 1);
+        color red   = color(1, 0, 0);
+        color green = color(0, 1, 0);
+        color blue  = color(0, 0, 1);
+
+        // Normalize the SSS weights.
+        float sssWeight1_ = sssWeight1;
+        float sssWeight2_ = sssWeight2;
+        float sssWeight3_ = sssWeight3;
+
+        float normweight = 1.0 / (sssWeight1_ + sssWeight2_ + sssWeight3_);
+        sssWeight1_ *= normweight;
+        sssWeight2_ *= normweight;
+        sssWeight3_ *= normweight;
+
+        float sssIor = 1.3;
+
+        if (sssMode == SSSMODE_DIFFUSION || sssMode == SSSMODE_DIRECTIONAL)
+        {
+            // TODO: implement this.
+        }
+        else // SSSMODE_CUBIC || SSSMODE_EMPIRICAL
+        {
+            if (sssWeight1_ > IMPORTANCE_EPS)
+            {
+                color radius = max(
+                    color(0.0001),
+                    sssRadius * sssRadiusColor / (sssDensityScale * 7.0));
+
+                rgb += sssColor * sssWeight1_ * as_subsurface(
+                    sssMode == SSSMODE_CUBIC ? "gaussian" : "normalized_diffusion",
+                    diffuseNormal_,
+                    white,
+                    radius,
+                    sssIor,
+                    "fresnel_weight", 0);
+            }
+
+            // TODO: add lobes 2 and 3.
+        }
+    }
+
+    if (do_transmission)
+    {
+        normal transmissionNormal_ = globalNormal_;
+        if (isconnected(transmissionNormal) == 1)
+            transmissionNormal_ = normalize(transmissionNormal);
+
+        float transmissionRoughness_;
+        float transmissionIor_;
+        if (transmissionLinkToSpecular1)
+        {
+            transmissionRoughness_ = specular1Roughness;
+            transmissionIor_ = specular1Ior;
+        }
+        else
+        {
+            transmissionRoughness_ = transmissionRoughness;
+            transmissionIor = transmissionIor;
+        }
+
+        color volumeTransmittanceColor = color(1);
+        float volumeTransmittanceDistance = 0.0;
+
+        if (minh(ssAttenuationColor) < 1.0)
+        {
+            color sigmaA =
+                (color(1) - clamp(ssAttenuationColor, color(0), color(0.999))) * ssDensityScale;
+
+            // Convert to transmittance.
+            volumeTransmittanceColor = exp(-sigmaA);
+            volumeTransmittanceDistance = 1.0;
+        }
+
+        rgb += (1.0 - sssMix) * as_glass(
+            "beckmann",
+            transmissionNormal_,
+            transmissionColor_,
+            color(0), // transmission only.
+            color(1),
+            transmissionRoughness_,
+            transmissionIor_,
+            volumeTransmittanceColor,
+            volumeTransmittanceDistance);
+    }
+
+    if (do_emission)
+        rgb += emissionColor_ * emission();
+
+    if (do_glossy2)
+    {
+        normal specular2Normal_ = globalNormal_;
+        if (isconnected(specular2Normal) == 1)
+            specular2Normal_ = normalize(specular2Normal);
+
+        vector T = Tn;
+        if (specular2Rotation != 0.0)
+        {
+            // todo: handle T rotation here...
+        }
+
+        rgb = as_alsurface_layer(
+            rgb,
+            specular2Distribution,
+            specular2Normal_,
+            T,
+            specular2Color_,
+            specular2Roughness,
+            specular2Anisotropy,
+            specular2FresnelMode,
+            specular2Ior,
+            specular2Reflectivity,
+            specular2EdgeTint);
+    }
+
+    if (do_glossy)
+    {
+        normal specular1Normal_ = globalNormal_;
+        if (isconnected(specular1Normal) == 1)
+            specular1Normal_ = normalize(specular1Normal);
+
+        vector T = Tn;
+
+        if (specular1Rotation != 0.0)
+        {
+            // todo: handle T rotation here...
+        }
+
+        rgb = as_alsurface_layer(
+            rgb,
+            specular1Distribution,
+            specular1Normal_,
+            T,
+            specular1Color_,
+            specular1Roughness,
+            specular1Anisotropy,
+            specular1FresnelMode,
+            specular1Ior,
+            specular1Reflectivity,
+            specular1EdgeTint);
+    }
+}
