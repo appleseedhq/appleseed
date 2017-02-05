@@ -83,6 +83,26 @@ void implode_3d(
     }
 }
 
+vector implode_2d(
+    float implode,
+    float implode_center[2],
+    vector Vin)
+{
+    vector Vout = vector(Vin[0], Vin[1], 0.0);
+    implode_2d(implode, implode_center, Vout[0], Vout[1]);
+    return Vout;
+}
+
+point implode_2d(
+    float implode,
+    float implode_center[2],
+    point Pin)
+{
+    point Pout = point(Pin[0], Pin[1], 0.0);
+    implode_2d(implode, implode_center, Pout[0], Pout[1]);
+    return Pout;
+}
+
 vector implode_3d(
     float implode,
     float implode_center[3],
@@ -149,7 +169,7 @@ float maya_fBm(
         fw *= lacunarity;
         ttime *= lacunarity;
     }
-    return sum;
+    return clamp(sum * 0.5 + 0.5, 0.0, 1.0);
 }
 
 #endif // AS_MAYA_FRACTAL_HELPERS_H
