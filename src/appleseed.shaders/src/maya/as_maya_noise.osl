@@ -216,28 +216,15 @@ shader as_maya_noise
 
         if (in_noiseType == 0)
         {
-            if (in_inflection)
-            {
-                val = maya_turbulence(
-                    coords,
-                    in_time,
-                    filter_size,
-                    in_amplitude,
-                    in_depthMax,
-                    in_frequencyRatio,
-                    in_ratio);
-            }
-            else
-            {
-                val = maya_fBm(
-                    coords,
-                    in_time,
-                    filter_size,
-                    in_amplitude,
-                    in_depthMax,
-                    in_frequencyRatio,
-                    in_ratio);
-            }
+            val = maya_perlin(
+                coords,
+                in_time,
+                filter_size,
+                in_amplitude,
+                in_depthMax,
+                in_frequencyRatio,
+                in_ratio,
+                in_inflection);
         }
         else if (in_noiseType == 1)
         {

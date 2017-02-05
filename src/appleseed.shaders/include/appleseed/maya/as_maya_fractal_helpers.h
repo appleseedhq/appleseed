@@ -125,7 +125,7 @@ point implode_3d(
 
 float maya_turbulence(
     point surface_point,
-    float itime,
+    float initial_time,
     float filter_width,
     float amplitude,
     int octaves,
@@ -133,7 +133,7 @@ float maya_turbulence(
     float gain)
 {
     point pp = surface_point;
-    float amp = amplitude, fw = filter_width, sum = 0.0, ttime = itime;
+    float amp = amplitude, fw = filter_width, sum = 0.0, ttime = initial_time;
 
     for (int i = 0; i < octaves; ++i)
     {
@@ -150,7 +150,7 @@ float maya_turbulence(
 
 float maya_fBm(
     point surface_point,
-    float itime,
+    float initial_time,
     float filter_width,
     float amplitude,
     int octaves,
@@ -158,7 +158,7 @@ float maya_fBm(
     float gain)
 {
     point pp = surface_point;
-    float amp = amplitude, fw = filter_width, sum = 0.0, ttime = itime;
+    float amp = amplitude, fw = filter_width, sum = 0.0, ttime = initial_time;
 
     for (int i = 0; i < octaves; ++i)
     {
@@ -170,6 +170,40 @@ float maya_fBm(
         ttime *= lacunarity;
     }
     return clamp(sum * 0.5 + 0.5, 0.0, 1.0);
+}
+
+float maya_perlin(
+    point surface_point,
+    float initial_time,
+    float filter_width,
+    float amplitude,
+    int octaves,
+    float lacunarity,
+    float gain,
+    int inflection)
+{
+    if (inflection)
+    {
+        return maya_turbulence(
+            surface_point,
+            initial_time,
+            filter_width,
+            amplitude,
+            octaves,
+            lacunarity,
+            gain);
+    }
+    else
+    {
+        return maya_fBm(
+            surface_point,
+            initial_time,
+            filter_width,
+            amplitude,
+            octaves,
+            lacunarity,
+            gain);
+    }
 }
 
 #endif // AS_MAYA_FRACTAL_HELPERS_H
