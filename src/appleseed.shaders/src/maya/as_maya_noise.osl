@@ -213,18 +213,40 @@ shader as_maya_noise
         }
 
         coords *= in_frequency;
-
-        if (in_noiseType == 0)
-        {
             val = maya_perlin(
                 coords,
-                in_time,
+                in_time + time,
                 filter_size,
                 in_amplitude,
                 in_depthMax,
                 in_frequencyRatio,
                 in_ratio,
-                in_inflection);
+                in_inflection);    
+             
+        if (in_noiseType == 0)
+        {
+            if (in_inflection)
+            {
+                val = maya_turbulence(
+                    coords,
+                    in_time + time,
+                    filter_size,
+                    in_amplitude,
+                    in_depthMax,
+                    in_frequencyRatio,
+                    in_ratio);
+            }
+            else
+            {
+                val = maya_fBm(
+                    coords,
+                    in_time,
+                    filter_size,
+                    in_amplitude,
+                    in_depthMax,
+                    in_frequencyRatio,
+                    in_ratio);
+            }
         }
         else if (in_noiseType == 1)
         {
@@ -240,7 +262,33 @@ shader as_maya_noise
         }
         else if (in_noiseType == 4)
         {
-            // space-time
+            if (in_inflection)
+            {
+                val = maya_turbulence(
+                    coords,
+                    in_time + time,
+                    filter_size,
+                    in_amplitude,
+                    in_depthMax,
+                    in_frequencyRatio,
+                    in_ratio);
+            }
+            else
+            {
+#ifdef DEBUG
+                printf("Current shutter time = %.3f,\tdtime = %.3f\n",
+                        time, dtime);
+#endif
+
+                val = fBm(
+                    coords,
+                    in_time, // + time, // time is bugged?
+                    filter_size,
+                    in_amplitude,
+                    in_depthMax,
+                    in_frequencyRatio,
+                    in_ratio) * 0.5 + 0.5;
+            }
         }
         else
         {
