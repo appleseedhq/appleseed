@@ -29,6 +29,7 @@
 // Ref: $MAYA_LOCATION/docs/Nodes/noise.html
 
 #include "appleseed/fractal/as_fractal_helpers.h"
+#include "appleseed/maya/as_maya_fractal_helpers.h"
 #include "appleseed/maya/as_maya_helpers.h"
 
 shader as_maya_noise
@@ -210,7 +211,7 @@ shader as_maya_noise
         {
             if (in_inflection)
             {
-                val = turbulence(
+                val = maya_turbulence(
                     coords,
                     in_time,
                     filter_size,
@@ -221,7 +222,7 @@ shader as_maya_noise
             }
             else
             {
-                val = fBm(
+                val = maya_fBm(
                     coords,
                     in_time,
                     filter_size,

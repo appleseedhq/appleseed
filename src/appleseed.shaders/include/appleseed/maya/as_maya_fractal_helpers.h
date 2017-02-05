@@ -98,9 +98,58 @@ point implode_3d(
     float implode_center[3],
     point Vin)
 {
-    point Pout = Pin;
+    point Pout = Vin;
     implode_3d(implode, implode_center, Pout[0], Pout[1], Pout[2]);
     return Pout;
+}
+
+float maya_turbulence(
+    point surface_point,
+    float itime,
+    float filter_width,
+    float amplitude,
+    int octaves,
+    float lacunarity,
+    float gain)
+{
+    point pp = surface_point;
+    float amp = amplitude, fw = filter_width, sum = 0.0, ttime = itime;
+
+    for (int i = 0; i < octaves; ++i)
+    {
+        // Base frequency looks too regular, break it with point+noise.
+        float tmp = amp * filtered_snoise(pp + noise(lacunarity), ttime, fw);
+        sum += abs(tmp);
+        amp *= gain;
+        pp *= lacunarity;
+        fw *= lacunarity;
+        ttime *= lacunarity;
+    }
+    return sum;
+}
+
+float maya_fBm(
+    point surface_point,
+    float itime,
+    float filter_width,
+    float amplitude,
+    int octaves,
+    float lacunarity,
+    float gain)
+{
+    point pp = surface_point;
+    float amp = amplitude, fw = filter_width, sum = 0.0, ttime = itime;
+
+    for (int i = 0; i < octaves; ++i)
+    {
+        // These magic numbers seem to match Maya better.
+        sum += amp * 1.2 * (filtered_snoise(pp, ttime, fw) - 0.1) + 0.05;
+        amp *= gain;
+        pp *= lacunarity;
+        fw *= lacunarity;
+        ttime *= lacunarity;
+    }
+    return sum;
 }
 
 #endif // AS_MAYA_FRACTAL_HELPERS_H

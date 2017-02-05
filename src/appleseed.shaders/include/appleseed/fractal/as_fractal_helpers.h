@@ -60,28 +60,4 @@ float fBm(
     return sum;
 }
 
-float turbulence(
-    point surface_point,
-    float itime,
-    float filter_width,
-    float amplitude,
-    int octaves,
-    float lacunarity,
-    float gain)
-{
-    point pp = surface_point;
-    float amp = amplitude, fw = filter_width, sum = 0.0, ttime = itime;
-
-    for (int i = 0; i < octaves; ++i)
-    {
-        float tmp = amp * filtered_snoise(pp, ttime, fw);
-        sum += abs(tmp);
-        amp *= gain;
-        pp *= lacunarity;
-        fw *= lacunarity;
-        ttime *= lacunarity;
-    }
-    return sum;
-}
-
 #endif // AS_PATTERN_HELPERS_H
