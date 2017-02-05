@@ -220,7 +220,7 @@ shader as_maya_noise
             {
                 val = maya_turbulence(
                     coords,
-                    in_time + time,
+                    in_time,
                     filter_size,
                     in_amplitude,
                     in_depthMax,
@@ -255,7 +255,7 @@ shader as_maya_noise
             {
                 val = maya_turbulence(
                     coords,
-                    in_time + time,
+                    in_time,
                     filter_size,
                     in_amplitude,
                     in_depthMax,
@@ -280,7 +280,7 @@ shader as_maya_noise
             {
                 val = maya_turbulence(
                     coords,
-                    in_time + time,
+                    in_time, // + time,
                     filter_size,
                     in_amplitude,
                     in_depthMax,
