@@ -44,9 +44,10 @@
 #ifndef AS_NOISE_HELPERS_H
 #define AS_NOISE_HELPERS_H
 
-#define NOISE_CUBE_SIDE   32.0
-#define NOISE_CUBE_SHIFT  5
-#define NOISE_CUBE_MASK   31
+#define NOISE_CUBE_SIDE     32.0
+#define NOISE_CUBE_SHIFT    5
+#define NOISE_CUBE_MASK     31
+#define NOISE_TABLE_SIZE    65536
 
 #include "appleseed/fractal/as_noise_tables.h"
 #include "appleseed/math/as_math_helpers.h"
@@ -75,7 +76,7 @@ float noise_derivative(vector control_p, float x)
 
 vector noise_lookup(int y, int vx[3])
 {
-    float rng_table[65536] = { RNG_TABLE };
+    float rng_table[NOISE_TABLE_SIZE] = { RNG_TABLE };
 
     return vector(
         rng_table[vx[0] | y],
@@ -85,7 +86,7 @@ vector noise_lookup(int y, int vx[3])
 
 float value_noise_2d(float x, float y)
 {
-    float rng_table[65536] = { RNG_TABLE };
+    float rng_table[NOISE_TABLE_SIZE] = { RNG_TABLE };
 
     float xx = (x > 1.0e9) ? 0 : x;
     float yy = (y > 1.0e9) ? 0 : y;
@@ -125,7 +126,7 @@ float value_noise_2d(float x, float y)
 
 vector value_noise_2d(float x, float y)
 {
-    float rng_table[65536] = { RNG_TABLE };
+    float rng_table[NOISE_TABLE_SIZE] = { RNG_TABLE };
 
     float xx = (x > 1.0e9) ? 0 : x;
     float yy = (y > 1.0e9) ? 0 : y;
@@ -167,6 +168,23 @@ vector value_noise_2d(float x, float y)
                 4.0 * (-py[0] + py[1])) * ty + py[0] + py[1]);
 
     return vector(out_x, out_y, out_z);
+}
+
+float random_noise(int index)
+{
+    int ndx = index;
+
+    float rng_table[NOISE_TABLE_SIZE] = { RNG_TABLE };
+
+    if (ndx < 0)
+    {
+        ndx = -ndx;
+    }
+    if (ndx >= NOISE_TABLE_SIZE)
+    {
+        ndx = ndx % NOISE_TABLE_SIZE;
+    }
+    return rng_table[ndx];
 }
 
 #endif // AS_NOISE_HELPERS_H

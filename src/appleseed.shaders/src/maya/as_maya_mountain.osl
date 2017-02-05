@@ -28,7 +28,7 @@
 
 // Ref: $MAYA_LOCATION/docs/Nodes/mountain.html
 
-#define REQUIRE_VALUE_NOISE
+#define REQUIRE_NOISE_TABLE
 
 #include "appleseed/fractal/as_fractal_helpers.h"
 #include "appleseed/math/as_math_helpers.h"

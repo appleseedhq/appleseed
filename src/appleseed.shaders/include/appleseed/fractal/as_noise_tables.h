@@ -31,7 +31,7 @@
 
 // Use (large) table only on nodes that need it, avoid slowdown.
 
-#ifndef REQUIRE_VALUE_NOISE
+#ifndef REQUIRE_NOISE_TABLES
 #define RNG_TABLE   0
 #else
 
@@ -13146,5 +13146,5 @@
       0.306280,  0.141044, -0.766729, -0.161466, -0.880173,     \
       0.728414,  0.714905,  0.735757, -0.830280,  0.921542      \
 
-#endif // REQUIRE_VALUE_NOISE
+#endif // REQUIRE_NOISE_TABLES
 #endif // AS_NOISE_TABLES_H

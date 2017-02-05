@@ -29,8 +29,11 @@
 // Ref: $MAYA_LOCATION/docs/Nodes/noise.html
 
 #include "appleseed/fractal/as_fractal_helpers.h"
+#include "appleseed/fractal/as_noise_helpers.h"
 #include "appleseed/maya/as_maya_fractal_helpers.h"
 #include "appleseed/maya/as_maya_helpers.h"
+
+#define REQUIRE_NOISE_TABLE
 
 shader as_maya_noise
 [[
@@ -246,6 +249,36 @@ shader as_maya_noise
         else if (in_noiseType == 2)
         {
             // wave
+
+            coords *= M_2PI;
+            float current_time = in_time * M_PI;
+            float val = 0.0, kx, ky, kz, k, phi;
+            int seed = 50;
+
+            for (int i = 0; i < in_numWaves; ++i)
+            {
+                do
+                {
+                    kx = random_noise(seed++);
+                    ky = random_noise(seed++);
+                    kz = random_noise(seed++);
+                    k = hypot(kx, ky, kz);
+                }
+                while (k <= 0);
+
+                kx /= k;
+                ky /= k;
+                kz /= k;
+
+                phi = random_noise(seed++) * M_PI;
+
+                val += cos( kx * coords[0] +
+                            ky * coords[1] +
+                            kz * coords[2] +
+                            phi + current_time);
+            }
+            val /= in_numWaves;
+
         }
         else if (in_noiseType == 3)
         {
