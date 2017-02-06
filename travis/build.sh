@@ -10,6 +10,7 @@ export LD_LIBRARY_PATH=$DEPSDIR/lib:../sandbox/lib/Debug:$LD_LIBRARY_PATH
 mkdir build
 cd build
 
+cmake --version
 cmake \
     -D USE_CPP11=$USE_CPP11 \
     -D WITH_CLI=ON \
