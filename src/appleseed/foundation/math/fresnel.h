@@ -135,6 +135,7 @@ void normal_reflectance_dielectric(
 // References:
 //
 //   [1] Physically Based Rendering, first edition.
+//
 //   [2] Artist Friendly Metallic Fresnel.
 //       Ole Gulbrandsen
 //       http://jcgt.org/published/0003/04/03/paper.pdf

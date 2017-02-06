@@ -169,6 +169,7 @@ T exponential_distribution_pdf(
     const T a);
 
 
+//
 // Equiangular sampling along a ray with respect to a point.
 //
 // Reference:
@@ -176,6 +177,7 @@ T exponential_distribution_pdf(
 //   Importance Sampling Techniques for Path Tracing in Participating Media
 //   Christopher Kulla and Marcos Fajardo
 //   https://www.solidangle.com/research/egsr2012_volume.pdf
+//
 
 template <typename T>
 T sample_equiangular_distribution(
