@@ -643,7 +643,7 @@ namespace
                 caches[L2].linesize = 64;
                 break;
               case 0x49:
-                // TODO: check for Intel Xeon processor MP, Family 0Fh,
+                // todo: check for Intel Xeon processor MP, Family 0Fh,
                 // Model 06h, because 0x49 means L3 cache (4MB, 16-way,
                 // 64-byte linesize) for this CPU.
                 caches[L2].size = 4096;

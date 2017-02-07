@@ -239,10 +239,8 @@ namespace
 
             // Blend BSDF values.
             value.set(0.0f);
-            if (bsdf0_prob > 0.0)
-                madd(value, bsdf0_value, static_cast<float>(w0));
-            if (bsdf1_prob > 0.0)
-                madd(value, bsdf1_value, static_cast<float>(w1));
+            if (bsdf0_prob > 0.0) madd(value, bsdf0_value, w0);
+            if (bsdf1_prob > 0.0) madd(value, bsdf1_value, w1);
 
             // Blend PDF values.
             return bsdf0_prob * w0 + bsdf1_prob * w1;

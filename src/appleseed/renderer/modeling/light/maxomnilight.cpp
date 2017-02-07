@@ -104,7 +104,7 @@ namespace
             check_non_zero_emission("intensity", "intensity_multiplier");
 
             m_inputs.evaluate_uniforms(&m_values);
-            m_values.m_intensity *= static_cast<float>(m_values.m_intensity_multiplier);
+            m_values.m_intensity *= m_values.m_intensity_multiplier;
 
             m_decay_start = m_params.get_optional<float>("decay_start", 0.0f);
             m_decay_exponent = m_params.get_optional<float>("decay_exponent", 2.0f);

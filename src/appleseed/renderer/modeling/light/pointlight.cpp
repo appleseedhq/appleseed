@@ -109,9 +109,7 @@ namespace
             check_non_zero_emission("intensity", "intensity_multiplier");
 
             m_inputs.evaluate_uniforms(&m_values);
-            m_values.m_intensity *=
-                static_cast<float>(
-                    m_values.m_intensity_multiplier * pow(2.0, m_values.m_exposure));
+            m_values.m_intensity *= m_values.m_intensity_multiplier * pow(2.0f, m_values.m_exposure);
 
             return true;
         }

@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/material/ibasismodifier.h"
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/scene/scene.h"
@@ -260,7 +261,7 @@ void ShadingPoint::fetch_triangle_source_geometry() const
 
 void ShadingPoint::fetch_curve_source_geometry() const
 {
-    // Set primitive attribute to default value of 0.
+    // Set primitive attribute to default value 0.
     // todo: fix.
     m_primitive_pa = 0;
 }
@@ -800,7 +801,7 @@ void ShadingPoint::compute_alpha() const
     {
         assert(is_curve_primitive());
 
-        // TODO: interpolate per vertex alpha for curves here...
+        // todo: interpolate per vertex alpha for curves here...
     }
 }
 

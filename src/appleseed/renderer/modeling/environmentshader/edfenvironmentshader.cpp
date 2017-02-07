@@ -114,14 +114,13 @@ namespace
                     "cannot find environment edf \"%s\".",
                     get_path().c_str(),
                     name.c_str());
-
                 return false;
             }
 
             // Evaluate and store alpha value.
             InputValues uniform_values;
             m_inputs.evaluate_uniforms(&uniform_values);
-            m_alpha_value = static_cast<float>(uniform_values.m_alpha_value);
+            m_alpha_value = uniform_values.m_alpha_value;
 
             return true;
         }

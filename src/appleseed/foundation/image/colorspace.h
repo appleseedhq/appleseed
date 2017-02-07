@@ -401,8 +401,7 @@ void linear_rgb_illuminance_to_spectrum(
 // Spectrum <-> Spectrum transformation.
 //
 
-// Convert a spectrum defined over a given set of wavelengths
-// to a spectrum defined over a different set of wavelengths.
+// Resample a spectrum from one set of wavelengths to another.
 template <typename T>
 void spectrum_to_spectrum(
     const size_t                input_count,

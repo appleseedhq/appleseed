@@ -144,7 +144,7 @@ namespace
 
             // Inject values into any children layered closures.
             assert(values->m_osl_bsdf);
-            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
+            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
                 const ClosureID cid = c->get_closure_type(i);
 

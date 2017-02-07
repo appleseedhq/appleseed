@@ -224,7 +224,7 @@ namespace
             SamplingContext&        sampling_context,
             const void*             data) const APPLESEED_OVERRIDE
         {
-            return static_cast<float>(static_cast<const InputValues*>(data)->m_ior);
+            return static_cast<const InputValues*>(data)->m_ior;
         }
 
         void compute_absorption(

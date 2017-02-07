@@ -99,7 +99,7 @@ namespace
             const CompositeEmissionClosure* c =
                 reinterpret_cast<const CompositeEmissionClosure*>(data);
 
-            if (c->get_num_closures() > 0)
+            if (c->get_closure_count() > 0)
             {
                 const size_t closure_index = c->choose_closure(sampling_context);
                 const EDF& edf = edf_from_closure_id(c->get_closure_type(closure_index));
@@ -127,7 +127,7 @@ namespace
 
             value.set(0.0f);
 
-            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
+            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
                 Spectrum s;
 
@@ -138,6 +138,7 @@ namespace
                     shading_basis,
                     outgoing,
                     s);
+
                 value += s;
             }
         }
@@ -153,10 +154,10 @@ namespace
             const CompositeEmissionClosure* c =
                 reinterpret_cast<const CompositeEmissionClosure*>(data);
 
-            probability = 0.0f;
             value.set(0.0f);
+            probability = 0.0f;
 
-            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
+            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
                 Spectrum s;
                 float edf_prob = 0.0f;
@@ -189,14 +190,15 @@ namespace
 
             float probability = 0.0f;
 
-            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
+            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
                 const EDF& edf = edf_from_closure_id(c->get_closure_type(i));
-                float edf_prob = edf.evaluate_pdf(
-                    c->get_closure_input_values(i),
-                    geometric_normal,
-                    shading_basis,
-                    outgoing);
+                const float edf_prob =
+                    edf.evaluate_pdf(
+                        c->get_closure_input_values(i),
+                        geometric_normal,
+                        shading_basis,
+                        outgoing);
 
                 if (edf_prob > 0.0f)
                     probability += edf_prob * c->get_closure_pdf_weight(i);

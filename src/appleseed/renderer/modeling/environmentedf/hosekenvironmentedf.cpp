@@ -136,8 +136,8 @@ namespace
             m_inputs.evaluate_uniforms(&m_uniform_values);
 
             // Compute the sun direction.
-            m_sun_theta = deg_to_rad(static_cast<float>(m_uniform_values.m_sun_theta));
-            m_sun_phi = deg_to_rad(static_cast<float>(m_uniform_values.m_sun_phi));
+            m_sun_theta = deg_to_rad(m_uniform_values.m_sun_theta);
+            m_sun_phi = deg_to_rad(m_uniform_values.m_sun_phi);
             m_sun_dir = Vector3f::make_unit_vector(m_sun_theta, m_sun_phi);
 
             // Precompute the coefficients of the radiance distribution function and
@@ -150,8 +150,8 @@ namespace
                 m_uniform_values.m_turbidity += BaseTurbidity;
 
                 compute_coefficients(
-                    static_cast<float>(m_uniform_values.m_turbidity),
-                    static_cast<float>(m_uniform_values.m_ground_albedo),
+                    m_uniform_values.m_turbidity,
+                    m_uniform_values.m_ground_albedo,
                     m_sun_theta,
                     m_uniform_coeffs,
                     m_uniform_master_Y);
@@ -174,8 +174,8 @@ namespace
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             outgoing = transform.vector_to_parent(local_outgoing);
-
             const Vector3f shifted_outgoing = shift(local_outgoing);
+
             if (shifted_outgoing.y > 0.0f)
                 compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
@@ -192,8 +192,8 @@ namespace
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
-
             const Vector3f shifted_outgoing = shift(local_outgoing);
+
             if (shifted_outgoing.y > 0.0f)
                 compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
@@ -211,8 +211,8 @@ namespace
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
-
             const Vector3f shifted_outgoing = shift(local_outgoing);
+
             if (shifted_outgoing.y > 0.0f)
                 compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
@@ -369,10 +369,10 @@ namespace
             // There is an error in the paper, coeffs[7] (H) and coeffs[8] (I) are reversed.
             const float u = 1.0f + coeffs[0] * exp(coeffs[1] / (cos_theta + 0.01f));
             const float v =   coeffs[2]
-                             + coeffs[3] * exp(coeffs[4] * gamma)
-                             + coeffs[5] * cos_gamma * cos_gamma
-                             + coeffs[6] * chi(coeffs[8], cos_gamma)
-                             + coeffs[7] * sqrt_cos_theta;
+                            + coeffs[3] * exp(coeffs[4] * gamma)
+                            + coeffs[5] * cos_gamma * cos_gamma
+                            + coeffs[6] * chi(coeffs[8], cos_gamma)
+                            + coeffs[7] * sqrt_cos_theta;
             return u * v;
         }
 
@@ -408,17 +408,17 @@ namespace
                 float u, v;
                 unit_vector_to_angles(outgoing, theta, phi);
                 angles_to_unit_square(theta, phi, u, v);
-                float turbidity = static_cast<float>(input_evaluator.evaluate<InputValues>(m_inputs, Vector2f(u, v))->m_turbidity);
+                float turbidity = input_evaluator.evaluate<InputValues>(m_inputs, Vector2f(u, v))->m_turbidity;
 
                 // Apply turbidity multiplier and bias.
-                turbidity *= static_cast<float>(m_uniform_values.m_turbidity_multiplier);
+                turbidity *= m_uniform_values.m_turbidity_multiplier;
                 turbidity += BaseTurbidity;
 
                 // Compute the coefficients of the radiance distribution function and the master luminance value.
                 float coeffs[3 * 9], master_Y[3];
                 compute_coefficients(
                     turbidity,
-                    static_cast<float>(m_uniform_values.m_ground_albedo),
+                    m_uniform_values.m_ground_albedo,
                     m_sun_theta,
                     coeffs,
                     master_Y);
@@ -437,7 +437,7 @@ namespace
                 Color3f hsl = linear_rgb_to_hsl(linear_rgb);
 
                 // Apply the saturation multiplier.
-                hsl[1] *= static_cast<float>(m_uniform_values.m_saturation_multiplier);
+                hsl[1] *= m_uniform_values.m_saturation_multiplier;
 
                 // Convert the result back to linear RGB, then to CIE XYZ.
                 linear_rgb = hsl_to_linear_rgb(hsl);
@@ -453,8 +453,8 @@ namespace
 
             // Apply luminance gamma and multiplier.
             if (m_uniform_values.m_luminance_gamma != 1.0f)
-                luminance = fast_pow(luminance, static_cast<float>(m_uniform_values.m_luminance_gamma));
-            luminance *= static_cast<float>(m_uniform_values.m_luminance_multiplier);
+                luminance = fast_pow(luminance, m_uniform_values.m_luminance_gamma);
+            luminance *= m_uniform_values.m_luminance_multiplier;
 
             // Compute the final sky radiance.
             value *=
@@ -466,7 +466,7 @@ namespace
 
         Vector3f shift(Vector3f v) const
         {
-            v.y -= static_cast<float>(m_uniform_values.m_horizon_shift);
+            v.y -= m_uniform_values.m_horizon_shift;
             return normalize(v);
         }
     };

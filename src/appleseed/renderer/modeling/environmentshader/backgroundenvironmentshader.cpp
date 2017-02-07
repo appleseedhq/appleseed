@@ -92,7 +92,7 @@ namespace
 
             shading_result.m_color_space = ColorSpaceSpectral;
             shading_result.m_main.m_color = input_values->m_color;
-            shading_result.m_main.m_alpha[0] = static_cast<float>(input_values->m_alpha);
+            shading_result.m_main.m_alpha[0] = input_values->m_alpha;
             shading_result.m_aovs.m_color.set(0.0f);
             shading_result.m_aovs.m_alpha.set(0.0f);
         }

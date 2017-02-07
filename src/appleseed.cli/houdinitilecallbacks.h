@@ -50,7 +50,7 @@ class MPlayTileCallbackFactory
   public:
     MPlayTileCallbackFactory(
         const char*         scene_name,
-        bool                progressive_mode,
+        const bool          progressive_mode,
         foundation::Logger& logger);
 
     virtual void release() APPLESEED_OVERRIDE;
@@ -66,8 +66,8 @@ class HRmanPipeTileCallbackFactory
 {
   public:
     HRmanPipeTileCallbackFactory(
-        int                 socket_number,
-        bool                progressive_mode,
+        const int           socket_number,
+        const bool          progressive_mode,
         foundation::Logger& logger);
 
     virtual void release() APPLESEED_OVERRIDE;

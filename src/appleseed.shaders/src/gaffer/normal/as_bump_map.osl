@@ -78,7 +78,7 @@ shader as_bump_map
         //
         // Reference:
         //
-        //    Physically Based Rendering, 2nd edition, page 490.
+        //   Physically Based Rendering, 2nd edition, page 490.
         //
 
         vector new_tn = Tn * length(dpdx) + Normal * dhx;
@@ -92,9 +92,9 @@ shader as_bump_map
         //
         // Reference:
         //
-        //    Bump Mapping Unparametrized Surfaces on the GPU
-        //    Morten S. Mikkelsen
-        //    https://dl.dropbox.com/u/55891920/papers/mm_sfgrad_bump.pdf
+        //   Bump Mapping Unparametrized Surfaces on the GPU
+        //   Morten S. Mikkelsen
+        //   https://dl.dropbox.com/u/55891920/papers/mm_sfgrad_bump.pdf
         //
 
         int has_diffs;

@@ -231,14 +231,14 @@ const char* ShaderQuery::get_shader_type() const
     return impl->m_query.shadertype().c_str();
 }
 
-size_t ShaderQuery::get_num_params() const
+size_t ShaderQuery::get_param_count() const
 {
     return impl->m_query.nparams();
 }
 
 const Dictionary& ShaderQuery::get_param_info(const size_t param_index) const
 {
-    assert(param_index < get_num_params());
+    assert(param_index < get_param_count());
 
     if (!impl->m_param_info[param_index])
     {

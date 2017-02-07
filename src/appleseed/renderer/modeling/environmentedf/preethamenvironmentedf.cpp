@@ -129,8 +129,8 @@ namespace
             m_inputs.evaluate_uniforms(&m_uniform_values);
 
             // Compute the sun direction.
-            m_sun_theta = deg_to_rad(static_cast<float>(m_uniform_values.m_sun_theta));
-            m_sun_phi = deg_to_rad(static_cast<float>(m_uniform_values.m_sun_phi));
+            m_sun_theta = deg_to_rad(m_uniform_values.m_sun_theta);
+            m_sun_phi = deg_to_rad(m_uniform_values.m_sun_phi);
             m_sun_dir = Vector3f::make_unit_vector(m_sun_theta, m_sun_phi);
             m_cos_sun_theta = cos(m_sun_theta);
 
@@ -143,14 +143,14 @@ namespace
                 m_uniform_values.m_turbidity += BaseTurbidity;
 
                 // Precompute the coefficients of the luminance and chromaticity distribution functions.
-                compute_x_coefficients(static_cast<float>(m_uniform_values.m_turbidity), m_uniform_x_coeffs);
-                compute_y_coefficients(static_cast<float>(m_uniform_values.m_turbidity), m_uniform_y_coeffs);
-                compute_Y_coefficients(static_cast<float>(m_uniform_values.m_turbidity), m_uniform_Y_coeffs);
+                compute_x_coefficients(m_uniform_values.m_turbidity, m_uniform_x_coeffs);
+                compute_y_coefficients(m_uniform_values.m_turbidity, m_uniform_y_coeffs);
+                compute_Y_coefficients(m_uniform_values.m_turbidity, m_uniform_Y_coeffs);
 
                 // Precompute the luminance and chromaticity at zenith.
-                m_uniform_x_zenith = compute_zenith_x(static_cast<float>(m_uniform_values.m_turbidity), m_sun_theta);
-                m_uniform_y_zenith = compute_zenith_y(static_cast<float>(m_uniform_values.m_turbidity), m_sun_theta);
-                m_uniform_Y_zenith = compute_zenith_Y(static_cast<float>(m_uniform_values.m_turbidity), m_sun_theta);
+                m_uniform_x_zenith = compute_zenith_x(m_uniform_values.m_turbidity, m_sun_theta);
+                m_uniform_y_zenith = compute_zenith_y(m_uniform_values.m_turbidity, m_sun_theta);
+                m_uniform_Y_zenith = compute_zenith_Y(m_uniform_values.m_turbidity, m_sun_theta);
             }
 
             return true;
@@ -170,8 +170,8 @@ namespace
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             outgoing = transform.vector_to_parent(local_outgoing);
-
             const Vector3f shifted_outgoing = shift(local_outgoing);
+
             if (shifted_outgoing.y > 0.0f)
                 compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
@@ -188,8 +188,8 @@ namespace
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
-
             const Vector3f shifted_outgoing = shift(local_outgoing);
+
             if (shifted_outgoing.y > 0.0f)
                 compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
@@ -207,8 +207,8 @@ namespace
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
-
             const Vector3f shifted_outgoing = shift(local_outgoing);
+
             if (shifted_outgoing.y > 0.0f)
                 compute_sky_radiance(input_evaluator, shifted_outgoing, value);
             else value.set(0.0f);
@@ -316,7 +316,7 @@ namespace
             const float a = ( 0.00166f * turbidity - 0.02903f) * turbidity + 0.11693f;
             const float b = (-0.00375f * turbidity + 0.06377f) * turbidity - 0.21196f;
             const float c = ( 0.00209f * turbidity - 0.03202f) * turbidity + 0.06052f;
-            const float d = (                       0.00394f) * turbidity + 0.25886f;
+            const float d = (                        0.00394f) * turbidity + 0.25886f;
             return ((a * sun_theta + b) * sun_theta + c) * sun_theta + d;
         }
 
@@ -328,7 +328,7 @@ namespace
             const float e = ( 0.00275f * turbidity - 0.04214f) * turbidity + 0.15346f;
             const float f = (-0.00610f * turbidity + 0.08970f) * turbidity - 0.26756f;
             const float g = ( 0.00317f * turbidity - 0.04153f) * turbidity + 0.06670f;
-            const float h = (                       0.00516f) * turbidity + 0.26688f;
+            const float h = (                        0.00516f) * turbidity + 0.26688f;
             return ((e * sun_theta + f) * sun_theta + g) * sun_theta + h;
         }
 
@@ -393,10 +393,10 @@ namespace
                 float u, v;
                 unit_vector_to_angles(outgoing, theta, phi);
                 angles_to_unit_square(theta, phi, u, v);
-                float turbidity = static_cast<float>(input_evaluator.evaluate<InputValues>(m_inputs, Vector2f(u, v))->m_turbidity);
+                float turbidity = input_evaluator.evaluate<InputValues>(m_inputs, Vector2f(u, v))->m_turbidity;
 
                 // Apply turbidity multiplier and bias.
-                turbidity *= static_cast<float>(m_uniform_values.m_turbidity_multiplier);
+                turbidity *= m_uniform_values.m_turbidity_multiplier;
                 turbidity += BaseTurbidity;
 
                 // Compute the coefficients of the luminance and chromaticity distribution functions.
@@ -425,7 +425,7 @@ namespace
                 Color3f hsl = linear_rgb_to_hsl(linear_rgb);
 
                 // Apply the saturation multiplier.
-                hsl[1] *= static_cast<float>(m_uniform_values.m_saturation_multiplier);
+                hsl[1] *= m_uniform_values.m_saturation_multiplier;
 
                 // Convert the result back: HSL -> linear RGB -> CIE XYZ -> CIE xyY.
                 linear_rgb = hsl_to_linear_rgb(hsl);
@@ -441,8 +441,8 @@ namespace
 
             // Apply luminance gamma and multiplier.
             if (m_uniform_values.m_luminance_gamma != 1.0f)
-                luminance = fast_pow(luminance, static_cast<float>(m_uniform_values.m_luminance_gamma));
-            luminance *= static_cast<float>(m_uniform_values.m_luminance_multiplier);
+                luminance = fast_pow(luminance, m_uniform_values.m_luminance_gamma);
+            luminance *= m_uniform_values.m_luminance_multiplier;
 
             // Compute the final sky radiance.
             value *=
@@ -454,7 +454,7 @@ namespace
 
         Vector3f shift(Vector3f v) const
         {
-            v.y -= static_cast<float>(m_uniform_values.m_horizon_shift);
+            v.y -= m_uniform_values.m_horizon_shift;
             return normalize(v);
         }
     };

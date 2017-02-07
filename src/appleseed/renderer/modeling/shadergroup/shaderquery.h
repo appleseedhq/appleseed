@@ -71,7 +71,7 @@ class APPLESEED_DLLSYMBOL ShaderQuery
     const char* get_shader_type() const;
 
     // Return number of shader parameters.
-    size_t get_num_params() const;
+    size_t get_param_count() const;
 
     // Return shader parameter information.
     const foundation::Dictionary& get_param_info(const size_t param_index) const;

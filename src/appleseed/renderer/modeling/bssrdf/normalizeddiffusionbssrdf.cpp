@@ -222,7 +222,7 @@ namespace
                 const float a = values->m_reflectance[i];
                 const float s = values->m_precomputed.m_s[i];
                 const float l = values->m_mfp[i];
-                value[i] = static_cast<float>(normalized_diffusion_profile(radius, l, s, a));
+                value[i] = normalized_diffusion_profile(radius, l, s, a);
             }
 
             // Return r * R(r) * weight.

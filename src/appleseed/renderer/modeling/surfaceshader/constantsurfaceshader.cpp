@@ -127,8 +127,8 @@ namespace
                 shading_result.m_main.m_alpha = values.m_alpha;
 
             // Apply multipliers.
-            shading_result.m_main.m_color *= static_cast<float>(values.m_color_multiplier);
-            shading_result.m_main.m_alpha *= static_cast<float>(values.m_alpha_multiplier);
+            shading_result.m_main.m_color *= values.m_color_multiplier;
+            shading_result.m_main.m_alpha *= values.m_alpha_multiplier;
         }
 
       private:

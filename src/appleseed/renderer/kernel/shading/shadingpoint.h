@@ -35,7 +35,6 @@
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
-#include "renderer/modeling/material/ibasismodifier.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/curveobject.h"
 #include "renderer/modeling/object/regionkit.h"
