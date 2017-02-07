@@ -252,7 +252,7 @@ namespace
 
             void visit_vertex(const PathVertex& vertex)
             {
-                Spectrum vertex_radiance(0.0f);
+                Spectrum vertex_radiance(0.0f, Spectrum::Illuminance);
                 SpectrumStack vertex_aovs(m_path_aovs.size(), 0.0f);
 
                 if (vertex.m_bsdf)
@@ -297,7 +297,7 @@ namespace
                 Spectrum&               vertex_radiance,
                 SpectrumStack&          vertex_aovs)
             {
-                Spectrum dl_radiance;
+                Spectrum dl_radiance(Spectrum::Illuminance);
                 SpectrumStack dl_aovs(vertex_aovs.size());
 
                 const size_t light_sample_count =
@@ -374,7 +374,7 @@ namespace
                 const float rcp_max_square_dist = 1.0f / max_square_dist;
 
                 // Accumulate photons contributions.
-                Spectrum indirect_radiance;
+                Spectrum indirect_radiance(Spectrum::Illuminance);
                 if (m_params.m_photon_type == SPPMParameters::Monochromatic)
                 {
                     indirect_radiance.resize(Spectrum::Samples);
@@ -555,7 +555,7 @@ namespace
                 SpectrumStack&          vertex_aovs)
             {
                 // Compute the emitted radiance.
-                Spectrum emitted_radiance;
+                Spectrum emitted_radiance(Spectrum::Illuminance);
                 vertex.compute_emitted_radiance(
                     m_shading_context,
                     m_texture_cache,
@@ -580,7 +580,7 @@ namespace
 
                 // Evaluate the environment EDF.
                 InputEvaluator input_evaluator(m_texture_cache);
-                Spectrum env_radiance;
+                Spectrum env_radiance(Spectrum::Illuminance);
                 float env_prob;
                 m_env_edf->evaluate(
                     m_shading_context,

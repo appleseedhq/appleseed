@@ -354,7 +354,7 @@ namespace
             // Sample the EDF.
             SamplingContext child_sampling_context = sampling_context.split(2, 1);
             Vector3f emission_direction;
-            Spectrum edf_value;
+            Spectrum edf_value(Spectrum::Illuminance);
             float edf_prob;
             edf->sample(
                 sampling_context,
@@ -424,7 +424,7 @@ namespace
             InputEvaluator input_evaluator(m_texture_cache);
             SamplingContext child_sampling_context = sampling_context.split(2, 1);
             Vector3d emission_position, emission_direction;
-            Spectrum light_value;
+            Spectrum light_value(Spectrum::Illuminance);
             float light_prob;
             light_sample.m_light->sample(
                 input_evaluator,
@@ -587,7 +587,7 @@ namespace
             // Sample the environment.
             InputEvaluator input_evaluator(m_texture_cache);
             Vector3f outgoing;
-            Spectrum env_edf_value;
+            Spectrum env_edf_value(Spectrum::Illuminance);
             float env_edf_prob;
             m_env_edf.sample(
                 shading_context,

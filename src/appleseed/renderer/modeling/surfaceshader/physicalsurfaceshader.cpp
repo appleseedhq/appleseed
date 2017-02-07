@@ -161,7 +161,7 @@ namespace
                 shading_point.get_uv(0),
                 &values);
 
-            Spectrum radiance;
+            Spectrum radiance(Spectrum::Illuminance);
             SpectrumStack aovs(shading_result.m_aovs.size());
 
             // Compute front lighting.
@@ -296,7 +296,7 @@ namespace
             ShadingPoint back_shading_point(shading_point);
             back_shading_point.set_ray(back_ray);
 
-            Spectrum back_radiance(0.0f);
+            Spectrum back_radiance(0.0f, Spectrum::Illuminance);
             SpectrumStack back_aovs(aovs.size(), 0.0f);
 
             // Compute back lighting.
@@ -359,6 +359,8 @@ namespace
                     sky_color = sky.m_main.m_color;
                 }
                 else sky_color.set(0.0f);
+
+                sky_color.set_intent(Spectrum::Illuminance);
             }
 
             // Compute the blend factor.

@@ -271,7 +271,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling(
         radiance,
         aovs);
 
-    Spectrum radiance_light_sampling;
+    Spectrum radiance_light_sampling(Spectrum::Illuminance);
     SpectrumStack aovs_light_sampling(aovs.size());
 
     compute_outgoing_radiance_light_sampling(
@@ -298,7 +298,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling_low_v
         radiance,
         aovs);
 
-    Spectrum radiance_light_sampling;
+    Spectrum radiance_light_sampling(Spectrum::Illuminance);
     SpectrumStack aovs_light_sampling(aovs.size());
 
     compute_outgoing_radiance_light_sampling_low_variance(
@@ -558,7 +558,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     edf->evaluate_inputs(edf_input_evaluator, light_shading_point);
 
     // Evaluate emitted radiance.
-    Spectrum edf_value;
+    Spectrum edf_value(Spectrum::Illuminance);
     float edf_prob;
     edf->evaluate(
         edf_input_evaluator.data(),
@@ -736,7 +736,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     edf->evaluate_inputs(edf_input_evaluator, light_shading_point);
 
     // Evaluate the EDF.
-    Spectrum edf_value;
+    Spectrum edf_value(Spectrum::Illuminance);
     edf->evaluate(
         edf_input_evaluator.data(),
         Vector3f(sample.m_geometric_normal),
@@ -776,7 +776,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     // Evaluate the light.
     InputEvaluator input_evaluator(m_shading_context.get_texture_cache());
     Vector3d emission_position, emission_direction;
-    Spectrum light_value;
+    Spectrum light_value(Spectrum::Illuminance);
     light->evaluate(
         input_evaluator,
         sample.m_light_transform,

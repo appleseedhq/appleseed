@@ -386,7 +386,7 @@ namespace
             };
 
             // Compute the attenuated radiance of the Sun.
-            radiance = Spectrum(SunRadianceValues);
+            radiance = Spectrum(SunRadianceValues, Spectrum::Illuminance);
             radiance *= tau_r;
             radiance *= tau_a;
             radiance *= tau_o;
