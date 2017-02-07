@@ -31,6 +31,7 @@
 #include "logger.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/platform/snprintf.h"
 #include "foundation/platform/system.h"
 #include "foundation/platform/thread.h"
