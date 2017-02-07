@@ -415,23 +415,30 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
             if (dot(get_original_shading_normal(), cross(m_dpdv, m_dpdu)) < 0.0)
                 m_dpdu = -m_dpdu;
 
-            const Vector3d dn0(m_n0 - m_n2);
-            const Vector3d dn1(m_n1 - m_n2);
+            if (m_members & HasTriangleVertexNormals)
+            {
+                const Vector3d dn0(m_n0 - m_n2);
+                const Vector3d dn1(m_n1 - m_n2);
 
-            m_dndu = (dv1 * dn0 - dv0 * dn1) * rcp_det;
-            m_dndv = (du0 * dn1 - du1 * dn0) * rcp_det;
+                m_dndu = (dv1 * dn0 - dv0 * dn1) * rcp_det;
+                m_dndv = (du0 * dn1 - du1 * dn0) * rcp_det;
 
-            // Transform the normal derivatives to world space.
-            const Transformd& obj_instance_transform =
-                m_object_instance->get_transform();
+                // Transform the normal derivatives to world space.
+                const Transformd& obj_instance_transform =
+                    m_object_instance->get_transform();
 
-            m_dndu =
-                m_assembly_instance_transform.normal_to_parent(
-                    obj_instance_transform.normal_to_parent(m_dndu));
+                m_dndu =
+                    m_assembly_instance_transform.normal_to_parent(
+                        obj_instance_transform.normal_to_parent(m_dndu));
 
-            m_dndv =
-                m_assembly_instance_transform.normal_to_parent(
-                    obj_instance_transform.normal_to_parent(m_dndv));
+                m_dndv =
+                    m_assembly_instance_transform.normal_to_parent(
+                        obj_instance_transform.normal_to_parent(m_dndv));
+            }
+            else
+            {
+                m_dndu = m_dndv = Vector3d(0.0);
+            }
         }
     }
     else
