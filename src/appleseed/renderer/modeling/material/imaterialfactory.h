@@ -72,8 +72,10 @@ class APPLESEED_DLLSYMBOL IMaterialFactory
         const ParamArray&   params) const = 0;
 
   protected:
-    // Add the input metadata common to all material models.
-    static void add_common_input_metadata(foundation::DictionaryArray& metadata);
+    // Add input metadata common to several material models.
+    static void add_surface_shader_metadata(foundation::DictionaryArray& metadata);
+    static void add_alpha_map_metadata(foundation::DictionaryArray& metadata);
+    static void add_displacement_metadata(foundation::DictionaryArray& metadata);
 };
 
 }       // namespace renderer

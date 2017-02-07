@@ -48,8 +48,10 @@
 #include "renderer/api/surfaceshader.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/fp.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/apistring.h"
+#include "foundation/utility/iostreamop.h"
 #include "foundation/utility/string.h"
 
 // Qt headers.
@@ -63,6 +65,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstddef>
 #include <ostream>
 #include <sstream>
 
@@ -161,6 +164,28 @@ namespace
         }
     }
 
+    const char* get_side_name(const ObjectInstance::Side side)
+    {
+        switch (side)
+        {
+          case ObjectInstance::FrontSide: return "front";
+          case ObjectInstance::BackSide: return "back";
+          case ObjectInstance::BothSides: return "front+back";
+          default: return "unknown";
+        }
+    }
+
+    template <typename T, size_t N>
+    Vector<T, N> filter_neg_zero(const Vector<T, N>& v)
+    {
+        Vector<T, N> result;
+
+        for (size_t i = 0; i < N; ++i)
+            result[i] = FP<T>::is_neg_zero(v[i]) ? T(0.0) : v[i];
+
+        return result;
+    }
+
     string print_entity(const char* prefix, const Entity* entity)
     {
         return
@@ -216,11 +241,25 @@ ItemBase* ScenePickingHandler::pick(const QPoint& point)
     stringstream sstr;
 
     sstr << "picking details:" << endl;
-    sstr << "  pixel coords     " << pix.x << ", " << pix.y << endl;
-    sstr << "  ndc coords       " << ndc.x << ", " << ndc.y << endl;
-    sstr << "  world coords     " << result.m_point.x << ", " << result.m_point.y << ", " << result.m_point.z << endl;
-    sstr << "  depth            " << result.m_distance << endl;
+    sstr << "  pixel coords     " << pix << endl;
+    sstr << "  ndc coords       " << ndc << endl;
     sstr << "  primitive type   " << get_primitive_type_name(result.m_primitive_type) << endl;
+    sstr << "  distance         " << result.m_distance << endl;
+
+    sstr << "  bary             " << filter_neg_zero(result.m_bary) << endl;
+    sstr << "  uv               " << filter_neg_zero(result.m_uv) << endl;
+    sstr << "  duvdx            " << filter_neg_zero(result.m_duvdx) << endl;
+    sstr << "  duvdy            " << filter_neg_zero(result.m_duvdy) << endl;
+    sstr << "  point            " << filter_neg_zero(result.m_point) << endl;
+    sstr << "  dpdu             " << filter_neg_zero(result.m_dpdu) << endl;
+    sstr << "  dpdv             " << filter_neg_zero(result.m_dpdv) << endl;
+    sstr << "  dndu             " << filter_neg_zero(result.m_dndu) << endl;
+    sstr << "  dndv             " << filter_neg_zero(result.m_dndv) << endl;
+    sstr << "  dpdx             " << filter_neg_zero(result.m_dpdx) << endl;
+    sstr << "  dpdy             " << filter_neg_zero(result.m_dpdy) << endl;
+    sstr << "  geometric normal " << filter_neg_zero(result.m_geometric_normal) << endl;
+    sstr << "  shading normal   " << filter_neg_zero(result.m_original_shading_normal) << endl;
+    sstr << "  side             " << get_side_name(result.m_side) << endl;
 
     sstr << print_entity("  camera           ", result.m_camera) << endl;
     sstr << print_entity("  assembly inst.   ", result.m_assembly_instance) << endl;
