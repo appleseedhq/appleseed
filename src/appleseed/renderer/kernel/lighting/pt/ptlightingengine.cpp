@@ -356,7 +356,7 @@ namespace
                     (vertex.m_path_length < 2 || (vertex.m_edf->get_flags() & EDF::CastIndirectLight)))
                 {
                     // Compute the emitted radiance.
-                    Spectrum emitted_radiance;
+                    Spectrum emitted_radiance(Spectrum::Illuminance);
                     vertex.compute_emitted_radiance(
                         m_shading_context,
                         m_texture_cache,
@@ -383,7 +383,7 @@ namespace
 
                 // Evaluate the environment EDF.
                 InputEvaluator input_evaluator(m_texture_cache);
-                Spectrum env_radiance;
+                Spectrum env_radiance(Spectrum::Illuminance);
                 float env_prob;
                 m_env_edf->evaluate(
                     m_shading_context,
@@ -439,7 +439,7 @@ namespace
                         ? ScatteringMode::Diffuse
                         : ScatteringMode::All;
 
-                Spectrum vertex_radiance(0.0f);
+                Spectrum vertex_radiance(0.0f, Spectrum::Illuminance);
                 SpectrumStack vertex_aovs(m_path_aovs.size(), 0.0f);
 
                 // Direct lighting.
@@ -521,7 +521,7 @@ namespace
                 Spectrum&               vertex_radiance,
                 SpectrumStack&          vertex_aovs)
             {
-                Spectrum dl_radiance;
+                Spectrum dl_radiance(Spectrum::Illuminance);
                 SpectrumStack dl_aovs(vertex_aovs.size());
 
                 const bool last_vertex = vertex.m_path_length == m_params.m_max_path_length;
@@ -595,7 +595,7 @@ namespace
                     m_is_indirect_lighting);
                 Vector3d incoming;
                 float incoming_prob;
-                Spectrum radiance;
+                Spectrum radiance(Spectrum::Illuminance);
                 if (!integrator.compute_incoming_radiance(
                         m_sampling_context,
                         incoming,
@@ -636,7 +636,7 @@ namespace
                 Spectrum&               vertex_radiance,
                 SpectrumStack&          vertex_aovs)
             {
-                Spectrum ibl_radiance;
+                Spectrum ibl_radiance(Spectrum::Illuminance);
 
                 const bool last_vertex = vertex.m_path_length == m_params.m_max_path_length;
 
@@ -696,7 +696,7 @@ namespace
                 Spectrum&               vertex_radiance,
                 SpectrumStack&          vertex_aovs)
             {
-                Spectrum ibl_radiance;
+                Spectrum ibl_radiance(Spectrum::Illuminance);
 
                 const bool last_vertex = vertex.m_path_length == m_params.m_max_path_length;
 
@@ -757,7 +757,7 @@ namespace
                 SpectrumStack&          vertex_aovs)
             {
                 // Compute the emitted radiance.
-                Spectrum emitted_radiance;
+                Spectrum emitted_radiance(Spectrum::Illuminance);
                 vertex.compute_emitted_radiance(
                     m_shading_context,
                     m_texture_cache,
@@ -793,7 +793,7 @@ namespace
 
                 // Evaluate the environment EDF.
                 InputEvaluator input_evaluator(m_texture_cache);
-                Spectrum env_radiance;
+                Spectrum env_radiance(Spectrum::Illuminance);
                 float env_prob;
                 m_env_edf->evaluate(
                     m_shading_context,

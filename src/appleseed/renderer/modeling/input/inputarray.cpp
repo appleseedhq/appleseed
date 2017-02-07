@@ -142,6 +142,22 @@ namespace
                 break;
 
               case InputFormatSpectralReflectance:
+                {
+                    ptr = align_to<Spectrum>(ptr);
+                    Spectrum* out_spectrum = reinterpret_cast<Spectrum*>(ptr);
+
+                    new (out_spectrum) Spectrum();
+
+                    if (m_source)
+                        m_source->evaluate(texture_cache, uv, *out_spectrum);
+                    else out_spectrum->set(0.0f);
+
+                    out_spectrum->set_intent(Spectrum::Reflectance);
+
+                    ptr += sizeof(Spectrum);
+                }
+                break;
+
               case InputFormatSpectralIlluminance:
                 {
                     ptr = align_to<Spectrum>(ptr);
@@ -153,11 +169,36 @@ namespace
                         m_source->evaluate(texture_cache, uv, *out_spectrum);
                     else out_spectrum->set(0.0f);
 
+                    out_spectrum->set_intent(Spectrum::Illuminance);
+
                     ptr += sizeof(Spectrum);
                 }
                 break;
 
               case InputFormatSpectralReflectanceWithAlpha:
+                {
+                    ptr = align_to<Spectrum>(ptr);
+                    Spectrum* out_spectrum = reinterpret_cast<Spectrum*>(ptr);
+                    Alpha* out_alpha = reinterpret_cast<Alpha*>(ptr + sizeof(Spectrum));
+
+                    new (out_spectrum) Spectrum();
+                    new (out_alpha) Alpha();
+
+                    if (m_source)
+                        m_source->evaluate(texture_cache, uv, *out_spectrum, *out_alpha);
+                    else
+                    {
+                        out_spectrum->set(0.0f);
+                        out_alpha->set(0.0f);
+                    }
+
+                    out_spectrum->set_intent(Spectrum::Reflectance);
+
+                    ptr += sizeof(Spectrum);
+                    ptr += sizeof(Alpha);
+                }
+                break;
+
               case InputFormatSpectralIlluminanceWithAlpha:
                 {
                     ptr = align_to<Spectrum>(ptr);
@@ -174,6 +215,8 @@ namespace
                         out_spectrum->set(0.0f);
                         out_alpha->set(0.0f);
                     }
+
+                    out_spectrum->set_intent(Spectrum::Illuminance);
 
                     ptr += sizeof(Spectrum);
                     ptr += sizeof(Alpha);
@@ -208,6 +251,22 @@ namespace
                 break;
 
               case InputFormatSpectralReflectance:
+                {
+                    ptr = align_to<Spectrum>(ptr);
+                    Spectrum* out_spectrum = reinterpret_cast<Spectrum*>(ptr);
+
+                    new (out_spectrum) Spectrum();
+
+                    if (m_source && m_source->is_uniform())
+                        m_source->evaluate_uniform(*out_spectrum);
+                    else out_spectrum->set(0.0f);
+
+                    out_spectrum->set_intent(Spectrum::Reflectance);
+
+                    ptr += sizeof(Spectrum);
+                }
+                break;
+
               case InputFormatSpectralIlluminance:
                 {
                     ptr = align_to<Spectrum>(ptr);
@@ -219,11 +278,36 @@ namespace
                         m_source->evaluate_uniform(*out_spectrum);
                     else out_spectrum->set(0.0f);
 
+                    out_spectrum->set_intent(Spectrum::Illuminance);
+
                     ptr += sizeof(Spectrum);
                 }
                 break;
 
               case InputFormatSpectralReflectanceWithAlpha:
+                {
+                    ptr = align_to<Spectrum>(ptr);
+                    Spectrum* out_spectrum = reinterpret_cast<Spectrum*>(ptr);
+                    Alpha* out_alpha = reinterpret_cast<Alpha*>(ptr + sizeof(Spectrum));
+
+                    new (out_spectrum) Spectrum();
+                    new (out_alpha) Alpha();
+
+                    if (m_source && m_source->is_uniform())
+                        m_source->evaluate_uniform(*out_spectrum, *out_alpha);
+                    else
+                    {
+                        out_spectrum->set(0.0f);
+                        out_alpha->set(0.0f);
+                    }
+
+                    out_spectrum->set_intent(Spectrum::Reflectance);
+
+                    ptr += sizeof(Spectrum);
+                    ptr += sizeof(Alpha);
+                }
+                break;
+
               case InputFormatSpectralIlluminanceWithAlpha:
                 {
                     ptr = align_to<Spectrum>(ptr);
@@ -240,6 +324,8 @@ namespace
                         out_spectrum->set(0.0f);
                         out_alpha->set(0.0f);
                     }
+
+                    out_spectrum->set_intent(Spectrum::Illuminance);
 
                     ptr += sizeof(Spectrum);
                     ptr += sizeof(Alpha);

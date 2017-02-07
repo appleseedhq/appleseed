@@ -66,12 +66,26 @@ class DynamicSpectrum
     // Number of stored samples such that the size of the sample array is a multiple of 16 bytes.
     static const size_t StoredSamples = (((N * sizeof(T)) + 15) & ~15) / sizeof(T);
 
+    enum Intent
+    {
+        Reflectance = 0,    // this spectrum represents a reflectance in [0, 1]^N
+        Illuminance = 1     // this spectrum represents an illuminance in [0, infinity)^N
+    };
+
     // Constructors.
-    DynamicSpectrum();                                                          // set size to 3, leave all components uninitialized
-    explicit DynamicSpectrum(const ValueType* rhs);                             // set size to N, initialize with array of N scalars
-    explicit DynamicSpectrum(const ValueType val);                              // set size to 3, set all components to 'val'
-    DynamicSpectrum(const foundation::Color<ValueType, 3>& rhs);                // set size to 3
-    DynamicSpectrum(const foundation::RegularSpectrum<ValueType, N>& rhs);      // set size to N
+    explicit DynamicSpectrum(const Intent intent = Reflectance);                    // set size to 3, leave all components uninitialized
+    explicit DynamicSpectrum(                                                       // set size to N, initialize with array of N scalars
+        const ValueType*    rhs,
+        const Intent        intent = Reflectance);
+    explicit DynamicSpectrum(                                                       // set size to 3, set all components to 'val'
+        const ValueType     val,
+        const Intent        intent = Reflectance);
+    DynamicSpectrum(                                                                // set size to 3
+        const foundation::Color<ValueType, 3>&              rhs,
+        const Intent                                        intent = Reflectance);
+    DynamicSpectrum(                                                                // set size to N
+        const foundation::RegularSpectrum<ValueType, N>&    rhs,
+        const Intent                                        intent = Reflectance);
 
     // Construct a spectrum from another spectrum of a different type.
     template <typename U>
@@ -92,6 +106,12 @@ class DynamicSpectrum
 
     // Set the number of active components in the spectrum. Allowed values are 3 and N.
     void resize(const size_t size);
+
+    // Set the intent of this spectrum.
+    void set_intent(const Intent intent);
+
+    // Return the intent of this spectrum.
+    Intent get_intent() const;
 
     // Set all components to a given value.
     void set(const ValueType val);
@@ -123,8 +143,20 @@ class DynamicSpectrum
 
   private:
     APPLESEED_SIMD4_ALIGN ValueType m_samples[StoredSamples];
-    foundation::uint32              m_size;
+    foundation::uint16              m_size;
+    foundation::uint16              m_intent;
 };
+
+// Combine intents of multiple spectra.
+template <typename T, size_t N>
+typename DynamicSpectrum<T, N>::Intent combine_intents(
+    const DynamicSpectrum<T, N>&    a,
+    const DynamicSpectrum<T, N>&    b);
+template <typename T, size_t N>
+typename DynamicSpectrum<T, N>::Intent combine_intents(
+    const DynamicSpectrum<T, N>&    a,
+    const DynamicSpectrum<T, N>&    b,
+    const DynamicSpectrum<T, N>&    c);
 
 // Exact inequality and equality tests.
 template <typename T, size_t N> bool operator!=(const DynamicSpectrum<T, N>& lhs, const DynamicSpectrum<T, N>& rhs);
@@ -238,10 +270,10 @@ template <typename T, size_t N> renderer::DynamicSpectrum<T, N> pow(
     const renderer::DynamicSpectrum<T, N>& y);
 
 // Compute the logarithm of a spectrum.
-template <typename T, size_t N> renderer::DynamicSpectrum<T, N> log(const renderer::DynamicSpectrum<T, N>& x);
+template <typename T, size_t N> renderer::DynamicSpectrum<T, N> log(const renderer::DynamicSpectrum<T, N>& s);
 
 // Compute the exponential of a spectrum.
-template <typename T, size_t N> renderer::DynamicSpectrum<T, N> exp(const renderer::DynamicSpectrum<T, N>& x);
+template <typename T, size_t N> renderer::DynamicSpectrum<T, N> exp(const renderer::DynamicSpectrum<T, N>& s);
 
 }   // namespace foundation
 
@@ -254,16 +286,18 @@ namespace renderer
 {
 
 template <typename T, size_t N>
-inline DynamicSpectrum<T, N>::DynamicSpectrum()
+inline DynamicSpectrum<T, N>::DynamicSpectrum(const Intent intent)
   : m_size(3)
+  , m_intent(static_cast<foundation::uint16>(intent))
 {
     for (size_t i = N; i < StoredSamples; ++i)
         m_samples[i] = T(0.0);
 }
 
 template <typename T, size_t N>
-inline DynamicSpectrum<T, N>::DynamicSpectrum(const ValueType* rhs)
+inline DynamicSpectrum<T, N>::DynamicSpectrum(const ValueType* rhs, const Intent intent)
   : m_size(N)
+  , m_intent(static_cast<foundation::uint16>(intent))
 {
     assert(rhs);
 
@@ -275,8 +309,9 @@ inline DynamicSpectrum<T, N>::DynamicSpectrum(const ValueType* rhs)
 }
 
 template <typename T, size_t N>
-inline DynamicSpectrum<T, N>::DynamicSpectrum(const ValueType val)
+inline DynamicSpectrum<T, N>::DynamicSpectrum(const ValueType val, const Intent intent)
   : m_size(3)
+  , m_intent(static_cast<foundation::uint16>(intent))
 {
     set(val);
 
@@ -285,20 +320,9 @@ inline DynamicSpectrum<T, N>::DynamicSpectrum(const ValueType val)
 }
 
 template <typename T, size_t N>
-template <typename U>
-inline DynamicSpectrum<T, N>::DynamicSpectrum(const DynamicSpectrum<U, N>& rhs)
-  : m_size(rhs.m_size)
-{
-    for (size_t i = 0; i < m_size; ++i)
-        m_samples[i] = static_cast<ValueType>(rhs[i]);
-
-    for (size_t i = N; i < StoredSamples; ++i)
-        m_samples[i] = T(0.0);
-}
-
-template <typename T, size_t N>
-inline DynamicSpectrum<T, N>::DynamicSpectrum(const foundation::Color<ValueType, 3>& rhs)
+inline DynamicSpectrum<T, N>::DynamicSpectrum(const foundation::Color<ValueType, 3>& rhs, const Intent intent)
   : m_size(3)
+  , m_intent(static_cast<foundation::uint16>(intent))
 {
     m_samples[0] = rhs[0];
     m_samples[1] = rhs[1];
@@ -309,8 +333,9 @@ inline DynamicSpectrum<T, N>::DynamicSpectrum(const foundation::Color<ValueType,
 }
 
 template <typename T, size_t N>
-inline DynamicSpectrum<T, N>::DynamicSpectrum(const foundation::RegularSpectrum<ValueType, N>& rhs)
+inline DynamicSpectrum<T, N>::DynamicSpectrum(const foundation::RegularSpectrum<ValueType, N>& rhs, const Intent intent)
   : m_size(N)
+  , m_intent(static_cast<foundation::uint16>(intent))
 {
     for (size_t i = 0; i < N; ++i)
         m_samples[i] = rhs[i];
@@ -320,9 +345,24 @@ inline DynamicSpectrum<T, N>::DynamicSpectrum(const foundation::RegularSpectrum<
 }
 
 template <typename T, size_t N>
+template <typename U>
+inline DynamicSpectrum<T, N>::DynamicSpectrum(const DynamicSpectrum<U, N>& rhs)
+  : m_size(rhs.m_size)
+  , m_intent(rhs.m_intent)
+{
+    for (size_t i = 0; i < m_size; ++i)
+        m_samples[i] = static_cast<ValueType>(rhs[i]);
+
+    for (size_t i = N; i < StoredSamples; ++i)
+        m_samples[i] = T(0.0);
+}
+
+template <typename T, size_t N>
 inline DynamicSpectrum<T, N>& DynamicSpectrum<T, N>::operator=(const foundation::Color<ValueType, 3>& rhs)
 {
     m_size = 3;
+
+    // The intent remains unchanged, on purpose.
 
     m_samples[0] = rhs[0];
     m_samples[1] = rhs[1];
@@ -335,6 +375,8 @@ template <typename T, size_t N>
 inline DynamicSpectrum<T, N>& DynamicSpectrum<T, N>::operator=(const foundation::RegularSpectrum<ValueType, N>& rhs)
 {
     m_size = N;
+
+    // The intent remains unchanged, on purpose.
 
     for (size_t i = 0; i < N; ++i)
         m_samples[i] = rhs[i];
@@ -364,7 +406,19 @@ template <typename T, size_t N>
 inline void DynamicSpectrum<T, N>::resize(const size_t size)
 {
     assert(size == 3 || size == N);
-    m_size = static_cast<foundation::uint32>(size);
+    m_size = static_cast<foundation::uint16>(size);
+}
+
+template <typename T, size_t N>
+inline void DynamicSpectrum<T, N>::set_intent(const Intent intent)
+{
+    m_intent = static_cast<foundation::uint16>(intent);
+}
+
+template <typename T, size_t N>
+inline typename DynamicSpectrum<T, N>::Intent DynamicSpectrum<T, N>::get_intent() const
+{
+    return static_cast<Intent>(m_intent);
 }
 
 template <typename T, size_t N>
@@ -441,9 +495,21 @@ inline DynamicSpectrum<T, N>& DynamicSpectrum<T, N>::upgrade(
 
     if (source.is_rgb())
     {
-        foundation::linear_rgb_illuminance_to_spectrum(
-            reinterpret_cast<const foundation::Color<ValueType, 3>&>(source[0]),
-            reinterpret_cast<foundation::RegularSpectrum<ValueType, N>&>(dest[0]));
+        if (source.get_intent() == Reflectance)
+        {
+            foundation::linear_rgb_reflectance_to_spectrum(
+                reinterpret_cast<const foundation::Color<ValueType, 3>&>(source[0]),
+                reinterpret_cast<foundation::RegularSpectrum<ValueType, N>&>(dest[0]));
+            dest.set_intent(Reflectance);
+        }
+        else
+        {
+            assert(source.get_intent() == Illuminance);
+            foundation::linear_rgb_illuminance_to_spectrum(
+                reinterpret_cast<const foundation::Color<ValueType, 3>&>(source[0]),
+                reinterpret_cast<foundation::RegularSpectrum<ValueType, N>&>(dest[0]));
+            dest.set_intent(Illuminance);
+        }
         dest.m_size = N;
     }
     else
@@ -468,6 +534,7 @@ inline DynamicSpectrum<T, N>& DynamicSpectrum<T, N>::downgrade(
                     lighting_conditions,
                     reinterpret_cast<const foundation::RegularSpectrum<ValueType, N>&>(source[0])));
         dest.m_size = 3;
+        dest.m_intent = source.m_intent;
     }
     else
         dest = source;
@@ -476,8 +543,31 @@ inline DynamicSpectrum<T, N>& DynamicSpectrum<T, N>::downgrade(
 }
 
 template <typename T, size_t N>
+inline typename DynamicSpectrum<T, N>::Intent combine_intents(
+    const DynamicSpectrum<T, N>&            a,
+    const DynamicSpectrum<T, N>&            b)
+{
+    return
+        static_cast<typename DynamicSpectrum<T, N>::Intent>(
+            a.get_intent() | b.get_intent());
+}
+
+template <typename T, size_t N>
+inline typename DynamicSpectrum<T, N>::Intent combine_intents(
+    const DynamicSpectrum<T, N>&            a,
+    const DynamicSpectrum<T, N>&            b,
+    const DynamicSpectrum<T, N>&            c)
+{
+    return
+        static_cast<typename DynamicSpectrum<T, N>::Intent>(
+            a.get_intent() | b.get_intent() | c.get_intent());
+}
+
+template <typename T, size_t N>
 inline bool operator!=(const DynamicSpectrum<T, N>& lhs, const DynamicSpectrum<T, N>& rhs)
 {
+    assert(lhs.get_intent() == rhs.get_intent());
+
     if (lhs.size() != rhs.size())
         return true;
 
@@ -499,6 +589,8 @@ inline bool operator==(const DynamicSpectrum<T, N>& lhs, const DynamicSpectrum<T
 template <typename T, size_t N>
 inline DynamicSpectrum<T, N> operator+(const DynamicSpectrum<T, N>& lhs, const DynamicSpectrum<T, N>& rhs)
 {
+    assert(lhs.get_intent() == rhs.get_intent());
+
     DynamicSpectrum<T, N> result;
 
     if (lhs.size() == rhs.size())
@@ -526,6 +618,8 @@ inline DynamicSpectrum<T, N> operator+(const DynamicSpectrum<T, N>& lhs, const D
 template <typename T, size_t N>
 inline DynamicSpectrum<T, N> operator-(const DynamicSpectrum<T, N>& lhs, const DynamicSpectrum<T, N>& rhs)
 {
+    assert(lhs.get_intent() == rhs.get_intent());
+
     DynamicSpectrum<T, N> result;
 
     if (lhs.size() == rhs.size())
@@ -583,7 +677,8 @@ inline DynamicSpectrum<T, N> operator*(const T lhs, const DynamicSpectrum<T, N>&
 template <typename T, size_t N>
 inline DynamicSpectrum<T, N> operator*(const DynamicSpectrum<T, N>& lhs, const DynamicSpectrum<T, N>& rhs)
 {
-    DynamicSpectrum<T, N> result;
+    // If lhs or rhs is an illuminance, then result is an illuminance as well.
+    DynamicSpectrum<T, N> result(combine_intents(lhs, rhs));
 
     if (lhs.size() == rhs.size())
     {
@@ -640,7 +735,8 @@ inline DynamicSpectrum<long double, N> operator/(const DynamicSpectrum<long doub
 template <typename T, size_t N>
 inline DynamicSpectrum<T, N> operator/(const DynamicSpectrum<T, N>& lhs, const DynamicSpectrum<T, N>& rhs)
 {
-    DynamicSpectrum<T, N> result;
+    // If lhs or rhs is an illuminance, then result is an illuminance as well.
+    DynamicSpectrum<T, N> result(combine_intents(lhs, rhs));
 
     if (lhs.size() == rhs.size())
     {
@@ -667,6 +763,8 @@ inline DynamicSpectrum<T, N> operator/(const DynamicSpectrum<T, N>& lhs, const D
 template <typename T, size_t N>
 inline DynamicSpectrum<T, N>& operator+=(DynamicSpectrum<T, N>& lhs, const DynamicSpectrum<T, N>& rhs)
 {
+    assert(lhs.get_intent() == rhs.get_intent());
+
     if (lhs.size() <= rhs.size())
     {
         if (lhs.size() < rhs.size())
@@ -692,6 +790,8 @@ inline DynamicSpectrum<T, N>& operator+=(DynamicSpectrum<T, N>& lhs, const Dynam
 template <>
 APPLESEED_FORCE_INLINE DynamicSpectrum<float, 31>& operator+=(DynamicSpectrum<float, 31>& lhs, const DynamicSpectrum<float, 31>& rhs)
 {
+    assert(lhs.get_intent() == rhs.get_intent());
+
     if (lhs.size() <= rhs.size())
     {
         if (lhs.size() < rhs.size())
@@ -733,6 +833,8 @@ APPLESEED_FORCE_INLINE DynamicSpectrum<float, 31>& operator+=(DynamicSpectrum<fl
 template <typename T, size_t N>
 inline DynamicSpectrum<T, N>& operator-=(DynamicSpectrum<T, N>& lhs, const DynamicSpectrum<T, N>& rhs)
 {
+    assert(lhs.get_intent() == rhs.get_intent());
+
     if (lhs.size() <= rhs.size())
     {
         if (lhs.size() < rhs.size())
@@ -807,6 +909,9 @@ inline DynamicSpectrum<T, N>& operator*=(DynamicSpectrum<T, N>& lhs, const Dynam
             lhs[i] *= up_rhs[i];
     }
 
+    // If rhs is an illuminance, then lhs becomes an illuminance.
+    lhs.set_intent(combine_intents(lhs, rhs));
+
     return lhs;
 }
 
@@ -847,6 +952,9 @@ APPLESEED_FORCE_INLINE DynamicSpectrum<float, 31>& operator*=(DynamicSpectrum<fl
         _mm_store_ps(&lhs[24], _mm_mul_ps(_mm_load_ps(&lhs[24]), _mm_load_ps(&up_rhs[24])));
         _mm_store_ps(&lhs[28], _mm_mul_ps(_mm_load_ps(&lhs[28]), _mm_load_ps(&up_rhs[28])));
     }
+
+    // If rhs is an illuminance, then lhs becomes an illuminance.
+    lhs.set_intent(combine_intents(lhs, rhs));
 
     return lhs;
 }
@@ -900,6 +1008,9 @@ inline DynamicSpectrum<T, N>& operator/=(DynamicSpectrum<T, N>& lhs, const Dynam
             lhs[i] /= up_rhs[i];
     }
 
+    // If rhs is an illuminance, then lhs becomes an illuminance.
+    lhs.set_intent(combine_intents(lhs, rhs));
+
     return lhs;
 }
 
@@ -909,6 +1020,8 @@ inline void madd(
     const DynamicSpectrum<T, N>&            b,
     const DynamicSpectrum<T, N>&            c)
 {
+    assert(a.get_intent() == combine_intents(b, c));
+
     if (a.size() == b.size() && a.size() == c.size())
     {
         for (size_t i = 0, e = a.size(); i < e; ++i)
@@ -926,6 +1039,8 @@ inline void madd(
     const DynamicSpectrum<T, N>&            b,
     const T                                 c)
 {
+    assert(a.get_intent() == b.get_intent());
+
     if (a.size() <= b.size())
     {
         if (a.size() < b.size())
@@ -952,6 +1067,8 @@ APPLESEED_FORCE_INLINE void madd(
     const DynamicSpectrum<float, 31>&       b,
     const DynamicSpectrum<float, 31>&       c)
 {
+    assert(a.get_intent() == combine_intents(b, c));
+
     if (a.size() == b.size() && a.size() == c.size())
     {
         _mm_store_ps(&a[0], _mm_add_ps(_mm_load_ps(&a[0]), _mm_mul_ps(_mm_load_ps(&b[0]), _mm_load_ps(&c[0]))));
@@ -979,6 +1096,8 @@ APPLESEED_FORCE_INLINE void madd(
     const DynamicSpectrum<float, 31>&       b,
     const float                             c)
 {
+    assert(a.get_intent() == b.get_intent());
+
     const __m128 k = _mm_set_ps1(c);
 
     if (a.size() <= b.size())
@@ -1037,6 +1156,8 @@ inline bool is_zero(const renderer::DynamicSpectrum<T, N>& s)
 template <typename T, size_t N>
 inline bool feq(const renderer::DynamicSpectrum<T, N>& lhs, const renderer::DynamicSpectrum<T, N>& rhs)
 {
+    assert(lhs.get_intent() == rhs.get_intent());
+
     if (lhs.size() != rhs.size())
         return false;
 
@@ -1052,6 +1173,8 @@ inline bool feq(const renderer::DynamicSpectrum<T, N>& lhs, const renderer::Dyna
 template <typename T, size_t N>
 inline bool feq(const renderer::DynamicSpectrum<T, N>& lhs, const renderer::DynamicSpectrum<T, N>& rhs, const T eps)
 {
+    assert(lhs.get_intent() == rhs.get_intent());
+
     if (lhs.size() != rhs.size())
         return false;
 
@@ -1091,7 +1214,7 @@ inline bool fz(const renderer::DynamicSpectrum<T, N>& s, const T eps)
 template <typename T, size_t N>
 inline renderer::DynamicSpectrum<T, N> rcp(const renderer::DynamicSpectrum<T, N>& s)
 {
-    renderer::DynamicSpectrum<T, N> result;
+    renderer::DynamicSpectrum<T, N> result(s.get_intent());
     result.resize(s.size());
 
     for (size_t i = 0, e = s.size(); i < e; ++i)
@@ -1115,7 +1238,7 @@ inline bool is_saturated(const renderer::DynamicSpectrum<T, N>& s)
 template <typename T, size_t N>
 inline renderer::DynamicSpectrum<T, N> saturate(const renderer::DynamicSpectrum<T, N>& s)
 {
-    renderer::DynamicSpectrum<T, N> result;
+    renderer::DynamicSpectrum<T, N> result(s.get_intent());
     result.resize(s.size());
 
     for (size_t i = 0, e = s.size(); i < e; ++i)
@@ -1133,7 +1256,7 @@ inline void saturate_in_place(renderer::DynamicSpectrum<T, N>& s)
 template <typename T, size_t N>
 inline renderer::DynamicSpectrum<T, N> clamp(const renderer::DynamicSpectrum<T, N>& s, const T min, const T max)
 {
-    renderer::DynamicSpectrum<T, N> result;
+    renderer::DynamicSpectrum<T, N> result(s.get_intent());
     result.resize(s.size());
 
     for (size_t i = 0, e = s.size(); i < e; ++i)
@@ -1158,7 +1281,7 @@ inline void clamp_in_place(renderer::DynamicSpectrum<T, N>& s, const T min, cons
 template <typename T, size_t N>
 inline renderer::DynamicSpectrum<T, N> clamp_low(const renderer::DynamicSpectrum<T, N>& s, const T min)
 {
-    renderer::DynamicSpectrum<T, N> result;
+    renderer::DynamicSpectrum<T, N> result(s.get_intent());
     result.resize(s.size());
 
     for (size_t i = 0, e = s.size(); i < e; ++i)
@@ -1180,7 +1303,7 @@ inline void clamp_low_in_place(renderer::DynamicSpectrum<T, N>& s, const T min)
 template <typename T, size_t N>
 inline renderer::DynamicSpectrum<T, N> clamp_high(const renderer::DynamicSpectrum<T, N>& s, const T max)
 {
-    renderer::DynamicSpectrum<T, N> result;
+    renderer::DynamicSpectrum<T, N> result(s.get_intent());
     result.resize(s.size());
 
     for (size_t i = 0, e = s.size(); i < e; ++i)
@@ -1207,6 +1330,8 @@ inline renderer::DynamicSpectrum<T, N> lerp(
 {
     assert(a.size() == b.size());
     assert(a.size() == t.size());
+    assert(a.get_intent() == b.get_intent());
+    assert(a.get_intent() == t.get_intent());
 
     renderer::DynamicSpectrum<T, N> result;
     result.resize(a.size());
@@ -1227,6 +1352,8 @@ APPLESEED_FORCE_INLINE renderer::DynamicSpectrum<float, 31> lerp(
 {
     assert(a.size() == b.size());
     assert(a.size() == t.size());
+    assert(a.get_intent() == b.get_intent());
+    assert(a.get_intent() == t.get_intent());
 
     renderer::DynamicSpectrum<float, 31> result;
     result.resize(a.size());
@@ -1457,7 +1584,7 @@ inline bool is_finite(const renderer::DynamicSpectrum<T, N>& s)
 template <typename T, size_t N>
 inline renderer::DynamicSpectrum<T, N> sqrt(const renderer::DynamicSpectrum<T, N>& s)
 {
-    renderer::DynamicSpectrum<T, N> result;
+    renderer::DynamicSpectrum<T, N> result(s.get_intent());
     result.resize(s.size());
 
     for (size_t i = 0, e = s.size(); i < e; ++i)
@@ -1471,7 +1598,7 @@ inline renderer::DynamicSpectrum<T, N> sqrt(const renderer::DynamicSpectrum<T, N
 template <>
 APPLESEED_FORCE_INLINE renderer::DynamicSpectrum<float, 31> sqrt(const renderer::DynamicSpectrum<float, 31>& s)
 {
-    renderer::DynamicSpectrum<float, 31> result;
+    renderer::DynamicSpectrum<float, 31> result(s.get_intent());
     result.resize(s.size());
 
     _mm_store_ps(&result[ 0], _mm_sqrt_ps(_mm_load_ps(&s[ 0])));
@@ -1495,7 +1622,7 @@ APPLESEED_FORCE_INLINE renderer::DynamicSpectrum<float, 31> sqrt(const renderer:
 template <typename T, size_t N>
 inline renderer::DynamicSpectrum<T, N> pow(const renderer::DynamicSpectrum<T, N>& x, const T y)
 {
-    renderer::DynamicSpectrum<T, N> result;
+    renderer::DynamicSpectrum<T, N> result(x.get_intent());
     result.resize(x.size());
 
     for (size_t i = 0, e = x.size(); i < e; ++i)
@@ -1511,7 +1638,7 @@ inline renderer::DynamicSpectrum<T, N> pow(
 {
     assert(x.size() == y.size());
 
-    renderer::DynamicSpectrum<T, N> result;
+    renderer::DynamicSpectrum<T, N> result(x.get_intent());
     result.resize(x.size());
 
     for (size_t i = 0, e = x.size(); i < e; ++i)
@@ -1521,25 +1648,25 @@ inline renderer::DynamicSpectrum<T, N> pow(
 }
 
 template <typename T, size_t N>
-inline renderer::DynamicSpectrum<T, N> log(const renderer::DynamicSpectrum<T, N>& x)
+inline renderer::DynamicSpectrum<T, N> log(const renderer::DynamicSpectrum<T, N>& s)
 {
-    renderer::DynamicSpectrum<T, N> result;
-    result.resize(x.size());
+    renderer::DynamicSpectrum<T, N> result(s.get_intent());
+    result.resize(s.size());
 
-    for (size_t i = 0, e = x.size(); i < e; ++i)
-        result[i] = std::log(x[i]);
+    for (size_t i = 0, e = s.size(); i < e; ++i)
+        result[i] = std::log(s[i]);
 
     return result;
 }
 
 template <typename T, size_t N>
-inline renderer::DynamicSpectrum<T, N> exp(const renderer::DynamicSpectrum<T, N>& x)
+inline renderer::DynamicSpectrum<T, N> exp(const renderer::DynamicSpectrum<T, N>& s)
 {
-    renderer::DynamicSpectrum<T, N> result;
-    result.resize(x.size());
+    renderer::DynamicSpectrum<T, N> result(s.get_intent());
+    result.resize(s.size());
 
-    for (size_t i = 0, e = x.size(); i < e; ++i)
-        result[i] = std::exp(x[i]);
+    for (size_t i = 0, e = s.size(); i < e; ++i)
+        result[i] = std::exp(s[i]);
 
     return result;
 }

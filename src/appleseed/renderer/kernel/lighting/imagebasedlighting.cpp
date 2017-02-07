@@ -84,7 +84,7 @@ void compute_ibl(
         radiance);
 
     // Compute IBL by sampling the environment.
-    Spectrum radiance_env_sampling;
+    Spectrum radiance_env_sampling(Spectrum::Illuminance);
     compute_ibl_environment_sampling(
         sampling_context,
         shading_context,
@@ -130,7 +130,7 @@ void compute_ibl(
         radiance);
 
     // Compute IBL by sampling the environment.
-    Spectrum radiance_env_sampling;
+    Spectrum radiance_env_sampling(Spectrum::Illuminance);
     compute_ibl_environment_sampling(
         sampling_context,
         shading_context,
@@ -193,7 +193,7 @@ void compute_ibl_bsdf_sampling(
 
         // Evaluate the environment's EDF.
         InputEvaluator input_evaluator(shading_context.get_texture_cache());
-        Spectrum env_value;
+        Spectrum env_value(Spectrum::Illuminance);
         float env_prob;
         environment_edf.evaluate(
             shading_context,
@@ -277,7 +277,7 @@ void compute_ibl_bssrdf_sampling(
 
         // Evaluate the environment's EDF.
         InputEvaluator input_evaluator(shading_context.get_texture_cache());
-        Spectrum env_value;
+        Spectrum env_value(Spectrum::Illuminance);
         float env_prob;
         environment_edf.evaluate(
             shading_context,
@@ -336,7 +336,7 @@ void compute_ibl_environment_sampling(
         // Sample the environment.
         InputEvaluator input_evaluator(shading_context.get_texture_cache());
         Vector3f incoming;
-        Spectrum env_value;
+        Spectrum env_value(Spectrum::Illuminance);
         float env_prob;
         environment_edf.sample(
             shading_context,
@@ -422,7 +422,7 @@ void compute_ibl_environment_sampling(
         // Sample the environment.
         InputEvaluator input_evaluator(shading_context.get_texture_cache());
         Vector3f incoming;
-        Spectrum env_value;
+        Spectrum env_value(Spectrum::Illuminance);
         float env_prob;
         environment_edf.sample(
             shading_context,

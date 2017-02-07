@@ -129,7 +129,7 @@ namespace
 
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
-                Spectrum s;
+                Spectrum s(Spectrum::Illuminance);
 
                 const EDF& edf = edf_from_closure_id(c->get_closure_type(i));
                 edf.evaluate(
@@ -159,7 +159,7 @@ namespace
 
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
-                Spectrum s;
+                Spectrum s(Spectrum::Illuminance);
                 float edf_prob = 0.0f;
 
                 const EDF& edf = edf_from_closure_id(c->get_closure_type(i));

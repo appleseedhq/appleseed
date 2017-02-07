@@ -1056,13 +1056,8 @@ void linear_rgb_reflectance_to_spectrum(
     const Color<T, 3>&          linear_rgb,
     SpectrumType&               spectrum)
 {
-    const T m = max_value(linear_rgb);
-
-    linear_rgb_reflectance_to_spectrum_unclamped(
-        linear_rgb,
-        spectrum);
-
-    clamp_in_place(spectrum, T(0.0), std::max(m, T(1.0)));
+    linear_rgb_reflectance_to_spectrum_unclamped(linear_rgb, spectrum);
+    clamp_low_in_place(spectrum, T(0.0));
 }
 
 template <typename T, typename SpectrumType>

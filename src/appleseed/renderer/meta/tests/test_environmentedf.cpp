@@ -227,7 +227,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
             InputEvaluator input_evaluator(texture_cache);
 
             Vector3f outgoing;
-            Spectrum value1;
+            Spectrum value1(Spectrum::Illuminance);
             float probability1;
 
             env_edf.sample(
@@ -238,7 +238,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
                 value1,
                 probability1);
 
-            Spectrum value2;
+            Spectrum value2(Spectrum::Illuminance);
 
             env_edf.evaluate(
                 shading_context,
