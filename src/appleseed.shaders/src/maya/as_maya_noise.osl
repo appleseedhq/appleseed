@@ -248,37 +248,17 @@ shader as_maya_noise
         }
         else if (in_noiseType == 2)
         {
-            // wave
-
             coords *= M_2PI;
-            float current_time = in_time * M_PI;
-            float val = 0.0, kx, ky, kz, k, phi;
-            int seed = 50;
 
-            for (int i = 0; i < in_numWaves; ++i)
-            {
-                do
-                {
-                    kx = random_noise(seed++);
-                    ky = random_noise(seed++);
-                    kz = random_noise(seed++);
-                    k = hypot(kx, ky, kz);
-                }
-                while (k <= 0);
-
-                kx /= k;
-                ky /= k;
-                kz /= k;
-
-                phi = random_noise(seed++) * M_PI;
-
-                val += cos( kx * coords[0] +
-                            ky * coords[1] +
-                            kz * coords[2] +
-                            phi + current_time);
-            }
-            val /= in_numWaves;
-
+            val = maya_waves_noise(
+                coords,
+                in_amplitude,
+                in_time,
+                in_frequencyRatio,
+                in_ratio,
+                in_depthMax,
+                in_numWaves,
+                in_inflection);
         }
         else if (in_noiseType == 3)
         {

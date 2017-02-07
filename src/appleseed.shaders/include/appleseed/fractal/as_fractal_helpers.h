@@ -34,8 +34,6 @@
 #define AS_FRACTAL_HELPERS_H
 
 #include "appleseed/fractal/as_noise_helpers.h"
-#include "appleseed/math/as_math_helpers.h"
-#include "appleseed/pattern/as_pattern_helpers.h"
 
 float fBm(
     point surface_point,

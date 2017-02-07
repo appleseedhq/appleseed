@@ -29,6 +29,7 @@
 #ifndef AS_MAYA_FRACTAL_HELPERS_H
 #define AS_MAYA_FRACTAL_HELPERS_H
 
+#include "appleseed/fractal/as_noise_helpers.h"
 #include "appleseed/math/as_math_helpers.h"
 
 void implode_2d(
@@ -170,6 +171,67 @@ float maya_fBm(
         ttime *= lacunarity;
     }
     return clamp(sum * 0.5 + 0.5, 0.0, 1.0);
+}
+
+float maya_cos_waves_2d(
+    point coords,
+    float current_time,
+    int current_step,
+    int waves)
+{
+    int seed = current_step * 50;
+
+    float kx, ky, k, out = 0.0;
+
+    for (int i = 0; i < waves; ++i)
+    {
+        do
+        {
+            kx = random_noise(seed++);
+            ky = random_noise(seed++);
+            k = hypot(kx, ky);
+        }
+        while (k <= 0);
+
+        kx /= k;
+        ky /= k;
+
+        float phi = random_noise(seed++) * M_PI;
+
+        out += cos(kx * coords[0] + ky * coords[1] + phi + current_time);
+    }
+    return out / (float) waves;
+}
+                                                   
+float maya_waves_noise(
+    point xyz,
+    float amplitude,
+    float current_time,
+    float frequency_ratio,
+    float ratio,
+    int max_depth,
+    int num_waves,
+    int inflection)
+{
+    float time_ratio = sqrt(frequency_ratio);
+    float cycle_time = current_time * M_PI, amp = amplitude, out = 0.0;
+
+    for (int i = 0; i < max_depth; ++i)
+    {
+        if (!amp)
+        {
+            break;
+        }
+
+        out += amp * maya_cos_waves_2d(xyz, cycle_time, i, num_waves);
+
+        amp *= ratio;
+        xyz *= frequency_ratio;
+
+        cycle_time *= time_ratio;
+    }
+
+    return (inflection) ? abs(out) : out * 0.5 + 0.5;
 }
 
 #endif // AS_MAYA_FRACTAL_HELPERS_H
