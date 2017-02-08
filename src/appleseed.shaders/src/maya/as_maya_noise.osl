@@ -311,7 +311,7 @@ shader as_maya_noise
             {
                 val = maya_turbulence(
                     coords,
-                    in_time, // + time,
+                    in_time + time,
                     filter_size,
                     in_amplitude,
                     in_depthMax,
@@ -320,14 +320,9 @@ shader as_maya_noise
             }
             else
             {
-#ifdef DEBUG
-                printf("Current shutter time = %.3f,\tdtime = %.3f\n",
-                        time, dtime);
-#endif
-
                 val = fBm(
                     coords,
-                    in_time, // + time, // time is bugged?
+                    in_time + time,
                     filter_size,
                     in_amplitude,
                     in_depthMax,
