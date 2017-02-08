@@ -32,6 +32,8 @@
 #include "appleseed/fractal/as_noise_helpers.h"
 #include "appleseed/math/as_math_helpers.h"
 
+#define MAYA_LATTICE_SIZE    20
+
 void implode_2d(
     float implode,
     float implode_center[2],
@@ -138,6 +140,11 @@ float maya_turbulence(
 
     for (int i = 0; i < octaves; ++i)
     {
+        if (!amp)
+        {
+            break;
+        }
+
         // Base frequency looks too regular, break it with point+noise.
         float tmp = amp * filtered_snoise(pp + noise(lacunarity), ttime, fw);
         sum += abs(tmp);
@@ -163,6 +170,11 @@ float maya_fBm(
 
     for (int i = 0; i < octaves; ++i)
     {
+        if (!amp)
+        {
+            break;
+        }
+
         // These magic numbers seem to match Maya better.
         sum += amp * 1.2 * (filtered_snoise(pp, ttime, fw) - 0.1) + 0.05;
         amp *= gain;
@@ -232,6 +244,199 @@ float maya_waves_noise(
     }
 
     return (inflection) ? abs(out) : out * 0.5 + 0.5;
+}
+
+float billow_noise_2d(
+    float x,
+    float y,
+    float density,
+    float randomness,
+    float size_randomness,
+    float spottyness,
+    float current_time,
+    int current_step,
+    int falloff_mode)
+{
+    float t_density = 2 - randomness;
+
+    if (t_density < density)
+    {
+        t_density = density;
+    }
+    if (t_density < 1.0e-4)
+    {
+        return 0; // no blobs
+    }
+
+    float xx = x - floor(x);
+    float yy = y - floor(y);
+
+    xx *= MAYA_LATTICE_SIZE;
+    yy *= MAYA_LATTICE_SIZE;
+
+    float cx = xx - trunc(xx);
+    float cy = yy - trunc(yy);
+
+    int ix = (int) xx, nx;
+    int iy = (int) yy, ny;
+
+    float blob_size = 2.0 / t_density;
+    float jittering = 0.5 * randomness;
+    float inv_spottyness = 1.0 - spottyness, val = 0.0, falloff;
+
+    for (int dy = -1; dy <= 1; dy++)
+    {
+        ny = iy + dy;
+
+        if (ny >= MAYA_LATTICE_SIZE)
+        {
+            ny -= MAYA_LATTICE_SIZE;
+        }
+        else if (ny < 0)
+        {
+            ny += MAYA_LATTICE_SIZE;
+        }
+
+        ny *= MAYA_LATTICE_SIZE;
+
+        for (int dx = -1; dx <= 1; dx++)
+        {
+            nx = ix + dx;
+
+            if (nx >= MAYA_LATTICE_SIZE)
+            {
+                nx -= MAYA_LATTICE_SIZE;
+            }
+            else if (nx < 0)
+            {
+                nx += MAYA_LATTICE_SIZE;
+            }
+
+            int idx = nx + ny;
+
+            float pos_x =
+                sin(current_time * 2.0 + M_2PI * random_noise(idx++));
+
+            float pos_y =
+                cos(current_time + M_2PI * random_noise(idx++));
+
+            pos_x = pos_x * jittering + 0.5;
+            pos_y = pos_y * jittering + 0.5;
+
+            float x_dist = cx - (float)dx - pos_x;
+            float y_dist = cy - (float)dy - pos_y;
+
+            float dist = sqr(x_dist) + sqr(y_dist) * blob_size;
+
+            if (size_randomness)
+            {
+                dist /= (random_noise(idx++) + 1.0) *
+                    0.5 * size_randomness + (1.0 - size_randomness);
+            }
+            else
+            {
+                idx++;
+            }
+
+            if (dist < 1.0)
+            {
+                if (falloff_mode == 0)
+                {
+                    falloff = 1.0 - sqrt(dist);
+                }
+                else if (falloff_mode == 1)
+                {
+                    falloff = 1.0 + dist * (-3.0 + 2.0 * sqrt(dist));
+                }
+                else if (falloff_mode == 2)
+                {
+                    falloff = 1.0 - dist;
+                }
+                else if (falloff_mode == 3)
+                {
+                    dist *= 1.1;
+
+                    falloff = (dist > 1.0)
+                        ? 1.0 - (dist - 1.0) * 10.0
+                        : dist;
+                }
+
+                if (spottyness)
+                {
+                    falloff *= spottyness *
+                        (random_noise(idx++) + 1.0) + inv_spottyness;
+                }
+                val += falloff;
+            }
+        }
+    }
+    return val;
+}
+
+float maya_billow_noise_2d(
+    point xyz,
+    float gain,
+    float current_time,
+    float frequency_ratio,
+    float ratio,
+    float density,
+    float randomness,
+    float size_randomness,
+    float spottyness,
+    int falloff_mode,
+    int max_depth,
+    int inflection)
+{
+    float x = xyz[0] / MAYA_LATTICE_SIZE;
+    float y = xyz[1] / MAYA_LATTICE_SIZE;
+
+    float x_offset = 0.0, y_offset = 0.0;
+
+    float curr_time = current_time;
+    float time_ratio = sqrt(ratio);
+
+    float amp = 1.0, total_amp = 0.0, out = 0.0;
+
+    for (int i = 0; i < max_depth; ++i)
+    {
+        if (!amp)
+        {
+            break;
+        }
+
+        x_offset += 0.021;
+        y_offset += 0.33;
+
+        float noiz = billow_noise_2d(
+            x + x_offset,
+            y + y_offset,
+            density,
+            randomness,
+            size_randomness,
+            spottyness,
+            curr_time,
+            i,
+            falloff_mode);
+
+        if (inflection)
+        {
+            noiz = abs(noiz);
+        }
+
+        out += amp * noiz;
+
+        total_amp += amp;
+        amp *= ratio;
+
+        x *= frequency_ratio;
+        y *= frequency_ratio;
+
+        curr_time *= time_ratio;
+    }
+    out /= total_amp;
+    out *= gain;
+
+    return out;
 }
 
 #endif // AS_MAYA_FRACTAL_HELPERS_H

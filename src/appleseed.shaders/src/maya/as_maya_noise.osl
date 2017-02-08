@@ -119,6 +119,12 @@ shader as_maya_noise
         string maya_attribute_type = "float",
         string label = "Spottyness"
     ]],
+    float in_sizeRand = 0.0
+    [[
+        string maya_attribute_name = "sizeRand",
+        string maya_attribute_type = "float",
+        string label = "Size Randomness"
+    ]],
     float in_randomness = 1.0
     [[
         string maya_attribute_name = "randomness",
@@ -244,7 +250,19 @@ shader as_maya_noise
         }
         else if (in_noiseType == 1)
         {
-            // billow
+            val = maya_billow_noise_2d(
+                coords,
+                in_amplitude,
+                in_time,
+                in_frequencyRatio,
+                in_ratio,
+                in_density,
+                in_randomness,
+                in_sizeRand,
+                in_spottyness,
+                in_falloff,
+                in_depthMax,
+                in_inflection);
         }
         else if (in_noiseType == 2)
         {
@@ -327,6 +345,8 @@ shader as_maya_noise
                     shadername, __FILE__, __LINE__);
 #endif
         }
+
+        val += in_threshold;
         out_outAlpha = clamp(val, 0, 1);
         out_outColor = color(out_outAlpha);
     }
