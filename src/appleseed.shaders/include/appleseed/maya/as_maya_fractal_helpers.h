@@ -326,7 +326,7 @@ float billow_noise_2d(
             float x_dist = cx - (float)dx - pos_x;
             float y_dist = cy - (float)dy - pos_y;
 
-            float dist = sqr(x_dist) + sqr(y_dist) * blob_size;
+            float dist = (sqr(x_dist) + sqr(y_dist)) * blob_size;
 
             if (size_randomness)
             {
