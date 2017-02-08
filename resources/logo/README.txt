@@ -1,3 +1,5 @@
-appleseed is a modern rendering engine designed to produce photorealistic images, animations and visual effects. It is released as open source under the MIT license.
+The appleseed logo was designed by Paolo Berto (https://twitter.com/pberto).
 
-Visit http://appleseedhq.net/ for additional information and resources.
+It is licensed under the Creative Commons Attribution-ShareAlike 4.0 International License.
+To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/4.0/ or send a letter
+to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
