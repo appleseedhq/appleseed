@@ -29,10 +29,10 @@
 #ifndef AS_MAYA_FRACTAL_HELPERS_H
 #define AS_MAYA_FRACTAL_HELPERS_H
 
+#define MAYA_LATTICE_SIZE   20
+
 #include "appleseed/fractal/as_noise_helpers.h"
 #include "appleseed/math/as_math_helpers.h"
-
-#define MAYA_LATTICE_SIZE    20
 
 void implode_2d(
     float implode,
@@ -58,74 +58,6 @@ void implode_2d(
     }
 }
 
-void implode_3d(
-    float implode,
-    float implode_center[3],
-    output float x,
-    output float y,
-    output float z)
-{
-    if (implode > EPS || implode < -EPS)
-    {
-        x -= implode_center[0];
-        y -= implode_center[1];
-        z -= implode_center[2];
-
-        float dist = hypot(x, y, z);
-
-        if (dist > EPS)
-        {
-            float factor = pow(dist, 1 - implode) / dist;
-            x *= factor;
-            y *= factor;
-            z *= factor;
-        }
-        x += implode_center[0];
-        y += implode_center[1];
-        z += implode_center[2];
-    }
-}
-
-vector implode_2d(
-    float implode,
-    float implode_center[2],
-    vector Vin)
-{
-    vector Vout = vector(Vin[0], Vin[1], 0.0);
-    implode_2d(implode, implode_center, Vout[0], Vout[1]);
-    return Vout;
-}
-
-point implode_2d(
-    float implode,
-    float implode_center[2],
-    point Pin)
-{
-    point Pout = point(Pin[0], Pin[1], 0.0);
-    implode_2d(implode, implode_center, Pout[0], Pout[1]);
-    return Pout;
-}
-
-vector implode_3d(
-    float implode,
-    float implode_center[3],
-    vector Vin)
-{
-    vector Vout = Vin;
-    implode_3d(implode, implode_center, Vout[0], Vout[1], Vout[2]);
-    return Vout;
-}
-
-point implode_3d(
-    float implode,
-    float implode_center[3],
-    point Vin)
-{
-    point Pout = Vin;
-    implode_3d(implode, implode_center, Pout[0], Pout[1], Pout[2]);
-    return Pout;
-}
-
 float maya_turbulence(
     point surface_point,
     float initial_time,
@@ -135,8 +67,9 @@ float maya_turbulence(
     float lacunarity,
     float gain)
 {
-    point pp = surface_point;
-    float amp = amplitude, fw = filter_width, sum = 0.0, ttime = initial_time;
+    point xyz = surface_point;
+    float amp = amplitude, filter_size = filter_width;
+    float current_time = initial_time, sum = 0.0;
 
     for (int i = 0; i < octaves; ++i)
     {
@@ -145,13 +78,19 @@ float maya_turbulence(
             break;
         }
 
-        // Base frequency looks too regular, break it with point+noise.
-        float tmp = amp * filtered_snoise(pp + noise(lacunarity), ttime, fw);
+        // The base frequency looks too regular, perturb it with point+noise.
+        float tmp = amp *
+            filtered_snoise(
+                xyz + noise("uperlin", lacunarity),
+                current_time,
+                filter_size);
+
         sum += abs(tmp);
         amp *= gain;
-        pp *= lacunarity;
-        fw *= lacunarity;
-        ttime *= lacunarity;
+        xyz *= lacunarity;
+
+        filter_size *= lacunarity;
+        current_time *= lacunarity;
     }
     return sum;
 }
@@ -165,8 +104,9 @@ float maya_fBm(
     float lacunarity,
     float gain)
 {
-    point pp = surface_point;
-    float amp = amplitude, fw = filter_width, sum = 0.0, ttime = initial_time;
+    point xyz = surface_point;
+    float amp = amplitude, filter_size = filter_width;
+    float current_time = initial_time, sum = 0.0;
 
     for (int i = 0; i < octaves; ++i)
     {
@@ -175,58 +115,65 @@ float maya_fBm(
             break;
         }
 
-        // These magic numbers seem to match Maya better.
-        sum += amp * 1.2 * (filtered_snoise(pp, ttime, fw) - 0.1) + 0.05;
+        // These factors seem to match Maya's result better.
+        sum += amp * 1.2 *
+            (filtered_snoise(xyz, current_time, filter_size) - 0.1) + 0.05;
+
         amp *= gain;
-        pp *= lacunarity;
-        fw *= lacunarity;
-        ttime *= lacunarity;
+        xyz *= lacunarity;
+
+        filter_size *= lacunarity;
+        current_time *= lacunarity;
     }
     return clamp(sum * 0.5 + 0.5, 0.0, 1.0);
 }
 
 float maya_cos_waves_2d(
-    point coords,
+    point surface_point,
     float current_time,
     int current_step,
     int waves)
 {
     int seed = current_step * 50;
 
-    float kx, ky, k, out = 0.0;
+    float x, y, h, out = 0.0;
 
     for (int i = 0; i < waves; ++i)
     {
         do
         {
-            kx = random_noise(seed++);
-            ky = random_noise(seed++);
-            k = hypot(kx, ky);
+            x = random_noise(seed++);
+            y = random_noise(seed++);
+            h = hypot(x, y);
         }
-        while (k <= 0);
+        while (h <= 0.0);
 
-        kx /= k;
-        ky /= k;
+        x /= h;
+        y /= h;
 
         float phi = random_noise(seed++) * M_PI;
 
-        out += cos(kx * coords[0] + ky * coords[1] + phi + current_time);
+        out += cos(
+            x * surface_point[0] +
+            y * surface_point[1] +
+            phi + current_time);
     }
     return out / (float) waves;
 }
-                                                   
+
 float maya_waves_noise(
-    point xyz,
+    point surface_point,
     float amplitude,
-    float current_time,
+    float initial_time,
     float frequency_ratio,
     float ratio,
     int max_depth,
     int num_waves,
     int inflection)
 {
+    point xyz = surface_point;
     float time_ratio = sqrt(frequency_ratio);
-    float cycle_time = current_time * M_PI, amp = amplitude, out = 0.0;
+    float current_time = initial_time * M_PI, amp = amplitude, sum = 0.0;
 
     for (int i = 0; i < max_depth; ++i)
     {
@@ -235,15 +182,13 @@ float maya_waves_noise(
             break;
         }
 
-        out += amp * maya_cos_waves_2d(xyz, cycle_time, i, num_waves);
-
+        sum += amp * maya_cos_waves_2d(xyz, current_time, i, num_waves);
         amp *= ratio;
         xyz *= frequency_ratio;
 
-        cycle_time *= time_ratio;
+        current_time *= time_ratio;
     }
-
-    return (inflection) ? abs(out) : out * 0.5 + 0.5;
+    return (inflection) ? abs(sum) : sum * 0.5 + 0.5;
 }
 
 float billow_noise_2d(
@@ -257,36 +202,33 @@ float billow_noise_2d(
     int current_step,
     int falloff_mode)
 {
-    float t_density = 2 - randomness;
+    float blob_density = 2.0 - randomness;
 
-    if (t_density < density)
+    if (blob_density < density)
     {
-        t_density = density;
+        blob_density = density;
     }
-    if (t_density < 1.0e-4)
+    if (blob_density < 1.0e-4)
     {
-        return 0; // no blobs
+        return 0;
     }
 
-    float xx = x - floor(x);
-    float yy = y - floor(y);
+    float lattice_x = mod(x, 1.0) * MAYA_LATTICE_SIZE;
+    float lattice_y = mod(y, 1.0) * MAYA_LATTICE_SIZE;
 
-    xx *= MAYA_LATTICE_SIZE;
-    yy *= MAYA_LATTICE_SIZE;
+    float cell_x = lattice_x - trunc(lattice_x);
+    float cell_y = lattice_y - trunc(lattice_y);
 
-    float cx = xx - trunc(xx);
-    float cy = yy - trunc(yy);
+    int x_cell_index = (int) lattice_x, nx;
+    int y_cell_index = (int) lattice_y, ny;
 
-    int ix = (int) xx, nx;
-    int iy = (int) yy, ny;
-
-    float blob_size = 2.0 / t_density;
+    float blob_size = 2.0 / blob_density;
     float jittering = 0.5 * randomness;
-    float inv_spottyness = 1.0 - spottyness, val = 0.0, falloff;
+    float inv_spottyness = 1.0 - spottyness, falloff, sum = 0.0;
 
     for (int dy = -1; dy <= 1; dy++)
     {
-        ny = iy + dy;
+        ny = y_cell_index + dy;
 
         if (ny >= MAYA_LATTICE_SIZE)
         {
@@ -301,7 +243,7 @@ float billow_noise_2d(
 
         for (int dx = -1; dx <= 1; dx++)
         {
-            nx = ix + dx;
+            nx = x_cell_index + dx;
 
             if (nx >= MAYA_LATTICE_SIZE)
             {
@@ -312,71 +254,73 @@ float billow_noise_2d(
                 nx += MAYA_LATTICE_SIZE;
             }
 
-            int idx = nx + ny;
+            int index = nx + ny;
 
             float pos_x =
-                sin(current_time * 2.0 + M_2PI * random_noise(idx++));
+                sin(current_time * 2.0 + M_2PI * random_noise(index++));
 
             float pos_y =
-                cos(current_time + M_2PI * random_noise(idx++));
+                cos(current_time + M_2PI * random_noise(index++));
 
-            pos_x = pos_x * jittering + 0.5;
-            pos_y = pos_y * jittering + 0.5;
+            pos_x *= jittering + 0.5;
+            pos_y *= jittering + 0.5;
 
-            float x_dist = cx - (float)dx - pos_x;
-            float y_dist = cy - (float)dy - pos_y;
+            float x_sample_distance = cell_x - (float)dx - pos_x;
+            float y_sample_distance = cell_y - (float)dy - pos_y;
 
-            float dist = (sqr(x_dist) + sqr(y_dist)) * blob_size;
-
+            float sample_distance = blob_size * (
+                sqr(x_sample_distance) + sqr(y_sample_distance));
+            
             if (size_randomness)
             {
-                dist /= (random_noise(idx++) + 1.0) *
+                sample_distance /= (random_noise(index++) + 1.0) *
                     0.5 * size_randomness + (1.0 - size_randomness);
             }
             else
             {
-                idx++;
+                index++;
             }
 
-            if (dist < 1.0)
+            if (sample_distance < 1.0)
             {
                 if (falloff_mode == 0)
                 {
-                    falloff = 1.0 - sqrt(dist);
+                    falloff = 1.0 - sqrt(sample_distance);
                 }
                 else if (falloff_mode == 1)
                 {
-                    falloff = 1.0 + dist * (-3.0 + 2.0 * sqrt(dist));
+                    falloff = 1.0 + sample_distance *
+                        (-3.0 + 2.0 * sqrt(sample_distance));
                 }
                 else if (falloff_mode == 2)
                 {
-                    falloff = 1.0 - dist;
+                    falloff = 1.0 - sample_distance;
                 }
                 else if (falloff_mode == 3)
                 {
-                    dist *= 1.1;
+                    sample_distance *= 1.1;
 
-                    falloff = (dist > 1.0)
-                        ? 1.0 - (dist - 1.0) * 10.0
-                        : dist;
+                    falloff = (sample_distance > 1.0)
+                        ? 1.0 - (sample_distance - 1.0) * 10.0
+                        : sample_distance;
                 }
 
                 if (spottyness)
                 {
                     falloff *= spottyness *
-                        (random_noise(idx++) + 1.0) + inv_spottyness;
+                        (random_noise(index++) + 1.0) + inv_spottyness;
                 }
-                val += falloff;
+                sum += falloff;
             }
         }
     }
-    return val;
+    return sum;
 }
 
 float maya_billow_noise_2d(
-    point xyz,
+    point surface_point,
     float gain,
-    float current_time,
+    float initial_time,
     float frequency_ratio,
     float ratio,
     float density,
@@ -387,56 +331,51 @@ float maya_billow_noise_2d(
     int max_depth,
     int inflection)
 {
-    float x = xyz[0] / MAYA_LATTICE_SIZE;
-    float y = xyz[1] / MAYA_LATTICE_SIZE;
+    float x = surface_point[0] / MAYA_LATTICE_SIZE, x_offset = 0.0;
+    float y = surface_point[1] / MAYA_LATTICE_SIZE, y_offset = 0.0;
 
-    float x_offset = 0.0, y_offset = 0.0;
-
-    float curr_time = current_time;
-    float time_ratio = sqrt(ratio);
-
-    float amp = 1.0, total_amp = 0.0, out = 0.0;
+    float current_time = initial_time, time_ratio = sqrt(ratio);
+    float amplitude = 1.0, total_amplitude = 0.0, sum = 0.0;
 
     for (int i = 0; i < max_depth; ++i)
     {
-        if (!amp)
+        if (!amplitude)
         {
             break;
         }
 
+
         x_offset += 0.021;
         y_offset += 0.33;
 
-        float noiz = billow_noise_2d(
+        float val = billow_noise_2d(
             x + x_offset,
             y + y_offset,
             density,
             randomness,
             size_randomness,
             spottyness,
-            curr_time,
+            current_time,
             i,
             falloff_mode);
 
         if (inflection)
         {
-            noiz = abs(noiz);
+            val = abs(val);
         }
 
-        out += amp * noiz;
+        sum += amplitude * val;
 
-        total_amp += amp;
-        amp *= ratio;
+        total_amplitude += amplitude;
+        amplitude *= ratio;
 
         x *= frequency_ratio;
         y *= frequency_ratio;
 
-        curr_time *= time_ratio;
+        current_time *= time_ratio;
     }
-    out /= total_amp;
-    out *= gain;
-
-    return out;
+    sum /= total_amplitude;
+    return gain * sum;
 }
 
 #endif // AS_MAYA_FRACTAL_HELPERS_H

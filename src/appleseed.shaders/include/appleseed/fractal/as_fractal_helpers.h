@@ -37,23 +37,30 @@
 
 float fBm(
     point surface_point,
-    float itime,
+    float initial_time,
     float filter_width,
     float amplitude,
     int octaves,
     float lacunarity,
     float gain)
 {
-    point pp = surface_point;
-    float amp = amplitude, fw = filter_width, sum = 0.0, ttime = itime;
+    point xyz = surface_point;
+    float amp = amplitude, filter_size = filter_width;
+    float current_time = initial_time, sum = 0.0;
 
     for (int i = 0; i < octaves; ++i)
     {
-        sum += amp * filtered_snoise(pp, ttime, fw);
+        if (!amp)
+        {
+            break;
+        }
+
+        sum += amp * filtered_snoise(xyz, current_time, filter_size);
         amp *= gain;
-        pp *= lacunarity;
-        fw *= lacunarity;
-        ttime *= lacunarity;
+        xyz *= lacunarity;
+
+        filter_size *= lacunarity;
+        current_time *= lacunarity;
     }
     return sum;
 }

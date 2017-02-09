@@ -26,21 +26,6 @@
 // THE SOFTWARE.
 //
 
-// Filtered noise macros from noises.h, slightly tweaked for OSL
-
-/************************************************************************
- * noises.h - various noise-based patterns
- *
- * Author: Larry Gritz (gritzl@acm.org)
- *
- * Reference:
- *   _Advanced RenderMan: Creating CGI for Motion Picture_, 
- *   by Anthony A. Apodaca and Larry Gritz, Morgan Kaufmann, 1999.
- *
- * $Revision: 1.1 $    $Date: 2004/03/02 04:50:34 $
- *
- ************************************************************************/
-
 #ifndef AS_NOISE_HELPERS_H
 #define AS_NOISE_HELPERS_H
 
@@ -50,38 +35,49 @@
 #define NOISE_TABLE_SIZE    65536
 
 #include "appleseed/fractal/as_noise_tables.h"
-#include "appleseed/math/as_math_helpers.h"
 #include "appleseed/maya/as_maya_helpers.h"
 
-#define filtered_noise(p, itime, filter_width)                          \
-    (noise(p,itime) * (1 - smoothstep(0.2, 0.75, filter_width)))
-
-#define filtered_snoise(p, itime, filter_width)                         \
-    (snoise(p, itime) * (1 - smoothstep(0.2, 0.75, filter_width)))
-
-float noise_quadratic(vector control_p, float x)
+float filtered_noise(
+    point surface_point,
+    float current_time,
+    float filter_width)
 {
-    float tmp = control_p[0] - control_p[1];
-
-    return ((tmp - control_p[1] + control_p[2]) * x - tmp - tmp) *
-       x + control_p[0] + control_p[1];
+    return (1.0 - smoothstep(0.2, 0.75, filter_width)) *
+        noise("uperlin", surface_point, current_time);
 }
 
-float noise_derivative(vector control_p, float x)
+float filtered_snoise(
+    point surface_point,
+    float current_time,
+    float filter_width)
 {
-    float tmp = control_p[0] - control_p[1];
-
-    return (tmp - control_p[1] + control_p[2]) * x - tmp;
+    return (1.0 - smoothstep(0.2, 0.75, filter_width)) *
+        noise("perlin", surface_point, current_time);
 }
 
-vector noise_lookup(int y, int vx[3])
+float noise_quadratic(vector control_point, float x)
+{
+    float tmp = control_point[0] - control_point[1];
+
+    return ((tmp - control_point[1] + control_point[2]) *
+        x - tmp - tmp) * x + control_point[0] + control_point[1];
+}
+
+float noise_derivative(vector control_point, float x)
+{
+    float tmp = control_point[0] - control_point[1];
+
+    return (tmp - control_point[1] + control_point[2]) * x - tmp;
+}
+
+vector noise_lookup(int index, int xyz[3])
 {
     float rng_table[NOISE_TABLE_SIZE] = { RNG_TABLE };
 
     return vector(
-        rng_table[vx[0] | y],
-        rng_table[vx[1] | y],
-        rng_table[vx[2] | y]);
+        rng_table[xyz[0] | index],
+        rng_table[xyz[1] | index],
+        rng_table[xyz[2] | index]);
 }                  
 
 float value_noise_2d(float x, float y)
