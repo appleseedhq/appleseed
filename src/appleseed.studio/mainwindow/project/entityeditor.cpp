@@ -197,7 +197,9 @@ bool EntityEditor::is_input_widget_visible(const Dictionary& metadata, const Dic
         return true;
 
     const StringDictionary& visible_if = metadata.dictionary("visible_if").strings();
-    assert(visible_if.size() == 1);
+
+    if (visible_if.empty())
+        return false;
 
     const char* key = visible_if.begin().key();
     const char* value = visible_if.begin().value();
