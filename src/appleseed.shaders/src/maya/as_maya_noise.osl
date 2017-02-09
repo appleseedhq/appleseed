@@ -262,8 +262,6 @@ shader as_maya_noise
         }
         else if (in_noiseType == 2)
         {
-            coords *= M_2PI;
-
             val = maya_waves_noise(
                 coords,
                 in_amplitude,

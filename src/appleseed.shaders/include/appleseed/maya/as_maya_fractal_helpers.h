@@ -171,7 +171,7 @@ float maya_waves_noise(
     int num_waves,
     int inflection)
 {
-    point xyz = surface_point;
+    point xyz = surface_point * M_2PI;
     float time_ratio = sqrt(frequency_ratio);
     float current_time = initial_time * M_PI, amp = amplitude, sum = 0.0;
 
