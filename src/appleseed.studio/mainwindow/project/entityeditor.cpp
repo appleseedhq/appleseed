@@ -118,7 +118,7 @@ Dictionary EntityEditor::get_values() const
     Dictionary values;
 
     if (m_custom_ui.get())
-        values = m_custom_ui->get_values();
+        values.merge(m_custom_ui->get_values());
 
     values.merge(m_widget_proxies.get_values());
 
@@ -169,8 +169,8 @@ void EntityEditor::rebuild_form(const Dictionary& values)
     create_form_layout();
     for (const_each<InputMetadataCollection> i = m_input_metadata; i; ++i)
     {
-        if (is_input_widget_visible(*i, values))
-            create_input_widgets(*i);
+        const bool input_widget_visible = is_input_widget_visible(*i, values);
+        create_input_widgets(*i, input_widget_visible);
     }
 
     if (m_custom_ui.get())
@@ -208,20 +208,20 @@ bool EntityEditor::is_input_widget_visible(const Dictionary& metadata, const Dic
             : get_input_metadata(key).get<string>("default") == value;
 }
 
-void EntityEditor::create_input_widgets(const Dictionary& metadata)
+void EntityEditor::create_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     const string input_name = metadata.get<string>("name");
     const string input_type = metadata.get<string>("type");
 
     auto_ptr<IInputWidgetProxy> widget_proxy =
-        input_type == "text" ? create_text_input_widgets(metadata) :
-        input_type == "numeric" ? create_numeric_input_widgets(metadata) :
-        input_type == "colormap" ? create_colormap_input_widgets(metadata) :
-        input_type == "boolean" ? create_boolean_input_widgets(metadata) :
-        input_type == "enumeration" ? create_enumeration_input_widgets(metadata) :
-        input_type == "entity" ? create_entity_input_widgets(metadata) :
-        input_type == "color" ? create_color_input_widgets(metadata) :
-        input_type == "file" ? create_file_input_widgets(metadata) :
+        input_type == "text" ? create_text_input_widgets(metadata, input_widget_visible) :
+        input_type == "numeric" ? create_numeric_input_widgets(metadata, input_widget_visible) :
+        input_type == "colormap" ? create_colormap_input_widgets(metadata, input_widget_visible) :
+        input_type == "boolean" ? create_boolean_input_widgets(metadata, input_widget_visible) :
+        input_type == "enumeration" ? create_enumeration_input_widgets(metadata, input_widget_visible) :
+        input_type == "entity" ? create_entity_input_widgets(metadata, input_widget_visible) :
+        input_type == "color" ? create_color_input_widgets(metadata, input_widget_visible) :
+        input_type == "file" ? create_file_input_widgets(metadata, input_widget_visible) :
         auto_ptr<IInputWidgetProxy>(0);
 
     assert(widget_proxy.get());
@@ -262,7 +262,7 @@ namespace
     }
 }
 
-auto_ptr<IInputWidgetProxy> EntityEditor::create_text_input_widgets(const Dictionary& metadata)
+auto_ptr<IInputWidgetProxy> EntityEditor::create_text_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     QLineEdit* line_edit = new QLineEdit(m_parent);
 
@@ -272,7 +272,8 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_text_input_widgets(const Dictio
         line_edit->setFocus();
     }
 
-    m_form_layout->addRow(create_label(metadata), line_edit);
+    if (input_widget_visible)
+        m_form_layout->addRow(create_label(metadata), line_edit);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
     widget_proxy->set(metadata.strings().get<string>("value"));
@@ -280,7 +281,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_text_input_widgets(const Dictio
     return widget_proxy;
 }
 
-auto_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dictionary& metadata)
+auto_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     QLineEdit* line_edit = new QLineEdit(m_parent);
     line_edit->setMaximumWidth(60);
@@ -305,7 +306,8 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dic
     layout->addWidget(line_edit);
     layout->addWidget(slider);
 
-    m_form_layout->addRow(create_label(metadata), layout);
+    if (input_widget_visible)
+        m_form_layout->addRow(create_label(metadata), layout);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
     widget_proxy->set(metadata.strings().get<string>("value"));
@@ -313,7 +315,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dic
     return widget_proxy;
 }
 
-auto_ptr<IInputWidgetProxy> EntityEditor::create_colormap_input_widgets(const Dictionary& metadata)
+auto_ptr<IInputWidgetProxy> EntityEditor::create_colormap_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     const string name = metadata.get<string>("name");
 
@@ -325,7 +327,8 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_colormap_input_widgets(const Di
     if (should_be_focused(metadata))
         input_widget->set_focus();
 
-    m_form_layout->addRow(create_label(metadata), input_widget);
+    if (input_widget_visible)
+        m_form_layout->addRow(create_label(metadata), input_widget);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new ColorMapInputProxy(input_widget));
     widget_proxy->set(metadata.strings().get<string>("value"));
@@ -333,14 +336,15 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_colormap_input_widgets(const Di
     return widget_proxy;
 }
 
-auto_ptr<IInputWidgetProxy> EntityEditor::create_boolean_input_widgets(const Dictionary& metadata)
+auto_ptr<IInputWidgetProxy> EntityEditor::create_boolean_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     QCheckBox* checkbox = new QCheckBox(m_parent);
 
     if (should_be_focused(metadata))
         checkbox->setFocus();
 
-    m_form_layout->addRow(create_label(metadata), checkbox);
+    if (input_widget_visible)
+        m_form_layout->addRow(create_label(metadata), checkbox);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new CheckBoxProxy(checkbox));
     widget_proxy->set(metadata.strings().get<string>("value"));
@@ -348,7 +352,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_boolean_input_widgets(const Dic
     return widget_proxy;
 }
 
-auto_ptr<IInputWidgetProxy> EntityEditor::create_enumeration_input_widgets(const Dictionary& metadata)
+auto_ptr<IInputWidgetProxy> EntityEditor::create_enumeration_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     QComboBox* combo_box = new QComboBox(m_parent);
     combo_box->setEditable(false);
@@ -364,14 +368,15 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_enumeration_input_widgets(const
     if (should_be_focused(metadata))
         combo_box->setFocus();
 
-    m_form_layout->addRow(create_label(metadata), combo_box);
+    if (input_widget_visible)
+        m_form_layout->addRow(create_label(metadata), combo_box);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new ComboBoxProxy(combo_box));
 
     return widget_proxy;
 }
 
-auto_ptr<IInputWidgetProxy> EntityEditor::create_entity_input_widgets(const Dictionary& metadata)
+auto_ptr<IInputWidgetProxy> EntityEditor::create_entity_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     const string name = metadata.get<string>("name");
 
@@ -382,7 +387,8 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_entity_input_widgets(const Dict
     if (should_be_focused(metadata))
         input_widget->set_focus();
 
-    m_form_layout->addRow(create_label(metadata), input_widget);
+    if (input_widget_visible)
+        m_form_layout->addRow(create_label(metadata), input_widget);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new EntityInputProxy(input_widget));
     widget_proxy->set(metadata.strings().get<string>("value"));
@@ -390,7 +396,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_entity_input_widgets(const Dict
     return widget_proxy;
 }
 
-auto_ptr<IInputWidgetProxy> EntityEditor::create_color_input_widgets(const Dictionary& metadata)
+auto_ptr<IInputWidgetProxy> EntityEditor::create_color_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     QLineEdit* line_edit = new QLineEdit(m_parent);
 
@@ -407,11 +413,14 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_color_input_widgets(const Dicti
         line_edit->setFocus();
     }
 
-    QHBoxLayout* layout = new QHBoxLayout();
-    layout->setSpacing(6);
-    layout->addWidget(line_edit);
-    layout->addWidget(picker_button);
-    m_form_layout->addRow(create_label(metadata), layout);
+    if (input_widget_visible)
+    {
+        QHBoxLayout* layout = new QHBoxLayout();
+        layout->setSpacing(6);
+        layout->addWidget(line_edit);
+        layout->addWidget(picker_button);
+        m_form_layout->addRow(create_label(metadata), layout);
+    }
 
     auto_ptr<ColorPickerProxy> widget_proxy(new ColorPickerProxy(line_edit, picker_button));
 
@@ -430,7 +439,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_color_input_widgets(const Dicti
     return auto_ptr<IInputWidgetProxy>(widget_proxy);
 }
 
-auto_ptr<IInputWidgetProxy> EntityEditor::create_file_input_widgets(const Dictionary& metadata)
+auto_ptr<IInputWidgetProxy> EntityEditor::create_file_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     const string name = metadata.get<string>("name");
 
@@ -448,11 +457,14 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_file_input_widgets(const Dictio
         line_edit->setFocus();
     }
 
-    QHBoxLayout* layout = new QHBoxLayout();
-    layout->setSpacing(6);
-    layout->addWidget(line_edit);
-    layout->addWidget(browse_button);
-    m_form_layout->addRow(create_label(metadata), layout);
+    if (input_widget_visible)
+    {
+        QHBoxLayout* layout = new QHBoxLayout();
+        layout->setSpacing(6);
+        layout->addWidget(line_edit);
+        layout->addWidget(browse_button);
+        m_form_layout->addRow(create_label(metadata), layout);
+    }
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
     widget_proxy->set(metadata.strings().get<string>("value"));
