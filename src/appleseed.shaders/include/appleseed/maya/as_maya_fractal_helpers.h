@@ -344,7 +344,6 @@ float maya_billow_noise_2d(
             break;
         }
 
-
         x_offset += 0.021;
         y_offset += 0.33;
 
