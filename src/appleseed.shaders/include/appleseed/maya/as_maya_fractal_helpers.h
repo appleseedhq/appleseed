@@ -262,8 +262,8 @@ float billow_noise_2d(
             float pos_y =
                 cos(current_time + M_2PI * random_noise(index++));
 
-            pos_x *= jittering + 0.5;
-            pos_y *= jittering + 0.5;
+            pos_x = pos_x * jittering + 0.5;
+            pos_y = pos_y * jittering + 0.5;
 
             float x_sample_distance = cell_x - (float)dx - pos_x;
             float y_sample_distance = cell_y - (float)dy - pos_y;
