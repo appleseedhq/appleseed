@@ -11,13 +11,12 @@ appleseed is actively developed by a small, international team of talented volun
 
 Over the years appleseed has been used on several projects including [TV documentaries](https://vimeo.com/81199785), ads, promotional videos and [an animation short](http://www.fetchaveryshortfilm.com/).
 
-appleseed is available as a portable C++ library with C++ and Python APIs, and as a set of standalone applications for Windows, Linux and macOS.
+appleseed is available as a portable C++ library with C++ and Python APIs, as a set of standalone applications for Windows, Linux and macOS, and as native plugins for content creation applications. [Downloads &rarr;](http://appleseedhq.net/download.html)
 
 [More &rarr;](http://appleseedhq.net/about.html)
 
 ## On the Web
 
-* [**Download**](http://appleseedhq.net/download.html)
 * Home: [appleseedhq.net](http://appleseedhq.net/)
 * Twitter: [twitter.com/appleseedhq](https://twitter.com/appleseedhq)
 * Vimeo: [vimeo.com/appleseedhq](https://vimeo.com/appleseedhq)
