@@ -12,22 +12,18 @@ appleseed is actively developed by a small, international team of talented volun
 
 Over the years appleseed has been used on several projects including [TV documentaries](https://vimeo.com/81199785), ads, promotional videos and [an animation short](http://www.fetchaveryshortfilm.com/).
 
-appleseed is available under the [MIT license](http://en.wikipedia.org/wiki/MIT_License).
+appleseed is available as a portable C++ library with C++ and Python APIs, and as a set of standalone applications for Windows, Linux and macOS.
 
 [More &rarr;](http://appleseedhq.net/about.html)
 
 ### On the Web
 
+* [**Download**](http://appleseedhq.net/download.html)
 * Home: [appleseedhq.net](http://appleseedhq.net/)
 * Twitter: [twitter.com/appleseedhq](https://twitter.com/appleseedhq)
 * Vimeo: [vimeo.com/appleseedhq](https://vimeo.com/appleseedhq)
 * Users Forum: [forum.appleseedhq.net](https://forum.appleseedhq.net/)
 * Developers Mailing List: [appleseed-dev](http://groups.google.com/group/appleseed-dev)
-
-### Related Projects
-
-* appleseed for Autodesk Maya: [appleseed-maya](https://github.com/appleseedhq/appleseed-maya)
-* appleseed for Autodesk 3ds Max: [appleseed-max](https://github.com/appleseedhq/appleseed-max)
 
 ### Contributing
 
@@ -35,3 +31,14 @@ appleseed is available under the [MIT license](http://en.wikipedia.org/wiki/MIT_
 * [Coding philosophy and guidelines](https://github.com/appleseedhq/appleseed/wiki/Coding-Philosophy-and-Guidelines)
 * [Detailed projects ideas](https://github.com/appleseedhq/appleseed/wiki/List-of-Project-ideas-for-GSoC-2017)
 * [Developer and contributor wiki](https://github.com/appleseedhq/appleseed/wiki)
+
+### Related Projects
+
+* appleseed for Autodesk Maya: [appleseed-maya &rarr;](https://github.com/appleseedhq/appleseed-maya)
+* appleseed for Autodesk 3ds Max: [appleseed-max &rarr;](https://github.com/appleseedhq/appleseed-max)
+
+### License
+
+appleseed and its accompanying software is released under the [MIT license](http://en.wikipedia.org/wiki/MIT_License).
+
+© 2010-2017 The appleseedhq Organization
