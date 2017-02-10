@@ -32,13 +32,13 @@ Developer and contributor documentation can be found in the [wiki](https://githu
 
 ### Selected Works
 
-##### Light And Dark (BBC 4 Documentary Series)
-
-[![Light And Dark (BBC 4)](https://raw.github.com/appleseedhq/appleseed-wiki/master/images/light-and-dark.png)](https://vimeo.com/81199785)
-
 ##### Fetch, a very short film
 
 [![Fetch](https://raw.github.com/appleseedhq/appleseed-wiki/master/images/fetch.png)](https://vimeo.com/appleseedhq/fetchaveryshortfilm)
+
+##### Light And Dark (BBC 4 Documentary Series)
+
+[![Light And Dark (BBC 4)](https://raw.github.com/appleseedhq/appleseed-wiki/master/images/light-and-dark.png)](https://vimeo.com/81199785)
 
 ### Screenshots
 
