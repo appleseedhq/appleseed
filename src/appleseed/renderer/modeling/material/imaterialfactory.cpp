@@ -112,6 +112,17 @@ void IMaterialFactory::add_displacement_metadata(DictionaryArray& metadata)
 
     metadata.push_back(
         Dictionary()
+            .insert("name", "bump_offset")
+            .insert("label", "Bump Offset")
+            .insert("type", "numeric")
+            .insert("min_value", "0.01")
+            .insert("max_value", "10.0")
+            .insert("use", "optional")
+            .insert("default", "2.0")
+            .insert("visible_if", Dictionary()));   // invisible
+
+    metadata.push_back(
+        Dictionary()
             .insert("name", "normal_map_up")
             .insert("label", "Normal Map Up Vector")
             .insert("type", "enumeration")

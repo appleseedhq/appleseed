@@ -377,20 +377,25 @@ void daylight_ciexy_to_spectrum(
 //   http://www.cs.utah.edu/~bes/papers/color/
 //
 
-// Convert a linear RGB reflectance value to a spectrum,
-// without clamping the spectrum values.
+// Convert a linear RGB reflectance value to a spectrum, without any clamping.
 template <typename T, typename SpectrumType>
 void linear_rgb_reflectance_to_spectrum_unclamped(
     const Color<T, 3>&          linear_rgb,
     SpectrumType&               spectrum);
 
-// Convert a linear RGB reflectance value to a spectrum.
+// Convert a linear RGB reflectance value to a spectrum, and clamp the result to [0, infinity)^N.
 template <typename T, typename SpectrumType>
 void linear_rgb_reflectance_to_spectrum(
     const Color<T, 3>&          linear_rgb,
     SpectrumType&               spectrum);
 
-// Convert a linear RGB illuminance value to a spectrum.
+// Convert a linear RGB illuminance value to a spectrum, without any clamping.
+template <typename T, typename SpectrumType>
+void linear_rgb_illuminance_to_spectrum_unclamped(
+    const Color<T, 3>&          linear_rgb,
+    SpectrumType&               spectrum);
+
+// Convert a linear RGB illuminance value to a spectrum, and clamp the result to [0, infinity)^N.
 template <typename T, typename SpectrumType>
 void linear_rgb_illuminance_to_spectrum(
     const Color<T, 3>&          linear_rgb,
@@ -1052,7 +1057,7 @@ void linear_rgb_reflectance_to_spectrum_unclamped(
 }
 
 template <typename T, typename SpectrumType>
-void linear_rgb_reflectance_to_spectrum(
+inline void linear_rgb_reflectance_to_spectrum(
     const Color<T, 3>&          linear_rgb,
     SpectrumType&               spectrum)
 {
@@ -1061,7 +1066,7 @@ void linear_rgb_reflectance_to_spectrum(
 }
 
 template <typename T, typename SpectrumType>
-void linear_rgb_illuminance_to_spectrum(
+void linear_rgb_illuminance_to_spectrum_unclamped(
     const Color<T, 3>&          linear_rgb,
     SpectrumType&               spectrum)
 {
@@ -1087,7 +1092,14 @@ void linear_rgb_illuminance_to_spectrum(
         RGBToSpectrumGreenReflectance,
         RGBToSpectrumBlueReflectance,
         spectrum);
+}
 
+template <typename T, typename SpectrumType>
+inline void linear_rgb_illuminance_to_spectrum(
+    const Color<T, 3>&          linear_rgb,
+    SpectrumType&               spectrum)
+{
+    linear_rgb_illuminance_to_spectrum_unclamped(linear_rgb, spectrum);
     clamp_low_in_place(spectrum, T(0.0));
 }
 
