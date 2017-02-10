@@ -668,6 +668,7 @@ install (
 install (
     DIRECTORY
         sandbox/docs
+        sandbox/icons
         sandbox/samples
         sandbox/share
     DESTINATION .
