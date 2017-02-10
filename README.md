@@ -1,38 +1,34 @@
 appleseed [![Build Status](https://travis-ci.org/appleseedhq/appleseed.svg?branch=master)](https://travis-ci.org/appleseedhq/appleseed)
 =========
 
-### About appleseed
+![Japanese Classroom, by Blender Swap’s user NovaZeeke](http://appleseedhq.net/img/renders/classroom.jpg)
+*(Japanese Classroom, by Blender Swap’s user [NovaZeeke](http://www.blendswap.com/users/view/NovaZeeke).)*
 
-appleseed is a modern, open source, physically-based rendering engine designed to produce photorealistic images, animations and visual effects. It provides individuals and small studios with an efficient, reliable suite of tools built on robust foundations and open technologies.
+### Overview
 
-Started in 2009, it has grown into a robust production rendering toolset and has been battle-tested on several projects such as TV documentaries, ads, promotional videos and animation shorts.
+appleseed is an open source, physically-based global illumination rendering engine primarily designed for animation and visual effects.
+
+appleseed is actively developed by a small, international team of talented volunteers from the animation and VFX industry. Its core mission is to provide individuals and small studios with a complete, reliable, fully open rendering package.
+
+Over the years appleseed has been used on several projects including [TV documentaries](https://vimeo.com/81199785), ads, promotional videos and [an animation short](http://www.fetchaveryshortfilm.com/).
 
 appleseed is available under the [MIT license](http://en.wikipedia.org/wiki/MIT_License).
 
-More information at http://appleseedhq.net/.
+[More &rarr;](http://appleseedhq.net/about.html)
 
-### Documentation
+### On the Web
+
+* Home: [appleseedhq.net](http://appleseedhq.net/)
+* Twitter: [twitter.com/appleseedhq](https://twitter.com/appleseedhq)
+* Vimeo: [vimeo.com/appleseedhq](https://vimeo.com/appleseedhq)
+* Users Forum: [forum.appleseedhq.net](https://forum.appleseedhq.net/)
+* Developers Mailing List: [appleseed-dev](http://groups.google.com/group/appleseed-dev)
+
+### Building
 
 Check out our [detailed build instructions](https://github.com/appleseedhq/appleseed/wiki/Building-appleseed) to build appleseed from source.
 
 Developer and contributor documentation can be found in the [wiki](https://github.com/appleseedhq/appleseed/wiki).
-
-### On the Web
-
-* [appleseed Website](http://appleseedhq.net/)
-* [appleseed-dev Google Group](http://groups.google.com/group/appleseed-dev)
-* [appleseed on Twitter](https://twitter.com/appleseedhq)
-* [appleseed on Vimeo](https://vimeo.com/appleseedhq)
-* [appleseed on Open Hub](https://www.openhub.net/p/appleseedhq)
-* [appleseed on Woboq](http://code.woboq.org/appleseed/appleseed/)
-
-### Screenshots
-
-##### appleseed.studio
-
-![Disney Material Editor](https://cloud.githubusercontent.com/assets/321290/4024500/967e8c30-2bcc-11e4-90a9-2f163394a391.png)
-
-![Editing a Scene from Fetch](https://cloud.githubusercontent.com/assets/321290/2713456/16f83e26-c4e7-11e3-8f3d-d136cad3379e.png)
 
 ### Selected Works
 
@@ -43,6 +39,14 @@ Developer and contributor documentation can be found in the [wiki](https://githu
 ##### Fetch, a very short film
 
 [![Fetch](https://raw.github.com/appleseedhq/appleseed-wiki/master/images/fetch.png)](https://vimeo.com/appleseedhq/fetchaveryshortfilm)
+
+### Screenshots
+
+##### appleseed.studio
+
+![Disney Material Editor](https://cloud.githubusercontent.com/assets/321290/4024500/967e8c30-2bcc-11e4-90a9-2f163394a391.png)
+
+![Editing a Scene from Fetch](https://cloud.githubusercontent.com/assets/321290/2713456/16f83e26-c4e7-11e3-8f3d-d136cad3379e.png)
 
 ### Demos
 
