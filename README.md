@@ -24,7 +24,7 @@ appleseed is available under the [MIT license](http://en.wikipedia.org/wiki/MIT_
 * Users Forum: [forum.appleseedhq.net](https://forum.appleseedhq.net/)
 * Developers Mailing List: [appleseed-dev](http://groups.google.com/group/appleseed-dev)
 
-### Building
+### Build Instructions
 
 Check out our [detailed build instructions](https://github.com/appleseedhq/appleseed/wiki/Building-appleseed) to build appleseed from source.
 
