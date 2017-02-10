@@ -24,11 +24,12 @@ appleseed is available under the [MIT license](http://en.wikipedia.org/wiki/MIT_
 * Users Forum: [forum.appleseedhq.net](https://forum.appleseedhq.net/)
 * Developers Mailing List: [appleseed-dev](http://groups.google.com/group/appleseed-dev)
 
-### Build Instructions
+### Contributing
 
-Check out our [detailed build instructions](https://github.com/appleseedhq/appleseed/wiki/Building-appleseed) to build appleseed from source.
-
-Developer and contributor documentation can be found in the [wiki](https://github.com/appleseedhq/appleseed/wiki).
+* [How to build appleseed from source](https://github.com/appleseedhq/appleseed/wiki/Building-appleseed)
+* [Coding philosophy and guidelines](https://github.com/appleseedhq/appleseed/wiki/Coding-Philosophy-and-Guidelines)
+* [Detailed projects ideas](https://github.com/appleseedhq/appleseed/wiki/List-of-Project-ideas-for-GSoC-2017)
+* [Developer and contributor wiki](https://github.com/appleseedhq/appleseed/wiki)
 
 ### Selected Works
 
