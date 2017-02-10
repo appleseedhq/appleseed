@@ -24,33 +24,14 @@ appleseed is available under the [MIT license](http://en.wikipedia.org/wiki/MIT_
 * Users Forum: [forum.appleseedhq.net](https://forum.appleseedhq.net/)
 * Developers Mailing List: [appleseed-dev](http://groups.google.com/group/appleseed-dev)
 
+### Related Projects
+
+* appleseed for Autodesk Maya: [appleseed-maya](https://github.com/appleseedhq/appleseed-maya)
+* appleseed for Autodesk 3ds Max: [appleseed-max](https://github.com/appleseedhq/appleseed-max)
+
 ### Contributing
 
 * [How to build appleseed from source](https://github.com/appleseedhq/appleseed/wiki/Building-appleseed)
 * [Coding philosophy and guidelines](https://github.com/appleseedhq/appleseed/wiki/Coding-Philosophy-and-Guidelines)
 * [Detailed projects ideas](https://github.com/appleseedhq/appleseed/wiki/List-of-Project-ideas-for-GSoC-2017)
 * [Developer and contributor wiki](https://github.com/appleseedhq/appleseed/wiki)
-
-### Selected Works
-
-##### Fetch, a very short film
-
-[![Fetch](https://raw.github.com/appleseedhq/appleseed-wiki/master/images/fetch.png)](https://vimeo.com/appleseedhq/fetchaveryshortfilm)
-
-##### Light And Dark (BBC 4 Documentary Series)
-
-[![Light And Dark (BBC 4)](https://raw.github.com/appleseedhq/appleseed-wiki/master/images/light-and-dark.png)](https://vimeo.com/81199785)
-
-### Screenshots
-
-##### appleseed.studio
-
-![Disney Material Editor](https://cloud.githubusercontent.com/assets/321290/4024500/967e8c30-2bcc-11e4-90a9-2f163394a391.png)
-
-![Editing a Scene from Fetch](https://cloud.githubusercontent.com/assets/321290/2713456/16f83e26-c4e7-11e3-8f3d-d136cad3379e.png)
-
-### Demos
-
-##### Interactive lookdev inside appleseed.studio
-
-[![Interactive lookdev inside appleseed.studio](https://i.vimeocdn.com/video/518464756_1280.jpg)](https://vimeo.com/127622613)
