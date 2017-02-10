@@ -1,10 +1,9 @@
-appleseed [![Build Status](https://travis-ci.org/appleseedhq/appleseed.svg?branch=master)](https://travis-ci.org/appleseedhq/appleseed)
-=========
+# appleseed [![Build Status](https://travis-ci.org/appleseedhq/appleseed.svg?branch=master)](https://travis-ci.org/appleseedhq/appleseed)
 
 ![Japanese Classroom, by Blender Swap’s user NovaZeeke](http://appleseedhq.net/img/renders/classroom.jpg)
 *(Japanese Classroom, by Blender Swap’s user [NovaZeeke](http://www.blendswap.com/users/view/NovaZeeke).)*
 
-### Overview
+## Overview
 
 appleseed is an open source, physically-based global illumination rendering engine primarily designed for animation and visual effects.
 
@@ -16,7 +15,7 @@ appleseed is available as a portable C++ library with C++ and Python APIs, and a
 
 [More &rarr;](http://appleseedhq.net/about.html)
 
-### On the Web
+## On the Web
 
 * [**Download**](http://appleseedhq.net/download.html)
 * Home: [appleseedhq.net](http://appleseedhq.net/)
@@ -25,19 +24,19 @@ appleseed is available as a portable C++ library with C++ and Python APIs, and a
 * Users Forum: [forum.appleseedhq.net](https://forum.appleseedhq.net/)
 * Developers Mailing List: [appleseed-dev](http://groups.google.com/group/appleseed-dev)
 
-### Contributing
+## Contributing
 
 * [How to build appleseed from source](https://github.com/appleseedhq/appleseed/wiki/Building-appleseed)
 * [Coding philosophy and guidelines](https://github.com/appleseedhq/appleseed/wiki/Coding-Philosophy-and-Guidelines)
 * [Detailed projects ideas](https://github.com/appleseedhq/appleseed/wiki/List-of-Project-ideas-for-GSoC-2017)
 * [Developer and contributor wiki](https://github.com/appleseedhq/appleseed/wiki)
 
-### Related Projects
+## Related Projects
 
 * appleseed for Autodesk Maya: [appleseed-maya &rarr;](https://github.com/appleseedhq/appleseed-maya)
 * appleseed for Autodesk 3ds Max: [appleseed-max &rarr;](https://github.com/appleseedhq/appleseed-max)
 
-### License
+## License
 
 appleseed and its accompanying software is released under the [MIT license](http://en.wikipedia.org/wiki/MIT_License).
 
