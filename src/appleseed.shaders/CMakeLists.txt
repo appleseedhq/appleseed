@@ -67,6 +67,7 @@ set (appleseed_library_osl_headers
     include/appleseed/fractal/as_noise_helpers.h
     include/appleseed/material/as_material_helpers.h
     include/appleseed/math/as_math_helpers.h
+    include/appleseed/maya/as_maya_fractal_helpers.h
     include/appleseed/maya/as_maya_helpers.h
     include/appleseed/maya/as_maya_ramp_helpers.h
     include/appleseed/maya/as_maya_transform_helpers.h
@@ -185,6 +186,7 @@ set (appleseed_maya_osl_sources
      src/maya/as_maya_multDoubleLinear.osl
      src/maya/as_maya_multiplyDivide.osl
      src/maya/as_maya_multMatrix.osl
+     src/maya/as_maya_noise.osl
      src/maya/as_maya_place2dTexture.osl
      src/maya/as_maya_place3dTexture.osl
      src/maya/as_maya_plusMinusAverage.osl

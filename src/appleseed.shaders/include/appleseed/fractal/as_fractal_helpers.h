@@ -34,25 +34,33 @@
 #define AS_FRACTAL_HELPERS_H
 
 #include "appleseed/fractal/as_noise_helpers.h"
-#include "appleseed/math/as_math_helpers.h"
 
 float fBm(
     point surface_point,
+    float initial_time,
     float filter_width,
     float amplitude,
     int octaves,
     float lacunarity,
     float gain)
 {
-    point pp = surface_point;
-    float amp = amplitude, fw = filter_width, sum = 0.0;
+    point xyz = surface_point;
+    float amp = amplitude, filter_size = filter_width;
+    float current_time = initial_time, sum = 0.0;
 
     for (int i = 0; i < octaves; ++i)
     {
-        sum += amp * filtered_snoise(pp, fw);
+        if (!amp)
+        {
+            break;
+        }
+
+        sum += amp * filtered_snoise(xyz, current_time, filter_size);
         amp *= gain;
-        pp *= lacunarity;
-        fw *= lacunarity;
+        xyz *= lacunarity;
+
+        filter_size *= lacunarity;
+        current_time *= lacunarity;
     }
     return sum;
 }

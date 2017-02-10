@@ -48,9 +48,11 @@
 
 float filtered_abs(float x, float dx)
 {
-    float A = x * erf(x / dx * M_SQRT2);
-    float B = dx * sqrt(M_2_PI) * exp(-sqr(x) / 2 * sqr(dx));
-    return A * B;
+    float A = x / dx * M_SQRT2;
+    float B = dx * sqrt(M_2_PI);
+    float C = sqr(x) / 2 * sqr(dx);
+
+    return x * erf(A) + B * exp(-C);
 }
 
 float filtered_clamp(float x, float dx)
