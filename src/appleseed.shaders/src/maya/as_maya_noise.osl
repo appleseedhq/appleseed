@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -185,6 +185,11 @@ shader as_maya_noise
     {
         out_outColor = in_defaultColor;
         out_outAlpha = maya_luminance(in_defaultColor);
+    }
+    else if (in_amplitude == 0.0)
+    {
+        out_outAlpha = (in_noiseType == 2) ? 0.0 : 0.5;
+        out_outColor = color(out_outAlpha);
     }
     else
     {

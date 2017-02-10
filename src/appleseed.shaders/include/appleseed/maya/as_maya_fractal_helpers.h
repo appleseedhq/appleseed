@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016-2017 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -49,7 +49,7 @@ void implode_2d(
 
         if (dist > EPS)
         {
-            float factor = pow(dist, 1 - implode) / dist;
+            float factor = pow(dist, 1.0 - implode) / dist;
             x *= factor;
             y *= factor;
         }
@@ -65,7 +65,7 @@ float maya_turbulence(
     float amplitude,
     int octaves,
     float lacunarity,
-    float gain)
+    float ratio)
 {
     point xyz = surface_point;
     float amp = amplitude, filter_size = filter_width;
@@ -73,20 +73,21 @@ float maya_turbulence(
 
     for (int i = 0; i < octaves; ++i)
     {
-        if (!amp)
+        if (amp == 0.0)
         {
             break;
         }
 
         // The base frequency looks too regular, perturb it with point+noise.
-        float tmp = amp *
+        float val = amp *
             filtered_snoise(
                 xyz + noise("uperlin", lacunarity),
                 current_time,
                 filter_size);
 
-        sum += abs(tmp);
-        amp *= gain;
+        sum += abs(val);
+        amp *= ratio;
+
         xyz *= lacunarity;
 
         filter_size *= lacunarity;
@@ -102,7 +103,7 @@ float maya_fBm(
     float amplitude,
     int octaves,
     float lacunarity,
-    float gain)
+    float ratio)
 {
     point xyz = surface_point;
     float amp = amplitude, filter_size = filter_width;
@@ -110,7 +111,7 @@ float maya_fBm(
 
     for (int i = 0; i < octaves; ++i)
     {
-        if (!amp)
+        if (amp == 0.0)
         {
             break;
         }
@@ -119,7 +120,7 @@ float maya_fBm(
         sum += amp * 1.2 *
             (filtered_snoise(xyz, current_time, filter_size) - 0.1) + 0.05;
 
-        amp *= gain;
+        amp *= ratio;
         xyz *= lacunarity;
 
         filter_size *= lacunarity;
@@ -136,29 +137,29 @@ float maya_cos_waves_2d(
 {
     int seed = current_step * 50;
 
-    float x, y, h, out = 0.0;
+    float x, y, h, phi, sum = 0.0;
 
     for (int i = 0; i < waves; ++i)
     {
-        do
+        x = random_noise(seed++);
+        y = random_noise(seed++);
+        h = hypot(x, y);
+
+        if (h >= EPS)
         {
-            x = random_noise(seed++);
-            y = random_noise(seed++);
-            h = hypot(x, y);
+            x /= h;
+            y /= h;
+
+            phi = random_noise(seed++);
+
+            sum += cos(
+                x * surface_point[0] * M_2PI +
+                y * surface_point[1] * M_2PI +
+                phi * M_PI +
+                current_time * M_PI);
         }
-        while (h <= 0.0);
-
-        x /= h;
-        y /= h;
-
-        float phi = random_noise(seed++) * M_PI;
-
-        out += cos(
-            x * surface_point[0] +
-            y * surface_point[1] +
-            phi + current_time);
     }
-    return out / (float) waves;
+    return sum / (float) waves;
 }
 
 float maya_waves_noise(
@@ -171,24 +172,31 @@ float maya_waves_noise(
     int num_waves,
     int inflection)
 {
-    point xyz = surface_point * M_2PI;
+    point xyz = surface_point;
     float time_ratio = sqrt(frequency_ratio);
-    float current_time = initial_time * M_PI, amp = amplitude, sum = 0.0;
+    float current_time = initial_time, amp = amplitude, sum = 0.0;
 
     for (int i = 0; i < max_depth; ++i)
     {
-        if (!amp)
+        if (amp == 0.0)
         {
             break;
         }
 
-        sum += amp * maya_cos_waves_2d(xyz, current_time, i, num_waves);
+        float val = amp *
+            maya_cos_waves_2d(xyz, current_time, i, num_waves);
+
+        if (inflection)
+        {
+            val = abs(val);
+        }
+
+        sum += val;
         amp *= ratio;
         xyz *= frequency_ratio;
-
         current_time *= time_ratio;
     }
-    return (inflection) ? abs(sum) : sum * 0.5 + 0.5;
+    return inflection ? sum : sum * 0.5 + 0.5;
 }
 
 float billow_noise_2d(
@@ -210,7 +218,7 @@ float billow_noise_2d(
     }
     if (blob_density < 1.0e-4)
     {
-        return 0;
+        return 0.0;
     }
 
     float lattice_x = mod(x, 1.0) * MAYA_LATTICE_SIZE;
