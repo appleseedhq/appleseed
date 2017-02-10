@@ -188,7 +188,7 @@ shader as_maya_noise
     }
     else if (in_amplitude == 0.0)
     {
-        out_outAlpha = (in_noiseType == 2) ? 0.0 : 0.5;
+        out_outAlpha = (in_noiseType == 1) ? 0.0 : 0.5;
         out_outColor = color(out_outAlpha);
     }
     else
