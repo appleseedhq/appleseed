@@ -44,6 +44,7 @@
 #include "foundation/utility/memory.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 
@@ -127,8 +128,8 @@ namespace
             clamp_in_place(values->m_reflectance, 0.001f, 0.999f);
             clamp_low_in_place(values->m_mfp, 1.0e-6f);
 
+            // Precompute scaling factor.
             values->m_precomputed.m_s.resize(values->m_reflectance.size());
-
             for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
             {
                 const float a = values->m_reflectance[i];
@@ -142,17 +143,14 @@ namespace
                 values->m_precomputed.m_channel_pdf);
 
             // Precompute the (square of the) max radius.
-            values->m_precomputed.m_rmax2 = 0.0f;
+            float max_radius = 0.0f;
             for (size_t i = 0, e = values->m_mfp.size(); i < e; ++i)
             {
                 const float l = values->m_mfp[i];
-                values->m_precomputed.m_rmax2 =
-                    max(
-                        normalized_diffusion_max_radius(l, values->m_precomputed.m_s[i]),
-                        values->m_precomputed.m_rmax2);
+                const float s = values->m_precomputed.m_s[i];
+                max_radius = max(max_radius, normalized_diffusion_max_radius(l, s));
             }
-
-            values->m_precomputed.m_rmax2 *= values->m_precomputed.m_rmax2;
+            values->m_precomputed.m_rmax2 = square(max_radius);
         }
 
         virtual bool sample(
@@ -219,9 +217,9 @@ namespace
 
             for (size_t i = 0, e = value.size(); i < e; ++i)
             {
-                const float a = values->m_reflectance[i];
-                const float s = values->m_precomputed.m_s[i];
                 const float l = values->m_mfp[i];
+                const float s = values->m_precomputed.m_s[i];
+                const float a = values->m_reflectance[i];
                 value[i] = normalized_diffusion_profile(radius, l, s, a);
             }
 
@@ -242,9 +240,9 @@ namespace
             for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
             {
                 const float l = values->m_mfp[i];
-                pdf_radius +=
-                      normalized_diffusion_pdf(radius, l, values->m_precomputed.m_s[i])
-                    * values->m_precomputed.m_channel_pdf[i];
+                const float s = values->m_precomputed.m_s[i];
+                const float channel_pdf = values->m_precomputed.m_channel_pdf[i];
+                pdf_radius += normalized_diffusion_pdf(radius, l, s) * channel_pdf;
             }
 
             // PDF of the sampled angle.
