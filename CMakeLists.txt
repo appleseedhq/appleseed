@@ -670,7 +670,9 @@ install (
         sandbox/docs
         sandbox/icons
         sandbox/samples
+        sandbox/settings
         sandbox/share
+        sandbox/stylesheets
     DESTINATION .
 )
 
