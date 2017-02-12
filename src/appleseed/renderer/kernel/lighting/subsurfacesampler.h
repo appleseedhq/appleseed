@@ -60,6 +60,12 @@ namespace renderer
 //
 // Subsurface sampler.
 //
+// References:
+//
+//   BSSRDF Importance Sampling
+//   http://library.imageworks.com/pdfs/imageworks-library-BSSRDF-sampling.pdf
+//   https://www.solidangle.com/research/s2013_bssrdf_slides.pdf
+//
 
 #define SUBSURFACESAMPLER_BASIS_ROTATION
 
@@ -86,7 +92,7 @@ class SubsurfaceSampler
 
     static void pick_sampling_basis(
         const foundation::Basis3d&  shading_basis,
-        const foundation::Vector2d& s,
+        const foundation::Vector2f& s,
         Axis&                       axis,
         foundation::Basis3d&        basis,
         float&                      basis_pdf);
@@ -154,20 +160,24 @@ void SubsurfaceSampler::sample(
     float sampling_basis_pdf;
     pick_sampling_basis(
         outgoing_point.get_shading_basis(),
-        sampling_context.next2<foundation::Vector2d>(),
+        sampling_context.next2<foundation::Vector2f>(),
         sampling_axis,
         sampling_basis,
         sampling_basis_pdf);
 
-    // Compute height of sample point on (positive) hemisphere of radius Rmax.
+    // Compute the height of the sample point on the (positive) hemisphere of radius Rmax.
     assert(rmax2 >= radius2);
     const double h = std::sqrt(rmax2 - radius2);
 
     // Compute sphere entry and exit points.
+    const foundation::Vector3d hn = h * sampling_basis.get_normal();
     foundation::Vector3d entry_point, exit_point;
-    entry_point = exit_point = outgoing_point.get_point();
-    entry_point += sampling_basis.transform_to_parent(foundation::Vector3d(point[0], +h, point[1]));
-    exit_point += sampling_basis.transform_to_parent(foundation::Vector3d(point[0], -h, point[1]));
+    entry_point = outgoing_point.get_point();
+    entry_point += static_cast<double>(point[0]) * sampling_basis.get_tangent_u();
+    entry_point += static_cast<double>(point[1]) * sampling_basis.get_tangent_v();
+    exit_point = entry_point;
+    entry_point += hn;
+    exit_point -= hn;
     assert(foundation::feq(foundation::norm(exit_point - entry_point), 2.0 * h, 1.0e-6));
 
     // Build a probe ray inscribed inside the sphere of radius Rmax.
@@ -249,7 +259,7 @@ void SubsurfaceSampler::sample(
 
 inline void SubsurfaceSampler::pick_sampling_basis(
     const foundation::Basis3d&      shading_basis,
-    const foundation::Vector2d&     s,
+    const foundation::Vector2f&     s,
     Axis&                           axis,
     foundation::Basis3d&            basis,
     float&                          basis_pdf)
@@ -332,6 +342,10 @@ inline float SubsurfaceSampler::compute_mis_weight(
     APPLESEED_UNREACHABLE;
     return -1.0f;
 }
+
+#ifdef SUBSURFACESAMPLER_BASIS_ROTATION
+#undef SUBSURFACESAMPLER_BASIS_ROTATION
+#endif
 
 }       // namespace renderer
 
