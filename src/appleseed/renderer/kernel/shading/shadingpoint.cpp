@@ -468,7 +468,7 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
     if (ray.m_has_differentials)
     {
         const Vector3d& p = get_point();
-        const Vector3d& n = get_shading_normal();
+        const Vector3d& n = get_original_shading_normal();
 
         const double tx = intersect(ray.m_rx, p, n);
         const Vector3d px = ray.m_rx.point_at(tx);
