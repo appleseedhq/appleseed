@@ -190,7 +190,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         for (size_t i = 0; i < sample_count; ++i)
         {
-            const float u = static_cast<float>(rand_double2(rng));
+            const float u = rand_float2(rng);
             const float r = sample_exponential_distribution(u, sigma_tr);
 
             const float pdf_radius = exponential_distribution_pdf(r, sigma_tr);
@@ -519,7 +519,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         for (size_t i = 0; i < SampleCount; ++i)
         {
-            const float u = static_cast<float>(rand_double2(rng));
+            const float u = rand_float2(rng);
             const float r = u * sqrt(RMax2);
             const float pdf_radius = 1.0f / sqrt(RMax2);
             const float pdf_angle = RcpTwoPi<float>();
@@ -547,7 +547,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         for (size_t i = 0; i < SampleCount; ++i)
         {
-            const float u = static_cast<float>(rand_double2(rng));
+            const float u = rand_float2(rng);
             const float r = gaussian_profile_sample(u, V, RMax2);
             const float pdf = gaussian_profile_pdf(r, V, RIntegralThreshold);
             const float value = gaussian_profile(r, V, RIntegralThreshold);
@@ -563,133 +563,30 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     // Normalized diffusion profile.
     //
 
-    const float NormalizedDiffusionTestEps = 0.0001f;
-
-    TEST_CASE(NormalizedDiffusionS)
+    TEST_CASE(PlotNormalizedDiffusionS_mfp)
     {
-        static const float Expected[] =
+        GnuplotFile plotfile;
+        plotfile.set_title("Scaling Factor For Searchlight Configuration With mfp Parameterization");
+        plotfile.set_xlabel("A");
+        plotfile.set_ylabel("s(A)");
+        plotfile.set_xrange(0.0, 1.0);
+        plotfile.set_yrange(0.0, 6.0);
+
+        const size_t N = 1000;
+        vector<Vector2d> points;
+
+        for (size_t i = 0; i < N; ++i)
         {
-            4.68592f, 4.11466f, 3.77984f, 3.60498f, 3.52856f, 3.5041f,  3.50008f,
-            3.50002f, 3.5024f,  3.52074f, 3.58352f, 3.73426f, 4.03144f, 4.54858f,
-            5.37416f, 6.6117f,  8.37968f, 10.8116f, 14.056f,  18.2763f, 23.6511f
-        };
-
-        for (size_t i = 0, e = countof(Expected); i < e; ++i)
-        {
-            const float a = fit<size_t, float>(i, 0, countof(Expected) - 1, 0.0f, 1.0f);
-            const float s = normalized_diffusion_s_dmfp(a);
-
-            EXPECT_FEQ_EPS(Expected[i], s, NormalizedDiffusionTestEps);
-        }
-    }
-
-    TEST_CASE(NormalizedDiffusionR)
-    {
-        static const float Expected[] =
-        {
-            2.53511f,    0.674967f,  0.327967f,   0.192204f,   0.124137f,   0.0852575f,
-            0.0611367f,  0.0452741f, 0.0343737f,  0.0266197f,  0.0209473f,  0.0167009f,
-            0.0134603f,  0.0109471f, 0.00897108f, 0.00739936f, 0.00613676f, 0.00511384f,
-            0.00427902f, 0.0035934f, 0.00302721f
-        };
-
-        for (size_t i = 0, e = countof(Expected); i < e; ++i)
-        {
-            const float A = 0.5f;                           // surface albedo
-            const float L = 1.0f;                           // mean free path
-            const float S = 3.583521f;                      // scaling factor for A = 0.5
-            const float r = static_cast<float>(i) * 0.1f + 0.05f;
-            const float value = normalized_diffusion_profile(r, L, S, A);
-
-            EXPECT_FEQ_EPS(Expected[i], value, NormalizedDiffusionTestEps);
-        }
-    }
-
-    TEST_CASE(NormalizedDiffusionCDF)
-    {
-        static const float Expected[] =
-        {
-            0.282838f, 0.598244f, 0.760091f, 0.85267f,  0.908478f, 0.942885f, 0.964293f,
-            0.97766f,  0.98602f,  0.99125f,  0.994523f, 0.996572f, 0.997854f, 0.998657f,
-            0.999159f, 0.999474f, 0.999671f, 0.999794f, 0.999871f, 0.999919f, 0.999949f,
-            0.999968f, 0.99998f,  0.999988f, 0.999992f, 0.999995f, 0.999997f, 0.999998f,
-            0.999999f, 0.999999f, 1.0f
-        };
-
-        for (size_t i = 0, e = countof(Expected); i < e; ++i)
-        {
-            const float L = 1.0f;                           // mean free path
-            const float S = 14.056001f;                     // scaling factor for A = 0.9
-            const float r = static_cast<float>(i) * 0.1f + 0.05f;
-            const float cdf = normalized_diffusion_cdf(r, L, S);
-
-            EXPECT_FEQ_EPS(Expected[i], cdf, NormalizedDiffusionTestEps);
-        }
-    }
-
-    TEST_CASE(NormalizedDiffusionSample)
-    {
-        MersenneTwister rng;
-
-        for (size_t i = 0; i < 1000; ++i)
-        {
-            const float u = static_cast<float>(rand_double2(rng));
-            const float a = static_cast<float>(rand_double1(rng));
-            const float l = static_cast<float>(rand_double1(rng, 0.001, 10.0));
-
-            const float s = normalized_diffusion_s_dmfp(a);
-            const float r = normalized_diffusion_sample(u, l, s, 0.00001f);
-            const float e = normalized_diffusion_cdf(r, l, s);
-
-            EXPECT_FEQ_EPS(u, e, 0.005f);
-        }
-    }
-
-    TEST_CASE(NormalizedDiffusionMaxRadius)
-    {
-        MersenneTwister rng;
-
-        for (size_t i = 0; i < 1000; ++i)
-        {
-            const float a = static_cast<float>(rand_double1(rng));
-            const float l = static_cast<float>(rand_double1(rng, 0.001, 10.0));
-
-            const float s = normalized_diffusion_s_dmfp(a);
-            const float r = normalized_diffusion_max_radius(l, s);
-            const float value = normalized_diffusion_profile(r, l, s, a);
-
-            EXPECT_LT(0.00001f, value);
-        }
-    }
-
-    TEST_CASE(NormalizedDiffusionProfileIntegration)
-    {
-        const float A = 0.5f;
-        const float L = 100.0f;
-        const float s = normalized_diffusion_s_dmfp(A);
-
-        const size_t SampleCount = 1000;
-        MersenneTwister rng;
-
-        float integral = 0.0f;
-
-        for (size_t i = 0; i < SampleCount; ++i)
-        {
-            const float u = static_cast<float>(rand_double2(rng));
-            const float r = normalized_diffusion_sample(u, L, s);
-            const float pdf_radius = normalized_diffusion_pdf(r, L, s);
-            const float pdf_angle = RcpTwoPi<float>();
-            const float pdf = pdf_radius * pdf_angle;
-            const float value = r * normalized_diffusion_profile(r, L, s, A);
-            integral += value / pdf;
+            const float a = fit<size_t, float>(i, 0, N - 1, 0.0f, 1.0f);
+            const float s = normalized_diffusion_s_mfp(a);
+            points.push_back(Vector2d(a, s));
         }
 
-        integral /= SampleCount;
-
-        EXPECT_FEQ(A, integral);
+        plotfile.new_plot().set_points(points);
+        plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_s_mfp.gnuplot");
     }
 
-    TEST_CASE(PlotNormalizedDiffusionS)
+    TEST_CASE(PlotNormalizedDiffusionS_dmfp)
     {
         GnuplotFile plotfile;
         plotfile.set_title("Scaling Factor For Searchlight Configuration With dmfp Parameterization");
@@ -709,17 +606,65 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         }
 
         plotfile.new_plot().set_points(points);
-        plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_s.gnuplot");
+        plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_s_dmfp.gnuplot");
     }
 
-    TEST_CASE(PlotNormalizedDiffusionR)
+    TEST_CASE(PlotNormalizedDiffusionR_mfp)
+    {
+        GnuplotFile plotfile;
+        plotfile.set_title("Reflectance Profile For Searchlight Configuration With mfp Parameterization");
+        plotfile.set_xlabel("r");
+        plotfile.set_ylabel("r R(r)");
+        plotfile.set_xrange(0.0, 8.0);
+        plotfile.set_yrange(0.001, 0.1);
+        plotfile.set_logscale_y();
+
+        for (size_t i = 9; i >= 1; --i)
+        {
+            const float a = static_cast<float>(i) / 10.0f;
+            const float s = normalized_diffusion_s_mfp(a);
+
+            const size_t N = 1000;
+            vector<Vector2d> points;
+
+            for (size_t j = 0; j < N; ++j)
+            {
+                const float r = max(fit<size_t, float>(j, 0, N - 1, 0.0f, 8.0f), 0.0001f);
+                const float y = r * normalized_diffusion_profile(r, 1.0f, s, a);
+                points.push_back(Vector2d(r, y));
+            }
+
+            static const char* Colors[9] =
+            {
+                "gray",
+                "orange",
+                "black",
+                "brown",
+                "cyan",
+                "magenta",
+                "blue",
+                "green",
+                "red"
+            };
+
+            plotfile
+                .new_plot()
+                .set_points(points)
+                .set_title("A = " + to_string(a))
+                .set_color(Colors[i - 1]);
+        }
+
+        plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_r_mfp.gnuplot");
+    }
+
+    TEST_CASE(PlotNormalizedDiffusionR_dmfp)
     {
         GnuplotFile plotfile;
         plotfile.set_title("Reflectance Profile For Searchlight Configuration With dmfp Parameterization");
         plotfile.set_xlabel("r");
         plotfile.set_ylabel("r R(r)");
         plotfile.set_xrange(0.0, 8.0);
-        plotfile.set_yrange(0.001, 1.0);
+        plotfile.set_yrange(0.001, 0.1);
         plotfile.set_logscale_y();
 
         for (size_t i = 9; i >= 1; --i)
@@ -757,7 +702,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
                 .set_color(Colors[i - 1]);
         }
 
-        plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_r.gnuplot");
+        plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_r_dmfp.gnuplot");
     }
 
     TEST_CASE(PlotNormalizedDiffusionCDF)
@@ -853,6 +798,68 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
 #endif
 
+    TEST_CASE(NormalizedDiffusionSample)
+    {
+        MersenneTwister rng;
+
+        for (size_t i = 0; i < 1000; ++i)
+        {
+            const float u = rand_float2(rng);
+            const float a = rand_float1(rng);
+            const float l = rand_float1(rng, 0.001f, 10.0f);
+
+            const float s = normalized_diffusion_s_dmfp(a);
+            const float r = normalized_diffusion_sample(u, l, s, 0.00001f);
+            const float e = normalized_diffusion_cdf(r, l, s);
+
+            EXPECT_FEQ_EPS(u, e, 0.005f);
+        }
+    }
+
+    TEST_CASE(NormalizedDiffusionMaxRadius)
+    {
+        MersenneTwister rng;
+
+        for (size_t i = 0; i < 1000; ++i)
+        {
+            const float a = rand_float1(rng);
+            const float l = rand_float1(rng, 0.001f, 10.0f);
+
+            const float s = normalized_diffusion_s_dmfp(a);
+            const float r = normalized_diffusion_max_radius(l, s);
+            const float value = normalized_diffusion_profile(r, l, s, a);
+
+            EXPECT_LT(0.00001f, value);
+        }
+    }
+
+    TEST_CASE(NormalizedDiffusionProfileIntegration)
+    {
+        const float A = 0.5f;
+        const float L = 100.0f;
+        const float s = normalized_diffusion_s_dmfp(A);
+
+        const size_t SampleCount = 1000;
+        MersenneTwister rng;
+
+        float integral = 0.0f;
+
+        for (size_t i = 0; i < SampleCount; ++i)
+        {
+            const float u = rand_float2(rng);
+            const float r = normalized_diffusion_sample(u, L, s);
+            const float pdf_radius = normalized_diffusion_pdf(r, L, s);
+            const float pdf_angle = RcpTwoPi<float>();
+            const float pdf = pdf_radius * pdf_angle;
+            const float value = r * normalized_diffusion_profile(r, L, s, A);
+            integral += value / pdf;
+        }
+
+        integral /= SampleCount;
+
+        EXPECT_FEQ(A, integral);
+    }
+
     //
     // Standard dipole profile.
     //
@@ -863,8 +870,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         for (size_t i = 0; i < 1000; ++i)
         {
-            const float rd = static_cast<float>(rand_double1(rng));
-            const float mfp = static_cast<float>(rand_double1(rng, 0.001, 10.0));
+            const float rd = rand_float1(rng);
+            const float mfp = rand_float1(rng, 0.001f, 10.0f);
 
             DipoleBSSRDFEvaluator<StandardDipoleBSSRDFFactory> bssrdf_eval;
             bssrdf_eval.set_values_from_rd_mfp(rd, mfp, 1.0f);
@@ -973,8 +980,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         for (size_t i = 0; i < 1000; ++i)
         {
-            const float rd = static_cast<float>(rand_double1(rng));
-            const float mfp = static_cast<float>(rand_double1(rng, 0.001, 100.0));
+            const float rd = rand_float1(rng);
+            const float mfp = rand_float1(rng, 0.001f, 100.0f);
 
             DipoleBSSRDFEvaluator<DirectionalDipoleBSSRDFFactory> bssrdf_eval;
             bssrdf_eval.set_values_from_rd_mfp(rd, mfp, 1.0f);

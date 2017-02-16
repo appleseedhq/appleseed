@@ -388,49 +388,38 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
         const double dv0 = static_cast<double>(m_v0_uv[1] - m_v2_uv[1]);
         const double du1 = static_cast<double>(m_v1_uv[0] - m_v2_uv[0]);
         const double dv1 = static_cast<double>(m_v1_uv[1] - m_v2_uv[1]);
-
         const double det = du0 * dv1 - dv0 * du1;
 
-        if (det == 0.0)
+        if (det != 0.0)
         {
-            const Basis3d basis(get_original_shading_normal());
+            const double rcp_det = 1.0 / det;
 
-            m_dpdu = basis.get_tangent_u();
-            m_dpdv = basis.get_tangent_v();
-            m_dndu = m_dndv = Vector3d(0.0);
-        }
-        else
-        {
             const Vector3d& v2 = get_vertex(2);
             const Vector3d dp0 = get_vertex(0) - v2;
             const Vector3d dp1 = get_vertex(1) - v2;
 
-            const double rcp_det = 1.0 / det;
-
+            // Compute the derivatives of the intersection point.
             m_dpdu = (dv1 * dp0 - dv0 * dp1) * rcp_det;
             m_dpdv = (du0 * dp1 - du1 * dp0) * rcp_det;
 
-            // Make sure dPdv x dPdu points in the same direction as
-            // the original shading normal.
-            if (dot(get_original_shading_normal(), cross(m_dpdv, m_dpdu)) < 0.0)
+            // Make sure dPdu x dPdv points in the same direction as the original shading normal.
+            const Vector3d& n = get_original_shading_normal();
+            if (dot(cross(m_dpdu, m_dpdv), n) < 0.0)
                 m_dpdu = -m_dpdu;
 
             if (m_members & HasTriangleVertexNormals)
             {
+                // Compute the derivatives of the normal.
                 const Vector3d dn0(m_n0 - m_n2);
                 const Vector3d dn1(m_n1 - m_n2);
-
                 m_dndu = (dv1 * dn0 - dv0 * dn1) * rcp_det;
                 m_dndv = (du0 * dn1 - du1 * dn0) * rcp_det;
 
                 // Transform the normal derivatives to world space.
-                const Transformd& obj_instance_transform =
-                    m_object_instance->get_transform();
-
+                const Transformd& obj_instance_transform = m_object_instance->get_transform();
                 m_dndu =
                     m_assembly_instance_transform.normal_to_parent(
                         obj_instance_transform.normal_to_parent(m_dndu));
-
                 m_dndv =
                     m_assembly_instance_transform.normal_to_parent(
                         obj_instance_transform.normal_to_parent(m_dndv));
@@ -439,6 +428,13 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
             {
                 m_dndu = m_dndv = Vector3d(0.0);
             }
+        }
+        else
+        {
+            const Basis3d basis(get_original_shading_normal());
+            m_dpdu = basis.get_tangent_u();
+            m_dpdv = basis.get_tangent_v();
+            m_dndu = m_dndv = Vector3d(0.0);
         }
     }
     else
@@ -453,10 +449,10 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
                 ? curves->get_curve1(m_primitive_index).evaluate_tangent(v)
                 : curves->get_curve3(m_primitive_index).evaluate_tangent(v);
 
-        const Vector3d& sn = get_original_shading_normal();
+        const Vector3d& n = get_original_shading_normal();
 
         m_dpdu = normalize(Vector3d(tangent));
-        m_dpdv = normalize(cross(sn, m_dpdu));
+        m_dpdv = normalize(cross(n, m_dpdu));
         m_dndu = m_dndv = Vector3d(0.0);
     }
 }
@@ -468,7 +464,7 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
     if (ray.m_has_differentials)
     {
         const Vector3d& p = get_point();
-        const Vector3d& n = get_shading_normal();
+        const Vector3d& n = get_original_shading_normal();
 
         const double tx = intersect(ray.m_rx, p, n);
         const Vector3d px = ray.m_rx.point_at(tx);
@@ -478,9 +474,8 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
         const Vector3d py = ray.m_ry.point_at(ty);
         m_dpdy = py - p;
 
-        // Make sure dPdy x dPdx points in the same direction as
-        // the original shading normal.
-        if (dot(get_original_shading_normal(), cross(m_dpdy, m_dpdx)) < 0.0)
+        // Make sure dPdx x dPdy points in the same direction as the original shading normal.
+        if (dot(cross(m_dpdx, m_dpdy), n) < 0.0)
             m_dpdx = -m_dpdx;
 
         // Select the two smallest axes.
@@ -499,27 +494,28 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
 
         const double d = det(a0, a1);
 
-        if (d == 0.0)
+        if (d != 0.0)
+        {
+            const Vector2f bx(
+                static_cast<float>(px[axes[0]] - p[axes[0]]),
+                static_cast<float>(px[axes[1]] - p[axes[1]]));
+            const Vector2f by(
+                static_cast<float>(py[axes[0]] - p[axes[0]]),
+                static_cast<float>(py[axes[1]] - p[axes[1]]));
+
+            const float rcp_d = 1.0f / static_cast<float>(d);
+
+            m_duvdx[0] = (a1[1] * bx[0] - a0[1] * bx[1]) * rcp_d;
+            m_duvdx[1] = (a0[0] * bx[1] - a1[0] * bx[0]) * rcp_d;
+
+            m_duvdy[0] = (a1[1] * by[0] - a0[1] * by[1]) * rcp_d;
+            m_duvdy[1] = (a0[0] * by[1] - a1[0] * by[0]) * rcp_d;
+        }
+        else
         {
             m_duvdx = Vector2f(0.0f);
             m_duvdy = Vector2f(0.0f);
-            return;
         }
-
-        const Vector2f bx(
-            static_cast<float>(px[axes[0]] - p[axes[0]]),
-            static_cast<float>(px[axes[1]] - p[axes[1]]));
-        const Vector2f by(
-            static_cast<float>(py[axes[0]] - p[axes[0]]),
-            static_cast<float>(py[axes[1]] - p[axes[1]]));
-
-        const float rcp_d = 1.0f / static_cast<float>(d);
-
-        m_duvdx[0] = (a1[1] * bx[0] - a0[1] * bx[1]) * rcp_d;
-        m_duvdx[1] = (a0[0] * bx[1] - a1[0] * bx[0]) * rcp_d;
-
-        m_duvdy[0] = (a1[1] * by[0] - a0[1] * by[1]) * rcp_d;
-        m_duvdy[1] = (a0[0] * by[1] - a1[0] * by[0]) * rcp_d;
     }
     else
     {
@@ -859,7 +855,6 @@ void ShadingPoint::initialize_osl_shader_globals(
         // Shading and geometric normals and backfacing flag.
         m_shader_globals.N = Vector3f(get_original_shading_normal());
         m_shader_globals.Ng = Vector3f(get_geometric_normal());
-
         m_shader_globals.backfacing = get_side() == ObjectInstance::FrontSide ? 0 : 1;
 
         // Surface parameters and their differentials.
@@ -888,7 +883,6 @@ void ShadingPoint::initialize_osl_shader_globals(
             m_shader_globals.flipHandedness
                 ?  Vector3f(get_dpdu(0))
                 : -Vector3f(get_dpdu(0));
-
         m_shader_globals.dPdv = Vector3f(get_dpdv(0));
 
         // Time and its derivative.

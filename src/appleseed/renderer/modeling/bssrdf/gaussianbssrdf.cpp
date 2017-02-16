@@ -44,6 +44,7 @@
 #include "foundation/utility/memory.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 
@@ -181,11 +182,10 @@ namespace
                 const float radius = max(values->m_mfp[i], 0.0001f) * 7.0f;
 
                 // The remapping from radius to v comes from Cycles.
-                const float v = square(radius) * square(0.25f);
+                const float v = square(radius * 0.25f);
                 values->m_precomputed.m_v[i] = v;
                 max_v = max(max_v, v);
             }
-
             values->m_precomputed.m_rmax2 = max_v * RMax2Constant;
         }
 
