@@ -359,17 +359,16 @@ namespace
         {
             if (distribution == Beckmann)
                 return m_beckmann_mdf;
-            else
-                return m_ggx_mdf;
+            else return m_ggx_mdf;
         }
 
         static void fresnel_term(
-            const InputValues&  values,
-            Vector3f            wo,
-            const Vector3f&     m,
-            Spectrum&           value,
-            float&              weight,
-            float&              probability)
+            const InputValues&      values,
+            Vector3f                wo,
+            const Vector3f&         m,
+            Spectrum&               value,
+            float&                  weight,
+            float&                  probability)
         {
             if (wo.y < 0.0f)
                 wo = -wo;
