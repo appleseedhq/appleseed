@@ -124,7 +124,7 @@ bool Light::on_frame_begin(
 }
 
 void Light::sample(
-    InputEvaluator&         input_evaluator,
+    const ShadingContext&   shading_context,
     const Transformd&       light_transform,
     const Vector2d&         s,
     const LightTargetArray& targets,
@@ -136,7 +136,7 @@ void Light::sample(
     // By default we ignore the light targets.
     return
         sample(
-            input_evaluator,
+            shading_context,
             light_transform,
             s,
             position,

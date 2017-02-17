@@ -44,8 +44,8 @@
 #include "renderer/modeling/camera/pinholecamera.h"
 #include "renderer/modeling/entity/onframebeginrecorder.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/input/inputbinder.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
@@ -181,7 +181,6 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         ASSERT_TRUE(success);
 
         TextureCache texture_cache(texture_store);
-        InputEvaluator input_evaluator(texture_cache);
         Arena arena;
 
         Intersector intersector(
@@ -209,11 +208,7 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         builder.set_uvs(Vector2f(0.0));
 
         BSDF& parent_bsdf = *assembly.bsdfs().get_by_name("parent_bsdf");
-        parent_bsdf.evaluate_inputs(
-            shading_context,
-            input_evaluator,
-            shading_point,
-            arena);
+        parent_bsdf.evaluate_inputs(shading_context, shading_point, arena);
 
         size_t offset = 0;
 

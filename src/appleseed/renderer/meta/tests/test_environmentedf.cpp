@@ -43,7 +43,7 @@
 #include "renderer/modeling/environmentedf/gradientenvironmentedf.h"
 #include "renderer/modeling/environmentedf/latlongmapenvironmentedf.h"
 #include "renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h"
-#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/texture/texture.h"
@@ -224,15 +224,12 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
                 sg_exec,
                 0);
 
-            InputEvaluator input_evaluator(texture_cache);
-
             Vector3f outgoing;
             Spectrum value1(Spectrum::Illuminance);
             float probability1;
 
             env_edf.sample(
                 shading_context,
-                input_evaluator,
                 Vector2f(0.3f, 0.7f),
                 outgoing,
                 value1,
@@ -240,13 +237,8 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
 
             Spectrum value2(Spectrum::Illuminance);
 
-            env_edf.evaluate(
-                shading_context,
-                input_evaluator,
-                outgoing,
-                value2);
-
-            const float probability2 = env_edf.evaluate_pdf(input_evaluator, outgoing);
+            env_edf.evaluate(shading_context, outgoing, value2);
+            const float probability2 = env_edf.evaluate_pdf(outgoing);
 
             recorder.on_frame_end(m_project);
 

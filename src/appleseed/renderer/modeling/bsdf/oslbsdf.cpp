@@ -40,7 +40,7 @@
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/glassbsdf.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
-#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/utility/paramarray.h"
 
@@ -157,7 +157,6 @@ namespace
 
         virtual void evaluate_inputs(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
             const ShadingPoint&     shading_point,
             Arena&                  arena,
             const size_t            offset) const APPLESEED_OVERRIDE

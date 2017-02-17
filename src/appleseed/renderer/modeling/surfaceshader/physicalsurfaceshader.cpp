@@ -45,8 +45,8 @@
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
@@ -346,14 +346,12 @@ namespace
                 if (environment_shader)
                 {
                     // Execute the environment shader to obtain the sky color in the direction of the ray.
-                    InputEvaluator input_evaluator(shading_context.get_texture_cache());
                     const ShadingRay& ray = shading_point.get_ray();
                     const Vector3d direction = normalize(ray.m_dir);
                     ShadingResult sky;
                     environment_shader->evaluate(
                         shading_context,
                         pixel_context,
-                        input_evaluator,
                         direction,
                         sky);
                     sky_color = sky.m_main.m_color;

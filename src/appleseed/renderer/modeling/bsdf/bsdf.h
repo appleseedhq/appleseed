@@ -50,7 +50,6 @@
 // Forward declarations.
 namespace renderer      { class Arena; }
 namespace renderer      { class Assembly; }
-namespace renderer      { class InputEvaluator; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
@@ -133,7 +132,6 @@ class APPLESEED_DLLSYMBOL BSDF
     // once per shading point and pair of incoming/outgoing directions.
     virtual void evaluate_inputs(
         const ShadingContext&       shading_context,
-        InputEvaluator&             input_evaluator,
         const ShadingPoint&         shading_point,
         Arena&                      arena,
         const size_t                offset = 0) const;

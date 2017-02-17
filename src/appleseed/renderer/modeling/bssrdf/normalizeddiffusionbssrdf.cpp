@@ -33,7 +33,7 @@
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/bssrdf/separablebssrdf.h"
 #include "renderer/modeling/bssrdf/sss.h"
-#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/input/arena.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/cdf.h"

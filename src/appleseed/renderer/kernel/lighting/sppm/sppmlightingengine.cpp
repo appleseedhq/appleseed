@@ -46,7 +46,7 @@
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
-#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/stochasticcast.h"
 
@@ -579,12 +579,10 @@ namespace
                     return;
 
                 // Evaluate the environment EDF.
-                InputEvaluator input_evaluator(m_texture_cache);
                 Spectrum env_radiance(Spectrum::Illuminance);
                 float env_prob;
                 m_env_edf->evaluate(
                     m_shading_context,
-                    input_evaluator,
                     -Vector3f(vertex.m_outgoing.get_value()),
                     env_radiance,
                     env_prob);

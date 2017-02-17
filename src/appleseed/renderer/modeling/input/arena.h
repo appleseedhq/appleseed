@@ -27,22 +27,12 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_INPUT_INPUTEVALUATOR_H
-#define APPLESEED_RENDERER_MODELING_INPUT_INPUTEVALUATOR_H
-
-// appleseed.renderer headers.
-#include "renderer/modeling/input/inputarray.h"
+#ifndef APPLESEED_RENDERER_MODELING_INPUT_ARENA_H
+#define APPLESEED_RENDERER_MODELING_INPUT_ARENA_H
 
 // appleseed.foundation headers.
-#include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
-
-// Standard headers.
-#include <cstddef>
-
-// Forward declarations.
-namespace renderer  { class TextureCache; }
 
 namespace renderer
 {
@@ -64,28 +54,6 @@ class Arena
 
   private:
     APPLESEED_SIMD4_ALIGN foundation::uint8 m_data[DataSize];
-};
-
-
-//
-// Input evaluator.
-//
-
-class InputEvaluator
-{
-  public:
-    // Constructor.
-    explicit InputEvaluator(TextureCache& texture_cache);
-
-    // Evaluate a set of inputs, and return the values as an opaque block of memory.
-    void evaluate(
-        const InputArray&           inputs,
-        const foundation::Vector2f& uv,
-        Arena&                      arena,
-        const size_t                offset = 0);
-
-  private:
-    TextureCache& m_texture_cache;
 };
 
 
@@ -115,25 +83,6 @@ inline T& Arena::as()
     return *reinterpret_cast<T*>(m_data);
 }
 
-
-//
-// InputEvaluator class implementation.
-//
-
-inline InputEvaluator::InputEvaluator(TextureCache& texture_cache)
-  : m_texture_cache(texture_cache)
-{
-}
-
-inline void InputEvaluator::evaluate(
-    const InputArray&               inputs,
-    const foundation::Vector2f&     uv,
-    Arena&                          arena,
-    const size_t                    offset)
-{
-    inputs.evaluate(m_texture_cache, uv, arena.data(), offset);
-}
-
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_INPUT_INPUTEVALUATOR_H
+#endif  // !APPLESEED_RENDERER_MODELING_INPUT_ARENA_H

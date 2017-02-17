@@ -32,7 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/input/arena.h"
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 

@@ -33,7 +33,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/distance.h"
@@ -50,6 +49,7 @@
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class Project; }
+namespace renderer      { class ShadingContext; }
 
 using namespace foundation;
 using namespace std;
@@ -115,7 +115,7 @@ namespace
         }
 
         virtual void sample(
-            InputEvaluator&         input_evaluator,
+            const ShadingContext&   shading_context,
             const Transformd&       light_transform,
             const Vector2d&         s,
             Vector3d&               position,
@@ -130,7 +130,7 @@ namespace
         }
 
         virtual void evaluate(
-            InputEvaluator&         input_evaluator,
+            const ShadingContext&   shading_context,
             const Transformd&       light_transform,
             const Vector3d&         target,
             Vector3d&               position,

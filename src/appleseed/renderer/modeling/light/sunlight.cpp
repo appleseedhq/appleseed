@@ -35,7 +35,6 @@
 #include "renderer/modeling/color/wavelengths.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/light/lighttarget.h"
 #include "renderer/modeling/project/project.h"
@@ -57,6 +56,7 @@
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Assembly; }
+namespace renderer      { class ShadingContext; }
 
 using namespace foundation;
 using namespace std;
@@ -139,7 +139,7 @@ namespace
         }
 
         virtual void sample(
-            InputEvaluator&         input_evaluator,
+            const ShadingContext&   shading_context,
             const Transformd&       light_transform,
             const Vector2d&         s,
             Vector3d&               position,
@@ -159,7 +159,7 @@ namespace
         }
 
         virtual void sample(
-            InputEvaluator&         input_evaluator,
+            const ShadingContext&   shading_context,
             const Transformd&       light_transform,
             const Vector2d&         s,
             const LightTargetArray& targets,
@@ -202,7 +202,7 @@ namespace
         }
 
         virtual void evaluate(
-            InputEvaluator&         input_evaluator,
+            const ShadingContext&   shading_context,
             const Transformd&       light_transform,
             const Vector3d&         target,
             Vector3d&               position,

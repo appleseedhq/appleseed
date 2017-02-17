@@ -35,7 +35,7 @@
 #include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/color/wavelengths.h"
-#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/input/arena.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"

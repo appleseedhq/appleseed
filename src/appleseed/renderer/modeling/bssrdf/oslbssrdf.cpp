@@ -41,7 +41,7 @@
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
 #endif
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
-#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/input/arena.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/api/specializedapiarrays.h"
@@ -140,7 +140,6 @@ namespace
 
         virtual void evaluate_inputs(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
             const ShadingPoint&     shading_point,
             Arena&                  arena,
             const size_t            offset = 0) const APPLESEED_OVERRIDE

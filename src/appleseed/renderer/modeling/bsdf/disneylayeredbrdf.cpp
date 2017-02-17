@@ -33,7 +33,7 @@
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
-#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/material/disneymaterial.h"
 #include "renderer/utility/paramarray.h"
 
@@ -105,7 +105,6 @@ size_t DisneyLayeredBRDF::compute_input_data_size(
 
 void DisneyLayeredBRDF::evaluate_inputs(
     const ShadingContext&       shading_context,
-    InputEvaluator&             input_evaluator,
     const ShadingPoint&         shading_point,
     Arena&                      arena,
     const size_t                offset) const

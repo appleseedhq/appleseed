@@ -1505,19 +1505,18 @@ source_group ("renderer\\modeling\\frame" FILES
 )
 
 set (renderer_modeling_input_sources
+    renderer/modeling/input/arena.h
     renderer/modeling/input/colorsource.cpp
     renderer/modeling/input/colorsource.h
     renderer/modeling/input/inputarray.cpp
     renderer/modeling/input/inputarray.h
     renderer/modeling/input/inputbinder.cpp
     renderer/modeling/input/inputbinder.h
-    renderer/modeling/input/inputevaluator.h
     renderer/modeling/input/scalarsource.h
     renderer/modeling/input/source.h
     renderer/modeling/input/symbol.h
     renderer/modeling/input/texturesource.cpp
     renderer/modeling/input/texturesource.h
-    renderer/modeling/input/uniforminputevaluator.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_input_sources}

@@ -48,7 +48,7 @@
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
-#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/light/lighttarget.h"
 #include "renderer/modeling/scene/assembly.h"
@@ -348,9 +348,8 @@ namespace
             }
 
             // Evaluate the EDF inputs.
-            InputEvaluator input_evaluator(m_texture_cache);
             Arena arena;
-            edf->evaluate_inputs(input_evaluator, light_shading_point, arena);
+            edf->evaluate_inputs(shading_context, light_shading_point, arena);
 
             // Sample the EDF.
             SamplingContext child_sampling_context = sampling_context.split(2, 1);
@@ -422,13 +421,12 @@ namespace
             const LightSample&      light_sample)
         {
             // Sample the light.
-            InputEvaluator input_evaluator(m_texture_cache);
             SamplingContext child_sampling_context = sampling_context.split(2, 1);
             Vector3d emission_position, emission_direction;
             Spectrum light_value(Spectrum::Illuminance);
             float light_prob;
             light_sample.m_light->sample(
-                input_evaluator,
+                shading_context,
                 light_sample.m_light_transform,
                 child_sampling_context.next2<Vector2d>(),
                 m_photon_targets,
@@ -586,13 +584,11 @@ namespace
             SamplingContext&        sampling_context)
         {
             // Sample the environment.
-            InputEvaluator input_evaluator(m_texture_cache);
             Vector3f outgoing;
             Spectrum env_edf_value(Spectrum::Illuminance);
             float env_edf_prob;
             m_env_edf.sample(
                 shading_context,
-                input_evaluator,
                 sampling_context.next2<Vector2f>(),
                 outgoing,                                   // points toward the environment
                 env_edf_value,

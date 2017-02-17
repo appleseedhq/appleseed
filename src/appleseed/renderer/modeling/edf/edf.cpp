@@ -32,8 +32,9 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/input/arena.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/api/apistring.h"
@@ -114,11 +115,14 @@ bool EDF::on_frame_begin(
 }
 
 void EDF::evaluate_inputs(
-    InputEvaluator&         input_evaluator,
+    const ShadingContext&   shading_context,
     const ShadingPoint&     shading_point,
     Arena&                  arena) const
 {
-    input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0), arena);
+    get_inputs().evaluate(
+        shading_context.get_texture_cache(),
+        shading_point.get_uv(0),
+        arena.data());
 }
 
 }   // namespace renderer

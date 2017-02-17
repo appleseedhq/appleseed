@@ -48,7 +48,6 @@ namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Arena; }
 namespace renderer      { class BaseGroup; }
 namespace renderer      { class DisneyMaterial; }
-namespace renderer      { class InputEvaluator; }
 namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
@@ -81,7 +80,6 @@ class DisneyLayeredBRDF
 
     virtual void evaluate_inputs(
         const ShadingContext&           shading_context,
-        InputEvaluator&                 input_evaluator,
         const ShadingPoint&             shading_point,
         Arena&                          arena,
         const size_t                    offset = 0) const APPLESEED_OVERRIDE;

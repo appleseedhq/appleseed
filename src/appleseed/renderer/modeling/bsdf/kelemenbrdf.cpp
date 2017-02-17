@@ -35,9 +35,9 @@
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
+#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
-#include "renderer/modeling/input/uniforminputevaluator.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -170,21 +170,24 @@ namespace
             if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
-            // todo: implement proper error handling.
-            assert(m_inputs.source("specular_reflectance")->is_uniform());
-            assert(m_inputs.source("specular_reflectance_multiplier")->is_uniform());
-            assert(m_inputs.source("roughness")->is_uniform());
+            if (!m_inputs.source("specular_reflectance")->is_uniform() ||
+                !m_inputs.source("specular_reflectance_multiplier")->is_uniform() ||
+                !m_inputs.source("roughness")->is_uniform())
+            {
+                RENDERER_LOG_ERROR("the \"specular_reflectance\", \"specular_reflectance_multiplier\" and \"roughness\" parameters of the Kelemen BRDF model must be uniform.");
+                return false;
+            }
 
-            UniformInputEvaluator input_evaluator;
-            const InputValues* values =
-                static_cast<const InputValues*>(input_evaluator.evaluate(m_inputs));
+            Arena arena;
+            m_inputs.evaluate_uniforms(arena.data());
+            const InputValues& values = arena.as<InputValues>();
 
             // Construct the Microfacet Distribution Function.
-            m_mdf.reset(new MDFType(max(values->m_roughness, 1.0e-6f)));
+            m_mdf.reset(new MDFType(max(values.m_roughness, 1.0e-6f)));
 
             // Precompute the specular albedo curve.
-            Spectrum rs(values->m_rs);
-            rs *= values->m_rs_multiplier;
+            Spectrum rs(values.m_rs);
+            rs *= values.m_rs_multiplier;
             compute_specular_albedo(*m_mdf.get(), rs, m_a_spec);
 
             // Precompute the average specular albedo.

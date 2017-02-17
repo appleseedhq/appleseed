@@ -37,7 +37,7 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
-#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
@@ -192,12 +192,10 @@ void compute_ibl_bsdf_sampling(
             continue;
 
         // Evaluate the environment's EDF.
-        InputEvaluator input_evaluator(shading_context.get_texture_cache());
         Spectrum env_value(Spectrum::Illuminance);
         float env_prob;
         environment_edf.evaluate(
             shading_context,
-            input_evaluator,
             sample.m_incoming.get_value(),
             env_value,
             env_prob);
@@ -276,12 +274,10 @@ void compute_ibl_bssrdf_sampling(
             bssrdf_value);
 
         // Evaluate the environment's EDF.
-        InputEvaluator input_evaluator(shading_context.get_texture_cache());
         Spectrum env_value(Spectrum::Illuminance);
         float env_prob;
         environment_edf.evaluate(
             shading_context,
-            input_evaluator,
             incoming,
             env_value,
             env_prob);
@@ -334,13 +330,11 @@ void compute_ibl_environment_sampling(
         const Vector2f s = sampling_context.next2<Vector2f>();
 
         // Sample the environment.
-        InputEvaluator input_evaluator(shading_context.get_texture_cache());
         Vector3f incoming;
         Spectrum env_value(Spectrum::Illuminance);
         float env_prob;
         environment_edf.sample(
             shading_context,
-            input_evaluator,
             s,
             incoming,
             env_value,
@@ -420,13 +414,11 @@ void compute_ibl_environment_sampling(
         const Vector2f s = sampling_context.next2<Vector2f>();
 
         // Sample the environment.
-        InputEvaluator input_evaluator(shading_context.get_texture_cache());
         Vector3f incoming;
         Spectrum env_value(Spectrum::Illuminance);
         float env_prob;
         environment_edf.sample(
             shading_context,
-            input_evaluator,
             s,
             incoming,
             env_value,

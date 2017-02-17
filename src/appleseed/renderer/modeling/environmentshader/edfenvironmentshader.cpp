@@ -54,7 +54,6 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class InputEvaluator; }
 namespace renderer      { class PixelContext; }
 
 using namespace foundation;
@@ -128,7 +127,6 @@ namespace
         virtual void evaluate(
             const ShadingContext&   shading_context,
             const PixelContext&     pixel_context,
-            InputEvaluator&         input_evaluator,
             const Vector3d&         direction,
             ShadingResult&          shading_result) const APPLESEED_OVERRIDE
         {
@@ -141,7 +139,6 @@ namespace
             // Evaluate the environment EDF and store the radiance into the shading result.
             m_env_edf->evaluate(
                 shading_context,
-                input_evaluator,
                 Vector3f(direction),
                 shading_result.m_main.m_color);
         }

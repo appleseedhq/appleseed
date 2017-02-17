@@ -33,7 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/edf/edf.h"
-#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/input/arena.h"
 
 using namespace foundation;
 
@@ -58,9 +58,8 @@ void PathVertex::compute_emitted_radiance(
         shading_context.execute_osl_emission(*sg, *m_shading_point);
 
     // Evaluate the EDF inputs.
-    InputEvaluator input_evaluator(texture_cache);
     Arena arena;
-    m_edf->evaluate_inputs(input_evaluator, *m_shading_point, arena);
+    m_edf->evaluate_inputs(shading_context, *m_shading_point, arena);
 
     // Compute the emitted radiance.
     m_edf->evaluate(

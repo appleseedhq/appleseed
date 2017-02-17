@@ -53,7 +53,7 @@
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/frame/frame.h"
-#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/project/project.h"
@@ -592,9 +592,8 @@ namespace
             }
 
             // Evaluate the EDF inputs.
-            InputEvaluator input_evaluator(m_texture_cache);
             Arena arena;
-            material_data.m_edf->evaluate_inputs(input_evaluator, light_shading_point, arena);
+            material_data.m_edf->evaluate_inputs(m_shading_context, light_shading_point, arena);
 
             // Sample the EDF.
             sampling_context.split_in_place(2, 1);
@@ -684,13 +683,12 @@ namespace
             SampleVector&               samples)
         {
             // Sample the light.
-            InputEvaluator input_evaluator(m_texture_cache);
             sampling_context.split_in_place(2, 1);
             Vector3d emission_position, emission_direction;
             Spectrum light_value(Spectrum::Illuminance);
             float light_prob;
             light_sample.m_light->sample(
-                input_evaluator,
+                m_shading_context,
                 light_sample.m_light_transform,
                 sampling_context.next2<Vector2d>(),
                 emission_position,
@@ -761,13 +759,11 @@ namespace
         {
             // Sample the environment.
             sampling_context.split_in_place(2, 1);
-            InputEvaluator input_evaluator(m_texture_cache);
             Vector3f outgoing;
             Spectrum env_edf_value(Spectrum::Illuminance);
             float env_edf_prob;
             env_edf->sample(
                 m_shading_context,
-                input_evaluator,
                 sampling_context.next2<Vector2f>(),
                 outgoing,               // points toward the environment
                 env_edf_value,

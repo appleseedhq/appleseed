@@ -30,11 +30,12 @@
 #include "bssrdf.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
 #include "renderer/modeling/color/colorspace.h"
-#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/input/arena.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -100,12 +101,16 @@ size_t BSSRDF::compute_input_data_size(
 
 void BSSRDF::evaluate_inputs(
     const ShadingContext&   shading_context,
-    InputEvaluator&         input_evaluator,
     const ShadingPoint&     shading_point,
     Arena&                  arena,
     const size_t            offset) const
 {
-    input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0), arena, offset);
+    get_inputs().evaluate(
+        shading_context.get_texture_cache(),
+        shading_point.get_uv(0),
+        arena.data(),
+        offset);
+
     prepare_inputs(shading_point, arena.data() + offset);
 }
 

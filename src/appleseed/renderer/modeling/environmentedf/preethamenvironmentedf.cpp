@@ -32,10 +32,11 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentedf/sphericalcoordinates.h"
+#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/utility/transformsequence.h"
 
@@ -58,7 +59,6 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class InputEvaluator; }
 namespace renderer      { class Project; }
 
 using namespace foundation;
@@ -157,7 +157,6 @@ namespace
 
         virtual void sample(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
             const Vector2f&         s,
             Vector3f&               outgoing,
             Spectrum&               value,
@@ -171,7 +170,7 @@ namespace
             const Vector3f shifted_outgoing = shift(local_outgoing);
 
             if (shifted_outgoing.y > 0.0f)
-                compute_sky_radiance(input_evaluator, shifted_outgoing, value);
+                compute_sky_radiance(shading_context, shifted_outgoing, value);
             else value.set(0.0f);
 
             probability = shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
@@ -179,7 +178,6 @@ namespace
 
         virtual void evaluate(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
             const Vector3f&         outgoing,
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
@@ -191,13 +189,12 @@ namespace
             const Vector3f shifted_outgoing = shift(local_outgoing);
 
             if (shifted_outgoing.y > 0.0f)
-                compute_sky_radiance(input_evaluator, shifted_outgoing, value);
+                compute_sky_radiance(shading_context, shifted_outgoing, value);
             else value.set(0.0f);
         }
 
         virtual void evaluate(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
             const Vector3f&         outgoing,
             Spectrum&               value,
             float&                  probability) const APPLESEED_OVERRIDE
@@ -210,14 +207,13 @@ namespace
             const Vector3f shifted_outgoing = shift(local_outgoing);
 
             if (shifted_outgoing.y > 0.0f)
-                compute_sky_radiance(input_evaluator, shifted_outgoing, value);
+                compute_sky_radiance(shading_context, shifted_outgoing, value);
             else value.set(0.0f);
 
             probability = shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
         }
 
         virtual float evaluate_pdf(
-            InputEvaluator&         input_evaluator,
             const Vector3f&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
@@ -360,7 +356,7 @@ namespace
 
         // Compute the sky radiance along a given direction.
         void compute_sky_radiance(
-            InputEvaluator&         input_evaluator,
+            const ShadingContext&   shading_context,
             const Vector3f&         outgoing,
             Spectrum&               value) const
         {
@@ -391,7 +387,7 @@ namespace
                 unit_vector_to_angles(outgoing, theta, phi);
                 angles_to_unit_square(theta, phi, u, v);
                 Arena arena;
-                input_evaluator.evaluate(m_inputs, Vector2f(u, v), arena);
+                m_inputs.evaluate(shading_context.get_texture_cache(), Vector2f(u, v), arena.data());
                 float turbidity = arena.as<InputValues>().m_turbidity;
 
                 // Apply turbidity multiplier and bias.
