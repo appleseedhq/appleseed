@@ -37,7 +37,6 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
-#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.

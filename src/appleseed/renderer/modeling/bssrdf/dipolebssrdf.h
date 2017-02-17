@@ -100,9 +100,6 @@ class DipoleBSSRDF
         const char*                 name,
         const ParamArray&           params);
 
-    virtual size_t compute_input_data_size(
-        const Assembly&             assembly) const APPLESEED_OVERRIDE;
-
     virtual bool on_frame_begin(
         const Project&              project,
         const BaseGroup*            parent,
@@ -139,12 +136,6 @@ class DipoleBSSRDF
 //
 // DipoleBSSRDF class implementation.
 //
-
-inline size_t DipoleBSSRDF::compute_input_data_size(
-    const Assembly&             assembly) const
-{
-    return foundation::align(sizeof(DipoleBSSRDFInputValues), 16);
-}
 
 inline bool DipoleBSSRDF::on_frame_begin(
     const Project&              project,

@@ -1194,7 +1194,6 @@ source_group ("renderer\\meta\\benchmarks" FILES
 
 set (renderer_meta_tests_sources
     renderer/meta/tests/test_assembly.cpp
-    renderer/meta/tests/test_bsdfmix.cpp
     renderer/meta/tests/test_containers.cpp
     renderer/meta/tests/test_dynamicspectrum.cpp
     renderer/meta/tests/test_entitymap.cpp
@@ -1505,7 +1504,6 @@ source_group ("renderer\\modeling\\frame" FILES
 )
 
 set (renderer_modeling_input_sources
-    renderer/modeling/input/arena.h
     renderer/modeling/input/colorsource.cpp
     renderer/modeling/input/colorsource.h
     renderer/modeling/input/inputarray.cpp
@@ -1766,6 +1764,7 @@ source_group ("renderer\\modeling\\texture" FILES
 )
 
 set (renderer_utility_sources
+    renderer/utility/arena.h
     renderer/utility/autodeskmax.h
     renderer/utility/bbox.h
     renderer/utility/dynamicspectrum.h

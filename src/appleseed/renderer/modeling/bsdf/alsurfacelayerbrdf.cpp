@@ -38,6 +38,7 @@
 #include "renderer/modeling/bsdf/fresnel.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/modeling/bsdf/specularhelper.h"
+#include "renderer/utility/arena.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
@@ -102,12 +103,6 @@ namespace
             return Model;
         }
 
-        virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const APPLESEED_OVERRIDE
-        {
-            return align(sizeof(InputValues), 16);
-        }
-
         APPLESEED_FORCE_INLINE virtual void prepare_inputs(
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
@@ -135,9 +130,8 @@ namespace
             values->m_precomputed.m_alpha_y = clamp(values->m_precomputed.m_alpha_y, 0.001f, 0.999f);
 
             // Allocate memory and initialize the nested closure tree.
-            values->m_substrate_closure_data = shading_context.osl_mem_alloc(sizeof(CompositeSurfaceClosure));
-
-            CompositeSurfaceClosure* c = reinterpret_cast<CompositeSurfaceClosure*>(values->m_substrate_closure_data);
+            values->m_substrate_closure_data = shading_context.get_arena().allocate(sizeof(CompositeSurfaceClosure));
+            CompositeSurfaceClosure* c = static_cast<CompositeSurfaceClosure*>(values->m_substrate_closure_data);
             new (c) CompositeSurfaceClosure(
                 Basis3f(shading_point.get_shading_basis()),
                 reinterpret_cast<OSL::ClosureColor*>(values->m_substrate));
@@ -153,7 +147,10 @@ namespace
             }
 
             // Prepare the inputs of children BSDFs.
-            values->m_osl_bsdf->prepare_inputs(shading_context, shading_point, values->m_substrate_closure_data);
+            values->m_osl_bsdf->prepare_inputs(
+                shading_context,
+                shading_point,
+                values->m_substrate_closure_data);
         }
 
         APPLESEED_FORCE_INLINE virtual void sample(

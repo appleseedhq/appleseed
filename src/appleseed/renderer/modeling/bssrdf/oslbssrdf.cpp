@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/closures.h"
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bssrdf/betterdipolebssrdf.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
@@ -41,7 +42,7 @@
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
 #endif
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
-#include "renderer/modeling/input/arena.h"
+#include "renderer/utility/arena.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/api/specializedapiarrays.h"
@@ -132,19 +133,12 @@ namespace
             return true;
         }
 
-        virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const
-        {
-            return sizeof(CompositeSubsurfaceClosure);
-        }
-
-        virtual void evaluate_inputs(
+        virtual const void* evaluate_inputs(
             const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point,
-            Arena&                  arena,
-            const size_t            offset = 0) const APPLESEED_OVERRIDE
+            const ShadingPoint&     shading_point) const APPLESEED_OVERRIDE
         {
-            CompositeSubsurfaceClosure* c = reinterpret_cast<CompositeSubsurfaceClosure*>(arena.data());
+            CompositeSubsurfaceClosure* c = shading_context.get_arena().allocate<CompositeSubsurfaceClosure>();
+
             new (c) CompositeSubsurfaceClosure(
                 Basis3f(shading_point.get_shading_basis()),
                 shading_point.get_osl_shader_globals().Ci);
@@ -156,6 +150,8 @@ namespace
                         shading_point,
                         c->get_closure_input_values(i));
             }
+
+            return c;
         }
 
         virtual bool sample(

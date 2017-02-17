@@ -35,7 +35,6 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
-#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/utility/transformsequence.h"
 
@@ -185,9 +184,8 @@ namespace
             const Vector2f uv(0.5f + direction[0] * r, 0.5f + direction[1] * r);
 
             // Evaluate the input.
-            Arena arena;
-            m_inputs.evaluate(shading_context.get_texture_cache(), uv, arena.data());
-            const InputValues& values = arena.as<InputValues>();
+            InputValues values;
+            m_inputs.evaluate(shading_context.get_texture_cache(), uv, &values);
             if (is_finite(values.m_radiance))
             {
                 value = values.m_radiance;

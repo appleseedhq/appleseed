@@ -35,7 +35,6 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
-#include "renderer/modeling/input/arena.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
@@ -159,12 +158,6 @@ namespace
             else return false;
 
             return true;
-        }
-
-        virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const APPLESEED_OVERRIDE
-        {
-            return align(sizeof(InputValues), 16);
         }
 
         APPLESEED_FORCE_INLINE virtual void prepare_inputs(

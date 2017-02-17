@@ -39,7 +39,6 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/edf/edf.h"
-#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/visibilityflags.h"
@@ -430,13 +429,9 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
                 light_shading_point);
         }
 
-        // Evaluate the EDF inputs.
-        Arena arena;
-        edf->evaluate_inputs(m_shading_context, light_shading_point, arena);
-
         // Evaluate the EDF.
         edf->evaluate(
-            arena.data(),
+            edf->evaluate_inputs(m_shading_context, light_shading_point),
             Vector3f(sample.m_geometric_normal),
             Basis3f(Vector3f(sample.m_shading_normal)),
             -Vector3f(incoming),
@@ -552,15 +547,11 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
             light_shading_point);
     }
 
-    // Evaluate the EDF inputs.
-    Arena arena;
-    edf->evaluate_inputs(m_shading_context, light_shading_point, arena);
-
     // Evaluate emitted radiance.
     Spectrum edf_value(Spectrum::Illuminance);
     float edf_prob;
     edf->evaluate(
-        arena.data(),
+        edf->evaluate_inputs(m_shading_context, light_shading_point),
         Vector3f(light_shading_point.get_geometric_normal()),
         Basis3f(light_shading_point.get_shading_basis()),
         -sample.m_incoming.get_value(),
@@ -730,14 +721,10 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
             light_shading_point);
     }
 
-    // Evaluate the EDF inputs.
-    Arena arena;
-    edf->evaluate_inputs(m_shading_context, light_shading_point, arena);
-
     // Evaluate the EDF.
     Spectrum edf_value(Spectrum::Illuminance);
     edf->evaluate(
-        arena.data(),
+        edf->evaluate_inputs(m_shading_context, light_shading_point),
         Vector3f(sample.m_geometric_normal),
         Basis3f(Vector3f(sample.m_shading_normal)),
         -Vector3f(incoming),

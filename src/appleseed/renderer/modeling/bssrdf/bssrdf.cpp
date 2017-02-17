@@ -35,7 +35,7 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
 #include "renderer/modeling/color/colorspace.h"
-#include "renderer/modeling/input/arena.h"
+#include "renderer/utility/arena.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -93,25 +93,20 @@ const BSDF& BSSRDF::get_brdf() const
     return impl->m_brdf.ref();
 }
 
-size_t BSSRDF::compute_input_data_size(
-    const Assembly&         assembly) const
-{
-    return get_inputs().compute_data_size();
-}
-
-void BSSRDF::evaluate_inputs(
+const void* BSSRDF::evaluate_inputs(
     const ShadingContext&   shading_context,
-    const ShadingPoint&     shading_point,
-    Arena&                  arena,
-    const size_t            offset) const
+    const ShadingPoint&     shading_point) const
 {
+    void* data = shading_context.get_arena().allocate(get_inputs().compute_data_size());
+
     get_inputs().evaluate(
         shading_context.get_texture_cache(),
         shading_point.get_uv(0),
-        arena.data(),
-        offset);
+        data);
 
-    prepare_inputs(shading_point, arena.data() + offset);
+    prepare_inputs(shading_point, data);
+
+    return data;
 }
 
 void BSSRDF::prepare_inputs(

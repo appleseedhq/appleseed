@@ -35,7 +35,6 @@
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
-#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
 
@@ -178,9 +177,8 @@ namespace
                 return false;
             }
 
-            Arena arena;
-            m_inputs.evaluate_uniforms(arena.data());
-            const InputValues& values = arena.as<InputValues>();
+            InputValues values;
+            m_inputs.evaluate_uniforms(&values);
 
             // Construct the Microfacet Distribution Function.
             m_mdf.reset(new MDFType(max(values.m_roughness, 1.0e-6f)));

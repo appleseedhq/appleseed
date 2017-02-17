@@ -27,36 +27,42 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_INPUT_ARENA_H
-#define APPLESEED_RENDERER_MODELING_INPUT_ARENA_H
+#ifndef APPLESEED_RENDERER_UTILITY_ARENA_H
+#define APPLESEED_RENDERER_UTILITY_ARENA_H
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptions/exception.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/memory.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 
 namespace renderer
 {
 
 //
-// An arena is the storage for inputs values and additional data such as precomputed values.
+// An arena is a temporary heap providing extremely cheap memory allocation.
 //
 
 class Arena
 {
   public:
-    enum { DataSize = 32 * 1024 };  // bytes
+    Arena();
 
-    const foundation::uint8* data(const size_t offset = 0) const;
-    foundation::uint8* data(const size_t offset = 0);
+    void clear();
 
-    template <typename T> const T& as(const size_t offset = 0) const;
-    template <typename T> T& as(const size_t offset = 0);
+    void* allocate(const size_t size);
+    template <typename T> T* allocate();
 
   private:
-    APPLESEED_SIMD4_ALIGN foundation::uint8 m_data[DataSize];
+    enum { ArenaSize = 256 * 1024 };        // bytes
+
+    APPLESEED_SIMD4_ALIGN foundation::uint8 m_storage[ArenaSize];
+    const foundation::uint8*                m_end;
+    foundation::uint8*                      m_current;
 };
 
 
@@ -64,28 +70,36 @@ class Arena
 // Arena class implementation.
 //
 
-inline const foundation::uint8* Arena::data(const size_t offset) const
+inline Arena::Arena()
+  : m_end(m_storage + ArenaSize)
+  , m_current(m_storage)
 {
-    return m_data + offset;
 }
 
-inline foundation::uint8* Arena::data(const size_t offset)
+inline void Arena::clear()
 {
-    return m_data + offset;
+    m_current = m_storage;
+}
+
+inline void* Arena::allocate(const size_t size)
+{
+    if (m_current + size > m_end)
+        throw foundation::Exception("out of arena memory");
+
+    void* ptr = m_current;
+    m_current += foundation::align(size, 16);
+
+    assert(foundation::is_aligned(ptr, 16));
+
+    return ptr;
 }
 
 template <typename T>
-inline const T& Arena::as(const size_t offset) const
+inline T* Arena::allocate()
 {
-    return *reinterpret_cast<const T*>(data(offset));
-}
-
-template <typename T>
-inline T& Arena::as(const size_t offset)
-{
-    return *reinterpret_cast<T*>(data(offset));
+    return static_cast<T*>(allocate(sizeof(T)));
 }
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_INPUT_ARENA_H
+#endif  // !APPLESEED_RENDERER_UTILITY_ARENA_H

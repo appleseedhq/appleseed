@@ -45,7 +45,6 @@
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/frame/frame.h"
-#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"

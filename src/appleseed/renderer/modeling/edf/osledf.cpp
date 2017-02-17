@@ -33,10 +33,11 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/closures.h"
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/edf/diffuseedf.h"
 #include "renderer/modeling/edf/edf.h"
-#include "renderer/modeling/input/arena.h"
+#include "renderer/utility/arena.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -77,14 +78,16 @@ namespace
             return Model;
         }
 
-        virtual void evaluate_inputs(
+        virtual const void* evaluate_inputs(
             const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point,
-            Arena&                  arena) const APPLESEED_OVERRIDE
+            const ShadingPoint&     shading_point) const APPLESEED_OVERRIDE
         {
             CompositeEmissionClosure* c =
-                reinterpret_cast<CompositeEmissionClosure*>(arena.data());
+                shading_context.get_arena().allocate<CompositeEmissionClosure>();
+
             new (c) CompositeEmissionClosure(shading_point.get_osl_shader_globals().Ci);
+
+            return c;
         }
 
         virtual void sample(

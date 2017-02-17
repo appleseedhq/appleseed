@@ -38,7 +38,6 @@
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentedf/sphericalcoordinates.h"
-#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/texturesource.h"
@@ -449,10 +448,8 @@ namespace
             assert(u >= 0.0f && u < 1.0f);
             assert(v >= 0.0f && v < 1.0f);
 
-            Arena arena;
-            m_inputs.evaluate(shading_context.get_texture_cache(), Vector2f(u, 1.0f - v), arena.data());
-
-            const InputValues& values = arena.as<InputValues>();
+            InputValues values;
+            m_inputs.evaluate(shading_context.get_texture_cache(), Vector2f(u, 1.0f - v), &values);
 
             if (is_finite(values.m_radiance))
             {

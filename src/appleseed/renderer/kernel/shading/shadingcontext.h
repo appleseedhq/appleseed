@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/oslshadergroupexec.h"
+#include "renderer/utility/arena.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -75,6 +76,8 @@ class ShadingContext
         ILightingEngine*            lighting_engine = 0,
         const float                 transparency_threshold = 0.001f,
         const size_t                max_iterations = 1000);
+
+    Arena& get_arena() const;
 
     const Intersector& get_intersector() const;
 
@@ -139,9 +142,8 @@ class ShadingContext
         const foundation::Color3f&  color,
         const float                 alpha) const;
 
-    void* osl_mem_alloc(const size_t size) const;
-
   private:
+    mutable Arena                   m_arena;
     const Intersector&              m_intersector;
     Tracer&                         m_tracer;
     TextureCache&                   m_texture_cache;
@@ -157,6 +159,11 @@ class ShadingContext
 //
 // ShadingContext class implementation.
 //
+
+inline Arena& ShadingContext::get_arena() const
+{
+    return m_arena;
+}
 
 inline const Intersector& ShadingContext::get_intersector() const
 {

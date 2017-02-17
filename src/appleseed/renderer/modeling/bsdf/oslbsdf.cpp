@@ -33,6 +33,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/closures.h"
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/alsurfacelayerbrdf.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -40,8 +41,8 @@
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/glassbsdf.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
-#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/scene/assembly.h"
+#include "renderer/utility/arena.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -149,21 +150,11 @@ namespace
             return true;
         }
 
-        virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const APPLESEED_OVERRIDE
-        {
-            return sizeof(CompositeSurfaceClosure);
-        }
-
-        virtual void evaluate_inputs(
+        virtual const void* evaluate_inputs(
             const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point,
-            Arena&                  arena,
-            const size_t            offset) const APPLESEED_OVERRIDE
+            const ShadingPoint&     shading_point) const APPLESEED_OVERRIDE
         {
-            assert(offset == 0);
-
-            CompositeSurfaceClosure* c = reinterpret_cast<CompositeSurfaceClosure*>(arena.data());
+            CompositeSurfaceClosure* c = shading_context.get_arena().allocate<CompositeSurfaceClosure>();
             new (c) CompositeSurfaceClosure(
                 Basis3f(shading_point.get_shading_basis()),
                 shading_point.get_osl_shader_globals().Ci);
@@ -176,15 +167,17 @@ namespace
                     inject_layered_closure_values(cid, this, c->get_closure_input_values(i));
             }
 
-            prepare_inputs(shading_context, shading_point, arena.data());
+            prepare_inputs(shading_context, shading_point, c);
+
+            return c;
         }
 
         void prepare_inputs(
-            const ShadingContext&       shading_context,
-            const ShadingPoint&         shading_point,
-            void*                       data) const APPLESEED_OVERRIDE
+            const ShadingContext&   shading_context,
+            const ShadingPoint&     shading_point,
+            void*                   data) const APPLESEED_OVERRIDE
         {
-            CompositeSurfaceClosure* c = reinterpret_cast<CompositeSurfaceClosure*>(data);
+            CompositeSurfaceClosure* c = static_cast<CompositeSurfaceClosure*>(data);
 
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
@@ -304,7 +297,7 @@ namespace
 
         virtual void compute_absorption(
             const void*                 data,
-            const float                distance,
+            const float                 distance,
             Spectrum&                   absorption) const APPLESEED_OVERRIDE
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);

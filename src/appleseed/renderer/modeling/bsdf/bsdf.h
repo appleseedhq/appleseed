@@ -48,11 +48,10 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer      { class Arena; }
-namespace renderer      { class Assembly; }
-namespace renderer      { class ParamArray; }
-namespace renderer      { class ShadingContext; }
-namespace renderer      { class ShadingPoint; }
+namespace renderer  { class Assembly; }
+namespace renderer  { class ParamArray; }
+namespace renderer  { class ShadingContext; }
+namespace renderer  { class ShadingPoint; }
 
 namespace renderer
 {
@@ -122,19 +121,12 @@ class APPLESEED_DLLSYMBOL BSDF
     bool is_purely_diffuse_or_glossy() const;
     bool is_purely_glossy_or_specular() const;
 
-    // Compute the cumulated size in bytes of the values of all inputs of
-    // this BSDF and its child BSDFs, if any.
-    virtual size_t compute_input_data_size(
-        const Assembly&             assembly) const;
-
     // Evaluate the inputs of this BSDF and of its child BSDFs, if any.
     // Input values are stored in the input evaluator. This method is called
     // once per shading point and pair of incoming/outgoing directions.
-    virtual void evaluate_inputs(
+    virtual const void* evaluate_inputs(
         const ShadingContext&       shading_context,
-        const ShadingPoint&         shading_point,
-        Arena&                      arena,
-        const size_t                offset = 0) const;
+        const ShadingPoint&         shading_point) const;
 
     // Perform any precomputation needed for this BSDF's input values.
     virtual void prepare_inputs(

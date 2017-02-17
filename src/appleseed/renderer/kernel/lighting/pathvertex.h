@@ -107,7 +107,6 @@ class PathVertex
     // Compute the radiance emitted at this vertex. Only call when there is an EDF (when m_edf is set).
     void compute_emitted_radiance(
         const ShadingContext&   shading_context,
-        TextureCache&           texture_cache,
         Spectrum&               radiance) const;
 
     // Return the probability density wrt. surface area mesure of reaching this vertex via BSDF sampling.

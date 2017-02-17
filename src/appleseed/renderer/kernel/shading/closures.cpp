@@ -32,7 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/input/arena.h"
+#include "renderer/utility/arena.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/cdf.h"
@@ -1454,8 +1454,6 @@ InputValues* CompositeClosure::do_add_closure(
 // CompositeSurfaceClosure class implementation.
 //
 
-BOOST_STATIC_ASSERT(sizeof(CompositeSurfaceClosure) <= Arena::DataSize);
-
 CompositeSurfaceClosure::CompositeSurfaceClosure(
     const Basis3f&              original_shading_basis,
     const OSL::ClosureColor*    ci)
@@ -1562,8 +1560,6 @@ void CompositeSurfaceClosure::process_closure_tree(
 // CompositeSubsurfaceClosure class implementation.
 //
 
-BOOST_STATIC_ASSERT(sizeof(CompositeSubsurfaceClosure) <= Arena::DataSize);
-
 CompositeSubsurfaceClosure::CompositeSubsurfaceClosure(
     const Basis3f&              original_shading_basis,
     const OSL::ClosureColor*    ci)
@@ -1632,8 +1628,6 @@ void CompositeSubsurfaceClosure::process_closure_tree(
 //
 // CompositeEmissionClosure class implementation.
 //
-
-BOOST_STATIC_ASSERT(sizeof(CompositeEmissionClosure) <= Arena::DataSize);
 
 CompositeEmissionClosure::CompositeEmissionClosure(
     const OSL::ClosureColor*    ci)

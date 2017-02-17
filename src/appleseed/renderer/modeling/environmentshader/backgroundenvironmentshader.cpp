@@ -36,7 +36,6 @@
 #include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
-#include "renderer/modeling/input/arena.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
@@ -88,16 +87,15 @@ namespace
         {
             const Vector2f s(pixel_context.get_sample_position());
 
-            Arena arena;
+            InputValues values;
             m_inputs.evaluate(
                 shading_context.get_texture_cache(),
                 Vector2f(s[0], 1.0f - s[1]),
-                arena.data());
-            const InputValues& input_values = arena.as<InputValues>();
+                &values);
 
             shading_result.m_color_space = ColorSpaceSpectral;
-            shading_result.m_main.m_color = input_values.m_color;
-            shading_result.m_main.m_alpha[0] = input_values.m_alpha;
+            shading_result.m_main.m_color = values.m_color;
+            shading_result.m_main.m_alpha[0] = values.m_alpha;
             shading_result.m_aovs.m_color.set(0.0f);
             shading_result.m_aovs.m_alpha.set(0.0f);
         }

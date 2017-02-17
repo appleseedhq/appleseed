@@ -46,7 +46,6 @@
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
-#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/stochasticcast.h"
 
@@ -208,7 +207,6 @@ namespace
             const LightSampler&         m_light_sampler;
             SamplingContext&            m_sampling_context;
             const ShadingContext&       m_shading_context;
-            TextureCache&               m_texture_cache;
             const EnvironmentEDF*       m_env_edf;
             knn::Answer<float>&         m_answer;
             Spectrum&                   m_path_radiance;
@@ -229,7 +227,6 @@ namespace
               , m_light_sampler(light_sampler)
               , m_sampling_context(sampling_context)
               , m_shading_context(shading_context)
-              , m_texture_cache(shading_context.get_texture_cache())
               , m_env_edf(scene.get_environment()->get_environment_edf())
               , m_answer(answer)
               , m_path_radiance(path_radiance)
@@ -556,10 +553,7 @@ namespace
             {
                 // Compute the emitted radiance.
                 Spectrum emitted_radiance(Spectrum::Illuminance);
-                vertex.compute_emitted_radiance(
-                    m_shading_context,
-                    m_texture_cache,
-                    emitted_radiance);
+                vertex.compute_emitted_radiance(m_shading_context, emitted_radiance);
 
                 // Add the emitted light contribution.
                 vertex_radiance += emitted_radiance;

@@ -48,7 +48,6 @@
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
-#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/stochasticcast.h"
@@ -272,7 +271,6 @@ namespace
             const LightSampler&         m_light_sampler;
             SamplingContext&            m_sampling_context;
             const ShadingContext&       m_shading_context;
-            TextureCache&               m_texture_cache;
             const EnvironmentEDF*       m_env_edf;
             Spectrum&                   m_path_radiance;
             SpectrumStack&              m_path_aovs;
@@ -290,7 +288,6 @@ namespace
               , m_light_sampler(light_sampler)
               , m_sampling_context(sampling_context)
               , m_shading_context(shading_context)
-              , m_texture_cache(shading_context.get_texture_cache())
               , m_env_edf(scene.get_environment()->get_environment_edf())
               , m_path_radiance(path_radiance)
               , m_path_aovs(path_aovs)
@@ -357,10 +354,7 @@ namespace
                 {
                     // Compute the emitted radiance.
                     Spectrum emitted_radiance(Spectrum::Illuminance);
-                    vertex.compute_emitted_radiance(
-                        m_shading_context,
-                        m_texture_cache,
-                        emitted_radiance);
+                    vertex.compute_emitted_radiance(m_shading_context, emitted_radiance);
 
                     // Update the path radiance.
                     emitted_radiance *= vertex.m_throughput;
@@ -756,10 +750,7 @@ namespace
             {
                 // Compute the emitted radiance.
                 Spectrum emitted_radiance(Spectrum::Illuminance);
-                vertex.compute_emitted_radiance(
-                    m_shading_context,
-                    m_texture_cache,
-                    emitted_radiance);
+                vertex.compute_emitted_radiance(m_shading_context, emitted_radiance);
 
                 // Multiple importance sampling.
                 if (vertex.m_prev_mode != ScatteringMode::Specular)

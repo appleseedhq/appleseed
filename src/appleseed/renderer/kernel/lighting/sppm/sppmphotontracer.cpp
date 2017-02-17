@@ -48,7 +48,6 @@
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
-#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/light/lighttarget.h"
 #include "renderer/modeling/scene/assembly.h"
@@ -347,10 +346,6 @@ namespace
                     light_shading_point);
             }
 
-            // Evaluate the EDF inputs.
-            Arena arena;
-            edf->evaluate_inputs(shading_context, light_shading_point, arena);
-
             // Sample the EDF.
             SamplingContext child_sampling_context = sampling_context.split(2, 1);
             Vector3f emission_direction;
@@ -358,7 +353,7 @@ namespace
             float edf_prob;
             edf->sample(
                 sampling_context,
-                arena.data(),
+                edf->evaluate_inputs(shading_context, light_shading_point),
                 Vector3f(light_sample.m_geometric_normal),
                 Basis3f(Vector3f(light_sample.m_shading_normal)),
                 child_sampling_context.next2<Vector2f>(),

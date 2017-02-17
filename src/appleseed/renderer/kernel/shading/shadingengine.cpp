@@ -38,7 +38,6 @@
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
-#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/object.h"

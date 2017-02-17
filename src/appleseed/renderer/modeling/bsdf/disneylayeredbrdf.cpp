@@ -33,8 +33,8 @@
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
-#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/material/disneymaterial.h"
+#include "renderer/utility/arena.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -97,21 +97,11 @@ bool DisneyLayeredBRDF::on_frame_begin(
     return true;
 }
 
-size_t DisneyLayeredBRDF::compute_input_data_size(
-    const Assembly&             assembly) const
-{
-    return sizeof(DisneyBRDFInputValues);
-}
-
-void DisneyLayeredBRDF::evaluate_inputs(
+const void* DisneyLayeredBRDF::evaluate_inputs(
     const ShadingContext&       shading_context,
-    const ShadingPoint&         shading_point,
-    Arena&                      arena,
-    const size_t                offset) const
+    const ShadingPoint&         shading_point) const
 {
-    DisneyBRDFInputValues* values =
-        reinterpret_cast<DisneyBRDFInputValues*>(arena.data() + offset);
-
+    DisneyBRDFInputValues* values = shading_context.get_arena().allocate<DisneyBRDFInputValues>();
     memset(values, 0, sizeof(DisneyBRDFInputValues));
 
     Color3f base_color(0.0f);
@@ -133,6 +123,8 @@ void DisneyLayeredBRDF::evaluate_inputs(
     values->m_base_color = srgb_to_linear_rgb(base_color);
 
     m_brdf->prepare_inputs(shading_context, shading_point, values);
+
+    return values;
 }
 
 void DisneyLayeredBRDF::sample(

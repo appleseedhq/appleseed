@@ -112,12 +112,6 @@ namespace
             return Model;
         }
 
-        virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const APPLESEED_OVERRIDE
-        {
-            return align(sizeof(InputValues), 16);
-        }
-
         APPLESEED_FORCE_INLINE virtual void prepare_inputs(
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,

@@ -32,7 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/shadingcontext.h"
-#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/utility/autodeskmax.h"
@@ -215,10 +214,9 @@ namespace
             const float y = static_cast<float>(dot(d, n) * m_rcp_screen_half_size);
             const Vector2f uv(0.5f * (x + 1.0f), 0.5f * (y + 1.0f));
 
-            Arena arena;
-            m_inputs.evaluate(shading_context.get_texture_cache(), uv, arena.data());
+            InputValues values;
+            m_inputs.evaluate(shading_context.get_texture_cache(), uv, &values);
 
-            const InputValues& values = arena.as<InputValues>();
             radiance = values.m_intensity;
             radiance *= values.m_intensity_multiplier;
 

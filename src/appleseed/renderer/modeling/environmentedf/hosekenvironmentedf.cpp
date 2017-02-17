@@ -35,7 +35,6 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentedf/sphericalcoordinates.h"
-#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/utility/transformsequence.h"
@@ -401,9 +400,9 @@ namespace
                 float u, v;
                 unit_vector_to_angles(outgoing, theta, phi);
                 angles_to_unit_square(theta, phi, u, v);
-                Arena arena;
-                m_inputs.evaluate(shading_context.get_texture_cache(), Vector2f(u, v), arena.data());
-                float turbidity = arena.as<InputValues>().m_turbidity;
+                InputValues values;
+                m_inputs.evaluate(shading_context.get_texture_cache(), Vector2f(u, v), &values);
+                float turbidity = values.m_turbidity;
 
                 // Apply turbidity multiplier and bias.
                 turbidity *= m_uniform_values.m_turbidity_multiplier;

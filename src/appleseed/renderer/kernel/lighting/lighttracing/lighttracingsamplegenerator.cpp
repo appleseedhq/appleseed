@@ -53,7 +53,6 @@
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/frame/frame.h"
-#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/project/project.h"
@@ -591,10 +590,6 @@ namespace
                     light_shading_point);
             }
 
-            // Evaluate the EDF inputs.
-            Arena arena;
-            material_data.m_edf->evaluate_inputs(m_shading_context, light_shading_point, arena);
-
             // Sample the EDF.
             sampling_context.split_in_place(2, 1);
             Vector3f emission_direction;
@@ -602,7 +597,7 @@ namespace
             float edf_prob;
             material_data.m_edf->sample(
                 sampling_context,
-                arena.data(),
+                material_data.m_edf->evaluate_inputs(m_shading_context, light_shading_point),
                 Vector3f(light_sample.m_geometric_normal),
                 Basis3f(Vector3f(light_sample.m_shading_normal)),
                 sampling_context.next2<Vector2f>(),
@@ -654,7 +649,7 @@ namespace
                 material_data.m_edf->get_light_near_start());   // don't illuminate points closer than the light near start value
 
             // Handle the light vertex separately.
-            Spectrum light_particle_flux = edf_value;       // todo: only works for diffuse EDF? What we need is the light exitance
+            Spectrum light_particle_flux = edf_value;           // todo: only works for diffuse EDF? What we need is the light exitance
             light_particle_flux /= light_sample.m_probability;
             path_visitor.visit_area_light_vertex(
                 light_sample,

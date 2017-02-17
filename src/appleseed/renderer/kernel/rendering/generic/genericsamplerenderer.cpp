@@ -49,6 +49,7 @@
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/utility/arena.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -183,6 +184,9 @@ namespace
                         pretty_int(m_params.m_max_iterations).c_str());
                     break;
                 }
+
+                // Clear the arena.
+                m_shading_context.get_arena().clear();
 
                 // Trace the ray.
                 shading_points[shading_point_index].clear();

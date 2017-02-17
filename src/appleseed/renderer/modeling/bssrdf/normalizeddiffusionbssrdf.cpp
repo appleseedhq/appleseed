@@ -33,7 +33,6 @@
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/bssrdf/separablebssrdf.h"
 #include "renderer/modeling/bssrdf/sss.h"
-#include "renderer/modeling/input/arena.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/cdf.h"
@@ -98,12 +97,6 @@ namespace
         virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
-        }
-
-        virtual size_t compute_input_data_size(
-            const Assembly&     assembly) const APPLESEED_OVERRIDE
-        {
-            return align(sizeof(NormalizedDiffusionBSSRDFInputValues), 16);
         }
 
         virtual void prepare_inputs(

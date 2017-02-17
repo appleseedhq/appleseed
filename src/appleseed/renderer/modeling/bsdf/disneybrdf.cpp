@@ -35,7 +35,6 @@
 #include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/color/wavelengths.h"
-#include "renderer/modeling/input/arena.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
@@ -356,12 +355,6 @@ namespace
         virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
-        }
-
-        virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const APPLESEED_OVERRIDE
-        {
-            return align(sizeof(DisneyBRDFInputValues), 16);
         }
 
         void prepare_inputs(

@@ -33,9 +33,11 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/scene/assembly.h"
+#include "renderer/utility/arena.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -52,7 +54,6 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class Arena; }
 namespace renderer      { class ShadingPoint; }
 
 using namespace foundation;
@@ -108,57 +109,25 @@ namespace
             if (m_bsdf[0] == 0 || m_bsdf[1] == 0)
                 return false;
 
-            m_bsdf_data_offset[0] = get_inputs().compute_data_size();
-            m_bsdf_data_offset[1] = m_bsdf_data_offset[0] + m_bsdf[0]->compute_input_data_size(*assembly);
-
             return true;
         }
 
-        virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const APPLESEED_OVERRIDE
-        {
-            size_t size = get_inputs().compute_data_size();
-
-            {
-                const BSDF* bsdf0 = retrieve_bsdf(assembly, "bsdf0");
-                if (bsdf0)
-                    size += bsdf0->compute_input_data_size(assembly);
-            }
-
-            {
-                const BSDF* bsdf1 = retrieve_bsdf(assembly, "bsdf1");
-                if (bsdf1)
-                    size += bsdf1->compute_input_data_size(assembly);
-            }
-
-            return size;
-        }
-
-        virtual void evaluate_inputs(
+        virtual const void* evaluate_inputs(
             const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point,
-            Arena&                  arena,
-            const size_t            offset) const APPLESEED_OVERRIDE
+            const ShadingPoint&     shading_point) const APPLESEED_OVERRIDE
         {
             assert(m_bsdf[0] && m_bsdf[1]);
 
-            BSDF::evaluate_inputs(
-                shading_context,
-                shading_point,
-                arena,
-                offset);
+            Values* values = shading_context.get_arena().allocate<Values>();
 
-            m_bsdf[0]->evaluate_inputs(
-                shading_context,
-                shading_point,
-                arena,
-                offset + m_bsdf_data_offset[0]);
+            values->m_inputs =
+                static_cast<const Values::Inputs*>(
+                    BSDF::evaluate_inputs(shading_context, shading_point));
 
-            m_bsdf[1]->evaluate_inputs(
-                shading_context,
-                shading_point,
-                arena,
-                offset + m_bsdf_data_offset[1]);
+            values->m_child_inputs[0] = m_bsdf[0]->evaluate_inputs(shading_context, shading_point);
+            values->m_child_inputs[1] = m_bsdf[1]->evaluate_inputs(shading_context, shading_point);
+
+            return values;
         }
 
         APPLESEED_FORCE_INLINE virtual void sample(
@@ -170,18 +139,17 @@ namespace
         {
             assert(m_bsdf[0] && m_bsdf[1]);
 
-            // Retrieve the blending weights.
-            const InputValues* values = static_cast<const InputValues*>(data);
+            const Values* values = static_cast<const Values*>(data);
 
             // Choose which of the two BSDFs to sample.
             sampling_context.split_in_place(1, 1);
             const float s = sampling_context.next2<float>();
-            const size_t bsdf_index = s < values->m_weight ? 0 : 1;
+            const size_t bsdf_index = s < values->m_inputs->m_weight ? 0 : 1;
 
             // Sample the chosen BSDF.
             m_bsdf[bsdf_index]->sample(
                 sampling_context,
-                get_bsdf_data(data, bsdf_index),
+                values->m_child_inputs[bsdf_index],
                 adjoint,
                 false,                      // do not multiply by |cos(incoming, normal)|
                 sample);
@@ -200,9 +168,10 @@ namespace
         {
             assert(m_bsdf[0] && m_bsdf[1]);
 
-            // Retrieve the blending weights.
-            const InputValues* values = static_cast<const InputValues*>(data);
-            const float w0 = values->m_weight;
+            const Values* values = static_cast<const Values*>(data);
+
+            // Retrieve blending weights.
+            const float w0 = values->m_inputs->m_weight;
             const float w1 = 1.0f - w0;
 
             // Evaluate the first BSDF.
@@ -210,7 +179,7 @@ namespace
             const float bsdf0_prob =
                 w0 > 0.0f
                     ? m_bsdf[0]->evaluate(
-                          get_bsdf_data(data, 0),
+                          values->m_child_inputs[0],
                           adjoint,
                           false,                // do not multiply by |cos(incoming, normal)|
                           geometric_normal,
@@ -226,7 +195,7 @@ namespace
             const float bsdf1_prob =
                 w1 > 0.0f
                     ? m_bsdf[1]->evaluate(
-                          get_bsdf_data(data, 1),
+                          values->m_child_inputs[1],
                           adjoint,
                           false,                // do not multiply by |cos(incoming, normal)|
                           geometric_normal,
@@ -239,8 +208,8 @@ namespace
 
             // Blend BSDF values.
             value.set(0.0f);
-            if (bsdf0_prob > 0.0) madd(value, bsdf0_value, w0);
-            if (bsdf1_prob > 0.0) madd(value, bsdf1_value, w1);
+            if (bsdf0_prob > 0.0f) madd(value, bsdf0_value, w0);
+            if (bsdf1_prob > 0.0f) madd(value, bsdf1_value, w1);
 
             // Blend PDF values.
             return bsdf0_prob * w0 + bsdf1_prob * w1;
@@ -256,16 +225,17 @@ namespace
         {
             assert(m_bsdf[0] && m_bsdf[1]);
 
-            // Retrieve the blending weights.
-            const InputValues* values = static_cast<const InputValues*>(data);
-            const float w0 = values->m_weight;
+            const Values* values = static_cast<const Values*>(data);
+
+            // Retrieve blending weights.
+            const float w0 = values->m_inputs->m_weight;
             const float w1 = 1.0f - w0;
 
             // Evaluate the PDF of the first BSDF.
             const float bsdf0_prob =
                 w0 > 0.0f
                     ? m_bsdf[0]->evaluate_pdf(
-                          get_bsdf_data(data, 0),
+                          values->m_child_inputs[0],
                           geometric_normal,
                           shading_basis,
                           outgoing,
@@ -277,7 +247,7 @@ namespace
             const float bsdf1_prob =
                 w1 > 0.0f
                     ? m_bsdf[1]->evaluate_pdf(
-                          get_bsdf_data(data, 1),
+                          values->m_child_inputs[1],
                           geometric_normal,
                           shading_basis,
                           outgoing,
@@ -290,9 +260,15 @@ namespace
         }
 
       private:
-        APPLESEED_DECLARE_INPUT_VALUES(InputValues)
+        struct Values
         {
-            float   m_weight;
+            APPLESEED_DECLARE_INPUT_VALUES(Inputs)
+            {
+                float       m_weight;
+            };
+
+            const Inputs*   m_inputs;
+            const void*     m_child_inputs[2];
         };
 
         const BSDF* m_bsdf[2];
@@ -312,12 +288,6 @@ namespace
                 RENDERER_LOG_ERROR("while preparing bsdf \"%s\": cannot find bsdf \"%s\".", get_path().c_str(), bsdf_name.c_str());
 
             return bsdf;
-        }
-
-        const void* get_bsdf_data(const void* data, const size_t bsdf_index) const
-        {
-            assert(bsdf_index < 2);
-            return static_cast<const uint8*>(data) + m_bsdf_data_offset[bsdf_index];
         }
     };
 

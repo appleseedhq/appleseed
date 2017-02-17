@@ -37,7 +37,6 @@
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/camera/camera.h"
-#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/scene.h"
@@ -242,12 +241,10 @@ void DiagnosticSurfaceShader::evaluate(
 
                 if (material_data.m_bsdf)
                 {
-                    Arena arena;
-                    material_data.m_bsdf->evaluate_inputs(shading_context, shading_point, arena);
-
                     const Vector3f direction = -normalize(Vector3f(shading_point.get_ray().m_dir));
+
                     material_data.m_bsdf->evaluate(
-                        arena.data(),
+                        material_data.m_bsdf->evaluate_inputs(shading_context, shading_point),
                         false,
                         false,
                         Vector3f(shading_point.get_geometric_normal()),
@@ -513,13 +510,10 @@ void DiagnosticSurfaceShader::evaluate(
                         ray.m_dir - ray.m_rx.m_dir,
                         ray.m_dir - ray.m_ry.m_dir);
 
-                    Arena arena;
-                    material_data.m_bsdf->evaluate_inputs(shading_context, shading_point, arena);
-
                     BSDFSample sample(shading_point, outgoing);
                     material_data.m_bsdf->sample(
                         sampling_context,
-                        arena.data(),
+                        material_data.m_bsdf->evaluate_inputs(shading_context, shading_point),
                         false,
                         false,
                         sample);

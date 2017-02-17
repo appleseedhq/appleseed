@@ -32,7 +32,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/input/arena.h"
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 
@@ -166,11 +165,6 @@ void ShadingContext::execute_osl_surface_shader(
         shading_point,
         color,
         alpha);
-}
-
-void* ShadingContext::osl_mem_alloc(const size_t size) const
-{
-    return m_shadergroup_exec.osl_mem_alloc(size);
 }
 
 }   // namespace renderer

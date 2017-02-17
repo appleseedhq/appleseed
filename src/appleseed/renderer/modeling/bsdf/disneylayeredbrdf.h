@@ -45,7 +45,6 @@
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class Arena; }
 namespace renderer      { class BaseGroup; }
 namespace renderer      { class DisneyMaterial; }
 namespace renderer      { class OnFrameBeginRecorder; }
@@ -75,14 +74,9 @@ class DisneyLayeredBRDF
         OnFrameBeginRecorder&           recorder,
         foundation::IAbortSwitch*       abort_switch = 0) APPLESEED_OVERRIDE;
 
-    virtual size_t compute_input_data_size(
-        const Assembly&                 assembly) const APPLESEED_OVERRIDE;
-
-    virtual void evaluate_inputs(
+    virtual const void* evaluate_inputs(
         const ShadingContext&           shading_context,
-        const ShadingPoint&             shading_point,
-        Arena&                          arena,
-        const size_t                    offset = 0) const APPLESEED_OVERRIDE;
+        const ShadingPoint&             shading_point) const APPLESEED_OVERRIDE;
 
     virtual void sample(
         SamplingContext&                sampling_context,

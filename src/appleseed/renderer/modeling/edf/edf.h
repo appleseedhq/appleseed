@@ -45,7 +45,6 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class Arena; }
 namespace renderer      { class BaseGroup; }
 namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
@@ -110,10 +109,9 @@ class APPLESEED_DLLSYMBOL EDF
 
     // Evaluate the inputs of this EDF.
     // Input values are stored in the input evaluator.
-    virtual void evaluate_inputs(
+    virtual const void* evaluate_inputs(
         const ShadingContext&       shading_context,
-        const ShadingPoint&         shading_point,              // shading point on the light source
-        Arena&                      arena) const;
+        const ShadingPoint&         shading_point) const;       // shading point on the light source
 
     // Sample the EDF and compute the emission direction, its probability
     // density and the value of the EDF for this direction.

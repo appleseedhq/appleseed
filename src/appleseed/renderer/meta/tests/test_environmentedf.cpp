@@ -43,7 +43,6 @@
 #include "renderer/modeling/environmentedf/gradientenvironmentedf.h"
 #include "renderer/modeling/environmentedf/latlongmapenvironmentedf.h"
 #include "renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h"
-#include "renderer/modeling/input/arena.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/texture/texture.h"
