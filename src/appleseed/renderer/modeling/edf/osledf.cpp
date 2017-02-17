@@ -79,10 +79,11 @@ namespace
 
         virtual void evaluate_inputs(
             InputEvaluator&         input_evaluator,
-            const ShadingPoint&     shading_point) const APPLESEED_OVERRIDE
+            const ShadingPoint&     shading_point,
+            Arena&                  arena) const APPLESEED_OVERRIDE
         {
             CompositeEmissionClosure* c =
-                reinterpret_cast<CompositeEmissionClosure*>(input_evaluator.data());
+                reinterpret_cast<CompositeEmissionClosure*>(arena.data());
             new (c) CompositeEmissionClosure(shading_point.get_osl_shader_globals().Ci);
         }
 

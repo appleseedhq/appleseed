@@ -279,15 +279,14 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                         *vertex.m_shading_point);
                 }
 
-                InputEvaluator input_evaluator(shading_context.get_texture_cache());
+                Arena arena;
+                InputEvaluator input_evaluator(shading_context.get_texture_cache(), arena);
                 material_data.m_bsdf->evaluate_inputs(
                     shading_context,
                     input_evaluator,
-                    *vertex.m_shading_point);
-                const float ior =
-                    material_data.m_bsdf->sample_ior(
-                        sampling_context,
-                        input_evaluator.data());
+                    *vertex.m_shading_point,
+                    arena);
+                const float ior = material_data.m_bsdf->sample_ior(sampling_context, arena.data());
                 next_ray.add_medium(ray, &object_instance, material, ior);
             }
             else next_ray.remove_medium(ray, &object_instance);
@@ -384,25 +383,29 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         }
 
         // Evaluate the inputs of the BSDF.
-        InputEvaluator bsdf_input_evaluator(shading_context.get_texture_cache());
+        Arena bsdf_arena;
+        InputEvaluator bsdf_input_evaluator(shading_context.get_texture_cache(), bsdf_arena);
         if (vertex.m_bsdf)
         {
             vertex.m_bsdf->evaluate_inputs(
                 shading_context,
                 bsdf_input_evaluator,
-                *vertex.m_shading_point);
-            vertex.m_bsdf_data = bsdf_input_evaluator.data();
+                *vertex.m_shading_point,
+                bsdf_arena);
+            vertex.m_bsdf_data = bsdf_arena.data();
         }
 
         // Evaluate the inputs of the BSSRDF.
-        InputEvaluator bssrdf_input_evaluator(shading_context.get_texture_cache());
+        Arena bssrdf_arena;
+        InputEvaluator bssrdf_input_evaluator(shading_context.get_texture_cache(), bssrdf_arena);
         if (vertex.m_bssrdf)
         {
             vertex.m_bssrdf->evaluate_inputs(
                 shading_context,
                 bssrdf_input_evaluator,
-                *vertex.m_shading_point);
-            vertex.m_bssrdf_data = bssrdf_input_evaluator.data();
+                *vertex.m_shading_point,
+                bssrdf_arena);
+            vertex.m_bssrdf_data = bssrdf_arena.data();
         }
 
         // If we picked the BSSRDF, find an incoming point.
@@ -572,7 +575,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 const float ior =
                     vertex.m_bsdf->sample_ior(
                         sampling_context,
-                        bsdf_input_evaluator.data());
+                        bsdf_arena.data());
                 next_ray.add_medium(ray, &object_instance, vertex.get_material(), ior);
             }
             else next_ray.remove_medium(ray, &object_instance);
@@ -596,11 +599,12 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                     render_data.m_bsdf->evaluate_inputs(
                         shading_context,
                         bsdf_input_evaluator,
-                        *vertex.m_shading_point);
+                        *vertex.m_shading_point,
+                        bsdf_arena);
                     const float distance = static_cast<float>(norm(vertex.get_point() - medium_start));
                     Spectrum absorption;
                     render_data.m_bsdf->compute_absorption(
-                        bsdf_input_evaluator.data(),
+                        bsdf_arena.data(),
                         distance,
                         absorption);
                     vertex.m_throughput *= absorption;

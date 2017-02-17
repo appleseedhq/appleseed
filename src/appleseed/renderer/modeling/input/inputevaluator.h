@@ -48,6 +48,23 @@ namespace renderer
 {
 
 //
+// An arena is the storage for inputs values and additional data such as precomputed values.
+//
+
+class Arena
+{
+  public:
+    enum { DataSize = 32 * 1024 };  // bytes
+
+    const foundation::uint8* data() const;
+    foundation::uint8* data();
+
+  private:
+    APPLESEED_SIMD4_ALIGN foundation::uint8 m_data[DataSize];
+};
+
+
+//
 // Input evaluator.
 //
 
@@ -55,7 +72,7 @@ class InputEvaluator
 {
   public:
     // Constructor.
-    explicit InputEvaluator(TextureCache& texture_cache);
+    InputEvaluator(TextureCache& texture_cache, Arena& arena);
 
     // Evaluate a set of inputs, and return the values as an opaque block of memory.
     const void* evaluate(
@@ -68,24 +85,34 @@ class InputEvaluator
         const foundation::Vector2f& uv,
         const size_t                offset = 0);
 
-    // Access the values stored by the evaluate() methods.
-    const foundation::uint8* data() const;
-    foundation::uint8* data();
-
-    enum { DataSize = 32 * 1024 };  // bytes
-
   private:
-    APPLESEED_SIMD4_ALIGN foundation::uint8 m_data[DataSize];
-    TextureCache&                           m_texture_cache;
+    TextureCache&   m_texture_cache;
+    Arena&          m_arena;
 };
+
+
+//
+// Arena class implementation.
+//
+
+inline const foundation::uint8* Arena::data() const
+{
+    return m_data;
+}
+
+inline foundation::uint8* Arena::data()
+{
+    return m_data;
+}
 
 
 //
 // InputEvaluator class implementation.
 //
 
-inline InputEvaluator::InputEvaluator(TextureCache& texture_cache)
+inline InputEvaluator::InputEvaluator(TextureCache& texture_cache, Arena& arena)
   : m_texture_cache(texture_cache)
+  , m_arena(arena)
 {
 }
 
@@ -94,8 +121,8 @@ inline const void* InputEvaluator::evaluate(
     const foundation::Vector2f&     uv,
     const size_t                    offset)
 {
-    inputs.evaluate(m_texture_cache, uv, m_data, offset);
-    return m_data + offset;
+    inputs.evaluate(m_texture_cache, uv, m_arena.data(), offset);
+    return m_arena.data() + offset;
 }
 
 template <typename T>
@@ -104,18 +131,7 @@ inline const T* InputEvaluator::evaluate(
     const foundation::Vector2f&     uv,
     const size_t                    offset)
 {
-    inputs.evaluate(m_texture_cache, uv, m_data, offset);
-    return reinterpret_cast<const T*>(m_data + offset);
-}
-
-inline const foundation::uint8* InputEvaluator::data() const
-{
-    return m_data;
-}
-
-inline foundation::uint8* InputEvaluator::data()
-{
-    return m_data;
+    return reinterpret_cast<const T*>(evaluate(inputs, uv, offset));
 }
 
 }       // namespace renderer

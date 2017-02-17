@@ -115,7 +115,8 @@ bool EDF::on_frame_begin(
 
 void EDF::evaluate_inputs(
     InputEvaluator&         input_evaluator,
-    const ShadingPoint&     shading_point) const
+    const ShadingPoint&     shading_point,
+    Arena&                  arena) const
 {
     input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0));
 }

@@ -431,12 +431,13 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
         }
 
         // Evaluate the EDF inputs.
-        InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
-        edf->evaluate_inputs(edf_input_evaluator, light_shading_point);
+        Arena arena;
+        InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache(), arena);
+        edf->evaluate_inputs(edf_input_evaluator, light_shading_point, arena);
 
         // Evaluate the EDF.
         edf->evaluate(
-            edf_input_evaluator.data(),
+            arena.data(),
             Vector3f(sample.m_geometric_normal),
             Basis3f(Vector3f(sample.m_shading_normal)),
             -Vector3f(incoming),
@@ -458,7 +459,8 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
             return false;
 
         // Evaluate the light.
-        InputEvaluator input_evaluator(m_shading_context.get_texture_cache());
+        Arena arena;
+        InputEvaluator input_evaluator(m_shading_context.get_texture_cache(), arena);
         Vector3d emission_position, emission_direction;
         light->evaluate(
             input_evaluator,
@@ -554,14 +556,15 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     }
 
     // Evaluate the EDF inputs.
-    InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
-    edf->evaluate_inputs(edf_input_evaluator, light_shading_point);
+    Arena arena;
+    InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache(), arena);
+    edf->evaluate_inputs(edf_input_evaluator, light_shading_point, arena);
 
     // Evaluate emitted radiance.
     Spectrum edf_value(Spectrum::Illuminance);
     float edf_prob;
     edf->evaluate(
-        edf_input_evaluator.data(),
+        arena.data(),
         Vector3f(light_shading_point.get_geometric_normal()),
         Basis3f(light_shading_point.get_shading_basis()),
         -sample.m_incoming.get_value(),
@@ -732,13 +735,14 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     }
 
     // Evaluate the EDF inputs.
-    InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
-    edf->evaluate_inputs(edf_input_evaluator, light_shading_point);
+    Arena arena;
+    InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache(), arena);
+    edf->evaluate_inputs(edf_input_evaluator, light_shading_point, arena);
 
     // Evaluate the EDF.
     Spectrum edf_value(Spectrum::Illuminance);
     edf->evaluate(
-        edf_input_evaluator.data(),
+        arena.data(),
         Vector3f(sample.m_geometric_normal),
         Basis3f(Vector3f(sample.m_shading_normal)),
         -Vector3f(incoming),
@@ -774,7 +778,8 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
         return;
 
     // Evaluate the light.
-    InputEvaluator input_evaluator(m_shading_context.get_texture_cache());
+    Arena arena;
+    InputEvaluator input_evaluator(m_shading_context.get_texture_cache(), arena);
     Vector3d emission_position, emission_direction;
     Spectrum light_value(Spectrum::Illuminance);
     light->evaluate(

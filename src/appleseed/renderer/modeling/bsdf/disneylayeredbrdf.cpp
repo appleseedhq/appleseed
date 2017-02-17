@@ -107,10 +107,11 @@ void DisneyLayeredBRDF::evaluate_inputs(
     const ShadingContext&       shading_context,
     InputEvaluator&             input_evaluator,
     const ShadingPoint&         shading_point,
+    Arena&                      arena,
     const size_t                offset) const
 {
     DisneyBRDFInputValues* values =
-        reinterpret_cast<DisneyBRDFInputValues*>(input_evaluator.data() + offset);
+        reinterpret_cast<DisneyBRDFInputValues*>(arena.data() + offset);
 
     memset(values, 0, sizeof(DisneyBRDFInputValues));
 

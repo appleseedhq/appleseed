@@ -242,15 +242,17 @@ void DiagnosticSurfaceShader::evaluate(
 
                 if (material_data.m_bsdf)
                 {
-                    InputEvaluator input_evaluator(shading_context.get_texture_cache());
+                    Arena arena;
+                    InputEvaluator input_evaluator(shading_context.get_texture_cache(), arena);
                     material_data.m_bsdf->evaluate_inputs(
                         shading_context,
                         input_evaluator,
-                        shading_point);
+                        shading_point,
+                        arena);
 
                     const Vector3f direction = -normalize(Vector3f(shading_point.get_ray().m_dir));
                     material_data.m_bsdf->evaluate(
-                        input_evaluator.data(),
+                        arena.data(),
                         false,
                         false,
                         Vector3f(shading_point.get_geometric_normal()),
@@ -516,17 +518,18 @@ void DiagnosticSurfaceShader::evaluate(
                         ray.m_dir - ray.m_rx.m_dir,
                         ray.m_dir - ray.m_ry.m_dir);
 
-                    InputEvaluator input_evaluator(shading_context.get_texture_cache());
+                    Arena arena;
+                    InputEvaluator input_evaluator(shading_context.get_texture_cache(), arena);
                     material_data.m_bsdf->evaluate_inputs(
                         shading_context,
                         input_evaluator,
-                        shading_point);
-                    const void* bsdf_data = input_evaluator.data();
+                        shading_point,
+                        arena);
 
                     BSDFSample sample(shading_point, outgoing);
                     material_data.m_bsdf->sample(
                         sampling_context,
-                        bsdf_data,
+                        arena.data(),
                         false,
                         false,
                         sample);

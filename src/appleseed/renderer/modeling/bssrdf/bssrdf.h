@@ -44,13 +44,14 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer      { class Assembly; }
-namespace renderer      { class BSDF; }
-namespace renderer      { class BSSRDFSample; }
-namespace renderer      { class InputEvaluator; }
-namespace renderer      { class ParamArray; }
-namespace renderer      { class ShadingContext; }
-namespace renderer      { class ShadingPoint; }
+namespace renderer  { class Arena; }
+namespace renderer  { class Assembly; }
+namespace renderer  { class BSDF; }
+namespace renderer  { class BSSRDFSample; }
+namespace renderer  { class InputEvaluator; }
+namespace renderer  { class ParamArray; }
+namespace renderer  { class ShadingContext; }
+namespace renderer  { class ShadingPoint; }
 
 namespace renderer
 {
@@ -107,6 +108,7 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const ShadingContext&       shading_context,
         InputEvaluator&             input_evaluator,
         const ShadingPoint&         shading_point,
+        Arena&                      arena,
         const size_t                offset = 0) const;
 
     // Performs any precomputation needed for this BSSRDF input values.

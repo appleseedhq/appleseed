@@ -77,10 +77,11 @@ void BSDF::evaluate_inputs(
     const ShadingContext&   shading_context,
     InputEvaluator&         input_evaluator,
     const ShadingPoint&     shading_point,
+    Arena&                  arena,
     const size_t            offset) const
 {
     input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0), offset);
-    prepare_inputs(shading_context, shading_point, input_evaluator.data() + offset);
+    prepare_inputs(shading_context, shading_point, arena.data() + offset);
 }
 
 void BSDF::prepare_inputs(

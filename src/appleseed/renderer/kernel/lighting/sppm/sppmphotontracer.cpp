@@ -348,8 +348,9 @@ namespace
             }
 
             // Evaluate the EDF inputs.
-            InputEvaluator input_evaluator(m_texture_cache);
-            edf->evaluate_inputs(input_evaluator, light_shading_point);
+            Arena arena;
+            InputEvaluator input_evaluator(m_texture_cache, arena);
+            edf->evaluate_inputs(input_evaluator, light_shading_point, arena);
 
             // Sample the EDF.
             SamplingContext child_sampling_context = sampling_context.split(2, 1);
@@ -358,7 +359,7 @@ namespace
             float edf_prob;
             edf->sample(
                 sampling_context,
-                input_evaluator.data(),
+                arena.data(),
                 Vector3f(light_sample.m_geometric_normal),
                 Basis3f(Vector3f(light_sample.m_shading_normal)),
                 child_sampling_context.next2<Vector2f>(),
@@ -421,7 +422,8 @@ namespace
             const LightSample&      light_sample)
         {
             // Sample the light.
-            InputEvaluator input_evaluator(m_texture_cache);
+            Arena arena;
+            InputEvaluator input_evaluator(m_texture_cache, arena);
             SamplingContext child_sampling_context = sampling_context.split(2, 1);
             Vector3d emission_position, emission_direction;
             Spectrum light_value(Spectrum::Illuminance);
@@ -585,7 +587,8 @@ namespace
             SamplingContext&        sampling_context)
         {
             // Sample the environment.
-            InputEvaluator input_evaluator(m_texture_cache);
+            Arena arena;
+            InputEvaluator input_evaluator(m_texture_cache, arena);
             Vector3f outgoing;
             Spectrum env_edf_value(Spectrum::Illuminance);
             float env_edf_prob;

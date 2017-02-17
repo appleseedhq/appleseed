@@ -52,6 +52,7 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
+namespace renderer      { class Arena; }
 namespace renderer      { class InputEvaluator; }
 namespace renderer      { class ShadingPoint; }
 
@@ -138,6 +139,7 @@ namespace
             const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
             const ShadingPoint&     shading_point,
+            Arena&                  arena,
             const size_t            offset) const APPLESEED_OVERRIDE
         {
             assert(m_bsdf[0] && m_bsdf[1]);
@@ -146,18 +148,21 @@ namespace
                 shading_context,
                 input_evaluator,
                 shading_point,
+                arena,
                 offset);
 
             m_bsdf[0]->evaluate_inputs(
                 shading_context,
                 input_evaluator,
                 shading_point,
+                arena,
                 offset + m_bsdf_data_offset[0]);
 
             m_bsdf[1]->evaluate_inputs(
                 shading_context,
                 input_evaluator,
                 shading_point,
+                arena,
                 offset + m_bsdf_data_offset[1]);
         }
 

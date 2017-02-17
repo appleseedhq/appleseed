@@ -142,9 +142,10 @@ namespace
             const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
             const ShadingPoint&     shading_point,
+            Arena&                  arena,
             const size_t            offset = 0) const APPLESEED_OVERRIDE
         {
-            CompositeSubsurfaceClosure* c = reinterpret_cast<CompositeSubsurfaceClosure*>(input_evaluator.data());
+            CompositeSubsurfaceClosure* c = reinterpret_cast<CompositeSubsurfaceClosure*>(arena.data());
             new (c) CompositeSubsurfaceClosure(
                 Basis3f(shading_point.get_shading_basis()),
                 shading_point.get_osl_shader_globals().Ci);

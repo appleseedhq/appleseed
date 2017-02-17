@@ -159,11 +159,12 @@ namespace
             const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
             const ShadingPoint&     shading_point,
+            Arena&                  arena,
             const size_t            offset) const APPLESEED_OVERRIDE
         {
             assert(offset == 0);
 
-            CompositeSurfaceClosure* c = reinterpret_cast<CompositeSurfaceClosure*>(input_evaluator.data());
+            CompositeSurfaceClosure* c = reinterpret_cast<CompositeSurfaceClosure*>(arena.data());
             new (c) CompositeSurfaceClosure(
                 Basis3f(shading_point.get_shading_basis()),
                 shading_point.get_osl_shader_globals().Ci);
@@ -176,7 +177,7 @@ namespace
                     inject_layered_closure_values(cid, this, c->get_closure_input_values(i));
             }
 
-            prepare_inputs(shading_context, shading_point, input_evaluator.data());
+            prepare_inputs(shading_context, shading_point, arena.data());
         }
 
         void prepare_inputs(

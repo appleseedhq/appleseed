@@ -224,7 +224,8 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
                 sg_exec,
                 0);
 
-            InputEvaluator input_evaluator(texture_cache);
+            Arena arena;
+            InputEvaluator input_evaluator(texture_cache, arena);
 
             Vector3f outgoing;
             Spectrum value1(Spectrum::Illuminance);

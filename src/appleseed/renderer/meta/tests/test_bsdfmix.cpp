@@ -86,9 +86,9 @@ using namespace renderer;
 TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
 {
     template <typename T>
-    T get_value(const InputEvaluator& input_evaluator, const size_t offset)
+    T get_value(const Arena& arena, const size_t offset)
     {
-        const uint8* base = static_cast<const uint8*>(input_evaluator.data());
+        const uint8* base = static_cast<const uint8*>(arena.data());
         return *reinterpret_cast<const T*>(base + offset);
     }
 
@@ -181,7 +181,8 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         ASSERT_TRUE(success);
 
         TextureCache texture_cache(texture_store);
-        InputEvaluator input_evaluator(texture_cache);
+        Arena arena;
+        InputEvaluator input_evaluator(texture_cache, arena);
 
         Intersector intersector(
             project->get_trace_context(),
@@ -211,30 +212,31 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         parent_bsdf.evaluate_inputs(
             shading_context,
             input_evaluator,
-            shading_point);
+            shading_point,
+            arena);
 
         size_t offset = 0;
 
         // parent_bsdf mixing weights.
-        EXPECT_EQ(0.6f, get_value<float>(input_evaluator, offset)); offset += sizeof(float);
-        EXPECT_EQ(0.4f, get_value<float>(input_evaluator, offset)); offset += sizeof(float);
+        EXPECT_EQ(0.6f, get_value<float>(arena, offset)); offset += sizeof(float);
+        EXPECT_EQ(0.4f, get_value<float>(arena, offset)); offset += sizeof(float);
         offset = align(offset, 16);
 
         // child0_bsdf mixing weights.
-        EXPECT_EQ(0.2f, get_value<float>(input_evaluator, offset)); offset += sizeof(float);
-        EXPECT_EQ(0.8f, get_value<float>(input_evaluator, offset)); offset += sizeof(float);
+        EXPECT_EQ(0.2f, get_value<float>(arena, offset)); offset += sizeof(float);
+        EXPECT_EQ(0.8f, get_value<float>(arena, offset)); offset += sizeof(float);
         offset = align(offset, 16);
 
         // child0_child0_bsdf reflectance.
-        EXPECT_EQ(Spectrum(0.5f), get_value<Spectrum>(input_evaluator, offset)); offset += sizeof(Spectrum) + sizeof(float);
+        EXPECT_EQ(Spectrum(0.5f), get_value<Spectrum>(arena, offset)); offset += sizeof(Spectrum) + sizeof(float);
         offset = align(offset, 16);
 
         // child0_child1_bsdf reflectance.
-        EXPECT_EQ(Spectrum(0.1f), get_value<Spectrum>(input_evaluator, offset)); offset += sizeof(Spectrum) + sizeof(float);
+        EXPECT_EQ(Spectrum(0.1f), get_value<Spectrum>(arena, offset)); offset += sizeof(Spectrum) + sizeof(float);
         offset = align(offset, 16);
 
         // child1_bsdf reflectance.
-        EXPECT_EQ(Spectrum(1.0f), get_value<Spectrum>(input_evaluator, offset)); offset += sizeof(Spectrum) + sizeof(float);
+        EXPECT_EQ(Spectrum(1.0f), get_value<Spectrum>(arena, offset)); offset += sizeof(Spectrum) + sizeof(float);
         offset = align(offset, 16);
 
         recorder.on_frame_end(project.ref());
