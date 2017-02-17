@@ -34,6 +34,9 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 
+// Standard headers.
+#include <cstddef>
+
 namespace renderer
 {
 
@@ -46,11 +49,11 @@ class Arena
   public:
     enum { DataSize = 32 * 1024 };  // bytes
 
-    const foundation::uint8* data() const;
-    foundation::uint8* data();
+    const foundation::uint8* data(const size_t offset = 0) const;
+    foundation::uint8* data(const size_t offset = 0);
 
-    template <typename T> const T& as() const;
-    template <typename T> T& as();
+    template <typename T> const T& as(const size_t offset = 0) const;
+    template <typename T> T& as(const size_t offset = 0);
 
   private:
     APPLESEED_SIMD4_ALIGN foundation::uint8 m_data[DataSize];
@@ -61,26 +64,26 @@ class Arena
 // Arena class implementation.
 //
 
-inline const foundation::uint8* Arena::data() const
+inline const foundation::uint8* Arena::data(const size_t offset) const
 {
-    return m_data;
+    return m_data + offset;
 }
 
-inline foundation::uint8* Arena::data()
+inline foundation::uint8* Arena::data(const size_t offset)
 {
-    return m_data;
-}
-
-template <typename T>
-inline const T& Arena::as() const
-{
-    return *reinterpret_cast<const T*>(m_data);
+    return m_data + offset;
 }
 
 template <typename T>
-inline T& Arena::as()
+inline const T& Arena::as(const size_t offset) const
 {
-    return *reinterpret_cast<T*>(m_data);
+    return *reinterpret_cast<const T*>(data(offset));
+}
+
+template <typename T>
+inline T& Arena::as(const size_t offset)
+{
+    return *reinterpret_cast<T*>(data(offset));
 }
 
 }       // namespace renderer
