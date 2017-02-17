@@ -130,7 +130,7 @@ void BSDFSample::apply_pdf_differentials_heuristic()
     //
     // Reference:
     //
-    //   http://renderman.pixar.com/resources/current/RenderMan/integratorRef.html#about-ray-differentials-ray-spreads
+    //   https://renderman.pixar.com/resources/RenderMan_20/integratorRef.html#about-ray-differentials-ray-spreads
     //
 
     assert(m_incoming.has_derivatives());
