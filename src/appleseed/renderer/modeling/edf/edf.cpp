@@ -118,7 +118,7 @@ void EDF::evaluate_inputs(
     const ShadingPoint&     shading_point,
     Arena&                  arena) const
 {
-    input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0));
+    input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0), arena);
 }
 
 }   // namespace renderer

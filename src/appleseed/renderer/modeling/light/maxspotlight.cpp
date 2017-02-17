@@ -211,9 +211,12 @@ namespace
             const float y = static_cast<float>(dot(d, n) * m_rcp_screen_half_size);
             const Vector2f uv(0.5f * (x + 1.0f), 0.5f * (y + 1.0f));
 
-            const InputValues* values = input_evaluator.evaluate<InputValues>(m_inputs, uv);
-            radiance = values->m_intensity;
-            radiance *= values->m_intensity_multiplier;
+            Arena arena;
+            input_evaluator.evaluate(m_inputs, uv, arena);
+
+            const InputValues& values = arena.as<InputValues>();
+            radiance = values.m_intensity;
+            radiance *= values.m_intensity_multiplier;
 
             if (cos_theta < m_cos_inner_half_angle)
             {

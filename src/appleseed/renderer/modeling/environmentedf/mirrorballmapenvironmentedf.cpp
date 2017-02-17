@@ -188,11 +188,13 @@ namespace
             const Vector2f uv(0.5f + direction[0] * r, 0.5f + direction[1] * r);
 
             // Evaluate the input.
-            const InputValues* values = input_evaluator.evaluate<InputValues>(m_inputs, uv);
-            if (is_finite(values->m_radiance))
+            Arena arena;
+            input_evaluator.evaluate(m_inputs, uv, arena);
+            const InputValues& values = arena.as<InputValues>();
+            if (is_finite(values.m_radiance))
             {
-                value = values->m_radiance;
-                value *= values->m_radiance_multiplier;
+                value = values.m_radiance;
+                value *= values.m_radiance_multiplier;
             }
             else value.set(0.0f);
         }

@@ -192,8 +192,7 @@ void compute_ibl_bsdf_sampling(
             continue;
 
         // Evaluate the environment's EDF.
-        Arena arena;
-        InputEvaluator input_evaluator(shading_context.get_texture_cache(), arena);
+        InputEvaluator input_evaluator(shading_context.get_texture_cache());
         Spectrum env_value(Spectrum::Illuminance);
         float env_prob;
         environment_edf.evaluate(
@@ -277,8 +276,7 @@ void compute_ibl_bssrdf_sampling(
             bssrdf_value);
 
         // Evaluate the environment's EDF.
-        Arena arena;
-        InputEvaluator input_evaluator(shading_context.get_texture_cache(), arena);
+        InputEvaluator input_evaluator(shading_context.get_texture_cache());
         Spectrum env_value(Spectrum::Illuminance);
         float env_prob;
         environment_edf.evaluate(
@@ -336,8 +334,7 @@ void compute_ibl_environment_sampling(
         const Vector2f s = sampling_context.next2<Vector2f>();
 
         // Sample the environment.
-        Arena arena;
-        InputEvaluator input_evaluator(shading_context.get_texture_cache(), arena);
+        InputEvaluator input_evaluator(shading_context.get_texture_cache());
         Vector3f incoming;
         Spectrum env_value(Spectrum::Illuminance);
         float env_prob;
@@ -423,8 +420,7 @@ void compute_ibl_environment_sampling(
         const Vector2f s = sampling_context.next2<Vector2f>();
 
         // Sample the environment.
-        Arena arena;
-        InputEvaluator input_evaluator(shading_context.get_texture_cache(), arena);
+        InputEvaluator input_evaluator(shading_context.get_texture_cache());
         Vector3f incoming;
         Spectrum env_value(Spectrum::Illuminance);
         float env_prob;

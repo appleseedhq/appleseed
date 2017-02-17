@@ -579,8 +579,7 @@ namespace
                     return;
 
                 // Evaluate the environment EDF.
-                Arena arena;
-                InputEvaluator input_evaluator(m_texture_cache, arena);
+                InputEvaluator input_evaluator(m_texture_cache);
                 Spectrum env_radiance(Spectrum::Illuminance);
                 float env_prob;
                 m_env_edf->evaluate(

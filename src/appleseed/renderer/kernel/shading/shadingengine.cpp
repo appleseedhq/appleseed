@@ -173,8 +173,7 @@ void ShadingEngine::shade_environment(
     if (environment_shader)
     {
         // There is an environment shader: execute it.
-        Arena arena;
-        InputEvaluator input_evaluator(shading_context.get_texture_cache(), arena);
+        InputEvaluator input_evaluator(shading_context.get_texture_cache());
         const ShadingRay& ray = shading_point.get_ray();
         const Vector3d direction = normalize(ray.m_dir);
         environment_shader->evaluate(

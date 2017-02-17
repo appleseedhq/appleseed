@@ -452,13 +452,15 @@ namespace
             assert(u >= 0.0f && u < 1.0f);
             assert(v >= 0.0f && v < 1.0f);
 
-            const InputValues* values =
-                input_evaluator.evaluate<InputValues>(m_inputs, Vector2f(u, 1.0f - v));
+            Arena arena;
+            input_evaluator.evaluate(m_inputs, Vector2f(u, 1.0f - v), arena);
 
-            if (is_finite(values->m_radiance))
+            const InputValues& values = arena.as<InputValues>();
+
+            if (is_finite(values.m_radiance))
             {
-                value = values->m_radiance;
-                value *= values->m_radiance_multiplier * pow(2.0f, values->m_exposure);
+                value = values.m_radiance;
+                value *= values.m_radiance_multiplier * pow(2.0f, values.m_exposure);
             }
             else value.set(0.0f);
         }

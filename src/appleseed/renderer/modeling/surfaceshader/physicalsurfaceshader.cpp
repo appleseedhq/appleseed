@@ -346,8 +346,7 @@ namespace
                 if (environment_shader)
                 {
                     // Execute the environment shader to obtain the sky color in the direction of the ray.
-                    Arena arena;
-                    InputEvaluator input_evaluator(shading_context.get_texture_cache(), arena);
+                    InputEvaluator input_evaluator(shading_context.get_texture_cache());
                     const ShadingRay& ray = shading_point.get_ray();
                     const Vector3d direction = normalize(ray.m_dir);
                     ShadingResult sky;

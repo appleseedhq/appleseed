@@ -58,8 +58,8 @@ void PathVertex::compute_emitted_radiance(
         shading_context.execute_osl_emission(*sg, *m_shading_point);
 
     // Evaluate the EDF inputs.
+    InputEvaluator input_evaluator(texture_cache);
     Arena arena;
-    InputEvaluator input_evaluator(texture_cache, arena);
     m_edf->evaluate_inputs(input_evaluator, *m_shading_point, arena);
 
     // Compute the emitted radiance.

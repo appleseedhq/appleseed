@@ -390,7 +390,9 @@ namespace
                 float u, v;
                 unit_vector_to_angles(outgoing, theta, phi);
                 angles_to_unit_square(theta, phi, u, v);
-                float turbidity = input_evaluator.evaluate<InputValues>(m_inputs, Vector2f(u, v))->m_turbidity;
+                Arena arena;
+                input_evaluator.evaluate(m_inputs, Vector2f(u, v), arena);
+                float turbidity = arena.as<InputValues>().m_turbidity;
 
                 // Apply turbidity multiplier and bias.
                 turbidity *= m_uniform_values.m_turbidity_multiplier;

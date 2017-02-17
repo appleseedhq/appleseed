@@ -224,8 +224,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
                 sg_exec,
                 0);
 
-            Arena arena;
-            InputEvaluator input_evaluator(texture_cache, arena);
+            InputEvaluator input_evaluator(texture_cache);
 
             Vector3f outgoing;
             Spectrum value1(Spectrum::Illuminance);
@@ -247,10 +246,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
                 outgoing,
                 value2);
 
-            const float probability2 =
-                env_edf.evaluate_pdf(
-                    input_evaluator,
-                    outgoing);
+            const float probability2 = env_edf.evaluate_pdf(input_evaluator, outgoing);
 
             recorder.on_frame_end(m_project);
 

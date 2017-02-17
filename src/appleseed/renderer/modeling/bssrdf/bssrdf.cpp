@@ -105,7 +105,7 @@ void BSSRDF::evaluate_inputs(
     Arena&                  arena,
     const size_t            offset) const
 {
-    input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0), offset);
+    input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0), arena, offset);
     prepare_inputs(shading_point, arena.data() + offset);
 }
 

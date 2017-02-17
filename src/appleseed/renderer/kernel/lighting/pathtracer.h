@@ -279,8 +279,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                         *vertex.m_shading_point);
                 }
 
+                InputEvaluator input_evaluator(shading_context.get_texture_cache());
                 Arena arena;
-                InputEvaluator input_evaluator(shading_context.get_texture_cache(), arena);
                 material_data.m_bsdf->evaluate_inputs(
                     shading_context,
                     input_evaluator,
@@ -383,8 +383,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         }
 
         // Evaluate the inputs of the BSDF.
+        InputEvaluator bsdf_input_evaluator(shading_context.get_texture_cache());
         Arena bsdf_arena;
-        InputEvaluator bsdf_input_evaluator(shading_context.get_texture_cache(), bsdf_arena);
         if (vertex.m_bsdf)
         {
             vertex.m_bsdf->evaluate_inputs(
@@ -396,8 +396,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         }
 
         // Evaluate the inputs of the BSSRDF.
+        InputEvaluator bssrdf_input_evaluator(shading_context.get_texture_cache());
         Arena bssrdf_arena;
-        InputEvaluator bssrdf_input_evaluator(shading_context.get_texture_cache(), bssrdf_arena);
         if (vertex.m_bssrdf)
         {
             vertex.m_bssrdf->evaluate_inputs(

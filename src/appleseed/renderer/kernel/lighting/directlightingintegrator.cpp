@@ -431,8 +431,8 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
         }
 
         // Evaluate the EDF inputs.
+        InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
         Arena arena;
-        InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache(), arena);
         edf->evaluate_inputs(edf_input_evaluator, light_shading_point, arena);
 
         // Evaluate the EDF.
@@ -459,8 +459,7 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
             return false;
 
         // Evaluate the light.
-        Arena arena;
-        InputEvaluator input_evaluator(m_shading_context.get_texture_cache(), arena);
+        InputEvaluator input_evaluator(m_shading_context.get_texture_cache());
         Vector3d emission_position, emission_direction;
         light->evaluate(
             input_evaluator,
@@ -556,8 +555,8 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     }
 
     // Evaluate the EDF inputs.
+    InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
     Arena arena;
-    InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache(), arena);
     edf->evaluate_inputs(edf_input_evaluator, light_shading_point, arena);
 
     // Evaluate emitted radiance.
@@ -735,8 +734,8 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     }
 
     // Evaluate the EDF inputs.
+    InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
     Arena arena;
-    InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache(), arena);
     edf->evaluate_inputs(edf_input_evaluator, light_shading_point, arena);
 
     // Evaluate the EDF.
@@ -778,8 +777,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
         return;
 
     // Evaluate the light.
-    Arena arena;
-    InputEvaluator input_evaluator(m_shading_context.get_texture_cache(), arena);
+    InputEvaluator input_evaluator(m_shading_context.get_texture_cache());
     Vector3d emission_position, emission_direction;
     Spectrum light_value(Spectrum::Illuminance);
     light->evaluate(

@@ -181,8 +181,8 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         ASSERT_TRUE(success);
 
         TextureCache texture_cache(texture_store);
+        InputEvaluator input_evaluator(texture_cache);
         Arena arena;
-        InputEvaluator input_evaluator(texture_cache, arena);
 
         Intersector intersector(
             project->get_trace_context(),

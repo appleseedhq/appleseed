@@ -242,8 +242,8 @@ void DiagnosticSurfaceShader::evaluate(
 
                 if (material_data.m_bsdf)
                 {
+                    InputEvaluator input_evaluator(shading_context.get_texture_cache());
                     Arena arena;
-                    InputEvaluator input_evaluator(shading_context.get_texture_cache(), arena);
                     material_data.m_bsdf->evaluate_inputs(
                         shading_context,
                         input_evaluator,
@@ -518,8 +518,8 @@ void DiagnosticSurfaceShader::evaluate(
                         ray.m_dir - ray.m_rx.m_dir,
                         ray.m_dir - ray.m_ry.m_dir);
 
+                    InputEvaluator input_evaluator(shading_context.get_texture_cache());
                     Arena arena;
-                    InputEvaluator input_evaluator(shading_context.get_texture_cache(), arena);
                     material_data.m_bsdf->evaluate_inputs(
                         shading_context,
                         input_evaluator,

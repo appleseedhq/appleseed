@@ -87,12 +87,13 @@ namespace
             ShadingResult&          shading_result) const APPLESEED_OVERRIDE
         {
             const Vector2f s(pixel_context.get_sample_position());
-            const InputValues* input_values =
-                input_evaluator.evaluate<InputValues>(m_inputs, Vector2f(s[0], 1.0f - s[1]));
+            Arena arena;
+            input_evaluator.evaluate(m_inputs, Vector2f(s[0], 1.0f - s[1]), arena);
+            const InputValues& input_values = arena.as<InputValues>();
 
             shading_result.m_color_space = ColorSpaceSpectral;
-            shading_result.m_main.m_color = input_values->m_color;
-            shading_result.m_main.m_alpha[0] = input_values->m_alpha;
+            shading_result.m_main.m_color = input_values.m_color;
+            shading_result.m_main.m_alpha[0] = input_values.m_alpha;
             shading_result.m_aovs.m_color.set(0.0f);
             shading_result.m_aovs.m_alpha.set(0.0f);
         }
