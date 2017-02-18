@@ -48,11 +48,11 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class Arena; }
-namespace renderer  { class Assembly; }
-namespace renderer  { class ParamArray; }
-namespace renderer  { class ShadingContext; }
-namespace renderer  { class ShadingPoint; }
+namespace foundation    { class Arena; }
+namespace renderer      { class Assembly; }
+namespace renderer      { class ParamArray; }
+namespace renderer      { class ShadingContext; }
+namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {
@@ -129,7 +129,7 @@ class APPLESEED_DLLSYMBOL BSDF
 
     // Precompute data based on already evaluated input values.
     virtual void prepare_inputs(
-        Arena&                      arena,
+        foundation::Arena&          arena,
         const ShadingPoint&         shading_point,
         void*                       data) const;
 

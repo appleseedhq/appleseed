@@ -67,8 +67,8 @@ END_OSL_INCLUDES
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class Arena; }
-namespace renderer  { class BSDF; }
+namespace foundation    { class Arena; }
+namespace renderer      { class BSDF; }
 
 namespace renderer
 {
@@ -175,7 +175,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
         const foundation::Basis3f&  original_shading_basis,
         const foundation::Color3f&  weight,
         const foundation::Vector3f& normal,
-        Arena&                      arena);
+        foundation::Arena&          arena);
 
     template <typename InputValues>
     InputValues* add_closure(
@@ -184,7 +184,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
         const foundation::Color3f&  weight,
         const foundation::Vector3f& normal,
         const foundation::Vector3f& tangent,
-        Arena&                      arena);
+        foundation::Arena&          arena);
 
   protected:
     enum { MaxClosureEntries = 16 };
@@ -209,7 +209,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
         const foundation::Vector3f& normal,
         const bool                  has_tangent,
         const foundation::Vector3f& tangent,
-        Arena&                      arena);
+        foundation::Arena&          arena);
 };
 
 
@@ -224,7 +224,7 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
     CompositeSurfaceClosure(
         const foundation::Basis3f&  original_shading_basis,
         const OSL::ClosureColor*    ci,
-        Arena&                      arena);
+        foundation::Arena&          arena);
 
     void add_ior(
         const foundation::Color3f&  weight,
@@ -241,7 +241,7 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
         const OSL::ClosureColor*    closure,
         const foundation::Basis3f&  original_shading_basis,
         const foundation::Color3f&  weight,
-        Arena&                      arena);
+        foundation::Arena&          arena);
 };
 
 
@@ -256,14 +256,14 @@ class APPLESEED_ALIGN(16) CompositeSubsurfaceClosure
     CompositeSubsurfaceClosure(
         const foundation::Basis3f&  original_shading_basis,
         const OSL::ClosureColor*    ci,
-        Arena&                      arena);
+        foundation::Arena&          arena);
 
   private:
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
         const foundation::Basis3f&  original_shading_basis,
         const foundation::Color3f&  weight,
-        Arena&                      arena);
+        foundation::Arena&          arena);
 
 };
 
@@ -278,20 +278,20 @@ class APPLESEED_ALIGN(16) CompositeEmissionClosure
   public:
     CompositeEmissionClosure(
         const OSL::ClosureColor*    ci,
-        Arena&                      arena);
+        foundation::Arena&          arena);
 
     template <typename InputValues>
     InputValues* add_closure(
         const ClosureID             closure_type,
         const foundation::Color3f&  weight,
         const float                 max_weight_component,
-        Arena&                      arena);
+        foundation::Arena&          arena);
 
   private:
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
         const foundation::Color3f&  weight,
-        Arena&                      arena);
+        foundation::Arena&          arena);
 };
 
 

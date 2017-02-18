@@ -42,10 +42,10 @@
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
 #endif
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
-#include "renderer/utility/arena.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/api/specializedapiarrays.h"
+#include "foundation/utility/arena.h"
 #include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.

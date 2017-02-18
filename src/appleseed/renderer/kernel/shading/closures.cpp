@@ -32,11 +32,11 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
-#include "renderer/utility/arena.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/cdf.h"
 #include "foundation/math/scalar.h"
+#include "foundation/utility/arena.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/otherwise.h"
 

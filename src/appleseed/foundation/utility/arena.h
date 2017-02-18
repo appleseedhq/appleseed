@@ -27,8 +27,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_UTILITY_ARENA_H
-#define APPLESEED_RENDERER_UTILITY_ARENA_H
+#ifndef APPLESEED_FOUNDATION_UTILITY_ARENA_H
+#define APPLESEED_FOUNDATION_UTILITY_ARENA_H
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
@@ -40,7 +40,7 @@
 #include <cassert>
 #include <cstddef>
 
-namespace renderer
+namespace foundation
 {
 
 //
@@ -60,11 +60,11 @@ class Arena
     template <typename T> T* allocate_noinit();
 
   private:
-    enum { ArenaSize = 256 * 1024 };        // bytes
+    enum { ArenaSize = 256 * 1024 };    // bytes
 
-    APPLESEED_SIMD4_ALIGN foundation::uint8 m_storage[ArenaSize];
-    const foundation::uint8*                m_end;
-    foundation::uint8*                      m_current;
+    APPLESEED_SIMD4_ALIGN uint8 m_storage[ArenaSize];
+    const uint8*                m_end;
+    uint8*                      m_current;
 };
 
 
@@ -86,12 +86,12 @@ inline void Arena::clear()
 inline void* Arena::allocate(const size_t size)
 {
     if (m_current + size > m_end)
-        throw foundation::Exception("out of arena memory");
+        throw Exception("out of arena memory");
 
     void* ptr = m_current;
-    m_current += foundation::align(size, 16);
+    m_current += align(size, 16);
 
-    assert(foundation::is_aligned(ptr, 16));
+    assert(is_aligned(ptr, 16));
 
     return ptr;
 }
@@ -112,6 +112,6 @@ inline T* Arena::allocate_noinit()
     return static_cast<T*>(allocate(sizeof(T)));
 }
 
-}       // namespace renderer
+}       // namespace foundation
 
-#endif  // !APPLESEED_RENDERER_UTILITY_ARENA_H
+#endif  // !APPLESEED_FOUNDATION_UTILITY_ARENA_H

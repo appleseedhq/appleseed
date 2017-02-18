@@ -33,7 +33,9 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/utility/arena.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/arena.h"
 
 using namespace foundation;
 

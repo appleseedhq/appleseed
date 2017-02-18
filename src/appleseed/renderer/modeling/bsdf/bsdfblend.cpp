@@ -37,7 +37,6 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/scene/assembly.h"
-#include "renderer/utility/arena.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -45,6 +44,7 @@
 #include "foundation/platform/types.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
+#include "foundation/utility/arena.h"
 #include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.

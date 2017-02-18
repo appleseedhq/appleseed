@@ -34,12 +34,12 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/material/disneymaterial.h"
-#include "renderer/utility/arena.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
+#include "foundation/utility/arena.h"
 
 // Standard headers.
 #include <cassert>

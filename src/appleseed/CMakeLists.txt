@@ -701,6 +701,7 @@ source_group ("foundation\\utility\\test" FILES
 set (foundation_utility_sources
     foundation/utility/alignedallocator.h
     foundation/utility/alignedvector.h
+    foundation/utility/arena.h
     foundation/utility/attributeset.cpp
     foundation/utility/attributeset.h
     foundation/utility/autoreleaseptr.h
@@ -1764,7 +1765,6 @@ source_group ("renderer\\modeling\\texture" FILES
 )
 
 set (renderer_utility_sources
-    renderer/utility/arena.h
     renderer/utility/autodeskmax.h
     renderer/utility/bbox.h
     renderer/utility/dynamicspectrum.h

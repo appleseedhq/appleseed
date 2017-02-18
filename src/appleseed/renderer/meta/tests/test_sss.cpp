@@ -42,7 +42,6 @@
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/scalarsource.h"
 #include "renderer/modeling/project/project.h"
-#include "renderer/utility/arena.h"
 #include "renderer/utility/iostreamop.h"
 #include "renderer/utility/paramarray.h"
 
@@ -54,6 +53,7 @@
 #include "foundation/math/basis.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
+#include "foundation/utility/arena.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/gnuplotfile.h"
 #ifdef APPLESEED_WITH_PARTIO

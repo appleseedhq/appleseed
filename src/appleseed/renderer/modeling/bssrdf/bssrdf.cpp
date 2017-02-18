@@ -35,10 +35,10 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
 #include "renderer/modeling/color/colorspace.h"
-#include "renderer/utility/arena.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/arena.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // Standard headers.

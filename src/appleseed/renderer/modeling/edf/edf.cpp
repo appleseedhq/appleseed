@@ -34,10 +34,10 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/utility/arena.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/api/apistring.h"
+#include "foundation/utility/arena.h"
 
 // Standard headers.
 #include <string>

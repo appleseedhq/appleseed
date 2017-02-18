@@ -49,7 +49,6 @@
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/scene/scene.h"
-#include "renderer/utility/arena.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -58,6 +57,7 @@
 #include "foundation/image/regularspectrum.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/arena.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 

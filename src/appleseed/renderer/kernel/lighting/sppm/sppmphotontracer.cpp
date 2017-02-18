@@ -56,7 +56,6 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/visibilityflags.h"
-#include "renderer/utility/arena.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
@@ -69,6 +68,7 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/timers.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/arena.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/job.h"
 #include "foundation/utility/statistics.h"

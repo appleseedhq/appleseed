@@ -58,7 +58,6 @@
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/visibilityflags.h"
-#include "renderer/utility/arena.h"
 #include "renderer/utility/settingsparsing.h"
 #include "renderer/utility/transformsequence.h"
 
@@ -73,6 +72,7 @@
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/arena.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
