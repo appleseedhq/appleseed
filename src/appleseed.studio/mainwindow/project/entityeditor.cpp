@@ -276,6 +276,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_text_input_widgets(const Dictio
 
     if (input_widget_visible)
         m_form_layout->addRow(create_label(metadata), line_edit);
+    else line_edit->hide();
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
     widget_proxy->set(metadata.strings().get<string>("value"));
@@ -303,13 +304,19 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dic
         line_edit->setFocus();
     }
 
-    QHBoxLayout* layout = new QHBoxLayout();
-    layout->setSpacing(6);
-    layout->addWidget(line_edit);
-    layout->addWidget(slider);
-
     if (input_widget_visible)
+    {
+        QHBoxLayout* layout = new QHBoxLayout();
+        layout->setSpacing(6);
+        layout->addWidget(line_edit);
+        layout->addWidget(slider);
         m_form_layout->addRow(create_label(metadata), layout);
+    }
+    else
+    {
+        line_edit->hide();
+        slider->hide();
+    }
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
     widget_proxy->set(metadata.strings().get<string>("value"));
@@ -331,6 +338,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_colormap_input_widgets(const Di
 
     if (input_widget_visible)
         m_form_layout->addRow(create_label(metadata), input_widget);
+    else input_widget->hide();
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new ColorMapInputProxy(input_widget));
     widget_proxy->set(metadata.strings().get<string>("value"));
@@ -347,6 +355,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_boolean_input_widgets(const Dic
 
     if (input_widget_visible)
         m_form_layout->addRow(create_label(metadata), checkbox);
+    else checkbox->hide();
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new CheckBoxProxy(checkbox));
     widget_proxy->set(metadata.strings().get<string>("value"));
@@ -372,6 +381,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_enumeration_input_widgets(const
 
     if (input_widget_visible)
         m_form_layout->addRow(create_label(metadata), combo_box);
+    else combo_box->hide();
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new ComboBoxProxy(combo_box));
 
@@ -391,6 +401,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_entity_input_widgets(const Dict
 
     if (input_widget_visible)
         m_form_layout->addRow(create_label(metadata), input_widget);
+    else input_widget->hide();
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new EntityInputProxy(input_widget));
     widget_proxy->set(metadata.strings().get<string>("value"));
@@ -422,6 +433,11 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_color_input_widgets(const Dicti
         layout->addWidget(line_edit);
         layout->addWidget(picker_button);
         m_form_layout->addRow(create_label(metadata), layout);
+    }
+    else
+    {
+        line_edit->hide();
+        picker_button->hide();
     }
 
     auto_ptr<ColorPickerProxy> widget_proxy(new ColorPickerProxy(line_edit, picker_button));
@@ -466,6 +482,11 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_file_input_widgets(const Dictio
         layout->addWidget(line_edit);
         layout->addWidget(browse_button);
         m_form_layout->addRow(create_label(metadata), layout);
+    }
+    else
+    {
+        line_edit->hide();
+        browse_button->hide();
     }
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
