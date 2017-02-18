@@ -296,7 +296,6 @@ namespace
         };
 
         const BSDF* m_bsdf[2];
-        size_t      m_bsdf_data_offset[2];
 
         const BSDF* retrieve_bsdf(const Assembly& assembly, const char* param_name) const
         {
