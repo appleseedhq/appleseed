@@ -168,7 +168,7 @@ namespace
                 Basis3f(shading_point.get_shading_basis()),
                 shading_point.get_osl_shader_globals().Ci);
 
-            // Inject values into any children layered closure.
+            // Inject values into any children layered closures.
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
                 const ClosureID cid = c->get_closure_type(i);
