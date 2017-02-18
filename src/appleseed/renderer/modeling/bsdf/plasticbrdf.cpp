@@ -139,12 +139,12 @@ namespace
             return true;
         }
 
-        APPLESEED_FORCE_INLINE virtual void prepare_inputs(
-            const ShadingContext&   shading_context,
+        virtual void prepare_inputs(
+            Arena&                  arena,
             const ShadingPoint&     shading_point,
             void*                   data) const APPLESEED_OVERRIDE
         {
-            InputValues* values = reinterpret_cast<InputValues*>(data);
+            InputValues* values = static_cast<InputValues*>(data);
 
             // Apply multipliers to input values.
             values->m_specular_reflectance *= values->m_specular_reflectance_multiplier;
@@ -158,7 +158,7 @@ namespace
             values->m_precomputed.m_diffuse_weight = max(max_value(values->m_diffuse_reflectance), 0.0f);
         }
 
-        APPLESEED_FORCE_INLINE virtual void sample(
+        virtual void sample(
             SamplingContext&        sampling_context,
             const void*             data,
             const bool              adjoint,
@@ -172,7 +172,7 @@ namespace
             if (cos_on < 0.0f)
                 return;
 
-            const InputValues* values = reinterpret_cast<const InputValues*>(data);
+            const InputValues* values = static_cast<const InputValues*>(data);
             const float alpha = microfacet_alpha_from_roughness(values->m_roughness);
 
             // Compute the microfacet normal by sampling the MDF.
@@ -239,7 +239,7 @@ namespace
             sample.compute_reflected_differentials();
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate(
+        virtual float evaluate(
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
@@ -257,7 +257,7 @@ namespace
             if (cos_in < 0.0f || cos_on < 0.0f)
                 return 0.0f;
 
-            const InputValues* values = reinterpret_cast<const InputValues*>(data);
+            const InputValues* values = static_cast<const InputValues*>(data);
             const float alpha = microfacet_alpha_from_roughness(values->m_roughness);
 
             const Vector3f wo = shading_basis.transform_to_local(outgoing);
@@ -308,7 +308,7 @@ namespace
             return probability;
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate_pdf(
+        virtual float evaluate_pdf(
             const void*             data,
             const Vector3f&         geometric_normal,
             const Basis3f&          shading_basis,
@@ -323,7 +323,7 @@ namespace
             if (cos_in < 0.0f || cos_on < 0.0f)
                 return 0.0f;
 
-            const InputValues* values = reinterpret_cast<const InputValues*>(data);
+            const InputValues* values = static_cast<const InputValues*>(data);
             const float alpha = microfacet_alpha_from_roughness(values->m_roughness);
 
             const Vector3f wo = shading_basis.transform_to_local(outgoing);

@@ -56,6 +56,7 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/visibilityflags.h"
+#include "renderer/utility/arena.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
@@ -222,7 +223,7 @@ namespace
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache)
           , m_oiio_texture_system(oiio_texture_system)
-          , m_shadergroup_exec(shading_system)
+          , m_shadergroup_exec(shading_system, m_arena)
           , m_params(params)
           , m_tracer(
                 m_scene,
@@ -251,6 +252,7 @@ namespace
                 m_texture_cache,
                 m_oiio_texture_system,
                 m_shadergroup_exec,
+                m_arena,
                 thread_index);
 
             const uint32 instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
@@ -263,7 +265,10 @@ namespace
                 instance);                  // initial instance number
 
             for (size_t i = m_photon_begin; i < m_photon_end && !m_abort_switch.is_aborted(); ++i)
+            {
+                m_arena.clear();
                 trace_light_photon(shading_context, sampling_context);
+            }
 
             m_global_photons.append(m_local_photons);
         }
@@ -275,6 +280,7 @@ namespace
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
         OIIO::TextureSystem&        m_oiio_texture_system;
+        Arena                       m_arena;
         OSLShaderGroupExec          m_shadergroup_exec;
         const SPPMParameters        m_params;
         Tracer                      m_tracer;
@@ -499,7 +505,7 @@ namespace
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache)
           , m_oiio_texture_system(oiio_texture_system)
-          , m_shadergroup_exec(shading_system)
+          , m_shadergroup_exec(shading_system, m_arena)
           , m_params(params)
           , m_tracer(
                 m_scene,
@@ -533,6 +539,7 @@ namespace
                 m_texture_cache,
                 m_oiio_texture_system,
                 m_shadergroup_exec,
+                m_arena,
                 thread_index);
 
             const uint32 instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
@@ -545,7 +552,10 @@ namespace
                 instance);                  // initial instance number
 
             for (size_t i = m_photon_begin; i < m_photon_end && !m_abort_switch.is_aborted(); ++i)
+            {
+                m_arena.clear();
                 trace_env_photon(shading_context, sampling_context);
+            }
 
             m_global_photons.append(m_local_photons);
         }
@@ -558,6 +568,7 @@ namespace
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
         OIIO::TextureSystem&        m_oiio_texture_system;
+        Arena                       m_arena;
         OSLShaderGroupExec          m_shadergroup_exec;
         const SPPMParameters        m_params;
         Tracer                      m_tracer;

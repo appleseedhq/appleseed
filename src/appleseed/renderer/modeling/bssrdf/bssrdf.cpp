@@ -93,7 +93,7 @@ const BSDF& BSSRDF::get_brdf() const
     return impl->m_brdf.ref();
 }
 
-const void* BSSRDF::evaluate_inputs(
+void* BSSRDF::evaluate_inputs(
     const ShadingContext&   shading_context,
     const ShadingPoint&     shading_point) const
 {
@@ -104,12 +104,16 @@ const void* BSSRDF::evaluate_inputs(
         shading_point.get_uv(0),
         data);
 
-    prepare_inputs(shading_point, data);
+    prepare_inputs(
+        shading_context.get_arena(),
+        shading_point,
+        data);
 
     return data;
 }
 
 void BSSRDF::prepare_inputs(
+    Arena&                  arena,
     const ShadingPoint&     shading_point,
     void*                   data) const
 {

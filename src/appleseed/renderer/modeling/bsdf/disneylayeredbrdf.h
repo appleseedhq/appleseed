@@ -74,7 +74,7 @@ class DisneyLayeredBRDF
         OnFrameBeginRecorder&           recorder,
         foundation::IAbortSwitch*       abort_switch = 0) APPLESEED_OVERRIDE;
 
-    virtual const void* evaluate_inputs(
+    virtual void* evaluate_inputs(
         const ShadingContext&           shading_context,
         const ShadingPoint&             shading_point) const APPLESEED_OVERRIDE;
 

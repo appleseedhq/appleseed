@@ -97,7 +97,7 @@ bool DisneyLayeredBRDF::on_frame_begin(
     return true;
 }
 
-const void* DisneyLayeredBRDF::evaluate_inputs(
+void* DisneyLayeredBRDF::evaluate_inputs(
     const ShadingContext&       shading_context,
     const ShadingPoint&         shading_point) const
 {
@@ -122,7 +122,10 @@ const void* DisneyLayeredBRDF::evaluate_inputs(
     // todo: convert colors earlier so that all math is done in linear space.
     values->m_base_color = srgb_to_linear_rgb(base_color);
 
-    m_brdf->prepare_inputs(shading_context, shading_point, values);
+    m_brdf->prepare_inputs(
+        shading_context.get_arena(),
+        shading_point,
+        values);
 
     return values;
 }

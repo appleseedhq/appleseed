@@ -46,6 +46,7 @@ BEGIN_OSL_INCLUDES
 END_OSL_INCLUDES
 
 // Forward declarations.
+namespace renderer  { class Arena; }
 namespace renderer  { class ShaderGroup; }
 namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingPoint; }
@@ -58,7 +59,9 @@ class OSLShaderGroupExec
   : public foundation::NonCopyable
 {
   public:
-    explicit OSLShaderGroupExec(OSL::ShadingSystem& shading_system);
+    OSLShaderGroupExec(
+        OSL::ShadingSystem&             shading_system,
+        Arena&                          arena);
 
     ~OSLShaderGroupExec();
 
@@ -67,6 +70,8 @@ class OSLShaderGroupExec
     friend class Tracer;
 
     OSL::ShadingSystem&                 m_osl_shading_system;
+    Arena&                              m_arena;
+
     OSL::PerThreadInfo*                 m_osl_thread_info;
     OSL::ShadingContext*                m_osl_shading_context;
     char*                               m_osl_mem_pool;

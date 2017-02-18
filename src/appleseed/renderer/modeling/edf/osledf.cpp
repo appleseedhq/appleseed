@@ -78,14 +78,16 @@ namespace
             return Model;
         }
 
-        virtual const void* evaluate_inputs(
+        virtual void* evaluate_inputs(
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point) const APPLESEED_OVERRIDE
         {
             CompositeEmissionClosure* c =
-                shading_context.get_arena().allocate<CompositeEmissionClosure>();
+                shading_context.get_arena().allocate_noinit<CompositeEmissionClosure>();
 
-            new (c) CompositeEmissionClosure(shading_point.get_osl_shader_globals().Ci);
+            new (c) CompositeEmissionClosure(
+                shading_point.get_osl_shader_globals().Ci,
+                shading_context.get_arena());
 
             return c;
         }
@@ -101,7 +103,7 @@ namespace
             float&                  probability) const APPLESEED_OVERRIDE
         {
             const CompositeEmissionClosure* c =
-                reinterpret_cast<const CompositeEmissionClosure*>(data);
+                static_cast<const CompositeEmissionClosure*>(data);
 
             if (c->get_closure_count() > 0)
             {
@@ -127,7 +129,7 @@ namespace
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
             const CompositeEmissionClosure* c =
-                reinterpret_cast<const CompositeEmissionClosure*>(data);
+                static_cast<const CompositeEmissionClosure*>(data);
 
             value.set(0.0f);
 
@@ -156,7 +158,7 @@ namespace
             float&                  probability) const APPLESEED_OVERRIDE
         {
             const CompositeEmissionClosure* c =
-                reinterpret_cast<const CompositeEmissionClosure*>(data);
+                static_cast<const CompositeEmissionClosure*>(data);
 
             value.set(0.0f);
             probability = 0.0f;
@@ -190,7 +192,7 @@ namespace
             const Vector3f&         outgoing) const APPLESEED_OVERRIDE
         {
             const CompositeEmissionClosure* c =
-                reinterpret_cast<const CompositeEmissionClosure*>(data);
+                static_cast<const CompositeEmissionClosure*>(data);
 
             float probability = 0.0f;
 

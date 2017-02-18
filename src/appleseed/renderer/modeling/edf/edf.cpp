@@ -114,7 +114,7 @@ bool EDF::on_frame_begin(
     return true;
 }
 
-const void* EDF::evaluate_inputs(
+void* EDF::evaluate_inputs(
     const ShadingContext&   shading_context,
     const ShadingPoint&     shading_point) const
 {

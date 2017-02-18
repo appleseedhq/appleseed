@@ -47,8 +47,9 @@ namespace renderer
 // OSLShaderGroupExec class implementation.
 //
 
-OSLShaderGroupExec::OSLShaderGroupExec(OSL::ShadingSystem& shading_system)
+OSLShaderGroupExec::OSLShaderGroupExec(OSL::ShadingSystem& shading_system, Arena& arena)
   : m_osl_shading_system(shading_system)
+  , m_arena(arena)
   , m_osl_thread_info(shading_system.create_thread_info())
   , m_osl_shading_context(shading_system.get_context(m_osl_thread_info))
 {
@@ -138,7 +139,8 @@ void OSLShaderGroupExec::execute_bump(
 
         CompositeSubsurfaceClosure c(
             Basis3f(shading_point.get_shading_basis()),
-            shading_point.get_osl_shader_globals().Ci);
+            shading_point.get_osl_shader_globals().Ci,
+            m_arena);
 
         // Pick a shading basis from one of the BSSRDF closures.
         if (c.get_closure_count() > 0)
@@ -157,7 +159,8 @@ void OSLShaderGroupExec::execute_bump(
 
         CompositeSurfaceClosure c(
             Basis3f(shading_point.get_shading_basis()),
-            shading_point.get_osl_shader_globals().Ci);
+            shading_point.get_osl_shader_globals().Ci,
+            m_arena);
 
         // Pick a shading basis from one of the BSDF closures.
         if (c.get_closure_count() > 0)

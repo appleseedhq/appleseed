@@ -150,14 +150,17 @@ namespace
             return true;
         }
 
-        virtual const void* evaluate_inputs(
+        virtual void* evaluate_inputs(
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point) const APPLESEED_OVERRIDE
         {
-            CompositeSurfaceClosure* c = shading_context.get_arena().allocate<CompositeSurfaceClosure>();
+            CompositeSurfaceClosure* c =
+                shading_context.get_arena().allocate_noinit<CompositeSurfaceClosure>();
+
             new (c) CompositeSurfaceClosure(
                 Basis3f(shading_point.get_shading_basis()),
-                shading_point.get_osl_shader_globals().Ci);
+                shading_point.get_osl_shader_globals().Ci,
+                shading_context.get_arena());
 
             // Inject values into any children layered closure.
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
@@ -167,13 +170,16 @@ namespace
                     inject_layered_closure_values(cid, this, c->get_closure_input_values(i));
             }
 
-            prepare_inputs(shading_context, shading_point, c);
+            prepare_inputs(
+                shading_context.get_arena(),
+                shading_point,
+                c);
 
             return c;
         }
 
         void prepare_inputs(
-            const ShadingContext&   shading_context,
+            Arena&                  arena,
             const ShadingPoint&     shading_point,
             void*                   data) const APPLESEED_OVERRIDE
         {
@@ -183,13 +189,13 @@ namespace
             {
                 bsdf_from_closure_id(c->get_closure_type(i))
                     .prepare_inputs(
-                        shading_context,
+                        arena,
                         shading_point,
                         c->get_closure_input_values(i));
             }
         }
 
-        APPLESEED_FORCE_INLINE virtual void sample(
+        virtual void sample(
             SamplingContext&        sampling_context,
             const void*             data,
             const bool              adjoint,
@@ -214,7 +220,7 @@ namespace
             }
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate(
+        virtual float evaluate(
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
@@ -256,7 +262,7 @@ namespace
             return prob;
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate_pdf(
+        virtual float evaluate_pdf(
             const void*             data,
             const Vector3f&         geometric_normal,
             const Basis3f&          shading_basis,

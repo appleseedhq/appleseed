@@ -42,6 +42,7 @@
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/scalarsource.h"
 #include "renderer/modeling/project/project.h"
+#include "renderer/utility/arena.h"
 #include "renderer/utility/iostreamop.h"
 #include "renderer/utility/paramarray.h"
 
@@ -120,7 +121,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             m_values.m_ior = eta;
             m_values.m_fresnel_weight = 1.0f;
 
-            m_bssrdf->prepare_inputs(m_outgoing_point, &m_values);
+            m_bssrdf->prepare_inputs(m_arena, m_outgoing_point, &m_values);
         }
 
         void set_values_from_rd_mfp(
@@ -141,7 +142,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             m_values.m_ior = eta;
             m_values.m_fresnel_weight = 1.0f;
 
-            m_bssrdf->prepare_inputs(m_outgoing_point, &m_values);
+            m_bssrdf->prepare_inputs(m_arena, m_outgoing_point, &m_values);
         }
 
         const float get_sigma_tr() const
@@ -172,6 +173,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         }
 
       private:
+        Arena                       m_arena;
         auto_release_ptr<Project>   m_project;
         auto_release_ptr<BSSRDF>    m_bssrdf;
         ShadingPoint                m_outgoing_point;

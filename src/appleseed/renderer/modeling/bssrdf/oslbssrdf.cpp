@@ -133,20 +133,22 @@ namespace
             return true;
         }
 
-        virtual const void* evaluate_inputs(
+        virtual void* evaluate_inputs(
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point) const APPLESEED_OVERRIDE
         {
-            CompositeSubsurfaceClosure* c = shading_context.get_arena().allocate<CompositeSubsurfaceClosure>();
+            CompositeSubsurfaceClosure* c = shading_context.get_arena().allocate_noinit<CompositeSubsurfaceClosure>();
 
             new (c) CompositeSubsurfaceClosure(
                 Basis3f(shading_point.get_shading_basis()),
-                shading_point.get_osl_shader_globals().Ci);
+                shading_point.get_osl_shader_globals().Ci,
+                shading_context.get_arena());
 
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
                 bssrdf_from_closure_id(c->get_closure_type(i))
                     .prepare_inputs(
+                        shading_context.get_arena(),
                         shading_point,
                         c->get_closure_input_values(i));
             }
@@ -160,7 +162,7 @@ namespace
             BSSRDFSample&           sample) const APPLESEED_OVERRIDE
         {
             const CompositeSubsurfaceClosure* c =
-                reinterpret_cast<const CompositeSubsurfaceClosure*>(data);
+                static_cast<const CompositeSubsurfaceClosure*>(data);
 
             if (c->get_closure_count() > 0)
             {
@@ -189,7 +191,7 @@ namespace
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
             const CompositeSubsurfaceClosure* c =
-                reinterpret_cast<const CompositeSubsurfaceClosure*>(data);
+                static_cast<const CompositeSubsurfaceClosure*>(data);
 
             value.set(0.0f);
 
@@ -215,7 +217,7 @@ namespace
             const float             dist) const APPLESEED_OVERRIDE
         {
             const CompositeSubsurfaceClosure* c =
-                reinterpret_cast<const CompositeSubsurfaceClosure*>(data);
+                static_cast<const CompositeSubsurfaceClosure*>(data);
 
             float pdf = 0.0f;
 

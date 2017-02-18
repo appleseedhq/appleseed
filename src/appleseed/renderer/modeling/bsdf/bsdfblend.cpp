@@ -112,7 +112,7 @@ namespace
             return true;
         }
 
-        virtual const void* evaluate_inputs(
+        virtual void* evaluate_inputs(
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point) const APPLESEED_OVERRIDE
         {
@@ -121,7 +121,7 @@ namespace
             Values* values = shading_context.get_arena().allocate<Values>();
 
             values->m_inputs =
-                static_cast<const Values::Inputs*>(
+                static_cast<Values::Inputs*>(
                     BSDF::evaluate_inputs(shading_context, shading_point));
 
             values->m_child_inputs[0] = m_bsdf[0]->evaluate_inputs(shading_context, shading_point);
@@ -130,7 +130,7 @@ namespace
             return values;
         }
 
-        APPLESEED_FORCE_INLINE virtual void sample(
+        virtual void sample(
             SamplingContext&        sampling_context,
             const void*             data,
             const bool              adjoint,
@@ -155,7 +155,7 @@ namespace
                 sample);
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate(
+        virtual float evaluate(
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
@@ -215,7 +215,7 @@ namespace
             return bsdf0_prob * w0 + bsdf1_prob * w1;
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate_pdf(
+        virtual float evaluate_pdf(
             const void*             data,
             const Vector3f&         geometric_normal,
             const Basis3f&          shading_basis,

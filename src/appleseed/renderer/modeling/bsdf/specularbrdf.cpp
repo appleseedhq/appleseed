@@ -80,7 +80,7 @@ namespace
             return Model;
         }
 
-        APPLESEED_FORCE_INLINE virtual void sample(
+        virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -102,7 +102,7 @@ namespace
             SpecularBRDFHelper::sample(f, sample);
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate(
+        virtual float evaluate(
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
@@ -116,7 +116,7 @@ namespace
             return 0.0f;
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate_pdf(
+        virtual float evaluate_pdf(
             const void*         data,
             const Vector3f&     geometric_normal,
             const Basis3f&      shading_basis,

@@ -101,11 +101,11 @@ namespace
         }
 
         virtual void prepare_inputs(
+            Arena&              arena,
             const ShadingPoint& shading_point,
             void*               data) const APPLESEED_OVERRIDE
         {
-            DipoleBSSRDFInputValues* values =
-                reinterpret_cast<DipoleBSSRDFInputValues*>(data);
+            DipoleBSSRDFInputValues* values = static_cast<DipoleBSSRDFInputValues*>(data);
 
             do_prepare_inputs<ComputeRdStandardDipole>(shading_point, values);
 
@@ -143,8 +143,7 @@ namespace
             const Vector3f&     incoming_dir,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
-            const DipoleBSSRDFInputValues* values =
-                reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
+            const DipoleBSSRDFInputValues* values = static_cast<const DipoleBSSRDFInputValues*>(data);
 
             const Vector3d incoming_normal =
                 dot(Vector3d(incoming_dir), incoming_point.get_shading_normal()) > 0.0

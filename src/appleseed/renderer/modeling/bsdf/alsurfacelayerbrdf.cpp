@@ -103,12 +103,12 @@ namespace
             return Model;
         }
 
-        APPLESEED_FORCE_INLINE virtual void prepare_inputs(
-            const ShadingContext&   shading_context,
+        virtual void prepare_inputs(
+            Arena&                  arena,
             const ShadingPoint&     shading_point,
             void*                   data) const APPLESEED_OVERRIDE
         {
-            InputValues* values = reinterpret_cast<InputValues*>(data);
+            InputValues* values = static_cast<InputValues*>(data);
 
             new (&values->m_precomputed) InputValues::Precomputed();
 
@@ -130,11 +130,12 @@ namespace
             values->m_precomputed.m_alpha_y = clamp(values->m_precomputed.m_alpha_y, 0.001f, 0.999f);
 
             // Allocate memory and initialize the nested closure tree.
-            values->m_substrate_closure_data = shading_context.get_arena().allocate(sizeof(CompositeSurfaceClosure));
+            values->m_substrate_closure_data = arena.allocate(sizeof(CompositeSurfaceClosure));
             CompositeSurfaceClosure* c = static_cast<CompositeSurfaceClosure*>(values->m_substrate_closure_data);
             new (c) CompositeSurfaceClosure(
                 Basis3f(shading_point.get_shading_basis()),
-                reinterpret_cast<OSL::ClosureColor*>(values->m_substrate));
+                static_cast<OSL::ClosureColor*>(values->m_substrate),
+                arena);
 
             // Inject values into any children layered closures.
             assert(values->m_osl_bsdf);
@@ -148,12 +149,12 @@ namespace
 
             // Prepare the inputs of children BSDFs.
             values->m_osl_bsdf->prepare_inputs(
-                shading_context,
+                arena,
                 shading_point,
                 values->m_substrate_closure_data);
         }
 
-        APPLESEED_FORCE_INLINE virtual void sample(
+        virtual void sample(
             SamplingContext&        sampling_context,
             const void*             data,
             const bool              adjoint,
@@ -214,7 +215,7 @@ namespace
             }
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate(
+        virtual float evaluate(
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
@@ -270,7 +271,7 @@ namespace
             return probability;
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate_pdf(
+        virtual float evaluate_pdf(
             const void*             data,
             const Vector3f&         geometric_normal,
             const Basis3f&          shading_basis,

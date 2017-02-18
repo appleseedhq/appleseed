@@ -32,7 +32,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/oslshadergroupexec.h"
-#include "renderer/utility/arena.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -48,6 +47,7 @@ END_OIIO_INCLUDES
 #include <cstddef>
 
 // Forward declarations.
+namespace renderer  { class Arena; }
 namespace renderer  { class ILightingEngine; }
 namespace renderer  { class Intersector; }
 namespace renderer  { class ShadingPoint; }
@@ -72,12 +72,11 @@ class ShadingContext
         TextureCache&               texture_cache,
         OIIO::TextureSystem&        oiio_texture_system,
         OSLShaderGroupExec&         osl_shadergroup_exec,
+        Arena&                      arena,
         const size_t                thread_index,
         ILightingEngine*            lighting_engine = 0,
         const float                 transparency_threshold = 0.001f,
         const size_t                max_iterations = 1000);
-
-    Arena& get_arena() const;
 
     const Intersector& get_intersector() const;
 
@@ -88,6 +87,8 @@ class ShadingContext
     OIIO::TextureSystem& get_oiio_texture_system() const;
 
     ILightingEngine* get_lighting_engine() const;
+
+    Arena& get_arena() const;
 
     // Return the index of the current rendering thread.
     size_t get_thread_index() const;
@@ -143,12 +144,12 @@ class ShadingContext
         const float                 alpha) const;
 
   private:
-    mutable Arena                   m_arena;
     const Intersector&              m_intersector;
     Tracer&                         m_tracer;
     TextureCache&                   m_texture_cache;
     OIIO::TextureSystem&            m_oiio_texture_system;
     OSLShaderGroupExec&             m_shadergroup_exec;
+    Arena&                          m_arena;
     const size_t                    m_thread_index;
     ILightingEngine*                m_lighting_engine;
     const float                     m_transparency_threshold;
@@ -159,11 +160,6 @@ class ShadingContext
 //
 // ShadingContext class implementation.
 //
-
-inline Arena& ShadingContext::get_arena() const
-{
-    return m_arena;
-}
 
 inline const Intersector& ShadingContext::get_intersector() const
 {
@@ -183,6 +179,11 @@ inline TextureCache& ShadingContext::get_texture_cache() const
 inline ILightingEngine* ShadingContext::get_lighting_engine() const
 {
     return m_lighting_engine;
+}
+
+inline Arena& ShadingContext::get_arena() const
+{
+    return m_arena;
 }
 
 inline size_t ShadingContext::get_thread_index() const

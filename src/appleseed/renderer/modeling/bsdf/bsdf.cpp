@@ -68,7 +68,7 @@ BSDF::BSDF(
     set_name(name);
 }
 
-const void* BSDF::evaluate_inputs(
+void* BSDF::evaluate_inputs(
     const ShadingContext&   shading_context,
     const ShadingPoint&     shading_point) const
 {
@@ -79,13 +79,16 @@ const void* BSDF::evaluate_inputs(
         shading_point.get_uv(0),
         data);
 
-    prepare_inputs(shading_context, shading_point, data);
+    prepare_inputs(
+        shading_context.get_arena(),
+        shading_point,
+        data);
 
     return data;
 }
 
 void BSDF::prepare_inputs(
-    const ShadingContext&   shading_context,
+    Arena&                  arena,
     const ShadingPoint&     shading_point,
     void*                   data) const
 {

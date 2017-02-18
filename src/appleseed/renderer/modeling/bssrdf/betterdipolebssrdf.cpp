@@ -86,11 +86,11 @@ namespace
         }
 
         virtual void prepare_inputs(
+            Arena&              arena,
             const ShadingPoint& shading_point,
             void*               data) const APPLESEED_OVERRIDE
         {
-            DipoleBSSRDFInputValues* values =
-                reinterpret_cast<DipoleBSSRDFInputValues*>(data);
+            DipoleBSSRDFInputValues* values = static_cast<DipoleBSSRDFInputValues*>(data);
 
             do_prepare_inputs<ComputeRdBetterDipole>(shading_point, values);
         }
@@ -100,8 +100,7 @@ namespace
             const float         square_radius,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
-            const DipoleBSSRDFInputValues* values =
-                reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
+            const DipoleBSSRDFInputValues* values = static_cast<const DipoleBSSRDFInputValues*>(data);
 
             const float two_c1 = fresnel_first_moment(values->m_precomputed.m_eta);
             const float three_c2 = fresnel_second_moment(values->m_precomputed.m_eta);

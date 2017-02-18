@@ -55,7 +55,9 @@ class Arena
     void clear();
 
     void* allocate(const size_t size);
+
     template <typename T> T* allocate();
+    template <typename T> T* allocate_noinit();
 
   private:
     enum { ArenaSize = 256 * 1024 };        // bytes
@@ -96,6 +98,16 @@ inline void* Arena::allocate(const size_t size)
 
 template <typename T>
 inline T* Arena::allocate()
+{
+    T* ptr = static_cast<T*>(allocate(sizeof(T)));
+
+    new (ptr) T();
+
+    return ptr;
+}
+
+template <typename T>
+inline T* Arena::allocate_noinit()
 {
     return static_cast<T*>(allocate(sizeof(T)));
 }

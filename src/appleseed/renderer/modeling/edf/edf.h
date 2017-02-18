@@ -108,8 +108,7 @@ class APPLESEED_DLLSYMBOL EDF
         foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
 
     // Evaluate the inputs of this EDF.
-    // Input values are stored in the input evaluator.
-    virtual const void* evaluate_inputs(
+    virtual void* evaluate_inputs(
         const ShadingContext&       shading_context,
         const ShadingPoint&         shading_point) const;       // shading point on the light source
 

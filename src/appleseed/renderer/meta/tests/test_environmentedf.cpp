@@ -46,6 +46,7 @@
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/utility/arena.h"
 #include "renderer/utility/paramarray.h"
 #include "renderer/utility/testutils.h"
 
@@ -207,7 +208,8 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
                 m_project.get_trace_context(),
                 texture_cache);
 
-            OSLShaderGroupExec sg_exec(*shading_system);
+            Arena arena;
+            OSLShaderGroupExec sg_exec(*shading_system, arena);
 
             Tracer tracer(
                 m_scene,
@@ -221,6 +223,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
                 texture_cache,
                 *texture_system,
                 sg_exec,
+                arena,
                 0);
 
             Vector3f outgoing;

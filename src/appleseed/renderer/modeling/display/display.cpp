@@ -73,7 +73,7 @@ struct Display::Impl
         typedef ITileCallbackFactory*(*CreateFnType)(const ParamArray*);
 
         CreateFnType create_fn =
-            reinterpret_cast<CreateFnType>(m_plugin->get_symbol("create_tile_callback_factory", false));
+            static_cast<CreateFnType>(m_plugin->get_symbol("create_tile_callback_factory", false));
 
         m_tile_callback_factory.reset(create_fn(&params));
     }

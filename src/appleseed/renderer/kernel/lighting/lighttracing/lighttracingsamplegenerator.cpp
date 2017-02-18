@@ -58,6 +58,7 @@
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/visibilityflags.h"
+#include "renderer/utility/arena.h"
 #include "renderer/utility/settingsparsing.h"
 #include "renderer/utility/transformsequence.h"
 
@@ -171,7 +172,7 @@ namespace
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache, m_params.m_report_self_intersections)
-          , m_shadergroup_exec(shading_system)
+          , m_shadergroup_exec(shading_system, m_arena)
           , m_tracer(
                 m_scene,
                 m_intersector,
@@ -185,6 +186,7 @@ namespace
                 m_texture_cache,
                 oiio_texture_system,
                 m_shadergroup_exec,
+                m_arena,
                 generator_index,
                 0,
                 m_params.m_transparency_threshold,
@@ -494,6 +496,7 @@ namespace
         const LightSampler&             m_light_sampler;
         TextureCache                    m_texture_cache;
         Intersector                     m_intersector;
+        Arena                           m_arena;
         OSLShaderGroupExec              m_shadergroup_exec;
         Tracer                          m_tracer;
         const ShadingContext            m_shading_context;
@@ -512,6 +515,8 @@ namespace
             const size_t                sequence_index,
             SampleVector&               samples) APPLESEED_OVERRIDE
         {
+            m_arena.clear();
+
             SamplingContext sampling_context(
                 m_rng,
                 m_params.m_sampling_mode,

@@ -153,13 +153,13 @@ inline bool DipoleBSSRDF::on_frame_begin(
 inline float DipoleBSSRDF::get_eta(
     const void*                 data) const
 {
-    return reinterpret_cast<const DipoleBSSRDFInputValues*>(data)->m_precomputed.m_eta;
+    return static_cast<const DipoleBSSRDFInputValues*>(data)->m_precomputed.m_eta;
 }
 
 inline float DipoleBSSRDF::get_fresnel_weight(
     const void*         data) const
 {
-    return reinterpret_cast<const DipoleBSSRDFInputValues*>(data)->m_fresnel_weight;
+    return static_cast<const DipoleBSSRDFInputValues*>(data)->m_fresnel_weight;
 }
 
 template <typename ComputeRdFun>
