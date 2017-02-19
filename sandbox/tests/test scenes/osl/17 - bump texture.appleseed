@@ -86,7 +86,7 @@
                     <parameter name="Filename" value="string UVCheckerMap11-512.exr" />
                 </shader>
                 <shader type="shader" name="normal/as_bump_map" layer="bump1">
-                    <parameter name="Amount" value="float 0.025" />
+                    <parameter name="Amount" value="float -0.055" />
                     <parameter name="Method" value="string classic" />
                 </shader>
                 <shader type="shader" name="surface/as_diffuse_surface" layer="diffuse1">
