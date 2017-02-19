@@ -46,10 +46,10 @@
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class BaseGroup; }
-namespace renderer      { class InputEvaluator; }
 namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
+namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 
 namespace renderer
@@ -108,9 +108,8 @@ class APPLESEED_DLLSYMBOL EDF
         foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
 
     // Evaluate the inputs of this EDF.
-    // Input values are stored in the input evaluator.
-    virtual void evaluate_inputs(
-        InputEvaluator&             input_evaluator,
+    virtual void* evaluate_inputs(
+        const ShadingContext&       shading_context,
         const ShadingPoint&         shading_point) const;       // shading point on the light source
 
     // Sample the EDF and compute the emission direction, its probability

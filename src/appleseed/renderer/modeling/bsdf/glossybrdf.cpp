@@ -112,18 +112,12 @@ namespace
             return Model;
         }
 
-        virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const APPLESEED_OVERRIDE
-        {
-            return align(sizeof(InputValues), 16);
-        }
-
-        APPLESEED_FORCE_INLINE virtual void prepare_inputs(
-            const ShadingContext&   shading_context,
+        virtual void prepare_inputs(
+            Arena&                  arena,
             const ShadingPoint&     shading_point,
             void*                   data) const APPLESEED_OVERRIDE
         {
-            InputValues* values = reinterpret_cast<InputValues*>(data);
+            InputValues* values = static_cast<InputValues*>(data);
             new (&values->m_precomputed) InputValues::Precomputed();
             values->m_precomputed.m_outside_ior = shading_point.get_ray().get_current_ior();
         }
@@ -152,7 +146,7 @@ namespace
             return true;
         }
 
-        APPLESEED_FORCE_INLINE virtual void sample(
+        virtual void sample(
             SamplingContext&        sampling_context,
             const void*             data,
             const bool              adjoint,
@@ -165,7 +159,7 @@ namespace
             if (cos_on < 0.0f)
                 return;
 
-            const InputValues* values = reinterpret_cast<const InputValues*>(data);
+            const InputValues* values = static_cast<const InputValues*>(data);
 
             const FresnelDielectricFun f(
                 values->m_reflectance,
@@ -212,7 +206,7 @@ namespace
             }
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate(
+        virtual float evaluate(
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
@@ -233,7 +227,7 @@ namespace
             if (cos_in < 0.0f || cos_on < 0.0f)
                 return 0.0f;
 
-            const InputValues* values = reinterpret_cast<const InputValues*>(data);
+            const InputValues* values = static_cast<const InputValues*>(data);
 
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
@@ -279,7 +273,7 @@ namespace
             }
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate_pdf(
+        virtual float evaluate_pdf(
             const void*             data,
             const Vector3f&         geometric_normal,
             const Basis3f&          shading_basis,
@@ -297,7 +291,7 @@ namespace
             if (cos_in < 0.0f || cos_on < 0.0f)
                 return 0.0f;
 
-            const InputValues* values = reinterpret_cast<const InputValues*>(data);
+            const InputValues* values = static_cast<const InputValues*>(data);
 
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(

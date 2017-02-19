@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/closures.h"
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bssrdf/betterdipolebssrdf.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
@@ -41,10 +42,10 @@
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
 #endif
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
-#include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/api/specializedapiarrays.h"
+#include "foundation/utility/arena.h"
 #include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
@@ -132,30 +133,27 @@ namespace
             return true;
         }
 
-        virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const
-        {
-            return sizeof(CompositeSubsurfaceClosure);
-        }
-
-        virtual void evaluate_inputs(
+        virtual void* evaluate_inputs(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
-            const ShadingPoint&     shading_point,
-            const size_t            offset = 0) const APPLESEED_OVERRIDE
+            const ShadingPoint&     shading_point) const APPLESEED_OVERRIDE
         {
-            CompositeSubsurfaceClosure* c = reinterpret_cast<CompositeSubsurfaceClosure*>(input_evaluator.data());
+            CompositeSubsurfaceClosure* c = shading_context.get_arena().allocate_noinit<CompositeSubsurfaceClosure>();
+
             new (c) CompositeSubsurfaceClosure(
                 Basis3f(shading_point.get_shading_basis()),
-                shading_point.get_osl_shader_globals().Ci);
+                shading_point.get_osl_shader_globals().Ci,
+                shading_context.get_arena());
 
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
                 bssrdf_from_closure_id(c->get_closure_type(i))
                     .prepare_inputs(
+                        shading_context.get_arena(),
                         shading_point,
                         c->get_closure_input_values(i));
             }
+
+            return c;
         }
 
         virtual bool sample(
@@ -164,7 +162,7 @@ namespace
             BSSRDFSample&           sample) const APPLESEED_OVERRIDE
         {
             const CompositeSubsurfaceClosure* c =
-                reinterpret_cast<const CompositeSubsurfaceClosure*>(data);
+                static_cast<const CompositeSubsurfaceClosure*>(data);
 
             if (c->get_closure_count() > 0)
             {
@@ -193,7 +191,7 @@ namespace
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
             const CompositeSubsurfaceClosure* c =
-                reinterpret_cast<const CompositeSubsurfaceClosure*>(data);
+                static_cast<const CompositeSubsurfaceClosure*>(data);
 
             value.set(0.0f);
 
@@ -219,7 +217,7 @@ namespace
             const float             dist) const APPLESEED_OVERRIDE
         {
             const CompositeSubsurfaceClosure* c =
-                reinterpret_cast<const CompositeSubsurfaceClosure*>(data);
+                static_cast<const CompositeSubsurfaceClosure*>(data);
 
             float pdf = 0.0f;
 

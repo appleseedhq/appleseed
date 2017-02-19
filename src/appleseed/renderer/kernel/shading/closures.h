@@ -62,24 +62,13 @@ BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
 END_OSL_INCLUDES
 
-// Boost headers.
-#include "boost/mpl/assert.hpp"
-#include "boost/mpl/back_inserter.hpp"
-#include "boost/mpl/copy.hpp"
-#include "boost/mpl/deref.hpp"
-#include "boost/mpl/equal.hpp"
-#include "boost/mpl/max_element.hpp"
-#include "boost/mpl/size.hpp"
-#include "boost/mpl/sizeof.hpp"
-#include "boost/mpl/transform_view.hpp"
-#include "boost/mpl/vector.hpp"
-
 // Standard headers.
 #include <cassert>
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class BSDF; }
+namespace foundation    { class Arena; }
+namespace renderer      { class BSDF; }
 
 namespace renderer
 {
@@ -185,7 +174,8 @@ class APPLESEED_ALIGN(16) CompositeClosure
         const ClosureID             closure_type,
         const foundation::Basis3f&  original_shading_basis,
         const foundation::Color3f&  weight,
-        const foundation::Vector3f& normal);
+        const foundation::Vector3f& normal,
+        foundation::Arena&          arena);
 
     template <typename InputValues>
     InputValues* add_closure(
@@ -193,43 +183,15 @@ class APPLESEED_ALIGN(16) CompositeClosure
         const foundation::Basis3f&  original_shading_basis,
         const foundation::Color3f&  weight,
         const foundation::Vector3f& normal,
-        const foundation::Vector3f& tangent);
+        const foundation::Vector3f& tangent,
+        foundation::Arena&          arena);
 
   protected:
-    typedef boost::mpl::vector<
-        AlSurfaceLayerBRDFInputValues,
-        AshikhminBRDFInputValues,
-        DiffuseBTDFInputValues,
-        DiffuseEDFInputValues,
-        DipoleBSSRDFInputValues,
-        DisneyBRDFInputValues,
-        GaussianBSSRDFInputValues,
-        GlassBSDFInputValues,
-        GlossyBRDFInputValues,
-        MetalBRDFInputValues,
-#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
-        NormalizedDiffusionBSSRDFInputValues,
-#endif
-        OrenNayarBRDFInputValues,
-        SheenBRDFInputValues
-    > InputValuesTypeList;
-
-    // Find the biggest InputValues type.
-    typedef boost::mpl::max_element<
-        boost::mpl::transform_view<
-            InputValuesTypeList,
-            boost::mpl::sizeof_<boost::mpl::_1> > >::type BiggestInputValueType;
-
-    enum { InputValuesAlignment = 16 };
     enum { MaxClosureEntries = 16 };
-    enum { MaxPoolSize = MaxClosureEntries * (sizeof(boost::mpl::deref<BiggestInputValueType::base>::type) + InputValuesAlignment) };
 
-    // m_pool has to be first, because it has to be aligned.
-    char                            m_pool[MaxPoolSize];
+    size_t                          m_closure_count;
     void*                           m_input_values[MaxClosureEntries];
     ClosureID                       m_closure_types[MaxClosureEntries];
-    size_t                          m_closure_count;
-    size_t                          m_byte_count;
     Spectrum                        m_weights[MaxClosureEntries];
     float                           m_cdf[MaxClosureEntries];
     float                           m_pdf_weights[MaxClosureEntries];
@@ -246,7 +208,8 @@ class APPLESEED_ALIGN(16) CompositeClosure
         const foundation::Color3f&  weight,
         const foundation::Vector3f& normal,
         const bool                  has_tangent,
-        const foundation::Vector3f& tangent);
+        const foundation::Vector3f& tangent,
+        foundation::Arena&          arena);
 };
 
 
@@ -260,7 +223,8 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
   public:
     CompositeSurfaceClosure(
         const foundation::Basis3f&  original_shading_basis,
-        const OSL::ClosureColor*    ci);
+        const OSL::ClosureColor*    ci,
+        foundation::Arena&          arena);
 
     void add_ior(
         const foundation::Color3f&  weight,
@@ -269,14 +233,15 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
     float choose_ior(const float w) const;
 
   private:
-    size_t                          m_num_iors;
+    size_t                          m_ior_count;
     float                           m_iors[MaxClosureEntries];
     float                           m_ior_cdf[MaxClosureEntries];
 
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
         const foundation::Basis3f&  original_shading_basis,
-        const foundation::Color3f&  weight);
+        const foundation::Color3f&  weight,
+        foundation::Arena&          arena);
 };
 
 
@@ -290,13 +255,15 @@ class APPLESEED_ALIGN(16) CompositeSubsurfaceClosure
   public:
     CompositeSubsurfaceClosure(
         const foundation::Basis3f&  original_shading_basis,
-        const OSL::ClosureColor*    ci);
+        const OSL::ClosureColor*    ci,
+        foundation::Arena&          arena);
 
   private:
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
         const foundation::Basis3f&  original_shading_basis,
-        const foundation::Color3f&  weight);
+        const foundation::Color3f&  weight,
+        foundation::Arena&          arena);
 
 };
 
@@ -309,19 +276,22 @@ class APPLESEED_ALIGN(16) CompositeEmissionClosure
   : public CompositeClosure
 {
   public:
-    explicit CompositeEmissionClosure(
-        const OSL::ClosureColor*    ci);
+    CompositeEmissionClosure(
+        const OSL::ClosureColor*    ci,
+        foundation::Arena&          arena);
 
     template <typename InputValues>
     InputValues* add_closure(
         const ClosureID             closure_type,
         const foundation::Color3f&  weight,
-        const float                 max_weight_component);
+        const float                 max_weight_component,
+        foundation::Arena&          arena);
 
   private:
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
-        const foundation::Color3f&  weight);
+        const foundation::Color3f&  weight,
+        foundation::Arena&          arena);
 };
 
 

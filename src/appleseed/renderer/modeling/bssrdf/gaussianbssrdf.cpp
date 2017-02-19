@@ -33,7 +33,6 @@
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/bssrdf/separablebssrdf.h"
 #include "renderer/modeling/bssrdf/sss.h"
-#include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/cdf.h"
@@ -143,18 +142,12 @@ namespace
             return Model;
         }
 
-        virtual size_t compute_input_data_size(
-            const Assembly&     assembly) const APPLESEED_OVERRIDE
-        {
-            return align(sizeof(GaussianBSSRDFInputValues), 16);
-        }
-
         virtual void prepare_inputs(
+            Arena&              arena,
             const ShadingPoint& shading_point,
             void*               data) const APPLESEED_OVERRIDE
         {
-            GaussianBSSRDFInputValues* values =
-                reinterpret_cast<GaussianBSSRDFInputValues*>(data);
+            GaussianBSSRDFInputValues* values = static_cast<GaussianBSSRDFInputValues*>(data);
 
             new (&values->m_precomputed) GaussianBSSRDFInputValues::Precomputed();
 
@@ -194,8 +187,7 @@ namespace
             const void*         data,
             BSSRDFSample&       sample) const APPLESEED_OVERRIDE
         {
-            const GaussianBSSRDFInputValues* values =
-                reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
+            const GaussianBSSRDFInputValues* values = static_cast<const GaussianBSSRDFInputValues*>(data);
 
             const float rmax2 = values->m_precomputed.m_rmax2;
 
@@ -225,13 +217,13 @@ namespace
         virtual float get_eta(
             const void*         data) const APPLESEED_OVERRIDE
         {
-            return reinterpret_cast<const GaussianBSSRDFInputValues*>(data)->m_precomputed.m_eta;
+            return static_cast<const GaussianBSSRDFInputValues*>(data)->m_precomputed.m_eta;
         }
 
         virtual float get_fresnel_weight(
             const void*         data) const APPLESEED_OVERRIDE
         {
-            return reinterpret_cast<const GaussianBSSRDFInputValues*>(data)->m_fresnel_weight;
+            return static_cast<const GaussianBSSRDFInputValues*>(data)->m_fresnel_weight;
         }
 
         virtual void evaluate_profile(
@@ -239,8 +231,7 @@ namespace
             const float         square_radius,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
-            const GaussianBSSRDFInputValues* values =
-                reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
+            const GaussianBSSRDFInputValues* values = static_cast<const GaussianBSSRDFInputValues*>(data);
 
             const float rmax2 = values->m_precomputed.m_rmax2;
 
@@ -264,8 +255,7 @@ namespace
             const size_t        channel,
             const float         radius) const APPLESEED_OVERRIDE
         {
-            const GaussianBSSRDFInputValues* values =
-                reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
+            const GaussianBSSRDFInputValues* values = static_cast<const GaussianBSSRDFInputValues*>(data);
 
             const float rmax2 = values->m_precomputed.m_rmax2;
             const float r2 = radius * radius;

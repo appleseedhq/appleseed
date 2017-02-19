@@ -86,14 +86,8 @@ namespace
             return Model;
         }
 
-        virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const APPLESEED_OVERRIDE
-        {
-            return align(sizeof(InputValues), 16);
-        }
-
-        APPLESEED_FORCE_INLINE virtual void prepare_inputs(
-            const ShadingContext&   shading_context,
+        virtual void prepare_inputs(
+            Arena&                  arena,
             const ShadingPoint&     shading_point,
             void*                   data) const APPLESEED_OVERRIDE
         {
@@ -102,7 +96,7 @@ namespace
             values->m_precomputed.m_backfacing = !shading_point.is_entering();
         }
 
-        APPLESEED_FORCE_INLINE virtual void sample(
+        virtual void sample(
             SamplingContext&        sampling_context,
             const void*             data,
             const bool              adjoint,
@@ -136,7 +130,7 @@ namespace
             sample.m_mode = ScatteringMode::Diffuse;
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate(
+        virtual float evaluate(
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
@@ -173,7 +167,7 @@ namespace
             }
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate_pdf(
+        virtual float evaluate_pdf(
             const void*             data,
             const Vector3f&         geometric_normal,
             const Basis3f&          shading_basis,

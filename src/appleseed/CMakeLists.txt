@@ -701,6 +701,7 @@ source_group ("foundation\\utility\\test" FILES
 set (foundation_utility_sources
     foundation/utility/alignedallocator.h
     foundation/utility/alignedvector.h
+    foundation/utility/arena.h
     foundation/utility/attributeset.cpp
     foundation/utility/attributeset.h
     foundation/utility/autoreleaseptr.h
@@ -1194,7 +1195,6 @@ source_group ("renderer\\meta\\benchmarks" FILES
 
 set (renderer_meta_tests_sources
     renderer/meta/tests/test_assembly.cpp
-    renderer/meta/tests/test_bsdfmix.cpp
     renderer/meta/tests/test_containers.cpp
     renderer/meta/tests/test_dynamicspectrum.cpp
     renderer/meta/tests/test_entitymap.cpp
@@ -1511,13 +1511,11 @@ set (renderer_modeling_input_sources
     renderer/modeling/input/inputarray.h
     renderer/modeling/input/inputbinder.cpp
     renderer/modeling/input/inputbinder.h
-    renderer/modeling/input/inputevaluator.h
     renderer/modeling/input/scalarsource.h
     renderer/modeling/input/source.h
     renderer/modeling/input/symbol.h
     renderer/modeling/input/texturesource.cpp
     renderer/modeling/input/texturesource.h
-    renderer/modeling/input/uniforminputevaluator.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_input_sources}

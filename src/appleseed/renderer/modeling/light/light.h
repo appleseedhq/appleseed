@@ -46,11 +46,11 @@
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class BaseGroup; }
-namespace renderer      { class InputEvaluator; }
 namespace renderer      { class LightTargetArray; }
 namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
+namespace renderer      { class ShadingContext; }
 
 namespace renderer
 {
@@ -105,7 +105,7 @@ class APPLESEED_DLLSYMBOL Light
     // Sample the light and compute the emission position, the emission direction,
     // its probability density and the value of the light for this direction.
     virtual void sample(
-        InputEvaluator&                 input_evaluator,
+        const ShadingContext&           shading_context,
         const foundation::Transformd&   light_transform,            // light space to world space transform
         const foundation::Vector2d&     s,                          // sample in [0,1)^2
         foundation::Vector3d&           position,                   // world space emission position
@@ -113,7 +113,7 @@ class APPLESEED_DLLSYMBOL Light
         Spectrum&                       value,                      // light value
         float&                          probability) const = 0;     // PDF value
     virtual void sample(
-        InputEvaluator&                 input_evaluator,
+        const ShadingContext&           shading_context,
         const foundation::Transformd&   light_transform,            // light space to world space transform
         const foundation::Vector2d&     s,                          // sample in [0,1)^2
         const LightTargetArray&         targets,
@@ -124,7 +124,7 @@ class APPLESEED_DLLSYMBOL Light
 
     // Evaluate the light for a given target point.
     virtual void evaluate(
-        InputEvaluator&                 input_evaluator,
+        const ShadingContext&           shading_context,
         const foundation::Transformd&   light_transform,            // light space to world space transform
         const foundation::Vector3d&     target,                     // world space target point
         foundation::Vector3d&           position,                   // world space emission position

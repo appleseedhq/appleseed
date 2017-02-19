@@ -88,7 +88,7 @@ namespace
             return Model;
         }
 
-        APPLESEED_FORCE_INLINE virtual void sample(
+        virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -118,7 +118,7 @@ namespace
             sample.compute_reflected_differentials();
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate(
+        virtual float evaluate(
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
@@ -147,7 +147,7 @@ namespace
             return cos_in * RcpPi<float>();
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate_pdf(
+        virtual float evaluate_pdf(
             const void*         data,
             const Vector3f&     geometric_normal,
             const Basis3f&      shading_basis,

@@ -476,12 +476,11 @@ size_t InputArray::compute_data_size() const
 void InputArray::evaluate(
     TextureCache&       texture_cache,
     const Vector2f&     uv,
-    void*               values,
-    const size_t        offset) const
+    void*               values) const
 {
     assert(values);
 
-    uint8* ptr = static_cast<uint8*>(values) + offset;
+    uint8* ptr = static_cast<uint8*>(values);
 
 #ifdef APPLESEED_USE_SSE
     assert(is_aligned(ptr, 16));
@@ -492,12 +491,11 @@ void InputArray::evaluate(
 }
 
 void InputArray::evaluate_uniforms(
-    void*               values,
-    const size_t        offset) const
+    void*               values) const
 {
     assert(values);
 
-    uint8* ptr = static_cast<uint8*>(values) + offset;
+    uint8* ptr = static_cast<uint8*>(values);
 
 #ifdef APPLESEED_USE_SSE
     assert(is_aligned(ptr, 16));

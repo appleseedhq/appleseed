@@ -33,6 +33,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/closures.h"
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/alsurfacelayerbrdf.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -40,7 +41,6 @@
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/glassbsdf.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/utility/paramarray.h"
 
@@ -49,6 +49,7 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/api/specializedapiarrays.h"
+#include "foundation/utility/arena.h"
 #include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
@@ -149,24 +150,17 @@ namespace
             return true;
         }
 
-        virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const APPLESEED_OVERRIDE
-        {
-            return sizeof(CompositeSurfaceClosure);
-        }
-
-        virtual void evaluate_inputs(
+        virtual void* evaluate_inputs(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
-            const ShadingPoint&     shading_point,
-            const size_t            offset) const APPLESEED_OVERRIDE
+            const ShadingPoint&     shading_point) const APPLESEED_OVERRIDE
         {
-            assert(offset == 0);
+            CompositeSurfaceClosure* c =
+                shading_context.get_arena().allocate_noinit<CompositeSurfaceClosure>();
 
-            CompositeSurfaceClosure* c = reinterpret_cast<CompositeSurfaceClosure*>(input_evaluator.data());
             new (c) CompositeSurfaceClosure(
                 Basis3f(shading_point.get_shading_basis()),
-                shading_point.get_osl_shader_globals().Ci);
+                shading_point.get_osl_shader_globals().Ci,
+                shading_context.get_arena());
 
             // Inject values into any children layered closure.
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
@@ -176,27 +170,32 @@ namespace
                     inject_layered_closure_values(cid, this, c->get_closure_input_values(i));
             }
 
-            prepare_inputs(shading_context, shading_point, input_evaluator.data());
+            prepare_inputs(
+                shading_context.get_arena(),
+                shading_point,
+                c);
+
+            return c;
         }
 
         void prepare_inputs(
-            const ShadingContext&       shading_context,
-            const ShadingPoint&         shading_point,
-            void*                       data) const APPLESEED_OVERRIDE
+            Arena&                  arena,
+            const ShadingPoint&     shading_point,
+            void*                   data) const APPLESEED_OVERRIDE
         {
-            CompositeSurfaceClosure* c = reinterpret_cast<CompositeSurfaceClosure*>(data);
+            CompositeSurfaceClosure* c = static_cast<CompositeSurfaceClosure*>(data);
 
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
                 bsdf_from_closure_id(c->get_closure_type(i))
                     .prepare_inputs(
-                        shading_context,
+                        arena,
                         shading_point,
                         c->get_closure_input_values(i));
             }
         }
 
-        APPLESEED_FORCE_INLINE virtual void sample(
+        virtual void sample(
             SamplingContext&        sampling_context,
             const void*             data,
             const bool              adjoint,
@@ -221,7 +220,7 @@ namespace
             }
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate(
+        virtual float evaluate(
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
@@ -263,7 +262,7 @@ namespace
             return prob;
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate_pdf(
+        virtual float evaluate_pdf(
             const void*             data,
             const Vector3f&         geometric_normal,
             const Basis3f&          shading_basis,
@@ -304,7 +303,7 @@ namespace
 
         virtual void compute_absorption(
             const void*                 data,
-            const float                distance,
+            const float                 distance,
             Spectrum&                   absorption) const APPLESEED_OVERRIDE
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);

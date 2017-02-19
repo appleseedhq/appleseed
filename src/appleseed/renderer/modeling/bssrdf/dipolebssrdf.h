@@ -100,9 +100,6 @@ class DipoleBSSRDF
         const char*                 name,
         const ParamArray&           params);
 
-    virtual size_t compute_input_data_size(
-        const Assembly&             assembly) const APPLESEED_OVERRIDE;
-
     virtual bool on_frame_begin(
         const Project&              project,
         const BaseGroup*            parent,
@@ -140,12 +137,6 @@ class DipoleBSSRDF
 // DipoleBSSRDF class implementation.
 //
 
-inline size_t DipoleBSSRDF::compute_input_data_size(
-    const Assembly&             assembly) const
-{
-    return foundation::align(sizeof(DipoleBSSRDFInputValues), 16);
-}
-
 inline bool DipoleBSSRDF::on_frame_begin(
     const Project&              project,
     const BaseGroup*            parent,
@@ -162,13 +153,13 @@ inline bool DipoleBSSRDF::on_frame_begin(
 inline float DipoleBSSRDF::get_eta(
     const void*                 data) const
 {
-    return reinterpret_cast<const DipoleBSSRDFInputValues*>(data)->m_precomputed.m_eta;
+    return static_cast<const DipoleBSSRDFInputValues*>(data)->m_precomputed.m_eta;
 }
 
 inline float DipoleBSSRDF::get_fresnel_weight(
     const void*         data) const
 {
-    return reinterpret_cast<const DipoleBSSRDFInputValues*>(data)->m_fresnel_weight;
+    return static_cast<const DipoleBSSRDFInputValues*>(data)->m_fresnel_weight;
 }
 
 template <typename ComputeRdFun>

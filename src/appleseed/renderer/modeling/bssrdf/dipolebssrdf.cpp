@@ -33,7 +33,6 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/bssrdf/sss.h"
-#include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/cdf.h"
@@ -76,8 +75,7 @@ bool DipoleBSSRDF::sample(
     const void*         data,
     BSSRDFSample&       sample) const
 {
-    const DipoleBSSRDFInputValues* values =
-        reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
+    const DipoleBSSRDFInputValues* values = static_cast<const DipoleBSSRDFInputValues*>(data);
 
     if (values->m_weight == 0.0)
         return false;
@@ -112,8 +110,7 @@ float DipoleBSSRDF::evaluate_pdf(
     const size_t        channel,
     const float         radius) const
 {
-    const DipoleBSSRDFInputValues* values =
-        reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
+    const DipoleBSSRDFInputValues* values = static_cast<const DipoleBSSRDFInputValues*>(data);
 
     // PDF of the sampled radius.
     float pdf_radius = 0.0f;

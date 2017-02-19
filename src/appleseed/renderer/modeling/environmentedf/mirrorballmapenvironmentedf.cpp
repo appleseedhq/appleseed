@@ -32,10 +32,10 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
@@ -114,7 +114,6 @@ namespace
 
         virtual void sample(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
             const Vector2f&         s,
             Vector3f&               outgoing,
             Spectrum&               value,
@@ -127,12 +126,11 @@ namespace
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             outgoing = transform.vector_to_parent(local_outgoing);
 
-            lookup_envmap(input_evaluator, local_outgoing, value);
+            lookup_envmap(shading_context, local_outgoing, value);
         }
 
         virtual void evaluate(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
             const Vector3f&         outgoing,
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
@@ -142,12 +140,11 @@ namespace
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
 
-            lookup_envmap(input_evaluator, local_outgoing, value);
+            lookup_envmap(shading_context, local_outgoing, value);
         }
 
         virtual void evaluate(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
             const Vector3f&         outgoing,
             Spectrum&               value,
             float&                  probability) const APPLESEED_OVERRIDE
@@ -158,12 +155,11 @@ namespace
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
 
-            lookup_envmap(input_evaluator, local_outgoing, value);
+            lookup_envmap(shading_context, local_outgoing, value);
             probability = RcpFourPi<float>();
         }
 
         virtual float evaluate_pdf(
-            InputEvaluator&         input_evaluator,
             const Vector3f&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
@@ -178,7 +174,7 @@ namespace
         };
 
         void lookup_envmap(
-            InputEvaluator&         input_evaluator,
+            const ShadingContext&   shading_context,
             const Vector3f&         direction,
             Spectrum&               value) const
         {
@@ -188,11 +184,12 @@ namespace
             const Vector2f uv(0.5f + direction[0] * r, 0.5f + direction[1] * r);
 
             // Evaluate the input.
-            const InputValues* values = input_evaluator.evaluate<InputValues>(m_inputs, uv);
-            if (is_finite(values->m_radiance))
+            InputValues values;
+            m_inputs.evaluate(shading_context.get_texture_cache(), uv, &values);
+            if (is_finite(values.m_radiance))
             {
-                value = values->m_radiance;
-                value *= values->m_radiance_multiplier;
+                value = values.m_radiance;
+                value *= values.m_radiance_multiplier;
             }
             else value.set(0.0f);
         }

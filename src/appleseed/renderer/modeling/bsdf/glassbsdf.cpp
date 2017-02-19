@@ -35,7 +35,6 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
@@ -161,14 +160,8 @@ namespace
             return true;
         }
 
-        virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const APPLESEED_OVERRIDE
-        {
-            return align(sizeof(InputValues), 16);
-        }
-
-        APPLESEED_FORCE_INLINE virtual void prepare_inputs(
-            const ShadingContext&   shading_context,
+        virtual void prepare_inputs(
+            Arena&                  arena,
             const ShadingPoint&     shading_point,
             void*                   data) const APPLESEED_OVERRIDE
         {
@@ -202,7 +195,7 @@ namespace
             values->m_precomputed.m_refraction_weight = max(max_value(values->m_precomputed.m_refraction_color), 0.0f);
         }
 
-        APPLESEED_FORCE_INLINE virtual void sample(
+        virtual void sample(
             SamplingContext&        sampling_context,
             const void*             data,
             const bool              adjoint,
@@ -307,7 +300,7 @@ namespace
             else sample.compute_reflected_differentials();
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate(
+        virtual float evaluate(
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
@@ -379,7 +372,7 @@ namespace
             }
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate_pdf(
+        virtual float evaluate_pdf(
             const void*             data,
             const Vector3f&         geometric_normal,
             const Basis3f&          shading_basis,

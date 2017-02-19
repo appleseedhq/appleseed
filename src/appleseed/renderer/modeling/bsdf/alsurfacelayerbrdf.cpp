@@ -48,6 +48,7 @@
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
+#include "foundation/utility/arena.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/otherwise.h"
@@ -102,18 +103,12 @@ namespace
             return Model;
         }
 
-        virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const APPLESEED_OVERRIDE
-        {
-            return align(sizeof(InputValues), 16);
-        }
-
-        APPLESEED_FORCE_INLINE virtual void prepare_inputs(
-            const ShadingContext&   shading_context,
+        virtual void prepare_inputs(
+            Arena&                  arena,
             const ShadingPoint&     shading_point,
             void*                   data) const APPLESEED_OVERRIDE
         {
-            InputValues* values = reinterpret_cast<InputValues*>(data);
+            InputValues* values = static_cast<InputValues*>(data);
 
             new (&values->m_precomputed) InputValues::Precomputed();
 
@@ -135,12 +130,12 @@ namespace
             values->m_precomputed.m_alpha_y = clamp(values->m_precomputed.m_alpha_y, 0.001f, 0.999f);
 
             // Allocate memory and initialize the nested closure tree.
-            values->m_substrate_closure_data = shading_context.osl_mem_alloc(sizeof(CompositeSurfaceClosure));
-
-            CompositeSurfaceClosure* c = reinterpret_cast<CompositeSurfaceClosure*>(values->m_substrate_closure_data);
+            values->m_substrate_closure_data = arena.allocate(sizeof(CompositeSurfaceClosure));
+            CompositeSurfaceClosure* c = static_cast<CompositeSurfaceClosure*>(values->m_substrate_closure_data);
             new (c) CompositeSurfaceClosure(
                 Basis3f(shading_point.get_shading_basis()),
-                reinterpret_cast<OSL::ClosureColor*>(values->m_substrate));
+                static_cast<OSL::ClosureColor*>(values->m_substrate),
+                arena);
 
             // Inject values into any children layered closures.
             assert(values->m_osl_bsdf);
@@ -153,10 +148,13 @@ namespace
             }
 
             // Prepare the inputs of children BSDFs.
-            values->m_osl_bsdf->prepare_inputs(shading_context, shading_point, values->m_substrate_closure_data);
+            values->m_osl_bsdf->prepare_inputs(
+                arena,
+                shading_point,
+                values->m_substrate_closure_data);
         }
 
-        APPLESEED_FORCE_INLINE virtual void sample(
+        virtual void sample(
             SamplingContext&        sampling_context,
             const void*             data,
             const bool              adjoint,
@@ -217,7 +215,7 @@ namespace
             }
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate(
+        virtual float evaluate(
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
@@ -273,7 +271,7 @@ namespace
             return probability;
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate_pdf(
+        virtual float evaluate_pdf(
             const void*             data,
             const Vector3f&         geometric_normal,
             const Basis3f&          shading_basis,
@@ -359,17 +357,16 @@ namespace
         {
             if (distribution == Beckmann)
                 return m_beckmann_mdf;
-            else
-                return m_ggx_mdf;
+            else return m_ggx_mdf;
         }
 
         static void fresnel_term(
-            const InputValues&  values,
-            Vector3f            wo,
-            const Vector3f&     m,
-            Spectrum&           value,
-            float&              weight,
-            float&              probability)
+            const InputValues&      values,
+            Vector3f                wo,
+            const Vector3f&         m,
+            Spectrum&               value,
+            float&                  weight,
+            float&                  probability)
         {
             if (wo.y < 0.0f)
                 wo = -wo;

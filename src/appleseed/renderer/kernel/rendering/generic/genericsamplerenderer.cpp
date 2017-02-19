@@ -57,6 +57,7 @@
 #include "foundation/image/regularspectrum.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/arena.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
@@ -107,7 +108,7 @@ namespace
           , m_lighting_engine(lighting_engine_factory->create())
           , m_shading_engine(shading_engine)
           , m_oiio_texture_system(oiio_texture_system)
-          , m_shadergroup_exec(shading_system)
+          , m_shadergroup_exec(shading_system, m_arena)
           , m_thread_index(thread_index)
           , m_intersector(
                 trace_context,
@@ -127,6 +128,7 @@ namespace
                 m_texture_cache,
                 m_oiio_texture_system,
                 m_shadergroup_exec,
+                m_arena,
                 m_thread_index,
                 m_lighting_engine,
                 m_params.m_transparency_threshold,
@@ -183,6 +185,8 @@ namespace
                         pretty_int(m_params.m_max_iterations).c_str());
                     break;
                 }
+
+                m_arena.clear();
 
                 // Trace the ray.
                 shading_points[shading_point_index].clear();
@@ -317,6 +321,7 @@ namespace
         OIIO::TextureSystem&        m_oiio_texture_system;
         const size_t                m_thread_index;
 
+        Arena                       m_arena;
         OSLShaderGroupExec          m_shadergroup_exec;
         const Intersector           m_intersector;
         Tracer                      m_tracer;

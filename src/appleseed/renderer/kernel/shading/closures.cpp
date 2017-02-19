@@ -32,11 +32,11 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/cdf.h"
 #include "foundation/math/scalar.h"
+#include "foundation/utility/arena.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/otherwise.h"
 
@@ -47,10 +47,6 @@ BEGIN_OSL_INCLUDES
 #include "OSL/oslclosure.h"
 #include "OSL/oslversion.h"
 END_OSL_INCLUDES
-
-// Boost headers.
-#include "boost/mpl/contains.hpp"
-#include "boost/static_assert.hpp"
 
 // Standard headers.
 #include <algorithm>
@@ -87,7 +83,8 @@ namespace
         CompositeSurfaceClosure&    composite_closure,
         const Basis3f&              shading_basis,
         const void*                 osl_params,
-        const Color3f&              weight);
+        const Color3f&              weight,
+        Arena&                      arena);
 
     convert_closure_fun g_closure_convert_funs[NumClosuresIDs];
 
@@ -95,7 +92,8 @@ namespace
         CompositeSurfaceClosure&    composite_closure,
         const Basis3f&              shading_basis,
         const void*                 osl_params,
-        const Color3f&              weight)
+        const Color3f&              weight,
+        Arena&                      arena)
     {
     }
 
@@ -105,8 +103,6 @@ namespace
 
     struct AshikhminShirleyClosure
     {
-        typedef AshikhminBRDFInputValues InputValues;
-
         struct Params
         {
             OSL::Vec3   N;
@@ -151,16 +147,19 @@ namespace
             CompositeSurfaceClosure&    composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
-            const Color3f&              weight)
+            const Color3f&              weight,
+            Arena&                      arena)
         {
-            const Params* p = reinterpret_cast<const Params*>(osl_params);
-            InputValues* values =
-                composite_closure.add_closure<InputValues>(
+            const Params* p = static_cast<const Params*>(osl_params);
+
+            AshikhminBRDFInputValues* values =
+                composite_closure.add_closure<AshikhminBRDFInputValues>(
                     id(),
                     shading_basis,
                     weight,
                     p->N,
-                    p->T);
+                    p->T,
+                    arena);
 
             values->m_rd = Color3f(p->diffuse_reflectance);
             values->m_rd_multiplier = 1.0f;
@@ -230,8 +229,6 @@ namespace
 
     struct DiffuseClosure
     {
-        typedef OrenNayarBRDFInputValues InputValues;
-
         struct Params
         {
             OSL::Vec3   N;
@@ -264,15 +261,18 @@ namespace
             CompositeSurfaceClosure&    composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
-            const Color3f&              weight)
+            const Color3f&              weight,
+            Arena&                      arena)
         {
-            const Params* p = reinterpret_cast<const Params*>(osl_params);
-            InputValues* values =
-                composite_closure.add_closure<InputValues>(
+            const Params* p = static_cast<const Params*>(osl_params);
+
+            OrenNayarBRDFInputValues* values =
+                composite_closure.add_closure<OrenNayarBRDFInputValues>(
                     OrenNayarID,
                     shading_basis,
                     weight,
-                    p->N);
+                    p->N,
+                    arena);
 
             values->m_reflectance.set(1.0f);
             values->m_reflectance_multiplier = 1.0f;
@@ -282,8 +282,6 @@ namespace
 
     struct DisneyClosure
     {
-        typedef DisneyBRDFInputValues InputValues;
-
         struct Params
         {
             OSL::Vec3   N;
@@ -340,16 +338,19 @@ namespace
             CompositeSurfaceClosure&    composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
-            const Color3f&              weight)
+            const Color3f&              weight,
+            Arena&                      arena)
         {
-            const Params* p = reinterpret_cast<const Params*>(osl_params);
-            InputValues* values =
-                composite_closure.add_closure<InputValues>(
+            const Params* p = static_cast<const Params*>(osl_params);
+
+            DisneyBRDFInputValues* values =
+                composite_closure.add_closure<DisneyBRDFInputValues>(
                     id(),
                     shading_basis,
                     weight,
                     p->N,
-                    p->T);
+                    p->T,
+                    arena);
 
             values->m_base_color = Color3f(p->base_color);
             values->m_subsurface = saturate(p->subsurface);
@@ -367,8 +368,6 @@ namespace
 
     struct EmissionClosure
     {
-        typedef DiffuseEDFInputValues InputValues;
-
         struct Params
         {
         };
@@ -397,13 +396,15 @@ namespace
             CompositeEmissionClosure&   composite_closure,
             const void*                 osl_params,
             const Color3f&              weight,
-            const float                 max_weight_component)
+            const float                 max_weight_component,
+            Arena&                      arena)
         {
-            InputValues* values =
-                composite_closure.add_closure<InputValues>(
+            DiffuseEDFInputValues* values =
+                composite_closure.add_closure<DiffuseEDFInputValues>(
                     id(),
                     weight,
-                    max_weight_component);
+                    max_weight_component,
+                    arena);
 
             values->m_radiance.set_intent(Spectrum::Illuminance);
             values->m_radiance = weight / max_weight_component;
@@ -413,8 +414,6 @@ namespace
 
     struct GlassClosure
     {
-        typedef GlassBSDFInputValues InputValues;
-
         struct Params
         {
             OSL::ustring    dist;
@@ -467,31 +466,34 @@ namespace
             CompositeSurfaceClosure&    composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
-            const Color3f&              weight)
+            const Color3f&              weight,
+            Arena&                      arena)
         {
-            const Params* p = reinterpret_cast<const Params*>(osl_params);
+            const Params* p = static_cast<const Params*>(osl_params);
 
-            InputValues* values;
+            GlassBSDFInputValues* values;
 
             if (p->dist == g_ggx_str)
             {
                 values =
-                    composite_closure.add_closure<InputValues>(
+                    composite_closure.add_closure<GlassBSDFInputValues>(
                         GlassGGXID,
                         shading_basis,
                         weight,
                         p->N,
-                        p->T);
+                        p->T,
+                        arena);
             }
             else if (p->dist == g_beckmann_str)
             {
                 values =
-                    composite_closure.add_closure<InputValues>(
+                    composite_closure.add_closure<GlassBSDFInputValues>(
                         GlassBeckmannID,
                         shading_basis,
                         weight,
                         p->N,
-                        p->T);
+                        p->T,
+                        arena);
             }
             else
             {
@@ -515,8 +517,6 @@ namespace
 
     struct GlossyClosure
     {
-        typedef GlossyBRDFInputValues InputValues;
-
         struct Params
         {
             OSL::ustring    dist;
@@ -559,31 +559,34 @@ namespace
             CompositeSurfaceClosure&    composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
-            const Color3f&              weight)
+            const Color3f&              weight,
+            Arena&                      arena)
         {
-            const Params* p = reinterpret_cast<const Params*>(osl_params);
+            const Params* p = static_cast<const Params*>(osl_params);
 
-            InputValues* values;
+            GlossyBRDFInputValues* values;
 
             if (p->dist == g_ggx_str)
             {
                 values =
-                    composite_closure.add_closure<InputValues>(
+                    composite_closure.add_closure<GlossyBRDFInputValues>(
                         GlossyGGXID,
                         shading_basis,
                         weight,
                         p->N,
-                        p->T);
+                        p->T,
+                        arena);
             }
             else if (p->dist == g_beckmann_str)
             {
                 values =
-                    composite_closure.add_closure<InputValues>(
+                    composite_closure.add_closure<GlossyBRDFInputValues>(
                         GlossyBeckmannID,
                         shading_basis,
                         weight,
                         p->N,
-                        p->T);
+                        p->T,
+                        arena);
             }
             else
             {
@@ -629,8 +632,6 @@ namespace
 
     struct MetalClosure
     {
-        typedef MetalBRDFInputValues InputValues;
-
         struct Params
         {
             OSL::ustring    dist;
@@ -675,31 +676,34 @@ namespace
             CompositeSurfaceClosure&    composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
-            const Color3f&              weight)
+            const Color3f&              weight,
+            Arena&                      arena)
         {
-            const Params* p = reinterpret_cast<const Params*>(osl_params);
+            const Params* p = static_cast<const Params*>(osl_params);
 
-            InputValues* values;
+            MetalBRDFInputValues* values;
 
             if (p->dist == g_ggx_str)
             {
                 values =
-                    composite_closure.add_closure<InputValues>(
+                    composite_closure.add_closure<MetalBRDFInputValues>(
                         MetalGGXID,
                         shading_basis,
                         weight,
                         p->N,
-                        p->T);
+                        p->T,
+                        arena);
             }
             else if (p->dist == g_beckmann_str)
             {
                 values =
-                    composite_closure.add_closure<InputValues>(
+                    composite_closure.add_closure<MetalBRDFInputValues>(
                         MetalBeckmannID,
                         shading_basis,
                         weight,
                         p->N,
-                        p->T);
+                        p->T,
+                        arena);
             }
             else
             {
@@ -718,8 +722,6 @@ namespace
 
     struct OrenNayarClosure
     {
-        typedef OrenNayarBRDFInputValues InputValues;
-
         struct Params
         {
             OSL::Vec3   N;
@@ -754,15 +756,18 @@ namespace
             CompositeSurfaceClosure&    composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
-            const Color3f&              weight)
+            const Color3f&              weight,
+            Arena&                      arena)
         {
-            const Params* p = reinterpret_cast<const Params*>(osl_params);
-            InputValues* values =
-                composite_closure.add_closure<InputValues>(
+            const Params* p = static_cast<const Params*>(osl_params);
+
+            OrenNayarBRDFInputValues* values =
+                composite_closure.add_closure<OrenNayarBRDFInputValues>(
                     id(),
                     shading_basis,
                     weight,
-                    p->N);
+                    p->N,
+                    arena);
 
             values->m_reflectance.set(1.0f);
             values->m_reflectance_multiplier = 1.0f;
@@ -772,8 +777,6 @@ namespace
 
     struct PhongClosure
     {
-        typedef AshikhminBRDFInputValues InputValues;
-
         struct Params
         {
             OSL::Vec3   N;
@@ -808,15 +811,18 @@ namespace
             CompositeSurfaceClosure&    composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
-            const Color3f&              weight)
+            const Color3f&              weight,
+            Arena&                      arena)
         {
-            const Params* p = reinterpret_cast<const Params*>(osl_params);
-            InputValues* values =
-                composite_closure.add_closure<InputValues>(
+            const Params* p = static_cast<const Params*>(osl_params);
+
+            AshikhminBRDFInputValues* values =
+                composite_closure.add_closure<AshikhminBRDFInputValues>(
                     AshikhminShirleyID,
                     shading_basis,
                     weight,
-                    p->N);
+                    p->N,
+                    arena);
 
             values->m_rd = Color3f(1.0f);
             values->m_rd_multiplier = 1.0f;
@@ -830,8 +836,6 @@ namespace
 
     struct ReflectionClosure
     {
-        typedef GlossyBRDFInputValues InputValues;
-
         struct Params
         {
             OSL::Vec3       N;
@@ -866,18 +870,18 @@ namespace
             CompositeSurfaceClosure&    composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
-            const Color3f&              weight)
+            const Color3f&              weight,
+            Arena&                      arena)
         {
-            const Params* p = reinterpret_cast<const Params*>(osl_params);
+            const Params* p = static_cast<const Params*>(osl_params);
 
-            InputValues* values;
-
-            values =
-                composite_closure.add_closure<InputValues>(
+            GlossyBRDFInputValues* values =
+                composite_closure.add_closure<GlossyBRDFInputValues>(
                     GlossyBeckmannID,
                     shading_basis,
                     weight,
-                    p->N);
+                    p->N,
+                    arena);
 
             values->m_reflectance.set(1.0f);
             values->m_reflectance_multiplier = 1.0f;
@@ -889,8 +893,6 @@ namespace
 
     struct SheenClosure
     {
-        typedef SheenBRDFInputValues InputValues;
-
         struct Params
         {
             OSL::Vec3 N;
@@ -923,15 +925,18 @@ namespace
             CompositeSurfaceClosure&    composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
-            const Color3f&              weight)
+            const Color3f&              weight,
+            Arena&                      arena)
         {
-            const Params* p = reinterpret_cast<const Params*>(osl_params);
-            InputValues* values =
-                composite_closure.add_closure<InputValues>(
+            const Params* p = static_cast<const Params*>(osl_params);
+
+            SheenBRDFInputValues* values =
+                composite_closure.add_closure<SheenBRDFInputValues>(
                     id(),
                     shading_basis,
                     weight,
-                    p->N);
+                    p->N,
+                    arena);
 
             values->m_reflectance.set(1.0f);
             values->m_reflectance_multiplier = 1.0f;
@@ -961,9 +966,9 @@ namespace
         }
 
         static void prepare_closure(
-            OSL::RendererServices*          render_services,
-            int                             id,
-            void*                           data)
+            OSL::RendererServices*      render_services,
+            int                         id,
+            void*                       data)
         {
             // Initialize keyword parameter defaults.
             Params* params = new (data) Params();
@@ -987,12 +992,13 @@ namespace
         }
 
         static void convert_closure(
-            CompositeSubsurfaceClosure&     composite_closure,
-            const Basis3f&                  shading_basis,
-            const void*                     osl_params,
-            const Color3f&                  weight)
+            CompositeSubsurfaceClosure& composite_closure,
+            const Basis3f&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight,
+            Arena&                      arena)
         {
-            const Params* p = reinterpret_cast<const Params*>(osl_params);
+            const Params* p = static_cast<const Params*>(osl_params);
 
             if (p->profile == g_normalized_diffusion_profile_str)
             {
@@ -1002,7 +1008,8 @@ namespace
                         SubsurfaceNormalizedDiffusionID,
                         shading_basis,
                         weight,
-                        p->N);
+                        p->N,
+                        arena);
 
                 copy_parameters(p, values);
 #else
@@ -1016,7 +1023,8 @@ namespace
                         SubsurfaceGaussianID,
                         shading_basis,
                         weight,
-                        p->N);
+                        p->N,
+                        arena);
 
                 copy_parameters(p, values);
             }
@@ -1031,7 +1039,8 @@ namespace
                             SubsurfaceBetterDipoleID,
                             shading_basis,
                             weight,
-                            p->N);
+                            p->N,
+                            arena);
                 }
                 else if (p->profile == g_standard_dipole_profile_str)
                 {
@@ -1040,7 +1049,8 @@ namespace
                             SubsurfaceStandardDipoleID,
                             shading_basis,
                             weight,
-                            p->N);
+                            p->N,
+                            arena);
                 }
                 else if (p->profile == g_directional_dipole_profile_str)
                 {
@@ -1049,7 +1059,8 @@ namespace
                             SubsurfaceDirectionalDipoleID,
                             shading_basis,
                             weight,
-                            p->N);
+                            p->N,
+                            arena);
                 }
                 else
                 {
@@ -1064,8 +1075,8 @@ namespace
 
         template <typename InputValues>
         static void copy_parameters(
-            const Params*                   p,
-            InputValues*                    values)
+            const Params*               p,
+            InputValues*                values)
         {
             values->m_weight = 1.0f;
             values->m_reflectance = Color3f(p->reflectance);
@@ -1079,8 +1090,6 @@ namespace
 
     struct TranslucentClosure
     {
-        typedef DiffuseBTDFInputValues InputValues;
-
         struct Params
         {
             OSL::Vec3 N;
@@ -1113,15 +1122,18 @@ namespace
             CompositeSurfaceClosure&    composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
-            const Color3f&              weight)
+            const Color3f&              weight,
+            Arena&                      arena)
         {
-            const Params* p = reinterpret_cast<const Params*>(osl_params);
-            InputValues* values =
-                composite_closure.add_closure<InputValues>(
+            const Params* p = static_cast<const Params*>(osl_params);
+
+            DiffuseBTDFInputValues* values =
+                composite_closure.add_closure<DiffuseBTDFInputValues>(
                     id(),
                     shading_basis,
                     weight,
-                    p->N);
+                    p->N,
+                    arena);
 
             values->m_transmittance.set(1.0f);
             values->m_transmittance_multiplier = 1.0f;
@@ -1168,7 +1180,8 @@ namespace
     {
         typedef AlSurfaceLayerBRDFInputValues InputValues;
 
-        struct Params : public LayeredClosureBaseParams
+        struct Params
+          : public LayeredClosureBaseParams
         {
             int             distribution;
             OSL::Vec3       N;
@@ -1219,9 +1232,10 @@ namespace
             CompositeSurfaceClosure&    composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
-            const Color3f&              weight)
+            const Color3f&              weight,
+            Arena&                      arena)
         {
-            const Params* p = reinterpret_cast<const Params*>(osl_params);
+            const Params* p = static_cast<const Params*>(osl_params);
 
             InputValues* values =
                 composite_closure.add_closure<InputValues>(
@@ -1229,7 +1243,8 @@ namespace
                     shading_basis,
                     weight,
                     p->N,
-                    p->T);
+                    p->T,
+                    arena);
 
             values->m_substrate = p->substrate;
             values->m_substrate_closure_data = 0;
@@ -1254,9 +1269,9 @@ namespace
         assert(closure_id >= FirstLayeredClosure);
 
         const LayeredClosureBaseParams* p =
-            reinterpret_cast<const LayeredClosureBaseParams*>(params);
+            static_cast<const LayeredClosureBaseParams*>(params);
 
-        return reinterpret_cast<const OSL::ClosureColor*>(p->substrate);
+        return static_cast<const OSL::ClosureColor*>(p->substrate);
     }
 }
 
@@ -1267,9 +1282,7 @@ namespace
 
 CompositeClosure::CompositeClosure()
   : m_closure_count(0)
-  , m_byte_count(0)
 {
-    assert(is_aligned(m_pool, InputValuesAlignment));
 }
 
 void CompositeClosure::compute_cdf()
@@ -1376,7 +1389,8 @@ InputValues* CompositeClosure::add_closure(
     const ClosureID             closure_type,
     const Basis3f&              original_shading_basis,
     const Color3f&              weight,
-    const Vector3f&             normal)
+    const Vector3f&             normal,
+    Arena&                      arena)
 {
     return do_add_closure<InputValues>(
         closure_type,
@@ -1384,7 +1398,8 @@ InputValues* CompositeClosure::add_closure(
         weight,
         normal,
         false,
-        Vector3f(0.0f));
+        Vector3f(0.0f),
+        arena);
 }
 
 template <typename InputValues>
@@ -1393,7 +1408,8 @@ InputValues* CompositeClosure::add_closure(
     const Basis3f&              original_shading_basis,
     const Color3f&              weight,
     const Vector3f&             normal,
-    const Vector3f&             tangent)
+    const Vector3f&             tangent,
+    Arena&                      arena)
 {
     return do_add_closure<InputValues>(
         closure_type,
@@ -1401,7 +1417,8 @@ InputValues* CompositeClosure::add_closure(
         weight,
         normal,
         true,
-        tangent);
+        tangent,
+        arena);
 }
 
 template <typename InputValues>
@@ -1411,20 +1428,15 @@ InputValues* CompositeClosure::do_add_closure(
     const Color3f&              weight,
     const Vector3f&             normal,
     const bool                  has_tangent,
-    const Vector3f&             tangent)
+    const Vector3f&             tangent,
+    Arena&                      arena)
 {
-    // Check that InputValues is included in our type list.
-    typedef typename boost::mpl::contains<InputValuesTypeList, InputValues>::type value_in_list;
-    BOOST_STATIC_ASSERT(value_in_list::value);
-
     // Make sure we have enough space.
     if APPLESEED_UNLIKELY(get_closure_count() >= MaxClosureEntries)
     {
         throw ExceptionOSLRuntimeError(
-            "maximum number of closures in OSL shader group exceeded.");
+            "maximum number of closures in osl shader group exceeded");
     }
-
-    assert(m_byte_count + sizeof(InputValues) <= MaxPoolSize);
 
     // We use the luminance of the weight as the BSDF weight.
     const float w = luminance(weight);
@@ -1439,14 +1451,12 @@ InputValues* CompositeClosure::do_add_closure(
 
     m_closure_types[m_closure_count] = closure_type;
 
-    char* values_ptr = m_pool + m_byte_count;
-    assert(is_aligned(values_ptr, InputValuesAlignment));
-    new (values_ptr) InputValues();
-    m_input_values[m_closure_count] = values_ptr;
-    m_byte_count += align(sizeof(InputValues), InputValuesAlignment);
+    InputValues* values = arena.allocate<InputValues>();
+    m_input_values[m_closure_count] = values;
+
     ++m_closure_count;
 
-    return reinterpret_cast<InputValues*>(values_ptr);
+    return values;
 }
 
 
@@ -1454,29 +1464,27 @@ InputValues* CompositeClosure::do_add_closure(
 // CompositeSurfaceClosure class implementation.
 //
 
-BOOST_STATIC_ASSERT(sizeof(CompositeSurfaceClosure) <= InputEvaluator::DataSize);
-
 CompositeSurfaceClosure::CompositeSurfaceClosure(
     const Basis3f&              original_shading_basis,
-    const OSL::ClosureColor*    ci)
-  : CompositeClosure()
-  , m_num_iors(0)
+    const OSL::ClosureColor*    ci,
+    Arena&                      arena)
+  : m_ior_count(0)
 {
-    process_closure_tree(ci, original_shading_basis, Color3f(1.0f));
+    process_closure_tree(ci, original_shading_basis, Color3f(1.0f), arena);
     compute_cdf();
 
-    if (m_num_iors == 0)
+    if (m_ior_count == 0)
     {
-        m_num_iors = 1;
+        m_ior_count = 1;
         m_iors[0] = 1.0f;
         return;
     }
 
     // Build the IOR CDF in place if needed.
-    if (m_num_iors > 1)
+    if (m_ior_count > 1)
     {
         float total_weight = m_ior_cdf[0];
-        for (size_t i = 1; i < m_num_iors; ++i)
+        for (size_t i = 1; i < m_ior_count; ++i)
         {
             total_weight += m_ior_cdf[i];
             m_ior_cdf[i] = total_weight;
@@ -1484,10 +1492,10 @@ CompositeSurfaceClosure::CompositeSurfaceClosure(
 
         const float rcp_total_weight = 1.0f / total_weight;
 
-        for (size_t i = 0; i < m_num_iors - 1; ++i)
+        for (size_t i = 0; i < m_ior_count - 1; ++i)
             m_ior_cdf[i] *= rcp_total_weight;
 
-        m_ior_cdf[m_num_iors - 1] = 1.0f;
+        m_ior_cdf[m_ior_count - 1] = 1.0f;
     }
 }
 
@@ -1499,16 +1507,16 @@ void CompositeSurfaceClosure::add_ior(
     const float w = luminance(weight);
     assert(w > 0.0f);
 
-    m_iors[m_num_iors] = ior;
-    m_ior_cdf[m_num_iors] = w;
-    ++m_num_iors;
+    m_iors[m_ior_count] = ior;
+    m_ior_cdf[m_ior_count] = w;
+    ++m_ior_count;
 }
 
 float CompositeSurfaceClosure::choose_ior(const float w) const
 {
-    assert(m_num_iors > 0);
+    assert(m_ior_count > 0);
 
-    if APPLESEED_LIKELY(m_num_iors == 1)
+    if APPLESEED_LIKELY(m_ior_count == 1)
         return m_iors[0];
 
     const size_t index = sample_cdf_linear_search(m_ior_cdf, w);
@@ -1518,7 +1526,8 @@ float CompositeSurfaceClosure::choose_ior(const float w) const
 void CompositeSurfaceClosure::process_closure_tree(
     const OSL::ClosureColor*    closure,
     const Basis3f&              original_shading_basis,
-    const Color3f&              weight)
+    const Color3f&              weight,
+    Arena&                      arena)
 {
     if (closure == 0)
         return;
@@ -1533,15 +1542,15 @@ void CompositeSurfaceClosure::process_closure_tree(
         {
             const OSL::ClosureMul* c = reinterpret_cast<const OSL::ClosureMul*>(closure);
             const Color3f w = weight * Color3f(c->weight);
-            process_closure_tree(c->closure, original_shading_basis, w);
+            process_closure_tree(c->closure, original_shading_basis, w, arena);
         }
         break;
 
       case OSL::ClosureColor::ADD:
         {
             const OSL::ClosureAdd* c = reinterpret_cast<const OSL::ClosureAdd*>(closure);
-            process_closure_tree(c->closureA, original_shading_basis, weight);
-            process_closure_tree(c->closureB, original_shading_basis, weight);
+            process_closure_tree(c->closureA, original_shading_basis, weight, arena);
+            process_closure_tree(c->closureB, original_shading_basis, weight, arena);
         }
         break;
 
@@ -1551,7 +1560,7 @@ void CompositeSurfaceClosure::process_closure_tree(
             const Color3f w = weight * Color3f(c->w);
 
             if (luminance(w) > 0.0f)
-                g_closure_convert_funs[c->id](*this, original_shading_basis, c->data(), w);
+                g_closure_convert_funs[c->id](*this, original_shading_basis, c->data(), w, arena);
         }
         break;
     }
@@ -1562,20 +1571,20 @@ void CompositeSurfaceClosure::process_closure_tree(
 // CompositeSubsurfaceClosure class implementation.
 //
 
-BOOST_STATIC_ASSERT(sizeof(CompositeSubsurfaceClosure) <= InputEvaluator::DataSize);
-
 CompositeSubsurfaceClosure::CompositeSubsurfaceClosure(
     const Basis3f&              original_shading_basis,
-    const OSL::ClosureColor*    ci)
+    const OSL::ClosureColor*    ci,
+    Arena&                      arena)
 {
-    process_closure_tree(ci, original_shading_basis, Color3f(1.0f));
+    process_closure_tree(ci, original_shading_basis, Color3f(1.0f), arena);
     compute_cdf();
 }
 
 void CompositeSubsurfaceClosure::process_closure_tree(
     const OSL::ClosureColor*    closure,
     const Basis3f&              original_shading_basis,
-    const foundation::Color3f&  weight)
+    const foundation::Color3f&  weight,
+    Arena&                      arena)
 {
     if (closure == 0)
         return;
@@ -1589,15 +1598,15 @@ void CompositeSubsurfaceClosure::process_closure_tree(
       case OSL::ClosureColor::MUL:
         {
             const OSL::ClosureMul* c = reinterpret_cast<const OSL::ClosureMul*>(closure);
-            process_closure_tree(c->closure, original_shading_basis, weight * Color3f(c->weight));
+            process_closure_tree(c->closure, original_shading_basis, weight * Color3f(c->weight), arena);
         }
         break;
 
       case OSL::ClosureColor::ADD:
         {
             const OSL::ClosureAdd* c = reinterpret_cast<const OSL::ClosureAdd*>(closure);
-            process_closure_tree(c->closureA, original_shading_basis, weight);
-            process_closure_tree(c->closureB, original_shading_basis, weight);
+            process_closure_tree(c->closureA, original_shading_basis, weight, arena);
+            process_closure_tree(c->closureB, original_shading_basis, weight, arena);
         }
         break;
 
@@ -1614,14 +1623,15 @@ void CompositeSubsurfaceClosure::process_closure_tree(
                         *this,
                         original_shading_basis,
                         c->data(),
-                        w);
+                        w,
+                        arena);
                 }
             }
             else if (c->id >= FirstLayeredClosure)
             {
                 // For now, we just recurse.
                 const OSL::ClosureColor* nested = get_nested_closure_color(c->id, c->data());
-                process_closure_tree(nested, original_shading_basis, weight * Color3f(c->w));
+                process_closure_tree(nested, original_shading_basis, weight * Color3f(c->w), arena);
             }
         }
         break;
@@ -1633,12 +1643,11 @@ void CompositeSubsurfaceClosure::process_closure_tree(
 // CompositeEmissionClosure class implementation.
 //
 
-BOOST_STATIC_ASSERT(sizeof(CompositeEmissionClosure) <= InputEvaluator::DataSize);
-
 CompositeEmissionClosure::CompositeEmissionClosure(
-    const OSL::ClosureColor*    ci)
+    const OSL::ClosureColor*    ci,
+    Arena&                      arena)
 {
-    process_closure_tree(ci, Color3f(1.0f));
+    process_closure_tree(ci, Color3f(1.0f), arena);
     compute_cdf();
 }
 
@@ -1646,39 +1655,32 @@ template <typename InputValues>
 InputValues* CompositeEmissionClosure::add_closure(
     const ClosureID             closure_type,
     const Color3f&              weight,
-    const float                 max_weight_component)
+    const float                 max_weight_component,
+    Arena&                      arena)
 {
-    // Check that InputValues is included in our type list.
-    typedef typename boost::mpl::contains<InputValuesTypeList, InputValues>::type value_in_list;
-    BOOST_STATIC_ASSERT(value_in_list::value);
-
     // Make sure we have enough space.
     if APPLESEED_UNLIKELY(get_closure_count() >= MaxClosureEntries)
     {
         throw ExceptionOSLRuntimeError(
-            "maximum number of closures in OSL shader group exceeded.");
+            "maximum number of closures in osl shader group exceeded");
     }
 
-    assert(m_byte_count + sizeof(InputValues) <= MaxPoolSize);
-
-    m_pdf_weights[m_closure_count] = max_weight_component;
-    m_weights[m_closure_count] = weight;
-
     m_closure_types[m_closure_count] = closure_type;
+    m_weights[m_closure_count] = weight;
+    m_pdf_weights[m_closure_count] = max_weight_component;
 
-    char* values_ptr = m_pool + m_byte_count;
-    assert(is_aligned(values_ptr, InputValuesAlignment));
-    new (values_ptr) InputValues();
-    m_input_values[m_closure_count] = values_ptr;
-    m_byte_count += align(sizeof(InputValues), InputValuesAlignment);
+    InputValues* values = arena.allocate<InputValues>();
+    m_input_values[m_closure_count] = values;
+
     ++m_closure_count;
 
-    return reinterpret_cast<InputValues*>(values_ptr);
+    return values;
 }
 
 void CompositeEmissionClosure::process_closure_tree(
     const OSL::ClosureColor*    closure,
-    const Color3f&              weight)
+    const Color3f&              weight,
+    Arena&                      arena)
 {
     if (closure == 0)
         return;
@@ -1692,15 +1694,15 @@ void CompositeEmissionClosure::process_closure_tree(
       case OSL::ClosureColor::MUL:
         {
             const OSL::ClosureMul* c = reinterpret_cast<const OSL::ClosureMul*>(closure);
-            process_closure_tree(c->closure, weight * Color3f(c->weight));
+            process_closure_tree(c->closure, weight * Color3f(c->weight), arena);
         }
         break;
 
       case OSL::ClosureColor::ADD:
         {
             const OSL::ClosureAdd* c = reinterpret_cast<const OSL::ClosureAdd*>(closure);
-            process_closure_tree(c->closureA, weight);
-            process_closure_tree(c->closureB, weight);
+            process_closure_tree(c->closureA, weight, arena);
+            process_closure_tree(c->closureB, weight, arena);
         }
         break;
 
@@ -1719,13 +1721,14 @@ void CompositeEmissionClosure::process_closure_tree(
                         *this,
                         c->data(),
                         w,
-                        max_weight_component);
+                        max_weight_component,
+                        arena);
                 }
                 else if (c->id >= FirstLayeredClosure)
                 {
                     // For now, we just recurse.
                     const OSL::ClosureColor* nested = get_nested_closure_color(c->id, c->data());
-                    process_closure_tree(nested, w);
+                    process_closure_tree(nested, w, arena);
                 }
             }
         }
@@ -1818,7 +1821,7 @@ void inject_layered_closure_values(
       case AlSurfaceLayerID:
       {
           AlSurfaceLayerBRDFInputValues* values =
-              reinterpret_cast<AlSurfaceLayerBRDFInputValues*>(data);
+              static_cast<AlSurfaceLayerBRDFInputValues*>(data);
           values->m_osl_bsdf = osl_bsdf;
       }
       break;

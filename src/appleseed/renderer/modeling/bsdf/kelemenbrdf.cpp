@@ -37,7 +37,6 @@
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
-#include "renderer/modeling/input/uniforminputevaluator.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -170,21 +169,23 @@ namespace
             if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
-            // todo: implement proper error handling.
-            assert(m_inputs.source("specular_reflectance")->is_uniform());
-            assert(m_inputs.source("specular_reflectance_multiplier")->is_uniform());
-            assert(m_inputs.source("roughness")->is_uniform());
+            if (!m_inputs.source("specular_reflectance")->is_uniform() ||
+                !m_inputs.source("specular_reflectance_multiplier")->is_uniform() ||
+                !m_inputs.source("roughness")->is_uniform())
+            {
+                RENDERER_LOG_ERROR("the \"specular_reflectance\", \"specular_reflectance_multiplier\" and \"roughness\" parameters of the Kelemen BRDF model must be uniform.");
+                return false;
+            }
 
-            UniformInputEvaluator input_evaluator;
-            const InputValues* values =
-                static_cast<const InputValues*>(input_evaluator.evaluate(m_inputs));
+            InputValues values;
+            m_inputs.evaluate_uniforms(&values);
 
             // Construct the Microfacet Distribution Function.
-            m_mdf.reset(new MDFType(max(values->m_roughness, 1.0e-6f)));
+            m_mdf.reset(new MDFType(max(values.m_roughness, 1.0e-6f)));
 
             // Precompute the specular albedo curve.
-            Spectrum rs(values->m_rs);
-            rs *= values->m_rs_multiplier;
+            Spectrum rs(values.m_rs);
+            rs *= values.m_rs_multiplier;
             compute_specular_albedo(*m_mdf.get(), rs, m_a_spec);
 
             // Precompute the average specular albedo.
@@ -213,7 +214,7 @@ namespace
             BSDF::on_frame_end(project, parent);
         }
 
-        APPLESEED_FORCE_INLINE virtual void sample(
+        virtual void sample(
             SamplingContext&        sampling_context,
             const void*             data,
             const bool              adjoint,
@@ -337,7 +338,7 @@ namespace
             sample.compute_reflected_differentials();
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate(
+        virtual float evaluate(
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
@@ -420,7 +421,7 @@ namespace
             return probability;
         }
 
-        APPLESEED_FORCE_INLINE virtual float evaluate_pdf(
+        virtual float evaluate_pdf(
             const void*             data,
             const Vector3f&         geometric_normal,
             const Basis3f&          shading_basis,

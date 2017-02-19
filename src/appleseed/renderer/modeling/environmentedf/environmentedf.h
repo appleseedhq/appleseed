@@ -45,7 +45,6 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class InputEvaluator; }
 namespace renderer      { class BaseGroup; }
 namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
@@ -94,7 +93,6 @@ class APPLESEED_DLLSYMBOL EnvironmentEDF
     // density and the value of the EDF for this direction.
     virtual void sample(
         const ShadingContext&       shading_context,
-        InputEvaluator&             input_evaluator,
         const foundation::Vector2f& s,                          // sample in [0,1)^2
         foundation::Vector3f&       outgoing,                   // world space emission direction, unit-length
         Spectrum&                   value,                      // EDF value for this direction
@@ -103,19 +101,16 @@ class APPLESEED_DLLSYMBOL EnvironmentEDF
     // Evaluate the EDF for a given emission direction.
     virtual void evaluate(
         const ShadingContext&       shading_context,
-        InputEvaluator&             input_evaluator,
         const foundation::Vector3f& outgoing,                   // world space emission direction, unit-length
         Spectrum&                   value) const = 0;           // EDF value for this direction
     virtual void evaluate(
         const ShadingContext&       shading_context,
-        InputEvaluator&             input_evaluator,
         const foundation::Vector3f& outgoing,                   // world space emission direction, unit-length
         Spectrum&                   value,                      // EDF value for this direction
         float&                      probability) const = 0;     // PDF value
 
     // Evaluate the PDF for a given emission direction.
     virtual float evaluate_pdf(
-        InputEvaluator&             input_evaluator,
         const foundation::Vector3f& outgoing) const = 0;        // world space emission direction, unit-length
 
   protected:

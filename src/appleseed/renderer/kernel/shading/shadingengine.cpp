@@ -38,7 +38,6 @@
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/object.h"
@@ -173,13 +172,11 @@ void ShadingEngine::shade_environment(
     if (environment_shader)
     {
         // There is an environment shader: execute it.
-        InputEvaluator input_evaluator(shading_context.get_texture_cache());
         const ShadingRay& ray = shading_point.get_ray();
         const Vector3d direction = normalize(ray.m_dir);
         environment_shader->evaluate(
             shading_context,
             pixel_context,
-            input_evaluator,
             direction,
             shading_result);
 

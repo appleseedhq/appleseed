@@ -27,50 +27,91 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_INPUT_UNIFORMINPUTEVALUATOR_H
-#define APPLESEED_RENDERER_MODELING_INPUT_UNIFORMINPUTEVALUATOR_H
-
-// appleseed.renderer headers.
-#include "renderer/modeling/input/inputarray.h"
+#ifndef APPLESEED_FOUNDATION_UTILITY_ARENA_H
+#define APPLESEED_FOUNDATION_UTILITY_ARENA_H
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptions/exception.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/memory.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 
-namespace renderer
+namespace foundation
 {
 
 //
-// Uniform input evaluator.
+// An arena is a temporary heap providing extremely cheap memory allocation.
 //
 
-class UniformInputEvaluator
+class Arena
 {
   public:
-    // Evaluate all uniform inputs from a set of inputs, and return the values as
-    // an opaque block of memory containing holes corresponding to varying inputs.
-    const void* evaluate(const InputArray& inputs);
+    Arena();
+
+    void clear();
+
+    void* allocate(const size_t size);
+
+    template <typename T> T* allocate();
+    template <typename T> T* allocate_noinit();
 
   private:
-    static const size_t ScratchSize = 16 * 1024;    // bytes
+    enum { ArenaSize = 256 * 1024 };    // bytes
 
-    APPLESEED_SIMD4_ALIGN foundation::uint8 m_scratch[ScratchSize];
+    APPLESEED_SIMD4_ALIGN uint8 m_storage[ArenaSize];
+    const uint8*                m_end;
+    uint8*                      m_current;
 };
 
 
 //
-// UniformInputEvaluator class implementation.
+// Arena class implementation.
 //
 
-inline const void* UniformInputEvaluator::evaluate(const InputArray& inputs)
+inline Arena::Arena()
+  : m_end(m_storage + ArenaSize)
+  , m_current(m_storage)
 {
-    inputs.evaluate_uniforms(m_scratch);
-    return m_scratch;
 }
 
-}       // namespace renderer
+inline void Arena::clear()
+{
+    m_current = m_storage;
+}
 
-#endif  // !APPLESEED_RENDERER_MODELING_INPUT_UNIFORMINPUTEVALUATOR_H
+inline void* Arena::allocate(const size_t size)
+{
+    if (m_current + size > m_end)
+        throw Exception("out of arena memory");
+
+    void* ptr = m_current;
+    m_current += align(size, 16);
+
+    assert(is_aligned(ptr, 16));
+
+    return ptr;
+}
+
+template <typename T>
+inline T* Arena::allocate()
+{
+    T* ptr = static_cast<T*>(allocate(sizeof(T)));
+
+    new (ptr) T();
+
+    return ptr;
+}
+
+template <typename T>
+inline T* Arena::allocate_noinit()
+{
+    return static_cast<T*>(allocate(sizeof(T)));
+}
+
+}       // namespace foundation
+
+#endif  // !APPLESEED_FOUNDATION_UTILITY_ARENA_H

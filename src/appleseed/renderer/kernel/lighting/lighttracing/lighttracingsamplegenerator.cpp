@@ -53,7 +53,6 @@
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/frame/frame.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/project/project.h"
@@ -73,6 +72,7 @@
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/arena.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
@@ -172,7 +172,7 @@ namespace
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache, m_params.m_report_self_intersections)
-          , m_shadergroup_exec(shading_system)
+          , m_shadergroup_exec(shading_system, m_arena)
           , m_tracer(
                 m_scene,
                 m_intersector,
@@ -186,6 +186,7 @@ namespace
                 m_texture_cache,
                 oiio_texture_system,
                 m_shadergroup_exec,
+                m_arena,
                 generator_index,
                 0,
                 m_params.m_transparency_threshold,
@@ -495,6 +496,7 @@ namespace
         const LightSampler&             m_light_sampler;
         TextureCache                    m_texture_cache;
         Intersector                     m_intersector;
+        Arena                           m_arena;
         OSLShaderGroupExec              m_shadergroup_exec;
         Tracer                          m_tracer;
         const ShadingContext            m_shading_context;
@@ -513,6 +515,8 @@ namespace
             const size_t                sequence_index,
             SampleVector&               samples) APPLESEED_OVERRIDE
         {
+            m_arena.clear();
+
             SamplingContext sampling_context(
                 m_rng,
                 m_params.m_sampling_mode,
@@ -591,10 +595,6 @@ namespace
                     light_shading_point);
             }
 
-            // Evaluate the EDF inputs.
-            InputEvaluator input_evaluator(m_texture_cache);
-            material_data.m_edf->evaluate_inputs(input_evaluator, light_shading_point);
-
             // Sample the EDF.
             sampling_context.split_in_place(2, 1);
             Vector3f emission_direction;
@@ -602,7 +602,7 @@ namespace
             float edf_prob;
             material_data.m_edf->sample(
                 sampling_context,
-                input_evaluator.data(),
+                material_data.m_edf->evaluate_inputs(m_shading_context, light_shading_point),
                 Vector3f(light_sample.m_geometric_normal),
                 Basis3f(Vector3f(light_sample.m_shading_normal)),
                 sampling_context.next2<Vector2f>(),
@@ -654,7 +654,7 @@ namespace
                 material_data.m_edf->get_light_near_start());   // don't illuminate points closer than the light near start value
 
             // Handle the light vertex separately.
-            Spectrum light_particle_flux = edf_value;       // todo: only works for diffuse EDF? What we need is the light exitance
+            Spectrum light_particle_flux = edf_value;           // todo: only works for diffuse EDF? What we need is the light exitance
             light_particle_flux /= light_sample.m_probability;
             path_visitor.visit_area_light_vertex(
                 light_sample,
@@ -683,13 +683,12 @@ namespace
             SampleVector&               samples)
         {
             // Sample the light.
-            InputEvaluator input_evaluator(m_texture_cache);
             sampling_context.split_in_place(2, 1);
             Vector3d emission_position, emission_direction;
             Spectrum light_value(Spectrum::Illuminance);
             float light_prob;
             light_sample.m_light->sample(
-                input_evaluator,
+                m_shading_context,
                 light_sample.m_light_transform,
                 sampling_context.next2<Vector2d>(),
                 emission_position,
@@ -760,13 +759,11 @@ namespace
         {
             // Sample the environment.
             sampling_context.split_in_place(2, 1);
-            InputEvaluator input_evaluator(m_texture_cache);
             Vector3f outgoing;
             Spectrum env_edf_value(Spectrum::Illuminance);
             float env_edf_prob;
             env_edf->sample(
                 m_shading_context,
-                input_evaluator,
                 sampling_context.next2<Vector2f>(),
                 outgoing,               // points toward the environment
                 env_edf_value,

@@ -47,11 +47,12 @@ END_OIIO_INCLUDES
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class ILightingEngine; }
-namespace renderer  { class Intersector; }
-namespace renderer  { class ShadingPoint; }
-namespace renderer  { class TextureCache; }
-namespace renderer  { class Tracer; }
+namespace foundation    { class Arena; }
+namespace renderer      { class ILightingEngine; }
+namespace renderer      { class Intersector; }
+namespace renderer      { class ShadingPoint; }
+namespace renderer      { class TextureCache; }
+namespace renderer      { class Tracer; }
 
 namespace renderer
 {
@@ -71,6 +72,7 @@ class ShadingContext
         TextureCache&               texture_cache,
         OIIO::TextureSystem&        oiio_texture_system,
         OSLShaderGroupExec&         osl_shadergroup_exec,
+        foundation::Arena&          arena,
         const size_t                thread_index,
         ILightingEngine*            lighting_engine = 0,
         const float                 transparency_threshold = 0.001f,
@@ -85,6 +87,8 @@ class ShadingContext
     OIIO::TextureSystem& get_oiio_texture_system() const;
 
     ILightingEngine* get_lighting_engine() const;
+
+    foundation::Arena& get_arena() const;
 
     // Return the index of the current rendering thread.
     size_t get_thread_index() const;
@@ -139,14 +143,13 @@ class ShadingContext
         const foundation::Color3f&  color,
         const float                 alpha) const;
 
-    void* osl_mem_alloc(const size_t size) const;
-
   private:
     const Intersector&              m_intersector;
     Tracer&                         m_tracer;
     TextureCache&                   m_texture_cache;
     OIIO::TextureSystem&            m_oiio_texture_system;
     OSLShaderGroupExec&             m_shadergroup_exec;
+    foundation::Arena&              m_arena;
     const size_t                    m_thread_index;
     ILightingEngine*                m_lighting_engine;
     const float                     m_transparency_threshold;
@@ -176,6 +179,11 @@ inline TextureCache& ShadingContext::get_texture_cache() const
 inline ILightingEngine* ShadingContext::get_lighting_engine() const
 {
     return m_lighting_engine;
+}
+
+inline foundation::Arena& ShadingContext::get_arena() const
+{
+    return m_arena;
 }
 
 inline size_t ShadingContext::get_thread_index() const

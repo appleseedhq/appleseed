@@ -48,7 +48,6 @@
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/light/lighttarget.h"
 #include "renderer/modeling/scene/assembly.h"
@@ -69,6 +68,7 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/timers.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/arena.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/job.h"
 #include "foundation/utility/statistics.h"
@@ -223,7 +223,7 @@ namespace
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache)
           , m_oiio_texture_system(oiio_texture_system)
-          , m_shadergroup_exec(shading_system)
+          , m_shadergroup_exec(shading_system, m_arena)
           , m_params(params)
           , m_tracer(
                 m_scene,
@@ -252,6 +252,7 @@ namespace
                 m_texture_cache,
                 m_oiio_texture_system,
                 m_shadergroup_exec,
+                m_arena,
                 thread_index);
 
             const uint32 instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
@@ -264,7 +265,10 @@ namespace
                 instance);                  // initial instance number
 
             for (size_t i = m_photon_begin; i < m_photon_end && !m_abort_switch.is_aborted(); ++i)
+            {
+                m_arena.clear();
                 trace_light_photon(shading_context, sampling_context);
+            }
 
             m_global_photons.append(m_local_photons);
         }
@@ -276,6 +280,7 @@ namespace
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
         OIIO::TextureSystem&        m_oiio_texture_system;
+        Arena                       m_arena;
         OSLShaderGroupExec          m_shadergroup_exec;
         const SPPMParameters        m_params;
         Tracer                      m_tracer;
@@ -347,10 +352,6 @@ namespace
                     light_shading_point);
             }
 
-            // Evaluate the EDF inputs.
-            InputEvaluator input_evaluator(m_texture_cache);
-            edf->evaluate_inputs(input_evaluator, light_shading_point);
-
             // Sample the EDF.
             SamplingContext child_sampling_context = sampling_context.split(2, 1);
             Vector3f emission_direction;
@@ -358,7 +359,7 @@ namespace
             float edf_prob;
             edf->sample(
                 sampling_context,
-                input_evaluator.data(),
+                edf->evaluate_inputs(shading_context, light_shading_point),
                 Vector3f(light_sample.m_geometric_normal),
                 Basis3f(Vector3f(light_sample.m_shading_normal)),
                 child_sampling_context.next2<Vector2f>(),
@@ -421,13 +422,12 @@ namespace
             const LightSample&      light_sample)
         {
             // Sample the light.
-            InputEvaluator input_evaluator(m_texture_cache);
             SamplingContext child_sampling_context = sampling_context.split(2, 1);
             Vector3d emission_position, emission_direction;
             Spectrum light_value(Spectrum::Illuminance);
             float light_prob;
             light_sample.m_light->sample(
-                input_evaluator,
+                shading_context,
                 light_sample.m_light_transform,
                 child_sampling_context.next2<Vector2d>(),
                 m_photon_targets,
@@ -505,7 +505,7 @@ namespace
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache)
           , m_oiio_texture_system(oiio_texture_system)
-          , m_shadergroup_exec(shading_system)
+          , m_shadergroup_exec(shading_system, m_arena)
           , m_params(params)
           , m_tracer(
                 m_scene,
@@ -539,6 +539,7 @@ namespace
                 m_texture_cache,
                 m_oiio_texture_system,
                 m_shadergroup_exec,
+                m_arena,
                 thread_index);
 
             const uint32 instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
@@ -551,7 +552,10 @@ namespace
                 instance);                  // initial instance number
 
             for (size_t i = m_photon_begin; i < m_photon_end && !m_abort_switch.is_aborted(); ++i)
+            {
+                m_arena.clear();
                 trace_env_photon(shading_context, sampling_context);
+            }
 
             m_global_photons.append(m_local_photons);
         }
@@ -564,6 +568,7 @@ namespace
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
         OIIO::TextureSystem&        m_oiio_texture_system;
+        Arena                       m_arena;
         OSLShaderGroupExec          m_shadergroup_exec;
         const SPPMParameters        m_params;
         Tracer                      m_tracer;
@@ -585,13 +590,11 @@ namespace
             SamplingContext&        sampling_context)
         {
             // Sample the environment.
-            InputEvaluator input_evaluator(m_texture_cache);
             Vector3f outgoing;
             Spectrum env_edf_value(Spectrum::Illuminance);
             float env_edf_prob;
             m_env_edf.sample(
                 shading_context,
-                input_evaluator,
                 sampling_context.next2<Vector2f>(),
                 outgoing,                                   // points toward the environment
                 env_edf_value,

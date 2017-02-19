@@ -61,6 +61,7 @@
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/arena.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/iostreamop.h"
@@ -218,6 +219,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         boost::shared_ptr<OIIO::TextureSystem>  m_texture_system;
         boost::shared_ptr<RendererServices>     m_renderer_services;
         boost::shared_ptr<OSL::ShadingSystem>   m_shading_system;
+        Arena                                   m_arena;
         boost::shared_ptr<OSLShaderGroupExec>   m_shading_group_exec;
         OnFrameBeginRecorder                    m_recorder;
 
@@ -236,7 +238,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 new OSL::ShadingSystem(
                     m_renderer_services.get(),
                     m_texture_system.get()));
-            m_shading_group_exec.reset(new OSLShaderGroupExec(*m_shading_system));
+            m_shading_group_exec.reset(new OSLShaderGroupExec(*m_shading_system, m_arena));
 
             Base::m_scene->on_frame_begin(Base::m_project.ref(), 0, m_recorder);
         }

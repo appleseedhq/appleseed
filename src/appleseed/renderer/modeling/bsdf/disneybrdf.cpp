@@ -35,7 +35,6 @@
 #include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/color/wavelengths.h"
-#include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
@@ -358,19 +357,12 @@ namespace
             return Model;
         }
 
-        virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const APPLESEED_OVERRIDE
-        {
-            return align(sizeof(DisneyBRDFInputValues), 16);
-        }
-
         void prepare_inputs(
-            const ShadingContext&   shading_context,
+            Arena&                  arena,
             const ShadingPoint&     shading_point,
             void*                   data) const APPLESEED_OVERRIDE
         {
-            DisneyBRDFInputValues* values =
-                reinterpret_cast<DisneyBRDFInputValues*>(data);
+            DisneyBRDFInputValues* values = static_cast<DisneyBRDFInputValues*>(data);
 
             new (&values->m_precomputed) DisneyBRDFInputValues::Precomputed();
 
@@ -400,8 +392,7 @@ namespace
             if (cos_on < 0.0f)
                 return;
 
-            const DisneyBRDFInputValues* values =
-                reinterpret_cast<const DisneyBRDFInputValues*>(data);
+            const DisneyBRDFInputValues* values = static_cast<const DisneyBRDFInputValues*>(data);
 
             float cdf[NumComponents];
             compute_component_cdf(values, cdf);
@@ -479,8 +470,7 @@ namespace
             if (cos_in <= 0.0f || cos_on <= 0.0f)
                 return 0.0f;
 
-            const DisneyBRDFInputValues* values =
-                reinterpret_cast<const DisneyBRDFInputValues*>(data);
+            const DisneyBRDFInputValues* values = static_cast<const DisneyBRDFInputValues*>(data);
 
             float weights[NumComponents];
             compute_component_weights(values, weights);
@@ -578,8 +568,7 @@ namespace
             if (cos_in < 0.0f || cos_on < 0.0f)
                 return 0.0f;
 
-            const DisneyBRDFInputValues* values =
-                reinterpret_cast<const DisneyBRDFInputValues*>(data);
+            const DisneyBRDFInputValues* values = static_cast<const DisneyBRDFInputValues*>(data);
 
             float weights[NumComponents];
             compute_component_weights(values, weights);

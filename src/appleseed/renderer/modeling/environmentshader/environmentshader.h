@@ -41,11 +41,10 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer      { class InputEvaluator; }
-namespace renderer      { class ParamArray; }
-namespace renderer      { class PixelContext; }
-namespace renderer      { class ShadingContext; }
-namespace renderer      { class ShadingResult; }
+namespace renderer  { class ParamArray; }
+namespace renderer  { class PixelContext; }
+namespace renderer  { class ShadingContext; }
+namespace renderer  { class ShadingResult; }
 
 namespace renderer
 {
@@ -73,7 +72,6 @@ class APPLESEED_DLLSYMBOL EnvironmentShader
     virtual void evaluate(
         const ShadingContext&           shading_context,
         const PixelContext&             pixel_context,
-        InputEvaluator&                 input_evaluator,
         const foundation::Vector3d&     direction,                      // world space direction, pointing toward the environment
         ShadingResult&                  shading_result) const = 0;
 };

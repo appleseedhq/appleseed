@@ -44,10 +44,10 @@
 #include <cstddef>
 
 // Forward declarations.
+namespace foundation    { class Arena; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class BSDF; }
 namespace renderer      { class BSSRDFSample; }
-namespace renderer      { class InputEvaluator; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
@@ -95,22 +95,14 @@ class APPLESEED_DLLSYMBOL BSSRDF
     // Return the BRDF associated with this BSSRDF.
     const BSDF& get_brdf() const;
 
-    // Compute the cumulated size in bytes of the values of all inputs of
-    // this BSSRDF and its child BSSRDFs, if any.
-    virtual size_t compute_input_data_size(
-        const Assembly&             assembly) const;
-
     // Evaluate the inputs of this BSSRDF and of its child BSSRDFs, if any.
-    // Input values are stored in the input evaluator. This method is called
-    // once per shading point and pair of incoming/outgoing directions.
-    virtual void evaluate_inputs(
+    virtual void* evaluate_inputs(
         const ShadingContext&       shading_context,
-        InputEvaluator&             input_evaluator,
-        const ShadingPoint&         shading_point,
-        const size_t                offset = 0) const;
+        const ShadingPoint&         shading_point) const;
 
-    // Performs any precomputation needed for this BSSRDF input values.
+    // Precompute data based on already evaluated input values.
     virtual void prepare_inputs(
+        foundation::Arena&          arena,
         const ShadingPoint&         shading_point,
         void*                       data) const;
 

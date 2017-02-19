@@ -47,7 +47,6 @@ namespace foundation    { class DictionaryArray; }
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class BaseGroup; }
 namespace renderer      { class DisneyMaterial; }
-namespace renderer      { class InputEvaluator; }
 namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
@@ -75,14 +74,9 @@ class DisneyLayeredBRDF
         OnFrameBeginRecorder&           recorder,
         foundation::IAbortSwitch*       abort_switch = 0) APPLESEED_OVERRIDE;
 
-    virtual size_t compute_input_data_size(
-        const Assembly&                 assembly) const APPLESEED_OVERRIDE;
-
-    virtual void evaluate_inputs(
+    virtual void* evaluate_inputs(
         const ShadingContext&           shading_context,
-        InputEvaluator&                 input_evaluator,
-        const ShadingPoint&             shading_point,
-        const size_t                    offset = 0) const APPLESEED_OVERRIDE;
+        const ShadingPoint&             shading_point) const APPLESEED_OVERRIDE;
 
     virtual void sample(
         SamplingContext&                sampling_context,

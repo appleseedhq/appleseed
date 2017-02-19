@@ -49,7 +49,6 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class InputEvaluator; }
 namespace renderer      { class Project; }
 
 using namespace foundation;
@@ -109,7 +108,6 @@ namespace
 
         virtual void sample(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
             const Vector2f&         s,
             Vector3f&               outgoing,
             Spectrum&               value,
@@ -122,7 +120,6 @@ namespace
 
         virtual void evaluate(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
             const Vector3f&         outgoing,
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
@@ -132,7 +129,6 @@ namespace
 
         virtual void evaluate(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
             const Vector3f&         outgoing,
             Spectrum&               value,
             float&                  probability) const APPLESEED_OVERRIDE
@@ -143,7 +139,6 @@ namespace
         }
 
         virtual float evaluate_pdf(
-            InputEvaluator&         input_evaluator,
             const Vector3f&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));

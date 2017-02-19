@@ -32,10 +32,10 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/shadingfragmentstack.h"
 #include "renderer/kernel/rendering/pixelcontext.h"
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
-#include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
@@ -82,17 +82,20 @@ namespace
         virtual void evaluate(
             const ShadingContext&   shading_context,
             const PixelContext&     pixel_context,
-            InputEvaluator&         input_evaluator,
             const Vector3d&         direction,
             ShadingResult&          shading_result) const APPLESEED_OVERRIDE
         {
             const Vector2f s(pixel_context.get_sample_position());
-            const InputValues* input_values =
-                input_evaluator.evaluate<InputValues>(m_inputs, Vector2f(s[0], 1.0f - s[1]));
+
+            InputValues values;
+            m_inputs.evaluate(
+                shading_context.get_texture_cache(),
+                Vector2f(s[0], 1.0f - s[1]),
+                &values);
 
             shading_result.m_color_space = ColorSpaceSpectral;
-            shading_result.m_main.m_color = input_values->m_color;
-            shading_result.m_main.m_alpha[0] = input_values->m_alpha;
+            shading_result.m_main.m_color = values.m_color;
+            shading_result.m_main.m_alpha[0] = values.m_alpha;
             shading_result.m_aovs.m_color.set(0.0f);
             shading_result.m_aovs.m_alpha.set(0.0f);
         }

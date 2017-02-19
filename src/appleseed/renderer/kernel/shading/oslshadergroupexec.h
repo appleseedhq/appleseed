@@ -46,10 +46,11 @@ BEGIN_OSL_INCLUDES
 END_OSL_INCLUDES
 
 // Forward declarations.
-namespace renderer  { class ShaderGroup; }
-namespace renderer  { class ShadingContext; }
-namespace renderer  { class ShadingPoint; }
-namespace renderer  { class Tracer; }
+namespace foundation    { class Arena; }
+namespace renderer      { class ShaderGroup; }
+namespace renderer      { class ShadingContext; }
+namespace renderer      { class ShadingPoint; }
+namespace renderer      { class Tracer; }
 
 namespace renderer
 {
@@ -58,7 +59,9 @@ class OSLShaderGroupExec
   : public foundation::NonCopyable
 {
   public:
-    explicit OSLShaderGroupExec(OSL::ShadingSystem& shading_system);
+    OSLShaderGroupExec(
+        OSL::ShadingSystem&             shading_system,
+        foundation::Arena&              arena);
 
     ~OSLShaderGroupExec();
 
@@ -66,12 +69,14 @@ class OSLShaderGroupExec
     friend class ShadingContext;
     friend class Tracer;
 
-    OSL::ShadingSystem&     m_osl_shading_system;
-    OSL::PerThreadInfo*     m_osl_thread_info;
-    OSL::ShadingContext*    m_osl_shading_context;
-    char*                   m_osl_mem_pool;
-    char*                   m_osl_mem_pool_start;
-    mutable size_t          m_osl_mem_used;
+    OSL::ShadingSystem&                 m_osl_shading_system;
+    foundation::Arena&                  m_arena;
+
+    OSL::PerThreadInfo*                 m_osl_thread_info;
+    OSL::ShadingContext*                m_osl_shading_context;
+    char*                               m_osl_mem_pool;
+    char*                               m_osl_mem_pool_start;
+    mutable size_t                      m_osl_mem_used;
 
     void execute_shading(
         const ShaderGroup&              shader_group,
@@ -120,14 +125,6 @@ class OSLShaderGroupExec
         const ShaderGroup&              shader_group,
         const ShadingPoint&             shading_point,
         const VisibilityFlags::Type     ray_flags) const;
-
-    // OSL memory pool. Used currently in layered closures.
-    // 128 Kb., space for roughly 4 layers.
-    enum { OSLMemPoolSize = 131072 };
-    enum { OSLMemAlignment = 16 };
-
-    void* osl_mem_alloc(const size_t size) const;
-    void reset_osl_mem_pool() const;
 };
 
 }       // namespace renderer

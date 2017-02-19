@@ -31,8 +31,11 @@
 #include "bsdf.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/input/inputevaluator.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/arena.h"
 
 using namespace foundation;
 
@@ -67,24 +70,27 @@ BSDF::BSDF(
     set_name(name);
 }
 
-size_t BSDF::compute_input_data_size(
-    const Assembly&         assembly) const
-{
-    return get_inputs().compute_data_size();
-}
-
-void BSDF::evaluate_inputs(
+void* BSDF::evaluate_inputs(
     const ShadingContext&   shading_context,
-    InputEvaluator&         input_evaluator,
-    const ShadingPoint&     shading_point,
-    const size_t            offset) const
+    const ShadingPoint&     shading_point) const
 {
-    input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0), offset);
-    prepare_inputs(shading_context, shading_point, input_evaluator.data() + offset);
+    void* data = shading_context.get_arena().allocate(get_inputs().compute_data_size());
+
+    get_inputs().evaluate(
+        shading_context.get_texture_cache(),
+        shading_point.get_uv(0),
+        data);
+
+    prepare_inputs(
+        shading_context.get_arena(),
+        shading_point,
+        data);
+
+    return data;
 }
 
 void BSDF::prepare_inputs(
-    const ShadingContext&   shading_context,
+    Arena&                  arena,
     const ShadingPoint&     shading_point,
     void*                   data) const
 {

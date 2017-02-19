@@ -33,12 +33,12 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentedf/sphericalcoordinates.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/texturesource.h"
 #include "renderer/modeling/project/project.h"
@@ -211,7 +211,6 @@ namespace
 
         virtual void sample(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
             const Vector2f&         s,
             Vector3f&               outgoing,
             Spectrum&               value,
@@ -264,7 +263,6 @@ namespace
 
         virtual void evaluate(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
             const Vector3f&         outgoing,
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
@@ -285,12 +283,11 @@ namespace
             angles_to_unit_square(theta, phi, u, v);
 
             // Compute and return the environment color.
-            lookup_environment_map(input_evaluator, u, v, value);
+            lookup_environment_map(shading_context, u, v, value);
         }
 
         virtual void evaluate(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
             const Vector3f&         outgoing,
             Spectrum&               value,
             float&                  probability) const APPLESEED_OVERRIDE
@@ -322,12 +319,11 @@ namespace
             angles_to_unit_square(theta, phi, u, v);
 
             // Compute and return the environment color and the PDF value.
-            lookup_environment_map(input_evaluator, u, v, value);
+            lookup_environment_map(shading_context, u, v, value);
             probability = compute_pdf(u, v, theta);
         }
 
         virtual float evaluate_pdf(
-            InputEvaluator&         input_evaluator,
             const Vector3f&         outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
@@ -444,7 +440,7 @@ namespace
         }
 
         void lookup_environment_map(
-            InputEvaluator&         input_evaluator,
+            const ShadingContext&   shading_context,
             const float             u,
             const float             v,
             Spectrum&               value) const
@@ -452,13 +448,13 @@ namespace
             assert(u >= 0.0f && u < 1.0f);
             assert(v >= 0.0f && v < 1.0f);
 
-            const InputValues* values =
-                input_evaluator.evaluate<InputValues>(m_inputs, Vector2f(u, 1.0f - v));
+            InputValues values;
+            m_inputs.evaluate(shading_context.get_texture_cache(), Vector2f(u, 1.0f - v), &values);
 
-            if (is_finite(values->m_radiance))
+            if (is_finite(values.m_radiance))
             {
-                value = values->m_radiance;
-                value *= values->m_radiance_multiplier * pow(2.0f, values->m_exposure);
+                value = values.m_radiance;
+                value *= values.m_radiance_multiplier * pow(2.0f, values.m_exposure);
             }
             else value.set(0.0f);
         }

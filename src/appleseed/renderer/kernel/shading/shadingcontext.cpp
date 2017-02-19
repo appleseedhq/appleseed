@@ -32,7 +32,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 
@@ -51,6 +50,7 @@ ShadingContext::ShadingContext(
     TextureCache&           texture_cache,
     OIIO::TextureSystem&    oiio_texture_system,
     OSLShaderGroupExec&     osl_shadergroup_exec,
+    Arena&                  arena,
     const size_t            thread_index,
     ILightingEngine*        lighting_engine,
     const float             transparency_threshold,
@@ -60,6 +60,7 @@ ShadingContext::ShadingContext(
   , m_texture_cache(texture_cache)
   , m_oiio_texture_system(oiio_texture_system)
   , m_shadergroup_exec(osl_shadergroup_exec)
+  , m_arena(arena)
   , m_thread_index(thread_index)
   , m_lighting_engine(lighting_engine)
   , m_transparency_threshold(transparency_threshold)
@@ -166,11 +167,6 @@ void ShadingContext::execute_osl_surface_shader(
         shading_point,
         color,
         alpha);
-}
-
-void* ShadingContext::osl_mem_alloc(const size_t size) const
-{
-    return m_shadergroup_exec.osl_mem_alloc(size);
 }
 
 }   // namespace renderer

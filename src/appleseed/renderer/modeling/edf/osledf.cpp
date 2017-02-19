@@ -33,16 +33,17 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/closures.h"
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/edf/diffuseedf.h"
 #include "renderer/modeling/edf/edf.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/arena.h"
 
 using namespace foundation;
 
@@ -77,13 +78,18 @@ namespace
             return Model;
         }
 
-        virtual void evaluate_inputs(
-            InputEvaluator&         input_evaluator,
+        virtual void* evaluate_inputs(
+            const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point) const APPLESEED_OVERRIDE
         {
             CompositeEmissionClosure* c =
-                reinterpret_cast<CompositeEmissionClosure*>(input_evaluator.data());
-            new (c) CompositeEmissionClosure(shading_point.get_osl_shader_globals().Ci);
+                shading_context.get_arena().allocate_noinit<CompositeEmissionClosure>();
+
+            new (c) CompositeEmissionClosure(
+                shading_point.get_osl_shader_globals().Ci,
+                shading_context.get_arena());
+
+            return c;
         }
 
         virtual void sample(
@@ -97,7 +103,7 @@ namespace
             float&                  probability) const APPLESEED_OVERRIDE
         {
             const CompositeEmissionClosure* c =
-                reinterpret_cast<const CompositeEmissionClosure*>(data);
+                static_cast<const CompositeEmissionClosure*>(data);
 
             if (c->get_closure_count() > 0)
             {
@@ -123,7 +129,7 @@ namespace
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
             const CompositeEmissionClosure* c =
-                reinterpret_cast<const CompositeEmissionClosure*>(data);
+                static_cast<const CompositeEmissionClosure*>(data);
 
             value.set(0.0f);
 
@@ -152,7 +158,7 @@ namespace
             float&                  probability) const APPLESEED_OVERRIDE
         {
             const CompositeEmissionClosure* c =
-                reinterpret_cast<const CompositeEmissionClosure*>(data);
+                static_cast<const CompositeEmissionClosure*>(data);
 
             value.set(0.0f);
             probability = 0.0f;
@@ -186,7 +192,7 @@ namespace
             const Vector3f&         outgoing) const APPLESEED_OVERRIDE
         {
             const CompositeEmissionClosure* c =
-                reinterpret_cast<const CompositeEmissionClosure*>(data);
+                static_cast<const CompositeEmissionClosure*>(data);
 
             float probability = 0.0f;
 

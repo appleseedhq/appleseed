@@ -89,11 +89,12 @@ namespace
         }
 
         void prepare_inputs(
+            Arena&              arena,
             const ShadingPoint& shading_point,
             void*               data) const APPLESEED_OVERRIDE
         {
             DipoleBSSRDFInputValues* values =
-                reinterpret_cast<DipoleBSSRDFInputValues*>(data);
+                static_cast<DipoleBSSRDFInputValues*>(data);
 
             do_prepare_inputs<ComputeRdStandardDipole>(shading_point, values);
         }
@@ -104,7 +105,7 @@ namespace
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
             const DipoleBSSRDFInputValues* values =
-                reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
+                static_cast<const DipoleBSSRDFInputValues*>(data);
 
             const float fdr = fresnel_internal_diffuse_reflectance(values->m_precomputed.m_eta);
             const float a = (1.0f + fdr) / (1.0f - fdr);

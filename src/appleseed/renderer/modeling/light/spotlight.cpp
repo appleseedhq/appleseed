@@ -32,8 +32,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/utility/paramarray.h"
 
@@ -120,7 +120,7 @@ namespace
         }
 
         virtual void sample(
-            InputEvaluator&         input_evaluator,
+            const ShadingContext&   shading_context,
             const Transformd&       light_transform,
             const Vector2d&         s,
             Vector3d&               position,
@@ -137,11 +137,11 @@ namespace
 
             const Vector3d axis = -normalize(light_transform.get_parent_z());
 
-            compute_radiance(input_evaluator, light_transform, axis, outgoing, value);
+            compute_radiance(shading_context, light_transform, axis, outgoing, value);
         }
 
         virtual void evaluate(
-            InputEvaluator&         input_evaluator,
+            const ShadingContext&   shading_context,
             const Transformd&       light_transform,
             const Vector3d&         target,
             Vector3d&               position,
@@ -154,7 +154,7 @@ namespace
             const Vector3d axis = -normalize(light_transform.get_parent_z());
 
             if (dot(outgoing, axis) > m_cos_outer_half_angle)
-                compute_radiance(input_evaluator, light_transform, axis, outgoing, value);
+                compute_radiance(shading_context, light_transform, axis, outgoing, value);
             else value.set(0.0f);
         }
 
@@ -189,7 +189,7 @@ namespace
         }
 
         void compute_radiance(
-            InputEvaluator&         input_evaluator,
+            const ShadingContext&   shading_context,
             const Transformd&       light_transform,
             const Vector3d&         axis,
             const Vector3d&         outgoing,
@@ -208,9 +208,11 @@ namespace
             const float y = static_cast<float>(dot(d, n) * m_rcp_screen_half_size);
             const Vector2f uv(0.5f * (x + 1.0f), 0.5f * (y + 1.0f));
 
-            const InputValues* values = input_evaluator.evaluate<InputValues>(m_inputs, uv);
-            radiance = values->m_intensity;
-            radiance *= values->m_intensity_multiplier * pow(2.0f, values->m_exposure);
+            InputValues values;
+            m_inputs.evaluate(shading_context.get_texture_cache(), uv, &values);
+
+            radiance = values.m_intensity;
+            radiance *= values.m_intensity_multiplier * pow(2.0f, values.m_exposure);
 
             if (cos_theta < m_cos_inner_half_angle)
             {

@@ -33,7 +33,6 @@
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/bssrdf/separablebssrdf.h"
 #include "renderer/modeling/bssrdf/sss.h"
-#include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/cdf.h"
@@ -100,18 +99,13 @@ namespace
             return Model;
         }
 
-        virtual size_t compute_input_data_size(
-            const Assembly&     assembly) const APPLESEED_OVERRIDE
-        {
-            return align(sizeof(NormalizedDiffusionBSSRDFInputValues), 16);
-        }
-
         virtual void prepare_inputs(
+            Arena&              arena,
             const ShadingPoint& shading_point,
             void*               data) const APPLESEED_OVERRIDE
         {
             NormalizedDiffusionBSSRDFInputValues* values =
-                reinterpret_cast<NormalizedDiffusionBSSRDFInputValues*>(data);
+                static_cast<NormalizedDiffusionBSSRDFInputValues*>(data);
 
             new (&values->m_precomputed) NormalizedDiffusionBSSRDFInputValues::Precomputed();
 
@@ -159,7 +153,7 @@ namespace
             BSSRDFSample&       sample) const APPLESEED_OVERRIDE
         {
             const NormalizedDiffusionBSSRDFInputValues* values =
-                reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
+                static_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
 
             if (values->m_weight == 0.0f)
                 return false;
@@ -194,13 +188,13 @@ namespace
         virtual float get_eta(
             const void*         data) const APPLESEED_OVERRIDE
         {
-            return reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data)->m_precomputed.m_eta;
+            return static_cast<const NormalizedDiffusionBSSRDFInputValues*>(data)->m_precomputed.m_eta;
         }
 
         virtual float get_fresnel_weight(
             const void*         data) const APPLESEED_OVERRIDE
         {
-            return reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data)->m_fresnel_weight;
+            return static_cast<const NormalizedDiffusionBSSRDFInputValues*>(data)->m_fresnel_weight;
         }
 
         virtual void evaluate_profile(
@@ -209,7 +203,7 @@ namespace
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
             const NormalizedDiffusionBSSRDFInputValues* values =
-                reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
+                static_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
 
             const float radius = sqrt(square_radius);
 
@@ -233,7 +227,7 @@ namespace
             const float         radius) const APPLESEED_OVERRIDE
         {
             const NormalizedDiffusionBSSRDFInputValues* values =
-                reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
+                static_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
 
             // PDF of the sampled radius.
             float pdf_radius = 0.0f;

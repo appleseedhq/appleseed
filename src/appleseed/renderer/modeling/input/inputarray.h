@@ -215,18 +215,16 @@ class APPLESEED_DLLSYMBOL InputArray
     size_t compute_data_size() const;
 
     // Evaluate all inputs into a preallocated block of memory.
-    // The address 'values + offset' must be 16-byte aligned.
+    // 'values' must be 16-byte aligned.
     void evaluate(
         TextureCache&               texture_cache,
         const foundation::Vector2f& uv,
-        void*                       values,
-        const size_t                offset = 0) const;
+        void*                       values) const;
 
     // Evaluate all uniform inputs into a preallocated block of memory.
-    // The address 'values + offset' must be 16-byte aligned.
+    // 'values' must be 16-byte aligned.
     void evaluate_uniforms(
-        void*                       values,
-        const size_t                offset = 0) const;
+        void*                       values) const;
 
   private:
     struct Impl;

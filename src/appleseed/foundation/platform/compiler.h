@@ -101,7 +101,7 @@ namespace foundation
 // APPLESEED_SIMD4_ALIGN aligns on a 16-byte boundary as required by SSE load/store instructions.
 // APPLESEED_SIMD8_ALIGN aligns on a 32-byte boundary as required by AVX load/store instructions.
 //
-// Note that APPLESEED_SIMDX_ALIGN *always* performs the alignment, regardless of whether or not
+// Note that APPLESEED_SIMDx_ALIGN *always* performs the alignment, regardless of whether or not
 // SSE is enabled in the build configuration.
 //
 
