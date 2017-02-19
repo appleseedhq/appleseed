@@ -114,7 +114,7 @@ shader as_maya_blinn
     color in_specularColor = color(0.5)
     [[
         string maya_attribute_name = "specularColor",
-        string maya_attribute_type = "color",
+        string maya_attribute_type = "vector",
         string label = "Specular Color",
         string page = "Specular Shading"
     ]],
@@ -128,7 +128,7 @@ shader as_maya_blinn
     color in_reflectedColor = color(0)
     [[
         string maya_attribute_name = "reflectedColor",
-        string maya_attribute_type = "color",
+        string maya_attribute_type = "vector",
         string label = "Reflected Color",
         string page = "Specular Shading"
     ]],

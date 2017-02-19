@@ -57,20 +57,20 @@ shader as_maya_condition
     color in_colorIfTrue = color(0)
     [[
         string maya_attribute_name = "colorIfTrue",
-        string maya_attribute_type = "color",
+        string maya_attribute_type = "vector",
         string label = "Color If True"
     ]],
     color in_colorIfFalse = color(0)
     [[
         string maya_attribute_name = "colorIfFalse",
-        string maya_attribute_type = "color",
+        string maya_attribute_type = "vector",
         string label = "Color If False"
     ]],
 
     output color out_outColor = color(0)
     [[
         string maya_attribute_name = "outColor",
-        string maya_attribute_type = "color",
+        string maya_attribute_type = "vector",
         string lable = "Output Color",
         string widget = "null"
     ]]

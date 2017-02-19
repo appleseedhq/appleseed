@@ -168,7 +168,7 @@ shader as_maya_noise
     output color out_outColor = color(0)
     [[
         string maya_attribute_name = "outColor",
-        string maya_attribute_type = "color",
+        string maya_attribute_type = "vector",
         string label = "Output Color",
         string widget = "null"
     ]],

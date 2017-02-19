@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,13 +26,13 @@
 // THE SOFTWARE.
 //
 
-// Ref: $MAYA_LOCATION/docs/Nodes/psdFileTex.html
+// Ref: $MAYA_LOCATION/docs/Nodes/movie.html
 
 #include "appleseed/maya/as_maya_helpers.h"
 
-shader as_maya_psdFileTex
+shader as_maya_movie
 [[
-    string maya_node_name = "psdFileTex",
+    string maya_node_name = "movie",
     string maya_classification = "texture/2d"
 ]]
 (
@@ -103,43 +103,6 @@ shader as_maya_psdFileTex
         int slidermin = 1,
         int slidermax = 10,
         int digits = 4
-    ]],
-    int in_useMaximumRes = 0
-    [[
-        string maya_attribute_name = "useMaximumRes",
-        string maya_attribute_type = "bool",
-        string label = "Use Maximum Res",
-        string widget = "checkBox"
-    ]],
-    // We have no mechanism to load channels by string names in OSL/OIIO,
-    // so don't expose the (multi)channel options, assume RGBA for now.
-    string in_layerSetName = ""
-    [[
-        string maya_attribute_name = "layerSetName",
-        string maya_attribute_type = "string",
-        string label = "Layer Set Name",
-        string widget = "null"
-    ]],
-    string in_layerSets[] = {""}
-    [[
-        string maya_attribute_name = "layerSets",
-        string maya_attribute_type = "string[]",
-        string label = "Layer Sets",
-        string widget = "null"
-    ]],
-    string in_alpha = ""
-    [[
-        string maya_attribute_name = "alpha",
-        string maya_attribute_type = "string",
-        string label = "Alpha",
-        string widget = "null"
-    ]],
-    string in_alphaList[] = {""}
-    [[
-        string maya_attribute_name = "alphaList",
-        string maya_attribute_type = "string[]",
-        string label = "Alpha List",
-        string widget = "null"
     ]],
 
     MAYA_COLORBALANCE_PARAMETERS,
@@ -279,7 +242,9 @@ shader as_maya_psdFileTex
             dsdt[3] *= fw;
         }
 
-        if (in_filterType == 1 && in_useMaximumRes)
+        // OIIO uses subimage to access frames in movie.
+
+        if (in_useFrameExtension)
         {
             out_outColor =
                 texture(
@@ -289,7 +254,7 @@ shader as_maya_psdFileTex
                     "blur", in_filterOffset,
                     "width", in_filter,
                     "wrap", "periodic",
-                    "subimage", 0,
+                    "subimage", in_frameExtension + in_frameOffset,
                     "missingcolor", in_defaultColor,
                     "missingalpha", 1.0,
                     "alpha", out_outAlpha,

@@ -1,0 +1,278 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/bump2d.html
+
+#include "appleseed/maya/as_maya_helpers.h"
+
+shader as_maya_bump2d
+[[
+    string maya_node_name = "bump2d",
+    string maya_classification = "utility/general/bump"
+]]
+(
+    point in_pointCamera = P
+    [[
+        string maya_attribute_name = "pointCamera",
+        string maya_attribute_type = "float3",
+        string label = "Point Camera Space"
+    ]],
+    point in_pointObject = point(0)
+    [[
+        string maya_attribute_name = "pointObject",
+        string maya_attribute_type = "float3",
+        string label = "Point Object Space"
+    ]],
+    point in_refPointObj = point(0)
+    [[
+        string maya_attribute_name = "refPointObj",
+        string maya_attribute_type = "float3",
+        string label = "Reference Point Object Space"
+    ]],
+    point in_refPointCamera = point(0)
+    [[
+        string maya_attribute_name = "refPointCamera",
+        string maya_attribute_type = "float3",
+        string label = "Reference Point Camera Space"
+    ]],
+    point in_rayOrigin = point(0)
+    [[
+        string maya_attribute_name = "rayOrigin",
+        string maya_attribute_type = "float3",
+        string label = "Ray Origin"
+    ]],
+    float in_xPixelAngle = 0.002053
+    [[
+        string maya_attribute_name = "xPixelAngle",
+        string maya_attribute_type = "float",
+        string label = "X Pixel Angle"
+    ]],
+    int in_infoBits = 0
+    [[
+        string maya_attribute_name = "infoBits",
+        string maya_attribute_type = "int",
+        string label = "Info Bits"
+    ]],
+    normal in_normalCamera = N
+    [[
+        string maya_attribute_name = "normalCamera",
+        string maya_attribute_type = "float3",
+        string label = "Normal Camera Space"
+    ]],
+    vector in_tangentUCamera = vector(1.0, 0.0, 0.0)
+    [[
+        string maya_attribute_name = "tangentUCamera",
+        string maya_attribute_type = "float3",
+        string label = "Tangent U Direction"
+    ]],
+    vector in_tangentVCamera = vector(0.0, 1.0, 0.0)
+    [[
+        string maya_attribute_name = "tangentVCamera",
+        string maya_attribute_type = "float3",
+        string label = "Tangent V Direction"
+    ]],
+    int in_adjustEdges = 0
+    [[
+        string maya_attribute_name = "adjustEdges",
+        string maya_attribute_type = "bool",
+        string label = "Adjust Edges",
+        string widget = "checkBox"
+    ]],
+    float in_bumpDepth = 1.0
+    [[
+        string maya_attribute_name = "bumpDepth",
+        string maya_attribute_type = "float",
+        string label = "Bump Depth"
+    ]],
+    int in_bumpInterp = 0
+    [[
+        string maya_attribute_name = "bumpInterp",
+        string maya_attribute_type = "enum",
+        string label = "Bump Interpolation Mode",
+        string widget = "mapper",
+        string options = "Bump:0|Tangent Space Normals:1|Object Space Normals:2"
+    ]],
+    float in_bumpFilter = 1.0
+    [[
+        string maya_attribute_name = "bumpFilter",
+        string maya_attribute_type = "float",
+        string label = "Bump Filter"
+    ]],
+    float in_bumpFilterOffset = 0.0
+    [[
+        string maya_attribute_name = "bumpFilterOffset",
+        string maya_attribute_type = "float",
+        string label = "Bump Filter Offset"
+    ]],
+    float in_bumpValue = 0.0
+    [[
+        string maya_attribute_name = "bumpValue",
+        string maya_attribute_type = "float",
+        string label = "Bump Value"
+    ]],
+    color in_normalMap = color(0)
+    [[
+        string maya_attribute_name = "asNormalMap",
+        string maya_attribute_type = "vector"
+    ]],
+    int in_normalMapMode = 0
+    [[
+        string maya_attribute_name = "asNormalMapMode",
+        string maya_attribute_type = "enum",
+        string widget = "mapper",
+        string options = "unsigned:0|signed:1"
+    ]],
+    int in_normalMapFlipR = 0
+    [[
+        string maya_attribute_name = "asNormalMapFlipR",
+        string maya_attribute_type = "bool",
+        string widget = "checkBox"
+    ]],
+    int in_normalMapFlipG = 0
+    [[
+        string maya_attribute_name = "asNormalMapFlipG",
+        string maya_attribute_type = "bool",
+        string widget = "checkBox"
+    ]],
+    int in_normalMapSwapRG = 0
+    [[
+        string maya_attribute_name = "asNormalMapSwapRG",
+        string maya_attribute_type = "bool",
+        string widget = "checkBox"
+    ]],
+    vector Tn = vector(0)
+    [[
+        int lockgeom = 0,
+        string widget = "null"
+    ]],
+    vector Bn = vector(0)
+    [[
+        int lockgeom = 0,
+        string widget = "null"
+    ]],
+
+    MAYA_UV_PARAMETERS,
+
+    output normal out_outNormal = normal(0.0, 0.0, 1.0)
+    [[
+        string maya_attribute_name = "outNormal",
+        string maya_attribute_type = "float3",
+        string label = "Output Normal",
+        string widget = "null"
+    ]]
+)
+{
+    float bump_depth = abs(in_bumpDepth);
+    float bump_offset = clamp(
+        in_bumpValue * in_bumpDepth, -bump_depth, bump_depth);
+
+    bump_offset = in_bumpValue;
+
+    if (bump_offset == 0.0)
+    {
+        out_outNormal = in_normalCamera;
+    }
+    else
+    {
+        if (in_bumpInterp == 0)
+        {
+            normal surface_normal = normalize(in_normalCamera);
+            vector point_offset = (vector) surface_normal * bump_offset;
+
+            out_outNormal = normalize(
+                calculatenormal(in_pointCamera + point_offset));
+        }
+        else if (in_bumpInterp == 1)
+        {
+            normal lookup_normal = (in_normalMapMode == 0)
+                ? (normal) in_normalMap * 2.0 - 1.0
+                : (normal) in_normalMap;
+
+            if (lookup_normal == 0.0)
+            {
+                out_outNormal = in_normalCamera;
+            }
+            else
+            {
+                if (in_normalMapFlipR)
+                {
+                    lookup_normal[0] = -lookup_normal[0];
+                }
+                if (in_normalMapFlipG)
+                {
+                    lookup_normal[1] = -lookup_normal[1];
+                }
+
+                if (in_normalMapSwapRG)
+                {
+                    float lookup_tmp = lookup_normal[0];
+                    lookup_normal[0] = lookup_normal[1];
+                    lookup_normal[1] = lookup_tmp;
+                }
+
+                vector bitangent = cross(Tn, in_normalCamera);
+
+                normal temp_normal =
+                    lookup_normal[0] * Tn +
+                    lookup_normal[1] * bitangent +
+                    lookup_normal[2] * in_normalCamera;
+
+                out_outNormal = mix(in_normalCamera, temp_normal, bump_offset);
+
+                out_outNormal = normalize(out_outNormal);
+            }
+        }
+        else if (in_bumpInterp == 2)
+        {
+            normal lookup_normal = (in_normalMapMode == 0)
+                ? (normal) in_normalMap * 2.0 - 1.0
+                : (normal) in_normalMap;
+
+            if (lookup_normal == 0.0)
+            {
+                out_outNormal = in_normalCamera;
+            }
+            else
+            {
+                normal temp_normal =
+                    transform("object", "common", lookup_normal);
+
+                out_outNormal = mix(in_normalCamera, temp_normal, bump_offset);
+
+                out_outNormal = normalize(out_outNormal);
+            }
+        }
+        else
+        {
+#ifdef DEBUG
+            warning("[WARNING]: Bump mode unsupported!");
+#endif
+        }
+    }
+}
+
