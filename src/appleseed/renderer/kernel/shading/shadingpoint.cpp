@@ -410,11 +410,6 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
             m_dpdu = (dv1 * dp0 - dv0 * dp1) * rcp_det;
             m_dpdv = (du0 * dp1 - du1 * dp0) * rcp_det;
 
-            // Make sure dPdv x dPdu points in the same direction as
-            // the original shading normal.
-            if (dot(get_original_shading_normal(), cross(m_dpdv, m_dpdu)) < 0.0)
-                m_dpdu = -m_dpdu;
-
             if (m_members & HasTriangleVertexNormals)
             {
                 const Vector3d dn0(m_n0 - m_n2);
@@ -470,63 +465,59 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
         const Vector3d& p = get_point();
         const Vector3d& n = get_original_shading_normal();
 
-        const double tx = intersect(ray.m_rx, p, n);
+        double tx, ty;
+        if (!intersect(ray.m_rx, p, n, tx) ||
+            !intersect(ray.m_ry, p, n, ty))
+        {
+            m_dpdx = Vector3d(0.0);
+            m_dpdy = Vector3d(0.0);
+            m_duvdx = Vector2f(0.0f);
+            m_duvdy = Vector2f(0.0f);
+            return;
+        }
+
         const Vector3d px = ray.m_rx.point_at(tx);
         m_dpdx = px - p;
 
-        const double ty = intersect(ray.m_ry, p, n);
         const Vector3d py = ray.m_ry.point_at(ty);
         m_dpdy = py - p;
 
-        // Make sure dPdy x dPdx points in the same direction as
-        // the original shading normal.
-        if (dot(get_original_shading_normal(), cross(m_dpdy, m_dpdx)) < 0.0)
+        if (get_side() == ObjectInstance::BackSide)
             m_dpdx = -m_dpdx;
 
         // Select the two smallest axes.
         const size_t max_index = max_abs_index(n);
-        const size_t axes[2] = { max_index == 0, 2 - (max_index >> 1) };
+        const size_t axes[3][2] = {{1, 2}, {0, 2}, {0, 1}};
 
-        const Vector3d& dpdu = get_dpdu(0);
-        const Vector3d& dpdv = get_dpdv(0);
+        const Vector2f dpdu(
+            static_cast<float>(get_dpdu(0)[axes[max_index][0]]),
+            static_cast<float>(get_dpdu(0)[axes[max_index][1]]));
+        const Vector2f dpdv(
+            static_cast<float>(get_dpdv(0)[axes[max_index][0]]),
+            static_cast<float>(get_dpdv(0)[axes[max_index][1]]));
 
-        const Vector2f a0(
-            static_cast<float>(dpdu[axes[0]]),
-            static_cast<float>(dpdu[axes[1]]));
-        const Vector2f a1(
-            static_cast<float>(dpdv[axes[0]]),
-            static_cast<float>(dpdv[axes[1]]));
+        const float d = det(dpdu, dpdv);
 
-        const double d = det(a0, a1);
-
-        if (d == 0.0)
+        if (d == 0.0f)
         {
             m_duvdx = Vector2f(0.0f);
             m_duvdy = Vector2f(0.0f);
             return;
         }
 
-        const Vector2f bx(
-            static_cast<float>(px[axes[0]] - p[axes[0]]),
-            static_cast<float>(px[axes[1]] - p[axes[1]]));
-        const Vector2f by(
-            static_cast<float>(py[axes[0]] - p[axes[0]]),
-            static_cast<float>(py[axes[1]] - p[axes[1]]));
+        const Vector2f dpdx(
+            static_cast<float>(m_dpdx[axes[max_index][0]]),
+            static_cast<float>(m_dpdx[axes[max_index][1]]));
+        const Vector2f dpdy(
+            static_cast<float>(m_dpdy[axes[max_index][0]]),
+            static_cast<float>(m_dpdy[axes[max_index][1]]));
 
-        const float rcp_d = 1.0f / static_cast<float>(d);
+        const float rcp_d = 1.0f / d;
 
-        m_duvdx[0] = (a1[1] * bx[0] - a0[1] * bx[1]) * rcp_d;
-        m_duvdx[1] = (a0[0] * bx[1] - a1[0] * bx[0]) * rcp_d;
-
-        m_duvdy[0] = (a1[1] * by[0] - a0[1] * by[1]) * rcp_d;
-        m_duvdy[1] = (a0[0] * by[1] - a1[0] * by[0]) * rcp_d;
-    }
-    else
-    {
-        m_dpdx = Vector3d(0.0);
-        m_dpdy = Vector3d(0.0);
-        m_duvdx = Vector2f(0.0f);
-        m_duvdy = Vector2f(0.0f);
+        m_duvdx[0] = (dpdv[1] * dpdx[0] - dpdv[0] * dpdx[1]) * rcp_d;
+        m_duvdx[1] = (dpdu[0] * dpdx[1] - dpdu[1] * dpdx[0]) * rcp_d;
+        m_duvdy[0] = (dpdv[1] * dpdy[0] - dpdv[0] * dpdy[1]) * rcp_d;
+        m_duvdy[1] = (dpdu[0] * dpdy[1] - dpdu[1] * dpdy[0]) * rcp_d;
     }
 }
 
@@ -829,8 +820,6 @@ void ShadingPoint::initialize_osl_shader_globals(
         m_shader_globals.P = Vector3f(get_point());
         m_shader_globals.I = Vector3f(ray.m_dir);
 
-        // Handedness flip flag.
-        // Currently it is unused, but we might want to enable it in the future.
         m_shader_globals.flipHandedness =
             m_assembly_instance_transform_seq->swaps_handedness(m_assembly_instance_transform) !=
             get_object_instance().transform_swaps_handedness() ? 1 : 0;
@@ -838,10 +827,7 @@ void ShadingPoint::initialize_osl_shader_globals(
         // Surface position and incident ray direction differentials.
         if (ray.m_has_differentials)
         {
-            m_shader_globals.dPdx =
-                m_shader_globals.flipHandedness
-                    ?  Vector3f(get_dpdx())
-                    : -Vector3f(get_dpdx());
+            m_shader_globals.dPdx = Vector3f(get_dpdx());
             m_shader_globals.dPdy = Vector3f(get_dpdy());
             m_shader_globals.dPdz = Vector3f(0.0);
             m_shader_globals.dIdx = Vector3f(ray.m_rx.m_dir);
@@ -884,11 +870,7 @@ void ShadingPoint::initialize_osl_shader_globals(
         }
 
         // Surface tangents.
-        m_shader_globals.dPdu =
-            m_shader_globals.flipHandedness
-                ?  Vector3f(get_dpdu(0))
-                : -Vector3f(get_dpdu(0));
-
+        m_shader_globals.dPdu = Vector3f(get_dpdu(0));
         m_shader_globals.dPdv = Vector3f(get_dpdv(0));
 
         // Time and its derivative.

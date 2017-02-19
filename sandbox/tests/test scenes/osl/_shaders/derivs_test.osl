@@ -1,0 +1,35 @@
+
+surface derivs_test(
+    int direction = 0,
+    int analytic = 0,
+    float frequency = 1.0
+)
+{
+    float s = u * frequency;
+    float t = v * frequency;
+
+    if (direction == 1)
+    {
+        float tmp = t;
+        t = s;
+        s = tmp;
+    }
+
+    float value;
+
+    if (analytic)
+        value = sin(75.0 * s);
+    else
+    {
+        value = texture(
+            "sin_bump.tx",
+            s,
+            t,
+            "swrap", "periodic",
+            "twrap", "periodic"
+        );
+    }
+
+    float deriv = direction == 0 ? Dx(value) : Dy(value);
+    Ci = clamp(deriv, 0.0, 1.0) * diffuse(N);
+}

@@ -137,11 +137,7 @@ class TextureSeExprFunc
                 m_texture_filename,
                 m_texture_options,
                 static_cast<float>(u[0]),
-#if OIIO_VERSION >= 10703
                 static_cast<float>(v[0]),
-#else
-                static_cast<float>(1.0 - v[0]),
-#endif
                 0.0f,
                 0.0f,
                 0.0f,

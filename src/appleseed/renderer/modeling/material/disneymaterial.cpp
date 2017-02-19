@@ -178,11 +178,7 @@ namespace
                         m_texture_filename,
                         m_texture_options,
                         uv[0],
-#if OIIO_VERSION >= 10703
                         uv[1],
-#else
-                        1.0f - uv[1],
-#endif
                         0.0f,
                         0.0f,
                         0.0f,

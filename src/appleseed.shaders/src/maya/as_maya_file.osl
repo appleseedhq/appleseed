@@ -247,7 +247,7 @@ shader as_maya_file
                 facendx,
                 "blur", in_ptexFilterBlur,
                 "width", fw,
-                "missingalpha", 1,
+                "missingalpha", 1.0,
                 "alpha", ptex_alpha,
                 "ptexfilter", in_ptexFilterType,
                 "ptexinterpolate", in_ptexFilterInterpolateLevels
@@ -317,7 +317,7 @@ shader as_maya_file
             dsdt[1] = 0;
             dsdt[2] = 0;
             dsdt[3] = 0;
-            
+
             filter = "closest";
         }
 
@@ -345,7 +345,7 @@ shader as_maya_file
                     "wrap", "periodic",
                     "subimage", 0,
                     "missingcolor", in_defaultColor,
-                    "missingalpha", 1,
+                    "missingalpha", 1.0,
                     "alpha", out_outAlpha,
                     "interp", filter);
         }
@@ -360,7 +360,7 @@ shader as_maya_file
                     "width", in_filter,
                     "wrap", "periodic",
                     "missingcolor", in_defaultColor,
-                    "missingalpha", 1,
+                    "missingalpha", 1.0,
                     "alpha", out_outAlpha,
                     "interp", filter);
         }

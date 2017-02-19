@@ -183,11 +183,7 @@ bool RendererServices::texture(
         options,
         sg,
         s,
-#if OIIO_VERSION >= 10703
         t,
-#else
-        1.0f - t,
-#endif
         dsdx,
         dtdx,
         dsdy,
@@ -1017,10 +1013,6 @@ IMPLEMENT_USER_DATA_GETTER(tn)
             static_cast<float>(tn.x),
             static_cast<float>(tn.y),
             static_cast<float>(tn.z));
-
-        // Make sure Tn points in the same direction as dPdu.
-        if (v.dot(sg->dPdu) < 0.0f)
-            v = -v;
 
         reinterpret_cast<float*>(val)[0] = v.x;
         reinterpret_cast<float*>(val)[1] = v.y;

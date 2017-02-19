@@ -47,6 +47,12 @@ T intersect(
     const Vector<T, 3>&     point,
     const Vector<T, 3>&     normal);
 
+template <typename T>
+bool intersect(
+    const Ray<T, 3>&        ray,
+    const Vector<T, 3>&     point,
+    const Vector<T, 3>&     normal,
+    T&                      t);
 
 //
 // 3D ray-plane intersection implementation.
@@ -60,6 +66,23 @@ inline T intersect(
 {
     const Vector<T, 3> u = point - ray.m_org;
     return dot(u, normal) / dot(ray.m_dir, normal);
+}
+
+template <typename T>
+inline bool intersect(
+    const Ray<T, 3>&        ray,
+    const Vector<T, 3>&     point,
+    const Vector<T, 3>&     normal,
+    T&                      t)
+{
+    const Vector<T, 3> u = point - ray.m_org;
+    const T denom = dot(ray.m_dir, normal);
+
+    if (denom == T(0))
+        return false;
+
+    t = dot(u, normal) / denom;
+    return true;
 }
 
 }       // namespace foundation
