@@ -159,6 +159,7 @@ set (appleseed_maya_osl_sources
      src/maya/as_maya_blendColors.osl
      src/maya/as_maya_blinn.osl
      src/maya/as_maya_bulge.osl
+     src/maya/as_maya_bump2d.osl
      src/maya/as_maya_checker.osl
      src/maya/as_maya_clamp.osl
      src/maya/as_maya_clearCoat.osl
@@ -183,6 +184,7 @@ set (appleseed_maya_osl_sources
      src/maya/as_maya_luminance.osl
      src/maya/as_maya_matrixInverse.osl
      src/maya/as_maya_mountain.osl
+     src/maya/as_maya_movie.osl
      src/maya/as_maya_multDoubleLinear.osl
      src/maya/as_maya_multiplyDivide.osl
      src/maya/as_maya_multMatrix.osl
