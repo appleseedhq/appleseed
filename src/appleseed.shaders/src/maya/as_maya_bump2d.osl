@@ -40,7 +40,7 @@ shader as_maya_bump2d
     [[
         string maya_attribute_name = "pointCamera",
         string maya_attribute_type = "float3",
-        string label = "Point Camera Space"
+        string label = "Surface Point"
     ]],
     point in_pointObject = point(0)
     [[
@@ -58,7 +58,7 @@ shader as_maya_bump2d
     [[
         string maya_attribute_name = "refPointCamera",
         string maya_attribute_type = "float3",
-        string label = "Reference Point Camera Space"
+        string label = "Reference Surface Point"
     ]],
     point in_rayOrigin = point(0)
     [[
@@ -82,7 +82,7 @@ shader as_maya_bump2d
     [[
         string maya_attribute_name = "normalCamera",
         string maya_attribute_type = "float3",
-        string label = "Normal Camera Space"
+        string label = "Surface Normal"
     ]],
     vector in_tangentUCamera = vector(1.0, 0.0, 0.0)
     [[
