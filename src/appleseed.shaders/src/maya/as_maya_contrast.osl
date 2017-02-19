@@ -39,26 +39,26 @@ shader as_maya_contrast
     color in_value = color(0)
     [[
         string maya_attribute_name = "value",
-        string maya_attribute_type = "color",
+        string maya_attribute_type = "vector",
         string label = "Input Color"
     ]],
     color in_contrast = color(0)
     [[
         string maya_attribute_name = "contrast",
-        string maya_attribute_type = "color",
+        string maya_attribute_type = "vector",
         string label = "Contrast"
     ]],
     color in_bias = color(0)
     [[
         string maya_attribute_name = "bias",
-        string maya_attribute_type = "color",
+        string maya_attribute_type = "vector",
         string label = "Bias"
     ]],
 
     output color out_outValue = color(0)
     [[
         string maya_attribute_name = "outValue",
-        string maya_attribute_type = "color",
+        string maya_attribute_type = "vector",
         string label = "Output Color",
         string widget = "null"
     ]]

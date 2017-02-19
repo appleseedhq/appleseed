@@ -273,10 +273,10 @@ shader as_maya_psdFileTex
         {
             float fw = in_filterWidth * in_preFilterRadius;
 
-            dsdt[0] = fw;
-            dsdt[1] = fw;
-            dsdt[2] = fw;
-            dsdt[3] = fw;
+            dsdt[0] *= fw;
+            dsdt[1] *= fw;
+            dsdt[2] *= fw;
+            dsdt[3] *= fw;
         }
 
         if (in_filterType == 1 && in_useMaximumRes)
