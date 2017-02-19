@@ -32,8 +32,8 @@ appleseed is available as a portable C++ library with C++ and Python APIs, as a 
 
 ## Related Projects
 
-* appleseed for Autodesk® Maya® &rarr; [appleseed-maya](https://github.com/appleseedhq/appleseed-maya)
-* appleseed for Autodesk® 3ds Max® &rarr; [appleseed-max](https://github.com/appleseedhq/appleseed-max)
+* [appleseed for Autodesk® Maya®](https://github.com/appleseedhq/appleseed-maya)
+* [appleseed for Autodesk® 3ds Max®](https://github.com/appleseedhq/appleseed-max)
 
 ## License
 
