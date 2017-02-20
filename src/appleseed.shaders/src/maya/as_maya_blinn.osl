@@ -243,10 +243,7 @@ shader as_maya_blinn
             // f0=(eta-1)^2/(eta+1)^2 for eta.
 
             float tmp = sqrt(in_specularRollOff);
-            float eta = (1.0 + tmp) / (1.0 - tmp);
-
-            warning("roll off = %.3f,\teta = %.3f\n" ,
-                    in_specularRollOff, eta);
+            float eta = (1 + tmp) / (1 - tmp);
 
             specular_term = opacity * in_specularColor *
                 microfacet(
