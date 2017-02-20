@@ -104,9 +104,9 @@ shader as_maya_blinn
         string label = "Eccentricity",
         string page = "Specular Shading"
     ]],
-    float in_specularRolloff = 0.7
+    float in_specularRollOff = 0.7
     [[
-        string maya_attribute_name = "specularRolloff",
+        string maya_attribute_name = "specularRollOff",
         string maya_attribute_type = "float",
         string label = "Specular Rolloff",
         string page = "Specular Shading"
@@ -242,15 +242,18 @@ shader as_maya_blinn
             // Specular roll-off is a simple Fresnel term, get eta, solve
             // f0=(eta-1)^2/(eta+1)^2 for eta.
 
-            float tmp = sqrt(in_specularRolloff);
-            float eta = (1 + tmp) / (1 - tmp);
+            float tmp = sqrt(in_specularRollOff);
+            float eta = (1.0 + tmp) / (1.0 - tmp);
+
+            warning("roll off = %.3f,\teta = %.3f\n" ,
+                    in_specularRollOff, eta);
 
             specular_term = opacity * in_specularColor *
                 microfacet(
                     "ggx",
                     Nn,
-                    0.5,
-                    500.0,
+                    in_eccentricity,
+                    eta,
                     0);
         }
         
