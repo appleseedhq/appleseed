@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
+#include "foundation/math/specialfunctions.h"
 
 // Standard headers.
 #include <cassert>
@@ -175,76 +176,6 @@ float pdf_visible_normals(
     return
         mdf.G1(v, h, alpha_x, alpha_y) * std::abs(dot(v, h)) *
         mdf.D(h, alpha_x, alpha_y) / std::abs(cos_theta_v);
-}
-
-//
-// Reference:
-//
-//   Handbook of Mathematical Functions.
-//   Abramowitz and Stegun.
-//   http://people.math.sfu.ca/~cbm/aands/toc.htm
-//
-// Copied from from pbrt-v3.
-//
-
-float erf(const float x)
-{
-    // Constants.
-    const float a1 = 0.254829592f;
-    const float a2 = -0.284496736f;
-    const float a3 = 1.421413741f;
-    const float a4 = -1.453152027f;
-    const float a5 = 1.061405429f;
-    const float p  = 0.3275911f;
-
-    // A&S formula 7.1.26.
-    const float abs_x = std::abs(x);
-    const float t = 1.0f / (1.0f + p * abs_x);
-    const float y = 1.0f - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * std::exp(-square(abs_x * abs_x));
-    return x < 0.0f ? -y : y;
-}
-
-//
-// Reference:
-//
-//   Approximating the erfinv function, Mike Giles.
-//   https://people.maths.ox.ac.uk/gilesm/files/gems_erfinv.pdf
-//
-
-float erf_inv(const float x)
-{
-    const float y = clamp(x, -0.99999f, 0.99999f);
-    float w = -std::log((1 - y) * (1 + y));
-    float p;
-
-    if (w < 5.0f)
-    {
-        w = w - 2.5f;
-        p = 2.81022636e-08f;
-        p = 3.43273939e-07f + p * w;
-        p = -3.5233877e-06f + p * w;
-        p = -4.39150654e-06f + p * w;
-        p = 0.00021858087f + p * w;
-        p = -0.00125372503f + p * w;
-        p = -0.00417768164f + p * w;
-        p = 0.246640727f + p * w;
-        p = 1.50140941f + p * w;
-    }
-    else
-    {
-        w = std::sqrt(w) - 3.0f;
-        p = -0.000200214257f;
-        p = 0.000100950558f + p * w;
-        p = 0.00134934322f + p * w;
-        p = -0.00367342844f + p * w;
-        p = 0.00573950773f + p * w;
-        p = -0.0076224613f + p * w;
-        p = 0.00943887047f + p * w;
-        p = 1.00167406f + p * w;
-        p = 2.83297682f + p * w;
-    }
-
-    return p * y;
 }
 
 }

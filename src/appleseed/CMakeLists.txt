@@ -279,6 +279,8 @@ set (foundation_math_sources
     foundation/math/rr.h
     foundation/math/sah.h
     foundation/math/scalar.h
+    foundation/math/specialfunctions.cpp
+    foundation/math/specialfunctions.h
     foundation/math/sphericaltriangle.h
     foundation/math/spline.h
     foundation/math/split.h
