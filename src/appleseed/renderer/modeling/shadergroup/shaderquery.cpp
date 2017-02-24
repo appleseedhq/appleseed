@@ -29,9 +29,6 @@
 // Interface header.
 #include "shaderquery.h"
 
-// appleseed.renderer headers.
-#include "renderer/global/globallogger.h"
-
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -104,15 +101,7 @@ struct ShaderQuery::Impl
         Dictionary dictionary;
         dictionary.insert("name", param.name.c_str());
         dictionary.insert("type", param.type.c_str());
-
-        if (!copy_value_to_dict(param, "value", dictionary))
-        {
-            RENDERER_LOG_WARNING(
-                "skipping metadata value for entry %s of type %s.",
-                param.name.c_str(),
-                param.type.c_str());
-        }
-
+        copy_value_to_dict(param, "value", dictionary);
         return dictionary;
     }
 
@@ -135,26 +124,8 @@ struct ShaderQuery::Impl
         if (is_array)
             dictionary.insert("arraylen", param.type.arraylen);
 
-        if (param.validdefault)
-        {
-            if (is_array)
-            {
-                RENDERER_LOG_WARNING(
-                    "skipping default value for param %s of type %s array.",
-                    param.name.c_str(),
-                    param.type.c_str());
-            }
-            else
-            {
-                if (!copy_value_to_dict(param, "default", dictionary))
-                {
-                    RENDERER_LOG_WARNING(
-                        "skipping default value for param %s of type %s.",
-                        param.name.c_str(),
-                        param.type.c_str());
-                }
-            }
-        }
+        if (param.validdefault && is_array == false)
+            copy_value_to_dict(param, "default", dictionary);
 
         if (!param.metadata.empty())
         {
