@@ -81,12 +81,6 @@ class MDF
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y) const = 0;
-
-  protected:
-    static float sin_theta(const Vector3f& v)
-    {
-        return std::sqrt(std::max(0.0f, 1.0f - square(v.y)));
-    }
 };
 
 

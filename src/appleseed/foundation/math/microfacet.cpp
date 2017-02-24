@@ -311,7 +311,7 @@ Vector3f BlinnMDF::sample(
     const float         alpha_y) const
 {
     const float cos_theta = std::pow(1.0f - s[0], 1.0f / (alpha_x + 2.0f));
-    const float sin_theta = std::sqrt(1.0f - cos_theta * cos_theta);
+    const float sin_theta = std::sqrt(std::max(0.0f, 1.0f - square(cos_theta)));
 
     float cos_phi, sin_phi;
     sample_phi(s[1], cos_phi, sin_phi);
@@ -348,12 +348,13 @@ float BeckmannMDF::D(
         return 0.0f;
 
     const float cos_theta_2 = square(cos_theta);
+    const float sin_theta = std::sqrt(std::max(0.0f, 1.0f - cos_theta_2));
     const float cos_theta_4 = square(cos_theta_2);
     const float tan_theta_2 = (1.0f - cos_theta_2) / cos_theta_2;
 
     const float A = stretched_roughness(
         h,
-        sin_theta(h),
+        sin_theta,
         alpha_x,
         alpha_y);
 
@@ -389,7 +390,7 @@ float BeckmannMDF::lambda(
     if (cos_theta == 0.0f)
         return 0.0f;
 
-    const float sin_theta = MDF::sin_theta(v);
+    const float sin_theta = std::sqrt(std::max(0.0f, 1.0f - square(cos_theta)));
 
     const float alpha =
         projected_roughness(
@@ -500,13 +501,14 @@ float GGXMDF::D(
         return square(alpha_x) * RcpPi<float>();
 
     const float cos_theta_2 = square(cos_theta);
+    const float sin_theta = std::sqrt(std::max(0.0f, 1.0f - cos_theta_2));
     const float cos_theta_4 = square(cos_theta_2);
     const float tan_theta_2 = (1.0f - cos_theta_2) / cos_theta_2;
 
     const float A =
         stretched_roughness(
             h,
-            sin_theta(h),
+            sin_theta,
             alpha_x,
             alpha_y);
 
@@ -544,7 +546,7 @@ float GGXMDF::lambda(
         return 0.0f;
 
     const float cos_theta_2 = square(cos_theta);
-    const float sin_theta = MDF::sin_theta(v);
+    const float sin_theta = std::sqrt(std::max(0.0f, 1.0f - square(cos_theta)));
     const float tan_theta_2 = square(sin_theta) / cos_theta_2;
 
     const float alpha =
@@ -578,7 +580,7 @@ Vector2f GGXMDF::sample11(
     const float         cos_theta,
     const Vector3f&     s) const
 {
-    const float sin_theta = std::sqrt(1.0f - square(cos_theta));
+    const float sin_theta = std::sqrt(std::max(0.0f, 1.0f - square(cos_theta)));
 
     // Special case (normal incidence).
     if (sin_theta < 1.0e-4f)
@@ -762,7 +764,7 @@ float GTR1MDF::lambda(
 
     // [2] section 3.2.
     const float cos_theta_2 = square(cos_theta);
-    const float sin_theta = MDF::sin_theta(v);
+    const float sin_theta = std::sqrt(std::max(0.0f, 1.0f - square(cos_theta)));
     const float cot_theta_2 = cos_theta_2 / square(sin_theta);
     const float cot_theta = std::sqrt(cot_theta_2);
     const float alpha_2 = square(alpha_x);
@@ -784,7 +786,7 @@ Vector3f GTR1MDF::sample(
     const float alpha2 = square(alpha_x);
     const float a = 1.0f - std::pow(alpha2, 1.0f - s[0]);
     const float cos_theta = std::sqrt(a / (1.0f - alpha2));
-    const float sin_theta  = std::sqrt(1.0f - square(cos_theta));
+    const float sin_theta  = std::sqrt(std::max(0.0f, 1.0f - square(cos_theta)));
 
     float cos_phi, sin_phi;
     sample_phi(s[1], cos_phi, sin_phi);
