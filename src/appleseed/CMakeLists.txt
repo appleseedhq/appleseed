@@ -258,6 +258,7 @@ set (foundation_math_sources
     foundation/math/hash.h
     foundation/math/knn.h
     foundation/math/matrix.h
+    foundation/math/microfacet.cpp
     foundation/math/microfacet.h
     foundation/math/minmax.h
     foundation/math/mis.h
