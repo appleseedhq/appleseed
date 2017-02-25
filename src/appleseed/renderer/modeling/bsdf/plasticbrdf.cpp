@@ -129,11 +129,11 @@ namespace
                     context);
 
             if (mdf == "ggx")
-                m_mdf.reset(new GGXMDF<float>());
+                m_mdf.reset(new GGXMDF());
             else if (mdf == "beckmann")
-                m_mdf.reset(new BeckmannMDF<float>());
+                m_mdf.reset(new BeckmannMDF());
             else if (mdf == "gtr1")
-                m_mdf.reset(new GTR1MDF<float>());
+                m_mdf.reset(new GTR1MDF());
             else return false;
 
             return true;
@@ -386,7 +386,7 @@ namespace
 
         static void evaluate_specular(
             const Spectrum&         specular_reflectance,
-            const MDF<float>&       mdf,
+            const MDF&              mdf,
             const float             alpha,
             const Vector3f&         wi,
             const Vector3f&         wo,
@@ -411,7 +411,7 @@ namespace
         }
 
         static float specular_pdf(
-            const MDF<float>&       mdf,
+            const MDF&              mdf,
             const float             alpha,
             const Vector3f&         wo,
             const Vector3f&         m)
@@ -448,7 +448,7 @@ namespace
             }
         }
 
-        auto_ptr<MDF<float> >   m_mdf;
+        auto_ptr<MDF>   m_mdf;
     };
 
     typedef BSDFWrapper<PlasticBRDFImpl> PlasticBRDF;

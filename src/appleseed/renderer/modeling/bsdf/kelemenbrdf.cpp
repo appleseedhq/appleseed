@@ -73,46 +73,45 @@ namespace renderer
 
 namespace
 {
-    template <typename T>
     class WardMDFAdapter
     {
       public:
-        explicit WardMDFAdapter(const T alpha)
+        explicit WardMDFAdapter(const float alpha)
           : m_alpha(alpha)
         {
         }
 
-        Vector<T, 3> sample(const Vector<T, 2>& s) const
+        Vector3f sample(const Vector2f& s) const
         {
             return
-                WardMDF<T>().sample(
-                    Vector<T, 3>(0.0f, 0.0f, 0.0f),
-                    Vector<T, 3>(s[0], s[1], 0.0f),
+                WardMDF().sample(
+                    Vector3f(0.0f, 0.0f, 0.0f),
+                    Vector3f(s[0], s[1], 0.0f),
                     m_alpha,
                     m_alpha);
         }
 
-        T evaluate(const T cos_alpha) const
+        float evaluate(const float cos_alpha) const
         {
             return
-                WardMDF<T>().D(
-                    Vector<T, 3>(0.0f, cos_alpha, 0.0f),
+                WardMDF().D(
+                    Vector3f(0.0f, cos_alpha, 0.0f),
                     m_alpha,
                     m_alpha);
         }
 
-        T evaluate_pdf(const T cos_alpha) const
+        float evaluate_pdf(const float cos_alpha) const
         {
             return
-                WardMDF<T>().pdf(
-                    Vector<T, 3>(0.0f, 0.0f, 0.0f),
-                    Vector<T, 3>(0.0f, cos_alpha, 0.0f),
+                WardMDF().pdf(
+                    Vector3f(0.0f, 0.0f, 0.0f),
+                    Vector3f(0.0f, cos_alpha, 0.0f),
                     m_alpha,
                     m_alpha);
         }
 
       private:
-        const T m_alpha;
+        const float m_alpha;
     };
 
 
@@ -495,7 +494,7 @@ namespace
             float               m_roughness;                    // technically, root-mean-square of the microfacets slopes
         };
 
-        typedef WardMDFAdapter<float> MDFType;
+        typedef WardMDFAdapter MDFType;
 
         auto_ptr<MDFType>       m_mdf;                          // Microfacet Distribution Function
         Spectrum                m_a_spec[AlbedoTableSize];      // albedo of the specular component as V varies
@@ -658,7 +657,7 @@ namespace
             const float         m,
             const Spectrum&     rs)
         {
-            generate_specular_albedo_plot_data("Ward", m, WardMDFAdapter<float>(m), rs);
+            generate_specular_albedo_plot_data("Ward", m, WardMDFAdapter(m), rs);
         }
 
         template <typename MDF>
