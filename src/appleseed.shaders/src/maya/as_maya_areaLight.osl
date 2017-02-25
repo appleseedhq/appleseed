@@ -102,7 +102,7 @@ surface as_maya_areaLight
     ]],
     output float out_uvCoord[2] = {0}
     [[
-        string maya_attribut_name = "uvCoord",
+        string maya_attribute_name = "uvCoord",
         string maya_attribute_type = "float2",
         string label = "UV Coordinates",
         string widget = "null"

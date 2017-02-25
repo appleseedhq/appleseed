@@ -1,0 +1,279 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/phong.html
+
+shader as_maya_phong
+[[
+    string maya_node_name = "phong",
+    string maya_classification = "shader/surface"
+]]
+(
+    color in_color = color(0.5)
+    [[
+        string maya_attribute_name = "color",
+        string maya_attribute_type = "vector",
+        string label = "Color",
+        string page = "Common Material Attributes"
+    ]],
+    color in_transparency = color(0)
+    [[
+        string maya_attribute_name = "transparency",
+        string maya_attribute_type = "vector",
+        string label = "Transparency",
+        string page = "Common Material Attributes"        
+    ]],
+    color in_ambientColor = color(0)
+    [[
+        string maya_attribute_name = "ambientColor",
+        string maya_attribute_type = "vector",
+        string label = "Ambient Color",
+        string page = "Common Material Attributes"
+    ]],
+    color in_incandescence = color(0)
+    [[
+        string maya_attribute_name = "incandescence",
+        string maya_attribute_type = "vector",
+        string label = "Incandescence Color",
+        string page = "Common Material Attributes"
+    ]],
+    normal in_normalCamera = N
+    [[
+        string maya_attribute_name = "normalCamera",
+        string maya_attribute_type = "vector",
+        string label = "Bump Mapping Normal",
+        string page = "Common Material Attributes"
+    ]],
+    float in_diffuse = 0.8
+    [[
+        string maya_attribute_name = "diffuse",
+        string maya_attribute_type = "float",
+        string label = "Diffuse Intensity",
+        string page = "Common Material Attributes"
+    ]],
+    float in_translucence = 0.0
+    [[
+        string maya_attribute_name = "translucence",
+        string maya_attribute_type = "float",
+        string label = "Translucence",
+        string page = "Common Material Attributes"
+    ]],
+    float in_translucenceDepth = 0.5
+    [[
+        string maya_attribute_name = "translucenceDepth",
+        string maya_attribute_type = "float",
+        string label = "Translucence Depth",
+        string page = "Common Material Attributes"
+    ]],  
+    float in_translucenceFocus = 0.5
+    [[
+        string maya_attribute_name = "translucenceFocus",
+        string maya_attribute_type = "float",
+        string label = "Translucence Focus",
+        string page = "Common Material Attributes"
+    ]],
+    float in_cosinePower = 20.0
+    [[
+        string maya_attribute_name = "cosinePower",
+        string maya_attribute_type = "float",
+        string label = "Cosine Power",
+        float min = 1.0,
+        float max = 100000.0,
+        float softmin = 2.0,
+        float softmax = 100.0,
+        string page = "Specular Shading"
+    ]],
+    color in_specularColor = color(0.5)
+    [[
+        string maya_attribute_name = "specularColor",
+        string maya_attribute_type = "vector",
+        string label = "Specular Color",
+        string page = "Specular Shading"
+    ]],
+    float in_reflectivity = 0.5
+    [[
+        string maya_attribute_name = "reflectivity",
+        string maya_attribute_type = "float",
+        string label = "Reflectivity",
+        string page = "Specular Shading"
+    ]],
+    color in_reflectedColor = color(0)
+    [[
+        string maya_attribute_name = "reflectedColor",
+        string maya_attribute_type = "vector",
+        string label = "Reflected Color",
+        string page = "Specular Shading"
+    ]],
+    int in_matteOpacityMode = 2
+    [[
+        string maya_attribute_name = "matteOpacityMode",
+        string maya_attribute_type = "enum",
+        string label = "Matte Opacity Mode",
+        string widget = "mapper",
+        string options = "Black Hole:0|Solid Matte:1|Opacity Gain:2",
+        string page = "Matte Opacity"
+    ]],
+    float in_matteOpacity = 1.0
+    [[
+        string maya_attribute_name = "matteOpacity",
+        string maya_attribute_type = "float",
+        string label = "Matte Opacity",
+        string page = "Matte Opacity"
+    ]],
+    int in_hideSource = 0
+    [[
+        string maya_attribute_name = "hideSource",
+        string maya_attribute_type = "bool",
+        string label = "Hide Glow Source",
+        string widget = "checkBox",
+        string page = "Special Effects"
+    ]],
+    float in_glowIntensity = 0.0
+    [[
+        string maya_attribute_name = "glowIntensity",
+        string maya_attribute_type = "float",
+        string label = "Glow Intensity",
+        string page = "Special Effects"
+    ]],
+    float in_shadowAttenuation = 0.5
+    [[
+        string maya_attribute_name = "shadowAttenuation",
+        string maya_attribute_type = "float",
+        string label = "Shadow Attenuation",
+        string page = "Raytrace Options"
+    ]],
+
+    output closure color out_outColor = 0
+    [[
+        string maya_attribute_name = "outColor",
+        string maya_attribute_type = "vector",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output closure color out_outTransparency = 0
+    [[
+        string maya_attribute_name = "outTransparency",
+        string maya_attribute_type = "vector",
+        string label = "Output Transparency",
+        string widget = "null"
+    ]],
+    output closure color out_outGlowColor = 0
+    [[
+        string maya_attribute_name = "outGlowColor",
+        string maya_attribute_type = "vector",
+        string label = "Output Glow Color",
+        string widget = "null"
+    ]],
+    output closure color out_outMatteOpacity = 0
+    [[
+        string maya_attribute_name = "outMatteOpacity",
+        string maya_attribute_type = "vector",
+        string label = "Output Matte Opacity",
+        string widget = "null"
+    ]]
+)
+{   
+    if (raytype("shadow"))
+    {
+        color transparency = in_transparency ;
+
+        // Shadow attenuation: 0=constant, 1=fake caustics.
+        if (in_transparency != 0 && in_shadowAttenuation > 0)
+        {
+            transparency *= mix(
+                transparency,
+                max(0.0, dot(-normalize(I), normalize(in_normalCamera))),
+                in_shadowAttenuation
+                );
+        }
+        out_outColor = transparency * transparent();
+        out_outTransparency = out_outColor;
+    }
+    else
+    {
+        normal Nn = normalize(in_normalCamera);
+
+        closure color transparency_term = in_transparency * transparent();
+
+        color opacity = 1 - in_transparency;
+
+        closure color incandescence_term = opacity *
+            in_incandescence * emission();
+
+        closure color diffuse_term = opacity *
+            in_diffuse * in_color * diffuse(Nn);
+
+        // Translucence focus and depth (light wrapping) parameters ignored.
+        closure color translucence_term = opacity *
+            in_translucence * in_color * translucent(Nn);
+
+        closure color specular_term = 0;
+
+        if (in_specularColor)
+        {
+            specular_term = opacity * in_specularColor *
+                phong(Nn, in_cosinePower);
+        }
+        
+        float matte_opacity;
+
+        if (in_matteOpacityMode == 0)
+        {
+            matte_opacity = 0.0;
+        }
+        else if (in_matteOpacityMode == 1)
+        {
+            matte_opacity = 1.0;
+        }
+        else
+        {
+            matte_opacity = in_matteOpacity;
+        }
+
+        closure color matte_term = matte_opacity * holdout();
+        
+        out_outMatteOpacity = matte_term;
+
+        closure color glow_term = 0;
+
+        if (in_glowIntensity)
+        {
+            // glow_term = opacity * in_glowIntensity * post_glow();
+            // out_outGlowColor = glow_term;
+        }
+
+        out_outColor =
+            incandescence_term +
+            diffuse_term +
+            translucence_term +
+            specular_term +
+            matte_term +
+            glow_term +
+            transparency_term;
+    }
+}

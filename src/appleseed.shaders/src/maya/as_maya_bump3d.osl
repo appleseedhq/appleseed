@@ -26,13 +26,13 @@
 // THE SOFTWARE.
 //
 
-// Ref: $MAYA_LOCATION/docs/Nodes/bump2d.html
+// Ref: $MAYA_LOCATION/docs/Nodes/bump3d.html
 
 #include "appleseed/maya/as_maya_helpers.h"
 
-shader as_maya_bump2d
+shader as_maya_bump3d
 [[
-    string maya_node_name = "bump2d",
+    string maya_node_name = "bump3d",
     string maya_classification = "utility/general/bump"
 ]]
 (
@@ -109,14 +109,6 @@ shader as_maya_bump2d
         string maya_attribute_type = "float",
         string label = "Bump Depth"
     ]],
-    int in_bumpInterp = 0
-    [[
-        string maya_attribute_name = "bumpInterp",
-        string maya_attribute_type = "enum",
-        string label = "Bump Interpolation Mode",
-        string widget = "mapper",
-        string options = "Bump:0|Tangent Space Normals:1|Object Space Normals:2"
-    ]],
     float in_bumpFilter = 1.0
     [[
         string maya_attribute_name = "bumpFilter",
@@ -134,52 +126,6 @@ shader as_maya_bump2d
         string maya_attribute_name = "bumpValue",
         string maya_attribute_type = "float",
         string label = "Bump Value"
-    ]],
-    color in_normalMap = color(0)
-    [[
-        string maya_attribute_name = "asNormalMap",
-        string maya_attribute_short_name = "nM",
-        string maya_attribute_type = "vector",
-        string widget = "null"
-    ]],
-    int in_normalMapMode = 0
-    [[
-        string maya_attribute_name = "asNormalMapMode",
-        string maya_attribute_short_name = "mM",
-        string maya_attribute_type = "enum",
-        string widget = "mapper",
-        string options = "unsigned:0|signed:1"
-    ]],
-    int in_normalMapFlipR = 0
-    [[
-        string maya_attribute_name = "asNormalMapFlipR",
-        string maya_attribute_short_name = "fR",
-        string maya_attribute_type = "bool",
-        string widget = "checkBox"
-    ]],
-    int in_normalMapFlipG = 0
-    [[
-        string maya_attribute_name = "asNormalMapFlipG",
-        string maya_attribute_short_name = "fG",
-        string maya_attribute_type = "bool",
-        string widget = "checkBox"
-    ]],
-    int in_normalMapSwapRG = 0
-    [[
-        string maya_attribute_name = "asNormalMapSwapRG",
-        string maya_attribute_short_name = "sW",
-        string maya_attribute_type = "bool",
-        string widget = "checkBox"
-    ]],
-    vector Tn = vector(0)
-    [[
-        int lockgeom = 0,
-        string widget = "null"
-    ]],
-    vector Bn = vector(0)
-    [[
-        int lockgeom = 0,
-        string widget = "null"
     ]],
 
     MAYA_UV_PARAMETERS,
@@ -200,92 +146,17 @@ shader as_maya_bump2d
     else
     {
         float bump_depth = abs(in_bumpDepth);
-
+        
         // Halve the bump value to avoid excess clamp.
         float bump_offset = clamp(
             in_bumpValue * 0.5 * in_bumpDepth, -bump_depth, bump_depth);
 
         normal surface_normal = normalize(in_normalCamera);
 
-        if (in_bumpInterp == 0)
-        {
-            bump_offset /= length(transform("object", surface_normal));
+        bump_offset /= length(transform("world", surface_normal));
 
-            out_outNormal = normalize(calculatenormal(
-                in_pointCamera + (vector) surface_normal * bump_offset));
-        }
-        else if (in_bumpInterp == 1)
-        {
-            normal lookup_normal = (in_normalMapMode == 0)
-                ? (normal) clamp(in_normalMap, 0.0, 1.0) * 2.0 - 1.0
-                : (normal) clamp(in_normalMap, -1.0, 1.0);
-
-            if (lookup_normal == 0.0)
-            {
-                out_outNormal = surface_normal;
-            }
-            else
-            {
-                if (in_normalMapFlipR)
-                {
-                    lookup_normal[0] = -lookup_normal[0];
-                }
-                if (in_normalMapFlipG)
-                {
-                    lookup_normal[1] = -lookup_normal[1];
-                }
-                if (in_normalMapSwapRG)
-                {
-                    float lookup_tmp = lookup_normal[0];
-                    lookup_normal[0] = lookup_normal[1];
-                    lookup_normal[1] = lookup_tmp;
-                }
-
-                vector bitangent = cross(Tn, surface_normal);
-
-                normal reoriented_normal =
-                    lookup_normal[0] * Tn +
-                    lookup_normal[1] * bitangent +
-                    lookup_normal[2] * surface_normal;
-
-                out_outNormal = mix(
-                    surface_normal,
-                    reoriented_normal,
-                    bump_offset);
-
-                out_outNormal = normalize(out_outNormal);
-            }
-        }
-        else if (in_bumpInterp == 2)
-        {
-            normal lookup_normal = (in_normalMapMode == 0)
-                ? (normal) in_normalMap * 2.0 - 1.0
-                : (normal) in_normalMap;
-
-            if (lookup_normal == 0.0)
-            {
-                out_outNormal = surface_normal;
-            }
-            else
-            {
-                normal xformed_normal =
-                    transform("object", "common", lookup_normal);
-
-                out_outNormal = mix(
-                    surface_normal,
-                    xformed_normal,
-                    bump_offset);
-
-                out_outNormal = normalize(out_outNormal);
-            }
-        }
-        else
-        {
-#ifdef DEBUG
-            warning("[WARNING]: Bump mode invalid in %s:%i\n",
-                    __FILE__, __LINE__);
-#endif
-        }
+        out_outNormal = normalize(calculatenormal(
+            in_pointCamera + (vector) surface_normal * bump_offset));
     }
 }
 
