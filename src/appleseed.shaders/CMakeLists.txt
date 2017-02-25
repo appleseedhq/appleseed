@@ -160,6 +160,7 @@ set (appleseed_maya_osl_sources
      src/maya/as_maya_blinn.osl
      src/maya/as_maya_bulge.osl
      src/maya/as_maya_bump2d.osl
+     src/maya/as_maya_bump3d.osl
      src/maya/as_maya_checker.osl
      src/maya/as_maya_clamp.osl
      src/maya/as_maya_clearCoat.osl
