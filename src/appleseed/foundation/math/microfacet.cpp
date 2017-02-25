@@ -143,7 +143,7 @@ Vector3f sample_visible_normals(
         stretched[1] < 0.99999f ? std::atan2(stretched[2], stretched[0]) : 0.0f;
 
     // Sample slope.
-    const Vector2f slope = mdf.sample11(cos_theta, s, gamma);
+    Vector2f slope = mdf.sample11(cos_theta, s, gamma);
 
     // Rotate.
     const float cos_phi = std::cos(phi);
@@ -542,8 +542,9 @@ Vector2f GGXMDF::sample11(
     if (sin_theta < 1.0e-4f)
     {
         const float r = std::sqrt(s[0] / (1.0f - s[0]));
-        const float cos_phi = std::cos(TwoPi<float>() * s[1]);
-        const float sin_phi = std::sin(TwoPi<float>() * s[1]);
+        const float two_pi_s1 = TwoOverPi<float>() * s[1];
+        const float cos_phi = std::cos(two_pi_s1);
+        const float sin_phi = std::sin(two_pi_s1);
         return Vector2f(r * cos_phi, r * sin_phi);
     }
 
