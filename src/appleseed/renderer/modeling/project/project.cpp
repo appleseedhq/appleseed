@@ -432,8 +432,6 @@ void Project::create_aov_images()
 
     impl->m_frame->aov_images().clear();
 
-    impl->m_frame->aov_images().append("depth", ImageStack::ContributionType, 4, PixelFormatFloat);
-
     ApplyRenderLayer apply_render_layers(
         impl->m_scene.ref(),
         impl->m_frame.ref());

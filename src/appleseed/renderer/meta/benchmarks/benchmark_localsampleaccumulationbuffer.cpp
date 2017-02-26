@@ -46,14 +46,12 @@ BENCHMARK_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
     struct Fixture
     {
         Tile                            m_color_tile;
-        Tile                            m_depth_tile;
         BlackmanHarrisFilter2<float>    m_filter;
         FilteredTile                    m_level;
         AABB2u                          m_rect;
 
         Fixture()
           : m_color_tile(64, 64, 4, PixelFormatHalf)
-          , m_depth_tile(64, 64, 1, PixelFormatHalf)
           , m_filter(1.5f, 1.5f)
           , m_level(256, 256, 5, m_filter)
           , m_rect(Vector2u(0, 0), Vector2u(63, 63))
@@ -66,7 +64,6 @@ BENCHMARK_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
     {
         LocalSampleAccumulationBuffer::develop_to_tile_undo_premult_alpha(
             m_color_tile,
-            m_depth_tile,
             1024, 1024,
             m_level,
             0, 0,
@@ -77,7 +74,6 @@ BENCHMARK_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
     {
         LocalSampleAccumulationBuffer::develop_to_tile_undo_premult_alpha(
             m_color_tile,
-            m_depth_tile,
             1025, 1025,
             m_level,
             0, 0,
@@ -88,7 +84,6 @@ BENCHMARK_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
     {
         LocalSampleAccumulationBuffer::develop_to_tile(
             m_color_tile,
-            m_depth_tile,
             1024, 1024,
             m_level,
             0, 0,
@@ -99,7 +94,6 @@ BENCHMARK_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
     {
         LocalSampleAccumulationBuffer::develop_to_tile(
             m_color_tile,
-            m_depth_tile,
             1025, 1025,
             m_level,
             0, 0,
