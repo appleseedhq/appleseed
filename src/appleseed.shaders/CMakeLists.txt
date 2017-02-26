@@ -69,6 +69,7 @@ set (appleseed_library_osl_headers
     include/appleseed/math/as_math_helpers.h
     include/appleseed/maya/as_maya_fractal_helpers.h
     include/appleseed/maya/as_maya_helpers.h
+    include/appleseed/maya/as_maya_layer_helpers.h
     include/appleseed/maya/as_maya_ramp_helpers.h
     include/appleseed/maya/as_maya_transform_helpers.h
     include/appleseed/pattern/as_pattern_helpers.h
@@ -182,6 +183,8 @@ set (appleseed_maya_osl_sources
      src/maya/as_maya_grid.osl
      src/maya/as_maya_hsvToRgb.osl
      src/maya/as_maya_lambert.osl
+     src/maya/as_maya_layeredShader.osl
+     src/maya/as_maya_layeredTexture.osl
      src/maya/as_maya_luminance.osl
      src/maya/as_maya_matrixInverse.osl
      src/maya/as_maya_mountain.osl
