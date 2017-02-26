@@ -175,7 +175,7 @@ namespace
 
             if (m_mdf == GGX)
             {
-                const GGXMDF<float> mdf;
+                const GGXMDF mdf;
                 MicrofacetBRDFHelper::sample(
                     sampling_context,
                     mdf,
@@ -187,7 +187,7 @@ namespace
             }
             else
             {
-                const BeckmannMDF<float> mdf;
+                const BeckmannMDF mdf;
                 MicrofacetBRDFHelper::sample(
                     sampling_context,
                     mdf,
@@ -236,7 +236,7 @@ namespace
 
             if (m_mdf == GGX)
             {
-                const GGXMDF<float> mdf;
+                const GGXMDF mdf;
                 return MicrofacetBRDFHelper::evaluate(
                     mdf,
                     alpha_x,
@@ -251,7 +251,7 @@ namespace
             }
             else
             {
-                const BeckmannMDF<float> mdf;
+                const BeckmannMDF mdf;
                 return MicrofacetBRDFHelper::evaluate(
                     mdf,
                     alpha_x,
@@ -295,7 +295,7 @@ namespace
 
             if (m_mdf == GGX)
             {
-                const GGXMDF<float> mdf;
+                const GGXMDF mdf;
                 return MicrofacetBRDFHelper::pdf(
                     mdf,
                     alpha_x,
@@ -306,7 +306,7 @@ namespace
             }
             else
             {
-                const BeckmannMDF<float> mdf;
+                const BeckmannMDF mdf;
                 return MicrofacetBRDFHelper::pdf(
                     mdf,
                     alpha_x,

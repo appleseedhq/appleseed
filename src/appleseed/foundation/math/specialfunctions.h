@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,41 +26,18 @@
 // THE SOFTWARE.
 //
 
-// Ref: $MAYA_LOCATION/docs/Nodes/clamp.html
+#ifndef APPLESEED_FOUNDATION_MATH_SPECIAL_FUNCTIONS_H
+#define APPLESEED_FOUNDATION_MATH_SPECIAL_FUNCTIONS_H
 
-shader as_maya_clamp
-[[
-    string maya_node_name = "clamp",
-    string maya_classification = "utility/general"
-]]
-(
-    color in_min = color(0)
-    [[
-        string maya_attribute_name = "min",
-        string maya_attribute_type = "vector",
-        string label = "Lower Bound"
-    ]],
-    color in_max = color(0)
-    [[
-        string maya_attribute_name = "max",
-        string maya_attribute_type = "vector",
-        string label = "Upper Bound"
-    ]],
-    color in_input = color(0)
-    [[
-        string maya_attribute_name = "input",
-        string maya_attribute_type = "vector",
-        string label = "Input Color"
-    ]],
-
-    output color out_output = color(0)
-    [[
-        string maya_attribute_name = "output",
-        string maya_attribute_type = "vector",
-        string label = "Output Color",
-        string widget = "null"
-    ]]
-)
+namespace foundation
 {
-    out_output = clamp(in_input, in_min, in_max);
-}
+
+// Error function.
+float erf(const float x);
+
+// Inverse error function.
+float erf_inv(const float x);
+
+}       // namespace foundation
+
+#endif  // !APPLESEED_FOUNDATION_MATH_SPECIAL_FUNCTIONS_H

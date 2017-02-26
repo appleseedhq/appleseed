@@ -145,9 +145,9 @@ namespace
                     context);
 
             if (mdf == "ggx")
-                m_mdf.reset(new GGXMDF<float>());
+                m_mdf.reset(new GGXMDF());
             else if (mdf == "beckmann")
-                m_mdf.reset(new BeckmannMDF<float>());
+                m_mdf.reset(new BeckmannMDF());
             else return false;
 
             const string volume_parameterization =
@@ -481,7 +481,7 @@ namespace
       private:
         typedef GlassBSDFInputValues InputValues;
 
-        auto_ptr<MDF<float> >   m_mdf;
+        auto_ptr<MDF>   m_mdf;
 
         enum VolumeParameterization
         {

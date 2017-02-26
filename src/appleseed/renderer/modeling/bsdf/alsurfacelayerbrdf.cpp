@@ -173,7 +173,7 @@ namespace
             Vector3f wo = shading_basis.transform_to_local(sample.m_outgoing.get_value());
 
             // Compute the microfacet normal by sampling the MDF.
-            const MDF<float>& mdf = pick_mdf(values->m_distribution);
+            const MDF& mdf = pick_mdf(values->m_distribution);
             sampling_context.split_in_place(4, 1);
             const Vector4f s = sampling_context.next2<Vector4f>();
             Vector3f m = mdf.sample(
@@ -250,7 +250,7 @@ namespace
 
             if (ScatteringMode::has_glossy(modes) && (wi.y * wo.y >= 0.0f))
             {
-                const MDF<float>& mdf = pick_mdf(values->m_distribution);
+                const MDF& mdf = pick_mdf(values->m_distribution);
                 value = f_value;
                 evaluate_reflection(*values, mdf, wi, wo, m, value);
                 probability = layer_probability * reflection_pdf(*values, mdf, wo, m);
@@ -300,7 +300,7 @@ namespace
 
             if (ScatteringMode::has_glossy(modes) && (wi.y * wo.y >= 0.0f))
             {
-                const MDF<float>& mdf = pick_mdf(values->m_distribution);
+                const MDF& mdf = pick_mdf(values->m_distribution);
                 probability = layer_probability * reflection_pdf(*values, mdf, wo, m);
             }
 
@@ -359,7 +359,7 @@ namespace
             Metallic
         };
 
-        static const MDF<float>& pick_mdf(int distribution)
+        static const MDF& pick_mdf(int distribution)
         {
             if (distribution == Beckmann)
                 return m_beckmann_mdf;
@@ -426,7 +426,7 @@ namespace
 
         static void evaluate_reflection(
             const InputValues&      values,
-            const MDF<float>&       mdf,
+            const MDF&              mdf,
             const Vector3f&         wi,
             const Vector3f&         wo,
             const Vector3f&         m,
@@ -446,7 +446,7 @@ namespace
 
         static float reflection_pdf(
             const InputValues&      values,
-            const MDF<float>&       mdf,
+            const MDF&              mdf,
             const Vector3f&         wo,
             const Vector3f&         m)
         {
@@ -458,12 +458,12 @@ namespace
             return jacobian * mdf.pdf(wo, m, values.m_precomputed.m_alpha_x, values.m_precomputed.m_alpha_y);
         }
 
-        static GGXMDF<float>        m_ggx_mdf;
-        static BeckmannMDF<float>   m_beckmann_mdf;
+        static GGXMDF        m_ggx_mdf;
+        static BeckmannMDF   m_beckmann_mdf;
     };
 
-    GGXMDF<float>        AlSurfaceLayerBRDFImpl::m_ggx_mdf;
-    BeckmannMDF<float>   AlSurfaceLayerBRDFImpl::m_beckmann_mdf;
+    GGXMDF        AlSurfaceLayerBRDFImpl::m_ggx_mdf;
+    BeckmannMDF   AlSurfaceLayerBRDFImpl::m_beckmann_mdf;
 
     typedef BSDFWrapper<AlSurfaceLayerBRDFImpl> AlSurfaceLayerBRDF;
 }

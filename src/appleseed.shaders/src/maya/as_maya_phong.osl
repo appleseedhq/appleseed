@@ -26,11 +26,11 @@
 // THE SOFTWARE.
 //
 
-// Ref: $MAYA_LOCATION/docs/Nodes/blinn.html
+// Ref: $MAYA_LOCATION/docs/Nodes/phong.html
 
-shader as_maya_blinn
+shader as_maya_phong
 [[
-    string maya_node_name = "blinn",
+    string maya_node_name = "phong",
     string maya_classification = "shader/surface"
 ]]
 (
@@ -97,18 +97,15 @@ shader as_maya_blinn
         string label = "Translucence Focus",
         string page = "Common Material Attributes"
     ]],
-    float in_eccentricity = 0.3
+    float in_cosinePower = 20.0
     [[
-        string maya_attribute_name = "eccentricity",
+        string maya_attribute_name = "cosinePower",
         string maya_attribute_type = "float",
-        string label = "Eccentricity",
-        string page = "Specular Shading"
-    ]],
-    float in_specularRollOff = 0.7
-    [[
-        string maya_attribute_name = "specularRollOff",
-        string maya_attribute_type = "float",
-        string label = "Specular Rolloff",
+        string label = "Cosine Power",
+        float min = 1.0,
+        float max = 100000.0,
+        float softmin = 2.0,
+        float softmax = 100.0,
         string page = "Specular Shading"
     ]],
     color in_specularColor = color(0.5)
@@ -239,19 +236,8 @@ shader as_maya_blinn
 
         if (in_specularColor)
         {
-            // Specular roll-off is a simple Fresnel term, get eta, solve
-            // f0=(eta-1)^2/(eta+1)^2 for eta.
-
-            float tmp = sqrt(in_specularRollOff);
-            float eta = (1 + tmp) / (1 - tmp);
-
             specular_term = opacity * in_specularColor *
-                microfacet(
-                    "ggx",
-                    Nn,
-                    in_eccentricity,
-                    eta,
-                    0);
+                phong(Nn, in_cosinePower);
         }
         
         float matte_opacity;

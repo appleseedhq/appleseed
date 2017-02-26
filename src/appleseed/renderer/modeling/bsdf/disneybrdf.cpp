@@ -432,7 +432,7 @@ namespace
                         alpha_x,
                         alpha_y);
 
-                    const GGXMDF<float> ggx_mdf;
+                    const GGXMDF ggx_mdf;
                     MicrofacetBRDFHelper::sample(
                         sampling_context,
                         ggx_mdf,
@@ -445,7 +445,7 @@ namespace
                 else
                 {
                     const float alpha = clearcoat_roughness(values);
-                    const GTR1MDF<float> gtr1_mdf;
+                    const GTR1MDF gtr1_mdf;
                     MicrofacetBRDFHelper::sample(
                         sampling_context,
                         gtr1_mdf,
@@ -521,7 +521,7 @@ namespace
                         alpha_x,
                         alpha_y);
 
-                    const GGXMDF<float> ggx_mdf;
+                    const GGXMDF ggx_mdf;
                     pdf += MicrofacetBRDFHelper::evaluate(
                         ggx_mdf,
                         alpha_x,
@@ -540,7 +540,7 @@ namespace
                 {
                     Spectrum clear;
                     const float alpha = clearcoat_roughness(values);
-                    const GTR1MDF<float> gtr1_mdf;
+                    const GTR1MDF gtr1_mdf;
                     pdf += MicrofacetBRDFHelper::evaluate(
                         gtr1_mdf,
                         alpha,
@@ -609,7 +609,7 @@ namespace
                         alpha_x,
                         alpha_y);
 
-                    const GGXMDF<float> ggx_mdf;
+                    const GGXMDF ggx_mdf;
                     pdf += MicrofacetBRDFHelper::pdf(
                         ggx_mdf,
                         alpha_x,
@@ -622,7 +622,7 @@ namespace
                 if (weights[CleatcoatComponent] != 0.0f)
                 {
                     const float alpha = clearcoat_roughness(values);
-                    const GTR1MDF<float> gtr1_mdf;
+                    const GTR1MDF gtr1_mdf;
                     pdf += MicrofacetBRDFHelper::pdf(
                         gtr1_mdf,
                         alpha,
