@@ -45,19 +45,19 @@ shader as_maya_layeredShader
     closure color in_color[] = {0}
     [[
         string maya_attribute_name = "color",
-        string maya_attribute_type = "vector",
+        string maya_attribute_type = "color[]",
         string label = "Color"
     ]],
     float in_transparency[] = {0}
     [[
         string maya_attribute_name = "transparency",
-        string maya_attribute_type = "vector",
+        string maya_attribute_type = "float[]",
         string label = "Transparency"
     ]],
     color in_glowColor[] = {0}
     [[
         string maya_attribute_name = "glowColor",
-        string maya_attribute_type = "vector",
+        string maya_attribute_type = "color[]",
         string label = "Glow Color",
         string widget = "null"
     ]],
