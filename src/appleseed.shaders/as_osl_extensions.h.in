@@ -74,6 +74,18 @@ closure color as_glossy(
     return as_glossy(distribution, N, vector(0), roughness, 0.0, ior);
 }
 
+closure color as_glossy_blinn(
+    normal  N,
+    float   exponent,
+    float   ior)
+{
+    return as_glossy(
+        "blinn",
+        N,
+        sqrt(exponent), // Compensate for roughness squaring inside the glossy brdf.
+        ior);
+}
+
 closure color as_metal(
     string  distribution,
     normal  N,
