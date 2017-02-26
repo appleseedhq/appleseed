@@ -53,6 +53,7 @@
 // Standard headers.
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <string>
 
 // Forward declarations.
@@ -110,6 +111,11 @@ namespace
         virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
+        }
+
+        virtual size_t compute_input_data_size() const APPLESEED_OVERRIDE
+        {
+            return sizeof(InputValues);
         }
 
         virtual void prepare_inputs(

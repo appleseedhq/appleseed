@@ -34,11 +34,11 @@
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
-#include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/sampling/mappings.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -104,7 +104,7 @@ namespace
             sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
 
             // Compute the BRDF value.
-            const InputValues* values = static_cast<const InputValues*>(data);
+            const LambertianBRDFInputValues* values = static_cast<const LambertianBRDFInputValues*>(data);
             sample.m_value = values->m_reflectance;
             sample.m_value *= values->m_reflectance_multiplier * RcpPi<float>();
 
@@ -139,7 +139,7 @@ namespace
                 return 0.0f;
 
             // Compute the BRDF value.
-            const InputValues* values = static_cast<const InputValues*>(data);
+            const LambertianBRDFInputValues* values = static_cast<const LambertianBRDFInputValues*>(data);
             value = values->m_reflectance;
             value *= values->m_reflectance_multiplier * RcpPi<float>();
 
@@ -166,13 +166,6 @@ namespace
 
             return cos_in * RcpPi<float>();
         }
-
-      private:
-        APPLESEED_DECLARE_INPUT_VALUES(InputValues)
-        {
-            Spectrum    m_reflectance;              // diffuse reflectance (albedo, technically)
-            float       m_reflectance_multiplier;
-        };
     };
 
     typedef BSDFWrapper<LambertianBRDFImpl> LambertianBRDF;

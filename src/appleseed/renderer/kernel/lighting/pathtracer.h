@@ -36,12 +36,13 @@
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
-#include "renderer/kernel/lighting/subsurfacesampler.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
+#include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/objectinstance.h"
@@ -93,22 +94,6 @@ class PathTracer
         const ShadingPoint&     shading_point);
 
   private:
-    struct SubsurfaceSampleVisitor
-    {
-        enum { MaxSampleCount = 16 };
-
-        ShadingPoint            m_incoming_points[MaxSampleCount];
-        float                   m_probabilities[MaxSampleCount];
-        size_t                  m_sample_count;
-
-        SubsurfaceSampleVisitor();
-
-        bool visit(
-            const BSSRDFSample& bssrdf_sample,
-            const ShadingPoint& incoming_point,
-            const float         probability);
-    };
-
     PathVisitor&                m_path_visitor;
     const size_t                m_rr_min_path_length;
     const size_t                m_max_path_length;
@@ -365,7 +350,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         vertex.m_bsdf = material_data.m_bsdf;
         vertex.m_bssrdf = material_data.m_bssrdf;
 
-        // If there is both a BSDF and a BSSRDF, pick one to extend the path.
+        // We allow materials with both a BSDF and a BSSRDF.
+        // When both are present, pick one to extend the path.
         if (vertex.m_bsdf && vertex.m_bssrdf)
         {
             sampling_context.split_in_place(1, 1);
@@ -383,118 +369,78 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         if (vertex.m_bssrdf)
             vertex.m_bssrdf_data = vertex.m_bssrdf->evaluate_inputs(shading_context, *vertex.m_shading_point);
 
-        // If we picked the BSSRDF, find an incoming point.
-        // The subsurface visitor must live outside the 'if' block below because
-        // it owns the incoming points that were found during subsurface sampling,
-        // one of which will become the parent point for the next ray.
-        SubsurfaceSampleVisitor subsurf_visitor;
+        BSDFSample bsdf_sample(vertex.m_shading_point, Dual3f(vertex.m_outgoing));
+
+        // Subsurface scattering.
         if (vertex.m_bssrdf)
         {
-            // Find possible incoming points.
-            const SubsurfaceSampler sampler(shading_context);
-            sampler.sample(
-                sampling_context,
-                *vertex.m_shading_point,
-                *vertex.m_bssrdf,
-                vertex.m_bssrdf_data,
-                subsurf_visitor);
-
-            // Terminate the path if no incoming point could be found.
-            if (subsurf_visitor.m_sample_count == 0)
+            // Sample the BSSRDF and terminate the path if no incoming point is found.
+            BSSRDFSample bssrdf_sample;
+            if (!vertex.m_bssrdf->sample(
+                    shading_context,
+                    sampling_context,
+                    vertex.m_bssrdf_data,
+                    *vertex.m_shading_point,
+                    foundation::Vector3f(vertex.m_outgoing.get_value()),
+                    bssrdf_sample,
+                    bsdf_sample))
                 break;
 
-            // Select one of the incoming points at random.
-            sampling_context.split_in_place(1, 1);
-            const float s = sampling_context.next2<float>();
-            const size_t i = foundation::truncate<size_t>(s * subsurf_visitor.m_sample_count);
-            vertex.m_incoming_point = &subsurf_visitor.m_incoming_points[i];
-            vertex.m_incoming_point_prob = subsurf_visitor.m_probabilities[i] / subsurf_visitor.m_sample_count;
+            // Update the path throughput.
+            vertex.m_throughput *= bssrdf_sample.m_value;
+            vertex.m_throughput /= bssrdf_sample.m_probability;
+
+            // Switch to the BSSRDF's BRDF.
+            vertex.m_shading_point = &bssrdf_sample.m_incoming_point;
+            vertex.m_bsdf = bssrdf_sample.m_brdf;
+            vertex.m_bsdf_data = bssrdf_sample.m_brdf_data;
         }
 
-        // Pass this vertex to the path visitor.
+        // cos(outgoing, normal) is used for changes of probability measure. In the case of subsurface
+        // scattering, we purposely compute it at the outgoing vertex even though it may be used at
+        // the incoming vertex if we need to change the probability of reaching this vertex by BSDF
+        // sampling from projected solid angle measure to area measure.
         vertex.m_cos_on = foundation::dot(vertex.m_outgoing.get_value(), vertex.get_shading_normal());
+
+        // Pass this vertex to the path visitor.
         m_path_visitor.visit_vertex(vertex);
 
         // Honor the user bounce limit.
         if (vertex.m_path_length >= m_max_path_length)
             break;
 
-        Spectrum value;
-        const ShadingPoint* parent_shading_point;
-        foundation::Dual3d incoming;
+        // Terminate the path if no above-surface scattering possible.
+        if (!vertex.m_bsdf)
+            break;
 
-        if (vertex.m_bsdf)
+        // Above-surface scattering.
+        if (!vertex.m_bssrdf)
         {
             // Sample the BSDF.
-            BSDFSample sample(*vertex.m_shading_point, vertex.m_outgoing);
             vertex.m_bsdf->sample(
                 sampling_context,
                 vertex.m_bsdf_data,
                 Adjoint,
                 true,       // multiply by |cos(incoming, normal)|
-                sample);
+                bsdf_sample);
 
             // Terminate the path if it gets absorbed.
-            if (sample.m_mode == ScatteringMode::Absorption)
+            if (bsdf_sample.m_mode == ScatteringMode::Absorption)
                 break;
 
             // Terminate the path if this scattering event is not accepted.
-            if (!m_path_visitor.accept_scattering(vertex.m_prev_mode, sample.m_mode))
+            if (!m_path_visitor.accept_scattering(vertex.m_prev_mode, bsdf_sample.m_mode))
                 break;
-
-            // Compute the path throughput multiplier.
-            value = sample.m_value;
-            if (sample.m_probability != BSDF::DiracDelta)
-                value /= sample.m_probability;
-
-            // Properties of this scattering event.
-            vertex.m_prev_mode = sample.m_mode;
-            vertex.m_prev_prob = sample.m_probability;
-
-            // Origin and direction of the scattered ray.
-            parent_shading_point = vertex.m_shading_point;
-            incoming = foundation::Dual3d(sample.m_incoming);
         }
-        else if (vertex.m_bssrdf)
-        {
-            // Pick the direction of the scattered ray at random.
-            sampling_context.split_in_place(2, 1);
-            const foundation::Vector2f s = sampling_context.next2<foundation::Vector2f>();
-            foundation::Vector3f incoming_vector = foundation::sample_hemisphere_cosine(s);
-            const float cos_in = incoming_vector.y;
-            const float incoming_prob = cos_in * foundation::RcpPi<float>();
-            incoming_vector = vertex.m_incoming_point->get_shading_basis().transform_to_parent(incoming_vector);
-            if (vertex.m_incoming_point->get_side() == ObjectInstance::BackSide)
-                incoming_vector = -incoming_vector;
-            incoming = foundation::Dual3d(foundation::Vector3d(incoming_vector));
 
-            // Evaluate the BSSRDF.
-            vertex.m_bssrdf->evaluate(
-                vertex.m_bssrdf_data,
-                *vertex.m_shading_point,
-                foundation::Vector3f(vertex.m_outgoing.get_value()),
-                *vertex.m_incoming_point,
-                incoming_vector,
-                value);
-
-            // Compute the path throughput multiplier.
-            value *= cos_in / vertex.m_incoming_point_prob;
-
-            // Properties of this scattering event.
-            vertex.m_prev_mode = ScatteringMode::Diffuse;
-            vertex.m_prev_prob = incoming_prob;
-
-            // Origin of the scattered ray.
-            parent_shading_point = vertex.m_incoming_point;
-        }
-        else
-        {
-            // No scattering possible, terminate the path.
-            break;
-        }
+        // Properties of this scattering event.
+        vertex.m_prev_mode = bsdf_sample.m_mode;
+        vertex.m_prev_prob = bsdf_sample.m_probability;
 
         // Update the path throughput.
-        vertex.m_throughput *= value;
+        vertex.m_throughput *= bsdf_sample.m_value;
+        if (bsdf_sample.m_probability != BSDF::DiracDelta)
+            vertex.m_throughput /= bsdf_sample.m_probability;
 
         // Use Russian Roulette to cut the path without introducing bias.
         if (vertex.m_path_length >= m_rr_min_path_length)
@@ -504,7 +450,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             const float s = sampling_context.next2<float>();
 
             // Compute the probability of extending this path.
-            const float scattering_prob = std::min(foundation::max_value(value), 1.0f);
+            const float scattering_prob = std::min(foundation::max_value(bsdf_sample.m_value), 1.0f);
 
             // Russian Roulette.
             if (!foundation::pass_rr(scattering_prob, s))
@@ -519,21 +465,22 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         ++vertex.m_path_length;
 
         // Construct the scattered ray.
+        const foundation::Vector3d incoming(bsdf_sample.m_incoming.get_value());
         ShadingRay next_ray(
-            parent_shading_point->get_biased_point(incoming.get_value()),
-            incoming.get_value(),
+            vertex.m_shading_point->get_biased_point(incoming),
+            incoming,
             ray.m_time,
             ScatteringMode::get_vis_flags(vertex.m_prev_mode),
             ray.m_depth + 1);
         next_ray.m_dir = foundation::improve_normalization<2>(next_ray.m_dir);
 
         // Compute scattered ray differentials.
-        if (incoming.has_derivatives())
+        if (bsdf_sample.m_incoming.has_derivatives())
         {
             next_ray.m_rx.m_org = next_ray.m_org + vertex.m_shading_point->get_dpdx();
             next_ray.m_ry.m_org = next_ray.m_org + vertex.m_shading_point->get_dpdy();
-            next_ray.m_rx.m_dir = next_ray.m_dir + incoming.get_dx();
-            next_ray.m_ry.m_dir = next_ray.m_dir + incoming.get_dy();
+            next_ray.m_rx.m_dir = next_ray.m_dir + foundation::Vector3d(bsdf_sample.m_incoming.get_dx());
+            next_ray.m_ry.m_dir = next_ray.m_dir + foundation::Vector3d(bsdf_sample.m_incoming.get_dy());
             next_ray.m_has_differentials = true;
         }
 
@@ -592,7 +539,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         shading_context.get_intersector().trace(
             next_ray,
             shading_points[shading_point_index],
-            parent_shading_point);
+            vertex.m_shading_point);
 
         // Update the pointers to the shading points.
         vertex.m_shading_point = &shading_points[shading_point_index];
@@ -616,37 +563,6 @@ inline bool PathTracer<PathVisitor, Adjoint>::pass_through(
     sampling_context.split_in_place(1, 1);
 
     return sampling_context.next2<float>() >= alpha[0];
-}
-
-
-//
-// PathTracer::SubsurfaceSampleVisitor class implementation.
-//
-
-template <typename PathVisitor, bool Adjoint>
-PathTracer<PathVisitor, Adjoint>::SubsurfaceSampleVisitor::SubsurfaceSampleVisitor()
-  : m_sample_count(0)
-{
-}
-
-template <typename PathVisitor, bool Adjoint>
-bool PathTracer<PathVisitor, Adjoint>::SubsurfaceSampleVisitor::visit(
-    const BSSRDFSample&         bssrdf_sample,
-    const ShadingPoint&         incoming_point,
-    const float                 probability)
-{
-    if (m_sample_count >= MaxSampleCount)
-    {
-        // Stop visiting samples.
-        return false;
-    }
-
-    m_incoming_points[m_sample_count] = incoming_point;
-    m_probabilities[m_sample_count] = probability;
-    ++m_sample_count;
-
-    // Continue visiting samples.
-    return true;
 }
 
 }       // namespace renderer

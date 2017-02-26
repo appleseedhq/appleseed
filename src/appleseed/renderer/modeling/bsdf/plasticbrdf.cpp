@@ -54,6 +54,7 @@
 // Standard headers.
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <string>
 
 // Forward declarations.
@@ -137,6 +138,11 @@ namespace
             else return false;
 
             return true;
+        }
+
+        virtual size_t compute_input_data_size() const APPLESEED_OVERRIDE
+        {
+            return sizeof(InputValues);
         }
 
         virtual void prepare_inputs(

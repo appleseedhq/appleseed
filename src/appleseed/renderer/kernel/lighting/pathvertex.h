@@ -35,7 +35,6 @@
 #include "renderer/kernel/lighting/lightsampler.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/bsdf/bsdf.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -48,6 +47,7 @@
 #include <cstddef>
 
 // Forward declarations.
+namespace renderer  { class BSDF; }
 namespace renderer  { class BSSRDF; }
 namespace renderer  { class EDF; }
 namespace renderer  { class Material; }
@@ -82,10 +82,6 @@ class PathVertex
     const void*                 m_bsdf_data;
     const BSSRDF*               m_bssrdf;
     const void*                 m_bssrdf_data;
-
-    // Sampled incoming point for subsurface scattering.
-    const ShadingPoint*         m_incoming_point;
-    float                       m_incoming_point_prob;
 
     // Properties of the last scattering event (for multiple importance sampling).
     ScatteringMode::Mode        m_prev_mode;

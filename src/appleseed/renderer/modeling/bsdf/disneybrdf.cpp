@@ -46,10 +46,10 @@
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/memory.h"
 
 // Standard headers.
 #include <cmath>
+#include <cstddef>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
@@ -61,6 +61,7 @@ using namespace std;
 
 namespace renderer
 {
+
 namespace
 {
     float schlick_fresnel(const float u)
@@ -357,14 +358,19 @@ namespace
             return Model;
         }
 
-        void prepare_inputs(
+        virtual size_t compute_input_data_size() const APPLESEED_OVERRIDE
+        {
+            return sizeof(InputValues);
+        }
+
+        virtual void prepare_inputs(
             Arena&                  arena,
             const ShadingPoint&     shading_point,
             void*                   data) const APPLESEED_OVERRIDE
         {
-            DisneyBRDFInputValues* values = static_cast<DisneyBRDFInputValues*>(data);
+            InputValues* values = static_cast<InputValues*>(data);
 
-            new (&values->m_precomputed) DisneyBRDFInputValues::Precomputed();
+            new (&values->m_precomputed) InputValues::Precomputed();
 
             const Color3f tint_xyz =
                 values->m_base_color.is_rgb()
@@ -392,7 +398,7 @@ namespace
             if (cos_on < 0.0f)
                 return;
 
-            const DisneyBRDFInputValues* values = static_cast<const DisneyBRDFInputValues*>(data);
+            const InputValues* values = static_cast<const InputValues*>(data);
 
             float cdf[NumComponents];
             compute_component_cdf(values, cdf);
@@ -470,7 +476,7 @@ namespace
             if (cos_in <= 0.0f || cos_on <= 0.0f)
                 return 0.0f;
 
-            const DisneyBRDFInputValues* values = static_cast<const DisneyBRDFInputValues*>(data);
+            const InputValues* values = static_cast<const InputValues*>(data);
 
             float weights[NumComponents];
             compute_component_weights(values, weights);
@@ -568,7 +574,7 @@ namespace
             if (cos_in < 0.0f || cos_on < 0.0f)
                 return 0.0f;
 
-            const DisneyBRDFInputValues* values = static_cast<const DisneyBRDFInputValues*>(data);
+            const InputValues* values = static_cast<const InputValues*>(data);
 
             float weights[NumComponents];
             compute_component_weights(values, weights);
@@ -633,13 +639,13 @@ namespace
       private:
         typedef DisneyBRDFInputValues InputValues;
 
-        void compute_component_weights(
-            const DisneyBRDFInputValues*    values,
-            float                           weights[NumComponents]) const
+        static void compute_component_weights(
+            const InputValues*      values,
+            float                   weights[NumComponents])
         {
-            weights[DiffuseComponent]   = lerp(values->m_precomputed.m_base_color_luminance, 0.0f, values->m_metallic);
-            weights[SheenComponent]     = lerp(values->m_sheen, 0.0f, values->m_metallic);
-            weights[SpecularComponent]  = lerp(values->m_specular, 1.0f, values->m_metallic);
+            weights[DiffuseComponent] = lerp(values->m_precomputed.m_base_color_luminance, 0.0f, values->m_metallic);
+            weights[SheenComponent] = lerp(values->m_sheen, 0.0f, values->m_metallic);
+            weights[SpecularComponent] = lerp(values->m_specular, 1.0f, values->m_metallic);
             weights[CleatcoatComponent] = values->m_clearcoat * 0.25f;
 
             const float total_weight =
@@ -652,23 +658,23 @@ namespace
                 return;
 
             const float total_weight_rcp = 1.0f / total_weight;
-            weights[DiffuseComponent]   *= total_weight_rcp;
-            weights[SheenComponent]     *= total_weight_rcp;
-            weights[SpecularComponent]  *= total_weight_rcp;
+            weights[DiffuseComponent] *= total_weight_rcp;
+            weights[SheenComponent] *= total_weight_rcp;
+            weights[SpecularComponent] *= total_weight_rcp;
             weights[CleatcoatComponent] *= total_weight_rcp;
         }
 
-        void compute_component_cdf(
-            const DisneyBRDFInputValues*    values,
-            float                           cdf[NumComponents]) const
+        static void compute_component_cdf(
+            const InputValues*      values,
+            float                   cdf[NumComponents])
         {
             compute_component_weights(values, cdf);
-            cdf[SheenComponent]     += cdf[DiffuseComponent];
-            cdf[SpecularComponent]  += cdf[SheenComponent];
+            cdf[SheenComponent] += cdf[DiffuseComponent];
+            cdf[SpecularComponent] += cdf[SheenComponent];
             cdf[CleatcoatComponent] += cdf[SpecularComponent];
         }
 
-        float clearcoat_roughness(const DisneyBRDFInputValues* values) const
+        static float clearcoat_roughness(const InputValues* values)
         {
             return mix(0.1f, 0.001f, values->m_clearcoat_gloss);
         }

@@ -28,17 +28,12 @@
 
 // Interface header.
 #include "dipolebssrdf.h"
-#include "dipolebssrdffactory.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/bssrdf/bssrdfsample.h"
-#include "renderer/modeling/bssrdf/sss.h"
+#include "renderer/modeling/bssrdf/dipolebssrdffactory.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/cdf.h"
 #include "foundation/math/sampling/mappings.h"
-#include "foundation/math/scalar.h"
-#include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
 
@@ -53,8 +48,8 @@ namespace renderer
 //
 
 DipoleBSSRDF::DipoleBSSRDF(
-    const char*         name,
-    const ParamArray&   params)
+    const char*             name,
+    const ParamArray&       params)
   : SeparableBSSRDF(name, params)
   , m_has_sigma_sources(false)
 {
@@ -70,63 +65,92 @@ DipoleBSSRDF::DipoleBSSRDF(
     m_inputs.declare("fresnel_weight", InputFormatFloat, "1.0");
 }
 
-bool DipoleBSSRDF::sample(
-    SamplingContext&    sampling_context,
-    const void*         data,
-    BSSRDFSample&       sample) const
+size_t DipoleBSSRDF::compute_input_data_size() const
 {
-    const DipoleBSSRDFInputValues* values = static_cast<const DipoleBSSRDFInputValues*>(data);
-
-    if (values->m_weight == 0.0)
-        return false;
-
-    sampling_context.split_in_place(3, 1);
-    const Vector3f s = sampling_context.next2<Vector3f>();
-
-    // Sample a channel.
-    const size_t channel =
-        sample_cdf(
-            &values->m_precomputed.m_channel_cdf[0],
-            &values->m_precomputed.m_channel_cdf[0] + values->m_precomputed.m_channel_cdf.size(),
-            s[0]);
-
-    // Sample a radius.
-    const float sigma_tr = values->m_precomputed.m_sigma_tr[channel];
-    const float radius = sample_exponential_distribution(s[1], sigma_tr);
-
-    // Sample an angle.
-    const float phi = TwoPi<float>() * s[2];
-
-    sample.m_eta = values->m_precomputed.m_eta;
-    sample.m_channel = channel;
-    sample.m_point = Vector2f(radius * cos(phi), radius * sin(phi));
-    sample.m_rmax2 = values->m_precomputed.m_rmax2;
-
-    return true;
+    return sizeof(DipoleBSSRDFInputValues);
 }
 
-float DipoleBSSRDF::evaluate_pdf(
-    const void*         data,
-    const size_t        channel,
-    const float         radius) const
+float DipoleBSSRDF::sample_profile(
+    const void*             data,
+    const size_t            channel,
+    const float             u) const
 {
-    const DipoleBSSRDFInputValues* values = static_cast<const DipoleBSSRDFInputValues*>(data);
+    const DipoleBSSRDFInputValues* values =
+        static_cast<const DipoleBSSRDFInputValues*>(data);
 
-    // PDF of the sampled radius.
-    float pdf_radius = 0.0f;
+    const float sigma_tr = values->m_precomputed.m_sigma_tr[channel];
+
+    return sample_exponential_distribution(u, sigma_tr);
+}
+
+float DipoleBSSRDF::evaluate_profile_pdf(
+    const void*             data,
+    const float             disk_radius) const
+{
+    const DipoleBSSRDFInputValues* values =
+        static_cast<const DipoleBSSRDFInputValues*>(data);
+
+    if (disk_radius > values->m_base_values.m_max_disk_radius)
+        return 0.0f;
+
+    float pdf = 0.0f;
+
     for (size_t i = 0, e = values->m_precomputed.m_sigma_tr.size(); i < e; ++i)
     {
+        const float channel_pdf = values->m_precomputed.m_channel_pdf[i];
         const float sigma_tr = values->m_precomputed.m_sigma_tr[i];
-        pdf_radius +=
-              exponential_distribution_pdf(radius, sigma_tr)
-            * values->m_precomputed.m_channel_pdf[i];
+        pdf += channel_pdf * exponential_distribution_pdf(disk_radius, sigma_tr);
     }
 
-    // PDF of the sampled angle.
-    const float pdf_angle = RcpTwoPi<float>();
+    // Convert PDF to area measure (intuitively, multiply the PDF by the probability
+    // of choosing a particular point on the circle of radius 'disk_radius').
+    pdf /= TwoPi<float>() * disk_radius;
 
-    // Compute and return the final PDF.
-    return pdf_radius * pdf_angle;
+    return pdf;
+}
+
+bool DipoleBSSRDF::sample(
+    const ShadingContext&   shading_context,
+    SamplingContext&        sampling_context,
+    const void*             data,
+    const ShadingPoint&     outgoing_point,
+    const Vector3f&         outgoing_dir,
+    BSSRDFSample&           bssrdf_sample,
+    BSDFSample&             bsdf_sample) const
+{
+    const DipoleBSSRDFInputValues* values =
+        static_cast<const DipoleBSSRDFInputValues*>(data);
+
+    return do_sample(
+        shading_context,
+        sampling_context,
+        data,
+        values->m_base_values,
+        outgoing_point,
+        outgoing_dir,
+        bssrdf_sample,
+        bsdf_sample);
+}
+
+void DipoleBSSRDF::evaluate(
+    const void*             data,
+    const ShadingPoint&     outgoing_point,
+    const Vector3f&         outgoing_dir,
+    const ShadingPoint&     incoming_point,
+    const Vector3f&         incoming_dir,
+    Spectrum&               value) const
+{
+    const DipoleBSSRDFInputValues* values =
+        static_cast<const DipoleBSSRDFInputValues*>(data);
+
+    return do_evaluate(
+        data,
+        values->m_base_values,
+        outgoing_point,
+        outgoing_dir,
+        incoming_point,
+        incoming_dir,
+        value);
 }
 
 

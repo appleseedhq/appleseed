@@ -58,17 +58,6 @@
                     1.000000
                 </alpha>
             </color>
-            <color name="color1">
-                <parameter name="color_space" value="srgb" />
-                <parameter name="multiplier" value="1.0" />
-                <parameter name="wavelength_range" value="400.0 700.0" />
-                <values>
-                    0.215686 0.694118 0.325490
-                </values>
-                <alpha>
-                    1.000000
-                </alpha>
-            </color>
             <bsdf name="Material.002|BSDF Layer 1" model="lambertian_brdf">
                 <parameter name="reflectance" value="Material.002|BSDF Layer 1_lambertian_reflectance" />
                 <parameter name="reflectance_multiplier" value="1" />
@@ -77,15 +66,6 @@
                 <parameter name="reflectance" value="1" />
                 <parameter name="reflectance_multiplier" value="1.0" />
             </bsdf>
-            <bssrdf name="bssrdf1" model="directional_dipole_bssrdf">
-                <parameter name="anisotropy" value="0.0" />
-                <parameter name="ior" value="1.3" />
-                <parameter name="mfp" value="0.1" />
-                <parameter name="mfp_multiplier" value="1.0" />
-                <parameter name="reflectance" value="color1" />
-                <parameter name="reflectance_multiplier" value="1.0" />
-                <parameter name="weight" value="1.0" />
-            </bssrdf>
             <edf name="Material.001_edf" model="diffuse_edf">
                 <parameter name="cast_indirect_light" value="true" />
                 <parameter name="importance_multiplier" value="1.0" />
@@ -130,13 +110,6 @@
                 <parameter name="normal_map_up" value="z" />
                 <parameter name="shade_alpha_cutouts" value="false" />
                 <parameter name="surface_shader" value="physical_surface_shader" />
-            </material>
-            <material name="material1" model="generic_material">
-                <parameter name="bssrdf" value="bssrdf1" />
-                <parameter name="bump_amplitude" value="1.0" />
-                <parameter name="displacement_method" value="bump" />
-                <parameter name="normal_map_up" value="z" />
-                <parameter name="shade_alpha_cutouts" value="false" />
             </material>
             <material name="sss_material" model="osl_material">
                 <parameter name="osl_surface" value="subsurface" />

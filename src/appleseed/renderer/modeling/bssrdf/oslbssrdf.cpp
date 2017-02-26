@@ -82,7 +82,7 @@ namespace
             m_dir_dipole =
                 create_and_register_bssrdf<DirectionalDipoleBSSRDFFactory>(
                     SubsurfaceDirectionalDipoleID,
-                    "dir_dipole");
+                    "directional_dipole");
 
             m_gaussian =
                 create_and_register_bssrdf<GaussianBSSRDFFactory>(
@@ -93,13 +93,13 @@ namespace
             m_normalized =
                 create_and_register_bssrdf<NormalizedDiffusionBSSRDFFactory>(
                     SubsurfaceNormalizedDiffusionID,
-                    "normalized");
+                    "normalized_diffusion");
 #endif
 
             m_std_dipole =
                 create_and_register_bssrdf<StandardDipoleBSSRDFFactory>(
                     SubsurfaceStandardDipoleID,
-                    "std_dipole");
+                    "standard_dipole");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -137,7 +137,8 @@ namespace
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point) const APPLESEED_OVERRIDE
         {
-            CompositeSubsurfaceClosure* c = shading_context.get_arena().allocate_noinit<CompositeSubsurfaceClosure>();
+            CompositeSubsurfaceClosure* c =
+                shading_context.get_arena().allocate_noinit<CompositeSubsurfaceClosure>();
 
             new (c) CompositeSubsurfaceClosure(
                 Basis3f(shading_point.get_shading_basis()),
@@ -157,9 +158,13 @@ namespace
         }
 
         virtual bool sample(
+            const ShadingContext&   shading_context,
             SamplingContext&        sampling_context,
             const void*             data,
-            BSSRDFSample&           sample) const APPLESEED_OVERRIDE
+            const ShadingPoint&     outgoing_point,
+            const Vector3f&         outgoing_dir,
+            BSSRDFSample&           bssrdf_sample,
+            BSDFSample&             bsdf_sample) const APPLESEED_OVERRIDE
         {
             const CompositeSubsurfaceClosure* c =
                 static_cast<const CompositeSubsurfaceClosure*>(data);
@@ -167,16 +172,20 @@ namespace
             if (c->get_closure_count() > 0)
             {
                 const size_t closure_index = c->choose_closure(sampling_context);
+                const Basis3f& modified_basis = c->get_closure_shading_basis(closure_index);
 
-                sample.m_shading_basis =
-                    &c->get_closure_shading_basis(closure_index);
+                outgoing_point.set_shading_basis(Basis3d(modified_basis));
 
                 return
                     bssrdf_from_closure_id(c->get_closure_type(closure_index))
                         .sample(
+                            shading_context,
                             sampling_context,
                             c->get_closure_input_values(closure_index),
-                            sample);
+                            outgoing_point,
+                            outgoing_dir,
+                            bssrdf_sample,
+                            bsdf_sample);
             }
 
             return false;
@@ -211,29 +220,6 @@ namespace
             }
         }
 
-        virtual float evaluate_pdf(
-            const void*             data,
-            const size_t            channel,
-            const float             dist) const APPLESEED_OVERRIDE
-        {
-            const CompositeSubsurfaceClosure* c =
-                static_cast<const CompositeSubsurfaceClosure*>(data);
-
-            float pdf = 0.0f;
-
-            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
-            {
-                pdf +=
-                    bssrdf_from_closure_id(c->get_closure_type(i))
-                        .evaluate_pdf(
-                            c->get_closure_input_values(i),
-                            channel,
-                            dist) * c->get_closure_pdf_weight(i);
-            }
-
-            return pdf;
-        }
-
       private:
         template <typename BSSRDFFactory>
         auto_release_ptr<BSSRDF> create_and_register_bssrdf(
@@ -248,13 +234,6 @@ namespace
         const BSSRDF& bssrdf_from_closure_id(const ClosureID cid) const
         {
             const BSSRDF* bssrdf = m_all_bssrdfs[cid];
-            assert(bssrdf);
-            return *bssrdf;
-        }
-
-        BSSRDF& bssrdf_from_closure_id(const ClosureID cid)
-        {
-            BSSRDF* bssrdf = m_all_bssrdfs[cid];
             assert(bssrdf);
             return *bssrdf;
         }

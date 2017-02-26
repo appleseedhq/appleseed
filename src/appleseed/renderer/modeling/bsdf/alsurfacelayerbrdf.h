@@ -72,11 +72,11 @@ APPLESEED_DECLARE_INPUT_VALUES(AlSurfaceLayerBRDFInputValues)
 
     struct Precomputed
     {
-        float   m_alpha_x;
-        float   m_alpha_y;
+        float       m_alpha_x;
+        float       m_alpha_y;
     };
 
-    Precomputed m_precomputed;
+    Precomputed     m_precomputed;
 };
 
 

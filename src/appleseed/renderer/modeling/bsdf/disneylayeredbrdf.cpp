@@ -97,6 +97,11 @@ bool DisneyLayeredBRDF::on_frame_begin(
     return true;
 }
 
+size_t DisneyLayeredBRDF::compute_input_data_size() const
+{
+    return sizeof(DisneyBRDFInputValues);
+}
+
 void* DisneyLayeredBRDF::evaluate_inputs(
     const ShadingContext&       shading_context,
     const ShadingPoint&         shading_point) const

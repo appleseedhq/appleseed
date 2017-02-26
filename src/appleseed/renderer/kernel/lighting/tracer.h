@@ -329,8 +329,8 @@ inline float Tracer::trace_between(
         const ShadingRay ray(
             origin,
             direction / dist,
-            0.0,                    // ray tmin
-            dist * (1.0 - 1.0e-6),  // ray tmax
+            0.0,                        // ray tmin
+            dist * (1.0 - 1.0e-6),      // ray tmax
             ray_time,
             ray_flags,
             ray_depth);
@@ -366,8 +366,8 @@ inline float Tracer::trace_between(
         const ShadingRay ray(
             origin.get_biased_point(direction),
             direction / dist,
-            0.0,                    // ray tmin
-            dist * (1.0 - 1.0e-6),  // ray tmax
+            0.0,                        // ray tmin
+            dist * (1.0 - 1.0e-6),      // ray tmax
             origin.get_time(),
             ray_flags,
             origin.get_ray().m_depth + 1);

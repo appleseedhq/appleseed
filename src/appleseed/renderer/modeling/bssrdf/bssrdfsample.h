@@ -29,37 +29,30 @@
 #ifndef APPLESEED_RENDERER_MODELING_BSSRDF_BSSRDFSAMPLE_H
 #define APPLESEED_RENDERER_MODELING_BSSRDF_BSSRDFSAMPLE_H
 
-// appleseed.foundation headers.
-#include "foundation/math/basis.h"
-#include "foundation/math/vector.h"
+// appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 
-// Standard headers
-#include <cstddef>
+// Forward declarations.
+namespace renderer  { class BSDF; }
 
 namespace renderer
 {
 
+//
+// The BSSRDFSample class represents the result of sampling a BSSRDF.
+//
+
 class BSSRDFSample
 {
   public:
-    BSSRDFSample();
-
-    const foundation::Basis3f*  m_shading_basis;
-    float                       m_eta;
-    size_t                      m_channel;
-    foundation::Vector2f        m_point;
-    float                       m_rmax2;
+    // Outputs.
+    ShadingPoint    m_incoming_point;   // sampled incoming point
+    float           m_probability;      // PDF value
+    Spectrum        m_value;            // BSSRDF value
+    const BSDF*     m_brdf;             // BRDF at the incoming point
+    const void*     m_brdf_data;        // input values for the BRDF
 };
-
-
-//
-// BSSRDFSample class implementation.
-//
-
-inline BSSRDFSample::BSSRDFSample()
-  : m_shading_basis(0)
-{
-}
 
 }       // namespace renderer
 

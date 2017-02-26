@@ -101,6 +101,23 @@ Vector<T, 2> sample_disk_uniform(const Vector<T, 2>& s);
 template <typename T>
 Vector<T, 2> sample_disk_uniform_alt(const Vector<T, 2>& s);
 
+// Map a uniform random sample in [0,1) to a radius on the unit disk such
+// that samples follow a 2D Gaussian distribution with probability density
+//   pdf(x, y) = 4*a/Pi*exp(-a*(x^2+y^2))
+//   pdf(r, theta) = r*pdf(x, y) = a/Pi*r*exp(-a*r^2)
+template <typename T>
+T sample_disk_gaussian(
+    const T s,
+    const T a);
+template <typename T>
+T sample_disk_gaussian_polar_pdf(
+    const T r2,
+    const T a);
+template <typename T>
+T sample_disk_gaussian_area_pdf(
+    const T r2,
+    const T a);
+
 
 //
 // Other sampling functions.
@@ -185,7 +202,6 @@ T sample_equiangular_distribution(
     const T theta_a,                // start angle
     const T theta_b,                // end angle
     const T distance);              // distance from point to the ray
-
 template <typename T>
 T equiangular_distribution_pdf(
     const T t,
@@ -313,6 +329,37 @@ inline Vector<T, 2> sample_disk_uniform_alt(const Vector<T, 2>& s)
     const T r = std::sqrt(T(1.0) - s[1]);
 
     return r * Vector<T, 2>(std::cos(phi), std::sin(phi));
+}
+
+template <typename T>
+inline T sample_disk_gaussian(
+    const T s,
+    const T a)
+{
+    assert(s >= T(0.0));
+    assert(s < T(1.0));
+
+    return std::sqrt(-std::log(T(1.0) - s) / a);
+}
+
+template <typename T>
+inline T sample_disk_gaussian_polar_pdf(
+    const T r2,
+    const T a)
+{
+    assert(r2 >= T(0.0));
+
+    return a * RcpPi<T>() * r * std::exp(-a * r2);
+}
+
+template <typename T>
+inline T sample_disk_gaussian_area_pdf(
+    const T r2,
+    const T a)
+{
+    assert(r2 >= T(0.0));
+
+    return a * FourOverPi<T>() * std::exp(-a * r2);
 }
 
 template <typename T>
@@ -475,17 +522,20 @@ inline T exponential_distribution_pdf(
 }
 
 template <typename T>
-T sample_equiangular_distribution(
-    const T u,
+inline T sample_equiangular_distribution(
+    const T s,
     const T theta_a,
     const T theta_b,
     const T distance)
 {
-    return distance * std::tan(lerp(theta_a, theta_b, u));
+    assert(s >= T(0.0));
+    assert(s < T(1.0));
+
+    return distance * std::tan(lerp(theta_a, theta_b, s));
 }
 
 template <typename T>
-T equiangular_distribution_pdf(
+inline T equiangular_distribution_pdf(
     const T t,
     const T theta_a,
     const T theta_b,

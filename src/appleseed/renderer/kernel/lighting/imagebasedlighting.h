@@ -42,7 +42,6 @@
 
 // Forward declarations.
 namespace renderer  { class BSDF; }
-namespace renderer  { class BSSRDF; }
 namespace renderer  { class EnvironmentEDF; }
 namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingPoint; }
@@ -54,8 +53,8 @@ namespace renderer
 // Compute image-based lighting at a given point in space.
 //
 
-// Compute image-based lighting via BSDF and environment sampling.
-void compute_ibl(
+// Compute outgoing radiance due to image-based lighting via combined BSDF and environment sampling.
+void compute_ibl_combined_sampling(
     SamplingContext&                sampling_context,
     const ShadingContext&           shading_context,
     const EnvironmentEDF&           environment_edf,
@@ -69,21 +68,7 @@ void compute_ibl(
     const size_t                    env_sample_count,       // number of samples in environment sampling
     Spectrum&                       radiance);
 
-// Compute image-based lighting via BSSRDF and environment sampling.
-void compute_ibl(
-    SamplingContext&                sampling_context,
-    const ShadingContext&           shading_context,
-    const EnvironmentEDF&           environment_edf,
-    const BSSRDF&                   bssrdf,
-    const void*                     bssrdf_data,
-    const ShadingPoint&             incoming_point,
-    const ShadingPoint&             outgoing_point,
-    const foundation::Dual3d&       outgoing,
-    const size_t                    bssrdf_sample_count,    // number of samples in BSSRDF sampling
-    const size_t                    env_sample_count,       // number of samples in environment sampling
-    Spectrum&                       radiance);
-
-// Compute image-based lighting via BSDF sampling.
+// Compute outgoing radiance due to image-based lighting via BSDF sampling only.
 void compute_ibl_bsdf_sampling(
     SamplingContext&                sampling_context,
     const ShadingContext&           shading_context,
@@ -97,21 +82,7 @@ void compute_ibl_bsdf_sampling(
     const size_t                    env_sample_count,       // number of samples in environment sampling
     Spectrum&                       radiance);
 
-// Compute image-based lighting via BSSRDF sampling.
-void compute_ibl_bssrdf_sampling(
-    SamplingContext&                sampling_context,
-    const ShadingContext&           shading_context,
-    const EnvironmentEDF&           environment_edf,
-    const BSSRDF&                   bssrdf,
-    const void*                     bssrdf_data,
-    const ShadingPoint&             incoming_point,
-    const ShadingPoint&             outgoing_point,
-    const foundation::Dual3d&       outgoing,
-    const size_t                    bssrdf_sample_count,    // number of samples in BSSRDF sampling
-    const size_t                    env_sample_count,       // number of samples in environment sampling
-    Spectrum&                       radiance);
-
-// Compute image-based lighting via environment sampling.
+// Compute outgoing radiance due to image-based lighting via environment sampling only.
 void compute_ibl_environment_sampling(
     SamplingContext&                sampling_context,
     const ShadingContext&           shading_context,
@@ -122,18 +93,6 @@ void compute_ibl_environment_sampling(
     const void*                     bsdf_data,
     const int                       env_sampling_modes,     // permitted scattering modes during environment sampling
     const size_t                    bsdf_sample_count,      // number of samples in BSDF sampling
-    const size_t                    env_sample_count,       // number of samples in environment sampling
-    Spectrum&                       radiance);
-void compute_ibl_environment_sampling(
-    SamplingContext&                sampling_context,
-    const ShadingContext&           shading_context,
-    const EnvironmentEDF&           environment_edf,
-    const BSSRDF&                   bssrdf,
-    const void*                     bssrdf_data,
-    const ShadingPoint&             incoming_point,
-    const ShadingPoint&             outgoing_point,
-    const foundation::Dual3d&       outgoing,
-    const size_t                    bssrdf_sample_count,    // number of samples in BSSRDF sampling
     const size_t                    env_sample_count,       // number of samples in environment sampling
     Spectrum&                       radiance);
 
