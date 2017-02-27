@@ -82,7 +82,7 @@ closure color as_glossy_blinn(
     return as_glossy(
         "blinn",
         N,
-        sqrt(exponent), // Compensate for roughness squaring inside the glossy brdf.
+        sqrt(exponent), // Compensate for roughness squaring inside the BRDF.
         ior);
 }
 
@@ -204,7 +204,7 @@ closure color as_alsurface_layer(
     float           anisotropy,
     int             fresnel_mode,       // 0 = dielectric, 1 = metallic.
     float           ior,                // ior for dielectric fresnel.
-    color           normal_reflectance, // normal reflectance for metallic fresnel.
+    color           normal_reflectance, // f0 reflectance for metallic fresnel.
     color           edge_tint           // edge tint for metallic fresnel.
     ) BUILTIN;
 
