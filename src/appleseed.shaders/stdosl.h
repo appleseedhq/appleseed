@@ -539,21 +539,52 @@ closure color microfacet(
     }
     else
     {
-        return as_glossy(
-            distribution,
-            N,
-            U,
-            xalpha,     // roughness
-            anisotropy,
-            eta);
+        if (distribution != "blinn")
+        {
+            return as_glossy(
+                distribution,
+                N,
+                U,
+                xalpha,     // roughness
+                anisotropy,
+                eta);
+        }
+        else
+        {
+#ifdef DEBUG
+            warning("[WARNING]: Isotropic Blinn MDF supported only\n");
+#endif
+            return as_glossy(
+                distribution,
+                N,
+                vector(0),
+                sqrt(xalpha), // account for roughness squaring in BRDF
+                0.0,
+                eta);
+        }
     }
 }
 
-closure color microfacet(string distribution, normal N, float alpha, float eta,
-                         int refr)
+closure color microfacet(
+    string distribution,
+    normal N,
+    float alpha,
+    float eta,
+    int refr)
 {
-    return microfacet(distribution, N, vector(0), alpha, alpha, eta, refr);
+    // Account for roughness squaring in Blinn BRDF.
+    float m = (distribution != "blinn") ? alpha : sqrt(alpha);
+
+    return microfacet(
+        distribution,
+        N,
+        vector(0),
+        m,
+        m,
+        eta,
+        refr);
 }
+
 closure color reflection(normal N, float eta) BUILTIN;
 closure color reflection(normal N) { return reflection (N, 50.0); }
 closure color refraction(normal N, float eta)
