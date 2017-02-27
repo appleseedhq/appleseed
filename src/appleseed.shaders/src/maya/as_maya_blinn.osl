@@ -247,7 +247,7 @@ shader as_maya_blinn
 
             specular_term = opacity * in_specularColor *
                 microfacet(
-                    "ggx",
+                    "blinn",
                     Nn,
                     in_eccentricity,
                     eta,
