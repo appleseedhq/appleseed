@@ -129,6 +129,11 @@ namespace
             // Spectrum tmp;
             // bssrdf(values, xo, no, outgoing_dir, xi, ni, tmp);
             // madd(value, tmp, 0.5f);
+
+            // The directional dipole expression already integrates the BRDF
+            // at the incoming point so we need to cancel the 1/Pi term from
+            // the Lambertian BRDF.
+            value *= Pi<float>();
         }
 
       private:
