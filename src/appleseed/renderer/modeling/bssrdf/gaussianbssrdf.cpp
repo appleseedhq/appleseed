@@ -244,14 +244,13 @@ namespace
             if (disk_radius > values->m_base_values.m_max_disk_radius)
                 return 0.0f;
 
-            const float square_disk_radius = square(disk_radius);
             float pdf = 0.0f;
 
             for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
             {
                 const float channel_pdf = values->m_precomputed.m_channel_pdf[i];
                 const float k = values->m_precomputed.m_k[i];
-                pdf += channel_pdf * sample_disk_gaussian_area_pdf(square_disk_radius, k) * ScaleFactor;
+                pdf += channel_pdf * sample_disk_gaussian_area_pdf(disk_radius, k) * ScaleFactor;
             }
 
             return pdf;
@@ -270,15 +269,15 @@ namespace
 
             value.resize(values->m_reflectance.size());
 
-            const float square_radius =
+            const float radius =
                 static_cast<float>(
-                    square_norm(outgoing_point.get_point() - incoming_point.get_point()));
+                    norm(outgoing_point.get_point() - incoming_point.get_point()));
 
             for (size_t i = 0, e = value.size(); i < e; ++i)
             {
                 const float a = values->m_reflectance[i];
                 const float k = values->m_precomputed.m_k[i];
-                value[i] = a * sample_disk_gaussian_area_pdf(square_radius, k);
+                value[i] = a * sample_disk_gaussian_area_pdf(radius, k);
             }
         }
 

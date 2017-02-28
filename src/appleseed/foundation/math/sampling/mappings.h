@@ -111,11 +111,11 @@ T sample_disk_gaussian(
     const T a);
 template <typename T>
 T sample_disk_gaussian_polar_pdf(
-    const T r2,
+    const T r,
     const T a);
 template <typename T>
 T sample_disk_gaussian_area_pdf(
-    const T r2,
+    const T r,
     const T a);
 
 
@@ -344,22 +344,22 @@ inline T sample_disk_gaussian(
 
 template <typename T>
 inline T sample_disk_gaussian_polar_pdf(
-    const T r2,
+    const T r,
     const T a)
 {
-    assert(r2 >= T(0.0));
+    assert(r >= T(0.0));
 
-    return a * RcpPi<T>() * r * std::exp(-a * r2);
+    return a * RcpPi<T>() * r * std::exp(-a * r * r);
 }
 
 template <typename T>
 inline T sample_disk_gaussian_area_pdf(
-    const T r2,
+    const T r,
     const T a)
 {
-    assert(r2 >= T(0.0));
+    assert(r >= T(0.0));
 
-    return a * FourOverPi<T>() * std::exp(-a * r2);
+    return a * FourOverPi<T>() * std::exp(-a * r * r);
 }
 
 template <typename T>
