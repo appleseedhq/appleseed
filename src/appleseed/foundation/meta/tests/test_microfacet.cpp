@@ -173,6 +173,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
     EXPECT_FEQ_EPS(1.0f, result.m_min_result, WeakWhiteFurnaceEps); \
     EXPECT_FEQ_EPS(1.0f, result.m_max_result, WeakWhiteFurnaceEps);
 
+
     //
     // Test settings.
     //
@@ -201,6 +202,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
     TEST_CASE(BlinnMDF_Evaluate_GivenCosThetaIsZero_ReturnsZero)
     {
         const BlinnMDF mdf;
+
         const float limit = mdf.D(Vector3f(0.0f), 10.0f, 10.0f);
 
         EXPECT_FEQ(0.0f, limit);
@@ -329,6 +331,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
         EXPECT_WEAK_WHITE_FURNACE_PASS(result)
     }
 
+
     //
     // Ward MDF.
     //
@@ -369,4 +372,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
         EXPECT_FEQ_EPS(1.0f, integral, IntegrationEps);
     }
+
+
+#undef EXPECT_WEAK_WHITE_FURNACE_PASS
 }
