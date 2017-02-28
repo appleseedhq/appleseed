@@ -369,7 +369,9 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         if (vertex.m_bssrdf)
             vertex.m_bssrdf_data = vertex.m_bssrdf->evaluate_inputs(shading_context, *vertex.m_shading_point);
 
-        BSDFSample bsdf_sample(vertex.m_shading_point, Dual3f(vertex.m_outgoing));
+        BSDFSample bsdf_sample(
+            vertex.m_shading_point,
+            foundation::Dual3f(vertex.m_outgoing));
 
         // Subsurface scattering.
         if (vertex.m_bssrdf)

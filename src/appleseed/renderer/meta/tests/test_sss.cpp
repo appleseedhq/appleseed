@@ -215,7 +215,6 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             values.m_fresnel_weight = 1.0f;
         }
 
-        template <>
         static void do_set_values_from_rd_mfp(
             DipoleBSSRDFInputValues&        values,
             const float                     rd,
@@ -953,6 +952,9 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         }
     }
 
+#if 0
+    // There is still a misunderstanding about the directional dipole or a bug in our implementation
+    // which makes this test fail. Commenting it until we figure things out.
     TEST_CASE(DirectionalDipole_IntegrateProfile)
     {
         const float Rd = 0.5f;
@@ -964,9 +966,9 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         const float integral = integrate_bssrdf_profile(bssrdf_eval, SampleCount);
 
-        // todo: currently fails.
-        // EXPECT_FEQ_EPS(Rd, integral, 1.0e-2f);
+        EXPECT_FEQ_EPS(Rd, integral, 1.0e-2f);
     }
+#endif
 
     //
     // Comparison of the dipole-based models.

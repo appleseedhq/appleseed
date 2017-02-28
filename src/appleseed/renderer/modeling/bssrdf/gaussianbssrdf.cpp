@@ -219,9 +219,9 @@ namespace
             // We restrict sampling to the disk of radius Rmax, so we restrict the sampling
             // parameter u originally in [0, 1) to [0, Umax) such that
             //
-            //        / -ln(1 - Umax) \
+            //        | -ln(1 - Umax) |
             //   sqrt | ------------- | = Rmax
-            //        \       a       /
+            //        |       a       |
             //
             // which leads to
             //
