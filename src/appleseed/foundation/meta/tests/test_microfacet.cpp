@@ -132,7 +132,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
             result.m_min_G1 = std::min(result.m_min_G1, G1);
             result.m_max_G1 = std::max(result.m_max_G1, G1);
 
-            const float cos_thetha_o_4 = std::abs(4.0 * v.y);
+            const float cos_thetha_o_4 = std::abs(4.0f * v.y);
 
             float integral = 0.0f;
 
@@ -203,7 +203,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
         const BlinnMDF mdf;
         const float limit = mdf.D(Vector3f(0.0f), 10.0f, 10.0f);
 
-        EXPECT_FEQ(0.0, limit);
+        EXPECT_FEQ(0.0f, limit);
     }
 
     TEST_CASE(BlinnMDF_Integral_EqualsOne)
@@ -233,7 +233,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
         const float limit = mdf.D(Vector3f(0.0f), 0.5f, 0.5f);
 
-        EXPECT_FEQ(0.0, limit);
+        EXPECT_FEQ(0.0f, limit);
     }
 
     TEST_CASE(BeckmannMDF_Integral_EqualsOne)
