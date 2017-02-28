@@ -472,8 +472,9 @@ void SeparableBSSRDF::do_evaluate(
     // Normalization constant.
     const float c = 1.0f - fresnel_first_moment_x2(values.m_eta);
 
-    // Final value. Note: no 1/Pi factor. todo: why?
-    value *= values.m_weight * fo * fi / (/*Pi<float>() * */c);
+    // Final value. The 1/Pi factor present in the BSSRDF expression in most
+    // papers is the one from the Lambertian BRDF at the incoming point.
+    value *= values.m_weight * fo * fi / c;
 }
 
 }   // namespace renderer
