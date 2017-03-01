@@ -455,19 +455,24 @@ void SeparableBSSRDF::do_evaluate(
         incoming_dir,
         value);
 
-    // Fresnel factor at outgoing direction.
-    float fo;
-    const Vector3f outgoing_normal(outgoing_point.get_shading_normal());
-    const float cos_on = abs(dot(outgoing_dir, outgoing_normal));
-    fresnel_transmittance_dielectric(fo, values.m_eta, cos_on);
-    fo = lerp(1.0f, fo, values.m_fresnel_weight);
+    float fo, fi;
 
-    // Fresnel factor at incoming direction.
-    float fi;
-    const Vector3f incoming_normal(incoming_point.get_shading_normal());
-    const float cos_in = abs(dot(incoming_dir, incoming_normal));
-    fresnel_transmittance_dielectric(fi, values.m_eta, cos_in);
-    fi = lerp(1.0f, fi, values.m_fresnel_weight);
+    if (values.m_fresnel_weight == 0.0f)
+        fo = fi = 1.0f;
+    else
+    {
+        // Fresnel factor at outgoing direction.
+        const Vector3f outgoing_normal(outgoing_point.get_shading_normal());
+        const float cos_on = abs(dot(outgoing_dir, outgoing_normal));
+        fresnel_transmittance_dielectric(fo, values.m_eta, cos_on);
+        fo = lerp(1.0f, fo, values.m_fresnel_weight);
+
+        // Fresnel factor at incoming direction.
+        const Vector3f incoming_normal(incoming_point.get_shading_normal());
+        const float cos_in = abs(dot(incoming_dir, incoming_normal));
+        fresnel_transmittance_dielectric(fi, values.m_eta, cos_in);
+        fi = lerp(1.0f, fi, values.m_fresnel_weight);
+    }
 
     // Normalization constant.
     const float c = 1.0f - fresnel_first_moment_x2(values.m_eta);
