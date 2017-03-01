@@ -47,7 +47,6 @@
 namespace renderer  { class BSDF; }
 namespace renderer  { class LightSample; }
 namespace renderer  { class LightSampler; }
-namespace renderer  { class PathVertex; }
 namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingPoint; }
 namespace renderer  { class SpectrumStack; }
@@ -86,40 +85,7 @@ class DirectLightingIntegrator
         const size_t                    light_sample_count,         // number of samples in light sampling
         const bool                      indirect);                  // are we computing indirect lighting?
 
-    // A convenience constructor taking a renderer::PathVertex object.
-    DirectLightingIntegrator(
-        const ShadingContext&           shading_context,
-        const LightSampler&             light_sampler,
-        const PathVertex&               vertex,
-        const int                       bsdf_sampling_modes,
-        const int                       light_sampling_modes,
-        const size_t                    bsdf_sample_count,
-        const size_t                    light_sample_count,
-        const bool                      indirect);
-
-    // Compute outgoing direct lighting using BSDF sampling only.
-    void compute_outgoing_radiance_bsdf_sampling(
-        SamplingContext&                sampling_context,
-        const foundation::MISHeuristic  mis_heuristic,
-        const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
-        Spectrum&                       radiance,
-        SpectrumStack&                  aovs) const;
-
-    // Compute outgoing direct lighting using light sampling only.
-    void compute_outgoing_radiance_light_sampling(
-        SamplingContext&                sampling_context,
-        const foundation::MISHeuristic  mis_heuristic,
-        const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
-        Spectrum&                       radiance,
-        SpectrumStack&                  aovs) const;
-    void compute_outgoing_radiance_light_sampling_low_variance(
-        SamplingContext&                sampling_context,
-        const foundation::MISHeuristic  mis_heuristic,
-        const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
-        Spectrum&                       radiance,
-        SpectrumStack&                  aovs) const;
-
-    // Compute outgoing direct lighting using combined BSDF and light sampling.
+    // Compute outgoing radiance due to direct lighting via combined BSDF and light sampling.
     void compute_outgoing_radiance_combined_sampling(
         SamplingContext&                sampling_context,
         const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
@@ -131,9 +97,24 @@ class DirectLightingIntegrator
         Spectrum&                       radiance,
         SpectrumStack&                  aovs) const;
 
-    // Compute outgoing direct lighting using a single BSDF or light sample.
-    void compute_outgoing_radiance_single_sample(
+    // Compute outgoing radiance due to direct lighting via BSDF sampling only.
+    void compute_outgoing_radiance_bsdf_sampling(
         SamplingContext&                sampling_context,
+        const foundation::MISHeuristic  mis_heuristic,
+        const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
+        Spectrum&                       radiance,
+        SpectrumStack&                  aovs) const;
+
+    // Compute outgoing radiance due to direct lighting via light sampling only.
+    void compute_outgoing_radiance_light_sampling(
+        SamplingContext&                sampling_context,
+        const foundation::MISHeuristic  mis_heuristic,
+        const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
+        Spectrum&                       radiance,
+        SpectrumStack&                  aovs) const;
+    void compute_outgoing_radiance_light_sampling_low_variance(
+        SamplingContext&                sampling_context,
+        const foundation::MISHeuristic  mis_heuristic,
         const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
         Spectrum&                       radiance,
         SpectrumStack&                  aovs) const;
@@ -162,13 +143,6 @@ class DirectLightingIntegrator
     const bool                          m_indirect;
 
     void take_single_bsdf_sample(
-        SamplingContext&                sampling_context,
-        const foundation::MISHeuristic  mis_heuristic,
-        const foundation::Dual3d&       outgoing,
-        Spectrum&                       radiance,
-        SpectrumStack&                  aovs) const;
-
-    void take_single_light_sample(
         SamplingContext&                sampling_context,
         const foundation::MISHeuristic  mis_heuristic,
         const foundation::Dual3d&       outgoing,

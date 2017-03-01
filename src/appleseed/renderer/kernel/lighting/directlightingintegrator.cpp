@@ -33,11 +33,11 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/lighting/lightsampler.h"
-#include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
@@ -65,9 +65,8 @@ namespace renderer
 //       take_single_bsdf_sample
 //
 //   compute_outgoing_radiance_light_sampling
-//       take_single_light_sample
-//           add_emitting_triangle_sample_contribution
-//           add_non_physical_light_sample_contribution
+//       add_emitting_triangle_sample_contribution
+//       add_non_physical_light_sample_contribution
 //
 //   compute_outgoing_radiance_light_sampling_low_variance
 //       add_emitting_triangle_sample_contribution
@@ -81,9 +80,7 @@ namespace renderer
 //       compute_outgoing_radiance_bsdf_sampling
 //       compute_outgoing_radiance_light_sampling_low_variance
 //
-//   compute_outgoing_radiance_single_sample
-//       take_single_bsdf_sample
-//       take_single_light_sample
+//   compute_incoming_radiance
 //
 
 DirectLightingIntegrator::DirectLightingIntegrator(
@@ -114,32 +111,6 @@ DirectLightingIntegrator::DirectLightingIntegrator(
 {
 }
 
-DirectLightingIntegrator::DirectLightingIntegrator(
-    const ShadingContext&       shading_context,
-    const LightSampler&         light_sampler,
-    const PathVertex&           vertex,
-    const int                   bsdf_sampling_modes,
-    const int                   light_sampling_modes,
-    const size_t                bsdf_sample_count,
-    const size_t                light_sample_count,
-    const bool                  indirect)
-  : m_shading_context(shading_context)
-  , m_light_sampler(light_sampler)
-  , m_shading_point(*vertex.m_shading_point)
-  , m_point(vertex.get_point())
-  , m_geometric_normal(vertex.get_geometric_normal())
-  , m_shading_basis(vertex.get_shading_basis())
-  , m_time(vertex.get_time())
-  , m_bsdf(*vertex.m_bsdf)
-  , m_bsdf_data(vertex.m_bsdf_data)
-  , m_bsdf_sampling_modes(bsdf_sampling_modes)
-  , m_light_sampling_modes(light_sampling_modes)
-  , m_bsdf_sample_count(bsdf_sample_count)
-  , m_light_sample_count(light_sample_count)
-  , m_indirect(indirect)
-{
-}
-
 void DirectLightingIntegrator::compute_outgoing_radiance_bsdf_sampling(
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
@@ -150,6 +121,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_bsdf_sampling(
     radiance.set(0.0f);
     aovs.set(0.0f);
 
+    // No emitting triangles in the scene.
     if (m_light_sampler.get_emitting_triangle_count() == 0)
         return;
 
@@ -181,16 +153,43 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling(
     radiance.set(0.0f);
     aovs.set(0.0f);
 
+    // No light source in the scene.
+    if (!m_light_sampler.has_lights_or_emitting_triangles())
+        return;
+
+    // There cannot be any contribution for purely specular BSDFs.
+    if (m_bsdf.is_purely_specular())
+        return;
+
     sampling_context.split_in_place(3, m_light_sample_count);
 
+    // Add contributions from both emitting triangles and non-physical light sources.
     for (size_t i = 0; i < m_light_sample_count; ++i)
     {
-        take_single_light_sample(
-            sampling_context,
-            mis_heuristic,
-            outgoing,
-            radiance,
-            aovs);
+        // Sample both emitting triangles and non-physical light sources.
+        LightSample sample;
+        m_light_sampler.sample(
+            m_time,
+            sampling_context.next2<Vector3f>(),
+            sample);
+
+        if (sample.m_triangle)
+        {
+            add_emitting_triangle_sample_contribution(
+                sample,
+                mis_heuristic,
+                outgoing,
+                radiance,
+                aovs);
+        }
+        else
+        {
+            add_non_physical_light_sample_contribution(
+                sample,
+                outgoing,
+                radiance,
+                aovs);
+        }
     }
 
     if (m_light_sample_count > 1)
@@ -211,21 +210,27 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
     radiance.set(0.0f);
     aovs.set(0.0f);
 
-    // todo: if we had a way to know that a BSDF is purely specular, we could
-    // immediately return black here since there will be no contribution from
-    // such a BSDF.
+    // No light source in the scene.
+    if (!m_light_sampler.has_lights_or_emitting_triangles())
+        return;
 
-    // Sample emitting triangles.
+    // There cannot be any contribution for purely specular BSDFs.
+    if (m_bsdf.is_purely_specular())
+        return;
+
+    // Add contributions from emitting triangles only.
     if (m_light_sampler.get_emitting_triangle_count() > 0)
     {
         sampling_context.split_in_place(3, m_light_sample_count);
 
         for (size_t i = 0; i < m_light_sample_count; ++i)
         {
-            const Vector3f s = sampling_context.next2<Vector3f>();
-
+            // Sample emitting triangles only.
             LightSample sample;
-            m_light_sampler.sample_emitting_triangles(m_time, s, sample);
+            m_light_sampler.sample_emitting_triangles(
+                m_time,
+                sampling_context.next2<Vector3f>(),
+                sample);
 
             add_emitting_triangle_sample_contribution(
                 sample,
@@ -243,7 +248,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
         }
     }
 
-    // Sample non-physical light sources.
+    // Add contributions from non-physical light sources only.
     for (size_t i = 0, e = m_light_sampler.get_non_physical_light_count(); i < e; ++i)
     {
         LightSample sample;
@@ -311,64 +316,21 @@ void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling_low_v
     aovs += aovs_light_sampling;
 }
 
-void DirectLightingIntegrator::compute_outgoing_radiance_single_sample(
-    SamplingContext&            sampling_context,
-    const Dual3d&               outgoing,
-    Spectrum&                   radiance,
-    SpectrumStack&              aovs) const
-{
-    radiance.set(0.0f);
-    aovs.set(0.0f);
-
-    if (m_light_sampler.get_emitting_triangle_count() > 0)
-    {
-        sampling_context.split_in_place(1, 1);
-
-        if (sampling_context.next2<float>() < 0.5f)
-        {
-            sampling_context.split_in_place(3, 1);
-            take_single_light_sample(
-                sampling_context,
-                MISBalance,
-                outgoing,
-                radiance,
-                aovs);
-        }
-        else
-        {
-            take_single_bsdf_sample(
-                sampling_context,
-                MISBalance,
-                outgoing,
-                radiance,
-                aovs);
-        }
-
-        radiance *= 2.0f;
-        aovs *= 2.0f;
-    }
-    else
-    {
-        take_single_light_sample(
-            sampling_context,
-            MISNone,
-            outgoing,
-            radiance,
-            aovs);
-    }
-}
-
 bool DirectLightingIntegrator::compute_incoming_radiance(
     SamplingContext&            sampling_context,
     Vector3d&                   incoming,
     float&                      incoming_prob,
     Spectrum&                   radiance) const
 {
+    radiance.set(0.0f);
+
+    // No light source in the scene.
     if (!m_light_sampler.has_lights_or_emitting_triangles())
         return false;
 
     sampling_context.split_in_place(3, 1);
 
+    // Sample both emitting triangles and non-physical light sources.
     LightSample sample;
     m_light_sampler.sample(
         m_time,
@@ -495,7 +457,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     assert(m_light_sampler.get_emitting_triangle_count() > 0);
 
     // Sample the BSDF.
-    BSDFSample sample(m_shading_point, outgoing);
+    BSDFSample sample(&m_shading_point, Dual3f(outgoing));
     m_bsdf.sample(
         sampling_context,
         m_bsdf_data,
@@ -592,45 +554,6 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     edf_value *= sample.m_value;
     radiance += edf_value;
     aovs.add(edf->get_render_layer_index(), edf_value);
-}
-
-void DirectLightingIntegrator::take_single_light_sample(
-    SamplingContext&            sampling_context,
-    const MISHeuristic          mis_heuristic,
-    const Dual3d&               outgoing,
-    Spectrum&                   radiance,
-    SpectrumStack&              aovs) const
-{
-    // todo: if we had a way to know that a BSDF is purely specular, we could
-    // immediately return black here since there will be no contribution from
-    // such a BSDF.
-
-    if (!m_light_sampler.has_lights_or_emitting_triangles())
-        return;
-
-    LightSample sample;
-    m_light_sampler.sample(
-        m_time,
-        sampling_context.next2<Vector3f>(),
-        sample);
-
-    if (sample.m_triangle)
-    {
-        add_emitting_triangle_sample_contribution(
-            sample,
-            mis_heuristic,
-            outgoing,
-            radiance,
-            aovs);
-    }
-    else
-    {
-        add_non_physical_light_sample_contribution(
-            sample,
-            outgoing,
-            radiance,
-            aovs);
-    }
 }
 
 void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(

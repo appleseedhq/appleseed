@@ -45,8 +45,7 @@
 
 // Forward declarations.
 namespace foundation    { class Arena; }
-namespace renderer      { class Assembly; }
-namespace renderer      { class BSDF; }
+namespace renderer      { class BSDFSample; }
 namespace renderer      { class BSSRDFSample; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class ShadingContext; }
@@ -56,9 +55,7 @@ namespace renderer
 {
 
 //
-// Profile of a Bidirectional Surface Scattering Reflectance Distribution Function (BSSRDF).
-//
-// The 1/Pi factor and the Fresnel terms at the incoming and outgoing points are not included.
+// Bidirectional Surface Scattering Reflectance Distribution Function (BSSRDF).
 //
 // Conventions (Veach, 3.7.5, figure 3.3 on page 93):
 //
@@ -86,14 +83,16 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const char*                 name,
         const ParamArray&           params);
 
-    // Destructor.
-    ~BSSRDF();
-
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 
-    // Return the BRDF associated with this BSSRDF.
-    const BSDF& get_brdf() const;
+    // Return the size in bytes to allocate for the input values of this BSSRDF
+    // and its precomputed values, if any. By default, enough space is allocated
+    // for the inputs alone, i.e. this returns get_inputs().compute_data_size().
+    // If a BSSRDF stores additional data such as precomputed values in its input
+    // block, it must override this method and return the correct size.
+    // If evaluate_inputs() is overridden, then this method is irrelevant.
+    virtual size_t compute_input_data_size() const;
 
     // Evaluate the inputs of this BSSRDF and of its child BSSRDFs, if any.
     virtual void* evaluate_inputs(
@@ -106,13 +105,17 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const ShadingPoint&         shading_point,
         void*                       data) const;
 
-    // Sample r * R(r).
+    // Sample the BSSRDF.
     virtual bool sample(
+        const ShadingContext&       shading_context,
         SamplingContext&            sampling_context,
         const void*                 data,
-        BSSRDFSample&               sample) const = 0;
+        const ShadingPoint&         outgoing_point,
+        const foundation::Vector3f& outgoing_dir,
+        BSSRDFSample&               bssrdf_sample,
+        BSDFSample&                 bsdf_sample) const = 0;
 
-    // Evaluate r * R(r) for a given pair of points and directions.
+    // Evaluate the BSSRDF.
     virtual void evaluate(
         const void*                 data,
         const ShadingPoint&         outgoing_point,
@@ -121,30 +124,19 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const foundation::Vector3f& incoming_dir,
         Spectrum&                   value) const = 0;
 
-    // Evaluate the PDF of r * R(r) for a given radius r.
-    virtual float evaluate_pdf(
-        const void*                 data,
-        const size_t                channel,
-        const float                 radius) const = 0;
-
-    virtual float get_fresnel_weight(const void* data) const;
-
   protected:
-    struct Impl;
-    Impl* impl;
-
-    float compute_eta(
-        const ShadingPoint&         shading_point,
-        const float                 ior) const;
-
-    void make_reflectance_and_mfp_compatible(
+    static void make_reflectance_and_mfp_compatible(
         Spectrum&                   reflectance,
-        const Spectrum&             mfp) const;
+        const Spectrum&             mfp);
 
-    void build_cdf_and_pdf(
+    static float compute_eta(
+        const ShadingPoint&         shading_point,
+        const float                 ior);
+
+    static void build_cdf_and_pdf(
         const Spectrum&             src,
         Spectrum&                   cdf,
-        Spectrum&                   pdf) const;
+        Spectrum&                   pdf);
 };
 
 }       // namespace renderer

@@ -45,7 +45,7 @@ namespace renderer
 {
 
 //
-// BSSRDF reparameterization implementation.
+// BSSRDF reparameterization functions implementation.
 //
 
 ComputeRdStandardDipole::ComputeRdStandardDipole(const float eta)
@@ -62,8 +62,8 @@ float ComputeRdStandardDipole::operator()(const float alpha_prime) const
 }
 
 ComputeRdBetterDipole::ComputeRdBetterDipole(const float eta)
-  : m_two_c1(fresnel_first_moment(eta))
-  , m_three_c2(fresnel_second_moment(eta))
+  : m_two_c1(fresnel_first_moment_x2(eta))
+  , m_three_c2(fresnel_second_moment_x3(eta))
 {
 }
 
@@ -136,35 +136,6 @@ void effective_extinction_coefficient(
                 sigma_s[i],
                 anisotropy);
     }
-}
-
-
-//
-// Gaussian diffusion profile implementation.
-//
-
-float gaussian_profile(
-    const float     r,
-    const float     v,
-    const float     r_integral_threshold)
-{
-    return exp(-r * r / (2.0f * v)) / (TwoPi<float>() * v * r_integral_threshold);
-}
-
-float gaussian_profile_sample(
-    const float     u,
-    const float     v,
-    const float     rmax2)
-{
-    return sqrt(-2.0f * v * log(1.0f - u * (1.0f - exp(-rmax2 / (2.0f * v)))));
-}
-
-float gaussian_profile_pdf(
-    const float     r,
-    const float     v,
-    const float     r_integral_threshold)
-{
-    return exp(-r * r / (2.0f * v)) / (TwoPi<float>() * v * r_integral_threshold);
 }
 
 
@@ -337,10 +308,7 @@ float normalized_diffusion_pdf(
     const float     r,
     const float     d)
 {
-    return
-        abs(r) < 1.0e-6f
-            ? 1.0f / (2.0f * d)
-            : r * TwoPi<float>() * normalized_diffusion_profile(r, d);
+    return normalized_diffusion_profile(r, d);
 }
 
 float normalized_diffusion_pdf(

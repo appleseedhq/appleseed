@@ -70,7 +70,7 @@ BENCHMARK_SUITE(Foundation_Math_Microfacet)
 
         void evaluate(const float alpha_x, const float alpha_y)
         {
-            Vector2d s;
+            Vector2f s;
             s[0] = rand_float2(m_rng);
             s[1] = rand_float2(m_rng);
 

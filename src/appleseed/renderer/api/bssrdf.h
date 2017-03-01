@@ -40,6 +40,7 @@
 #ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
 #endif
+#include "renderer/modeling/bssrdf/separablebssrdf.h"
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
 
 #endif  // !APPLESEED_RENDERER_API_BSSRDF_H

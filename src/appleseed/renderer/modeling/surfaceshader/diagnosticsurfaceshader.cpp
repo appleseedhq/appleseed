@@ -36,6 +36,7 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/material/material.h"
@@ -510,7 +511,7 @@ void DiagnosticSurfaceShader::evaluate(
                         ray.m_dir - ray.m_rx.m_dir,
                         ray.m_dir - ray.m_ry.m_dir);
 
-                    BSDFSample sample(shading_point, outgoing);
+                    BSDFSample sample(&shading_point, Dual3f(outgoing));
                     material_data.m_bsdf->sample(
                         sampling_context,
                         material_data.m_bsdf->evaluate_inputs(shading_context, shading_point),

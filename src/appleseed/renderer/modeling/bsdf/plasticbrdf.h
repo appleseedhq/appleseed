@@ -56,14 +56,14 @@ namespace renderer
 
 APPLESEED_DECLARE_INPUT_VALUES(PlasticBRDFInputValues)
 {
-    Spectrum    m_specular_reflectance;
-    float       m_specular_reflectance_multiplier;
-    float       m_roughness;
-    float       m_ior;
+    Spectrum        m_specular_reflectance;
+    float           m_specular_reflectance_multiplier;
+    float           m_roughness;
+    float           m_ior;
 
-    Spectrum    m_diffuse_reflectance;
-    float       m_diffuse_reflectance_multiplier;
-    float       m_internal_scattering;
+    Spectrum        m_diffuse_reflectance;
+    float           m_diffuse_reflectance_multiplier;
+    float           m_internal_scattering;
 
     struct Precomputed
     {

@@ -31,7 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/bssrdf/bssrdfsample.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bssrdf/dipolebssrdf.h"
 #include "renderer/modeling/bssrdf/sss.h"
 
@@ -72,8 +72,8 @@ namespace
     {
       public:
         StandardDipoleBSSRDF(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : DipoleBSSRDF(name, params)
         {
         }
@@ -88,10 +88,10 @@ namespace
             return Model;
         }
 
-        void prepare_inputs(
-            Arena&              arena,
-            const ShadingPoint& shading_point,
-            void*               data) const APPLESEED_OVERRIDE
+        virtual void prepare_inputs(
+            Arena&                  arena,
+            const ShadingPoint&     shading_point,
+            void*                   data) const APPLESEED_OVERRIDE
         {
             DipoleBSSRDFInputValues* values =
                 static_cast<DipoleBSSRDFInputValues*>(data);
@@ -100,17 +100,24 @@ namespace
         }
 
         virtual void evaluate_profile(
-            const void*         data,
-            const float         square_radius,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+            const void*             data,
+            const ShadingPoint&     outgoing_point,
+            const Vector3f&         outgoing_dir,
+            const ShadingPoint&     incoming_point,
+            const Vector3f&         incoming_dir,
+            Spectrum&               value) const APPLESEED_OVERRIDE
         {
             const DipoleBSSRDFInputValues* values =
                 static_cast<const DipoleBSSRDFInputValues*>(data);
 
-            const float fdr = fresnel_internal_diffuse_reflectance(values->m_precomputed.m_eta);
-            const float a = (1.0f + fdr) / (1.0f - fdr);
-
             value.resize(values->m_sigma_a.size());
+
+            const float square_radius =
+                static_cast<float>(
+                    square_norm(outgoing_point.get_point() - incoming_point.get_point()));
+
+            const float fdr = fresnel_internal_diffuse_reflectance(values->m_base_values.m_eta);
+            const float a = (1.0f + fdr) / (1.0f - fdr);
 
             for (size_t i = 0, e = value.size(); i < e; ++i)
             {
@@ -187,9 +194,6 @@ namespace
                 const float ev = exp(-sigma_tr_dv) * rcp_dv;
                 value[i] = alpha_prime * RcpFourPi<float>() * (kr * er - kv * ev);
             }
-
-            // Return r * R(r) * weight.
-            value *= sqrt(square_radius) * values->m_weight;
         }
     };
 }

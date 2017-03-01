@@ -31,11 +31,12 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/ibssrdffactory.h"
-#include "renderer/modeling/input/inputarray.h"
-
+#include "renderer/modeling/bssrdf/separablebssrdf.h"
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -43,7 +44,6 @@
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
-namespace renderer      { class BSSRDF;  }
 namespace renderer      { class ParamArray; }
 
 namespace renderer
@@ -65,14 +65,12 @@ APPLESEED_DECLARE_INPUT_VALUES(NormalizedDiffusionBSSRDFInputValues)
 
     struct Precomputed
     {
-        Spectrum    m_s;
         Spectrum    m_channel_pdf;
-        Spectrum    m_channel_cdf;
-        float       m_rmax2;
-        float       m_eta;
+        Spectrum    m_s;
     };
 
-    Precomputed     m_precomputed;
+    Precomputed                     m_precomputed;
+    SeparableBSSRDF::InputValues    m_base_values;
 };
 
 

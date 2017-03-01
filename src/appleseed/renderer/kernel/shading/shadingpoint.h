@@ -46,6 +46,7 @@
 #include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/beziercurve.h"
 #include "foundation/math/transform.h"
@@ -174,6 +175,9 @@ class ShadingPoint
 
     // Return the side of the surface that was hit.
     ObjectInstance::Side get_side() const;
+
+    // Flip the side on which this shading point lies.
+    void flip_side();
 
     // Return true if the ray is entering/leaving an object.
     bool is_entering() const;
@@ -343,10 +347,10 @@ class ShadingPoint
     mutable foundation::Vector3d        m_front_point;                  // hit point refined to front, in assembly instance space
     mutable foundation::Vector3d        m_back_point;                   // hit point refined to back, in assembly instance space
 
+    // OSl-related data.
     mutable OSLObjectTransformInfo      m_obj_transform_info;
     mutable OSLTraceData                m_osl_trace_data;
     mutable OSL::ShaderGlobals          m_shader_globals;
-
     mutable foundation::Color3f         m_surface_shader_color;
     mutable float                       m_surface_shader_alpha;
 

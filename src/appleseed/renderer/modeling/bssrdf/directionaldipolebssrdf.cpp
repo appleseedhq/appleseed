@@ -32,18 +32,14 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/bssrdf/dipolebssrdf.h"
-#include "renderer/modeling/bssrdf/sss.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/cdf.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/memory.h"
 
 // Standard headers.
 #include <algorithm>
@@ -52,7 +48,7 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
+namespace renderer  { class BSSRDFSample; }
 namespace renderer  { class ShadingContext; }
 
 using namespace foundation;
@@ -84,8 +80,8 @@ namespace
     {
       public:
         DirectionalDipoleBSSRDF(
-            const char*         name,
-            const ParamArray&   params)
+            const char*                     name,
+            const ParamArray&               params)
           : DipoleBSSRDF(name, params)
         {
         }
@@ -101,99 +97,43 @@ namespace
         }
 
         virtual void prepare_inputs(
-            Arena&              arena,
-            const ShadingPoint& shading_point,
-            void*               data) const APPLESEED_OVERRIDE
+            Arena&                          arena,
+            const ShadingPoint&             shading_point,
+            void*                           data) const APPLESEED_OVERRIDE
         {
-            DipoleBSSRDFInputValues* values = static_cast<DipoleBSSRDFInputValues*>(data);
+            DipoleBSSRDFInputValues* values =
+                static_cast<DipoleBSSRDFInputValues*>(data);
 
             do_prepare_inputs<ComputeRdStandardDipole>(shading_point, values);
-
-            if (m_inputs.source("sigma_a") == 0 || m_inputs.source("sigma_s") == 0)
-            {
-                // Reparamerization weight to match the standard dipole reflectance.
-                // This was derived by numerically integrating both models for different alpha_prime values,
-                // comparing the resulting Rd curves, fitting a quadratic to the difference between them
-                // and scaling by an empirical magic factor.
-                values->m_precomputed.m_dirpole_reparam_weight.resize(values->m_precomputed.m_alpha_prime.size());
-                for (size_t i = 0, e = values->m_precomputed.m_dirpole_reparam_weight.size(); i < e; ++i)
-                {
-                    const float a = values->m_precomputed.m_alpha_prime[i];
-                    const float w = 0.2605589f * square(a) + 0.2622902f * a + 0.007895145f;
-                    values->m_precomputed.m_dirpole_reparam_weight[i] = w * 1.44773351f;
-                }
-            }
-            else
-                values->m_precomputed.m_dirpole_reparam_weight.set(1.0f);
         }
 
         virtual void evaluate_profile(
-            const void*         data,
-            const float         square_radius,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+            const void*                     data,
+            const ShadingPoint&             outgoing_point,
+            const Vector3f&                 outgoing_dir,
+            const ShadingPoint&             incoming_point,
+            const Vector3f&                 incoming_dir,
+            Spectrum&                       value) const APPLESEED_OVERRIDE
         {
-            assert(!"Should never be called.");
-        }
+            const DipoleBSSRDFInputValues* values =
+                static_cast<const DipoleBSSRDFInputValues*>(data);
 
-        virtual void evaluate(
-            const void*         data,
-            const ShadingPoint& outgoing_point,
-            const Vector3f&     outgoing_dir,
-            const ShadingPoint& incoming_point,
-            const Vector3f&     incoming_dir,
-            Spectrum&           value) const APPLESEED_OVERRIDE
-        {
-            const DipoleBSSRDFInputValues* values = static_cast<const DipoleBSSRDFInputValues*>(data);
+            const Vector3f xo(outgoing_point.get_point());
+            const Vector3f xi(incoming_point.get_point());
+            const Vector3f no(outgoing_point.get_shading_normal());
+            const Vector3f ni(incoming_point.get_shading_normal());
 
-            const Vector3d incoming_normal =
-                dot(Vector3d(incoming_dir), incoming_point.get_shading_normal()) > 0.0
-                    ? incoming_point.get_shading_normal()
-                    : -incoming_point.get_shading_normal();
+            bssrdf(values, xi, ni, incoming_dir, xo, no, value);
 
-            bssrdf(
-                values,
-                Vector3f(incoming_point.get_point()),
-                Vector3f(incoming_normal),
-                incoming_dir,
-                Vector3f(outgoing_point.get_point()),
-                Vector3f(outgoing_point.get_shading_normal()),
-                value);
+            // Hack to make the BSSRDF reciprocal ([1] section 6.3):
+            // Spectrum tmp;
+            // bssrdf(values, xo, no, outgoing_dir, xi, ni, tmp);
+            // madd(value, tmp, 0.5f);
 
-#ifdef DIRPOLE_RECIPROCAL
-            // Hack to make the BSSRDF reciprocal ([1] section 6.3).
-            Spectrum tmp;
-            bssrdf(
-                values,
-                outgoing_point.get_point(),
-                outgoing_point.get_shading_normal(),
-                outgoing_dir,
-                incoming_point.get_point(),
-                incoming_point.get_shading_normal(),    // todo: possibly need to swap the normal here?
-                tmp);
-            value += tmp;
-            value *= 0.5f;
-#endif
-
-            float fi = 1.0f;
-            float fo = 1.0f;
-
-            const float fresnel_weight = saturate(get_fresnel_weight(data));
-
-            if (fresnel_weight != 0.0f)
-            {
-                const float cos_on = abs(dot(outgoing_dir, Vector3f(outgoing_point.get_shading_normal())));
-                fresnel_transmittance_dielectric(fo, values->m_precomputed.m_eta, cos_on);
-                fo = lerp(1.0f, fo, fresnel_weight);
-
-                const float cos_in = abs(dot(incoming_dir, Vector3f(incoming_point.get_shading_normal())));
-                fresnel_transmittance_dielectric(fi, values->m_precomputed.m_eta, cos_in);
-                fi = lerp(1.0f, fi, fresnel_weight);
-            }
-
-            const float radius = static_cast<float>(norm(incoming_point.get_point() - outgoing_point.get_point()));
-            value *= radius * fo * fi * values->m_weight;
-
-            value *= values->m_precomputed.m_dirpole_reparam_weight;
+            // The directional dipole expression already integrates the BRDF
+            // at the incoming point so we need to cancel the 1/Pi term from
+            // the Lambertian BRDF.
+            value *= Pi<float>();
         }
 
       private:
@@ -215,10 +155,11 @@ namespace
                 value.set(0.0f);
                 return;
             }
-            const float rcp_eta = 1.0f / values->m_precomputed.m_eta;
-            const float cphi_eta = 0.25f * (1.0f - fresnel_first_moment(rcp_eta));
-            const float cphi_rcp_eta = 0.25f * (1.0f - fresnel_first_moment(values->m_precomputed.m_eta));
-            const float ce_eta = 0.5f * (1.0f - fresnel_second_moment(rcp_eta));
+
+            const float eta = values->m_base_values.m_eta;
+            const float rcp_eta = 1.0f / eta;
+            const float cphi_eta = 0.25f * (1.0f - fresnel_first_moment_x2(rcp_eta));
+            const float ce_eta = 0.5f * (1.0f - fresnel_second_moment_x3(rcp_eta));
             const float A = (1.0f - ce_eta) / (2.0f * cphi_eta);                        // reflection parameter
 
             // Compute normal to modified tangent plane.
@@ -227,7 +168,7 @@ namespace
 
             // Compute direction of real ray source.
             Vector3f wr;
-            APPLESEED_UNUSED const bool successful = refract(wi, ni, values->m_precomputed.m_eta, wr);
+            APPLESEED_UNUSED const bool successful = refract(wi, ni, eta, wr);
             assert(successful);
             assert(is_normalized(wr));
 
@@ -278,10 +219,7 @@ namespace
                 // Evaluate the BSSRDF.
                 const float sdr = sd_prime(cphi_eta, ce_eta, D, sigma_tr, dot_wr_xoxi, dot_wr_no, dot_xoxi_no, dr);
                 const float sdv = sd_prime(cphi_eta, ce_eta, D, sigma_tr, dot(wv, xoxv), dot_wv_no, dot_xoxv_no, dv);
-                const float result = max((sdr - sdv) / (4.0f * cphi_rcp_eta), 0.0f);
-
-                // Store result.
-                value[i] = result;
+                value[i] = max(sdr - sdv, 0.0f);
             }
 
             // todo: add reduced intensity component here (S_sigma_E term).
@@ -290,14 +228,14 @@ namespace
 
         // Diffusion term of the BSSRDF.
         static float sd_prime(
-            const float         cphi_eta,
-            const float         ce_eta,
-            const float         D,
-            const float         sigma_tr,
-            const float         dot_w_x,
-            const float         dot_w_n,
-            const float         dot_x_n,
-            const float         r)
+            const float cphi_eta,
+            const float ce_eta,
+            const float D,
+            const float sigma_tr,
+            const float dot_w_x,
+            const float dot_w_n,
+            const float dot_x_n,
+            const float r)
         {
             const float r2 = square(r);
             const float sigma_tr_r = sigma_tr * r;
