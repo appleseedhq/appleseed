@@ -61,6 +61,7 @@
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/project/configuration.h"
+#include "renderer/modeling/project/eventcounters.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/project/projectformatrevision.h"
 #include "renderer/modeling/project/regexrenderlayerrule.h"
@@ -1288,10 +1289,20 @@ namespace
     };
 }
 
-bool ProjectFileUpdater::update(Project& project, const size_t to_revision)
+bool ProjectFileUpdater::update(
+    Project&        project,
+    const size_t    to_revision)
 {
-    bool modified = false;
+    EventCounters event_counters;
+    update(project, event_counters, to_revision);
+    return event_counters.get_error_count() == 0;
+}
 
+void ProjectFileUpdater::update(
+    Project&        project,
+    EventCounters&  event_counters,
+    const size_t    to_revision)
+{
     size_t format_revision = project.get_format_revision();
 
 #define CASE_UPDATE_FROM_REVISION(from)             \
@@ -1304,7 +1315,6 @@ bool ProjectFileUpdater::update(Project& project, const size_t to_revision)
         updater.update();                           \
                                                     \
         format_revision = from + 1;                 \
-        modified = true;                            \
     }
 
     switch (format_revision)
@@ -1324,21 +1334,31 @@ bool ProjectFileUpdater::update(Project& project, const size_t to_revision)
       CASE_UPDATE_FROM_REVISION(12);
       CASE_UPDATE_FROM_REVISION(13);
 
-      case 14:
+      case ProjectFormatRevision:
         // Project is up-to-date.
         break;
 
       default:
-        RENDERER_LOG_ERROR(
-            "cannot update project following format revision " FMT_SIZE_T ", latest supported revision is " FMT_SIZE_T ".",
-            format_revision,
-            ProjectFormatRevision);
+        if (format_revision > ProjectFormatRevision)
+        {
+            RENDERER_LOG_ERROR(
+                "cannot update project in format revision " FMT_SIZE_T ", latest supported revision is " FMT_SIZE_T ".",
+                format_revision,
+                ProjectFormatRevision);
+            event_counters.signal_error();
+        }
+        else
+        {
+            RENDERER_LOG_ERROR(
+                "cannot update project format from revision " FMT_SIZE_T " to revision " FMT_SIZE_T ", one or more update steps are missing.",
+                format_revision,
+                ProjectFormatRevision);
+            event_counters.signal_error();
+        }
         break;
     }
 
 #undef CASE_UPDATE_FROM_REVISION
-
-    return modified;
 }
 
 }   // namespace renderer

@@ -3350,7 +3350,7 @@ void ProjectFileReader::upgrade_project(
     EventCounters&          event_counters) const
 {
     ProjectFileUpdater updater;
-    updater.update(project);
+    updater.update(project, event_counters);
 }
 
 void ProjectFileReader::print_loading_results(
