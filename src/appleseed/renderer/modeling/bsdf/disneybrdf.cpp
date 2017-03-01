@@ -341,7 +341,7 @@ namespace
             m_inputs.declare("specular", InputFormatFloat, "0.0");
             m_inputs.declare("specular_tint", InputFormatFloat, "0.0");
             m_inputs.declare("anisotropic", InputFormatFloat, "0.0");
-            m_inputs.declare("roughness", InputFormatFloat, "0.5");
+            m_inputs.declare("roughness", InputFormatFloat, "0.1");
             m_inputs.declare("sheen", InputFormatFloat, "0.0");
             m_inputs.declare("sheen_tint", InputFormatFloat, "0.0");
             m_inputs.declare("clearcoat", InputFormatFloat, "0.0");
@@ -788,7 +788,7 @@ DictionaryArray DisneyBRDFFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "0.5"));
+            .insert("default", "0.1"));
 
     metadata.push_back(
         Dictionary()
