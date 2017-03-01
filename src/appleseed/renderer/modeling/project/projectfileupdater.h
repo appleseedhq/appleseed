@@ -37,6 +37,7 @@
 #include <cstddef>
 
 // Forward declarations.
+namespace renderer  { class EventCounters; }
 namespace renderer  { class Project; }
 
 namespace renderer
@@ -49,9 +50,19 @@ namespace renderer
 class APPLESEED_DLLSYMBOL ProjectFileUpdater
 {
   public:
+    // Return true if the update was successful, false otherwise.
     bool update(
         Project&        project,
         const size_t    to_revision = ~0);
+
+  private:
+    friend class ProjectFileReader;
+
+    void update(
+        Project&        project,
+        EventCounters&  event_counters,
+        const size_t    to_revision = ~0);
+
 };
 
 }       // namespace renderer

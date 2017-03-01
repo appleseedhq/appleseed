@@ -850,12 +850,12 @@ QSlider::groove
 
 QSlider::groove:horizontal
 {
-    height: 6px;
+    height: 4px;
 }
 
 QSlider::groove:vertical
 {
-    width: 6px;
+    width: 4px;
 }
 
 QSlider::sub-page:horizontal,
