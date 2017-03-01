@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/bsdf/glassbsdf.h"
 #include "renderer/modeling/bsdf/glossybrdf.h"
 #include "renderer/modeling/bsdf/metalbrdf.h"
@@ -58,6 +59,7 @@
 #include "renderer/modeling/light/pointlight.h"
 #include "renderer/modeling/light/spotlight.h"
 #include "renderer/modeling/light/sunlight.h"
+#include "renderer/modeling/material/disneymaterial.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/project/configuration.h"
@@ -1287,6 +1289,73 @@ namespace
             }
         }
     };
+
+    //
+    // Update from revision 14 to revision 15.
+    //
+
+    class UpdateFromRevision_14
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_14(Project& project)
+          : Updater(project, 14)
+        {
+        }
+
+        virtual void update() APPLESEED_OVERRIDE
+        {
+            if (Scene* scene = m_project.get_scene())
+                update_entities(scene->assemblies());
+        }
+
+      private:
+        static void update_entities(AssemblyContainer& assemblies)
+        {
+            for (each<AssemblyContainer> i = assemblies; i; ++i)
+            {
+                update_entities(*i);
+                update_entities(i->assemblies());
+            }
+        }
+
+        static void update_entities(Assembly& assembly)
+        {
+            for (each<BSDFContainer> i = assembly.bsdfs(); i; ++i)
+                update_bsdf_inputs(*i);
+
+            for (each<MaterialContainer> i = assembly.materials(); i; ++i)
+                update_material_inputs(*i);
+        }
+
+        static void update_bsdf_inputs(BSDF& bsdf)
+        {
+            if (strcmp(bsdf.get_model(), DisneyBRDFFactory().get_model()) == 0)
+            {
+                ParamArray& params = bsdf.get_parameters();
+                if (!params.strings().exist("specular"))
+                    params.insert("specular", 0.5f);
+                if (!params.strings().exist("roughness"))
+                    params.insert("roughness", 0.5f);
+                if (!params.strings().exist("sheen_tint"))
+                    params.insert("sheen_tint", 0.5f);
+            }
+        }
+
+        static void update_material_inputs(Material& material)
+        {
+            if (strcmp(material.get_model(), DisneyMaterialFactory().get_model()) == 0)
+            {
+                ParamArray& params = material.get_parameters();
+                for (each<DictionaryDictionary> i = params.dictionaries(); i; ++i)
+                {
+                    Dictionary& layer_params = i->value();
+                    if (!layer_params.strings().exist("roughness"))
+                        layer_params.insert("roughness", 0.5f);
+                }
+            }
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(
@@ -1333,6 +1402,7 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(11);
       CASE_UPDATE_FROM_REVISION(12);
       CASE_UPDATE_FROM_REVISION(13);
+      CASE_UPDATE_FROM_REVISION(14);
 
       case ProjectFormatRevision:
         // Project is up-to-date.
