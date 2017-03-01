@@ -45,6 +45,10 @@
 #include "foundation/utility/attributeset.h"
 #include "foundation/utility/otherwise.h"
 
+// Standard headers.
+#include <algorithm>
+#include <utility>
+
 using namespace foundation;
 using namespace std;
 
@@ -54,6 +58,96 @@ namespace renderer
 //
 // ShadingPoint class implementation.
 //
+
+void ShadingPoint::flip_side()
+{
+    assert(hit());
+
+#if 1
+
+    //
+    // Move the ray's origin to the other side of the intersection point,
+    // and inverse the ray's direction. Pretending the ray came from the
+    // other side of the surface is enough to flip the side on which lies
+    // the shading point.
+    //
+    // The two downsides of this approach are:
+    //
+    //   1. The ray that led to this shading point is modified, and that
+    //      could have consequences if not taken into account.
+    //
+    //   2. All precomputed values are lost and will need to be recomputed
+    //      if they are needed.
+    //
+
+    const double t = 2.0 * m_ray.m_tmax;
+
+    m_ray.m_org = m_ray.point_at(t);
+    m_ray.m_rx.m_org = m_ray.m_rx.point_at(t);
+    m_ray.m_ry.m_org = m_ray.m_ry.point_at(t);
+
+    m_ray.m_dir = -m_ray.m_dir;
+    m_ray.m_rx.m_dir = -m_ray.m_rx.m_dir;
+    m_ray.m_ry.m_dir = -m_ray.m_ry.m_dir;
+
+    m_members = 0;
+
+#else
+
+    //
+    // Flip all the fields related to the side on which the shading point
+    // lies. While this should work (the code below is not well tested),
+    // the major downside of this approach is that this flips precomputed
+    // values, not the primary intersection results. This means that the
+    // flip is lost if the shading point is copied, or if for any other
+    // reason, m_members is set to 0.
+    //
+
+    // Force the side to be computed.
+    get_side();
+
+    // Flip the side.
+    if (m_side == ObjectInstance::FrontSide)
+        m_side = ObjectInstance::BackSide;
+    else m_side = ObjectInstance::FrontSide;
+
+    // Clear the biased point if it depends on a normal vector.
+    if ((m_members & HasBiasedPoint) &&
+        m_object_instance->get_ray_bias_method() == ObjectInstance::RayBiasMethodNormal)
+        m_members &= ~HasBiasedPoint;
+
+    // Flip the geometric normal.
+    assert(m_members & HasGeometricNormal);
+    m_geometric_normal = -m_geometric_normal;
+
+    // Flip the original shading normal.
+    if (m_members & HasOriginalShadingNormal)
+        m_original_shading_normal = -m_original_shading_normal;
+
+    // Flip the modified shading normal.
+    if (m_members & HasShadingBasis)
+    {
+        // todo: add a more efficient flip() method to foundation::Basis.
+        m_shading_basis = Basis3d(
+            -m_shading_basis.get_normal(),
+            -m_shading_basis.get_tangent_u(),
+             m_shading_basis.get_tangent_v());
+    }
+
+    // Swap materials.
+    if (m_members & HasMaterials)
+        std::swap(m_material, m_opposite_material);
+
+    // Update OSL shader globals.
+    if (m_members & HasOSLShaderGlobals)
+    {
+        m_shader_globals.N = -m_shader_globals.N;
+        m_shader_globals.Ng = -m_shader_globals.Ng;
+        m_shader_globals.backfacing = 1 - m_shader_globals.backfacing;
+    }
+
+#endif
+}
 
 void ShadingPoint::fetch_source_geometry() const
 {

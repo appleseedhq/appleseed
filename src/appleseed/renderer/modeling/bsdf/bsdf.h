@@ -33,7 +33,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
-#include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/entity/connectableentity.h"
 
 // appleseed.foundation headers.
@@ -49,7 +48,7 @@
 
 // Forward declarations.
 namespace foundation    { class Arena; }
-namespace renderer      { class Assembly; }
+namespace renderer      { class BSDFSample; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
@@ -90,9 +89,9 @@ class APPLESEED_DLLSYMBOL BSDF
     // BSDF types.
     enum Type
     {
-        Reflective          = 1 << 0,
-        Transmissive        = 1 << 1,
-        AllBSDFTypes        = Reflective | Transmissive
+        Reflective   = 1 << 0,
+        Transmissive = 1 << 1,
+        AllBSDFTypes = Reflective | Transmissive
     };
 
     // Use a particular (negative) value as the probability density
@@ -121,6 +120,14 @@ class APPLESEED_DLLSYMBOL BSDF
     bool is_purely_specular() const;
     bool is_purely_diffuse_or_glossy() const;
     bool is_purely_glossy_or_specular() const;
+
+    // Return the size in bytes to allocate for the input values of this BSDF
+    // and its precomputed values, if any. By default, enough space is allocated
+    // for the inputs alone, i.e. this returns get_inputs().compute_data_size().
+    // If a BSDF stores additional data such as precomputed values in its input
+    // block, it must override this method and return the correct size.
+    // If evaluate_inputs() is overridden, then this method is irrelevant.
+    virtual size_t compute_input_data_size() const;
 
     // Evaluate the inputs of this BSDF and of its child BSDFs, if any.
     virtual void* evaluate_inputs(

@@ -35,7 +35,7 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
-#include "renderer/modeling/bssrdf/bssrdf.h"
+#include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/scene/visibilityflags.h"
 
@@ -52,7 +52,7 @@ using namespace foundation;
 namespace renderer
 {
 
-void compute_ibl(
+void compute_ibl_combined_sampling(
     SamplingContext&        sampling_context,
     const ShadingContext&   shading_context,
     const EnvironmentEDF&   environment_edf,
@@ -99,52 +99,6 @@ void compute_ibl(
     radiance += radiance_env_sampling;
 }
 
-void compute_ibl(
-    SamplingContext&        sampling_context,
-    const ShadingContext&   shading_context,
-    const EnvironmentEDF&   environment_edf,
-    const BSSRDF&           bssrdf,
-    const void*             bssrdf_data,
-    const ShadingPoint&     incoming_point,
-    const ShadingPoint&     outgoing_point,
-    const Dual3d&           outgoing,
-    const size_t            bssrdf_sample_count,
-    const size_t            env_sample_count,
-    Spectrum&               radiance)
-{
-    assert(is_normalized(outgoing.get_value()));
-
-    // Compute IBL by sampling the BSSRDF.
-    compute_ibl_bssrdf_sampling(
-        sampling_context,
-        shading_context,
-        environment_edf,
-        bssrdf,
-        bssrdf_data,
-        incoming_point,
-        outgoing_point,
-        outgoing,
-        bssrdf_sample_count,
-        env_sample_count,
-        radiance);
-
-    // Compute IBL by sampling the environment.
-    Spectrum radiance_env_sampling(Spectrum::Illuminance);
-    compute_ibl_environment_sampling(
-        sampling_context,
-        shading_context,
-        environment_edf,
-        bssrdf,
-        bssrdf_data,
-        incoming_point,
-        outgoing_point,
-        outgoing,
-        bssrdf_sample_count,
-        env_sample_count,
-        radiance_env_sampling);
-    radiance += radiance_env_sampling;
-}
-
 void compute_ibl_bsdf_sampling(
     SamplingContext&        sampling_context,
     const ShadingContext&   shading_context,
@@ -169,7 +123,7 @@ void compute_ibl_bsdf_sampling(
         // includes the contribution of a specular component since these are explicitly rejected
         // afterward. We need a mechanism to indicate that we want the contribution of some of
         // the components only.
-        BSDFSample sample(shading_point, outgoing);
+        BSDFSample sample(&shading_point, Dual3f(outgoing));
         bsdf.sample(
             sampling_context,
             bsdf_data,
@@ -218,83 +172,6 @@ void compute_ibl_bsdf_sampling(
 
     if (bsdf_sample_count > 1)
         radiance /= static_cast<float>(bsdf_sample_count);
-}
-
-void compute_ibl_bssrdf_sampling(
-    SamplingContext&        sampling_context,
-    const ShadingContext&   shading_context,
-    const EnvironmentEDF&   environment_edf,
-    const BSSRDF&           bssrdf,
-    const void*             bssrdf_data,
-    const ShadingPoint&     incoming_point,
-    const ShadingPoint&     outgoing_point,
-    const Dual3d&           outgoing,
-    const size_t            bssrdf_sample_count,
-    const size_t            env_sample_count,
-    Spectrum&               radiance)
-{
-    assert(is_normalized(outgoing.get_value()));
-
-    radiance.set(0.0f);
-
-    sampling_context.split_in_place(2, bssrdf_sample_count);
-
-    for (size_t i = 0; i < bssrdf_sample_count; ++i)
-    {
-        // Generate a uniform sample in [0,1)^2.
-        const Vector2f s = sampling_context.next2<Vector2f>();
-
-        // Sample the BSSRDF (hemisphere cosine).
-        Vector3f incoming = sample_hemisphere_cosine(s);
-        const float cos_in = incoming.y;
-        const float bssrdf_prob = cos_in * RcpPi<float>();
-        incoming = incoming_point.get_shading_basis().transform_to_parent(incoming);
-        if (incoming_point.get_side() == ObjectInstance::BackSide)
-            incoming = -incoming;
-        assert(is_normalized(incoming));
-
-        // Discard occluded samples.
-        const float transmission =
-            shading_context.get_tracer().trace(
-                incoming_point,
-                Vector3d(incoming),
-                VisibilityFlags::ShadowRay);
-        if (transmission == 0.0f)
-            continue;
-
-        // Evaluate the BSSRDF.
-        Spectrum bssrdf_value;
-        bssrdf.evaluate(
-            bssrdf_data,
-            outgoing_point,
-            Vector3f(outgoing.get_value()),
-            incoming_point,
-            incoming,
-            bssrdf_value);
-
-        // Evaluate the environment's EDF.
-        Spectrum env_value(Spectrum::Illuminance);
-        float env_prob;
-        environment_edf.evaluate(
-            shading_context,
-            incoming,
-            env_value,
-            env_prob);
-
-        // Compute MIS weight.
-        const float mis_weight =
-            mis_power2(
-                bssrdf_sample_count * bssrdf_prob,
-                env_sample_count * env_prob);
-
-        // Add the contribution of this sample to the illumination.
-        env_value *= transmission * cos_in / bssrdf_prob * mis_weight;
-        env_value *= bssrdf_value;
-        radiance += env_value;
-    }
-
-    if (bssrdf_sample_count > 1)
-        radiance /= static_cast<float>(bssrdf_sample_count);
 }
 
 void compute_ibl_environment_sampling(
@@ -379,85 +256,6 @@ void compute_ibl_environment_sampling(
         // Add the contribution of this sample to the illumination.
         env_value *= transmission / env_prob * mis_weight;
         env_value *= bsdf_value;
-        radiance += env_value;
-    }
-
-    if (env_sample_count > 1)
-        radiance /= static_cast<float>(env_sample_count);
-}
-
-void compute_ibl_environment_sampling(
-    SamplingContext&        sampling_context,
-    const ShadingContext&   shading_context,
-    const EnvironmentEDF&   environment_edf,
-    const BSSRDF&           bssrdf,
-    const void*             bssrdf_data,
-    const ShadingPoint&     incoming_point,
-    const ShadingPoint&     outgoing_point,
-    const Dual3d&           outgoing,
-    const size_t            bssrdf_sample_count,
-    const size_t            env_sample_count,
-    Spectrum&               radiance)
-{
-    assert(is_normalized(outgoing.get_value()));
-
-    const Basis3d& shading_basis = incoming_point.get_shading_basis();
-
-    radiance.set(0.0f);
-
-    sampling_context.split_in_place(2, env_sample_count);
-
-    for (size_t i = 0; i < env_sample_count; ++i)
-    {
-        // Generate a uniform sample in [0,1)^2.
-        const Vector2f s = sampling_context.next2<Vector2f>();
-
-        // Sample the environment.
-        Vector3f incoming;
-        Spectrum env_value(Spectrum::Illuminance);
-        float env_prob;
-        environment_edf.sample(
-            shading_context,
-            s,
-            incoming,
-            env_value,
-            env_prob);
-
-        // Cull samples behind the shading surface.
-        assert(is_normalized(incoming));
-        const float cos_in = dot(incoming, Vector3f(shading_basis.get_normal()));
-        if (cos_in <= 0.0f)
-            continue;
-
-        // Discard occluded samples.
-        const float transmission =
-            shading_context.get_tracer().trace(
-                incoming_point,
-                Vector3d(incoming),
-                VisibilityFlags::ShadowRay);
-        if (transmission == 0.0f)
-            continue;
-
-        // Evaluate the BSSRDF.
-        Spectrum bssrdf_value;
-        bssrdf.evaluate(
-            bssrdf_data,
-            outgoing_point,
-            Vector3f(outgoing.get_value()),
-            incoming_point,
-            incoming,
-            bssrdf_value);
-
-        // Compute MIS weight.
-        const float bssrdf_prob = cos_in * RcpPi<float>();
-        const float mis_weight =
-            mis_power2(
-                env_sample_count * env_prob,
-                bssrdf_sample_count * bssrdf_prob);
-
-        // Add the contribution of this sample to the illumination.
-        env_value *= transmission * cos_in / env_prob * mis_weight;
-        env_value *= bssrdf_value;
         radiance += env_value;
     }
 

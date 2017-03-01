@@ -181,7 +181,7 @@ namespace
             return c;
         }
 
-        void prepare_inputs(
+        virtual void prepare_inputs(
             Arena&                  arena,
             const ShadingPoint&     shading_point,
             void*                   data) const APPLESEED_OVERRIDE
@@ -210,7 +210,11 @@ namespace
             if (c->get_closure_count() > 0)
             {
                 const size_t closure_index = c->choose_closure(sampling_context);
-                sample.set_shading_basis(c->get_closure_shading_basis(closure_index));
+                const Basis3f& modified_basis = c->get_closure_shading_basis(closure_index);
+
+                sample.m_shading_basis = modified_basis;
+                sample.m_shading_point->set_shading_basis(Basis3d(modified_basis));
+
                 bsdf_from_closure_id(c->get_closure_type(closure_index))
                     .sample(
                         sampling_context,
@@ -234,10 +238,10 @@ namespace
             const int               modes,
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
+            const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
+
             float prob = 0.0f;
             value.set(0.0f);
-
-            const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
 
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
@@ -274,6 +278,7 @@ namespace
             const int               modes) const APPLESEED_OVERRIDE
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
+
             float prob = 0.0f;
 
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
@@ -296,8 +301,8 @@ namespace
         }
 
         virtual float sample_ior(
-            SamplingContext&            sampling_context,
-            const void*                 data) const APPLESEED_OVERRIDE
+            SamplingContext&        sampling_context,
+            const void*             data) const APPLESEED_OVERRIDE
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
             sampling_context.split_in_place(1, 1);
@@ -305,12 +310,14 @@ namespace
         }
 
         virtual void compute_absorption(
-            const void*                 data,
-            const float                 distance,
-            Spectrum&                   absorption) const APPLESEED_OVERRIDE
+            const void*             data,
+            const float             distance,
+            Spectrum&               absorption) const APPLESEED_OVERRIDE
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
+
             absorption.set(0.0f);
+
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
                 Spectrum a;

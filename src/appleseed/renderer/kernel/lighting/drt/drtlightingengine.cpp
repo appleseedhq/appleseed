@@ -302,7 +302,9 @@ namespace
                 const DirectLightingIntegrator integrator(
                     m_shading_context,
                     m_light_sampler,
-                    vertex,
+                    *vertex.m_shading_point,
+                    *vertex.m_bsdf,
+                    vertex.m_bsdf_data,
                     ScatteringMode::Diffuse,
                     ScatteringMode::All,
                     bsdf_sample_count,
@@ -345,7 +347,7 @@ namespace
                 // Always sample both the environment and the BSDF. When sampling the BSDF,
                 // we limit ourselves to sampling diffuse components of the BSDF; sampling
                 // of glossy components will be done by extending the current path.
-                compute_ibl(
+                compute_ibl_combined_sampling(
                     m_sampling_context,
                     m_shading_context,
                     *m_env_edf,

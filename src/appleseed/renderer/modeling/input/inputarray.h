@@ -42,9 +42,9 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer      { class Entity; }
-namespace renderer      { class Source; }
-namespace renderer      { class TextureCache; }
+namespace renderer  { class Entity; }
+namespace renderer  { class Source; }
+namespace renderer  { class TextureCache; }
 
 namespace renderer
 {

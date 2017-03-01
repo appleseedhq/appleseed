@@ -981,7 +981,6 @@ set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/pathvertex.cpp
     renderer/kernel/lighting/pathvertex.h
     renderer/kernel/lighting/scatteringmode.h
-    renderer/kernel/lighting/subsurfacesampler.h
     renderer/kernel/lighting/tracer.cpp
     renderer/kernel/lighting/tracer.h
 )
@@ -1320,6 +1319,7 @@ set (renderer_modeling_bssrdf_sources
     renderer/modeling/bssrdf/ibssrdffactory.h
     renderer/modeling/bssrdf/oslbssrdf.cpp
     renderer/modeling/bssrdf/oslbssrdf.h
+    renderer/modeling/bssrdf/separablebssrdf.cpp
     renderer/modeling/bssrdf/separablebssrdf.h
     renderer/modeling/bssrdf/sss.cpp
     renderer/modeling/bssrdf/sss.h

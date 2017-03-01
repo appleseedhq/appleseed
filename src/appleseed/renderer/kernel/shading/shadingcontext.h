@@ -127,11 +127,6 @@ class ShadingContext
         const ShadingPoint&         shading_point,
         const foundation::Vector2f& s) const;
 
-    void choose_osl_subsurface_normal(
-        const ShadingPoint&         shading_point,
-        const void*                 bssrdf_data,
-        const float                 s) const;
-
     void execute_osl_background(
         const ShaderGroup&          shader_group,
         const foundation::Vector3f& outgoing,

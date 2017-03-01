@@ -134,17 +134,6 @@ void ShadingContext::execute_osl_bump(
         s);
 }
 
-void ShadingContext::choose_osl_subsurface_normal(
-    const ShadingPoint&     shading_point,
-    const void*             bssrdf_data,
-    const float             s) const
-{
-    m_shadergroup_exec.choose_subsurface_normal(
-        shading_point,
-        bssrdf_data,
-        s);
-}
-
 void ShadingContext::execute_osl_background(
     const ShaderGroup&      shader_group,
     const Vector3f&         outgoing,

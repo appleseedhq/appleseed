@@ -130,26 +130,6 @@ void compute_absorption_and_scattering_mfp(
 
 
 //
-// Gaussian diffusion profile.
-//
-
-float gaussian_profile(
-    const float         r,
-    const float         v,
-    const float         r_integral_threshold);
-
-float gaussian_profile_sample(
-    const float         u,
-    const float         v,
-    const float         rmax2);
-
-float gaussian_profile_pdf(
-    const float         r,
-    const float         v,
-    const float         r_integral_threshold);
-
-
-//
 // Dipole diffusion profile.
 //
 
@@ -221,7 +201,7 @@ float normalized_diffusion_max_radius(
 
 
 //
-// BSSRDF reparameterization implementation.
+// BSSRDF reparameterization functions implementation.
 //
 
 template <typename ComputeRdFun>
