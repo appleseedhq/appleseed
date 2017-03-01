@@ -338,12 +338,12 @@ namespace
             m_inputs.declare("base_color", InputFormatSpectralReflectance);
             m_inputs.declare("subsurface", InputFormatFloat, "0.0");
             m_inputs.declare("metallic", InputFormatFloat, "0.0");
-            m_inputs.declare("specular", InputFormatFloat, "0.5");
+            m_inputs.declare("specular", InputFormatFloat, "0.0");
             m_inputs.declare("specular_tint", InputFormatFloat, "0.0");
             m_inputs.declare("anisotropic", InputFormatFloat, "0.0");
             m_inputs.declare("roughness", InputFormatFloat, "0.5");
             m_inputs.declare("sheen", InputFormatFloat, "0.0");
-            m_inputs.declare("sheen_tint", InputFormatFloat, "0.5");
+            m_inputs.declare("sheen_tint", InputFormatFloat, "0.0");
             m_inputs.declare("clearcoat", InputFormatFloat, "0.0");
             m_inputs.declare("clearcoat_gloss", InputFormatFloat, "1.0");
         }
@@ -716,7 +716,7 @@ DictionaryArray DisneyBRDFFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", "0.5"));
+            .insert("default", "0.9"));
 
     metadata.push_back(
         Dictionary()
@@ -752,7 +752,7 @@ DictionaryArray DisneyBRDFFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "0.5"));
+            .insert("default", "0.0"));
 
     metadata.push_back(
         Dictionary()
@@ -812,7 +812,7 @@ DictionaryArray DisneyBRDFFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "0.5"));
+            .insert("default", "0.0"));
 
     metadata.push_back(
         Dictionary()
