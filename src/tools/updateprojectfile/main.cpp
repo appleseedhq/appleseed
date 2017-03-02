@@ -104,23 +104,26 @@ int main(int argc, const char* argv[])
             input_filepath.c_str(),
             schema_filepath.string().c_str(),
             ProjectFileReader::OmitProjectFileUpdate));
-
-    // Bail out if the project couldn't be loaded.
     if (project.get() == 0)
         return 1;
 
     // Update the project file to the desired revision.
     ProjectFileUpdater updater;
-    if (cl.m_to_revision.is_set())
-        updater.update(project.ref(), cl.m_to_revision.value());
-    else updater.update(project.ref());
+    bool success =
+        cl.m_to_revision.is_set()
+            ? updater.update(project.ref(), cl.m_to_revision.value())
+            : updater.update(project.ref());
+    if (!success)
+        return 1;
 
     // Write the project back to disk.
-    const bool success =
+    success =
         ProjectFileWriter::write(
             project.ref(),
             project->get_path(),
             ProjectFileWriter::OmitWritingGeometryFiles | ProjectFileWriter::OmitHandlingAssetFiles);
+    if (!success)
+        return 1;
 
-    return success ? 0 : 1;
+    return 0;
 }
