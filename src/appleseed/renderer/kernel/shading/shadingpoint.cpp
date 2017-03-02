@@ -482,7 +482,6 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
         const double dv0 = static_cast<double>(m_v0_uv[1] - m_v2_uv[1]);
         const double du1 = static_cast<double>(m_v1_uv[0] - m_v2_uv[0]);
         const double dv1 = static_cast<double>(m_v1_uv[1] - m_v2_uv[1]);
-
         const double det = du0 * dv1 - dv0 * du1;
 
         if (det == 0.0)
@@ -939,7 +938,6 @@ void ShadingPoint::initialize_osl_shader_globals(
         // Shading and geometric normals and backfacing flag.
         m_shader_globals.N = Vector3f(get_original_shading_normal());
         m_shader_globals.Ng = Vector3f(get_geometric_normal());
-
         m_shader_globals.backfacing = get_side() == ObjectInstance::FrontSide ? 0 : 1;
 
         // Surface parameters and their differentials.
