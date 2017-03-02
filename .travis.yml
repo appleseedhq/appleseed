@@ -21,7 +21,7 @@ addons:
       - g++-6
 
 before_install:
-  - git clone https://github.com/appleseedhq/travis-linux-deps.git
+  - git clone https://github.com/appleseedhq/prebuilt-linux-deps.git
 
 install:
   - if [ -n "$GCC_VERSION" ]; then export CC="${CC}-${GCC_VERSION}"; fi
