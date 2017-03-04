@@ -57,6 +57,7 @@
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.
+#include <clocale>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -285,9 +286,11 @@ int main(int argc, char* argv[])
     QApplication::setApplicationName("appleseed.studio");
     QApplication::setApplicationVersion(Appleseed::get_lib_version());
     QApplication::setWindowIcon(QIcon(make_app_path("icons/appleseed.png")));
-
+    
     // The locale must be set after the construction of QApplication.
     QLocale::setDefault(QLocale::C);
+    // QApplication sets C locale to user's locale, we need to fix this
+    std::setlocale(LC_ALL, "C");
 
     check_installation();
 
