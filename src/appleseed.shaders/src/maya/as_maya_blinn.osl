@@ -28,6 +28,8 @@
 
 // Ref: $MAYA_LOCATION/docs/Nodes/blinn.html
 
+#include "appleseed/math/as_math_helpers.h"
+
 shader as_maya_blinn
 [[
     string maya_node_name = "blinn",
@@ -299,11 +301,13 @@ shader as_maya_blinn
             float tmp = sqrt(in_specularRollOff);
             float eta = (1 + tmp) / (1 - tmp);
 
+            float m = pow(1.0 / max(EPS, in_eccentricity), 8.0);
+
             specular_term = opacity * in_specularColor *
                 microfacet(
                     "blinn",
                     Nn,
-                    in_eccentricity,
+                    m,
                     eta,
                     0);
         }
