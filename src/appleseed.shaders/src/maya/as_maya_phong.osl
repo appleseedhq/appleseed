@@ -265,6 +265,11 @@ shader as_maya_phong
                 in_color * translucent(Nn);
         }
 
+        if (raytype("light") && in_incandescence)
+        {
+            incandescence_term = opacity * in_incandescence * emission();
+        }
+
         if (in_specularColor)
         {
             specular_term = opacity * in_specularColor *

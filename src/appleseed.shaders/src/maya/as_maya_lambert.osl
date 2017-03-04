@@ -218,6 +218,11 @@ shader as_maya_lambert
                 in_color * translucent(Nn);
         }
 
+        if (raytype("light") && in_incandescence)
+        {
+            incandescence_term = opacity * in_incandescence * emission();
+        }
+
         if (in_refractions)
         {
             int ray_depth = 0;
