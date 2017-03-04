@@ -185,7 +185,6 @@ set (appleseed_maya_osl_sources
      src/maya/as_maya_grid.osl
      src/maya/as_maya_hsvToRgb.osl
      src/maya/as_maya_lambert.osl
-     src/maya/as_maya_layeredShader.osl
      src/maya/as_maya_layeredTexture.osl
      src/maya/as_maya_luminance.osl
      src/maya/as_maya_matrixInverse.osl
