@@ -227,10 +227,9 @@ shader as_maya_envChrome
         vector R = reflect(I, normalize(in_normalCamera));
         vector Rn = normalize(transform(in_placementMatrix, R));
 
-        // Sky hemisphere. Compute the light shapes and blend with color,
-        // assuming Y is up, but Maya provides an option for Z up, so ideally
-        // one would query this. Notice that the color blending is performed
-        // on the "up" coordinate, not on (spherical coordinates) elevation.
+        // Sky hemisphere. Compute the pulse trains and color blending 
+        // assuming Y is up, but the user can override this in Maya while we
+        // don't yet have a mechanism to query this attribute. TODO
 
         if (Rn[1] >= 0)
         {
@@ -242,7 +241,6 @@ shader as_maya_envChrome
                 in_zenithColor,
                 Rn[1]);
 
-            // pulse trains
             float quad_width =
                 compute_filtered_lines(
                     Rn[0],
@@ -270,7 +268,7 @@ shader as_maya_envChrome
                -Rn[1]);
 
             // The grid frequency isn't matching but the issue seems to be
-            // the xform in the placementMatrix. TODO.
+            // the xform in the placementMatrix. Confirm in the exporter.TODO
             
             float elevation_factor = 2.0 * in_floorAltitude / Rn[1];
 
