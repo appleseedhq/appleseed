@@ -311,7 +311,11 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_mitsuba_curve_file(
     }
 
     char signature[12];
-    fread(signature, 1, 11, file);
+    size_t sizeRead = fread(signature, 1, 11, file);
+    if (sizeRead != 11) 
+    {
+       RENDERER_LOG_ERROR("failed to load curve file %s: unknown signature.", filepath.c_str());
+    }	
     signature[11] = '\0';
 
     if (strcmp(signature, "BINARY_HAIR") != 0)
