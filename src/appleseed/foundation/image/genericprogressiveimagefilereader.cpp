@@ -41,11 +41,13 @@
 #include "foundation/platform/oiioheaderguards.h"
 BEGIN_OIIO_INCLUDES
 #include "OpenImageIO/imageio.h"
+#include "OpenImageIO/typedesc.h"
 END_OIIO_INCLUDES
 
 // Standard headers.
 #include <algorithm>
 #include <cassert>
+#include <cstring>
 #include <memory>
 #include <string>
 

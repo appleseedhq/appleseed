@@ -45,6 +45,9 @@
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/searchpaths.h"
 
+// Standard headers.
+#include <string>
+
 using namespace foundation;
 using namespace std;
 
@@ -57,9 +60,7 @@ namespace renderer
 
 namespace
 {
-
     const char* Model = "archive_assembly";
-
 }
 
 ArchiveAssembly::ArchiveAssembly(
@@ -92,22 +93,23 @@ void ArchiveAssembly::update_asset_paths(const StringDictionary& mappings)
 }
 
 bool ArchiveAssembly::expand_contents(
-    const Project&          project,
-    const Assembly*         parent,
-    IAbortSwitch*           abort_switch)
+    const Project&      project,
+    const Assembly*     parent,
+    IAbortSwitch*       abort_switch)
 {
     if (!m_archive_opened)
     {
         // Establish and store the qualified path to the archive project.
         const SearchPaths& search_paths = project.search_paths();
-        string filepath = search_paths.qualify(m_params.get_required<string>("filename", ""));
+        const string filepath = search_paths.qualify(m_params.get_required<string>("filename", ""));
 
         ProjectFileReader reader;
-        auto_release_ptr<Assembly> assembly = reader.read_archive(
-            filepath.c_str(),
-            0, // For now, we don't validate archives.
-            search_paths,
-            ProjectFileReader::OmitProjectSchemaValidation);
+        auto_release_ptr<Assembly> assembly =
+            reader.read_archive(
+                filepath.c_str(),
+                0,  // for now, we don't validate archives
+                search_paths,
+                ProjectFileReader::OmitProjectSchemaValidation);
 
         if (assembly.get())
         {

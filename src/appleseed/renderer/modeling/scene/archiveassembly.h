@@ -30,7 +30,6 @@
 #define APPLESEED_RENDERER_MODELING_SCENE_ARCHIVEASSEMBLY_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/scene/basegroup.h"
 #include "renderer/modeling/scene/iassemblyfactory.h"
 #include "renderer/modeling/scene/proceduralassembly.h"

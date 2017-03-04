@@ -38,22 +38,25 @@
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/scene/objectinstance.h"
+#include "renderer/modeling/scene/visibilityflags.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/cdf.h"
+#include "foundation/math/dual.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/mis.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/arena.h"
-#include "foundation/utility/memory.h"
 
 // Standard headers.
 #include <cassert>
 #include <cmath>
 #include <string>
+
+// Forward declarations.
+namespace renderer  { class Material; }
 
 using namespace foundation;
 using namespace std;

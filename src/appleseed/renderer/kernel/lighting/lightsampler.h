@@ -60,7 +60,6 @@ namespace renderer  { class MaterialArray; }
 namespace renderer  { class ObjectInstance; }
 namespace renderer  { class ParamArray; }
 namespace renderer  { class Scene; }
-namespace renderer  { class ShaderGroup; }
 namespace renderer  { class ShadingPoint; }
 
 namespace renderer

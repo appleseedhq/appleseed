@@ -41,9 +41,8 @@
 #include "boost/weak_ptr.hpp"
 
 // Standard headers.
-#include <algorithm>
+#include <cassert>
 #include <map>
-#include <memory>
 #include <string>
 
 using namespace foundation;
@@ -58,8 +57,8 @@ namespace renderer
 //
 
 ExceptionPluginInitializationFailed::ExceptionPluginInitializationFailed()
+  : Exception("plugin initialization failed")
 {
-    set_what("Plugin initialization failed");
 }
 
 

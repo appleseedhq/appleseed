@@ -33,6 +33,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/imageattributes.h"
 #include "foundation/platform/system.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
 

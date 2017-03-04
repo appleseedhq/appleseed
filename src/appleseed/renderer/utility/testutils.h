@@ -45,9 +45,6 @@
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/lazy.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // Standard headers.
 #include <cassert>
 #include <cstddef>

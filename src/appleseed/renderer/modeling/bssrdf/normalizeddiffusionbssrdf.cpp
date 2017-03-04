@@ -34,7 +34,6 @@
 #include "renderer/modeling/bssrdf/sss.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -44,9 +43,10 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class BSDFSample; }
-namespace renderer  { class BSSRDFSample; }
-namespace renderer  { class ShadingContext; }
+namespace foundation    { class Arena; }
+namespace renderer      { class BSDFSample; }
+namespace renderer      { class BSSRDFSample; }
+namespace renderer      { class ShadingContext; }
 
 using namespace foundation;
 using namespace std;

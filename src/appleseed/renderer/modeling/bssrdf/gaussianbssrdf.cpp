@@ -45,9 +45,10 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class BSDFSample; }
-namespace renderer  { class BSSRDFSample; }
-namespace renderer  { class ShadingContext; }
+namespace foundation    { class Arena; }
+namespace renderer      { class BSDFSample; }
+namespace renderer      { class BSSRDFSample; }
+namespace renderer      { class ShadingContext; }
 
 using namespace foundation;
 using namespace std;
