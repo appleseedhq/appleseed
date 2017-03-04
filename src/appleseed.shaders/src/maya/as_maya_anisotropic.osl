@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,13 +26,13 @@
 // THE SOFTWARE.
 //
 
-// Ref: $MAYA_LOCATION/docs/Nodes/blinn.html
+// Ref: $MAYA_LOCATION/docs/Nodes/anisotropic.html
 
 #include "appleseed/math/as_math_helpers.h"
 
-shader as_maya_blinn
+shader as_maya_anisotropic
 [[
-    string maya_node_name = "blinn",
+    string maya_node_name = "anisotropic",
     string maya_classification = "shader/surface"
 ]]
 (
@@ -99,26 +99,66 @@ shader as_maya_blinn
         string label = "Translucence Focus",
         string page = "Common Material Attributes"
     ]],
-    float in_eccentricity = 0.3
+    float in_angle = 0.0
     [[
-        string maya_attribute_name = "eccentricity",
+        string maya_attribute_name = "angle",
         string maya_attribute_type = "float",
-        string label = "Eccentricity",
+        string label = "Angle",
+        string widget = "slider",
+        float min = 0.0,
+        float max = 360.0,
+        float softmin = 0.0,
+        float softmax = 360.0,
         string page = "Specular Shading"
     ]],
-    float in_specularRollOff = 0.7
+    float in_spreadX = 13.0
     [[
-        string maya_attribute_name = "specularRollOff",
+        string maya_attribute_name = "spreadX",
         string maya_attribute_type = "float",
-        string label = "Specular Rolloff",
+        string label = "Spread X",
+        string widget = "slider",
+        float min = 0.1,
+        float max = 100.0,
+        float softmin = 0.1,
+        float softmax = 100.0,
+        string page = "Specular Shading"
+    ]],
+    float in_spreadY = 13.0
+    [[
+        string maya_attribute_name = "spreadY",
+        string maya_attribute_type = "float",
+        string label = "Spread Y",
+        string widget = "slider",
+        float min = 0.1,
+        float max = 100.0,
+        float softmin = 0.1,
+        float softmax = 100.0,
+        string page = "Specular Shading"
+    ]],
+    float in_roughness = 0.7
+    [[
+        string maya_attribute_name = "roughness",
+        string maya_attribute_type = "float",
+        string label = "Roughness",
+        string page = "Specular Shading"
+    ]],
+    float in_fresnelRefractiveIndex = 6.0
+    [[
+        string maya_attribute_name = "fresnelRefractiveIndex",
+        string maya_attribute_type = "float",
+        string label = "Refractive Index",
+        string widget = "slider",
+        float min = 1.0,
+        float max = 20.0,
+        float softmin = 1.0,
+        float softmax = 20.0,
         string page = "Specular Shading"
     ]],
     color in_specularColor = color(0.5)
     [[
         string maya_attribute_name = "specularColor",
-        string maya_attribute_type = "vector",
-        string label = "Specular Color",
-        string page = "Specular Shading"
+        string maya_attribute_type = "color",
+        string label = "Specular Color"
     ]],
     float in_reflectivity = 0.5
     [[
@@ -131,7 +171,7 @@ shader as_maya_blinn
     [[
         string maya_attribute_name = "reflectedColor",
         string maya_attribute_type = "vector",
-        string label = "Reflected Color",
+        string label = "Reflected Color",                   
         string page = "Specular Shading"
     ]],
     int in_matteOpacityMode = 2
@@ -202,6 +242,16 @@ shader as_maya_blinn
         string maya_attribute_type = "float",
         string label = "Glow Intensity",
         string page = "Special Effects"
+    ]],
+    vector Tn = vector(0)
+    [[
+        int lockgeom = 0,
+        string widget = "null"
+    ]],
+    vector Bn = vector(0)
+    [[
+        int lockgeom = 0,
+        string widget = "null"
     ]],
 
     output closure color out_outColor = 0
@@ -292,23 +342,24 @@ shader as_maya_blinn
         {
             transparency_term = in_transparency * transparent();
         }
-        
+
         if (in_specularColor)
         {
-            // Specular roll-off is a simple Fresnel term, get eta, solve
-            // f0=(eta-1)^2/(eta+1)^2 for eta.
+            vector tangent = (in_spreadX != in_spreadY)
+                ? rotate(Tn, radians(in_angle), point(0), point(Nn))
+                : Tn;
 
-            float tmp = sqrt(in_specularRollOff);
-            float eta = (1 + tmp) / (1 - tmp);
-
-            float m = pow(1.0 / max(EPS, in_eccentricity), 8.0);
+            float alpha_x = in_roughness / in_spreadX;
+            float alpha_y = in_roughness / in_spreadY;
 
             specular_term = opacity * in_specularColor *
                 microfacet(
-                    "blinn",
+                    "ggx",
                     Nn,
-                    m,
-                    eta,
+                    tangent,
+                    alpha_x,
+                    alpha_y,
+                    in_fresnelRefractiveIndex,
                     0);
         }
 

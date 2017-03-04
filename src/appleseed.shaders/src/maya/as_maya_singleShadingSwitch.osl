@@ -36,14 +36,14 @@ shader as_maya_singleShadingSwitch
 (
     float in_inSingle[] = {0.0}
     [[
-        string maya_attribute_name = "input[].inSingle",
+        string maya_attribute_name = "inputs",
         string maya_attribute_type = "float[]",
         string label = "Input Value"
     ]],
 
     string in_inShape[] = {""}
     [[
-        string maya_attribute_name = "input[].inShape",
+        string maya_attribute_name = "inputs",
         string maya_attribute_type = "string[]",
         string label = "Input Shape Name"
     ]],
@@ -74,7 +74,6 @@ shader as_maya_singleShadingSwitch
             if (in_inShape[i] == shape)
             {
                 out_output = in_inSingle[i];
-                exit();
             }
         }
     }

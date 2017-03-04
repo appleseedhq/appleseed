@@ -69,6 +69,8 @@ set (appleseed_library_osl_headers
     include/appleseed/math/as_math_helpers.h
     include/appleseed/maya/as_maya_fractal_helpers.h
     include/appleseed/maya/as_maya_helpers.h
+    include/appleseed/maya/as_maya_layer_helpers.h
+    include/appleseed/maya/as_maya_pattern_helpers.h
     include/appleseed/maya/as_maya_ramp_helpers.h
     include/appleseed/maya/as_maya_transform_helpers.h
     include/appleseed/pattern/as_pattern_helpers.h
@@ -155,6 +157,7 @@ source_group ("src\\gaffer" FILES
 set (appleseed_maya_osl_sources
      src/maya/as_maya_addDoubleLinear.osl
      src/maya/as_maya_addMatrix.osl
+     src/maya/as_maya_anisotropic.osl
      src/maya/as_maya_areaLight.osl
      src/maya/as_maya_blendColors.osl
      src/maya/as_maya_blinn.osl
@@ -175,6 +178,7 @@ set (appleseed_maya_osl_sources
      src/maya/as_maya_contrast.osl
      src/maya/as_maya_distanceBetween.osl
      src/maya/as_maya_doubleShadingSwitch.osl
+     src/maya/as_maya_envChrome.osl
      src/maya/as_maya_file.osl
      src/maya/as_maya_fourByFourMatrix.osl
      src/maya/as_maya_fractal.osl
@@ -182,6 +186,7 @@ set (appleseed_maya_osl_sources
      src/maya/as_maya_grid.osl
      src/maya/as_maya_hsvToRgb.osl
      src/maya/as_maya_lambert.osl
+     src/maya/as_maya_layeredTexture.osl
      src/maya/as_maya_luminance.osl
      src/maya/as_maya_matrixInverse.osl
      src/maya/as_maya_mountain.osl

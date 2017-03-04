@@ -92,14 +92,17 @@ namespace
             m_disney_brdf =
                 create_and_register_bsdf(DisneyID, "disney_brdf");
 
-            m_glossy_beckmann_brdf =
-                create_and_register_glossy_brdf(GlossyBeckmannID, "beckmann");
-
             m_glass_ggx_bsdf =
                 create_and_register_glass_bsdf(GlassGGXID, "ggx");
 
             m_glass_beckmann_bsdf =
                 create_and_register_glass_bsdf(GlassBeckmannID, "beckmann");
+
+            m_glossy_beckmann_brdf =
+                create_and_register_glossy_brdf(GlossyBeckmannID, "beckmann");
+
+            m_glossy_blinn_brdf =
+                create_and_register_glossy_brdf(GlossyBlinnID, "blinn");
 
             m_glossy_ggx_brdf =
                 create_and_register_glossy_brdf(GlossyGGXID, "ggx");
@@ -342,6 +345,7 @@ namespace
         auto_release_ptr<BSDF>      m_glass_beckmann_bsdf;
         auto_release_ptr<BSDF>      m_glass_ggx_bsdf;
         auto_release_ptr<BSDF>      m_glossy_beckmann_brdf;
+        auto_release_ptr<BSDF>      m_glossy_blinn_brdf;
         auto_release_ptr<BSDF>      m_glossy_ggx_brdf;
         auto_release_ptr<BSDF>      m_metal_beckmann_brdf;
         auto_release_ptr<BSDF>      m_metal_ggx_brdf;
