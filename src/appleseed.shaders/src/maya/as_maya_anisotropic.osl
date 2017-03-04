@@ -386,6 +386,7 @@ shader as_maya_anisotropic
             incandescence_term +
             diffuse_term +
             translucency_term +
+            refraction_term +
             specular_term +
             matte_term +
             glow_term +

@@ -290,7 +290,7 @@ shader as_maya_blinn
         {
             transparency_term = in_transparency * transparent();
         }
-
+        
         if (in_specularColor)
         {
             // Specular roll-off is a simple Fresnel term, get eta, solve
@@ -331,6 +331,7 @@ shader as_maya_blinn
             incandescence_term +
             diffuse_term +
             translucency_term +
+            refraction_term +
             specular_term +
             matte_term +
             glow_term +
