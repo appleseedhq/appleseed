@@ -206,7 +206,7 @@ shader as_maya_lambert
 
         closure color transparency_term = 0, incandescence_term = 0;
         closure color translucency_term = 0, diffuse_term = 0;
-        closure color refraction_term = 0, matte_term = 0, glow_term = 0;
+        closure color refraction_term = 0, glow_term = 0;
 
         color opacity = 1.0 - in_transparency;
 
@@ -242,9 +242,11 @@ shader as_maya_lambert
             transparency_term = in_transparency * transparent();
         }
 
+        closure color matte_term;
+
         if (in_matteOpacityMode == 0)
         {
-            ; // 0
+            matte_term = 0;
         }
         else if (in_matteOpacityMode == 1)
         {

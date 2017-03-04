@@ -307,7 +307,7 @@ shader as_maya_anisotropic
         closure color transparency_term = 0, incandescence_term = 0;
         closure color translucency_term = 0, diffuse_term = 0;
         closure color specular_term = 0, refraction_term = 0;
-        closure color matte_term = 0, glow_term = 0;
+        closure color glow_term = 0;
 
         color opacity = 1.0 - in_transparency;
 
@@ -363,9 +363,11 @@ shader as_maya_anisotropic
                     0);
         }
 
+        closure color matte_term;
+
         if (in_matteOpacityMode == 0)
         {
-            ; // 0
+            matte_term = 0;
         }
         else if (in_matteOpacityMode == 1)
         {
