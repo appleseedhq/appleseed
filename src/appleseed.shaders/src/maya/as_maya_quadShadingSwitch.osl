@@ -36,45 +36,45 @@ shader as_maya_quadShadingSwitch
 (
     color in_inTriple[] = {0}
     [[
-        string maya_attribute_name = "input[].inQuad.inTriple",
+        string maya_attribute_name = "inputs",
         string maya_attribute_type = "vector[]",
         string label = "Triple Value Component"
     ]],
     float in_inSingle[] = {0.0}
     [[
-        string maya_attribute_name = "input[].inQuad.inSingle",
+        string maya_attribute_name = "inputs",
         string maya_attribute_type = "float[]",
         string label = "Single Value Component"
     ]],
     string in_inShape[] = {""}
     [[
-        string maya_attribute_name = "input[].inShape",
+        string maya_attribute_name = "inputs",
         string maya_attribute_type = "string[]",
         string label = "Shape Name"
     ]],
     color in_defTriple = color(0.8)
     [[
-        string maya_attribute_name = "default.defTriple",
+        string maya_attribute_name = "default",
         string maya_attribute_type = "vector",
         string label = "Default Triple Value"
     ]],
     float in_defSingle = 0.0
     [[
-        string maya_attribute_name = "default.defSingle",
+        string maya_attribute_name = "default",
         string maya_attribute_type = "float",
         string label = "Default Single Value"
     ]],
 
     output color out_outTriple = color(0)
     [[
-        string maya_attribute_name = "output.outTriple",
+        string maya_attribute_name = "output",
         string maya_attribute_type = "vector",
         string label = "Output Triple Value",
         string widget = "null"
     ]],
     output float out_outSingle = 0.0
     [[
-        string maya_attribute_name = "output.outSingle",
+        string maya_attribute_name = "output",
         string maya_attribute_type = "float",
         string label = "Output Single Value",
         string widget = "null"
@@ -93,7 +93,6 @@ shader as_maya_quadShadingSwitch
             {
                 out_outTriple = in_inTriple[i];
                 out_outSingle = in_inSingle[i];
-                exit();
             }
         }
     }

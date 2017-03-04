@@ -142,12 +142,16 @@ namespace
                 m_params.get_required<string>(
                     "mdf",
                     "ggx",
-                    make_vector("beckmann", "ggx"),
+                    make_vector("beckmann", "ggx", "blinn"),
                     context);
 
             if (mdf == "ggx")
-                m_mdf = GGX;
-            else m_mdf = Beckmann;
+                m_mdf.reset(new GGXMDF());
+            else if (mdf == "beckmann")
+                m_mdf.reset(new BeckmannMDF());
+            else if (mdf == "blinn")
+                m_mdf.reset(new BlinnMDF());
+            else return false;
 
             return true;
         }
@@ -186,30 +190,14 @@ namespace
                 alpha_x,
                 alpha_y);
 
-            if (m_mdf == GGX)
-            {
-                const GGXMDF mdf;
-                MicrofacetBRDFHelper::sample(
-                    sampling_context,
-                    mdf,
-                    alpha_x,
-                    alpha_y,
-                    f,
-                    cos_on,
-                    sample);
-            }
-            else
-            {
-                const BeckmannMDF mdf;
-                MicrofacetBRDFHelper::sample(
-                    sampling_context,
-                    mdf,
-                    alpha_x,
-                    alpha_y,
-                    f,
-                    cos_on,
-                    sample);
-            }
+            MicrofacetBRDFHelper::sample(
+                sampling_context,
+                *m_mdf,
+                alpha_x,
+                alpha_y,
+                f,
+                cos_on,
+                sample);
         }
 
         virtual float evaluate(
@@ -247,36 +235,17 @@ namespace
                 values->m_reflectance_multiplier,
                 values->m_precomputed.m_outside_ior / values->m_ior);
 
-            if (m_mdf == GGX)
-            {
-                const GGXMDF mdf;
-                return MicrofacetBRDFHelper::evaluate(
-                    mdf,
-                    alpha_x,
-                    alpha_y,
-                    shading_basis,
-                    outgoing,
-                    incoming,
-                    f,
-                    cos_in,
-                    cos_on,
-                    value);
-            }
-            else
-            {
-                const BeckmannMDF mdf;
-                return MicrofacetBRDFHelper::evaluate(
-                    mdf,
-                    alpha_x,
-                    alpha_y,
-                    shading_basis,
-                    outgoing,
-                    incoming,
-                    f,
-                    cos_in,
-                    cos_on,
-                    value);
-            }
+            return MicrofacetBRDFHelper::evaluate(
+                *m_mdf,
+                alpha_x,
+                alpha_y,
+                shading_basis,
+                outgoing,
+                incoming,
+                f,
+                cos_in,
+                cos_on,
+                value);
         }
 
         virtual float evaluate_pdf(
@@ -306,36 +275,19 @@ namespace
                 alpha_x,
                 alpha_y);
 
-            if (m_mdf == GGX)
-            {
-                const GGXMDF mdf;
-                return MicrofacetBRDFHelper::pdf(
-                    mdf,
-                    alpha_x,
-                    alpha_y,
-                    shading_basis,
-                    outgoing,
-                    incoming);
-            }
-            else
-            {
-                const BeckmannMDF mdf;
-                return MicrofacetBRDFHelper::pdf(
-                    mdf,
-                    alpha_x,
-                    alpha_y,
-                    shading_basis,
-                    outgoing,
-                    incoming);
-            }
+            return MicrofacetBRDFHelper::pdf(
+                *m_mdf,
+                alpha_x,
+                alpha_y,
+                shading_basis,
+                outgoing,
+                incoming);
         }
 
       private:
         typedef GlossyBRDFInputValues InputValues;
 
-        enum MDF { GGX, Beckmann };
-
-        MDF m_mdf;
+        auto_ptr<MDF> m_mdf;
     };
 
     typedef BSDFWrapper<GlossyBRDFImpl> GlossyBRDF;

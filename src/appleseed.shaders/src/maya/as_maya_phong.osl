@@ -145,6 +145,45 @@ shader as_maya_phong
         string label = "Matte Opacity",
         string page = "Matte Opacity"
     ]],
+    int in_refractions = 0
+    [[
+        string maya_attribute_name = "refractions",
+        string maya_attribute_type = "bool",
+        string label = "Refractions",
+        string widget = "checkBox",
+        string page = "Raytrace Options"
+    ]],
+    float in_refractiveIndex = 1.0
+    [[
+        string maya_attribute_name = "refractiveIndex",
+        string maya_attribute_type = "float",
+        string label = "Refractive Index",
+        float min = 0.010,
+        float max = 3.0,
+        float softmin = 0.010,
+        float softmax = 3.0,
+        string page = "Raytrace Options"
+    ]],
+    int in_refractionLimit = 1
+    [[
+        string maya_attribute_name = "refractionLimit",
+        string maya_attribute_type = "int",
+        string label = "Refraction Limit",
+        string widget = "intslider",
+        int min = 0,
+        int max = 10,
+        int softmin = 0,
+        int softmax = 10,
+        string page = "Raytrace Options"
+    ]],
+    float in_shadowAttenuation = 0.5
+    [[
+        string maya_attribute_name = "shadowAttenuation",
+        string maya_attribute_type = "float",
+        string label = "Shadow Attenuation",
+        string page = "Raytrace Options"
+    ]],
+
     int in_hideSource = 0
     [[
         string maya_attribute_name = "hideSource",
@@ -159,13 +198,6 @@ shader as_maya_phong
         string maya_attribute_type = "float",
         string label = "Glow Intensity",
         string page = "Special Effects"
-    ]],
-    float in_shadowAttenuation = 0.5
-    [[
-        string maya_attribute_name = "shadowAttenuation",
-        string maya_attribute_type = "float",
-        string label = "Shadow Attenuation",
-        string page = "Raytrace Options"
     ]],
 
     output closure color out_outColor = 0
@@ -203,11 +235,11 @@ shader as_maya_phong
         color transparency = in_transparency ;
 
         // Shadow attenuation: 0=constant, 1=fake caustics.
-        if (in_transparency != 0 && in_shadowAttenuation > 0)
+        if (in_refractions && in_transparency)
         {
             transparency *= mix(
                 transparency,
-                max(0.0, dot(-normalize(I), normalize(in_normalCamera))),
+                abs(dot(normalize(I), normalize(in_normalCamera))),
                 in_shadowAttenuation
                 );
         }
@@ -218,49 +250,73 @@ shader as_maya_phong
     {
         normal Nn = normalize(in_normalCamera);
 
-        closure color transparency_term = in_transparency * transparent();
+        closure color transparency_term = 0, incandescence_term = 0;
+        closure color translucency_term = 0, diffuse_term = 0;
+        closure color specular_term = 0, refraction_term = 0;
+        closure color glow_term = 0;
 
-        color opacity = 1 - in_transparency;
+        color opacity = 1.0 - in_transparency;
 
-        closure color incandescence_term = opacity *
-            in_incandescence * emission();
+        if (in_color)
+        {
+            diffuse_term = opacity * in_diffuse * in_color * diffuse(Nn);
+            
+            translucency_term = opacity * in_translucence *
+                in_color * translucent(Nn);
+        }
 
-        closure color diffuse_term = opacity *
-            in_diffuse * in_color * diffuse(Nn);
-
-        // Translucence focus and depth (light wrapping) parameters ignored.
-        closure color translucence_term = opacity *
-            in_translucence * in_color * translucent(Nn);
-
-        closure color specular_term = 0;
+        if (raytype("light") && in_incandescence)
+        {
+            incandescence_term = opacity * in_incandescence * emission();
+        }
 
         if (in_specularColor)
         {
             specular_term = opacity * in_specularColor *
-                phong(Nn, in_cosinePower);
+                phong(Nn, in_cosinePower * 10); // better matches Maya results
         }
-        
-        float matte_opacity;
 
-        if (in_matteOpacityMode == 0)
+        // Maya associates the transparency with the BTDF.
+        if (in_refractions)
         {
-            matte_opacity = 0.0;
-        }
-        else if (in_matteOpacityMode == 1)
-        {
-            matte_opacity = 1.0;
+            int ray_depth = 0;
+            int status = getattribute("path:ray_depth", ray_depth);
+
+            if (status && ray_depth <= in_refractionLimit)
+            {
+                // Maya associates transparency with the BTDF.
+                refraction_term = in_transparency *
+                    refraction(Nn, in_refractiveIndex);
+            }
+
+            opacity = 1.0;
         }
         else
         {
-            matte_opacity = in_matteOpacity;
+            transparency_term = in_transparency * transparent();
         }
 
-        closure color matte_term = matte_opacity * holdout();
+        if (in_specularColor)
+        {
+            specular_term = opacity * in_specularColor *
+                phong(Nn, in_cosinePower * 10);
+        }
+
+        closure color matte_term;
+
+        if (in_matteOpacityMode == 0)
+        {
+            matte_term = 0;
+        }
+        else if (in_matteOpacityMode == 1)
+        {
+            matte_term = holdout();
+        }
+        else
+        {
+            matte_term = in_matteOpacity * holdout();
+        }
         
-        out_outMatteOpacity = matte_term;
-
-        closure color glow_term = 0;
-
         if (in_glowIntensity)
         {
             // glow_term = opacity * in_glowIntensity * post_glow();
@@ -270,10 +326,16 @@ shader as_maya_phong
         out_outColor =
             incandescence_term +
             diffuse_term +
-            translucence_term +
+            translucency_term +
             specular_term +
+            refraction_term +
             matte_term +
             glow_term +
             transparency_term;
+
+        out_outTransparency = transparency_term;
+        out_outMatteOpacity = matte_term;
+        out_outGlowColor = glow_term;
     }
 }
+

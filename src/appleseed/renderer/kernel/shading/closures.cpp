@@ -67,6 +67,7 @@ namespace
     //
 
     const OIIO::ustring g_beckmann_str("beckmann");
+    const OIIO::ustring g_blinn_str("blinn");
     const OIIO::ustring g_ggx_str("ggx");
 
     const OIIO::ustring g_standard_dipole_profile_str("standard_dipole");
@@ -582,6 +583,17 @@ namespace
                 values =
                     composite_closure.add_closure<GlossyBRDFInputValues>(
                         GlossyBeckmannID,
+                        shading_basis,
+                        weight,
+                        p->N,
+                        p->T,
+                        arena);
+            }
+            else if (p->dist == g_blinn_str)
+            {
+                values =
+                    composite_closure.add_closure<GlossyBRDFInputValues>(
+                        GlossyBlinnID,
                         shading_basis,
                         weight,
                         p->N,

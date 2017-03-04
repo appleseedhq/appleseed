@@ -96,6 +96,7 @@ enum ClosureID
 
     GlossyID,
     GlossyBeckmannID,
+    GlossyBlinnID,
     GlossyGGXID,
 
     MetalID,
