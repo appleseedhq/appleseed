@@ -60,6 +60,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <clocale>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -280,15 +281,15 @@ int main(int argc, char* argv[])
     g_previous_message_handler = qInstallMsgHandler(message_handler);
 
     QApplication application(argc, argv);
+    // QApplication sets C locale to user's locale, we need to fix this
+    std::setlocale(LC_ALL, "C");
+
     QApplication::setOrganizationName("appleseedhq");
     QApplication::setOrganizationDomain("appleseedhq.net");
     QApplication::setApplicationName("appleseed.studio");
     QApplication::setApplicationVersion(Appleseed::get_lib_version());
     QApplication::setWindowIcon(QIcon(make_app_path("icons/appleseed.png")));
-
-    // The locale must be set after the construction of QApplication.
-    QLocale::setDefault(QLocale::C);
-
+    
     check_installation();
 
     // Parse the command line.
