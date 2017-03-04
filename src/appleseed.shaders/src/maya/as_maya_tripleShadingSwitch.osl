@@ -36,13 +36,13 @@ shader as_maya_tripleShadingSwitch
 (
     color in_inTriple[] = {0}
     [[
-        string maya_attribute_name = "input[].inTriple",
-        string maya_attribute_type = "vector[]",
+        string maya_attribute_name = "inputs",
+        string maya_attribute_type = "color[]",
         string label = "Input Value"
     ]],
     string in_inShape[] = {""}
     [[
-        string maya_attribute_name = "input[].inShape",
+        string maya_attribute_name = "inputs",
         string maya_attribute_type = "string[]",
         string label = "Shape Name"
     ]],
@@ -72,7 +72,6 @@ shader as_maya_tripleShadingSwitch
             if (in_inShape[i] == shape)
             {
                 out_output = in_inTriple[i];
-                exit();
             }
         }
     }
