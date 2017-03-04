@@ -70,6 +70,7 @@ set (appleseed_library_osl_headers
     include/appleseed/maya/as_maya_fractal_helpers.h
     include/appleseed/maya/as_maya_helpers.h
     include/appleseed/maya/as_maya_layer_helpers.h
+    include/appleseed/maya/as_maya_pattern_helpers.h
     include/appleseed/maya/as_maya_ramp_helpers.h
     include/appleseed/maya/as_maya_transform_helpers.h
     include/appleseed/pattern/as_pattern_helpers.h
@@ -176,6 +177,7 @@ set (appleseed_maya_osl_sources
      src/maya/as_maya_contrast.osl
      src/maya/as_maya_distanceBetween.osl
      src/maya/as_maya_doubleShadingSwitch.osl
+     src/maya/as_maya_envChrome.osl
      src/maya/as_maya_file.osl
      src/maya/as_maya_fourByFourMatrix.osl
      src/maya/as_maya_fractal.osl
