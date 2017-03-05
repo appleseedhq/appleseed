@@ -117,6 +117,26 @@ namespace
             return Model;
         }
 
+        virtual size_t compute_input_data_size() const APPLESEED_OVERRIDE
+        {
+            return sizeof(InputValues);
+        }
+
+        virtual void prepare_inputs(
+            Arena&                  arena,
+            const ShadingPoint&     shading_point,
+            void*                   data) const APPLESEED_OVERRIDE
+        {
+            InputValues* values = static_cast<InputValues*>(data);
+            new (&values->m_precomputed) InputValues::Precomputed();
+
+            artist_friendly_fresnel_conductor_reparameterization(
+                values->m_normal_reflectance,
+                values->m_edge_tint,
+                values->m_precomputed.m_n,
+                values->m_precomputed.m_k);
+        }
+
         virtual bool on_frame_begin(
             const Project&          project,
             const BaseGroup*        parent,
@@ -158,9 +178,9 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            FresnelFriendlyConductorFun f(
-                values->m_normal_reflectance,
-                values->m_edge_tint,
+            FresnelConductorFun f(
+                values->m_precomputed.m_n,
+                values->m_precomputed.m_k,
                 values->m_reflectance_multiplier);
 
             // If roughness is zero use reflection.
@@ -217,9 +237,9 @@ namespace
                 alpha_x,
                 alpha_y);
 
-            FresnelFriendlyConductorFun f(
-                values->m_normal_reflectance,
-                values->m_edge_tint,
+            FresnelConductorFun f(
+                values->m_precomputed.m_n,
+                values->m_precomputed.m_k,
                 values->m_reflectance_multiplier);
 
             return MicrofacetBRDFHelper::evaluate(
