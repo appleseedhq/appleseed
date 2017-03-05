@@ -157,18 +157,7 @@ void OSLShaderGroupExec::execute_bump(
             shading_point,
             VisibilityFlags::CameraRay);
 
-        CompositeSurfaceClosure c(
-            Basis3f(shading_point.get_shading_basis()),
-            shading_point.get_osl_shader_globals().Ci,
-            m_arena);
-
-        // Pick a shading basis from one of the BSDF closures.
-        if (c.get_closure_count() > 0)
-        {
-            const size_t index = c.choose_closure(s[1]);
-            shading_point.set_shading_basis(
-                Basis3d(c.get_closure_shading_basis(index)));
-        }
+        choose_bsdf_closure_shading_basis(shading_point, s);
     }
 }
 
@@ -232,6 +221,23 @@ void OSLShaderGroupExec::do_execute(
 #endif
         *shader_group.shader_group_ref(),
         shading_point.get_osl_shader_globals());
+}
+
+void OSLShaderGroupExec::choose_bsdf_closure_shading_basis(
+    const ShadingPoint&             shading_point,
+    const Vector2f&                 s) const
+{
+    CompositeSurfaceClosure c(
+        Basis3f(shading_point.get_shading_basis()),
+        shading_point.get_osl_shader_globals().Ci,
+        m_arena);
+
+    if (c.get_closure_count() > 0)
+    {
+        const size_t index = c.choose_closure(s[1]);
+        shading_point.set_shading_basis(
+            Basis3d(c.get_closure_shading_basis(index)));
+    }
 }
 
 }   // namespace renderer
