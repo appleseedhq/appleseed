@@ -26,11 +26,11 @@
 // THE SOFTWARE.
 //
 
-// Ref: $MAYA_LOCATION/docs/Nodes/phong.html
+// Ref: $MAYA_LOCATION/docs/Nodes/phongE.html
 
-shader as_maya_phong
+shader as_maya_phongE
 [[
-    string maya_node_name = "phong",
+    string maya_node_name = "phongE",
     string maya_classification = "shader/surface"
 ]]
 (
@@ -97,15 +97,25 @@ shader as_maya_phong
         string label = "Translucence Focus",
         string page = "Common Material Attributes"
     ]],
-    float in_cosinePower = 20.0
+    float in_roughness = 0.5
     [[
-        string maya_attribute_name = "cosinePower",
+        string maya_attribute_name = "roughness",
         string maya_attribute_type = "float",
-        string label = "Cosine Power",
-        float min = 1.0,
-        float max = 100000.0,
-        float softmin = 2.0,
-        float softmax = 100.0,
+        string label = "Roughness",
+        string page = "Specular Shading"
+    ]],
+    float in_highlightSize = 0.5
+    [[
+        string maya_attribute_name = "highlightSize",
+        string maya_attribute_type = "float",
+        string label = "Highlight Size",
+        string page = "Specular Shading"
+    ]],
+    color in_whiteness = color(0.5)
+    [[
+        string maya_attribute_name = "whiteness",
+        string maya_attribute_type = "color",
+        string label = "Whiteness",
         string page = "Specular Shading"
     ]],
     color in_specularColor = color(0.5)
@@ -292,9 +302,20 @@ shader as_maya_phong
 
         if (in_specularColor)
         {
-            specular_term = opacity * in_specularColor *
-                phong(Nn, in_cosinePower * 10);
-        }
+            color specular_color = in_specularColor *
+                mix(in_color, color(1), in_whiteness);
+
+            // Parameter "highlight size" controls the tails of the specular
+            // term (i.e: gamma in GTR MDF). Not implemented yet.
+            
+            specular_term = opacity * specular_color *
+                microfacet(
+                    "ggx",
+                    Nn,
+                    in_roughness,
+                    0.0,    // eta
+                    0);     // refract
+        } 
 
         closure color matte_term;
 

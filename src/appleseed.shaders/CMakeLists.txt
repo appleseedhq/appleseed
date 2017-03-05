@@ -196,6 +196,7 @@ set (appleseed_maya_osl_sources
      src/maya/as_maya_multMatrix.osl
      src/maya/as_maya_noise.osl
      src/maya/as_maya_phong.osl
+     src/maya/as_maya_phongE.osl
      src/maya/as_maya_place2dTexture.osl
      src/maya/as_maya_place3dTexture.osl
      src/maya/as_maya_plusMinusAverage.osl
