@@ -32,7 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/utility/paramarray.h"

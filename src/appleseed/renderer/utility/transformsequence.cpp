@@ -39,10 +39,8 @@
 
 // Standard headers.
 #include <algorithm>
-#include <cassert>
 #include <cmath>
 #include <cstring>
-#include <vector>
 
 using namespace foundation;
 using namespace std;

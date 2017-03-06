@@ -56,6 +56,7 @@
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/arena.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -172,6 +173,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
     while (true)
     {
+        shading_context.get_arena().clear();
+
 #ifndef NDEBUG
         // Save the sampling context at the beginning of the iteration.
         const SamplingContext backup_sampling_context(sampling_context);
@@ -440,9 +443,9 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         vertex.m_prev_prob = bsdf_sample.m_probability;
 
         // Update the path throughput.
-        vertex.m_throughput *= bsdf_sample.m_value;
         if (bsdf_sample.m_probability != BSDF::DiracDelta)
-            vertex.m_throughput /= bsdf_sample.m_probability;
+            bsdf_sample.m_value /= bsdf_sample.m_probability;
+        vertex.m_throughput *= bsdf_sample.m_value;
 
         // Use Russian Roulette to cut the path without introducing bias.
         if (vertex.m_path_length >= m_rr_min_path_length)

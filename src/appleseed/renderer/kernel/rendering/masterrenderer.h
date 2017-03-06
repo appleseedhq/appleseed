@@ -45,7 +45,6 @@ namespace renderer      { class IFrameRenderer; }
 namespace renderer      { class ITileCallback; }
 namespace renderer      { class ITileCallbackFactory; }
 namespace renderer      { class Project; }
-namespace renderer      { class RendererServices; }
 namespace renderer      { class SerialRendererController; }
 
 namespace renderer

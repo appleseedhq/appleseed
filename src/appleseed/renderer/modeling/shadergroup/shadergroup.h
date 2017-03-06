@@ -35,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
@@ -48,12 +49,9 @@ END_OSL_INCLUDES
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class Assembly; }
 namespace renderer      { class AssemblyInstance; }
-namespace renderer      { class LightSamper; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class ObjectInstance; }
-namespace renderer      { class Project; }
 
 namespace renderer
 {

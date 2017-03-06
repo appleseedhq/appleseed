@@ -49,9 +49,8 @@
 
 // Forward declarations.
 namespace foundation    { class Dictionary; }
-namespace foundation    { class Statistics; }
+namespace foundation    { class StatisticsVector; }
 namespace foundation    { class Tile; }
-namespace renderer      { class Assemblies; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Scene; }
 

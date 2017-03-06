@@ -130,7 +130,7 @@ namespace
               , m_max_iterations(params.get_optional<size_t>("max_iterations", 1000))
               , m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
               , m_max_path_length(nz(params.get_optional<size_t>("max_path_length", 0)))
-              , m_rr_min_path_length(nz(params.get_optional<size_t>("rr_min_path_length", 6)))
+              , m_rr_min_path_length(nz(params.get_optional<size_t>("rr_min_path_length", 3)))
             {
             }
 

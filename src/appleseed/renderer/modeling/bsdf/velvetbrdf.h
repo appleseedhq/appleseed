@@ -30,7 +30,6 @@
 #define APPLESEED_RENDERER_MODELING_BSDF_VELVETBRDF_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
 
 // appleseed.foundation headers.

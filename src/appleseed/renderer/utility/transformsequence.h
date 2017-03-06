@@ -39,6 +39,7 @@
 #include "main/dllsymbol.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 
 namespace renderer

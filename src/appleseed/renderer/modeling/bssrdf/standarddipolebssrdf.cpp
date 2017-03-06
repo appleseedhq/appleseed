@@ -45,6 +45,9 @@
 #include <cmath>
 #include <cstddef>
 
+// Forward declarations.
+namespace foundation    { class Arena; }
+
 using namespace foundation;
 using namespace std;
 

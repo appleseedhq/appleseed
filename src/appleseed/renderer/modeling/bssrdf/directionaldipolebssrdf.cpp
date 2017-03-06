@@ -33,10 +33,10 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bssrdf/dipolebssrdf.h"
+#include "renderer/modeling/bssrdf/sss.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/fresnel.h"
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -48,8 +48,7 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class BSSRDFSample; }
-namespace renderer  { class ShadingContext; }
+namespace foundation    { class Arena; }
 
 using namespace foundation;
 using namespace std;

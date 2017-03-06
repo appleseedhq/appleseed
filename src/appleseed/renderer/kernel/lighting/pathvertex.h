@@ -35,6 +35,7 @@
 #include "renderer/kernel/lighting/lightsampler.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -52,8 +53,6 @@ namespace renderer  { class BSSRDF; }
 namespace renderer  { class EDF; }
 namespace renderer  { class Material; }
 namespace renderer  { class ShadingContext; }
-namespace renderer  { class ShadingRay; }
-namespace renderer  { class TextureCache; }
 
 namespace renderer
 {

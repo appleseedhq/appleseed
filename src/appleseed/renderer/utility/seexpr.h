@@ -53,6 +53,7 @@
 #include "foundation/platform/oiioheaderguards.h"
 BEGIN_OIIO_INCLUDES
 #include "OpenImageIO/texture.h"
+#include "OpenImageIO/ustring.h"
 END_OIIO_INCLUDES
 
 // Boost headers.
