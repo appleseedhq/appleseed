@@ -149,12 +149,6 @@ namespace
             // Precompute some stuff. Same as for the Better Dipole model.
             const Vector3f xoxi = xo - xi;
             const float r2 = square_norm(xoxi);                                         // square distance between points of incidence and emergence
-            if (r2 == 0.0f)
-            {
-                value.set(0.0f);
-                return;
-            }
-
             const float eta = values->m_base_values.m_eta;
             const float rcp_eta = 1.0f / eta;
             const float cphi_eta = 0.25f * (1.0f - fresnel_first_moment_x2(rcp_eta));
@@ -162,7 +156,10 @@ namespace
             const float A = (1.0f - ce_eta) / (2.0f * cphi_eta);                        // reflection parameter
 
             // Compute normal to modified tangent plane.
-            const Vector3f ni_star = cross(xoxi / sqrt(r2), normalize(cross(ni, xoxi)));
+            const Vector3f ni_star =
+                r2 > 0.0f                                                               // we assume that if r2 > 0, then sqrt(r2) is also > 0
+                    ? cross(xoxi / sqrt(r2), normalize(cross(ni, xoxi)))
+                    : ni;
             assert(is_normalized(ni_star));
 
             // Compute direction of real ray source.
