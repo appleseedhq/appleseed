@@ -440,9 +440,9 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         vertex.m_prev_prob = bsdf_sample.m_probability;
 
         // Update the path throughput.
-        vertex.m_throughput *= bsdf_sample.m_value;
         if (bsdf_sample.m_probability != BSDF::DiracDelta)
-            vertex.m_throughput /= bsdf_sample.m_probability;
+            bsdf_sample.m_value /= bsdf_sample.m_probability;
+        vertex.m_throughput *= bsdf_sample.m_value;
 
         // Use Russian Roulette to cut the path without introducing bias.
         if (vertex.m_path_length >= m_rr_min_path_length)
