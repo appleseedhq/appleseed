@@ -529,6 +529,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         EXPECT_FEQ_EPS(Rd, integral, 1.0e-2f);
     }
 
+#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
+
     //
     // Normalized Diffusion BSSRDF.
     //
@@ -798,6 +800,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         EXPECT_FEQ_EPS(Rd, integral, 1.0e-2f);
     }
+
+#endif
 
     //
     // Standard dipole BSSRDF.
