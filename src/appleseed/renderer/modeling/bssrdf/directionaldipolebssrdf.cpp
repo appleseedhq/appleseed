@@ -146,7 +146,6 @@ namespace
             const Vector3f&                 no,
             Spectrum&                       value)
         {
-            // Precompute some stuff. Same as for the Better Dipole model.
             const Vector3f xoxi = xo - xi;
             const float r2 = square_norm(xoxi);                                         // square distance between points of incidence and emergence
             const float eta = values->m_base_values.m_eta;
