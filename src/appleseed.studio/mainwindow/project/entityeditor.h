@@ -163,6 +163,8 @@ class EntityEditor
     void slot_open_file_picker(const QString& widget_name);
 
     void slot_apply();
+
+    void slot_reset_color(const QString& widget_name, const QColor& color);
 };
 
 }       // namespace studio
