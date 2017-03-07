@@ -136,8 +136,8 @@ class ForwardColorChangedSignal
   public:
     ForwardColorChangedSignal(
         QObject*        parent,
-        const QColor&   initial_color,
-        const QString&  widget_name);
+        const QString&  widget_name,
+        const QColor&   initial_color);
 
   public slots:
     void slot_color_changed(const QColor& color);
@@ -148,8 +148,8 @@ class ForwardColorChangedSignal
     void signal_reset_color(const QString& widget_name, const QColor& color);
 
   private:
-    const QColor m_initial_color;
     const QString m_widget_name;
+    const QColor m_initial_color;
 };
 
 }       // namespace studio

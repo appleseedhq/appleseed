@@ -261,11 +261,11 @@ void LineEditDoubleSliderAdaptor::adjust_slider(const double new_value)
 
 ForwardColorChangedSignal::ForwardColorChangedSignal(
     QObject*        parent,
-    const QColor&   initial_color,
-    const QString&  widget_name)
+    const QString&  widget_name,
+    const QColor&   initial_color)
   : QObject(parent)
-  , m_initial_color(initial_color)
   , m_widget_name(widget_name)
+  , m_initial_color(initial_color)
 {
 }
 
