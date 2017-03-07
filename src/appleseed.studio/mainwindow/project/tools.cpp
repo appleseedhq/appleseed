@@ -261,34 +261,22 @@ void LineEditDoubleSliderAdaptor::adjust_slider(const double new_value)
 
 ForwardColorChangedSignal::ForwardColorChangedSignal(
     QObject*        parent,
+    const QColor&   initial_color,
     const QString&  widget_name)
   : QObject(parent)
+  , m_initial_color(initial_color)
   , m_widget_name(widget_name)
 {
+}
+
+void ForwardColorChangedSignal::slot_reset_color()
+{
+    emit signal_reset_color(m_widget_name, m_initial_color);
 }
 
 void ForwardColorChangedSignal::slot_color_changed(const QColor& color)
 {
     emit signal_color_changed(m_widget_name, color);
-}
-
-//
-// ForwardResetColorSignal class implementation.
-//
-
-ForwardResetColorSignal::ForwardResetColorSignal(
-    QObject*        parent,
-    const QColor&   color,
-    const QString&  widget_name)
-  : QObject(parent)
-  , m_color(color)
-  , m_widget_name(widget_name)
-{
-}
-
-void ForwardResetColorSignal::slot_reset_color()
-{
-    emit signal_reset_color(m_widget_name, m_color);
 }
 
 }   // namespace studio

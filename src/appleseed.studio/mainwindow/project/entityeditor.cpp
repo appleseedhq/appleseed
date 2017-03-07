@@ -596,32 +596,23 @@ void EntityEditor::slot_open_color_picker(const QString& widget_name)
     dialog->setWindowTitle("Pick Color");
     dialog->setOptions(QColorDialog::DontUseNativeDialog);
 
-    ForwardResetColorSignal* reset_signal =
-        new ForwardResetColorSignal(dialog, color_to_qcolor(initial_color), widget_name);
-    connect(dialog, SIGNAL(rejected()),
-        reset_signal, SLOT(slot_reset_color()));
-    connect(reset_signal, SIGNAL(signal_reset_color(const QString&, const QColor&)),
-        SLOT(slot_reset_color(const QString&, const QColor&)));
-
     ForwardColorChangedSignal* forward_signal =
-        new ForwardColorChangedSignal(dialog, widget_name);
+        new ForwardColorChangedSignal(dialog, color_to_qcolor(initial_color), widget_name);  
     connect(
         dialog, SIGNAL(currentColorChanged(const QColor&)),
         forward_signal, SLOT(slot_color_changed(const QColor&)));
     connect(
         forward_signal, SIGNAL(signal_color_changed(const QString&, const QColor&)),
         SLOT(slot_color_changed(const QString&, const QColor&)));
+    connect(
+        dialog, SIGNAL(rejected()),
+        forward_signal, SLOT(slot_reset_color()));
+    connect(
+        forward_signal, SIGNAL(signal_reset_color(const QString&, const QColor&)),
+        SLOT(slot_color_changed(const QString&, const QColor&)));
 
     dialog->exec();
 }
-
-void EntityEditor::slot_reset_color(const QString& widget_name, const QColor& color)
-{
-    IInputWidgetProxy* widget_proxy = m_widget_proxies.get(widget_name.toStdString());
-    widget_proxy->set(to_string(qcolor_to_color<Color3d>(color)));
-    widget_proxy->emit_signal_changed();
-}
-
 
 void EntityEditor::slot_color_changed(const QString& widget_name, const QColor& color)
 {

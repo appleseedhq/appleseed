@@ -136,41 +136,19 @@ class ForwardColorChangedSignal
   public:
     ForwardColorChangedSignal(
         QObject*        parent,
+        const QColor&   initial_color,
         const QString&  widget_name);
 
   public slots:
     void slot_color_changed(const QColor& color);
-
-  signals:
-    void signal_color_changed(const QString& widget_name, const QColor& color);
-
-  private:
-    const QString m_widget_name;
-};
-
-//
-// Adds extra information to the signal emitted when the color resets.
-//
-
-class ForwardResetColorSignal
-  : public QObject
-{
-    Q_OBJECT
-
-  public:
-    ForwardResetColorSignal(
-        QObject*        parent,
-        const QColor&   color,
-        const QString&  widget_name);
-
-  public slots:
     void slot_reset_color();
 
   signals:
+    void signal_color_changed(const QString& widget_name, const QColor& color);
     void signal_reset_color(const QString& widget_name, const QColor& color);
 
   private:
-    const QColor m_color;
+    const QColor m_initial_color;
     const QString m_widget_name;
 };
 

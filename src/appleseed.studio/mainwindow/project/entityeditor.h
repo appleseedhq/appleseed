@@ -164,7 +164,6 @@ class EntityEditor
 
     void slot_apply();
 
-    void slot_reset_color(const QString& widget_name, const QColor& color);
 };
 
 }       // namespace studio
