@@ -502,6 +502,14 @@ void EntityEditor::slot_rebuild_form()
     emit signal_applied(get_values());
 }
 
+void EntityEditor::slot_clear_crop_window_field()
+{
+    IInputWidgetProxy* widget_proxy = m_widget_proxies.get("crop_window");
+
+    if (widget_proxy)
+        widget_proxy->set("");
+}
+
 namespace
 {
     class ForwardAcceptedSignal
