@@ -446,6 +446,22 @@ namespace
                         vertex_aovs);
                 }
 
+                // If we have an OSL shader and this is not the last vertex of the path,
+                // we need to choose one of the closures and set its shading basis into the shading point
+                // for the DirectLightingIntegrator to use it.
+                if (!last_vertex && (m_params.m_enable_dl || m_params.m_enable_ibl))
+                {
+                    const Material::RenderData& material_data =
+                        vertex.m_shading_point->get_material()->get_render_data();
+
+                    if (material_data.m_shader_group)
+                    {
+                        m_shading_context.choose_bsdf_closure_shading_basis(
+                            *vertex.m_shading_point,
+                            m_sampling_context.next2<Vector2f>());
+                    }
+                }
+
                 // Direct lighting.
                 if (m_params.m_enable_dl || vertex.m_path_length > 1)
                 {

@@ -138,6 +138,11 @@ class ShadingContext
         const foundation::Color3f&  color,
         const float                 alpha) const;
 
+    // Choose one of the bsdf closures and set its shading basis in shading point.
+    void choose_bsdf_closure_shading_basis(
+        const ShadingPoint&         shading_point,
+        const foundation::Vector2f& s) const;
+
   private:
     const Intersector&              m_intersector;
     Tracer&                         m_tracer;

@@ -120,6 +120,10 @@ class OSLShaderGroupExec
         const ShaderGroup&              shader_group,
         const ShadingPoint&             shading_point,
         const VisibilityFlags::Type     ray_flags) const;
+
+    void choose_bsdf_closure_shading_basis(
+        const ShadingPoint&             shading_point,
+        const foundation::Vector2f&     s) const;
 };
 
 }       // namespace renderer
