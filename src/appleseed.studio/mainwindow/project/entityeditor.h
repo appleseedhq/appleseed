@@ -154,7 +154,7 @@ class EntityEditor
   private slots:
     void slot_rebuild_form();
 
-    void slot_clear_crop_window_field();
+    void slot_clear_crop_window_widget();
 
     void slot_open_entity_browser(const QString& widget_name);
     void slot_entity_browser_accept(QString widget_name, QString page_name, QString entity_name);

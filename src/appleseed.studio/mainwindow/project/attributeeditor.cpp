@@ -84,8 +84,8 @@ void AttributeEditor::edit(
         receiver, slot_apply);
 
     QObject::connect(
-        m_parent->window(), SIGNAL(signal_clear_crop_window_field()),
-        m_entity_editor.get(), SLOT(slot_clear_crop_window_field()));
+        m_parent->window(), SIGNAL(signal_crop_window_cleared()),
+        m_entity_editor.get(), SLOT(slot_clear_crop_window_widget()));
 }
 
 }   // namespace studio

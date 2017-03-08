@@ -502,7 +502,7 @@ void EntityEditor::slot_rebuild_form()
     emit signal_applied(get_values());
 }
 
-void EntityEditor::slot_clear_crop_window_field()
+void EntityEditor::slot_clear_crop_window_widget()
 {
     IInputWidgetProxy* widget_proxy = m_widget_proxies.get("crop_window");
 

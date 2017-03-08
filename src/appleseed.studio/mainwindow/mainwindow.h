@@ -92,7 +92,7 @@ class MainWindow
     void open_and_render_project(const QString& filepath, const QString& configuration);
 
   signals:
-    void signal_clear_crop_window_field();
+    void signal_crop_window_cleared();
 
   private:
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
