@@ -117,6 +117,26 @@ namespace
             return Model;
         }
 
+        virtual size_t compute_input_data_size() const APPLESEED_OVERRIDE
+        {
+            return sizeof(InputValues);
+        }
+
+        virtual void prepare_inputs(
+            Arena&                  arena,
+            const ShadingPoint&     shading_point,
+            void*                   data) const APPLESEED_OVERRIDE
+        {
+            InputValues* values = static_cast<InputValues*>(data);
+            new (&values->m_precomputed) InputValues::Precomputed();
+
+            artist_friendly_fresnel_conductor_reparameterization(
+                values->m_normal_reflectance,
+                values->m_edge_tint,
+                values->m_precomputed.m_n,
+                values->m_precomputed.m_k);
+        }
+
         virtual bool on_frame_begin(
             const Project&          project,
             const BaseGroup*        parent,
@@ -134,7 +154,11 @@ namespace
                     make_vector("beckmann", "ggx"),
                     context);
 
-            m_mdf = mdf == "ggx" ? GGX : Beckmann;
+            if (mdf == "ggx")
+                m_mdf.reset(new GGXMDF());
+            else if (mdf == "beckmann")
+                m_mdf.reset(new BeckmannMDF());
+            else return false;
 
             return true;
         }
@@ -154,9 +178,9 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            FresnelFriendlyConductorFun f(
-                values->m_normal_reflectance,
-                values->m_edge_tint,
+            FresnelConductorFun f(
+                values->m_precomputed.m_n,
+                values->m_precomputed.m_k,
                 values->m_reflectance_multiplier);
 
             // If roughness is zero use reflection.
@@ -173,30 +197,14 @@ namespace
                 alpha_x,
                 alpha_y);
 
-            if (m_mdf == GGX)
-            {
-                const GGXMDF mdf;
-                MicrofacetBRDFHelper::sample(
-                    sampling_context,
-                    mdf,
-                    alpha_x,
-                    alpha_y,
-                    f,
-                    cos_on,
-                    sample);
-            }
-            else
-            {
-                const BeckmannMDF mdf;
-                MicrofacetBRDFHelper::sample(
-                    sampling_context,
-                    mdf,
-                    alpha_x,
-                    alpha_y,
-                    f,
-                    cos_on,
-                    sample);
-            }
+            MicrofacetBRDFHelper::sample(
+                sampling_context,
+                *m_mdf,
+                alpha_x,
+                alpha_y,
+                f,
+                cos_on,
+                sample);
         }
 
         virtual float evaluate(
@@ -229,41 +237,22 @@ namespace
                 alpha_x,
                 alpha_y);
 
-            FresnelFriendlyConductorFun f(
-                values->m_normal_reflectance,
-                values->m_edge_tint,
+            FresnelConductorFun f(
+                values->m_precomputed.m_n,
+                values->m_precomputed.m_k,
                 values->m_reflectance_multiplier);
 
-            if (m_mdf == GGX)
-            {
-                const GGXMDF mdf;
-                return MicrofacetBRDFHelper::evaluate(
-                    mdf,
-                    alpha_x,
-                    alpha_y,
-                    shading_basis,
-                    outgoing,
-                    incoming,
-                    f,
-                    cos_in,
-                    cos_on,
-                    value);
-            }
-            else
-            {
-                const BeckmannMDF mdf;
-                return MicrofacetBRDFHelper::evaluate(
-                    mdf,
-                    alpha_x,
-                    alpha_y,
-                    shading_basis,
-                    outgoing,
-                    incoming,
-                    f,
-                    cos_in,
-                    cos_on,
-                    value);
-            }
+            return MicrofacetBRDFHelper::evaluate(
+                *m_mdf,
+                alpha_x,
+                alpha_y,
+                shading_basis,
+                outgoing,
+                incoming,
+                f,
+                cos_in,
+                cos_on,
+                value);
         }
 
         virtual float evaluate_pdf(
@@ -293,40 +282,19 @@ namespace
                 alpha_x,
                 alpha_y);
 
-            if (m_mdf == GGX)
-            {
-                const GGXMDF mdf;
-                return MicrofacetBRDFHelper::pdf(
-                    mdf,
-                    alpha_x,
-                    alpha_y,
-                    shading_basis,
-                    outgoing,
-                    incoming);
-            }
-            else
-            {
-                const BeckmannMDF mdf;
-                return MicrofacetBRDFHelper::pdf(
-                    mdf,
-                    alpha_x,
-                    alpha_y,
-                    shading_basis,
-                    outgoing,
-                    incoming);
-            }
+            return MicrofacetBRDFHelper::pdf(
+                *m_mdf,
+                alpha_x,
+                alpha_y,
+                shading_basis,
+                outgoing,
+                incoming);
         }
 
       private:
         typedef MetalBRDFInputValues InputValues;
 
-        enum MDF
-        {
-            GGX,
-            Beckmann
-        };
-
-        MDF m_mdf;
+        auto_ptr<MDF> m_mdf;
     };
 
     typedef BSDFWrapper<MetalBRDFImpl> MetalBRDF;

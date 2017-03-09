@@ -134,6 +134,39 @@ class FresnelFriendlyConductorFun
     const float     m_reflectance_multiplier;
 };
 
+class FresnelConductorFun
+{
+  public:
+    FresnelConductorFun(
+        const Spectrum&             n,
+        const Spectrum&             k,
+        const float                 reflectance_multiplier)
+      : m_n(n)
+      , m_k(k)
+      , m_reflectance_multiplier(reflectance_multiplier)
+    {
+    }
+
+    void operator()(
+        const foundation::Vector3f& o,
+        const foundation::Vector3f& h,
+        const foundation::Vector3f& n,
+        Spectrum&                   value) const
+    {
+        foundation::fresnel_reflectance_conductor(
+            value,
+            m_n,
+            m_k,
+            foundation::dot(o, h));
+        value *= m_reflectance_multiplier;
+    }
+
+  private:
+    const Spectrum& m_n;
+    const Spectrum& m_k;
+    const float     m_reflectance_multiplier;
+};
+
 }       // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_MODELING_BSDF_FRESNEL_H
