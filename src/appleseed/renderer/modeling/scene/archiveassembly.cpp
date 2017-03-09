@@ -39,6 +39,7 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
@@ -101,7 +102,8 @@ bool ArchiveAssembly::expand_contents(
     {
         // Establish and store the qualified path to the archive project.
         const SearchPaths& search_paths = project.search_paths();
-        const string filepath = search_paths.qualify(m_params.get_required<string>("filename", ""));
+        const string filepath =
+            to_string(search_paths.qualify(m_params.get_required<string>("filename", "")));
 
         ProjectFileReader reader;
         auto_release_ptr<Assembly> assembly =

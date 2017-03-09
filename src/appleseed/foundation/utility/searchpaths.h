@@ -31,7 +31,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_SEARCHPATHS_H
 
 // appleseed.foundation headers.
-#include "foundation/utility/string.h"
+#include "foundation/utility/api/apistring.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -83,7 +83,7 @@ class APPLESEED_DLLSYMBOL SearchPaths
     void set_root_path(const std::string& path);
 
     // Return the root path used to resolve relative search paths.
-    std::string get_root_path() const;
+    APIString get_root_path() const;
 
     // Return true if the root path has been set.
     bool has_root_path() const;
@@ -120,23 +120,24 @@ class APPLESEED_DLLSYMBOL SearchPaths
     bool exist(const std::string& filepath) const;
 
     // Find a file in the search paths. If the file was found, the qualified path to
-    // this file is returned. Otherwise the input path is returned. The second variant
-    // also returns the search path inside which the file was found.
-    std::string qualify(const std::string& filepath) const;
-    void qualify(const std::string& filepath, std::string& qualified_filepath, std::string& search_path);
+    // this file is returned. Otherwise the input path is returned.
+    APIString qualify(const char* filepath) const;
+    APIString qualify(const std::string& filepath) const;
+
+    // Same as above but also returns the search path inside which the file was found.
+    void qualify(const char* filepath, APIString* qualified_filepath, APIString* search_path) const;
+    void qualify(const std::string& filepath, APIString* qualified_filepath, APIString* search_path) const;
 
     // Return a string with all the search paths separated by the specified separator.
     // The second variant returns the search paths in reverse order.
-    std::string to_string(const char separator) const;
-    std::string to_string_reversed(const char separator) const;
+    APIString to_string(const char separator) const;
+    APIString to_string_reversed(const char separator) const;
 
   protected:
     struct Impl;
     Impl* impl;
 
-    char* do_get_root_path() const;
-    void do_qualify(const char* filepath, char** qualified_filepath_cstr, char** search_path_cstr) const;
-    char* do_to_string(const char separator, const bool reversed) const;
+    APIString do_to_string(const char separator, const bool reversed) const;
 };
 
 
@@ -147,11 +148,6 @@ class APPLESEED_DLLSYMBOL SearchPaths
 inline void SearchPaths::set_root_path(const std::string& path)
 {
     set_root_path(path.c_str());
-}
-
-inline std::string SearchPaths::get_root_path() const
-{
-    return convert_to_std_string(do_get_root_path());
 }
 
 inline void SearchPaths::push_back(const std::string& path)
@@ -169,32 +165,24 @@ inline bool SearchPaths::exist(const std::string& filepath) const
     return exist(filepath.c_str());
 }
 
-inline std::string SearchPaths::qualify(const std::string& filepath) const
+inline APIString SearchPaths::qualify(const std::string& filepath) const
 {
-    char* qualified_filepath_cstr;
-    do_qualify(filepath.c_str(), &qualified_filepath_cstr, 0);
-
-    return convert_to_std_string(qualified_filepath_cstr);
+    return qualify(filepath.c_str());
 }
 
-inline void SearchPaths::qualify(const std::string& filepath, std::string& qualified_filepath, std::string& search_path)
+inline void SearchPaths::qualify(const std::string& filepath, APIString* qualified_filepath, APIString* search_path) const
 {
-    char* qualified_filepath_cstr;
-    char* search_path_cstr;
-    do_qualify(filepath.c_str(), &qualified_filepath_cstr, &search_path_cstr);
-
-    qualified_filepath = convert_to_std_string(qualified_filepath_cstr);
-    search_path = search_path_cstr ? convert_to_std_string(search_path_cstr) : std::string();
+    qualify(filepath.c_str(), qualified_filepath, search_path);
 }
 
-inline std::string SearchPaths::to_string(const char separator) const
+inline APIString SearchPaths::to_string(const char separator) const
 {
-    return convert_to_std_string(do_to_string(separator, false));
+    return do_to_string(separator, false);
 }
 
-inline std::string SearchPaths::to_string_reversed(const char separator) const
+inline APIString SearchPaths::to_string_reversed(const char separator) const
 {
-    return convert_to_std_string(do_to_string(separator, true));
+    return do_to_string(separator, true);
 }
 
 }       // namespace foundation

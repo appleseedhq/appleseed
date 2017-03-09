@@ -39,6 +39,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/path.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/otherwise.h"
@@ -203,18 +204,15 @@ bool AssetHandler::handle_asset(string& asset_path) const
         return handle_absolute_asset(asset_path);
 
     // Otherwise, let's check if the asset is found in a search path.
-    string qualified_asset_path;
-    string search_path;
-    m_project.search_paths().qualify(
-        asset_path,
-        qualified_asset_path,
-        search_path);
+    APIString qualified_asset_path;
+    APIString search_path;
+    m_project.search_paths().qualify(asset_path, &qualified_asset_path, &search_path);
 
-    if (search_path.empty() || path(search_path).is_relative())
+    if (search_path.empty() || path(search_path.c_str()).is_relative())
     {
         // Relative asset path, found in a relative search path or in the root directory.
         if (m_project_old_root_dir == m_project_new_root_dir ||
-            is_extension_of(qualified_asset_path, m_project.search_paths().get_root_path()))
+            is_extension_of(qualified_asset_path.c_str(), m_project.search_paths().get_root_path().c_str()))
         {
             // Relative asset/search path, below the project's root path.
             return copy_relative_asset(asset_path);
@@ -261,8 +259,7 @@ bool AssetHandler::make_absolute_asset_path(string& asset_path) const
 {
     // Make sure the asset path is qualified and canonized.
     path absolute_asset_path =
-        canonical(
-            m_project.search_paths().qualify(asset_path));
+        canonical(m_project.search_paths().qualify(asset_path).c_str());
 
     // Make sure absolute paths use native separators.
     absolute_asset_path.make_preferred();
@@ -280,7 +277,7 @@ bool AssetHandler::copy_absolute_asset(string& asset_path) const
 
     // Copy the asset file.
     if (!safe_copy_file(
-            m_project.search_paths().qualify(asset_path),
+            m_project.search_paths().qualify(asset_path).c_str(),
             new_absolute_asset_path))
         return false;
 
@@ -300,7 +297,7 @@ bool AssetHandler::copy_relative_asset(string& asset_path) const
     {
         // Copy the asset file.
         if (!safe_copy_file(
-                m_project.search_paths().qualify(asset_path),
+                m_project.search_paths().qualify(asset_path).c_str(),
                 m_project_new_root_dir / asset_path))
             return false;
     }

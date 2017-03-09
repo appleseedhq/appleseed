@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/searchpaths.h"
@@ -174,7 +175,8 @@ ShaderQuery::ShaderQuery(const char* search_path)
 ShaderQuery::ShaderQuery(const SearchPaths& search_paths)
   : impl(new Impl())
 {
-    impl->m_search_path = search_paths.to_string_reversed(SearchPaths::osl_path_separator());
+    impl->m_search_path =
+        to_string(search_paths.to_string_reversed(SearchPaths::osl_path_separator()));
 }
 
 ShaderQuery::~ShaderQuery()

@@ -37,6 +37,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/sharedlibrary.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.
@@ -107,9 +108,9 @@ bool Display::open(const Project& project)
 
     try
     {
-        plugin = get_parameters().get("plugin_name");
+        plugin = m_params.get("plugin_name");
         plugin += Plugin::get_default_file_extension();
-        plugin = project.search_paths().qualify(plugin);
+        plugin = to_string(project.search_paths().qualify(plugin));
     }
     catch (const ExceptionDictionaryKeyNotFound&)
     {
@@ -119,7 +120,7 @@ bool Display::open(const Project& project)
 
     try
     {
-        impl = new Impl(plugin.c_str(), get_parameters());
+        impl = new Impl(plugin.c_str(), m_params);
     }
     catch (const ExceptionCannotLoadSharedLib& e)
     {
