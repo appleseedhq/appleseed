@@ -155,10 +155,15 @@ namespace
             const float A = (1.0f - ce_eta) / (2.0f * cphi_eta);                        // reflection parameter
 
             // Compute normal to modified tangent plane.
+            const Vector3f v = cross(ni, xoxi);
+            const float norm_v = norm(v);
+            if (norm_v == 0.0f)
+            {
+                value.set(0.0f);
+                return;
+            }
             const Vector3f ni_star =
-                r2 > 0.0f                                                               // we assume that if r2 > 0, then sqrt(r2) is also > 0
-                    ? cross(xoxi / sqrt(r2), normalize(cross(ni, xoxi)))
-                    : ni;
+                r2 > 0.0f ? cross(xoxi / sqrt(r2), v / norm_v) : ni;                    // we assume that if r2 > 0, then sqrt(r2) is also > 0
             assert(is_normalized(ni_star));
 
             // Compute direction of real ray source.
