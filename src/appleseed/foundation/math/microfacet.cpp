@@ -773,4 +773,50 @@ float GTR1MDF::pdf(
     return D(h, alpha_x, alpha_y, gamma) * h.y;
 }
 
+// 
+// StdMDF class implementation
+//
+
+StdMDF::StdMDF() {}
+
+float StdMDF::D(
+    const Vector3f&     h,
+    const float         alpha_x,
+    const float         alpha_y,
+    const float         gamma) const
+{
+    const float cos_theta = h.y;
+
+    if (cos_theta == 0.0f)
+        return 0.0;
+
+    const float cos_theta_2 = square(cos_theta);
+    const float cos_theta_4 = square(cos_theta_2);
+    const float alpha_x2 = square(alpha_x);
+    const float tan_theta_2 = (1.0f - cos_theta_2) / cos_theta_2;
+    
+    return RcpPi<float>() * std::pow(gamma - 1.0f, gamma) * std::pow(alpha_x, 2.0f * gamma - 2.0f) / (cos_theta_4 * std::pow((gamma - 1) * alpha_x2 + tan_theta_2, gamma));
+}
+
+float StdMDF::G(
+    const Vector3f&     incoming,
+    const Vector3f&     outgoing,
+    const Vector3f&     h,
+    const float         alpha_x,
+    const float         alpha_y,
+    const float         gamma) const
+{
+    return 0;
+}
+
+float StdMDF::G1(
+    const Vector3f&     v,
+    const Vector3f&     m,
+    const float         alpha_x,
+    const float         alpha_y,
+    const float         gamma) const
+{
+    return 0;
+}
+
 }   // namespace foundation

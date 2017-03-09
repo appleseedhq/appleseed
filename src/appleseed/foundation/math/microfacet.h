@@ -1,4 +1,4 @@
-
+            
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -405,6 +405,40 @@ class GTR1MDF
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const;
+};
+
+//
+// Students T-Distribution MDF
+//
+// [1] https://bv.univ-poitiers.fr/access/content/user/mribar03/website/projects/eg_2017/distribution.pdf
+//
+
+class StdMDF
+  : public MDF
+{
+  public:
+    StdMDF();
+
+    virtual float D(
+        const Vector3f&     h,
+        const float         alpha_x,
+        const float         alpha_y,
+        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+
+    virtual float G(
+        const Vector3f&     incoming,
+        const Vector3f&     outgoing,
+        const Vector3f&     h,
+        const float         alpha_x,
+        const float         alpha_y,
+        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+
+    virtual float G1(
+        const Vector3f&     v,
+        const Vector3f&     m,
+        const float         alpha_x,
+        const float         alpha_y,
+        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
 };
 
 }       // namespace foundation
