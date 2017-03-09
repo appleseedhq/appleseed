@@ -437,6 +437,7 @@ namespace
             create_direct_link("adaptive_sampler.enable_diagnostics",   "adaptive_pixel_renderer.enable_diagnostics");
 
             load_directly_linked_values(config);
+
         }
 
         virtual void save_config(Configuration& config) const APPLESEED_OVERRIDE
@@ -473,6 +474,7 @@ namespace
             m_image_plane_sampler_combo->addItem("Adaptive", "adaptive");
             m_image_plane_sampler_combo->setCurrentIndex(-1);
             sublayout->addRow("Sampler:", m_image_plane_sampler_combo);
+            m_image_plane_sampler_combo->setToolTip(m_params_metadata.get_path("sampling_mode.help"));
 
             connect(
                 m_image_plane_sampler_combo, SIGNAL(currentIndexChanged(int)),
@@ -480,6 +482,7 @@ namespace
 
             m_image_plane_sampler_passes = create_integer_input("general.passes", 1, 1000000, 1);
             sublayout->addRow("Passes:", m_image_plane_sampler_passes);
+            m_image_plane_sampler_passes->setToolTip(m_params_metadata.get_path("generic_frame_renderer.passes.help"));
         }
 
         void create_image_plane_sampling_sampler_settings(QVBoxLayout* parent)
@@ -501,17 +504,20 @@ namespace
 
             QSpinBox* samples_spinbox = create_integer_input("uniform_sampler.samples", 1, 1000000, 1);
             layout->addLayout(create_form_layout("Samples:", samples_spinbox));
+            samples_spinbox->setToolTip(m_params_metadata.get_path("uniform_pixel_renderer.samples.help"));
 
             m_uniform_sampler_force_aa = create_checkbox("uniform_sampler.force_antialiasing", "Force Antialiasing");
             layout->addWidget(m_uniform_sampler_force_aa);
+            m_uniform_sampler_force_aa->setToolTip(m_params_metadata.get_path("uniform_pixel_renderer.force_antialiasing.help"));
 
             connect(
                 samples_spinbox, SIGNAL(valueChanged(const int)),
                 SLOT(slot_changed_uniform_sampler_samples(const int)));
 
-            m_uniform_sampler_decorrelate_pixels =
-                create_checkbox("uniform_sampler.decorrelate_pixels", "Decorrelate Pixels");
+            m_uniform_sampler_decorrelate_pixels = create_checkbox("uniform_sampler.decorrelate_pixels", "Decorrelate Pixels");
             layout->addWidget(m_uniform_sampler_decorrelate_pixels);
+            m_uniform_sampler_decorrelate_pixels->setToolTip(m_params_metadata.get_path("uniform_pixel_renderer.decorrelate_pixels.help"));
+
 
             connect(
                 m_image_plane_sampler_passes, SIGNAL(valueChanged(const int)),
@@ -529,9 +535,17 @@ namespace
             QFormLayout* sublayout = create_form_layout();
             layout->addLayout(sublayout);
 
-            sublayout->addRow("Min Samples:", create_integer_input("adaptive_sampler.min_samples", 1, 1000000, 1));
-            sublayout->addRow("Max Samples:", create_integer_input("adaptive_sampler.max_samples", 1, 1000000, 1));
-            sublayout->addRow("Quality:", create_double_input("adaptive_sampler.quality", -20.0, +20.0, 2, 0.5));
+            QSpinBox* min_samples = create_integer_input("adaptive_sampler.min_samples", 1, 1000000, 1);
+            QSpinBox* max_samples = create_integer_input("adaptive_sampler.max_samples", 1, 1000000, 1);
+            QDoubleSpinBox* quality = create_double_input("adaptive_sampler.quality", -20.0, +20.0, 2, 0.5);
+
+            sublayout->addRow("Min Samples:", min_samples);
+            sublayout->addRow("Max Samples:", max_samples);
+            sublayout->addRow("Quality:", quality);
+
+            min_samples->setToolTip(m_params_metadata.get_path("adaptive_pixel_renderer.min_samples.help"));
+            max_samples->setToolTip(m_params_metadata.get_path("adaptive_pixel_renderer.max_samples.help"));
+            quality->setToolTip(m_params_metadata.get_path("adaptive_pixel_renderer.quality.help"));
 
             layout->addWidget(create_checkbox("adaptive_sampler.enable_diagnostics", "Enable Diagnostic AOVs"));
         }
@@ -606,6 +620,7 @@ namespace
             combobox->addItem("Distribution Ray Tracer", "drt");
             combobox->addItem("Unidirectional Path Tracer", "pt");
             combobox->addItem("Stochastic Progressive Photon Mapping", "sppm");
+            combobox->setToolTip(m_params_metadata.get_path("lighting_engine.help"));
             construct(config, combobox);
         }
     };
@@ -651,14 +666,25 @@ namespace
 
         void create_bounce_settings(QFormLayout* layout, const string& prefix)
         {
-            const string widget_base_key = prefix + ".bounces.";
 
+            const string widget_base_key = prefix + ".bounces.";
             QSpinBox* max_bounces = create_integer_input(widget_base_key + "max_bounces", 0, 10000, 1);
             QCheckBox* unlimited_bounces = create_checkbox(widget_base_key + "unlimited_bounces", "Unlimited");
+            
+            if(prefix == "photon_tracing")
+                max_bounces->setToolTip(m_params_metadata.get_path("sppm.photon_tracing_max_path_length.help"));
+            else
+                max_bounces->setToolTip(m_params_metadata.get_path("pt.max_path_length.help"));
+
             layout->addRow("Max Bounces:", create_horizontal_group(max_bounces, unlimited_bounces));
             connect(unlimited_bounces, SIGNAL(toggled(bool)), max_bounces, SLOT(setDisabled(bool)));
 
-            layout->addRow("Russian Roulette Start Bounce:", create_integer_input(widget_base_key + "rr_start_bounce", 1, 10000, 1));
+            QSpinBox* russian_roulette_start = create_integer_input(widget_base_key + "rr_start_bounce", 1, 10000, 1);
+            russian_roulette_start->setToolTip(m_params_metadata.get_path("pt.rr_min_path_length.help"));
+
+            layout->addRow("Russian Roulette Start Bounce:", russian_roulette_start);
+
+            
         }
 
         void load_bounce_settings(
@@ -700,8 +726,8 @@ namespace
         DistributionRayTracerPanel(const Configuration& config, QWidget* parent = 0)
           : LightingEnginePanel("Distribution Ray Tracer", parent)
         {
-            fold();
 
+            fold();
             QVBoxLayout* layout = new QVBoxLayout();
             container()->setLayout(layout);
 
@@ -757,7 +783,9 @@ namespace
             QHBoxLayout* sublayout = create_horizontal_layout();
             layout->addLayout(sublayout);
 
-            sublayout->addLayout(create_form_layout("Light Samples:", create_double_input("advanced.dl.light_samples", 0.0, 1000000.0, 3, 1.0)));
+            QDoubleSpinBox* light_samples = create_double_input("advanced.dl.light_samples", 0.0, 1000000.0, 3, 1.0);
+            sublayout->addLayout(create_form_layout("Light Samples:", light_samples));
+            light_samples->setToolTip(m_params_metadata.get_path("drt.dl_light_samples.help"));
         }
 
         void create_drt_advanced_ibl_settings(QVBoxLayout* parent)
@@ -765,13 +793,18 @@ namespace
             QGroupBox* groupbox = new QGroupBox("Image-Based Lighting");
             parent->addWidget(groupbox);
 
+            groupbox->setToolTip(m_params_metadata.get_path("drt.ibl_env_samples.help"));
+
             QVBoxLayout* layout = create_vertical_layout();
             groupbox->setLayout(layout);
 
             QHBoxLayout* sublayout = create_horizontal_layout();
             layout->addLayout(sublayout);
 
-            sublayout->addLayout(create_form_layout("Environment Samples:", create_double_input("advanced.ibl.env_samples", 0.0, 1000000.0, 3, 1.0)));
+            QDoubleSpinBox* env_samples = create_double_input("advanced.ibl.env_samples", 0.0, 1000000.0, 3, 1.0);
+            sublayout->addLayout(create_form_layout("Environment Samples:", env_samples));
+            env_samples->setToolTip(m_params_metadata.get_path("drt.ibl_env_samples.help"));
+
         }
     };
 
@@ -787,7 +820,6 @@ namespace
           : LightingEnginePanel("Unidirectional Path Tracer", parent)
         {
             fold();
-
             QVBoxLayout* layout = new QVBoxLayout();
             container()->setLayout(layout);
 
@@ -862,7 +894,10 @@ namespace
             QHBoxLayout* sublayout = create_horizontal_layout();
             layout->addLayout(sublayout);
 
-            sublayout->addLayout(create_form_layout("Light Samples:", create_double_input("advanced.dl.light_samples", 0.0, 1000000.0, 3, 1.0)));
+            QDoubleSpinBox* light_samples = create_double_input("advanced.dl.light_samples", 0.0, 1000000.0, 3, 1.0);
+
+            sublayout->addLayout(create_form_layout("Light Samples:", light_samples));
+            light_samples->setToolTip(m_params_metadata.get_path("pt.dl_light_samples.help")); 
         }
 
         void create_pt_advanced_ibl_settings(QVBoxLayout* parent)
@@ -876,15 +911,21 @@ namespace
             QHBoxLayout* sublayout = create_horizontal_layout();
             layout->addLayout(sublayout);
 
-            sublayout->addLayout(create_form_layout("Environment Samples:", create_double_input("advanced.ibl.env_samples", 0.0, 1000000.0, 3, 1.0)));
+            QDoubleSpinBox* env_samples = create_double_input("advanced.ibl.env_samples", 0.0, 1000000.0, 3, 1.0);
+
+            sublayout->addLayout(create_form_layout("Environment Samples:", env_samples));
+            env_samples->setToolTip(m_params_metadata.get_path("pt.ibl_env_samples.help")); 
         }
 
         void create_pt_advanced_max_ray_intensity_settings(QVBoxLayout* parent)
         {
             QDoubleSpinBox* max_ray_intensity = create_double_input("advanced.max_ray_intensity", 0.0, 1.0e9, 3, 0.1);
+            max_ray_intensity->setToolTip(m_params_metadata.get_path("pt.max_ray_intensity.help"));
+            
             QCheckBox* unlimited_ray_intensity = create_checkbox("advanced.unlimited_ray_intensity", "Unlimited");
             parent->addLayout(create_form_layout("Max Ray Intensity:", create_horizontal_group(max_ray_intensity, unlimited_ray_intensity)));
             connect(unlimited_ray_intensity, SIGNAL(toggled(bool)), max_ray_intensity, SLOT(setDisabled(bool)));
+            
         }
     };
 
@@ -900,7 +941,6 @@ namespace
           : LightingEnginePanel("Stochastic Progressive Photon Mapping", parent)
         {
             fold();
-
             QVBoxLayout* layout = new QVBoxLayout();
             container()->setLayout(layout);
 
@@ -986,6 +1026,10 @@ namespace
             buttons->addButton(buttons_sppm);
             buttons->addButton(buttons_off);
 
+            buttons_rt->setToolTip(m_params_metadata.get_path("sppm.dl_type.options.rt.help"));
+            buttons_sppm->setToolTip(m_params_metadata.get_path("sppm.dl_type.options.sppm.help"));
+            buttons_off->setToolTip(m_params_metadata.get_path("sppm.dl_type.options.off.help"));
+
             QHBoxLayout* dl_buttons_layout = new QHBoxLayout();
             dl_buttons_layout->addWidget(buttons_rt);
             dl_buttons_layout->addWidget(buttons_sppm);
@@ -998,6 +1042,7 @@ namespace
 
         void create_photon_tracing_settings(QVBoxLayout* parent)
         {
+            
             QGroupBox* groupbox = new QGroupBox("Photon Tracing");
             parent->addWidget(groupbox);
 
@@ -1008,12 +1053,19 @@ namespace
             layout->addLayout(sublayout);
 
             create_bounce_settings(sublayout, "photon_tracing");
-            sublayout->addRow("Light Photons:", create_integer_input("photon_tracing.light_photons", 0, 1000000000, 100000));
-            sublayout->addRow("Environment Photons:", create_integer_input("photon_tracing.env_photons", 0, 1000000000, 100000));
+            QSpinBox* light_photons = create_integer_input("photon_tracing.light_photons", 0, 1000000000, 100000);
+            QSpinBox* environment_photons = create_integer_input("photon_tracing.env_photons", 0, 1000000000, 100000);
+
+            sublayout->addRow("Light Photons:", light_photons);
+            sublayout->addRow("Environment Photons:", environment_photons);
+
+            light_photons->setToolTip(m_params_metadata.get_path("sppm.light_photons_per_pass.help"));
+            environment_photons->setToolTip(m_params_metadata.get_path("sppm.env_photons_per_pass.help"));
         }
 
         void create_radiance_estimation_settings(QVBoxLayout* parent)
         {
+            
             QGroupBox* groupbox = new QGroupBox("Radiance Estimation");
             parent->addWidget(groupbox);
 
@@ -1024,9 +1076,19 @@ namespace
             layout->addLayout(sublayout);
 
             create_bounce_settings(sublayout, "radiance_estimation");
-            sublayout->addRow("Initial Radius:", create_double_input("radiance_estimation.initial_radius", 0.001, 100.0, 3, 0.1, "%"));
-            sublayout->addRow("Max Photons:", create_integer_input("radiance_estimation.max_photons", 8, 1000000000, 50));
-            sublayout->addRow("Alpha:", create_double_input("radiance_estimation.alpha", 0.0, 1.0, 2, 0.1));
+
+            QDoubleSpinBox* initial_radius = create_double_input("radiance_estimation.initial_radius", 0.001, 100.0, 3, 0.1, "%");
+            QSpinBox* max_photons = create_integer_input("radiance_estimation.max_photons", 8, 1000000000, 50);
+            QDoubleSpinBox* alpha = create_double_input("radiance_estimation.alpha", 0.0, 1.0, 2, 0.1);
+
+            sublayout->addRow("Initial Radius:", initial_radius);
+            sublayout->addRow("Max Photons:", max_photons);
+            sublayout->addRow("Alpha:", alpha);
+
+            initial_radius->setToolTip(m_params_metadata.get_path("sppm.initial_radius.help"));
+            max_photons->setToolTip(m_params_metadata.get_path("sppm.max_photons_per_estimate.help"));
+            alpha->setToolTip(m_params_metadata.get_path("sppm.alpha.help"));
+
         }
     };
 
@@ -1100,12 +1162,15 @@ namespace
             QCheckBox* auto_rendering_threads = create_checkbox("rendering_threads.auto", "Auto");
             groupbox->setLayout(create_form_layout("Rendering Threads:", create_horizontal_group(rendering_threads, auto_rendering_threads)));
             connect(auto_rendering_threads, SIGNAL(toggled(bool)), rendering_threads, SLOT(setDisabled(bool)));
+            rendering_threads->setToolTip(m_params_metadata.get_path("rendering_threads.help"));
         }
 
         void create_system_override_texture_store_max_size_settings(QVBoxLayout* parent)
         {
             QGroupBox* groupbox = create_checkable_groupbox("texture_store_max_size.override", "Override");
             parent->addWidget(groupbox);
+
+            groupbox->setToolTip(m_params_metadata.get_path("texture_store.max_size.help"));
 
             groupbox->setLayout(
                 create_form_layout(
@@ -1124,6 +1189,7 @@ namespace
             tile_ordering->addItem("Hilbert", "hilbert");
             tile_ordering->addItem("Random", "random");
             groupbox->setLayout(create_form_layout("Tile Ordering:", tile_ordering));
+            tile_ordering->setToolTip(m_params_metadata.get_path("generic_frame_renderer.tile_ordering.help"));
         }
     };
 }
