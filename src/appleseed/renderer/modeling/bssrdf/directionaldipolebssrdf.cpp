@@ -214,7 +214,7 @@ namespace
 
                 // Compute distance to virtual source.
                 const float dv = norm(xoxv);                                            // distance to virtual ray source
-                assert(feq(dv, sqrt(r2 + square(2.0f * A * de)), 1.0e-5f));             // true because we computed xv using ni_star, not ni
+                assert(feq(dv, sqrt(r2 + square(2.0f * A * de)), 1.0e-2f));             // true because we computed xv using ni_star, not ni
 
                 // Evaluate the BSSRDF.
                 const float sdr = sd_prime(cphi_eta, ce_eta, D, sigma_tr, dot_wr_xoxi, dot_wr_no, dot_xoxi_no, dr);
