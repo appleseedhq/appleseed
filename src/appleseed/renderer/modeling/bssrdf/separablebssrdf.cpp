@@ -225,14 +225,16 @@ namespace
             VisibilityFlags::ProbeRay,
             outgoing_point.get_ray().m_depth + 1);
 
+        const UniqueID outgoing_obj_inst_uid = outgoing_point.get_object_instance().get_uid();
         const Material* outgoing_material = outgoing_point.get_material();
 
+        const size_t MaxIterations = 16;
         const size_t MaxSampleCount = 16;
         ShadingPoint shading_points[MaxSampleCount];
         size_t sample_count = 0;
 
         // Trace the ray and store all intersections found inside the sphere.
-        for (size_t i = 0; sample_count < MaxSampleCount && i < 16; ++i)
+        for (size_t i = 0; sample_count < MaxSampleCount && i < MaxIterations; ++i)
         {
             // Continue tracing the ray.
             ShadingPoint& incoming_point = shading_points[sample_count];
@@ -244,9 +246,11 @@ namespace
             probe_ray.m_tmin = 1.0e-6;
             probe_ray.m_tmax = norm(exit_point - probe_ray.m_org);
 
-            // Only consider hit points with the same material as the outgoing point.
-            if (incoming_point.get_material() == outgoing_material ||
-                incoming_point.get_opposite_material() == outgoing_material)
+            // Only consider incoming points on the same object instance,
+            // and with the same material as the outgoing point.
+            if (incoming_point.get_object_instance().get_uid() == outgoing_obj_inst_uid &&
+                (incoming_point.get_material() == outgoing_material ||
+                 incoming_point.get_opposite_material() == outgoing_material))
             {
                 // Make sure the incoming point is on the front side of the surface.
                 // There is no such thing as subsurface scattering seen "from the inside".
