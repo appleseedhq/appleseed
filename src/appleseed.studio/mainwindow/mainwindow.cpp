@@ -1466,11 +1466,20 @@ namespace
       : public RenderingManager::IScheduledAction
     {
       public:
+        explicit ClearRenderRegionAction(const MainWindow* main_window)
+          : m_main_window(main_window)
+        {
+        }
+
         virtual void operator()(
             Project&        project) APPLESEED_OVERRIDE
         {
             project.get_frame()->reset_crop_window();
+            m_main_window->emit_signal_crop_window_cleared();
         }
+
+      private:
+        const MainWindow* m_main_window;
     };
 
     class SetRenderRegionAction
@@ -1510,13 +1519,15 @@ namespace
 
 void MainWindow::slot_clear_render_region()
 {
-    m_rendering_manager.schedule(
-        auto_ptr<RenderingManager::IScheduledAction>(
-            new ClearRenderRegionAction()));
+    auto_ptr<RenderingManager::IScheduledAction> clear_render_region_action(
+        new ClearRenderRegionAction(this));
+
+    if (m_rendering_manager.is_rendering())
+        m_rendering_manager.schedule(clear_render_region_action);
+    else clear_render_region_action.get()->operator()(
+        *m_project_manager.get_project());
 
     m_rendering_manager.reinitialize_rendering();
-
-    emit signal_crop_window_cleared();
 }
 
 void MainWindow::slot_set_render_region(const QRect& rect)
@@ -1549,6 +1560,11 @@ void MainWindow::slot_render_widget_context_menu(const QPoint& point)
     menu->addAction("Clear Frame", this, SLOT(slot_clear_frame()));
 
     menu->exec(point);
+}
+
+void MainWindow::emit_signal_crop_window_cleared() const {
+    emit signal_refresh_attribute_editor(
+            m_project_manager.get_project()->get_frame()->get_parameters());
 }
 
 namespace

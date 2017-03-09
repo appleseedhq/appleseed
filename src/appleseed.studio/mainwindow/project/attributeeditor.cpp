@@ -31,6 +31,7 @@
 #include "attributeeditor.h"
 
 // appleseed.studio headers.
+#include "frameitem.h"
 #include "utility/miscellaneous.h"
 
 // Qt headers.
@@ -59,6 +60,7 @@ void AttributeEditor::clear()
     {
         clear_layout(m_parent->layout());
         delete m_parent->layout();
+        m_entity_editor.reset();
     }
 }
 
@@ -83,9 +85,12 @@ void AttributeEditor::edit(
         m_entity_editor.get(), SIGNAL(signal_applied(foundation::Dictionary)),
         receiver, slot_apply);
 
-    QObject::connect(
-        m_parent->window(), SIGNAL(signal_crop_window_cleared()),
-        m_entity_editor.get(), SLOT(slot_clear_crop_window_widget()));
+    FrameItem* frame_item = dynamic_cast<FrameItem*>(receiver);
+
+    if (frame_item)
+        QObject::connect(
+            m_parent->window(), SIGNAL(signal_refresh_attribute_editor(foundation::Dictionary)),
+            m_entity_editor.get(), SLOT(slot_refresh_widgets(foundation::Dictionary)));
 }
 
 }   // namespace studio
