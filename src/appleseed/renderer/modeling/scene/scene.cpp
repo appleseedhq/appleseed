@@ -294,7 +294,7 @@ namespace
         const Assembly*         parent,
         IAbortSwitch*           abort_switch)
     {
-        ProceduralAssembly *proc_assembly =
+        ProceduralAssembly* proc_assembly =
             dynamic_cast<ProceduralAssembly*>(&assembly);
 
         if (proc_assembly)
