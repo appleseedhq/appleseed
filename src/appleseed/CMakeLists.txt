@@ -772,6 +772,8 @@ set (foundation_utility_sources
     foundation/utility/typetraits.h
     foundation/utility/uid.cpp
     foundation/utility/uid.h
+    foundation/utility/unzipper.cpp
+    foundation/utility/unzipper.h
     foundation/utility/version.h
     foundation/utility/vpythonfile.cpp
     foundation/utility/vpythonfile.h
