@@ -535,17 +535,19 @@ namespace
 
             QSpinBox* min_samples = create_integer_input("adaptive_sampler.min_samples", 1, 1000000, 1);
             min_samples->setToolTip(m_params_metadata.get_path("adaptive_pixel_renderer.min_samples.help"));
+            sublayout->addRow("Min Samples:", min_samples);
+
             QSpinBox* max_samples = create_integer_input("adaptive_sampler.max_samples", 1, 1000000, 1);
             max_samples->setToolTip(m_params_metadata.get_path("adaptive_pixel_renderer.max_samples.help"));
+            sublayout->addRow("Max Samples:", max_samples);
+
             QDoubleSpinBox* quality = create_double_input("adaptive_sampler.quality", -20.0, +20.0, 2, 0.5);
             quality->setToolTip(m_params_metadata.get_path("adaptive_pixel_renderer.quality.help"));
+            sublayout->addRow("Quality:", quality);
+
             QCheckBox* enable_diagnostics = create_checkbox("adaptive_sampler.enable_diagnostics", "Enable Diagnostic AOVs");
             enable_diagnostics->setToolTip(m_params_metadata.get_path("adaptive_pixel_renderer.enable_diagnostics.help"));
             layout->addWidget(enable_diagnostics);
-
-            sublayout->addRow("Min Samples:", min_samples);
-            sublayout->addRow("Max Samples:", max_samples);
-            sublayout->addRow("Quality:", quality);
         }
 
       private slots:
@@ -665,8 +667,10 @@ namespace
         void create_bounce_settings(QFormLayout* layout, const string& prefix, const string& config_param_path)
         {
             const string widget_base_key = prefix + ".bounces.";
+
             QSpinBox* max_bounces = create_integer_input(widget_base_key + "max_bounces", 0, 10000, 1);
             max_bounces->setToolTip(m_params_metadata.get_path((config_param_path + ".help").c_str()));
+
             QCheckBox* unlimited_bounces = create_checkbox(widget_base_key + "unlimited_bounces", "Unlimited");
 
             layout->addRow("Max Bounces:", create_horizontal_group(max_bounces, unlimited_bounces));
@@ -1005,20 +1009,23 @@ namespace
             groupbox->setLayout(layout);
 
             QButtonGroup* buttons = new QButtonGroup(groupbox);
-            QRadioButton* buttons_rt = create_radio_button("lighting_components.dl.rt", "RT Direct Lighting");
-            buttons_rt->setToolTip(m_params_metadata.get_path("sppm.dl_type.options.rt.help"));
-            QRadioButton* buttons_sppm = create_radio_button("lighting_components.dl.sppm", "SPPM Direct Lighting");
-            buttons_sppm->setToolTip(m_params_metadata.get_path("sppm.dl_type.options.sppm.help"));
-            QRadioButton* buttons_off = create_radio_button("lighting_components.dl.off", "No Direct Lighting");
-            buttons_off->setToolTip(m_params_metadata.get_path("sppm.dl_type.options.off.help"));
-            buttons->addButton(buttons_rt);
-            buttons->addButton(buttons_sppm);
-            buttons->addButton(buttons_off);
+
+            QRadioButton* button_rt = create_radio_button("lighting_components.dl.rt", "RT Direct Lighting");
+            button_rt->setToolTip(m_params_metadata.get_path("sppm.dl_type.options.rt.help"));
+            buttons->addButton(button_rt);
+
+            QRadioButton* button_sppm = create_radio_button("lighting_components.dl.sppm", "SPPM Direct Lighting");
+            button_sppm->setToolTip(m_params_metadata.get_path("sppm.dl_type.options.sppm.help"));
+            buttons->addButton(button_sppm);
+
+            QRadioButton* button_off = create_radio_button("lighting_components.dl.off", "No Direct Lighting");
+            button_off->setToolTip(m_params_metadata.get_path("sppm.dl_type.options.off.help"));
+            buttons->addButton(button_off);
 
             QHBoxLayout* dl_buttons_layout = new QHBoxLayout();
-            dl_buttons_layout->addWidget(buttons_rt);
-            dl_buttons_layout->addWidget(buttons_sppm);
-            dl_buttons_layout->addWidget(buttons_off);
+            dl_buttons_layout->addWidget(button_rt);
+            dl_buttons_layout->addWidget(button_sppm);
+            dl_buttons_layout->addWidget(button_off);
             layout->addLayout(dl_buttons_layout);
 
             layout->addWidget(create_checkbox("lighting_components.ibl", "Image-Based Lighting"));
@@ -1037,12 +1044,13 @@ namespace
             layout->addLayout(sublayout);
 
             create_bounce_settings(sublayout, "photon_tracing", "sppm.photon_tracing_max_path_length");
+            
             QSpinBox* light_photons = create_integer_input("photon_tracing.light_photons", 0, 1000000000, 100000);
             light_photons->setToolTip(m_params_metadata.get_path("sppm.light_photons_per_pass.help"));
+            sublayout->addRow("Light Photons:", light_photons);
+
             QSpinBox* environment_photons = create_integer_input("photon_tracing.env_photons", 0, 1000000000, 100000);
             environment_photons->setToolTip(m_params_metadata.get_path("sppm.env_photons_per_pass.help"));
-
-            sublayout->addRow("Light Photons:", light_photons);
             sublayout->addRow("Environment Photons:", environment_photons);
         }
 
@@ -1061,13 +1069,14 @@ namespace
 
             QDoubleSpinBox* initial_radius = create_double_input("radiance_estimation.initial_radius", 0.001, 100.0, 3, 0.1, "%");
             initial_radius->setToolTip(m_params_metadata.get_path("sppm.initial_radius.help"));
+            sublayout->addRow("Initial Radius:", initial_radius);
+
             QSpinBox* max_photons = create_integer_input("radiance_estimation.max_photons", 8, 1000000000, 50);
             max_photons->setToolTip(m_params_metadata.get_path("sppm.max_photons_per_estimate.help"));
+            sublayout->addRow("Max Photons:", max_photons);
+
             QDoubleSpinBox* alpha = create_double_input("radiance_estimation.alpha", 0.0, 1.0, 2, 0.1);
             alpha->setToolTip(m_params_metadata.get_path("sppm.alpha.help"));
-
-            sublayout->addRow("Initial Radius:", initial_radius);
-            sublayout->addRow("Max Photons:", max_photons);
             sublayout->addRow("Alpha:", alpha);
         }
     };
@@ -1140,8 +1149,10 @@ namespace
 
             QSpinBox* rendering_threads = create_integer_input("rendering_threads.value", -65535, 65536, 1);
             rendering_threads->setToolTip(m_params_metadata.get_path("rendering_threads.help"));
+
             QCheckBox* auto_rendering_threads = create_checkbox("rendering_threads.auto", "Auto");
             groupbox->setLayout(create_form_layout("Rendering Threads:", create_horizontal_group(rendering_threads, auto_rendering_threads)));
+
             connect(auto_rendering_threads, SIGNAL(toggled(bool)), rendering_threads, SLOT(setDisabled(bool)));
         }
 
