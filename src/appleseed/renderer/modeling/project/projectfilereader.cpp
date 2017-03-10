@@ -96,6 +96,7 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
@@ -114,6 +115,7 @@
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
+#include "foundation/utility/unzipper.h"
 #include "foundation/utility/xercesc.h"
 
 // Xerces-C++ headers.
@@ -3036,15 +3038,49 @@ namespace
     }
 }
 
+bool is_packed_project(const string& project_filepath, string& project_name) {
+    try 
+    {
+        vector<string> appleseed_files = get_filenames_with_extension_from_zip(project_filepath, ".appleseed");
+        
+        if (appleseed_files.size() != 1)
+            throw ExceptionUnsupportedFileFormat("Should be exactly one .appleseed file in project");
+
+        project_name = appleseed_files[0];
+        return true;
+    }
+    catch (UnzipException e)
+    {
+        return false;
+    }
+}
+
 auto_release_ptr<Project> ProjectFileReader::read(
     const char*             project_filepath,
     const char*             schema_filepath,
     const int               options)
 {
     assert(project_filepath);
+    
+    string project_name;
+
+    // Handle packed projects
+    string actual_project_filepath;
+    if (is_packed_project(project_filepath, project_name))
+    {
+        string unpacked_project_directory(project_filepath);
+        unpacked_project_directory += ".unpacked";
+
+        RENDERER_LOG_INFO("%s appears to be a packed project", project_filepath);
+        RENDERER_LOG_INFO("Unpacking to %s...", unpacked_project_directory.c_str());
+
+        unzip(project_filepath, unpacked_project_directory);
+        
+        actual_project_filepath = (bf::path(unpacked_project_directory) / bf::path(project_name)).string().c_str();
+        project_filepath = actual_project_filepath.data();
+    }
 
     // Handle built-in projects.
-    string project_name;
     if (is_builtin_project(project_filepath, project_name))
         return load_builtin(project_name.c_str());
 
