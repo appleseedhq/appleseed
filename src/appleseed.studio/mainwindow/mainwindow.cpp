@@ -1475,7 +1475,7 @@ namespace
             Project&        project) APPLESEED_OVERRIDE
         {
             project.get_frame()->reset_crop_window();
-            m_main_window->emit_signal_crop_window_cleared();
+            m_main_window->emit_refresh_attribute_editor_signal();
         }
 
       private:
@@ -1562,9 +1562,10 @@ void MainWindow::slot_render_widget_context_menu(const QPoint& point)
     menu->exec(point);
 }
 
-void MainWindow::emit_signal_crop_window_cleared() const {
+void MainWindow::emit_refresh_attribute_editor_signal() const
+{
     emit signal_refresh_attribute_editor(
-            m_project_manager.get_project()->get_frame()->get_parameters());
+        m_project_manager.get_project()->get_frame()->get_parameters());
 }
 
 namespace
