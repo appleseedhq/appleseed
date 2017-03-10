@@ -212,8 +212,6 @@ source_group ("mainwindow\\project" FILES
 set (mainwindow_rendering_sources
     mainwindow/rendering/cameracontroller.cpp
     mainwindow/rendering/cameracontroller.h
-    mainwindow/rendering/frozendisplayrenderer.cpp
-    mainwindow/rendering/frozendisplayrenderer.h
     mainwindow/rendering/pixelcolortracker.cpp
     mainwindow/rendering/pixelcolortracker.h
     mainwindow/rendering/pixelinspectorhandler.cpp

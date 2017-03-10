@@ -402,119 +402,21 @@ void RenderingManager::slot_frame_end()
 
 void RenderingManager::slot_camera_change_begin()
 {
-    if (m_params.get_optional<bool>("freeze_display_during_navigation", false))
-    {
-        pause_rendering();
-
-        assert(m_frozen_display_func.get() == 0);
-        assert(m_frozen_display_thread.get() == 0);
-
-        m_frozen_display_abort_switch.clear();
-
-        m_frozen_display_func.reset(
-            new FrozenDisplayFunc(
-                get_sampling_context_mode(m_params),
-                *m_project->get_uncached_active_camera(),
-                *m_project->get_frame(),
-                *m_tile_callback_factory.get(),
-                m_frozen_display_abort_switch));
-
-        m_frozen_display_thread.reset(
-            new boost::thread(
-                ThreadFunctionWrapper<FrozenDisplayFunc>(m_frozen_display_func.get())));
-    }
 }
 
 void RenderingManager::slot_camera_changed()
 {
     m_has_camera_changed = true;
-
-    if (m_frozen_display_func.get())
-    {
-        m_frozen_display_func->set_camera_transform(
-            m_render_tab->get_camera_controller()->get_transform());
-    }
-    else
-    {
-        restart_rendering();
-    }
+    restart_rendering();
 }
 
 void RenderingManager::slot_camera_change_end()
 {
-    if (m_frozen_display_func.get())
-    {
-        m_frozen_display_abort_switch.abort();
-        m_frozen_display_thread->join();
-        m_frozen_display_thread.reset();
-        m_frozen_display_func.reset();
-
-        m_project->get_frame()->clear_main_image();
-
-        restart_rendering();
-    }
 }
 
 void RenderingManager::slot_master_renderer_thread_finished()
 {
     m_master_renderer.reset();
-}
-
-
-//
-// RenderingManager::FrozenDisplayFunc class implementation.
-//
-
-RenderingManager::FrozenDisplayFunc::FrozenDisplayFunc(
-    const SamplingContext::Mode sampling_mode,
-    const Camera&               camera,
-    const Frame&                frame,
-    ITileCallbackFactory&       tile_callback_factory,
-    IAbortSwitch&               abort_switch)
-  : m_renderer(sampling_mode, camera, frame)
-  , m_frame(frame)
-  , m_tile_callback(tile_callback_factory.create())
-  , m_abort_switch(abort_switch)
-{
-    // Start by capturing the current frame as a point cloud.
-    m_renderer.capture();
-}
-
-void RenderingManager::FrozenDisplayFunc::set_camera_transform(const Transformd& transform)
-{
-    m_renderer.set_camera_transform(transform);
-}
-
-void RenderingManager::FrozenDisplayFunc::operator()()
-{
-    set_current_thread_name("frozen_display");
-
-    const double TargetElapsed = 1.0 / 30.0;
-
-    DefaultWallclockTimer timer;
-    const double rcp_timer_freq = 1.0 / timer.frequency();
-    uint64 last_time = timer.read();
-
-    while (!m_abort_switch.is_aborted())
-    {
-        // Render the point cloud to the frame.
-        m_renderer.render();
-
-        // Display the frame.
-        m_tile_callback->post_render(&m_frame);
-
-        // Compute time elapsed since last frame.
-        const uint64 time = timer.read();
-        const double elapsed = (time - last_time) * rcp_timer_freq;
-        last_time = time;
-
-        // Limit frame rate.
-        if (elapsed < TargetElapsed)
-        {
-            const double ms = ceil(1000.0 * (TargetElapsed - elapsed));
-            sleep(truncate<uint32>(ms), m_abort_switch);
-        }
-    }
 }
 
 }   // namespace studio
