@@ -1466,8 +1466,8 @@ namespace
       : public RenderingManager::IScheduledAction
     {
       public:
-        explicit ClearRenderRegionAction(const MainWindow* main_window)
-          : m_main_window(main_window)
+        explicit ClearRenderRegionAction(const AttributeEditor* attribute_editor)
+          : m_attribute_editor(attribute_editor)
         {
         }
 
@@ -1475,19 +1475,23 @@ namespace
             Project&        project) APPLESEED_OVERRIDE
         {
             project.get_frame()->reset_crop_window();
-            m_main_window->emit_refresh_attribute_editor_signal();
+            m_attribute_editor->refresh(
+                project.get_frame()->get_parameters());
         }
 
       private:
-        const MainWindow* m_main_window;
+        const AttributeEditor* m_attribute_editor;
     };
 
     class SetRenderRegionAction
       : public RenderingManager::IScheduledAction
     {
       public:
-        explicit SetRenderRegionAction(const QRect& rect)
-          : m_rect(rect)
+        explicit SetRenderRegionAction(
+            const QRect& rect,
+            const AttributeEditor* attribute_editor)
+          : m_rect(rect),
+            m_attribute_editor(attribute_editor)
         {
         }
 
@@ -1510,17 +1514,20 @@ namespace
                 AABB2i(
                     Vector2i(x0, y0),
                     Vector2i(x1, y1)));
+            m_attribute_editor->refresh(
+                project.get_frame()->get_parameters());
         }
 
       private:
         const QRect m_rect;
+        const AttributeEditor* m_attribute_editor;
     };
 }
 
 void MainWindow::slot_clear_render_region()
 {
     auto_ptr<RenderingManager::IScheduledAction> clear_render_region_action(
-        new ClearRenderRegionAction(this));
+        new ClearRenderRegionAction(m_attribute_editor));
 
     if (m_rendering_manager.is_rendering())
         m_rendering_manager.schedule(clear_render_region_action);
@@ -1534,7 +1541,7 @@ void MainWindow::slot_set_render_region(const QRect& rect)
 {
     m_rendering_manager.schedule(
         auto_ptr<RenderingManager::IScheduledAction>(
-            new SetRenderRegionAction(rect)));
+            new SetRenderRegionAction(rect, m_attribute_editor)));
 
     if (m_settings.get_path_optional<bool>(SETTINGS_RENDER_REGION_TRIGGERS_RENDERING))
     {
@@ -1560,12 +1567,6 @@ void MainWindow::slot_render_widget_context_menu(const QPoint& point)
     menu->addAction("Clear Frame", this, SLOT(slot_clear_frame()));
 
     menu->exec(point);
-}
-
-void MainWindow::emit_refresh_attribute_editor_signal() const
-{
-    emit signal_refresh_attribute_editor(
-        m_project_manager.get_project()->get_frame()->get_parameters());
 }
 
 namespace

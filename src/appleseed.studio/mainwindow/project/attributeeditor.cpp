@@ -84,13 +84,12 @@ void AttributeEditor::edit(
     QObject::connect(
         m_entity_editor.get(), SIGNAL(signal_applied(foundation::Dictionary)),
         receiver, slot_apply);
+}
 
-    FrameItem* frame_item = dynamic_cast<FrameItem*>(receiver);
-
-    if (frame_item)
-        QObject::connect(
-            m_parent->window(), SIGNAL(signal_refresh_attribute_editor(foundation::Dictionary)),
-            m_entity_editor.get(), SLOT(slot_refresh_widgets(foundation::Dictionary)));
+void AttributeEditor::refresh(const foundation::Dictionary &values) const
+{
+    if (m_entity_editor.get())
+        m_entity_editor.get()->refresh(values);
 }
 
 }   // namespace studio

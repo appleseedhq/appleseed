@@ -501,7 +501,7 @@ void EntityEditor::slot_rebuild_form()
     emit signal_applied(get_values());
 }
 
-void EntityEditor::slot_refresh_widgets(const Dictionary& values)
+void EntityEditor::refresh(const Dictionary& values)
 {
     m_form_factory->update(values, m_input_metadata);
 

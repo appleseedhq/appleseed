@@ -66,6 +66,8 @@ class AttributeEditor
         QObject*                                        receiver,
         const char*                                     slot_apply);
 
+    void refresh(const foundation::Dictionary& values) const;
+
   private:
     QWidget*                    m_parent;
     renderer::Project&          m_project;

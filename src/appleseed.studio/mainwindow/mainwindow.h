@@ -91,8 +91,6 @@ class MainWindow
     void open_project(const QString& filepath);
     void open_and_render_project(const QString& filepath, const QString& configuration);
 
-    void emit_refresh_attribute_editor_signal() const;
-
   signals:
     void signal_refresh_attribute_editor(const foundation::Dictionary& values) const;
 
