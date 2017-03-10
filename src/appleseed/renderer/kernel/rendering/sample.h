@@ -31,6 +31,7 @@
 #define APPLESEED_RENDERER_KERNEL_RENDERING_SAMPLE_H
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
 #include "foundation/math/vector.h"
 
 namespace renderer
@@ -40,7 +41,7 @@ class Sample
 {
   public:
     foundation::Vector2f    m_position;
-    float                   m_values[5];    // RGBA + Z
+    foundation::Color4f     m_color;
 };
 
 }       // namespace renderer

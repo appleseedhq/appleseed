@@ -338,7 +338,7 @@ namespace
                 // Store the contribution of this vertex.
                 Spectrum radiance = light_particle_flux;
                 radiance *= static_cast<float>(transmission * cos_alpha * importance);
-                emit_sample(sample_position, distance, radiance);
+                emit_sample(sample_position, radiance);
             }
 
             void visit_non_physical_light_vertex(
@@ -375,7 +375,7 @@ namespace
                 // Store the contribution of this vertex.
                 Spectrum radiance = light_particle_flux;
                 radiance *= transmission * importance;
-                emit_sample(sample_position, norm(camera_outgoing), radiance);
+                emit_sample(sample_position, radiance);
             }
 
             void visit_vertex(const PathVertex& vertex)
@@ -447,7 +447,7 @@ namespace
                 radiance *= vertex.m_throughput;
                 radiance *= bsdf_value;
                 radiance *= transmission * importance;
-                emit_sample(sample_position, distance, radiance);
+                emit_sample(sample_position, radiance);
             }
 
             void visit_environment(const PathVertex& vertex)
@@ -457,7 +457,6 @@ namespace
 
             void emit_sample(
                 const Vector2d&             position_ndc,
-                const double                distance,
                 const Spectrum&             radiance)
             {
                 assert(min_value(radiance) >= 0.0f);
@@ -469,11 +468,7 @@ namespace
 
                 Sample sample;
                 sample.m_position = Vector2f(position_ndc);
-                sample.m_values[0] = linear_rgb.r;
-                sample.m_values[1] = linear_rgb.g;
-                sample.m_values[2] = linear_rgb.b;
-                sample.m_values[3] = 1.0f;
-                sample.m_values[4] = static_cast<float>(distance);
+                sample.m_color = Color4f(linear_rgb, 1.0f);
                 m_samples.push_back(sample);
 
                 ++m_sample_count;

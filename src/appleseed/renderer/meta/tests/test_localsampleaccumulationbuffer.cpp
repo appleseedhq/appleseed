@@ -68,10 +68,8 @@ TEST_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
 
         // A tile of the high resolution framebuffer.
         Tile color_tile(32, 32, 4, PixelFormatFloat);
-        Tile depth_tile(32, 32, 1, PixelFormatFloat);
 
         color_tile.clear(Color4f(0.0f));
-        depth_tile.clear(Color<float, 1>(0.0f));
 
         const AABB2u tile_rect(
             Vector2u(0, 0),
@@ -84,7 +82,6 @@ TEST_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
         {
             LocalSampleAccumulationBuffer::develop_to_tile_undo_premult_alpha(
                 color_tile,
-                depth_tile,
                 256, 256,
                 level,
                 0, 0,
@@ -94,7 +91,6 @@ TEST_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
         {
             LocalSampleAccumulationBuffer::develop_to_tile(
                 color_tile,
-                depth_tile,
                 256, 256,
                 level,
                 0, 0,
@@ -109,16 +105,12 @@ TEST_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
                 float color[4];
                 color_tile.get_pixel(x, y, color);
 
-                float depth[1];
-                depth_tile.get_pixel(x, y, depth);
-
                 const float expected = rect.contains(Vector2u(x, y)) ? 1.0f : 0.0f;
 
                 if (color[0] != expected ||
                     color[1] != expected ||
                     color[2] != expected ||
-                    color[3] != expected ||
-                    depth[0] != expected)
+                    color[3] != expected)
                     return false;
             }
         }

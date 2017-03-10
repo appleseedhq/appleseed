@@ -31,7 +31,6 @@
 #define APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERINGMANAGER_H
 
 // appleseed.studio headers.
-#include "mainwindow/rendering/frozendisplayrenderer.h"
 #include "mainwindow/rendering/qtrenderercontroller.h"
 #include "mainwindow/rendering/qttilecallback.h"
 #include "mainwindow/rendering/renderingtimer.h"
@@ -172,32 +171,6 @@ class RenderingManager
     StickyActionCollection                      m_sticky_actions;
 
     bool                                        m_has_camera_changed;
-
-    class FrozenDisplayFunc
-    {
-      public:
-        FrozenDisplayFunc(
-            const renderer::SamplingContext::Mode   sampling_mode,
-            const renderer::Camera&                 camera,
-            const renderer::Frame&                  frame,
-            renderer::ITileCallbackFactory&         tile_callback_factory,
-            foundation::IAbortSwitch&               abort_switch);
-
-        void set_camera_transform(
-            const foundation::Transformd&           transform);
-
-        void operator()();
-
-      private:
-        FrozenDisplayRenderer                                   m_renderer;
-        const renderer::Frame&                                  m_frame;
-        foundation::auto_release_ptr<renderer::ITileCallback>   m_tile_callback;
-        foundation::IAbortSwitch&                               m_abort_switch;
-    };
-
-    std::auto_ptr<FrozenDisplayFunc>            m_frozen_display_func;
-    std::auto_ptr<boost::thread>                m_frozen_display_thread;
-    foundation::AbortSwitch                     m_frozen_display_abort_switch;
 
     void print_final_rendering_time();
     void print_average_luminance();
