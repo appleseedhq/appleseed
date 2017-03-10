@@ -701,6 +701,20 @@ source_group ("foundation\\utility\\test" FILES
     ${foundation_utility_test_sources}
 )
 
+set (foundation_utility_minizip_sources
+    foundation/utility/minizip/ioapi.c
+    foundation/utility/minizip/ioapi.h
+    foundation/utility/minizip/unzip.c
+    foundation/utility/minizip/unzip.h
+)
+list (APPEND appleseed_sources
+    ${foundation_utility_minizip_sources}
+)
+source_group ("foundation\\utility\\minizip" FILES
+    ${foundation_utility_minizip_sources}
+)
+
+
 set (foundation_utility_sources
     foundation/utility/alignedallocator.h
     foundation/utility/alignedvector.h
