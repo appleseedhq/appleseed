@@ -31,6 +31,8 @@
 #define APPLESEED_RENDERER_MODELING_FRAME_FRAME_H
 
 // appleseed.renderer headers.
+#include "renderer/modeling/aov/aov.h"
+#include "renderer/modeling/aov/aovcontainer.h"
 #include "renderer/modeling/entity/entity.h"
 
 // appleseed.foundation headers.
@@ -56,6 +58,7 @@ namespace foundation    { class Image; }
 namespace foundation    { class ImageAttributes; }
 namespace foundation    { class LightingConditions; }
 namespace foundation    { class Tile; }
+namespace renderer      { class AOV; }
 namespace renderer      { class ImageStack; }
 namespace renderer      { class ParamArray; }
 
@@ -147,6 +150,12 @@ class APPLESEED_DLLSYMBOL Frame
     bool archive(
         const char*     directory,
         char**          output_path = 0) const;
+
+    // Add an aov.
+    void add_aov(foundation::auto_release_ptr<AOV> aov);
+
+    // Access the aovs.
+    AOVContainer& aovs() const;
 
   private:
     friend class FrameFactory;

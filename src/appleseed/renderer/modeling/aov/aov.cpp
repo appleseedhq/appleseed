@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,16 +26,42 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_AOV_H
-#define APPLESEED_RENDERER_API_AOV_H
+// Interface header.
+#include "aov.h"
 
-// API headers.
-#include "renderer/kernel/aov/imagestack.h"
-#include "renderer/modeling/aov/aov.h"
-#include "renderer/modeling/aov/aovcontainer.h"
-#include "renderer/modeling/aov/aovfactoryregistrar.h"
-#include "renderer/modeling/aov/aovtraits.h"
-#include "renderer/modeling/aov/depthaov.h"
-#include "renderer/modeling/aov/iaovfactory.h"
+// appleseed.renderer headers.
+#include "renderer/utility/paramarray.h"
 
-#endif  // !APPLESEED_RENDERER_API_AOV_H
+using namespace foundation;
+
+namespace renderer
+{
+
+//
+// AOV class implementation.
+//
+
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
+UniqueID AOV::get_class_uid()
+{
+    return g_class_uid;
+}
+
+AOV::AOV(
+    const char*         name,
+    const ParamArray&   params)
+  : Entity(g_class_uid, params)
+{
+    set_name(name);
+}
+
+void AOV::release()
+{
+    delete this;
+}
+
+}   // namespace renderer

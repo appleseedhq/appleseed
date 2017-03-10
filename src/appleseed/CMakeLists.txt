@@ -1248,6 +1248,28 @@ source_group ("renderer\\meta\\tests" FILES
     ${renderer_meta_tests_sources}
 )
 
+set (renderer_modeling_aov_sources
+    renderer/modeling/aov/aov.cpp
+    renderer/modeling/aov/aov.h
+    renderer/modeling/aov/aovcontainer.h
+    renderer/modeling/aov/aovfactoryregistrar.cpp
+    renderer/modeling/aov/aovfactoryregistrar.h
+    renderer/modeling/aov/aovtraits.h
+    renderer/modeling/aov/depthaov.cpp
+    renderer/modeling/aov/depthaov.h
+    renderer/modeling/aov/diffuseaov.cpp
+    renderer/modeling/aov/diffuseaov.h
+    renderer/modeling/aov/iaovfactory.h
+    renderer/modeling/aov/normalaov.cpp
+    renderer/modeling/aov/normalaov.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_aov_sources}
+)
+source_group ("renderer\\modeling\\aov" FILES
+    ${renderer_modeling_aov_sources}
+)
+
 set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/alsurfacelayerbrdf.cpp
     renderer/modeling/bsdf/alsurfacelayerbrdf.h

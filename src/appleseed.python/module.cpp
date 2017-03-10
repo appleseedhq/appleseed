@@ -34,6 +34,7 @@
 #include "renderer/api/version.h"
 
 // Forward declarations.
+void bind_aov();
 void bind_assembly();
 void bind_basis();
 void bind_bbox();
@@ -106,6 +107,7 @@ BOOST_PYTHON_MODULE(_appleseedpython)
     bind_scene();
 
     bind_image();
+    bind_aov();
     bind_frame();
     bind_display();
     bind_project();

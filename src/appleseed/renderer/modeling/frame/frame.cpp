@@ -108,6 +108,8 @@ struct Frame::Impl
     auto_ptr<Image>         m_image;
     auto_ptr<ImageStack>    m_aov_images;
 
+    AOVContainer            m_aovs;
+
     Impl()
       : m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
     {
@@ -562,7 +564,7 @@ bool Frame::archive(
         write_image(
             file_path.c_str(),
             transformed_image,
-            ImageAttributes::create_default_attributes());
+                ImageAttributes::create_default_attributes());
 }
 
 void Frame::extract_parameters()
@@ -773,6 +775,16 @@ bool Frame::write_image(
         pretty_time(stopwatch.get_seconds()).c_str());
 
     return true;
+}
+
+void Frame::add_aov(foundation::auto_release_ptr<AOV> aov)
+{
+    impl->m_aovs.insert(aov);
+}
+
+AOVContainer& Frame::aovs() const
+{
+    return impl->m_aovs;
 }
 
 

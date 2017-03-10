@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,16 +26,20 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_AOV_H
-#define APPLESEED_RENDERER_API_AOV_H
+#ifndef APPLESEED_RENDERER_MODELING_AOV_AOVCONTAINER_H
+#define APPLESEED_RENDERER_MODELING_AOV_AOVCONTAINER_H
 
-// API headers.
-#include "renderer/kernel/aov/imagestack.h"
-#include "renderer/modeling/aov/aov.h"
-#include "renderer/modeling/aov/aovcontainer.h"
-#include "renderer/modeling/aov/aovfactoryregistrar.h"
-#include "renderer/modeling/aov/aovtraits.h"
-#include "renderer/modeling/aov/depthaov.h"
-#include "renderer/modeling/aov/iaovfactory.h"
+// appleseed.renderer headers.
+#include "renderer/modeling/entity/entityvector.h"
 
-#endif  // !APPLESEED_RENDERER_API_AOV_H
+// Forward declarations.
+namespace renderer { class AOV; }
+
+namespace renderer
+{
+
+typedef TypedEntityVector<AOV> AOVContainer;
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_AOV_AOVCONTAINER_H
