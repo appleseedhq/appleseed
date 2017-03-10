@@ -90,8 +90,20 @@ class APPLESEED_DLLSYMBOL Frame
     // Access the main underlying image.
     foundation::Image& image() const;
 
+    // Clear the main image to transparent black.
+    void clear_main_image();
+
     // Access the AOV images.
     ImageStack& aov_images() const;
+
+    // Delete the AOV images.
+    void delete_aov_images();
+
+    // Add an aov.
+    void add_aov(foundation::auto_release_ptr<AOV> aov);
+
+    // Access the aovs.
+    AOVContainer& aovs() const;
 
     // Return the reconstruction filter used by the main image and the AOV images.
     const foundation::Filter2f& get_filter() const;
@@ -135,9 +147,6 @@ class APPLESEED_DLLSYMBOL Frame
         const double    sample_x,               // x coordinate of the sample in the pixel, in [0,1)
         const double    sample_y) const;        // y coordinate of the sample in the pixel, in [0,1)
 
-    // Clear the main image to transparent black.
-    void clear_main_image();
-
     // Write the main image / the AOV images to disk.
     // Return true if successful, false otherwise.
     bool write_main_image(const char* file_path) const;
@@ -150,12 +159,6 @@ class APPLESEED_DLLSYMBOL Frame
     bool archive(
         const char*     directory,
         char**          output_path = 0) const;
-
-    // Add an aov.
-    void add_aov(foundation::auto_release_ptr<AOV> aov);
-
-    // Access the aovs.
-    AOVContainer& aovs() const;
 
   private:
     friend class FrameFactory;

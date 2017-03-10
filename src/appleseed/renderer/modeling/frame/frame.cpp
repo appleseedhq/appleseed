@@ -204,9 +204,29 @@ Image& Frame::image() const
     return *impl->m_image.get();
 }
 
+void Frame::clear_main_image()
+{
+    impl->m_image->clear(Color4f(0.0));
+}
+
 ImageStack& Frame::aov_images() const
 {
     return *impl->m_aov_images.get();
+}
+
+void Frame::delete_aov_images()
+{
+    impl->m_aov_images->clear();
+}
+
+void Frame::add_aov(foundation::auto_release_ptr<AOV> aov)
+{
+    impl->m_aovs.insert(aov);
+}
+
+AOVContainer& Frame::aovs() const
+{
+    return impl->m_aovs;
 }
 
 const Filter2f& Frame::get_filter() const
@@ -485,11 +505,6 @@ void Frame::transform_to_output_color_space(Image& image) const
         for (size_t tx = 0; tx < image_props.m_tile_count_x; ++tx)
             transform_to_output_color_space(image.tile(tx, ty));
     }
-}
-
-void Frame::clear_main_image()
-{
-    impl->m_image->clear(Color4f(0.0));
 }
 
 bool Frame::write_main_image(const char* file_path) const
@@ -775,16 +790,6 @@ bool Frame::write_image(
         pretty_time(stopwatch.get_seconds()).c_str());
 
     return true;
-}
-
-void Frame::add_aov(foundation::auto_release_ptr<AOV> aov)
-{
-    impl->m_aovs.insert(aov);
-}
-
-AOVContainer& Frame::aovs() const
-{
-    return impl->m_aovs;
 }
 
 
