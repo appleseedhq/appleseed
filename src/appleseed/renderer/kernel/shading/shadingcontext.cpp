@@ -158,4 +158,11 @@ void ShadingContext::execute_osl_surface_shader(
         alpha);
 }
 
+void ShadingContext::choose_bsdf_closure_shading_basis(
+    const ShadingPoint&     shading_point,
+    const Vector2f&         s) const
+{
+    m_shadergroup_exec.choose_bsdf_closure_shading_basis(shading_point, s);
+}
+
 }   // namespace renderer

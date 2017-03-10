@@ -85,7 +85,6 @@ class LocalSampleAccumulationBuffer
     // Exposed for tests and benchmarks.
     static void develop_to_tile_undo_premult_alpha(
         foundation::Tile&                   color_tile,
-        foundation::Tile&                   depth_tile,
         const size_t                        image_width,
         const size_t                        image_height,
         const foundation::FilteredTile&     level,
@@ -94,7 +93,6 @@ class LocalSampleAccumulationBuffer
         const foundation::AABB2u&           rect);
     static void develop_to_tile(
         foundation::Tile&                   color_tile,
-        foundation::Tile&                   depth_tile,
         const size_t                        image_width,
         const size_t                        image_height,
         const foundation::FilteredTile&     level,

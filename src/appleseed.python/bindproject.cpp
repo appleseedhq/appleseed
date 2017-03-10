@@ -298,9 +298,7 @@ void bind_project()
 
         .def("get_active_camera", &Project::get_uncached_active_camera, bpy::return_value_policy<bpy::reference_existing_object>())
 
-        .def("configurations", project_get_configs, bpy::return_value_policy<bpy::reference_existing_object>())
-
-        .def("create_aov_images", &Project::create_aov_images);
+        .def("configurations", project_get_configs, bpy::return_value_policy<bpy::reference_existing_object>());
 
     bpy::enum_<ProjectFileReader::Options>("ProjectFileReaderOptions")
         .value("Defaults", ProjectFileReader::Defaults)

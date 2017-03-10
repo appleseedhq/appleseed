@@ -150,7 +150,6 @@ class ForwardColorChangedSignal
   private:
     const QString m_widget_name;
     const QColor m_initial_color;
-    QColor m_current;
 };
 
 }       // namespace studio

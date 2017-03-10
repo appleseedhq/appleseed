@@ -1486,6 +1486,8 @@ void MainWindow::slot_clear_render_region()
             new ClearRenderRegionAction()));
 
     m_rendering_manager.reinitialize_rendering();
+
+    emit signal_crop_window_cleared();
 }
 
 void MainWindow::slot_set_render_region(const QRect& rect)

@@ -202,11 +202,9 @@ namespace
             // Create a single sample.
             Sample sample;
             sample.m_position = Vector2f(sample_position);
-            sample.m_values[0] = shading_result.m_main.m_color[0];
-            sample.m_values[1] = shading_result.m_main.m_color[1];
-            sample.m_values[2] = shading_result.m_main.m_color[2];
-            sample.m_values[3] = shading_result.m_main.m_alpha[0];
-            sample.m_values[4] = static_cast<float>(shading_result.m_depth);
+            sample.m_color = Color4f(
+                shading_result.m_main.m_color.rgb(),
+                shading_result.m_main.m_alpha[0]);
             samples.push_back(sample);
 
             m_total_sampling_dim.insert(sampling_context.get_total_dimension());
