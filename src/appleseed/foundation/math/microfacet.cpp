@@ -794,8 +794,13 @@ float StdMDF::D(
     const float cos_theta_4 = square(cos_theta_2);
     const float alpha_x2 = square(alpha_x);
     const float tan_theta_2 = (1.0f - cos_theta_2) / cos_theta_2;
+    
+    // [1] Equation 11.
+    const float a = std::pow(gamma - 1.0f, gamma);
+    const float b = std::pow(alpha_x, 2.0f * gamma - 2.0f);
+    const float c = std::pow((gamma - 1) * alpha_x2 + tan_theta_2, gamma);
 
-    return RcpPi<float>() * std::pow(gamma - 1.0f, gamma) * std::pow(alpha_x, 2.0f * gamma - 2.0f) / (cos_theta_4 * std::pow((gamma - 1) * alpha_x2 + tan_theta_2, gamma));
+    return RcpPi<float>() * (a * b) / (cos_theta_4 * c);
 }
 
 float StdMDF::G(
