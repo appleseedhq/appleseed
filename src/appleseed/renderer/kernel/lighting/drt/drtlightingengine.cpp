@@ -288,7 +288,6 @@ namespace
                 SpectrumStack&          vertex_aovs)
             {
                 Spectrum dl_radiance(Spectrum::Illuminance);
-                SpectrumStack dl_aovs(vertex_aovs.size());
 
                 const size_t light_sample_count =
                     stochastic_cast<size_t>(
@@ -315,19 +314,14 @@ namespace
                 integrator.compute_outgoing_radiance_combined_sampling_low_variance(
                     vertex.m_sampling_context,
                     vertex.m_outgoing,
-                    dl_radiance,
-                    dl_aovs);
+                    dl_radiance);
 
                 // Divide by the sample count when this number is less than 1.
                 if (m_params.m_rcp_dl_light_sample_count > 0.0f)
-                {
                     dl_radiance *= m_params.m_rcp_dl_light_sample_count;
-                    dl_aovs *= m_params.m_rcp_dl_light_sample_count;
-                }
 
                 // Add the direct lighting contributions.
                 vertex_radiance += dl_radiance;
-                vertex_aovs += dl_aovs;
             }
 
             void add_image_based_lighting_contribution(
