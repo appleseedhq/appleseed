@@ -111,17 +111,16 @@ void extract_current_file(unzFile& zip_file, const string& unzipped_dir)
 
     fstream out(filepath.c_str(), ios_base::out | ios_base::binary);
 
-    char* buffer = new char[BUFFER_SIZE];
+    char buffer[BUFFER_SIZE];
     int read;
 
     do 
     {
-        read = read_chunk(zip_file, buffer, BUFFER_SIZE);         
-        out.write(buffer, read);
+        read = read_chunk(zip_file, (char*) &buffer, BUFFER_SIZE);         
+        out.write((char*) &buffer, read);
     } 
     while (!unzeof(zip_file));
-            
-    delete[] buffer;
+
     out.close();
     close_current_file(zip_file);
 }
