@@ -3038,7 +3038,8 @@ namespace
     }
 }
 
-bool is_packed_project(const string& project_filepath, string& project_name) {
+bool is_packed_project(const string& project_filepath, string& project_name) 
+{
     try 
     {
         vector<string> appleseed_files = get_filenames_with_extension_from_zip(project_filepath, ".appleseed");
@@ -3071,8 +3072,8 @@ auto_release_ptr<Project> ProjectFileReader::read(
         string unpacked_project_directory(project_filepath);
         unpacked_project_directory += ".unpacked";
 
-        RENDERER_LOG_INFO("%s appears to be a packed project", project_filepath);
-        RENDERER_LOG_INFO("Unpacking to %s...", unpacked_project_directory.c_str());
+        RENDERER_LOG_INFO("%s appears to be a packed project.", project_filepath);
+        RENDERER_LOG_INFO("unpacking to %s...", unpacked_project_directory.c_str());
 
         unzip(project_filepath, unpacked_project_directory);
         

@@ -714,7 +714,6 @@ source_group ("foundation\\utility\\minizip" FILES
     ${foundation_utility_minizip_sources}
 )
 
-
 set (foundation_utility_sources
     foundation/utility/alignedallocator.h
     foundation/utility/alignedvector.h

@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Gleb Mishchenko, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +25,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-
 
 // Interface header.
 #include "unzipper.h"
@@ -50,7 +48,7 @@ namespace bf = boost::filesystem;
 namespace foundation
 {
 
-const int BUFFER_SIZE = 4096;
+const size_t BUFFER_SIZE = 4096;
 
 const char* UnzipException::what() const throw() 
 {
@@ -63,7 +61,8 @@ const char* UnzipException::what() const throw()
     return exc_message.str().c_str();
 }
 
-bool exists(const string& dirname) {
+bool exists(const string& dirname) 
+{
     bf::path dir(dirname);
     return bf::exists(dir);
 }
@@ -80,9 +79,9 @@ int remove_dir(const string& dirname)
     return bf::remove_all(dir);
 }
 
-bool is_directory(const string& dirname) 
+bool is_zip_entry_directory(const string& dirname) 
 {
-    // used own implementation of is_directory instead of boost implementation
+    // used own implementation of is_zip_entry_directory instead of boost implementation
     // because this directory is not in filesystem, but in zipfile
     return dirname[dirname.size() - 1] == '/';
 }
@@ -94,18 +93,20 @@ void open_current_file(unzFile& zip_file)
         throw UnzipException("Can't open file inside zip: ", err);
 }
 
-int read_chunk(unzFile& zip_file, char* buffer, const int chunk_size) {
+int read_chunk(unzFile& zip_file, char* buffer, const int chunk_size) 
+{
     const int err = unzReadCurrentFile(zip_file, buffer, chunk_size);
 
     if (err == UNZ_ERRNO)
         throw UnzipException("IO error while reading from zip");
     if (err < 0)
-        throw UnzipException("zLib error with decompessing file: ", err);
+        throw UnzipException("zLib error while decompressing file: ", err);
 
     return err;
 }
 
-void close_current_file(unzFile& zip_file) {
+void close_current_file(unzFile& zip_file) 
+{
     const int err = unzCloseCurrentFile(zip_file);
 
     if (err == UNZ_CRCERROR)
@@ -120,7 +121,8 @@ string read_filename(unzFile& zip_file)
     return filename_inzip;
 }
 
-string get_filepath(unzFile& zip_file, const string& unzipped_dir) {
+string get_filepath(unzFile& zip_file, const string& unzipped_dir) 
+{
     string filename = read_filename(zip_file);
     return (bf::path(unzipped_dir) / bf::path(filename)).string();
 }
@@ -129,12 +131,12 @@ void extract_current_file(unzFile& zip_file, const string& unzipped_dir)
 {
     const string filepath = get_filepath(zip_file, unzipped_dir);
 
-    if (is_directory(filepath)) 
+    if (is_zip_entry_directory(filepath)) 
     {
         make_dir(filepath);
         return;
-    } else 
-        open_current_file(zip_file);
+    } 
+    else open_current_file(zip_file);
 
     fstream out(filepath.c_str(), ios_base::out | ios_base::binary);
 
@@ -215,3 +217,4 @@ vector<string> get_filenames_with_extension_from_zip(const string& zip_filename,
 }
 
 } // namespace foundation
+
