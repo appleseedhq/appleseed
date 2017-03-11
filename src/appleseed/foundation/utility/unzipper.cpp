@@ -89,13 +89,11 @@ string read_filename(unzFile& zip_file)
     unz_file_info zip_file_info;
     unzGetCurrentFileInfo(zip_file, &zip_file_info, NULL, 0, NULL, 0, NULL, 0);
 
-    char* filename = new char[zip_file_info.size_filename + 1];
-    unzGetCurrentFileInfo(zip_file, &zip_file_info, filename, zip_file_info.size_filename + 1, NULL, 0, NULL, 0);
-    filename[zip_file_info.size_filename] = '\0';
+    vector<char> filename(zip_file_info.size_filename + 1);
+    unzGetCurrentFileInfo(zip_file, &zip_file_info, &filename[0], filename.size(), NULL, 0, NULL, 0);
+    filename[filename.size() - 1] = '\0';
 
-    string inzip_filename(filename);
-    delete[] filename;
-
+    const string inzip_filename(&filename[0]);
     return inzip_filename;
 }
 
