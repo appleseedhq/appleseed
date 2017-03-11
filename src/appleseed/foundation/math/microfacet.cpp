@@ -865,4 +865,19 @@ float StdMDF::pdf(
     return D(h, alpha_x, alpha_y, gamma) * h.y;
 }
 
+Vector3f StdMDF::sample(
+    const Vector3f&     v,
+    const Vector3f&     s,
+    const float         alpha_x,
+    const float         alpha_y,
+    const float         gamma) const
+{
+    const float phi = TwoPi<float>() * s[0];
+    const float a = gamma - 1.0f;
+    const float b = std::pow(1.0f - s[1], 1.0f / (1.0f - gamma)) - 1.0f;
+    const float theta = atan(alpha_x * std::sqrt(a * b));
+
+    return Vector3f::make_unit_vector(theta, phi);
+}
+
 }   // namespace foundation

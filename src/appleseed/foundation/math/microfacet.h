@@ -440,6 +440,13 @@ class StdMDF
         const float         alpha_y,
         const float         gamma) const APPLESEED_OVERRIDE;
 
+    virtual Vector3f sample(
+        const Vector3f&     v,
+        const Vector3f&     s,
+        const float         alpha_x,
+        const float         alpha_y,
+        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+
     virtual float pdf(
         const Vector3f&     v,
         const Vector3f&     h,
