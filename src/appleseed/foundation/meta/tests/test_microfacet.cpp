@@ -376,5 +376,48 @@ TEST_SUITE(Foundation_Math_Microfacet)
         EXPECT_FEQ_EPS(1.0f, integral, IntegrationEps);
     }
 
+    //
+    // STD MDF.
+    //
+
+    TEST_CASE(StdMDF_Evaluate_ReturnsNonNegativeValues)
+    {
+        const StdMDF mdf;
+
+        EXPECT_TRUE(is_positive(mdf, 0.5f, 0.5f, PositivityTestSampleCount, 2.0f));
+    }
+
+    TEST_CASE(StdMDF_Evaluate_GivenCosThetaIsZero_ReturnsZero)
+    {
+        const StdMDF mdf;
+
+        const float limit = mdf.D(Vector3f(0.0f), 0.5f, 0.5f, 2.0f);
+
+        EXPECT_FEQ(0.0f, limit);
+    }
+
+    TEST_CASE(StdMDF_Integral_EqualsOne)
+    {
+        const StdMDF mdf;
+
+        const float integral = integrate(mdf, 0.5f, IntegrationSampleCount, 2.0);
+
+        EXPECT_FEQ_EPS(1.0f, integral, IntegrationEps);
+    }
+
+    TEST_CASE(StdMDF_Isotropic_WeakWhiteFurnace)
+    {
+        WeakWhiteFurnaceTestResult result;
+        weak_white_furnace_test<StdMDF >(
+            WeakWhiteFurnaceRuns,
+            0.6f,
+            0.6f,
+            WeakWhiteFurnaceAngleStep,
+            result,
+            2.0f);
+
+        EXPECT_WEAK_WHITE_FURNACE_PASS(result)
+    }
+
 #undef EXPECT_WEAK_WHITE_FURNACE_PASS
 }
