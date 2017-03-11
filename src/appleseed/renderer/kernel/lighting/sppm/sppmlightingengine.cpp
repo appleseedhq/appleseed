@@ -559,7 +559,6 @@ namespace
 
                 // Add the emitted light contribution.
                 vertex_radiance += emitted_radiance;
-                vertex_aovs.add(vertex.m_edf->get_render_layer_index(), emitted_radiance);
             }
 
             void visit_environment(const PathVertex& vertex)
@@ -586,7 +585,6 @@ namespace
                 // Update the path radiance.
                 env_radiance *= vertex.m_throughput;
                 m_path_radiance += env_radiance;
-                m_path_aovs.add(m_env_edf->get_render_layer_index(), env_radiance);
             }
         };
 

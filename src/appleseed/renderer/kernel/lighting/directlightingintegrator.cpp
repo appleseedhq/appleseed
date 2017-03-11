@@ -553,7 +553,6 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     // Add the contribution of this sample to the illumination.
     edf_value *= sample.m_value;
     radiance += edf_value;
-    aovs.add(edf->get_render_layer_index(), edf_value);
 }
 
 void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
@@ -667,7 +666,6 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     edf_value *= weight;
     edf_value *= bsdf_value;
     radiance += edf_value;
-    aovs.add(edf->get_render_layer_index(), edf_value);
 }
 
 void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
@@ -740,7 +738,6 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     light_value *= weight;
     light_value *= bsdf_value;
     radiance += light_value;
-    aovs.add(light->get_render_layer_index(), light_value);
 }
 
 }   // namespace renderer

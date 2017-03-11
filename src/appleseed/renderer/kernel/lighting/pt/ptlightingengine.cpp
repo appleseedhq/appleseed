@@ -356,7 +356,6 @@ namespace
                     // Update the path radiance.
                     emitted_radiance *= vertex.m_throughput;
                     m_path_radiance += emitted_radiance;
-                    m_path_aovs.add(vertex.m_edf->get_render_layer_index(), emitted_radiance);
                 }
             }
 
@@ -384,7 +383,6 @@ namespace
                 // Update path radiance.
                 env_radiance *= vertex.m_throughput;
                 m_path_radiance += env_radiance;
-                m_path_aovs.add(m_env_edf->get_render_layer_index(), env_radiance);
             }
         };
 
@@ -602,7 +600,6 @@ namespace
 
                 // Add emitted light contribution.
                 vertex_radiance += emitted_radiance;
-                vertex_aovs.add(vertex.m_edf->get_render_layer_index(), emitted_radiance);
             }
 
             void add_image_based_lighting_contribution_bsdf(
@@ -664,7 +661,6 @@ namespace
 
                 // Add image-based lighting contribution.
                 vertex_radiance += ibl_radiance;
-                vertex_aovs.add(m_env_edf->get_render_layer_index(), ibl_radiance);
             }
 
             void visit_environment(const PathVertex& vertex)
@@ -714,7 +710,6 @@ namespace
 
                 // Update the path radiance.
                 m_path_radiance += env_radiance;
-                m_path_aovs.add(m_env_edf->get_render_layer_index(), env_radiance);
             }
 
             void clamp_contribution(Spectrum& radiance) const

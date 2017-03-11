@@ -140,15 +140,6 @@ void ShadingEngine::shade_hit_point(
             shading_context,
             shading_point,
             shading_result);
-
-        // Set AOVs.
-        shading_result.set_entity_aov(shading_point.get_assembly());
-        shading_result.set_entity_aov(shading_point.get_assembly_instance());
-        shading_result.set_entity_aov(shading_point.get_object());
-        shading_result.set_entity_aov(shading_point.get_object_instance());
-        if (material)
-            shading_result.set_entity_aov(*material);
-        shading_result.set_entity_aov(*surface_shader);
     }
     else
     {
@@ -179,9 +170,6 @@ void ShadingEngine::shade_environment(
             pixel_context,
             direction,
             shading_result);
-
-        // Set environment shader AOV.
-        shading_result.set_entity_aov(*environment_shader);
     }
     else
     {
