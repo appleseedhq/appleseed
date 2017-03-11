@@ -50,19 +50,6 @@ namespace foundation
 
 const size_t BUFFER_SIZE = 4096;
 
-const char* UnzipException::what() const throw() 
-{
-    stringstream exc_message;
-    exc_message << message;
-
-    if (err != 0)
-        exc_message << err;
-
-    return exc_message.str().c_str();
-}
-
-
-
 bool is_zip_entry_directory(const string& dirname) 
 {
     // used own implementation of is_zip_entry_directory instead of boost implementation
@@ -117,7 +104,7 @@ void extract_current_file(unzFile& zip_file, const string& unzipped_dir)
 
     if (is_zip_entry_directory(filepath)) 
     {
-        make_dir(filepath);
+        bf::create_directories(bf::path(filepath));
         return;
     } 
     else open_current_file(zip_file);
@@ -143,7 +130,7 @@ void unzip(const string& zip_filename, const string& unzipped_dir)
 {
     try
     {
-        if (bf::exists(bf_path(unzipped_dir)))
+        if (bf::exists(bf::path(unzipped_dir)))
             bf::remove_all(bf::path(unzipped_dir));
 
         bf::create_directories(bf::path(unzipped_dir));

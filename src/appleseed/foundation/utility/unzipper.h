@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
+#include "foundation/utility/string.h"
 
 // Standard headers
 #include <string>
@@ -47,17 +48,20 @@ class UnzipException
   : public foundation::Exception
 {
   public:
-    UnzipException(const char* message, const int err): message(message), err(err) {}
-    UnzipException(const char* message): message(message), err(0) {}
+    UnzipException(const char* what);
+    UnzipException(const char* what, const int err);
+};  
 
-    const char* what() const throw();
+inline UnzipException::UnzipException(const char* what)
+  : Exception(what) 
+{
+}
 
-    ~UnzipException() throw() {};
-
-  private:
-    const int err;
-    const char* message;
-};
+inline UnzipException::UnzipException(const char* what, const int err)
+{
+    std::string string_what = what + to_string(err);
+    set_what(string_what.c_str());
+}
 
 //
 // This function unzips zip file zipFilename
