@@ -61,23 +61,7 @@ const char* UnzipException::what() const throw()
     return exc_message.str().c_str();
 }
 
-bool exists(const string& dirname) 
-{
-    bf::path dir(dirname);
-    return bf::exists(dir);
-}
 
-bool make_dir(const string& dirname) 
-{
-    bf::path dir(dirname);
-    return bf::create_directories(dir);
-}
-
-int remove_dir(const string& dirname)
-{
-    bf::path dir(dirname);
-    return bf::remove_all(dir);
-}
 
 bool is_zip_entry_directory(const string& dirname) 
 {
@@ -159,10 +143,10 @@ void unzip(const string& zip_filename, const string& unzipped_dir)
 {
     try
     {
-        if (exists(unzipped_dir))
-            remove_dir(unzipped_dir);
+        if (bf::exists(bf_path(unzipped_dir)))
+            bf::remove_all(bf::path(unzipped_dir));
 
-        make_dir(unzipped_dir);
+        bf::create_directories(bf::path(unzipped_dir));
 
         unzFile zip_file = unzOpen(zip_filename.c_str());
         if (zip_file == NULL)
@@ -181,7 +165,7 @@ void unzip(const string& zip_filename, const string& unzipped_dir)
     }
     catch (exception e) 
     {
-        remove_dir(unzipped_dir);
+        bf::remove_all(bf::path(unzipped_dir));
         throw e;
     }
 }
