@@ -872,6 +872,8 @@ source_group ("renderer\\global" FILES
 )
 
 set (renderer_kernel_aov_sources
+    renderer/kernel/aov/aovaccumulator.cpp
+    renderer/kernel/aov/aovaccumulator.h
     renderer/kernel/aov/aovsettings.h
     renderer/kernel/aov/imagestack.cpp
     renderer/kernel/aov/imagestack.h
