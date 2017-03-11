@@ -3044,8 +3044,12 @@ bool is_packed_project(const string& project_filepath, string& project_name)
     {
         vector<string> appleseed_files = get_filenames_with_extension_from_zip(project_filepath, ".appleseed");
         
-        if (appleseed_files.size() != 1)
-            throw ExceptionUnsupportedFileFormat("Should be exactly one .appleseed file in project");
+        if (appleseed_files.size() != 1) {
+            RENDERER_LOG_INFO(
+                "%s could be a packed project, but only one .appleseed file should be inside.", 
+                project_filepath.c_str());
+            return false;
+        }
 
         project_name = appleseed_files[0];
         return true;
