@@ -773,4 +773,120 @@ float GTR1MDF::pdf(
     return D(h, alpha_x, alpha_y, gamma) * h.y;
 }
 
+// 
+// StdMDF class implementation
+//
+
+StdMDF::StdMDF() {}
+
+float StdMDF::D(
+    const Vector3f&     h,
+    const float         alpha_x,
+    const float         alpha_y,
+    const float         gamma) const
+{
+    const float cos_theta = h.y;
+
+    if (cos_theta == 0.0f)
+        return 0.0;
+
+    const float cos_theta_2 = square(cos_theta);
+    const float cos_theta_4 = square(cos_theta_2);
+    const float alpha_x2 = square(alpha_x);
+    const float tan_theta_2 = (1.0f - cos_theta_2) / cos_theta_2;
+    
+    // [1] Equation 11.
+    const float a = std::pow(gamma - 1.0f, gamma);
+    const float b = std::pow(alpha_x, 2.0f * gamma - 2.0f);
+    const float c = std::pow((gamma - 1) * alpha_x2 + tan_theta_2, gamma);
+
+    return RcpPi<float>() * (a * b) / (cos_theta_4 * c);
+}
+
+float StdMDF::G(
+    const Vector3f&     incoming,
+    const Vector3f&     outgoing,
+    const Vector3f&     h,
+    const float         alpha_x,
+    const float         alpha_y,
+    const float         gamma) const
+{
+    assert(gamma > 1.5f);
+
+    return 1.0f / (1.0f + lambda(outgoing, alpha_x, alpha_y, gamma) + lambda(incoming, alpha_x, alpha_y, gamma));
+}
+
+float StdMDF::G1(
+    const Vector3f&     v,
+    const Vector3f&     m,
+    const float         alpha_x,
+    const float         alpha_y,
+    const float         gamma) const
+{
+    assert(gamma > 1.5f);   
+
+    return 1.0f / (1.0f + lambda(v, alpha_x, alpha_y, gamma));
+}
+
+float StdMDF::lambda(
+    const Vector3f&     v,
+    const float         alpha_x,
+    const float         alpha_y,
+    const float         gamma) const
+{
+    const float alpha_2 = square(alpha_x);
+    const float cos_theta = std::abs(v.y);
+    const float sin_theta = std::sqrt(std::max(0.0f, 1.0f - square(cos_theta)));
+    const float tan_theta = sin_theta / cos_theta;
+    const float tan_theta_2 = square(tan_theta);
+
+    const float A1 = std::pow((gamma - 1.0f), gamma) / (2.0f * gamma - 3.0f);
+    // S1 [1] Equation 14.
+    const float S1_a = alpha_x * tan_theta;
+    const float S1_b = (gamma - 1.0f) + 1.0f / (alpha_2 * tan_theta_2);
+    const float S1 = S1_a * std::pow(S1_b, 1.5f - gamma);
+
+    const float A2 = std::sqrt(gamma - 1.0f);
+    // S2 Rational fractions for GAF approximation [1] Equation 23.
+    const float z = 1.0f / (alpha_x * tan_theta);
+    const float z_2 = square(z);
+    const float z_3 = z_2 * z;
+    const float gamma_2 = square(gamma);
+    const float gamma_3 = gamma_2 * gamma;
+    const float F_21 = (1.066f * z + 2.655f * z_2 + 4.892f * z_3) / (1.038f + 2.969f * z + 4.305f * z_2 + 4.418f * z_3);
+    const float F_22 = (14.402f - 27.145f * gamma + 20.574f * gamma_2 - 2.745f * gamma_3) / (-30.612f + 86.567f * gamma - 84.341f * gamma_2 +29.938f * gamma_3);
+    const float F_23 = (-129.404f + 324.987f * gamma - 299.305f * gamma_2 + 93.268f * gamma_3) / (-92.609f + 256.006f * gamma - 245.663f * gamma_2 + 86.064f * gamma_3);
+    const float F_24 = (6.537f + 6.074f * z - 0.623f * z_2 + 5.223f * z_3) / (6.538f + 6.103f * z - 3.218f * z_2 + 6.347 * z_3);
+    const float S2 = F_21 * (F_22 + F_23 * F_24);
+
+    const float gamma_fraction = tgamma(gamma - 0.5f) / tgamma(gamma);
+
+    return (gamma_fraction / SqrtPi<float>()) * (A1 * S1 + A2 * S2) - 0.5f;
+}
+
+float StdMDF::pdf(
+    const Vector3f&     v,
+    const Vector3f&     h,
+    const float         alpha_x,
+    const float         alpha_y,
+    const float         gamma) const
+{
+    return D(h, alpha_x, alpha_y, gamma) * h.y;
+}
+
+Vector3f StdMDF::sample(
+    const Vector3f&     v,
+    const Vector3f&     s,
+    const float         alpha_x,
+    const float         alpha_y,
+    const float         gamma) const
+{
+    const float phi = TwoPi<float>() * s[0];
+    const float a = gamma - 1.0f;
+    const float b = std::pow(1.0f - s[1], 1.0f / (1.0f - gamma)) - 1.0f;
+    const float theta = std::atan(alpha_x * std::sqrt(a * b));
+
+    return Vector3f::make_unit_vector(theta, phi);
+}
+
 }   // namespace foundation
