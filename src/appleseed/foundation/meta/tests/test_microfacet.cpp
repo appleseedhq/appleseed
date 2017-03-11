@@ -49,7 +49,8 @@ TEST_SUITE(Foundation_Math_Microfacet)
         const MDF&    mdf,
         const float   alpha_x,
         const float   alpha_y,
-        const size_t  sample_count)
+        const size_t  sample_count,
+        const float   gamma = 0.0f)
     {
         for (size_t i = 0; i < sample_count; ++i)
         {
@@ -57,7 +58,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
             const Vector2f s = hammersley_sequence<float, 2>(Bases, sample_count, i);
 
             const Vector3f h = sample_hemisphere_uniform(s);
-            const float value = mdf.D(h, alpha_x, alpha_y);
+            const float value = mdf.D(h, alpha_x, alpha_y, gamma);
 
             if (value < 0.0f)
                 return false;
@@ -70,7 +71,8 @@ TEST_SUITE(Foundation_Math_Microfacet)
     float integrate(
         const MDF&    mdf,
         const float   alpha,
-        const size_t  sample_count)
+        const size_t  sample_count,
+        const float   gamma = 0.0f)
     {
         float integral = 0.0f;
 
@@ -78,7 +80,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
         {
             const float theta = radical_inverse_base2<float>(i) * HalfPi<float>();
             const Vector3f h(0.0f, cos(theta), 0.0f);
-            const float value = mdf.D(h, alpha, alpha);
+            const float value = mdf.D(h, alpha, alpha, gamma);
 
             integral += value * h.y * sin(theta);
         }
@@ -113,7 +115,8 @@ TEST_SUITE(Foundation_Math_Microfacet)
         const float                 alpha_x,
         const float                 alpha_y,
         const float                 angle_step,
-        WeakWhiteFurnaceTestResult& result)
+        WeakWhiteFurnaceTestResult& result,
+        const float                 gamma = 0.0f)
     {
         result.m_min_G1 =  numeric_limits<float>::max();
         result.m_max_G1 = -numeric_limits<float>::max();
@@ -127,7 +130,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
             static const size_t Bases[] = { 2 };
             const Vector2f s = hammersley_sequence<float, 2>(Bases, num_runs, i);
             const Vector3f v = sample_hemisphere_uniform(s);
-            const float G1 = mdf.G1(v, Vector3f(0.0f, 1.0, 0.0f), alpha_x, alpha_y);
+            const float G1 = mdf.G1(v, Vector3f(0.0f, 1.0, 0.0f), alpha_x, alpha_y, gamma);
 
             result.m_min_G1 = std::min(result.m_min_G1, G1);
             result.m_max_G1 = std::max(result.m_max_G1, G1);
@@ -156,7 +159,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
                     const Vector3f h = normalize(v + l);
 
                     if (h.y > 0.0f)
-                        integral += sin_theta * mdf.D(h, alpha_x, alpha_y) * G1 / cos_thetha_o_4;
+                        integral += sin_theta * mdf.D(h, alpha_x, alpha_y, gamma) * G1 / cos_thetha_o_4;
                 }
             }
 
@@ -372,7 +375,6 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
         EXPECT_FEQ_EPS(1.0f, integral, IntegrationEps);
     }
-
 
 #undef EXPECT_WEAK_WHITE_FURNACE_PASS
 }
