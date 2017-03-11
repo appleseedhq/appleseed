@@ -806,6 +806,8 @@ float StdMDF::G(
     const float         alpha_y,
     const float         gamma) const
 {
+    assert(gamma > 1.5f);
+    
     return 1.0f / (1.0f + lambda(outgoing, alpha_x, alpha_y, gamma) + lambda(incoming, alpha_x, alpha_y, gamma));
 }
 
@@ -816,6 +818,8 @@ float StdMDF::G1(
     const float         alpha_y,
     const float         gamma) const
 {
+    assert(gamma > 1.5f);   
+
     return 1.0f / (1.0f + lambda(v, alpha_x, alpha_y, gamma));
 }
 
