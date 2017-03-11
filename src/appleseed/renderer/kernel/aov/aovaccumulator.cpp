@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/shading/shadingresult.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -62,8 +63,14 @@ void AOVAccumulator::release()
     delete this;
 }
 
-void AOVAccumulator::flush()
+virtual void AOVAccumulator::reset()
 {
+    m_color.set(0.0f);
+}
+
+void AOVAccumulator::flush(ShadingResult& result)
+{
+    result.m_aovs[m_index].m_color = m_color;
 }
 
 namespace
@@ -78,19 +85,17 @@ class BeautyAOVAccumulator
     {
     }
 
-    virtual void reset() APPLESEED_OVERRIDE
-    {
-    }
-
     virtual void accumulate(
       const ShadingPoint&       shading_point,
       const Spectrum&           value,
-      const float               alpha) APPLESEED_OVERRIDE
+      const Alpha&              alpha) APPLESEED_OVERRIDE
     {
+        m_color += value;
     }
 
-    virtual void flush() APPLESEED_OVERRIDE
+    virtual void flush(ShadingResult& result) APPLESEED_OVERRIDE
     {
+        //result.m_main.m_color = m_color;
     }
 };
 
@@ -121,17 +126,16 @@ void AOVAccumulatorContainer::reset()
 
 void AOVAccumulatorContainer::accumulate(
     const ShadingPoint&       shading_point,
-    const Spectrum&           value,
-    const float               alpha)
+    const Spectrum&           value)
 {
     for (size_t i = 0; i < m_size; ++i)
-        m_accumulators[i]->accumulate(shading_point, value, alpha);
+        m_accumulators[i]->accumulate(shading_point, value);
 }
 
-void AOVAccumulatorContainer::flush()
+void AOVAccumulatorContainer::flush(ShadingResult& result)
 {
     for (size_t i = 0; i < m_size; ++i)
-        m_accumulators[i]->flush();
+        m_accumulators[i]->flush(result);
 }
 
 bool AOVAccumulatorContainer::insert(auto_release_ptr<AOVAccumulator>& aov_accum)

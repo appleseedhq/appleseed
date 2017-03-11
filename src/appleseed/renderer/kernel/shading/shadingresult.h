@@ -57,7 +57,6 @@ class ShadingResult
     foundation::ColorSpace      m_color_space;
     ShadingFragment             m_main;
     ShadingFragmentStack        m_aovs;
-    double                      m_depth;
 
     // Constructor.
     // AOVs are cleared to transparent black but the main output is left uninitialized.

@@ -39,6 +39,7 @@
 
 // Forward declarations.
 namespace renderer { class ShadingPoint; }
+namespace renderer { class ShadingResult; }
 
 namespace renderer
 {
@@ -58,16 +59,15 @@ class AOVAccumulator
     virtual void release();
 
     // Reset the accumulator.
-    virtual void reset() = 0;
+    virtual void reset();
 
     // Accumulate a sample.
     virtual void accumulate(
       const ShadingPoint&       shading_point,
-      const Spectrum&           value,
-      const float               alpha) = 0;
+      const Spectrum&           value) = 0;
 
     // Write the result.
-    virtual void flush();
+    virtual void flush(ShadingResult& result);
 
   protected:
     // Constructor.
@@ -75,7 +75,6 @@ class AOVAccumulator
 
     const size_t    m_index;
     Spectrum        m_color;
-    float           m_alpha;
 };
 
 //
@@ -96,10 +95,9 @@ class AOVAccumulatorContainer
 
     void accumulate(
       const ShadingPoint&       shading_point,
-      const Spectrum&           value,
-      const float               alpha);
+      const Spectrum&           value);
 
-    void flush();
+    void flush(ShadingResult& result);
 
   private:
     bool insert(foundation::auto_release_ptr<AOVAccumulator>& aov_accum);
