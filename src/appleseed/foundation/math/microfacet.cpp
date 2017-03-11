@@ -807,7 +807,7 @@ float StdMDF::G(
     const float         gamma) const
 {
     assert(gamma > 1.5f);
-    
+
     return 1.0f / (1.0f + lambda(outgoing, alpha_x, alpha_y, gamma) + lambda(incoming, alpha_x, alpha_y, gamma));
 }
 
@@ -879,7 +879,7 @@ Vector3f StdMDF::sample(
     const float phi = TwoPi<float>() * s[0];
     const float a = gamma - 1.0f;
     const float b = std::pow(1.0f - s[1], 1.0f / (1.0f - gamma)) - 1.0f;
-    const float theta = atan(alpha_x * std::sqrt(a * b));
+    const float theta = std::atan(alpha_x * std::sqrt(a * b));
 
     return Vector3f::make_unit_vector(theta, phi);
 }
