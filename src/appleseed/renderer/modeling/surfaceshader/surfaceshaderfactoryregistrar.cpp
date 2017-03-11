@@ -37,7 +37,6 @@
 #include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
 #include "renderer/modeling/surfaceshader/oslsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/physicalsurfaceshader.h"
-#include "renderer/modeling/surfaceshader/surfaceshadercollection.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -68,7 +67,6 @@ SurfaceShaderFactoryRegistrar::SurfaceShaderFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new DiagnosticSurfaceShaderFactory()));
     register_factory(auto_ptr<FactoryType>(new OSLSurfaceShaderFactory()));
     register_factory(auto_ptr<FactoryType>(new PhysicalSurfaceShaderFactory()));
-    register_factory(auto_ptr<FactoryType>(new SurfaceShaderCollectionFactory()));
 }
 
 SurfaceShaderFactoryRegistrar::~SurfaceShaderFactoryRegistrar()

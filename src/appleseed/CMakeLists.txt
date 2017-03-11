@@ -1774,8 +1774,6 @@ set (renderer_modeling_surfaceshader_sources
     renderer/modeling/surfaceshader/physicalsurfaceshader.h
     renderer/modeling/surfaceshader/surfaceshader.cpp
     renderer/modeling/surfaceshader/surfaceshader.h
-    renderer/modeling/surfaceshader/surfaceshadercollection.cpp
-    renderer/modeling/surfaceshader/surfaceshadercollection.h
     renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.cpp
     renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.h
     renderer/modeling/surfaceshader/surfaceshadertraits.h
