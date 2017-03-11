@@ -106,6 +106,7 @@ elseif (CMAKE_COMPILER_IS_GNUCC AND (NOT CMAKE_COMPILER_IS_CLANG))
         )
 
         add_definitions (-DBOOST_NO_CXX11_SCOPED_ENUMS)
+        add_definitions (-D_GLIBCXX_USE_CXX11_ABI=0)
     endif()
 endif ()
 
