@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/aov/aovsettings.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/utility/paramarray.h"
 
@@ -214,19 +215,49 @@ ImageStack& Frame::aov_images() const
     return *impl->m_aov_images.get();
 }
 
-void Frame::delete_aov_images()
-{
-    impl->m_aov_images->clear();
-}
-
 void Frame::add_aov(foundation::auto_release_ptr<AOV> aov)
 {
-    impl->m_aovs.insert(aov);
+    assert(aov.get());
+
+    size_t aov_index = aov_images().get_index(aov->get_name());
+    if (aov_index == size_t(~0) && aov_images().size() < MaxAOVCount)
+    {
+        aov_images().append(
+            aov->get_name(),
+            ImageStack::ContributionType,
+            aov->get_channel_count(),
+            PixelFormatFloat);
+    }
+    else
+    {
+        RENDERER_LOG_WARNING(
+            "could not create %s AOVs, maximum number of AOVs (" FMT_SIZE_T ") reached.",
+            aov->get_name(),
+            MaxAOVCount);
+    }
+}
+
+void Frame::add_aovs(AOVContainer& aovs)
+{
+    while(!aovs.empty())
+    {
+        auto_release_ptr<AOV> aov = aovs.remove(aovs.get_by_index(0));
+        add_aov(aov);
+    }
 }
 
 AOVContainer& Frame::aovs() const
 {
     return impl->m_aovs;
+}
+
+size_t Frame::create_extra_aov_image(const char* name) const
+{
+    size_t index = aov_images().get_index(name);
+    if (index == size_t(~0) && aov_images().size() < MaxAOVCount)
+        return aov_images().append(name, ImageStack::IdentificationType, 4, PixelFormatFloat);
+
+    return ~0;
 }
 
 const Filter2f& Frame::get_filter() const

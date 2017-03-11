@@ -2543,7 +2543,7 @@ namespace
             ParametrizedElementHandler::end_element();
 
             m_frame = FrameFactory::create(m_name.c_str(), m_params);
-            m_frame->aovs().swap(m_aovs);
+            m_frame->add_aovs(m_aovs);
         }
 
         virtual void start_child_element(
