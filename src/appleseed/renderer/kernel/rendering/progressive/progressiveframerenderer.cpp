@@ -56,6 +56,7 @@
 #include "foundation/platform/thread.h"
 #include "foundation/platform/timers.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/gnuplotfile.h"
@@ -151,7 +152,7 @@ namespace
             if (!m_params.m_ref_image_path.empty())
             {
                 const string ref_image_path =
-                    project.search_paths().qualify(m_params.m_ref_image_path);
+                    to_string(project.search_paths().qualify(m_params.m_ref_image_path));
 
                 RENDERER_LOG_DEBUG("loading reference image %s...", ref_image_path.c_str());
 
@@ -541,7 +542,7 @@ namespace
                 if (!m_sample_count_records.empty())
                 {
                     const string filepath =
-                        (bf::path(m_project.search_paths().get_root_path()) / "sample_count.gnuplot").string();
+                        (bf::path(m_project.search_paths().get_root_path().c_str()) / "sample_count.gnuplot").string();
                     RENDERER_LOG_DEBUG("writing %s...", filepath.c_str());
 
                     GnuplotFile plotfile;
@@ -557,7 +558,7 @@ namespace
                 if (!m_rmsd_records.empty())
                 {
                     const string filepath =
-                        (bf::path(m_project.search_paths().get_root_path()) / "rms_deviation.gnuplot").string();
+                        (bf::path(m_project.search_paths().get_root_path().c_str()) / "rms_deviation.gnuplot").string();
                     RENDERER_LOG_DEBUG("writing %s...", filepath.c_str());
 
                     GnuplotFile plotfile;

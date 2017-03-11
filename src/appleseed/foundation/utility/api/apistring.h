@@ -48,17 +48,20 @@ namespace foundation
 class APPLESEED_DLLSYMBOL APIString
 {
   public:
+    APIString();
     explicit APIString(const char* s);
     APIString(const APIString& rhs);
 
     ~APIString();
 
+    APIString& operator=(const APIString& rhs);
+
     const char* c_str() const;
+
+    bool empty() const;
 
   private:
     const char* m_s;
-
-    APIString& operator=(const APIString& rhs);
 };
 
 template <>

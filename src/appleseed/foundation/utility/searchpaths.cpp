@@ -136,6 +136,11 @@ void SearchPaths::set_root_path(const char* path)
     impl->m_root_path = bf::path(path).make_preferred();
 }
 
+APIString SearchPaths::get_root_path() const
+{
+    return APIString(impl->m_root_path.string().c_str());
+}
+
 bool SearchPaths::has_root_path() const
 {
     return !impl->m_root_path.empty();
@@ -228,12 +233,14 @@ bool SearchPaths::exist(const char* filepath) const
     return bf::exists(fp);
 }
 
-char* SearchPaths::do_get_root_path() const
+APIString SearchPaths::qualify(const char* filepath) const
 {
-    return duplicate_string(impl->m_root_path.string().c_str());
+    APIString qualified_filepath;
+    qualify(filepath, &qualified_filepath, 0);
+    return qualified_filepath;
 }
 
-void SearchPaths::do_qualify(const char* filepath, char** qualified_filepath_cstr, char** search_path_cstr) const
+void SearchPaths::qualify(const char* filepath, APIString* qualified_filepath_str, APIString* search_path_str) const
 {
     assert(filepath);
 
@@ -256,9 +263,9 @@ void SearchPaths::do_qualify(const char* filepath, char** qualified_filepath_cst
             if (bf::exists(qualified_fp))
             {
                 qualified_fp.make_preferred();
-                *qualified_filepath_cstr = duplicate_string(qualified_fp.string().c_str());
-                if (search_path_cstr)
-                    *search_path_cstr = duplicate_string(i->c_str());
+                *qualified_filepath_str = APIString(qualified_fp.string().c_str());
+                if (search_path_str)
+                    *search_path_str = APIString(i->c_str());
                 return;
             }
         }
@@ -271,20 +278,20 @@ void SearchPaths::do_qualify(const char* filepath, char** qualified_filepath_cst
             if (bf::exists(qualified_fp))
             {
                 qualified_fp.make_preferred();
-                *qualified_filepath_cstr = duplicate_string(qualified_fp.string().c_str());
-                if (search_path_cstr)
-                    *search_path_cstr = 0;
+                *qualified_filepath_str = APIString(qualified_fp.string().c_str());
+                if (search_path_str)
+                    *search_path_str = APIString();
                 return;
             }
         }
     }
 
-    *qualified_filepath_cstr = duplicate_string(fp.string().c_str());
-    if (search_path_cstr)
-        *search_path_cstr = 0;
+    *qualified_filepath_str = APIString(fp.string().c_str());
+    if (search_path_str)
+        *search_path_str = APIString();
 }
 
-char* SearchPaths::do_to_string(const char separator, const bool reversed) const
+APIString SearchPaths::do_to_string(const char separator, const bool reversed) const
 {
     Impl::PathCollection paths;
 
@@ -319,7 +326,7 @@ char* SearchPaths::do_to_string(const char separator, const bool reversed) const
         paths_str.append(p.string());
     }
 
-    return duplicate_string(paths_str.c_str());
+    return APIString(paths_str.c_str());
 }
 
 }   // namespace foundation

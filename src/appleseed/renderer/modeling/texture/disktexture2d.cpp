@@ -42,6 +42,7 @@
 #include "foundation/image/genericprogressiveimagefilereader.h"
 #include "foundation/image/tile.h"
 #include "foundation/platform/thread.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/makevector.h"
@@ -79,7 +80,7 @@ namespace
             const EntityDefMessageContext message_context("texture", this);
 
             // Establish and store the qualified path to the texture file.
-            m_filepath = search_paths.qualify(m_params.get_required<string>("filename", ""));
+            m_filepath = to_string(search_paths.qualify(m_params.get_required<string>("filename", "")));
 
             // Retrieve the color space.
             const string color_space =
