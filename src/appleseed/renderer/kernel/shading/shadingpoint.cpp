@@ -660,17 +660,17 @@ void ShadingPoint::compute_geometric_normal() const
             if (m_side == ObjectInstance::BackSide)
                 m_geometric_normal = -m_geometric_normal;
         }
-        else
-        {
-            // In the absence of per-vertex normals, we have no way to know if we are
-            // hitting the front face or the back face of the surface. Assume we are
-            // always hitting the front face...
-            m_side = ObjectInstance::FrontSide;
+        // else
+        // {
+        //     // In the absence of per-vertex normals, we have no way to know if we are
+        //     // hitting the front face or the back face of the surface. Assume we are
+        //     // always hitting the front face...
+        //     m_side = ObjectInstance::FrontSide;
 
-            // ...and if the geometric normal is not facing the ray, flip it.
-            if (dot(m_ray.m_dir, m_geometric_normal) > 0.0)
-                m_geometric_normal = -m_geometric_normal;
-        }
+        //     // ...and if the geometric normal is not facing the ray, flip it.
+        //     if (dot(m_ray.m_dir, m_geometric_normal) > 0.0)
+        //         m_geometric_normal = -m_geometric_normal;
+        // }
     }
     else
     {
