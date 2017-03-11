@@ -86,10 +86,17 @@ void close_current_file(unzFile& zip_file)
 
 string read_filename(unzFile& zip_file) 
 {
-    char filename_inzip[256];
-    unzGetCurrentFileInfo(zip_file, NULL, filename_inzip, sizeof(filename_inzip), NULL, 0, NULL, 0);
+    unz_file_info zip_file_info;
+    unzGetCurrentFileInfo(zip_file, &zip_file_info, NULL, 0, NULL, 0, NULL, 0);
 
-    return filename_inzip;
+    char* filename = new char[zip_file_info.size_filename + 1];
+    unzGetCurrentFileInfo(zip_file, &zip_file_info, filename, zip_file_info.size_filename + 1, NULL, 0, NULL, 0);
+    filename[zip_file_info.size_filename] = '\0';
+
+    string inzip_filename(filename);
+    delete[] filename;
+
+    return inzip_filename;
 }
 
 string get_filepath(unzFile& zip_file, const string& unzipped_dir) 
