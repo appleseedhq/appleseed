@@ -3076,8 +3076,10 @@ auto_release_ptr<Project> ProjectFileReader::read(
         string unpacked_project_directory(project_filepath);
         unpacked_project_directory += ".unpacked";
 
-        RENDERER_LOG_INFO("%s appears to be a packed project.", project_filepath);
-        RENDERER_LOG_INFO("unpacking to %s...", unpacked_project_directory.c_str());
+        RENDERER_LOG_INFO(
+            "%s appears to be a packed project; unpacking to %s...,", 
+            project_filepath, 
+            unpacked_project_directory.c_str());
 
         unzip(project_filepath, unpacked_project_directory);
         
