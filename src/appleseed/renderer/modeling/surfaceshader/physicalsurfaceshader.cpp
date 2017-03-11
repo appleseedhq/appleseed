@@ -129,23 +129,6 @@ namespace
             return Model;
         }
 
-        virtual bool on_frame_begin(
-            const Project&          project,
-            const BaseGroup*        parent,
-            OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
-        {
-            if (!SurfaceShader::on_frame_begin(project, parent, recorder, abort_switch))
-                return false;
-
-            const ImageStack& aov_images = project.get_frame()->aov_images();
-
-            for (size_t i = 0, e = aov_images.size(); i < e; ++i)
-                m_is_contribution_aov[i] = aov_images.get_type(i) == ImageStack::ContributionType;
-
-            return true;
-        }
-
         virtual void evaluate(
             SamplingContext&        sampling_context,
             const PixelContext&     pixel_context,
@@ -191,15 +174,6 @@ namespace
             shading_result.m_main.m_color = radiance;
             shading_result.m_aovs.m_color = aovs;
 
-            // Set alpha channel of AOVs.
-            for (size_t i = 0, e = aovs.size(); i < e; ++i)
-            {
-                shading_result.m_aovs[i].m_alpha =
-                    m_is_contribution_aov[i]
-                        ? shading_result.m_main.m_alpha
-                        : Alpha(0.0f);
-            }
-
             // Apply multipliers.
             shading_result.m_main.m_color *= values.m_color_multiplier;
             shading_result.m_main.m_alpha *= values.m_alpha_multiplier;
@@ -240,7 +214,6 @@ namespace
         double                      m_aerial_persp_intensity;
         size_t                      m_front_lighting_samples;
         size_t                      m_back_lighting_samples;
-        bool                        m_is_contribution_aov[MaxAOVCount];
 
         void compute_front_lighting(
             const InputValues&      values,

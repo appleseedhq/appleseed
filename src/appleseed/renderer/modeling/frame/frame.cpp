@@ -224,7 +224,6 @@ void Frame::add_aov(foundation::auto_release_ptr<AOV> aov)
     {
         aov_images().append(
             aov->get_name(),
-            ImageStack::ContributionType,
             aov->get_channel_count(),
             PixelFormatFloat);
     }
@@ -255,7 +254,7 @@ size_t Frame::create_extra_aov_image(const char* name) const
 {
     size_t index = aov_images().get_index(name);
     if (index == size_t(~0) && aov_images().size() < MaxAOVCount)
-        return aov_images().append(name, ImageStack::IdentificationType, 4, PixelFormatFloat);
+        return aov_images().append(name, 4, PixelFormatFloat);
 
     return ~0;
 }
