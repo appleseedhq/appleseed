@@ -31,6 +31,9 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/aov/aovaccumulator.h"
+#include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
 #include "renderer/utility/paramarray.h"
 
@@ -40,6 +43,7 @@
 #include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
+#include <limits>
 #include <string>
 
 using namespace foundation;
@@ -51,7 +55,43 @@ namespace renderer
 namespace
 {
     //
-    // Depth aov.
+    // Depth AOV accumulator.
+    //
+
+    class DepthAOVAccumulator
+      : public AOVAccumulator
+    {
+      public:
+        explicit DepthAOVAccumulator(const size_t index)
+          : AOVAccumulator(index)
+        {
+        }
+
+        virtual void reset() APPLESEED_OVERRIDE
+        {
+            m_depth = std::numeric_limits<float>::max();
+        }
+
+        virtual void write(
+            const ShadingPoint&     shading_point,
+            const Camera&           camera) APPLESEED_OVERRIDE
+        {
+            if (shading_point.hit())
+                m_depth = shading_point.get_distance();
+        }
+
+        virtual void flush(ShadingResult& result) APPLESEED_OVERRIDE
+        {
+            result.m_aovs[m_index].m_color.set(m_depth);
+            result.m_aovs[m_index].m_alpha.set(1.0f);
+        }
+
+        float m_depth;
+    };
+
+
+    //
+    // Depth AOV.
     //
 
     const char* Model = "depth_aov";
@@ -89,6 +129,12 @@ namespace
         virtual bool has_color_data() const APPLESEED_OVERRIDE
         {
             return false;
+        }
+
+        virtual auto_release_ptr<AOVAccumulator> create_accumulator(
+            const size_t index) const APPLESEED_OVERRIDE
+        {
+            return auto_release_ptr<AOVAccumulator>(new DepthAOVAccumulator(index));
         }
     };
 }

@@ -40,6 +40,7 @@
 #include "foundation/utility/autoreleaseptr.h"
 
 // Forward declarations.
+namespace renderer { class Camera; }
 namespace renderer { class ShadingPoint; }
 namespace renderer { class ShadingResult; }
 
@@ -61,15 +62,23 @@ class AOVAccumulator
     virtual void release();
 
     // Reset the accumulator.
-    virtual void reset();
+    virtual void reset() = 0;
 
-    // Accumulate a sample.
+    // Write a value to the accumulator.
+    // Normally, this is used for geometry AOVs
+    // like normals, velocity, ...
+    virtual void write(
+        const ShadingPoint&     shading_point,
+        const Camera&           camera);
+
+    // Accumulate a shading sample into the accumulator.
+    // Normally, this is used for shading AOVs.
     virtual void accumulate(
       const ShadingPoint&       shading_point,
-      const Spectrum&           value) = 0;
+      const Spectrum&           value);
 
-    // Write the result.
-    virtual void flush(ShadingResult& result);
+    // Flush the result.
+    virtual void flush(ShadingResult& result) = 0;
 
   protected:
     // Constructor.
@@ -77,7 +86,6 @@ class AOVAccumulator
 
   public:
     const size_t    m_index;
-    Spectrum        m_color;
 };
 
 
@@ -96,15 +104,15 @@ class BeautyAOVAccumulator
 
     void set_to_pink_linear_rgb();
 
-    void mult(const float multiplier);
+    void apply_multiplier(const float multiplier);
 
-    virtual void accumulate(
-      const ShadingPoint&       shading_point,
-      const Spectrum&           value) APPLESEED_OVERRIDE;
+    virtual void reset() APPLESEED_OVERRIDE;
 
     virtual void flush(ShadingResult& result) APPLESEED_OVERRIDE;
 
-    foundation::ColorSpace m_color_space;
+  private:
+    foundation::ColorSpace  m_color_space;
+    Spectrum                m_color;
 };
 
 
@@ -118,17 +126,15 @@ class AlphaAOVAccumulator
   public:
     AlphaAOVAccumulator();
 
-    virtual void reset() APPLESEED_OVERRIDE;
-
     void set(const Alpha& alpha);
-    void mult(const Alpha& alpha);
 
-    virtual void accumulate(
-      const ShadingPoint&       shading_point,
-      const Spectrum&           value) APPLESEED_OVERRIDE;
+    void apply_multiplier(const Alpha& alpha);
+
+    virtual void reset() APPLESEED_OVERRIDE;
 
     virtual void flush(ShadingResult& result) APPLESEED_OVERRIDE;
 
+  private:
     Alpha m_alpha;
 };
 
@@ -147,26 +153,38 @@ class AOVAccumulatorContainer
     // Destructor.
     ~AOVAccumulatorContainer();
 
+    // Reset all accumulators.
     void reset();
 
+    // Write a sample to all accumulators.
+    void write(
+        const ShadingPoint&     shading_point,
+        const Camera&           camera);
+
+    // Accumulate a shading sample into all the accumulator.
     void accumulate(
       const ShadingPoint&       shading_point,
       const Spectrum&           value);
 
+    // Flush all the accumulators.
     void flush(ShadingResult& result);
 
+    // Access the beauty AOV.
     BeautyAOVAccumulator& beauty();
 
+    // Access the alpha AOV.
     AlphaAOVAccumulator& alpha();
 
   private:
-    bool insert(foundation::auto_release_ptr<AOVAccumulator>& aov_accum);
-
     void create_beauty_accumulator();
     void create_alpha_accumulator();
 
+    bool insert(foundation::auto_release_ptr<AOVAccumulator>& aov_accum);
+
+    enum { MaxAovAccumulators = MaxAOVCount + 2 }; // MaxAOVCount + Beauty + Alpha.
+
     size_t          m_size;
-    AOVAccumulator* m_accumulators[MaxAOVCount];
+    AOVAccumulator* m_accumulators[MaxAovAccumulators];
 };
 
 

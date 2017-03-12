@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
+#include "renderer/modeling/aov/aov.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -63,14 +64,16 @@ void AOVAccumulator::release()
     delete this;
 }
 
-void AOVAccumulator::reset()
+void AOVAccumulator::write(
+    const ShadingPoint&     shading_point,
+    const Camera&           camera)
 {
-    m_color.set(0.0f);
 }
 
-void AOVAccumulator::flush(ShadingResult& result)
+void AOVAccumulator::accumulate(
+  const ShadingPoint&       shading_point,
+  const Spectrum&           value)
 {
-    result.m_aovs[m_index].m_color = m_color;
 }
 
 
@@ -89,11 +92,6 @@ void BeautyAOVAccumulator::set(const Spectrum& value)
     m_color = value;
 }
 
-void BeautyAOVAccumulator::mult(const float multiplier)
-{
-    m_color *= multiplier;
-}
-
 void BeautyAOVAccumulator::set(const Color3f& color)
 {
     m_color_space = ColorSpaceLinearRGB;
@@ -107,11 +105,14 @@ void BeautyAOVAccumulator::set_to_pink_linear_rgb()
     set(Color3f(1.0f, 0.0f, 1.0f));
 }
 
-void BeautyAOVAccumulator::accumulate(
-  const ShadingPoint&       shading_point,
-  const Spectrum&           value)
+void BeautyAOVAccumulator::apply_multiplier(const float multiplier)
 {
-    m_color += value;
+    m_color *= multiplier;
+}
+
+void BeautyAOVAccumulator::reset()
+{
+    m_color.set(0.0f);
 }
 
 void BeautyAOVAccumulator::flush(ShadingResult& result)
@@ -130,25 +131,19 @@ AlphaAOVAccumulator::AlphaAOVAccumulator()
 {
 }
 
-void AlphaAOVAccumulator::reset()
-{
-    m_alpha.set(0.0f);
-}
-
 void AlphaAOVAccumulator::set(const Alpha& alpha)
 {
     m_alpha[0] = alpha[0];
 }
 
-void AlphaAOVAccumulator::mult(const Alpha& alpha)
+void AlphaAOVAccumulator::apply_multiplier(const Alpha& alpha)
 {
     m_alpha[0] *= alpha[0];
 }
 
-void AlphaAOVAccumulator::accumulate(
-  const ShadingPoint&       shading_point,
-  const Spectrum&           value)
+void AlphaAOVAccumulator::reset()
 {
+    m_alpha.set(0.0f);
 }
 
 void AlphaAOVAccumulator::flush(ShadingResult& result)
@@ -164,11 +159,17 @@ void AlphaAOVAccumulator::flush(ShadingResult& result)
 AOVAccumulatorContainer::AOVAccumulatorContainer(const AOVContainer& aovs)
   : m_size(0)
 {
-    memset(m_accumulators, 0, MaxAOVCount * sizeof(AOVAccumulator*));
+    memset(m_accumulators, 0, MaxAovAccumulators * sizeof(AOVAccumulator*));
 
     create_beauty_accumulator();
     create_alpha_accumulator();
-    // todo: create accumulators for all aovs here.
+
+    for (size_t i = 0, e = aovs.size(); i < e; ++i)
+    {
+        const AOV* aov = aovs.get_by_index(i);
+        auto_release_ptr<AOVAccumulator> accum = aov->create_accumulator(i);
+        insert(accum);
+    }
 }
 
 AOVAccumulatorContainer::~AOVAccumulatorContainer()
@@ -183,6 +184,14 @@ void AOVAccumulatorContainer::reset()
         m_accumulators[i]->reset();
 }
 
+void AOVAccumulatorContainer::write(
+    const ShadingPoint&       shading_point,
+    const Camera&             camera)
+{
+    for (size_t i = 0; i < m_size; ++i)
+        m_accumulators[i]->write(shading_point, camera);
+}
+
 void AOVAccumulatorContainer::accumulate(
     const ShadingPoint&       shading_point,
     const Spectrum&           value)
@@ -195,15 +204,6 @@ void AOVAccumulatorContainer::flush(ShadingResult& result)
 {
     for (size_t i = 0; i < m_size; ++i)
         m_accumulators[i]->flush(result);
-}
-
-bool AOVAccumulatorContainer::insert(auto_release_ptr<AOVAccumulator>& aov_accum)
-{
-    if (m_size == MaxAOVCount - 1)
-        return false;
-
-    m_accumulators[m_size++] = aov_accum.release();
-    return true;
 }
 
 void AOVAccumulatorContainer::create_beauty_accumulator()
@@ -222,6 +222,18 @@ void AOVAccumulatorContainer::create_alpha_accumulator()
     auto_release_ptr<AOVAccumulator> aov_accum(
         new AlphaAOVAccumulator());
     insert(aov_accum);
+}
+
+bool AOVAccumulatorContainer::insert(
+    auto_release_ptr<AOVAccumulator>& aov_accum)
+{
+    assert(aov_accum.get());
+
+    if (m_size == MaxAovAccumulators - 1)
+        return false;
+
+    m_accumulators[m_size++] = aov_accum.release();
+    return true;
 }
 
 }   // namespace renderer

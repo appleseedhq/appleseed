@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/aov/depthaov.h"
-#include "renderer/modeling/aov/diffuseaov.h"
 #include "renderer/modeling/aov/normalaov.h"
 #include "renderer/modeling/aov/iaovfactory.h"
 
@@ -60,7 +59,6 @@ AOVFactoryRegistrar::AOVFactoryRegistrar()
   : impl(new Impl())
 {
     register_factory(auto_ptr<FactoryType>(new DepthAOVFactory()));
-    register_factory(auto_ptr<FactoryType>(new DiffuseAOVFactory()));
     register_factory(auto_ptr<FactoryType>(new NormalAOVFactory()));
 }
 

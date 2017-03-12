@@ -224,13 +224,14 @@ void Frame::add_aov(foundation::auto_release_ptr<AOV> aov)
     {
         aov_images().append(
             aov->get_name(),
-            aov->get_channel_count(),
+            4, // aov->get_channel_count(),
             PixelFormatFloat);
+        aovs().insert(aov);
     }
     else
     {
         RENDERER_LOG_WARNING(
-            "could not create %s AOVs, maximum number of AOVs (" FMT_SIZE_T ") reached.",
+            "could not create %s AOV, maximum number of AOVs (" FMT_SIZE_T ") reached.",
             aov->get_name(),
             MaxAOVCount);
     }

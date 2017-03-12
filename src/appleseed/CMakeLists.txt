@@ -1259,8 +1259,6 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/aovtraits.h
     renderer/modeling/aov/depthaov.cpp
     renderer/modeling/aov/depthaov.h
-    renderer/modeling/aov/diffuseaov.cpp
-    renderer/modeling/aov/diffuseaov.h
     renderer/modeling/aov/iaovfactory.h
     renderer/modeling/aov/normalaov.cpp
     renderer/modeling/aov/normalaov.h

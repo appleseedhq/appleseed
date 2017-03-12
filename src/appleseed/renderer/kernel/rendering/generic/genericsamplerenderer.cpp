@@ -214,6 +214,10 @@ namespace
                         shading_result,
                         m_aov_accumulators);
 
+                    m_aov_accumulators.write(
+                        *shading_point_ptr,
+                        *m_scene.get_active_camera());
+
                     m_aov_accumulators.flush(shading_result);
 
                     // Transform the result to the linear RGB color space.
@@ -234,6 +238,10 @@ namespace
                         *shading_point_ptr,
                         local_result,
                         m_aov_accumulators);
+
+                    m_aov_accumulators.write(
+                        *shading_point_ptr,
+                        *m_scene.get_active_camera());
 
                     m_aov_accumulators.flush(local_result);
 

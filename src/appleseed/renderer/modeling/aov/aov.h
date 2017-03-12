@@ -40,6 +40,7 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace renderer      { class AOVAccumulator; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer
@@ -69,6 +70,10 @@ class APPLESEED_DLLSYMBOL AOV
 
     // Return true if this aov contains color data.
     virtual bool has_color_data() const = 0;
+
+    // Create an accumulator for this AOV.
+    virtual foundation::auto_release_ptr<AOVAccumulator> create_accumulator(
+        const size_t index) const = 0;
 };
 
 }       // namespace renderer

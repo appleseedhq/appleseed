@@ -176,8 +176,8 @@ namespace
             shading_result.m_main.m_color *= values.m_color_multiplier;
             shading_result.m_main.m_alpha *= values.m_alpha_multiplier;
 
-            aov_accumulators.beauty().mult(values.m_color_multiplier);
-            aov_accumulators.alpha().mult(Alpha(values.m_alpha_multiplier));
+            aov_accumulators.beauty().apply_multiplier(values.m_color_multiplier);
+            aov_accumulators.alpha().apply_multiplier(Alpha(values.m_alpha_multiplier));
 
             // Optionally apply fake aerial perspective.
             if (m_aerial_persp_mode != AerialPerspNone)

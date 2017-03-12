@@ -31,6 +31,9 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/aov/aovaccumulator.h"
+#include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
 #include "renderer/utility/paramarray.h"
 
@@ -51,7 +54,44 @@ namespace renderer
 namespace
 {
     //
-    // Normal aov.
+    // Normal AOV accumulator.
+    //
+
+    class NormalAOVAccumulator
+      : public AOVAccumulator
+    {
+      public:
+        explicit NormalAOVAccumulator(const size_t index)
+          : AOVAccumulator(index)
+        {
+        }
+
+        virtual void reset() APPLESEED_OVERRIDE
+        {
+            m_normal = Vector3f(0.0f, 0.0f, 0.0f);
+        }
+
+        virtual void write(
+            const ShadingPoint&     shading_point,
+            const Camera&           camera) APPLESEED_OVERRIDE
+        {
+            if (shading_point.hit())
+                m_normal = Vector3f(shading_point.get_shading_normal());
+        }
+
+        virtual void flush(ShadingResult& result) APPLESEED_OVERRIDE
+        {
+            result.m_aovs[m_index].m_color =
+                Color3f(m_normal[0], m_normal[1], m_normal[2]);
+            result.m_aovs[m_index].m_alpha.set(1.0f);
+        }
+
+        Vector3f m_normal;
+    };
+
+
+    //
+    // Normal AOV.
     //
 
     const char* Model = "normal_aov";
@@ -91,6 +131,12 @@ namespace
         virtual bool has_color_data() const APPLESEED_OVERRIDE
         {
             return false;
+        }
+
+        virtual auto_release_ptr<AOVAccumulator> create_accumulator(
+            const size_t index) const APPLESEED_OVERRIDE
+        {
+            return auto_release_ptr<AOVAccumulator>(new NormalAOVAccumulator(index));
         }
     };
 }

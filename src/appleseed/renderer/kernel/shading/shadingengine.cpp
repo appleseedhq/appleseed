@@ -106,7 +106,7 @@ void ShadingEngine::shade_hit_point(
             shading_point,
             alpha);
         shading_result.m_main.m_alpha *= alpha;
-        aov_accumulators.alpha().mult(alpha);
+        aov_accumulators.alpha().apply_multiplier(alpha);
     }
 
     // Shade the sample if it isn't fully transparent.
