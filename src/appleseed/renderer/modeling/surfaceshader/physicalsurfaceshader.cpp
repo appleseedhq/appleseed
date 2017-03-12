@@ -36,7 +36,6 @@
 #include "renderer/kernel/aov/aovsettings.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/aov/shadingfragmentstack.h"
-#include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingfragment.h"
@@ -146,7 +145,6 @@ namespace
                 &values);
 
             Spectrum radiance(Spectrum::Illuminance);
-            SpectrumStack aovs(shading_result.m_aovs.size());
 
             // Compute front lighting.
             compute_front_lighting(
@@ -155,8 +153,7 @@ namespace
                 pixel_context,
                 shading_context,
                 shading_point,
-                radiance,
-                aovs);
+                radiance);
 
             // Optionally simulate translucency by adding back lighting.
             if (!is_zero(values.m_translucency))
@@ -167,21 +164,17 @@ namespace
                     pixel_context,
                     shading_context,
                     shading_point,
-                    radiance,
-                    aovs);
+                    radiance);
             }
 
             // Initialize the shading result.
             shading_result.m_color_space = ColorSpaceSpectral;
             shading_result.m_main.m_color = radiance;
-            shading_result.m_aovs.m_color = aovs;
             aov_accumulators.beauty().set(radiance);
 
             // Apply multipliers.
             shading_result.m_main.m_color *= values.m_color_multiplier;
             shading_result.m_main.m_alpha *= values.m_alpha_multiplier;
-            shading_result.m_aovs.m_color *= values.m_color_multiplier;
-            shading_result.m_aovs.m_alpha *= values.m_alpha_multiplier;
 
             aov_accumulators.beauty().mult(values.m_color_multiplier);
             aov_accumulators.alpha().mult(Alpha(values.m_alpha_multiplier));
@@ -228,11 +221,9 @@ namespace
             const PixelContext&         pixel_context,
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point,
-            Spectrum&                   radiance,
-            SpectrumStack&              aovs) const
+            Spectrum&                   radiance) const
         {
             radiance.set(0.0f);
-            aovs.set(0.0f);
 
             for (size_t i = 0; i < m_front_lighting_samples; ++i)
             {
@@ -241,15 +232,13 @@ namespace
                     pixel_context,
                     shading_context,
                     shading_point,
-                    radiance,
-                    aovs);
+                    radiance);
             }
 
             if (m_front_lighting_samples > 1)
             {
                 const float rcp_sample_count = 1.0f / m_front_lighting_samples;
                 radiance *= rcp_sample_count;
-                aovs *= rcp_sample_count;
             }
         }
 
@@ -259,8 +248,7 @@ namespace
             const PixelContext&         pixel_context,
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point,
-            Spectrum&                   radiance,
-            SpectrumStack&              aovs) const
+            Spectrum&                   radiance) const
         {
             const Vector3d& p = shading_point.get_point();
             const Vector3d& n = shading_point.get_original_shading_normal();
@@ -276,7 +264,6 @@ namespace
             back_shading_point.set_ray(back_ray);
 
             Spectrum back_radiance(0.0f, Spectrum::Illuminance);
-            SpectrumStack back_aovs(aovs.size(), 0.0f);
 
             // Compute back lighting.
             for (size_t i = 0; i < m_back_lighting_samples; ++i)
@@ -286,22 +273,18 @@ namespace
                     pixel_context,
                     shading_context,
                     back_shading_point,
-                    back_radiance,
-                    back_aovs);
+                    back_radiance);
             }
 
             // Apply translucency factor.
             back_radiance *= values.m_translucency;
-            back_aovs *= values.m_translucency;
 
             // Divide by the number of samples.
             const float rcp_sample_count = 1.0f / m_back_lighting_samples;
             back_radiance *= rcp_sample_count;
-            back_aovs *= rcp_sample_count;
 
             // Add back lighting contribution.
             radiance += back_radiance;
-            aovs += back_aovs;
         }
 
         void apply_aerial_perspective(
