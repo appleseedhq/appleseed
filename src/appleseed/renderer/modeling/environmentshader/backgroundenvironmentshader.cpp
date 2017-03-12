@@ -99,7 +99,6 @@ namespace
             shading_result.m_main.m_color = values.m_color;
             shading_result.m_main.m_alpha[0] = values.m_alpha;
 
-            aov_accumulators.beauty().set_color_space(ColorSpaceSpectral);
             aov_accumulators.beauty().set(values.m_color);
             aov_accumulators.alpha().set(Alpha(values.m_alpha));
         }

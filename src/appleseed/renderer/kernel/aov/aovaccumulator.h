@@ -36,6 +36,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/image/color.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // Forward declarations.
@@ -90,11 +91,12 @@ class BeautyAOVAccumulator
   public:
     BeautyAOVAccumulator();
 
-    void set_color_space(const foundation::ColorSpace& color_space);
-
     void set(const Spectrum& value);
+    void set(const foundation::Color3f& color);
 
     void set_to_pink_linear_rgb();
+
+    void mult(const float multiplier);
 
     virtual void accumulate(
       const ShadingPoint&       shading_point,

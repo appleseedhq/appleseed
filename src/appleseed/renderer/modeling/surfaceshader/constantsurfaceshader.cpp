@@ -121,16 +121,21 @@ namespace
             // Initialize the shading result.
             shading_result.m_color_space = ColorSpaceSpectral;
             shading_result.m_main.m_color = values.m_color;
-            shading_result.m_aovs.m_color.set(0.0f);
-            shading_result.m_aovs.m_alpha.set(0.0f);
+            aov_accumulators.beauty().set(values.m_color);
 
             // This surface shader can override alpha.
             if (m_alpha_source == AlphaSourceColor)
+            {
                 shading_result.m_main.m_alpha = values.m_alpha;
+                aov_accumulators.alpha().set(values.m_alpha);
+            }
 
             // Apply multipliers.
             shading_result.m_main.m_color *= values.m_color_multiplier;
             shading_result.m_main.m_alpha *= values.m_alpha_multiplier;
+
+            aov_accumulators.beauty().mult(values.m_color_multiplier);
+            aov_accumulators.alpha().mult(Alpha(values.m_alpha_multiplier));
         }
 
       private:

@@ -156,8 +156,7 @@ namespace
                 shading_context,
                 shading_point,
                 radiance,
-                aovs,
-                aov_accumulators);
+                aovs);
 
             // Optionally simulate translucency by adding back lighting.
             if (!is_zero(values.m_translucency))
@@ -169,8 +168,7 @@ namespace
                     shading_context,
                     shading_point,
                     radiance,
-                    aovs,
-                    aov_accumulators);
+                    aovs);
             }
 
             // Initialize the shading result.
@@ -227,8 +225,7 @@ namespace
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point,
             Spectrum&                   radiance,
-            SpectrumStack&              aovs,
-            AOVAccumulatorContainer&    aov_accumulators) const
+            SpectrumStack&              aovs) const
         {
             radiance.set(0.0f);
             aovs.set(0.0f);
@@ -259,8 +256,7 @@ namespace
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point,
             Spectrum&                   radiance,
-            SpectrumStack&              aovs,
-            AOVAccumulatorContainer&    aov_accumulators) const
+            SpectrumStack&              aovs) const
         {
             const Vector3d& p = shading_point.get_point();
             const Vector3d& n = shading_point.get_original_shading_normal();

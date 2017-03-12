@@ -83,22 +83,28 @@ BeautyAOVAccumulator::BeautyAOVAccumulator()
 {
 }
 
-void BeautyAOVAccumulator::set_color_space(const ColorSpace& color_space)
-{
-    m_color_space = color_space;
-}
-
 void BeautyAOVAccumulator::set(const Spectrum& value)
 {
+    m_color_space = ColorSpaceSpectral;
     m_color = value;
+}
+
+void BeautyAOVAccumulator::mult(const float multiplier)
+{
+    m_color *= multiplier;
+}
+
+void BeautyAOVAccumulator::set(const Color3f& color)
+{
+    m_color_space = ColorSpaceLinearRGB;
+    m_color[0] = color[0];
+    m_color[1] = color[1];
+    m_color[2] = color[2];
 }
 
 void BeautyAOVAccumulator::set_to_pink_linear_rgb()
 {
-    m_color_space = ColorSpaceLinearRGB;
-    m_color[0] = 1.0f;
-    m_color[1] = 0.0f;
-    m_color[2] = 1.0f;
+    set(Color3f(1.0f, 0.0f, 1.0f));
 }
 
 void BeautyAOVAccumulator::accumulate(

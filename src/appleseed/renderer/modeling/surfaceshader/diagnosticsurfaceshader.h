@@ -123,6 +123,25 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
     size_t      m_ao_samples;
 
     void extract_parameters();
+
+    static void set_result(
+        const foundation::Color3f&  color,
+        ShadingResult&              shading_result,
+        AOVAccumulatorContainer&    aov_accumulators);
+
+    static void set_result(
+        const foundation::Color4f&  color,
+        ShadingResult&              shading_result,
+        AOVAccumulatorContainer&    aov_accumulators);
+
+    static void set_result(
+        const Spectrum&             value,
+        ShadingResult&              shading_result,
+        AOVAccumulatorContainer&    aov_accumulators);
+
+    static void set_result_to_opaque_pink(
+        ShadingResult&              shading_result,
+        AOVAccumulatorContainer&    aov_accumulators);
 };
 
 
