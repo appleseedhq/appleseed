@@ -82,16 +82,19 @@ class RenderTab
         ProjectExplorer&                    project_explorer,
         renderer::Project&                  project);
 
+    RenderWidget* get_render_widget() const;
+    CameraController* get_camera_controller() const;
+    ScenePickingHandler* get_scene_picking_handler() const;
+
+    void set_clear_frame_button_enabled(const bool enabled);
+    void set_render_region_buttons_enabled(const bool enabled);
+
     void clear();
     void darken();
     void reset_zoom();
-    void set_clear_frame_button_enabled(const bool enabled);
 
     void update();
     void update_size();
-
-    RenderWidget* get_render_widget() const;
-    CameraController* get_camera_controller() const;
 
     struct State
     {
@@ -151,7 +154,7 @@ class RenderTab
     std::auto_ptr<PixelColorTracker>        m_pixel_color_tracker;
     std::auto_ptr<PixelInspectorHandler>    m_pixel_inspector_handler;
     std::auto_ptr<CameraController>         m_camera_controller;
-    std::auto_ptr<ScenePickingHandler>      m_picking_handler;
+    std::auto_ptr<ScenePickingHandler>      m_scene_picking_handler;
     std::auto_ptr<RenderRegionHandler>      m_render_region_handler;
     std::auto_ptr<RenderClipboardHandler>   m_clipboard_handler;
 
