@@ -30,12 +30,8 @@
 #include "backgroundenvironmentshader.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/aov/aovaccumulator.h"
-#include "renderer/kernel/aov/shadingfragmentstack.h"
 #include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/shading/shadingcontext.h"
-#include "renderer/kernel/shading/shadingfragment.h"
-#include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 
 // appleseed.foundation headers.
@@ -81,11 +77,11 @@ namespace
         }
 
         virtual void evaluate(
-            const ShadingContext&       shading_context,
-            const PixelContext&         pixel_context,
-            const Vector3d&             direction,
-            ShadingResult&              shading_result,
-            AOVAccumulatorContainer&    aov_accumulators) const APPLESEED_OVERRIDE
+            const ShadingContext&   shading_context,
+            const PixelContext&     pixel_context,
+            const Vector3d&         direction,
+            Spectrum&               value,
+            Alpha&                  alpha) const APPLESEED_OVERRIDE
         {
             const Vector2f s(pixel_context.get_sample_position());
 
@@ -95,12 +91,8 @@ namespace
                 Vector2f(s[0], 1.0f - s[1]),
                 &values);
 
-            shading_result.m_color_space = ColorSpaceSpectral;
-            shading_result.m_main.m_color = values.m_color;
-            shading_result.m_main.m_alpha[0] = values.m_alpha;
-
-            aov_accumulators.beauty().set(values.m_color);
-            aov_accumulators.alpha().set(Alpha(values.m_alpha));
+            value = values.m_color;
+            alpha = Alpha(values.m_alpha);
         }
 
       private:

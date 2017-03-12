@@ -167,12 +167,16 @@ void ShadingEngine::shade_environment(
         // There is an environment shader: execute it.
         const ShadingRay& ray = shading_point.get_ray();
         const Vector3d direction = normalize(ray.m_dir);
+        Spectrum value;
+        Alpha alpha;
         environment_shader->evaluate(
             shading_context,
             pixel_context,
             direction,
-            shading_result,
-            aov_accumulators);
+            value,
+            alpha);
+        aov_accumulators.beauty().set(value);
+        aov_accumulators.alpha().set(alpha);
     }
 }
 

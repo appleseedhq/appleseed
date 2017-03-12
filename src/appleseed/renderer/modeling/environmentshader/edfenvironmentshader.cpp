@@ -32,10 +32,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
-#include "renderer/kernel/aov/aovaccumulator.h"
-#include "renderer/kernel/aov/shadingfragmentstack.h"
-#include "renderer/kernel/shading/shadingfragment.h"
-#include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/project/project.h"
@@ -126,26 +122,15 @@ namespace
         }
 
         virtual void evaluate(
-            const ShadingContext&       shading_context,
-            const PixelContext&         pixel_context,
-            const Vector3d&             direction,
-            ShadingResult&              shading_result,
-            AOVAccumulatorContainer&    aov_accumulators) const APPLESEED_OVERRIDE
+            const ShadingContext&   shading_context,
+            const PixelContext&     pixel_context,
+            const Vector3d&         direction,
+            Spectrum&               value,
+            Alpha&                  alpha) const APPLESEED_OVERRIDE
         {
             // Evaluate the environment EDF and store the radiance into the shading result.
-            Spectrum value;
-            m_env_edf->evaluate(
-                shading_context,
-                Vector3f(direction),
-                value);
-
-            // Initialize the shading result.
-            shading_result.m_color_space = ColorSpaceSpectral;
-            shading_result.m_main.m_color = value;
-            shading_result.m_main.m_alpha.set(m_alpha_value);
-
-            aov_accumulators.beauty().set(value);
-            aov_accumulators.alpha().set(Alpha(m_alpha_value));
+            m_env_edf->evaluate(shading_context, Vector3f(direction), value);
+            alpha = Alpha(m_alpha_value);
         }
 
       private:
