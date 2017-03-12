@@ -670,7 +670,7 @@ namespace
             if (!params.strings().exist("filepath"))
             {
                 const string object_name = object.get_name();
-                const string filename = object_name + ".curves";
+                const string filename = object_name + ".txt";
 
                 if (!(m_options & ProjectFileWriter::OmitWritingGeometryFiles))
                 {
