@@ -116,8 +116,8 @@ void BeautyAOVAccumulator::accumulate(
 
 void BeautyAOVAccumulator::flush(ShadingResult& result)
 {
-    //result.m_color_space = m_color_space;
-    //result.m_main.m_color = m_color;
+    result.m_color_space = m_color_space;
+    result.m_main.m_color = m_color;
 }
 
 
@@ -137,12 +137,12 @@ void AlphaAOVAccumulator::reset()
 
 void AlphaAOVAccumulator::set(const Alpha& alpha)
 {
-    m_color[0] = alpha[0];
+    m_alpha[0] = alpha[0];
 }
 
 void AlphaAOVAccumulator::mult(const Alpha& alpha)
 {
-    m_color[0] *= alpha[0];
+    m_alpha[0] *= alpha[0];
 }
 
 void AlphaAOVAccumulator::accumulate(
@@ -153,7 +153,7 @@ void AlphaAOVAccumulator::accumulate(
 
 void AlphaAOVAccumulator::flush(ShadingResult& result)
 {
-    //result.m_main.m_alpha = m_alpha;
+    result.m_main.m_alpha = m_alpha;
 }
 
 
@@ -208,7 +208,7 @@ bool AOVAccumulatorContainer::insert(auto_release_ptr<AOVAccumulator>& aov_accum
 
 void AOVAccumulatorContainer::create_beauty_accumulator()
 {
-    assert(m_size = 0);
+    assert(m_size == 0);
 
     auto_release_ptr<AOVAccumulator> aov_accum(
         new BeautyAOVAccumulator());
@@ -217,7 +217,7 @@ void AOVAccumulatorContainer::create_beauty_accumulator()
 
 void AOVAccumulatorContainer::create_alpha_accumulator()
 {
-    assert(m_size = 1);
+    assert(m_size == 1);
 
     auto_release_ptr<AOVAccumulator> aov_accum(
         new AlphaAOVAccumulator());

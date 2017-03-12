@@ -175,12 +175,16 @@ namespace
             shading_result.m_color_space = ColorSpaceSpectral;
             shading_result.m_main.m_color = radiance;
             shading_result.m_aovs.m_color = aovs;
+            aov_accumulators.beauty().set(radiance);
 
             // Apply multipliers.
             shading_result.m_main.m_color *= values.m_color_multiplier;
             shading_result.m_main.m_alpha *= values.m_alpha_multiplier;
             shading_result.m_aovs.m_color *= values.m_color_multiplier;
             shading_result.m_aovs.m_alpha *= values.m_alpha_multiplier;
+
+            aov_accumulators.beauty().mult(values.m_color_multiplier);
+            aov_accumulators.alpha().mult(Alpha(values.m_alpha_multiplier));
 
             // Optionally apply fake aerial perspective.
             if (m_aerial_persp_mode != AerialPerspNone)
