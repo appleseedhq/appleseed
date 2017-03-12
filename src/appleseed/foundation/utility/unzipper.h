@@ -31,9 +31,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
-#include "foundation/utility/string.h"
 
-// Standard headers
+// Standard headers.
 #include <string>
 #include <vector>
 
@@ -52,16 +51,6 @@ class UnzipException
     UnzipException(const char* what, const int err);
 };  
 
-inline UnzipException::UnzipException(const char* what)
-  : Exception(what) 
-{
-}
-
-inline UnzipException::UnzipException(const char* what, const int err)
-{
-    std::string string_what = what + to_string(err);
-    set_what(string_what.c_str());
-}
 
 //
 // This function unzips zip file zipFilename
@@ -72,6 +61,7 @@ inline UnzipException::UnzipException(const char* what, const int err)
 //
 
 void unzip(const std::string& zip_filename, const std::string& unzipped_dir);
+
 
 //
 // This function returns all filenames from zip_filenames zip with given extension
