@@ -62,15 +62,26 @@ CameraController::CameraController(
     Project&    project)
   : m_render_widget(render_widget)
   , m_project(project)
+  , m_enabled(false)
 {
     configure_controller();
-
-    m_render_widget->installEventFilter(this);
 }
 
 CameraController::~CameraController()
 {
-    m_render_widget->removeEventFilter(this);
+    set_enabled(false);
+}
+
+void CameraController::set_enabled(const bool enabled)
+{
+    if (enabled == m_enabled)
+        return;
+
+    if (enabled)
+        m_render_widget->installEventFilter(this);
+    else m_render_widget->removeEventFilter(this);
+
+    m_enabled = enabled;
 }
 
 Transformd CameraController::get_transform() const

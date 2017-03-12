@@ -86,6 +86,32 @@ RenderTab::RenderTab(
     recreate_handlers();
 }
 
+RenderWidget* RenderTab::get_render_widget() const
+{
+    return m_render_widget;
+}
+
+CameraController* RenderTab::get_camera_controller() const
+{
+    return m_camera_controller.get();
+}
+
+ScenePickingHandler* RenderTab::get_scene_picking_handler() const
+{
+    return m_scene_picking_handler.get();
+}
+
+void RenderTab::set_clear_frame_button_enabled(const bool enabled)
+{
+    m_clear_frame_button->setEnabled(enabled);
+}
+
+void RenderTab::set_render_region_buttons_enabled(const bool enabled)
+{
+    m_set_render_region_button->setEnabled(enabled);
+    m_clear_render_region_button->setEnabled(enabled);
+}
+
 void RenderTab::clear()
 {
     m_render_widget->clear();
@@ -120,16 +146,6 @@ void RenderTab::update_size()
     recreate_handlers();
 }
 
-RenderWidget* RenderTab::get_render_widget() const
-{
-    return m_render_widget;
-}
-
-CameraController* RenderTab::get_camera_controller() const
-{
-    return m_camera_controller.get();
-}
-
 RenderTab::State RenderTab::save_state() const
 {
     State state;
@@ -152,7 +168,7 @@ void RenderTab::slot_render_widget_context_menu(const QPoint& point)
 
 void RenderTab::slot_toggle_render_region(const bool checked)
 {
-    m_picking_handler->set_enabled(!checked);
+    m_scene_picking_handler->set_enabled(!checked);
     m_render_region_handler->set_enabled(checked);
 }
 
@@ -355,7 +371,7 @@ void RenderTab::recreate_handlers()
             m_render_widget,
             m_info_label));
 
-    // Handle for tracking and display the color of the pixel underneath the mouse cursor.
+    // Handle for tracking and displaying the color of the pixel under the mouse cursor.
     m_pixel_color_tracker.reset(
         new PixelColorTracker(
             m_render_widget,
@@ -393,7 +409,7 @@ void RenderTab::recreate_handlers()
         m_camera_controller.get(), SLOT(slot_frame_modified()));
 
     // Handler for picking scene entities in the render widget.
-    m_picking_handler.reset(
+    m_scene_picking_handler.reset(
         new ScenePickingHandler(
             m_render_widget,
             m_picking_mode_combo,
@@ -401,10 +417,10 @@ void RenderTab::recreate_handlers()
             m_project_explorer,
             m_project));
     connect(
-        m_picking_handler.get(), SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
+        m_scene_picking_handler.get(), SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
         SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)));
     connect(
-        m_picking_handler.get(), SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
+        m_scene_picking_handler.get(), SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
         m_camera_controller.get(), SLOT(slot_entity_picked(renderer::ScenePicker::PickingResult)));
 
     // Handler for setting render regions with the mouse.
@@ -420,14 +436,9 @@ void RenderTab::recreate_handlers()
     m_clipboard_handler.reset(new RenderClipboardHandler(m_render_widget));
 
     // Set initial state.
-    m_picking_handler->set_enabled(true);
+    m_scene_picking_handler->set_enabled(true);
     m_render_region_handler->set_enabled(false);
     m_pixel_inspector_handler->set_enabled(false);
-}
-
-void RenderTab::set_clear_frame_button_enabled(const bool enabled)
-{
-    m_clear_frame_button->setEnabled(enabled);
 }
 
 }   // namespace studio
