@@ -172,9 +172,9 @@ void MainWindow::open_project(const QString& filepath)
 
     remove_render_widgets();
 
-    set_file_widgets_enabled(false);
+    set_file_widgets_enabled(false, NotRendering);
     set_project_explorer_enabled(false);
-    set_rendering_widgets_enabled(false, false);
+    set_rendering_widgets_enabled(false, NotRendering);
 
     m_project_manager.load_project(filepath.toAscii().constData());
 }
@@ -568,9 +568,12 @@ void MainWindow::build_connections()
 void MainWindow::update_workspace()
 {
     update_window_title();
-    set_file_widgets_enabled(true);
+
+    set_file_widgets_enabled(true, NotRendering);
     set_project_explorer_enabled(true);
-    set_rendering_widgets_enabled(true, false);
+    set_rendering_widgets_enabled(true, NotRendering);
+
+    m_ui->attribute_editor_scrollarea_contents->setEnabled(true);
 }
 
 void MainWindow::update_project_explorer()
@@ -626,9 +629,10 @@ void MainWindow::update_window_title()
     setWindowTitle(title);
 }
 
-void MainWindow::set_file_widgets_enabled(const bool is_enabled)
+void MainWindow::set_file_widgets_enabled(const bool is_enabled, const RenderingMode rendering_mode)
 {
     const bool is_project_open = m_project_manager.is_project_open();
+    const bool project_has_path = is_project_open && m_project_manager.get_project()->has_path();
 
     // File -> New Project.
     m_ui->action_file_new_project->setEnabled(is_enabled);
@@ -645,19 +649,20 @@ void MainWindow::set_file_widgets_enabled(const bool is_enabled)
     m_ui->menu_file_open_builtin_project->setEnabled(is_enabled);
 
     // File -> Reload Project.
-    m_ui->action_file_reload_project->setEnabled(
-        is_enabled &&
-        is_project_open &&
-        m_project_manager.get_project()->has_path());
-    m_action_reload_project->setEnabled(
-        is_enabled &&
-        is_project_open &&
-        m_project_manager.get_project()->has_path());
+    const bool allow_reload = (is_enabled || rendering_mode == InteractiveRendering) && project_has_path;
+    m_ui->action_file_reload_project->setEnabled(allow_reload);
+    m_action_reload_project->setEnabled(allow_reload);
+
+    // File -> Monitor Project.
+    const bool allow_monitor = (is_enabled || rendering_mode == InteractiveRendering) && project_has_path;
+    m_ui->action_monitor_project_file->setEnabled(allow_monitor);
+    m_action_monitor_project_file->setEnabled(allow_monitor);
 
     // File -> Save Project and Save Project As.
-    m_ui->action_file_save_project->setEnabled(is_enabled && is_project_open);
-    m_action_save_project->setEnabled(is_enabled && is_project_open);
-    m_ui->action_file_save_project_as->setEnabled(is_enabled && is_project_open);
+    const bool allow_save = is_enabled && is_project_open;
+    m_ui->action_file_save_project->setEnabled(allow_save);
+    m_action_save_project->setEnabled(allow_save);
+    m_ui->action_file_save_project_as->setEnabled(allow_save);
 
     // File -> Exit.
     m_ui->action_file_exit->setEnabled(is_enabled);
@@ -673,37 +678,48 @@ void MainWindow::set_project_explorer_enabled(const bool is_enabled)
     m_ui->treewidget_project_explorer_scene->setEnabled(is_enabled && is_project_open);
 }
 
-void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const bool is_rendering)
+void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const RenderingMode rendering_mode)
 {
-    const bool is_project_open = is_enabled && m_project_manager.is_project_open();
-    const bool allow_starting_rendering = is_project_open && !is_rendering;
-    const bool allow_stopping_rendering = is_project_open && is_rendering;
+    const bool is_project_open = m_project_manager.is_project_open();
+    const bool allow_start = is_enabled && is_project_open && rendering_mode == NotRendering;
+    const bool allow_stop = is_enabled && is_project_open && rendering_mode != NotRendering;
 
     // Rendering -> Rendering Settings.
-    m_ui->action_rendering_rendering_settings->setEnabled(allow_starting_rendering);
-    m_action_rendering_settings->setEnabled(allow_starting_rendering);
+    m_ui->action_rendering_rendering_settings->setEnabled(allow_start);
+    m_action_rendering_settings->setEnabled(allow_start);
 
     // Rendering -> Start Interactive Rendering.
-    m_ui->action_rendering_start_interactive_rendering->setEnabled(allow_starting_rendering);
-    m_action_start_interactive_rendering->setEnabled(allow_starting_rendering);
+    m_ui->action_rendering_start_interactive_rendering->setEnabled(allow_start);
+    m_action_start_interactive_rendering->setEnabled(allow_start);
 
     // Rendering -> Start Final Rendering.
-    m_ui->action_rendering_start_final_rendering->setEnabled(allow_starting_rendering);
-    m_action_start_final_rendering->setEnabled(allow_starting_rendering);
+    m_ui->action_rendering_start_final_rendering->setEnabled(allow_start);
+    m_action_start_final_rendering->setEnabled(allow_start);
 
     // Rendering -> Stop Rendering.
-    m_ui->action_rendering_stop_rendering->setEnabled(allow_stopping_rendering);
-    m_action_stop_rendering->setEnabled(allow_stopping_rendering);
+    m_ui->action_rendering_stop_rendering->setEnabled(allow_stop);
+    m_action_stop_rendering->setEnabled(allow_stop);
 
     // Rendering -> Render Settings.
-    m_ui->action_rendering_rendering_settings->setEnabled(allow_starting_rendering);
+    m_ui->action_rendering_rendering_settings->setEnabled(allow_start);
 
-    // Rendering -> Clear Frame.
-    if (is_project_open)
+    // Render tab buttons.
+    const int current_tab_index = m_ui->tab_render_channels->currentIndex();
+    if (current_tab_index != -1)
     {
-        const int current_tab_index = m_ui->tab_render_channels->currentIndex();
-        if (current_tab_index != -1)
-            m_tab_index_to_render_tab[current_tab_index]->set_clear_frame_button_enabled(!is_rendering);
+        RenderTab* render_tab = m_tab_index_to_render_tab[current_tab_index];
+
+        // Clear frame.
+        render_tab->set_clear_frame_button_enabled(
+            is_enabled && is_project_open && rendering_mode == NotRendering);
+
+        // Set/clear rendering region.
+        render_tab->set_render_region_buttons_enabled(
+            is_enabled && is_project_open && rendering_mode != FinalRendering);
+
+        // Scene picker.
+        render_tab->get_scene_picking_handler()->set_enabled(
+            is_enabled && is_project_open && rendering_mode != FinalRendering);
     }
 }
 
@@ -731,7 +747,7 @@ void MainWindow::restore_state_after_project_open()
         }
 
         if (m_state_before_project_open->m_is_rendering)
-            start_rendering(true);
+            start_rendering(InteractiveRendering);
     }
 }
 
@@ -968,19 +984,22 @@ void MainWindow::dropEvent(QDropEvent* event)
      event->accept();
 }
 
-void MainWindow::start_rendering(const bool interactive)
+void MainWindow::start_rendering(const RenderingMode rendering_mode)
 {
     assert(m_project_manager.is_project_open());
 
-    // Enable/disable widgets appropriately. File -> Reload is enabled during interactive rendering.
-    set_file_widgets_enabled(false);
-    if (interactive)
+    // Enable/disable widgets appropriately.
+    set_file_widgets_enabled(false, rendering_mode);
+    set_rendering_widgets_enabled(true, rendering_mode);
+    set_project_explorer_enabled(rendering_mode == InteractiveRendering);
+    m_ui->attribute_editor_scrollarea_contents->setEnabled(rendering_mode == InteractiveRendering);
+
+    // Stop monitoring the project file in Final rendering mode.
+    if (rendering_mode == FinalRendering)
     {
-        m_ui->action_file_reload_project->setEnabled(
-            m_project_manager.get_project()->has_path());
+        if (m_project_file_watcher)
+            stop_monitoring_project_file();
     }
-    set_project_explorer_enabled(true);
-    set_rendering_widgets_enabled(true, true);
 
     Project* project = m_project_manager.get_project();
     Frame* frame = project->get_frame();
@@ -997,13 +1016,17 @@ void MainWindow::start_rendering(const bool interactive)
     }
 
     // Retrieve the right configuration.
-    const char* configuration_name = interactive ? "interactive" : "final";
+    const char* configuration_name =
+        rendering_mode == InteractiveRendering ? "interactive" : "final";
     const ParamArray params = get_project_params(configuration_name);
 
     // Effectively start rendering.
     m_rendering_manager.start_rendering(
         project,
         params,
+        rendering_mode == InteractiveRendering
+            ? RenderingManager::InteractiveRendering
+            : RenderingManager::FinalRendering,
         m_render_tabs["RGB"]);
 }
 
@@ -1339,12 +1362,12 @@ void MainWindow::slot_save_settings()
 
 void MainWindow::slot_start_interactive_rendering()
 {
-    start_rendering(true);
+    start_rendering(InteractiveRendering);
 }
 
 void MainWindow::slot_start_final_rendering()
 {
-    start_rendering(false);
+    start_rendering(FinalRendering);
 }
 
 void MainWindow::slot_start_rendering_once(const QString& filepath, const QString& configuration, const bool successful)
@@ -1353,14 +1376,20 @@ void MainWindow::slot_start_rendering_once(const QString& filepath, const QStrin
 
     if (successful)
     {
-        const bool interactive = configuration == "interactive";
-        start_rendering(interactive);
+        if (configuration == "interactive")
+            start_rendering(InteractiveRendering);
+        else start_rendering(FinalRendering);
     }
 }
 
 void MainWindow::slot_rendering_end()
 {
     update_workspace();
+
+    // Restart monitoring the project file if monitoring was enabled
+    // (monitoring would have been stopped if rendering in Final mode).
+    if (m_project_file_watcher)
+        start_monitoring_project_file();
 }
 
 void MainWindow::slot_camera_changed()
@@ -1500,7 +1529,7 @@ void MainWindow::slot_set_render_region(const QRect& rect)
     {
         if (m_rendering_manager.is_rendering())
             m_rendering_manager.reinitialize_rendering();
-        else start_rendering(true);
+        else start_rendering(InteractiveRendering);
     }
     else m_rendering_manager.reinitialize_rendering();
 }

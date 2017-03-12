@@ -72,6 +72,12 @@ class RenderingManager
     Q_OBJECT
 
   public:
+    enum RenderingMode
+    {
+        InteractiveRendering,
+        FinalRendering
+    };
+
     // Constructor.
     explicit RenderingManager(StatusBar& status_bar);
 
@@ -82,6 +88,7 @@ class RenderingManager
     void start_rendering(
         renderer::Project*              project,
         const renderer::ParamArray&     params,
+        const RenderingMode             rendering_mode,
         RenderTab*                      render_tab);
 
     // Return true if currently rendering, false otherwise.
@@ -156,6 +163,7 @@ class RenderingManager
 
     renderer::Project*                          m_project;
     renderer::ParamArray                        m_params;
+    RenderingMode                               m_rendering_mode;
     RenderTab*                                  m_render_tab;
 
     std::auto_ptr<QtTileCallbackFactory>        m_tile_callback_factory;
