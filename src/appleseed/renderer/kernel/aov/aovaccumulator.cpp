@@ -63,7 +63,7 @@ void AOVAccumulator::release()
     delete this;
 }
 
-virtual void AOVAccumulator::reset()
+void AOVAccumulator::reset()
 {
     m_color.set(0.0f);
 }
@@ -73,43 +73,96 @@ void AOVAccumulator::flush(ShadingResult& result)
     result.m_aovs[m_index].m_color = m_color;
 }
 
-namespace
+
+//
+// BeautyAOVAccumulator class implementation.
+//
+
+BeautyAOVAccumulator::BeautyAOVAccumulator()
+  : AOVAccumulator(~0)
 {
-
-class BeautyAOVAccumulator
-  : public AOVAccumulator
-{
-  public:
-    BeautyAOVAccumulator()
-      : AOVAccumulator(~0)
-    {
-    }
-
-    virtual void accumulate(
-      const ShadingPoint&       shading_point,
-      const Spectrum&           value,
-      const Alpha&              alpha) APPLESEED_OVERRIDE
-    {
-        m_color += value;
-    }
-
-    virtual void flush(ShadingResult& result) APPLESEED_OVERRIDE
-    {
-        //result.m_main.m_color = m_color;
-    }
-};
-
 }
+
+void BeautyAOVAccumulator::set_color_space(const ColorSpace& color_space)
+{
+    m_color_space = color_space;
+}
+
+void BeautyAOVAccumulator::set(const Spectrum& value)
+{
+    m_color = value;
+}
+
+void BeautyAOVAccumulator::set_to_pink_linear_rgb()
+{
+    m_color_space = ColorSpaceLinearRGB;
+    m_color[0] = 1.0f;
+    m_color[1] = 0.0f;
+    m_color[2] = 1.0f;
+}
+
+void BeautyAOVAccumulator::accumulate(
+  const ShadingPoint&       shading_point,
+  const Spectrum&           value)
+{
+    m_color += value;
+}
+
+void BeautyAOVAccumulator::flush(ShadingResult& result)
+{
+    //result.m_color_space = m_color_space;
+    //result.m_main.m_color = m_color;
+}
+
+
+//
+// AlphaAOVAccumulator class implementation.
+//
+
+AlphaAOVAccumulator::AlphaAOVAccumulator()
+  : AOVAccumulator(~0)
+{
+}
+
+void AlphaAOVAccumulator::reset()
+{
+    m_alpha.set(0.0f);
+}
+
+void AlphaAOVAccumulator::set(const Alpha& alpha)
+{
+    m_color[0] = alpha[0];
+}
+
+void AlphaAOVAccumulator::mult(const Alpha& alpha)
+{
+    m_color[0] *= alpha[0];
+}
+
+void AlphaAOVAccumulator::accumulate(
+  const ShadingPoint&       shading_point,
+  const Spectrum&           value)
+{
+}
+
+void AlphaAOVAccumulator::flush(ShadingResult& result)
+{
+    //result.m_main.m_alpha = m_alpha;
+}
+
 
 //
 // AOVAccumulatorContainer class implementation.
 //
 
-AOVAccumulatorContainer::AOVAccumulatorContainer()
+AOVAccumulatorContainer::AOVAccumulatorContainer(const AOVContainer& aovs)
   : m_size(0)
 {
     memset(m_accumulators, 0, MaxAOVCount * sizeof(AOVAccumulator*));
+
     create_beauty_accumulator();
+    create_alpha_accumulator();
+    // todo: create accumulators for all aovs here.
 }
 
 AOVAccumulatorContainer::~AOVAccumulatorContainer()
@@ -153,6 +206,15 @@ void AOVAccumulatorContainer::create_beauty_accumulator()
 
     auto_release_ptr<AOVAccumulator> aov_accum(
         new BeautyAOVAccumulator());
+    insert(aov_accum);
+}
+
+void AOVAccumulatorContainer::create_alpha_accumulator()
+{
+    assert(m_size = 1);
+
+    auto_release_ptr<AOVAccumulator> aov_accum(
+        new AlphaAOVAccumulator());
     insert(aov_accum);
 }
 

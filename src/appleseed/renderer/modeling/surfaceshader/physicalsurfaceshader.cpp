@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/aov/aovsettings.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/aov/shadingfragmentstack.h"
@@ -86,8 +87,8 @@ namespace
     {
       public:
         PhysicalSurfaceShader(
-            const char*             name,
-            const ParamArray&       params)
+            const char*                 name,
+            const ParamArray&           params)
           : SurfaceShader(name, params)
           , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
         {
@@ -130,11 +131,12 @@ namespace
         }
 
         virtual void evaluate(
-            SamplingContext&        sampling_context,
-            const PixelContext&     pixel_context,
-            const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point,
-            ShadingResult&          shading_result) const APPLESEED_OVERRIDE
+            SamplingContext&            sampling_context,
+            const PixelContext&         pixel_context,
+            const ShadingContext&       shading_context,
+            const ShadingPoint&         shading_point,
+            ShadingResult&              shading_result,
+            AOVAccumulatorContainer&    aov_accumulators) const APPLESEED_OVERRIDE
         {
             // Evaluate the shader inputs.
             InputValues values;
@@ -154,7 +156,8 @@ namespace
                 shading_context,
                 shading_point,
                 radiance,
-                aovs);
+                aovs,
+                aov_accumulators);
 
             // Optionally simulate translucency by adding back lighting.
             if (!is_zero(values.m_translucency))
@@ -166,7 +169,8 @@ namespace
                     shading_context,
                     shading_point,
                     radiance,
-                    aovs);
+                    aovs,
+                    aov_accumulators);
             }
 
             // Initialize the shading result.
@@ -188,7 +192,8 @@ namespace
                     shading_context,
                     pixel_context,
                     shading_point,
-                    shading_result);
+                    shading_result,
+                    aov_accumulators);
             }
         }
 
@@ -216,13 +221,14 @@ namespace
         size_t                      m_back_lighting_samples;
 
         void compute_front_lighting(
-            const InputValues&      values,
-            SamplingContext&        sampling_context,
-            const PixelContext&     pixel_context,
-            const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point,
-            Spectrum&               radiance,
-            SpectrumStack&          aovs) const
+            const InputValues&          values,
+            SamplingContext&            sampling_context,
+            const PixelContext&         pixel_context,
+            const ShadingContext&       shading_context,
+            const ShadingPoint&         shading_point,
+            Spectrum&                   radiance,
+            SpectrumStack&              aovs,
+            AOVAccumulatorContainer&    aov_accumulators) const
         {
             radiance.set(0.0f);
             aovs.set(0.0f);
@@ -247,13 +253,14 @@ namespace
         }
 
         void add_back_lighting(
-            const InputValues&      values,
-            SamplingContext&        sampling_context,
-            const PixelContext&     pixel_context,
-            const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point,
-            Spectrum&               radiance,
-            SpectrumStack&          aovs) const
+            const InputValues&          values,
+            SamplingContext&            sampling_context,
+            const PixelContext&         pixel_context,
+            const ShadingContext&       shading_context,
+            const ShadingPoint&         shading_point,
+            Spectrum&                   radiance,
+            SpectrumStack&              aovs,
+            AOVAccumulatorContainer&    aov_accumulators) const
         {
             const Vector3d& p = shading_point.get_point();
             const Vector3d& n = shading_point.get_original_shading_normal();
@@ -298,11 +305,12 @@ namespace
         }
 
         void apply_aerial_perspective(
-            const InputValues&      values,
-            const ShadingContext&   shading_context,
-            const PixelContext&     pixel_context,
-            const ShadingPoint&     shading_point,
-            ShadingResult&          shading_result) const
+            const InputValues&          values,
+            const ShadingContext&       shading_context,
+            const PixelContext&         pixel_context,
+            const ShadingPoint&         shading_point,
+            ShadingResult&              shading_result,
+            AOVAccumulatorContainer&    aov_accumulators) const
         {
             Spectrum sky_color;
 
@@ -325,7 +333,8 @@ namespace
                         shading_context,
                         pixel_context,
                         direction,
-                        sky);
+                        sky,
+                        aov_accumulators);
                     sky_color = sky.m_main.m_color;
                 }
                 else sky_color.set(0.0f);

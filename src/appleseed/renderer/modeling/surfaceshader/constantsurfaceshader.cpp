@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/aov/shadingfragmentstack.h"
 #include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/shading/shadingcontext.h"
@@ -69,8 +70,8 @@ namespace
     {
       public:
         ConstantSurfaceShader(
-            const char*             name,
-            const ParamArray&       params)
+            const char*                 name,
+            const ParamArray&           params)
           : SurfaceShader(name, params)
         {
             m_inputs.declare("color", InputFormatSpectralIlluminanceWithAlpha);
@@ -103,11 +104,12 @@ namespace
         }
 
         virtual void evaluate(
-            SamplingContext&        sampling_context,
-            const PixelContext&     pixel_context,
-            const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point,
-            ShadingResult&          shading_result) const APPLESEED_OVERRIDE
+            SamplingContext&            sampling_context,
+            const PixelContext&         pixel_context,
+            const ShadingContext&       shading_context,
+            const ShadingPoint&         shading_point,
+            ShadingResult&              shading_result,
+            AOVAccumulatorContainer&    aov_accumulators) const APPLESEED_OVERRIDE
         {
             // Evaluate the shader inputs.
             InputValues values;

@@ -41,6 +41,7 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace renderer      { class AOVAccumulatorContainer; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class PixelContext; }
 namespace renderer      { class ShadingContext; }
@@ -63,19 +64,20 @@ class APPLESEED_DLLSYMBOL SurfaceShader
 
     // Constructor.
     SurfaceShader(
-        const char*             name,
-        const ParamArray&       params);
+        const char*                 name,
+        const ParamArray&           params);
 
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 
     // Evaluate the shading at a given point.
     virtual void evaluate(
-        SamplingContext&        sampling_context,
-        const PixelContext&     pixel_context,
-        const ShadingContext&   shading_context,
-        const ShadingPoint&     shading_point,
-        ShadingResult&          shading_result) const = 0;
+        SamplingContext&            sampling_context,
+        const PixelContext&         pixel_context,
+        const ShadingContext&       shading_context,
+        const ShadingPoint&         shading_point,
+        ShadingResult&              shading_result,
+        AOVAccumulatorContainer&    aov_accumulators) const = 0;
 };
 
 }       // namespace renderer

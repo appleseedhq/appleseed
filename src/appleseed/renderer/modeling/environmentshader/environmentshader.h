@@ -41,6 +41,7 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace renderer  { class AOVAccumulatorContainer; }
 namespace renderer  { class ParamArray; }
 namespace renderer  { class PixelContext; }
 namespace renderer  { class ShadingContext; }
@@ -73,7 +74,8 @@ class APPLESEED_DLLSYMBOL EnvironmentShader
         const ShadingContext&           shading_context,
         const PixelContext&             pixel_context,
         const foundation::Vector3d&     direction,                      // world space direction, pointing toward the environment
-        ShadingResult&                  shading_result) const = 0;
+        ShadingResult&                  shading_result,
+        AOVAccumulatorContainer&        aov_accumulators) const = 0;
 };
 
 }       // namespace renderer

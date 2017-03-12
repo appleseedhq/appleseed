@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/aov/aovsettings.h"
+#include "renderer/modeling/aov/aovcontainer.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -73,9 +74,62 @@ class AOVAccumulator
     // Constructor.
     explicit AOVAccumulator(const size_t index);
 
+  public:
     const size_t    m_index;
     Spectrum        m_color;
 };
+
+
+//
+// BeautyAOVAccumulator class.
+//
+
+class BeautyAOVAccumulator
+  : public AOVAccumulator
+{
+  public:
+    BeautyAOVAccumulator();
+
+    void set_color_space(const foundation::ColorSpace& color_space);
+
+    void set(const Spectrum& value);
+
+    void set_to_pink_linear_rgb();
+
+    virtual void accumulate(
+      const ShadingPoint&       shading_point,
+      const Spectrum&           value) APPLESEED_OVERRIDE;
+
+    virtual void flush(ShadingResult& result) APPLESEED_OVERRIDE;
+
+    foundation::ColorSpace m_color_space;
+};
+
+
+//
+// AlphaAOVAccumulator class.
+//
+
+class AlphaAOVAccumulator
+  : public AOVAccumulator
+{
+  public:
+    AlphaAOVAccumulator();
+
+    virtual void reset() APPLESEED_OVERRIDE;
+
+    void set(const Alpha& alpha);
+    void mult(const Alpha& alpha);
+
+    virtual void accumulate(
+      const ShadingPoint&       shading_point,
+      const Spectrum&           value) APPLESEED_OVERRIDE;
+
+    virtual void flush(ShadingResult& result) APPLESEED_OVERRIDE;
+
+    Alpha m_alpha;
+};
+
 
 //
 // A collection of AOV accumulators.
@@ -86,7 +140,7 @@ class AOVAccumulatorContainer
 {
   public:
     // Constructor.
-    AOVAccumulatorContainer();
+    explicit AOVAccumulatorContainer(const AOVContainer& aovs);
 
     // Destructor.
     ~AOVAccumulatorContainer();
@@ -99,14 +153,34 @@ class AOVAccumulatorContainer
 
     void flush(ShadingResult& result);
 
+    BeautyAOVAccumulator& beauty();
+
+    AlphaAOVAccumulator& alpha();
+
   private:
     bool insert(foundation::auto_release_ptr<AOVAccumulator>& aov_accum);
 
     void create_beauty_accumulator();
+    void create_alpha_accumulator();
 
     size_t          m_size;
     AOVAccumulator* m_accumulators[MaxAOVCount];
 };
+
+
+//
+// AOVAccumulatorContainer class implementation.
+//
+
+inline BeautyAOVAccumulator& AOVAccumulatorContainer::beauty()
+{
+    return static_cast<BeautyAOVAccumulator&>(*m_accumulators[0]);
+}
+
+inline AlphaAOVAccumulator& AOVAccumulatorContainer::alpha()
+{
+    return static_cast<AlphaAOVAccumulator&>(*m_accumulators[1]);
+}
 
 }       // namespace renderer
 

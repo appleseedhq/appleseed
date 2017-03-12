@@ -30,6 +30,7 @@
 #include "backgroundenvironmentshader.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/aov/shadingfragmentstack.h"
 #include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/shading/shadingcontext.h"
@@ -61,8 +62,8 @@ namespace
     {
       public:
         BackgroundEnvironmentShader(
-            const char*         name,
-            const ParamArray&   params)
+            const char*                 name,
+            const ParamArray&           params)
           : EnvironmentShader(name, params)
         {
             m_inputs.declare("color", InputFormatSpectralIlluminance);
@@ -80,10 +81,11 @@ namespace
         }
 
         virtual void evaluate(
-            const ShadingContext&   shading_context,
-            const PixelContext&     pixel_context,
-            const Vector3d&         direction,
-            ShadingResult&          shading_result) const APPLESEED_OVERRIDE
+            const ShadingContext&       shading_context,
+            const PixelContext&         pixel_context,
+            const Vector3d&             direction,
+            ShadingResult&              shading_result,
+            AOVAccumulatorContainer&    aov_accumulators) const APPLESEED_OVERRIDE
         {
             const Vector2f s(pixel_context.get_sample_position());
 
@@ -96,8 +98,10 @@ namespace
             shading_result.m_color_space = ColorSpaceSpectral;
             shading_result.m_main.m_color = values.m_color;
             shading_result.m_main.m_alpha[0] = values.m_alpha;
-            shading_result.m_aovs.m_color.set(0.0f);
-            shading_result.m_aovs.m_alpha.set(0.0f);
+
+            aov_accumulators.beauty().set_color_space(ColorSpaceSpectral);
+            aov_accumulators.beauty().set(values.m_color);
+            aov_accumulators.alpha().set(Alpha(values.m_alpha));
         }
 
       private:

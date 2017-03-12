@@ -31,6 +31,7 @@
 #include "diagnosticsurfaceshader.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/shading/ambientocclusion.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
@@ -128,8 +129,8 @@ const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingMod
 };
 
 DiagnosticSurfaceShader::DiagnosticSurfaceShader(
-    const char*             name,
-    const ParamArray&       params)
+    const char*                 name,
+    const ParamArray&           params)
   : SurfaceShader(name, params)
 {
     extract_parameters();
@@ -215,11 +216,12 @@ namespace
 }
 
 void DiagnosticSurfaceShader::evaluate(
-    SamplingContext&        sampling_context,
-    const PixelContext&     pixel_context,
-    const ShadingContext&   shading_context,
-    const ShadingPoint&     shading_point,
-    ShadingResult&          shading_result) const
+    SamplingContext&            sampling_context,
+    const PixelContext&         pixel_context,
+    const ShadingContext&       shading_context,
+    const ShadingPoint&         shading_point,
+    ShadingResult&              shading_result,
+    AOVAccumulatorContainer&    aov_accumulators) const
 {
     switch (m_shading_mode)
     {

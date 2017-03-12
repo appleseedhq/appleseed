@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/aov/shadingfragmentstack.h"
 #include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/shading/shadingcontext.h"
@@ -132,7 +133,8 @@ namespace
             const PixelContext&         pixel_context,
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point,
-            ShadingResult&              shading_result) const APPLESEED_OVERRIDE
+            ShadingResult&              shading_result,
+            AOVAccumulatorContainer&    aov_accumulators) const APPLESEED_OVERRIDE
         {
             if (m_shader_group)
             {
@@ -149,7 +151,8 @@ namespace
                         pixel_context,
                         shading_context,
                         shading_point,
-                        shading_result);
+                        shading_result,
+                        aov_accumulators);
 
                     shading_result.transform_to_linear_rgb(*m_lighting_conditions);
 

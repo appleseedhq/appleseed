@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/aov/shadingfragmentstack.h"
 #include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingresult.h"
@@ -75,9 +76,9 @@ namespace
     {
       public:
         EDFEnvironmentShader(
-            const char*             name,
-            const ParamArray&       params)
-          : EnvironmentShader(name, params)
+            const char*                 name,
+            const ParamArray&           params)
+          : EnvironmentShader(name,     params)
           , m_env_edf(0)
         {
             m_inputs.declare("alpha_value", InputFormatFloat, "1.0");
@@ -94,10 +95,10 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&          project,
-            const BaseGroup*        parent,
-            OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
+            const Project&              project,
+            const BaseGroup*            parent,
+            OnFrameBeginRecorder&       recorder,
+            IAbortSwitch*               abort_switch) APPLESEED_OVERRIDE
         {
             if (!EnvironmentShader::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
@@ -125,22 +126,27 @@ namespace
         }
 
         virtual void evaluate(
-            const ShadingContext&   shading_context,
-            const PixelContext&     pixel_context,
-            const Vector3d&         direction,
-            ShadingResult&          shading_result) const APPLESEED_OVERRIDE
+            const ShadingContext&       shading_context,
+            const PixelContext&         pixel_context,
+            const Vector3d&             direction,
+            ShadingResult&              shading_result,
+            AOVAccumulatorContainer&    aov_accumulators) const APPLESEED_OVERRIDE
         {
-            // Initialize the shading result.
-            shading_result.m_color_space = ColorSpaceSpectral;
-            shading_result.m_main.m_alpha.set(m_alpha_value);
-            shading_result.m_aovs.m_color.set(0.0f);
-            shading_result.m_aovs.m_alpha.set(0.0f);
-
             // Evaluate the environment EDF and store the radiance into the shading result.
+            Spectrum value;
             m_env_edf->evaluate(
                 shading_context,
                 Vector3f(direction),
-                shading_result.m_main.m_color);
+                value);
+
+            // Initialize the shading result.
+            shading_result.m_color_space = ColorSpaceSpectral;
+            shading_result.m_main.m_color = value;
+            shading_result.m_main.m_alpha.set(m_alpha_value);
+
+            aov_accumulators.beauty().set_color_space(ColorSpaceSpectral);
+            aov_accumulators.beauty().set(value);
+            aov_accumulators.alpha().set(Alpha(m_alpha_value));
         }
 
       private:

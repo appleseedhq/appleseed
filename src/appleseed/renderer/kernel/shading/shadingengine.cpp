@@ -31,6 +31,7 @@
 #include "shadingengine.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/aov/shadingfragmentstack.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingfragment.h"
@@ -80,14 +81,16 @@ void ShadingEngine::create_diagnostic_surface_shader(const ParamArray& params)
 }
 
 void ShadingEngine::shade_hit_point(
-    SamplingContext&        sampling_context,
-    const PixelContext&     pixel_context,
-    const ShadingContext&   shading_context,
-    const ShadingPoint&     shading_point,
-    ShadingResult&          shading_result) const
+    SamplingContext&            sampling_context,
+    const PixelContext&         pixel_context,
+    const ShadingContext&       shading_context,
+    const ShadingPoint&         shading_point,
+    ShadingResult&              shading_result,
+    AOVAccumulatorContainer&    aov_accumulators) const
 {
     // Compute the alpha channel of the main output.
     shading_result.m_main.m_alpha = shading_point.get_alpha();
+    aov_accumulators.alpha().set(shading_point.get_alpha());
 
     // Retrieve the material of the intersected surface.
     const Material* material = shading_point.get_material();
@@ -103,6 +106,7 @@ void ShadingEngine::shade_hit_point(
             shading_point,
             alpha);
         shading_result.m_main.m_alpha *= alpha;
+        aov_accumulators.alpha().mult(alpha);
     }
 
     // Shade the sample if it isn't fully transparent.
@@ -117,7 +121,8 @@ void ShadingEngine::shade_hit_point(
             {
                 // The intersected surface has no material: return solid pink.
                 shading_result.set_main_to_opaque_pink_linear_rgba();
-                shading_result.set_aovs_to_transparent_black_linear_rgba();
+                aov_accumulators.beauty().set_to_pink_linear_rgb();
+                aov_accumulators.alpha().set(Alpha(1.0f));
                 return;
             }
 
@@ -128,7 +133,8 @@ void ShadingEngine::shade_hit_point(
             {
                 // The intersected surface has no surface shader: return solid pink.
                 shading_result.set_main_to_opaque_pink_linear_rgba();
-                shading_result.set_aovs_to_transparent_black_linear_rgba();
+                aov_accumulators.beauty().set_to_pink_linear_rgb();
+                aov_accumulators.alpha().set(Alpha(1.0f));
                 return;
             }
         }
@@ -139,22 +145,18 @@ void ShadingEngine::shade_hit_point(
             pixel_context,
             shading_context,
             shading_point,
-            shading_result);
-    }
-    else
-    {
-        // Alpha is zero: shade as transparent black.
-        shading_result.set_main_to_transparent_black_linear_rgba();
-        shading_result.set_aovs_to_transparent_black_linear_rgba();
+            shading_result,
+            aov_accumulators);
     }
 }
 
 void ShadingEngine::shade_environment(
-    SamplingContext&        sampling_context,
-    const PixelContext&     pixel_context,
-    const ShadingContext&   shading_context,
-    const ShadingPoint&     shading_point,
-    ShadingResult&          shading_result) const
+    SamplingContext&            sampling_context,
+    const PixelContext&         pixel_context,
+    const ShadingContext&       shading_context,
+    const ShadingPoint&         shading_point,
+    ShadingResult&              shading_result,
+    AOVAccumulatorContainer&    aov_accumulators) const
 {
     // Retrieve the environment shader of the scene.
     const EnvironmentShader* environment_shader =
@@ -169,13 +171,8 @@ void ShadingEngine::shade_environment(
             shading_context,
             pixel_context,
             direction,
-            shading_result);
-    }
-    else
-    {
-        // No environment shader: shade as transparent black.
-        shading_result.set_main_to_transparent_black_linear_rgba();
-        shading_result.set_aovs_to_transparent_black_linear_rgba();
+            shading_result,
+            aov_accumulators);
     }
 }
 

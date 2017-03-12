@@ -48,6 +48,7 @@
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
+namespace renderer      { class AOVAccumulatorContainer; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class PixelContext; }
 namespace renderer      { class ShadingContext; }
@@ -98,8 +99,8 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
 
     // Constructor.
     DiagnosticSurfaceShader(
-        const char*             name,
-        const ParamArray&       params);
+        const char*                 name,
+        const ParamArray&           params);
 
     // Delete this instance.
     virtual void release() APPLESEED_OVERRIDE;
@@ -109,11 +110,12 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
 
     // Evaluate the shading at a given point.
     virtual void evaluate(
-        SamplingContext&        sampling_context,
-        const PixelContext&     pixel_context,
-        const ShadingContext&   shading_context,
-        const ShadingPoint&     shading_point,
-        ShadingResult&          shading_result) const APPLESEED_OVERRIDE;
+        SamplingContext&            sampling_context,
+        const PixelContext&         pixel_context,
+        const ShadingContext&       shading_context,
+        const ShadingPoint&         shading_point,
+        ShadingResult&              shading_result,
+        AOVAccumulatorContainer&    aov_accumulators) const APPLESEED_OVERRIDE;
 
   private:
     ShadingMode m_shading_mode;

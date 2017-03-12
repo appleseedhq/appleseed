@@ -31,6 +31,7 @@
 #include "aosurfaceshader.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/shading/ambientocclusion.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
@@ -67,8 +68,8 @@ namespace
     {
       public:
         AOSurfaceShader(
-            const char*             name,
-            const ParamArray&       params)
+            const char*                 name,
+            const ParamArray&           params)
           : SurfaceShader(name, params)
           , m_samples(m_params.get_required<size_t>("samples", 16))
           , m_max_distance(m_params.get_required<double>("max_distance", 1.0))
@@ -100,11 +101,12 @@ namespace
         }
 
         virtual void evaluate(
-            SamplingContext&        sampling_context,
-            const PixelContext&     pixel_context,
-            const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point,
-            ShadingResult&          shading_result) const APPLESEED_OVERRIDE
+            SamplingContext&            sampling_context,
+            const PixelContext&         pixel_context,
+            const ShadingContext&       shading_context,
+            const ShadingPoint&         shading_point,
+            ShadingResult&              shading_result,
+            AOVAccumulatorContainer&    aov_accumulators) const APPLESEED_OVERRIDE
         {
             double occlusion;
 
