@@ -295,6 +295,7 @@ namespace
             ShadingResult&              shading_result,
             AOVAccumulatorContainer&    aov_accumulators) const
         {
+            /*
             Spectrum sky_color;
 
             if (m_aerial_persp_mode == AerialPerspSkyColor)
@@ -334,6 +335,7 @@ namespace
             sky_color *= static_cast<float>(blend);
             shading_result.m_main.m_color *= static_cast<float>(1.0 - blend);
             shading_result.m_main.m_color += sky_color;
+            */
         }
     };
 }
