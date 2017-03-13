@@ -27,56 +27,21 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ATTRIBUTEEDITOR_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ATTRIBUTEEDITOR_H
-
-// appleseed.studio headers.
-#include "mainwindow/project/entityeditor.h"
-
-// appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-
-// Standard headers.
-#include <memory>
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYVALUEPROVIDER_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYVALUEPROVIDER_H
 
 // Forward declarations.
-namespace appleseed     { namespace studio { class IEntityValueProvider; } }
-namespace foundation    { class Dictionary; }
-namespace renderer      { class Project; }
-class QObject;
-class QWidget;
+namespace foundation { class Dictionary; }
 
 namespace appleseed {
 namespace studio {
 
-class AttributeEditor
-  : public foundation::NonCopyable
-{
+class IEntityValueProvider {
   public:
-    AttributeEditor(
-        QWidget*                parent,
-        renderer::Project&      project);
-
-    void clear();
-
-    void edit(
-        std::auto_ptr<EntityEditor::IFormFactory>       form_factory,
-        std::auto_ptr<EntityEditor::IEntityBrowser>     entity_browser,
-        std::auto_ptr<CustomEntityUI>                   custom_ui,
-        const foundation::Dictionary&                   values,
-        QObject*                                        receiver,
-        const char*                                     slot_apply);
-
-    void refresh() const;
-
-  private:
-    QWidget*                    m_parent;
-    IEntityValueProvider*       m_value_provider;
-    renderer::Project&          m_project;
-    std::auto_ptr<EntityEditor> m_entity_editor;
+    virtual const foundation::Dictionary get_values() = 0;
 };
 
-}       // namespace studio
-}       // namespace appleseed
+}
+}
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ATTRIBUTEEDITOR_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYVALUEPROVIDER_H

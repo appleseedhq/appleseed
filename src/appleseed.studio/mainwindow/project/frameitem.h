@@ -33,6 +33,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/entityactions.h"
 #include "mainwindow/project/entitycreatorbase.h"
+#include "mainwindow/project/entityvalueprovider.h"
 #include "mainwindow/project/itembase.h"
 
 // appleseed.foundation headers.
@@ -53,6 +54,7 @@ namespace studio {
 class FrameItem
   : public ItemBase
   , public EntityCreatorBase
+  , public IEntityValueProvider
 {
     Q_OBJECT
 
@@ -60,6 +62,8 @@ class FrameItem
     FrameItem(
         EntityEditorContext&    editor_context,
         renderer::Frame*        frame);
+
+  virtual const foundation::Dictionary get_values() APPLESEED_OVERRIDE;
 
   private slots:
     void slot_edit_accepted(foundation::Dictionary values);

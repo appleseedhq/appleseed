@@ -1475,8 +1475,7 @@ namespace
             Project&        project) APPLESEED_OVERRIDE
         {
             project.get_frame()->reset_crop_window();
-            m_attribute_editor->refresh(
-                project.get_frame()->get_parameters());
+            m_attribute_editor->refresh();
         }
 
       private:
@@ -1487,9 +1486,9 @@ namespace
       : public RenderingManager::IScheduledAction
     {
       public:
-        explicit SetRenderRegionAction(
-            const QRect& rect,
-            const AttributeEditor* attribute_editor)
+        SetRenderRegionAction(
+            const QRect&            rect,
+            const AttributeEditor*  attribute_editor)
           : m_rect(rect),
             m_attribute_editor(attribute_editor)
         {
@@ -1514,8 +1513,7 @@ namespace
                 AABB2i(
                     Vector2i(x0, y0),
                     Vector2i(x1, y1)));
-            m_attribute_editor->refresh(
-                project.get_frame()->get_parameters());
+            m_attribute_editor->refresh();
         }
 
       private:
@@ -1539,17 +1537,21 @@ void MainWindow::slot_clear_render_region()
 
 void MainWindow::slot_set_render_region(const QRect& rect)
 {
-    m_rendering_manager.schedule(
-        auto_ptr<RenderingManager::IScheduledAction>(
-            new SetRenderRegionAction(rect, m_attribute_editor)));
+    auto_ptr<RenderingManager::IScheduledAction> set_render_region_action(
+        new SetRenderRegionAction(rect, m_attribute_editor));
 
-    if (m_settings.get_path_optional<bool>(SETTINGS_RENDER_REGION_TRIGGERS_RENDERING))
+    if (m_settings.get_path_optional<bool>(SETTINGS_RENDER_REGION_TRIGGERS_RENDERING)
+        && !m_rendering_manager.is_rendering())
     {
-        if (m_rendering_manager.is_rendering())
-            m_rendering_manager.reinitialize_rendering();
-        else start_rendering(InteractiveRendering);
+        m_rendering_manager.schedule(set_render_region_action);
+        start_rendering(true);
     }
-    else m_rendering_manager.reinitialize_rendering();
+    else
+    {
+        set_render_region_action.get()->operator()(
+            *m_project_manager.get_project());
+        m_rendering_manager.reinitialize_rendering();
+    }
 }
 
 void MainWindow::slot_render_widget_context_menu(const QPoint& point)
