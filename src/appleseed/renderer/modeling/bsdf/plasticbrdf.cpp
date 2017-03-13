@@ -97,10 +97,10 @@ namespace
             m_inputs.declare("specular_reflectance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("roughness", InputFormatFloat, "0.15");
             m_inputs.declare("ior", InputFormatFloat, "1.5");
+            m_inputs.declare("highlight_falloff", InputFormatFloat, "2.0");
             m_inputs.declare("diffuse_reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("diffuse_reflectance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("internal_scattering", InputFormatFloat, "1.0");
-            m_inputs.declare("highlight_falloff", InputFormatFloat, "2.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -192,7 +192,7 @@ namespace
 
             const Vector3f m = alpha == 0.0f ?
                 Vector3f(0.0f, 1.0f, 0.0f) :
-                m_mdf->sample(wo, Vector3f(s[0], s[1], s[2]), alpha, alpha);
+                m_mdf->sample(wo, Vector3f(s[0], s[1], s[2]), alpha, alpha, gamma);
 
             const float F = fresnel_reflectance(wo, m, values->m_precomputed.m_eta);
             const float specular_probability = choose_specular_probability(*values, F);
@@ -223,7 +223,8 @@ namespace
                         wo,
                         m,
                         F,
-                        sample.m_value);
+                        sample.m_value,
+                        gamma);
 
                     sample.m_probability = specular_pdf(*m_mdf, alpha, wo, m, gamma) * specular_probability;
                     sample.m_mode = ScatteringMode::Glossy;
@@ -296,7 +297,8 @@ namespace
                     wo,
                     m,
                     Fo,
-                    value);
+                    value,
+                    gamma);
 
                 probability = specular_probability * specular_pdf(*m_mdf, alpha, wo, m, gamma);
             }
@@ -405,7 +407,7 @@ namespace
             const Vector3f&         m,
             const float             F,
             Spectrum&               value,
-            const float             gamma = 0.0f)
+            const float             gamma)
         {
             if (alpha == 0.0f)
                 return;
@@ -428,7 +430,7 @@ namespace
             const float             alpha,
             const Vector3f&         wo,
             const Vector3f&         m,
-            const float             gamma = 0.0f)
+            const float             gamma)
         {
             if (alpha == 0.0f)
                 return 0.0f;
@@ -552,6 +554,16 @@ DictionaryArray PlasticBRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
+            .insert("name", "highlight_falloff")
+            .insert("label", "Highlight Falloff")
+            .insert("type", "numeric")
+            .insert("min_value", "1.6")
+            .insert("max_value", "100")
+            .insert("use", "optional")
+            .insert("default", "2.0"));
+    
+    metadata.push_back(
+        Dictionary()
             .insert("name", "diffuse_reflectance")
             .insert("label", "Diffuse Reflectance")
             .insert("type", "colormap")
@@ -581,16 +593,6 @@ DictionaryArray PlasticBRDFFactory::get_input_metadata() const
             .insert("max_value", "1.0")
             .insert("use", "optional")
             .insert("default", "1.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "highlight_falloff")
-            .insert("label", "Highlight Falloff")
-            .insert("type", "numeric")
-            .insert("min_value", "1.6")
-            .insert("max_value", "100")
-            .insert("use", "optional")
-            .insert("default", "2.0"));
 
     return metadata;
 }
