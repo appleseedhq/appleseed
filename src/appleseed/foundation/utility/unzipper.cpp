@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
+#include "foundation/utility/string.h"
 #include "foundation/utility/minizip/unzip.h"
 
 // Boost headers.
@@ -38,7 +39,6 @@
 
 // Standard headers.
 #include <fstream>
-#include <iostream>
 #include <string>
 #include <sstream>
 
@@ -161,11 +161,6 @@ void unzip(const string& zip_filename, const string& unzipped_dir)
     }
 }
 
-bool has_extension(const string& filename, const string& extension) 
-{
-    return filename.rfind(extension) == filename.size() - extension.size();
-}
-
 vector<string> get_filenames_with_extension_from_zip(const string& zip_filename, const string& extension) 
 {
     vector<string> filenames;
@@ -180,7 +175,7 @@ vector<string> get_filenames_with_extension_from_zip(const string& zip_filename,
     while (has_next == UNZ_OK)
     {
         string filename = read_filename(zip_file);
-        if (has_extension(filename, extension))
+        if (ends_with(filename, extension))
             filenames.push_back(filename);
 
         has_next = unzGoToNextFile(zip_file);
