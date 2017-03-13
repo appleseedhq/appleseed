@@ -195,6 +195,7 @@ namespace
                 *m_mdf,
                 alpha_x,
                 alpha_y,
+                0.0f,
                 f,
                 cos_on,
                 sample);
@@ -239,6 +240,7 @@ namespace
                 *m_mdf,
                 alpha_x,
                 alpha_y,
+                0.0f,
                 shading_basis,
                 outgoing,
                 incoming,
@@ -279,6 +281,7 @@ namespace
                 *m_mdf,
                 alpha_x,
                 alpha_y,
+                0.0f,
                 shading_basis,
                 outgoing,
                 incoming);

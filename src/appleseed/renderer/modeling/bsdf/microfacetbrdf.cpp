@@ -185,6 +185,7 @@ namespace
                         blinn_mdf,
                         e,
                         e,
+                        0.0f,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
                         cos_on,
                         sample);
@@ -200,6 +201,7 @@ namespace
                         beckmann_mdf,
                         a,
                         a,
+                        0.0f,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
                         cos_on,
                         sample);
@@ -215,6 +217,7 @@ namespace
                         ward_mdf,
                         a,
                         a,
+                        0.0f,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
                         cos_on,
                         sample);
@@ -230,6 +233,7 @@ namespace
                         ggx_mdf,
                         a,
                         a,
+                        0.0f,
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
                         cos_on,
                         sample);
@@ -278,6 +282,7 @@ namespace
                         blinn_mdf,
                         e,
                         e,
+                        0.0f,
                         shading_basis,
                         outgoing,
                         incoming,
@@ -296,6 +301,7 @@ namespace
                         beckman_mdf,
                         a,
                         a,
+                        0.0f,
                         shading_basis,
                         outgoing,
                         incoming,
@@ -314,6 +320,7 @@ namespace
                         ward_mdf,
                         a,
                         a,
+                        0.0f,
                         shading_basis,
                         outgoing,
                         incoming,
@@ -332,6 +339,7 @@ namespace
                         ggx_mdf,
                         a,
                         a,
+                        0.0f,
                         shading_basis,
                         outgoing,
                         incoming,
@@ -380,6 +388,7 @@ namespace
                         blinn_mdf,
                         e,
                         e,
+                        0.0f,
                         shading_basis,
                         outgoing,
                         incoming);
@@ -394,6 +403,7 @@ namespace
                         beckmann_mdf,
                         a,
                         a,
+                        0.0f,
                         shading_basis,
                         outgoing,
                         incoming);
@@ -408,6 +418,7 @@ namespace
                         ward_mdf,
                         a,
                         a,
+                        0.0f,
                         shading_basis,
                         outgoing,
                         incoming);
@@ -422,6 +433,7 @@ namespace
                         ggx_mdf,
                         a,
                         a,
+                        0.0f,
                         shading_basis,
                         outgoing,
                         incoming);
