@@ -219,14 +219,14 @@ namespace
                         values->m_specular_reflectance,
                         *m_mdf,
                         alpha,
+                        gamma,
                         wi,
                         wo,
                         m,
                         F,
-                        sample.m_value,
-                        gamma);
+                        sample.m_value);
 
-                    sample.m_probability = specular_pdf(*m_mdf, alpha, wo, m, gamma) * specular_probability;
+                    sample.m_probability = specular_pdf(*m_mdf, alpha, gamma, wo, m) * specular_probability;
                     sample.m_mode = ScatteringMode::Glossy;
                 }
             }
@@ -293,14 +293,14 @@ namespace
                     values->m_specular_reflectance,
                     *m_mdf,
                     alpha,
+                    gamma,
                     wi,
                     wo,
                     m,
                     Fo,
-                    value,
-                    gamma);
+                    value);
 
-                probability = specular_probability * specular_pdf(*m_mdf, alpha, wo, m, gamma);
+                probability = specular_probability * specular_pdf(*m_mdf, alpha, gamma, wo, m);
             }
 
             if (ScatteringMode::has_diffuse(modes))
@@ -353,7 +353,7 @@ namespace
             float probability = 0.0f;
 
             if (ScatteringMode::has_glossy(modes))
-                probability = specular_probability * specular_pdf(*m_mdf, alpha, wo, m, gamma);
+                probability = specular_probability * specular_pdf(*m_mdf, alpha, gamma, wo, m);
 
             if (ScatteringMode::has_diffuse(modes))
                 probability += wi.y * RcpPi<float>() * (1.0f - specular_probability);
@@ -402,12 +402,12 @@ namespace
             const Spectrum&         specular_reflectance,
             const MDF&              mdf,
             const float             alpha,
+            const float             gamma,
             const Vector3f&         wi,
             const Vector3f&         wo,
             const Vector3f&         m,
             const float             F,
-            Spectrum&               value,
-            const float             gamma)
+            Spectrum&               value)
         {
             if (alpha == 0.0f)
                 return;
@@ -428,9 +428,9 @@ namespace
         static float specular_pdf(
             const MDF&              mdf,
             const float             alpha,
+            const float             gamma,
             const Vector3f&         wo,
-            const Vector3f&         m,
-            const float             gamma)
+            const Vector3f&         m)
         {
             if (alpha == 0.0f)
                 return 0.0f;
@@ -561,7 +561,7 @@ DictionaryArray PlasticBRDFFactory::get_input_metadata() const
             .insert("max_value", "100")
             .insert("use", "optional")
             .insert("default", "2.0"));
-    
+
     metadata.push_back(
         Dictionary()
             .insert("name", "diffuse_reflectance")
