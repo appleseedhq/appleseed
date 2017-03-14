@@ -213,6 +213,9 @@ class ShadingPoint
     // Return the index, within the assembly, of the object instance that was hit.
     size_t get_object_instance_index() const;
 
+    // Return SSS Set ID of the object instance that was hit.
+    const ObjectInstance::SubsurfaceScatteringSet& get_sss_set() const;
+
     // Return the index, within the object, of the region containing the hit triangle.
     size_t get_region_index() const;
 
@@ -830,6 +833,12 @@ inline size_t ShadingPoint::get_object_instance_index() const
 {
     assert(hit());
     return m_object_instance_index;
+}
+
+inline const ObjectInstance::SubsurfaceScatteringSet& ShadingPoint::get_sss_set() const
+{
+    assert(hit());
+    return m_object_instance->get_sss_set();
 }
 
 inline size_t ShadingPoint::get_region_index() const

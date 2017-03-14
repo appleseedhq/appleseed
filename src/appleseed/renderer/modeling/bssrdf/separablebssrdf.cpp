@@ -226,6 +226,7 @@ namespace
             outgoing_point.get_ray().m_depth + 1);
 
         const Material* outgoing_material = outgoing_point.get_material();
+        const ObjectInstance& outgoing_object_instance = outgoing_point.get_object_instance();
 
         const size_t MaxSampleCount = 16;
         ShadingPoint shading_points[MaxSampleCount];
@@ -244,9 +245,15 @@ namespace
             probe_ray.m_tmin = 1.0e-6;
             probe_ray.m_tmax = norm(exit_point - probe_ray.m_org);
 
-            // Only consider hit points with the same material as the outgoing point.
-            if (incoming_point.get_material() == outgoing_material ||
-                incoming_point.get_opposite_material() == outgoing_material)
+            bool same_material =
+                incoming_point.get_material() == outgoing_material ||
+                incoming_point.get_opposite_material() == outgoing_material;
+            bool same_sss_set =
+                incoming_point.get_object_instance().is_in_same_sss_set(outgoing_object_instance);
+
+            // Only consider hit points with the same material as the outgoing point 
+            // and belonging to the same SSS set
+            if (same_material && same_sss_set)
             {
                 // Make sure the incoming point is on the front side of the surface.
                 // There is no such thing as subsurface scattering seen "from the inside".
