@@ -90,7 +90,8 @@ string read_filename(unzFile& zip_file)
     unzGetCurrentFileInfo(zip_file, &zip_file_info, NULL, 0, NULL, 0, NULL, 0);
 
     vector<char> filename(zip_file_info.size_filename + 1);
-    unzGetCurrentFileInfo(zip_file, &zip_file_info, &filename[0], filename.size(), NULL, 0, NULL, 0);
+    unzGetCurrentFileInfo(zip_file, &zip_file_info, &filename[0], 
+        static_cast<uLong>(filename.size()), NULL, 0l, NULL, 0l);
     filename[filename.size() - 1] = '\0';
 
     const string inzip_filename(&filename[0]);

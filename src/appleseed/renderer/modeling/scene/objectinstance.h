@@ -170,6 +170,34 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     // Return the object bound to this instance.
     Object& get_object() const;
 
+    // SSS set
+    // By default, each object instance belongs to its own SSS set
+    struct SubsurfaceScatteringSet
+    {
+        SubsurfaceScatteringSet() :
+            m_use_default_sss_set(true)
+        {}
+
+        explicit SubsurfaceScatteringSet(const char* identifier) :
+            m_identifier(identifier),
+            m_use_default_sss_set(false)
+        {}
+
+        explicit SubsurfaceScatteringSet(const std::string& identifier) :
+            m_identifier(identifier),
+            m_use_default_sss_set(false)
+        {}
+
+        bool m_use_default_sss_set;
+        std::string m_identifier;
+    };
+
+    // Return the SSS set that this instance belongs to
+    const SubsurfaceScatteringSet& get_sss_set() const;
+
+    // Check if this object instance is in the same sss set as the given one
+    bool is_in_same_sss_set(const ObjectInstance& other) const;
+
     // Return the materials bound to this instance.
     const MaterialArray& get_front_materials() const;
     const MaterialArray& get_back_materials() const;
