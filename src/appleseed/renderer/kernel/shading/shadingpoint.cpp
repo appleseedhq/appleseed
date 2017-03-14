@@ -669,7 +669,7 @@ void ShadingPoint::compute_geometric_normal() const
                     : ObjectInstance::FrontSide;
 
             // Make the geometric normal face the direction of the incoming ray.
-            if (m_side == ObjectInstance::FrontSide)
+            if (m_side == ObjectInstance::BackSide)
                 m_geometric_normal = -m_geometric_normal;
         }
     }
@@ -710,8 +710,10 @@ void ShadingPoint::compute_original_shading_normal() const
             // Use the geometric normal if per-vertex normals are absent.
             m_original_shading_normal = get_geometric_normal();
 
-            // Flip it to return the original geometric normal.
-            m_original_shading_normal = -m_original_shading_normal;
+            // In the absence of vertex normals, the shading normal is set to the original,
+            // unflipped geometric normal.
+            if (m_side == ObjectInstance::BackSide)
+                m_original_shading_normal = -m_original_shading_normal;
         }
     }
     else
