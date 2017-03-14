@@ -188,7 +188,7 @@ class APPLESEED_DLLSYMBOL ObjectInstance
             m_use_default_sss_set(false)
         {}
 
-        bool m_use_default_sss_set = true;
+        bool m_use_default_sss_set;
         std::string m_identifier;
     };
 
