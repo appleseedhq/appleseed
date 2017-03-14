@@ -225,15 +225,17 @@ namespace
             VisibilityFlags::ProbeRay,
             outgoing_point.get_ray().m_depth + 1);
 
+        const UniqueID outgoing_obj_inst_uid = outgoing_point.get_object_instance().get_uid();
         const Material* outgoing_material = outgoing_point.get_material();
         const ObjectInstance& outgoing_object_instance = outgoing_point.get_object_instance();
 
+        const size_t MaxIterations = 16;
         const size_t MaxSampleCount = 16;
         ShadingPoint shading_points[MaxSampleCount];
         size_t sample_count = 0;
 
         // Trace the ray and store all intersections found inside the sphere.
-        for (size_t i = 0; sample_count < MaxSampleCount && i < 16; ++i)
+        for (size_t i = 0; sample_count < MaxSampleCount && i < MaxIterations; ++i)
         {
             // Continue tracing the ray.
             ShadingPoint& incoming_point = shading_points[sample_count];

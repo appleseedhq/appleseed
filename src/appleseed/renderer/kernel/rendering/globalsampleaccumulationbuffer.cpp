@@ -98,7 +98,7 @@ void GlobalSampleAccumulationBuffer::store_samples(
         const float fx = s->m_position.x * fw;
         const float fy = s->m_position.y * fh;
 
-        Color3f value(s->m_values);
+        Color3f value(s->m_color.rgb());
         value *= m_filter_rcp_norm_factor;
 
         m_fb.add(fx, fy, &value[0]);

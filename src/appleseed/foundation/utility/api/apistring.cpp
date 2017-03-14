@@ -29,8 +29,16 @@
 // Interface header.
 #include "apistring.h"
 
+// Standard headers.
+#include <cassert>
+
 namespace foundation
 {
+
+APIString::APIString()
+  : m_s(0)
+{
+}
 
 APIString::APIString(const char* s)
   : m_s(duplicate_string(s))
@@ -38,7 +46,7 @@ APIString::APIString(const char* s)
 }
 
 APIString::APIString(const APIString& rhs)
-  : m_s(duplicate_string(rhs.m_s))
+  : m_s(rhs.m_s ? duplicate_string(rhs.m_s) : 0)
 {
 }
 
@@ -47,9 +55,21 @@ APIString::~APIString()
     free_string(m_s);
 }
 
+APIString& APIString::operator=(const APIString& rhs)
+{
+    free_string(m_s);
+    m_s = rhs.m_s ? duplicate_string(rhs.m_s) : 0;
+    return *this;
+}
+
 const char* APIString::c_str() const
 {
-    return m_s;
+    return m_s ? m_s : "";
+}
+
+bool APIString::empty() const
+{
+    return m_s ? m_s[0] == '\0' : true;
 }
 
 }   // namespace foundation

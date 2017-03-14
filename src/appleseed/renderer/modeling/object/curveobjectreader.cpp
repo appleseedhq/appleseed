@@ -47,6 +47,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/searchpaths.h"
@@ -201,7 +202,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_text_curve_file(
 {
     auto_release_ptr<CurveObject> object = CurveObjectFactory::create(name, params);
 
-    const string filepath = search_paths.qualify(params.get<string>("filepath"));
+    const string filepath = to_string(search_paths.qualify(params.get("filepath")));
     const size_t split_count = params.get_optional<size_t>("presplits", 0);
 
     ifstream input;
@@ -301,7 +302,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_mitsuba_curve_file(
 
     auto_release_ptr<CurveObject> object = CurveObjectFactory::create(name, params);
 
-    const string filepath = search_paths.qualify(params.get<string>("filepath"));
+    const string filepath = to_string(search_paths.qualify(params.get("filepath")));
 
     FILE* file = fopen(filepath.c_str(), "rb");
     if (file == 0)

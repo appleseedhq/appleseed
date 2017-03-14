@@ -266,16 +266,19 @@ ForwardColorChangedSignal::ForwardColorChangedSignal(
   : QObject(parent)
   , m_widget_name(widget_name)
   , m_initial_color(initial_color)
+  , m_current_color(initial_color)
 {
 }
 
-void ForwardColorChangedSignal::slot_reset_color()
+void ForwardColorChangedSignal::slot_color_reset()
 {
-    emit signal_reset_color(m_widget_name, m_initial_color);
+    if (m_current_color != m_initial_color)
+        emit signal_color_reset(m_widget_name, m_initial_color);
 }
 
 void ForwardColorChangedSignal::slot_color_changed(const QColor& color)
 {
+    m_current_color = color;
     emit signal_color_changed(m_widget_name, color);
 }
 

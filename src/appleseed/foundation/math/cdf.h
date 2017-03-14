@@ -49,7 +49,7 @@ namespace foundation
 //
 // Reference:
 //
-//     http://en.wikipedia.org/wiki/Cumulative_distribution_function
+//   http://en.wikipedia.org/wiki/Cumulative_distribution_function
 //
 
 template <typename Item, typename Weight>

@@ -161,7 +161,7 @@ SearchPaths& Project::search_paths() const
 
 string Project::make_search_path_string() const
 {
-    return impl->m_search_paths.to_string_reversed(SearchPaths::osl_path_separator());
+    return to_string(impl->m_search_paths.to_string_reversed(SearchPaths::osl_path_separator()));
 }
 
 void Project::set_scene(auto_release_ptr<Scene> scene)
@@ -431,8 +431,6 @@ void Project::create_aov_images()
     assert(impl->m_frame.get());
 
     impl->m_frame->aov_images().clear();
-
-    impl->m_frame->aov_images().append("depth", ImageStack::ContributionType, 4, PixelFormatFloat);
 
     ApplyRenderLayer apply_render_layers(
         impl->m_scene.ref(),

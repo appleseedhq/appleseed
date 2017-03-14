@@ -254,6 +254,12 @@ void DisneyMaterialLayerUI::slot_open_color_picker(const QString& widget_name)
     connect(
         forward_signal, SIGNAL(signal_color_changed(const QString&, const QColor&)),
         SLOT(slot_color_changed(const QString&, const QColor&)));
+    connect(
+        dialog, SIGNAL(rejected()),
+        forward_signal, SLOT(slot_color_reset()));
+    connect(
+        forward_signal, SIGNAL(signal_color_reset(const QString&, const QColor&)),
+        SLOT(slot_color_changed(const QString&, const QColor&)));
 
     dialog->exec();
 }
@@ -302,7 +308,7 @@ namespace
 
                 search_path =
                     QDir::cleanPath(
-                        QString::fromStdString(s.get_root_path()) +
+                        QString::fromAscii(s.get_root_path().c_str()) +
                         QDir::separator() +
                         search_path);
             }
@@ -316,7 +322,7 @@ namespace
 
         if (s.has_root_path())
         {
-            const QDir root_dir(QString::fromStdString(s.get_root_path()));
+            const QDir root_dir(QString::fromAscii(s.get_root_path().c_str()));
             assert(root_dir.isAbsolute());
 
             QString relative_path;

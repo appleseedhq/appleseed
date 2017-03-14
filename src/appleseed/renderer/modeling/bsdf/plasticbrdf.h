@@ -60,6 +60,7 @@ APPLESEED_DECLARE_INPUT_VALUES(PlasticBRDFInputValues)
     float           m_specular_reflectance_multiplier;
     float           m_roughness;
     float           m_ior;
+    float           m_highlight_falloff;
 
     Spectrum        m_diffuse_reflectance;
     float           m_diffuse_reflectance_multiplier;

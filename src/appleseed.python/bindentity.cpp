@@ -86,9 +86,6 @@ void bind_entity()
 
         .def("get_parameters", entity_get_parameters)
         .def("set_parameters", entity_set_parameters)
-
-        .def("set_render_layer_index", &Entity::set_render_layer_index)
-        .def("get_render_layer_index", &Entity::get_render_layer_index)
         ;
 
     bpy::class_<ConnectableEntity, auto_release_ptr<ConnectableEntity>, bpy::bases<Entity>, boost::noncopyable>("ConnectableEntity", bpy::no_init);
