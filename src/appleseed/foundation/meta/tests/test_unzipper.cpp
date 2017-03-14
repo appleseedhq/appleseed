@@ -43,10 +43,10 @@ namespace bf = boost::filesystem;
 
 TEST_SUITE(Foundation_Utility_Unzipper)
 {
-    string valid_project = "unit tests/inputs/test_packed_project_valid.appleseedz";
-    string invalid_project = "unit tests/inputs/test_packed_project_invalid.appleseedz";
+    const string valid_project = "unit tests/inputs/test_packed_project_valid.appleseedz";
+    const string invalid_project = "unit tests/inputs/test_packed_project_invalid.appleseedz";
 
-    set<string> rec_ls(bf::path dir) 
+    set<string> recursive_ls(bf::path dir) 
     {
         set<string> files;
 
@@ -54,11 +54,11 @@ TEST_SUITE(Foundation_Utility_Unzipper)
         bf::directory_iterator end_iter;
         for (bf::directory_iterator dir_itr(dir); dir_itr != end_iter; ++dir_itr) 
         {
-            bf::path current_path = dir_itr->path();
+            const bf::path current_path = dir_itr->path();
 
             if (bf::is_directory(current_path))
             {
-                set<string> files_in_subdir = rec_ls(current_path);
+                const set<string> files_in_subdir = recursive_ls(current_path);
                 files.insert(files_in_subdir.begin(), files_in_subdir.end());
             }
             else
@@ -68,17 +68,18 @@ TEST_SUITE(Foundation_Utility_Unzipper)
         return files;
     }
 
-    TEST_CASE(UnzipTest) {
-        string unpacked_dir = valid_project + ".unpacked";
+    TEST_CASE(UnzipTest) 
+    {
+        const string unpacked_dir = valid_project + ".unpacked";
 
         try 
         {
             unzip(valid_project, unpacked_dir);
 
-            EXPECT_EQ(bf::exists(bf::path(unpacked_dir)), true);
-            EXPECT_EQ(bf::is_empty(bf::path(unpacked_dir)), false);
+            EXPECT_EQ(true, bf::exists(bf::path(unpacked_dir)));
+            EXPECT_EQ(false, bf::is_empty(bf::path(unpacked_dir)));
 
-            string expected_files[] = 
+            const string expected_files[] = 
             {
                 "01 - lambertiannrdf - arealight.appleseed",
                 "sphere.obj",
@@ -93,11 +94,11 @@ TEST_SUITE(Foundation_Utility_Unzipper)
                 "Plane001.binarymesh"
             };
 
-            set<string> actual_files = rec_ls(bf::path(unpacked_dir));
+            const set<string> actual_files = recursive_ls(bf::path(unpacked_dir));
 
-            for (int i = 0; i < 11; ++i) 
+            for (size_t i = 0; i < 11; ++i) 
             {
-                EXPECT_TRUE(actual_files.count(expected_files[i]));
+                EXPECT_EQ(1, actual_files.count(expected_files[i]));
             }
 
             bf::remove_all(bf::path(unpacked_dir));
@@ -111,14 +112,14 @@ TEST_SUITE(Foundation_Utility_Unzipper)
 
     TEST_CASE(FilesnamesWithExtensionTest) 
     {
-        string extension = ".appleseed";
+        const string extension = ".appleseed";
 
-        vector<string> appleseed_files_4 = get_filenames_with_extension_from_zip(invalid_project, extension);
-        vector<string> appleseed_files_1 = get_filenames_with_extension_from_zip(valid_project, extension);
+        const vector<string> appleseed_files_4 = get_filenames_with_extension_from_zip(invalid_project, extension);
+        const vector<string> appleseed_files_1 = get_filenames_with_extension_from_zip(valid_project, extension);
 
-        EXPECT_EQ(appleseed_files_4.size(), 4);
-        EXPECT_EQ(appleseed_files_1.size(), 1);
+        EXPECT_EQ(4, appleseed_files_4.size());
+        EXPECT_EQ(1, appleseed_files_1.size());
 
-        EXPECT_EQ(appleseed_files_1[0], "01 - lambertiannrdf - arealight.appleseed");
+        EXPECT_EQ("01 - lambertiannrdf - arealight.appleseed", appleseed_files_1[0]);
     }
 }
