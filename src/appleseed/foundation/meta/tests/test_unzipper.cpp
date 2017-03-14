@@ -114,16 +114,20 @@ TEST_SUITE(Foundation_Utility_Unzipper)
         }
     }
 
-    TEST_CASE(FilesnamesWithExtensionTest) 
+    TEST_CASE(FilesnamesWithExtensionOneFile)
     {
         const string extension = ".appleseed";
-
-        const vector<string> appleseed_files_4 = get_filenames_with_extension_from_zip(invalid_project, extension);
         const vector<string> appleseed_files_1 = get_filenames_with_extension_from_zip(valid_project, extension);
 
-        EXPECT_EQ(4, appleseed_files_4.size());
         EXPECT_EQ(1, appleseed_files_1.size());
-
         EXPECT_EQ("01 - lambertiannrdf - arealight.appleseed", appleseed_files_1[0]);
+    }
+
+    TEST_CASE(FilesnamesWithExtensionSeveralFiles) 
+    {
+        const string extension = ".appleseed";
+        const vector<string> appleseed_files_4 = get_filenames_with_extension_from_zip(invalid_project, extension);
+
+        EXPECT_EQ(4, appleseed_files_4.size());
     }
 }
