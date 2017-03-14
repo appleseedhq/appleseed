@@ -33,13 +33,15 @@
 #include "renderer/modeling/project/projectfilewriter.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 #include "foundation/utility/testutils.h"
 
 // Boost headers
 #include "boost/filesystem.hpp"
+
+// Standard headers
+#include <exception>
 
 using namespace foundation;
 using namespace renderer;
