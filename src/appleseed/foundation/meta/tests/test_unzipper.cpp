@@ -36,7 +36,6 @@
 // Standard headers
 #include <set>
 #include <vector>
-#include <iostream>
 
 using namespace foundation;
 using namespace std;
@@ -80,8 +79,8 @@ TEST_SUITE(Foundation_Utility_Unzipper)
         {
             unzip(valid_project, unpacked_dir);
 
-            EXPECT_EQ(true, bf::exists(bf::path(unpacked_dir)));
-            EXPECT_EQ(false, bf::is_empty(bf::path(unpacked_dir)));
+            EXPECT_TRUE(bf::exists(bf::path(unpacked_dir)));
+            EXPECT_FALSE(bf::is_empty(bf::path(unpacked_dir)));
 
             const string expected_files[] = 
             {
@@ -117,17 +116,17 @@ TEST_SUITE(Foundation_Utility_Unzipper)
     TEST_CASE(FilesnamesWithExtensionOneFile)
     {
         const string extension = ".appleseed";
-        const vector<string> appleseed_files_1 = get_filenames_with_extension_from_zip(valid_project, extension);
+        const vector<string> appleseed_files = get_filenames_with_extension_from_zip(valid_project, extension);
 
-        EXPECT_EQ(1, appleseed_files_1.size());
-        EXPECT_EQ("01 - lambertiannrdf - arealight.appleseed", appleseed_files_1[0]);
+        ASSERT_EQ(1, appleseed_files.size());
+        EXPECT_EQ("01 - lambertiannrdf - arealight.appleseed", appleseed_files[0]);
     }
 
     TEST_CASE(FilesnamesWithExtensionSeveralFiles) 
     {
         const string extension = ".appleseed";
-        const vector<string> appleseed_files_4 = get_filenames_with_extension_from_zip(invalid_project, extension);
+        const vector<string> appleseed_files = get_filenames_with_extension_from_zip(invalid_project, extension);
 
-        EXPECT_EQ(4, appleseed_files_4.size());
+        EXPECT_EQ(4, appleseed_files.size());
     }
 }
