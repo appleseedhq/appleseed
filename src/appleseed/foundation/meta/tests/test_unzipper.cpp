@@ -36,6 +36,7 @@
 // Standard headers
 #include <set>
 #include <vector>
+#include <iostream>
 
 using namespace foundation;
 using namespace std;
@@ -58,8 +59,11 @@ TEST_SUITE(Foundation_Utility_Unzipper)
 
             if (bf::is_directory(current_path))
             {
+                const string dirname = current_path.filename().string();
                 const set<string> files_in_subdir = recursive_ls(current_path);
-                files.insert(files_in_subdir.begin(), files_in_subdir.end());
+                
+                for (set<string>::iterator it = files_in_subdir.begin(); it != files_in_subdir.end(); ++it)
+                    files.insert(dirname + "/" + *it);
             }
             else
                 files.insert(current_path.filename().string());
@@ -82,16 +86,16 @@ TEST_SUITE(Foundation_Utility_Unzipper)
             const string expected_files[] = 
             {
                 "01 - lambertiannrdf - arealight.appleseed",
-                "sphere.obj",
-                "Box002.binarymesh",
-                "GeoSphere001.binarymesh",
-                "dirpole reference sphere.obj",
-                "Box001.binarymesh",
-                "plane.obj",
-                "Sphere002.binarymesh",
-                "Plane002.binarymesh",
-                "cube.obj",
-                "Plane001.binarymesh"
+                "geometry/sphere.obj",
+                "geometry/Box002.binarymesh",
+                "geometry/GeoSphere001.binarymesh",
+                "geometry/dirpole reference sphere.obj",
+                "geometry/Box001.binarymesh",
+                "geometry/plane.obj",
+                "geometry/Sphere002.binarymesh",
+                "geometry/Plane002.binarymesh",
+                "geometry/cube.obj",
+                "geometry/Plane001.binarymesh"
             };
 
             const set<string> actual_files = recursive_ls(bf::path(unpacked_dir));
