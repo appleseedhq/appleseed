@@ -174,21 +174,16 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     // By default, each object instance belongs to its own SSS set
     struct SubsurfaceScatteringSet
     {
-        SubsurfaceScatteringSet() :
-            m_use_default_sss_set(true)
-        {}
+        SubsurfaceScatteringSet() = default;
 
         explicit SubsurfaceScatteringSet(const char* identifier) :
             m_identifier(identifier),
-            m_use_default_sss_set(false)
-        {}
+            m_use_default_sss_set(false) {}
 
         explicit SubsurfaceScatteringSet(const std::string& identifier) :
-            m_identifier(identifier),
-            m_use_default_sss_set(false)
-        {}
+        SubsurfaceScatteringSet(identifier.c_str()) {}
 
-        bool m_use_default_sss_set;
+        bool m_use_default_sss_set = true;
         std::string m_identifier;
     };
 
