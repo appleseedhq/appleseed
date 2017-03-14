@@ -75,13 +75,10 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
         EXPECT_TRUE(identical);
     }
 
-    TEST_CASE(ReadPackedProject)
+    TEST_CASE(ReadValidPackedProject)
     {
-        const char* valid_project = "unit tests/inputs/test_packed_project_valid.appleseedz";
-        const char* valid_project_unpacked = "unit tests/inputs/test_packed_project_valid.appleseedz.unpacked";
-
-        const char* invalid_project = "unit tests/inputs/test_packed_project_invalid.appleseedz";
-        const char* invalid_project_unpacked = "unit tests/inputs/test_packed_project_invalid.appleseedz.unpacked";
+        const char* project = "unit tests/inputs/test_packed_project_valid.appleseedz";
+        const char* project_unpacked = "unit tests/inputs/test_packed_project_valid.appleseedz.unpacked";
 
         try 
         {
@@ -89,25 +86,41 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
 
             auto_release_ptr<Project> project_success =
                 reader.read(
-                    valid_project,
+                    project,
                     "../../../../schemas/project.xsd");    // path relative to input file
-
-            auto_release_ptr<Project> project_fail =
-                reader.read(
-                    invalid_project,
-                    "../../../../schemas/project.xsd");    // path relative to input file
-
+            
             EXPECT_NEQ(0, project_success.get());
-            EXPECT_EQ(0, project_fail.get());
-
-            bf::remove_all(bf::path(valid_project_unpacked));
-            bf::remove_all(bf::path(invalid_project_unpacked));
+            
+            bf::remove_all(bf::path(project_unpacked));
         } 
         catch (std::exception e) 
         {
-            bf::remove_all(bf::path(valid_project_unpacked));
-            bf::remove_all(bf::path(invalid_project_unpacked));
+            bf::remove_all(bf::path(project_unpacked));
+            throw e;
+        }
+    }
 
+    TEST_CASE(ReadInvalidPackedProject)
+    {
+        const char* project = "unit tests/inputs/test_packed_project_invalid.appleseedz";
+        const char* project_unpacked = "unit tests/inputs/test_packed_project_invalid.appleseedz.unpacked";
+
+        try
+        {
+            ProjectFileReader reader;
+
+            auto_release_ptr<Project> project_fail =
+                    reader.read(
+                        project,
+                        "../../../../schemas/project.xsd");    // path relative to input file
+
+            EXPECT_EQ(0, project_fail.get());
+
+            bf::remove_all(bf::path(project_unpacked));
+        }
+        catch (std::exception e)
+        {
+            bf::remove_all(bf::path(project_unpacked));
             throw e;
         }
     }
