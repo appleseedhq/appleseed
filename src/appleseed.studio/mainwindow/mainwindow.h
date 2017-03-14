@@ -158,13 +158,20 @@ class MainWindow
     void build_minimize_buttons();
     void build_connections();
 
+    enum RenderingMode
+    {
+        NotRendering,
+        InteractiveRendering,
+        FinalRendering
+    };
+
     // UI state management.
     void update_workspace();
     void update_project_explorer();
     void update_window_title();
-    void set_file_widgets_enabled(const bool is_enabled);
+    void set_file_widgets_enabled(const bool is_enabled, const RenderingMode rendering_mode);
     void set_project_explorer_enabled(const bool is_enabled);
-    void set_rendering_widgets_enabled(const bool is_enabled, const bool is_rendering);
+    void set_rendering_widgets_enabled(const bool is_enabled, const RenderingMode rendering_mode);
     void save_state_before_project_open();
     void restore_state_after_project_open();
 
@@ -189,7 +196,7 @@ class MainWindow
     void dropEvent(QDropEvent* event);
 
     // Rendering.
-    void start_rendering(const bool interactive);
+    void start_rendering(const RenderingMode rendering_mode);
 
     // Miscellaneous.
     void print_startup_information();
