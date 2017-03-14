@@ -37,8 +37,15 @@
 #include "foundation/utility/test.h"
 #include "foundation/utility/testutils.h"
 
+// Boost headers
+#include "boost/filesystem.hpp"
+
+// Standard headers
+#include <exception>
+
 using namespace foundation;
 using namespace renderer;
+namespace bf = boost::filesystem;
 
 TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
 {
@@ -66,5 +73,55 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
                 "unit tests/outputs/test_projectfilereader_configurationblocks.appleseed");
 
         EXPECT_TRUE(identical);
+    }
+
+    TEST_CASE(ReadValidPackedProject)
+    {
+        const char* project = "unit tests/inputs/test_packed_project_valid.appleseedz";
+        const char* project_unpacked = "unit tests/inputs/test_packed_project_valid.appleseedz.unpacked";
+
+        try 
+        {
+            ProjectFileReader reader;
+
+            auto_release_ptr<Project> project_success =
+                reader.read(
+                    project,
+                    "../../../../schemas/project.xsd");    // path relative to input file
+            
+            EXPECT_NEQ(0, project_success.get());
+            
+            bf::remove_all(bf::path(project_unpacked));
+        } 
+        catch (std::exception e) 
+        {
+            bf::remove_all(bf::path(project_unpacked));
+            throw e;
+        }
+    }
+
+    TEST_CASE(ReadInvalidPackedProject)
+    {
+        const char* project = "unit tests/inputs/test_packed_project_invalid.appleseedz";
+        const char* project_unpacked = "unit tests/inputs/test_packed_project_invalid.appleseedz.unpacked";
+
+        try
+        {
+            ProjectFileReader reader;
+
+            auto_release_ptr<Project> project_fail =
+                    reader.read(
+                        project,
+                        "../../../../schemas/project.xsd");    // path relative to input file
+
+            EXPECT_EQ(0, project_fail.get());
+
+            bf::remove_all(bf::path(project_unpacked));
+        }
+        catch (std::exception e)
+        {
+            bf::remove_all(bf::path(project_unpacked));
+            throw e;
+        }
     }
 }
