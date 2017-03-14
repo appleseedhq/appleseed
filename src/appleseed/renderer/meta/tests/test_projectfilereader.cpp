@@ -33,12 +33,17 @@
 #include "renderer/modeling/project/projectfilewriter.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptions/exception.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 #include "foundation/utility/testutils.h"
 
+// Boost headers
+#include "boost/filesystem.hpp"
+
 using namespace foundation;
 using namespace renderer;
+namespace bf = boost::filesystem;
 
 TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
 {
@@ -66,5 +71,42 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
                 "unit tests/outputs/test_projectfilereader_configurationblocks.appleseed");
 
         EXPECT_TRUE(identical);
+    }
+
+    TEST_CASE(ReadPackedProject)
+    {
+        const char* valid_project = "unit tests/inputs/test_packed_project_valid.appleseedz";
+        const char* valid_project_unpacked = "unit tests/inputs/test_packed_project_valid.appleseedz.unpacked";
+
+        const char* invalid_project = "unit tests/inputs/test_packed_project_invalid.appleseedz";
+        const char* invalid_project_unpacked = "unit tests/inputs/test_packed_project_invalid.appleseedz.unpacked";
+
+        try 
+        {
+            ProjectFileReader reader;
+
+            auto_release_ptr<Project> project_success =
+                reader.read(
+                    valid_project,
+                    "../../../../schemas/project.xsd");    // path relative to input file
+
+            auto_release_ptr<Project> project_fail =
+                reader.read(
+                    invalid_project,
+                    "../../../../schemas/project.xsd");    // path relative to input file
+
+            EXPECT_NEQ(0, project_success.get());
+            EXPECT_EQ(0, project_fail.get());
+
+            bf::remove_all(bf::path(valid_project_unpacked));
+            bf::remove_all(bf::path(invalid_project_unpacked));
+        } 
+        catch (std::exception e) 
+        {
+            bf::remove_all(bf::path(valid_project_unpacked));
+            bf::remove_all(bf::path(invalid_project_unpacked));
+
+            throw e;
+        }
     }
 }
