@@ -91,7 +91,6 @@ TEST_SUITE(Foundation_Math_Microfacet)
         return integral;
     }
 
-
     //
     // Weak white furnace test.
     //
@@ -417,6 +416,25 @@ TEST_SUITE(Foundation_Math_Microfacet)
             2.0f);
 
         EXPECT_WEAK_WHITE_FURNACE_PASS(result)
+    }
+
+    // Expect StdMDF and GGXMDF to be the same for gamma = 2
+
+    TEST_CASE(StdMDF_2_GGXMDF_comparison)
+    {
+        const StdMDF std;
+        const GGXMDF ggx;
+
+        size_t num_sample = 128;
+        for (size_t i = 0; i < num_sample; ++i)
+        {
+            static const size_t Bases[] = { 2 };
+            const Vector2f s = hammersley_sequence<float, 2>(Bases, num_sample, i);
+            const Vector3f v = sample_hemisphere_uniform(s);
+            const float std_G1 = std.G1(v, Vector3f(0.0f, 1.0, 0.0f), 0.5, 0.5, 2);
+            const float ggx_G1 = ggx.G1(v, Vector3f(0.0f, 1.0, 0.0f), 0.5, 0.5, 2);
+            EXPECT_FEQ_EPS(std_G1, ggx_G1, 0.05f);
+        }
     }
 
 #undef EXPECT_WEAK_WHITE_FURNACE_PASS
