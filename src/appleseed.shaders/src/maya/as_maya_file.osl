@@ -149,6 +149,48 @@ shader as_maya_file
         string label = "Exposure"
     ]],
 
+    int in_colorProfile = 0
+    [[
+        string maya_attribute_name = "colorProfile",
+        string maya_attribute_type = "enum",
+        string label = "Color Profile"
+    ]],
+    int in_ignoreColorSpaceFileRules = 0
+    [[
+        string maya_attribute_name = "ignoreColorSpaceFileRules",
+        string maya_attribute_type = "bool",
+        string label = "Ignore Color Space File Rules"
+    ]],
+    string in_colorSpace = ""
+    [[
+        string maya_attribute_name = "colorSpace",
+        string maya_attribute_type = "string"
+    ]],
+    string in_workingSpace = ""
+    [[
+        string maya_attribute_name = "workingSpace",
+        string maya_attribute_type = "string",
+        string label = "Working Space"
+    ]],
+    int in_colorManagementEnabled = 0
+    [[
+        string maya_attribute_name = "colorManagementEnabled",
+        string maya_attribute_type = "bool",
+        string label = "Color Management Enabled"
+    ]],
+    int in_colorManagementConfigFileEnabled = 0
+    [[
+        string maya_attribute_name = "colorManagementConfigFileEnabled",
+        string maya_attribute_type = "bool",
+        string label = "Color Management Config File Enabled"
+    ]],
+    string in_colorManagementConfigFilePath = ""
+    [[
+        string maya_attribute_name = "colorManagementConfigFilePath",
+        string maya_attribute_type = "string",
+        string label = "Color Management Config File Path"
+    ]],
+
     MAYA_COLORBALANCE_PARAMETERS,
     MAYA_EFFECTS_PARAMETERS,
     MAYA_UV_PARAMETERS,
@@ -190,6 +232,18 @@ shader as_maya_file
     ]]
 )
 {
+#ifdef DEBUG
+    warning("[CMS] : Color profile = %i\n", in_colorProfile);
+    warning("[CMS] : Color Space = %s\n", in_colorSpace);
+    warning("[CMS] : Ignore CMS rules = %i\n", in_ignoreColorSpaceFileRules);
+    warning("[CMS] : Working Space = %s\n", in_workingSpace);
+    warning("[CMS] : CMS Enabled = %i\n", in_colorManagementEnabled);
+    warning("[CMS] : CMS Config File Enabled = %i\n",
+        in_colorManagementConfigFileEnabled);
+    warning("[CMS] : CMS Config File Path = %s\n",
+        in_colorManagementConfigFilePath);
+#endif
+
     if (in_disableFileLoad || in_fileTextureName == "")
     {
         out_outColor = in_defaultColor;
