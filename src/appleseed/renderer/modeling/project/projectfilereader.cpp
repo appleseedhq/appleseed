@@ -3068,6 +3068,9 @@ auto_release_ptr<Project> ProjectFileReader::read(
     assert(project_filepath);
     
     string project_name;
+        if (bf::exists(bf::path(unpacked_project_directory)))
+            bf::remove_all(bf::path(unpacked_project_directory));
+
 
     // Handle packed projects
     string actual_project_filepath;

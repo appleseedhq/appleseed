@@ -65,7 +65,7 @@ inline UnzipException::UnzipException(const char* what, const int err)
 
 //
 // This function unzips zip file zipFilename
-// to unzipped_dir directory (filename.unzipped if NULL)
+// to unzipped_dir directory
 //
 // throws UnzipException in case of exception
 // if exception thrown, unzipped folder is deleted

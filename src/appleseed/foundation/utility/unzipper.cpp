@@ -134,9 +134,6 @@ void unzip(const string& zip_filename, const string& unzipped_dir)
 {
     try
     {
-        if (bf::exists(bf::path(unzipped_dir)))
-            bf::remove_all(bf::path(unzipped_dir));
-
         bf::create_directories(bf::path(unzipped_dir));
 
         unzFile zip_file = unzOpen(zip_filename.c_str());
