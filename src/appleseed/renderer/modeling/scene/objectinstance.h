@@ -46,6 +46,12 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// OpenImageIO headers.
+#include "foundation/platform/oiioheaderguards.h"
+BEGIN_OIIO_INCLUDES
+#include "OpenImageIO/ustring.h"
+END_OIIO_INCLUDES
+
 // Standard headers.
 #include <cassert>
 #include <cstddef>
@@ -174,21 +180,18 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     // By default, each object instance belongs to its own SSS set
     struct SubsurfaceScatteringSet
     {
-        SubsurfaceScatteringSet() = default;
+        SubsurfaceScatteringSet() :
+			m_use_individual_sss_set(true)
+        {}
 
-        explicit SubsurfaceScatteringSet(const char* identifier) :
+        explicit SubsurfaceScatteringSet(OIIO::string_view identifier) :
             m_identifier(identifier),
-            m_use_default_sss_set(false) {}
+			m_use_individual_sss_set(false)
+        {}
 
-        explicit SubsurfaceScatteringSet(const std::string& identifier) :
-        SubsurfaceScatteringSet(identifier.c_str()) {}
-
-        bool m_use_default_sss_set = true;
-        std::string m_identifier;
+        bool m_use_individual_sss_set;
+        OIIO::ustring m_identifier;
     };
-
-    // Return the SSS set that this instance belongs to
-    const SubsurfaceScatteringSet& get_sss_set() const;
 
     // Check if this object instance is in the same sss set as the given one
     bool is_in_same_sss_set(const ObjectInstance& other) const;

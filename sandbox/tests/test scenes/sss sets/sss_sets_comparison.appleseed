@@ -159,7 +159,6 @@
                 <parameter name="ray_bias_distance" value="0.0" />
                 <parameter name="ray_bias_method" value="none" />
                 <parameter name="sss_set_id" value="sss_set" />
-                <parameter name="use_individual_sss_set" value="false" />
                 <assign_material slot="None" side="front" material="marble_sss_material" />
             </object_instance>
             <object_instance name="sphere_right_side" object="sss_sets_test.Sphere.004">

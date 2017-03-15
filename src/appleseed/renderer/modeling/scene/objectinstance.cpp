@@ -157,12 +157,11 @@ ObjectInstance::ObjectInstance(
     m_ray_bias_distance = params.get_optional<double>("ray_bias_distance", 0.0);
 
     // Retrieve SSS set
-    bool use_individual_sss_set = params.get_optional<bool>("use_individual_sss_set", true);
-    if (!use_individual_sss_set)
-    {
-        std::string identifier = params.get_optional<std::string>("sss_set_id", "");
-        impl->m_sss_set = SubsurfaceScatteringSet(identifier);
-    }
+	std::string sss_set_id = params.get_optional<std::string>("sss_set_id", "");
+	if (sss_set_id != "")
+	{
+		impl->m_sss_set = SubsurfaceScatteringSet(sss_set_id);
+	}
 
     // No bound object yet.
     m_object = 0;
@@ -191,19 +190,15 @@ const char* ObjectInstance::get_object_name() const
     return impl->m_object_name.c_str();
 }
 
-const ObjectInstance::SubsurfaceScatteringSet& ObjectInstance::get_sss_set() const
-{
-    return impl->m_sss_set;
-}
-
 bool ObjectInstance::is_in_same_sss_set(const ObjectInstance& other) const
 {
     // If it is the same object instance, sss set is also the same
     if (other.get_uid() == get_uid())
         return true;
 
-    if (impl->m_sss_set.m_use_default_sss_set || other.impl->m_sss_set.m_use_default_sss_set)
+	if (impl->m_sss_set.m_use_individual_sss_set || other.impl->m_sss_set.m_use_individual_sss_set)
         return false;
+
     return impl->m_sss_set.m_identifier == other.impl->m_sss_set.m_identifier;
 }
 
@@ -512,14 +507,6 @@ DictionaryArray ObjectInstanceFactory::get_input_metadata()
             .insert("type", "text")
             .insert("use", "optional")
             .insert("default", "0.0"));
-
-    metadata.push_back(
-        Dictionary()
-        .insert("name", "use_individual_sss_set")
-        .insert("label", "Use Individual SSS Set")
-        .insert("type", "boolean")
-        .insert("use", "optional")
-        .insert("default", "true"));
 
     metadata.push_back(
         Dictionary()
