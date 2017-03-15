@@ -1,0 +1,180 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: http://blog.selfshadow.com/publications/s2012-shading-course/burley/s2012_pbs_disney_brdf_slides_v2.pdf
+
+shader as_DisneyMaterial
+[[
+    int maya_type_id = 1210824
+    string maya_node_name = "AsDisney",
+    string maya_classification = "shader/surface:Appleseed/surface:swatch/AppleseedRenderSwatch",
+    string help = "Disney BSDF material"
+]]
+(
+    color in_color = color(0.5)
+    [[
+        string maya_attribute_name = "color",
+        string maya_attribute_type = "color",
+        string maya_attribute_short_name = "c",
+        string label = "Surface Color",
+        string page = "Common Material Attributes"
+    ]],
+    float in_subsurfaceAmount = 0.0
+    [[
+        float min = 0.0,
+        float max = 1.0,
+        float slidermin = 0.0,
+        float slidermax = 1.0,
+        string label = "Subsurface",
+        string page = "Common Material Attributes",
+        int separator = 1
+    ]],
+    float in_specularAmount = 0.5
+    [[
+        float min = 0.0,
+        float max = 1.0,
+        float slidermin = 0.0,
+        float slidermax = 1.0,
+        string label = "Specular Amount",
+        string page = "Common Material Attributes"
+    ]],
+    float in_roughness = 0.5
+    [[
+        float min = 0.0,
+        float max = 1.0,
+        float slidermin = 0.0,
+        float slidermax = 1.0,
+        string label = "Surface Roughness",
+        string page = "Common Material Attributes"
+    ]],
+    float in_specularTint = 0.0
+    [[
+        float min = 0.0,
+        float max = 1.0,
+        float slidermin = 0.0,
+        float slidermax = 1.0,
+        string label = "Specular Tinting",
+        string page = "Common  Material Attributes"
+    ]],
+    float in_metallicAmount = 0.0
+    [[
+        float min = 0.0,
+        float max = 1.0,
+        float slidermin = 0.0,
+        float slidermax = 1.0,
+        string label = "Metallicness",
+        string page = "Common Material Attributes"
+    ]],
+    float in_anisotropyAmount = 0.0
+    [[
+        float min = 0.0,
+        float max = 1.0,
+        float slidermin = 0.0,
+        float slidermax = 1.0,
+        string label = "Anisotropy Amount",
+        string page = "Common Material Attributes",
+        int separator = 1
+    ]],
+    float in_sheenAmount = 0.0
+    [[
+        float min = 0.0,
+        float max = 10.0,
+        float softmin = 0.0,
+        float softmax = 1.0,
+        float slidermin = 0.0,
+        float slidermax = 1.0,
+        string label = "Sheen Amount",
+        string page = "Common Material Attributes"
+    ]],
+    float in_sheenTint = 0.5
+    [[
+        float min = 0.0,
+        float max = 1.0,
+        float slidermin = 0.0,
+        float slidermax = 1.0,
+        string label = "Sheen Tint",
+        string page = "Common Material Attributes",
+        int separator = 1
+    ]],
+    float in_clearCoat = 0.0
+    [[
+        float min = 0.0,
+        float max = 100.0,
+        float softmin = 0.0,
+        float softmax = 1.0,
+        float slidermin = 0.0,
+        float slidermax = 1.0,
+        string label = "Coating Amount",
+        string page = "Common Material Attributes"
+    ]],
+    float in_clearCoatGlossyness = 1.0
+    [[
+        float min = 0.0,
+        float max = 1.0,
+        float slidermin = 0.0,
+        float slidermax = 1.0,
+        string label = "Coating Glossyness",
+        string page = "Common Material Attributes"
+    ]],
+    normal in_normalCamera = N
+    [[
+        string maya_attribute_name = "normalCamera",
+        string maya_attribute_short_name = "n",
+        string label = "Bump Normal",
+        string page = "Bump"
+    ]],
+    vector Tn = vector(0)
+    [[
+        int lockgeom = 0,
+        string widget = "null"
+    ]],
+
+    output closure color out_outColor = 0
+    [[
+        string maya_attribute_name = "outColor",
+        string maya_attribute_short_name = "oc",
+        string widget = "null"
+    ]]
+)
+{
+    out_outColor = as_disney(
+        in_normalCamera,
+        Tn,
+        in_color,
+        in_subsurfaceAmount,
+        in_metallicAmount,
+        in_specularAmount,
+        in_specularTint,
+        in_anisotropyAmount,
+        in_roughness,
+        in_sheenAmount,
+        in_sheenTint,
+        in_clearCoat,
+        in_clearCoatGlossyness);
+}
+
