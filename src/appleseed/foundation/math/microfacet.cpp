@@ -843,11 +843,11 @@ float StdMDF::lambda(
     if (tan_theta == 0.0f)
         return 0.0f;
 
-    // If equation 14 from [1] would be implemented dirrectly as it is written
-    // multiplier of S1, (we'll call it A1), explodes for gamma values over 30
-    // because of power.
-    // To avoid the mathematical explosion, function needs to be rewritten
-    // so that the base of the power lowers before.
+    // If equation 14 from [1] would be implemented dirrectly as it is written,
+    // the multiplier of S1, (we'll call it here A1), would explode for gamma
+    // values over 30 because of exponent.
+    // To avoid the exponential explosion, function needs to be rewritten
+    // so that the base of the power lowers.
     // Here we combine A1 with part of S1 which is also raised to gamma.
     const float A1S1_a = gamma - 1.0f;
     const float A1S1_b = alpha_x * tan_theta / (2 * gamma - 3.0f);
