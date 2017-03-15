@@ -53,26 +53,25 @@ class UnzipException
 
 
 //
-// This function unzips zip file zipFilename
-// to unzipped_dir directory
+// This function unzips zip file zipFilename to unzipped_dir directory.
 //
-// throws UnzipException in case of exception
-// if exception thrown, unzipped folder is deleted
+// Throws UnzipException in case of exception.
+// If exception is thrown, unzipped folder is deleted.
 //
 
 void unzip(const std::string& zip_filename, const std::string& unzipped_dir);
 
 
 //
-// Checks if file is in zip format by trying to open it
+// Checks if file is in zip format by trying to open it.
 //
 
 bool is_zip_file(const std::string& filename);
 
 //
-// This function returns all filenames from zip_filenames zip with given extension
+// This function returns all filenames from zip_filenames zip with given extension.
 // 
-// throws UnzipException if zip_filename can't be opened or is not a zip file 
+// Throws UnzipException if zip_filename can't be opened or is not a zip file.
 //
 
 std::vector<std::string> get_filenames_with_extension_from_zip(

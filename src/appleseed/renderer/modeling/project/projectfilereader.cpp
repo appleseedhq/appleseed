@@ -3045,6 +3045,11 @@ auto_release_ptr<Project> ProjectFileReader::read(
 {
     assert(project_filepath);
 
+    // Handle built-in projects.
+    string project_name;
+    if (is_builtin_project(project_filepath, project_name))
+        return load_builtin(project_name.c_str());
+
     // Handle packed projects
     string actual_project_filepath;
     if (is_zip_file(project_filepath))
@@ -3076,11 +3081,6 @@ auto_release_ptr<Project> ProjectFileReader::read(
         actual_project_filepath = (bf::path(unpacked_project_directory) / bf::path(project_name)).string().c_str();
         project_filepath = actual_project_filepath.data();
     }
-
-    // Handle built-in projects.
-    string project_name;
-    if (is_builtin_project(project_filepath, project_name))
-        return load_builtin(project_name.c_str());
 
     XercesCContext xerces_context(global_logger());
     if (!xerces_context.is_initialized())
