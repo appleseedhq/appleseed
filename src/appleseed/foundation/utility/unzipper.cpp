@@ -158,6 +158,19 @@ void unzip(const string& zip_filename, const string& unzipped_dir)
     }
 }
 
+bool is_zip_file(const string& filename) {
+    try
+    {
+        unzFile zip_file = unzOpen(filename.c_str());
+        unzClose(zip_file);
+        return true;
+    }
+    catch (UnzipException e)
+    {
+        return false;
+    }
+}
+
 vector<string> get_filenames_with_extension_from_zip(const string& zip_filename, const string& extension) 
 {
     vector<string> filenames;

@@ -74,6 +74,12 @@ inline UnzipException::UnzipException(const char* what, const int err)
 void unzip(const std::string& zip_filename, const std::string& unzipped_dir);
 
 //
+// Checks if file is in zip format by trying to open it
+//
+
+bool is_zip_file(const std::string& filename);
+
+//
 // This function returns all filenames from zip_filenames zip with given extension
 // 
 // throws UnzipException if zip_filename can't be opened or is not a zip file 
