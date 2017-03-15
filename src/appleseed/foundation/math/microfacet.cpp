@@ -840,6 +840,9 @@ float StdMDF::lambda(
     const float tan_theta = sin_theta / cos_theta;
     const float tan_theta_2 = square(tan_theta);
 
+    if (tan_theta == 0.0f)
+        return 0.0f;
+
     const float A1 = std::pow((gamma - 1.0f), gamma) / (2.0f * gamma - 3.0f);
     // S1 [1] Equation 14.
     const float S1_a = alpha_x * tan_theta;
@@ -860,7 +863,7 @@ float StdMDF::lambda(
     const float S2 = F_21 * (F_22 + F_23 * F_24);
 
     const float gamma_fraction = tgamma(gamma - 0.5f) / tgamma(gamma);
-
+    
     return (gamma_fraction / SqrtPi<float>()) * (A1 * S1 + A2 * S2) - 0.5f;
 }
 
