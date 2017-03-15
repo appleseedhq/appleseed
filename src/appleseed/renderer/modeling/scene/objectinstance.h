@@ -46,6 +46,12 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// OpenImageIO headers.
+#include "foundation/platform/oiioheaderguards.h"
+BEGIN_OIIO_INCLUDES
+#include "OpenImageIO/ustring.h"
+END_OIIO_INCLUDES
+
 // Standard headers.
 #include <cassert>
 #include <cstddef>
@@ -169,6 +175,26 @@ class APPLESEED_DLLSYMBOL ObjectInstance
 
     // Return the object bound to this instance.
     Object& get_object() const;
+
+    // SSS set
+    // By default, each object instance belongs to its own SSS set
+    struct SubsurfaceScatteringSet
+    {
+        SubsurfaceScatteringSet() :
+            m_use_individual_sss_set(true)
+        {}
+
+        explicit SubsurfaceScatteringSet(OIIO::string_view identifier) :
+            m_identifier(identifier),
+            m_use_individual_sss_set(false)
+        {}
+
+        bool m_use_individual_sss_set;
+        OIIO::ustring m_identifier;
+    };
+
+    // Check if this object instance is in the same sss set as the given one
+    bool is_in_same_sss_set(const ObjectInstance& other) const;
 
     // Return the materials bound to this instance.
     const MaterialArray& get_front_materials() const;

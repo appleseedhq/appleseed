@@ -110,6 +110,7 @@ struct ObjectInstance::Impl
     string                  m_object_name;
     StringDictionary        m_front_material_mappings;
     StringDictionary        m_back_material_mappings;
+    SubsurfaceScatteringSet m_sss_set;
 };
 
 ObjectInstance::ObjectInstance(
@@ -155,6 +156,13 @@ ObjectInstance::ObjectInstance(
     // Retrieve ray bias distance.
     m_ray_bias_distance = params.get_optional<double>("ray_bias_distance", 0.0);
 
+    // Retrieve SSS set
+    std::string sss_set_id = params.get_optional<std::string>("sss_set_id", "");
+    if (sss_set_id != "")
+    {
+        impl->m_sss_set = SubsurfaceScatteringSet(sss_set_id);
+    }
+
     // No bound object yet.
     m_object = 0;
 }
@@ -180,6 +188,18 @@ uint64 ObjectInstance::compute_signature() const
 const char* ObjectInstance::get_object_name() const
 {
     return impl->m_object_name.c_str();
+}
+
+bool ObjectInstance::is_in_same_sss_set(const ObjectInstance& other) const
+{
+    // If it is the same object instance, sss set is also the same
+    if (other.get_uid() == get_uid())
+        return true;
+
+    if (impl->m_sss_set.m_use_individual_sss_set || other.impl->m_sss_set.m_use_individual_sss_set)
+        return false;
+
+    return impl->m_sss_set.m_identifier == other.impl->m_sss_set.m_identifier;
 }
 
 const Transformd& ObjectInstance::get_transform() const
@@ -487,6 +507,14 @@ DictionaryArray ObjectInstanceFactory::get_input_metadata()
             .insert("type", "text")
             .insert("use", "optional")
             .insert("default", "0.0"));
+
+    metadata.push_back(
+        Dictionary()
+        .insert("name", "sss_set_id")
+        .insert("label", "SSS Set Identifier")
+        .insert("type", "text")
+        .insert("use", "optional")
+        .insert("default", ""));
 
     return metadata;
 }
