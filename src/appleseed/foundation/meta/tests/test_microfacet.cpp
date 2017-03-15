@@ -437,5 +437,28 @@ TEST_SUITE(Foundation_Math_Microfacet)
         }
     }
 
+    // Check for lambda overflow
+
+    TEST_CASE(StdMDF_lambda_overflow)
+    {
+        const StdMDF std;
+
+        float gamma_max = 100.0f;
+        float gamma_step = 1.0f;
+        size_t num_sample = 128;
+        for (float i = 2.0f; i < gamma_max; i += gamma_step)
+        {
+            for (size_t j = 0; j < num_sample; ++j)            
+            {         
+            static const size_t Bases[] = { 2 };
+            const Vector2f s = hammersley_sequence<float, 2>(Bases, num_sample, i);
+            const Vector3f v = sample_hemisphere_uniform(s);
+            const float std_G1 = std.G1(v, Vector3f(0.0f, 1.0, 0.0f), 0.5, 0.5, i);
+            EXPECT_TRUE(!(std_G1 != std_G1)); // check that G1 doesn't produce NaN
+            }
+        }
+
+    }
+
 #undef EXPECT_WEAK_WHITE_FURNACE_PASS
 }
