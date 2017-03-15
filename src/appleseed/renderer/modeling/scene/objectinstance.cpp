@@ -45,6 +45,12 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/makevector.h"
 
+// OpenImageIO headers.
+#include "foundation/platform/oiioheaderguards.h"
+BEGIN_OIIO_INCLUDES
+#include "OpenImageIO/ustring.h"
+END_OIIO_INCLUDES
+
 // Standard headers.
 #include <string>
 
@@ -110,7 +116,7 @@ struct ObjectInstance::Impl
     string                  m_object_name;
     StringDictionary        m_front_material_mappings;
     StringDictionary        m_back_material_mappings;
-    SubsurfaceScatteringSet m_sss_set;
+    OIIO::ustring           m_sss_set_identifier;
 };
 
 ObjectInstance::ObjectInstance(
@@ -157,11 +163,7 @@ ObjectInstance::ObjectInstance(
     m_ray_bias_distance = params.get_optional<double>("ray_bias_distance", 0.0);
 
     // Retrieve SSS set
-    std::string sss_set_id = params.get_optional<std::string>("sss_set_id", "");
-    if (sss_set_id != "")
-    {
-        impl->m_sss_set = SubsurfaceScatteringSet(sss_set_id);
-    }
+    impl->m_sss_set_identifier = params.get_optional<std::string>("sss_set_id", "");
 
     // No bound object yet.
     m_object = 0;
@@ -196,10 +198,11 @@ bool ObjectInstance::is_in_same_sss_set(const ObjectInstance& other) const
     if (other.get_uid() == get_uid())
         return true;
 
-    if (impl->m_sss_set.m_use_individual_sss_set || other.impl->m_sss_set.m_use_individual_sss_set)
+    // Empty identifier indicates that object instance belongs to its individual SSS set
+    if (impl->m_sss_set_identifier.empty() || other.impl->m_sss_set_identifier.empty())
         return false;
 
-    return impl->m_sss_set.m_identifier == other.impl->m_sss_set.m_identifier;
+    return impl->m_sss_set_identifier == other.impl->m_sss_set_identifier;
 }
 
 const Transformd& ObjectInstance::get_transform() const
