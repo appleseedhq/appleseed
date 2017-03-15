@@ -843,11 +843,16 @@ float StdMDF::lambda(
     if (tan_theta == 0.0f)
         return 0.0f;
 
-    const float A1 = std::pow((gamma - 1.0f), gamma) / (2.0f * gamma - 3.0f);
-    // S1 [1] Equation 14.
-    const float S1_a = alpha_x * tan_theta;
-    const float S1_b = (gamma - 1.0f) + 1.0f / (alpha_2 * tan_theta_2);
-    const float S1 = S1_a * std::pow(S1_b, 1.5f - gamma);
+    // If equation 14 from [1] would be implemented dirrectly as it is written
+    // multiplier of S1, (we'll call it A1), explodes for gamma values over 30
+    // because of power.
+    // To avoid the mathematical explosion, function needs to be rewritten
+    // so that the base of the power lowers before.
+    // Here we combine A1 with part of S1 which is also raised to gamma.
+    const float A1S1_a = gamma - 1.0f;
+    const float A1S1_b = alpha_x * tan_theta / (2 * gamma - 3.0f);
+    const float A1S1_c = (gamma - 1.0f + 1.0f / (alpha_2 * tan_theta_2));
+    const float A1S1 = std::pow(A1S1_a / A1S1_c, gamma) * A1S1_b * std::pow(A1S1_c, 1.5f);
 
     const float A2 = std::sqrt(gamma - 1.0f);
     // S2 Rational fractions for GAF approximation [1] Equation 23.
@@ -863,8 +868,7 @@ float StdMDF::lambda(
     const float S2 = F_21 * (F_22 + F_23 * F_24);
 
     const float gamma_fraction = tgamma(gamma - 0.5f) / tgamma(gamma);
-    
-    return (gamma_fraction / SqrtPi<float>()) * (A1 * S1 + A2 * S2) - 0.5f;
+    return (gamma_fraction / SqrtPi<float>()) * (A1S1 + A2 * S2) - 0.5f;
 }
 
 float StdMDF::pdf(
