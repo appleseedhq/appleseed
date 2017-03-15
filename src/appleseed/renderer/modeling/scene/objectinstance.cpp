@@ -196,7 +196,11 @@ bool ObjectInstance::is_in_same_sss_set(const ObjectInstance& other) const
     if (other.get_uid() == get_uid())
         return true;
 
+<<<<<<< HEAD
     if (impl->m_sss_set.m_use_individual_sss_set || other.impl->m_sss_set.m_use_individual_sss_set)
+=======
+	if (impl->m_sss_set.m_use_individual_sss_set || other.impl->m_sss_set.m_use_individual_sss_set)
+>>>>>>> b04aba7e2626b94cd1f8d2746bdc5903d2920f7e
         return false;
 
     return impl->m_sss_set.m_identifier == other.impl->m_sss_set.m_identifier;
