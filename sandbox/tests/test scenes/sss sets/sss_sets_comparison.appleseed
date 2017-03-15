@@ -109,13 +109,12 @@
                 <parameter name="surface_shader" value="physical_shader" />
             </material>
             <object name="sss_sets_test" model="mesh_object">
-                <parameter name="filename" value="F:\Appleseed\scenes\sss_sets_test.obj" />
+                <parameter name="filename" value="geometry/sss_sets_test.obj" />
             </object>
             <object_instance name="cube_left" object="sss_sets_test.Cube.002_Cube.000">
                 <parameter name="medium_priority" value="0" />
                 <parameter name="ray_bias_distance" value="0.0" />
                 <parameter name="ray_bias_method" value="none" />
-                <parameter name="use_individual_sss_set" value="true" />
                 <assign_material slot="None" side="front" material="marble_sss_material" />
             </object_instance>
             <object_instance name="cube_right" object="sss_sets_test.Cube.001_Cube.002">
@@ -123,35 +122,30 @@
                 <parameter name="ray_bias_distance" value="0.0" />
                 <parameter name="ray_bias_method" value="none" />
                 <parameter name="sss_set_id" value="sss_set" />
-                <parameter name="use_individual_sss_set" value="false" />
                 <assign_material slot="None" side="front" material="marble_sss_material" />
             </object_instance>
             <object_instance name="light_left" object="sss_sets_test.Plane">
                 <parameter name="medium_priority" value="0" />
                 <parameter name="ray_bias_distance" value="0.0" />
                 <parameter name="ray_bias_method" value="none" />
-                <parameter name="use_individual_sss_set" value="true" />
                 <assign_material slot="None" side="back" material="light_material" />
             </object_instance>
             <object_instance name="light_right" object="sss_sets_test.Plane.001">
                 <parameter name="medium_priority" value="0" />
                 <parameter name="ray_bias_distance" value="0.0" />
                 <parameter name="ray_bias_method" value="none" />
-                <parameter name="use_individual_sss_set" value="true" />
                 <assign_material slot="None" side="back" material="light_material" />
             </object_instance>
             <object_instance name="sphere_left_front" object="sss_sets_test.Sphere.002_Sphere.001">
                 <parameter name="medium_priority" value="0" />
                 <parameter name="ray_bias_distance" value="0.0" />
                 <parameter name="ray_bias_method" value="none" />
-                <parameter name="use_individual_sss_set" value="true" />
                 <assign_material slot="None" side="front" material="marble_sss_material" />
             </object_instance>
             <object_instance name="sphere_left_side" object="sss_sets_test.Sphere.003">
                 <parameter name="medium_priority" value="0" />
                 <parameter name="ray_bias_distance" value="0.0" />
                 <parameter name="ray_bias_method" value="none" />
-                <parameter name="use_individual_sss_set" value="true" />
                 <assign_material slot="None" side="front" material="marble_sss_material" />
             </object_instance>
             <object_instance name="sphere_right_front" object="sss_sets_test.Sphere.001_Sphere.000">
@@ -166,7 +160,6 @@
                 <parameter name="ray_bias_distance" value="0.0" />
                 <parameter name="ray_bias_method" value="none" />
                 <parameter name="sss_set_id" value="sss_set" />
-                <parameter name="use_individual_sss_set" value="false" />
                 <assign_material slot="None" side="front" material="marble_sss_material" />
             </object_instance>
         </assembly>
