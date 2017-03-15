@@ -226,7 +226,7 @@ namespace
             outgoing_point.get_ray().m_depth + 1);
 
         assert(outgoing_point.get_material() != NULL);
-        const BSSRDF* outgoing_bssrdf = outgoing_point.get_material()->get_uncached_bssrdf();
+        const BSSRDF* outgoing_bssrdf = &bssrdf;
         const ObjectInstance& outgoing_object_instance = outgoing_point.get_object_instance();
 
         const size_t MaxIterations = 16;
@@ -250,11 +250,11 @@ namespace
             const Material* incoming_material = incoming_point.get_material();
             const BSSRDF* incoming_bssrdf =
                 incoming_material == NULL ? NULL :
-                incoming_material->get_uncached_bssrdf();
+                incoming_material->get_render_data().m_bssrdf;
             const Material* incoming_opposite_material = incoming_point.get_opposite_material();
             const BSSRDF* incoming_opposite_bssrdf =
                 incoming_opposite_material == NULL ? NULL :
-                incoming_opposite_material->get_uncached_bssrdf();
+                incoming_opposite_material->get_render_data().m_bssrdf;
 
             bool same_bssrdf =
                 incoming_bssrdf == outgoing_bssrdf || incoming_opposite_bssrdf == outgoing_bssrdf;
