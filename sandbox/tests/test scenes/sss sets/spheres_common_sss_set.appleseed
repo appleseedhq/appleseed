@@ -168,7 +168,6 @@
                 <parameter name="ray_bias_distance" value="0.0" />
                 <parameter name="ray_bias_method" value="none" />
                 <parameter name="sss_set_id" value="sss_set" />
-                <parameter name="use_individual_sss_set" value="false" />
                 <assign_material slot="None" side="front" material="blue_sss_material" />
             </object_instance>
         </assembly>
