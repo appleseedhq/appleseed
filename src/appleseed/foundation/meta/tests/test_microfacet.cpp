@@ -443,10 +443,10 @@ TEST_SUITE(Foundation_Math_Microfacet)
     {
         const StdMDF std;
 
-        float gamma_max = 100.0f;
+        float gamma_max = 40.0f;
         float gamma_step = 2.0f;
         size_t num_sample = 128;
-        for (float i = 20.0f; i < gamma_max; i += gamma_step)
+        for (float i = 10.0f; i < gamma_max; i += gamma_step)
         {
             for (size_t j = 0; j < num_sample; ++j)            
             {         
@@ -466,10 +466,10 @@ TEST_SUITE(Foundation_Math_Microfacet)
     {
         const StdMDF std;
 
-        float gamma_max = 100.0f;
+        float gamma_max = 40.0f;
         float gamma_step = 2.0f;
         size_t num_sample = 128;
-        for (float i = 20.0f; i < gamma_max; i += gamma_step)
+        for (float i = 10.0f; i < gamma_max; i += gamma_step)
         {
             for (size_t j = 0; j < num_sample; ++j)            
             {         
