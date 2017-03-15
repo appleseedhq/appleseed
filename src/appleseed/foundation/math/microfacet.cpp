@@ -790,17 +790,20 @@ float StdMDF::D(
     if (cos_theta == 0.0f)
         return 0.0;
 
-    const float cos_theta_2 = square(cos_theta);
-    const float cos_theta_4 = square(cos_theta_2);
-    const float alpha_x2 = square(alpha_x);
-    const float tan_theta_2 = (1.0f - cos_theta_2) / cos_theta_2;
+    const double cos_theta_2 = square(cos_theta);
+    const double cos_theta_4 = square(cos_theta_2);
+    const double alpha_x2 = square(alpha_x);
+    const double tan_theta_2 = (1.0f - cos_theta_2) / cos_theta_2;
     
     // [1] Equation 11.
-    const float a = std::pow(gamma - 1.0f, gamma);
-    const float b = std::pow(alpha_x, 2.0f * gamma - 2.0f);
-    const float c = std::pow((gamma - 1) * alpha_x2 + tan_theta_2, gamma);
+    const double a = std::pow(alpha_x, (2.0f * gamma - 2.0f)) / (Pi<double>() * cos_theta_4);
+    const double b = gamma - 1.0f;
+    const double c = (gamma - 1.0f) * alpha_x2 + tan_theta_2;
+    const double power = std::pow(b / c, gamma / 4.0f);
+    const double power_2 = power * power;
+    const double power_4 = power_2 * power_2; // added only to reduce exponential explosion
 
-    return RcpPi<float>() * (a * b) / (cos_theta_4 * c);
+    return a * power_4;
 }
 
 float StdMDF::G(
