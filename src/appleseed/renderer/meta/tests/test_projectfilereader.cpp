@@ -100,28 +100,30 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
         }
     }
 
-    TEST_CASE(ReadInvalidPackedProject)
-    {
-        const char* project = "unit tests/inputs/test_packed_project_invalid.appleseedz";
-        const char* project_unpacked = "unit tests/inputs/test_packed_project_invalid.appleseedz.unpacked";
+    // Test waits for a brilliant solution of how to invoke it without emitting error message
 
-        try
-        {
-            ProjectFileReader reader;
+    // TEST_CASE(ReadInvalidPackedProject)
+    // {
+    //     const char* project = "unit tests/inputs/test_packed_project_invalid.appleseedz";
+    //     const char* project_unpacked = "unit tests/inputs/test_packed_project_invalid.appleseedz.unpacked";
 
-            auto_release_ptr<Project> project_fail =
-                    reader.read(
-                        project,
-                        "../../../../schemas/project.xsd");    // path relative to input file
+    //     try
+    //     {
+    //         ProjectFileReader reader;
 
-            EXPECT_EQ(0, project_fail.get());
+    //         auto_release_ptr<Project> project_fail =
+    //                 reader.read(
+    //                     project,
+    //                     "../../../../schemas/project.xsd");    // path relative to input file
 
-            bf::remove_all(bf::path(project_unpacked));
-        }
-        catch (std::exception e)
-        {
-            bf::remove_all(bf::path(project_unpacked));
-            throw e;
-        }
-    }
+    //         EXPECT_EQ(0, project_fail.get());
+
+    //         bf::remove_all(bf::path(project_unpacked));
+    //     }
+    //     catch (std::exception e)
+    //     {
+    //         bf::remove_all(bf::path(project_unpacked));
+    //         throw e;
+    //     }
+    // }
 }
