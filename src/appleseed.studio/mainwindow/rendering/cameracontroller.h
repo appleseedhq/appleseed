@@ -58,12 +58,16 @@ class CameraController
 
   public:
     // Constructor.
+    // The camera controller is disabled by default.
     CameraController(
         QWidget*            render_widget,
         renderer::Project&  project);
 
     // Destructor.
     ~CameraController();
+
+    // When enabled, the camera controller will track mouse movements and emit signals.
+    void set_enabled(const bool enabled);
 
     foundation::Transformd get_transform() const;
 
@@ -84,6 +88,8 @@ class CameraController
 
     QWidget*                m_render_widget;
     renderer::Project&      m_project;
+    bool                    m_enabled;
+
     ControllerType          m_controller;
     foundation::Vector3d    m_pivot;
 

@@ -163,10 +163,12 @@ RenderingManager::~RenderingManager()
 void RenderingManager::start_rendering(
     Project*                    project,
     const ParamArray&           params,
+    const RenderingMode         rendering_mode,
     RenderTab*                  render_tab)
 {
     m_project = project;
     m_params = params;
+    m_rendering_mode = rendering_mode;
     m_render_tab = render_tab;
 
     m_tile_callback_factory.reset(
@@ -186,6 +188,9 @@ void RenderingManager::start_rendering(
     connect(
         m_master_renderer_thread.get(), SIGNAL(finished()),
         SLOT(slot_master_renderer_thread_finished()));
+
+    if (m_rendering_mode == InteractiveRendering)
+        m_render_tab->get_camera_controller()->set_enabled(true);
 
     m_master_renderer_thread->start();
 }
@@ -364,6 +369,9 @@ void RenderingManager::slot_rendering_begin()
 
 void RenderingManager::slot_rendering_end()
 {
+    if (m_rendering_mode == InteractiveRendering)
+        m_render_tab->get_camera_controller()->set_enabled(false);
+
     // Save the controller target point into the camera when rendering ends.
     m_render_tab->get_camera_controller()->save_camera_target();
 

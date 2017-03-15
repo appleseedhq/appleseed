@@ -262,9 +262,9 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
                 ProjectFileWriter::OmitHeaderComment);
 
         ASSERT_TRUE(success);
-        EXPECT_TRUE(exists(m_output_directory / "curve_object.curves"));
+        EXPECT_TRUE(exists(m_output_directory / "curve_object.txt"));
         EXPECT_EQ(
-            string("curve_object.curves"),
+            string("curve_object.txt"),
             get_assembly()->objects().get_by_name("curve_object")->get_parameters().get("filepath"));
     }
 
@@ -282,9 +282,9 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
                 ProjectFileWriter::OmitWritingGeometryFiles);
 
         ASSERT_TRUE(success);
-        EXPECT_FALSE(exists(m_output_directory / "curve_object.curves"));
+        EXPECT_FALSE(exists(m_output_directory / "curve_object.txt"));
         EXPECT_EQ(
-            string("curve_object.curves"),
+            string("curve_object.txt"),
             get_assembly()->objects().get_by_name("curve_object")->get_parameters().get("filepath"));
     }
 }

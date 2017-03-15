@@ -31,15 +31,14 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
-#include "foundation/utility/string.h"
 #include "foundation/utility/minizip/unzip.h"
+#include "foundation/utility/string.h"
 
 // Boost headers.
 #include "boost/filesystem.hpp"
 
 // Standard headers.
 #include <fstream>
-#include <string>
 #include <sstream>
 
 using namespace std;
@@ -48,23 +47,32 @@ namespace bf = boost::filesystem;
 namespace foundation
 {
 
-const size_t BUFFER_SIZE = 4096;
+UnzipException::UnzipException(const char* what)
+  : Exception(what)
+{
+}
 
-bool is_zip_entry_directory(const string& dirname) 
+UnzipException::UnzipException(const char* what, const int err)
+{
+    string string_what = what + to_string(err);
+    set_what(string_what.c_str());
+}
+
+bool is_zip_entry_directory(const string& dirname)
 {
     // used own implementation of is_zip_entry_directory instead of boost implementation
     // because this directory is not in filesystem, but in zipfile
     return dirname[dirname.size() - 1] == '/';
 }
 
-void open_current_file(unzFile& zip_file) 
+void open_current_file(unzFile& zip_file)
 {
     const int err = unzOpenCurrentFile(zip_file);
-    if (err != UNZ_OK) 
+    if (err != UNZ_OK)
         throw UnzipException("Can't open file inside zip: ", err);
 }
 
-int read_chunk(unzFile& zip_file, char* buffer, const int chunk_size) 
+int read_chunk(unzFile& zip_file, char* buffer, const int chunk_size)
 {
     const int err = unzReadCurrentFile(zip_file, buffer, chunk_size);
 
@@ -76,7 +84,7 @@ int read_chunk(unzFile& zip_file, char* buffer, const int chunk_size)
     return err;
 }
 
-void close_current_file(unzFile& zip_file) 
+void close_current_file(unzFile& zip_file)
 {
     const int err = unzCloseCurrentFile(zip_file);
 
@@ -84,53 +92,59 @@ void close_current_file(unzFile& zip_file)
         throw UnzipException("CRC32 is not good");
 }
 
-string read_filename(unzFile& zip_file) 
+string read_filename(unzFile& zip_file)
 {
     unz_file_info zip_file_info;
     unzGetCurrentFileInfo(zip_file, &zip_file_info, NULL, 0, NULL, 0, NULL, 0);
 
     vector<char> filename(zip_file_info.size_filename + 1);
-    unzGetCurrentFileInfo(zip_file, &zip_file_info, &filename[0], filename.size(), NULL, 0, NULL, 0);
+    unzGetCurrentFileInfo(
+        zip_file,
+        &zip_file_info,
+        &filename[0],
+        static_cast<uLong>(filename.size()),
+        NULL, 0,
+        NULL, 0);
     filename[filename.size() - 1] = '\0';
 
     const string inzip_filename(&filename[0]);
     return inzip_filename;
 }
 
-string get_filepath(unzFile& zip_file, const string& unzipped_dir) 
+string get_filepath(unzFile& zip_file, const string& unzipped_dir)
 {
     string filename = read_filename(zip_file);
     return (bf::path(unzipped_dir) / bf::path(filename)).string();
 }
 
-void extract_current_file(unzFile& zip_file, const string& unzipped_dir) 
+void extract_current_file(unzFile& zip_file, const string& unzipped_dir)
 {
     const string filepath = get_filepath(zip_file, unzipped_dir);
 
-    if (is_zip_entry_directory(filepath)) 
+    if (is_zip_entry_directory(filepath))
     {
         bf::create_directories(bf::path(filepath));
         return;
-    } 
+    }
     else open_current_file(zip_file);
 
     fstream out(filepath.c_str(), ios_base::out | ios_base::binary);
 
-    char buffer[BUFFER_SIZE];
-    int read;
-
-    do 
+    do
     {
-        read = read_chunk(zip_file, (char*) &buffer, BUFFER_SIZE);         
+        const size_t BUFFER_SIZE = 4096;
+        char buffer[BUFFER_SIZE];
+
+        const int read = read_chunk(zip_file, (char*) &buffer, BUFFER_SIZE);
         out.write((char*) &buffer, read);
-    } 
+    }
     while (!unzeof(zip_file));
 
     out.close();
     close_current_file(zip_file);
 }
 
-void unzip(const string& zip_filename, const string& unzipped_dir) 
+void unzip(const string& zip_filename, const string& unzipped_dir)
 {
     try
     {
@@ -151,7 +165,7 @@ void unzip(const string& zip_filename, const string& unzipped_dir)
 
         unzClose(zip_file);
     }
-    catch (exception e) 
+    catch (exception e)
     {
         bf::remove_all(bf::path(unzipped_dir));
         throw e;
@@ -184,7 +198,8 @@ vector<string> get_filenames_with_extension_from_zip(const string& zip_filename,
     int has_next = UNZ_OK;
     while (has_next == UNZ_OK)
     {
-        string filename = read_filename(zip_file);
+        const string filename = read_filename(zip_file);
+
         if (ends_with(filename, extension))
             filenames.push_back(filename);
 
@@ -196,5 +211,4 @@ vector<string> get_filenames_with_extension_from_zip(const string& zip_filename,
     return filenames;
 }
 
-} // namespace foundation
-
+}   // namespace foundation
