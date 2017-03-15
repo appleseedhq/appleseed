@@ -557,8 +557,8 @@ DictionaryArray PlasticBRDFFactory::get_input_metadata() const
             .insert("name", "highlight_falloff")
             .insert("label", "Highlight Falloff")
             .insert("type", "numeric")
-            .insert("min_value", "1.6")
-            .insert("max_value", "100")
+            .insert("min_value", "1.5")
+            .insert("max_value", "40")
             .insert("use", "optional")
             .insert("default", "2.0"));
 
