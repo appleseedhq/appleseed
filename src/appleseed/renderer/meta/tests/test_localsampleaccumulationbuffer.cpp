@@ -54,14 +54,14 @@ TEST_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
     {
         // A full low resolution framebuffer.
         const BoxFilter2<float> filter(0.5f, 0.5f);
-        FilteredTile level(64, 64, 5, filter);
+        FilteredTile level(64, 64, 4, filter);
         level.clear();
 
         for (size_t y = 0; y < level.get_height(); ++y)
         {
             for (size_t x = 0; x < level.get_width(); ++x)
             {
-                static const float values[5] = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+                static const float values[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
                 level.add(x + 0.5f, y + 0.5f, values);
             }
         }
