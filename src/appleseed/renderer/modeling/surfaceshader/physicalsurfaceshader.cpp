@@ -42,8 +42,6 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/shading/shadingresult.h"
-#include "renderer/modeling/environment/environment.h"
-#include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/project/project.h"
@@ -94,26 +92,6 @@ namespace
             m_inputs.declare("color_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("alpha_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("translucency", InputFormatSpectralReflectance, "0.0");
-            m_inputs.declare("aerial_persp_sky_color", InputFormatSpectralIlluminance, "");
-
-            const string aerial_persp_mode = m_params.get_optional<string>("aerial_persp_mode", "none");
-            if (aerial_persp_mode == "none")
-                m_aerial_persp_mode = AerialPerspNone;
-            else if (aerial_persp_mode == "environment_shader")
-                m_aerial_persp_mode = AerialPerspEnvironmentShader;
-            else if (aerial_persp_mode == "sky_color")
-                m_aerial_persp_mode = AerialPerspSkyColor;
-            else
-            {
-                RENDERER_LOG_ERROR(
-                    "invalid value \"%s\" for parameter \"aerial_persp_mode\", "
-                    "using default value \"none\".",
-                    aerial_persp_mode.c_str());
-                m_aerial_persp_mode = AerialPerspNone;
-            }
-
-            m_aerial_persp_rcp_distance = 1.0 / m_params.get_optional<double>("aerial_persp_distance", 1000.0);
-            m_aerial_persp_intensity = m_params.get_optional<double>("aerial_persp_intensity", 0.01);
 
             m_front_lighting_samples = m_params.get_optional<size_t>("front_lighting_samples", 1);
             m_back_lighting_samples = m_params.get_optional<size_t>("back_lighting_samples", 1);
@@ -178,18 +156,6 @@ namespace
 
             aov_accumulators.beauty().apply_multiplier(values.m_color_multiplier);
             aov_accumulators.alpha().apply_multiplier(Alpha(values.m_alpha_multiplier));
-
-            // Optionally apply fake aerial perspective.
-            if (m_aerial_persp_mode != AerialPerspNone)
-            {
-                apply_aerial_perspective(
-                    values,
-                    shading_context,
-                    pixel_context,
-                    shading_point,
-                    shading_result,
-                    aov_accumulators);
-            }
         }
 
       private:
@@ -198,20 +164,9 @@ namespace
             float       m_color_multiplier;
             float       m_alpha_multiplier;
             Spectrum    m_translucency;
-            Spectrum    m_aerial_persp_sky_color;
-        };
-
-        enum AerialPerspMode
-        {
-            AerialPerspNone,
-            AerialPerspEnvironmentShader,
-            AerialPerspSkyColor
         };
 
         const LightingConditions    m_lighting_conditions;
-        AerialPerspMode             m_aerial_persp_mode;
-        double                      m_aerial_persp_rcp_distance;
-        double                      m_aerial_persp_intensity;
         size_t                      m_front_lighting_samples;
         size_t                      m_back_lighting_samples;
 
@@ -286,57 +241,6 @@ namespace
             // Add back lighting contribution.
             radiance += back_radiance;
         }
-
-        void apply_aerial_perspective(
-            const InputValues&          values,
-            const ShadingContext&       shading_context,
-            const PixelContext&         pixel_context,
-            const ShadingPoint&         shading_point,
-            ShadingResult&              shading_result,
-            AOVAccumulatorContainer&    aov_accumulators) const
-        {
-            /*
-            Spectrum sky_color;
-
-            if (m_aerial_persp_mode == AerialPerspSkyColor)
-                sky_color = values.m_aerial_persp_sky_color;
-            else
-            {
-                // Retrieve the environment shader of the scene.
-                const Scene& scene = shading_point.get_scene();
-                const EnvironmentShader* environment_shader =
-                    scene.get_environment()->get_environment_shader();
-
-                if (environment_shader)
-                {
-                    // Execute the environment shader to obtain the sky color in the direction of the ray.
-                    const ShadingRay& ray = shading_point.get_ray();
-                    const Vector3d direction = normalize(ray.m_dir);
-                    ShadingResult sky;
-                    environment_shader->evaluate(
-                        shading_context,
-                        pixel_context,
-                        direction,
-                        sky,
-                        aov_accumulators);
-                    sky_color = sky.m_main.m_color;
-                }
-                else sky_color.set(0.0f);
-
-                sky_color.set_intent(Spectrum::Illuminance);
-            }
-
-            // Compute the blend factor.
-            const double d = shading_point.get_distance() * m_aerial_persp_rcp_distance;
-            const double k = m_aerial_persp_intensity * exp(d);
-            const double blend = min(k, 1.0);
-
-            // Blend the shading result and the sky color.
-            sky_color *= static_cast<float>(blend);
-            shading_result.m_main.m_color *= static_cast<float>(1.0 - blend);
-            shading_result.m_main.m_color += sky_color;
-            */
-        }
     };
 }
 
@@ -407,44 +311,6 @@ DictionaryArray PhysicalSurfaceShaderFactory::get_input_metadata() const
             .insert("label", "Back Lighting Samples")
             .insert("type", "text")
             .insert("default", "1")
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "aerial_persp_mode")
-            .insert("label", "Aerial Perspective Mode")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("None", "none")
-                    .insert("Use Environment Shader", "environment_shader")
-                    .insert("Use Sky Color", "sky_color"))
-            .insert("default", "none")
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "aerial_persp_sky_color")
-            .insert("label", "Aerial Perspective Sky Color")
-            .insert("type", "colormap")
-            .insert("entity_types", Dictionary().insert("color", "Colors"))
-            .insert("default", "0.5")
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "aerial_persp_distance")
-            .insert("label", "Aerial Perspective Distance")
-            .insert("type", "text")
-            .insert("default", "1000.0")
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "aerial_persp_intensity")
-            .insert("label", "Aerial Perspective Intensity")
-            .insert("type", "text")
-            .insert("default", "0.01")
             .insert("use", "optional"));
 
     return metadata;
