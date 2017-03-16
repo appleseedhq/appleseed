@@ -703,10 +703,13 @@ source_group ("foundation\\utility\\test" FILES
 )
 
 set (foundation_utility_minizip_sources
+    foundation/utility/minizip/crypt.h
     foundation/utility/minizip/ioapi.c
     foundation/utility/minizip/ioapi.h
     foundation/utility/minizip/unzip.c
     foundation/utility/minizip/unzip.h
+    foundation/utility/minizip/zip.c
+    foundation/utility/minizip/zip.h
 )
 list (APPEND appleseed_sources
     ${foundation_utility_minizip_sources}
