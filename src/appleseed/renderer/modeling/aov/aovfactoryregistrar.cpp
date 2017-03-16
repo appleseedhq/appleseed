@@ -33,6 +33,7 @@
 #include "renderer/modeling/aov/depthaov.h"
 #include "renderer/modeling/aov/normalaov.h"
 #include "renderer/modeling/aov/iaovfactory.h"
+#include "renderer/modeling/aov/uvaov.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -60,6 +61,7 @@ AOVFactoryRegistrar::AOVFactoryRegistrar()
 {
     register_factory(auto_ptr<FactoryType>(new DepthAOVFactory()));
     register_factory(auto_ptr<FactoryType>(new NormalAOVFactory()));
+    register_factory(auto_ptr<FactoryType>(new UVAOVFactory()));
 }
 
 AOVFactoryRegistrar::~AOVFactoryRegistrar()

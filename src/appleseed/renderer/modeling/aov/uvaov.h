@@ -26,63 +26,56 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_AOV_AOVFACTORYREGISTRAR_H
-#define APPLESEED_RENDERER_MODELING_AOV_AOVFACTORYREGISTRAR_H
+#ifndef APPLESEED_RENDERER_MODELING_AOV_UVAOV_H
+#define APPLESEED_RENDERER_MODELING_AOV_UVAOV_H
+
+// appleseed.renderer headers.
+#include "renderer/modeling/aov/iaovfactory.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-#include "foundation/utility/api/apiarray.h"
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Standard headers.
-#include <memory>
-
 // Forward declarations.
-namespace renderer  { class IAOVFactory; }
+namespace foundation    { class Dictionary; }
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class AOV; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
 
 //
-// An array of AOV factories.
+// A factory for UV AOVs.
 //
 
-APPLESEED_DECLARE_APIARRAY(AOVFactoryArray, IAOVFactory*);
-
-
-//
-// AOV factory registrar.
-//
-
-class APPLESEED_DLLSYMBOL AOVFactoryRegistrar
-  : public foundation::NonCopyable
+class APPLESEED_DLLSYMBOL UVAOVFactory
+  : public IAOVFactory
 {
   public:
-    typedef IAOVFactory FactoryType;
-    typedef AOVFactoryArray FactoryArrayType;
+    // Return a string identifying this AOV model.
+    virtual const char* get_model() const APPLESEED_OVERRIDE;
 
-    // Constructor.
-    AOVFactoryRegistrar();
+    // Return metadata for this AOV model.
+    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
 
-    // Destructor.
-    ~AOVFactoryRegistrar();
+    // Return metadata for the inputs of this AOV model.
+    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 
-    // Register a render layer rule factory.
-    void register_factory(std::auto_ptr<FactoryType> factory);
+    // Create a new AOV instance.
+    virtual foundation::auto_release_ptr<AOV> create(
+        const char*         name,
+        const ParamArray&   params) const APPLESEED_OVERRIDE;
 
-    // Retrieve the registered factories.
-    FactoryArrayType get_factories() const;
-
-    // Lookup a factory by name.
-    const FactoryType* lookup(const char* name) const;
-
-  private:
-    struct Impl;
-    Impl* impl;
+    // Static variant of the create() method above.
+    static foundation::auto_release_ptr<AOV> static_create(
+        const char*         name,
+        const ParamArray&   params);
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_AOV_AOVFACTORYREGISTRAR_H
+#endif  // !APPLESEED_RENDERER_MODELING_AOV_UVAOV_H

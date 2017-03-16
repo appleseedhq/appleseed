@@ -49,23 +49,23 @@ namespace renderer
 {
 
 //
-// A factory for depth aovs.
+// A factory for depth AOVs.
 //
 
 class APPLESEED_DLLSYMBOL DepthAOVFactory
   : public IAOVFactory
 {
   public:
-    // Return a string identifying this aov model.
+    // Return a string identifying this AOV model.
     virtual const char* get_model() const APPLESEED_OVERRIDE;
 
-    // Return metadata for this aov model.
+    // Return metadata for this AOV model.
     virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
 
-    // Return metadata for the inputs of this aov model.
+    // Return metadata for the inputs of this AOV model.
     virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 
-    // Create a new aov instance.
+    // Create a new AOV instance.
     virtual foundation::auto_release_ptr<AOV> create(
         const char*         name,
         const ParamArray&   params) const APPLESEED_OVERRIDE;

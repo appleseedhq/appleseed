@@ -62,13 +62,13 @@ class APPLESEED_DLLSYMBOL AOV
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 
-    // Return the number of channels of this aov.
+    // Return the number of channels of this AOV.
     virtual size_t get_channel_count() const = 0;
 
     // Return the ith channel name.
     virtual const char* get_channel_name(const size_t i) const = 0;
 
-    // Return true if this aov contains color data.
+    // Return true if this AOV contains color data.
     virtual bool has_color_data() const = 0;
 
     // Create an accumulator for this AOV.

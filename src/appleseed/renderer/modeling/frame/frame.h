@@ -105,7 +105,7 @@ class APPLESEED_DLLSYMBOL Frame
     // Access the AOVs.
     AOVContainer& aovs() const;
 
-    // Create an extra aov image.
+    // Create an extra AOV image.
     size_t create_extra_aov_image(const char* name) const;
 
     // Return the reconstruction filter used by the main image and the AOV images.

@@ -1262,6 +1262,8 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/iaovfactory.h
     renderer/modeling/aov/normalaov.cpp
     renderer/modeling/aov/normalaov.h
+    renderer/modeling/aov/uvaov.cpp
+    renderer/modeling/aov/uvaov.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_aov_sources}

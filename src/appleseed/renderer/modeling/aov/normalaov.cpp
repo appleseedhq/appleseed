@@ -82,7 +82,10 @@ namespace
         virtual void flush(ShadingResult& result) APPLESEED_OVERRIDE
         {
             result.m_aovs[m_index].m_color =
-                Color3f(m_normal[0], m_normal[1], m_normal[2]);
+                Color3f(
+                    m_normal[0] * 0.5f + 0.5f,
+                    m_normal[1] * 0.5f + 0.5f,
+                    m_normal[2] * 0.5f + 0.5f);
             result.m_aovs[m_index].m_alpha.set(1.0f);
         }
 
@@ -143,7 +146,7 @@ namespace
 
 
 //
-// AOVFactory class implementation.
+// NormalAOVFactory class implementation.
 //
 
 const char* NormalAOVFactory::get_model() const

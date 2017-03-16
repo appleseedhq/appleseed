@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "depthaov.h"
+#include "uvaov.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
@@ -43,7 +43,6 @@
 #include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
-#include <limits>
 #include <string>
 
 using namespace foundation;
@@ -55,21 +54,21 @@ namespace renderer
 namespace
 {
     //
-    // Depth AOV accumulator.
+    // UV AOV accumulator.
     //
 
-    class DepthAOVAccumulator
+    class UVAOVAccumulator
       : public AOVAccumulator
     {
       public:
-        explicit DepthAOVAccumulator(const size_t index)
+        explicit UVAOVAccumulator(const size_t index)
           : AOVAccumulator(index)
         {
         }
 
         virtual void reset() APPLESEED_OVERRIDE
         {
-            m_depth = std::numeric_limits<float>::max();
+            m_uvs = Vector2f(0.0f, 0.0f);
         }
 
         virtual void write(
@@ -77,30 +76,31 @@ namespace
             const Camera&           camera) APPLESEED_OVERRIDE
         {
             if (shading_point.hit())
-                m_depth = shading_point.get_distance();
+                m_uvs = shading_point.get_uv(0);
         }
 
         virtual void flush(ShadingResult& result) APPLESEED_OVERRIDE
         {
-            result.m_aovs[m_index].m_color.set(m_depth);
+            result.m_aovs[m_index].m_color =
+                Color3f(m_uvs[0], m_uvs[1], 0.0f);
             result.m_aovs[m_index].m_alpha.set(1.0f);
         }
 
-        float m_depth;
+        Vector2f m_uvs;
     };
 
 
     //
-    // Depth AOV.
+    // UV AOV.
     //
 
-    const char* Model = "depth_aov";
+    const char* Model = "uv_aov";
 
-    class DepthAOV
+    class UVAOV
       : public AOV
     {
       public:
-        DepthAOV(const char* name, const ParamArray& params)
+        UVAOV(const char* name, const ParamArray& params)
           : AOV(name, params)
         {
         }
@@ -117,13 +117,15 @@ namespace
 
         virtual size_t get_channel_count() const APPLESEED_OVERRIDE
         {
-            return 1;
+            return 2;
         }
 
         virtual const char* get_channel_name(const size_t i) const APPLESEED_OVERRIDE
         {
             assert(i == 0);
-            return "Z";
+
+            const char* channels[] = {"U", "V"};
+            return channels[i];
         }
 
         virtual bool has_color_data() const APPLESEED_OVERRIDE
@@ -134,52 +136,52 @@ namespace
         virtual auto_release_ptr<AOVAccumulator> create_accumulator(
             const size_t index) const APPLESEED_OVERRIDE
         {
-            return auto_release_ptr<AOVAccumulator>(new DepthAOVAccumulator(index));
+            return auto_release_ptr<AOVAccumulator>(new UVAOVAccumulator(index));
         }
     };
 }
 
 
 //
-// DepthAOVFactory class implementation.
+// UVAOVFactory class implementation.
 //
 
-const char* DepthAOVFactory::get_model() const
+const char* UVAOVFactory::get_model() const
 {
     return Model;
 }
 
-Dictionary DepthAOVFactory::get_model_metadata() const
+Dictionary UVAOVFactory::get_model_metadata() const
 {
     return
         Dictionary()
             .insert("name", Model)
-            .insert("label", "Depth")
-            .insert("default_model", "true");
+            .insert("label", "UV")
+            .insert("default_model", "false");
 }
 
-DictionaryArray DepthAOVFactory::get_input_metadata() const
+DictionaryArray UVAOVFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
     return metadata;
 }
 
-auto_release_ptr<AOV> DepthAOVFactory::create(
+auto_release_ptr<AOV> UVAOVFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
     return
         auto_release_ptr<AOV>(
-            new DepthAOV(name, params));
+            new UVAOV(name, params));
 }
 
-auto_release_ptr<AOV> DepthAOVFactory::static_create(
+auto_release_ptr<AOV> UVAOVFactory::static_create(
     const char*         name,
     const ParamArray&   params)
 {
     return
         auto_release_ptr<AOV>(
-            new DepthAOV(name, params));
+            new UVAOV(name, params));
 }
 
 }   // namespace renderer
