@@ -102,7 +102,7 @@ string read_filename(unzFile& zip_file)
         zip_file,
         &zip_file_info,
         &filename[0],
-        static_cast<uLong>(filename.size(),
+        static_cast<uLong>(filename.size()),
         0, 0,
         0, 0);
     filename[filename.size() - 1] = '\0';
