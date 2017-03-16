@@ -66,7 +66,7 @@ void unzip(const std::string& zip_filename, const std::string& unzipped_dir);
 // Checks if file is in zip format by trying to open it.
 //
 
-bool is_zip_file(const std::string& filename);
+bool is_zip_file(const char* filename);
 
 //
 // This function returns all filenames from zip_filenames zip with given extension.

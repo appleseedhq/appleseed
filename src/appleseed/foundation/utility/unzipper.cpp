@@ -172,11 +172,11 @@ void unzip(const string& zip_filename, const string& unzipped_dir)
     }
 }
 
-bool is_zip_file(const string& filename)
+bool is_zip_file(const char* filename)
 {
     try
     {
-        unzFile zip_file = unzOpen(filename.c_str());
+        unzFile zip_file = unzOpen(filename);
         unzClose(zip_file);
         return true;
     }
