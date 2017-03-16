@@ -211,7 +211,6 @@ namespace
                         pixel_context,
                         m_shading_context,
                         *shading_point_ptr,
-                        shading_result,
                         m_aov_accumulators);
 
                     m_aov_accumulators.write(
@@ -236,7 +235,6 @@ namespace
                         pixel_context,
                         m_shading_context,
                         *shading_point_ptr,
-                        local_result,
                         m_aov_accumulators);
 
                     m_aov_accumulators.write(

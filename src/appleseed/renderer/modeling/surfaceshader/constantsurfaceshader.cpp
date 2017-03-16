@@ -38,7 +38,6 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/paramarray.h"
@@ -108,7 +107,6 @@ namespace
             const PixelContext&         pixel_context,
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point,
-            ShadingResult&              shading_result,
             AOVAccumulatorContainer&    aov_accumulators) const APPLESEED_OVERRIDE
         {
             // Evaluate the shader inputs.

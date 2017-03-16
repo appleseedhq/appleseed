@@ -53,7 +53,6 @@ namespace renderer      { class ParamArray; }
 namespace renderer      { class PixelContext; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
-namespace renderer      { class ShadingResult; }
 
 namespace renderer
 {
@@ -114,7 +113,6 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
         const PixelContext&         pixel_context,
         const ShadingContext&       shading_context,
         const ShadingPoint&         shading_point,
-        ShadingResult&              shading_result,
         AOVAccumulatorContainer&    aov_accumulators) const APPLESEED_OVERRIDE;
 
   private:
@@ -126,21 +124,17 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
 
     static void set_result(
         const foundation::Color3f&  color,
-        ShadingResult&              shading_result,
         AOVAccumulatorContainer&    aov_accumulators);
 
     static void set_result(
         const foundation::Color4f&  color,
-        ShadingResult&              shading_result,
         AOVAccumulatorContainer&    aov_accumulators);
 
     static void set_result(
         const Spectrum&             value,
-        ShadingResult&              shading_result,
         AOVAccumulatorContainer&    aov_accumulators);
 
     static void set_result_to_opaque_pink(
-        ShadingResult&              shading_result,
         AOVAccumulatorContainer&    aov_accumulators);
 };
 

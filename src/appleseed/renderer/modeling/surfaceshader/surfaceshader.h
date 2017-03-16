@@ -46,7 +46,6 @@ namespace renderer      { class ParamArray; }
 namespace renderer      { class PixelContext; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
-namespace renderer      { class ShadingResult; }
 
 namespace renderer
 {
@@ -76,7 +75,6 @@ class APPLESEED_DLLSYMBOL SurfaceShader
         const PixelContext&         pixel_context,
         const ShadingContext&       shading_context,
         const ShadingPoint&         shading_point,
-        ShadingResult&              shading_result,
         AOVAccumulatorContainer&    aov_accumulators) const = 0;
 };
 

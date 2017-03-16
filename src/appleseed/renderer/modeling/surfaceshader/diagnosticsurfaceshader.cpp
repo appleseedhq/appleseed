@@ -35,7 +35,6 @@
 #include "renderer/kernel/shading/ambientocclusion.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/camera/camera.h"
@@ -220,14 +219,13 @@ void DiagnosticSurfaceShader::evaluate(
     const PixelContext&         pixel_context,
     const ShadingContext&       shading_context,
     const ShadingPoint&         shading_point,
-    ShadingResult&              shading_result,
     AOVAccumulatorContainer&    aov_accumulators) const
 {
     switch (m_shading_mode)
     {
       case Color:
         {
-            set_result_to_opaque_pink(shading_result, aov_accumulators);
+            set_result_to_opaque_pink(aov_accumulators);
 
             const Material* material = shading_point.get_material();
             if (material)
@@ -257,27 +255,25 @@ void DiagnosticSurfaceShader::evaluate(
                         direction,
                         ScatteringMode::All,
                         value);
-                    set_result(value, shading_result, aov_accumulators);
+                    set_result(value, aov_accumulators);
                 }
             }
         }
         break;
 
       case Coverage:
-        set_result(Color3f(1.0f), shading_result, aov_accumulators);
+        set_result(Color3f(1.0f), aov_accumulators);
         break;
 
       case Barycentric:
         set_result(
             vector2_to_color(shading_point.get_bary()),
-            shading_result,
             aov_accumulators);
         break;
 
       case UV:
         set_result(
             uvs_to_color(shading_point.get_uv(0)),
-            shading_result,
             aov_accumulators);
         break;
 
@@ -305,21 +301,19 @@ void DiagnosticSurfaceShader::evaluate(
                 m_shading_mode == ShadingNormal ? shading_point.get_shading_basis().get_normal() :
                 m_shading_mode == Tangent ? shading_point.get_shading_basis().get_tangent_u() :
                 shading_point.get_shading_basis().get_tangent_v();
-            set_result(vector3_to_color(v), shading_result, aov_accumulators);
+            set_result(vector3_to_color(v), aov_accumulators);
         }
         break;
 
       case GeometricNormal:
         set_result(
             vector3_to_color(shading_point.get_geometric_normal()),
-            shading_result,
             aov_accumulators);
         break;
 
       case OriginalShadingNormal:
         set_result(
             vector3_to_color(shading_point.get_original_shading_normal()),
-            shading_result,
             aov_accumulators);
         break;
 
@@ -328,7 +322,6 @@ void DiagnosticSurfaceShader::evaluate(
             const Vector3d& p = shading_point.get_point();
             set_result(
                 Color3f(Color3d(p.x, p.y, p.z)),
-                shading_result,
                 aov_accumulators);
         }
         break;
@@ -338,21 +331,19 @@ void DiagnosticSurfaceShader::evaluate(
             shading_point.get_side() == ObjectInstance::FrontSide
                 ? Color3f(0.0f, 0.0f, 1.0f)
                 : Color3f(1.0f, 0.0f, 0.0f),
-            shading_result,
             aov_accumulators);
         break;
 
       case Depth:
         set_result(
             Color3f(static_cast<float>(shading_point.get_distance())),
-            shading_result,
             aov_accumulators);
         break;
 
       case ScreenSpaceWireframe:
         {
             // Initialize the shading result to the background color.
-            set_result(Color4f(0.0f, 0.0f, 0.8f, 0.5f), shading_result, aov_accumulators);
+            set_result(Color4f(0.0f, 0.0f, 0.8f, 0.5f), aov_accumulators);
 
             if (shading_point.is_triangle_primitive())
             {
@@ -387,7 +378,7 @@ void DiagnosticSurfaceShader::evaluate(
                     // Shade with the wire's color if the hit point is close enough to the edge.
                     if (d < SquareWireThickness)
                     {
-                        set_result(Color4f(1.0f), shading_result, aov_accumulators);
+                        set_result(Color4f(1.0f), aov_accumulators);
                         break;
                     }
                 }
@@ -404,7 +395,7 @@ void DiagnosticSurfaceShader::evaluate(
       case WorldSpaceWireframe:
         {
             // Initialize the shading result to the background color.
-            set_result(Color4f(0.0f, 0.0f, 0.8f, 0.5f), shading_result, aov_accumulators);
+            set_result(Color4f(0.0f, 0.0f, 0.8f, 0.5f), aov_accumulators);
 
             if (shading_point.is_triangle_primitive())
             {
@@ -428,7 +419,7 @@ void DiagnosticSurfaceShader::evaluate(
                     // Shade with the wire's color if the hit point is close enough to the edge.
                     if (d < SquareWireThickness)
                     {
-                        set_result(Color4f(1.0f), shading_result, aov_accumulators);
+                        set_result(Color4f(1.0f), aov_accumulators);
                         break;
                     }
                 }
@@ -456,21 +447,19 @@ void DiagnosticSurfaceShader::evaluate(
 
             // Return a gray scale value proportional to the accessibility.
             const float accessibility = static_cast<float>(1.0 - occlusion);
-            set_result(Color3f(accessibility), shading_result, aov_accumulators);
+            set_result(Color3f(accessibility), aov_accumulators);
         }
         break;
 
       case AssemblyInstances:
         set_result(
             integer_to_color(shading_point.get_assembly_instance().get_uid()),
-            shading_result,
             aov_accumulators);
         break;
 
       case ObjectInstances:
         set_result(
             integer_to_color(shading_point.get_object_instance().get_uid()),
-            shading_result,
             aov_accumulators);
         break;
 
@@ -480,7 +469,7 @@ void DiagnosticSurfaceShader::evaluate(
                 mix_uint32(
                     static_cast<uint32>(shading_point.get_object_instance().get_uid()),
                     static_cast<uint32>(shading_point.get_region_index()));
-            set_result(integer_to_color(h), shading_result, aov_accumulators);
+            set_result(integer_to_color(h), aov_accumulators);
         }
         break;
 
@@ -491,7 +480,7 @@ void DiagnosticSurfaceShader::evaluate(
                     static_cast<uint32>(shading_point.get_object_instance().get_uid()),
                     static_cast<uint32>(shading_point.get_region_index()),
                     static_cast<uint32>(shading_point.get_primitive_index()));
-            set_result(integer_to_color(h), shading_result, aov_accumulators);
+            set_result(integer_to_color(h), aov_accumulators);
         }
         break;
 
@@ -499,8 +488,8 @@ void DiagnosticSurfaceShader::evaluate(
         {
             const Material* material = shading_point.get_material();
             if (material)
-                set_result(integer_to_color(material->get_uid()), shading_result, aov_accumulators);
-            else set_result_to_opaque_pink(shading_result, aov_accumulators);
+                set_result(integer_to_color(material->get_uid()), aov_accumulators);
+            else set_result_to_opaque_pink(aov_accumulators);
         }
         break;
 
@@ -548,7 +537,6 @@ void DiagnosticSurfaceShader::evaluate(
                             norm(sample.m_incoming.get_dy())) * 3.0;
                     set_result(
                         Color3f(static_cast<float>(spread)),
-                        shading_result,
                         aov_accumulators);
 
                 }
@@ -563,7 +551,6 @@ void DiagnosticSurfaceShader::evaluate(
             const double facing = abs(dot(normal, view));
             set_result(
                 Color3f(static_cast<float>(facing)),
-                shading_result,
                 aov_accumulators);
         }
         break;
@@ -601,7 +588,6 @@ void DiagnosticSurfaceShader::extract_parameters()
 
 void DiagnosticSurfaceShader::set_result(
     const Color3f&              color,
-    ShadingResult&              shading_result,
     AOVAccumulatorContainer&    aov_accumulators)
 {
     aov_accumulators.beauty().set(color);
@@ -609,7 +595,6 @@ void DiagnosticSurfaceShader::set_result(
 
 void DiagnosticSurfaceShader::set_result(
     const Color4f&              color,
-    ShadingResult&              shading_result,
     AOVAccumulatorContainer&    aov_accumulators)
 {
     aov_accumulators.beauty().set(Color3f(color[0], color[1], color[2]));
@@ -618,14 +603,12 @@ void DiagnosticSurfaceShader::set_result(
 
 void DiagnosticSurfaceShader::set_result(
     const Spectrum&             value,
-    ShadingResult&              shading_result,
     AOVAccumulatorContainer&    aov_accumulators)
 {
     aov_accumulators.beauty().set(value);
 }
 
 void DiagnosticSurfaceShader::set_result_to_opaque_pink(
-    ShadingResult&              shading_result,
     AOVAccumulatorContainer&    aov_accumulators)
 {
     aov_accumulators.beauty().set_to_pink_linear_rgb();

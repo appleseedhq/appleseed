@@ -32,11 +32,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovaccumulator.h"
-#include "renderer/kernel/aov/shadingfragmentstack.h"
 #include "renderer/kernel/shading/shadingcontext.h"
-#include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingray.h"
-#include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/input/source.h"
@@ -85,7 +82,6 @@ void ShadingEngine::shade_hit_point(
     const PixelContext&         pixel_context,
     const ShadingContext&       shading_context,
     const ShadingPoint&         shading_point,
-    ShadingResult&              shading_result,
     AOVAccumulatorContainer&    aov_accumulators) const
 {
     // Compute the alpha channel of the main output.
@@ -118,7 +114,6 @@ void ShadingEngine::shade_hit_point(
             if (material == 0)
             {
                 // The intersected surface has no material: return solid pink.
-                shading_result.set_main_to_opaque_pink_linear_rgba();
                 aov_accumulators.beauty().set_to_pink_linear_rgb();
                 aov_accumulators.alpha().set(Alpha(1.0f));
                 return;
@@ -130,7 +125,6 @@ void ShadingEngine::shade_hit_point(
             if (surface_shader == 0)
             {
                 // The intersected surface has no surface shader: return solid pink.
-                shading_result.set_main_to_opaque_pink_linear_rgba();
                 aov_accumulators.beauty().set_to_pink_linear_rgb();
                 aov_accumulators.alpha().set(Alpha(1.0f));
                 return;
@@ -143,7 +137,6 @@ void ShadingEngine::shade_hit_point(
             pixel_context,
             shading_context,
             shading_point,
-            shading_result,
             aov_accumulators);
     }
 }
@@ -153,7 +146,6 @@ void ShadingEngine::shade_environment(
     const PixelContext&         pixel_context,
     const ShadingContext&       shading_context,
     const ShadingPoint&         shading_point,
-    ShadingResult&              shading_result,
     AOVAccumulatorContainer&    aov_accumulators) const
 {
     // Retrieve the environment shader of the scene.
