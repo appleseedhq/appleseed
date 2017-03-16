@@ -225,7 +225,7 @@ namespace
             VisibilityFlags::ProbeRay,
             outgoing_point.get_ray().m_depth + 1);
 
-        assert(outgoing_point.get_material() != NULL);
+        assert(outgoing_point.get_material() != 0);
         const BSSRDF* outgoing_bssrdf = &bssrdf;
         const ObjectInstance& outgoing_object_instance = outgoing_point.get_object_instance();
 
@@ -249,11 +249,11 @@ namespace
 
             const Material* incoming_material = incoming_point.get_material();
             const BSSRDF* incoming_bssrdf =
-                incoming_material == NULL ? NULL :
+                incoming_material == 0 ? 0 :
                 incoming_material->get_render_data().m_bssrdf;
             const Material* incoming_opposite_material = incoming_point.get_opposite_material();
             const BSSRDF* incoming_opposite_bssrdf =
-                incoming_opposite_material == NULL ? NULL :
+                incoming_opposite_material == 0 ? 0 :
                 incoming_opposite_material->get_render_data().m_bssrdf;
 
             bool same_bssrdf =
@@ -261,8 +261,8 @@ namespace
             bool same_sss_set =
                 incoming_point.get_object_instance().is_in_same_sss_set(outgoing_object_instance);
 
-            // Only consider hit points with the same bssrdf as the outgoing point 
-            // and belonging to the same SSS set
+            // Only consider hit points with the same BSSRDF as the outgoing point 
+            // and belonging to the same SSS set.
             if (same_bssrdf && same_sss_set)
             {
                 // Make sure the incoming point is on the front side of the surface.

@@ -162,7 +162,7 @@ ObjectInstance::ObjectInstance(
     // Retrieve ray bias distance.
     m_ray_bias_distance = params.get_optional<double>("ray_bias_distance", 0.0);
 
-    // Retrieve SSS set
+    // Retrieve SSS set.
     impl->m_sss_set_identifier = params.get_optional<std::string>("sss_set_id", "");
 
     // No bound object yet.
@@ -194,11 +194,11 @@ const char* ObjectInstance::get_object_name() const
 
 bool ObjectInstance::is_in_same_sss_set(const ObjectInstance& other) const
 {
-    // If it is the same object instance, sss set is also the same
+    // If it is the same object instance, sss set is also the same.
     if (other.get_uid() == get_uid())
         return true;
 
-    // Empty identifier indicates that object instance belongs to its individual SSS set
+    // Empty identifier indicates that object instance belongs to its individual SSS set.
     if (impl->m_sss_set_identifier.empty() || other.impl->m_sss_set_identifier.empty())
         return false;
 
