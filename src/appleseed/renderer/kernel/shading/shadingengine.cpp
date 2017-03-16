@@ -89,7 +89,6 @@ void ShadingEngine::shade_hit_point(
     AOVAccumulatorContainer&    aov_accumulators) const
 {
     // Compute the alpha channel of the main output.
-    shading_result.m_main.m_alpha = shading_point.get_alpha();
     aov_accumulators.alpha().set(shading_point.get_alpha());
 
     // Retrieve the material of the intersected surface.
@@ -105,12 +104,11 @@ void ShadingEngine::shade_hit_point(
             *material->get_render_data().m_shader_group,
             shading_point,
             alpha);
-        shading_result.m_main.m_alpha *= alpha;
         aov_accumulators.alpha().apply_multiplier(alpha);
     }
 
     // Shade the sample if it isn't fully transparent.
-    if (shading_result.m_main.m_alpha[0] > 0.0f || shading_point.shade_alpha_cutouts())
+    if (aov_accumulators.alpha().get()[0] > 0.0f || shading_point.shade_alpha_cutouts())
     {
         // Use the diagnostic surface shader if there is one.
         const SurfaceShader* surface_shader = m_diagnostic_surface_shader.get();

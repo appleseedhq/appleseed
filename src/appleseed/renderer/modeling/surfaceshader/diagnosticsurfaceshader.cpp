@@ -604,7 +604,6 @@ void DiagnosticSurfaceShader::set_result(
     ShadingResult&              shading_result,
     AOVAccumulatorContainer&    aov_accumulators)
 {
-    shading_result.set_main_to_linear_rgb(color);
     aov_accumulators.beauty().set(color);
 }
 
@@ -613,7 +612,6 @@ void DiagnosticSurfaceShader::set_result(
     ShadingResult&              shading_result,
     AOVAccumulatorContainer&    aov_accumulators)
 {
-    shading_result.set_main_to_linear_rgba(color);
     aov_accumulators.beauty().set(Color3f(color[0], color[1], color[2]));
     aov_accumulators.alpha().set(Alpha(color[3]));
 }
@@ -623,8 +621,6 @@ void DiagnosticSurfaceShader::set_result(
     ShadingResult&              shading_result,
     AOVAccumulatorContainer&    aov_accumulators)
 {
-    shading_result.m_color_space = ColorSpaceSpectral;
-    shading_result.m_main.m_color = value;
     aov_accumulators.beauty().set(value);
 }
 
@@ -632,7 +628,6 @@ void DiagnosticSurfaceShader::set_result_to_opaque_pink(
     ShadingResult&              shading_result,
     AOVAccumulatorContainer&    aov_accumulators)
 {
-    shading_result.set_main_to_opaque_pink_linear_rgba();
     aov_accumulators.beauty().set_to_pink_linear_rgb();
     aov_accumulators.alpha().set(Alpha(1.0f));
 }

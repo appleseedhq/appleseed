@@ -126,6 +126,8 @@ class AlphaAOVAccumulator
   public:
     AlphaAOVAccumulator();
 
+    const Alpha& get() const;
+
     void set(const Alpha& alpha);
 
     void apply_multiplier(const Alpha& alpha);
@@ -186,6 +188,16 @@ class AOVAccumulatorContainer
     size_t          m_size;
     AOVAccumulator* m_accumulators[MaxAovAccumulators];
 };
+
+
+//
+// AlphaAOVAccumulator class implementation.
+//
+
+inline const Alpha& AlphaAOVAccumulator::get() const
+{
+    return m_alpha;
+}
 
 
 //

@@ -146,14 +146,9 @@ namespace
             }
 
             // Initialize the shading result.
-            shading_result.m_color_space = ColorSpaceSpectral;
-            shading_result.m_main.m_color = radiance;
             aov_accumulators.beauty().set(radiance);
 
             // Apply multipliers.
-            shading_result.m_main.m_color *= values.m_color_multiplier;
-            shading_result.m_main.m_alpha *= values.m_alpha_multiplier;
-
             aov_accumulators.beauty().apply_multiplier(values.m_color_multiplier);
             aov_accumulators.alpha().apply_multiplier(Alpha(values.m_alpha_multiplier));
         }

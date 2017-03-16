@@ -135,7 +135,6 @@ namespace
 
             const float accessibility = static_cast<float>(1.0 - occlusion);
 
-            shading_result.set_main_to_linear_rgb(Color3f(accessibility));
             aov_accumulators.beauty().set(Color3f(accessibility));
         }
 
