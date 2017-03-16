@@ -170,6 +170,9 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     // Return the object bound to this instance.
     Object& get_object() const;
 
+    // Check if this object instance is in the same sss set as the given one
+    bool is_in_same_sss_set(const ObjectInstance& other) const;
+
     // Return the materials bound to this instance.
     const MaterialArray& get_front_materials() const;
     const MaterialArray& get_back_materials() const;
