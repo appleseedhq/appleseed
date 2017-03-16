@@ -113,6 +113,16 @@ TEST_SUITE(Foundation_Utility_Unzipper)
         }
     }
 
+    TEST_CASE(IsZipFileSuccess)
+    {
+        EXPECT_TRUE(is_zip_file(valid_project.c_str()));
+    }
+
+    TEST_CASE(IsZipFileFailure)
+    {
+        EXPECT_FALSE(is_zip_file("unit tests/inputs/test_projectfilereader_configurationblocks.appleseed"));
+    }
+
     TEST_CASE(FilesnamesWithExtensionOneFile)
     {
         const string extension = ".appleseed";
