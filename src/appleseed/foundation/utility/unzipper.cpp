@@ -84,7 +84,7 @@ int read_chunk(unzFile& zip_file, char* buffer, const int chunk_size)
     return err;
 }
 
-void close_current_file(unzFile& zip_file)
+void unzip_close_current_file(unzFile &zip_file)
 {
     const int err = unzCloseCurrentFile(zip_file);
 
@@ -123,32 +123,34 @@ void extract_current_file(unzFile& zip_file, const string& unzipped_dir)
 
     if (is_zip_entry_directory(filepath))
     {
-        bf::create_directories(bf::path(filepath));
+        bf::create_directories(filepath);
         return;
     }
     else open_current_file(zip_file);
 
     fstream out(filepath.c_str(), ios_base::out | ios_base::binary);
+    if (out.fail())
+        throw UnzipException(("Can't open file " + filepath).c_str());
+    
+    const size_t BUFFER_SIZE = 4096;
+    char buffer[BUFFER_SIZE];
 
     do
     {
-        const size_t BUFFER_SIZE = 4096;
-        char buffer[BUFFER_SIZE];
-
         const int read = read_chunk(zip_file, (char*) &buffer, BUFFER_SIZE);
         out.write((char*) &buffer, read);
     }
     while (!unzeof(zip_file));
 
     out.close();
-    close_current_file(zip_file);
+    unzip_close_current_file(zip_file);
 }
 
 void unzip(const string& zip_filename, const string& unzipped_dir)
 {
     try
     {
-        bf::create_directories(bf::path(unzipped_dir));
+        bf::create_directories(unzipped_dir);
 
         unzFile zip_file = unzOpen(zip_filename.c_str());
         if (zip_file == 0)
@@ -167,7 +169,7 @@ void unzip(const string& zip_filename, const string& unzipped_dir)
     }
     catch (exception e)
     {
-        bf::remove_all(bf::path(unzipped_dir));
+        bf::remove_all(unzipped_dir);
         throw e;
     }
 }
