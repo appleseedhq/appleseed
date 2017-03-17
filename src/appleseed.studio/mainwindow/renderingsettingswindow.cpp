@@ -73,7 +73,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
-#include "iostream"
+
 using namespace foundation;
 using namespace renderer;
 using namespace std;
@@ -1030,6 +1030,7 @@ namespace
             layout->addWidget(create_checkbox("lighting_components.ibl", "Image-Based Lighting"));
             layout->addWidget(create_checkbox("lighting_components.caustics", "Caustics"));
             layout->addWidget(create_checkbox("lighting_components.fg", "Final Gather"));
+
         }
 
         void create_photon_tracing_settings(QVBoxLayout* parent)

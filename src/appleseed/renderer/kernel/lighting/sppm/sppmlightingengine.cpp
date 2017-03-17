@@ -213,6 +213,7 @@ namespace
             SpectrumStack&              m_path_aovs;
             uint64                      m_num_diffuse_bounces;
 
+
             PathVisitor(
                 const SPPMParameters&   params,
                 const SPPMPassCallback& pass_callback,
@@ -233,6 +234,7 @@ namespace
               , m_path_radiance(path_radiance)
               , m_path_aovs(path_aovs)
               , m_num_diffuse_bounces(0)
+
             {
             }
 
