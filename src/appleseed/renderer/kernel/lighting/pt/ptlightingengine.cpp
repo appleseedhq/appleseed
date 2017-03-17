@@ -456,6 +456,7 @@ namespace
 
                     if (material_data.m_shader_group)
                     {
+                        m_sampling_context.split_in_place(2, 1);
                         m_shading_context.choose_bsdf_closure_shading_basis(
                             *vertex.m_shading_point,
                             m_sampling_context.next2<Vector2f>());
