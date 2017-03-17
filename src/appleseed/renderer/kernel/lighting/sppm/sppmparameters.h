@@ -53,6 +53,7 @@ struct SPPMParameters
     const Mode                  m_dl_mode;                              // direct lighting mode
     const bool                  m_enable_ibl;                           // is image-based lighting enabled?
     const bool                  m_enable_caustics;                      // are caustics enabled?
+    const bool                  m_enable_fg;                            // is Final Gather enabled?
 
     const size_t                m_light_photon_count;                   // number of photons emitted from the lights
     const size_t                m_env_photon_count;                     // number of photons emitted from the environment
