@@ -783,6 +783,8 @@ set (foundation_utility_sources
     foundation/utility/xercesc.cpp
     foundation/utility/xercesc.h
     foundation/utility/xmlelement.h
+    foundation/utility/zipper.cpp
+    foundation/utility/zipper.h
 )
 if (WITH_DISNEY_MATERIAL)
     list (APPEND foundation_utility_sources
