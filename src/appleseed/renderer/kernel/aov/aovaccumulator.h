@@ -71,12 +71,6 @@ class AOVAccumulator
         const ShadingPoint&     shading_point,
         const Camera&           camera);
 
-    // Accumulate a shading sample into the accumulator.
-    // Normally, this is used for shading AOVs.
-    virtual void accumulate(
-      const ShadingPoint&       shading_point,
-      const Spectrum&           value);
-
     // Flush the result.
     virtual void flush(ShadingResult& result) = 0;
 
@@ -162,11 +156,6 @@ class AOVAccumulatorContainer
     void write(
         const ShadingPoint&     shading_point,
         const Camera&           camera);
-
-    // Accumulate a shading sample into all the accumulator.
-    void accumulate(
-      const ShadingPoint&       shading_point,
-      const Spectrum&           value);
 
     // Flush all the accumulators.
     void flush(ShadingResult& result);

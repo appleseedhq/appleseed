@@ -70,12 +70,6 @@ void AOVAccumulator::write(
 {
 }
 
-void AOVAccumulator::accumulate(
-  const ShadingPoint&       shading_point,
-  const Spectrum&           value)
-{
-}
-
 
 //
 // BeautyAOVAccumulator class implementation.
@@ -190,14 +184,6 @@ void AOVAccumulatorContainer::write(
 {
     for (size_t i = 0; i < m_size; ++i)
         m_accumulators[i]->write(shading_point, camera);
-}
-
-void AOVAccumulatorContainer::accumulate(
-    const ShadingPoint&       shading_point,
-    const Spectrum&           value)
-{
-    for (size_t i = 0; i < m_size; ++i)
-        m_accumulators[i]->accumulate(shading_point, value);
 }
 
 void AOVAccumulatorContainer::flush(ShadingResult& result)
