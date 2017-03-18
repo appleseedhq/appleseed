@@ -213,9 +213,7 @@ shader alSurface
         diffuseNormal_ = normalize(diffuseNormal);
 
     if (do_diffuse)
-    {
         rgb += diffuseColor_ * (1.0 - sssMix) * oren_nayar(diffuseNormal_, diffuseRoughness);
-    }
 
     if (do_backlight)
         rgb += backlightColor_ * (1.0 - sssMix) * translucent(diffuseNormal_);
@@ -281,7 +279,7 @@ shader alSurface
         else
         {
             transmissionRoughness_ = transmissionRoughness;
-            transmissionIor = transmissionIor;
+            transmissionIor_ = transmissionIor;
         }
 
         color volumeTransmittanceColor = color(1);
@@ -321,7 +319,11 @@ shader alSurface
         vector T = Tn;
         if (specular2Rotation != 0.0)
         {
-            // todo: handle T rotation here...
+            T = rotate(
+                T,
+                -specular2Rotation * M_PI,
+                point(0),
+                point(specular2Normal_));
         }
 
         rgb = as_alsurface_layer(
@@ -345,10 +347,13 @@ shader alSurface
             specular1Normal_ = normalize(specular1Normal);
 
         vector T = Tn;
-
         if (specular1Rotation != 0.0)
         {
-            // todo: handle T rotation here...
+            T = rotate(
+                T,
+                -specular1Rotation * M_PI,
+                point(0),
+                point(specular1Normal_));
         }
 
         rgb = as_alsurface_layer(
