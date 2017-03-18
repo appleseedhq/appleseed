@@ -31,41 +31,41 @@
 
 #include "appleseed/color/as_color_data.h"
 
-float as_luminance(color in_C, string colorspace)
+// The luminance coefficients are provided by the Y value, so when the
+// white points of the color space differ from the requested white point,
+// the RGB->XYZ matrices are adjusted with the Bradford CAT.
+
+float as_luminance_D65(color in_C, string colorspace)
 {
-    color coeffs;
+    color coeffs = color(0);
 
     if (colorspace == "Rec.601")
     {
-        coeffs = color(BT601_LUMINANCE_COEFFS);
+        coeffs = color(REC601_D65_LUMINANCE_COEFFS);
     }
-    else if (colorspace == "Rec.709")
+    else if (colorspace == "Rec.709" || colorspace == "sRGB")
     {
-        coeffs = color(BT709_LUMINANCE_COEFFS);
+        coeffs = color(REC709_D65_LUMINANCE_COEFFS);
     }
-    else if (colorspace == "sRGB")
+    else if (colorspace == "AdobeRGB")
     {
-        coeffs = color(SRGB_LUMINANCE_COEFFS);
+        coeffs = color(ADOBERGB_D65_LUMINANCE_COEFFS);
     }
     else if (colorspace == "Rec.2020")
     {
-        coeffs = color(BT2020_LUMINANCE_COEFFS);
+        coeffs = color(REC2020_D65_LUMINANCE_COEFFS);
     }
-    else if (colorspace == "Rec.1886")
+    else if (colorspace == "ACES")
     {
-        coeffs = color(BT1886_LUMINANCE_COEFFS);
+        coeffs = color(ACES_D65_LUMINANCE_COEFFS);
     }
-    else if (colorspace == "Rec.2100")
+    else if (colorspace == "ACEScg")
     {
-        coeffs = color(BT2100_LUMINANCE_COEFFS);
+        coeffs = color(ACESCG_D65_LUMINANCE_COEFFS);
     }
-    else if (colorspace == "sRGB")
+    else if (colorspace == "DCI-P3")
     {
-        coeffs = color(SRGB_LUMINANCE_COEFFS);
-    }
-    else if (colorspace == "AdobeRGB98")
-    {
-        coeffs = color(ADOBERGB98_LUMINANCE_COEFFS);
+        coeffs = color(DCIP3_D65_LUMINANCE_COEFFS);
     }
     else
     {
@@ -81,6 +81,132 @@ float as_luminance(color in_C, string colorspace)
     return coeffs[0] * in_C[0] +
            coeffs[1] * in_C[1] +
            coeffs[2] + in_C[2];
+}
+
+float as_luminance_D60(color in_C, string colorspace)
+{
+    color coeffs = color(0);
+
+    if (colorspace == "Rec.601")
+    {
+        coeffs = color(REC601_D60_LUMINANCE_COEFFS);
+    }
+    else if (colorspace == "Rec.709" || colorspace == "sRGB")
+    {
+        coeffs = color(REC709_D65_LUMINANCE_COEFFS);
+    }
+    else if (colorspace == "AdobeRGB")
+    {
+        coeffs = color(ADOBERGB_D65_LUMINANCE_COEFFS);
+    }
+    else if (colorspace == "Rec.2020")
+    {
+        coeffs = color(REC2020_D65_LUMINANCE_COEFFS);
+    }
+    else if (colorspace == "ACES")
+    {
+        coeffs = color(ACES_D65_LUMINANCE_COEFFS);
+    }
+    else if (colorspace == "ACEScg")
+    {
+        coeffs = color(ACESCG_D65_LUMINANCE_COEFFS);
+    }
+    else if (colorspace == "DCI-P3")
+    {
+        coeffs = color(DCIP3_D65_LUMINANCE_COEFFS);
+    }
+    else
+    {
+#ifdef DEBUG
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
+
+        warning("[WARNING]: Unknown color space in shader %s, %s:%i\n",
+                shadername, __FILE__, __LINE__);
+#endif
+        coeffs = color(0);
+    }
+    return coeffs[0] * in_C[0] +
+           coeffs[1] * in_C[1] +
+           coeffs[2] + in_C[2];
+}
+
+float as_luminance_DCI(color in_C, string colorspace)
+{
+    color coeffs = color(0);
+
+    if (colorspace == "Rec.601")
+    {
+        coeffs = color(REC601_DCI_LUMINANCE_COEFFS);
+    }
+    else if (colorspace == "Rec.709" || colorspace == "sRGB")
+    {
+        coeffs = color(REC709_DCI_LUMINANCE_COEFFS);
+    }
+    else if (colorspace == "AdobeRGB")
+    {
+        coeffs = color(ADOBERGB_DCI_LUMINANCE_COEFFS);
+    }
+    else if (colorspace == "Rec.2020")
+    {
+        coeffs = color(REC2020_DCI_LUMINANCE_COEFFS);
+    }
+    else if (colorspace == "ACES")
+    {
+        coeffs = color(ACES_DCI_LUMINANCE_COEFFS);
+    }
+    else if (colorspace == "ACEScg")
+    {
+        coeffs = color(ACESCG_DCI_LUMINANCE_COEFFS);
+    }
+    else if (colorspace == "DCI-P3")
+    {
+        coeffs = color(DCIP3_DCI_LUMINANCE_COEFFS);
+    }
+    else
+    {
+#ifdef DEBUG
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
+
+        warning("[WARNING]: Unknown color space in shader %s, %s:%i\n",
+                shadername, __FILE__, __LINE__);
+#endif
+        coeffs = color(0);
+    }
+    return coeffs[0] * in_C[0] +
+           coeffs[1] * in_C[1] +
+           coeffs[2] + in_C[2];
+}
+
+float as_luminance(color in_C, string colorspace, string illuminant)
+{
+    color coeffs = color(0);
+
+    if (illuminant == "D60")
+    {
+        coeffs = as_luminance_D60(in_C, colorspace);
+    }
+    else if (illuminant == "DCI")
+    {
+        coeffs = as_luminance_DCI(in_C, colorspace);
+    }
+    else
+    {
+        coeffs = as_luminance_D65(in_C, colorspace);
+    }
+    return coeffs[0] * in_C[0] +
+           coeffs[1] * in_C[1] +
+           coeffs[2] + in_C[2];
+}
+
+float as_luminance(color in_C, string colorspace)
+{
+    color coeffs = as_luminance_D65(in_C, colorspace);
+
+    return coeffs[0] * in_C[0] +
+           coeffs[1] * in_C[1] +
+           coeffs[2] * in_C[2];
 }
 
 float sRGB_EOTF(float value)
@@ -137,7 +263,7 @@ color sRGB_OETF(color value)
         sRGB_OETF(value[2]));
 }
 
-float BT709_EOTF(float value)
+float Rec709_EOTF(float value)
 {
     float linear_out;
 
@@ -156,7 +282,7 @@ float BT709_EOTF(float value)
     return linear_out;
 }
 
-float BT709_OETF(float value)
+float Rec709_OETF(float value)
 {
     float prime_out ;
 
@@ -175,24 +301,26 @@ float BT709_OETF(float value)
     return prime_out;
 }
 
-color BT709_EOTF(color value)
+color Rec709_EOTF(color value)
 {
     return color(
-        BT709_EOTF(value[0]),
-        BT709_EOTF(value[1]),
-        BT709_EOTF(value[2]));
+        Rec709_EOTF(value[0]),
+        Rec709_EOTF(value[1]),
+        Rec709_EOTF(value[2]));
 }
 
-color BT709_OETF(color value)
+color Rec709_OETF(color value)
 {
     return color(
-        BT709_OETF(value[0]),
-        BT709_OETF(value[1]),
-        BT709_OETF(value[2]));
+        Rec709_OETF(value[0]),
+        Rec709_OETF(value[1]),
+        Rec709_OETF(value[2]));
 }
 
 // ITU-R BT.2020 transfer functions for bitdepth: 10|12bit system.
-float BT2020_EOTF(float value, int bitdepth)
+// Ref: https://www.itu.int/rec/R-REC-BT.2020-2-201510-I/en
+
+float Rec2020_EOTF(float value, int bitdepth)
 {
     float linear_out;
 
@@ -227,7 +355,7 @@ float BT2020_EOTF(float value, int bitdepth)
     return linear_out ;
 }
 
-float BT2020_OETF(float value, int bitdepth)
+float Rec2020_OETF(float value, int bitdepth)
 {
     float prime_out ;
 
@@ -262,24 +390,27 @@ float BT2020_OETF(float value, int bitdepth)
     return prime_out;
 }
 
-color BT2020_EOTF(color value, int bitdepth)
+color Rec2020_EOTF(color value, int bitdepth)
 {
     return color(
-        BT2020_EOTF(value[0], bitdepth),
-        BT2020_EOTF(value[1], bitdepth),
-        BT2020_EOTF(value[2], bitdepth));
+        Rec2020_EOTF(value[0], bitdepth),
+        Rec2020_EOTF(value[1], bitdepth),
+        Rec2020_EOTF(value[2], bitdepth));
 }
 
-color BT2020_OETF(color value, int bitdepth)
+color Rec2020_OETF(color value, int bitdepth)
 {
     return color(
-        BT2020_OETF(value[0], bitdepth),
-        BT2020_OETF(value[1], bitdepth),
-        BT2020_OETF(value[2], bitdepth));
+        Rec2020_OETF(value[0], bitdepth),
+        Rec2020_OETF(value[1], bitdepth),
+        Rec2020_OETF(value[2], bitdepth));
 }
 
-// ITU-R BT.1886 black luminance = 64cd/m², white luminance = 940cd/m².
-float BT1886_EOTF(float value, float black_luminance, float white_luminance)
+// Ref: https://www.itu.int/rec/R-REC-BT.1886/en
+// Lb, Lw in cd/m^2 (nit), 0.01 for black, 100 for reference white, in 10bit
+// digital code values 64, 940.
+
+float Rec1886_EOTF(float value, float black_luminance, float white_luminance)
 {
     float linear_out;
 
@@ -303,7 +434,7 @@ float BT1886_EOTF(float value, float black_luminance, float white_luminance)
     return linear_out;
 }
 
-float BT1886_OETF(float value, float black_luminance, float white_luminance)
+float Rec1886_OETF(float value, float black_luminance, float white_luminance)
 {
     float prime_out;
 
@@ -327,20 +458,20 @@ float BT1886_OETF(float value, float black_luminance, float white_luminance)
     return prime_out;
 }
 
-color BT1886_EOTF(color value, float black_luminance, float white_luminance)
+color Rec1886_EOTF(color value, float black_luminance, float white_luminance)
 {
     return color(
-        BT1886_EOTF(value[0], black_luminance, white_luminance),
-        BT1886_EOTF(value[1], black_luminance, white_luminance),
-        BT1886_EOTF(value[2], black_luminance, white_luminance));
+        Rec1886_EOTF(value[0], black_luminance, white_luminance),
+        Rec1886_EOTF(value[1], black_luminance, white_luminance),
+        Rec1886_EOTF(value[2], black_luminance, white_luminance));
 }
 
-color BT1886_OETF(color value, float black_luminance, float white_luminance)
+color Rec1886_OETF(color value, float black_luminance, float white_luminance)
 {
     return color(
-        BT1886_OETF(value[0], black_luminance, white_luminance),
-        BT1886_OETF(value[1], black_luminance, white_luminance),
-        BT1886_OETF(value[2], black_luminance, white_luminance));
+        Rec1886_OETF(value[0], black_luminance, white_luminance),
+        Rec1886_OETF(value[1], black_luminance, white_luminance),
+        Rec1886_OETF(value[2], black_luminance, white_luminance));
 }
 
 float gamma_EOTF(float value, float gamma)
@@ -407,81 +538,24 @@ color AdobeRGB_OETF(color value)
     return gamma_EOTF(value, ADOBERGB98_GAMMA);
 }
 
-// Get primaries xyz coordinates for given space (some are shared).
-void XYZ_chromaticity_coords(string space, output vector xyz[3])
-{
-    if (space == "Rec.601")
-    {
-        xyz[0] = BT601_CHROMATICITIES_Rxyz;
-        xyz[1] = BT601_CHROMATICITIES_Gxyz;
-        xyz[2] = BT601_CHROMATICITIES_Bxyz;
-    }
-    else if (space == "Rec.709")
-    {
-        xyz[0] = BT709_CHROMATICITIES_Rxyz;
-        xyz[1] = BT709_CHROMATICITIES_Gxyz;
-        xyz[2] = BT709_CHROMATICITIES_Bxyz;
-    }
-    else if (space == "Rec.2020")
-    {
-        xyz[0] = BT2020_CHROMATICITIES_Rxyz;
-        xyz[1] = BT2020_CHROMATICITIES_Gxyz;
-        xyz[2] = BT2020_CHROMATICITIES_Bxyz;
-    }
-    else if (space == "Rec.1886")
-    {
-        xyz[0] = BT1886_CHROMATICITIES_Rxyz;
-        xyz[1] = BT1886_CHROMATICITIES_Gxyz;
-        xyz[2] = BT1886_CHROMATICITIES_Bxyz;
-    }
-    else if (space == "Rec.2100")
-    {
-        xyz[0] = BT2100_CHROMATICITIES_Rxyz;
-        xyz[1] = BT2100_CHROMATICITIES_Gxyz;
-        xyz[2] = BT2100_CHROMATICITIES_Bxyz;
-    }
-    else if (space == "sRGB")
-    {
-        xyz[0] = SRGB_CHROMATICITIES_Rxyz;
-        xyz[1] = SRGB_CHROMATICITIES_Gxyz;
-        xyz[2] = SRGB_CHROMATICITIES_Bxyz;
-    }
-    else if (space == "AdobeRGB98")
-    {
-        xyz[0] = ADOBERGB98_CHROMATICITIES_Rxyz;
-        xyz[1] = ADOBERGB98_CHROMATICITIES_Gxyz;
-        xyz[2] = ADOBERGB98_CHROMATICITIES_Bxyz;
-    }
-    else
-    {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]: Unknown color space in shader %s, %s:%i\n",
-                 shadername, __FILE__, __LINE__);
-#endif
-        xyz[0] = vector(0);
-        xyz[1] = vector(0);
-        xyz[2] = vector(0);
-    }
-}
+// Chromatically adapted transformation matrix for XYZ<>RGB, using the
+// Bradford CAT will follow shortly. TODO.
 
 color transform_RGB2XYZ(color C, string space)
 {
-    if (space == "sRGB")
+    if (space == "Rec.709" || space == "sRGB")
     {
         return color(
-            dot(vector(RGB2XYZ_D65_SRGB_R0), vector(C)),
-            dot(vector(RGB2XYZ_D65_SRGB_R1), vector(C)),
-            dot(vector(RGB2XYZ_D65_SRGB_R1), vector(C)));
+            dot(vector(RGB_TO_XYZ_REC709_D65_R0), vector(C)),
+            dot(vector(RGB_TO_XYZ_REC709_D65_R1), vector(C)),
+            dot(vector(RGB_TO_XYZ_REC709_D65_R2), vector(C)));
     }
     else if (space == "AdobeRGB98")
     {
         return color(
-            dot(vector(RGB2XYZ_D65_ADOBERGB98_R0), vector(C)),
-            dot(vector(RGB2XYZ_D65_ADOBERGB98_R1), vector(C)),
-            dot(vector(RGB2XYZ_D65_ADOBERGB98_R2), vector(C)));
+            dot(vector(RGB_TO_XYZ_ADOBERGB_D65_R0), vector(C)),
+            dot(vector(RGB_TO_XYZ_ADOBERGB_D65_R1), vector(C)),
+            dot(vector(RGB_TO_XYZ_ADOBERGB_D65_R2), vector(C)));
     }
     else
     {
@@ -496,21 +570,23 @@ color transform_RGB2XYZ(color C, string space)
     }
 }
 
+// TODO: Same as above, remaining spaces to be added, chromatically adapted
+// with the Bradford CAT where appropriate.
 color transform_XYZ2RGB(color C, string space)
 {
-    if (space == "sRGB")
+    if (space == "Rec.709" || space == "sRGB")
     {
         return color(
-            dot(vector(XYZ2RGB_D65_SRGB_R0), vector(C)),
-            dot(vector(XYZ2RGB_D65_SRGB_R1), vector(C)),
-            dot(vector(XYZ2RGB_D65_SRGB_R1), vector(C)));
+            dot(vector(XYZ_TO_RGB_REC709_D65_R0), vector(C)),
+            dot(vector(XYZ_TO_RGB_REC709_D65_R1), vector(C)),
+            dot(vector(XYZ_TO_RGB_REC709_D65_R2), vector(C)));
     }
     else if (space == "AdobeRGB98")
     {
         return color(
-            dot(vector(XYZ2RGB_D65_ADOBERGB98_R0), vector(C)),
-            dot(vector(XYZ2RGB_D65_ADOBERGB98_R1), vector(C)),
-            dot(vector(XYZ2RGB_D65_ADOBERGB98_R2), vector(C)));
+            dot(vector(XYZ_TO_RGB_ADOBERGB_D65_R0), vector(C)),
+            dot(vector(XYZ_TO_RGB_ADOBERGB_D65_R1), vector(C)),
+            dot(vector(XYZ_TO_RGB_ADOBERGB_D65_R2), vector(C)));
     }
     else
     {
