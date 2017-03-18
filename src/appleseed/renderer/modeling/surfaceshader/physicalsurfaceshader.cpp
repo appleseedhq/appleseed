@@ -90,10 +90,8 @@ namespace
         {
             m_inputs.declare("color_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("alpha_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("translucency", InputFormatSpectralReflectance, "0.0");
 
-            m_front_lighting_samples = m_params.get_optional<size_t>("front_lighting_samples", 1);
-            m_back_lighting_samples = m_params.get_optional<size_t>("back_lighting_samples", 1);
+            m_lighting_samples = m_params.get_optional<size_t>("lighting_samples", 1);
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -122,26 +120,13 @@ namespace
 
             Spectrum radiance(Spectrum::Illuminance);
 
-            // Compute front lighting.
-            compute_front_lighting(
+            compute_lighting(
                 values,
                 sampling_context,
                 pixel_context,
                 shading_context,
                 shading_point,
                 radiance);
-
-            // Optionally simulate translucency by adding back lighting.
-            if (!is_zero(values.m_translucency))
-            {
-                add_back_lighting(
-                    values,
-                    sampling_context,
-                    pixel_context,
-                    shading_context,
-                    shading_point,
-                    radiance);
-            }
 
             // Initialize the shading result.
             aov_accumulators.beauty().set(radiance);
@@ -160,10 +145,9 @@ namespace
         };
 
         const LightingConditions    m_lighting_conditions;
-        size_t                      m_front_lighting_samples;
-        size_t                      m_back_lighting_samples;
+        size_t                      m_lighting_samples;
 
-        void compute_front_lighting(
+        void compute_lighting(
             const InputValues&          values,
             SamplingContext&            sampling_context,
             const PixelContext&         pixel_context,
@@ -173,7 +157,7 @@ namespace
         {
             radiance.set(0.0f);
 
-            for (size_t i = 0; i < m_front_lighting_samples; ++i)
+            for (size_t i = 0; i < m_lighting_samples; ++i)
             {
                 shading_context.get_lighting_engine()->compute_lighting(
                     sampling_context,
@@ -183,56 +167,11 @@ namespace
                     radiance);
             }
 
-            if (m_front_lighting_samples > 1)
+            if (m_lighting_samples > 1)
             {
-                const float rcp_sample_count = 1.0f / m_front_lighting_samples;
+                const float rcp_sample_count = 1.0f / m_lighting_samples;
                 radiance *= rcp_sample_count;
             }
-        }
-
-        void add_back_lighting(
-            const InputValues&          values,
-            SamplingContext&            sampling_context,
-            const PixelContext&         pixel_context,
-            const ShadingContext&       shading_context,
-            const ShadingPoint&         shading_point,
-            Spectrum&                   radiance) const
-        {
-            const Vector3d& p = shading_point.get_point();
-            const Vector3d& n = shading_point.get_original_shading_normal();
-            const Vector3d& d = shading_point.get_ray().m_dir;
-
-            // Construct a ray perpendicular to the other side of the surface.
-            ShadingRay back_ray(shading_point.get_ray());
-            back_ray.m_tmax *= norm(d);
-            back_ray.m_dir = dot(d, n) > 0.0 ? -n : n;
-            back_ray.m_org = p - back_ray.m_tmax * back_ray.m_dir;
-
-            ShadingPoint back_shading_point(shading_point);
-            back_shading_point.set_ray(back_ray);
-
-            Spectrum back_radiance(0.0f, Spectrum::Illuminance);
-
-            // Compute back lighting.
-            for (size_t i = 0; i < m_back_lighting_samples; ++i)
-            {
-                shading_context.get_lighting_engine()->compute_lighting(
-                    sampling_context,
-                    pixel_context,
-                    shading_context,
-                    back_shading_point,
-                    back_radiance);
-            }
-
-            // Apply translucency factor.
-            back_radiance *= values.m_translucency;
-
-            // Divide by the number of samples.
-            const float rcp_sample_count = 1.0f / m_back_lighting_samples;
-            back_radiance *= rcp_sample_count;
-
-            // Add back lighting contribution.
-            radiance += back_radiance;
         }
     };
 }
@@ -282,26 +221,8 @@ DictionaryArray PhysicalSurfaceShaderFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "translucency")
-            .insert("label", "Translucency")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
-            .insert("default", "0.0")
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "front_lighting_samples")
-            .insert("label", "Front Lighting Samples")
-            .insert("type", "text")
-            .insert("default", "1")
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "back_lighting_samples")
-            .insert("label", "Back Lighting Samples")
+            .insert("name", "lighting_samples")
+            .insert("label", "Lighting Samples")
             .insert("type", "text")
             .insert("default", "1")
             .insert("use", "optional"));
