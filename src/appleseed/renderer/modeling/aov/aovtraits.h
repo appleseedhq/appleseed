@@ -45,7 +45,7 @@ namespace renderer
 {
 
 //
-// Render layer rule entity traits.
+// AOV entity traits.
 //
 
 template <>

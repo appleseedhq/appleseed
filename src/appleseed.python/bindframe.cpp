@@ -152,6 +152,7 @@ void bind_frame()
         .def("archive", archive_frame)
 
         .def("add_aov", &Frame::add_aov)
+        .def("add_aovs", &Frame::add_aovs)
         .def("aovs", &Frame::aovs, bpy::return_value_policy<bpy::reference_existing_object>())
         ;
 }
