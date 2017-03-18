@@ -28,7 +28,7 @@
 
 shader as_Glass
 [[
-    int maya_type_id = 1210826
+    int maya_type_id = 1210826,
     string maya_node_name = "AsGlass",
     string maya_classification = "shader/surface:Appleseed/surface:swatch/AppleseedRenderSwatch",
     string help = "Glass material"
@@ -89,32 +89,33 @@ shader as_Glass
         string page = "Surface Material Attributes",
         int divider = 1
     ]],
-    float in_anisotropy = 0.0
+    float in_anisotropyAmount = 0.0
     [[
-        float min = -1.0
+        float min = 0.0,
         float max = 1.0,
-        string label = "Anisotropy",
-        string help = "With -1 being anisotropy on the U axis, 1.0 on V axis",
+        string label = "Anisotropy Amount",
         string page = "Surface Material Attributes"
     ]],
-    float in_anisotropyRotation = 0.0
+    float in_anisotropyAngle = 0.0
     [[
         float min = 0.0,
         float max = 1.0,
         string label = "Anisotropy Rotation",
-        string help = "The [0,1] range mapping to [0,360] degrees range",
-        string page = "Surface Material Attributes",
-        int divider = 1
+        string help = "The [0,1] range maps to [0,360] degrees range",
+        string page = "Surface Material Attributes"
     ]],
-    float in_cutoutMask = 0.0
+    color in_anisotropyVectorMap = color(0)
     [[
-        float min = 0.0,
-        float max = 1.0,
-        string label = "Cutout Mask",
-        string help = "Only 0 (transparent) or 1 (opaque) allowed",
-        string page = "Mask"
+        string label = "Anisotropy Vector Map",
+        string page = "Common Material Attributes",
+        int separator = 1
     ]],
     vector Tn = vector(0)
+    [[
+        int lockgeom = 0,
+        string widget = "null"
+    ]],
+    vector Bn = vector(0)
     [[
         int lockgeom = 0,
         string widget = "null"
@@ -186,42 +187,56 @@ shader as_Glass
     ]]
 )
 {
-    int present = (int) round(in_cutoutMask);
+    int ray_depth = 0;
+    int status = getattribute("path:ray_depth", ray_depth);
 
-    if (present)
+    if (status && ray_depth <= in_maximumRayDepth)
     {
-        int ray_depth = 0;
-        int status = getattribute("path:ray_depth", ray_depth);
+        normal Nn = normalize(in_normalCamera);
+        vector tangent;
 
-        if (status && ray_depth <= in_maximumRayDepth)
+        if (in_anisotropyAmount)
         {
-            vector tangent = Tn;
+            if (isconnected(in_anisotropyVectorMap))
+            {
+                vector vector_map = normalize(
+                    (vector) in_anisotropyVectorMap * 2.0 - 1.0);
 
-            if (in_anisotropy != 0 && in_anisotropyRotation > 0)
+                tangent = normalize(
+                    vector_map[0] * Tn +
+                    vector_map[1] * Bn +
+                    vector_map[2] * Nn);
+            }
+            else
+            {
+                tangent = Tn;
+            }
+
+            if (in_anisotropyAngle)
             {
                 tangent = rotate(
-                    Tn,
-                    in_anisotropyRotation * M_2PI,
+                    tangent,
+                    in_anisotropyAngle * M_2PI,
                     point(0),
                     point(in_normalCamera));
             }
-
-            string distribution = (in_distribution) ? "ggx" : "beckmann";
-
-            out_outColor = in_transmittanceAmount *
-                as_glass(
-                    distribution,
-                    normalize(in_normalCamera),
-                    tangent,
-                    in_surfaceTransmittance,
-                    in_reflectionTint,
-                    in_refractionTint,
-                    in_roughness,
-                    in_anisotropy,
-                    in_ior,
-                    in_volumeTransmittance,
-                    in_volumeTransmittanceDistance);
         }
+
+        string distribution = (in_distribution) ? "ggx" : "beckmann";
+
+        out_outColor = in_transmittanceAmount *
+            as_glass(
+                distribution,
+                Nn,
+                tangent,
+                in_surfaceTransmittance,
+                in_reflectionTint,
+                in_refractionTint,
+                in_roughness,
+                in_anisotropyAmount,
+                in_ior,
+                in_volumeTransmittance,
+                in_volumeTransmittanceDistance);
 
         closure color matte_term;
 
@@ -241,10 +256,6 @@ shader as_Glass
         out_outMatteOpacity = matte_term;
 
         out_outColor += matte_term;
-    }
-    else
-    {
-        out_outColor = out_outTransparency = transparent();
     }
 }
 
