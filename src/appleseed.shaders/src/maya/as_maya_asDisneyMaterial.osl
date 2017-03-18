@@ -30,10 +30,10 @@
 
 shader as_DisneyMaterial
 [[
-    int maya_type_id = 1210824,
-    string maya_node_name = "AsDisney",
-    string maya_classification = "shader/surface:Appleseed/surface:swatch/AppleseedRenderSwatch",
-    string help = "Disney BSDF material"
+    string maya_node_name = "asDisneyMaterial",
+    string maya_classification = "shader/surface:appleseed/surface:swatch/appleseedRenderSwatch",
+    string help = "Disney material",
+    int maya_type_id = 1210832
 ]]
 (
     color in_color = color(0.5)
