@@ -42,8 +42,7 @@ shader as_DisneyMaterial
         string maya_attribute_type = "color",
         string maya_attribute_short_name = "c",
         string label = "Surface Color",
-        string page = "Common Material Parameters",
-        int divider = 1
+        string page = "Common Material Parameters"
     ]],
     float in_subsurfaceAmount = 0.0
     [[
@@ -170,8 +169,7 @@ shader as_DisneyMaterial
         string label = "Matte Opacity Mode",
         string widget = "mapper",
         string options = "Black Hole:0|Solid Matte:1|Opacity Gain:2",
-        string page = "Matte Opacity Parameters",
-        int divider = 1
+        string page = "Matte Opacity Parameters"
     ]],
     float in_matteOpacity = 1.0
     [[

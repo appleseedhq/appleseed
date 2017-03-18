@@ -39,8 +39,7 @@ shader as_Glass
         string maya_attribute_name = "color",
         string maya_attribute_short_name = "c",
         string label = "Transmittance Color",
-        string page = "Surface Transmittance Parameters",
-        int divider = 1
+        string page = "Surface Transmittance Parameters"
     ]],
     float in_transmittanceAmount = 0.8
     [[
@@ -149,8 +148,7 @@ shader as_Glass
         string label = "Matte Opacity Mode",
         string widget = "mapper",
         string options = "Black Hole:0|Solid Matte:1|Opacity Gain:2",
-        string page = "Matte Opacity Parameters",
-        int divider = 1
+        string page = "Matte Opacity Parameters"
     ]],
     float in_matteOpacity = 1.0
     [[
