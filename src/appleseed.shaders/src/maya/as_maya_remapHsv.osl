@@ -1,0 +1,176 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/remapHsv.html
+
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/maya/as_maya_ramp_helpers.h"
+
+shader as_maya_remapHsv
+[[
+    string maya_node_name = "remapHsv",
+    string maya_classification = "utility/color"
+]]
+(
+    color in_color = color(0)
+    [[
+        string maya_attribute_name = "color",
+        string maya_attribute_type = "vector",
+        string label = "Color"
+    ]],
+    float in_inputMin = 0.0
+    [[
+        string maya_attribute_name = "inputMin",
+        string maya_attribute_type = "float",
+        string label = "Input Min"
+    ]],
+    float in_inputMax = 0.0
+    [[
+        string maya_attribute_name = "inputMax",
+        string maya_attribute_type = "float",
+        string label = "Input Max"
+    ]],
+    float in_outputMin = 0.0
+    [[
+        string maya_attribute_name = "outputMin",
+        string maya_attribute_type = "float",
+        string label = "Output Min"
+    ]], 
+    float in_outputMax = 0.0
+    [[
+        string maya_attribute_name = "outputMax",
+        string maya_attribute_type = "float",
+        string label = "Output Max"
+    ]],
+    float in_hue_Position[] = {0}
+    [[
+        string maya_attribute_name = "hue",
+        string maya_attribute_type = "float[]",
+        string label = "Hue Position",
+        string page = "Hue"
+    ]],
+    float in_hue_FloatValue[] = {0}
+    [[
+        string maya_attribute_name = "hue",
+        string maya_attribute_type = "float[]",
+        string label = "Hue Value",
+        string page = "Hue"
+    ]],
+    int in_hue_Interp[] = {0}
+    [[
+        string maya_attribute_name = "hue",
+        string maya_attribute_type = "int[]",
+        string widget = "mapper",
+        string options = "None:0|Linear:1|Smooth:2|Spline:3",
+        string label = "Hue Interpolation",
+        string page = "Hue"
+    ]],
+    float in_saturation_Position[] = {0}
+    [[
+        string maya_attribute_name = "saturation",
+        string maya_attribute_type = "float[]",
+        string label = "Saturation Position",
+        string page = "Saturation"
+    ]],
+    float in_saturation_FloatValue[] = {0}
+    [[
+        string maya_attribute_name = "saturation",
+        string maya_attribute_type = "float[]",
+        string label = "Saturation Value",
+        string page = "Saturation"
+    ]],
+    int in_saturation_Interp[] = {0}
+    [[
+        string maya_attribute_name = "saturation",
+        string maya_attribute_type = "int[]",
+        string widget = "mapper",
+        string options = "None:0|Linear:1|Smooth:2|Spline:3",
+        string label = "Saturation Interpolation",
+        string page = "Saturation"
+    ]], 
+    float in_value_Position[] = {0}
+    [[
+        string maya_attribute_name = "value",
+        string maya_attribute_type = "float[]",
+        string label = "Value Position",
+        string page = "Value"
+    ]],
+    float in_value_FloatValue[] = {0}
+    [[
+        string maya_attribute_name = "value",
+        string maya_attribute_type = "float[]",
+        string label = "Value Value",
+        string page = "Value"
+    ]],
+    int in_value_Interp[] = {0}
+    [[
+        string maya_attribute_name = "value",
+        string maya_attribute_type = "int[]",
+        string widget = "mapper",
+        string options = "None:0|Linear:1|Smooth:2|Spline:3",
+        string label = "Value Interpolation",
+        string page = "Value"
+    ]],
+
+    output color out_outColor = color(0)
+    [[
+        string maya_attribute_name = "outColor",
+        string maya_attribute_type = "vector",
+        string label = "Output Color",
+        string widget = "null"
+    ]]
+)
+{
+    color remapped_color =
+        (in_color - in_inputMin) / (in_inputMax - in_inputMin);
+
+    remapped_color = transformc("rgb", "hsv", remapped_color);
+
+    float hue = float_ramp(
+        in_hue_FloatValue,
+        in_hue_Position,
+        in_hue_Interp,
+        remapped_color[0]);
+
+    float saturation = float_ramp(
+        in_saturation_FloatValue,
+        in_saturation_Position,
+        in_saturation_Interp,
+        remapped_color[1]);
+
+    float value = float_ramp(
+        in_value_FloatValue,
+        in_value_Position,
+        in_value_Interp,
+        remapped_color[2]);
+
+    remapped_color = transformc("hsv", "rgb", color(hue, saturation, value));
+
+    out_outColor = remapped_color *
+        (in_outputMax - in_outputMin) + in_outputMin;
+}
