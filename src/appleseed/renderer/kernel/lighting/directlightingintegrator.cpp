@@ -93,7 +93,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(
     const int                   light_sampling_modes,
     const size_t                bsdf_sample_count,
     const size_t                light_sample_count,
-	const float                 low_light_threshold,
+    const float                 low_light_threshold,
     const bool                  indirect)
   : m_shading_context(shading_context)
   , m_light_sampler(light_sampler)

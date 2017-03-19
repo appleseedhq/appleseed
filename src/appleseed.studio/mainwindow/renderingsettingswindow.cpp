@@ -739,7 +739,7 @@ namespace
             create_direct_link("lighting_components.ibl",     "drt.enable_ibl");
             create_direct_link("drt.bounces.rr_start_bounce", "drt.rr_min_path_length");
             create_direct_link("advanced.dl.light_samples",   "drt.dl_light_samples");
-			create_direct_link("advanced.dl.low_light_threshold", "drt.dl_low_light_threshold");
+            create_direct_link("advanced.dl.low_light_threshold", "drt.dl_low_light_threshold");
             create_direct_link("advanced.ibl.env_samples",    "drt.ibl_env_samples");
 
             load_directly_linked_values(config);
@@ -782,9 +782,9 @@ namespace
             light_samples->setToolTip(m_params_metadata.get_path("drt.dl_light_samples.help"));
             sublayout->addRow("Light Samples:", light_samples);
 
-			QDoubleSpinBox* low_light_threshold = create_double_input("advanced.dl.low_light_threshold", 0.0, 1.0, 3, 0.001);
-			low_light_threshold->setToolTip(m_params_metadata.get_path("drt.dl_low_light_threshold.help"));
-			sublayout->addRow("Low Light Threshold:", low_light_threshold);
+            QDoubleSpinBox* low_light_threshold = create_double_input("advanced.dl.low_light_threshold", 0.0, 1.0, 3, 0.001);
+            low_light_threshold->setToolTip(m_params_metadata.get_path("drt.dl_low_light_threshold.help"));
+            sublayout->addRow("Low Light Threshold:", low_light_threshold);
         }
 
         void create_drt_advanced_ibl_settings(QVBoxLayout* parent)
@@ -840,7 +840,7 @@ namespace
             create_direct_link("advanced.next_event_estimation",   "pt.next_event_estimation");
             create_direct_link("advanced.dl.light_samples",        "pt.dl_light_samples");
             create_direct_link("advanced.ibl.env_samples",         "pt.ibl_env_samples");
-			create_direct_link("advanced.dl.low_light_threshold",  "pt.dl_low_light_threshold");
+            create_direct_link("advanced.dl.low_light_threshold",  "pt.dl_low_light_threshold");
 
 
             load_directly_linked_values(config);
@@ -890,16 +890,16 @@ namespace
             QVBoxLayout* layout = create_vertical_layout();
             groupbox->setLayout(layout);
 
-			QFormLayout* sublayout = create_form_layout();
+            QFormLayout* sublayout = create_form_layout();
             layout->addLayout(sublayout);
 
             QDoubleSpinBox* light_samples = create_double_input("advanced.dl.light_samples", 0.0, 1000000.0, 3, 1.0);
             light_samples->setToolTip(m_params_metadata.get_path("pt.dl_light_samples.help"));
             sublayout->addRow("Light Samples:", light_samples); 
 
-			QDoubleSpinBox* low_light_threshold = create_double_input("advanced.dl.low_light_threshold", 0.0, 1.0, 3, 0.001);
-			low_light_threshold->setToolTip(m_params_metadata.get_path("pt.dl_low_light_threshold.help"));
-			sublayout->addRow("Low Light Threshold:", low_light_threshold);
+            QDoubleSpinBox* low_light_threshold = create_double_input("advanced.dl.low_light_threshold", 0.0, 1.0, 3, 0.001);
+            low_light_threshold->setToolTip(m_params_metadata.get_path("pt.dl_low_light_threshold.help"));
+            sublayout->addRow("Low Light Threshold:", low_light_threshold);
         }
 
         void create_pt_advanced_ibl_settings(QVBoxLayout* parent)
