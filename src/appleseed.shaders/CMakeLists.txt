@@ -159,7 +159,6 @@ set (appleseed_maya_osl_sources
      src/maya/as_maya_addMatrix.osl
      src/maya/as_maya_anisotropic.osl
      src/maya/as_maya_areaLight.osl
-     src/maya/as_maya_asCarPaint.osl
      src/maya/as_maya_asDisneyMaterial.osl
      src/maya/as_maya_asGlass.osl
      src/maya/as_maya_blendColors.osl

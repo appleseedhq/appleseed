@@ -44,7 +44,7 @@ shader as_Glass
     float in_transmittanceAmount = 0.8
     [[
         float min = 0.0,
-        float max = 100.0,
+        float max = 1.0,
         float softmin = 0.0,
         float softmax = 1.0,
         string label = "Transmittance Amount",
@@ -227,19 +227,18 @@ shader as_Glass
 
         string distribution = (in_distribution) ? "ggx" : "beckmann";
 
-        out_outColor = in_transmittanceAmount *
-            as_glass(
-                distribution,
-                Nn,
-                tangent,
-                in_surfaceTransmittance,
-                in_reflectionTint,
-                in_refractionTint,
-                in_roughness,
-                in_anisotropyAmount,
-                in_ior,
-                in_volumeTransmittance,
-                in_volumeTransmittanceDistance);
+        out_outColor = as_glass(
+            distribution,
+            Nn,
+            tangent,
+            in_transmittanceAmount * in_surfaceTransmittance,
+            in_reflectionTint,
+            in_refractionTint,
+            in_roughness,
+            in_anisotropyAmount,
+            in_ior,
+            in_volumeTransmittance,
+            in_volumeTransmittanceDistance);
 
         closure color matte_term;
 
