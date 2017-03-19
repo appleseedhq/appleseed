@@ -71,7 +71,7 @@ namespace foundation
     // If exception is thrown, zip archive is deleted.
     //
 
-    void zip(const std::string &zip_filename, const std::string &directory_to_zip);
+    void zip(const std::string& zip_filename, const std::string& directory_to_zip);
 
     //
     // Checks if file is in zip format by trying to open it.

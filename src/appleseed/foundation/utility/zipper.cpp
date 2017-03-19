@@ -224,29 +224,17 @@ namespace foundation
         return zip_file_info;
     }
 
-    void zip_current_file(zipFile zip_file, const string &filename_to_zip)
+    void zip_current_file(zipFile zip_file, const string& filename, const string& base_directory)
     {
-        const zip_fileinfo zip_file_info = set_file_timestamp(filename_to_zip);
+        const string filename_in_fs = (bf::path(base_directory) / filename).string();
 
-        // name of file inside zip archive
-        string filename_inside_zip = bf::path(filename_to_zip).filename().string();
+        const zip_fileinfo zip_file_info = set_file_timestamp(filename_in_fs);
 
-        // The path name saved should not include a leading slash.
-        // If it does, windows/xp and dynazip couldn't read the zip file.
-        while (filename_inside_zip[0] == '\\' || filename_inside_zip[0] == '/')
-        {
-            filename_inside_zip.erase(filename_inside_zip.begin());
-        }
+        open_new_file_in_zip(zip_file, filename, zip_file_info);
 
-        open_new_file_in_zip(zip_file, filename_inside_zip, zip_file_info);
-
-        if (bf::is_directory(filename_to_zip))
-            throw ZipException("Can't handle directories");
-
-        fstream in(filename_to_zip.c_str(), ios_base::in | ios_base::binary);
-
+        fstream in(filename_in_fs.c_str(), ios_base::in | ios_base::binary);
         if (in.fail())
-            throw ZipException(("Can't open file " + filename_to_zip).c_str());
+            throw ZipException(("Can't open file " + filename_in_fs).c_str());
 
         const size_t BUFFER_SIZE = 4096;
         char buffer[BUFFER_SIZE];
@@ -263,18 +251,21 @@ namespace foundation
         zip_close_current_file(zip_file);
     }
 
-    void zip(const string &zip_filename, const vector<string> &filenames_to_zip)
+    void zip(const string &zip_filename, const string& directory_to_zip)
     {
         try
         {
+            set<string> files_to_zip = recursive_ls(directory_to_zip);
+
             zipFile zip_file = zipOpen(zip_filename.c_str(), 0);
             if (zip_file == 0)
                 throw ZipException(("Can't open file " + zip_filename).c_str());
 
-            for (size_t i = 0; i != filenames_to_zip.size(); ++i)
+            for (set<string>::iterator it = files_to_zip.begin();
+                 it != files_to_zip.end(); ++it)
             {
-                const string filename_to_zip = filenames_to_zip[i];
-                zip_current_file(zip_file, filename_to_zip);
+                const string filename_to_zip = *it;
+                zip_current_file(zip_file, filename_to_zip, directory_to_zip);
             }
 
             zipClose(zip_file, NULL);
