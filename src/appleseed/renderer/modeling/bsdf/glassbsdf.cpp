@@ -564,7 +564,7 @@ namespace
                 return;
             }
 
-            const float D = m_mdf->D(h, alpha_x, alpha_y);
+            const float D = m_mdf->D(h, alpha_x, alpha_y, 0.0f);
             const float G = m_mdf->G(wi, wo, h, alpha_x, alpha_y, 0.0f);
 
             value = values->m_precomputed.m_reflection_color;

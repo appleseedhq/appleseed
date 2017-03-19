@@ -773,7 +773,7 @@ float GTR1MDF::pdf(
     return D(h, alpha_x, alpha_y, gamma) * h.y;
 }
 
-// 
+//
 // StdMDF class implementation
 //
 
@@ -794,7 +794,7 @@ float StdMDF::D(
     const float cos_theta_4 = square(cos_theta_2);
     const float alpha_x2 = square(alpha_x);
     const float tan_theta_2 = (1.0f - cos_theta_2) / cos_theta_2;
-    
+
     // [1] Equation 11.
     // Following Disney implementation idea - divide gamma power by four first to avoid explosion
     const float A_a = std::pow(alpha_x, (2.0f * gamma - 2.0f) / 4.0f);
@@ -803,10 +803,10 @@ float StdMDF::D(
     const float A_num4 = A_a * A_b;
     const float A_denom4 = std::max(A_c, std::numeric_limits<float>::epsilon());
     const float A4 = A_num4 / A_denom4;
-    
+
     const float A2 = A4 * A4;
     const float A = A2 * A2;
-    
+
 
     return A / (Pi<float>() * cos_theta_4);
 }
@@ -831,7 +831,7 @@ float StdMDF::G1(
     const float         alpha_y,
     const float         gamma) const
 {
-    assert(gamma > 1.5f);   
+    assert(gamma > 1.5f);
 
     return 1.0f / (1.0f + lambda(v, alpha_x, alpha_y, gamma));
 }
@@ -843,12 +843,11 @@ float StdMDF::gamma_fraction(
 {
     const float ab1 = abgamma(numerator_arg + 5.0f);
     const float ab2 = abgamma(denominator_arg + 5.0f);
-    
+
     const float ac1 = 1.0f / (numerator_arg * (numerator_arg + 1.0f) * (numerator_arg + 2.0f) * (numerator_arg + 3.0f) * (numerator_arg + 4.0f));
     const float ac2 = 1.0f / (denominator_arg * (denominator_arg + 1.0f) * (denominator_arg + 2.0f) * (denominator_arg + 3.0f) * (denominator_arg + 4.0f));
-    
+
     return std::exp(ab1 - ab2) * (ac1 / ac2);
-       
 }
 
 // Disney code provided in supplement of [1]
@@ -863,7 +862,7 @@ float StdMDF::abgamma(
     const float gm5 = 29944523.0f / 19733142.0f;
     const float gm6 = 109535241009.0f / 48264275462.0f;
 
-    return (0.5f * std::log(2.0 * Pi<float>()) - x + (x - 0.5f) * std::log(x) 
+    return (0.5f * std::log(2.0 * Pi<float>()) - x + (x - 0.5f) * std::log(x)
              + gm0 / (x + gm1 / (x + gm2 / (x + gm3 / (x + gm4 / (x + gm5 / (x + gm6 / x)))))));
 }
 
@@ -906,9 +905,6 @@ float StdMDF::lambda(
     const float F_24 = (6.537f + 6.074f * z - 0.623f * z_2 + 5.223f * z_3) / (6.538f + 6.103f * z - 3.218f * z_2 + 6.347f * z_3);
     const float S2 = F_21 * (F_22 + F_23 * F_24);
 
-    // commented out because unit test failed on gcc6 
-    // const float gamma_fraction = tgamma(gamma - 0.5f) / tgamma(gamma);
-    
     return (gamma_fraction(gamma - 0.5f, gamma) / SqrtPi<float>()) * (A1S1 + A2 * S2) - 0.5f;
 }
 

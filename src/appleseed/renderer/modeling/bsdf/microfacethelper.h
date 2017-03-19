@@ -78,6 +78,18 @@ inline void microfacet_alpha_from_roughness(
     }
 }
 
+//
+// Map highlight falloff to STD microfacet distribution function's gamma parameter
+// in a perceptually linear fashion.
+//
+
+inline float highlight_falloff_to_gama(const float highlight_falloff)
+{
+    const float t = highlight_falloff;
+    const float t2 = foundation::square(t);
+    return foundation::mix(1.51f, 40.0f, foundation::square(t2) * t);
+}
+
 class MicrofacetBRDFHelper
 {
   public:
