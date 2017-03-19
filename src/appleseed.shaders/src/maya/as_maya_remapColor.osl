@@ -146,15 +146,28 @@ shader as_maya_remapColor
     ]]
 )
 {
-    color tmp = (in_color - in_inputMin) / (in_inputMax - in_inputMin);
+    color remapped_color =
+        (in_color - in_inputMin) / (in_inputMax - in_inputMin);
 
-    float r = tmp[0], g = tmp[1], b = tmp[2];
+    float red = float_ramp(
+        in_red_FloatValue,
+        in_red_Position,
+        in_red_Interp,
+        remapped_color[0]);
 
-    r = float_ramp(in_red_FloatValue, in_red_Position, in_red_Interp, r);
-    g = float_ramp(in_green_FloatValue, in_green_Position, in_green_Interp, g);
-    b = float_ramp(in_blue_FloatValue, in_blue_Position, in_blue_Interp, b);
-    
-    out_outColor = color(r, g, b) *
+    float green = float_ramp(
+        in_green_FloatValue,
+        in_green_Position,
+        in_green_Interp,
+        remapped_color[1]);
+
+    float blue = float_ramp(
+        in_blue_FloatValue,
+        in_blue_Position,
+        in_blue_Interp,
+        remapped_color[2]);
+
+    out_outColor = color(red, green, blue) *
         (in_outputMax - in_outputMin) + in_outputMin;
 }
 
