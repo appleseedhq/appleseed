@@ -225,9 +225,9 @@ namespace
             VisibilityFlags::ProbeRay,
             outgoing_point.get_ray().m_depth + 1);
 
-        assert(outgoing_point.get_material() != 0);
-        const BSSRDF* outgoing_bssrdf = &bssrdf;
         const ObjectInstance& outgoing_object_instance = outgoing_point.get_object_instance();
+        const Material* outgoing_material = outgoing_point.get_material();
+        assert(outgoing_material != 0);
 
         const size_t MaxIterations = 16;
         const size_t MaxSampleCount = 16;
@@ -248,22 +248,16 @@ namespace
             probe_ray.m_tmax = norm(exit_point - probe_ray.m_org);
 
             const Material* incoming_material = incoming_point.get_material();
-            const BSSRDF* incoming_bssrdf =
-                incoming_material == 0 ? 0 :
-                incoming_material->get_render_data().m_bssrdf;
             const Material* incoming_opposite_material = incoming_point.get_opposite_material();
-            const BSSRDF* incoming_opposite_bssrdf =
-                incoming_opposite_material == 0 ? 0 :
-                incoming_opposite_material->get_render_data().m_bssrdf;
 
-            bool same_bssrdf =
-                incoming_bssrdf == outgoing_bssrdf || incoming_opposite_bssrdf == outgoing_bssrdf;
-            bool same_sss_set =
+            const bool same_material =
+                incoming_material == outgoing_material || incoming_opposite_material == outgoing_material;
+            const bool same_sss_set =
                 incoming_point.get_object_instance().is_in_same_sss_set(outgoing_object_instance);
 
-            // Only consider hit points with the same BSSRDF as the outgoing point 
+            // Only consider hit points with the same material as the outgoing point
             // and belonging to the same SSS set.
-            if (same_bssrdf && same_sss_set)
+            if (same_material && same_sss_set)
             {
                 // Make sure the incoming point is on the front side of the surface.
                 // There is no such thing as subsurface scattering seen "from the inside".
