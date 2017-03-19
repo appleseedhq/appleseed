@@ -235,10 +235,7 @@ shader as_DisneyMaterial
             {
                 vector vector_map = normalize(
                     (vector) in_anisotropyVectorMap * 2.0 - 1.0);
-
-                // This needs testing, X,Y directions can be on R,G or R,B
-                // channels.
-
+                
                 tangent = normalize(
                     vector_map[0] * Tn +
                     vector_map[1] * Bn +
