@@ -78,9 +78,10 @@
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/xmlelement.h"
+#include "foundation/utility/zipper.h"
 
 // Boost headers.
-#include "boost/filesystem/path.hpp"
+#include "boost/filesystem.hpp"
 
 // Standard headers.
 #include <algorithm>
@@ -92,10 +93,12 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <exception>
 
 using namespace boost;
 using namespace foundation;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace renderer
 {
@@ -871,7 +874,7 @@ namespace
     };
 }
 
-bool ProjectFileWriter::write(
+bool ProjectFileWriter::write_project_file(
     const Project&  project,
     const char*     filepath,
     const int       options)
@@ -923,6 +926,75 @@ bool ProjectFileWriter::write(
 
     RENDERER_LOG_INFO("wrote project file %s.", filepath);
     return true;
+}
+
+string change_extension(string filepath, const string& new_extension)
+{
+    size_t ext_start = filepath.rfind('.');
+
+    if (ext_start == string::npos)
+        return filepath + new_extension;
+    else
+        return filepath.erase(ext_start) + new_extension;
+}
+
+string add_and_create_parent_directory(const string& filepath, const string& parent_dir)
+{
+    bf::path boost_filepath(filepath);
+    boost_filepath = boost_filepath.parent_path() / parent_dir / boost_filepath.filename();
+
+    bf::create_directory(boost_filepath.parent_path());
+    return boost_filepath.string();
+}
+
+bool ProjectFileWriter::write(
+        const Project&  project,
+        const char*     filepath,
+        const int       options)
+{
+    if (!(options & ProjectFileWriter::PackedProject))
+        return write_project_file(project, filepath, options);
+    else
+    {
+        string temp_directory = "";
+
+        try
+        {
+            string temp_project_filepath = change_extension(filepath, ".appleseed");
+            temp_project_filepath = add_and_create_parent_directory(temp_project_filepath, "temp");
+
+            temp_directory = bf::path(temp_project_filepath).parent_path().string();
+
+            RENDERER_LOG_INFO("hey");
+            RENDERER_LOG_INFO("%s", project.get_path());
+            RENDERER_LOG_INFO("%s", bf::path(filepath).parent_path().c_str());
+            RENDERER_LOG_INFO("%s", filepath);
+            RENDERER_LOG_INFO("%s", temp_project_filepath.c_str());
+
+            bool success = write_project_file(project,
+                                      temp_project_filepath.c_str(),
+                                      options | ProjectFileWriter::CopyAllAssets);
+
+            if (!success)
+            {
+                RENDERER_LOG_ERROR("Failed to save project %s.", filepath);
+            }
+            else
+            {
+                zip(filepath, temp_directory);
+            }
+
+            bf::remove_all(temp_directory);
+            return true;
+        }
+        catch (std::exception e)
+        {
+            RENDERER_LOG_ERROR("Failed to save project %s.", filepath);
+            if (temp_directory != "")
+                bf::remove_all(temp_directory);
+            return false;
+        }
+    }
 }
 
 }   // namespace renderer
