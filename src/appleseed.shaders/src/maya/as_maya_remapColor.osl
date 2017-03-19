@@ -1,0 +1,173 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/remapColor.html
+
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/maya/as_maya_ramp_helpers.h"
+
+shader as_maya_remapColor
+[[
+    string maya_node_name = "remapColor",
+    string maya_classification = "utility/color"
+]]
+(
+    color in_color = color(0)
+    [[
+        string maya_attribute_name = "color",
+        string maya_attribute_type = "vector",
+        string label = "Color"
+    ]],
+    float in_inputMin = 0.0
+    [[
+        string maya_attribute_name = "inputMin",
+        string maya_attribute_type = "float",
+        string label = "Input Min"
+    ]],
+    float in_inputMax = 0.0
+    [[
+        string maya_attribute_name = "inputMax",
+        string maya_attribute_type = "float",
+        string label = "Input Max"
+    ]],
+    float in_outputMin = 0.0
+    [[
+        string maya_attribute_name = "outputMin",
+        string maya_attribute_type = "float",
+        string label = "Output Min"
+    ]], 
+    float in_outputMax = 0.0
+    [[
+        string maya_attribute_name = "outputMax",
+        string maya_attribute_type = "float",
+        string label = "Output Max"
+    ]],
+    float in_red_Position[] = {0}
+    [[
+        string maya_attribute_name = "red",
+        string maya_attribute_type = "float[]",
+        string label = "Red Position",
+        string page = "Red"
+    ]],
+    float in_red_FloatValue[] = {0}
+    [[
+        string maya_attribute_name = "red",
+        string maya_attribute_type = "float[]",
+        string label = "Red Value",
+        string page = "Red"
+    ]],
+    int in_red_Interp[] = {0}
+    [[
+        string maya_attribute_name = "red",
+        string maya_attribute_type = "int[]",
+        string widget = "mapper",
+        string options = "None:0|Linear:1|Smooth:2|Spline:3",
+        string label = "Red Interpolation",
+        string page = "Red"
+    ]],
+    float in_green_Position[] = {0}
+    [[
+        string maya_attribute_name = "green",
+        string maya_attribute_type = "float[]",
+        string label = "Green Position",
+        string page = "Green"
+    ]],
+    float in_green_FloatValue[] = {0}
+    [[
+        string maya_attribute_name = "green",
+        string maya_attribute_type = "float[]",
+        string label = "Green Value",
+        string page = "Green"
+    ]],
+    int in_green_Interp[] = {0}
+    [[
+        string maya_attribute_name = "green",
+        string maya_attribute_type = "int[]",
+        string widget = "mapper",
+        string options = "None:0|Linear:1|Smooth:2|Spline:3",
+        string label = "Green Interpolation",
+        string page = "Green"
+    ]], 
+    float in_blue_Position[] = {0}
+    [[
+        string maya_attribute_name = "blue",
+        string maya_attribute_type = "float[]",
+        string label = "Blue Position",
+        string page = "Blue"
+    ]],
+    float in_blue_FloatValue[] = {0}
+    [[
+        string maya_attribute_name = "blue",
+        string maya_attribute_type = "float[]",
+        string label = "Blue Value",
+        string page = "Blue"
+    ]],
+    int in_blue_Interp[] = {0}
+    [[
+        string maya_attribute_name = "blue",
+        string maya_attribute_type = "int[]",
+        string widget = "mapper",
+        string options = "None:0|Linear:1|Smooth:2|Spline:3",
+        string label = "Blue Interpolation",
+        string page = "Blue"
+    ]],
+
+    output color out_outColor = color(0)
+    [[
+        string maya_attribute_name = "outColor",
+        string maya_attribute_type = "vector",
+        string label = "Output Color",
+        string widget = "null"
+    ]]
+)
+{
+    color remapped_color =
+        (in_color - in_inputMin) / (in_inputMax - in_inputMin);
+
+    float red = float_ramp(
+        in_red_FloatValue,
+        in_red_Position,
+        in_red_Interp,
+        remapped_color[0]);
+
+    float green = float_ramp(
+        in_green_FloatValue,
+        in_green_Position,
+        in_green_Interp,
+        remapped_color[1]);
+
+    float blue = float_ramp(
+        in_blue_FloatValue,
+        in_blue_Position,
+        in_blue_Interp,
+        remapped_color[2]);
+
+    out_outColor = color(red, green, blue) *
+        (in_outputMax - in_outputMin) + in_outputMin;
+}
+
