@@ -1245,7 +1245,7 @@ void MainWindow::slot_save_project_as()
     if (!filepath.isEmpty())
     {
         if (QFileInfo(filepath).suffix().isEmpty())
-            filepath += ".appleseed";
+            filepath += get_extension(m_settings, SETTINGS_FILE_DIALOG_PROJECTS);
 
         filepath = QDir::toNativeSeparators(filepath);
 
