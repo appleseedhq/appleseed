@@ -134,8 +134,8 @@ shader as_maya_remapValue
         (in_inputValue - in_inputMin) / (in_inputMax - in_inputMin);
 
     float tmp_value = float_ramp(
-        in_value_Position,
         in_value_FloatValue,
+        in_value_Position,
         in_value_Interp,
         remapped_value);
 
