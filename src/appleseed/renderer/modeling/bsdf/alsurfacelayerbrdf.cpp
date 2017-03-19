@@ -184,11 +184,10 @@ namespace
             assert(m.y > 0.0f);
 
             float layer_weight;
-            float layer_probability;
-            fresnel_term(*values, wo, m, sample.m_value, layer_weight, layer_probability);
+            fresnel_term(*values, wo, m, sample.m_value, layer_weight);
 
             // Choose between layer and substrate.
-            if (s[3] < layer_probability)
+            if (s[3] < layer_weight)
             {
                 // Compute the reflected direction.
                 const Vector3f wi = improve_normalization(reflect(wo, m));
@@ -203,7 +202,7 @@ namespace
                     m,
                     sample.m_value);
 
-                sample.m_probability = reflection_pdf(*values, mdf, wo, m) * layer_probability;
+                sample.m_probability = reflection_pdf(*values, mdf, wo, m) * layer_weight;
                 sample.m_mode = ScatteringMode::Glossy;
                 sample.m_incoming = Dual3f(shading_basis.transform_to_parent(wi));
                 sample.compute_reflected_differentials();
@@ -217,7 +216,7 @@ namespace
                     false, // do not multiply by |cos(incoming, normal)|
                     sample);
                 sample.m_value *= 1.0f - layer_weight;
-                sample.m_probability *= 1.0f - layer_probability;
+                sample.m_probability *= 1.0f - layer_weight;
             }
         }
 
@@ -244,21 +243,20 @@ namespace
             value.set(0.0f);
 
             float layer_weight;
-            float layer_probability;
             Spectrum f_value;
-            fresnel_term(*values, wo, m, f_value, layer_weight, layer_probability);
+            fresnel_term(*values, wo, m, f_value, layer_weight);
 
             if (ScatteringMode::has_glossy(modes) && (wi.y * wo.y >= 0.0f))
             {
                 const MDF& mdf = pick_mdf(values->m_distribution);
                 value = f_value;
                 evaluate_reflection(*values, mdf, wi, wo, m, value);
-                probability = layer_probability * reflection_pdf(*values, mdf, wo, m);
+                probability = layer_weight * reflection_pdf(*values, mdf, wo, m);
             }
 
-            const float substrate_probability = 1.0f - layer_probability;
+            const float substrate_weight = 1.0f - layer_weight;
 
-            if (substrate_probability > 0.0f)
+            if (substrate_weight > 0.0f)
             {
                 Spectrum substrate_value;
                 probability += values->m_osl_bsdf->evaluate(
@@ -270,8 +268,8 @@ namespace
                     outgoing,
                     incoming,
                     modes,
-                    substrate_value) * substrate_probability;
-                madd(value, substrate_value, (1.0f - layer_weight));
+                    substrate_value) * substrate_weight;
+                madd(value, substrate_value, substrate_weight);
             }
 
             return probability;
@@ -292,21 +290,20 @@ namespace
             const Vector3f m = half_reflection_vector(wi, wo);
 
             float layer_weight;
-            float layer_probability;
             Spectrum value;
-            fresnel_term(*values, wo, m, value, layer_weight, layer_probability);
+            fresnel_term(*values, wo, m, value, layer_weight);
 
             float probability = 0.0f;
 
             if (ScatteringMode::has_glossy(modes) && (wi.y * wo.y >= 0.0f))
             {
                 const MDF& mdf = pick_mdf(values->m_distribution);
-                probability = layer_probability * reflection_pdf(*values, mdf, wo, m);
+                probability = layer_weight * reflection_pdf(*values, mdf, wo, m);
             }
 
-            const float substrate_probability = 1.0f - layer_probability;
+            const float substrate_weight = 1.0f - layer_weight;
 
-            if (substrate_probability > 0.0f)
+            if (substrate_weight > 0.0f)
             {
                 probability += values->m_osl_bsdf->evaluate_pdf(
                     values->m_substrate_closure_data,
@@ -314,7 +311,7 @@ namespace
                     shading_basis,
                     outgoing,
                     incoming,
-                    modes) * substrate_probability;
+                    modes) * substrate_weight;
             }
 
             return probability;
@@ -371,8 +368,7 @@ namespace
             Vector3f                wo,
             const Vector3f&         m,
             Spectrum&               value,
-            float&                  weight,
-            float&                  probability)
+            float&                  weight)
         {
             if (wo.y < 0.0f)
                 wo = -wo;
@@ -385,7 +381,7 @@ namespace
                 if (cos_wom < 0.0f)
                 {
                     value.set(0.0f);
-                    weight = probability = 0.0f;
+                    weight = 0.0f;
                     return;
                 }
 
@@ -410,10 +406,6 @@ namespace
             }
 
             weight = saturate(max_value(value));
-            // Use more samples for the layer.
-            probability = sqrt(weight);
-            const float total = probability + sqrt(1.0f - weight);
-            probability /= total;
         }
 
         static Vector3f half_reflection_vector(
