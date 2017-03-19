@@ -91,7 +91,6 @@ TEST_SUITE(Foundation_Math_Microfacet)
         return integral;
     }
 
-
     //
     // Weak white furnace test.
     //
@@ -417,6 +416,72 @@ TEST_SUITE(Foundation_Math_Microfacet)
             2.0f);
 
         EXPECT_WEAK_WHITE_FURNACE_PASS(result)
+    }
+
+    // Expect StdMDF and GGXMDF to be the same for gamma = 2
+
+    TEST_CASE(StdMDF_2_GGXMDF_comparison)
+    {
+        const StdMDF std;
+        const GGXMDF ggx;
+
+        size_t num_sample = 128;
+        for (size_t i = 0; i < num_sample; ++i)
+        {
+            static const size_t Bases[] = { 2 };
+            const Vector2f s = hammersley_sequence<float, 2>(Bases, num_sample, i);
+            const Vector3f v = sample_hemisphere_uniform(s);
+            const float std_G1 = std.G1(v, Vector3f(0.0f, 1.0, 0.0f), 0.5, 0.5, 2);
+            const float ggx_G1 = ggx.G1(v, Vector3f(0.0f, 1.0, 0.0f), 0.5, 0.5, 2);
+            EXPECT_FEQ_EPS(std_G1, ggx_G1, 0.05f);
+        }
+    }
+
+    // Check for lambda overflow
+
+    TEST_CASE(StdMDF_lambda_overflow)
+    {
+        const StdMDF std;
+
+        float gamma_max = 40.0f;
+        float gamma_step = 2.0f;
+        size_t num_sample = 128;
+        for (float i = 10.0f; i < gamma_max; i += gamma_step)
+        {
+            for (size_t j = 0; j < num_sample; ++j)            
+            {         
+                static const size_t Bases[] = { 2 };
+                const Vector2f s = hammersley_sequence<float, 2>(Bases, num_sample, i);
+                const Vector3f v = sample_hemisphere_uniform(s);
+                const float std_G1 = std.G1(v, Vector3f(0.0f, 1.0, 0.0f), 0.5, 0.5, i);
+                EXPECT_TRUE(std::isfinite(std_G1)); // check that G1 doesn't produce NaN
+            }
+        }
+
+    }
+
+    // Check for D overflow
+
+    TEST_CASE(StdMDF_D_overflow)
+    {
+        const StdMDF std;
+
+        float gamma_max = 40.0f;
+        float gamma_step = 2.0f;
+        size_t num_sample = 128;
+        for (float i = 10.0f; i < gamma_max; i += gamma_step)
+        {
+            for (size_t j = 0; j < num_sample; ++j)            
+            {         
+                static const size_t Bases[] = { 2 };
+                const Vector2f s = hammersley_sequence<float, 2>(Bases, num_sample, i);
+                const Vector3f h = sample_hemisphere_uniform(s);
+                const float std_D = std.D(h, 0.5, 0.5, i);
+
+                EXPECT_TRUE(std::isfinite(std_D)); // check that D doesn't produce NaN
+            }
+        }
+
     }
 
 #undef EXPECT_WEAK_WHITE_FURNACE_PASS

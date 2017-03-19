@@ -796,11 +796,19 @@ float StdMDF::D(
     const float tan_theta_2 = (1.0f - cos_theta_2) / cos_theta_2;
     
     // [1] Equation 11.
-    const float a = std::pow(gamma - 1.0f, gamma);
-    const float b = std::pow(alpha_x, 2.0f * gamma - 2.0f);
-    const float c = std::pow((gamma - 1) * alpha_x2 + tan_theta_2, gamma);
+    // Following Disney implementation idea - divide gamma power by four first to avoid explosion
+    const float A_a = std::pow(alpha_x, (2.0f * gamma - 2.0f) / 4.0f);
+    const float A_b = std::pow(gamma - 1.0f, gamma / 4.0f);
+    const float A_c = std::pow((gamma - 1.0f) * alpha_x2 + tan_theta_2, gamma / 4.0f);
+    const float A_num4 = A_a * A_b;
+    const float A_denom4 = std::max(A_c, std::numeric_limits<float>::epsilon());
+    const float A4 = A_num4 / A_denom4;
+    
+    const float A2 = A4 * A4;
+    const float A = A2 * A2;
+    
 
-    return RcpPi<float>() * (a * b) / (cos_theta_4 * c);
+    return A / (Pi<float>() * cos_theta_4);
 }
 
 float StdMDF::G(
@@ -828,6 +836,37 @@ float StdMDF::G1(
     return 1.0f / (1.0f + lambda(v, alpha_x, alpha_y, gamma));
 }
 
+// Disney code provided in supplement of [1]
+float StdMDF::gamma_fraction(
+    const float         numerator_arg,
+    const float         denominator_arg) const
+{
+    const float ab1 = abgamma(numerator_arg + 5.0f);
+    const float ab2 = abgamma(denominator_arg + 5.0f);
+    
+    const float ac1 = 1.0f / (numerator_arg * (numerator_arg + 1.0f) * (numerator_arg + 2.0f) * (numerator_arg + 3.0f) * (numerator_arg + 4.0f));
+    const float ac2 = 1.0f / (denominator_arg * (denominator_arg + 1.0f) * (denominator_arg + 2.0f) * (denominator_arg + 3.0f) * (denominator_arg + 4.0f));
+    
+    return std::exp(ab1 - ab2) * (ac1 / ac2);
+       
+}
+
+// Disney code provided in supplement of [1]
+float StdMDF::abgamma(
+    const float         x) const
+{
+    const float gm0 = 1.0f /12.0f;
+    const float gm1 = 1.0f / 30.0f;
+    const float gm2 = 53.0f / 210.0f;
+    const float gm3 = 195.0f / 371.0f;
+    const float gm4 = 22999.0f / 22737.0f;
+    const float gm5 = 29944523.0f / 19733142.0f;
+    const float gm6 = 109535241009.0f / 48264275462.0f;
+
+    return (0.5f * std::log(2.0 * Pi<float>()) - x + (x - 0.5f) * std::log(x) 
+             + gm0 / (x + gm1 / (x + gm2 / (x + gm3 / (x + gm4 / (x + gm5 / (x + gm6 / x)))))));
+}
+
 float StdMDF::lambda(
     const Vector3f&     v,
     const float         alpha_x,
@@ -840,11 +879,19 @@ float StdMDF::lambda(
     const float tan_theta = sin_theta / cos_theta;
     const float tan_theta_2 = square(tan_theta);
 
-    const float A1 = std::pow((gamma - 1.0f), gamma) / (2.0f * gamma - 3.0f);
-    // S1 [1] Equation 14.
-    const float S1_a = alpha_x * tan_theta;
-    const float S1_b = (gamma - 1.0f) + 1.0f / (alpha_2 * tan_theta_2);
-    const float S1 = S1_a * std::pow(S1_b, 1.5f - gamma);
+    if (tan_theta == 0.0f)
+        return 0.0f;
+
+    // If equation 14 from [1] would be implemented dirrectly as it is written,
+    // the multiplier of S1, (we'll call it here A1), would explode for gamma
+    // values over 30 because of exponent.
+    // To avoid the exponential explosion, function needs to be rewritten
+    // so that the base of the power lowers.
+    // Here we combine A1 with part of S1 which is also raised to gamma.
+    const float A1S1_a = gamma - 1.0f;
+    const float A1S1_b = alpha_x * tan_theta / (2 * gamma - 3.0f);
+    const float A1S1_c = (gamma - 1.0f + 1.0f / (alpha_2 * tan_theta_2));
+    const float A1S1 = std::pow(A1S1_a / A1S1_c, gamma) * A1S1_b * std::pow(A1S1_c, 1.5f);
 
     const float A2 = std::sqrt(gamma - 1.0f);
     // S2 Rational fractions for GAF approximation [1] Equation 23.
@@ -859,9 +906,10 @@ float StdMDF::lambda(
     const float F_24 = (6.537f + 6.074f * z - 0.623f * z_2 + 5.223f * z_3) / (6.538f + 6.103f * z - 3.218f * z_2 + 6.347f * z_3);
     const float S2 = F_21 * (F_22 + F_23 * F_24);
 
-    const float gamma_fraction = tgamma(gamma - 0.5f) / tgamma(gamma);
-
-    return (gamma_fraction / SqrtPi<float>()) * (A1 * S1 + A2 * S2) - 0.5f;
+    // commented out because unit test failed on gcc6 
+    // const float gamma_fraction = tgamma(gamma - 0.5f) / tgamma(gamma);
+    
+    return (gamma_fraction(gamma - 0.5f, gamma) / SqrtPi<float>()) * (A1S1 + A2 * S2) - 0.5f;
 }
 
 float StdMDF::pdf(
