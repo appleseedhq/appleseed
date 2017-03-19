@@ -159,6 +159,9 @@ set (appleseed_maya_osl_sources
      src/maya/as_maya_addMatrix.osl
      src/maya/as_maya_anisotropic.osl
      src/maya/as_maya_areaLight.osl
+     src/maya/as_maya_asCarPaint.osl
+     src/maya/as_maya_asDisneyMaterial.osl
+     src/maya/as_maya_asGlass.osl
      src/maya/as_maya_blendColors.osl
      src/maya/as_maya_blinn.osl
      src/maya/as_maya_bulge.osl
@@ -203,6 +206,7 @@ set (appleseed_maya_osl_sources
      src/maya/as_maya_psdFileTex.osl
      src/maya/as_maya_quadShadingSwitch.osl
      src/maya/as_maya_ramp.osl
+     src/maya/as_maya_remapColor.osl
      src/maya/as_maya_reverse.osl
      src/maya/as_maya_rgbToHsv.osl
      src/maya/as_maya_samplerInfo.osl
