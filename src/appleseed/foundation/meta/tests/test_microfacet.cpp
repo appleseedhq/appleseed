@@ -477,6 +477,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
                 const Vector2f s = hammersley_sequence<float, 2>(Bases, num_sample, i);
                 const Vector3f h = sample_hemisphere_uniform(s);
                 const float std_D = std.D(h, 0.5, 0.5, i);
+
                 EXPECT_TRUE(std::isfinite(std_D)); // check that D doesn't produce NaN
             }
         }

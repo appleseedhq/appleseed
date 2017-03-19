@@ -790,20 +790,25 @@ float StdMDF::D(
     if (cos_theta == 0.0f)
         return 0.0;
 
-    const double cos_theta_2 = square(cos_theta);
-    const double cos_theta_4 = square(cos_theta_2);
-    const double alpha_x2 = square(alpha_x);
-    const double tan_theta_2 = (1.0f - cos_theta_2) / cos_theta_2;
+    const float cos_theta_2 = square(cos_theta);
+    const float cos_theta_4 = square(cos_theta_2);
+    const float alpha_x2 = square(alpha_x);
+    const float tan_theta_2 = (1.0f - cos_theta_2) / cos_theta_2;
     
     // [1] Equation 11.
-    const double a = std::pow(alpha_x, (2.0f * gamma - 2.0f)) / (Pi<double>() * cos_theta_4);
-    const double b = gamma - 1.0f;
-    const double c = (gamma - 1.0f) * alpha_x2 + tan_theta_2;
-    const double power = std::pow(b / c, gamma / 4.0f);
-    const double power_2 = power * power;
-    const double power_4 = power_2 * power_2; // added only to reduce exponential explosion
+    // Following Disney implementation idea - divide gamma power by four first to avoid explosion
+    const float A_a = std::pow(alpha_x, (2.0f * gamma - 2.0f) / 4.0f);
+    const float A_b = std::pow(gamma - 1.0f, gamma / 4.0f);
+    const float A_c = std::pow((gamma - 1.0f) * alpha_x2 + tan_theta_2, gamma / 4.0f);
+    const float A_num4 = A_a * A_b;
+    const float A_denom4 = std::max(A_c, std::numeric_limits<float>::epsilon());
+    const float A4 = A_num4 / A_denom4;
+    
+    const float A2 = A4 * A4;
+    const float A = A2 * A2;
+    
 
-    return a * power_4;
+    return A / (Pi<float>() * cos_theta_4);
 }
 
 float StdMDF::G(
