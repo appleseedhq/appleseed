@@ -32,15 +32,19 @@
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 
+// Boost headers.
+#include "boost/filesystem/path.hpp"
+
 // Standard headers.
 #include <string>
 #include <vector>
+#include <set>
 
 namespace foundation
 {
 
     //
-    // Exception class used for all zipper exceptions
+    // Exception class used for all zip related exceptions
     //
 
     class ZipException
@@ -51,7 +55,45 @@ namespace foundation
         ZipException(const char* what, const int err);
     };
 
-    void zip(const std::string &zip_filename, const std::vector<std::string> &filenames_to_zip);
+    //
+    // Extracts zip file zipFilename to unzipped_dir directory.
+    //
+    // Throws ZipException in case of exception.
+    // If exception is thrown, unzipped folder is deleted.
+    //
+
+    void unzip(const std::string& zip_filename, const std::string& unzipped_dir);
+
+    //
+    // Archives directory_to_zip to zip_filename zip file.
+    //
+    // Throws ZipException in case of exception.
+    // If exception is thrown, zip archive is deleted.
+    //
+
+    void zip(const std::string &zip_filename, const std::string &directory_to_zip);
+
+    //
+    // Checks if file is in zip format by trying to open it.
+    //
+
+    bool is_zip_file(const char* filename);
+
+    //
+    // Returns all filenames from zip_filenames zip with given extension.
+    //
+    // Throws ZipException if zip_filename can't be opened or is not a zip file.
+    //
+
+    std::vector<std::string> get_filenames_with_extension_from_zip(
+        const std::string& zip_filename,
+        const std::string& extension);
+
+    //
+    // Prints files inside dirpath directory and all subdirectories
+    //
+
+    std::set<std::string> recursive_ls(boost::filesystem::path dir);
 
     }   // namespace foundation
 

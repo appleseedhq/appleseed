@@ -115,7 +115,7 @@
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
-#include "foundation/utility/unzipper.h"
+#include "foundation/utility/zipper.h"
 #include "foundation/utility/xercesc.h"
 
 // Xerces-C++ headers.
