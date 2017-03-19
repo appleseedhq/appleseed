@@ -232,6 +232,12 @@ void EntityEditor::create_input_widgets(const Dictionary& metadata, const bool i
         metadata.strings().exist("on_change") &&
         metadata.get<string>("on_change") == "rebuild_form";
 
+    FILE *fout = fopen("rahat.txt", "a+");
+    fprintf(fout, "Am widget_proxy cu nume %s si type %s - fac rebuild %d\n", input_name.c_str(), 
+        input_type.c_str(), rebuild_form);
+    fclose(fout);
+
+
     connect(
         widget_proxy.get(),
         SIGNAL(signal_changed()),
@@ -417,6 +423,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_color_input_widgets(const Dicti
     picker_button->setObjectName("color_picker");
     connect(picker_button, SIGNAL(clicked()), m_color_picker_signal_mapper, SLOT(map()));
 
+
     const string name = metadata.get<string>("name");
     m_color_picker_signal_mapper->setMapping(picker_button, QString::fromStdString(name));
 
@@ -500,14 +507,6 @@ void EntityEditor::slot_rebuild_form()
     rebuild_form(get_values());
 
     emit signal_applied(get_values());
-}
-
-void EntityEditor::slot_clear_crop_window_widget()
-{
-    IInputWidgetProxy* widget_proxy = m_widget_proxies.get("crop_window");
-
-    if (widget_proxy)
-        widget_proxy->set("");
 }
 
 namespace

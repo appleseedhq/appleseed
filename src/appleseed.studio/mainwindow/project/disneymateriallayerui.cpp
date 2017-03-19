@@ -261,6 +261,13 @@ void DisneyMaterialLayerUI::slot_open_color_picker(const QString& widget_name)
         forward_signal, SIGNAL(signal_color_reset(const QString&, const QColor&)),
         SLOT(slot_color_changed(const QString&, const QColor&)));
 
+    connect(
+        dialog, SIGNAL(rejected()),
+        forward_signal, SLOT(slot_reset_color()));
+    connect(
+        forward_signal, SIGNAL(signal_reset_color(const QString&, const QColor&)),
+        SLOT(slot_color_changed(const QString&, const QColor&)));
+
     dialog->exec();
 }
 
