@@ -176,9 +176,9 @@ namespace
 
                 outgoing_point.set_shading_basis(Basis3d(modified_basis));
 
-                return
-                    bssrdf_from_closure_id(c->get_closure_type(closure_index))
-                        .sample(
+                const BSSRDF& bssrdf = bssrdf_from_closure_id(c->get_closure_type(closure_index));
+                const bool result =
+                        bssrdf.sample(
                             shading_context,
                             sampling_context,
                             c->get_closure_input_values(closure_index),
@@ -186,6 +186,11 @@ namespace
                             outgoing_dir,
                             bssrdf_sample,
                             bsdf_sample);
+
+                if (result)
+                    bssrdf_sample.m_value *= c->get_closure_weight(closure_index);;
+
+                return result;
             }
 
             return false;
