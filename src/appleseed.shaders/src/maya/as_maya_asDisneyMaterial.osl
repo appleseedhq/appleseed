@@ -258,7 +258,7 @@ shader as_DisneyMaterial
                     point(in_normalCamera));
             }
         }
-        
+
         out_outColor = as_disney(
             Nn,
             tangent,
@@ -294,4 +294,3 @@ shader as_DisneyMaterial
         out_outColor += matte_term;
     }
 }
-

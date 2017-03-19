@@ -261,4 +261,3 @@ shader as_Glass
         out_outColor += matte_term;
     }
 }
-
