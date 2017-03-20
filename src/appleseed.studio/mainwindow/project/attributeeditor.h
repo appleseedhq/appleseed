@@ -40,6 +40,7 @@
 #include <memory>
 
 // Forward declarations.
+namespace appleseed     { namespace studio { class IEntityValueProvider; } }
 namespace foundation    { class Dictionary; }
 namespace renderer      { class Project; }
 class QObject;
@@ -66,8 +67,11 @@ class AttributeEditor
         QObject*                                        receiver,
         const char*                                     slot_apply);
 
+    void refresh() const;
+
   private:
     QWidget*                    m_parent;
+    IEntityValueProvider*       m_value_provider;
     renderer::Project&          m_project;
     std::auto_ptr<EntityEditor> m_entity_editor;
 };

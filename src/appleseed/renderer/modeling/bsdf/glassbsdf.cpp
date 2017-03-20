@@ -223,7 +223,7 @@ namespace
             // Compute the microfacet normal by sampling the MDF.
             sampling_context.split_in_place(4, 1);
             const Vector4f s = sampling_context.next2<Vector4f>();
-            Vector3f m = m_mdf->sample(wo, Vector3f(s[0], s[1], s[2]), alpha_x, alpha_y);
+            Vector3f m = m_mdf->sample(wo, Vector3f(s[0], s[1], s[2]), alpha_x, alpha_y, 0.0f);
             assert(m.y > 0.0f);
 
             const float cos_wom = clamp(dot(wo, m), -1.0f, 1.0f);
@@ -260,7 +260,7 @@ namespace
 
                 sample.m_probability =
                     r_probability *
-                    reflection_pdf(wo, m, cos_wom, alpha_x, alpha_y);
+                    reflection_pdf(wo, m, cos_wom, alpha_x, alpha_y, 0.0f);
             }
             else
             {
@@ -292,7 +292,7 @@ namespace
 
                 sample.m_probability =
                     (1.0f - r_probability) *
-                    refraction_pdf(wi, wo, m, alpha_x, alpha_y, values->m_precomputed.m_eta);
+                    refraction_pdf(wi, wo, m, alpha_x, alpha_y, 0.0f, values->m_precomputed.m_eta);
             }
 
             if (sample.m_probability < 1.0e-9f)
@@ -352,7 +352,7 @@ namespace
 
                 return
                     choose_reflection_probability(values, F) *
-                    reflection_pdf(wo, m, cos_wom, alpha_x, alpha_y);
+                    reflection_pdf(wo, m, cos_wom, alpha_x, alpha_y, 0.0f);
             }
             else
             {
@@ -374,7 +374,7 @@ namespace
 
                 return
                     (1.0f - choose_reflection_probability(values, F)) *
-                    refraction_pdf(wi, wo, m, alpha_x, alpha_y, values->m_precomputed.m_eta);
+                    refraction_pdf(wi, wo, m, alpha_x, alpha_y, 0.0f, values->m_precomputed.m_eta);
             }
         }
 
@@ -411,7 +411,7 @@ namespace
 
                 return
                     choose_reflection_probability(values, F) *
-                    reflection_pdf(wo, m, cos_wom, alpha_x, alpha_y);
+                    reflection_pdf(wo, m, cos_wom, alpha_x, alpha_y, 0.0f);
             }
             else
             {
@@ -422,7 +422,7 @@ namespace
 
                 return
                     (1.0f - choose_reflection_probability(values, F)) *
-                    refraction_pdf(wi, wo, m, alpha_x, alpha_y, values->m_precomputed.m_eta);
+                    refraction_pdf(wi, wo, m, alpha_x, alpha_y, 0.0f, values->m_precomputed.m_eta);
             }
         }
 
@@ -564,8 +564,8 @@ namespace
                 return;
             }
 
-            const float D = m_mdf->D(h, alpha_x, alpha_y);
-            const float G = m_mdf->G(wi, wo, h, alpha_x, alpha_y);
+            const float D = m_mdf->D(h, alpha_x, alpha_y, 0.0f);
+            const float G = m_mdf->G(wi, wo, h, alpha_x, alpha_y, 0.0f);
 
             value = values->m_precomputed.m_reflection_color;
             value *= F * D * G / denom;
@@ -576,14 +576,15 @@ namespace
             const Vector3f&         h,
             const float             cos_oh,
             const float             alpha_x,
-            const float             alpha_y) const
+            const float             alpha_y,
+            const float             gamma) const
         {
             // [1] eq. 14.
             if (cos_oh == 0.0f)
                 return 0.0f;
 
             const float jacobian = 1.0f / (4.0f * abs(cos_oh));
-            return jacobian * m_mdf->pdf(wo, h, alpha_x, alpha_y);
+            return jacobian * m_mdf->pdf(wo, h, alpha_x, alpha_y, gamma);
         }
 
         static Vector3f half_refraction_vector(
@@ -619,8 +620,8 @@ namespace
                 return;
             }
 
-            const float D = m_mdf->D(h, alpha_x, alpha_y);
-            const float G = m_mdf->G(wi, wo, h, alpha_x, alpha_y);
+            const float D = m_mdf->D(h, alpha_x, alpha_y, 0.0f);
+            const float G = m_mdf->G(wi, wo, h, alpha_x, alpha_y, 0.0f);
             const float multiplier = abs(dots) * square(values->m_precomputed.m_eta / sqrt_denom) * T * D * G;
 
             value = values->m_precomputed.m_refraction_color;
@@ -633,6 +634,7 @@ namespace
             const Vector3f&         h,
             const float             alpha_x,
             const float             alpha_y,
+            const float             gamma,
             const float             eta) const
         {
             // [1] eq. 17.
@@ -644,7 +646,7 @@ namespace
                 return 0.0f;
 
             const float jacobian = abs(cos_ih) * square(eta / sqrt_denom);
-            return jacobian * m_mdf->pdf(wo, h, alpha_x, alpha_y);
+            return jacobian * m_mdf->pdf(wo, h, alpha_x, alpha_y, gamma);
         }
     };
 

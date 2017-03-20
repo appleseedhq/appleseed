@@ -1122,7 +1122,7 @@ void MainWindow::slot_open_project()
         get_open_filename(
             this,
             "Open...",
-            "Project Files (*.appleseed);;All Files (*.*)",
+            "Project Files (*.appleseed);;Packed Project Files (*.appleseedz);;All Files (*.*)",
             m_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 
@@ -1466,19 +1466,31 @@ namespace
       : public RenderingManager::IScheduledAction
     {
       public:
+        explicit ClearRenderRegionAction(const AttributeEditor* attribute_editor)
+          : m_attribute_editor(attribute_editor)
+        {
+        }
+
         virtual void operator()(
             Project&        project) APPLESEED_OVERRIDE
         {
             project.get_frame()->reset_crop_window();
+            m_attribute_editor->refresh();
         }
+
+      private:
+        const AttributeEditor* m_attribute_editor;
     };
 
     class SetRenderRegionAction
       : public RenderingManager::IScheduledAction
     {
       public:
-        explicit SetRenderRegionAction(const QRect& rect)
-          : m_rect(rect)
+        SetRenderRegionAction(
+            const QRect&            rect,
+            const AttributeEditor*  attribute_editor)
+          : m_rect(rect),
+            m_attribute_editor(attribute_editor)
         {
         }
 
@@ -1501,37 +1513,46 @@ namespace
                 AABB2i(
                     Vector2i(x0, y0),
                     Vector2i(x1, y1)));
+            m_attribute_editor->refresh();
         }
 
       private:
         const QRect m_rect;
+        const AttributeEditor* m_attribute_editor;
     };
 }
 
 void MainWindow::slot_clear_render_region()
 {
-    m_rendering_manager.schedule(
-        auto_ptr<RenderingManager::IScheduledAction>(
-            new ClearRenderRegionAction()));
+    auto_ptr<RenderingManager::IScheduledAction> clear_render_region_action(
+        new ClearRenderRegionAction(m_attribute_editor));
+
+    if (m_rendering_manager.is_rendering())
+        m_rendering_manager.schedule(clear_render_region_action);
+    else clear_render_region_action.get()->operator()(
+        *m_project_manager.get_project());
 
     m_rendering_manager.reinitialize_rendering();
-
-    emit signal_crop_window_cleared();
 }
 
 void MainWindow::slot_set_render_region(const QRect& rect)
 {
-    m_rendering_manager.schedule(
-        auto_ptr<RenderingManager::IScheduledAction>(
-            new SetRenderRegionAction(rect)));
+    auto_ptr<RenderingManager::IScheduledAction> set_render_region_action(
+        new SetRenderRegionAction(rect, m_attribute_editor));
 
-    if (m_settings.get_path_optional<bool>(SETTINGS_RENDER_REGION_TRIGGERS_RENDERING))
+    if (!m_rendering_manager.is_rendering())
     {
-        if (m_rendering_manager.is_rendering())
-            m_rendering_manager.reinitialize_rendering();
-        else start_rendering(InteractiveRendering);
+        set_render_region_action.get()->operator()(
+            *m_project_manager.get_project());
+
+        if (m_settings.get_path_optional<bool>(SETTINGS_RENDER_REGION_TRIGGERS_RENDERING))
+            start_rendering(InteractiveRendering);
     }
-    else m_rendering_manager.reinitialize_rendering();
+    else
+    {
+        m_rendering_manager.schedule(set_render_region_action);
+        m_rendering_manager.reinitialize_rendering();
+    }
 }
 
 void MainWindow::slot_render_widget_context_menu(const QPoint& point)

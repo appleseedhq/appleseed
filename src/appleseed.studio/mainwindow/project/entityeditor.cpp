@@ -108,7 +108,6 @@ EntityEditor::EntityEditor(
     m_top_layout = new QVBoxLayout(m_parent);
     m_top_layout->setMargin(7);
 
-    create_form_layout();
     create_connections();
     rebuild_form(values);
 }
@@ -502,12 +501,21 @@ void EntityEditor::slot_rebuild_form()
     emit signal_applied(get_values());
 }
 
-void EntityEditor::slot_clear_crop_window_widget()
+void EntityEditor::refresh(const Dictionary& values)
 {
-    IInputWidgetProxy* widget_proxy = m_widget_proxies.get("crop_window");
+    m_form_factory->update(values, m_input_metadata);
 
-    if (widget_proxy)
-        widget_proxy->set("");
+    for (const_each<InputMetadataCollection> i = m_input_metadata; i; ++i)
+    {
+        const Dictionary& metadata = *i;
+
+        IInputWidgetProxy* widget_proxy = m_widget_proxies.get(
+            metadata.strings().get<string>("name"));
+
+        if (widget_proxy)
+            widget_proxy->set(
+                metadata.strings().get<string>("value"));
+    }
 }
 
 namespace

@@ -438,6 +438,7 @@ namespace
                         ggx_mdf,
                         alpha_x,
                         alpha_y,
+                        0.0f,
                         DisneySpecularFresnelFun(*values),
                         cos_on,
                         sample);
@@ -451,6 +452,7 @@ namespace
                         gtr1_mdf,
                         alpha,
                         alpha,
+                        0.0f,
                         DisneyClearcoatFresnelFun(*values),
                         cos_on,
                         sample);
@@ -526,6 +528,7 @@ namespace
                         ggx_mdf,
                         alpha_x,
                         alpha_y,
+                        0.0f,
                         shading_basis,
                         outgoing,
                         incoming,
@@ -545,6 +548,7 @@ namespace
                         gtr1_mdf,
                         alpha,
                         alpha,
+                        0.0f,
                         shading_basis,
                         outgoing,
                         incoming,
@@ -614,6 +618,7 @@ namespace
                         ggx_mdf,
                         alpha_x,
                         alpha_y,
+                        0.0f,
                         shading_basis,
                         outgoing,
                         incoming) * weights[SpecularComponent];
@@ -627,6 +632,7 @@ namespace
                         gtr1_mdf,
                         alpha,
                         alpha,
+                        0.0f,
                         shading_basis,
                         outgoing,
                         incoming) * weights[CleatcoatComponent];
