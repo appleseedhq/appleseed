@@ -306,10 +306,10 @@ macro (osl_compile osl_src oso_obj headers)
     )
 
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(OSL_OPTIONS -O0 -DDEBUG)
-    else()
-        set(OSL_OPTIONS -O2 -DNDEBUG)
-    endif()
+        set (OSL_OPTIONS -O0 -DDEBUG)
+    else ()
+        set (OSL_OPTIONS -O2 -DNDEBUG)
+    endif ()
 
     add_custom_command (
         OUTPUT ${oso_dir}/${oso_filename}
