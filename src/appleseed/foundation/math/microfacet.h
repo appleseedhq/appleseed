@@ -48,8 +48,6 @@ class MDF
   : public NonCopyable
 {
   public:
-    MDF();
-
     virtual ~MDF();
 
     virtual float D(
@@ -107,8 +105,6 @@ class BlinnMDF
   : public MDF
 {
   public:
-    BlinnMDF();
-
     virtual float D(
         const Vector3f&     h,
         const float         alpha_x,
@@ -173,8 +169,6 @@ class BeckmannMDF
   : public MDF
 {
   public:
-    BeckmannMDF();
-
     virtual float D(
         const Vector3f&     h,
         const float         alpha_x,
@@ -242,8 +236,6 @@ class GGXMDF
   : public MDF
 {
   public:
-    GGXMDF();
-
     virtual float D(
         const Vector3f&     h,
         const float         alpha_x,
@@ -307,8 +299,6 @@ class WardMDF
   : public MDF
 {
   public:
-    WardMDF();
-
     virtual float D(
         const Vector3f&     h,
         const float         alpha_x,
@@ -362,8 +352,6 @@ class GTR1MDF
   : public MDF
 {
   public:
-    GTR1MDF();
-
     virtual float D(
         const Vector3f&     h,
         const float         alpha_x,
@@ -407,18 +395,19 @@ class GTR1MDF
         const float         gamma) const;
 };
 
+
 //
-// Students T-Distribution MDF
+// Student's t-Distribution MDF.
 //
-// [1] https://bv.univ-poitiers.fr/access/content/user/mribar03/website/projects/eg_2017/distribution.pdf
+// Reference:
+//
+//   https://bv.univ-poitiers.fr/access/content/user/mribar03/website/projects/eg_2017/distribution.pdf
 //
 
 class StdMDF
   : public MDF
 {
   public:
-    StdMDF();
-
     virtual float D(
         const Vector3f&     h,
         const float         alpha_x,
