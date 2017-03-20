@@ -150,7 +150,7 @@ void SPPMParameters::print() const
         "  initial radius         %s%%\n"
         "  alpha                  %s\n"
         "  max photons/est.       %s\n"
-        "  dl light samples       %s\n",
+        "  dl light samples       %s\n"
         "  dl low light threshold %s",
         m_path_tracing_max_path_length == size_t(~0) ? "infinite" : pretty_uint(m_path_tracing_max_path_length).c_str(),
         m_path_tracing_rr_min_path_length == size_t(~0) ? "infinite" : pretty_uint(m_path_tracing_rr_min_path_length).c_str(),
