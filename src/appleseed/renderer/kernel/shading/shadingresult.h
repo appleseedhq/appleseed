@@ -34,7 +34,6 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/aov/shadingfragmentstack.h"
 #include "renderer/kernel/shading/shadingfragment.h"
-#include "renderer/modeling/entity/entity.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"

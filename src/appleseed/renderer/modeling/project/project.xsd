@@ -307,7 +307,7 @@
                                 <xsd:complexType>
                                     <xsd:complexContent>
                                         <xsd:extension base="parameterSet">
-                                            <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                                            <xsd:choice minOccurs="0" maxOccurs="1">
                                             <xsd:element name="aovs">
                                                 <xsd:complexType>
                                                     <xsd:choice minOccurs="0" maxOccurs="unbounded">

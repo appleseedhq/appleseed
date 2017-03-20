@@ -58,8 +58,8 @@ namespace
     {
       public:
         BackgroundEnvironmentShader(
-            const char*                 name,
-            const ParamArray&           params)
+            const char*             name,
+            const ParamArray&       params)
           : EnvironmentShader(name, params)
         {
             m_inputs.declare("color", InputFormatSpectralIlluminance);

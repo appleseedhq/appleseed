@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_AOV_AOV_ACCUMULATOR_H
-#define APPLESEED_RENDERER_KERNEL_AOV_AOV_ACCUMULATOR_H
+#ifndef APPLESEED_RENDERER_KERNEL_AOV_AOVACCUMULATOR_H
+#define APPLESEED_RENDERER_KERNEL_AOV_AOVACCUMULATOR_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -37,6 +37,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/color.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // Forward declarations.
@@ -78,8 +79,7 @@ class AOVAccumulator
     // Constructor.
     explicit AOVAccumulator(const size_t index);
 
-  public:
-    const size_t    m_index;
+    const size_t m_index;
 };
 
 
@@ -124,7 +124,7 @@ class AlphaAOVAccumulator
 
     void set(const Alpha& alpha);
 
-    void apply_multiplier(const Alpha& alpha);
+    void apply_multiplier(const Alpha& multiplier);
 
     virtual void reset() APPLESEED_OVERRIDE;
 
@@ -167,9 +167,6 @@ class AOVAccumulatorContainer
     AlphaAOVAccumulator& alpha();
 
   private:
-    void create_beauty_accumulator();
-    void create_alpha_accumulator();
-
     bool insert(foundation::auto_release_ptr<AOVAccumulator>& aov_accum);
 
     enum { MaxAovAccumulators = MaxAOVCount + 2 }; // MaxAOVCount + Beauty + Alpha.
@@ -205,4 +202,4 @@ inline AlphaAOVAccumulator& AOVAccumulatorContainer::alpha()
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_AOV_AOV_ACCUMULATOR_H
+#endif  // !APPLESEED_RENDERER_KERNEL_AOV_AOVACCUMULATOR_H

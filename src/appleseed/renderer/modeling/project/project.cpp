@@ -54,8 +54,6 @@
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 
 // appleseed.foundation headers.
-//#include "foundation/image/canvasproperties.h"
-//#include "foundation/image/image.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/foreach.h"

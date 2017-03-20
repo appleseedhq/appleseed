@@ -72,9 +72,9 @@ namespace
     {
       public:
         EDFEnvironmentShader(
-            const char*                 name,
-            const ParamArray&           params)
-          : EnvironmentShader(name,     params)
+            const char*             name,
+            const ParamArray&       params)
+          : EnvironmentShader(name, params)
           , m_env_edf(0)
         {
             m_inputs.declare("alpha_value", InputFormatFloat, "1.0");
@@ -91,10 +91,10 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&              project,
-            const BaseGroup*            parent,
-            OnFrameBeginRecorder&       recorder,
-            IAbortSwitch*               abort_switch) APPLESEED_OVERRIDE
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
             if (!EnvironmentShader::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;

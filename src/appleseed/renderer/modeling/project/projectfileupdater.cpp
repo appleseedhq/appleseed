@@ -72,8 +72,8 @@
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
-#include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/surfaceshader/physicalsurfaceshader.h"
+#include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.

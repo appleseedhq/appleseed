@@ -2543,7 +2543,7 @@ namespace
             ParametrizedElementHandler::end_element();
 
             m_frame = FrameFactory::create(m_name.c_str(), m_params);
-            m_frame->add_aovs(m_aovs);
+            m_frame->transfer_aovs(m_aovs);
         }
 
         virtual void start_child_element(
@@ -3172,11 +3172,11 @@ auto_release_ptr<Project> ProjectFileReader::read(
     if (is_zip_file(project_filepath))
     {
         const vector<string> appleseed_files = get_filenames_with_extension_from_zip(project_filepath, ".appleseed");
-        
-        if (appleseed_files.size() != 1) 
+
+        if (appleseed_files.size() != 1)
         {
             RENDERER_LOG_ERROR(
-                "%s looks like a packed project file, but it should contain a single *.appleseed file in order to be valid.", 
+                "%s looks like a packed project file, but it should contain a single *.appleseed file in order to be valid.",
                 project_filepath);
             return auto_release_ptr<Project>(0);
         }
@@ -3185,15 +3185,15 @@ auto_release_ptr<Project> ProjectFileReader::read(
         unpacked_project_directory += ".unpacked";
 
         RENDERER_LOG_INFO(
-            "%s appears to be a packed project; unpacking to %s...,", 
-            project_filepath, 
+            "%s appears to be a packed project; unpacking to %s...,",
+            project_filepath,
             unpacked_project_directory.c_str());
 
         if (bf::exists(bf::path(unpacked_project_directory)))
             bf::remove_all(bf::path(unpacked_project_directory));
 
         unzip(project_filepath, unpacked_project_directory);
-        
+
         const string project_name = appleseed_files[0];
         actual_project_filepath = (bf::path(unpacked_project_directory) / bf::path(project_name)).string().c_str();
         project_filepath = actual_project_filepath.data();

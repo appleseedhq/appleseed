@@ -30,12 +30,10 @@
 #include "uvaov.h"
 
 // appleseed.renderer headers.
-#include "renderer/global/globallogger.h"
 #include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
-#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/api/apistring.h"
@@ -122,9 +120,7 @@ namespace
 
         virtual const char* get_channel_name(const size_t i) const APPLESEED_OVERRIDE
         {
-            assert(i == 0);
-
-            const char* channels[] = {"U", "V"};
+            static const char* channels[] = {"U", "V"};
             return channels[i];
         }
 

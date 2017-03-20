@@ -96,16 +96,16 @@ class APPLESEED_DLLSYMBOL Frame
     // Access the AOV images.
     ImageStack& aov_images() const;
 
-    // Add an AOV.
+    // Add an AOV if it does not exist.
     void add_aov(foundation::auto_release_ptr<AOV> aov);
 
-    // Add multiple AOVs.
-    void add_aovs(AOVContainer& aovs);
+    // Transfer AOVs.
+    void transfer_aovs(AOVContainer& aovs);
 
     // Access the AOVs.
     AOVContainer& aovs() const;
 
-    // Create an extra AOV image.
+    // Create an extra AOV image if it does not exist.
     size_t create_extra_aov_image(const char* name) const;
 
     // Return the reconstruction filter used by the main image and the AOV images.

@@ -29,9 +29,6 @@
 // Interface header.
 #include "aov.h"
 
-// appleseed.renderer headers.
-#include "renderer/utility/paramarray.h"
-
 using namespace foundation;
 
 namespace renderer

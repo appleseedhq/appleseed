@@ -219,7 +219,7 @@ void Frame::add_aov(foundation::auto_release_ptr<AOV> aov)
 {
     assert(aov.get());
 
-    size_t aov_index = aov_images().get_index(aov->get_name());
+    const size_t aov_index = aov_images().get_index(aov->get_name());
     if (aov_index == size_t(~0) && aov_images().size() < MaxAOVCount)
     {
         aov_images().append(
@@ -231,15 +231,15 @@ void Frame::add_aov(foundation::auto_release_ptr<AOV> aov)
     else
     {
         RENDERER_LOG_WARNING(
-            "could not create %s AOV, maximum number of AOVs (" FMT_SIZE_T ") reached.",
+            "could not create %s aov, maximum number of aovs (" FMT_SIZE_T ") reached.",
             aov->get_name(),
             MaxAOVCount);
     }
 }
 
-void Frame::add_aovs(AOVContainer& aovs)
+void Frame::transfer_aovs(AOVContainer& aovs)
 {
-    while(!aovs.empty())
+    while (!aovs.empty())
     {
         auto_release_ptr<AOV> aov = aovs.remove(aovs.get_by_index(0));
         add_aov(aov);
@@ -253,11 +253,11 @@ AOVContainer& Frame::aovs() const
 
 size_t Frame::create_extra_aov_image(const char* name) const
 {
-    size_t index = aov_images().get_index(name);
+    const size_t index = aov_images().get_index(name);
     if (index == size_t(~0) && aov_images().size() < MaxAOVCount)
         return aov_images().append(name, 4, PixelFormatFloat);
 
-    return ~0;
+    return index;
 }
 
 const Filter2f& Frame::get_filter() const
@@ -610,7 +610,7 @@ bool Frame::archive(
         write_image(
             file_path.c_str(),
             transformed_image,
-                ImageAttributes::create_default_attributes());
+            ImageAttributes::create_default_attributes());
 }
 
 void Frame::extract_parameters()

@@ -33,11 +33,15 @@
 #include "renderer/modeling/entity/entity.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace renderer      { class AOVAccumulator; }

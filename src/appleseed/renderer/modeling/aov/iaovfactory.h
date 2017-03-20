@@ -56,16 +56,16 @@ class APPLESEED_DLLSYMBOL IAOVFactory
     // Destructor.
     virtual ~IAOVFactory() {}
 
-    // Return a string identifying this render layer rule model.
+    // Return a string identifying this AOV model.
     virtual const char* get_model() const = 0;
 
-    // Return metadata for this render layer rule model.
+    // Return metadata for this AOV model.
     virtual foundation::Dictionary get_model_metadata() const = 0;
 
-    // Return metadata for the inputs of this render layer rule model.
+    // Return metadata for the inputs of this AOV model.
     virtual foundation::DictionaryArray get_input_metadata() const = 0;
 
-    // Create a new render layer rule instance.
+    // Create a new AOV instance.
     virtual foundation::auto_release_ptr<AOV> create(
         const char*         name,
         const ParamArray&   params) const = 0;

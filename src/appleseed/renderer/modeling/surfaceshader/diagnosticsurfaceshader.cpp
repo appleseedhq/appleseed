@@ -597,7 +597,7 @@ void DiagnosticSurfaceShader::set_result(
     const Color4f&              color,
     AOVAccumulatorContainer&    aov_accumulators)
 {
-    aov_accumulators.beauty().set(Color3f(color[0], color[1], color[2]));
+    aov_accumulators.beauty().set(color.rgb());
     aov_accumulators.alpha().set(Alpha(color[3]));
 }
 

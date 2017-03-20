@@ -130,9 +130,9 @@ void AlphaAOVAccumulator::set(const Alpha& alpha)
     m_alpha[0] = alpha[0];
 }
 
-void AlphaAOVAccumulator::apply_multiplier(const Alpha& alpha)
+void AlphaAOVAccumulator::apply_multiplier(const Alpha& multiplier)
 {
-    m_alpha[0] *= alpha[0];
+    m_alpha *= multiplier;
 }
 
 void AlphaAOVAccumulator::reset()
@@ -155,9 +155,16 @@ AOVAccumulatorContainer::AOVAccumulatorContainer(const AOVContainer& aovs)
 {
     memset(m_accumulators, 0, MaxAovAccumulators * sizeof(AOVAccumulator*));
 
-    create_beauty_accumulator();
-    create_alpha_accumulator();
+    // Create beauty and alpha accumulators.
+    auto_release_ptr<AOVAccumulator> aov_accum(
+        new BeautyAOVAccumulator());
+    insert(aov_accum);
 
+    aov_accum.reset(
+        new AlphaAOVAccumulator());
+    insert(aov_accum);
+
+    // Create the remaining accumulators.
     for (size_t i = 0, e = aovs.size(); i < e; ++i)
     {
         const AOV* aov = aovs.get_by_index(i);
@@ -168,13 +175,13 @@ AOVAccumulatorContainer::AOVAccumulatorContainer(const AOVContainer& aovs)
 
 AOVAccumulatorContainer::~AOVAccumulatorContainer()
 {
-    for (size_t i = 0; i < m_size; ++i)
+    for (size_t i = 0, e = m_size; i < e; ++i)
         m_accumulators[i]->release();
 }
 
 void AOVAccumulatorContainer::reset()
 {
-    for (size_t i = 0; i < m_size; ++i)
+    for (size_t i = 0, e = m_size; i < e; ++i)
         m_accumulators[i]->reset();
 }
 
@@ -182,32 +189,14 @@ void AOVAccumulatorContainer::write(
     const ShadingPoint&       shading_point,
     const Camera&             camera)
 {
-    for (size_t i = 0; i < m_size; ++i)
+    for (size_t i = 0, e = m_size; i < e; ++i)
         m_accumulators[i]->write(shading_point, camera);
 }
 
 void AOVAccumulatorContainer::flush(ShadingResult& result)
 {
-    for (size_t i = 0; i < m_size; ++i)
+    for (size_t i = 0, e = m_size; i < e; ++i)
         m_accumulators[i]->flush(result);
-}
-
-void AOVAccumulatorContainer::create_beauty_accumulator()
-{
-    assert(m_size == 0);
-
-    auto_release_ptr<AOVAccumulator> aov_accum(
-        new BeautyAOVAccumulator());
-    insert(aov_accum);
-}
-
-void AOVAccumulatorContainer::create_alpha_accumulator()
-{
-    assert(m_size == 1);
-
-    auto_release_ptr<AOVAccumulator> aov_accum(
-        new AlphaAOVAccumulator());
-    insert(aov_accum);
 }
 
 bool AOVAccumulatorContainer::insert(
