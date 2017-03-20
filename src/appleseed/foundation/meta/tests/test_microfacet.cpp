@@ -451,7 +451,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
             for (size_t j = 0; j < num_sample; ++j)
             {
                 static const size_t Bases[] = { 2 };
-                const Vector2f s = hammersley_sequence<float, 2>(Bases, num_sample, (size_t)i);
+                const Vector2f s = hammersley_sequence<float, 2>(Bases, num_sample, i);
                 const Vector3f v = sample_hemisphere_uniform(s);
                 const float std_G1 = std.G1(v, Vector3f(0.0f, 1.0f, 0.0f), 0.5f, 0.5f, i);
                 EXPECT_TRUE(foundation::FP<float>::is_finite(std_G1)); // check that G1 doesn't produce NaN
@@ -474,7 +474,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
             for (size_t j = 0; j < num_sample; ++j)
             {
                 static const size_t Bases[] = { 2 };
-                const Vector2f s = hammersley_sequence<float, 2>(Bases, num_sample, (size_t)i);
+                const Vector2f s = hammersley_sequence<float, 2>(Bases, num_sample, i);
                 const Vector3f h = sample_hemisphere_uniform(s);
                 const float std_D = std.D(h, 0.5f, 0.5f, i);
                 EXPECT_TRUE(foundation::FP<float>::is_finite(std_D)); // check that D doesn't produce NaN
