@@ -119,7 +119,12 @@ option (USE_STATIC_BOOST                    "Use static Boost libraries"        
 option (USE_STATIC_OIIO                     "Use static OpenImageIO libraries"                      ON)
 option (USE_STATIC_OSL                      "Use static OpenShadingLanguage libraries"              ON)
 
-option (WARNINGS_AS_ERRORS                  "Treat compiler warnings as errors"                     ON)
+if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "Ship")
+    set(WARNINGS_AS_ERRORS OFF CACHE BOOL   "Treat compiler warnings as errors" FORCE)
+else()
+    set(WARNINGS_AS_ERRORS ON CACHE BOOL    "Treat compiler warnings as errors" FORCE)
+endif()
+
 option (HIDE_SYMBOLS                        "When using gcc, hide symbols not on the public API"    ON)
 
 if (CMAKE_SYSTEM_NAME MATCHES "Linux|FreeBSD")

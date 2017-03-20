@@ -314,10 +314,9 @@ macro (osl_compile osl_src oso_obj headers)
     add_custom_command (
         OUTPUT ${oso_dir}/${oso_filename}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${oso_dir}
-        COMMAND ${PROJECT_SOURCE_DIR}/sandbox/bin/oslc
-        ${OSL_OPTIONS}
-        -I"${PROJECT_SOURCE_DIR}/src/appleseed.shaders/include"
-        -o "${oso_dir}/${oso_filename}" "${osl_src_abs}"
+        COMMAND ${PROJECT_SOURCE_DIR}/sandbox/bin/oslc ${OSL_OPTIONS}
+                -I"${PROJECT_SOURCE_DIR}/src/appleseed.shaders/include"
+                -o "${oso_dir}/${oso_filename}" "${osl_src_abs}"
         MAIN_DEPENDENCY ${osl_src_abs}
         DEPENDS ${${headers}} ${osl_src_abs}
     )
