@@ -862,7 +862,7 @@ float StdMDF::abgamma(
     const float gm5 = 29944523.0f / 19733142.0f;
     const float gm6 = 109535241009.0f / 48264275462.0f;
 
-    return (0.5f * std::log(2.0 * Pi<float>()) - x + (x - 0.5f) * std::log(x)
+    return (0.5f * std::log(2.0f * Pi<float>()) - x + (x - 0.5f) * std::log(x)
              + gm0 / (x + gm1 / (x + gm2 / (x + gm3 / (x + gm4 / (x + gm5 / (x + gm6 / x)))))));
 }
 
