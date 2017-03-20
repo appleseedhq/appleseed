@@ -67,7 +67,8 @@ set (CMAKE_CONFIGURATION_TYPES "Debug;Release;Profile;Ship" CACHE STRING "" FORC
 if (NOT CMAKE_BUILD_TYPE)
     convert_list_to_string (config_types_string ${CMAKE_CONFIGURATION_TYPES})
     set (CMAKE_BUILD_TYPE Ship
-         CACHE STRING "Choose the type of build, options are: ${config_types_string}" FORCE)
+         CACHE STRING "Choose the type of build, options are: ${CMAKE_CONFIGURATION_TYPES}" FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${CMAKE_CONFIGURATION_TYPES})
 endif ()
 
 project (appleseed)
