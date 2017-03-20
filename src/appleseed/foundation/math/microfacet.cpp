@@ -907,9 +907,10 @@ float StdMDF::lambda(
     const float S2 = F_21 * (F_22 + F_23 * F_24);
 
     // commented out because unit test failed on gcc6 
-    // const float gamma_fraction = tgamma(gamma - 0.5f) / tgamma(gamma);
+    const float gamma_fraction = tgamma(gamma - 0.5f) / tgamma(gamma);
     
-    return (gamma_fraction(gamma - 0.5f, gamma) / SqrtPi<float>()) * (A1S1 + A2 * S2) - 0.5f;
+    // return (gamma_fraction(gamma - 0.5f, gamma) / SqrtPi<float>()) * (A1S1 + A2 * S2) - 0.5f;
+    return (gamma_fraction / SqrtPi<float>()) * (A1S1 + A2 * S2) - 0.5f;
 }
 
 float StdMDF::pdf(
