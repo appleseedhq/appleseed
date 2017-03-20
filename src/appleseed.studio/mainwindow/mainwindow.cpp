@@ -1546,8 +1546,7 @@ void MainWindow::slot_set_render_region(const QRect& rect)
             *m_project_manager.get_project());
 
         if (m_settings.get_path_optional<bool>(SETTINGS_RENDER_REGION_TRIGGERS_RENDERING))
-            start_rendering(true);
-        else m_rendering_manager.reinitialize_rendering();
+            start_rendering(InteractiveRendering);
     }
     else
     {
