@@ -1122,7 +1122,7 @@ void MainWindow::slot_open_project()
         get_open_filename(
             this,
             "Open...",
-            "Project Files (*.appleseed);;All Files (*.*)",
+            "Project Files (*.appleseed);;Project Packed Files (*.appleseedz);;All Files (*.*)",
             m_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 
