@@ -607,7 +607,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     incoming *= rcp_sample_distance;
     
     // Decide whether the contributon from this light is significant or not.
-    const double approximate_contribution = cos_on * dot(incoming, m_geometric_normal);
+    const double approximate_contribution = cos_on * dot(incoming, m_geometric_normal) * rcp_sample_distance;
     const bool is_low_contribution = approximate_contribution < m_low_light_threshold;
     
     // Compute the transmission factor between the light sample and the shading point.
