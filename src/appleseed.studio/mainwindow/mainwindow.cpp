@@ -1540,16 +1540,18 @@ void MainWindow::slot_set_render_region(const QRect& rect)
     auto_ptr<RenderingManager::IScheduledAction> set_render_region_action(
         new SetRenderRegionAction(rect, m_attribute_editor));
 
-    if (m_settings.get_path_optional<bool>(SETTINGS_RENDER_REGION_TRIGGERS_RENDERING)
-        && !m_rendering_manager.is_rendering())
-    {
-        m_rendering_manager.schedule(set_render_region_action);
-        start_rendering(true);
-    }
-    else
+    if (!m_rendering_manager.is_rendering())
     {
         set_render_region_action.get()->operator()(
             *m_project_manager.get_project());
+
+        if (m_settings.get_path_optional<bool>(SETTINGS_RENDER_REGION_TRIGGERS_RENDERING))
+            start_rendering(true);
+        else m_rendering_manager.reinitialize_rendering();
+    }
+    else
+    {
+        m_rendering_manager.schedule(set_render_region_action);
         m_rendering_manager.reinitialize_rendering();
     }
 }
