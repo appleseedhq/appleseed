@@ -92,7 +92,7 @@ class MainWindow
     void open_and_render_project(const QString& filepath, const QString& configuration);
 
   signals:
-    void signal_crop_window_cleared();
+    void signal_refresh_attribute_editor(const foundation::Dictionary& values) const;
 
   private:
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.

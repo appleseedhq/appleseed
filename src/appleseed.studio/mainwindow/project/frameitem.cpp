@@ -134,5 +134,10 @@ void FrameItem::edit(const Dictionary& values)
     set_title(QString::fromAscii(m_frame->get_name()));
 }
 
+const Dictionary FrameItem::get_values()
+{
+    return m_frame->get_parameters();
+}
+
 }   // namespace studio
 }   // namespace appleseed
