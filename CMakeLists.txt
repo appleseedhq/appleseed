@@ -65,7 +65,6 @@ set (CMAKE_CONFIGURATION_TYPES "Debug;Release;Profile;Ship" CACHE STRING "" FORC
 
 # Select a build configuration if none is selected yet.
 if (NOT CMAKE_BUILD_TYPE)
-    convert_list_to_string (config_types_string ${CMAKE_CONFIGURATION_TYPES})
     set (CMAKE_BUILD_TYPE Ship
          CACHE STRING "Choose the type of build, options are: ${CMAKE_CONFIGURATION_TYPES}" FORCE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${CMAKE_CONFIGURATION_TYPES})
