@@ -387,11 +387,9 @@ shader as_maya_file
                     "width", in_filter,
                     "wrap", "periodic",
                     "subimage", 0,
-#if 0
                     "missingcolor", in_defaultColor,
                     "missingalpha", 1.0,
                     "alpha", out_outAlpha,
-#endif
                     "interp", filter);
         }
         else
@@ -404,21 +402,10 @@ shader as_maya_file
                     "blur", in_filterOffset,
                     "width", in_filter,
                     "wrap", "periodic",
-                    // Bug? One of the colorchecker patches is transparent,
-                    // but the EXR file has no alpha. The culprit seems to be
-                    // missingalpha, which also seems to ignore values set
-                    // in missingalpha token.
-#if 0
                     "missingcolor", in_defaultColor,
                     "missingalpha", 1.0,
                     "alpha", out_outAlpha,
-#endif
                     "interp", filter);
-
-                // Not even setting explicitly after the call fixes it (?!)
-#if 0
-                out_outAlpha = 1.0;
-#endif
         }
 
         if (in_exposure)
