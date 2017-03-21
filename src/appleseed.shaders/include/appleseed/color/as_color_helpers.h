@@ -539,7 +539,7 @@ color AdobeRGB_OETF(color value)
 }
 
 // Chromatically adapted transformation matrix for XYZ<>RGB, using the
-// Bradford CAT will follow shortly. TODO.
+// Bradford CAT will follow shortly.
 
 color transform_RGB2XYZ(color C, string space)
 {
@@ -570,8 +570,6 @@ color transform_RGB2XYZ(color C, string space)
     }
 }
 
-// TODO: Same as above, remaining spaces to be added, chromatically adapted
-// with the Bradford CAT where appropriate.
 color transform_XYZ2RGB(color C, string space)
 {
     if (space == "Rec.709" || space == "sRGB")
