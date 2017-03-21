@@ -211,6 +211,8 @@ namespace
             knn::Answer<float>&         m_answer;
             Spectrum&                   m_path_radiance;
             SpectrumStack&              m_path_aovs;
+            uint64                      m_num_diffuse_bounces;
+
 
             PathVisitor(
                 const SPPMParameters&   params,
@@ -231,6 +233,8 @@ namespace
               , m_answer(answer)
               , m_path_radiance(path_radiance)
               , m_path_aovs(path_aovs)
+              , m_num_diffuse_bounces(0)
+
             {
             }
 
@@ -242,8 +246,12 @@ namespace
 
                 // No diffuse bounces.
                 if (ScatteringMode::has_diffuse(next_mode))
-                    return false;
-
+                {
+                    if (m_num_diffuse_bounces == 2 || !m_params.m_enable_fg)
+                    {
+                        return false;
+                    }
+                }
                 return true;
             }
 
@@ -266,20 +274,27 @@ namespace
                     if (!vertex.m_bsdf->is_purely_specular())
                     {
                         // Lighting from photon map.
-                        add_photon_map_lighting_contribution(
-                            vertex,
-                            vertex_radiance,
-                            vertex_aovs);
+                        if (m_num_diffuse_bounces == 1 || !m_params.m_enable_fg)
+                        {
+                            add_photon_map_lighting_contribution(
+                                vertex,
+                                vertex_radiance,
+                                vertex_aovs);
+                        }
+                        m_num_diffuse_bounces++;
                     }
                 }
 
                 // Emitted light.
                 if (vertex.m_edf && vertex.m_cos_on > 0.0)
                 {
+                    if (m_num_diffuse_bounces < 2 || !m_params.m_enable_fg)
+                    {
                     add_emitted_light_contribution(
                         vertex,
                         vertex_radiance,
                         vertex_aovs);
+                    }
                 }
 
                 // Update the path radiance.
@@ -673,6 +688,14 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
             .insert("default", "true")
             .insert("label", "Enable Caustics")
             .insert("help", "Enable caustics"));
+
+    metadata.dictionaries().insert(
+        "enable_fg",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("default", "true")
+            .insert("label", "Enable Final Gather")
+            .insert("help", "Enable Final Gather"));
 
     metadata.dictionaries().insert(
         "photon_type",

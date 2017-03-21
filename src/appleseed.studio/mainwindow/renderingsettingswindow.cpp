@@ -941,6 +941,7 @@ namespace
 
             create_direct_link("lighting_components.ibl",                        "sppm.enable_ibl");
             create_direct_link("lighting_components.caustics",                   "sppm.enable_caustics");
+            create_direct_link("lighting_components.fg",                         "sppm.enable_fg");
             create_direct_link("photon_tracing.bounces.rr_start_bounce",         "sppm.photon_tracing_rr_min_path_length");
             create_direct_link("photon_tracing.light_photons",                   "sppm.light_photons_per_pass");
             create_direct_link("photon_tracing.env_photons",                     "sppm.env_photons_per_pass");
@@ -948,9 +949,7 @@ namespace
             create_direct_link("radiance_estimation.initial_radius",             "sppm.initial_radius");
             create_direct_link("radiance_estimation.max_photons",                "sppm.max_photons_per_estimate");
             create_direct_link("radiance_estimation.alpha",                      "sppm.alpha");
-
             load_directly_linked_values(config);
-
             load_bounce_settings(config, "photon_tracing", "sppm.photon_tracing_max_path_length");
             load_bounce_settings(config, "radiance_estimation", "sppm.path_tracing_max_path_length");
 
@@ -1030,6 +1029,8 @@ namespace
 
             layout->addWidget(create_checkbox("lighting_components.ibl", "Image-Based Lighting"));
             layout->addWidget(create_checkbox("lighting_components.caustics", "Caustics"));
+            layout->addWidget(create_checkbox("lighting_components.fg", "Final Gather"));
+
         }
 
         void create_photon_tracing_settings(QVBoxLayout* parent)
