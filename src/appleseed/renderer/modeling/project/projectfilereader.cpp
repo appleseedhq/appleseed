@@ -3064,11 +3064,9 @@ auto_release_ptr<Project> ProjectFileReader::read(
             return auto_release_ptr<Project>(0);
         }
 
-        string unpacked_project_directory(project_filepath);
-
-        size_t ext_start = unpacked_project_directory.rfind(".");
-        unpacked_project_directory.erase(ext_start);
-        unpacked_project_directory += ".unpacked";
+        const bf::path project_path(project_filepath);
+        const string unpacked_project_directory =
+            (project_path.parent_path() / project_path.stem()).string() + ".unpacked";
 
         RENDERER_LOG_INFO(
             "%s appears to be a packed project; unpacking to %s...,", 
