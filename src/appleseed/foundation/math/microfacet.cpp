@@ -904,8 +904,10 @@ float StdMDF::lambda(
     const float F_23 = (-129.404f + 324.987f * gamma - 299.305f * gamma_2 + 93.268f * gamma_3) / (-92.609f + 256.006f * gamma - 245.663f * gamma_2 + 86.064f * gamma_3);
     const float F_24 = (6.537f + 6.074f * z - 0.623f * z_2 + 5.223f * z_3) / (6.538f + 6.103f * z - 3.218f * z_2 + 6.347f * z_3);
     const float S2 = F_21 * (F_22 + F_23 * F_24);
+    const float gamma_fraction = tgamma(gamma - 0.5f) / tgamma(gamma);
 
-    return (gamma_fraction(gamma - 0.5f, gamma) / SqrtPi<float>()) * (A1S1 + A2 * S2) - 0.5f;
+    // return (gamma_fraction(gamma - 0.5f, gamma) / SqrtPi<float>()) * (A1S1 + A2 * S2) - 0.5f;
+    return (gamma_fraction / SqrtPi<float>()) * (A1S1 + A2 * S2) - 0.5f;
 }
 
 float StdMDF::pdf(
