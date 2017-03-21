@@ -3065,6 +3065,9 @@ auto_release_ptr<Project> ProjectFileReader::read(
         }
 
         string unpacked_project_directory(project_filepath);
+
+        size_t ext_start = unpacked_project_directory.rfind(".");
+        unpacked_project_directory.erase(ext_start);
         unpacked_project_directory += ".unpacked";
 
         RENDERER_LOG_INFO(
