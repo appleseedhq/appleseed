@@ -699,7 +699,6 @@ inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
 inline void ShadingPoint::set_shading_basis(const foundation::Basis3d& basis) const
 {
     assert(hit());
-
     m_shading_basis = basis;
     m_members |= HasShadingBasis;
     m_members &= ~HasScreenSpacePartialDerivatives;
