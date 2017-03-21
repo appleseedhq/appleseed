@@ -126,8 +126,8 @@
 #include "xercesc/util/XMLUni.hpp"
 
 // Boost headers.
+#include "boost/filesystem.hpp"
 #include "boost/filesystem/operations.hpp"
-#include "boost/filesystem/path.hpp"
 
 // Standard headers.
 #include <cassert>
@@ -3038,41 +3038,32 @@ namespace
     }
 }
 
-bool is_packed_project(const string& project_filepath, string& project_name) 
-{
-    try 
-    {
-        vector<string> appleseed_files = get_filenames_with_extension_from_zip(project_filepath, ".appleseed");
-        
-        if (appleseed_files.size() != 1) {
-            RENDERER_LOG_INFO(
-                "%s could be a packed project, but only one .appleseed file should be inside.", 
-                project_filepath.c_str());
-            return false;
-        }
-
-        project_name = appleseed_files[0];
-        return true;
-    }
-    catch (UnzipException e)
-    {
-        return false;
-    }
-}
-
 auto_release_ptr<Project> ProjectFileReader::read(
     const char*             project_filepath,
     const char*             schema_filepath,
     const int               options)
 {
     assert(project_filepath);
-    
+
+    // Handle built-in projects.
     string project_name;
+    if (is_builtin_project(project_filepath, project_name))
+        return load_builtin(project_name.c_str());
 
     // Handle packed projects
     string actual_project_filepath;
-    if (is_packed_project(project_filepath, project_name))
+    if (is_zip_file(project_filepath))
     {
+        const vector<string> appleseed_files = get_filenames_with_extension_from_zip(project_filepath, ".appleseed");
+        
+        if (appleseed_files.size() != 1) 
+        {
+            RENDERER_LOG_ERROR(
+                "%s looks like a packed project file, but it should contain a single *.appleseed file in order to be valid.", 
+                project_filepath);
+            return auto_release_ptr<Project>(0);
+        }
+
         string unpacked_project_directory(project_filepath);
         unpacked_project_directory += ".unpacked";
 
@@ -3081,15 +3072,15 @@ auto_release_ptr<Project> ProjectFileReader::read(
             project_filepath, 
             unpacked_project_directory.c_str());
 
+        if (bf::exists(bf::path(unpacked_project_directory)))
+            bf::remove_all(bf::path(unpacked_project_directory));
+
         unzip(project_filepath, unpacked_project_directory);
         
+        const string project_name = appleseed_files[0];
         actual_project_filepath = (bf::path(unpacked_project_directory) / bf::path(project_name)).string().c_str();
         project_filepath = actual_project_filepath.data();
     }
-
-    // Handle built-in projects.
-    if (is_builtin_project(project_filepath, project_name))
-        return load_builtin(project_name.c_str());
 
     XercesCContext xerces_context(global_logger());
     if (!xerces_context.is_initialized())

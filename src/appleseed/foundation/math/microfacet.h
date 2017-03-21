@@ -1,4 +1,4 @@
-            
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -48,15 +48,13 @@ class MDF
   : public NonCopyable
 {
   public:
-    MDF();
-
     virtual ~MDF();
 
     virtual float D(
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const = 0;
+        const float         gamma) const = 0;
 
     virtual float G(
         const Vector3f&     incoming,
@@ -64,28 +62,28 @@ class MDF
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const = 0;
+        const float         gamma) const = 0;
 
     virtual float G1(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const = 0;
+        const float         gamma) const = 0;
 
     virtual Vector3f sample(
         const Vector3f&     v,
         const Vector3f&     s,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const = 0;
+        const float         gamma) const = 0;
 
     virtual float pdf(
         const Vector3f&     v,
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const = 0;
+        const float         gamma) const = 0;
 };
 
 
@@ -107,13 +105,11 @@ class BlinnMDF
   : public MDF
 {
   public:
-    BlinnMDF();
-
     virtual float D(
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 
     virtual float G(
         const Vector3f&     incoming,
@@ -121,28 +117,28 @@ class BlinnMDF
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 
     float G1(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 
     virtual Vector3f sample(
         const Vector3f&     v,
         const Vector3f&     s,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 
     virtual float pdf(
         const Vector3f&     v,
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 };
 
 
@@ -173,13 +169,11 @@ class BeckmannMDF
   : public MDF
 {
   public:
-    BeckmannMDF();
-
     virtual float D(
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 
     virtual float G(
         const Vector3f&     incoming,
@@ -187,28 +181,28 @@ class BeckmannMDF
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 
     virtual float G1(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 
     virtual Vector3f sample(
         const Vector3f&     v,
         const Vector3f&     s,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 
     virtual float pdf(
         const Vector3f&     v,
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 
     Vector2f sample11(
         const float         cos_theta,
@@ -242,13 +236,11 @@ class GGXMDF
   : public MDF
 {
   public:
-    GGXMDF();
-
     virtual float D(
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 
     virtual float G(
         const Vector3f&     incoming,
@@ -256,28 +248,28 @@ class GGXMDF
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 
     virtual float G1(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 
     virtual Vector3f sample(
         const Vector3f&     v,
         const Vector3f&     s,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 
     virtual float pdf(
         const Vector3f&     v,
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 
     Vector2f sample11(
         const float         cos_theta,
@@ -307,13 +299,11 @@ class WardMDF
   : public MDF
 {
   public:
-    WardMDF();
-
     virtual float D(
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 
     virtual float G(
         const Vector3f&     incoming,
@@ -321,28 +311,28 @@ class WardMDF
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 
     virtual float G1(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 
     virtual Vector3f sample(
         const Vector3f&     v,
         const Vector3f&     s,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 
     virtual float pdf(
         const Vector3f&     v,
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 };
 
 
@@ -362,13 +352,11 @@ class GTR1MDF
   : public MDF
 {
   public:
-    GTR1MDF();
-
     virtual float D(
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 
     virtual float G(
         const Vector3f&     incoming,
@@ -376,28 +364,28 @@ class GTR1MDF
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 
     virtual float G1(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 
     virtual Vector3f sample(
         const Vector3f&     v,
         const Vector3f&     s,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 
     virtual float pdf(
         const Vector3f&     v,
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
-        const float         gamma = 0.0f) const APPLESEED_OVERRIDE;
+        const float         gamma) const APPLESEED_OVERRIDE;
 
   private:
     float lambda(
@@ -407,18 +395,19 @@ class GTR1MDF
         const float         gamma) const;
 };
 
+
 //
-// Students T-Distribution MDF
+// Student's t-Distribution MDF.
 //
-// [1] https://bv.univ-poitiers.fr/access/content/user/mribar03/website/projects/eg_2017/distribution.pdf
+// Reference:
+//
+//   https://bv.univ-poitiers.fr/access/content/user/mribar03/website/projects/eg_2017/distribution.pdf
 //
 
 class StdMDF
   : public MDF
 {
   public:
-    StdMDF();
-
     virtual float D(
         const Vector3f&     h,
         const float         alpha_x,
@@ -460,6 +449,13 @@ class StdMDF
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const;
+
+    float gamma_fraction(
+        const float         numerator,
+        const float         denominator) const;
+
+    float abgamma(
+        const float         x) const;
 };
 
 }       // namespace foundation

@@ -65,6 +65,7 @@ set (appleseed_library_osl_headers
     include/appleseed/color/as_color_helpers.h
     include/appleseed/fractal/as_fractal_helpers.h
     include/appleseed/fractal/as_noise_helpers.h
+    include/appleseed/fractal/as_noise_tables.h
     include/appleseed/material/as_material_helpers.h
     include/appleseed/math/as_math_helpers.h
     include/appleseed/maya/as_maya_fractal_helpers.h
@@ -159,6 +160,8 @@ set (appleseed_maya_osl_sources
      src/maya/as_maya_addMatrix.osl
      src/maya/as_maya_anisotropic.osl
      src/maya/as_maya_areaLight.osl
+     src/maya/as_maya_asDisneyMaterial.osl
+     src/maya/as_maya_asGlass.osl
      src/maya/as_maya_blendColors.osl
      src/maya/as_maya_blinn.osl
      src/maya/as_maya_bulge.osl
@@ -203,6 +206,9 @@ set (appleseed_maya_osl_sources
      src/maya/as_maya_psdFileTex.osl
      src/maya/as_maya_quadShadingSwitch.osl
      src/maya/as_maya_ramp.osl
+     src/maya/as_maya_remapColor.osl
+     src/maya/as_maya_remapHsv.osl
+     src/maya/as_maya_remapValue.osl
      src/maya/as_maya_reverse.osl
      src/maya/as_maya_rgbToHsv.osl
      src/maya/as_maya_samplerInfo.osl
@@ -299,10 +305,18 @@ macro (osl_compile osl_src oso_obj headers)
         ${osl_dir}
     )
 
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set (OSL_OPTIONS -O0 -DDEBUG)
+    else ()
+        set (OSL_OPTIONS -O2 -DNDEBUG)
+    endif ()
+
     add_custom_command (
         OUTPUT ${oso_dir}/${oso_filename}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${oso_dir}
-        COMMAND ${PROJECT_SOURCE_DIR}/sandbox/bin/oslc -I"${PROJECT_SOURCE_DIR}/src/appleseed.shaders/include" -o "${oso_dir}/${oso_filename}" "${osl_src_abs}"
+        COMMAND ${PROJECT_SOURCE_DIR}/sandbox/bin/oslc ${OSL_OPTIONS}
+                -I"${PROJECT_SOURCE_DIR}/src/appleseed.shaders/include"
+                -o "${oso_dir}/${oso_filename}" "${osl_src_abs}"
         MAIN_DEPENDENCY ${osl_src_abs}
         DEPENDS ${${headers}} ${osl_src_abs}
     )

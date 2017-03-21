@@ -82,6 +82,54 @@ color interpolate_color(
     }
 }
 
+float interpolate_value(
+    float value,
+    float v1,
+    float v2,
+    float position1,
+    float position2,
+    int interpolate)
+{
+    if (interpolate == 0)
+    {
+        return v1;
+    }
+    else
+    {
+        float delta = (value - position1) / (position2 - position1), weight;
+
+        if (interpolate == 1)
+        {
+            weight = delta;
+        }
+        else if (interpolate == 2)
+        {
+            weight = sqr(delta);
+        }
+        else if (interpolate == 3)
+        {
+            weight = 1 - sqr(1 - delta);
+        }
+        else if (interpolate == 4)
+        {
+            weight = 0.5 * (cos((delta + 1) * M_PI) + 1);
+        }
+        else if (interpolate == 5)
+        {
+            weight = (v1 < v2)
+                ? sin(delta * M_PI_2)
+                : sin((delta - 1) * M_PI_2) + 1;
+        }
+        else
+        {
+            weight = (v1 > v2)
+                ? sin(delta * M_PI_2)
+                : sin((delta - 1) * M_PI_2) + 1;
+        }
+        return mix(v1, v2, weight);
+    }
+}
+
 color color_ramp(
     color colors[],
     float positions[],
@@ -151,7 +199,76 @@ color color_ramp(
     }
 }
 
-color color_ramp(
+float float_ramp(
+    float float_value[],
+    float positions[],
+    int interpolate[],
+    float value)
+{
+    int len = arraylength(positions);
+
+    if (len && len == arraylength(float_value))
+    {
+        int index = -1;
+        float lower_bound = -1;
+        float upper_bound = 10.0;
+        float position_min = 10.0;
+        float v1 = 0.0, v2 = 0.0;
+
+        for (int i = 0; i < len; ++i)
+        {
+            if (positions[i] < 0.0)
+            {
+                continue;
+            }
+
+            float position = clamp(positions[i], 0.0, 1.0);
+
+            if (position < position_min)
+            {
+                position_min = position;
+                index = i;
+            }
+
+            if (position <= value && position > lower_bound)
+            {
+                lower_bound = position;
+                v1 = float_value[i];
+            }
+
+            if (position >= value && position < upper_bound)
+            {
+                upper_bound = position;
+                v2 = float_value[i];
+            }
+        }
+
+        if (lower_bound < position_min)
+        {
+            lower_bound = position_min;
+            v1 = (index >= 0) ? float_value[index] : 0.0;
+        }
+
+        int interpolation =
+            (arraylength(interpolate) && index >= 0)
+                ? interpolate[index]
+                : 0;
+
+        return interpolate_value(
+            value,
+            v1,
+            v2,
+            lower_bound,
+            upper_bound,
+            interpolation);
+    }
+    else
+    {
+        return float_value[0];
+    }
+}
+
+color color_ramp(                  
     color colors[],
     float positions[],
     int interpolation,

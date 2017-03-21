@@ -31,12 +31,11 @@
 #include "attributeeditor.h"
 
 // appleseed.studio headers.
+#include "entityvalueprovider.h"
 #include "utility/miscellaneous.h"
 
 // Qt headers.
 #include <QLayout>
-#include <QObject>
-#include <Qt>
 
 using namespace foundation;
 using namespace renderer;
@@ -59,6 +58,8 @@ void AttributeEditor::clear()
     {
         clear_layout(m_parent->layout());
         delete m_parent->layout();
+        m_entity_editor.reset();
+        m_value_provider = 0;
     }
 }
 
@@ -70,6 +71,10 @@ void AttributeEditor::edit(
     QObject*                                receiver,
     const char*                             slot_apply)
 {
+    IEntityValueProvider* value_provider = dynamic_cast<IEntityValueProvider*>(receiver);
+    if (value_provider)
+        m_value_provider = value_provider;
+
     m_entity_editor.reset(
         new EntityEditor(
             m_parent,
@@ -82,10 +87,12 @@ void AttributeEditor::edit(
     QObject::connect(
         m_entity_editor.get(), SIGNAL(signal_applied(foundation::Dictionary)),
         receiver, slot_apply);
+}
 
-    QObject::connect(
-        m_parent->window(), SIGNAL(signal_crop_window_cleared()),
-        m_entity_editor.get(), SLOT(slot_clear_crop_window_widget()));
+void AttributeEditor::refresh() const
+{
+    if (m_entity_editor.get() && m_value_provider)
+        m_entity_editor.get()->refresh(m_value_provider->get_values());
 }
 
 }   // namespace studio

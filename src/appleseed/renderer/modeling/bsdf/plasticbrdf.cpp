@@ -97,7 +97,7 @@ namespace
             m_inputs.declare("specular_reflectance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("roughness", InputFormatFloat, "0.15");
             m_inputs.declare("ior", InputFormatFloat, "1.5");
-            m_inputs.declare("highlight_falloff", InputFormatFloat, "2.0");
+            m_inputs.declare("highlight_falloff", InputFormatFloat, "0.4");
             m_inputs.declare("diffuse_reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("diffuse_reflectance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("internal_scattering", InputFormatFloat, "1.0");
@@ -183,7 +183,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             const float alpha = microfacet_alpha_from_roughness(values->m_roughness);
-            const float gamma = values->m_highlight_falloff;
+            const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
             // Compute the microfacet normal by sampling the MDF.
             const Vector3f wo = shading_basis.transform_to_local(outgoing);
@@ -270,7 +270,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             const float alpha = microfacet_alpha_from_roughness(values->m_roughness);
-            const float gamma = values->m_highlight_falloff;
+            const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
             const Vector3f wo = shading_basis.transform_to_local(outgoing);
             const Vector3f wi = shading_basis.transform_to_local(incoming);
@@ -338,7 +338,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             const float alpha = microfacet_alpha_from_roughness(values->m_roughness);
-            const float gamma = values->m_highlight_falloff;
+            const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
             const Vector3f wo = shading_basis.transform_to_local(outgoing);
             const Vector3f wi = shading_basis.transform_to_local(incoming);
@@ -557,10 +557,10 @@ DictionaryArray PlasticBRDFFactory::get_input_metadata() const
             .insert("name", "highlight_falloff")
             .insert("label", "Highlight Falloff")
             .insert("type", "numeric")
-            .insert("min_value", "1.6")
-            .insert("max_value", "100")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
             .insert("use", "optional")
-            .insert("default", "2.0"));
+            .insert("default", "0.4"));
 
     metadata.push_back(
         Dictionary()
