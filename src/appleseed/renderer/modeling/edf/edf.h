@@ -99,6 +99,12 @@ class APPLESEED_DLLSYMBOL EDF
     // Retrieve the light near start value.
     double get_uncached_light_near_start() const;
 
+    // Get the cached approximate contribution.
+    float get_max_radiance_value() const;
+
+    // Retrieve the approximate contribution.
+    float get_uncached_max_radiance_value() const;
+
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
@@ -149,6 +155,7 @@ class APPLESEED_DLLSYMBOL EDF
   private:
     int    m_flags;
     double m_light_near_start;
+    float  m_max_radiance_value;
 };
 
 
@@ -164,6 +171,11 @@ inline int EDF::get_flags() const
 inline double EDF::get_light_near_start() const
 {
     return m_light_near_start;
+}
+
+inline float EDF::get_max_radiance_value() const
+{
+    return m_max_radiance_value;
 }
 
 }       // namespace renderer

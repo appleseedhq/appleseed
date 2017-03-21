@@ -34,6 +34,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/input/source.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/api/apistring.h"
@@ -81,6 +82,25 @@ double EDF::get_uncached_light_near_start() const
     return m_params.get_optional<double>("light_near_start", 0.0);
 }
 
+float EDF::get_uncached_max_radiance_value() const
+{
+    Spectrum radiance;
+
+    Source *source = m_inputs.source("radiance");
+
+    assert(source);
+
+    source->evaluate_uniform(radiance);
+
+    if (radiance.size() == 3)
+        radiance.resize(3);
+
+    float radiance_multiplier = m_params.get_optional<float>("radiance_multiplier", 1.0);
+
+    // Return max component value of the final radiance.
+    return radiance_multiplier * max_value(radiance);
+}
+
 bool EDF::on_frame_begin(
     const Project&          project,
     const BaseGroup*        parent,
@@ -103,6 +123,8 @@ bool EDF::on_frame_begin(
             "edf \"%s\" has a negative light near start value; expect artifacts and/or slowdowns.",
             get_path().c_str());
     }
+
+    m_max_radiance_value = get_uncached_max_radiance_value();
 
     if (get_uncached_importance_multiplier() <= 0.0f)
     {
