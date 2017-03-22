@@ -454,7 +454,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_transform.cpp
     foundation/meta/tests/test_triangulator.cpp
     foundation/meta/tests/test_typetraits.cpp
-    foundation/meta/tests/test_unzipper.cpp
+    foundation/meta/tests/test_zipper.cpp
     foundation/meta/tests/test_utility_filter.cpp
     foundation/meta/tests/test_vector.cpp
     foundation/meta/tests/test_voxelgrid.cpp
