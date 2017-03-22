@@ -196,23 +196,29 @@ namespace
             return sample_cone_uniform_pdf(m_cos_half_angle);
         }
 
-		virtual float get_uncached_max_radiance_value() const
-		{
-			Spectrum radiance;
+        virtual float get_uncached_max_radiance_value() const APPLESEED_OVERRIDE
+        {
+            Source* radiance_source = m_inputs.source("radiance");
 
-			Source *source = m_inputs.source("radiance");
+            // If source is not available, simply return max float so that 
+            // light is not considered as a low contributing one.
+            if (!radiance_source)
+                return numeric_limits<float>::max();
+            
+            Spectrum radiance;
 
-			assert(source);
+            radiance_source->evaluate_uniform(radiance);
+            
+            Source* radiance_multiplier_source = m_inputs.source("radiance_multiplier");
+            
+            float radiance_multiplier = 1.0f;
 
-			source->evaluate_uniform(radiance);
-
-			float radiance_multiplier = m_params.get_optional<float>("radiance_multiplier", 1.0);
-
-			// Return max component value of the final radiance.
-			return radiance_multiplier * max_value(radiance);
-
-			return 0.0f;
-		}
+            if (radiance_multiplier_source)
+                radiance_multiplier_source->evaluate_uniform(radiance_multiplier);
+            
+            // Return max component value of the final radiance.
+            return radiance_multiplier * max_value(radiance);
+        }
 
       private:
         typedef ConeEDFInputValues InputValues;

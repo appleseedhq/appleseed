@@ -46,7 +46,11 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/arena.h"
 
+// Standard headers.
+#include <cmath>
+
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
@@ -214,23 +218,29 @@ namespace
             return probability;
         }
 
-		float get_uncached_max_radiance_value() const
-		{
-			Spectrum radiance;
+        virtual float get_uncached_max_radiance_value() const APPLESEED_OVERRIDE
+        {
+            Source* radiance_source = m_inputs.source("radiance");
 
-			Source *source = m_inputs.source("radiance");
+            // If source is not available, simply return max float so that 
+            // light is not considered as a low contributing one.
+            if (!radiance_source)
+                return numeric_limits<float>::max();
 
-			assert(source);
+            Spectrum radiance;
 
-			source->evaluate_uniform(radiance);
+            radiance_source->evaluate_uniform(radiance);
 
-			float radiance_multiplier = m_params.get_optional<float>("radiance_multiplier", 1.0);
+            Source* radiance_multiplier_source = m_inputs.source("radiance_multiplier");
 
-			// Return max component value of the final radiance.
-			return radiance_multiplier * max_value(radiance);
+            float radiance_multiplier = 1.0f;
 
-			return 0.0f;
-		}
+            if (radiance_multiplier_source)
+                radiance_multiplier_source->evaluate_uniform(radiance_multiplier);
+
+            // Return max component value of the final radiance.
+            return radiance_multiplier * max_value(radiance);
+        }
 
       private:
         auto_release_ptr<EDF> m_diffuse_edf;

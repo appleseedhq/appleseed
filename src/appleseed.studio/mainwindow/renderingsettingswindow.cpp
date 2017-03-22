@@ -736,11 +736,11 @@ namespace
             create_bounce_settings_group(layout, "drt", "drt.max_path_length");
             create_drt_advanced_settings(layout);
 
-            create_direct_link("lighting_components.ibl",     "drt.enable_ibl");
-            create_direct_link("drt.bounces.rr_start_bounce", "drt.rr_min_path_length");
-            create_direct_link("advanced.dl.light_samples",   "drt.dl_light_samples");
-            create_direct_link("advanced.dl.low_light_threshold", "drt.dl_low_light_threshold");
-            create_direct_link("advanced.ibl.env_samples",    "drt.ibl_env_samples");
+            create_direct_link("lighting_components.ibl",           "drt.enable_ibl");
+            create_direct_link("drt.bounces.rr_start_bounce",       "drt.rr_min_path_length");
+            create_direct_link("advanced.dl.light_samples",         "drt.dl_light_samples");
+            create_direct_link("advanced.dl.low_light_threshold",   "drt.dl_low_light_threshold");
+            create_direct_link("advanced.ibl.env_samples",          "drt.ibl_env_samples");
 
             load_directly_linked_values(config);
 
@@ -782,7 +782,7 @@ namespace
             light_samples->setToolTip(m_params_metadata.get_path("drt.dl_light_samples.help"));
             sublayout->addRow("Light Samples:", light_samples);
 
-            QDoubleSpinBox* low_light_threshold = create_double_input("advanced.dl.low_light_threshold", 0.0, 1.0, 3, 0.001);
+            QDoubleSpinBox* low_light_threshold = create_double_input("advanced.dl.low_light_threshold", 0.0, 1000.0, 3, 1.0);
             low_light_threshold->setToolTip(m_params_metadata.get_path("drt.dl_low_light_threshold.help"));
             sublayout->addRow("Low Light Threshold:", low_light_threshold);
         }
@@ -842,7 +842,6 @@ namespace
             create_direct_link("advanced.ibl.env_samples",         "pt.ibl_env_samples");
             create_direct_link("advanced.dl.low_light_threshold",  "pt.dl_low_light_threshold");
 
-
             load_directly_linked_values(config);
 
             load_bounce_settings(config, "pt", "pt.max_path_length");
@@ -897,7 +896,7 @@ namespace
             light_samples->setToolTip(m_params_metadata.get_path("pt.dl_light_samples.help"));
             sublayout->addRow("Light Samples:", light_samples); 
 
-            QDoubleSpinBox* low_light_threshold = create_double_input("advanced.dl.low_light_threshold", 0.0, 1.0, 3, 0.001);
+            QDoubleSpinBox* low_light_threshold = create_double_input("advanced.dl.low_light_threshold", 0.0, 1000.0, 3, 1.0);
             low_light_threshold->setToolTip(m_params_metadata.get_path("pt.dl_low_light_threshold.help"));
             sublayout->addRow("Low Light Threshold:", low_light_threshold);
         }

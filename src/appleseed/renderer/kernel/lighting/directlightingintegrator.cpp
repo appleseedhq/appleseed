@@ -608,7 +608,8 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     
     // Decide whether the contributon from this light is significant or not.
     const double approximate_contribution = 
-        cos_on * dot(incoming, m_geometric_normal) * 
+        cos_on * 
+        dot(incoming, m_geometric_normal) * 
         rcp_sample_square_distance * 
         edf->get_max_radiance_value();
 
@@ -625,12 +626,12 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
                 m_shading_point,
                 sample.m_point,
                 VisibilityFlags::ShadowRay);
+
+        // Discard occluded samples.
+        if (transmission == 0.0f)
+            return;
     }
     
-    // Discard occluded samples.
-    if (transmission == 0.0f)
-        return;
-
     // Evaluate the BSDF.
     Spectrum bsdf_value;
     const float bsdf_prob =
