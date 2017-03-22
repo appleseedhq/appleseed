@@ -37,6 +37,7 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/edf/diffuseedf.h"
 #include "renderer/modeling/edf/edf.h"
+#include "renderer/modeling/input/source.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -212,6 +213,27 @@ namespace
 
             return probability;
         }
+
+		float get_uncached_max_radiance_value() const
+		{
+			Spectrum radiance;
+
+			Source *source = m_inputs.source("radiance");
+
+			assert(source);
+
+			source->evaluate_uniform(radiance);
+
+			if (radiance.size() == 3)
+				radiance.resize(3);
+
+			float radiance_multiplier = m_params.get_optional<float>("radiance_multiplier", 1.0);
+
+			// Return max component value of the final radiance.
+			return radiance_multiplier * max_value(radiance);
+
+			return 0.0f;
+		}
 
       private:
         auto_release_ptr<EDF> m_diffuse_edf;

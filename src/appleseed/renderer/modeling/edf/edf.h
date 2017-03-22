@@ -103,7 +103,7 @@ class APPLESEED_DLLSYMBOL EDF
     float get_max_radiance_value() const;
 
     // Retrieve the approximate contribution.
-    float get_uncached_max_radiance_value() const;
+    virtual float get_uncached_max_radiance_value() const = 0;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
