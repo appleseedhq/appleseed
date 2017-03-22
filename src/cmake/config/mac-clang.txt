@@ -69,9 +69,9 @@ if (WARNINGS_AS_ERRORS)
         CMAKE_BUILD_TYPE STREQUAL "Release")
         set (c_compiler_flags_common
             ${c_compiler_flags_common}
-            -Werror                                         # treat Warnings As Errors
+            -Werror                                     # treat Warnings As Errors
         )
-    endif()
+    endif ()
 endif ()
 if (USE_CPP11)
     set (cxx_compiler_flags_common
