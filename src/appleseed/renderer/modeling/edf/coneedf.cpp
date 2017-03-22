@@ -206,9 +206,6 @@ namespace
 
 			source->evaluate_uniform(radiance);
 
-			if (radiance.size() == 3)
-				radiance.resize(3);
-
 			float radiance_multiplier = m_params.get_optional<float>("radiance_multiplier", 1.0);
 
 			// Return max component value of the final radiance.
