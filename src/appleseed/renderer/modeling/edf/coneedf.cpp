@@ -198,7 +198,7 @@ namespace
 
         virtual float get_uncached_max_radiance_value() const APPLESEED_OVERRIDE
         {
-            Source* radiance_source = m_inputs.source("radiance");
+            const Source* radiance_source = m_inputs.source("radiance");
 
             // If source is not available, simply return max float so that 
             // light is not considered as a low contributing one.
@@ -209,7 +209,7 @@ namespace
 
             radiance_source->evaluate_uniform(radiance);
             
-            Source* radiance_multiplier_source = m_inputs.source("radiance_multiplier");
+            const Source* radiance_multiplier_source = m_inputs.source("radiance_multiplier");
             
             float radiance_multiplier = 1.0f;
 
