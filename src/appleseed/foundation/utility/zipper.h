@@ -93,8 +93,8 @@ namespace foundation
     // Prints files inside dirpath directory and all subdirectories
     //
 
-    std::set<std::string> recursive_ls(boost::filesystem::path dir);
+    std::set<std::string> recursive_ls(const boost::filesystem::path& dir);
 
-    }   // namespace foundation
+}   // namespace foundation
 
 #endif //!APPLESEED_FOUNDATION_UTILITY_ZIPPER_H

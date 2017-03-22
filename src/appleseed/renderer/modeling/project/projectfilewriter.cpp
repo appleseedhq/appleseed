@@ -928,25 +928,6 @@ bool ProjectFileWriter::write_project_file(
     return true;
 }
 
-string change_extension(string filepath, const string& new_extension)
-{
-    size_t ext_start = filepath.rfind('.');
-
-    if (ext_start == string::npos)
-        return filepath + new_extension;
-    else
-        return filepath.erase(ext_start) + new_extension;
-}
-
-string add_and_create_parent_directory(const string& filepath, const string& parent_dir)
-{
-    bf::path boost_filepath(filepath);
-    boost_filepath = boost_filepath.parent_path() / parent_dir / boost_filepath.filename();
-
-    bf::create_directory(boost_filepath.parent_path());
-    return boost_filepath.string();
-}
-
 bool ProjectFileWriter::write(
         const Project&  project,
         const char*     filepath,
@@ -956,42 +937,36 @@ bool ProjectFileWriter::write(
         return write_project_file(project, filepath, options);
     else
     {
-        string temp_directory = "";
+        bf::path temp_project_filepath;
 
         try
         {
-            string temp_project_filepath = change_extension(filepath, ".appleseed");
-            temp_project_filepath = add_and_create_parent_directory(temp_project_filepath, "temp");
+            const bf::path project_path(filepath);
+            temp_project_filepath = project_path.parent_path() /
+                "temp.unpacked" / project_path.filename().replace_extension(".appleseed");
 
-            temp_directory = bf::path(temp_project_filepath).parent_path().string();
-
-            RENDERER_LOG_INFO("hey");
-            RENDERER_LOG_INFO("%s", project.get_path());
-            RENDERER_LOG_INFO("%s", bf::path(filepath).parent_path().c_str());
-            RENDERER_LOG_INFO("%s", filepath);
-            RENDERER_LOG_INFO("%s", temp_project_filepath.c_str());
+            bf::create_directory(temp_project_filepath.parent_path());
 
             bool success = write_project_file(project,
                                       temp_project_filepath.c_str(),
                                       options | ProjectFileWriter::CopyAllAssets);
-
             if (!success)
             {
                 RENDERER_LOG_ERROR("Failed to save project %s.", filepath);
             }
             else
             {
-                zip(filepath, temp_directory);
+                zip(filepath, temp_project_filepath.parent_path().string());
             }
 
-            bf::remove_all(temp_directory);
+            bf::remove_all(temp_project_filepath.parent_path());
             return true;
         }
         catch (std::exception e)
         {
             RENDERER_LOG_ERROR("Failed to save project %s.", filepath);
-            if (temp_directory != "")
-                bf::remove_all(temp_directory);
+            if (bf::exists(temp_project_filepath))
+                bf::remove_all(temp_project_filepath);
             return false;
         }
     }

@@ -49,32 +49,32 @@ namespace bf = boost::filesystem;
 namespace foundation
 {
 
-    ZipException::ZipException(const char *what)
+    ZipException::ZipException(const char* what)
         : Exception(what)
     {
     }
 
-    ZipException::ZipException(const char *what, const int err)
+    ZipException::ZipException(const char* what, const int err)
     {
         string string_what = what + to_string(err);
         set_what(string_what.c_str());
     }
 
-    bool is_zip_entry_directory(const string &dirname)
+    bool is_zip_entry_directory(const string& dirname)
     {
         // used own implementation of is_zip_entry_directory instead of boost implementation
         // because this directory is not in filesystem, but in zipfile
         return dirname[dirname.size() - 1] == '/';
     }
 
-    void open_current_file(unzFile &zip_file)
+    void open_current_file(unzFile& zip_file)
     {
         const int err = unzOpenCurrentFile(zip_file);
         if (err != UNZ_OK)
             throw ZipException("Can't open file inside zip: ", err);
     }
 
-    int read_chunk(unzFile &zip_file, char *buffer, const int chunk_size)
+    int read_chunk(unzFile& zip_file, char* buffer, const int chunk_size)
     {
         const int err = unzReadCurrentFile(zip_file, buffer, chunk_size);
 
@@ -86,7 +86,7 @@ namespace foundation
         return err;
     }
 
-    void unzip_close_current_file(unzFile &zip_file)
+    void unzip_close_current_file(unzFile& zip_file)
     {
         const int err = unzCloseCurrentFile(zip_file);
 
@@ -94,7 +94,7 @@ namespace foundation
             throw ZipException("CRC32 is not good");
     }
 
-    string read_filename(unzFile &zip_file)
+    string read_filename(unzFile& zip_file)
     {
         unz_file_info zip_file_info;
         unzGetCurrentFileInfo(zip_file, &zip_file_info, 0, 0, 0, 0, 0, 0);
@@ -109,17 +109,16 @@ namespace foundation
             0, 0);
         filename[filename.size() - 1] = '\0';
 
-        const string inzip_filename(&filename[0]);
-        return inzip_filename;
+        return string(&filename[0]);
     }
 
-    string get_filepath(unzFile &zip_file, const string &unzipped_dir)
+    string get_filepath(unzFile& zip_file, const string& unzipped_dir)
     {
         string filename = read_filename(zip_file);
         return (bf::path(unzipped_dir) / bf::path(filename)).string();
     }
 
-    void extract_current_file(unzFile &zip_file, const string &unzipped_dir)
+    void extract_current_file(unzFile& zip_file, const string& unzipped_dir)
     {
         const string filepath = get_filepath(zip_file, unzipped_dir);
 
@@ -139,8 +138,8 @@ namespace foundation
 
         do
         {
-            const int read = read_chunk(zip_file, (char *) &buffer, BUFFER_SIZE);
-            out.write((char *) &buffer, read);
+            const int read = read_chunk(zip_file, (char*) &buffer, BUFFER_SIZE);
+            out.write((char*) &buffer, read);
         }
         while (!unzeof(zip_file));
 
@@ -148,7 +147,7 @@ namespace foundation
         unzip_close_current_file(zip_file);
     }
 
-    void unzip(const string &zip_filename, const string &unzipped_dir)
+    void unzip(const string& zip_filename, const string& unzipped_dir)
     {
         try
         {
@@ -176,7 +175,7 @@ namespace foundation
         }
     }
 
-    void zip_close_current_file(zipFile &zip_file)
+    void zip_close_current_file(zipFile& zip_file)
     {
         const int err = zipCloseFileInZip(zip_file);
 
@@ -184,7 +183,7 @@ namespace foundation
             ZipException("Error while closing file in zip", err);
     }
 
-    void write_chunk(zipFile &zip_file, char *buffer, const int chunk_size)
+    void write_chunk(zipFile& zip_file, char* buffer, const int chunk_size)
     {
         const int err = zipWriteInFileInZip(zip_file, buffer, chunk_size);
 
@@ -194,7 +193,7 @@ namespace foundation
         }
     }
 
-    void open_new_file_in_zip(zipFile zip_file, string filename_in_zip, zip_fileinfo zip_file_info)
+    void open_new_file_in_zip(zipFile& zip_file, string filename_in_zip, zip_fileinfo zip_file_info)
     {
         int err = zipOpenNewFileInZip(zip_file, filename_in_zip.c_str(), &zip_file_info,
                                       0, 0, 0, 0, 0,
@@ -204,10 +203,10 @@ namespace foundation
             throw ZipException(("error while opening " + filename_in_zip + " in zipfile").c_str());
     }
 
-    zip_fileinfo set_file_timestamp(string filename)
+    zip_fileinfo set_file_timestamp(const string& filename)
     {
         time_t timestamp = bf::last_write_time(filename);
-        tm *timestamp_components = localtime(&timestamp);
+        tm* timestamp_components = localtime(&timestamp);
 
         zip_fileinfo zip_file_info;
         zip_file_info.tmz_date.tm_sec = timestamp_components->tm_sec;
@@ -224,7 +223,7 @@ namespace foundation
         return zip_file_info;
     }
 
-    void zip_current_file(zipFile zip_file, const string& filename, const string& base_directory)
+    void zip_current_file(zipFile& zip_file, const string& filename, const string& base_directory)
     {
         const string filename_in_fs = (bf::path(base_directory) / filename).string();
 
@@ -241,9 +240,9 @@ namespace foundation
 
         do
         {
-            in.read((char *) &buffer, BUFFER_SIZE);
+            in.read((char*) &buffer, BUFFER_SIZE);
             const streamsize read = in.gcount();
-            write_chunk(zip_file, (char *) &buffer, read);
+            write_chunk(zip_file, (char*) &buffer, read);
         }
         while (!in.eof());
 
@@ -251,7 +250,7 @@ namespace foundation
         zip_close_current_file(zip_file);
     }
 
-    void zip(const string &zip_filename, const string& directory_to_zip)
+    void zip(const string& zip_filename, const string& directory_to_zip)
     {
         try
         {
@@ -277,7 +276,7 @@ namespace foundation
         }
     }
 
-    bool is_zip_file(const char *filename)
+    bool is_zip_file(const char* filename)
     {
         unzFile zip_file = unzOpen(filename);
 
@@ -290,7 +289,7 @@ namespace foundation
         }
     }
 
-    vector<string> get_filenames_with_extension_from_zip(const string &zip_filename, const string &extension)
+    vector<string> get_filenames_with_extension_from_zip(const string& zip_filename, const string& extension)
     {
         vector<string> filenames;
 
@@ -316,7 +315,7 @@ namespace foundation
         return filenames;
     }
 
-    set<string> recursive_ls(bf::path dir)
+    set<string> recursive_ls(const bf::path& dir)
     {
         set<string> files;
 
