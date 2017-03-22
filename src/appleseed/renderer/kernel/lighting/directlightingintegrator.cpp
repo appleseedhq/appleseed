@@ -611,7 +611,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
         cos_on * 
         dot(incoming, m_geometric_normal) * 
         rcp_sample_square_distance * 
-        edf->get_max_radiance_value();
+        edf->get_max_contribution();
 
     const bool is_low_contribution = approximate_contribution < m_low_light_threshold;
     
