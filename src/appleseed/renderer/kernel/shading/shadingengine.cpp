@@ -31,11 +31,9 @@
 #include "shadingengine.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/aov/shadingfragmentstack.h"
+#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/shading/shadingcontext.h"
-#include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingray.h"
-#include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/input/source.h"
@@ -80,14 +78,14 @@ void ShadingEngine::create_diagnostic_surface_shader(const ParamArray& params)
 }
 
 void ShadingEngine::shade_hit_point(
-    SamplingContext&        sampling_context,
-    const PixelContext&     pixel_context,
-    const ShadingContext&   shading_context,
-    const ShadingPoint&     shading_point,
-    ShadingResult&          shading_result) const
+    SamplingContext&            sampling_context,
+    const PixelContext&         pixel_context,
+    const ShadingContext&       shading_context,
+    const ShadingPoint&         shading_point,
+    AOVAccumulatorContainer&    aov_accumulators) const
 {
     // Compute the alpha channel of the main output.
-    shading_result.m_main.m_alpha = shading_point.get_alpha();
+    aov_accumulators.alpha().set(shading_point.get_alpha());
 
     // Retrieve the material of the intersected surface.
     const Material* material = shading_point.get_material();
@@ -102,11 +100,11 @@ void ShadingEngine::shade_hit_point(
             *material->get_render_data().m_shader_group,
             shading_point,
             alpha);
-        shading_result.m_main.m_alpha *= alpha;
+        aov_accumulators.alpha().apply_multiplier(alpha);
     }
 
     // Shade the sample if it isn't fully transparent.
-    if (shading_result.m_main.m_alpha[0] > 0.0f || shading_point.shade_alpha_cutouts())
+    if (aov_accumulators.alpha().get()[0] > 0.0f || shading_point.shade_alpha_cutouts())
     {
         // Use the diagnostic surface shader if there is one.
         const SurfaceShader* surface_shader = m_diagnostic_surface_shader.get();
@@ -116,8 +114,8 @@ void ShadingEngine::shade_hit_point(
             if (material == 0)
             {
                 // The intersected surface has no material: return solid pink.
-                shading_result.set_main_to_opaque_pink_linear_rgba();
-                shading_result.set_aovs_to_transparent_black_linear_rgba();
+                aov_accumulators.beauty().set_to_pink_linear_rgb();
+                aov_accumulators.alpha().set(Alpha(1.0f));
                 return;
             }
 
@@ -127,8 +125,8 @@ void ShadingEngine::shade_hit_point(
             if (surface_shader == 0)
             {
                 // The intersected surface has no surface shader: return solid pink.
-                shading_result.set_main_to_opaque_pink_linear_rgba();
-                shading_result.set_aovs_to_transparent_black_linear_rgba();
+                aov_accumulators.beauty().set_to_pink_linear_rgb();
+                aov_accumulators.alpha().set(Alpha(1.0f));
                 return;
             }
         }
@@ -139,31 +137,16 @@ void ShadingEngine::shade_hit_point(
             pixel_context,
             shading_context,
             shading_point,
-            shading_result);
-
-        // Set AOVs.
-        shading_result.set_entity_aov(shading_point.get_assembly());
-        shading_result.set_entity_aov(shading_point.get_assembly_instance());
-        shading_result.set_entity_aov(shading_point.get_object());
-        shading_result.set_entity_aov(shading_point.get_object_instance());
-        if (material)
-            shading_result.set_entity_aov(*material);
-        shading_result.set_entity_aov(*surface_shader);
-    }
-    else
-    {
-        // Alpha is zero: shade as transparent black.
-        shading_result.set_main_to_transparent_black_linear_rgba();
-        shading_result.set_aovs_to_transparent_black_linear_rgba();
+            aov_accumulators);
     }
 }
 
 void ShadingEngine::shade_environment(
-    SamplingContext&        sampling_context,
-    const PixelContext&     pixel_context,
-    const ShadingContext&   shading_context,
-    const ShadingPoint&     shading_point,
-    ShadingResult&          shading_result) const
+    SamplingContext&            sampling_context,
+    const PixelContext&         pixel_context,
+    const ShadingContext&       shading_context,
+    const ShadingPoint&         shading_point,
+    AOVAccumulatorContainer&    aov_accumulators) const
 {
     // Retrieve the environment shader of the scene.
     const EnvironmentShader* environment_shader =
@@ -174,20 +157,16 @@ void ShadingEngine::shade_environment(
         // There is an environment shader: execute it.
         const ShadingRay& ray = shading_point.get_ray();
         const Vector3d direction = normalize(ray.m_dir);
+        Spectrum value;
+        Alpha alpha;
         environment_shader->evaluate(
             shading_context,
             pixel_context,
             direction,
-            shading_result);
-
-        // Set environment shader AOV.
-        shading_result.set_entity_aov(*environment_shader);
-    }
-    else
-    {
-        // No environment shader: shade as transparent black.
-        shading_result.set_main_to_transparent_black_linear_rgba();
-        shading_result.set_aovs_to_transparent_black_linear_rgba();
+            value,
+            alpha);
+        aov_accumulators.beauty().set(value);
+        aov_accumulators.alpha().set(alpha);
     }
 }
 

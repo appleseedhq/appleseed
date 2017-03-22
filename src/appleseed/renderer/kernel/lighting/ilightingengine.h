@@ -42,7 +42,6 @@ namespace foundation    { class StatisticsVector; }
 namespace renderer      { class PixelContext; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
-namespace renderer      { class SpectrumStack; }
 
 namespace renderer
 {
@@ -61,8 +60,7 @@ class ILightingEngine
         const PixelContext&     pixel_context,
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point,
-        Spectrum&               radiance,           // output radiance, in W.sr^-1.m^-2
-        SpectrumStack&          aovs) = 0;
+        Spectrum&               radiance) = 0;      // output radiance, in W.sr^-1.m^-2
 
     // Retrieve performance statistics.
     virtual foundation::StatisticsVector get_statistics() const = 0;

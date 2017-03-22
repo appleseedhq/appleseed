@@ -32,5 +32,11 @@
 
 // API headers.
 #include "renderer/kernel/aov/imagestack.h"
+#include "renderer/modeling/aov/aov.h"
+#include "renderer/modeling/aov/aovcontainer.h"
+#include "renderer/modeling/aov/aovfactoryregistrar.h"
+#include "renderer/modeling/aov/aovtraits.h"
+#include "renderer/modeling/aov/depthaov.h"
+#include "renderer/modeling/aov/iaovfactory.h"
 
 #endif  // !APPLESEED_RENDERER_API_AOV_H

@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +26,11 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADERCOLLECTION_H
-#define APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADERCOLLECTION_H
+#ifndef APPLESEED_RENDERER_MODELING_AOV_UVAOV_H
+#define APPLESEED_RENDERER_MODELING_AOV_UVAOV_H
 
 // appleseed.renderer headers.
-#include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
+#include "renderer/modeling/aov/iaovfactory.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -43,40 +42,40 @@
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
+namespace renderer      { class AOV; }
 namespace renderer      { class ParamArray; }
-namespace renderer      { class SurfaceShader; }
 
 namespace renderer
 {
 
 //
-// A collection of surface shaders, each outputting to its own AOVs.
+// A factory for UV AOVs.
 //
 
-class APPLESEED_DLLSYMBOL SurfaceShaderCollectionFactory
-  : public ISurfaceShaderFactory
+class APPLESEED_DLLSYMBOL UVAOVFactory
+  : public IAOVFactory
 {
   public:
-    // Return a string identifying this surface shader model.
+    // Return a string identifying this AOV model.
     virtual const char* get_model() const APPLESEED_OVERRIDE;
 
-    // Return metadata for this surface shader model.
+    // Return metadata for this AOV model.
     virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
 
-    // Return metadata for the inputs of this surface shader model.
+    // Return metadata for the inputs of this AOV model.
     virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 
-    // Create a new surface shader instance.
-    virtual foundation::auto_release_ptr<SurfaceShader> create(
+    // Create a new AOV instance.
+    virtual foundation::auto_release_ptr<AOV> create(
         const char*         name,
         const ParamArray&   params) const APPLESEED_OVERRIDE;
 
     // Static variant of the create() method above.
-    static foundation::auto_release_ptr<SurfaceShader> static_create(
+    static foundation::auto_release_ptr<AOV> static_create(
         const char*         name,
         const ParamArray&   params);
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADERCOLLECTION_H
+#endif  // !APPLESEED_RENDERER_MODELING_AOV_UVAOV_H

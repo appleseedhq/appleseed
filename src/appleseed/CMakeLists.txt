@@ -872,6 +872,8 @@ source_group ("renderer\\global" FILES
 )
 
 set (renderer_kernel_aov_sources
+    renderer/kernel/aov/aovaccumulator.cpp
+    renderer/kernel/aov/aovaccumulator.h
     renderer/kernel/aov/aovsettings.h
     renderer/kernel/aov/imagestack.cpp
     renderer/kernel/aov/imagestack.h
@@ -1246,6 +1248,28 @@ list (APPEND appleseed_sources
 )
 source_group ("renderer\\meta\\tests" FILES
     ${renderer_meta_tests_sources}
+)
+
+set (renderer_modeling_aov_sources
+    renderer/modeling/aov/aov.cpp
+    renderer/modeling/aov/aov.h
+    renderer/modeling/aov/aovcontainer.h
+    renderer/modeling/aov/aovfactoryregistrar.cpp
+    renderer/modeling/aov/aovfactoryregistrar.h
+    renderer/modeling/aov/aovtraits.h
+    renderer/modeling/aov/depthaov.cpp
+    renderer/modeling/aov/depthaov.h
+    renderer/modeling/aov/iaovfactory.h
+    renderer/modeling/aov/normalaov.cpp
+    renderer/modeling/aov/normalaov.h
+    renderer/modeling/aov/uvaov.cpp
+    renderer/modeling/aov/uvaov.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_aov_sources}
+)
+source_group ("renderer\\modeling\\aov" FILES
+    ${renderer_modeling_aov_sources}
 )
 
 set (renderer_modeling_bsdf_sources
@@ -1744,14 +1768,10 @@ set (renderer_modeling_surfaceshader_sources
     renderer/modeling/surfaceshader/diagnosticsurfaceshader.cpp
     renderer/modeling/surfaceshader/diagnosticsurfaceshader.h
     renderer/modeling/surfaceshader/isurfaceshaderfactory.h
-    renderer/modeling/surfaceshader/oslsurfaceshader.cpp
-    renderer/modeling/surfaceshader/oslsurfaceshader.h
     renderer/modeling/surfaceshader/physicalsurfaceshader.cpp
     renderer/modeling/surfaceshader/physicalsurfaceshader.h
     renderer/modeling/surfaceshader/surfaceshader.cpp
     renderer/modeling/surfaceshader/surfaceshader.h
-    renderer/modeling/surfaceshader/surfaceshadercollection.cpp
-    renderer/modeling/surfaceshader/surfaceshadercollection.h
     renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.cpp
     renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.h
     renderer/modeling/surfaceshader/surfaceshadertraits.h

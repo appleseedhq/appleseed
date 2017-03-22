@@ -92,15 +92,8 @@ namespace
         {
             if (m_params.m_diagnostics)
             {
-                ImageStack& images = frame.aov_images();
-
-                m_variation_aov_index = images.get_index("variation");
-                if (m_variation_aov_index == size_t(~0) && images.size() < MaxAOVCount)
-                    m_variation_aov_index = images.append("variation", ImageStack::IdentificationType, 4, PixelFormatFloat);
-
-                m_samples_aov_index = images.get_index("samples");
-                if (m_samples_aov_index == size_t(~0) && images.size() < MaxAOVCount)
-                    m_samples_aov_index = images.append("samples", ImageStack::IdentificationType, 4, PixelFormatFloat);
+                m_variation_aov_index = frame.create_extra_aov_image("variation");
+                m_samples_aov_index = frame.create_extra_aov_image("samples");
 
                 if ((thread_index == 0) && (m_variation_aov_index == size_t(~0) || m_samples_aov_index == size_t(~0)))
                 {

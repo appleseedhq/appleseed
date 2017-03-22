@@ -150,5 +150,9 @@ void bind_frame()
         .def("write_main_image", &Frame::write_main_image)
         .def("write_aov_images", &Frame::write_aov_images)
         .def("archive", archive_frame)
+
+        .def("add_aov", &Frame::add_aov)
+        .def("transfer_aovs", &Frame::transfer_aovs)
+        .def("aovs", &Frame::aovs, bpy::return_value_policy<bpy::reference_existing_object>())
         ;
 }

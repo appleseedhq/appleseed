@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,11 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_BACKGROUNDENVIRONMENTSHADER_H
-#define APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_BACKGROUNDENVIRONMENTSHADER_H
-
-// appleseed.renderer headers.
-#include "renderer/modeling/environmentshader/ienvironmentshaderfactory.h"
+#ifndef APPLESEED_RENDERER_MODELING_AOV_IAOVFACTORY_H
+#define APPLESEED_RENDERER_MODELING_AOV_IAOVFACTORY_H
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
@@ -42,41 +39,38 @@
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
-namespace renderer      { class AOVAccumulatorContainer; }
-namespace renderer      { class EnvironmentShader; }
+namespace renderer      { class AOV; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
 
 //
-// Factory for an environment shader that simply paints background pixels.
+// AOV factory interface.
 //
 
-class APPLESEED_DLLSYMBOL BackgroundEnvironmentShaderFactory
-  : public IEnvironmentShaderFactory
+class APPLESEED_DLLSYMBOL IAOVFactory
+  : public foundation::NonCopyable
 {
   public:
-    // Return a string identifying this environment shader model.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
+    // Destructor.
+    virtual ~IAOVFactory() {}
 
-    // Return metadata for this environment shader model.
-    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
+    // Return a string identifying this AOV model.
+    virtual const char* get_model() const = 0;
 
-    // Return metadata for the inputs of this environment shader model.
-    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
+    // Return metadata for this AOV model.
+    virtual foundation::Dictionary get_model_metadata() const = 0;
 
-    // Create a new environment shader instance.
-    virtual foundation::auto_release_ptr<EnvironmentShader> create(
+    // Return metadata for the inputs of this AOV model.
+    virtual foundation::DictionaryArray get_input_metadata() const = 0;
+
+    // Create a new AOV instance.
+    virtual foundation::auto_release_ptr<AOV> create(
         const char*         name,
-        const ParamArray&   params) const APPLESEED_OVERRIDE;
-
-    // Static variant of the create() method above.
-    static foundation::auto_release_ptr<EnvironmentShader> static_create(
-        const char*         name,
-        const ParamArray&   params);
+        const ParamArray&   params) const = 0;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_BACKGROUNDENVIRONMENTSHADER_H
+#endif  // !APPLESEED_RENDERER_MODELING_AOV_IAOVFACTORY_H

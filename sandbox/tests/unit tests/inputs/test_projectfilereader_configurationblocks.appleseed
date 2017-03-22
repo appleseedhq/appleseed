@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project format_revision="15">
+<project format_revision="16">
     <scene>
         <camera name="camera" model="pinhole_camera">
             <parameter name="film_dimensions" value="0.025 0.025" />

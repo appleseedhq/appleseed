@@ -52,7 +52,6 @@ Entity::Entity(
   : impl(new Impl())
   , m_class_uid(class_uid)
   , m_parent(0)
-  , m_render_layer(~0)
 {
 }
 
@@ -62,7 +61,6 @@ Entity::Entity(
   : impl(new Impl())
   , m_class_uid(class_uid)
   , m_parent(parent)
-  , m_render_layer(~0)
 {
 }
 
@@ -73,7 +71,6 @@ Entity::Entity(
   , m_class_uid(class_uid)
   , m_parent(0)
   , m_params(params)
-  , m_render_layer(~0)
 {
 }
 
@@ -85,7 +82,6 @@ Entity::Entity(
   , m_class_uid(class_uid)
   , m_parent(parent)
   , m_params(params)
-  , m_render_layer(~0)
 {
 }
 
