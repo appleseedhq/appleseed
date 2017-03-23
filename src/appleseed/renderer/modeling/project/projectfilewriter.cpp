@@ -79,9 +79,10 @@
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/xmlelement.h"
+#include "foundation/utility/zipper.h"
 
 // Boost headers.
-#include "boost/filesystem/path.hpp"
+#include "boost/filesystem.hpp"
 
 // Standard headers.
 #include <algorithm>
@@ -97,6 +98,7 @@
 using namespace boost;
 using namespace foundation;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace renderer
 {
@@ -892,7 +894,7 @@ namespace
     };
 }
 
-bool ProjectFileWriter::write(
+bool ProjectFileWriter::write_project_file(
     const Project&  project,
     const char*     filepath,
     const int       options)
@@ -944,6 +946,53 @@ bool ProjectFileWriter::write(
 
     RENDERER_LOG_INFO("wrote project file %s.", filepath);
     return true;
+}
+
+bool ProjectFileWriter::write(
+    const Project&  project,
+    const char*     filepath,
+    const int       options)
+{
+    if (!(options & ProjectFileWriter::PackedProject))
+        return write_project_file(project, filepath, options);
+    else
+    {
+        bf::path temp_project_filepath;
+
+        try
+        {
+            const bf::path project_path(filepath);
+            temp_project_filepath = project_path.parent_path() /
+                "temp.unpacked" / project_path.filename().replace_extension(".appleseed");
+
+            bf::create_directory(temp_project_filepath.parent_path());
+
+            const bool success =
+              write_project_file(
+                project,
+                temp_project_filepath.c_str(),
+                options | ProjectFileWriter::CopyAllAssets);
+
+            if (!success)
+            {
+                RENDERER_LOG_ERROR("failed to save project %s.", filepath);
+            }
+            else
+            {
+                zip(filepath, temp_project_filepath.parent_path().string());
+            }
+
+            bf::remove_all(temp_project_filepath.parent_path());
+            return true;
+        }
+        catch (const std::exception& e)
+        {
+            RENDERER_LOG_ERROR("failed to save project %s.", filepath);
+            if (bf::exists(temp_project_filepath))
+                bf::remove_all(temp_project_filepath);
+            return false;
+        }
+    }
 }
 
 }   // namespace renderer
