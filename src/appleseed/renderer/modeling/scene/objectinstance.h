@@ -103,6 +103,9 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     // Return true if the transform of this instance swaps handedness.
     bool transform_swaps_handedness() const;
 
+    // Return true if the normals of this instance must be flipped.
+    bool flip_normals() const;
+
     // Return the visibility flags of this instance.
     foundation::uint32 get_vis_flags() const;
 
@@ -199,6 +202,7 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     RayBiasMethod       m_ray_bias_method;
     double              m_ray_bias_distance;
     bool                m_transform_swaps_handedness;
+    bool                m_flip_normals;
 
     Object*             m_object;
     MaterialArray       m_front_materials;
@@ -246,6 +250,11 @@ class APPLESEED_DLLSYMBOL ObjectInstanceFactory
 inline bool ObjectInstance::transform_swaps_handedness() const
 {
     return m_transform_swaps_handedness;
+}
+
+inline bool ObjectInstance::flip_normals() const
+{
+    return m_flip_normals;
 }
 
 inline foundation::uint32 ObjectInstance::get_vis_flags() const

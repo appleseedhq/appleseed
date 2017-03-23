@@ -50,6 +50,7 @@
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/visibilityflags.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
+#include "renderer/utility/triangle.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/sampling/mappings.h"
@@ -311,7 +312,7 @@ void LightSampler::collect_emitting_triangles(
                 const Vector3d v2(assembly_instance_transform.point_to_parent(v2_as));
 
                 // Compute the geometric normal to the triangle and the area of the triangle.
-                Vector3d geometric_normal = cross(v1 - v0, v2 - v0);
+                Vector3d geometric_normal = compute_triangle_normal(v0, v1, v2);
                 const double geometric_normal_norm = norm(geometric_normal);
                 if (geometric_normal_norm == 0.0)
                     continue;

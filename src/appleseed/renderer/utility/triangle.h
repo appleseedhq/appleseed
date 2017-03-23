@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,18 +26,44 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_UTILITY_H
-#define APPLESEED_RENDERER_API_UTILITY_H
+#ifndef APPLESEED_RENDERER_UTILITY_TRIANGLE_H
+#define APPLESEED_RENDERER_UTILITY_TRIANGLE_H
 
-// API headers.
-#include "renderer/utility/bbox.h"
-#include "renderer/utility/paramarray.h"
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-#include "renderer/utility/seexpr.h"
-#endif
-#include "renderer/utility/settingsparsing.h"
-#include "renderer/utility/testutils.h"
-#include "renderer/utility/transformsequence.h"
-#include "renderer/utility/triangle.h"
+// appleseed.foundation headers.
+#include "foundation/math/vector.h"
 
-#endif  // !APPLESEED_RENDERER_API_UTILITY_H
+namespace renderer
+{
+
+//
+// Compute the (unnormalized) normal vector of a 3D triangle described by
+// the coordinates of its three vertices.
+//
+// This function is the embodiment of the following conventions:
+//   - appleseed uses a right-hand coordinate system
+//   - a triangle with vertices described in counter-clockwise order is front-facing
+//
+
+template <typename VectorType>
+VectorType compute_triangle_normal(
+    const VectorType&   v0,
+    const VectorType&   v1,
+    const VectorType&   v2);
+
+
+//
+// Implementation.
+//
+
+template <typename VectorType>
+VectorType compute_triangle_normal(
+    const VectorType&   v0,
+    const VectorType&   v1,
+    const VectorType&   v2)
+{
+    return foundation::cross(v1 - v0, v2 - v0);
+}
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_UTILITY_TRIANGLE_H

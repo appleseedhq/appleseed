@@ -74,15 +74,19 @@
                 <parameter name="filename" value="osl_as_edf_compare.obj" />
             </object>
             <object_instance name="osl_as_edf_compare.floor_floor_mesh_inst" object="osl_as_edf_compare.floor_floor_mesh">
+                <parameter name="flip_normals" value="true" />
                 <assign_material slot="default" side="front" material="diffuse_material" />
             </object_instance>
             <object_instance name="osl_as_edf_compare.left_light_left_light_mesh_inst" object="osl_as_edf_compare.left_light_left_light_mesh">
+                <parameter name="flip_normals" value="true" />
                 <assign_material slot="default" side="front" material="left_light_material" />
             </object_instance>
             <object_instance name="osl_as_edf_compare.right_light_right_light_mesh_inst" object="osl_as_edf_compare.right_light_right_light_mesh">
+                <parameter name="flip_normals" value="true" />
                 <assign_material slot="default" side="front" material="right_light_material" />
             </object_instance>
             <object_instance name="osl_as_edf_compare.wall_wall_mesh_inst" object="osl_as_edf_compare.wall_wall_mesh">
+                <parameter name="flip_normals" value="true" />
                 <assign_material slot="default" side="front" material="diffuse_material" />
             </object_instance>
         </assembly>
