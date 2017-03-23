@@ -87,6 +87,8 @@ void FrameItem::slot_edit(AttributeEditor* attribute_editor)
 
     if (attribute_editor)
     {
+        m_attrubute_editor = attribute_editor;
+
         attribute_editor->edit(
             form_factory,
             entity_browser,
@@ -132,6 +134,9 @@ void FrameItem::edit(const Dictionary& values)
     m_frame = m_editor_context.m_project_builder.edit_frame(values);
 
     set_title(QString::fromAscii(m_frame->get_name()));
+
+    if (m_attrubute_editor)
+        m_attrubute_editor->refresh();
 }
 
 const Dictionary FrameItem::get_values()

@@ -93,6 +93,7 @@ class ItemBase
 
   protected:
     EntityEditorContext&        m_editor_context;
+    AttributeEditor*            m_attrubute_editor;
 
     template <typename Item>
     QList<Item*> get_action_items();

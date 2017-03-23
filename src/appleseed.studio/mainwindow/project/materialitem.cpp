@@ -118,6 +118,8 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
 
     if (attribute_editor)
     {
+        m_attrubute_editor = attribute_editor;
+
         attribute_editor->edit(
             form_factory,
             entity_browser,
