@@ -80,10 +80,14 @@ set (c_compiler_flags_common
     /GF                                     # Enable String Pooling
 )
 if (WARNINGS_AS_ERRORS)
-    set (c_compiler_flags_common
-         ${c_compiler_flags_common}
-         /WX                                # Treat Warnings As Errors
-    )
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR
+        CMAKE_BUILD_TYPE STREQUAL "Profile" OR
+        CMAKE_BUILD_TYPE STREQUAL "Release")
+        set (c_compiler_flags_common
+            ${c_compiler_flags_common}
+            /WX                                # Treat Warnings As Errors
+        )
+    endif()
 endif ()
 set (cxx_compiler_flags_common
     /wd4068                                 # Disable warning C4068: unknown pragma
