@@ -64,10 +64,14 @@ set (c_compiler_flags_common
     -fno-math-errno                                     # ignore errno when calling math functions
 )
 if (WARNINGS_AS_ERRORS)
-    set (c_compiler_flags_common
-        ${c_compiler_flags_common}
-        -Werror                                         # treat Warnings As Errors
-    )
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR
+        CMAKE_BUILD_TYPE STREQUAL "Profile" OR
+        CMAKE_BUILD_TYPE STREQUAL "Release")
+        set (c_compiler_flags_common
+            ${c_compiler_flags_common}
+            -Werror                                     # treat Warnings As Errors
+        )
+    endif ()
 endif ()
 if (USE_CPP11)
     set (cxx_compiler_flags_common
