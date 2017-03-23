@@ -31,6 +31,45 @@
 
 #include "appleseed/color/as_color_data.h"
 
+//
+// Reference
+//
+//      Colour Space Conversions
+//
+//      http://www.poynton.com/PDFs/coloureq.pdf
+//
+
+float convert_XYZ_to_xyY(vector XYZ, float white_xy[2])
+{
+    if (XYZ[0] == XYZ[1] == XYZ[2] == 0.0)
+    {
+        // Set x and y to reference white chromaticity coordinates xy
+        xyY = vector(white_xy[0], white_xy[1], XYZ[1]);
+    }
+    else
+    {
+        float XYZ_sum = XYZ[0] + XYZ[1] + XYZ[2];
+
+        xyY = vector(XYZ[0] / XYZ_sum, XYZ[1] / XYZ_sum, XYZ[1]);
+    }
+    return xyY;
+}
+
+vector convert_xyY_to_XYZ(vector xyY)
+{
+    if (xyY[1] != 0)
+    {
+        XYZ[0] = xyY[0] * xyY[2] / xyY[1];
+        XYZ[1] = xyY[2];
+        XYZ[2] = (1.0 - xyY[0] - xyY[1]) * xyY[2] / xyY[1]; // z = 1-x-y
+    }
+    else
+    {
+        XYZ = vector(0);
+    }
+    return XYZ;
+}
+
 // The luminance coefficients are provided by the Y value, so when the
 // white points of the color space differ from the requested white point,
 // the RGB->XYZ matrices are adjusted with the Bradford CAT.

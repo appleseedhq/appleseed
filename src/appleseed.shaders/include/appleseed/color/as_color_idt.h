@@ -30,11 +30,15 @@
 #define AS_COLOR_IDT_H
 
 #include "appleseed/color/as_color_data.h"
-#include "appleseed/color/as_color_helpers.h"
+#include "appleseed/color/as_transfer_functions.h"
 
-// Input space to working space conversions, as per definitions set in SynColor
-// though they can be used as generic conversions. Bradford CAT used where
-// illuminants differ.
+//
+// Linearization and input space to working space conversions with precomputed
+// RGB to RGB matrices, chromatically adapted where meaningful, using the
+// Bradford CAT.
+// Only the D60, D65, DCI-P3 illuminants, supported. for other illuminants
+// and CATs, you might want to use the function
+// chromatic_adaptation_transform_vonKries() function.
 
 // Rec.709 render space, D65 white point
 //
