@@ -99,7 +99,7 @@ class APPLESEED_DLLSYMBOL EDF
     // Retrieve the light near start value.
     double get_uncached_light_near_start() const;
 
-    // Get the cached approximate contribution.
+    // Get the cached approximate maximum contribution.
     float get_max_contribution() const;
 
     // This method is called once before rendering each frame.
@@ -150,17 +150,14 @@ class APPLESEED_DLLSYMBOL EDF
         const foundation::Vector3f& outgoing) const = 0;        // world space emission direction, unit-length
 
   protected:
-        float get_max_contribution_scalar(const Source* source) const;
-        float get_max_contribution_spectrum(const Source* source) const;
+    float get_max_contribution_scalar(const Source* source) const;
+    float get_max_contribution_spectrum(const Source* source) const;
 
-        float get_max_contribution(const Source* source) const;
-        float get_max_contribution(const char* input_name) const;
+    float get_max_contribution(const Source* source, const Source* multiplier) const;
+    float get_max_contribution(const char* input_name, const char* multiplier_name) const;
 
-        float get_max_contribution(const Source* source, const Source* multiplier) const;
-        float get_max_contribution(const char* input_name, const char* multiplier_name) const;
-
-        // Retrieve the approximate contribution.
-        virtual float get_uncached_max_contribution() const = 0;
+    // Retrieve the approximate contribution.
+    virtual float get_uncached_max_contribution() const = 0;
 
   private:
     int    m_flags;

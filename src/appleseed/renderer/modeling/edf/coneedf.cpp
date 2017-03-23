@@ -33,7 +33,6 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/source.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -53,7 +52,6 @@ namespace renderer      { class Assembly; }
 namespace renderer      { class Project; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {

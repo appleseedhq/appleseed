@@ -609,7 +609,6 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     // Decide whether the contributon from this light is significant or not.
     const double approximate_contribution = 
         cos_on * 
-        dot(incoming, m_geometric_normal) * 
         rcp_sample_square_distance * 
         edf->get_max_contribution();
 

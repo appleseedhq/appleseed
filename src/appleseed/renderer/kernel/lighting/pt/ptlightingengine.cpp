@@ -147,16 +147,16 @@ namespace
             {
                 RENDERER_LOG_INFO(
                     "path tracing settings:\n"
-                    "  direct lighting        %s\n"
-                    "  ibl                    %s\n"
-                    "  caustics               %s\n"
-                    "  max path length        %s\n"
-                    "  rr min path len.       %s\n"
-                    "  next event est.        %s\n"
-                    "  dl light samples       %s\n"
-                    "  dl low light threshold %s\n"
-                    "  ibl env samples        %s\n"
-                    "  max ray intens.        %s",
+                    "  direct lighting  %s\n"
+                    "  ibl              %s\n"
+                    "  caustics         %s\n"
+                    "  max path length  %s\n"
+                    "  rr min path len. %s\n"
+                    "  next event est.  %s\n"
+                    "  dl light samples %s\n"
+                    "  dl light thresh. %s\n"
+                    "  ibl env samples  %s\n"
+                    "  max ray intens.  %s",
                     m_enable_dl ? "on" : "off",
                     m_enable_ibl ? "on" : "off",
                     m_enable_caustics ? "on" : "off",

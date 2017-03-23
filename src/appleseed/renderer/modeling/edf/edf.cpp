@@ -160,16 +160,6 @@ float EDF::get_max_contribution_spectrum(const Source* source) const
     return max_value(spectrum);
 }
 
-float EDF::get_max_contribution(const Source* input) const
-{
-    return get_max_contribution_spectrum(input);
-}
-
-float EDF::get_max_contribution(const char* input_name) const
-{
-    return get_max_contribution(m_inputs.source(input_name));
-}
-
 float EDF::get_max_contribution(const Source* input, const Source* multiplier) const
 {
     const float max_contribution_spectrum = get_max_contribution_spectrum(input);

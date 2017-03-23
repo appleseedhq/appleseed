@@ -37,7 +37,6 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/edf/diffuseedf.h"
 #include "renderer/modeling/edf/edf.h"
-#include "renderer/modeling/input/source.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -47,7 +46,6 @@
 #include "foundation/utility/arena.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
