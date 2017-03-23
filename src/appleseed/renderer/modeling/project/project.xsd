@@ -302,17 +302,35 @@
                 </xsd:element>
                 <xsd:element name="output">
                     <xsd:complexType>
-                        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                        <xsd:all>
                             <xsd:element name="frame">
                                 <xsd:complexType>
                                     <xsd:complexContent>
                                         <xsd:extension base="parameterSet">
+                                            <xsd:choice minOccurs="0" maxOccurs="1">
+                                            <xsd:element name="aovs">
+                                                <xsd:complexType>
+                                                    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                                                        <xsd:element name="aov">
+                                                            <xsd:complexType>
+                                                                <xsd:complexContent>
+                                                                    <xsd:extension base="parameterSet">
+                                                                        <xsd:attribute name="name" type="xsd:string" use="required"/>
+                                                                        <xsd:attribute name="model" type="xsd:string" use="required"/>
+                                                                    </xsd:extension>
+                                                                </xsd:complexContent>
+                                                            </xsd:complexType>
+                                                        </xsd:element>
+                                                    </xsd:choice>
+                                                </xsd:complexType>
+                                            </xsd:element>
+                                            </xsd:choice>
                                             <xsd:attribute name="name" type="xsd:string" use="required"/>
                                         </xsd:extension>
                                     </xsd:complexContent>
                                 </xsd:complexType>
                             </xsd:element>
-                        </xsd:choice>
+                        </xsd:all>
                     </xsd:complexType>
                 </xsd:element>
                 <xsd:element name="configurations">

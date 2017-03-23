@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,14 +27,13 @@
 //
 
 // Interface header.
-#include "surfaceshaderfactoryregistrar.h"
+#include "aovfactoryregistrar.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/surfaceshader/aosurfaceshader.h"
-#include "renderer/modeling/surfaceshader/constantsurfaceshader.h"
-#include "renderer/modeling/surfaceshader/diagnosticsurfaceshader.h"
-#include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
-#include "renderer/modeling/surfaceshader/physicalsurfaceshader.h"
+#include "renderer/modeling/aov/depthaov.h"
+#include "renderer/modeling/aov/iaovfactory.h"
+#include "renderer/modeling/aov/normalaov.h"
+#include "renderer/modeling/aov/uvaov.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -51,34 +49,33 @@ using namespace std;
 namespace renderer
 {
 
-APPLESEED_DEFINE_APIARRAY(SurfaceShaderFactoryArray);
+APPLESEED_DEFINE_APIARRAY(AOVFactoryArray);
 
-struct SurfaceShaderFactoryRegistrar::Impl
+struct AOVFactoryRegistrar::Impl
 {
-    Registrar<ISurfaceShaderFactory> m_registrar;
+    Registrar<IAOVFactory> m_registrar;
 };
 
-SurfaceShaderFactoryRegistrar::SurfaceShaderFactoryRegistrar()
+AOVFactoryRegistrar::AOVFactoryRegistrar()
   : impl(new Impl())
 {
-    register_factory(auto_ptr<FactoryType>(new AOSurfaceShaderFactory()));
-    register_factory(auto_ptr<FactoryType>(new ConstantSurfaceShaderFactory()));
-    register_factory(auto_ptr<FactoryType>(new DiagnosticSurfaceShaderFactory()));
-    register_factory(auto_ptr<FactoryType>(new PhysicalSurfaceShaderFactory()));
+    register_factory(auto_ptr<FactoryType>(new DepthAOVFactory()));
+    register_factory(auto_ptr<FactoryType>(new NormalAOVFactory()));
+    register_factory(auto_ptr<FactoryType>(new UVAOVFactory()));
 }
 
-SurfaceShaderFactoryRegistrar::~SurfaceShaderFactoryRegistrar()
+AOVFactoryRegistrar::~AOVFactoryRegistrar()
 {
     delete impl;
 }
 
-void SurfaceShaderFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+void AOVFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();
     impl->m_registrar.insert(model, factory);
 }
 
-SurfaceShaderFactoryArray SurfaceShaderFactoryRegistrar::get_factories() const
+AOVFactoryArray AOVFactoryRegistrar::get_factories() const
 {
     FactoryArrayType factories;
 
@@ -88,8 +85,7 @@ SurfaceShaderFactoryArray SurfaceShaderFactoryRegistrar::get_factories() const
     return factories;
 }
 
-const SurfaceShaderFactoryRegistrar::FactoryType*
-SurfaceShaderFactoryRegistrar::lookup(const char* name) const
+const AOVFactoryRegistrar::FactoryType* AOVFactoryRegistrar::lookup(const char* name) const
 {
     assert(name);
 

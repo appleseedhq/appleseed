@@ -55,12 +55,6 @@ class APPLESEED_DLLSYMBOL ImageStack
   : public foundation::NonCopyable
 {
   public:
-    enum Type
-    {
-        ContributionType,
-        IdentificationType
-    };
-
     ImageStack(
         const size_t                    canvas_width,
         const size_t                    canvas_height,
@@ -80,14 +74,11 @@ class APPLESEED_DLLSYMBOL ImageStack
 
     const char* get_name(const size_t index) const;
 
-    Type get_type(const size_t index) const;
-
     foundation::Image& get_image(const size_t index);
     const foundation::Image& get_image(const size_t index) const;
 
     size_t append(
         const char*                     name,
-        const Type                      type,
         const size_t                    channel_count,
         const foundation::PixelFormat   pixel_format);
 

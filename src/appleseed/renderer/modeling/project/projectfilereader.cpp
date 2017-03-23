@@ -33,6 +33,9 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/modeling/aov/aov.h"
+#include "renderer/modeling/aov/aovfactoryregistrar.h"
+#include "renderer/modeling/aov/iaovfactory.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
@@ -371,6 +374,8 @@ namespace
     enum ProjectElementID
     {
         ElementAlpha,
+        ElementAOV,
+        ElementAOVs,
         ElementAssembly,
         ElementAssemblyInstance,
         ElementAssignMaterial,
@@ -2433,6 +2438,85 @@ namespace
 
 
     //
+    // <aov> element handler.
+    //
+
+    class AOVElementHandler
+      : public EntityElementHandler<
+                   AOV,
+                   AOVFactoryRegistrar,
+                   ParametrizedElementHandler>
+    {
+      public:
+        explicit AOVElementHandler(ParseContext& context)
+          : EntityElementHandler<
+                AOV,
+                AOVFactoryRegistrar,
+                ParametrizedElementHandler>("AOV", context)
+        {
+        }
+    };
+
+
+    //
+    // <aovs> element handler.
+    //
+
+    class AOVsElementHandler
+      : public ElementHandlerBase
+    {
+      public:
+        explicit AOVsElementHandler(ParseContext& context)
+          : m_context(context)
+          , m_aovs(0)
+        {
+        }
+
+        virtual void end_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler) APPLESEED_OVERRIDE
+        {
+            assert(m_aovs);
+
+            switch (element)
+            {
+              case ElementAOV:
+                {
+                    auto_release_ptr<AOV> aov(
+                        static_cast<AOVElementHandler*>(handler)->get_entity());
+
+                    if (aov.get() == 0)
+                        return;
+
+                    if (m_aovs->get_by_name(aov->get_name()) != 0)
+                    {
+                        RENDERER_LOG_ERROR(
+                            "an aov with the path \"%s\" already exists.",
+                            aov->get_path().c_str());
+                        m_context.get_event_counters().signal_error();
+                        return;
+                    }
+
+                    m_aovs->insert(aov);
+                }
+                break;
+
+              assert_otherwise;
+            }
+        }
+
+        void set_aov_container(AOVContainer* aovs)
+        {
+            m_aovs = aovs;
+        }
+
+      private:
+        ParseContext&   m_context;
+        AOVContainer*   m_aovs;
+    };
+
+
+    //
     // <frame> element handler.
     //
 
@@ -2459,6 +2543,36 @@ namespace
             ParametrizedElementHandler::end_element();
 
             m_frame = FrameFactory::create(m_name.c_str(), m_params);
+            m_frame->transfer_aovs(m_aovs);
+        }
+
+        virtual void start_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler) APPLESEED_OVERRIDE
+        {
+            switch (element)
+            {
+              case ElementAOVs:
+                {
+                    AOVsElementHandler* aovs_handler =
+                        static_cast<AOVsElementHandler*>(handler);
+                    aovs_handler->set_aov_container(&m_aovs);
+                }
+                break;
+
+              default:
+                ParametrizedElementHandler::start_child_element(element, handler);
+            }
+        }
+
+        virtual void end_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler) APPLESEED_OVERRIDE
+        {
+            if (element == ElementAOVs)
+                return;
+
+            ParametrizedElementHandler::end_child_element(element, handler);
         }
 
         auto_release_ptr<Frame> get_frame()
@@ -2469,6 +2583,7 @@ namespace
       private:
         ParseContext&           m_context;
         auto_release_ptr<Frame> m_frame;
+        AOVContainer            m_aovs;
         string                  m_name;
     };
 
@@ -2925,6 +3040,8 @@ namespace
           : m_context(context)
         {
             register_factory_helper<ValuesElementHandler>("alpha", ElementAlpha);
+            register_factory_helper<AOVElementHandler>("aov", ElementAOV);
+            register_factory_helper<AOVsElementHandler>("aovs", ElementAOVs);
             register_factory_helper<AssemblyElementHandler>("assembly", ElementAssembly);
             register_factory_helper<AssemblyInstanceElementHandler>("assembly_instance", ElementAssemblyInstance);
             register_factory_helper<AssignMaterialElementHandler>("assign_material", ElementAssignMaterial);
@@ -3055,28 +3172,29 @@ auto_release_ptr<Project> ProjectFileReader::read(
     if (is_zip_file(project_filepath))
     {
         const vector<string> appleseed_files = get_filenames_with_extension_from_zip(project_filepath, ".appleseed");
-        
-        if (appleseed_files.size() != 1) 
+
+        if (appleseed_files.size() != 1)
         {
             RENDERER_LOG_ERROR(
-                "%s looks like a packed project file, but it should contain a single *.appleseed file in order to be valid.", 
+                "%s looks like a packed project file, but it should contain a single *.appleseed file in order to be valid.",
                 project_filepath);
             return auto_release_ptr<Project>(0);
         }
 
-        string unpacked_project_directory(project_filepath);
-        unpacked_project_directory += ".unpacked";
+        const bf::path project_path(project_filepath);
+        const string unpacked_project_directory =
+            (project_path.parent_path() / project_path.stem()).string() + ".unpacked";
 
         RENDERER_LOG_INFO(
-            "%s appears to be a packed project; unpacking to %s...,", 
-            project_filepath, 
+            "%s appears to be a packed project; unpacking to %s...,",
+            project_filepath,
             unpacked_project_directory.c_str());
 
         if (bf::exists(bf::path(unpacked_project_directory)))
             bf::remove_all(bf::path(unpacked_project_directory));
 
         unzip(project_filepath, unpacked_project_directory);
-        
+
         const string project_name = appleseed_files[0];
         actual_project_filepath = (bf::path(unpacked_project_directory) / bf::path(project_name)).string().c_str();
         project_filepath = actual_project_filepath.data();

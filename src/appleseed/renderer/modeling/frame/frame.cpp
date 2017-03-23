@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/aov/aovsettings.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/utility/paramarray.h"
 
@@ -107,6 +108,8 @@ struct Frame::Impl
 
     auto_ptr<Image>         m_image;
     auto_ptr<ImageStack>    m_aov_images;
+
+    AOVContainer            m_aovs;
 
     Impl()
       : m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
@@ -202,9 +205,59 @@ Image& Frame::image() const
     return *impl->m_image.get();
 }
 
+void Frame::clear_main_image()
+{
+    impl->m_image->clear(Color4f(0.0));
+}
+
 ImageStack& Frame::aov_images() const
 {
     return *impl->m_aov_images.get();
+}
+
+void Frame::add_aov(foundation::auto_release_ptr<AOV> aov)
+{
+    assert(aov.get());
+
+    const size_t aov_index = aov_images().get_index(aov->get_name());
+    if (aov_index == size_t(~0) && aov_images().size() < MaxAOVCount)
+    {
+        aov_images().append(
+            aov->get_name(),
+            4, // aov->get_channel_count(),
+            PixelFormatFloat);
+        aovs().insert(aov);
+    }
+    else
+    {
+        RENDERER_LOG_WARNING(
+            "could not create %s aov, maximum number of aovs (" FMT_SIZE_T ") reached.",
+            aov->get_name(),
+            MaxAOVCount);
+    }
+}
+
+void Frame::transfer_aovs(AOVContainer& aovs)
+{
+    while (!aovs.empty())
+    {
+        auto_release_ptr<AOV> aov = aovs.remove(aovs.get_by_index(0));
+        add_aov(aov);
+    }
+}
+
+AOVContainer& Frame::aovs() const
+{
+    return impl->m_aovs;
+}
+
+size_t Frame::create_extra_aov_image(const char* name) const
+{
+    const size_t index = aov_images().get_index(name);
+    if (index == size_t(~0) && aov_images().size() < MaxAOVCount)
+        return aov_images().append(name, 4, PixelFormatFloat);
+
+    return index;
 }
 
 const Filter2f& Frame::get_filter() const
@@ -483,11 +536,6 @@ void Frame::transform_to_output_color_space(Image& image) const
         for (size_t tx = 0; tx < image_props.m_tile_count_x; ++tx)
             transform_to_output_color_space(image.tile(tx, ty));
     }
-}
-
-void Frame::clear_main_image()
-{
-    impl->m_image->clear(Color4f(0.0));
 }
 
 bool Frame::write_main_image(const char* file_path) const
