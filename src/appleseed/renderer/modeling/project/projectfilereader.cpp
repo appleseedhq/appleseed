@@ -3186,7 +3186,7 @@ auto_release_ptr<Project> ProjectFileReader::read(
             (project_path.parent_path() / project_path.stem()).string() + ".unpacked";
 
         RENDERER_LOG_INFO(
-            "%s appears to be a packed project; unpacking to %s...,",
+            "%s appears to be a packed project; unpacking to %s...",
             project_filepath,
             unpacked_project_directory.c_str());
 
