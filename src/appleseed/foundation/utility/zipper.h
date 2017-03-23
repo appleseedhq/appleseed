@@ -90,9 +90,7 @@ std::vector<std::string> get_filenames_with_extension_from_zip(
   const std::string& extension);
 
 //
-// Retrieves
-//
-// files inside dirpath directory and all subdirectories
+// Retrieves files inside dirpath directory and all subdirectories
 //
 
 std::set<std::string> recursive_ls(const boost::filesystem::path& dir);

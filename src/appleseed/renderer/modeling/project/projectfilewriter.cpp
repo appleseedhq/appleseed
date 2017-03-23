@@ -928,9 +928,9 @@ bool ProjectFileWriter::write_project_file(
 }
 
 bool ProjectFileWriter::write(
-  const Project&  project,
-  const char*     filepath,
-  const int       options)
+    const Project&  project,
+    const char*     filepath,
+    const int       options)
 {
     if (!(options & ProjectFileWriter::PackedProject))
         return write_project_file(project, filepath, options);

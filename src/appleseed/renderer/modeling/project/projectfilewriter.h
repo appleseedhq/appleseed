@@ -66,9 +66,9 @@ class APPLESEED_DLLSYMBOL ProjectFileWriter
   private:
     // Write a project file to disk. Return true on success, false otherwise.
     static bool write_project_file(
-      const Project&  project,
-      const char*     filepath,
-      const int       options = Defaults);
+        const Project&  project,
+        const char*     filepath,
+        const int       options = Defaults);
 };
 
 }       // namespace renderer

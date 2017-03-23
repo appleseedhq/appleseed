@@ -132,11 +132,11 @@ void extract_current_file(unzFile& zip_file, const string& unzipped_dir)
     if (out.fail())
         throw ZipException(("can't open file " + filepath).c_str());
 
-    const size_t BUFFER_SIZE = 4096;
-    char buffer[BUFFER_SIZE];
-
     do
     {
+        const size_t BUFFER_SIZE = 4096;
+        char buffer[BUFFER_SIZE];
+
         const int read = read_chunk(zip_file, (char*) &buffer, BUFFER_SIZE);
         out.write((char*) &buffer, read);
     }
@@ -234,11 +234,11 @@ void zip_current_file(zipFile& zip_file, const string& filename, const string& b
     if (in.fail())
         throw ZipException(("can't open file " + filename_in_fs).c_str());
 
-    const size_t BUFFER_SIZE = 4096;
-    char buffer[BUFFER_SIZE];
-
     do
     {
+        const size_t BUFFER_SIZE = 4096;
+        char buffer[BUFFER_SIZE];
+
         in.read((char*) &buffer, BUFFER_SIZE);
         const streamsize read = in.gcount();
         write_chunk(zip_file, (char*) &buffer, read);
