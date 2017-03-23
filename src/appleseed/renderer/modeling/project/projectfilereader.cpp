@@ -115,8 +115,8 @@
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
-#include "foundation/utility/zipper.h"
 #include "foundation/utility/xercesc.h"
+#include "foundation/utility/zipper.h"
 
 // Xerces-C++ headers.
 #include "xercesc/sax2/Attributes.hpp"
@@ -3050,7 +3050,7 @@ auto_release_ptr<Project> ProjectFileReader::read(
     if (is_builtin_project(project_filepath, project_name))
         return load_builtin(project_name.c_str());
 
-    // Handle packed projects
+    // Handle packed projects.
     string actual_project_filepath;
     if (is_zip_file(project_filepath))
     {

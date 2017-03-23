@@ -93,7 +93,6 @@
 #include <set>
 #include <string>
 #include <vector>
-#include <exception>
 
 using namespace boost;
 using namespace foundation;
@@ -929,9 +928,9 @@ bool ProjectFileWriter::write_project_file(
 }
 
 bool ProjectFileWriter::write(
-        const Project&  project,
-        const char*     filepath,
-        const int       options)
+  const Project&  project,
+  const char*     filepath,
+  const int       options)
 {
     if (!(options & ProjectFileWriter::PackedProject))
         return write_project_file(project, filepath, options);
@@ -947,12 +946,15 @@ bool ProjectFileWriter::write(
 
             bf::create_directory(temp_project_filepath.parent_path());
 
-            bool success = write_project_file(project,
-                                      temp_project_filepath.c_str(),
-                                      options | ProjectFileWriter::CopyAllAssets);
+            const bool success =
+              write_project_file(
+                project,
+                temp_project_filepath.c_str(),
+                options | ProjectFileWriter::CopyAllAssets);
+
             if (!success)
             {
-                RENDERER_LOG_ERROR("Failed to save project %s.", filepath);
+                RENDERER_LOG_ERROR("failed to save project %s.", filepath);
             }
             else
             {
@@ -962,9 +964,9 @@ bool ProjectFileWriter::write(
             bf::remove_all(temp_project_filepath.parent_path());
             return true;
         }
-        catch (std::exception e)
+        catch (const std::exception& e)
         {
-            RENDERER_LOG_ERROR("Failed to save project %s.", filepath);
+            RENDERER_LOG_ERROR("failed to save project %s.", filepath);
             if (bf::exists(temp_project_filepath))
                 bf::remove_all(temp_project_filepath);
             return false;

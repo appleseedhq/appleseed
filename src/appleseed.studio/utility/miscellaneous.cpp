@@ -183,7 +183,8 @@ namespace
     }
 }
 
-QString get_extension(ParamArray& settings, const QString& target_dialog) {
+QString get_extension(ParamArray& settings, const QString& target_dialog)
+{
     QString filter = get_value(settings, target_dialog + SETTINGS_SELECTED_FILTER);
 
     const int ext_start = filter.lastIndexOf('(') + 2;

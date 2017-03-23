@@ -42,58 +42,60 @@
 
 namespace foundation
 {
+//
+// Exception class used for all zip related exceptions
+//
 
-    //
-    // Exception class used for all zip related exceptions
-    //
+class ZipException
+  : public foundation::Exception
+{
+  public:
+    ZipException(const char* what);
 
-    class ZipException
-            : public foundation::Exception
-    {
-    public:
-        ZipException(const char* what);
-        ZipException(const char* what, const int err);
-    };
+    ZipException(const char* what, const int err);
+};
 
-    //
-    // Extracts zip file zipFilename to unzipped_dir directory.
-    //
-    // Throws ZipException in case of exception.
-    // If exception is thrown, unzipped folder is deleted.
-    //
+//
+// Extracts zip file zipFilename to unzipped_dir directory.
+//
+// Throws ZipException in case of exception.
+// If exception is thrown, unzipped folder is deleted.
+//
 
-    void unzip(const std::string& zip_filename, const std::string& unzipped_dir);
+void unzip(const std::string& zip_filename, const std::string& unzipped_dir);
 
-    //
-    // Archives directory_to_zip to zip_filename zip file.
-    //
-    // Throws ZipException in case of exception.
-    // If exception is thrown, zip archive is deleted.
-    //
+//
+// Archives directory_to_zip to zip_filename zip file.
+//
+// Throws ZipException in case of exception.
+// If exception is thrown, zip archive is deleted.
+//
 
-    void zip(const std::string& zip_filename, const std::string& directory_to_zip);
+void zip(const std::string& zip_filename, const std::string& directory_to_zip);
 
-    //
-    // Checks if file is in zip format by trying to open it.
-    //
+//
+// Checks if file is in zip format by trying to open it.
+//
 
-    bool is_zip_file(const char* filename);
+bool is_zip_file(const char* filename);
 
-    //
-    // Returns all filenames from zip_filenames zip with given extension.
-    //
-    // Throws ZipException if zip_filename can't be opened or is not a zip file.
-    //
+//
+// Returns all filenames from zip_filenames zip with given extension.
+//
+// Throws ZipException if zip_filename can't be opened or is not a zip file.
+//
 
-    std::vector<std::string> get_filenames_with_extension_from_zip(
-        const std::string& zip_filename,
-        const std::string& extension);
+std::vector<std::string> get_filenames_with_extension_from_zip(
+  const std::string& zip_filename,
+  const std::string& extension);
 
-    //
-    // Prints files inside dirpath directory and all subdirectories
-    //
+//
+// Retrieves
+//
+// files inside dirpath directory and all subdirectories
+//
 
-    std::set<std::string> recursive_ls(const boost::filesystem::path& dir);
+std::set<std::string> recursive_ls(const boost::filesystem::path& dir);
 
 }   // namespace foundation
 

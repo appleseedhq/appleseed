@@ -45,13 +45,6 @@ namespace renderer
 
 class APPLESEED_DLLSYMBOL ProjectFileWriter
 {
-  private:
-    // Write a project file to disk. Return true on success, false otherwise
-    static bool write_project_file(
-            const Project&  project,
-            const char*     filepath,
-            const int       options = Defaults);
-
   public:
     enum Options
     {
@@ -64,11 +57,18 @@ class APPLESEED_DLLSYMBOL ProjectFileWriter
     };
 
     // Write a project to disk. Return true on success, false otherwise.
-    // Write project as project file or as packed project based on options
+    // Write project as project file or as packed project based on options.
     static bool write(
         const Project&  project,
         const char*     filepath,
         const int       options = Defaults);
+
+  private:
+    // Write a project file to disk. Return true on success, false otherwise.
+    static bool write_project_file(
+      const Project&  project,
+      const char*     filepath,
+      const int       options = Defaults);
 };
 
 }       // namespace renderer

@@ -1238,7 +1238,7 @@ void MainWindow::slot_save_project_as()
         get_save_filename(
             this,
             "Save As...",
-            "Project Files (*.appleseed);;Packed project files (*.appleseedz)",
+            "Plain Project Files (*.appleseed);;Packed Project Files (*.appleseedz)",
             m_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 
