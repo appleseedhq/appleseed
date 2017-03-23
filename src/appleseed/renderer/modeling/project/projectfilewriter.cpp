@@ -968,10 +968,10 @@ bool ProjectFileWriter::write(
             bf::create_directory(temp_project_filepath.parent_path());
 
             const bool success =
-              write_project_file(
-                project,
-                temp_project_filepath.c_str(),
-                options | ProjectFileWriter::CopyAllAssets);
+                write_project_file(
+                    project,
+                    temp_project_filepath.string().c_str(),
+                    options | ProjectFileWriter::CopyAllAssets);
 
             if (!success)
             {
@@ -985,7 +985,7 @@ bool ProjectFileWriter::write(
             bf::remove_all(temp_project_filepath.parent_path());
             return true;
         }
-        catch (const std::exception& e)
+        catch (const std::exception&)
         {
             RENDERER_LOG_ERROR("failed to save project %s.", filepath);
             if (bf::exists(temp_project_filepath))

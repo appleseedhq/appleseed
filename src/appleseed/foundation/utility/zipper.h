@@ -36,14 +36,15 @@
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.
+#include <set>
 #include <string>
 #include <vector>
-#include <set>
 
 namespace foundation
 {
+
 //
-// Exception class used for all zip related exceptions
+// Exception class used for all zip related exceptions.
 //
 
 class ZipException
@@ -86,8 +87,8 @@ bool is_zip_file(const char* filename);
 //
 
 std::vector<std::string> get_filenames_with_extension_from_zip(
-  const std::string& zip_filename,
-  const std::string& extension);
+    const std::string& zip_filename,
+    const std::string& extension);
 
 //
 // Retrieves files inside dirpath directory and all subdirectories
@@ -95,6 +96,6 @@ std::vector<std::string> get_filenames_with_extension_from_zip(
 
 std::set<std::string> recursive_ls(const boost::filesystem::path& dir);
 
-}   // namespace foundation
+}       // namespace foundation
 
-#endif //!APPLESEED_FOUNDATION_UTILITY_ZIPPER_H
+#endif  // !APPLESEED_FOUNDATION_UTILITY_ZIPPER_H

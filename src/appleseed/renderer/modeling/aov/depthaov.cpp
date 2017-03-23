@@ -84,6 +84,7 @@ namespace
             result.m_aovs[m_index].m_alpha.set(1.0f);
         }
 
+      private:
         float m_depth;
     };
 

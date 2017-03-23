@@ -39,15 +39,20 @@
 
 // Standard headers.
 #include <ctime>
-#include <vector>
 #include <fstream>
 #include <set>
+#include <vector>
 
 using namespace std;
 namespace bf = boost::filesystem;
 
 namespace foundation
 {
+
+//
+// ZipException class implementation.
+//
+
 ZipException::ZipException(const char* what)
   : Exception(what)
 {
@@ -59,91 +64,185 @@ ZipException::ZipException(const char* what, const int err)
     set_what(string_what.c_str());
 }
 
-bool is_zip_entry_directory(const string& dirname)
+
+//
+// Free functions implementation.
+//
+
+namespace
 {
-    // used own implementation of is_zip_entry_directory instead of boost implementation
-    // because this directory is not in filesystem, but in zipfile.
-    return dirname[dirname.size() - 1] == '/';
-}
-
-void open_current_file(unzFile& zip_file)
-{
-    const int err = unzOpenCurrentFile(zip_file);
-    if (err != UNZ_OK)
-        throw ZipException("can't open file inside zip: ", err);
-}
-
-int read_chunk(unzFile& zip_file, char* buffer, const int chunk_size)
-{
-    const int err = unzReadCurrentFile(zip_file, buffer, chunk_size);
-
-    if (err == UNZ_ERRNO)
-        throw ZipException("i/o error while reading from zip");
-    if (err < 0)
-        throw ZipException("zLib error while decompressing file: ", err);
-
-    return err;
-}
-
-void unzip_close_current_file(unzFile& zip_file)
-{
-    const int err = unzCloseCurrentFile(zip_file);
-
-    if (err == UNZ_CRCERROR)
-        throw ZipException("crc32 checksum error");
-}
-
-string read_filename(unzFile& zip_file)
-{
-    unz_file_info zip_file_info;
-    unzGetCurrentFileInfo(zip_file, &zip_file_info, 0, 0, 0, 0, 0, 0);
-
-    vector<char> filename(zip_file_info.size_filename + 1);
-    unzGetCurrentFileInfo(
-      zip_file,
-      &zip_file_info,
-      &filename[0],
-      static_cast<uLong>(filename.size()),
-      0, 0,
-      0, 0);
-    filename[filename.size() - 1] = '\0';
-
-    return string(&filename[0]);
-}
-
-string get_filepath(unzFile& zip_file, const string& unzipped_dir)
-{
-    string filename = read_filename(zip_file);
-    return (bf::path(unzipped_dir) / bf::path(filename)).string();
-}
-
-void extract_current_file(unzFile& zip_file, const string& unzipped_dir)
-{
-    const string filepath = get_filepath(zip_file, unzipped_dir);
-
-    if (is_zip_entry_directory(filepath))
+    bool is_zip_entry_directory(const string& dirname)
     {
-        bf::create_directories(filepath);
-        return;
+        // Use our own implementation of is_zip_entry_directory instead of Boost's one
+        // because this directory is not in the filesystem but in the zip file.
+        return dirname[dirname.size() - 1] == '/';
     }
-    else open_current_file(zip_file);
 
-    fstream out(filepath.c_str(), ios_base::out | ios_base::binary);
-    if (out.fail())
-        throw ZipException(("can't open file " + filepath).c_str());
-
-    do
+    void open_current_file(unzFile& zip_file)
     {
-        const size_t BUFFER_SIZE = 4096;
-        char buffer[BUFFER_SIZE];
-
-        const int read = read_chunk(zip_file, (char*) &buffer, BUFFER_SIZE);
-        out.write((char*) &buffer, read);
+        const int err = unzOpenCurrentFile(zip_file);
+        if (err != UNZ_OK)
+            throw ZipException("can't open file inside zip: ", err);
     }
-    while (!unzeof(zip_file));
 
-    out.close();
-    unzip_close_current_file(zip_file);
+    size_t read_chunk(unzFile& zip_file, char* buffer, const size_t chunk_size)
+    {
+        const int err =
+            unzReadCurrentFile(
+                zip_file,
+                buffer,
+                static_cast<unsigned int>(chunk_size));
+
+        if (err == UNZ_ERRNO)
+            throw ZipException("i/o error while reading from zip");
+
+        if (err < 0)
+            throw ZipException("zlib error while decompressing file: ", err);
+
+        return static_cast<size_t>(err);
+    }
+
+    void unzip_close_current_file(unzFile& zip_file)
+    {
+        const int err = unzCloseCurrentFile(zip_file);
+
+        if (err == UNZ_CRCERROR)
+            throw ZipException("crc32 checksum error");
+    }
+
+    string read_filename(unzFile& zip_file)
+    {
+        unz_file_info zip_file_info;
+        unzGetCurrentFileInfo(zip_file, &zip_file_info, 0, 0, 0, 0, 0, 0);
+
+        vector<char> filename(zip_file_info.size_filename + 1);
+        unzGetCurrentFileInfo(
+            zip_file,
+            &zip_file_info,
+            &filename[0],
+            static_cast<uLong>(filename.size()),
+            0, 0,
+            0, 0);
+        filename[filename.size() - 1] = '\0';
+
+        return string(&filename[0]);
+    }
+
+    string get_filepath(unzFile& zip_file, const string& unzipped_dir)
+    {
+        const string filename = read_filename(zip_file);
+        return (bf::path(unzipped_dir) / bf::path(filename)).string();
+    }
+
+    void extract_current_file(unzFile& zip_file, const string& unzipped_dir)
+    {
+        const string filepath = get_filepath(zip_file, unzipped_dir);
+
+        if (is_zip_entry_directory(filepath))
+        {
+            bf::create_directories(filepath);
+            return;
+        }
+        else open_current_file(zip_file);
+
+        fstream out(filepath.c_str(), ios_base::out | ios_base::binary);
+        if (out.fail())
+            throw ZipException(("can't open file " + filepath).c_str());
+
+        do
+        {
+            const size_t BUFFER_SIZE = 4096;
+            char buffer[BUFFER_SIZE];
+
+            const size_t read = read_chunk(zip_file, buffer, BUFFER_SIZE);
+            out.write(buffer, read);
+        }
+        while (!unzeof(zip_file));
+
+        out.close();
+        unzip_close_current_file(zip_file);
+    }
+
+    void zip_close_current_file(zipFile& zip_file)
+    {
+        const int err = zipCloseFileInZip(zip_file);
+
+        if (err != ZIP_OK)
+            throw ZipException("error while closing file in zip", err);
+    }
+
+    void write_chunk(zipFile& zip_file, char* buffer, const size_t chunk_size)
+    {
+        const int err =
+            zipWriteInFileInZip(
+                zip_file,
+                buffer,
+                static_cast<unsigned int>(chunk_size));
+
+        if (err < 0)
+            throw ZipException("error while writing to zip", err);
+    }
+
+    void open_new_file_in_zip(zipFile& zip_file, string filename_in_zip, zip_fileinfo zip_file_info)
+    {
+        const int err =
+            zipOpenNewFileInZip(
+                zip_file,
+                filename_in_zip.c_str(),
+                &zip_file_info,
+                0, 0, 0, 0, 0,
+                Z_DEFLATED,
+                Z_DEFAULT_COMPRESSION);
+
+        if (err != ZIP_OK)
+            throw ZipException(("error while opening " + filename_in_zip + " in zipfile").c_str());
+    }
+
+    zip_fileinfo make_zip_fileinfo(const string& filename)
+    {
+        time_t timestamp = bf::last_write_time(filename);
+        tm* timestamp_components = localtime(&timestamp);
+
+        zip_fileinfo zip_file_info;
+        zip_file_info.tmz_date.tm_sec = timestamp_components->tm_sec;
+        zip_file_info.tmz_date.tm_min = timestamp_components->tm_min;
+        zip_file_info.tmz_date.tm_hour = timestamp_components->tm_hour;
+        zip_file_info.tmz_date.tm_mday = timestamp_components->tm_mday;
+        zip_file_info.tmz_date.tm_mon = timestamp_components->tm_mon;
+        zip_file_info.tmz_date.tm_year = timestamp_components->tm_year;
+
+        zip_file_info.dosDate = 0;
+        zip_file_info.internal_fa = 0;
+        zip_file_info.external_fa = 0;
+
+        return zip_file_info;
+    }
+
+    void zip_current_file(zipFile& zip_file, const string& filename, const string& base_directory)
+    {
+        const string filename_in_fs = (bf::path(base_directory) / filename).string();
+
+        const zip_fileinfo zip_file_info = make_zip_fileinfo(filename_in_fs);
+
+        open_new_file_in_zip(zip_file, filename, zip_file_info);
+
+        fstream in(filename_in_fs.c_str(), ios_base::in | ios_base::binary);
+        if (in.fail())
+            throw ZipException(("can't open file " + filename_in_fs).c_str());
+
+        do
+        {
+            const size_t BUFFER_SIZE = 4096;
+            char buffer[BUFFER_SIZE];
+
+            in.read(&buffer[0], BUFFER_SIZE);
+            write_chunk(zip_file, &buffer[0], in.gcount());
+        }
+        while (!in.eof());
+
+        in.close();
+        zip_close_current_file(zip_file);
+    }
 }
 
 void unzip(const string& zip_filename, const string& unzipped_dir)
@@ -172,81 +271,6 @@ void unzip(const string& zip_filename, const string& unzipped_dir)
         bf::remove_all(unzipped_dir);
         throw e;
     }
-}
-
-void zip_close_current_file(zipFile& zip_file)
-{
-    const int err = zipCloseFileInZip(zip_file);
-
-    if (err != ZIP_OK)
-        throw ZipException("error while closing file in zip", err);
-}
-
-void write_chunk(zipFile& zip_file, char* buffer, const int chunk_size)
-{
-    const int err = zipWriteInFileInZip(zip_file, buffer, chunk_size);
-
-    if (err < 0)
-    {
-        throw ZipException("error while writing to zip", err);
-    }
-}
-
-void open_new_file_in_zip(zipFile& zip_file, string filename_in_zip, zip_fileinfo zip_file_info)
-{
-    int err = zipOpenNewFileInZip(zip_file, filename_in_zip.c_str(), &zip_file_info,
-                                  0, 0, 0, 0, 0,
-                                  Z_DEFLATED, Z_DEFAULT_COMPRESSION);
-
-    if (err != ZIP_OK)
-        throw ZipException(("error while opening " + filename_in_zip + " in zipfile").c_str());
-}
-
-zip_fileinfo make_zip_fileinfo(const string& filename)
-{
-    time_t timestamp = bf::last_write_time(filename);
-    tm* timestamp_components = localtime(&timestamp);
-
-    zip_fileinfo zip_file_info;
-    zip_file_info.tmz_date.tm_sec = timestamp_components->tm_sec;
-    zip_file_info.tmz_date.tm_min = timestamp_components->tm_min;
-    zip_file_info.tmz_date.tm_hour = timestamp_components->tm_hour;
-    zip_file_info.tmz_date.tm_mday = timestamp_components->tm_mday;
-    zip_file_info.tmz_date.tm_mon = timestamp_components->tm_mon;
-    zip_file_info.tmz_date.tm_year = timestamp_components->tm_year;
-
-    zip_file_info.dosDate = 0;
-    zip_file_info.internal_fa = 0;
-    zip_file_info.external_fa = 0;
-
-    return zip_file_info;
-}
-
-void zip_current_file(zipFile& zip_file, const string& filename, const string& base_directory)
-{
-    const string filename_in_fs = (bf::path(base_directory) / filename).string();
-
-    const zip_fileinfo zip_file_info = make_zip_fileinfo(filename_in_fs);
-
-    open_new_file_in_zip(zip_file, filename, zip_file_info);
-
-    fstream in(filename_in_fs.c_str(), ios_base::in | ios_base::binary);
-    if (in.fail())
-        throw ZipException(("can't open file " + filename_in_fs).c_str());
-
-    do
-    {
-        const size_t BUFFER_SIZE = 4096;
-        char buffer[BUFFER_SIZE];
-
-        in.read((char*) &buffer, BUFFER_SIZE);
-        const streamsize read = in.gcount();
-        write_chunk(zip_file, (char*) &buffer, read);
-    }
-    while (!in.eof());
-
-    in.close();
-    zip_close_current_file(zip_file);
 }
 
 void zip(const string& zip_filename, const string& directory_to_zip)
@@ -340,4 +364,3 @@ set<string> recursive_ls(const bf::path& dir)
 }
 
 }   // namespace foundation
-
