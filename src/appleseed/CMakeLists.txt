@@ -454,11 +454,11 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_transform.cpp
     foundation/meta/tests/test_triangulator.cpp
     foundation/meta/tests/test_typetraits.cpp
-    foundation/meta/tests/test_unzipper.cpp
     foundation/meta/tests/test_utility_filter.cpp
     foundation/meta/tests/test_vector.cpp
     foundation/meta/tests/test_voxelgrid.cpp
     foundation/meta/tests/test_windows.cpp
+    foundation/meta/tests/test_zipper.cpp
 )
 if (WITH_DISNEY_MATERIAL)
     list (APPEND foundation_meta_tests_sources
@@ -703,10 +703,13 @@ source_group ("foundation\\utility\\test" FILES
 )
 
 set (foundation_utility_minizip_sources
+    foundation/utility/minizip/crypt.h
     foundation/utility/minizip/ioapi.c
     foundation/utility/minizip/ioapi.h
     foundation/utility/minizip/unzip.c
     foundation/utility/minizip/unzip.h
+    foundation/utility/minizip/zip.c
+    foundation/utility/minizip/zip.h
 )
 list (APPEND appleseed_sources
     ${foundation_utility_minizip_sources}
@@ -772,14 +775,14 @@ set (foundation_utility_sources
     foundation/utility/typetraits.h
     foundation/utility/uid.cpp
     foundation/utility/uid.h
-    foundation/utility/unzipper.cpp
-    foundation/utility/unzipper.h
     foundation/utility/version.h
     foundation/utility/vpythonfile.cpp
     foundation/utility/vpythonfile.h
     foundation/utility/xercesc.cpp
     foundation/utility/xercesc.h
     foundation/utility/xmlelement.h
+    foundation/utility/zipper.cpp
+    foundation/utility/zipper.h
 )
 if (WITH_DISNEY_MATERIAL)
     list (APPEND foundation_utility_sources

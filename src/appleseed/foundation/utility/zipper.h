@@ -26,41 +26,52 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_UNZIPPER_H
-#define APPLESEED_FOUNDATION_UTILITY_UNZIPPER_H
+#ifndef APPLESEED_FOUNDATION_UTILITY_ZIPPER_H
+#define APPLESEED_FOUNDATION_UTILITY_ZIPPER_H
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 
+// Boost headers.
+#include "boost/filesystem/path.hpp"
+
 // Standard headers.
 #include <string>
 #include <vector>
+#include <set>
 
 namespace foundation
 {
-
 //
-// Exception class used for all unzipper exceptions
+// Exception class used for all zip related exceptions
 //
 
-class UnzipException
+class ZipException
   : public foundation::Exception
 {
   public:
-    UnzipException(const char* what);
-    UnzipException(const char* what, const int err);
-};  
+    ZipException(const char* what);
 
+    ZipException(const char* what, const int err);
+};
 
 //
-// This function unzips zip file zipFilename to unzipped_dir directory.
+// Extracts zip file zipFilename to unzipped_dir directory.
 //
-// Throws UnzipException in case of exception.
+// Throws ZipException in case of exception.
 // If exception is thrown, unzipped folder is deleted.
 //
 
 void unzip(const std::string& zip_filename, const std::string& unzipped_dir);
 
+//
+// Archives directory_to_zip to zip_filename zip file.
+//
+// Throws ZipException in case of exception.
+// If exception is thrown, zip archive is deleted.
+//
+
+void zip(const std::string& zip_filename, const std::string& directory_to_zip);
 
 //
 // Checks if file is in zip format by trying to open it.
@@ -69,15 +80,21 @@ void unzip(const std::string& zip_filename, const std::string& unzipped_dir);
 bool is_zip_file(const char* filename);
 
 //
-// This function returns all filenames from zip_filenames zip with given extension.
-// 
-// Throws UnzipException if zip_filename can't be opened or is not a zip file.
+// Returns all filenames from zip_filenames zip with given extension.
+//
+// Throws ZipException if zip_filename can't be opened or is not a zip file.
 //
 
 std::vector<std::string> get_filenames_with_extension_from_zip(
-    const std::string& zip_filename, 
-    const std::string& extension);
+  const std::string& zip_filename,
+  const std::string& extension);
 
-}       // namespace foundation
+//
+// Retrieves files inside dirpath directory and all subdirectories
+//
 
-#endif  // !APPLESEED_FOUNDATION_UTILITY_UNZIPPER_H
+std::set<std::string> recursive_ls(const boost::filesystem::path& dir);
+
+}   // namespace foundation
+
+#endif //!APPLESEED_FOUNDATION_UTILITY_ZIPPER_H
