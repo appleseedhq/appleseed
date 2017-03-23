@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,21 +26,39 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFORMATREVISION_H
-#define APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFORMATREVISION_H
+// Interface header.
+#include "aov.h"
+
+using namespace foundation;
 
 namespace renderer
 {
 
 //
-// Revision number of the current project file format.
-//
-// Make sure to update the project file updater (renderer::ProjectFileUpdater)
-// when you increment this value.
+// AOV class implementation.
 //
 
-const size_t ProjectFormatRevision = 16;
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
 
-}       // namespace renderer
+UniqueID AOV::get_class_uid()
+{
+    return g_class_uid;
+}
 
-#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFORMATREVISION_H
+AOV::AOV(
+    const char*         name,
+    const ParamArray&   params)
+  : Entity(g_class_uid, params)
+{
+    set_name(name);
+}
+
+void AOV::release()
+{
+    delete this;
+}
+
+}   // namespace renderer

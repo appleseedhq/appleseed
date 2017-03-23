@@ -31,6 +31,7 @@
 #include "projectfilewriter.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/camera/camera.h"
@@ -309,6 +310,12 @@ namespace
                 write(**i);
         }
 
+        // Write an <aov> element.
+        void write(const AOV& aov)
+        {
+            write_entity("aov", aov);
+        }
+
         // Write an <assembly> element.
         void write(const Assembly& assembly)
         {
@@ -380,6 +387,18 @@ namespace
 
             write_params(assembly_instance.get_parameters());
             write_transform_sequence(assembly_instance.transform_sequence());
+        }
+
+        // Write an <aovs> element.
+        void write_aovs(const Frame& frame)
+        {
+            if (!frame.aovs().empty())
+            {
+                XMLElement element("aovs", m_file, m_indenter);
+                element.write(XMLElement::HasChildElements);
+
+                write_collection(frame.aovs());
+            }
         }
 
         // Write an <assign_material> element.
@@ -537,10 +556,12 @@ namespace
             XMLElement element("frame", m_file, m_indenter);
             element.add_attribute("name", frame.get_name());
             element.write(
-                !frame.get_parameters().empty()
+                !frame.get_parameters().empty() ||
+                !frame.aovs().empty()
                     ? XMLElement::HasChildElements
                     : XMLElement::HasNoContent);
             write_params(frame.get_parameters());
+            write_aovs(frame);
         }
 
         // Write a <light> element.

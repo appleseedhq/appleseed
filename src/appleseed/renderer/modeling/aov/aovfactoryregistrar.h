@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016-2017 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,51 +26,63 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SURFACESHADER_OSLSURFACESHADER_H
-#define APPLESEED_RENDERER_MODELING_SURFACESHADER_OSLSURFACESHADER_H
-
-// appleseed.renderer headers.
-#include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
+#ifndef APPLESEED_RENDERER_MODELING_AOV_AOVFACTORYREGISTRAR_H
+#define APPLESEED_RENDERER_MODELING_AOV_AOVFACTORYREGISTRAR_H
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/api/apiarray.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// Standard headers.
+#include <memory>
+
 // Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace foundation    { class DictionaryArray; }
-namespace renderer      { class ParamArray; }
-namespace renderer      { class SurfaceShader; }
+namespace renderer  { class IAOVFactory; }
 
 namespace renderer
 {
 
 //
-// OSL surface shader factory.
+// An array of AOV factories.
 //
 
-class APPLESEED_DLLSYMBOL OSLSurfaceShaderFactory
-  : public ISurfaceShaderFactory
+APPLESEED_DECLARE_APIARRAY(AOVFactoryArray, IAOVFactory*);
+
+
+//
+// AOV factory registrar.
+//
+
+class APPLESEED_DLLSYMBOL AOVFactoryRegistrar
+  : public foundation::NonCopyable
 {
   public:
-    // Return a string identifying this surface shader model.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
+    typedef IAOVFactory FactoryType;
+    typedef AOVFactoryArray FactoryArrayType;
 
-    // Return metadata for this surface shader model.
-    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
+    // Constructor.
+    AOVFactoryRegistrar();
 
-    // Return metadata for the inputs of this surface shader model.
-    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
+    // Destructor.
+    ~AOVFactoryRegistrar();
 
-    // Create a new surface shader instance.
-    virtual foundation::auto_release_ptr<SurfaceShader> create(
-        const char*         name,
-        const ParamArray&   params) const APPLESEED_OVERRIDE;
+    // Register a render layer rule factory.
+    void register_factory(std::auto_ptr<FactoryType> factory);
+
+    // Retrieve the registered factories.
+    FactoryArrayType get_factories() const;
+
+    // Lookup a factory by name.
+    const FactoryType* lookup(const char* name) const;
+
+  private:
+    struct Impl;
+    Impl* impl;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_SURFACESHADER_OSLSURFACESHADER_H
+#endif  // !APPLESEED_RENDERER_MODELING_AOV_AOVFACTORYREGISTRAR_H

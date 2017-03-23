@@ -34,7 +34,6 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/aov/shadingfragmentstack.h"
 #include "renderer/kernel/shading/shadingfragment.h"
-#include "renderer/modeling/entity/entity.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -57,7 +56,6 @@ class ShadingResult
     foundation::ColorSpace      m_color_space;
     ShadingFragment             m_main;
     ShadingFragmentStack        m_aovs;
-    double                      m_depth;
 
     // Constructor.
     // AOVs are cleared to transparent black but the main output is left uninitialized.
@@ -81,14 +79,6 @@ class ShadingResult
 
     // Set all AOV colors and alpha channels to transparent black in linear RGB.
     void set_aovs_to_transparent_black_linear_rgba();
-
-    // Copy the main output to the AOV of a given entity.
-    void set_entity_aov(const Entity& entity);
-
-    // Store a shading fragment to the AOV of a given entity.
-    void set_entity_aov(
-        const Entity&           entity,
-        const ShadingFragment&  fragment);
 
     // Transform main and AOV colors to the linear RGB color space.
     void transform_to_linear_rgb(const foundation::LightingConditions& lighting);
@@ -138,18 +128,6 @@ inline void ShadingResult::set_main_to_transparent_black_linear_rgba()
 inline void ShadingResult::set_main_to_opaque_pink_linear_rgba()
 {
     set_main_to_linear_rgba(foundation::Color4f(1.0f, 0.0f, 1.0f, 1.0f));
-}
-
-inline void ShadingResult::set_entity_aov(const Entity& entity)
-{
-    m_aovs.set(entity.get_render_layer_index(), m_main);
-}
-
-inline void ShadingResult::set_entity_aov(
-    const Entity&               entity,
-    const ShadingFragment&      fragment)
-{
-    m_aovs.set(entity.get_render_layer_index(), fragment);
 }
 
 }       // namespace renderer

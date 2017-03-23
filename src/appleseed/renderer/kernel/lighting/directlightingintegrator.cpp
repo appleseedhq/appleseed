@@ -31,7 +31,6 @@
 #include "directlightingintegrator.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/lighting/lightsampler.h"
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/shadingcontext.h"
@@ -115,11 +114,9 @@ void DirectLightingIntegrator::compute_outgoing_radiance_bsdf_sampling(
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
     const Dual3d&               outgoing,
-    Spectrum&                   radiance,
-    SpectrumStack&              aovs) const
+    Spectrum&                   radiance) const
 {
     radiance.set(0.0f);
-    aovs.set(0.0f);
 
     // No emitting triangles in the scene.
     if (m_light_sampler.get_emitting_triangle_count() == 0)
@@ -131,15 +128,13 @@ void DirectLightingIntegrator::compute_outgoing_radiance_bsdf_sampling(
             sampling_context,
             mis_heuristic,
             outgoing,
-            radiance,
-            aovs);
+            radiance);
     }
 
     if (m_bsdf_sample_count > 1)
     {
         const float rcp_bsdf_sample_count = 1.0f / m_bsdf_sample_count;
         radiance *= rcp_bsdf_sample_count;
-        aovs *= rcp_bsdf_sample_count;
     }
 }
 
@@ -147,11 +142,9 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling(
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
     const Dual3d&               outgoing,
-    Spectrum&                   radiance,
-    SpectrumStack&              aovs) const
+    Spectrum&                   radiance) const
 {
     radiance.set(0.0f);
-    aovs.set(0.0f);
 
     // No light source in the scene.
     if (!m_light_sampler.has_lights_or_emitting_triangles())
@@ -179,16 +172,14 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling(
                 sample,
                 mis_heuristic,
                 outgoing,
-                radiance,
-                aovs);
+                radiance);
         }
         else
         {
             add_non_physical_light_sample_contribution(
                 sample,
                 outgoing,
-                radiance,
-                aovs);
+                radiance);
         }
     }
 
@@ -196,7 +187,6 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling(
     {
         const float rcp_light_sample_count = 1.0f / m_light_sample_count;
         radiance *= rcp_light_sample_count;
-        aovs *= rcp_light_sample_count;
     }
 }
 
@@ -204,11 +194,9 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
     const Dual3d&               outgoing,
-    Spectrum&                   radiance,
-    SpectrumStack&              aovs) const
+    Spectrum&                   radiance) const
 {
     radiance.set(0.0f);
-    aovs.set(0.0f);
 
     // No light source in the scene.
     if (!m_light_sampler.has_lights_or_emitting_triangles())
@@ -236,15 +224,13 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
                 sample,
                 mis_heuristic,
                 outgoing,
-                radiance,
-                aovs);
+                radiance);
         }
 
         if (m_light_sample_count > 1)
         {
             const float rcp_light_sample_count = 1.0f / m_light_sample_count;
             radiance *= rcp_light_sample_count;
-            aovs *= rcp_light_sample_count;
         }
     }
 
@@ -257,63 +243,52 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
         add_non_physical_light_sample_contribution(
             sample,
             outgoing,
-            radiance,
-            aovs);
+            radiance);
     }
 }
 
 void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling(
     SamplingContext&            sampling_context,
     const Dual3d&               outgoing,
-    Spectrum&                   radiance,
-    SpectrumStack&              aovs) const
+    Spectrum&                   radiance) const
 {
     compute_outgoing_radiance_bsdf_sampling(
         sampling_context,
         MISPower2,
         outgoing,
-        radiance,
-        aovs);
+        radiance);
 
     Spectrum radiance_light_sampling(Spectrum::Illuminance);
-    SpectrumStack aovs_light_sampling(aovs.size());
 
     compute_outgoing_radiance_light_sampling(
         sampling_context,
         MISPower2,
         outgoing,
-        radiance_light_sampling,
-        aovs_light_sampling);
+        radiance_light_sampling);
 
     radiance += radiance_light_sampling;
-    aovs += aovs_light_sampling;
 }
 
 void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling_low_variance(
     SamplingContext&            sampling_context,
     const Dual3d&               outgoing,
-    Spectrum&                   radiance,
-    SpectrumStack&              aovs) const
+    Spectrum&                   radiance) const
 {
     compute_outgoing_radiance_bsdf_sampling(
         sampling_context,
         MISPower2,
         outgoing,
-        radiance,
-        aovs);
+        radiance);
 
     Spectrum radiance_light_sampling(Spectrum::Illuminance);
-    SpectrumStack aovs_light_sampling(aovs.size());
 
     compute_outgoing_radiance_light_sampling_low_variance(
         sampling_context,
         MISPower2,
         outgoing,
-        radiance_light_sampling,
-        aovs_light_sampling);
+        radiance_light_sampling);
 
     radiance += radiance_light_sampling;
-    aovs += aovs_light_sampling;
 }
 
 bool DirectLightingIntegrator::compute_incoming_radiance(
@@ -451,8 +426,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
     const Dual3d&               outgoing,
-    Spectrum&                   radiance,
-    SpectrumStack&              aovs) const
+    Spectrum&                   radiance) const
 {
     assert(m_light_sampler.get_emitting_triangle_count() > 0);
 
@@ -553,15 +527,13 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     // Add the contribution of this sample to the illumination.
     edf_value *= sample.m_value;
     radiance += edf_value;
-    aovs.add(edf->get_render_layer_index(), edf_value);
 }
 
 void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     const LightSample&          sample,
     const MISHeuristic          mis_heuristic,
     const Dual3d&               outgoing,
-    Spectrum&                   radiance,
-    SpectrumStack&              aovs) const
+    Spectrum&                   radiance) const
 {
     const Material* material = sample.m_triangle->m_material;
     const Material::RenderData& material_data = material->get_render_data();
@@ -667,14 +639,12 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     edf_value *= weight;
     edf_value *= bsdf_value;
     radiance += edf_value;
-    aovs.add(edf->get_render_layer_index(), edf_value);
 }
 
 void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     const LightSample&          sample,
     const Dual3d&               outgoing,
-    Spectrum&                   radiance,
-    SpectrumStack&              aovs) const
+    Spectrum&                   radiance) const
 {
     const Light* light = sample.m_light;
 
@@ -740,7 +710,6 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     light_value *= weight;
     light_value *= bsdf_value;
     radiance += light_value;
-    aovs.add(light->get_render_layer_index(), light_value);
 }
 
 }   // namespace renderer

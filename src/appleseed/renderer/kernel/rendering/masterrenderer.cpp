@@ -225,7 +225,6 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     if (!bind_scene_entities_inputs())
         return IRendererController::AbortRendering;
 
-    m_project.create_aov_images();
     m_project.update_trace_context();
     m_project.get_frame()->print_settings();
 

@@ -33,7 +33,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/lighting/directlightingintegrator.h"
 #include "renderer/kernel/lighting/imagebasedlighting.h"
 #include "renderer/kernel/lighting/pathtracer.h"
@@ -157,8 +156,7 @@ namespace
             const PixelContext&     pixel_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
-            Spectrum&               radiance,               // output radiance, in W.sr^-1.m^-2
-            SpectrumStack&          aovs) APPLESEED_OVERRIDE
+            Spectrum&               radiance) APPLESEED_OVERRIDE    // output radiance, in W.sr^-1.m^-2
         {
             PathVisitor path_visitor(
                 m_params,
@@ -166,8 +164,7 @@ namespace
                 sampling_context,
                 shading_context,
                 shading_point.get_scene(),
-                radiance,
-                aovs);
+                radiance);
 
             PathTracer<PathVisitor, false> path_tracer(     // false = not adjoint
                 path_visitor,
@@ -210,7 +207,6 @@ namespace
             const ShadingContext&       m_shading_context;
             const EnvironmentEDF*       m_env_edf;
             Spectrum&                   m_path_radiance;
-            SpectrumStack&              m_path_aovs;
 
             PathVisitor(
                 const Parameters&       params,
@@ -218,15 +214,13 @@ namespace
                 SamplingContext&        sampling_context,
                 const ShadingContext&   shading_context,
                 const Scene&            scene,
-                Spectrum&               path_radiance,
-                SpectrumStack&          path_aovs)
+                Spectrum&               path_radiance)
               : m_params(params)
               , m_light_sampler(light_sampler)
               , m_sampling_context(sampling_context)
               , m_shading_context(shading_context)
               , m_env_edf(scene.get_environment()->get_environment_edf())
               , m_path_radiance(path_radiance)
-              , m_path_aovs(path_aovs)
             {
             }
 
@@ -246,23 +240,20 @@ namespace
             void visit_vertex(const PathVertex& vertex)
             {
                 Spectrum vertex_radiance(0.0f, Spectrum::Illuminance);
-                SpectrumStack vertex_aovs(m_path_aovs.size(), 0.0f);
 
                 if (vertex.m_bsdf)
                 {
                     // Direct lighting.
                     add_direct_lighting_contribution(
                         vertex,
-                        vertex_radiance,
-                        vertex_aovs);
+                        vertex_radiance);
 
                     // Image-based lighting.
                     if (m_params.m_enable_ibl && m_env_edf)
                     {
                         add_image_based_lighting_contribution(
                             vertex,
-                            vertex_radiance,
-                            vertex_aovs);
+                            vertex_radiance);
                     }
                 }
 
@@ -271,24 +262,19 @@ namespace
                 {
                     add_emitted_light_contribution(
                         vertex,
-                        vertex_radiance,
-                        vertex_aovs);
+                        vertex_radiance);
                 }
 
                 // Update the path radiance.
                 vertex_radiance *= vertex.m_throughput;
                 m_path_radiance += vertex_radiance;
-                vertex_aovs *= vertex.m_throughput;
-                m_path_aovs += vertex_aovs;
             }
 
             void add_direct_lighting_contribution(
                 const PathVertex&       vertex,
-                Spectrum&               vertex_radiance,
-                SpectrumStack&          vertex_aovs)
+                Spectrum&               vertex_radiance)
             {
                 Spectrum dl_radiance(Spectrum::Illuminance);
-                SpectrumStack dl_aovs(vertex_aovs.size());
 
                 const size_t light_sample_count =
                     stochastic_cast<size_t>(
@@ -315,25 +301,19 @@ namespace
                 integrator.compute_outgoing_radiance_combined_sampling_low_variance(
                     vertex.m_sampling_context,
                     vertex.m_outgoing,
-                    dl_radiance,
-                    dl_aovs);
+                    dl_radiance);
 
                 // Divide by the sample count when this number is less than 1.
                 if (m_params.m_rcp_dl_light_sample_count > 0.0f)
-                {
                     dl_radiance *= m_params.m_rcp_dl_light_sample_count;
-                    dl_aovs *= m_params.m_rcp_dl_light_sample_count;
-                }
 
                 // Add the direct lighting contributions.
                 vertex_radiance += dl_radiance;
-                vertex_aovs += dl_aovs;
             }
 
             void add_image_based_lighting_contribution(
                 const PathVertex&       vertex,
-                Spectrum&               vertex_radiance,
-                SpectrumStack&          vertex_aovs)
+                Spectrum&               vertex_radiance)
             {
                 Spectrum ibl_radiance(Spectrum::Illuminance);
 
@@ -367,13 +347,11 @@ namespace
 
                 // Add the image-based lighting contribution.
                 vertex_radiance += ibl_radiance;
-                vertex_aovs.add(m_env_edf->get_render_layer_index(), ibl_radiance);
             }
 
             void add_emitted_light_contribution(
                 const PathVertex&       vertex,
-                Spectrum&               vertex_radiance,
-                SpectrumStack&          vertex_aovs)
+                Spectrum&               vertex_radiance)
             {
                 // Compute the emitted radiance.
                 Spectrum emitted_radiance(Spectrum::Illuminance);
@@ -392,7 +370,6 @@ namespace
 
                 // Add the emitted light contribution.
                 vertex_radiance += emitted_radiance;
-                vertex_aovs.add(vertex.m_edf->get_render_layer_index(), emitted_radiance);
             }
 
             void visit_environment(const PathVertex& vertex)
@@ -436,7 +413,6 @@ namespace
                 // Update the path radiance.
                 env_radiance *= vertex.m_throughput;
                 m_path_radiance += env_radiance;
-                m_path_aovs.add(m_env_edf->get_render_layer_index(), env_radiance);
             }
         };
     };

@@ -48,11 +48,11 @@
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
+namespace renderer      { class AOVAccumulatorContainer; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class PixelContext; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
-namespace renderer      { class ShadingResult; }
 
 namespace renderer
 {
@@ -98,8 +98,8 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
 
     // Constructor.
     DiagnosticSurfaceShader(
-        const char*             name,
-        const ParamArray&       params);
+        const char*                 name,
+        const ParamArray&           params);
 
     // Delete this instance.
     virtual void release() APPLESEED_OVERRIDE;
@@ -109,11 +109,11 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
 
     // Evaluate the shading at a given point.
     virtual void evaluate(
-        SamplingContext&        sampling_context,
-        const PixelContext&     pixel_context,
-        const ShadingContext&   shading_context,
-        const ShadingPoint&     shading_point,
-        ShadingResult&          shading_result) const APPLESEED_OVERRIDE;
+        SamplingContext&            sampling_context,
+        const PixelContext&         pixel_context,
+        const ShadingContext&       shading_context,
+        const ShadingPoint&         shading_point,
+        AOVAccumulatorContainer&    aov_accumulators) const APPLESEED_OVERRIDE;
 
   private:
     ShadingMode m_shading_mode;
@@ -121,6 +121,21 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
     size_t      m_ao_samples;
 
     void extract_parameters();
+
+    static void set_result(
+        const foundation::Color3f&  color,
+        AOVAccumulatorContainer&    aov_accumulators);
+
+    static void set_result(
+        const foundation::Color4f&  color,
+        AOVAccumulatorContainer&    aov_accumulators);
+
+    static void set_result(
+        const Spectrum&             value,
+        AOVAccumulatorContainer&    aov_accumulators);
+
+    static void set_result_to_opaque_pink(
+        AOVAccumulatorContainer&    aov_accumulators);
 };
 
 
