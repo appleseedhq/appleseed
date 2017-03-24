@@ -119,7 +119,7 @@
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/xercesc.h"
-#include "foundation/utility/zipper.h"
+#include "foundation/utility/zip.h"
 
 // Xerces-C++ headers.
 #include "xercesc/sax2/Attributes.hpp"

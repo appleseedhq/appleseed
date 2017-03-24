@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "zipper.h"
+#include "zip.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/minizip/zip.h"

@@ -458,7 +458,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_vector.cpp
     foundation/meta/tests/test_voxelgrid.cpp
     foundation/meta/tests/test_windows.cpp
-    foundation/meta/tests/test_zipper.cpp
+    foundation/meta/tests/test_zip.cpp
 )
 if (WITH_DISNEY_MATERIAL)
     list (APPEND foundation_meta_tests_sources
@@ -781,8 +781,8 @@ set (foundation_utility_sources
     foundation/utility/xercesc.cpp
     foundation/utility/xercesc.h
     foundation/utility/xmlelement.h
-    foundation/utility/zipper.cpp
-    foundation/utility/zipper.h
+    foundation/utility/zip.cpp
+    foundation/utility/zip.h
 )
 if (WITH_DISNEY_MATERIAL)
     list (APPEND foundation_utility_sources

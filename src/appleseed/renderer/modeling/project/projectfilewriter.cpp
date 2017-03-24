@@ -79,7 +79,7 @@
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/xmlelement.h"
-#include "foundation/utility/zipper.h"
+#include "foundation/utility/zip.h"
 
 // Boost headers.
 #include "boost/filesystem.hpp"

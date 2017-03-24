@@ -28,7 +28,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/test.h"
-#include "foundation/utility/zipper.h"
+#include "foundation/utility/zip.h"
 
 // Boost headers
 #include "boost/filesystem.hpp"

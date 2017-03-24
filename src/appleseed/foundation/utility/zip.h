@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_ZIPPER_H
-#define APPLESEED_FOUNDATION_UTILITY_ZIPPER_H
+#ifndef APPLESEED_FOUNDATION_UTILITY_ZIP_H
+#define APPLESEED_FOUNDATION_UTILITY_ZIP_H
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
@@ -98,4 +98,4 @@ std::set<std::string> recursive_ls(const boost::filesystem::path& dir);
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_UTILITY_ZIPPER_H
+#endif  // !APPLESEED_FOUNDATION_UTILITY_ZIP_H
