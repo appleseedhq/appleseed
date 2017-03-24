@@ -29,46 +29,8 @@
 #ifndef AS_COLOR_HELPERS_H
 #define AS_COLOR_HELPERS_H
 
-#include "appleseed/color/as_color_data.h"
-
-//
-// Reference
-//
-//      Colour Space Conversions
-//
-//      http://www.poynton.com/PDFs/coloureq.pdf
-//
-
-float convert_XYZ_to_xyY(vector XYZ, float white_xy[2])
-{
-    if (XYZ[0] == XYZ[1] == XYZ[2] == 0.0)
-    {
-        // Set x and y to reference white chromaticity coordinates xy
-        xyY = vector(white_xy[0], white_xy[1], XYZ[1]);
-    }
-    else
-    {
-        float XYZ_sum = XYZ[0] + XYZ[1] + XYZ[2];
-
-        xyY = vector(XYZ[0] / XYZ_sum, XYZ[1] / XYZ_sum, XYZ[1]);
-    }
-    return xyY;
-}
-
-vector convert_xyY_to_XYZ(vector xyY)
-{
-    if (xyY[1] != 0)
-    {
-        XYZ[0] = xyY[0] * xyY[2] / xyY[1];
-        XYZ[1] = xyY[2];
-        XYZ[2] = (1.0 - xyY[0] - xyY[1]) * xyY[2] / xyY[1]; // z = 1-x-y
-    }
-    else
-    {
-        XYZ = vector(0);
-    }
-    return XYZ;
-}
+#include "appleseed/color/as_chromatic_adaptation.h"
+#include "appleseed/color/as_colorimetry.h"
 
 // The luminance coefficients are provided by the Y value, so when the
 // white points of the color space differ from the requested white point,
@@ -248,65 +210,4 @@ float as_luminance(color in_C, string colorspace)
            coeffs[2] * in_C[2];
 }
 
-// Chromatically adapted transformation matrix for XYZ<>RGB, using the
-// Bradford CAT will follow shortly.
-
-color transform_RGB2XYZ(color C, string space)
-{
-    if (space == "Rec.709" || space == "sRGB")
-    {
-        return color(
-            dot(vector(RGB_TO_XYZ_REC709_D65_R0), vector(C)),
-            dot(vector(RGB_TO_XYZ_REC709_D65_R1), vector(C)),
-            dot(vector(RGB_TO_XYZ_REC709_D65_R2), vector(C)));
-    }
-    else if (space == "AdobeRGB98")
-    {
-        return color(
-            dot(vector(RGB_TO_XYZ_ADOBERGB_D65_R0), vector(C)),
-            dot(vector(RGB_TO_XYZ_ADOBERGB_D65_R1), vector(C)),
-            dot(vector(RGB_TO_XYZ_ADOBERGB_D65_R2), vector(C)));
-    }
-    else
-    {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]: invalid space selected in %s, %s:%i\n",
-                shadername, __FILE__, __LINE__);
-#endif
-        return color(0);
-    }
-}
-
-color transform_XYZ2RGB(color C, string space)
-{
-    if (space == "Rec.709" || space == "sRGB")
-    {
-        return color(
-            dot(vector(XYZ_TO_RGB_REC709_D65_R0), vector(C)),
-            dot(vector(XYZ_TO_RGB_REC709_D65_R1), vector(C)),
-            dot(vector(XYZ_TO_RGB_REC709_D65_R2), vector(C)));
-    }
-    else if (space == "AdobeRGB98")
-    {
-        return color(
-            dot(vector(XYZ_TO_RGB_ADOBERGB_D65_R0), vector(C)),
-            dot(vector(XYZ_TO_RGB_ADOBERGB_D65_R1), vector(C)),
-            dot(vector(XYZ_TO_RGB_ADOBERGB_D65_R2), vector(C)));
-    }
-    else
-    {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]: invalid space selected in %s, %s:%i\n",
-                shadername, __FILE__, __LINE__);
-#endif
-        return color(0);
-    }
-}
-
-#endif // AS_COLOR_HELPERS_H
+#endif // !AS_COLOR_HELPERS_H
