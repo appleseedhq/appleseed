@@ -27,37 +27,40 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/utility/countof.h"
 #include "foundation/utility/test.h"
 #include "foundation/utility/zip.h"
 
-// Boost headers
+// Boost headers.
 #include "boost/filesystem.hpp"
 
-// Standard headers
+// Standard headers.
 #include <set>
+#include <string>
 #include <vector>
 
 using namespace foundation;
 using namespace std;
 namespace bf = boost::filesystem;
 
-TEST_SUITE(Foundation_Utility_Unzipper)
+TEST_SUITE(Foundation_Utility_Zip)
 {
-    const string valid_project = "unit tests/inputs/test_packed_project_valid.appleseedz";
-    const string invalid_project = "unit tests/inputs/test_packed_project_invalid.appleseedz";
+    const string ValidProjectFilePath = "unit tests/inputs/test_zip_valid_packed_project.appleseedz";
 
-    TEST_CASE(UnzipTest) 
+    TEST_CASE(Unzip)
     {
-        const string unpacked_dir = valid_project + ".unpacked";
+        const string TargetDirectory = "unit tests/outputs/test_zip_valid_packed_project.unpacked/";
 
-        try 
+        try
         {
-            unzip(valid_project, unpacked_dir);
+            ASSERT_FALSE(bf::exists(TargetDirectory));
 
-            EXPECT_TRUE(bf::exists(unpacked_dir));
-            EXPECT_FALSE(bf::is_empty(unpacked_dir));
+            unzip(ValidProjectFilePath, TargetDirectory);
 
-            const string expected_files[] = 
+            EXPECT_TRUE(bf::exists(TargetDirectory));
+            EXPECT_FALSE(bf::is_empty(TargetDirectory));
+
+            const string ExpectedFiles[] =
             {
                 "01 - lambertiannrdf - arealight.appleseed",
                 "geometry/sphere.obj",
@@ -72,45 +75,45 @@ TEST_SUITE(Foundation_Utility_Unzipper)
                 "geometry/Plane001.binarymesh"
             };
 
-            const set<string> actual_files = recursive_ls(unpacked_dir);
+            const set<string> actual_files = recursive_ls(TargetDirectory);
 
-            for (size_t i = 0; i < 11; ++i) 
-            {
-                EXPECT_EQ(1, actual_files.count(expected_files[i]));
-            }
+            for (size_t i = 0; i < countof(ExpectedFiles); ++i)
+                EXPECT_EQ(1, actual_files.count(ExpectedFiles[i]));
 
-            bf::remove_all(unpacked_dir);
-        } 
-        catch (exception e) 
+            bf::remove_all(TargetDirectory);
+        }
+        catch (const exception& e)
         {
-            bf::remove_all(unpacked_dir);
+            bf::remove_all(TargetDirectory);
             throw e;
         }
     }
 
-    TEST_CASE(IsZipFileSuccess)
+    TEST_CASE(IsZipFile_GivenValidZipFile_ReturnsTrue)
     {
-        EXPECT_TRUE(is_zip_file(valid_project.c_str()));
+        EXPECT_TRUE(is_zip_file(ValidProjectFilePath.c_str()));
     }
 
-    TEST_CASE(IsZipFileFailure)
+    TEST_CASE(IsZipFile_GivenInvalidZipFile_ReturnsFalse)
     {
-        EXPECT_FALSE(is_zip_file("unit tests/inputs/test_projectfilereader_configurationblocks.appleseed"));
+        EXPECT_FALSE(is_zip_file("unit tests/inputs/test_zip_not_zip_file.txt"));
     }
 
-    TEST_CASE(FilesnamesWithExtensionOneFile)
+    TEST_CASE(GetFilenamesWithExtensionFromZip_OneFile)
     {
-        const string extension = ".appleseed";
-        const vector<string> appleseed_files = get_filenames_with_extension_from_zip(valid_project, extension);
+        const vector<string> appleseed_files =
+            get_filenames_with_extension_from_zip(ValidProjectFilePath, ".appleseed");
 
         ASSERT_EQ(1, appleseed_files.size());
         EXPECT_EQ("01 - lambertiannrdf - arealight.appleseed", appleseed_files[0]);
     }
 
-    TEST_CASE(FilesnamesWithExtensionSeveralFiles) 
+    TEST_CASE(GetFilenamesWithExtensionFromZip_SeveralFiles)
     {
-        const string extension = ".appleseed";
-        const vector<string> appleseed_files = get_filenames_with_extension_from_zip(invalid_project, extension);
+        const string InvalidProjectFilePath = "unit tests/inputs/test_zip_invalid_packed_project.appleseedz";
+
+        const vector<string> appleseed_files =
+            get_filenames_with_extension_from_zip(InvalidProjectFilePath, ".appleseed");
 
         EXPECT_EQ(4, appleseed_files.size());
     }

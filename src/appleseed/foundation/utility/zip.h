@@ -52,7 +52,6 @@ class ZipException
 {
   public:
     ZipException(const char* what);
-
     ZipException(const char* what, const int err);
 };
 
@@ -91,7 +90,7 @@ std::vector<std::string> get_filenames_with_extension_from_zip(
     const std::string& extension);
 
 //
-// Retrieves files inside dirpath directory and all subdirectories
+// Retrieves all files inside a given directory and its subdirectories.
 //
 
 std::set<std::string> recursive_ls(const boost::filesystem::path& dir);

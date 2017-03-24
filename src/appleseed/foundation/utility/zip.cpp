@@ -30,8 +30,9 @@
 #include "zip.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/minizip/zip.h"
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/minizip/unzip.h"
+#include "foundation/utility/minizip/zip.h"
 #include "foundation/utility/string.h"
 
 // Boost headers.
@@ -107,7 +108,7 @@ namespace
         const int err = unzCloseCurrentFile(zip_file);
 
         if (err == UNZ_CRCERROR)
-            throw ZipException("crc32 checksum error");
+            throw ZipException("crc error");
     }
 
     string read_filename(unzFile& zip_file)
@@ -342,19 +343,18 @@ set<string> recursive_ls(const bf::path& dir)
 {
     set<string> files;
 
-    // A default constructed directory_iterator acts as the end iterator.
-    bf::directory_iterator end_iter;
-    for (bf::directory_iterator dir_itr(dir); dir_itr != end_iter; ++dir_itr)
+    // A default-constructed directory_iterator acts as the end iterator.
+    for (bf::directory_iterator di(dir), de; di != de; ++di)
     {
-        const bf::path current_path = dir_itr->path();
+        const bf::path& current_path = di->path();
 
         if (bf::is_directory(current_path))
         {
             const string dirname = current_path.filename().string();
             const set<string> files_in_subdir = recursive_ls(current_path);
 
-            for (set<string>::iterator it = files_in_subdir.begin(); it != files_in_subdir.end(); ++it)
-                files.insert(dirname + "/" + *it);
+            for (const_each<set<string> > fi = files_in_subdir; fi; ++fi)
+                files.insert(dirname + "/" + *fi);
         }
         else
             files.insert(current_path.filename().string());

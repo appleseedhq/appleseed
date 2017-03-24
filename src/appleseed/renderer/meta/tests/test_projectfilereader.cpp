@@ -37,10 +37,10 @@
 #include "foundation/utility/test.h"
 #include "foundation/utility/testutils.h"
 
-// Boost headers
+// Boost headers.
 #include "boost/filesystem.hpp"
 
-// Standard headers
+// Standard headers.
 #include <exception>
 
 using namespace foundation;
