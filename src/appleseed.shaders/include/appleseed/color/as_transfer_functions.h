@@ -31,6 +31,12 @@
 
 #include "appleseed/color/as_color_data.h"
 
+// Common color component transfer functions quantities
+
+#define ADOBE_RGB_1998_GAMMA    2.19921875
+#define REC709_GAMMA            2.4
+#define DCIP3_GAMMA             2.6
+
 //
 // Reference:
 //
@@ -101,6 +107,7 @@ color sRGB_OETF(color value)
 //
 //      http://www.itu.int/rec/R-REC-BT.709-6-201506-I/en
 //
+
 float Rec709_EOTF(float value)
 {
     float linear_out;
@@ -258,6 +265,20 @@ color Rec2020_OETF(color value, int bitdepth)
 //
 //      http://www.itu.int/rec/R-REC-BT.1886-0-201103-I
 //
+// Note:
+//
+//      The black and white luminance levels described in the reference are
+//      10bit values 64 and 940 respectively, but they should be the luminance
+//      in candelas per square meter for absolute luminance, or 0 and 1 for
+//      normalized values.
+//
+// See also:
+//
+//      EBU Tech.3320: User Requirements For Video Monitors In Television
+//      Production, section 5.1.
+//
+//      https://tech.ebu.ch/docs/tech/tech3320.pdf
+//
 
 float Rec1886_EOTF(float value, float black_luminance, float white_luminance)
 {
@@ -265,7 +286,7 @@ float Rec1886_EOTF(float value, float black_luminance, float white_luminance)
 
     if (value > 0)
     {
-        float gamma = 2.4;
+        float gamma = REC709_GAMMA;
         float gamma_denom = 1 / gamma;
 
         float tmp = pow(white_luminance, gamma_denom) -
@@ -323,7 +344,42 @@ color Rec1886_OETF(color value, float black_luminance, float white_luminance)
         Rec1886_OETF(value[2], black_luminance, white_luminance));
 }
 
-float gamma_function(float value, float gamma)
+// Normalized Rec.1886 CCTFs.
+
+float Rec1886_EOTF(float value)
+{
+    return Rec1886_EOTF(value, 0.0, 1.0);
+}
+
+float Rec1886_OETF(float value)
+{
+    return Rec1886_OETF(float value, 0.0, 1.0);
+}
+
+color Rec1886_EOTF(color value)
+{
+    return color(
+        Rec1886_EOTF(value[0], 0.0, 1.0),
+        Rec1886_EOTF(value[1], 0.0, 1.0),
+        Rec1886_EOTF(value[2], 0.0, 1.0));
+}
+
+color Rec1886_OETF(color value)
+{
+    return color(
+        Rec1886_OETF(value[0], 0.0, 1.0),
+        Rec1886_OETF(value[1], 0.0, 1.0),
+        Rec1886_OETF(value[2], 0.0, 1.0));
+}
+
+//
+// Reference:
+//
+//      Gamma function
+//      https://en.wikipedia.org/wiki/Gamma_correction
+//
+
+float gamma_CCTF(float value, float gamma)
 {
     if (value == 0)
     {
@@ -335,12 +391,64 @@ float gamma_function(float value, float gamma)
     }
 }
 
-color gamma_function(color value, float gamma)
+color gamma_CCTF(color value, float gamma)
 {
     return color(
-        gamma_function(value, gamma),
-        gamma_function(value, gamma),
-        gamma_function(value, gamma));
+        gamma_CCTF(value, gamma),
+        gamma_CCTF(value, gamma),
+        gamma_CCTF(value, gamma));
 }
 
-#endif // AS_TRANSFER_FUNCTIONS_H
+//
+// Reference:
+//
+//      Adobe RGB (1998) Color Image Encoding, version 2005-05, May 2005
+//
+//      https://www.adobe.com/digitalimag/adobergb.html
+//
+
+float AdobeRGB_EOTF(float value)
+{
+    return gamma_CCTF(value, 1.0 / ADOBE_RGB_1998_GAMMA);
+}
+
+float AdobeRGB_OETF(float value)
+{
+    return gamma_CCTF(value, ADOBE_RGB_1998_GAMMA);
+}
+
+color AdobeRGB_EOTF(color value)
+{
+    return color(
+        AdobeRGB_EOTF(color[0]),
+        AdobeRGB_EOTF(color[1]),
+        AdobeRGB_EOTF(color[2]));
+}
+
+color AdobeRGB_OETF(color value)
+{
+    return color(
+        AdobeRGB_OETF(color[0]),
+        AdobeRGB_OETF(color[1]),
+        AdobeRGB_OETF(color[2]));
+}
+
+//
+// Reference:
+//
+//      Digital Cinema System Specification Version 1.1, page 13, colorimetry
+//
+//      http://www.dcimovies.com/archives/spec_v1_1//DCI_DCinema_System_Spec_v1_1.pdf
+//
+
+color DCIP3_EOTF(color XYZ)
+{
+    return 4096 * gamma_CCTF(XYZ / 52.37, 1.0 / DCIP3_GAMMA);
+}
+
+color DCIP3_OETF(color XYZ)
+{
+    return 52.37 * gamma_CCTF(XYZ / 4095, DCIP3_GAMMA);
+}
+
+#endif // !AS_TRANSFER_FUNCTIONS_H
