@@ -368,28 +368,42 @@ Vector3f BeckmannMDF::sample(
             gamma);
 }
 
+
 // This code comes from OpenShadingLanguage test render.
 Vector2f BeckmannMDF::sample11(
     const float         cos_theta,
     const Vector3f&     s,
     const float         gamma) const
 {
-    const float ct = max(cos_theta, 1.0e-6f);
+    const float threshold = 1e-06f;
+    Vector2f slope;
+
+    // Sample slope Y.
+    slope[1] = erf_inv(2.0f * s[1] - 1.0f);
+
+    // Sample slope X:
+
+    // Special case (normal incidence).
+    if (cos_theta > 1.0f - threshold)
+    {
+        slope[0] = erf_inv(2.0f * s[0] - 1.0f);
+        return slope;
+    }
+
+    const float ct = max(cos_theta, threshold);
     const float tan_theta = sqrt(1.0f - square(ct)) / ct;
     const float cot_theta = 1.0f / tan_theta;
 
-    // Sample slope X:
-    // compute a coarse approximation using the approximation:
+    // Compute a coarse approximation using the approximation:
     // exp(-ierf(x)^2) ~= 1 - x * x
     // solve y = 1 + b + K * (1 - b * b).
 
     const float c = erf(cot_theta);
+
     const float K = tan_theta / SqrtPi<float>();
     const float y_approx = s[0] * (1.0f + c + K * (1 - c * c));
     const float y_exact  = s[0] * (1.0f + c + K * exp(-square(cot_theta)));
-    float b = K > 0.0f
-        ? (0.5f - sqrt(K * (K - y_approx + 1.0f) + 0.25f)) / K
-        : y_approx - 1.0f;
+    float b = (0.5f - sqrt(K * (K - y_approx + 1.0f) + 0.25f)) / K;
 
     // Perform a Newton step to refine toward the true root.
     float inv_erf = erf_inv(b);
@@ -397,9 +411,7 @@ Vector2f BeckmannMDF::sample11(
 
     // Check if we are close enough already.
     // This also avoids NaNs as we get close to the root.
-    Vector2f slope;
-
-    if (abs(value) > 1.0e-6f)
+    if (abs(value) > threshold)
     {
         b -= value / (1.0f - inv_erf * tan_theta); // newton step 1
         inv_erf = erf_inv(b);
@@ -411,8 +423,6 @@ Vector2f BeckmannMDF::sample11(
     else
         slope[0] = inv_erf;
 
-    // Sample slope Y.
-    slope[1] = erf_inv(2.0f * s[1] - 1.0f);
     return slope;
 }
 
