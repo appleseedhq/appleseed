@@ -19,12 +19,12 @@ surface test()
     // -0.9692660  1.8760108  0.0415560
     //  0.0556434 -0.2040259  1.0572252
 
-    color residual = color( abs(C2[0] - C1[0]),
+    color delta = color(    abs(C2[0] - C1[0]),
                             abs(C2[1] - C1[1]),
                             abs(C2[2] - C1[2]));
 
     printf("OSL transformc\t = %g,\tXYZ = %g\n", C, C1);
     printf("AS transform\t = %g,\tXYZ = %g\n", C, C2);
-    printf("Residual\t = %g\n\n", residual);
+    printf("delta\t\t = %g\n\n", delta);
 }
 
