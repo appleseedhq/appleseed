@@ -962,8 +962,10 @@ bool ProjectFileWriter::write(
         try
         {
             const bf::path project_path(filepath);
-            temp_project_filepath = project_path.parent_path() /
-                "temp.unpacked" / project_path.filename().replace_extension(".appleseed");
+            temp_project_filepath =
+                project_path.parent_path() /
+                project_path.filename().replace_extension(".unpacked") /
+                project_path.filename().replace_extension(".appleseed");
 
             bf::create_directory(temp_project_filepath.parent_path());
 

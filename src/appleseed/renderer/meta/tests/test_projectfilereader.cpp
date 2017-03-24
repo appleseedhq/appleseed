@@ -78,7 +78,7 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
     TEST_CASE(ReadValidPackedProject)
     {
         const char* project = "unit tests/inputs/test_packed_project_valid.appleseedz";
-        const char* project_unpacked = "unit tests/inputs/test_packed_project_valid.appleseedz.unpacked";
+        const char* project_unpacked = "unit tests/inputs/test_packed_project_valid.unpacked";
 
         try 
         {
@@ -88,9 +88,9 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
                 reader.read(
                     project,
                     "../../../../schemas/project.xsd");    // path relative to input file
-            
+
             EXPECT_NEQ(0, project_success.get());
-            
+
             bf::remove_all(bf::path(project_unpacked));
         } 
         catch (std::exception e) 
