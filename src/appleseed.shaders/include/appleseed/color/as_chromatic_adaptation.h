@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016-2017 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 #ifndef AS_CHROMATIC_ADAPTATION_H
 #define AS_CHROMATIC_ADAPTATION_H
 
-#include "appleseed/color/as_color_data.h"
+#include "appleseed/color/as_colorimetry.h"
 
 //
 // Reference:
@@ -43,8 +43,7 @@
 //      Number Of Color Patches
 //
 //      http://hrcak.srce.hr/file/95370
-//      
-//      
+//     
 
 void choose_CAT(string CAT, output vector CAT_matrix[3])
 {
@@ -120,7 +119,7 @@ void choose_CAT(string CAT, output vector CAT_matrix[3])
     }
     else
     {
-        // Fallback to XYZ scaling (aka "wrong von Kries")
+        // Fallback to XYZ scaling (aka "fake von Kries").
 #ifdef DEBUG
         string shadername = "";
         getattribute("shader:shadername", shadername);
@@ -142,11 +141,10 @@ void choose_CAT(string CAT, output vector CAT_matrix[3])
 //      http://cie.mogi.bme.hu/cie_arch/kee/div1/tc152.pdf
 //
 
-void chromatic_adaptation_vonKries(
+matrix chromatic_adaptation_vonKries(
     vector source_whitepoint_XYZ,
     vector target_whitepoint_XYZ,
-    string CAT,
-    output vector CAM[3])
+    string CAT)
 {
     vector CAT_matrix[3];
 
@@ -177,14 +175,38 @@ void chromatic_adaptation_vonKries(
         CAT_matrix[2][0], CAT_matrix[2][1], CAT_matrix[2][2], 0.0,
         0.0, 0.0, 0.0, 1.0);
 
-    matrix CAT_matrix_inverse = inverse(CAT_matrix);
-
-    matrix final_CAM = CAT_matrix_inverse *
+    matrix chromatic_adaptation_matrix = inverse(CAT_matrix) *
         diagonal_adaptation_matrix * CAT_matrix;
 
-    CAM[0] = vector(final_CAM[0][0], final_CAM[0][1], final_CAM[0][2]);
-    CAM[1] = vector(final_CAM[1][0], final_CAM[1][1], final_CAM[1][2]);
-    CAM[2] = vector(final_CAM[2][0], final_CAM[2][1], final_CAM[2][2]);
+    return chromatic_adaptation_matrix;
 }
 
-#endif // AS_CHROMATIC_ADAPTATION_H
+void chromatic_adaptation_vonKries(
+    vector source_whitepoint_XYZ,
+    vector target_whitepoint_XYZ,
+    string CAT,
+    output vector CAM[3])
+{
+    matrix chromatic_adaptation_matrix =
+        chromatic_adaptation_vonKries(
+            source_whitepoint_XYZ,
+            target_whitepoint_XYZ,
+            CAT);
+
+    CAM[0] = vector(
+        chromatic_adaptation_matrix[0][0],
+        chromatic_adaptation_matrix[0][1],
+        chromatic_adaptation_matrix[0][2]);
+
+    CAM[1] = vector(
+        chromatic_adaptation_matrix[1][0],
+        chromatic_adaptation_matrix[1][1],
+        chromatic_adaptation_matrix[1][2]);
+
+    CAM[2] = vector(
+        chromatic_adaptation_matrix[2][0],
+        chromatic_adaptation_matrix[2][1],
+        chromatic_adaptation_matrix[2][2]);
+}
+
+#endif // !AS_CHROMATIC_ADAPTATION_H
