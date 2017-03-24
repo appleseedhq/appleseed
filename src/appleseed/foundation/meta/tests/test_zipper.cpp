@@ -28,7 +28,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/test.h"
-#include "foundation/utility/unzipper.h"
+#include "foundation/utility/zipper.h"
 
 // Boost headers
 #include "boost/filesystem.hpp"
@@ -46,31 +46,6 @@ TEST_SUITE(Foundation_Utility_Unzipper)
     const string valid_project = "unit tests/inputs/test_packed_project_valid.appleseedz";
     const string invalid_project = "unit tests/inputs/test_packed_project_invalid.appleseedz";
 
-    set<string> recursive_ls(bf::path dir) 
-    {
-        set<string> files;
-
-        // A default constructed directory_iterator acts as the end iterator
-        bf::directory_iterator end_iter;
-        for (bf::directory_iterator dir_itr(dir); dir_itr != end_iter; ++dir_itr) 
-        {
-            const bf::path current_path = dir_itr->path();
-
-            if (bf::is_directory(current_path))
-            {
-                const string dirname = current_path.filename().string();
-                const set<string> files_in_subdir = recursive_ls(current_path);
-                
-                for (set<string>::iterator it = files_in_subdir.begin(); it != files_in_subdir.end(); ++it)
-                    files.insert(dirname + "/" + *it);
-            }
-            else
-                files.insert(current_path.filename().string());
-        }
-
-        return files;
-    }
-
     TEST_CASE(UnzipTest) 
     {
         const string unpacked_dir = valid_project + ".unpacked";
@@ -79,8 +54,8 @@ TEST_SUITE(Foundation_Utility_Unzipper)
         {
             unzip(valid_project, unpacked_dir);
 
-            EXPECT_TRUE(bf::exists(bf::path(unpacked_dir)));
-            EXPECT_FALSE(bf::is_empty(bf::path(unpacked_dir)));
+            EXPECT_TRUE(bf::exists(unpacked_dir));
+            EXPECT_FALSE(bf::is_empty(unpacked_dir));
 
             const string expected_files[] = 
             {
@@ -97,18 +72,18 @@ TEST_SUITE(Foundation_Utility_Unzipper)
                 "geometry/Plane001.binarymesh"
             };
 
-            const set<string> actual_files = recursive_ls(bf::path(unpacked_dir));
+            const set<string> actual_files = recursive_ls(unpacked_dir);
 
             for (size_t i = 0; i < 11; ++i) 
             {
                 EXPECT_EQ(1, actual_files.count(expected_files[i]));
             }
 
-            bf::remove_all(bf::path(unpacked_dir));
+            bf::remove_all(unpacked_dir);
         } 
         catch (exception e) 
         {
-            bf::remove_all(bf::path(unpacked_dir));
+            bf::remove_all(unpacked_dir);
             throw e;
         }
     }

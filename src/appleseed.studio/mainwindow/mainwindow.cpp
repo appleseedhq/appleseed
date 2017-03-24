@@ -1237,14 +1237,14 @@ void MainWindow::slot_save_project_as()
         get_save_filename(
             this,
             "Save As...",
-            "Project Files (*.appleseed)",
+            "Plain Project Files (*.appleseed);;Packed Project Files (*.appleseedz)",
             m_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 
     if (!filepath.isEmpty())
     {
         if (QFileInfo(filepath).suffix().isEmpty())
-            filepath += ".appleseed";
+            filepath += get_extension(m_settings, SETTINGS_FILE_DIALOG_PROJECTS);
 
         filepath = QDir::toNativeSeparators(filepath);
 
