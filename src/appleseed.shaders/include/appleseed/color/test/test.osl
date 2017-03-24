@@ -3,9 +3,10 @@
 
 surface test()
 {
-    color C = (color) noise(P * 5);
+    color C = color(0.123, 0.456, 0.789);
 
-    color C1 = transformc("rgb", "XYZ", C);
+    color C1 = color( 0.356182, 0.409231, 0.8067);
+
     color C2 = transform_linear_RGB_to_XYZ(C, "Rec.709");
 
     // expected value, sRGB/Rec.709 RGB->XYZ matrix, D65
@@ -23,8 +24,7 @@ surface test()
                             abs(C2[1] - C1[1]),
                             abs(C2[2] - C1[2]));
 
-    printf("OSL transformc\t = %g,\tXYZ = %g\n", C, C1);
-    printf("AS transform\t = %g,\tXYZ = %g\n", C, C2);
-    printf("delta\t\t = %g\n\n", delta);
+    printf("Expected value RGB\t= %g,\tXYZ = %g\n", C, C1);
+    printf("AS transform RGB\t= %g,\tXYZ = %g\n", C, C2);
+    printf("delta\t\t\t= %g\n\n", delta);
 }
-
