@@ -41,8 +41,10 @@
 //      http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_xyY.html
 //      
 
-float transform_XYZ_to_xyY(color XYZ, float white_xy[2])
+color transform_XYZ_to_xyY(color XYZ, float white_xy[2])
 {
+    color xyY;
+
     if (XYZ[0] == XYZ[1] == XYZ[2] == 0.0)
     {
         xyY = color(white_xy[0], white_xy[1], XYZ[1]);
@@ -66,6 +68,8 @@ float transform_XYZ_to_xyY(color XYZ, float white_xy[2])
 
 color transform_xyY_to_XYZ(color xyY)
 {
+    color XYZ;
+
     if (xyY[1] != 0)
     {
         XYZ[0] = xyY[0] * xyY[2] / xyY[1];
@@ -131,7 +135,7 @@ void get_RGB_to_XYZ_matrix(
         source_illuminant = "D60";
 
         RGB_to_XYZ[0] = vector(RGB_TO_XYZ_ACES_R0);
-        RGB_to_XYZ[1] = vector(RGB_TO_XYZ_ACES_R1)
+        RGB_to_XYZ[1] = vector(RGB_TO_XYZ_ACES_R1);
         RGB_to_XYZ[2] = vector(RGB_TO_XYZ_ACES_R2);
     }
     else if (color_space == "ACEScg")
@@ -197,7 +201,7 @@ void get_XYZ_to_RGB_matrix(
         source_illuminant = "D60";
 
         XYZ_to_RGB[0] = vector(XYZ_TO_RGB_ACES_R0);
-        XYZ_to_RGB[1] = vector(XYZ_TO_RGB_ACES_R1)
+        XYZ_to_RGB[1] = vector(XYZ_TO_RGB_ACES_R1);
         XYZ_to_RGB[2] = vector(XYZ_TO_RGB_ACES_R2);
     }
     else if (color_space == "ACEScg")
@@ -378,7 +382,7 @@ color transform_XYZ_to_linear_RGB(
     string target_illuminant)
 {
     string source_illuminant = "";
-    vector source_XYZ_to_RGB[3], XYZ;
+    vector source_XYZ_to_RGB[3];
 
     get_XYZ_to_RGB_matrix(color_space, source_XYZ_to_RGB, source_illuminant);
 

@@ -1,0 +1,30 @@
+
+#include "appleseed/color/as_color_transforms.h"
+
+surface test()
+{
+    color C = (color) noise(P * 5);
+
+    color C1 = transformc("rgb", "XYZ", C);
+    color C2 = transform_linear_RGB_to_XYZ(C, "Rec.709");
+
+    // expected value, sRGB/Rec.709 RGB->XYZ matrix, D65
+    //
+    //  0.4124564  0.3575761  0.1804375
+    //  0.2126729  0.7151522  0.0721750
+    //  0.0193339  0.1191920  0.9503041
+
+    // expected value, XYZ->RGB sRGB/Rec.709, D65
+    //  3.2404542 -1.5371385 -0.4985314
+    // -0.9692660  1.8760108  0.0415560
+    //  0.0556434 -0.2040259  1.0572252
+
+    color residual = color( abs(C2[0] - C1[0]),
+                            abs(C2[1] - C1[1]),
+                            abs(C2[2] - C1[2]));
+
+    printf("OSL transformc\t = %g,\tXYZ = %g\n", C, C1);
+    printf("AS transform\t = %g,\tXYZ = %g\n", C, C2);
+    printf("Residual\t = %g\n\n", residual);
+}
+

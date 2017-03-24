@@ -169,14 +169,14 @@ matrix chromatic_adaptation_vonKries(
         0.0, 0.0, cone_response_ratio[2], 0.0,
         0.0, 0.0, 0.0, 1.0);
 
-    matrix CAT_matrix = matrix(
+    matrix CAT_matrix_4x4 = matrix(
         CAT_matrix[0][0], CAT_matrix[0][1], CAT_matrix[0][2], 0.0,
         CAT_matrix[1][0], CAT_matrix[1][1], CAT_matrix[1][2], 0.0,
         CAT_matrix[2][0], CAT_matrix[2][1], CAT_matrix[2][2], 0.0,
         0.0, 0.0, 0.0, 1.0);
 
-    matrix chromatic_adaptation_matrix = inverse(CAT_matrix) *
-        diagonal_adaptation_matrix * CAT_matrix;
+    matrix chromatic_adaptation_matrix = inverse(CAT_matrix_4x4) *
+        diagonal_adaptation_matrix * CAT_matrix_4x4;
 
     return chromatic_adaptation_matrix;
 }
