@@ -205,12 +205,12 @@ class MainWindow
     static QString get_filter_string(const int filter);
 
     // Enum of filters for save project dialog.
-    enum Filter
+    enum ProjectDialogFilter
     {
-        PROJECT    = 1 << 0,  // all appleseed extensions
-        APPLESEED  = 1 << 1,  // .appleseed extension
-        APPLESEEDZ = 1 << 2,  // .appleseedz extension
-        ALL        = 1 << 3   // all extensions
+        ProjectDialogFilterAllProjects    = 1 << 0,  // all appleseed extensions
+        ProjectDialogFilterPlainProjects  = 1 << 1,  // .appleseed extension
+        ProjectDialogFilterPackedProjects = 1 << 2,  // .appleseedz extension
+        ProjectDialogFilterAllFiles       = 1 << 3   // all extensions
     };
 
   private slots:

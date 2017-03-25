@@ -1120,11 +1120,17 @@ void MainWindow::slot_open_project()
     if (!can_close_project())
         return;
 
+    const QString FilterString = get_filter_string(
+        ProjectDialogFilterAllProjects |
+        ProjectDialogFilterPlainProjects |
+        ProjectDialogFilterPackedProjects |
+        ProjectDialogFilterAllFiles);
+
     QString filepath =
         get_open_filename(
             this,
             "Open...",
-            get_filter_string(MainWindow::PROJECT | MainWindow::APPLESEED | MainWindow::APPLESEEDZ | MainWindow::ALL),
+            FilterString,
             m_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 
@@ -1235,13 +1241,16 @@ void MainWindow::slot_save_project()
 void MainWindow::slot_save_project_as()
 {
     assert(m_project_manager.is_project_open());
-    do_save_project(MainWindow::PROJECT | MainWindow::APPLESEED | MainWindow::APPLESEEDZ);
+    do_save_project(
+        ProjectDialogFilterAllProjects |
+        ProjectDialogFilterPlainProjects |
+        ProjectDialogFilterPackedProjects);
 }
 
 void MainWindow::slot_pack_project_as()
 {
     assert(m_project_manager.is_project_open());
-    do_save_project(MainWindow::APPLESEEDZ);
+    do_save_project(ProjectDialogFilterPackedProjects);
 }
 
 void MainWindow::do_save_project(const int filter)
@@ -1278,16 +1287,16 @@ QString MainWindow::get_filter_string(const int filter)
 {
     QStringList filters;
 
-    if (filter & MainWindow::PROJECT)
+    if (filter & ProjectDialogFilterAllProjects)
         filters << "Project Files (*.appleseed ; *.appleseedz)";
 
-    if (filter & MainWindow::APPLESEED)
+    if (filter & ProjectDialogFilterPlainProjects)
         filters << "Plain Project Files (*.appleseed)";
 
-    if (filter & MainWindow::APPLESEEDZ)
+    if (filter & ProjectDialogFilterPackedProjects)
         filters << "Packed Project Files (*.appleseedz)";
 
-    if (filter & MainWindow::ALL)   
+    if (filter & ProjectDialogFilterAllFiles)
         filters << "All Files (*.*)";
 
     return filters.join(";;");
