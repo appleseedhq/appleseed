@@ -307,9 +307,6 @@
    <property name="text">
     <string>Save Project &amp;As...</string>
    </property>
-   <property name="softKeyRole">
-    <enum>QAction::SelectSoftKey</enum>
-   </property>
   </action>
   <action name="action_file_exit">
    <property name="text">

@@ -1276,33 +1276,21 @@ void MainWindow::do_save_project(const int filter)
 
 QString MainWindow::get_filter_string(const int filter)
 {
-    QString filter_string = "";
+    QStringList filters;
 
     if (filter & MainWindow::PROJECT)
-        filter_string += "Project Files (*.appleseed ; *.appleseedz)";
+        filters << "Project Files (*.appleseed ; *.appleseedz)";
 
     if (filter & MainWindow::APPLESEED)
-    {
-        if (filter_string.size() != 0)
-            filter_string += ";;";
-        filter_string += "Plain Project Files (*.appleseed)";
-    }
+        filters << "Plain Project Files (*.appleseed)";
 
     if (filter & MainWindow::APPLESEEDZ)
-    {
-        if (filter_string.size() != 0)
-            filter_string += ";;";
-        filter_string += "Packed Project Files (*.appleseedz)";
-    }
+        filters << "Packed Project Files (*.appleseedz)";
 
-    if (filter & MainWindow::ALL)
-    {
-        if (filter_string.size() != 0)
-            filter_string += ";;";
-        filter_string += "All Files (*.*)";
-    }
+    if (filter & MainWindow::ALL)   
+        filters << "All Files (*.*)";
 
-    return filter_string;
+    return filters.join(";;");
 }
 
 void MainWindow::slot_project_modified()

@@ -202,7 +202,7 @@ class MainWindow
     void print_startup_information();
     virtual void closeEvent(QCloseEvent* event);
     void do_save_project(const int filter);
-    QString get_filter_string(const int filter);
+    static QString get_filter_string(const int filter);
 
     // Enum of filters for save project dialog.
     enum Filter
