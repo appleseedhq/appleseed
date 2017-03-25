@@ -28,7 +28,7 @@
 
 // Ref: $MAYA_LOCATION/docs/Nodes/file.html
 
-#include "appleseed/color/as_color_idt.h"
+#include "appleseed/maya/as_maya_cms_syncolor_idt.h"
 #include "appleseed/maya/as_maya_helpers.h"
 
 shader as_maya_file
@@ -192,27 +192,6 @@ shader as_maya_file
     ]]
 )
 {
-
-#ifndef DEBUG
-    warning("[CMS] : Color profile = %i\n",
-            in_colorProfile);
-
-    warning("[CMS] : Color Space = %s\n",
-            in_colorSpace);
-    warning("[CMS] : Ignore CMS rules = %i\n",
-            in_ignoreColorSpaceFileRules);
-
-    warning("[CMS] : Working Space = %s\n",
-            in_workingSpace);
-    warning("[CMS] : CMS Enabled = %i\n",
-            in_colorManagementEnabled);
-
-    warning("[CMS] : CMS Config File Enabled = %i\n",
-            in_colorManagementConfigFileEnabled);
-    warning("[CMS] : CMS Config File Path = %s\n",
-            in_colorManagementConfigFilePath);
-#endif
-
     if (in_disableFileLoad || in_fileTextureName == "")
     {
         out_outColor = in_defaultColor;
@@ -413,6 +392,26 @@ shader as_maya_file
             out_outColor *= pow(2, in_exposure);
         }
 
+#ifdef DEBUG
+        warning("[CMS] : Color profile = %i\n",
+                in_colorProfile);
+
+        warning("[CMS] : Color Space = %s\n",
+                in_colorSpace);
+        warning("[CMS] : Ignore CMS rules = %i\n",
+                in_ignoreColorSpaceFileRules);
+
+        warning("[CMS] : Working Space = %s\n",
+                in_workingSpace);
+        warning("[CMS] : CMS Enabled = %i\n",
+                in_colorManagementEnabled);
+
+        warning("[CMS] : CMS Config File Enabled = %i\n",
+                in_colorManagementConfigFileEnabled);
+        warning("[CMS] : CMS Config File Path = %s\n",
+                in_colorManagementConfigFilePath);
+#endif
+        
         if (in_colorManagementEnabled == 1 &&
             in_ignoreColorSpaceFileRules == 0 &&
             in_colorSpace != "Raw")

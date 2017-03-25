@@ -54,7 +54,7 @@ color transform_color_space_to_Rec709(
     string color_space)
 {
     color transformed_color;
-    vector v_color = vector(input_color), transformed_color;
+    vector v_color = vector(input_color);
 
     if (color_space == "sRGB")
     {
@@ -274,7 +274,7 @@ color transform_color_space_to_DCIP3(
     }
     else if (color_space == "gamma 1.8 Rec 709")
     {
-        v_color = (vector) gamma_EOTF(input_color, 1 / 1.8);
+        v_color = (vector) gamma_CCTF(input_color, 1 / 1.8);
 
         transformed_color = color(
             dot(vector(REC709_TO_DCIP3_X), v_color),
@@ -397,7 +397,7 @@ color transform_color_space_to_ACES(
     }
     else if (color_space == "gamma 2.4 Rec 709 (video)")
     {
-        v_color = (vector) gamma_EOTF(input_color, 1 / REC709_GAMMA);
+        v_color = (vector) gamma_CCTF(input_color, 1 / REC709_GAMMA);
 
         transformed_color = color(
             dot(vector(REC709_TO_ACES_X), v_color),
@@ -532,7 +532,7 @@ color transform_color_space_to_ACEScg(
     return transformed_color;
 }
 
-color transform_color_space_to_workingspace(
+color transform_colorspace_to_workingspace(
     color input_color,
     string color_space,
     string working_space)

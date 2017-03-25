@@ -29,7 +29,7 @@
 #ifndef AS_MAYA_HELPERS_H
 #define AS_MAYA_HELPERS_H
 
-#include "appleseed/color/as_color_data.h"
+#include "appleseed/color/as_colorimetry.h"
 #include "appleseed/color/as_color_helpers.h"
 #include "appleseed/math/as_math_helpers.h"
 

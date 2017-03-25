@@ -28,7 +28,7 @@
 
 // Ref: $MAYA_LOCATION/docs/Nodes/psdFileTex.html
 
-#include "appleseed/color/as_color_idt.h"
+#include "appleseed/maya/as_maya_cms_syncolor_idt.h"
 #include "appleseed/maya/as_maya_helpers.h"
 
 shader as_maya_psdFileTex

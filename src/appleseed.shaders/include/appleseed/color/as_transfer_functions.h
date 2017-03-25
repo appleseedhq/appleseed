@@ -29,7 +29,7 @@
 #ifndef AS_TRANSFER_FUNCTIONS_H
 #define AS_TRANSFER_FUNCTIONS_H
 
-#include "appleseed/color/as_color_data.h"
+#include "appleseed/color/as_colorimetry.h"
 
 // Common color component transfer functions quantities
 
@@ -353,7 +353,7 @@ float Rec1886_EOTF(float value)
 
 float Rec1886_OETF(float value)
 {
-    return Rec1886_OETF(float value, 0.0, 1.0);
+    return Rec1886_OETF(value, 0.0, 1.0);
 }
 
 color Rec1886_EOTF(color value)
@@ -394,9 +394,9 @@ float gamma_CCTF(float value, float gamma)
 color gamma_CCTF(color value, float gamma)
 {
     return color(
-        gamma_CCTF(value, gamma),
-        gamma_CCTF(value, gamma),
-        gamma_CCTF(value, gamma));
+        gamma_CCTF(value[0], gamma),
+        gamma_CCTF(value[1], gamma),
+        gamma_CCTF(value[2], gamma));
 }
 
 //
@@ -420,17 +420,17 @@ float AdobeRGB_OETF(float value)
 color AdobeRGB_EOTF(color value)
 {
     return color(
-        AdobeRGB_EOTF(color[0]),
-        AdobeRGB_EOTF(color[1]),
-        AdobeRGB_EOTF(color[2]));
+        AdobeRGB_EOTF(value[0]),
+        AdobeRGB_EOTF(value[1]),
+        AdobeRGB_EOTF(value[2]));
 }
 
 color AdobeRGB_OETF(color value)
 {
     return color(
-        AdobeRGB_OETF(color[0]),
-        AdobeRGB_OETF(color[1]),
-        AdobeRGB_OETF(color[2]));
+        AdobeRGB_OETF(value[0]),
+        AdobeRGB_OETF(value[1]),
+        AdobeRGB_OETF(value[2]));
 }
 
 //
