@@ -48,7 +48,7 @@
      <x>0</x>
      <y>0</y>
      <width>1280</width>
-     <height>38</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_file">
@@ -163,7 +163,7 @@
   <widget class="QDockWidget" name="project_explorer">
    <property name="minimumSize">
     <size>
-     <width>500</width>
+     <width>200</width>
      <height>187</height>
     </size>
    </property>
@@ -255,7 +255,7 @@
    <property name="minimumSize">
     <size>
      <width>200</width>
-     <height>102</height>
+     <height>93</height>
     </size>
    </property>
    <property name="floating">
@@ -276,8 +276,8 @@
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>200</width>
-       <height>848</height>
+       <width>198</width>
+       <height>903</height>
       </rect>
      </property>
     </widget>
