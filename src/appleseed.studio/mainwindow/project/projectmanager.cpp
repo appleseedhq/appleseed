@@ -94,10 +94,7 @@ bool ProjectManager::save_project()
 
 bool ProjectManager::save_project_as(const string& filepath)
 {
-    return
-        ends_with(filepath, ".appleseedz")
-            ? do_save_project(filepath, ProjectFileWriter::PackProject)
-            : do_save_project(filepath, ProjectFileWriter::Defaults);
+    return do_save_project(filepath, ProjectFileWriter::Defaults);
 }
 
 void ProjectManager::close_project()

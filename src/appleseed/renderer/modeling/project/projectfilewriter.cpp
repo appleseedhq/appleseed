@@ -900,7 +900,7 @@ bool ProjectFileWriter::write(
     const int       options)
 {
     return
-        options & ProjectFileWriter::PackProject
+        bf::path(filepath).extension() == ".appleseedz"
             ? write_packed_project_file(project, filepath, options)
             : write_plain_project_file(project, filepath, options);
 }

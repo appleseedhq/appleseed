@@ -132,11 +132,7 @@ bool pack_project()
         bf::path(input_filepath).replace_extension(".appleseedz").string();
 
     // Write the project to disk.
-    return
-        ProjectFileWriter::write(
-            project.ref(),
-            packed_file_path.c_str(),
-            ProjectFileWriter::PackProject);
+    return ProjectFileWriter::write(project.ref(), packed_file_path.c_str());
 }
 
 
