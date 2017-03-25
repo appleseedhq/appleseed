@@ -84,15 +84,15 @@ color transform_color_space_to_Rec709(
     }
     else if (color_space == "gamma 1.8 Rec 709")
     {
-        transformed_color = gamma_CCTF(input_color, 1 / 1.8);
+        transformed_color = gamma_CCTF(input_color, 1.8);
     }
     else if (color_space == "gamma 2.2 Rec 709")
     {
-        transformed_color = gamma_CCTF(input_color, 1 / 2.2);
+        transformed_color = gamma_CCTF(input_color, 2.2);
     }
     else if (color_space == "gamma 2.4 Rec 709 (video)")
     {
-        transformed_color = gamma_CCTF(input_color, 1 / REC709_GAMMA);
+        transformed_color = gamma_CCTF(input_color, REC709_GAMMA);
     }
     else if (color_space == "ACES2065-1")
     {
@@ -171,7 +171,7 @@ color transform_color_space_to_Rec2020(
     }
     else if (color_space == "gamma 1.8 Rec 709")
     {
-        v_color = (vector) gamma_CCTF(input_color, 1 / 1.8);
+        v_color = (vector) gamma_CCTF(input_color, 1.8);
 
         transformed_color = color(
             dot(vector(REC709_TO_REC2020_X), v_color),
@@ -180,7 +180,7 @@ color transform_color_space_to_Rec2020(
     }
     else if (color_space == "gamma 2.2 Rec 709")
     {
-        v_color = (vector) gamma_CCTF(input_color, 1 / 2.2);
+        v_color = (vector) gamma_CCTF(input_color, 2.2);
 
         transformed_color = color(
             dot(vector(REC709_TO_REC2020_X), v_color),
@@ -189,7 +189,7 @@ color transform_color_space_to_Rec2020(
     }
     else if (color_space == "gamma 2.4 Rec 709 (video)")
     {
-        v_color = (vector) gamma_CCTF(input_color, 1 / REC709_GAMMA);
+        v_color = (vector) gamma_CCTF(input_color, REC709_GAMMA);
 
         transformed_color = color(
             dot(vector(REC709_TO_REC2020_X), v_color),
@@ -274,7 +274,7 @@ color transform_color_space_to_DCIP3(
     }
     else if (color_space == "gamma 1.8 Rec 709")
     {
-        v_color = (vector) gamma_CCTF(input_color, 1 / 1.8);
+        v_color = (vector) gamma_CCTF(input_color, 1.8);
 
         transformed_color = color(
             dot(vector(REC709_TO_DCIP3_X), v_color),
@@ -283,7 +283,7 @@ color transform_color_space_to_DCIP3(
     }
     else if (color_space == "gamma 2.2 Rec 709")
     {
-        v_color = (vector) gamma_CCTF(input_color, 1 / 2.2);
+        v_color = (vector) gamma_CCTF(input_color, 2.2);
 
         transformed_color = color(
             dot(vector(REC709_TO_DCIP3_X), v_color),
@@ -292,7 +292,7 @@ color transform_color_space_to_DCIP3(
     }
     else if (color_space == "gamma 2.4 Rec 709 (video)")
     {
-        v_color = (vector) gamma_CCTF(input_color, 1 / REC709_GAMMA);
+        v_color = (vector) gamma_CCTF(input_color, REC709_GAMMA);
 
         transformed_color = color(
             dot(vector(REC709_TO_DCIP3_X), v_color),
@@ -379,7 +379,7 @@ color transform_color_space_to_ACES(
     }
     else if (color_space == "gamma 1.8 Rec 709")
     {
-        v_color = (vector) gamma_CCTF(input_color, 1 / 1.8);
+        v_color = (vector) gamma_CCTF(input_color, 1.8);
 
         transformed_color = color(
             dot(vector(REC709_TO_ACES_X), v_color),
@@ -388,7 +388,7 @@ color transform_color_space_to_ACES(
     }
     else if (color_space == "gamma 2.2 Rec 709")
     {
-        v_color = (vector) gamma_CCTF(input_color, 1 / 2.2);
+        v_color = (vector) gamma_CCTF(input_color, 2.2);
 
         transformed_color = color(
             dot(vector(REC709_TO_ACES_X), v_color),
@@ -397,7 +397,7 @@ color transform_color_space_to_ACES(
     }
     else if (color_space == "gamma 2.4 Rec 709 (video)")
     {
-        v_color = (vector) gamma_CCTF(input_color, 1 / REC709_GAMMA);
+        v_color = (vector) gamma_CCTF(input_color, REC709_GAMMA);
 
         transformed_color = color(
             dot(vector(REC709_TO_ACES_X), v_color),
@@ -482,7 +482,7 @@ color transform_color_space_to_ACEScg(
     }
     else if (color_space == "gamma 1.8 Rec 709")
     {
-        v_color = (vector) gamma_CCTF(input_color, 1 / 1.8);
+        v_color = (vector) gamma_CCTF(input_color, 1.8);
 
         transformed_color = color(
             dot(vector(REC709_TO_ACESCG_X), v_color),
@@ -491,7 +491,7 @@ color transform_color_space_to_ACEScg(
     }
     else if (color_space == "gamma 2.2 Rec 709")
     {
-        v_color = (vector) gamma_CCTF(input_color, 1 / 2.2);
+        v_color = (vector) gamma_CCTF(input_color, 2.2);
 
         transformed_color = color(
             dot(vector(REC709_TO_ACESCG_X), v_color),
@@ -500,7 +500,7 @@ color transform_color_space_to_ACEScg(
     }
     else if (color_space == "gamma 2.4 Rec 709 (video)")
     {
-        v_color = (vector) gamma_CCTF(input_color, 1 / REC709_GAMMA);
+        v_color = (vector) gamma_CCTF(input_color, REC709_GAMMA);
 
         transformed_color = color(
             dot(vector(REC709_TO_ACESCG_X), v_color),
