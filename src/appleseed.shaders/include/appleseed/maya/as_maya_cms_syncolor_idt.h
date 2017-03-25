@@ -62,7 +62,6 @@ color transform_color_space_to_Rec709(
     }
     else if (color_space == "scene-linear Rec 709/sRGB")
     {
-        ;
     }
     else if (color_space == "scene-linear Rec 2020")
     {
@@ -151,7 +150,6 @@ color transform_color_space_to_Rec2020(
     }
     else if (color_space == "scene-linear Rec 2020")
     {
-        ;
     }
     else if (color_space == "scene-linear DCI-P3")
     {
@@ -257,11 +255,9 @@ color transform_color_space_to_DCIP3(
             dot(vector(REC2020_TO_DCIP3_X), v_color),
             dot(vector(REC2020_TO_DCIP3_Y), v_color),
             dot(vector(REC2020_TO_DCIP3_Z), v_color));
-        ;
     }
     else if (color_space == "scene-linear DCI-P3")
     {
-        ;
     }
     else if (color_space == "camera Rec 709")
     {
@@ -406,7 +402,6 @@ color transform_color_space_to_ACES(
     }
     else if (color_space == "ACES2065-1")
     {
-        ;
     }
     else if (color_space == "ACEScg")
     {
@@ -462,7 +457,6 @@ color transform_color_space_to_ACEScg(
             dot(vector(REC2020_TO_ACESCG_X), v_color),
             dot(vector(REC2020_TO_ACESCG_Y), v_color),
             dot(vector(REC2020_TO_ACESCG_Z), v_color));
-        ;
     }
     else if (color_space == "scene-linear DCI-P3")
     {
@@ -516,7 +510,6 @@ color transform_color_space_to_ACEScg(
     }
     else if (color_space == "ACEScg")
     {
-        ;
     }
     else
     {
