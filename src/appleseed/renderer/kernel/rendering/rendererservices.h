@@ -82,42 +82,6 @@ class RendererServices
     // Return a pointer to the texture system.
     virtual OIIO::TextureSystem* texturesys() const APPLESEED_OVERRIDE;
 
-    // Filtered 2D texture lookup for a single point.
-    //
-    // s,t are the texture coordinates; dsdx, dtdx, dsdy, and dtdy are
-    // the differentials of s and t change in some canonical directions
-    // x and y.  The choice of x and y are not important to the
-    // implementation; it can be any imposed 2D coordinates, such as
-    // pixels in screen space, adjacent samples in parameter space on a
-    // surface, etc.
-    //
-    // The filename will always be passed, and it's ok for the renderer
-    // implementation to use only that (and in fact should be prepared to
-    // deal with texture_handle and texture_thread_info being NULL). But
-    // sometimes OSL can figure out the texture handle or thread info also
-    // and may pass them as non-NULL, in which case the renderer may (if it
-    // can) use that extra information to perform a less expensive texture
-    // lookup.
-    //
-    // Return true if the file is found and could be opened, otherwise
-    // return false.
-    virtual bool texture(
-        OSL::ustring                filename,
-        TextureHandle*              texture_handle,
-        TexturePerthread*           texture_thread_info,
-        OSL::TextureOpt&            options,
-        OSL::ShaderGlobals*         sg,
-        float                       s,
-        float                       t,
-        float                       dsdx,
-        float                       dtdx,
-        float                       dsdy,
-        float                       dtdy,
-        int                         nchannels,
-        float*                      result,
-        float*                      dresultds,
-        float*                      dresultdt) APPLESEED_OVERRIDE;
-
     // Get the 4x4 matrix that transforms by the specified
     // transformation at the given time.  Return true if ok, false
     // on error.

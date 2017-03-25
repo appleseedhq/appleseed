@@ -159,41 +159,6 @@ OIIO::TextureSystem* RendererServices::texturesys() const
     return &m_texture_sys;
 }
 
-bool RendererServices::texture(
-    OSL::ustring                filename,
-    TextureHandle*              texture_handle,
-    TexturePerthread*           texture_thread_info,
-    OSL::TextureOpt&            options,
-    OSL::ShaderGlobals*         sg,
-    float                       s,
-    float                       t,
-    float                       dsdx,
-    float                       dtdx,
-    float                       dsdy,
-    float                       dtdy,
-    int                         nchannels,
-    float*                      result,
-    float*                      dresultds,
-    float*                      dresultdt)
-{
-    return OSL::RendererServices::texture(
-        filename,
-        texture_handle,
-        texture_thread_info,
-        options,
-        sg,
-        s,
-        t,
-        dsdx,
-        dtdx,
-        dsdy,
-        dtdy,
-        nchannels,
-        result,
-        dresultds,
-        dresultdt);
-}
-
 bool RendererServices::get_matrix(
     OSL::ShaderGlobals*         sg,
     OSL::Matrix44&              result,

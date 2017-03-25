@@ -298,10 +298,12 @@ shader alSurface
         rgb += (1.0 - sssMix) * as_glass(
             "beckmann",
             transmissionNormal_,
+            vector(0),
             transmissionColor_,
             color(0), // transmission only.
             color(1),
             transmissionRoughness_,
+            0,
             transmissionIor_,
             volumeTransmittanceColor,
             volumeTransmittanceDistance);
