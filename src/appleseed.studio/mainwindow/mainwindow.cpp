@@ -245,6 +245,8 @@ void MainWindow::build_menus()
     m_ui->action_file_save_project_as->setShortcut(QKeySequence::SaveAs);
     connect(m_ui->action_file_save_project_as, SIGNAL(triggered()), SLOT(slot_save_project_as()));
 
+    connect(m_ui->action_file_pack_project_as, SIGNAL(triggered()), SLOT(slot_pack_project_as()));
+
     connect(m_ui->action_monitor_project_file, SIGNAL(toggled(bool)), SLOT(slot_toggle_project_file_monitoring(const bool)));
 
     m_ui->action_file_exit->setShortcut(QKeySequence::Quit);
@@ -658,11 +660,12 @@ void MainWindow::set_file_widgets_enabled(const bool is_enabled, const Rendering
     m_ui->action_monitor_project_file->setEnabled(allow_monitor);
     m_action_monitor_project_file->setEnabled(allow_monitor);
 
-    // File -> Save Project and Save Project As.
+    // File -> Save Project, Save Project As and Pack Project As.
     const bool allow_save = is_enabled && is_project_open;
     m_ui->action_file_save_project->setEnabled(allow_save);
     m_action_save_project->setEnabled(allow_save);
     m_ui->action_file_save_project_as->setEnabled(allow_save);
+    m_ui->action_file_pack_project_as->setEnabled(allow_save);
 
     // File -> Exit.
     m_ui->action_file_exit->setEnabled(is_enabled);
@@ -1117,11 +1120,17 @@ void MainWindow::slot_open_project()
     if (!can_close_project())
         return;
 
+    const QString FilterString = get_filter_string(
+        ProjectDialogFilterAllProjects |
+        ProjectDialogFilterPlainProjects |
+        ProjectDialogFilterPackedProjects |
+        ProjectDialogFilterAllFiles);
+
     QString filepath =
         get_open_filename(
             this,
             "Open...",
-            "Project Files (*.appleseed;*.appleseedz);;Plain Project Files (*.appleseed);;Packed Project Files (*.appleseedz);;All Files (*.*)",
+            FilterString,
             m_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 
@@ -1232,12 +1241,25 @@ void MainWindow::slot_save_project()
 void MainWindow::slot_save_project_as()
 {
     assert(m_project_manager.is_project_open());
+    do_save_project(
+        ProjectDialogFilterAllProjects |
+        ProjectDialogFilterPlainProjects |
+        ProjectDialogFilterPackedProjects);
+}
 
+void MainWindow::slot_pack_project_as()
+{
+    assert(m_project_manager.is_project_open());
+    do_save_project(ProjectDialogFilterPackedProjects);
+}
+
+void MainWindow::do_save_project(const int filter)
+{
     QString filepath =
         get_save_filename(
             this,
             "Save As...",
-            "Plain Project Files (*.appleseed);;Packed Project Files (*.appleseedz)",
+            get_filter_string(filter),
             m_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 
@@ -1259,6 +1281,25 @@ void MainWindow::slot_save_project_as()
         update_recent_files_menu(filepath);
         update_workspace();
     }
+}
+
+QString MainWindow::get_filter_string(const int filter)
+{
+    QStringList filters;
+
+    if (filter & ProjectDialogFilterAllProjects)
+        filters << "Project Files (*.appleseed;*.appleseedz)";
+
+    if (filter & ProjectDialogFilterPlainProjects)
+        filters << "Plain Project Files (*.appleseed)";
+
+    if (filter & ProjectDialogFilterPackedProjects)
+        filters << "Packed Project Files (*.appleseedz)";
+
+    if (filter & ProjectDialogFilterAllFiles)
+        filters << "All Files (*.*)";
+
+    return filters.join(";;");
 }
 
 void MainWindow::slot_project_modified()
