@@ -106,6 +106,7 @@ void BeautyAOVAccumulator::apply_multiplier(const float multiplier)
 
 void BeautyAOVAccumulator::reset()
 {
+    m_color_space = ColorSpaceLinearRGB;
     m_color.set(0.0f);
 }
 
