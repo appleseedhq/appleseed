@@ -48,7 +48,7 @@
      <x>0</x>
      <y>0</y>
      <width>1280</width>
-     <height>21</height>
+     <height>38</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_file">
@@ -76,6 +76,7 @@
     <addaction name="separator"/>
     <addaction name="action_file_save_project"/>
     <addaction name="action_file_save_project_as"/>
+    <addaction name="action_file_pack_project_as"/>
     <addaction name="separator"/>
     <addaction name="action_file_exit"/>
    </widget>
@@ -162,7 +163,7 @@
   <widget class="QDockWidget" name="project_explorer">
    <property name="minimumSize">
     <size>
-     <width>200</width>
+     <width>500</width>
      <height>187</height>
     </size>
    </property>
@@ -254,7 +255,7 @@
    <property name="minimumSize">
     <size>
      <width>200</width>
-     <height>93</height>
+     <height>102</height>
     </size>
    </property>
    <property name="floating">
@@ -275,8 +276,8 @@
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>198</width>
-       <height>903</height>
+       <width>200</width>
+       <height>848</height>
       </rect>
      </property>
     </widget>
@@ -305,6 +306,9 @@
   <action name="action_file_save_project_as">
    <property name="text">
     <string>Save Project &amp;As...</string>
+   </property>
+   <property name="softKeyRole">
+    <enum>QAction::SelectSoftKey</enum>
    </property>
   </action>
   <action name="action_file_exit">
@@ -453,6 +457,11 @@
    </property>
    <property name="text">
     <string>Monitor Project File</string>
+   </property>
+  </action>
+  <action name="action_file_pack_project_as">
+   <property name="text">
+    <string>&amp;Pack Project As...</string>
    </property>
   </action>
  </widget>

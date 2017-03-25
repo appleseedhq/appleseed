@@ -201,6 +201,17 @@ class MainWindow
     // Miscellaneous.
     void print_startup_information();
     virtual void closeEvent(QCloseEvent* event);
+    void do_save_project(const int filter);
+    QString get_filter_string(const int filter);
+
+    // Enum of filters for save project dialog.
+    enum Filter
+    {
+        PROJECT    = 1 << 0,  // all appleseed extensions
+        APPLESEED  = 1 << 1,  // .appleseed extension
+        APPLESEEDZ = 1 << 2,  // .appleseedz extension
+        ALL        = 1 << 3   // all extensions
+    };
 
   private slots:
     // Project I/O.
@@ -213,6 +224,7 @@ class MainWindow
     void slot_open_project_complete(const QString& filepath, const bool successful);
     void slot_save_project();
     void slot_save_project_as();
+    void slot_pack_project_as();
     void slot_project_modified();
 
     // Project file monitoring.
