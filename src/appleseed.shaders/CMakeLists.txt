@@ -61,14 +61,17 @@ source_group ("include\\gaffer" FILES
 )
 
 set (appleseed_library_osl_headers
-    include/appleseed/color/as_color_data.h
+    include/appleseed/color/as_chromatic_adaptation.h
     include/appleseed/color/as_color_helpers.h
-    include/appleseed/color/as_color_idt.h
+    include/appleseed/color/as_color_transforms.h
+    include/appleseed/color/as_colorimetry.h
+    include/appleseed/color/as_transfer_functions.h
     include/appleseed/fractal/as_fractal_helpers.h
     include/appleseed/fractal/as_noise_helpers.h
     include/appleseed/fractal/as_noise_tables.h
     include/appleseed/material/as_material_helpers.h
     include/appleseed/math/as_math_helpers.h
+    include/appleseed/maya/as_maya_cms_syncolor_idt.h
     include/appleseed/maya/as_maya_fractal_helpers.h
     include/appleseed/maya/as_maya_helpers.h
     include/appleseed/maya/as_maya_layer_helpers.h

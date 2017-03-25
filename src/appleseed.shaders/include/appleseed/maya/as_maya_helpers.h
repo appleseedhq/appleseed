@@ -31,6 +31,7 @@
 
 #include "appleseed/color/as_colorimetry.h"
 #include "appleseed/color/as_color_helpers.h"
+#include "appleseed/color/as_transfer_functions.h"
 #include "appleseed/math/as_math_helpers.h"
 
 #define OUTSIDE_UVFRAME     999999
@@ -247,4 +248,14 @@ color maya_contrast(
     return color(R, G, B);
 }
 
-#endif // AS_MAYA_HELPERS_H
+color maya_gamma(
+    color in_value,
+    color in_gamma)
+{
+    return color(
+        gamma_CCTF(in_value[0], in_gamma[0]),
+        gamma_CCTF(in_value[1], in_gamma[1]),
+        gamma_CCTF(in_value[2], in_gamma[2]));            
+}
+
+#endif // !AS_MAYA_HELPERS_H

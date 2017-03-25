@@ -28,7 +28,7 @@
 
 // Ref: $MAYA_LOCATION/docs/Nodes/gammaCorrect.html
 
-#include "appleseed/color/as_color_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
 
 shader as_maya_gammaCorrect
 [[
@@ -58,5 +58,5 @@ shader as_maya_gammaCorrect
     ]]
 )
 {
-    out_outValue = gamma_OETF(in_value, in_gamma);
+    out_outValue = maya_gamma(in_value, in_gamma);
 }
