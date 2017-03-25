@@ -1288,7 +1288,7 @@ QString MainWindow::get_filter_string(const int filter)
     QStringList filters;
 
     if (filter & ProjectDialogFilterAllProjects)
-        filters << "Project Files (*.appleseed ; *.appleseedz)";
+        filters << "Project Files (*.appleseed;*.appleseedz)";
 
     if (filter & ProjectDialogFilterPlainProjects)
         filters << "Plain Project Files (*.appleseed)";
