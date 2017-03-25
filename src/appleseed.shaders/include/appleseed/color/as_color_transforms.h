@@ -246,14 +246,19 @@ void get_XYZ_to_RGB_matrix(
     }
     else
     {
-#ifdef DEBUG
         string shadername = "";
         getattribute("shader:shadername", shadername);
 
         warning("[WARNING]:Unsupported/unknown color space %s in %s, %s:%i\n",
                 color_space, shadername, __FILE__, __NAME__);
-#endif
-        exit(); // no color space nor illuminant, no point in continuing
+
+        // We can exit the execution completely, or try to handle it a bit
+        // more nicely. Set the matrix as identity and enabling the warnings
+        // might be better.
+
+        XYZ_to_RGB[0] = vector(1, 0, 0);
+        XYZ_to_RGB[1] = vector(0, 1, 0);
+        XYZ_to_RGB[2] = vector(0, 0, 1);
     }
 }
 
