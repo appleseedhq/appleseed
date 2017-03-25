@@ -65,4 +65,4 @@ float fBm(
     return sum;
 }
 
-#endif // AS_PATTERN_HELPERS_H
+#endif // !AS_PATTERN_HELPERS_H

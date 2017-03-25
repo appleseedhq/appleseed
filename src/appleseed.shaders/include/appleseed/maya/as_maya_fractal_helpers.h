@@ -385,4 +385,4 @@ float maya_billow_noise_2d(
     return gain * sum;
 }
 
-#endif // AS_MAYA_FRACTAL_HELPERS_H
+#endif // !AS_MAYA_FRACTAL_HELPERS_H

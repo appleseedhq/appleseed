@@ -60,4 +60,4 @@ float fast_gain(float value, float g)
         : fast_bias(value * 2 - 1, 1 - g) * 0.5 + 0.5;
 }
 
-#endif // AS_MATH_HELPERS_H
+#endif // !AS_MATH_HELPERS_H

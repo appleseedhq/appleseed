@@ -29,128 +29,172 @@
 #ifndef AS_MAYA_HELPERS_H
 #define AS_MAYA_HELPERS_H
 
-#include "appleseed/color/as_color_data.h"
+#include "appleseed/color/as_colorimetry.h"
 #include "appleseed/color/as_color_helpers.h"
+#include "appleseed/color/as_transfer_functions.h"
 #include "appleseed/math/as_math_helpers.h"
 
 #define OUTSIDE_UVFRAME     999999
 #define UVWRAP              1.0001
 #define UNDEFINED_UVFILTER -1
 
-#define MAYA_COLORBALANCE_PARAMETERS                        \
-    color in_defaultColor = color(0.5)                      \
-    [[                                                      \
-        string maya_attribute_name = "defaultColor",        \
-        string maya_attribute_type = "vector",              \
-        string label = "Default Color",                     \
-        string page = "Color Balance"                       \
-    ]],                                                     \
-    color in_colorGain = color(1.0)                         \
-    [[                                                      \
-        string maya_attribute_name = "colorGain",           \
-        string maya_attribute_type = "vector",              \
-        string label = "Color Gain",                        \
-        string page = "Color Balance"                       \
-    ]],                                                     \
-    color in_colorOffset = color(0.0)                       \
-    [[                                                      \
-        string maya_attribute_name = "colorOffset",         \
-        string maya_attribute_type = "vector",              \
-        string label = "Color Offset",                      \
-        string page = "Color Balance"                       \
-    ]],                                                     \
-    float in_alphaGain = 1.0                                \
-    [[                                                      \
-        string maya_attribute_name = "alphaGain",           \
-        string maya_attribute_type = "float",               \
-        string label = "Alpha Gain",                        \
-        string page = "Color Balance"                       \
-    ]],                                                     \
-    float in_alphaOffset = 0.0                              \
-    [[                                                      \
-        string maya_attribute_name = "alphaOffset",         \
-        string maya_attribute_type = "float",               \
-        string label = "Alpha Offset",                      \
-        string page = "Color Balance"                       \
-    ]],                                                     \
-    int in_alphaIsLuminance = 1                             \
-    [[                                                      \
-        string maya_attribute_name = "alphaIsLuminance",    \
-        string maya_attribute_type = "int",                 \
-        string label = "Alpha Is Luminance",                \
-        string widget = "checkBox",                         \
-        string page = "Color Balance"                       \
+#define MAYA_COLORBALANCE_PARAMETERS                                    \
+    color in_defaultColor = color(0.5)                                  \
+    [[                                                                  \
+        string maya_attribute_name = "defaultColor",                    \
+        string maya_attribute_type = "vector",                          \
+        string label = "Default Color",                                 \
+        string page = "Color Balance"                                   \
+    ]],                                                                 \
+    color in_colorGain = color(1.0)                                     \
+    [[                                                                  \
+        string maya_attribute_name = "colorGain",                       \
+        string maya_attribute_type = "vector",                          \
+        string label = "Color Gain",                                    \
+        string page = "Color Balance"                                   \
+    ]],                                                                 \
+    color in_colorOffset = color(0.0)                                   \
+    [[                                                                  \
+        string maya_attribute_name = "colorOffset",                     \
+        string maya_attribute_type = "vector",                          \
+        string label = "Color Offset",                                  \
+        string page = "Color Balance"                                   \
+    ]],                                                                 \
+    float in_alphaGain = 1.0                                            \
+    [[                                                                  \
+        string maya_attribute_name = "alphaGain",                       \
+        string maya_attribute_type = "float",                           \
+        string label = "Alpha Gain",                                    \
+        string page = "Color Balance"                                   \
+    ]],                                                                 \
+    float in_alphaOffset = 0.0                                          \
+    [[                                                                  \
+        string maya_attribute_name = "alphaOffset",                     \
+        string maya_attribute_type = "float",                           \
+        string label = "Alpha Offset",                                  \
+        string page = "Color Balance"                                   \
+    ]],                                                                 \
+    int in_alphaIsLuminance = 1                                         \
+    [[                                                                  \
+        string maya_attribute_name = "alphaIsLuminance",                \
+        string maya_attribute_type = "int",                             \
+        string label = "Alpha Is Luminance",                            \
+        string widget = "checkBox",                                     \
+        string page = "Color Balance"                                   \
     ]]
 
-#define MAYA_EFFECTS_PARAMETERS                             \
-    float in_filter = 1.0                                   \
-    [[                                                      \
-        string maya_attribute_name = "filter",              \
-        string maya_attribute_type = "float",               \
-        string label = "Filter",                            \
-        string page = "Effects"                             \
-    ]],                                                     \
-    float in_filterOffset = 0.0                             \
-    [[                                                      \
-        string maya_attribute_name = "filterOffset",        \
-        string maya_attribute_type = "float",               \
-        string label = "Filter Offset",                     \
-        string page = "Effects"                             \
-    ]],                                                     \
-    int in_invert = 0                                       \
-    [[                                                      \
-        string maya_attribute_name = "invert",              \
-        string maya_attribute_type = "bool",                \
-        string label = "Invert",                            \
-        string widget = "checkBox",                         \
-        string page = "Effects"                             \
+#define MAYA_EFFECTS_PARAMETERS                                         \
+    float in_filter = 1.0                                               \
+    [[                                                                  \
+        string maya_attribute_name = "filter",                          \
+        string maya_attribute_type = "float",                           \
+        string label = "Filter",                                        \
+        string page = "Effects"                                         \
+    ]],                                                                 \
+    float in_filterOffset = 0.0                                         \
+    [[                                                                  \
+        string maya_attribute_name = "filterOffset",                    \
+        string maya_attribute_type = "float",                           \
+        string label = "Filter Offset",                                 \
+        string page = "Effects"                                         \
+    ]],                                                                 \
+    int in_invert = 0                                                   \
+    [[                                                                  \
+        string maya_attribute_name = "invert",                          \
+        string maya_attribute_type = "bool",                            \
+        string label = "Invert",                                        \
+        string widget = "checkBox",                                     \
+        string page = "Effects"                                         \
     ]]
 
-#define MAYA_EFFECTS_3DTEX_PARAMETERS                       \
-    int in_wrap = 1                                         \
-    [[                                                      \
-        string maya_attribute_name = "wrap",                \
-        string maya_attribute_type = "bool",                \
-        string label = "Wrap",                              \
-        string widget = "checkBox",                         \
-        string page = "Effects"                             \
-    ]],                                                     \
-    int in_local = 0                                        \
-    [[                                                      \
-        string maya_attribute_name = "local",               \
-        string maya_attribute_type = "bool",                \
-        string label = "Local",                             \
-        string widget = "checkBox",                         \
-        string page = "Effects"                             \
-    ]],                                                     \
-    float in_blend = 0.0                                    \
-    [[                                                      \
-        string maya_attribute_name = "blend",               \
-        string maya_attribute_type = "float",               \
-        string label = "Blend",                             \
-        string widget = "slider",                           \
-        float min = 0.0,                                    \
-        float max = 1.0,                                    \
-        float slidermin = 0.0,                              \
-        float slidermax = 1.0,                              \
-        string page = "Effects"                             \
+#define MAYA_EFFECTS_3DTEX_PARAMETERS                                   \
+    int in_wrap = 1                                                     \
+    [[                                                                  \
+        string maya_attribute_name = "wrap",                            \
+        string maya_attribute_type = "bool",                            \
+        string label = "Wrap",                                          \
+        string widget = "checkBox",                                     \
+        string page = "Effects"                                         \
+    ]],                                                                 \
+    int in_local = 0                                                    \
+    [[                                                                  \
+        string maya_attribute_name = "local",                           \
+        string maya_attribute_type = "bool",                            \
+        string label = "Local",                                         \
+        string widget = "checkBox",                                     \
+        string page = "Effects"                                         \
+    ]],                                                                 \
+    float in_blend = 0.0                                                \
+    [[                                                                  \
+        string maya_attribute_name = "blend",                           \
+        string maya_attribute_type = "float",                           \
+        string label = "Blend",                                         \
+        string widget = "slider",                                       \
+        float min = 0.0,                                                \
+        float max = 1.0,                                                \
+        float slidermin = 0.0,                                          \
+        float slidermax = 1.0,                                          \
+        string page = "Effects"                                         \
     ]]
 
-#define MAYA_UV_PARAMETERS                                  \
-    float in_uvCoord[2] = {u, v}                            \
-    [[                                                      \
-        string maya_attribute_name = "uvCoord",             \
-        string maya_attribute_type = "float[]",             \
-        string label = "UV Coordinates",                    \
-        string page = "UV Coordinates"                      \
-    ]],                                                     \
-    float in_uvFilterSize[2] = {                            \
-        UNDEFINED_UVFILTER, UNDEFINED_UVFILTER}             \
-    [[                                                      \
-        string maya_attribute_name = "uvFilterSize",        \
-        string maya_attribute_type = "float[]",             \
-        string label = "UV Filter Size",                    \
-        string page = "UV Coordinates"                      \
+#define MAYA_UV_PARAMETERS                                              \
+    float in_uvCoord[2] = {u, v}                                        \
+    [[                                                                  \
+        string maya_attribute_name = "uvCoord",                         \
+        string maya_attribute_type = "float[]",                         \
+        string label = "UV Coordinates",                                \
+        string page = "UV Coordinates"                                  \
+    ]],                                                                 \
+    float in_uvFilterSize[2] = {                                        \
+        UNDEFINED_UVFILTER, UNDEFINED_UVFILTER}                         \
+    [[                                                                  \
+        string maya_attribute_name = "uvFilterSize",                    \
+        string maya_attribute_type = "float[]",                         \
+        string label = "UV Filter Size",                                \
+        string page = "UV Coordinates"                                  \
+    ]]
+
+#define MAYA_COLORMANAGEMENT_PARAMETERS                                 \
+    int in_colorProfile = 0                                             \
+    [[                                                                  \
+        string maya_attribute_name = "colorProfile",                    \
+        string maya_attribute_type = "enum",                            \
+        string label = "Color Profile"                                  \
+    ]],                                                                 \
+    int in_ignoreColorSpaceFileRules = 0                                \
+    [[                                                                  \
+        string maya_attribute_name = "ignoreColorSpaceFileRules",       \
+        string maya_attribute_type = "bool",                            \
+        string label = "Ignore Color Space File Rules"                  \
+    ]],                                                                 \
+    string in_colorSpace = ""                                           \
+    [[                                                                  \
+        string maya_attribute_name = "colorSpace",                      \
+        string maya_attribute_type = "string"                           \
+    ]],                                                                 \
+    string in_workingSpace = ""                                         \
+    [[                                                                  \
+        string maya_attribute_name = "workingSpace",                    \
+        string maya_attribute_type = "string",                          \
+        string label = "Working Space"                                  \
+    ]],                                                                 \
+    int in_colorManagementEnabled = 0                                   \
+    [[                                                                  \
+        string maya_attribute_name = "colorManagementEnabled",          \
+        string maya_attribute_type = "bool",                            \
+        string label = "Color Management Enabled"                       \
+    ]],                                                                 \
+    int in_colorManagementConfigFileEnabled = 0                         \
+    [[                                                                  \
+        string maya_attribute_name = "colorManagementConfigFileEnabled",\
+        string maya_attribute_type = "bool",                            \
+        string label = "Color Management Config File Enabled"           \
+    ]],                                                                 \
+    string in_colorManagementConfigFilePath = ""                        \
+    [[                                                                  \
+        string maya_attribute_name = "colorManagementConfigFilePath",   \
+        string maya_attribute_type = "string",                          \
+        string label = "Color Management Config File Path"              \
     ]]
 
 float maya_luminance(color in_C)
@@ -204,4 +248,14 @@ color maya_contrast(
     return color(R, G, B);
 }
 
-#endif // AS_MAYA_HELPERS_H
+color maya_gamma(
+    color in_value,
+    color in_gamma)
+{
+    return color(
+        gamma_CCTF(in_value[0], in_gamma[0]),
+        gamma_CCTF(in_value[1], in_gamma[1]),
+        gamma_CCTF(in_value[2], in_gamma[2]));            
+}
+
+#endif // !AS_MAYA_HELPERS_H

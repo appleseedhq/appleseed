@@ -279,4 +279,4 @@ color color_ramp(
     return color_ramp(colors, positions, interpolate, value);
 }
 
-#endif // AS_MAYA_RAMP_HELPERS_H
+#endif // !AS_MAYA_RAMP_HELPERS_H

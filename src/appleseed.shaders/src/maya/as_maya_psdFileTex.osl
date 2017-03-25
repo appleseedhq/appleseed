@@ -28,6 +28,7 @@
 
 // Ref: $MAYA_LOCATION/docs/Nodes/psdFileTex.html
 
+#include "appleseed/maya/as_maya_cms_syncolor_idt.h"
 #include "appleseed/maya/as_maya_helpers.h"
 
 shader as_maya_psdFileTex
@@ -142,6 +143,7 @@ shader as_maya_psdFileTex
         string widget = "null"
     ]],
 
+    MAYA_COLORMANAGEMENT_PARAMETERS,
     MAYA_COLORBALANCE_PARAMETERS,
     MAYA_EFFECTS_PARAMETERS,
     MAYA_UV_PARAMETERS,
@@ -310,6 +312,17 @@ shader as_maya_psdFileTex
                     "alpha", out_outAlpha,
                     "interp", filter);
         }
+
+        if (in_colorManagementEnabled == 1 &&
+            in_ignoreColorSpaceFileRules == 0 &&
+            in_colorSpace != "Raw")
+        {
+            out_outColor =
+                transform_colorspace_to_workingspace(
+                    out_outColor,
+                    in_colorSpace,
+                    in_workingSpace);
+        }        
     }
 
     maya_colorBalance(
