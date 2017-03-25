@@ -503,68 +503,61 @@ endmacro ()
 # Compilation/linking flags.
 #--------------------------------------------------------------------------------------------------
 
-# Flags common to all configurations.
-set (c_compiler_flags_common ${c_compiler_flags_common})
-set (cxx_compiler_flags_common ${cxx_compiler_flags_common})
-set (exe_linker_flags_common ${exe_linker_flags_common})
-set (shared_lib_linker_flags_common ${shared_lib_linker_flags_common})
-set (static_lib_linker_flags_common ${static_lib_linker_flags_common})
-
 # Debug configuration.
-set (c_compiler_flags_debug ${c_compiler_flags_debug}                       ${c_compiler_flags_common})
-set (cxx_compiler_flags_debug ${cxx_compiler_flags_debug}                   ${cxx_compiler_flags_common})
-set (exe_linker_flags_debug ${exe_linker_flags_debug}                       ${exe_linker_flags_common})
-set (shared_lib_linker_flags_debug ${shared_lib_linker_flags_debug}         ${shared_lib_linker_flags_common})
-set (static_lib_linker_flags_debug ${static_lib_linker_flags_debug}         ${static_lib_linker_flags_common})
+set (c_compiler_flags_debug             ${c_compiler_flags_common}          ${c_compiler_flags_debug})
+set (cxx_compiler_flags_debug           ${cxx_compiler_flags_common}        ${cxx_compiler_flags_debug})
+set (exe_linker_flags_debug             ${exe_linker_flags_common}          ${exe_linker_flags_debug})
+set (shared_lib_linker_flags_debug      ${shared_lib_linker_flags_common}   ${shared_lib_linker_flags_debug})
+set (static_lib_linker_flags_debug      ${static_lib_linker_flags_common}   ${static_lib_linker_flags_debug})
 
 # Release configuration.
-set (c_compiler_flags_release ${c_compiler_flags_release}                   ${c_compiler_flags_common})
-set (cxx_compiler_flags_release ${cxx_compiler_flags_release}               ${cxx_compiler_flags_common})
-set (exe_linker_flags_release ${exe_linker_flags_release}                   ${exe_linker_flags_common})
-set (shared_lib_linker_flags_release ${shared_lib_linker_flags_release}     ${shared_lib_linker_flags_common})
-set (static_lib_linker_flags_release ${static_lib_linker_flags_release}     ${static_lib_linker_flags_common})
+set (c_compiler_flags_release           ${c_compiler_flags_common}          ${c_compiler_flags_release})
+set (cxx_compiler_flags_release         ${cxx_compiler_flags_common}        ${cxx_compiler_flags_release})
+set (exe_linker_flags_release           ${exe_linker_flags_common}          ${exe_linker_flags_release})
+set (shared_lib_linker_flags_release    ${shared_lib_linker_flags_common}   ${shared_lib_linker_flags_release})
+set (static_lib_linker_flags_release    ${static_lib_linker_flags_common}   ${static_lib_linker_flags_release})
 
 # Ship configuration (inherits from the Release configuration).
-set (c_compiler_flags_ship ${c_compiler_flags_ship}                         ${c_compiler_flags_release})
-set (cxx_compiler_flags_ship ${cxx_compiler_flags_ship}                     ${cxx_compiler_flags_release})
-set (exe_linker_flags_ship ${exe_linker_flags_ship}                         ${exe_linker_flags_release})
-set (shared_lib_linker_flags_ship ${shared_lib_linker_flags_ship}           ${shared_lib_linker_flags_release})
-set (static_lib_linker_flags_ship ${static_lib_linker_flags_ship}           ${static_lib_linker_flags_release})
+set (c_compiler_flags_ship              ${c_compiler_flags_release}         ${c_compiler_flags_ship})
+set (cxx_compiler_flags_ship            ${cxx_compiler_flags_release}       ${cxx_compiler_flags_ship})
+set (exe_linker_flags_ship              ${exe_linker_flags_release}         ${exe_linker_flags_ship})
+set (shared_lib_linker_flags_ship       ${shared_lib_linker_flags_release}  ${shared_lib_linker_flags_ship})
+set (static_lib_linker_flags_ship       ${static_lib_linker_flags_release}  ${static_lib_linker_flags_ship})
 
-# Profile configuration (inherits from the Ship configuration).
-set (c_compiler_flags_profile ${c_compiler_flags_profile}                   ${c_compiler_flags_ship})
-set (cxx_compiler_flags_profile ${cxx_compiler_flags_profile}               ${cxx_compiler_flags_ship})
-set (exe_linker_flags_profile ${exe_linker_flags_profile}                   ${exe_linker_flags_ship})
-set (shared_lib_linker_flags_profile ${shared_lib_linker_flags_profile}     ${shared_lib_linker_flags_ship})
-set (static_lib_linker_flags_profile ${static_lib_linker_flags_profile}     ${static_lib_linker_flags_ship})
+# Profile configuration (inherits from the Release configuration).
+set (c_compiler_flags_profile           ${c_compiler_flags_release}         ${c_compiler_flags_profile})
+set (cxx_compiler_flags_profile         ${cxx_compiler_flags_release}       ${cxx_compiler_flags_profile})
+set (exe_linker_flags_profile           ${exe_linker_flags_release}         ${exe_linker_flags_profile})
+set (shared_lib_linker_flags_profile    ${shared_lib_linker_flags_release}  ${shared_lib_linker_flags_profile})
+set (static_lib_linker_flags_profile    ${static_lib_linker_flags_release}  ${static_lib_linker_flags_profile})
 
 # Apply Debug configuration compilation/linking flags.
-convert_list_to_string (CMAKE_C_FLAGS_DEBUG "${c_compiler_flags_debug}")
-convert_list_to_string (CMAKE_CXX_FLAGS_DEBUG "${c_compiler_flags_debug} ${cxx_compiler_flags_debug}")
-convert_list_to_string (CMAKE_EXE_LINKER_FLAGS_DEBUG "${exe_linker_flags_debug}")
-convert_list_to_string (CMAKE_SHARED_LINKER_FLAGS_DEBUG "${shared_lib_linker_flags_debug}")
-convert_list_to_string (CMAKE_MODULE_LINKER_FLAGS_DEBUG "${shared_lib_linker_flags_debug}")
+convert_list_to_string (CMAKE_C_FLAGS_DEBUG                 "${c_compiler_flags_debug}")
+convert_list_to_string (CMAKE_CXX_FLAGS_DEBUG               "${c_compiler_flags_debug} ${cxx_compiler_flags_debug}")
+convert_list_to_string (CMAKE_EXE_LINKER_FLAGS_DEBUG        "${exe_linker_flags_debug}")
+convert_list_to_string (CMAKE_SHARED_LINKER_FLAGS_DEBUG     "${shared_lib_linker_flags_debug}")
+convert_list_to_string (CMAKE_MODULE_LINKER_FLAGS_DEBUG     "${shared_lib_linker_flags_debug}")
 
 # Apply Release configuration compilation/linking flags.
-convert_list_to_string (CMAKE_C_FLAGS_RELEASE "${c_compiler_flags_release}")
-convert_list_to_string (CMAKE_CXX_FLAGS_RELEASE "${c_compiler_flags_release} ${cxx_compiler_flags_release}")
-convert_list_to_string (CMAKE_EXE_LINKER_FLAGS_RELEASE "${exe_linker_flags_release}")
-convert_list_to_string (CMAKE_SHARED_LINKER_FLAGS_RELEASE "${shared_lib_linker_flags_release}")
-convert_list_to_string (CMAKE_MODULE_LINKER_FLAGS_RELEASE "${shared_lib_linker_flags_release}")
+convert_list_to_string (CMAKE_C_FLAGS_RELEASE               "${c_compiler_flags_release}")
+convert_list_to_string (CMAKE_CXX_FLAGS_RELEASE             "${c_compiler_flags_release} ${cxx_compiler_flags_release}")
+convert_list_to_string (CMAKE_EXE_LINKER_FLAGS_RELEASE      "${exe_linker_flags_release}")
+convert_list_to_string (CMAKE_SHARED_LINKER_FLAGS_RELEASE   "${shared_lib_linker_flags_release}")
+convert_list_to_string (CMAKE_MODULE_LINKER_FLAGS_RELEASE   "${shared_lib_linker_flags_release}")
 
 # Apply Ship configuration compilation/linking flags.
-convert_list_to_string (CMAKE_C_FLAGS_SHIP "${c_compiler_flags_ship}")
-convert_list_to_string (CMAKE_CXX_FLAGS_SHIP "${c_compiler_flags_ship} ${cxx_compiler_flags_ship}")
-convert_list_to_string (CMAKE_EXE_LINKER_FLAGS_SHIP "${exe_linker_flags_ship}")
-convert_list_to_string (CMAKE_SHARED_LINKER_FLAGS_SHIP "${shared_lib_linker_flags_ship}")
-convert_list_to_string (CMAKE_MODULE_LINKER_FLAGS_SHIP "${shared_lib_linker_flags_ship}")
+convert_list_to_string (CMAKE_C_FLAGS_SHIP                  "${c_compiler_flags_ship}")
+convert_list_to_string (CMAKE_CXX_FLAGS_SHIP                "${c_compiler_flags_ship} ${cxx_compiler_flags_ship}")
+convert_list_to_string (CMAKE_EXE_LINKER_FLAGS_SHIP         "${exe_linker_flags_ship}")
+convert_list_to_string (CMAKE_SHARED_LINKER_FLAGS_SHIP      "${shared_lib_linker_flags_ship}")
+convert_list_to_string (CMAKE_MODULE_LINKER_FLAGS_SHIP      "${shared_lib_linker_flags_ship}")
 
 # Apply Profile configuration compilation/linking flags.
-convert_list_to_string (CMAKE_C_FLAGS_PROFILE "${c_compiler_flags_profile}")
-convert_list_to_string (CMAKE_CXX_FLAGS_PROFILE "${c_compiler_flags_profile} ${cxx_compiler_flags_profile}")
-convert_list_to_string (CMAKE_EXE_LINKER_FLAGS_PROFILE "${exe_linker_flags_profile}")
-convert_list_to_string (CMAKE_SHARED_LINKER_FLAGS_PROFILE "${shared_lib_linker_flags_profile}")
-convert_list_to_string (CMAKE_MODULE_LINKER_FLAGS_PROFILE "${shared_lib_linker_flags_profile}")
+convert_list_to_string (CMAKE_C_FLAGS_PROFILE               "${c_compiler_flags_profile}")
+convert_list_to_string (CMAKE_CXX_FLAGS_PROFILE             "${c_compiler_flags_profile} ${cxx_compiler_flags_profile}")
+convert_list_to_string (CMAKE_EXE_LINKER_FLAGS_PROFILE      "${exe_linker_flags_profile}")
+convert_list_to_string (CMAKE_SHARED_LINKER_FLAGS_PROFILE   "${shared_lib_linker_flags_profile}")
+convert_list_to_string (CMAKE_MODULE_LINKER_FLAGS_PROFILE   "${shared_lib_linker_flags_profile}")
 
 # A convenience macro to apply the static library linker flags to all configurations of a given target.
 macro (apply_static_lib_linker_flags target)

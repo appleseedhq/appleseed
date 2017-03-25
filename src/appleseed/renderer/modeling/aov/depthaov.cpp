@@ -75,7 +75,7 @@ namespace
             const Camera&           camera) APPLESEED_OVERRIDE
         {
             if (shading_point.hit())
-                m_depth = shading_point.get_distance();
+                m_depth = static_cast<float>(shading_point.get_distance());
         }
 
         virtual void flush(ShadingResult& result) APPLESEED_OVERRIDE
@@ -84,6 +84,7 @@ namespace
             result.m_aovs[m_index].m_alpha.set(1.0f);
         }
 
+      private:
         float m_depth;
     };
 

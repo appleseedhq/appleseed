@@ -119,7 +119,7 @@
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/xercesc.h"
-#include "foundation/utility/zipper.h"
+#include "foundation/utility/zip.h"
 
 // Xerces-C++ headers.
 #include "xercesc/sax2/Attributes.hpp"
@@ -3185,7 +3185,7 @@ auto_release_ptr<Project> ProjectFileReader::read(
             bf::path(project_filepath).replace_extension(".unpacked").string();
 
         RENDERER_LOG_INFO(
-            "%s appears to be a packed project; unpacking to %s...,",
+            "%s appears to be a packed project; unpacking to %s...",
             project_filepath,
             unpacked_project_directory.c_str());
 

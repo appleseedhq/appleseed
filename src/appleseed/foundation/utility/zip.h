@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UTILITY_ZIPPER_H
-#define APPLESEED_FOUNDATION_UTILITY_ZIPPER_H
+#ifndef APPLESEED_FOUNDATION_UTILITY_ZIP_H
+#define APPLESEED_FOUNDATION_UTILITY_ZIP_H
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
@@ -36,14 +36,15 @@
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.
+#include <set>
 #include <string>
 #include <vector>
-#include <set>
 
 namespace foundation
 {
+
 //
-// Exception class used for all zip related exceptions
+// Exception class used for all zip related exceptions.
 //
 
 class ZipException
@@ -51,7 +52,6 @@ class ZipException
 {
   public:
     ZipException(const char* what);
-
     ZipException(const char* what, const int err);
 };
 
@@ -86,15 +86,15 @@ bool is_zip_file(const char* filename);
 //
 
 std::vector<std::string> get_filenames_with_extension_from_zip(
-  const std::string& zip_filename,
-  const std::string& extension);
+    const std::string& zip_filename,
+    const std::string& extension);
 
 //
-// Retrieves files inside dirpath directory and all subdirectories
+// Retrieves all files inside a given directory and its subdirectories.
 //
 
 std::set<std::string> recursive_ls(const boost::filesystem::path& dir);
 
-}   // namespace foundation
+}       // namespace foundation
 
-#endif //!APPLESEED_FOUNDATION_UTILITY_ZIPPER_H
+#endif  // !APPLESEED_FOUNDATION_UTILITY_ZIP_H

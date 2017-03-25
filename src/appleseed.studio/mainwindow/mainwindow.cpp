@@ -1120,17 +1120,18 @@ void MainWindow::slot_open_project()
     if (!can_close_project())
         return;
 
-    const QString FilterString = get_filter_string(
-        ProjectDialogFilterAllProjects |
-        ProjectDialogFilterPlainProjects |
-        ProjectDialogFilterPackedProjects |
-        ProjectDialogFilterAllFiles);
+    const QString filter_string =
+        get_filter_string(
+            ProjectDialogFilterAllProjects |
+            ProjectDialogFilterPlainProjects |
+            ProjectDialogFilterPackedProjects |
+            ProjectDialogFilterAllFiles);
 
     QString filepath =
         get_open_filename(
             this,
             "Open...",
-            FilterString,
+            filter_string,
             m_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 

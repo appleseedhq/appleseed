@@ -80,14 +80,10 @@ set (c_compiler_flags_common
     /GF                                     # Enable String Pooling
 )
 if (WARNINGS_AS_ERRORS)
-    if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR
-        CMAKE_BUILD_TYPE STREQUAL "Profile" OR
-        CMAKE_BUILD_TYPE STREQUAL "Release")
-        set (c_compiler_flags_common
-            ${c_compiler_flags_common}
-            /WX                                # Treat Warnings As Errors
-        )
-    endif()
+    set (c_compiler_flags_common
+         ${c_compiler_flags_common}
+         /WX                                # Treat Warnings As Errors
+    )
 endif ()
 set (cxx_compiler_flags_common
     /wd4068                                 # Disable warning C4068: unknown pragma
@@ -159,7 +155,6 @@ if (USE_AVX2)
         /arch:AVX2                          # Advanced Vector Extensions 2
     )
 endif ()
-
 set (exe_linker_flags_release
     /DEBUG                                  # Generate Debug Info
     /OPT:REF                                # Eliminate Unreferenced Data
@@ -172,6 +167,7 @@ set (shared_lib_linker_flags_release
 # Ship configuration.
 set (c_compiler_flags_ship
     /GL                                     # Enable link-time code generation
+    /WX-                                    # Disable Treat Warnings As Errors
 )
 set (exe_linker_flags_ship
     /LTCG                                   # Use Link Time Code Generation
@@ -185,11 +181,19 @@ set (static_lib_linker_flags_ship
 )
 
 # Profile configuration.
+set (c_compiler_flags_profile
+    /GL                                     # Enable link-time code generation
+)
 set (exe_linker_flags_profile
+    /LTCG                                   # Use Link Time Code Generation
+    /INCREMENTAL:NO                         # Disable Incremental Linking
     /DEBUG                                  # Generate Debug Info
 )
 set (shared_lib_linker_flags_profile
     ${exe_linker_flags_profile}
+)
+set (static_lib_linker_flags_profile
+    /LTCG                                   # Use Link Time Code Generation
 )
 
 
