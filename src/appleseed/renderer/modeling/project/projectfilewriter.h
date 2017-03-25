@@ -53,22 +53,30 @@ class APPLESEED_DLLSYMBOL ProjectFileWriter
         OmitWritingGeometryFiles    = 1 << 1,   // do not write geometry files to disk
         OmitHandlingAssetFiles      = 1 << 2,   // do not change paths to asset files (such as texture files)
         CopyAllAssets               = 1 << 3,   // copy all asset files (by default copy asset files with relative paths only)
-        PackedProject               = 1 << 4    // save file as packed project
+        PackProject                 = 1 << 4    // write packed project file
     };
 
-    // Write a project to disk. Return true on success, false otherwise.
-    // Write project as project file or as packed project based on options.
+    // Write a project to disk.
+    // Returns true on success, false otherwise.
     static bool write(
         const Project&  project,
         const char*     filepath,
         const int       options = Defaults);
 
   private:
-    // Write a project file to disk. Return true on success, false otherwise.
-    static bool write_project_file(
+    // Write a project to disk as a plain project file.
+    // Returns true on success, false otherwise.
+    static bool write_plain_project_file(
         const Project&  project,
         const char*     filepath,
-        const int       options = Defaults);
+        const int       options);
+
+    // Write a project file to disk as a packed project file.
+    // Returns true on success, false otherwise.
+    static bool write_packed_project_file(
+        const Project&  project,
+        const char*     filepath,
+        const int       options);
 };
 
 }       // namespace renderer

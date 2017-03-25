@@ -27,53 +27,46 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "commandlinehandler.h"
-
-// appleseed.shared headers.
-#include "application/superlogger.h"
+#ifndef APPLESEED_PROJECTTOOL_COMMANDLINEHANDLER_H
+#define APPLESEED_PROJECTTOOL_COMMANDLINEHANDLER_H
 
 // appleseed.foundation headers.
-#include "foundation/utility/log.h"
+#include "foundation/utility/commandlineparser.h"
 
-using namespace appleseed::shared;
-using namespace foundation;
-using namespace std;
+// appleseed.shared headers.
+#include "application/commandlinehandlerbase.h"
+
+// Standard headers.
+#include <string>
+
+// Forward declarations.
+namespace appleseed { namespace shared { class SuperLogger; } }
 
 namespace appleseed {
-namespace updateprojectfile {
+namespace projecttool {
 
-CommandLineHandler::CommandLineHandler()
-  : CommandLineHandlerBase("updateprojectfile")
+//
+// Command line handler.
+//
+
+class CommandLineHandler
+  : public shared::CommandLineHandlerBase
 {
-    add_default_options();
+  public:
+    foundation::ValueOptionHandler<std::string> m_positional_args;
+    foundation::ValueOptionHandler<int>         m_to_revision;
 
-    parser().set_default_option_handler(
-        &m_filename
-            .set_exact_value_count(1));
+    // Constructor.
+    CommandLineHandler();
 
-    parser().add_option_handler(
-        &m_to_revision
-            .add_name("--to-revision")
-            .add_name("-r")
-            .set_description("update the project to this revision (by default, update to the latest revision)")
-            .set_syntax("revision")
-            .set_exact_value_count(1));
-}
+  private:
+    // Emit usage instructions to the logger.
+    virtual void print_program_usage(
+        const char*             executable_name,
+        shared::SuperLogger&    logger) const;
+};
 
-void CommandLineHandler::print_program_usage(
-    const char*     executable_name,
-    SuperLogger&    logger) const
-{
-    SaveLogFormatterConfig save_config(logger);
-    logger.set_verbosity_level(LogMessage::Info);
-    logger.set_format(LogMessage::Info, "{message}");
+}       // namespace projecttool
+}       // namespace appleseed
 
-    LOG_INFO(logger, "usage: %s [options] project.appleseed", executable_name);
-    LOG_INFO(logger, "options:");
-
-    parser().print_usage(logger);
-}
-
-}   // namespace updateprojectfile
-}   // namespace appleseed
+#endif  // !APPLESEED_PROJECTTOOL_COMMANDLINEHANDLER_H
