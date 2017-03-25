@@ -183,4 +183,4 @@ float random_noise(int index)
     return rng_table[ndx];
 }
 
-#endif // AS_NOISE_HELPERS_H
+#endif // !AS_NOISE_HELPERS_H

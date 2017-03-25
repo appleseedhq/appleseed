@@ -53,4 +53,4 @@ float ior_from_normal_reflectance(float f0)
     return (sqrt_f0 + 1) / (1 - sqrt_f0);
 }
 
-#endif // AS_MATERIAL_HELPERS_H
+#endif // !AS_MATERIAL_HELPERS_H
