@@ -35,6 +35,7 @@
 #include "boost/filesystem.hpp"
 
 // Standard headers.
+#include <algorithm>
 #include <set>
 #include <string>
 #include <vector>
@@ -45,34 +46,25 @@ namespace bf = boost::filesystem;
 
 TEST_SUITE(Foundation_Utility_Zip)
 {
-    const string ValidProjectFilePath = "unit tests/inputs/test_zip_valid_packed_project.appleseedz";
-
     TEST_CASE(Unzip)
     {
-        const string TargetDirectory = "unit tests/outputs/test_zip_valid_packed_project.unpacked/";
+        const string TargetDirectory = "unit tests/outputs/test_zip/";
 
         try
         {
             ASSERT_FALSE(bf::exists(TargetDirectory));
 
-            unzip(ValidProjectFilePath, TargetDirectory);
+            unzip("unit tests/inputs/test_zip_validzipfile.zip", TargetDirectory);
 
             EXPECT_TRUE(bf::exists(TargetDirectory));
             EXPECT_FALSE(bf::is_empty(TargetDirectory));
 
             const string ExpectedFiles[] =
             {
-                "01 - lambertiannrdf - arealight.appleseed",
-                "geometry/sphere.obj",
-                "geometry/Box002.binarymesh",
-                "geometry/GeoSphere001.binarymesh",
-                "geometry/dirpole reference sphere.obj",
-                "geometry/Box001.binarymesh",
-                "geometry/plane.obj",
-                "geometry/Sphere002.binarymesh",
-                "geometry/Plane002.binarymesh",
-                "geometry/cube.obj",
-                "geometry/Plane001.binarymesh"
+                "subfolder/a.txt",
+                "subfolder/b.txt",
+                "c.txt",
+                "d.png"
             };
 
             const set<string> actual_files = recursive_ls(TargetDirectory);
@@ -91,30 +83,25 @@ TEST_SUITE(Foundation_Utility_Zip)
 
     TEST_CASE(IsZipFile_GivenValidZipFile_ReturnsTrue)
     {
-        EXPECT_TRUE(is_zip_file(ValidProjectFilePath.c_str()));
+        EXPECT_TRUE(is_zip_file("unit tests/inputs/test_zip_validzipfile.zip"));
     }
 
     TEST_CASE(IsZipFile_GivenInvalidZipFile_ReturnsFalse)
     {
-        EXPECT_FALSE(is_zip_file("unit tests/inputs/test_zip_not_zip_file.txt"));
+        EXPECT_FALSE(is_zip_file("unit tests/inputs/test_zip_invalidzipfile.zip"));
     }
 
-    TEST_CASE(GetFilenamesWithExtensionFromZip_OneFile)
+    TEST_CASE(GetFilenamesWithExtensionFromZip)
     {
-        const vector<string> appleseed_files =
-            get_filenames_with_extension_from_zip(ValidProjectFilePath, ".appleseed");
+        const vector<string> files =
+            get_filenames_with_extension_from_zip(
+                "unit tests/inputs/test_zip_validzipfile.zip",
+                ".txt");
 
-        ASSERT_EQ(1, appleseed_files.size());
-        EXPECT_EQ("01 - lambertiannrdf - arealight.appleseed", appleseed_files[0]);
-    }
+        ASSERT_EQ(3, files.size());
 
-    TEST_CASE(GetFilenamesWithExtensionFromZip_SeveralFiles)
-    {
-        const string InvalidProjectFilePath = "unit tests/inputs/test_zip_invalid_packed_project.appleseedz";
-
-        const vector<string> appleseed_files =
-            get_filenames_with_extension_from_zip(InvalidProjectFilePath, ".appleseed");
-
-        EXPECT_EQ(4, appleseed_files.size());
+        EXPECT_TRUE(find(files.begin(), files.end(), "subfolder/a.txt") != files.end());
+        EXPECT_TRUE(find(files.begin(), files.end(), "subfolder/b.txt") != files.end());
+        EXPECT_TRUE(find(files.begin(), files.end(), "c.txt")           != files.end());
     }
 }
