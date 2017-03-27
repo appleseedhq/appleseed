@@ -606,31 +606,28 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     cos_on *= rcp_sample_distance;
     incoming *= rcp_sample_distance;
     
-    // Decide whether the contributon from this light is significant or not.
+    // Compute the approximate contribution.
     const double approximate_contribution = 
-        cos_on * 
+        (cos_on * 
         rcp_sample_square_distance * 
-        edf->get_max_contribution();
+        edf->get_max_contribution()) 
+        / sample.m_triangle->m_rcp_area;
 
-    const bool is_low_contribution = approximate_contribution < m_low_light_threshold;
-    
+    // Don't use this sample if the approxmiate contribution is low.
+    if (approximate_contribution < m_low_light_threshold)
+        return;
+
     // Compute the transmission factor between the light sample and the shading point.
-    float transmission = 1.0f;
-    
-    // We cast a shadow ray only if the approximate contribution is large enough.
-    if (!is_low_contribution)
-    {
-    	transmission =
-            m_shading_context.get_tracer().trace_between(
-                m_shading_point,
-                sample.m_point,
-                VisibilityFlags::ShadowRay);
+    const float  transmission =
+        m_shading_context.get_tracer().trace_between(
+            m_shading_point,
+            sample.m_point,
+            VisibilityFlags::ShadowRay);
 
-        // Discard occluded samples.
-        if (transmission == 0.0f)
-            return;
-    }
-    
+    // Discard occluded samples.
+    if (transmission == 0.0f)
+        return;
+
     // Evaluate the BSDF.
     Spectrum bsdf_value;
     const float bsdf_prob =
