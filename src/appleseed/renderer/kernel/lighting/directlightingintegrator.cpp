@@ -618,7 +618,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
         return;
 
     // Compute the transmission factor between the light sample and the shading point.
-    const float  transmission =
+    const float transmission =
         m_shading_context.get_tracer().trace_between(
             m_shading_point,
             sample.m_point,
