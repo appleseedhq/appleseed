@@ -255,9 +255,6 @@ shader as_maya_file
                 "ptexinterpolate", in_ptexFilterInterpolateLevels
                 );
 
-        // Restrict lower bound for potential wide gamut images.
-        out_outColor = max(0, out_outColor);
-
         if (in_exposure)
         {
             out_outColor *= pow(2, in_exposure);
@@ -390,9 +387,6 @@ shader as_maya_file
                     "interp", filter);
         }
 
-        // Restrict lower bound for potential wide gamut images.
-        out_outColor = max(0, out_outColor);
-
         if (in_exposure)
         {
             out_outColor *= pow(2, in_exposure);
@@ -429,6 +423,8 @@ shader as_maya_file
                     in_workingSpace);
         }
     }
+
+    out_outColor = max(0, out_outColor);
 
     maya_colorBalance(
         in_colorGain,
