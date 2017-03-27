@@ -37,7 +37,7 @@ set (sources
     commandlinehandler.h
     main.cpp
 )
-list (APPEND updateprojectfile_sources
+list (APPEND projecttool_sources
     ${sources}
 )
 source_group ("" FILES
@@ -49,8 +49,8 @@ source_group ("" FILES
 # Target.
 #--------------------------------------------------------------------------------------------------
 
-add_executable (updateprojectfile
-    ${updateprojectfile_sources}
+add_executable (projecttool
+    ${projecttool_sources}
 )
 
 
@@ -68,23 +68,23 @@ include_directories (
 # Preprocessor definitions.
 #--------------------------------------------------------------------------------------------------
 
-apply_preprocessor_definitions (updateprojectfile)
+apply_preprocessor_definitions (projecttool)
 
 
 #--------------------------------------------------------------------------------------------------
 # Static libraries.
 #--------------------------------------------------------------------------------------------------
 
-link_against_platform (updateprojectfile)
+link_against_platform (projecttool)
 
-target_link_libraries (updateprojectfile
+target_link_libraries (projecttool
     appleseed
     appleseed.shared
     ${Boost_LIBRARIES}
 )
 
 if (USE_RPATH_ORIGIN)
-    set_target_properties (updateprojectfile PROPERTIES
+    set_target_properties (projecttool PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"
     )
 endif ()
@@ -94,13 +94,13 @@ endif ()
 # Post-build commands.
 #--------------------------------------------------------------------------------------------------
 
-add_copy_target_exe_to_sandbox_command (updateprojectfile)
+add_copy_target_exe_to_sandbox_command (projecttool)
 
 
 #--------------------------------------------------------------------------------------------------
 # Installation.
 #--------------------------------------------------------------------------------------------------
 
-install (TARGETS updateprojectfile
+install (TARGETS projecttool
     DESTINATION bin
 )
