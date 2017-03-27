@@ -894,7 +894,18 @@ namespace
     };
 }
 
-bool ProjectFileWriter::write_project_file(
+bool ProjectFileWriter::write(
+    const Project&  project,
+    const char*     filepath,
+    const int       options)
+{
+    return
+        bf::path(filepath).extension() == ".appleseedz"
+            ? write_packed_project_file(project, filepath, options)
+            : write_plain_project_file(project, filepath, options);
+}
+
+bool ProjectFileWriter::write_plain_project_file(
     const Project&  project,
     const char*     filepath,
     const int       options)
@@ -948,53 +959,53 @@ bool ProjectFileWriter::write_project_file(
     return true;
 }
 
-bool ProjectFileWriter::write(
+bool ProjectFileWriter::write_packed_project_file(
     const Project&  project,
     const char*     filepath,
     const int       options)
 {
-    if (!(options & ProjectFileWriter::PackedProject))
-        return write_project_file(project, filepath, options);
-    else
+    const bf::path project_path(filepath);
+
+    const bf::path temp_directory =
+        project_path.parent_path() /
+        project_path.filename().replace_extension(".unpacked");
+
+    const bf::path temp_project_filepath =
+        temp_directory /
+        project_path.filename().replace_extension(".appleseed");
+
+    if (!bf::create_directory(temp_directory))
     {
-        bf::path temp_project_filepath;
+        RENDERER_LOG_ERROR("failed to create directory %s", temp_directory.string().c_str());
+        return false;
+    }
 
-        try
+    bool success = true;
+
+    try
+    {
+        success =
+            write_plain_project_file(
+                project,
+                temp_project_filepath.string().c_str(),
+                options | ProjectFileWriter::CopyAllAssets);
+
+        if (success)
         {
-            const bf::path project_path(filepath);
-            temp_project_filepath =
-                project_path.parent_path() /
-                project_path.filename().replace_extension(".unpacked") /
-                project_path.filename().replace_extension(".appleseed");
-
-            bf::create_directory(temp_project_filepath.parent_path());
-
-            const bool success =
-                write_project_file(
-                    project,
-                    temp_project_filepath.string().c_str(),
-                    options | ProjectFileWriter::CopyAllAssets);
-
-            if (!success)
-            {
-                RENDERER_LOG_ERROR("failed to save project %s.", filepath);
-            }
-            else
-            {
-                zip(filepath, temp_project_filepath.parent_path().string());
-            }
-
-            bf::remove_all(temp_project_filepath.parent_path());
-            return true;
-        }
-        catch (const std::exception&)
-        {
-            RENDERER_LOG_ERROR("failed to save project %s.", filepath);
-            if (bf::exists(temp_project_filepath))
-                bf::remove_all(temp_project_filepath);
-            return false;
+            RENDERER_LOG_INFO("packing project to %s...", filepath);
+            zip(filepath, temp_directory.string());
         }
     }
+    catch (const std::exception&)
+    {
+        RENDERER_LOG_ERROR("failed to write project file %s.", filepath);
+        success = false;
+    }
+
+    if (bf::exists(temp_directory))
+        bf::remove_all(temp_directory);
+
+    return success;
 }
 
 }   // namespace renderer
