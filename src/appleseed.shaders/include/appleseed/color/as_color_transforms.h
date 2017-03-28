@@ -198,7 +198,7 @@ void get_XYZ_to_RGB_matrix(
 {
     if (color_space == "ACES")
     {
-        source_illuminant = "D60";
+        source_illuminant == "D60";
 
         XYZ_to_RGB[0] = vector(XYZ_TO_RGB_ACES_R0);
         XYZ_to_RGB[1] = vector(XYZ_TO_RGB_ACES_R1);
@@ -206,7 +206,7 @@ void get_XYZ_to_RGB_matrix(
     }
     else if (color_space == "ACEScg")
     {
-        source_illuminant = "D60";
+        source_illuminant == "D60";
 
         XYZ_to_RGB[0] = vector(XYZ_TO_RGB_ACESCG_R0);
         XYZ_to_RGB[1] = vector(XYZ_TO_RGB_ACESCG_R1);
