@@ -325,6 +325,8 @@ shader as_maya_psdFileTex
         }        
     }
 
+    out_outColor = max(0, out_outColor);
+
     maya_colorBalance(
         in_colorGain,
         in_colorOffset,
