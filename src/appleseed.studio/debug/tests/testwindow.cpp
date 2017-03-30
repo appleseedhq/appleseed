@@ -206,7 +206,7 @@ namespace
         add_test_cases_to_tests_treeview(item, suite);
     }
 }
-/// TODO: Disable filters when running tests!!
+
 void TestWindow::populate_tests_treeview() const
 {
     TestSuiteRepository& suite_repository = TestSuiteRepository::instance();
