@@ -1,0 +1,226 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/fractal/as_fractal_helpers.h"
+#include "appleseed/math/as_math_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/maya/as_maya_transform_helpers.h"
+
+shader as_asVoronoi
+[[
+    string maya_node_name = "AsVoronoi",
+    string maya_classification = "texture/2d:appleseed/surface:swatch/AppleseedRenderSwatch",
+    int maya_type_id = 1210822
+]]
+(
+    color in_color1 = color(1,0.3,0.05)
+    [[
+        string maya_attribute_name = "color1",
+        string maya_attribute_short_name = "c1",
+        string maya_attribute_type = "vector",
+        string label = "Color 1",
+        string page = "Color Parameters"
+    ]],
+    color in_color2 = color(0.1,0.3, 0.9)
+    [[
+        string maya_attribute_name = "color2",
+        string maya_attribute_short_name = "c2",
+        string maya_attribute_type = "vector",
+        string label = "Color 2",
+        string page = "Color Parameters"
+    ]],
+    float in_contrast = 0.5
+    [[
+        string maya_attribute_name = "contrast",
+        string maya_attribute_type = "float",
+        string label = "Contrast",
+        string page = "Color Parameters"
+    ]],
+    float in_amplitude = 1.0
+    [[
+        string maya_attribute_name = "amplitude",
+        string maya_attribute_short_name = "am",
+        string maya_attribute_type = "float",
+        string label = "Amplitude",
+        string page = "Noise Parameters"
+    ]],
+    float in_jittering = 0.5
+    [[
+        string maya_attribute_name = "jittering",
+        string maya_attribute_short_name = "jt",
+        string maya_attribute_type = "float",
+        string label = "Jittering",
+        string page = "Noise Parameters"
+    ]],
+    int in_metric = 0
+    [[
+        string maya_attribute_name = "metric",
+        string maya_attribute_short_name = "mt",
+        string maya_attribute_type = "enum",
+        string widget = "mapper",
+        string options = "0:Euclidian Distance|1:Sum of Square Difference|2:Tchebychev Distance|3:Sum of Absolute Difference|4:Canberra Distance|5:Akritean Distance|6:Minkowski Metric",
+        string label = "Metric",
+        string page = "Noise Parameters"
+    ]],
+    float in_Minkowski_p = 3.0
+    [[
+        string maya_attribute_name = "Minkowski_p",
+        string maya_attribute_short_name = "mp",
+        string maya_attribute_type = "float",
+        string label = "Minkowski P parameter",
+        string page = "Noise Parameters"
+    ]],
+    float in_coverage = 0.25
+    [[
+        string maya_attribute_name = "coverage",
+        string maya_attribute_short_name = "cc",
+        string maya_attribute_type = "float",
+        string label = "Akritean Coverage",
+        string page = "Noise Parameters"
+    ]],
+    matrix in_placementMatrix = matrix(1)
+    [[
+        string maya_attribute_name = "placementMatrix",
+        string maya_attribute_short_name = "mt",
+        string maya_attribute_type = "matrix",
+        string label = "Placement Matrix",
+        string page = "Noise Parameters"
+    ]],
+    int in_softEdges = 1
+    [[
+        string maya_attribute_name = "softEdges",
+        string maya_attribute_short_name = "se",
+        string maya_attribute_type = "bool",
+        string label = "Soft Edges",
+        string widget = "checkBox",
+        string page = "Noise Parameters"
+    ]],
+
+    MAYA_COLORBALANCE_PARAMETERS,
+    MAYA_EFFECTS_PARAMETERS,
+    MAYA_EFFECTS_3DTEX_PARAMETERS,
+
+    output color out_outColor = color(0)
+    [[
+        string maya_attribute_name = "outColor",
+        string maya_attribute_type = "vector",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string maya_attribute_name = "outAlpha",
+        string maya_attribute_type = "float",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]],
+    output float out_outFeature = 0.0
+    [[
+        string maya_attribute_name = "outFeature",
+        string maya_attribute_type = "float",
+        string label = "Output Feature",
+        string widget = "null"
+    ]],
+    output point out_outPosition = point(0)
+    [[
+        string maya_attribute_name = "outPosition",
+        string maya_attribute_type = "vector",
+        string label = "Output Position",
+        string widget = "null"
+    ]]
+)
+{
+    matrix placement = (in_local)
+        ? inverse(matrix("object", "world")) * in_placementMatrix
+        : in_placementMatrix;
+
+    point Pp = transform(placement, P);
+
+    float box_blending = 0.0;
+
+    int outside_box = outside_place3d_volume(
+        Pp,
+        in_wrap,
+        in_blend,
+        box_blending);
+
+    if (outside_box)
+    {
+        out_outColor = in_defaultColor;
+        out_outAlpha = maya_luminance(out_outColor);
+    }
+    else if (in_amplitude)
+    {
+        voronoi_3df1(
+            Pp,
+            in_jittering,
+            in_metric,
+            in_Minkowski_p,
+            in_coverage,
+            out_outFeature,
+            out_outPosition);
+
+        out_outFeature *= in_amplitude;
+
+        out_outAlpha = out_outFeature;
+
+        color color_blend = mix(in_color2, in_color1, in_contrast);
+
+        out_outColor = mix(in_color2, color_blend, 1 - out_outAlpha);
+
+        if (in_softEdges)
+        {
+            out_outColor *= 1 - out_outAlpha;
+        }
+        if (!in_wrap && in_blend)
+        {
+            float blend_factor = clamp(
+                smoothstep(in_blend * 0.05, in_blend * 0.65, box_blending),
+                0.0, 1.0);
+
+            out_outColor = mix(in_defaultColor, out_outColor, blend_factor);
+            out_outAlpha *= (1.0 - blend_factor);
+        }
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha);
+    }
+    else
+    {
+        out_outColor = color(0);
+        out_outAlpha = 1 - 0.5 * in_contrast;
+    }
+}
