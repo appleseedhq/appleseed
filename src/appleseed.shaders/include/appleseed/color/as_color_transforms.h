@@ -31,6 +31,7 @@
 
 #include "appleseed/color/as_chromatic_adaptation.h"
 #include "appleseed/color/as_colorimetry.h"
+#include "appleseed/math/as_math_helpers.h"
 
 //
 // Reference:
@@ -83,15 +84,15 @@ color transform_xyY_to_XYZ(color xyY)
     return XYZ;
 }
 
-color get_illuminant_XYZ(string illuminant)
+color get_illuminant_xyY(string illuminant)
 {
     color white_xyY;
 
-    if (illuminant = "D50")
+    if (illuminant == "D50")
     {
         white_xyY = color(D50_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
     }
-    else if (illuminant = "D55")
+    else if (illuminant == "D55")
     {
         white_xyY = color(D55_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
     }
@@ -122,6 +123,13 @@ color get_illuminant_XYZ(string illuminant)
 #endif
         return color(0);
     }
+    return white_xyY;
+}
+
+color get_illuminant_XYZ(string illuminant)
+{
+    color white_xyY = get_illuminant_xyY(illuminant);
+
     return transform_xyY_to_XYZ(white_xyY);
 }
 
@@ -198,7 +206,7 @@ void get_XYZ_to_RGB_matrix(
 {
     if (color_space == "ACES")
     {
-        source_illuminant == "D60";
+        source_illuminant = "D60";
 
         XYZ_to_RGB[0] = vector(XYZ_TO_RGB_ACES_R0);
         XYZ_to_RGB[1] = vector(XYZ_TO_RGB_ACES_R1);
@@ -206,7 +214,7 @@ void get_XYZ_to_RGB_matrix(
     }
     else if (color_space == "ACEScg")
     {
-        source_illuminant == "D60";
+        source_illuminant = "D60";
 
         XYZ_to_RGB[0] = vector(XYZ_TO_RGB_ACESCG_R0);
         XYZ_to_RGB[1] = vector(XYZ_TO_RGB_ACESCG_R1);
@@ -250,7 +258,7 @@ void get_XYZ_to_RGB_matrix(
         getattribute("shader:shadername", shadername);
 
         warning("[WARNING]:Unsupported/unknown color space %s in %s, %s:%i\n",
-                color_space, shadername, __FILE__, __NAME__);
+                color_space, shadername, __FILE__, __LINE__);
 
         // We can exit the execution completely, or try to handle it a bit
         // more nicely. Set the matrix as identity and enabling the warnings
@@ -397,6 +405,503 @@ color transform_XYZ_to_linear_RGB(
         dot(source_XYZ_to_RGB[2], XYZ));
 
     return (color) linear_RGB;
+}
+
+//
+// Reference:
+//
+//      Color Transformation Equations, 5.2
+//
+//      http://www.poynton.com/PDFs/coloureq.pdf
+//
+
+color transform_xyY_to_CIE_Yuv(color xyY)
+{
+    float denom = 6 * xyY[1] - xyY[0] + 1.5;
+    float CIE_u = 2 * xyY[0] / denom;
+    float CIE_v = 3 * xyY[1] / denom;
+
+    return color(xyY[2], CIE_u, CIE_v);
+}
+
+//
+// Reference:
+//
+//      RGB to XYZ to Lab equations
+//
+//      http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_Lab.html
+//      http://www.brucelindbloom.com/LContinuity.html
+//
+
+color transform_XYZ_to_Lab(color XYZ_color, color reference_white_xyY)
+{
+    color XYZ_white = transform_xyY_to_XYZ(reference_white_xyY);
+    color XYZ_f = XYZ_color / XYZ_white, XYZ;
+
+    for (int i = 0; i < 3; ++i)
+    {
+        XYZ[i] = (XYZ_f[i] > CIE_E)
+            ? pow(XYZ_f[i], 1 / 3)
+            : (CIE_K * XYZ_f[i] + 16) / 116;
+    }
+
+    float L  = 116 * XYZ[1] - 16;
+    float a = 500 * (XYZ[0] - XYZ[1]);
+    float b = 200 * (XYZ[1] - XYZ[2]);
+
+    return color(L, a, b); // L in [0,100]
+}
+
+color transform_XYZ_to_Lab(color XYZ_color, float reference_white_xy[2])
+{
+    return transform_XYZ_to_Lab(
+        XYZ_color,
+        color( reference_white_xy[0], reference_white_xy[1], 1.0));
+}
+
+color transform_XYZ_to_Lab(color XYZ_color, string illuminant)
+{
+    return transform_XYZ_to_Lab(XYZ_color, get_illuminant_xyY(illuminant));
+}
+
+//
+// Reference:
+//
+//      Lab to XYZ
+//
+//      http://www.brucelindbloom.com/index.html?Eqn_Lab_to_XYZ.html
+//
+
+color transform_Lab_to_XYZ(color Lab, color reference_white_xyY)
+{
+    color XYZ_white = transform_xyY_to_XYZ(reference_white_xyY);
+
+    float f_Y = (Lab[0] + 16) / 116;
+    float f_X = Lab[1] / 500 + f_Y;
+    float f_Z = f_Y - Lab[2] / 200;
+
+    float X_r = (pow(f_X, 3) > CIE_E)
+        ? pow(f_X, 3)
+        : (116 * f_X - 16) / CIE_K;
+
+    float Y_r = (Lab[0] > CIE_K * CIE_E)
+        ? pow((Lab[0] + 16) / 116, 3)
+        : Lab[0] / CIE_K;
+
+    float Z_r = (pow(f_Z, 3) > CIE_E)
+        ? pow(f_Z, 3)
+        : (116 * f_Z - 16) / CIE_K;
+
+    return color(X_r, Y_r, Z_r) * XYZ_white;
+}
+
+color transform_Lab_to_XYZ(color Lab, float reference_white_xy[2])
+{
+    return transform_Lab_to_XYZ(
+        Lab,
+        color(reference_white_xy[0], reference_white_xy[1], 1.0));
+}
+
+color transform_Lab_to_XYZ(color Lab_color, string illuminant)
+{
+    return transform_Lab_to_XYZ(Lab_color, get_illuminant_xyY(illuminant));
+}
+
+//
+// Reference:
+//
+//      XYZ to Luv
+//
+//      http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_Luv.html
+//      http://www.brucelindbloom.com/LContinuity.html
+//
+
+color transform_XYZ_to_Luv(color XYZ_color, color reference_white_xyY)
+{
+    color XYZ_white = transform_xyY_to_XYZ(reference_white_xyY);
+
+    float y_r = XYZ_color[1] / XYZ_white[1];
+
+    float denom = XYZ_color[0] + 15 * XYZ_color[1] + 3 * XYZ_color[2];
+    float denom_r = XYZ_white[0] + 15 * XYZ_white[1] + 3 * XYZ_white[2];
+
+    float u_prime = 4 * XYZ_color[0] / denom;
+    float v_prime = 9 * XYZ_color[1] / denom;
+
+    float u_prime_r = 4 * XYZ_white[0] / denom_r;
+    float v_prime_r = 9 * XYZ_white[1] / denom_r;
+
+    float L = (y_r > CIE_E)
+        ? 116 * pow(y_r, 1/3) - 16
+        : CIE_K * y_r;
+
+    float Luv_u = 13 * L * (u_prime - u_prime_r);
+    float Luv_v = 13 * L * (v_prime - v_prime_r);
+
+    return color(L, Luv_u, Luv_v);
+}
+
+color transform_XYZ_to_Luv(color XYZ_color, float reference_white_xy[2])
+{
+    return transform_XYZ_to_Luv(
+        XYZ_color,
+        color( reference_white_xy[0], reference_white_xy[1], 1.0));
+}
+
+color transform_XYZ_to_Luv(color XYZ_color, string illuminant)
+{
+    return transform_XYZ_to_Luv(XYZ_color, get_illuminant_xyY(illuminant));
+}
+
+//
+// Reference:
+//
+//      Luv to XYZ
+//
+//      http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_Luv.html
+//      http://www.brucelindbloom.com/LContinuity.html
+//
+
+color transform_Luv_to_XYZ(color Luv, color reference_white_xyY)
+{
+    color white_XYZ = transform_xyY_to_XYZ(reference_white_xyY);
+
+    float denom_r = white_XYZ[0] + 15 * white_XYZ[1] + 3 * white_XYZ[2];
+
+    float u0 = 4 * white_XYZ[0] / denom_r;
+    float v0 = 9 * white_XYZ[1] / denom_r;
+
+    float Y = (Luv[0] > CIE_K * CIE_E)
+        ? pow((Luv[0] + 16) / 116, 1 / 3)
+        : Luv[0] / CIE_K;
+
+    float a = (52 * Luv[0] / (Luv[1] + 13 * Luv[0] * u0) - 1) / 3;
+    float b = -5 * Y;
+    float c = -1 / 3;
+    float d = Y * (39 * Luv[0] / (Luv[2] + 13 * Luv[0] * v0) - 5);
+
+    float X = (d - b) / (a - c);
+    float Z = X * a + b;
+
+    return color(X, Y, Z);
+}
+
+color transform_Luv_to_XYZ(color Luv, float reference_white_xy[2])
+{
+    return transform_Luv_to_XYZ(
+        Luv,
+        color(reference_white_xy[0], reference_white_xy[1], 1.0));
+}
+
+color transform_Luv_to_XYZ(color Luv, string illuminant)
+{
+    return transform_Luv_to_XYZ(Luv, get_illuminant_xyY(illuminant));
+}
+
+//
+// Reference:
+//
+//      Lab to LCH(ab) equations
+//
+//      http://www.brucelindbloom.com/index.html?Eqn_Lab_to_LCH.html
+//      http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_Luv.html
+//
+// Note: When converting from Lab, LCH contains H in degrees, and when
+//       converting to LCH, H is also expected in degrees.
+//
+
+color transform_Lab_to_LCh_ab(color Lab)
+{
+    float h = mod(degrees(atan2(Lab[2], Lab[1])), 360);
+    float C = hypot(Lab[1], Lab[2]);
+    float L = Lab[0];
+
+    return color(L, C, h);
+}
+
+color transform_LCh_ab_to_Lab(color LCh_ab)
+{
+    float L = LCh_ab[0], a, b;
+
+    sincos(radians(LCh_ab[2]), a, b);
+
+    return color(L, a, b);
+}
+
+color transform_linear_RGB_to_Lab(
+    color linear_RGB,
+    string color_space,
+    string target_illuminant)
+{
+    color XYZ = transform_linear_RGB_to_XYZ(
+        linear_RGB,
+        color_space,
+        target_illuminant);
+
+    return transform_XYZ_to_Lab(XYZ, target_illuminant);
+}
+
+color transform_Lab_to_linear_RGB(
+    color Lab,
+    string color_space,
+    string target_illuminant)
+{
+    color XYZ = transform_Lab_to_XYZ(Lab, target_illuminant);
+
+    return transform_XYZ_to_linear_RGB(
+        XYZ,
+        color_space,
+        target_illuminant);
+}
+
+color transform_linear_RGB_to_LCh_ab(
+    color linear_RGB,
+    string color_space,
+    string target_illuminant)
+{
+    color Lab = transform_linear_RGB_to_Lab(
+        linear_RGB,
+        color_space,
+        target_illuminant);
+
+    return transform_Lab_to_LCh_ab(Lab);
+}
+
+color transform_LCh_ab_to_linear_RGB(
+    color LCh_ab,
+    string color_space,
+    string target_illuminant)
+{
+    color Lab = transform_LCh_ab_to_Lab(LCh_ab);
+
+    return transform_Lab_to_linear_RGB(
+        Lab,
+        color_space,
+        target_illuminant);
+}
+
+//
+// Reference:
+//
+//      Luv to LCH(uv) equations
+//
+//      http://www.brucelindbloom.com/index.html?Eqn_Luv_to_LCH.html
+//
+
+color transform_Luv_to_LCh_uv(color Luv)
+{
+    float L = Luv[0];
+    float C = hypot(Luv[1], Luv[2]);
+    float h = mod(degrees(atan2(Luv[2], Luv[1])), 360);
+
+    return color(L, C, h);
+}
+
+color transform_LCh_uv_to_Luv(color LCh_uv)
+{
+    float L = LCh_uv[0], uu, vv;
+
+    sincos(radians(LCh_uv[2]), uu, vv);
+
+    return color(LCh_uv[0], uu, vv);
+}
+
+color transform_linear_RGB_to_Luv(
+    color linear_RGB,
+    string color_space,
+    string target_illuminant)
+{
+    color XYZ = transform_linear_RGB_to_XYZ(
+        linear_RGB,
+        color_space,
+        target_illuminant);
+
+    return transform_XYZ_to_Luv(XYZ, target_illuminant);
+}
+
+color transform_Luv_to_linear_RGB(
+    color Luv,
+    string color_space,
+    string target_illuminant)
+{
+    color XYZ = transform_Luv_to_XYZ(Luv, target_illuminant);
+
+    return transform_XYZ_to_linear_RGB(
+        XYZ,
+        color_space,
+        target_illuminant);
+}
+
+color transform_linear_RGB_to_LCh_uv(
+    color linear_RGB,
+    string color_space,
+    string target_illuminant)
+{
+    color Luv = transform_linear_RGB_to_Luv(
+        linear_RGB,
+        color_space,
+        target_illuminant);
+
+    return transform_Luv_to_LCh_uv(Luv);
+}
+
+color transform_LCh_uv_to_linear_RGB(
+    color LCh_uv,
+    string color_space,
+    string target_illuminant)
+{
+    color Luv = transform_LCh_uv_to_Luv(LCh_uv);
+
+    return transform_Luv_to_linear_RGB(
+        Luv,
+        color_space,
+        target_illuminant);
+}
+
+//
+// Reference:
+//
+//      Delta E (CIEDE2000)
+//
+//      https://en.wikipedia.org/wiki/Color_difference
+//      http://www.brucelindbloom.com/index.html?Eqn_DeltaE_CIE2000.html
+//      https://zschuessler.github.io/DeltaE/learn/
+//
+//      The CIEDE2000 Color-Difference Formula: Implementation Notes,
+//      Supplementary Test Data, and Mathematical Observations
+//
+//      http://www.ece.rochester.edu/~gsharma/ciede2000/ciede2000noteCRNA.pdf
+//
+// Note: It's unlikely this will be of any use to the end user, but it's of
+//       use to us in measuring deviation from the color transformation 
+//       results against reference values. Used for now with OSL testshade
+//       exclusively.
+//
+
+color deltaE_CIEDE2000(
+    color   reference_linear_RGB,
+    string  reference_color_space,
+    color   sample_linear_RGB,
+    string  sample_color_space)
+{
+    // If the colors are in a color space with a different white point,
+    // then adapt them to D65.
+
+    color reference_Lab = transform_linear_RGB_to_Lab(
+        reference_linear_RGB,
+        reference_color_space,
+        "D65");
+
+    color sampleval_Lab = transform_linear_RGB_to_Lab(
+        sample_linear_RGB,
+        sample_color_space,
+        "D65");
+    
+    float reference_L = reference_Lab[0];
+    float reference_a = reference_Lab[1];
+    float reference_b = reference_Lab[2];
+
+    float sampleval_L = sampleval_Lab[0];
+    float sampleval_a = sampleval_Lab[1];
+    float sampleval_b = sampleval_Lab[2];
+
+    float reference_C = hypot(reference_a, reference_b);
+    float sampleval_C = hypot(sampleval_a, sampleval_b);
+
+    float C_bar = (reference_C + sampleval_C) / 2;
+    float C_7 = pow(C_bar, 7);
+
+    // 25^7 = 6103515625, using value directly causes an integer overflow
+    float C_7_sqrt = sqrt(C_7 / (C_7 + pow(25, 7)));
+    float G = (1.0 - C_7_sqrt) / 2;
+
+    float reference_a_prime = reference_a * (1 + G);
+    float sampleval_a_prime = sampleval_a * (1 + G);
+
+    float reference_C_prime = hypot(reference_a_prime, reference_b);
+    float sampleval_C_prime = hypot(sampleval_a_prime, sampleval_b);
+
+    float C_bar_prime = (reference_C_prime + sampleval_C_prime) / 2;
+
+    float reference_h_prime, sampleval_h_prime;
+
+    if (reference_a_prime == reference_b)
+    {
+        reference_h_prime = 0;
+    }
+    else
+    {
+        reference_h_prime = atan2(reference_b, reference_a_prime);
+        reference_h_prime = mod(degrees(reference_h_prime), 360);
+    }
+
+    if (sampleval_a_prime = sampleval_b)
+    {
+        sampleval_h_prime = 0;
+    }
+    else
+    {
+        sampleval_h_prime = atan2(sampleval_b, sampleval_a_prime);
+        sampleval_h_prime = mod(degrees(sampleval_h_prime), 360);
+    }
+
+    float abs_h_prime_diff = abs(reference_h_prime - sampleval_h_prime);
+    float delta_h_prime;
+
+    if (reference_C_prime == 0 || sampleval_C_prime == 0)
+    {
+        delta_h_prime = 0;
+    }
+    else if (abs_h_prime_diff <= 180)
+    {
+        delta_h_prime = sampleval_h_prime - reference_h_prime;
+    }
+    else
+    {
+        delta_h_prime = (sampleval_h_prime <= reference_h_prime)
+            ? sampleval_h_prime - reference_h_prime + 360
+            : sampleval_h_prime - reference_h_prime - 360;
+    }
+
+    float delta_H_prime = 2 * sin(radians(delta_h_prime / 2)) *
+        sqrt(reference_C_prime * sampleval_C_prime);
+
+    float H_bar_prime;
+
+    if (reference_C_prime == 0 || sampleval_C_prime == 0)
+    {
+        H_bar_prime = reference_h_prime + sampleval_h_prime;
+    }
+    else if (abs_h_prime_diff <= 180)
+    {
+        H_bar_prime = (reference_h_prime + sampleval_h_prime) / 2;
+    }
+    else
+    {
+        H_bar_prime = (reference_h_prime + sampleval_h_prime < 360)
+            ? (reference_h_prime + sampleval_h_prime + 360) / 2
+            : (reference_h_prime + sampleval_h_prime - 360) / 2;
+    }
+
+    float T = 1.0 -
+        0.17 * cos(radians(H_bar_prime - 30)) +
+        0.24 * cos(radians(2 * H_bar_prime)) +
+        0.32 * cos(radians(3 * H_bar_prime + 6)) -
+        0.20 * cos(radians(4 * H_bar_prime - 63));
+
+    float delta_L_prime = sampleval_L - reference_L;
+
+    float L_bar = (reference_L + sampleval_L) / 2;
+
+    float S_L = 1.0 + (0.015 * sqr(L_bar - 50)) / sqrt(20 + sqr(L_bar - 50));
+    float S_C = 1.0 + 0.045 * C_bar_prime;
+    float S_H = 1.0 + 0.015 * C_bar_prime * T;
+
+    float delta_theta = 30.0 * exp(-sqr((H_bar_prime - 275) / 25));
+
+    float R_T = -2.0 * C_7_sqrt * sin(radians(2 * delta_theta));
+
+    // K_L = K_C = K_H = 1
 }
 
 #endif // !AS_COLOR_TRANSFORMS_H
