@@ -820,6 +820,7 @@ color deltaE_CIEDE2000(
 
     float reference_C_prime = hypot(reference_a_prime, reference_b);
     float sampleval_C_prime = hypot(sampleval_a_prime, sampleval_b);
+    float delta_C_prime = sampleval_C_prime - reference_C_prime;
 
     float C_bar_prime = (reference_C_prime + sampleval_C_prime) / 2;
 
