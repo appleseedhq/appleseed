@@ -33,8 +33,7 @@
 
 shader as_maya_remapColor
 [[
-    string as_maya_node_name = "remapColor",
-    string as_maya_classification = "utility/color"
+    string as_maya_node_name = "remapColor"
 ]]
 (
     color in_color = color(0)
@@ -126,6 +125,7 @@ shader as_maya_remapColor
     output color out_outColor = color(0)
     [[
         string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]]

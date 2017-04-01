@@ -33,8 +33,7 @@
 
 shader as_maya_ramp
 [[
-    string as_maya_node_name = "ramp",
-    string as_maya_classification = "texture/2d"
+    string as_maya_node_name = "ramp"
 ]]
 (
     int in_type = 0
@@ -133,12 +132,14 @@ shader as_maya_ramp
     output color out_outColor = color(0)
     [[
         string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output float out_outAlpha = 1.0
     [[
         string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
         string label = "Output Alpha",
         string widget = "null"
     ]]

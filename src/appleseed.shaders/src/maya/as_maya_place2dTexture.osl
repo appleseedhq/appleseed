@@ -33,8 +33,7 @@
 
 shader as_maya_place2dTexture
 [[
-    string as_maya_node_name = "place2dTexture",
-    string as_maya_classification = "utility/general/placement/2d"
+    string as_maya_node_name = "place2dTexture"
 ]]
 (
     MAYA_UV_PARAMETERS,

@@ -33,8 +33,7 @@
 
 shader as_maya_stencil
 [[
-    string as_maya_node_name = "stencil",
-    string as_maya_classification = "utility/general"
+    string as_maya_node_name = "stencil"
 ]]
 (
     color in_image = color(0)
@@ -97,12 +96,14 @@ shader as_maya_stencil
     output color out_outColor = color(0)
     [[
         string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output float out_outAlpha = 1.0
     [[
         string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_name = "oa",
         string label = "Output Alpha",
         string widget = "null"
     ]]

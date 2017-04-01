@@ -31,8 +31,7 @@
 
 shader as_maya_place3dTexture
 [[
-    string as_maya_node_name = "place3dTexture",
-    string as_maya_classification = "utility/general/placement/3d"
+    string as_maya_node_name = "place3dTexture"
 ]]
 (
     matrix inclusiveMatrixInverse = matrix(1)
