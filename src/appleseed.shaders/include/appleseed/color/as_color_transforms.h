@@ -835,7 +835,7 @@ color deltaE_CIEDE2000(
         reference_h_prime = mod(degrees(reference_h_prime), 360);
     }
 
-    if (sampleval_a_prime = sampleval_b)
+    if (sampleval_a_prime == sampleval_b)
     {
         sampleval_h_prime = 0;
     }
@@ -902,6 +902,18 @@ color deltaE_CIEDE2000(
     float R_T = -2.0 * C_7_sqrt * sin(radians(2 * delta_theta));
 
     // K_L = K_C = K_H = 1
+
+    float t1 = sqr(delta_L_prime / S_L);
+    float t2 = sqr(delta_C_prime / S_C);
+    float t3 = sqr(delta_H_prime / S_H);
+
+    float deltaE_00 = sqrt(
+        sqr(delta_L_prime / S_L) +
+        sqr(delta_C_prime / S_C) +
+        sqr(delta_H_prime / S_H) +
+        R_T * (delta_C_prime / S_C) * (delta_H_prime / S_H));
+
+    return deltaE_00;
 }
 
 #endif // !AS_COLOR_TRANSFORMS_H
