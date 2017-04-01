@@ -314,9 +314,7 @@ namespace
         {
             QTreeWidgetItem* item = parent->child(i);
             if (item->checkState(column) == state)
-            {
                 return true;
-            }
         }
 
         return false;
@@ -391,6 +389,7 @@ namespace
             if (do_filter_items(item->child(i), regexp))
             {
                 any_children_visible = true;
+                break;
             }
         }
 

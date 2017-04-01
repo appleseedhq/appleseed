@@ -34,27 +34,9 @@
           </widget>
          </item>
          <item>
-          <widget class="QTreeWidget" name="treewidget_tests">
-           <property name="sortingEnabled">
-            <bool>true</bool>
-           </property>
-           <property name="allColumnsShowFocus">
-            <bool>true</bool>
-           </property>
-           <attribute name="headerVisible">
-            <bool>true</bool>
-           </attribute>
-           <column>
-            <property name="text">
-             <string notr="true">1</string>
-            </property>
-           </column>
-          </widget>
-         </item>
-         <item>
           <layout class="QHBoxLayout" name="horizontalLayout">
            <property name="topMargin">
-            <number>15</number>
+            <number>0</number>
            </property>
            <item>
             <widget class="QLabel" name="label_filter">
@@ -74,6 +56,24 @@
             </widget>
            </item>
           </layout>
+         </item>
+         <item>
+          <widget class="QTreeWidget" name="treewidget_tests">
+           <property name="sortingEnabled">
+            <bool>true</bool>
+           </property>
+           <property name="allColumnsShowFocus">
+            <bool>true</bool>
+           </property>
+           <attribute name="headerVisible">
+            <bool>true</bool>
+           </attribute>
+           <column>
+            <property name="text">
+             <string notr="true">1</string>
+            </property>
+           </column>
+          </widget>
          </item>
          <item>
           <widget class="QLabel" name="label_checked_tests">
