@@ -778,7 +778,7 @@ color transform_LCh_uv_to_linear_RGB(
 //       exclusively.
 //
 
-color deltaE_CIEDE2000(
+float deltaE_CIEDE2000(
     color   reference_linear_RGB,
     string  reference_color_space,
     color   sample_linear_RGB,
