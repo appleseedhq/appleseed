@@ -92,6 +92,7 @@ class EmittingTriangle
     foundation::Vector3d        m_n0, m_n1, m_n2;               // world space vertex normals
     foundation::Vector3d        m_geometric_normal;             // world space geometric normal, unit-length
     TriangleSupportPlaneType    m_triangle_support_plane;       // support plane of the triangle in assembly space
+    float                       m_area;                         // world space triangle area 
     float                       m_rcp_area;                     // world space triangle area reciprocal
     float                       m_triangle_prob;                // probability density of this triangle
     const Material*             m_material;

@@ -608,12 +608,12 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     
     // Compute the approximate contribution.
     const double approximate_contribution = 
-        (cos_on * 
+        cos_on * 
         rcp_sample_square_distance * 
-        edf->get_max_contribution()) 
-        / sample.m_triangle->m_rcp_area;
+        edf->get_max_contribution() * 
+        sample.m_triangle->m_area;
 
-    // Don't use this sample if the approxmiate contribution is low.
+    // Don't use this sample if the approximate contribution is low.
     if (approximate_contribution < m_low_light_threshold)
         return;
 
