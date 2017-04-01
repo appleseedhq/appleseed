@@ -40,7 +40,6 @@
 #include "foundation/platform/compiler.h"
 
 // Qt headers.
-#include <QObject>
 #include <QWidget>
 
 // Standard headers.
@@ -86,22 +85,26 @@ class TestWindow
 
     void build_connections();
 
-    void populate_tests_treeview();
-    void update_checked_tests_label();
+    void populate_tests_treeview() const;
+    void update_checked_tests_label() const;
 
-    void enable_widgets(const bool enabled);
+    void enable_widgets(const bool enabled) const;
 
   private slots:
-    void slot_on_test_item_check_state_changed(QTreeWidgetItem* item, int column);
+    void slot_on_test_item_check_state_changed(QTreeWidgetItem* item, int column) const;
 
-    void slot_check_all_tests();
-    void slot_uncheck_all_tests();
+    void slot_filter_text_changed(const QString&) const;
+
+    void slot_clear_filter_text() const;
+
+    void slot_check_all_tests() const;
+    void slot_uncheck_all_tests() const;
 
     void slot_run_tests();
-    void slot_on_tests_execution_complete(const int passed_count, const int failed_count);
+    void slot_on_tests_execution_complete(const int passed_count, const int failed_count) const;
 
-    void slot_clear_output_treeview();
-    void slot_filter_output_treeview();
+    void slot_clear_output_treeview() const;
+    void slot_filter_output_treeview() const;
 };
 
 }       // namespace studio
