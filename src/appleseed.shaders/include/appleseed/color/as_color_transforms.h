@@ -778,7 +778,7 @@ color transform_LCh_uv_to_linear_RGB(
 //       exclusively.
 //
 
-color deltaE_CIEDE2000(
+float deltaE_CIEDE2000(
     color   reference_linear_RGB,
     string  reference_color_space,
     color   sample_linear_RGB,
@@ -820,6 +820,7 @@ color deltaE_CIEDE2000(
 
     float reference_C_prime = hypot(reference_a_prime, reference_b);
     float sampleval_C_prime = hypot(sampleval_a_prime, sampleval_b);
+    float delta_C_prime = sampleval_C_prime - reference_C_prime;
 
     float C_bar_prime = (reference_C_prime + sampleval_C_prime) / 2;
 
@@ -835,7 +836,7 @@ color deltaE_CIEDE2000(
         reference_h_prime = mod(degrees(reference_h_prime), 360);
     }
 
-    if (sampleval_a_prime = sampleval_b)
+    if (sampleval_a_prime == sampleval_b)
     {
         sampleval_h_prime = 0;
     }
@@ -899,9 +900,20 @@ color deltaE_CIEDE2000(
 
     float delta_theta = 30.0 * exp(-sqr((H_bar_prime - 275) / 25));
 
-    float R_T = -2.0 * C_7_sqrt * sin(radians(2 * delta_theta));
+    float C_bar_7 = pow(C_bar, 7);
+
+    float R_T = -2.0 * sqrt(C_bar_7 / (C_bar_7 + pow(25, 7))) *
+        sin(radians(2 * delta_theta));
 
     // K_L = K_C = K_H = 1
+
+    float deltaE_00 = sqrt(
+        sqr(delta_L_prime / S_L) +
+        sqr(delta_C_prime / S_C) +
+        sqr(delta_H_prime / S_H) +
+        R_T * (delta_C_prime / S_C) * (delta_H_prime / S_H));
+
+    return deltaE_00;
 }
 
 #endif // !AS_COLOR_TRANSFORMS_H
