@@ -159,6 +159,14 @@ source_group ("src\\gaffer" FILES
     ${gaffer_osl_sources}
 )
 
+set (appleseed_osl_sources
+     asVoronoi.osl
+)
+list (APPEND osl_sources ${appleseed_osl_sources})
+source_group ("src\\appleseed" FILES
+    ${appleseed_osl_sources}
+)
+
 set (appleseed_maya_osl_sources
      src/maya/as_maya_addDoubleLinear.osl
      src/maya/as_maya_addMatrix.osl
