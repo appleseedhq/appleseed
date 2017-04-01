@@ -34,7 +34,7 @@
 shader asVoronoi
 [[
     string maya_node_name = "asVoronoi",
-    string maya_classification = "texture/3d",
+    string maya_classification = "appleseed/texture:textures/other",
     int maya_type_id = 1210823
 ]]
 (
@@ -73,7 +73,7 @@ shader asVoronoi
     [[
         string maya_attribute_name = "metric",
         string widget = "mapper",
-        string options = "0:Euclidian Distance|1:Sum of Square Difference|2:Tchebychev Distance|3:Sum of Absolute Difference|4:Canberra Distance|5:Akritean Distance|6:Minkowski Metric",
+        string options = "Euclidian Distance:0|Sum of Square Difference:1|Tchebychev Distance:2|Sum of Absolute Difference:3|Canberra Distance:4|Akritean Distance:5|Minkowski Metric:6",
         string label = "Metric",
         string page = "Noise Parameters"
     ]],
