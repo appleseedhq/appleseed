@@ -26,23 +26,24 @@
 // THE SOFTWARE.
 //
 
-shader as_Glass
+shader asGlass
 [[
-    string maya_node_name = "asGlass",
-    string maya_classification = "shader/surface:appleseed/surface:swatch/appleseedRenderSwatch",
+    string as_maya_node_name = "asGlass",
+    string as_maya_classification = "shader/surface:appleseed/surface:swatch/appleseedRenderSwatch",
     string help = "Glass material",
     int maya_type_id = 1210821
 ]]
 (
     color in_surfaceTransmittance = color(1.0)
     [[
-        string maya_attribute_name = "color",
-        string maya_attribute_short_name = "c",
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
         string label = "Transmittance Color",
         string page = "Surface Transmittance Parameters"
     ]],
     float in_transmittanceAmount = 0.8
     [[
+        string as_maya_attribute_name = "transmittanceAmount",
         float min = 0.0,
         float max = 1.0,
         float softmin = 0.0,
@@ -52,16 +53,19 @@ shader as_Glass
     ]],
     color in_reflectionTint = color(1)
     [[
+        string as_maya_attribute_name = "reflectionTint",
         string label = "Reflection Tint",
         string page = "Specular Parameters"
     ]],
     color in_refractionTint = color(1)
     [[
+        string as_maya_attribute_name = "refractionTint",
         string label = "Refraction Tint",
         string page = "Specular Parameters"
     ]],
     float in_ior = 1.5
     [[
+        string as_maya_attribute_name = "ior",
         float min = 1.0,
         float max = 10.0,
         float softmin = 1.0,
@@ -72,8 +76,9 @@ shader as_Glass
     ]],
     int in_distribution = 0
     [[
+        string as_maya_attribute_name = "distribution",
         string label = "Distribution",
-        string maya_attribute_type = "enum",
+        string as_maya_attribute_type = "enum",
         int min = 0,
         int max = 1,
         string widget = "mapper",
@@ -82,6 +87,7 @@ shader as_Glass
     ]],
     float in_roughness = 0.1
     [[
+        string as_maya_attribute_name = "roughness",
         float min = 0.001,
         float max = 1.0,
         float slidermin = 0.001,
@@ -92,6 +98,7 @@ shader as_Glass
     ]],
     float in_anisotropyAmount = 0.0
     [[
+        string as_maya_attribute_name = "anisotropyAmount",
         float min = 0.0,
         float max = 1.0,
         string label = "Anisotropy Amount",
@@ -99,6 +106,7 @@ shader as_Glass
     ]],
     float in_anisotropyAngle = 0.0
     [[
+        string as_maya_attribute_name = "anisotropyAngle",
         float min = 0.0,
         float max = 1.0,
         float slidermin = 0.0,
@@ -109,6 +117,7 @@ shader as_Glass
     ]],
     color in_anisotropyVectorMap = color(0)
     [[
+        string as_maya_attribute_name = "anisotropyVectorMap",
         string label = "Anisotropy Vector Map",
         string page = "Specular Parameters",
         string help = "Vector tangent field map, with XY in R,G channels"
@@ -125,26 +134,26 @@ shader as_Glass
     ]],
     color in_volumeTransmittance = 1.0
     [[
+        string as_maya_attribute_name = "volumeTransmittance",
         string label = "Volume Transmittance",
         string page = "Volume Material Parameters"
     ]],
     float in_volumeTransmittanceDistance = 0.0
     [[
+        string as_maya_attribute_name = "volumeTransmittanceDistance",
         string label = "Transmittance Distance",
         string page = "Volume Material Parameters"
     ]],
     normal in_normalCamera = N
     [[
-        string maya_attribute_name = "normalCamera",
-        string maya_attribute_type = "vector",
-        string maya_attribute_short_name = "n",
+        string as_maya_attribute_name = "normalCamera",
+        string as_maya_attribute_short_name = "n",
         string label = "Bump Normal",
         string page = "Bump Parameters"
     ]],
     int in_matteOpacityMode = 2
     [[
-        string maya_attribute_name = "matteOpacityMode",
-        string maya_attribute_type = "enum",
+        string as_maya_attribute_name = "matteOpacityMode",
         string label = "Matte Opacity Mode",
         string widget = "mapper",
         string options = "Black Hole:0|Solid Matte:1|Opacity Gain:2",
@@ -152,13 +161,13 @@ shader as_Glass
     ]],
     float in_matteOpacity = 1.0
     [[
-        string maya_attribute_name = "matteOpacity",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "matteOpacity",
         string label = "Matte Opacity",
         string page = "Matte Opacity Parameters"
     ]],
     int in_maximumRayDepth = 4
     [[
+        string as_maya_attribute_name = "maximumRayDepth",
         int min = 0,
         int max = 32,
         int softmin = 0,
@@ -169,23 +178,20 @@ shader as_Glass
 
     output closure color out_outColor = 0
     [[
-        string maya_attribute_name = "outColor",
-        string maya_attribute_type = "color",
-        string maya_attribute_short_name = "oc",
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
         string widget = "null"
     ]],
     output closure color out_outTransparency = 0
     [[
-        string maya_attribute_name = "outTransparency",
-        string maya_attribute_type = "color",
-        string maya_attribute_short_name = "ot",
+        string as_maya_attribute_name = "outTransparency",
+        string as_maya_attribute_short_name = "ot",
         string widget = "null"
     ]],
     output closure color out_outMatteOpacity = 0
     [[
-        string maya_attribute_name = "outMatteOpacity",
-        string maya_attribute_type = "color",
-        string maya_attribute_short_name = "om",
+        string as_maya_attribute_name = "outMatteOpacity",
+        string as_maya_attribute_short_name = "om",
         string widget = "null"
     ]]
 )

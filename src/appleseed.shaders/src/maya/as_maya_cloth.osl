@@ -33,74 +33,62 @@
 
 shader as_maya_cloth
 [[
-    string maya_node_name = "cloth",
-    string maya_classification = "texture/2d"
+    string as_maya_node_name = "cloth"
 ]]
 (
     color in_gapColor = color(0)
     [[
-        string maya_attribute_name = "gapColor",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "gapColor",
         string label = "Gap Color"
     ]],
     color in_uColor = color(1)
     [[
-        string maya_attribute_name = "uColor",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "uColor",
         string label = "U Color"
     ]],
     color in_vColor = color(0.5)
     [[
-        string maya_attribute_name = "vColor",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "vColor",
         string label = "V Color"
     ]],
     float in_uWidth = 0.75
     [[
-        string maya_attribute_name = "uWidth",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "uWidth",
         string label = "U Width"
     ]],
     float in_vWidth = 0.75
     [[
-        string maya_attribute_name = "vWidth",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "vWidth",
         string label = "V Width"
     ]],
     float in_uWave = 0.0
     [[
-        string maya_attribute_name = "uWave",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "uWave",
         string label = "U Wave"
     ]],
     float in_vWave = 0.0
     [[
-        string maya_attribute_name = "vWave",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "vWave",
         string label = "V Wave"
     ]],
     float in_randomness = 0.0
     [[
-        string maya_attribute_name = "randomness",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "randomness",
         string label = "Randomness"
     ]],
     float in_widthSpread = 0.0
     [[
-        string maya_attribute_name = "widthSpread",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "widthSpread",
         string label = "Width Spread"
     ]],
     float in_brightSpread = 0.0
     [[
-        string maya_attribute_name = "brightSpread",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "brightSpread",
         string label = "Bright Spread"
     ]],
     int in_invert = 0
     [[
-        string maya_attribute_name = "invert",
-        string maya_attribute_type = "bool",
+        string as_maya_attribute_name = "invert",
         string label = "Invert",
         string widget = "checkBox"
     ]],
@@ -110,15 +98,13 @@ shader as_maya_cloth
 
     output color out_outColor = color(0)
     [[
-        string maya_attribute_name = "outColor",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "outColor",
         string label = "Output Color",
         string widget = "null"
     ]],
     output float out_outAlpha = 1.0
     [[
-        string maya_attribute_name = "outAlpha",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "outAlpha",
         string label = "Output Alpha",
         string widget = "null"
     ]]

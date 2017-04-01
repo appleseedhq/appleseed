@@ -30,33 +30,29 @@
 
 shader as_maya_blendColors
 [[
-    string maya_node_name = "blendColors",
-    string maya_classification = "utility/color"
+    string as_maya_node_name = "blendColors"
 ]]
 (
     color in_color1 = color(1,0,0)
     [[
-        string maya_attribute_name = "color1",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "color1",
         string label = "Color 1"
     ]],
     color in_color2 = color(0,0,1)
     [[
-        string maya_attribute_name = "color2",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "color2",
         string label = "Color 2"
     ]],
     float in_blender = 0.0
     [[
-        string maya_attribute_name = "blender",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "blender",
         string label = "Weight"
     ]],
 
     output color out_output = color(0)
     [[
-        string maya_attribute_name = "output",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "output",
+        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]]

@@ -32,21 +32,18 @@
 
 shader as_maya_luminance
 [[
-    string maya_node_name = "luminance",
-    string maya_classification = "utility/color"
+    string as_maya_node_name = "luminance"
 ]]
 (
     color in_value = color(0)
     [[
-        string maya_attribute_name = "value",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "value",
         string label = "Input Color"
     ]],
 
     output float out_outValue = 0
     [[
-        string maya_attribute_name = "outValue",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "outValue",
         string label = "Output Color",
         string widget = "null"
     ]]

@@ -29,89 +29,85 @@
 
 surface as_maya_areaLight
 [[
-    string maya_node_name = "areaLight",
-    string maya_classification = "light"
+    string as_maya_node_name = "areaLight"
 ]]
 (
     color in_color = color(1)
     [[
-        string maya_attribute_name = "color",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "color",
         string label = "Color",
         string page = "Area Light Attributes"
     ]],
     float in_intensity = 1.0
     [[
-        string maya_attribute_name = "intensity",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "intensity",
         string label = "intensity",
         string page = "Area Light Attributes"
     ]],
     float in_intensity_scale = 1.0
     [[
-        string maya_attribute_name = "asIntensityScale"
+        string as_maya_attribute_name = "asIntensityScale",
+        string label = "Intensity",
+        string page = "Area Light Attributes"
     ]],
     float in_exposure = 0.0
     [[
-        string maya_attribute_name = "asExposure"
+        string as_maya_attribute_name = "asExposure",
+        string label = "Exposure",
+        string page = "Area Light Attributes"
     ]],
     int in_normalize = 0
     [[
-        string maya_attribute_name = "asNormalize"
+        string as_maya_attribute_name = "asNormalize",
+        string label = "Normalize",
+        string page = "Area Light Attributes"
     ]],
     output point out_center = 0
     [[
-        string maya_attribute_name = "center",
-        string maya_attribute_type = "vector",
-        string label = "Center"
+        string as_maya_attribute_name = "center",
+        string label = "Center",
+        string widget = "null"
     ]],
     output matrix out_matrix = 0
     [[
-        string maya_attribute_name = "matrix",
-        string maya_attribute_type = "matrix",
+        string as_maya_attribute_name = "matrix",
         string label = "Matrix",
         string widget = "null"
     ]],
     output matrix out_inverseMatrix = 0
     [[
-        string maya_attribute_name = "inverseMatrix",
-        string maya_attribute_type = "matrix",
+        string as_maya_attribute_name = "inverseMatrix",
         string label = "Inverse Matrix",
         string widget = "null"
     ]],
     output matrix out_worldMatrix = 0
     [[
-        string maya_attribute_name = "worldMatrix",
-        string maya_attribute_type = "matrix",
+        string as_maya_attribute_name = "worldMatrix",
         string label = "World Matrix",
         string widget = "null"
     ]],
     output matrix out_worldInverseMatrix = 0
     [[
-        string maya_attribute_name = "worldInverseMatrix",
-        string maya_attribute_type = "matrix",
+        string as_maya_attribute_name = "worldInverseMatrix",
         string label = "World Inverse Matrix",
         string widget = "null"
     ]],
     output normal out_normalCamera = N
     [[
-        string maya_attribute_name = "normalCamera",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "normalCamera",
         string label = "Surface Normal",
         string widget = "null"
     ]],
     output float out_uvCoord[2] = {0}
     [[
-        string maya_attribute_name = "uvCoord",
-        string maya_attribute_type = "float2",
+        string as_maya_attribute_name = "uvCoord",
         string label = "UV Coordinates",
         string widget = "null"
     ]],
     // compound object lightData, member lightIntensity
     output closure color out_lightIntensity = 0
     [[
-        string maya_attribute_name = "lightData",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "lightData",
         string label = "Light Intensity",
         string widget = "null"
     ]],

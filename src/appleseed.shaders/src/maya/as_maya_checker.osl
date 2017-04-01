@@ -33,26 +33,22 @@
 
 shader as_maya_checker
 [[
-    string maya_node_name = "checker",
-    string maya_classification = "texture/2d"
+    string as_maya_node_name = "checker"
 ]]
 (
     color in_color1 = color(1)
     [[
-        string maya_attribute_name = "color1",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "color1",
         string label = "Color 1"
     ]],
     color in_color2 = color(0)
     [[
-        string maya_attribute_name = "color2",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "color2",
         string label = "Color 2"
     ]],
     float in_contrast = 1.0
     [[
-        string maya_attribute_name = "contrast",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "contrast",
         string label = "Contrast"
     ]],
 
@@ -62,15 +58,15 @@ shader as_maya_checker
 
     output color out_outColor = color(0)
     [[
-        string maya_attribute_name = "outColor",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output float out_outAlpha = 1.0
     [[
-        string maya_attribute_name = "outAlpha",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
         string label = "Output Alpha",
         string widget = "null"
     ]]
