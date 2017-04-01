@@ -28,50 +28,50 @@
 
 #include "appleseed/fractal/as_fractal_helpers.h"
 #include "appleseed/math/as_math_helpers.h"
-#include "appleseed/maya/as_as_maya_helpers.h"
-#include "appleseed/maya/as_as_maya_transform_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/maya/as_maya_transform_helpers.h"
 
 shader asVoronoi
 [[
-    string as_maya_node_name = "asVoronoi",
-    string as_maya_classification = "texture/3d",
-    int as_maya_type_id = 1210823
+    string maya_node_name = "asVoronoi",
+    string maya_classification = "texture/3d",
+    int maya_type_id = 1210823
 ]]
 (
     color in_color1 = color(1,0.3,0.05)
     [[
-        string as_maya_attribute_name = "color",
-        string as_maya_attribute_short_name = "c",
+        string maya_attribute_name = "color",
+        string maya_attribute_short_name = "c",
         string label = "Color 1",
         string page = "Color Parameters"
     ]],
     color in_color2 = color(0.1,0.3, 0.9)
     [[
-        string as_maya_attribute_name = "color2",
+        string maya_attribute_name = "color2",
         string label = "Color 2",
         string page = "Color Parameters"
     ]],
     float in_contrast = 0.5
     [[
-        string as_maya_attribute_name = "contrast",
+        string maya_attribute_name = "contrast",
         string label = "Contrast",
         string page = "Color Parameters"
     ]],
     float in_amplitude = 1.0
     [[
-        string as_maya_attribute_name = "amplitude",
+        string maya_attribute_name = "amplitude",
         string label = "Amplitude",
         string page = "Noise Parameters"
     ]],
     float in_jittering = 0.5
     [[
-        string as_maya_attribute_name = "jittering",
+        string maya_attribute_name = "jittering",
         string label = "Jittering",
         string page = "Noise Parameters"
     ]],
     int in_metric = 0
     [[
-        string as_maya_attribute_name = "metric",
+        string maya_attribute_name = "metric",
         string widget = "mapper",
         string options = "0:Euclidian Distance|1:Sum of Square Difference|2:Tchebychev Distance|3:Sum of Absolute Difference|4:Canberra Distance|5:Akritean Distance|6:Minkowski Metric",
         string label = "Metric",
@@ -79,25 +79,25 @@ shader asVoronoi
     ]],
     float in_Minkowski_p = 3.0
     [[
-        string as_maya_attribute_name = "Minkowski_p",
+        string maya_attribute_name = "Minkowski_p",
         string label = "Minkowski P parameter",
         string page = "Noise Parameters"
     ]],
     float in_coverage = 0.25
     [[
-        string as_maya_attribute_name = "coverage",
+        string maya_attribute_name = "coverage",
         string label = "Akritean Coverage",
         string page = "Noise Parameters"
     ]],
     matrix in_placementMatrix = matrix(1)
     [[
-        string as_maya_attribute_name = "placementMatrix",
+        string maya_attribute_name = "placementMatrix",
         string label = "Placement Matrix",
         string page = "Noise Parameters"
     ]],
     int in_softEdges = 1
     [[
-        string as_maya_attribute_name = "softEdges",
+        string maya_attribute_name = "softEdges",
         string label = "Soft Edges",
         string widget = "checkBox",
         string page = "Noise Parameters"
@@ -109,27 +109,27 @@ shader asVoronoi
 
     output color out_outColor = color(0)
     [[
-        string as_maya_attribute_name = "outColor",
-        string as_maya_attribute_short_name = "oc",
+        string maya_attribute_name = "outColor",
+        string maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output float out_outAlpha = 1.0
     [[
-        string as_maya_attribute_name = "outAlpha",
-        string as_maya_attribute_short_name = "oa",
+        string maya_attribute_name = "outAlpha",
+        string maya_attribute_short_name = "oa",
         string label = "Output Alpha",
         string widget = "null"
     ]],
     output float out_outFeature = 0.0
     [[
-        string as_maya_attribute_name = "outFeature",
+        string maya_attribute_name = "outFeature",
         string label = "Output Feature",
         string widget = "null"
     ]],
     output point out_outPosition = point(0)
     [[
-        string as_maya_attribute_name = "outPosition",
+        string maya_attribute_name = "outPosition",
         string label = "Output Position",
         string widget = "null"
     ]]
