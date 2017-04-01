@@ -900,13 +900,12 @@ float deltaE_CIEDE2000(
 
     float delta_theta = 30.0 * exp(-sqr((H_bar_prime - 275) / 25));
 
-    float R_T = -2.0 * C_7_sqrt * sin(radians(2 * delta_theta));
+    float C_bar_7 = pow(C_bar, 7);
+
+    float R_T = -2.0 * sqrt(C_bar_7 / (C_bar_7 + pow(25, 7))) *
+        sin(radians(2 * delta_theta));
 
     // K_L = K_C = K_H = 1
-
-    float t1 = sqr(delta_L_prime / S_L);
-    float t2 = sqr(delta_C_prime / S_C);
-    float t3 = sqr(delta_H_prime / S_H);
 
     float deltaE_00 = sqrt(
         sqr(delta_L_prime / S_L) +
