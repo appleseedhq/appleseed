@@ -56,7 +56,7 @@ BENCHMARK_SUITE(Foundation_Math_Basis)
             }
         }
 
-        Basis3<T> build_Original(const Vector<T, 3> normal) const
+        Basis3<T> build_Original(const Vector<T, 3>& normal) const
         {
             const Vector<T, 3> m_n = normal;
 
