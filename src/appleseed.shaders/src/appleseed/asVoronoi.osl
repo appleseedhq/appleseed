@@ -73,17 +73,17 @@ shader asVoronoi
     [[
         string maya_attribute_name = "metric",
         string widget = "mapper",
-        string options = "Euclidian Distance:0|Sum of Square Difference:1|Tchebychev Distance:2|Sum of Absolute Difference:3|Canberra Distance:4|Akritean Distance:5|Minkowski Metric:6",
+        string options = "Euclidian Distance:0|Sum of Square Difference:1|Tchebychev Distance:2|Sum of Absolute Difference:3|Akritean Distance:4|Minkowski Metric:5",
         string label = "Metric",
         string page = "Noise Parameters"
     ]],
-    float in_Minkowski_p = 3.0
+    float in_Minkowski_p = 5.0
     [[
         string maya_attribute_name = "Minkowski_p",
         string label = "Minkowski P parameter",
         string page = "Noise Parameters"
     ]],
-    float in_coverage = 0.25
+    float in_coverage = 0.5
     [[
         string maya_attribute_name = "coverage",
         string label = "Akritean Coverage",
@@ -138,6 +138,8 @@ shader asVoronoi
     matrix placement = (in_local)
         ? inverse(matrix("object", "world")) * in_placementMatrix
         : in_placementMatrix;
+
+    placement = in_placementMatrix;
 
     point Pp = transform(placement, P);
 

@@ -89,26 +89,24 @@ float fBm(
 //          3) Sum of Absolute Difference, Manhattan or taxicab distance or
 //             L1 norm. Case of Minkowski metric with P=1.
 //
-//          4) Canberra distance, weighted version of L1 norm.
-//
-//          5) Akritean distance, a combination of the Euclidian and the
+//          4) Akritean distance, a combination of the Euclidian and the
 //             Manhattan distance, with coverage parameter.
 //
-//          6) Minkowski metric, with parameter P.
+//          5) Minkowski metric, with parameter P.
 //
-//          7) For the 2D case, Karlsruhe or Moscow metric.
+//          6) For the 2D case, Karlsruhe or Moscow metric.
 //
 
 float metric_2D(
     int metric,
-    float position[2],
+    float surface_position[2],
     float test_position[2],
     float Minkowski_P,
     float Akritean_coverage)
 {
     float delta[2] = {
-        test_position[0] - test_position[0],
-        test_position[1] - test_position[1]}, dist;
+        test_position[0] - surface_position[0],
+        test_position[1] - surface_position[1]}, dist;
                         
     if (metric == 0)
     {
@@ -128,39 +126,34 @@ float metric_2D(
     }
     else if (metric == 4)
     {
-        float dx = abs(delta[0]) /
-            (abs(test_position[0]) + abs(position[0]));
-
-        float dy = abs(delta[1]) /
-            (abs(test_position[1]) + abs(position[1]));
-
-        dist = dx + dy;
-    }
-    else if (metric == 5)
-    {
         float L2 = hypot(delta[0], delta[1]);
         float L1 = abs(delta[0]) + abs(delta[1]);
 
         dist = mix(L2, L1, Akritean_coverage);
     }
-    else
+    else if (metric == 5)
     {
         float dx = pow(abs(delta[0]), Minkowski_P);
         float dy = pow(abs(delta[1]), Minkowski_P);
 
         dist = pow(dx + dy, 1 / Minkowski_P);
     }
+    else
+    {
+        dist = 0; // TODO
+    }
+
     return dist;
 }
 
 float metric_3D(
     int metric,
-    point position,
+    point surface_position,
     point test_position,
     float Minkowski_P,
     float Akritean_coverage)
 {
-    vector delta = test_position - position;
+    vector delta = test_position - surface_position;
     float dist;
 
     if (metric == 0)
@@ -177,22 +170,9 @@ float metric_3D(
     }
     else if (metric == 3)
     {
-        float dx = abs(delta[0]) /
-            (abs(test_position[0]) + abs(position[0]));
-
-        float dy = abs(delta[1]) /
-            (abs(test_position[1]) + abs(position[1]));
-
-        float dz = abs(delta[2]) /
-            (abs(test_position[2]) + abs(position[2]));
-
-        dist = dx + dy + dz;
-    }
-    else if (metric == 4)
-    {
         dist = abs(delta[0]) + abs(delta[1]) + abs(delta[2]);
     }
-    else if (metric == 5)
+    else if (metric == 4)
     {
         float L2 = length(delta);
         float L1 = abs(delta[0]) + abs(delta[1]) + abs(delta[2]);
@@ -243,11 +223,11 @@ void voronoi_3df1(
                     
                 dist = metric_3D(
                     metric,
-                    position,
+                    surface_point,
                     test_position,
                     Minkowski_P,
                     Akritean_coverage);
-
+                
                 if (dist < feature)
                 {
                     feature = dist;
@@ -256,7 +236,6 @@ void voronoi_3df1(
             }
         }
     }
-    feature = sqrt(feature);
 }
 
 #endif // !AS_FRACTAL_HELPERS_H
