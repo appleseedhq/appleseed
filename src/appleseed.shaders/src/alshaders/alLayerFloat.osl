@@ -22,42 +22,281 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-// This code comes from alshaders's OSL branch, with minimal changes.
+// This code comes from alshaders OSL branch, with minimal changes.
 // https://bitbucket.org/anderslanglands/alshaders/branch/osl
 
 shader alLayerFloat
 [[
-    string maya_node_name = "alLayerFloat"
+    string as_maya_node_name = "alLayerFloat"
 ]]
 (
-    float layer1 = 0,
-    float layer1a = 0,
-    float layer2 = 0,
-    float layer2a = 0,
-    float layer3 = 0,
-    float layer3a = 0,
-    float layer4 = 0,
-    float layer4a = 0,
-    float layer5 = 0,
-    float layer5a = 0,
-    float layer6 = 0,
-    float layer6a = 0,
-    float layer7 = 0,
-    float layer7a = 0,
-    float layer8 = 0,
-    float layer8a = 0,
-
-    output float result = 0
+    string in_layer1name = ""
     [[
-        string maya_attribute_name = "outValue"
+        string page = "Background",
+        string label = "Name",
+        string help = "A descriptive name for this layer",
+        string as_maya_attribute_name = "layer1name"
+    ]],
+    int in_layer1enabled = 1
+    [[
+        string page = "Background",
+        string label = "Enabled",
+        string widget = "checkBox",
+        string help = "Toggle this layer on or off",
+        string as_maya_attribute_name = "layer1enabled"
+    ]],
+    float in_layer1 = 0
+    [[
+        string page = "Background",
+        string label = "Input",
+        string help = "The value of the background layer",
+        string as_maya_attribute_name = "layer1"
+    ]],
+    float in_layer1a = 0
+    [[
+        string page = "Background",
+        string label = "Alpha",
+        string help = "The alpha of the background layer",
+        string as_maya_attribute_name = "layer1a"
+    ]],
+
+    string in_layer2name = ""
+    [[
+        string page = "Layer 2",
+        string label = "Name",
+        string help = "A descriptive name for this layer",
+        string as_maya_attribute_name = "layer2name"
+    ]],
+    int in_layer2enabled = 1
+    [[
+        string page = "Layer 2",
+        string label = "Enabled",
+        string widget = "checkBox",
+        string help = "Toggle this layer on or off",
+        string as_maya_attribute_name = "layer2enabled"
+    ]],
+    float in_layer2 = 0
+    [[
+        string page = "Layer 2",
+        string label = "Input",
+        string help = "The value to be layered",
+        string as_maya_attribute_name = "layer2"
+    ]],
+    float in_layer2a = 0
+    [[
+        string page = "Layer 2",
+        string label = "Alpha",
+        string help = "The alpha used to blend this layer over the layers below",
+        string as_maya_attribute_name = "layer2a"
+    ]],
+
+    string in_layer3name = ""
+    [[
+        string page = "Layer 3",
+        string label = "Name",
+        string help = "A descriptive name for this layer",
+        string as_maya_attribute_name = "layer3name"
+    ]],
+    int in_layer3enabled = 1
+    [[
+        string page = "Layer 3",
+        string label = "Enabled",
+        string widget = "checkBox",
+        string help = "Toggle this layer on or off",
+        string as_maya_attribute_name = "layer3enabled"
+    ]],
+    float in_layer3 = 0
+    [[
+        string page = "Layer 3",
+        string label = "Input",
+        string help = "The value to be layered",
+        string as_maya_attribute_name = "layer3"
+    ]],
+    float in_layer3a = 0
+    [[
+        string page = "Layer 3",
+        string label = "Alpha",
+        string help = "The alpha used to blend this layer over the layers below",
+        string as_maya_attribute_name = "layer3a"
+    ]],
+
+    string in_layer4name = ""
+    [[
+        string page = "Layer 4",
+        string label = "Name",
+        string help = "A descriptive name for this layer",
+        string as_maya_attribute_name = "layer4name"
+    ]],
+    int in_layer4enabled = 1
+    [[
+        string page = "Layer 4",
+        string label = "Enabled",
+         string widget = "checkBox",
+       string help = "Toggle this layer on or off",
+        string as_maya_attribute_name = "layer4enabled"
+    ]],
+    float in_layer4 = 0
+    [[
+        string page = "Layer 4",
+        string label = "Input",
+        string help = "The value to be layered",
+        string as_maya_attribute_name = "layer4"
+    ]],
+    float in_layer4a = 0
+    [[
+        string page = "Layer 4",
+        string label = "Alpha",
+        string help = "The alpha used to blend this layer over the layers below",
+        string as_maya_attribute_name = "layer4a"
+    ]],
+
+    string in_layer5name = ""
+    [[
+        string page = "Layer 5",
+        string label = "Name",
+        string help = "A descriptive name for this layer",
+        string as_maya_attribute_name = "layer5name"
+    ]],
+    int in_layer5enabled = 1
+    [[
+        string page = "Layer 5",
+        string label = "Enabled",
+        string widget = "checkBox",
+        string help = "Toggle this layer on or off",
+        string as_maya_attribute_name = "layer5enabled"
+    ]],
+    float in_layer5 = 0
+    [[
+        string page = "Layer 5",
+        string label = "Input",
+        string help = "The value to be layered",
+        string as_maya_attribute_name = "layer5"
+    ]],
+    float in_layer5a = 0
+    [[
+        string page = "Layer 5",
+        string label = "Alpha",
+        string help = "The alpha used to blend this layer over the layers below",
+        string as_maya_attribute_name = "layer5a"
+    ]],
+
+    string in_layer6name = ""
+    [[
+        string page = "Layer 6",
+        string label = "Name",
+        string help = "A descriptive name for this layer",
+        string as_maya_attribute_name = "layer6name"
+    ]],
+    int in_layer6enabled = 1
+    [[
+        string page = "Layer 6",
+        string label = "Enabled",
+        string widget = "checkBox",
+        string help = "Toggle this layer on or off",
+        string as_maya_attribute_name = "layer6enabled"
+    ]],
+    float in_layer6 = 0
+    [[
+        string page = "Layer 6",
+        string label = "Input",
+        string help = "The value to be layered",
+        string as_maya_attribute_name = "layer6"
+    ]],
+    float in_layer6a = 0
+    [[
+        string page = "Layer 6",
+        string label = "Alpha",
+        string help = "The alpha used to blend this layer over the layers below",
+        string as_maya_attribute_name = "layer6a"
+    ]],
+
+    string in_layer7name = ""
+    [[
+        string page = "Layer 7",
+        string label = "Name",
+        string help = "A descriptive name for this layer",
+        string as_maya_attribute_name = "layer7name"
+    ]],
+    int in_layer7enabled = 1
+    [[
+        string page = "Layer 7",
+        string label = "Enabled",
+        string widget = "checkBox",
+        string help = "Toggle this layer on or off",
+        string as_maya_attribute_name = "layer7enabled"
+    ]],
+    float in_layer7 = 0
+    [[
+        string page = "Layer 7",
+        string label = "Input",
+        string help = "The value to be layered",
+        string as_maya_attribute_name = "layer7"
+    ]],
+    float in_layer7a = 0
+    [[
+        string page = "Layer 7",
+        string label = "Alpha",
+        string help = "The alpha used to blend this layer over the layers below",
+        string as_maya_attribute_name = "layer7a"
+    ]],
+
+    string in_layer8name = ""
+    [[
+        string page = "Layer 8",
+        string label = "Name",
+        string help = "A descriptive name for this layer",
+        string as_maya_attribute_name = "layer8name"
+    ]],
+    int in_layer8enabled = 1
+    [[
+        string page = "Layer 8",
+        string label = "Enabled",
+        string widget = "checkBox",
+        string help = "Toggle this layer on or off",
+        string as_maya_attribute_name = "layer8enabled"
+    ]],
+    float in_layer8 = 0
+    [[
+        string page = "Layer 8",
+        string label = "Input",
+        string help = "The value to be layered",
+        string as_maya_attribute_name = "layer8"
+    ]],
+    float in_layer8a = 0
+    [[
+        string page = "Layer 8",
+        string label = "Alpha",
+        string help = "The alpha used to blend this layer over the layers below",
+        string as_maya_attribute_name = "layer8a"
+    ]],
+
+    output float out_result = 0
+    [[
+        string as_maya_attribute_name = "outValue"
     ]]
 )
 {
-    result = mix(layer1, layer2, layer2a);
-    result = mix(layer2, layer3, layer3a);
-    result = mix(layer3, layer4, layer4a);
-    result = mix(layer4, layer5, layer5a);
-    result = mix(layer5, layer6, layer6a);
-    result = mix(layer6, layer7, layer7a);
-    result = mix(layer7, layer8, layer8a);
+    if (in_layer1enabled)
+        out_result = mix(out_result, in_layer1, in_layer1a);
+
+    if (in_layer2enabled)
+        out_result = mix(out_result, in_layer2, in_layer2a);
+
+    if (in_layer3enabled)
+        out_result = mix(out_result, in_layer3, in_layer3a);
+
+    if (in_layer4enabled)
+        out_result = mix(out_result, in_layer4, in_layer4a);
+
+    if (in_layer5enabled)
+        out_result = mix(out_result, in_layer5, in_layer5a);
+
+    if (in_layer6enabled)
+        out_result = mix(out_result, in_layer6, in_layer6a);
+
+    if (in_layer7enabled)
+        out_result = mix(out_result, in_layer7, in_layer7a);
+
+    if (in_layer8enabled)
+        out_result = mix(out_result, in_layer8, in_layer8a);
 }

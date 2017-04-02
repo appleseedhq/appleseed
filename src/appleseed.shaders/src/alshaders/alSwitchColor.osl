@@ -22,12 +22,12 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-// This code comes from alshaders's OSL branch, with minimal changes.
+// This code comes from alshaders OSL branch, with minimal changes.
 // https://bitbucket.org/anderslanglands/alshaders/branch/osl
 
 shader alSwitchColor
 [[
-    string maya_node_name = "alSwitchColor"
+    string as_maya_node_name = "alSwitchColor"
 ]]
 (
     color inputA = 0,
@@ -42,15 +42,19 @@ shader alSwitchColor
     float threshold=0.5,
     output color result = 0
     [[
-        string maya_attribute_name = "outColor",
-        string maya_attribute_short_name = "oc"
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc"
     ]]
 )
 {
     float input = floor(mixer);
-    if (mixer-input >= threshold) input++;
+
+    if (mixer - input >= threshold)
+        input++;
+
     input = clamp(input, 0, 7);
-    if (input == 0) result = inputA;
+
+         if (input == 0) result = inputA;
     else if (input == 1) result = inputB;
     else if (input == 2) result = inputC;
     else if (input == 3) result = inputD;

@@ -1,0 +1,192 @@
+
+//
+// This software is released under the MIT licence
+//
+// Copyright (c) 2013 Anders Langlands
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of
+// this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+// the Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+
+// This code is ported from alshaders original C++ implementation.
+// https://bitbucket.org/anderslanglands/alshaders
+
+#include "alshaders/remap.h"
+#include "alshaders/space.h"
+
+#include "appleseed/fractal/as_fractal_helpers.h"
+
+shader alCellNoise
+[[
+    string help = "Cell noise pattern generator.",
+    string description = "Fractal cell noise with support for both distance-based effects and chips can be useful for a variety of procedural effects.",
+    string as_maya_node_name = "alCellNoise"
+]]
+(
+    SPACE_DECLARE_PARAMS,
+    float in_frequency = 1
+    [[
+        string label = "Frequency",
+        string as_maya_attribute_name = "frequency",
+        string help = "Frequency of the noise pattern. Larger numbers make it smaller, lower numbers make it bigger."
+    ]],
+    int in_mode = 0
+    [[
+        string label = "Mode",
+        string help = "Features allows you to measure the distance to features to create veiny textures, chips simply puts a random color in each block.",
+        string widget = "mapper",
+        string options = "features:0|chips:1",
+        string as_maya_attribute_name = "mode"
+    ]],
+    float in_randomness = 1
+    [[
+        string label = "Randomness",
+        string help = "How much randomness is added to the cel positions.",
+        string as_maya_attribute_name = "randomness"
+    ]],
+    int in_octaves = 1
+    [[
+        string label = "Octaves",
+        string help = "Number of octaves to calculate. Higher numbers give more detail but take longer to compute.",
+        string page = "Features",
+        string as_maya_attribute_name = "octaves"
+    ]],
+    float in_lacunarity = 2.121
+    [[
+        string label = "Lacunarity",
+        string help = "How much the frequency is increased with each octave.",
+        string page = "Features",
+        string as_maya_attribute_name = "lacunarity"
+    ]],
+    color in_color1 = color(0)
+    [[
+        string label = "Color 1",
+        string help = "Color to use when the noise result is 0.",
+        string as_maya_attribute_name = "color1"
+    ]],
+    color in_color2 = color(0)
+    [[
+        string label = "Color 2",
+        string help = "Color to use when the noise result is 1.",
+        string as_maya_attribute_name = "color2"
+    ]],
+    int in_smoothChips = 0
+    [[
+        string label = "Smooth",
+        string help = "Smooth the chip colors.",
+        string page = "Chips",
+        string widget = "checkBox",
+        string as_maya_attribute_name = "smoothChips"
+    ]],
+    int in_randomChips = 0
+    [[
+        string label = "Randomize",
+        string help = "Give each chip a randomly-generated color.",
+        string page = "Chips",
+        string widget = "checkBox",
+        string as_maya_attribute_name = "randomChips"
+    ]],
+    color in_chipColor1 = color(.383, .318, .252)
+    [[
+        string label = "Chip color 1",
+        string help = "Color of the first set of chips",
+        string page = "Chips",
+        string as_maya_attribute_name = "chipColor1"
+    ]],
+    float in_chipProb1 = 1.0
+    [[
+        string label = "Chip probability 1",
+        string help = "Probability of the cell being the first color.",
+        string page = "Chips",
+        string as_maya_attribute_name = "chipProb1"
+    ]],
+    color in_chipColor2 = color(.383, .191, .010)
+    [[
+        string label = "Chip color 2",
+        string help = "Color of the second set of chips",
+        string page = "Chips",
+        string as_maya_attribute_name = "chipColor2"
+    ]],
+    float in_chipProb2 = 1.0
+    [[
+        string label = "Chip probability 2",
+        string help = "Probability of the cell being the second color.",
+        string page = "Chips",
+        string as_maya_attribute_name = "chipProb2"
+    ]],
+    color in_chipColor3 = color(.635, .612, .563)
+    [[
+        string label = "Chip color 3",
+        string help = "Color of the third set of chips",
+        string page = "Chips",
+        string as_maya_attribute_name = "chipColor3"
+    ]],
+    float in_chipProb3 = 1.0
+    [[
+        string label = "Chip probability 3",
+        string help = "Probability of the cell being the third color.",
+        string page = "Chips",
+        string as_maya_attribute_name = "chipProb3"
+    ]],
+    color in_chipColor4 = color(.509, .361, .213)
+    [[
+        string label = "Chip color 4",
+        string help = "Color of the fourth set of chips",
+        string page = "Chips",
+        string as_maya_attribute_name = "chipColor4"
+    ]],
+    float in_chipProb4 = 1.0
+    [[
+        string label = "Chip probability 4",
+        string help = "Probability of the cell being the fourth color.",
+        string page = "Chips",
+        string as_maya_attribute_name = "chipProb4"
+    ]],
+    color in_chipColor5 = color(.593, .472, .248)
+    [[
+        string label = "Chip color 5",
+        string help = "Color of the fifth set of chips",
+        string page = "Chips",
+        string as_maya_attribute_name = "chipColor5"
+    ]],
+    float in_chipProb5 = 1.0
+    [[
+        string label = "Chip probability 5",
+        string help = "Probability of the cell being the fifth color.",
+        string page = "Chips",
+        string as_maya_attribute_name = "chipProb5"
+    ]],
+    REMAP_FLOAT_DECLARE_PARAMS("Remap"),
+    output color out_result = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc"
+    ]]
+)
+{
+    point pp;
+    if (in_space == SPACE_WORLD)
+        pp = in_p;
+    else if (in_space == SPACE_OBJECT)
+        pp = transform("object", in_p);
+    else if (in_space == SPACE_PREF)
+        pp = Pref;
+    else if (in_space == SPACE_UV)
+        pp = point(u, v, 0);
+
+    // todo: implement me...
+}

@@ -25,55 +25,25 @@
 // This code comes from alshaders OSL branch, with minimal changes.
 // https://bitbucket.org/anderslanglands/alshaders/branch/osl
 
-shader alRemapColor
+#include "alshaders/remap.h"
+
+shader alRemapFloat
 [[
-    string as_maya_node_name = "alRemapColor"
+    string as_maya_node_name = "alRemapFloat"
 ]]
 (
-    color input = color(0.18, 0.18, 0.18),
-    float gamma = 1,
-    float saturation = 1,
-    float hueOffset = 0,
-    float contrastVal = 1,
-    float contrastPivot = 0.18,
-    float gain = 1,
-    float exposure = 0,
-    float mask = 1,
-    output color result = color(0,0,0)
+    float in_input = 0
     [[
-        string as_maya_attribute_name = "outColor",
-        string as_maya_attribute_short_name = "oc"
+        string as_maya_attribute_name = "input"
+    ]],
+    REMAP_FLOAT_DECLARE_PARAMS("Remap"),
+
+    output float out_result = 0
+    [[
+        string as_maya_attribute_name = "outValue"
     ]]
 )
 {
-    result = input;
-
-    if (mask > 0)
-    {
-        if (gamma != 1)
-            result = pow(result, 1 / gamma);
-
-        if (saturation != 1)
-        {
-            float l = luminance(result);
-            result = mix(color(l), result, saturation);
-        }
-
-        if (hueOffset != 0)
-        {
-            color hsv = transformc("hsv", result);
-            hsv[0] += hueOffset;
-            result = transformc("rgb", result);
-        }
-
-        if (contrastVal != 1)
-        {
-            result = (result-color(contrastPivot))*contrastVal + color(contrastPivot);
-        }
-
-        result = result * gain * pow(2, exposure);
-
-        if (mask < 1)
-            result = mix(input, result, mask);
-    }
+    RemapFloatParams rmp = REMAP_FLOAT_CREATE;
+    out_result = remap(in_input, rmp);
 }

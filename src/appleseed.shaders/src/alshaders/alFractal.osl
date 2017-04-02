@@ -1,0 +1,182 @@
+
+//
+// This software is released under the MIT licence
+//
+// Copyright (c) 2013 Anders Langlands
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of
+// this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+// the Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+
+// This code comes from alshaders OSL branch, with minimal changes.
+// https://bitbucket.org/anderslanglands/alshaders/branch/osl
+
+#include "alshaders/remap.h"
+#include "alshaders/space.h"
+
+// Constants.
+#define SCALAR_MODE 0
+#define VECTOR_MODE 1
+
+shader alFractal
+[[
+    string as_maya_node_name = "alFractal"
+]]
+(
+    int in_mode = 0
+    [[
+        string widget = "mapper",
+        string options = "scalar:0|vector:1",
+        string as_maya_attribute_name = "mode"
+    ]],
+    SPACE_DECLARE_PARAMS,
+    float in_frequency = 1
+    [[
+        string label = "Frequency",
+        string help = "Frequency of the noise pattern. Larger numbers make it smaller, lower numbers make it bigger.",
+        string as_maya_attribute_name = "frequency"
+    ]],
+    vector in_scale = vector(1)
+    [[
+        string label = "Scale",
+        string help = "Scale values of the noise space for each axis. Use this to stretch the noise along a certain direction.",
+        string as_maya_attribute_name = "scale"
+    ]],
+    float in_t = 0
+    [[
+        string label = "Time",
+        string help = "4th dimension of the noise. Connect this to a time value to animate the noise.",
+        string as_maya_attribute_name = "t"
+    ]],
+    int in_octaves = 8
+    [[
+        string label = "Octaves",
+        string help = "Number of octaves to calculate. Higher numbers give more detail but take longer to compute.",
+        string as_maya_attribute_name = "octaves"
+    ]],
+    float in_distortion = 0
+    [[
+        string label = "Distortion",
+        string help = "Apply a random warp to the noise space.",
+        string as_maya_attribute_name = "distortion"
+    ]],
+    float in_lacunarity = 2.121
+    [[
+        string label = "Lacunarity",
+        string help = "How much the frequency is increased with each octave.",
+        string as_maya_attribute_name = "lacunarity"
+    ]],
+    float in_gain = 0.5
+    [[
+        string label = "Gain",
+        string help = "How much the intensity of the noise is scaled with each object.",
+        string as_maya_attribute_name = "gain"
+    ]],
+    int in_turbulent = 0
+    [[
+        string widget = "checkBox",
+        string label = "Turbulent",
+        string help = "Enable this to switch from fBM to Turbulent noise.",
+        string as_maya_attribute_name = "turbulent"
+    ]],
+    REMAP_FLOAT_DECLARE_PARAMS("Remap"),
+    color in_color1 = color(0)
+    [[
+        string label = "Color 1",
+        string help = "Color to use when the noise result is 0.",
+        string as_maya_attribute_name = "color1"
+    ]],
+    color in_color2 = color(1)
+    [[
+        string label = "Color 2",
+        string help = "Color to use when the noise result is 1.",
+        string as_maya_attribute_name = "color2"
+    ]],
+    output color out_result = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc"
+    ]]
+)
+{
+    point pp;
+    if (in_space == SPACE_WORLD)
+        pp = in_p;
+    else if (in_space == SPACE_OBJECT)
+        pp = transform("object", in_p);
+    else if (in_space == SPACE_PREF)
+        pp = Pref;
+    else if (in_space == SPACE_UV)
+        pp = point(u, v, 0);
+
+    pp *= in_scale * in_frequency;
+
+    if (in_mode == SCALAR_MODE)
+    {
+        float n = 0;
+        float amp = 1;
+        float weight = 1;
+        float vv;
+        for (int i=0; i < in_octaves; ++i)
+        {
+            if (in_distortion != 0)
+            {
+                vector vd = noise("snoise", in_p);
+                pp += in_distortion * vd;
+            }
+            vv = noise("snoise", pp, in_t);
+            if (in_turbulent)
+                vv = abs(vv);
+
+            n += vv * amp;
+            amp *= in_gain;
+            pp *= in_lacunarity;
+        }
+
+        RemapFloatParams rmp = REMAP_FLOAT_CREATE;
+        n = remap(n, rmp);
+        out_result = mix(in_color1, in_color2, n);
+    }
+    else // if (in_mode == VECTOR_MODE)
+    {
+        color n = color(0, 0, 0);
+        float amp = 1.0;
+        color weight = color(0, 0, 0);
+        color vv;
+        for (int i=0; i < in_octaves; ++i)
+        {
+            if (in_distortion != 0)
+            {
+                vector vd = noise("snoise", in_p);
+                pp += in_distortion * vd;
+            }
+            vv = noise("snoise", pp, in_t);
+            if (in_turbulent)
+                vv = abs(vv);
+
+            n += vv * amp;
+            amp *= in_gain;
+            pp *= in_lacunarity;
+        }
+
+        RemapFloatParams rmp = REMAP_FLOAT_CREATE;
+        n[0] = remap(n[0], rmp);
+        n[1] = remap(n[1], rmp);
+        n[2] = remap(n[2], rmp);
+        out_result = n;
+    }
+}
