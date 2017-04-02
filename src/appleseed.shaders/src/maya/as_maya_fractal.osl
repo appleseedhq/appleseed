@@ -34,35 +34,30 @@
 
 shader as_maya_fractal
 [[
-    string maya_node_name = "fractal",
-    string maya_classification = "texture/2d"
+    string as_maya_node_name = "fractal"
 ]]
 (
     float in_amplitude = 1.0
     [[
-        string maya_attribute_name = "amplitude",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "amplitude",
         string label = "Amplitude",
         string page = "Fractal Attributes"
     ]],
     float in_ratio = 0.707
     [[
-        string maya_attribute_name = "ratio",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "ratio",
         string label = "Ratio",
         string page = "Fractal Attributes"
     ]],
     float in_threshold = 0.0
     [[
-        string maya_attribute_name = "threshold",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "threshold",
         string label = "Threshold",
         string page = "Fractal Attributes"
     ]],
     float in_levelMin = 0.0
     [[
-        string maya_attribute_name = "levelMin",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "levelMin",
         float slidermin = 0.0,
         float slidermax = 25.0,
         string label = "Level Minimum",
@@ -70,8 +65,7 @@ shader as_maya_fractal
     ]],
     float in_levelMax = 9.0
     [[
-        string maya_attribute_name = "levelMax",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "levelMax",
         float slidermin = 0.0,
         float slidermax = 25.0,
         string label = "Level Maximum",
@@ -79,8 +73,7 @@ shader as_maya_fractal
     ]],
     float in_frequencyRatio = 2.0
     [[
-        string maya_attribute_name = "frequencyRatio",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "frequencyRatio",
         float slidermin = 1.0,
         float slidermax = 10.0,
         string label = "Frequency Ratio",
@@ -88,8 +81,7 @@ shader as_maya_fractal
     ]],
     float in_bias = 0.0
     [[
-        string maya_attribute_name = "bias",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "bias",
         float slidermin = -1.0,
         float slidermax = 1.0,
         string label = "Bias",
@@ -97,24 +89,21 @@ shader as_maya_fractal
     ]],
     int in_inflection = 0
     [[
-        string maya_attribute_name = "inflection",
-        string maya_attribute_type = "bool",
+        string as_maya_attribute_name = "inflection",
         string label = "Inflection",
         string widget = "checkBox",
         string page = "Fractal Attributes"
     ]],
     int in_animated = 0
     [[
-        string maya_attribute_name = "animated",
-        string maya_attribute_type = "bool",
+        string as_maya_attribute_name = "animated",
         string label = "Animated",
         string widget = "checkBox",
         string page = "Fractal Attributes"
     ]],
     float in_timeRatio = 2.0
     [[
-        string maya_attribute_name = "timeRatio",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "timeRatio",
         float slidermin = 1.0,
         float slidermax = 10.0,
         string label = "Time Ratio",
@@ -122,8 +111,7 @@ shader as_maya_fractal
     ]],
     float in_time = 0.0
     [[
-        string maya_attribute_name = "time",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "time",
         float slidermin = 0.0,
         float slidermax = 100.0,
         string label = "Time",
@@ -136,15 +124,15 @@ shader as_maya_fractal
 
     output color out_outColor = color(0)
     [[
-        string maya_attribute_name = "outColor",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_name_short = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output float out_outAlpha = 1.0
     [[
-        string maya_attribute_name = "outAlpha",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_name_short = "oa",
         string label = "Output Alpha",
         string widget = "null"
     ]]

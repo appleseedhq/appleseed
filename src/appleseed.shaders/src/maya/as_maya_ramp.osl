@@ -33,14 +33,12 @@
 
 shader as_maya_ramp
 [[
-    string maya_node_name = "ramp",
-    string maya_classification = "texture/2d"
+    string as_maya_node_name = "ramp"
 ]]
 (
     int in_type = 0
     [[
-        string maya_attribute_name = "type",
-        string maya_attribute_type = "enum",
+        string as_maya_attribute_name = "type",
         string label = "Type",
         string widget = "mapper",
         string options = "U Ramp:0|V Ramp:1|Diagonal Ramp:2|Radial Ramp:3|Circular Ramp:4|Box Ramp:5|UV Ramp:6|Four Corner Ramp:7|Tartan Ramp:8",
@@ -48,8 +46,7 @@ shader as_maya_ramp
     ]],
     int in_interpolation = 1
     [[
-        string maya_attribute_name = "interpolation",
-        string maya_attribute_type = "enum",
+        string as_maya_attribute_name = "interpolation",
         string label = "Interpolation",
         string widget = "mapper",
         string options = "None:0|Linear:1|Exponential Up:2|Exponential Down:3|Smooth:4|Bump:5|Spike:6",
@@ -57,85 +54,73 @@ shader as_maya_ramp
     ]],
     float in_position[] = {0}
     [[
-        string maya_attribute_name = "colorEntryList",
-        string maya_attribute_type = "float[]",
+        string as_maya_attribute_name = "colorEntryList",
         string label = "Position",
         string page = "Ramp Attributes"
     ]],
     color in_color[] = {0}
     [[
-        string maya_attribute_name = "colorEntryList",
-        string maya_attribute_type = "color[]",
+        string as_maya_attribute_name = "colorEntryList",
         string label = "Color",
         string page = "Ramp Attributes"
     ]],
     float in_uWave = 0.0
     [[
-        string maya_attribute_name = "uWave",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "uWave",
         string label = "U Wave",
         string page = "Ramp Attributes"
     ]],
     float in_vWave = 0.0
     [[
-        string maya_attribute_name = "vWave",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "vWave",
         string label = "V Wave",
         string page = "Ramp Attributes"
     ]],
     float in_noise = 0.0
     [[
-        string maya_attribute_name = "noise",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "noise",
         string label = "Noise",
         string page = "Ramp Attributes"
     ]],
     float in_noiseFreq = 0.5
     [[
-        string maya_attribute_name = "noiseFreq",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "noiseFreq",
         string label = "Noise Frequency",
         string page = "Ramp Attributes"
     ]],
     float in_hueNoise = 0.0
     [[
-        string maya_attribute_name = "hueNoise",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "hueNoise",
         string label = "Hue Noise",
         string page = "HSV Color Noise"
     ]],
     float in_satNoise = 0.0
     [[
-        string maya_attribute_name = "satNoise",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "satNoise",
         string label = "Saturation Noise",
         string page = "HSV Color Noise"
     ]],
     float in_valNoise = 0.0
     [[
-        string maya_attribute_name = "valNoise",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "valNoise",
         string label = "Value Noise",
         string page = "HSV Color Noise"
     ]],
     float in_hueNoiseFreq = 0.5
     [[
-        string maya_attribute_name = "hueNoiseFreq",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "hueNoiseFreq",
         string label = "Hue Noise Frequency",
         string page = "HSV Color Noise"
     ]],
     float in_satNoiseFreq = 0.5
     [[
-        string maya_attribute_name = "satNoiseFreq",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "satNoiseFreq",
         string label = "Saturation Noise Frequency",
         string page = "HSV Color Noise"
     ]],
     float in_valNoiseFreq = 0.5
     [[
-        string maya_attribute_name = "valNoiseFreq",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "valNoiseFreq",
         string label = "Value Noise Frequency",
         string page = "HSV Color Noise"
     ]],
@@ -146,15 +131,15 @@ shader as_maya_ramp
 
     output color out_outColor = color(0)
     [[
-        string maya_attribute_name = "outColor",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output float out_outAlpha = 1.0
     [[
-        string maya_attribute_name = "outAlpha",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
         string label = "Output Alpha",
         string widget = "null"
     ]]

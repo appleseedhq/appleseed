@@ -35,41 +35,35 @@
 
 shader as_maya_cloud
 [[
-    string maya_node_name = "cloud",
-    string maya_classification = "texture/3d"
+    string as_maya_node_name = "cloud"
 ]]
 (
     matrix in_placementMatrix = matrix(1)
     [[
-        string maya_attribute_name = "placementMatrix",
-        string maya_attribute_type = "matrix",
+        string as_maya_attribute_name = "placementMatrix",
         string label = "Placement Matrix"
     ]],
     color in_color1 = color(0)
     [[
-        string maya_attribute_name = "color1",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "color1",
         string label = "Color 1",
         string page = "Cloud Attributes"
     ]],
     color in_color2 = color(1)
     [[
-        string maya_attribute_name = "color2",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "color2",
         string label = "Color 2",
         string page = "Cloud Attributes"
     ]],
     float in_contrast = 0.5
     [[
-        string maya_attribute_name = "contrast",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "contrast",
         string label = "Contrast",
         string page = "Cloud Attributes"
     ]],
     float in_amplitude = 1.0
     [[
-        string maya_attribute_name = "amplitude",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "amplitude",
         string label = "Amplitude",
         float min = 0.0,
         float max = 5.0,
@@ -79,75 +73,65 @@ shader as_maya_cloud
     ]],
     float in_depth[2] = {0.0, 0.8}
     [[
-        string maya_attribute_name = "depth",
-        string maya_attribute_type = "float2",
+        string as_maya_attribute_name = "depth",
         string label = "XY Recursion Depth",
         string page = "Cloud Attributes"
     ]],
     vector in_ripples = vector(1)
     [[
-        string maya_attribute_name = "ripples",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "ripples",
         string label = "Ripples",
         string page = "Cloud Attributes"
     ]],
     float in_ripplesX = 0.0
     [[
-        string maya_attribute_name = "ripplesX",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "ripplesX",
         string label = "Ripples X",
         string widget = "number",
         string page = "Cloud Attributes"
     ]],
     float in_ripplesY = 0.0
     [[
-        string maya_attribute_name = "ripplesY",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "ripplesY",
         string label = "Ripples Y",
         string widget = "number",
         string page = "Cloud Attributes"
     ]],
     float in_ripplesZ = 0.0
     [[
-        string maya_attribute_name = "ripplesZ",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "ripplesZ",
         string label = "Ripples Z",
         string widget = "number",
         string page = "Cloud Attributes"
     ]],
     int in_softEdges = 1
     [[
-        string maya_attribute_name = "softEdges",
-        string maya_attribute_type = "bool",
+        string as_maya_attribute_name = "softEdges",
         string label = "Soft Edges",
         string widget = "checkBox",
         string page = "Cloud Attributes"
     ]],
     float in_edgeThresh = 1.0
     [[
-        string maya_attribute_name = "edgeThresh",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "edgeThresh",
         string label = "Edge Threshold",
         string page = "Cloud Attributes"
     ]],
     float in_centerThresh = 0.0
     [[
-        string maya_attribute_name = "centerThresh",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "centerThresh",
         string label = "Center Threshold",
         string page = "Cloud Attributes"
     ]],
     float in_transpRange = 0.5
     [[
-        string maya_attribute_name = "transpRange",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "transpRange",
         string label = "Transparency Range",
         string page = "Cloud Attributes"
     ]],
     float in_ratio = 0.707
     [[
-        string maya_attribute_name = "ratio",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "ratio",
         string label = "Ratio",
         string page = "Cloud Attributes"
     ]],
@@ -158,15 +142,15 @@ shader as_maya_cloud
 
     output color out_outColor = color(0)
     [[
-        string maya_attribute_name = "outColor",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output float out_outAlpha = 1.0
     [[
-        string maya_attribute_name = "outAlpha",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
         string label = "Output Alpha",
         string widget = "null"
     ]]
