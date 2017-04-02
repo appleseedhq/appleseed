@@ -292,6 +292,7 @@ namespace
                     ScatteringMode::All,
                     bsdf_sample_count,
                     light_sample_count,
+                    m_params.m_dl_low_light_threshold,
                     false);             // not computing indirect lighting
 
                 // Always sample both the lights and the BSDF.

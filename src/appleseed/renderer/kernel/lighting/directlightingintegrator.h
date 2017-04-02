@@ -82,6 +82,7 @@ class DirectLightingIntegrator
         const int                       light_sampling_modes,       // permitted scattering modes during environment sampling
         const size_t                    bsdf_sample_count,          // number of samples in BSDF sampling
         const size_t                    light_sample_count,         // number of samples in light sampling
+        const float                     low_light_threshold,        // light contribution threshold to disable shadow rays
         const bool                      indirect);                  // are we computing indirect lighting?
 
     // Compute outgoing radiance due to direct lighting via combined BSDF and light sampling.
@@ -132,6 +133,7 @@ class DirectLightingIntegrator
     const void*                         m_bsdf_data;
     const int                           m_bsdf_sampling_modes;
     const int                           m_light_sampling_modes;
+    const float                         m_low_light_threshold;
     const size_t                        m_bsdf_sample_count;
     const size_t                        m_light_sample_count;
     const bool                          m_indirect;

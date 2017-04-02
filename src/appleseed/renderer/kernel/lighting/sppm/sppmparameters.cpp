@@ -109,6 +109,7 @@ SPPMParameters::SPPMParameters(const ParamArray& params)
   , m_alpha(params.get_optional<float>("alpha", 0.7f))
   , m_max_photons_per_estimate(params.get_optional<size_t>("max_photons_per_estimate", 100))
   , m_dl_light_sample_count(params.get_optional<float>("dl_light_samples", 1.0))
+  , m_dl_low_light_threshold(params.get_optional<float>("dl_low_light_threshold", 0.0))
   , m_view_photons(params.get_optional<bool>("view_photons", false))
   , m_view_photons_radius(params.get_optional<float>("view_photons_radius", 1.0e-3f))
 {
@@ -144,18 +145,20 @@ void SPPMParameters::print() const
 
     RENDERER_LOG_INFO(
         "sppm path tracing settings:\n"
-        "  max path length  %s\n"
-        "  rr min path len. %s\n"
-        "  initial radius   %s%%\n"
-        "  alpha            %s\n"
-        "  max photons/est. %s\n"
-        "  dl light samples %s",
+        "  max path length        %s\n"
+        "  rr min path len.       %s\n"
+        "  initial radius         %s%%\n"
+        "  alpha                  %s\n"
+        "  max photons/est.       %s\n"
+        "  dl light samples       %s\n",
+        "  dl low light threshold %s",
         m_path_tracing_max_path_length == size_t(~0) ? "infinite" : pretty_uint(m_path_tracing_max_path_length).c_str(),
         m_path_tracing_rr_min_path_length == size_t(~0) ? "infinite" : pretty_uint(m_path_tracing_rr_min_path_length).c_str(),
         pretty_scalar(m_initial_radius_percents, 3).c_str(),
         pretty_scalar(m_alpha, 1).c_str(),
         pretty_uint(m_max_photons_per_estimate).c_str(),
-        pretty_scalar(m_dl_light_sample_count).c_str());
+        pretty_scalar(m_dl_light_sample_count).c_str(),
+        pretty_scalar(m_dl_low_light_threshold, 3).c_str());
 }
 
 }   // namespace renderer
