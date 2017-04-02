@@ -98,9 +98,9 @@ namespace
             const bool      m_enable_caustics;              // are caustics enabled?
 
             const size_t    m_max_path_length;              // maximum path length, ~0 for unlimited
-            const size_t    m_max_specular_bounces;         // maximum specular path length, ~0 for unlimited
-            const size_t    m_max_glossy_bounces;           // maximum glossy path length, ~0 for unlimited
-            const size_t    m_max_diffuse_bounces;          // maximum diffuse path length, ~0 for unlimited
+            const size_t    m_max_specular_bounces;         // maximum number of specular bounces, ~0 for unlimited
+            const size_t    m_max_glossy_bounces;           // maximum number of glossy bounces, ~0 for unlimited
+            const size_t    m_max_diffuse_bounces;          // maximum number of diffuse bounces, ~0 for unlimited
             const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
             const bool      m_next_event_estimation;        // use next event estimation?
 
