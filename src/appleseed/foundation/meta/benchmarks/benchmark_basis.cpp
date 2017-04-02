@@ -110,7 +110,7 @@ BENCHMARK_SUITE(Foundation_Math_Basis)
     BENCHMARK_CASE_F(BranchlessBuild_SinglePrecision, BuildFixture<float>)
     {
         for (size_t i = 0; i < N; ++i)
-            m_result[i].build(m_normal[i]);
+            m_result[i] = Basis3<float>(m_normal[i]);
     }
 
     BENCHMARK_CASE_F(OriginalBuild_SinglePrecision, BuildFixture<float>)
@@ -122,7 +122,7 @@ BENCHMARK_SUITE(Foundation_Math_Basis)
     BENCHMARK_CASE_F(BranchlessBuild_DoublePrecision, BuildFixture<double>)
     {
         for (size_t i = 0; i < N; ++i)
-            m_result[i].build(m_normal[i]);
+            m_result[i] = Basis3<double>(m_normal[i]);
     }
 
     BENCHMARK_CASE_F(OriginalBuild_DoublePrecision, BuildFixture<double>)
