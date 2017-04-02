@@ -164,8 +164,6 @@ set (appleseed_maya_osl_sources
      src/maya/as_maya_addMatrix.osl
      src/maya/as_maya_anisotropic.osl
      src/maya/as_maya_areaLight.osl
-     src/maya/as_maya_asDisneyMaterial.osl
-     src/maya/as_maya_asGlass.osl
      src/maya/as_maya_blendColors.osl
      src/maya/as_maya_blinn.osl
      src/maya/as_maya_bulge.osl
@@ -245,6 +243,15 @@ set (appleseed_alshaders_osl_sources
 list (APPEND osl_sources ${appleseed_alshaders_osl_sources})
 source_group ("src\\alshaders" FILES
     ${appleseed_alshaders_osl_sources}
+)
+
+set (appleseed_osl_sources
+     src/appleseed/asDisneyMaterial.osl
+     src/appleseed/asGlass.osl
+)
+list (APPEND osl_sources ${appleseed_osl_sources})
+source_group ("src\\appleseed" FILES
+    ${appleseed_osl_sources}
 )
 
 
