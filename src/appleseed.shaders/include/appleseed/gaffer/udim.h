@@ -55,4 +55,4 @@
     TEN_MARI_UDIM_NAMES(8), \
     TEN_MARI_UDIM_NAMES(9) 
 
-#endif
+#endif // !APPLESEED_SHADERS_UDIM_H

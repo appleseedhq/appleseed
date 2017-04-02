@@ -53,4 +53,4 @@ void rotate2d(
     }
 }
 
-#endif
+#endif // !APPLESEED_SHADERS_TRANSFORM_H

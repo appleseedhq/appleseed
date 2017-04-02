@@ -45,6 +45,7 @@
 //      https://en.wikipedia.org/wiki/SRGB
 //
 //
+
 float sRGB_EOTF(float value)
 {
     float linear_out;
