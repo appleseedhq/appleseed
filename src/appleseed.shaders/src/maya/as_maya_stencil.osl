@@ -33,70 +33,59 @@
 
 shader as_maya_stencil
 [[
-    string maya_node_name = "stencil",
-    string maya_classification = "utility/general"
+    string as_maya_node_name = "stencil"
 ]]
 (
     color in_image = color(0)
     [[
-        string maya_attribute_name = "image",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "image",
         string label = "Image Input"
     ]],
     float in_mask = 0.0
     [[
-        string maya_attribute_name = "mask",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "mask",
         string label = "Input Mask"
     ]],
     float in_edgeBlend = 0.0
     [[
-        string maya_attribute_name = "edgeBlend",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "edgeBlend",
         string label = "Edge Blend"
     ]],
     int in_keyMasking = 0
     [[
-        string maya_attribute_name = "keyMasking",
-        string maya_attribute_type = "bool",
+        string as_maya_attribute_name = "keyMasking",
         string label = "Key Masking",
         string widget = "checkBox"
     ]],
     int in_positiveKey = 0
     [[
-        string maya_attribute_name = "positiveKey",
-        string maya_attribute_type = "bool",
+        string as_maya_attribute_name = "positiveKey",
         string label = "Positive Key",
         string widget = "checkBox"
     ]],
     color in_colorKey = color(0)
     [[
-        string maya_attribute_name = "colorKey",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "colorKey",
         string label = "Color Key"
     ]],
     float in_hueRange = 0.5
     [[
-        string maya_attribute_name = "hueRange",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "hueRange",
         string label = "Hue Range"
     ]],
     float in_saturationRange = 0.5
     [[
-        string maya_attribute_name = "saturationRange",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "saturationRange",
         string label = "Saturation Range"
     ]],
     float in_valueRange = 0.5
     [[
-        string maya_attribute_name = "valueRange",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "valueRange",
         string label = "Value Range"
     ]],
     float in_threshold = 0.5
     [[
-        string maya_attribute_name = "threshold",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "threshold",
         string label = "Threshold"
     ]],
 
@@ -106,15 +95,15 @@ shader as_maya_stencil
 
     output color out_outColor = color(0)
     [[
-        string maya_attribute_name = "outColor",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output float out_outAlpha = 1.0
     [[
-        string maya_attribute_name = "outAlpha",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_name = "oa",
         string label = "Output Alpha",
         string widget = "null"
     ]]

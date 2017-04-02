@@ -164,8 +164,6 @@ set (appleseed_maya_osl_sources
      src/maya/as_maya_addMatrix.osl
      src/maya/as_maya_anisotropic.osl
      src/maya/as_maya_areaLight.osl
-     src/maya/as_maya_asDisneyMaterial.osl
-     src/maya/as_maya_asGlass.osl
      src/maya/as_maya_blendColors.osl
      src/maya/as_maya_blinn.osl
      src/maya/as_maya_bulge.osl
@@ -247,6 +245,15 @@ source_group ("src\\alshaders" FILES
     ${appleseed_alshaders_osl_sources}
 )
 
+set (appleseed_osl_sources
+     src/appleseed/asDisneyMaterial.osl
+     src/appleseed/asGlass.osl
+)
+list (APPEND osl_sources ${appleseed_osl_sources})
+source_group ("src\\appleseed" FILES
+    ${appleseed_osl_sources}
+)
+
 
 #--------------------------------------------------------------------------------------------------
 # Prepare the sandbox.
@@ -282,7 +289,7 @@ add_custom_command (
     TARGET SANDBOX
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/include
-        ${PROJECT_SOURCE_DIR}/sandbox/shaders/
+        ${PROJECT_SOURCE_DIR}/sandbox/shaders/include
     MAIN_DEPENDENCY ${appleseed_osl_headers}
 )
 

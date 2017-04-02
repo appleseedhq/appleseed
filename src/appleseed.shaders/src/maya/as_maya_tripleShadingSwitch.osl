@@ -30,33 +30,28 @@
 
 shader as_maya_tripleShadingSwitch
 [[
-    string maya_node_name = "tripleShadingSwitch",
-    string maya_classification = "utility/switch"
+    string as_maya_node_name = "tripleShadingSwitch"
 ]]
 (
     color in_inTriple[] = {0}
     [[
-        string maya_attribute_name = "inputs",
-        string maya_attribute_type = "color[]",
+        string as_maya_attribute_name = "inputs",
         string label = "Input Value"
     ]],
     string in_inShape[] = {""}
     [[
-        string maya_attribute_name = "inputs",
-        string maya_attribute_type = "string[]",
+        string as_maya_attribute_name = "inputs",
         string label = "Shape Name"
     ]],
     color in_default = color(0)
     [[
-        string maya_attribute_name = "default",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "default",
         string label = "Default Color"
     ]],
 
     output color out_output = color(0)
     [[
-        string maya_attribute_name = "output",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "output",
         string label = "Output Color",
         string widget = "null"
     ]]

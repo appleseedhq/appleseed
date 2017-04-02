@@ -32,20 +32,17 @@
 
 shader as_maya_bulge
 [[
-    string maya_node_name = "bulge",
-    string maya_classification = "textures/2d"
+    string as_maya_node_name = "bulge"
 ]]
 (
     float in_uWidth = 0.0
     [[
-        string maya_attribute_name = "uWidth",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "uWidth",
         string label = "U Width"
     ]],
     float in_vWidth = 0.0
     [[
-        string maya_attribute_name = "vWidth",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "vWidth",
         string label = "V Width"
     ]],
 
@@ -55,15 +52,15 @@ shader as_maya_bulge
     
     output color out_outColor = color(0.0)
     [[
-        string maya_attribute_name = "outColor",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output float out_outAlpha = 1.0
     [[
-        string maya_attribute_name = "outAlpha",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
         string label = "Output Alpha",
         string widget = "null"
     ]]

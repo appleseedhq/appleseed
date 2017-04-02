@@ -33,26 +33,22 @@
 
 shader as_maya_layeredTexture
 [[
-    string maya_node_name = "layeredTexture",
-    string maya_classification = "texture/other"
+    string as_maya_node_name = "layeredTexture"
 ]]
 (
     color in_color[] = {0}
     [[
-        string maya_attribute_name = "inputs",
-        string maya_attribute_type = "color[]",
+        string as_maya_attribute_name = "inputs",
         string label = "Color"
     ]],
     float in_alpha[] = {1.0}
     [[
-        string maya_attribute_name = "inputs",
-        string maya_attribute_type = "float[]",
+        string as_maya_attribute_name = "inputs",
         string label = "Alpha"
     ]],
     int in_blendMode[] = {1}
     [[
-        string maya_attribute_name = "inputs",
-        string maya_attribute_type = "int[]",
+        string as_maya_attribute_name = "inputs",
         string label = "Blend Mode",
         string widget = "mapper",
         string options =
@@ -60,36 +56,33 @@ shader as_maya_layeredTexture
     ]],
     int in_isVisible[] = {1}
     [[
-        string maya_attribute_name = "inputs",
-        string maya_attribute_type = "int[]",
+        string as_maya_attribute_name = "inputs",
         string label = "Visible",
         string widget = "checkBox"
     ]],
     int in_alphaIsLuminance = 0
     [[
-        string maya_attribute_name = "alphaIsLuminance",
-        string maya_attribute_type = "bool",
+        string as_maya_attribute_name = "alphaIsLuminance",
         string label = "Alpha Is Luminance",
         string widget = "checkBox"
     ]],
     output float out_outAlpha = 0.0
     [[
-        string maya_attribute_name = "outAlpha",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "outAlpha",
         string label = "Output Alpha",
         string widget = "null"
     ]],
     output color out_outColor = color(0)
     [[
-        string maya_attribute_name = "outColor",
-        string maya_attribute_type = "color",
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output color out_outTransparency = color(0)
     [[
-        string maya_attribute_name = "outTransparency",
-        string maya_attribute_type = "color",
+        string as_maya_attribute_name = "outTransparency",
+        string as_maya_attribute_short_name = "ot",
         string label = "Output Transparency",
         string widget = "null"
     ]]
