@@ -46,6 +46,9 @@ set (standard_osl_headers
     oslutil.h
     stdosl.h
 )
+list (APPEND osl_headers
+    ${standard_osl_headers}
+)
 source_group ("include\\standard" FILES
     ${standard_osl_headers}
 )
@@ -55,7 +58,9 @@ set (gaffer_osl_headers
     include/appleseed/gaffer/transform.h
     include/appleseed/gaffer/udim.h
 )
-list (APPEND appleseed_osl_headers ${gaffer_osl_headers})
+list (APPEND osl_headers
+    ${gaffer_osl_headers}
+)
 source_group ("include\\gaffer" FILES
     ${gaffer_osl_headers}
 )
@@ -80,14 +85,11 @@ set (appleseed_library_osl_headers
     include/appleseed/maya/as_maya_transform_helpers.h
     include/appleseed/pattern/as_pattern_helpers.h
 )
-list (APPEND appleseed_osl_headers ${appleseed_library_osl_headers})
-source_group ("include\\appleseed" FILES
+list (APPEND osl_headers
     ${appleseed_library_osl_headers}
 )
-
-list (APPEND osl_headers
-    ${standard_osl_headers}
-    ${appleseed_osl_headers}
+source_group ("include\\appleseed" FILES
+    ${appleseed_library_osl_headers}
 )
 
 
@@ -154,7 +156,9 @@ set (gaffer_osl_sources
      src/gaffer/vector/as_vector_normalize.osl
      src/gaffer/vector/as_vector_split.osl
 )
-list (APPEND osl_sources ${gaffer_osl_sources})
+list (APPEND osl_sources
+    ${gaffer_osl_sources}
+)
 source_group ("src\\gaffer" FILES
     ${gaffer_osl_sources}
 )
@@ -224,7 +228,9 @@ set (appleseed_maya_osl_sources
      src/maya/as_maya_vectorProduct.osl
      src/maya/as_maya_wtAddMatrix.osl
 )
-list (APPEND osl_sources ${appleseed_maya_osl_sources})
+list (APPEND osl_sources
+    ${appleseed_maya_osl_sources}
+)
 source_group ("src\\maya" FILES
     ${appleseed_maya_osl_sources}
 )
@@ -240,7 +246,9 @@ set (appleseed_alshaders_osl_sources
      src/alshaders/alSwitchColor.osl
      src/alshaders/alSwitchFloat.osl
 )
-list (APPEND osl_sources ${appleseed_alshaders_osl_sources})
+list (APPEND osl_sources
+    ${appleseed_alshaders_osl_sources}
+)
 source_group ("src\\alshaders" FILES
     ${appleseed_alshaders_osl_sources}
 )
@@ -249,7 +257,9 @@ set (appleseed_osl_sources
      src/appleseed/asDisneyMaterial.osl
      src/appleseed/asGlass.osl
 )
-list (APPEND osl_sources ${appleseed_osl_sources})
+list (APPEND osl_sources
+    ${appleseed_osl_sources}
+)
 source_group ("src\\appleseed" FILES
     ${appleseed_osl_sources}
 )
