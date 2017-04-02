@@ -798,9 +798,9 @@ float deltaE_CIEDE2000(
     float C_7 = pow(C_bar, 7);
 
     // 25^7 = 6103515625, using value directly causes an integer overflow
-    float C_7_sqrt = sqrt(pow(C_bar, 7) / (pow(C_bar,7) + pow(25, 7)));
+    float C_7_sqrt = sqrt(pow(C_bar, 7) / (pow(C_bar, 7) + pow(25, 7)));
     float G = (1.0 - C_7_sqrt) / 2;
-    
+
     float reference_a_prime = reference_a * (1 + G);
     float sampleval_a_prime = sampleval_a * (1 + G);
 
