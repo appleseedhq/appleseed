@@ -790,6 +790,7 @@ float deltaE_CIEDE2000(
     float sampleval_a = sampleval_Lab[1];
     float sampleval_b = sampleval_Lab[2];
 
+
     float reference_C = hypot(reference_a, reference_b);
     float sampleval_C = hypot(sampleval_a, sampleval_b);
 
@@ -797,9 +798,9 @@ float deltaE_CIEDE2000(
     float C_7 = pow(C_bar, 7);
 
     // 25^7 = 6103515625, using value directly causes an integer overflow
-    float C_7_sqrt = sqrt(C_7 / (C_7 + pow(25, 7)));
+    float C_7_sqrt = sqrt(pow(C_bar, 7) / (pow(C_bar,7) + pow(25, 7)));
     float G = (1.0 - C_7_sqrt) / 2;
-
+    
     float reference_a_prime = reference_a * (1 + G);
     float sampleval_a_prime = sampleval_a * (1 + G);
 
@@ -885,7 +886,7 @@ float deltaE_CIEDE2000(
 
     float delta_theta = 30.0 * exp(-sqr((H_bar_prime - 275) / 25));
 
-    float C_bar_7 = pow(C_bar, 7);
+    float C_bar_7 = pow(C_bar_prime, 7);
 
     float R_T = -2.0 * sqrt(C_bar_7 / (C_bar_7 + pow(25, 7))) *
         sin(radians(2 * delta_theta));
