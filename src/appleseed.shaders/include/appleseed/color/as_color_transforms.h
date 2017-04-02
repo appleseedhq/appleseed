@@ -779,24 +779,9 @@ color transform_LCh_uv_to_linear_RGB(
 //
 
 float deltaE_CIEDE2000(
-    color   reference_linear_RGB,
-    string  reference_color_space,
-    color   sample_linear_RGB,
-    string  sample_color_space)
-{
-    // If the colors are in a color space with a different white point,
-    // then adapt them to D65.
-
-    color reference_Lab = transform_linear_RGB_to_Lab(
-        reference_linear_RGB,
-        reference_color_space,
-        "D65");
-
-    color sampleval_Lab = transform_linear_RGB_to_Lab(
-        sample_linear_RGB,
-        sample_color_space,
-        "D65");
-    
+    color   reference_Lab,
+    color   sampleval_Lab)
+{   
     float reference_L = reference_Lab[0];
     float reference_a = reference_Lab[1];
     float reference_b = reference_Lab[2];
@@ -914,6 +899,33 @@ float deltaE_CIEDE2000(
         R_T * (delta_C_prime / S_C) * (delta_H_prime / S_H));
 
     return deltaE_00;
+}
+
+//
+// Overloaded deltaE_CIEDE2000, taking as reference and samples (scene-linear) RGB
+// colors instead of Lab colors.
+//
+
+float deltaE_CIEDE2000(
+    color   reference_linear_RGB,
+    string  reference_color_space,
+    color   sample_linear_RGB,
+    string  sample_color_space)
+{
+    // If the colors are in a color space with a different white point,
+    // then adapt them to D65.
+
+    color reference_Lab = transform_linear_RGB_to_Lab(
+        reference_linear_RGB,
+        reference_color_space,
+        "D65");
+
+    color sampleval_Lab = transform_linear_RGB_to_Lab(
+        sample_linear_RGB,
+        sample_color_space,
+        "D65");
+
+    return deltaE_CIEDE2000(reference_Lab, sampleval_Lab);
 }
 
 #endif // !AS_COLOR_TRANSFORMS_H
