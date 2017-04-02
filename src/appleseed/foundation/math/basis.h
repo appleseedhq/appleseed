@@ -188,13 +188,13 @@ inline void Basis3<T>::build(const VectorType& normal)
 
     m_n = normal;
 
-    T sign = copysignf(1.0f, m_n[2]);
+    const T sign = m_n[2] < T(0.0) ? T(-1.0) : T(1.0);
 
     const T a = T(-1.0) / (sign + m_n[2]);
     const T b = m_n[0] * m_n[1] * a;
 
-    m_u = VectorType(T(1.0) + sign * m_n[0] * m_n[0] * a, sign * b, -sign * m_n[0]);
-    m_v = VectorType(b, sign + m_n[1] * m_n[1] * a, -m_n[1]);
+    m_u = VectorType(b, sign + m_n[1] * m_n[1] * a, -m_n[1]);
+    m_v = VectorType(T(1.0) + sign * m_n[0] * m_n[0] * a, sign * b, -sign * m_n[0]);
 
 #ifndef NDEBUG
     checks();
