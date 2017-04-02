@@ -92,6 +92,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(
     const int                   light_sampling_modes,
     const size_t                bsdf_sample_count,
     const size_t                light_sample_count,
+    const float                 low_light_threshold,
     const bool                  indirect)
   : m_shading_context(shading_context)
   , m_light_sampler(light_sampler)
@@ -106,6 +107,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(
   , m_light_sampling_modes(light_sampling_modes)
   , m_bsdf_sample_count(bsdf_sample_count)
   , m_light_sample_count(light_sample_count)
+  , m_low_light_threshold(low_light_threshold)
   , m_indirect(indirect)
 {
 }
@@ -561,30 +563,41 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     double cos_on = dot(-incoming, sample.m_shading_normal);
     if (cos_on <= 0.0)
         return;
-
-    // Compute the transmission factor between the light sample and the shading point.
-    const float transmission =
-        m_shading_context.get_tracer().trace_between(
-            m_shading_point,
-            sample.m_point,
-            VisibilityFlags::ShadowRay);
-
-    // Discard occluded samples.
-    if (transmission == 0.0f)
-        return;
-
+    
     // Compute the square distance between the light sample and the shading point.
     const double square_distance = square_norm(incoming);
-    const double rcp_sample_square_distance = 1.0 / square_distance;
-    const double rcp_sample_distance = sqrt(rcp_sample_square_distance);
-
+    
     // Don't use this sample if we're closer than the light near start value.
     if (square_distance < square(edf->get_light_near_start()))
         return;
 
-    // Normalize the incoming direction.
-    incoming *= rcp_sample_distance;
+    const double rcp_sample_square_distance = 1.0 / square_distance;
+    const double rcp_sample_distance = sqrt(rcp_sample_square_distance);
+    
+    // Normalize the incoming direction. 
     cos_on *= rcp_sample_distance;
+    incoming *= rcp_sample_distance;
+    
+    // Decide whether the contributon from this light is significant or not.
+    const double approximate_contribution = cos_on * dot(incoming, m_geometric_normal);
+    const bool is_low_contribution = approximate_contribution < m_low_light_threshold;
+    
+    // Compute the transmission factor between the light sample and the shading point.
+    float transmission = 1.0f;
+    
+    // We cast a shadow ray only if the approximate contribution is large enough.
+    if (!is_low_contribution)
+    {
+    	transmission =
+            m_shading_context.get_tracer().trace_between(
+                m_shading_point,
+                sample.m_point,
+                VisibilityFlags::ShadowRay);
+    }
+    
+    // Discard occluded samples.
+    if (transmission == 0.0f)
+        return;
 
     // Evaluate the BSDF.
     Spectrum bsdf_value;
