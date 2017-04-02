@@ -28,12 +28,12 @@
 
 // Ref: http://blog.selfshadow.com/publications/s2012-shading-course/burley/s2012_pbs_disney_brdf_slides_v2.pdf
 
-shader as_DisneyMaterial
+shader asDisneyMaterial
 [[
     string as_maya_node_name = "asDisneyMaterial",
     string as_maya_classification = "shader/surface:appleseed/surface:swatch/appleseedRenderSwatch",
     string help = "Disney material",
-    int maya_type_id = 1210820
+    int maya_type_id = 1210819
 ]]
 (
     color in_color = color(0.5)
