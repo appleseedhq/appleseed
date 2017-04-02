@@ -25,7 +25,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
- 
+
 #ifndef AS_MAYA_HELPERS_H
 #define AS_MAYA_HELPERS_H
 
@@ -38,150 +38,150 @@
 #define UVWRAP              1.0001
 #define UNDEFINED_UVFILTER -1
 
-#define MAYA_COLORBALANCE_PARAMETERS                                    \
-    color in_defaultColor = color(0.5)                                  \
-    [[                                                                  \
-        string maya_attribute_name = "defaultColor",                    \
-        string label = "Default Color",                                 \
-        string page = "Color Balance"                                   \
-    ]],                                                                 \
-    color in_colorGain = color(1.0)                                     \
-    [[                                                                  \
-        string maya_attribute_name = "colorGain",                       \
-        string label = "Color Gain",                                    \
-        string page = "Color Balance"                                   \
-    ]],                                                                 \
-    color in_colorOffset = color(0.0)                                   \
-    [[                                                                  \
-        string maya_attribute_name = "colorOffset",                     \
-        string label = "Color Offset",                                  \
-        string page = "Color Balance"                                   \
-    ]],                                                                 \
-    float in_alphaGain = 1.0                                            \
-    [[                                                                  \
-        string maya_attribute_name = "alphaGain",                       \
-        string label = "Alpha Gain",                                    \
-        string page = "Color Balance"                                   \
-    ]],                                                                 \
-    float in_alphaOffset = 0.0                                          \
-    [[                                                                  \
-        string maya_attribute_name = "alphaOffset",                     \
-        string label = "Alpha Offset",                                  \
-        string page = "Color Balance"                                   \
-    ]],                                                                 \
-    int in_alphaIsLuminance = 1                                         \
-    [[                                                                  \
-        string maya_attribute_name = "alphaIsLuminance",                \
-        string label = "Alpha Is Luminance",                            \
-        string widget = "checkBox",                                     \
-        string page = "Color Balance"                                   \
+#define MAYA_COLORBALANCE_PARAMETERS                                        \
+    color in_defaultColor = color(0.5)                                      \
+    [[                                                                      \
+        string as_maya_attribute_name = "defaultColor",                     \
+        string label = "Default Color",                                     \
+        string page = "Color Balance"                                       \
+    ]],                                                                     \
+    color in_colorGain = color(1.0)                                         \
+    [[                                                                      \
+        string as_maya_attribute_name = "colorGain",                        \
+        string label = "Color Gain",                                        \
+        string page = "Color Balance"                                       \
+    ]],                                                                     \
+    color in_colorOffset = color(0.0)                                       \
+    [[                                                                      \
+        string as_maya_attribute_name = "colorOffset",                      \
+        string label = "Color Offset",                                      \
+        string page = "Color Balance"                                       \
+    ]],                                                                     \
+    float in_alphaGain = 1.0                                                \
+    [[                                                                      \
+        string as_maya_attribute_name = "alphaGain",                        \
+        string label = "Alpha Gain",                                        \
+        string page = "Color Balance"                                       \
+    ]],                                                                     \
+    float in_alphaOffset = 0.0                                              \
+    [[                                                                      \
+        string as_maya_attribute_name = "alphaOffset",                      \
+        string label = "Alpha Offset",                                      \
+        string page = "Color Balance"                                       \
+    ]],                                                                     \
+    int in_alphaIsLuminance = 1                                             \
+    [[                                                                      \
+        string as_maya_attribute_name = "alphaIsLuminance",                 \
+        string label = "Alpha Is Luminance",                                \
+        string widget = "checkBox",                                         \
+        string page = "Color Balance"                                       \
     ]]
 
-#define MAYA_EFFECTS_PARAMETERS                                         \
-    float in_filter = 1.0                                               \
-    [[                                                                  \
-        string maya_attribute_name = "filter",                          \
-        string label = "Filter",                                        \
-        string page = "Effects"                                         \
-    ]],                                                                 \
-    float in_filterOffset = 0.0                                         \
-    [[                                                                  \
-        string maya_attribute_name = "filterOffset",                    \
-        string label = "Filter Offset",                                 \
-        string page = "Effects"                                         \
-    ]],                                                                 \
-    int in_invert = 0                                                   \
-    [[                                                                  \
-        string maya_attribute_name = "invert",                          \
-        string label = "Invert",                                        \
-        string widget = "checkBox",                                     \
-        string page = "Effects"                                         \
+#define MAYA_EFFECTS_PARAMETERS                                             \
+    float in_filter = 1.0                                                   \
+    [[                                                                      \
+        string as_maya_attribute_name = "filter",                           \
+        string label = "Filter",                                            \
+        string page = "Effects"                                             \
+    ]],                                                                     \
+    float in_filterOffset = 0.0                                             \
+    [[                                                                      \
+        string as_maya_attribute_name = "filterOffset",                     \
+        string label = "Filter Offset",                                     \
+        string page = "Effects"                                             \
+    ]],                                                                     \
+    int in_invert = 0                                                       \
+    [[                                                                      \
+        string as_maya_attribute_name = "invert",                           \
+        string label = "Invert",                                            \
+        string widget = "checkBox",                                         \
+        string page = "Effects"                                             \
     ]]
 
-#define MAYA_EFFECTS_3DTEX_PARAMETERS                                   \
-    int in_wrap = 1                                                     \
-    [[                                                                  \
-        string maya_attribute_name = "wrap",                            \
-        string label = "Wrap",                                          \
-        string widget = "checkBox",                                     \
-        string page = "Effects"                                         \
-    ]],                                                                 \
-    int in_local = 0                                                    \
-    [[                                                                  \
-        string maya_attribute_name = "local",                           \
-        string label = "Local",                                         \
-        string widget = "checkBox",                                     \
-        string page = "Effects"                                         \
-    ]],                                                                 \
-    float in_blend = 0.0                                                \
-    [[                                                                  \
-        string maya_attribute_name = "blend",                           \
-        string label = "Blend",                                         \
-        string widget = "slider",                                       \
-        float min = 0.0,                                                \
-        float max = 1.0,                                                \
-        float slidermin = 0.0,                                          \
-        float slidermax = 1.0,                                          \
-        string page = "Effects"                                         \
+#define MAYA_EFFECTS_3DTEX_PARAMETERS                                       \
+    int in_wrap = 1                                                         \
+    [[                                                                      \
+        string as_maya_attribute_name = "wrap",                             \
+        string label = "Wrap",                                              \
+        string widget = "checkBox",                                         \
+        string page = "Effects"                                             \
+    ]],                                                                     \
+    int in_local = 0                                                        \
+    [[                                                                      \
+        string as_maya_attribute_name = "local",                            \
+        string label = "Local",                                             \
+        string widget = "checkBox",                                         \
+        string page = "Effects"                                             \
+    ]],                                                                     \
+    float in_blend = 0.0                                                    \
+    [[                                                                      \
+        string as_maya_attribute_name = "blend",                            \
+        string label = "Blend",                                             \
+        string widget = "slider",                                           \
+        float min = 0.0,                                                    \
+        float max = 1.0,                                                    \
+        float slidermin = 0.0,                                              \
+        float slidermax = 1.0,                                              \
+        string page = "Effects"                                             \
     ]]
 
-#define MAYA_UV_PARAMETERS                                              \
-    float in_uvCoord[2] = {u, v}                                        \
-    [[                                                                  \
-        string maya_attribute_name = "uvCoord",                         \
-        string label = "UV Coordinates",                                \
-        string page = "UV Coordinates"                                  \
-    ]],                                                                 \
-    float in_uvFilterSize[2] = {                                        \
-        UNDEFINED_UVFILTER, UNDEFINED_UVFILTER}                         \
-    [[                                                                  \
-        string maya_attribute_name = "uvFilterSize",                    \
-        string label = "UV Filter Size",                                \
-        string page = "UV Coordinates"                                  \
+#define MAYA_UV_PARAMETERS                                                  \
+    float in_uvCoord[2] = {u, v}                                            \
+    [[                                                                      \
+        string as_maya_attribute_name = "uvCoord",                          \
+        string label = "UV Coordinates",                                    \
+        string page = "UV Coordinates"                                      \
+    ]],                                                                     \
+    float in_uvFilterSize[2] = {                                            \
+        UNDEFINED_UVFILTER, UNDEFINED_UVFILTER}                             \
+    [[                                                                      \
+        string as_maya_attribute_name = "uvFilterSize",                     \
+        string label = "UV Filter Size",                                    \
+        string page = "UV Coordinates"                                      \
     ]]
 
-#define MAYA_COLORMANAGEMENT_PARAMETERS                                 \
-    int in_colorProfile = 0                                             \
-    [[                                                                  \
-        string maya_attribute_name = "colorProfile",                    \
-        string widget = "string",                                       \
-        string label = "Color Profile"                                  \
-    ]],                                                                 \
-    int in_ignoreColorSpaceFileRules = 0                                \
-    [[                                                                  \
-        string maya_attribute_name = "ignoreColorSpaceFileRules",       \
-        string widget = "checkBox",                                     \
-        string label = "Ignore Color Space File Rules"                  \
-    ]],                                                                 \
-    string in_colorSpace = ""                                           \
-    [[                                                                  \
-        string maya_attribute_name = "colorSpace",                      \
-        string widget = "string",                                       \
-        string label = "Color Space"                                    \
-    ]],                                                                 \
-    string in_workingSpace = ""                                         \
-    [[                                                                  \
-        string maya_attribute_name = "workingSpace",                    \
-        string widget = "string",                                       \
-        string label = "Working Space"                                  \
-    ]],                                                                 \
-    int in_colorManagementEnabled = 0                                   \
-    [[                                                                  \
-        string maya_attribute_name = "colorManagementEnabled",          \
-        string widget = "checkBox",                                     \
-        string label = "Color Management Enabled"                       \
-    ]],                                                                 \
-    int in_colorManagementConfigFileEnabled = 0                         \
-    [[                                                                  \
-        string maya_attribute_name = "colorManagementConfigFileEnabled",\
-        string widget = "checkBox",                                     \
-        string label = "Enable CMS Config"                              \
-    ]],                                                                 \
-    string in_colorManagementConfigFilePath = ""                        \
-    [[                                                                  \
-        string maya_attribute_name = "colorManagementConfigFilePath",   \
-        string widget = "filename",                                     \
-        string label = "Color Management Config File Path"              \
+#define MAYA_COLORMANAGEMENT_PARAMETERS                                     \
+    int in_colorProfile = 0                                                 \
+    [[                                                                      \
+        string as_maya_attribute_name = "colorProfile",                     \
+        string widget = "string",                                           \
+        string label = "Color Profile"                                      \
+    ]],                                                                     \
+    int in_ignoreColorSpaceFileRules = 0                                    \
+    [[                                                                      \
+        string as_maya_attribute_name = "ignoreColorSpaceFileRules",        \
+        string widget = "checkBox",                                         \
+        string label = "Ignore Color Space File Rules"                      \
+    ]],                                                                     \
+    string in_colorSpace = ""                                               \
+    [[                                                                      \
+        string as_maya_attribute_name = "colorSpace",                       \
+        string widget = "string",                                           \
+        string label = "Color Space"                                        \
+    ]],                                                                     \
+    string in_workingSpace = ""                                             \
+    [[                                                                      \
+        string as_maya_attribute_name = "workingSpace",                     \
+        string widget = "string",                                           \
+        string label = "Working Space"                                      \
+    ]],                                                                     \
+    int in_colorManagementEnabled = 0                                       \
+    [[                                                                      \
+        string as_maya_attribute_name = "colorManagementEnabled",           \
+        string widget = "checkBox",                                         \
+        string label = "Color Management Enabled"                           \
+    ]],                                                                     \
+    int in_colorManagementConfigFileEnabled = 0                             \
+    [[                                                                      \
+        string as_maya_attribute_name = "colorManagementConfigFileEnabled", \
+        string widget = "checkBox",                                         \
+        string label = "Enable CMS Config"                                  \
+    ]],                                                                     \
+    string in_colorManagementConfigFilePath = ""                            \
+    [[                                                                      \
+        string as_maya_attribute_name = "colorManagementConfigFilePath",    \
+        string widget = "filename",                                         \
+        string label = "Color Management Config File Path"                  \
     ]]
 
 float maya_luminance(color in_C)
@@ -242,7 +242,7 @@ color maya_gamma(
     return color(
         gamma_CCTF(in_value[0], in_gamma[0]),
         gamma_CCTF(in_value[1], in_gamma[1]),
-        gamma_CCTF(in_value[2], in_gamma[2]));            
+        gamma_CCTF(in_value[2], in_gamma[2]));
 }
 
 #endif // !AS_MAYA_HELPERS_H
