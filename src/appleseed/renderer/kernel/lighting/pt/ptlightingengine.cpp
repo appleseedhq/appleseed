@@ -171,7 +171,7 @@ namespace
                     m_enable_ibl ? "on" : "off",
                     m_enable_caustics ? "on" : "off",
                     m_max_path_length == size_t(~0) ? "infinite" : pretty_uint(m_max_path_length).c_str(),
-                    m_max_specular_bounces == size_t(~0)? "infinite" : pretty_uint(m_max_specular_bounces).c_str(),
+                    m_max_specular_bounces == size_t(~0) ? "infinite" : pretty_uint(m_max_specular_bounces).c_str(),
                     m_max_glossy_bounces == size_t(~0) ? "infinite" : pretty_uint(m_max_glossy_bounces).c_str(),
                     m_max_diffuse_bounces == size_t(~0) ? "infinite" : pretty_uint(m_max_diffuse_bounces).c_str(),
                     m_rr_min_path_length == size_t(~0) ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),

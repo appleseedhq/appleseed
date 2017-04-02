@@ -758,6 +758,7 @@ namespace
 
             const int max_bounces =
                 get_config<int>(config, param_path, -1);
+
             set_widget(widget_key_prefix + ".bounces.unlimited_" + type + "_bounces", max_bounces == -1);
             set_widget(widget_key_prefix + ".bounces.max_" + type + "_bounces", max_bounces == -1 ? DefaultMaxBounces : max_bounces);
         }
@@ -772,6 +773,7 @@ namespace
                 !get_widget<bool>(widget_key_prefix + ".bounces.unlimited_" + type + "_bounces")
                     ? get_widget<int>(widget_key_prefix + ".bounces.max_" + type + "_bounces")
                     : -1;
+
             set_config(config, param_path, max_bounces);
         }
     };
