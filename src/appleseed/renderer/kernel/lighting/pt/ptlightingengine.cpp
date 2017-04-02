@@ -117,11 +117,11 @@ namespace
               : m_enable_dl(params.get_optional<bool>("enable_dl", true))
               , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
               , m_enable_caustics(params.get_optional<bool>("enable_caustics", false))
-              , m_max_path_length(nz(params.get_optional<size_t>("max_path_length", 0)))
-              , m_max_specular_bounces(n_minus_o(params.get_optional<int>("max_specular_bounces", -1)))
-              , m_max_glossy_bounces(n_minus_o(params.get_optional<int>("max_glossy_bounces", -1)))
-              , m_max_diffuse_bounces(n_minus_o(params.get_optional<int>("max_diffuse_bounces", -1)))
-              , m_rr_min_path_length(nz(params.get_optional<size_t>("rr_min_path_length", 6)))
+              , m_max_path_length(fixup_path_length(params.get_optional<size_t>("max_path_length", 0)))
+              , m_max_specular_bounces(fixup_bounces(params.get_optional<int>("max_specular_bounces", -1)))
+              , m_max_glossy_bounces(fixup_bounces(params.get_optional<int>("max_glossy_bounces", -1)))
+              , m_max_diffuse_bounces(fixup_bounces(params.get_optional<int>("max_diffuse_bounces", -1)))
+              , m_rr_min_path_length(fixup_path_length(params.get_optional<size_t>("rr_min_path_length", 6)))
               , m_next_event_estimation(params.get_optional<bool>("next_event_estimation", true))
               , m_dl_light_sample_count(params.get_optional<float>("dl_light_samples", 1.0f))
               , m_ibl_env_sample_count(params.get_optional<float>("ibl_env_samples", 1.0f))
@@ -141,12 +141,12 @@ namespace
                         : 0.0f;
             }
 
-            static size_t nz(const size_t x)
+            static size_t fixup_path_length(const size_t x)
             {
                 return x == 0 ? ~0 : x;
             }
 
-            static size_t n_minus_o(const int x)
+            static size_t fixup_bounces(const int x)
             {
                 return x == -1 ? ~0 : x;
             }

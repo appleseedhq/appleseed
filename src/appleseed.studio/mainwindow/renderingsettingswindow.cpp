@@ -775,7 +775,7 @@ namespace
             set_config(config, construct_bounce_setting_param_path(bounce_type), max_bounces);
         }
 
-        string construct_bounce_setting_param_path(const string& bounce_type) const
+        static string construct_bounce_setting_param_path(const string& bounce_type)
         {
             return "pt.max_" + bounce_type + "_bounces";
         }
