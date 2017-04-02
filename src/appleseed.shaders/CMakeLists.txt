@@ -289,7 +289,7 @@ add_custom_command (
     TARGET SANDBOX
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/include
-        ${PROJECT_SOURCE_DIR}/sandbox/shaders/
+        ${PROJECT_SOURCE_DIR}/sandbox/shaders/include
     MAIN_DEPENDENCY ${appleseed_osl_headers}
 )
 
