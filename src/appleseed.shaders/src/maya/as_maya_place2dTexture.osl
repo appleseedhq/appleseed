@@ -51,7 +51,7 @@ shader as_maya_place2dTexture
     float in_rotateFrame = 0.0
     [[
         string as_maya_attribute_name = "rotateFrame",
-        string as_maya_attribute_type = "angle",
+        string units = "degrees",
         string label = "UV Frame Rotation"
     ]],
     int in_mirrorU = 0
@@ -97,7 +97,7 @@ shader as_maya_place2dTexture
     float in_rotateUV = 0.0
     [[
         string as_maya_attribute_name = "rotateUV",
-        string as_maya_attribute_type = "angle",
+        string units = "degrees",
         string label = "Rotate UV"
     ]],
     float in_noiseUV[2] = {0.0, 0.0}
