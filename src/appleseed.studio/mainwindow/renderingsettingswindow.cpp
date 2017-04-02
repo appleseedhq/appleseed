@@ -756,11 +756,10 @@ namespace
         {
             const size_t DefaultMaxBounces = 8;
 
-            const size_t max_path_length =
-                get_config<size_t>(config, param_path, 0);
-
-            set_widget(widget_key_prefix + ".bounces.unlimited_"+type+"_bounces", max_path_length == 0);
-            set_widget(widget_key_prefix + ".bounces.max_"+type+"_bounces", max_path_length == 0 ? DefaultMaxBounces : max_path_length - 1);
+            const int max_bounces =
+                get_config<int>(config, param_path, -1);
+            set_widget(widget_key_prefix + ".bounces.unlimited_" + type + "_bounces", max_bounces == -1);
+            set_widget(widget_key_prefix + ".bounces.max_" + type + "_bounces", max_bounces == -1 ? DefaultMaxBounces : max_bounces);
         }
 
         void save_separate_bounce_settings(
@@ -769,12 +768,11 @@ namespace
             const string&           param_path,
             const string&           type) const
         {
-            const size_t max_path_length =
-                !get_widget<bool>(widget_key_prefix + ".bounces.unlimited_"+type+"_bounces")
-                    ? get_widget<size_t>(widget_key_prefix + ".bounces.max_"+type+"_bounces") + 1
-                    : 0;
-
-            set_config(config, param_path, max_path_length);
+            const int max_bounces =
+                !get_widget<bool>(widget_key_prefix + ".bounces.unlimited_" + type + "_bounces")
+                    ? get_widget<int>(widget_key_prefix + ".bounces.max_" + type + "_bounces")
+                    : -1;
+            set_config(config, param_path, max_bounces);
         }
     };
 
@@ -908,9 +906,9 @@ namespace
             load_directly_linked_values(config);
 
             load_bounce_settings(config, "pt", "pt.max_path_length");
-            load_separate_bounce_settings(config, "pt", "pt.specular_max_path_length", "specular");
-            load_separate_bounce_settings(config, "pt", "pt.glossy_max_path_length", "glossy");
-            load_separate_bounce_settings(config, "pt", "pt.diffuse_max_path_length", "diffuse");
+            load_separate_bounce_settings(config, "pt", "pt.max_specular_bounces", "specular");
+            load_separate_bounce_settings(config, "pt", "pt.max_glossy_bounces", "glossy");
+            load_separate_bounce_settings(config, "pt", "pt.max_diffuse_bounces", "diffuse");
 
             set_widget("advanced.unlimited_ray_intensity", !config.get_parameters().exist_path("pt.max_ray_intensity"));
             set_widget("advanced.max_ray_intensity", get_config<double>(config, "pt.max_ray_intensity", 1.0));
@@ -921,9 +919,9 @@ namespace
             save_directly_linked_values(config);
 
             save_bounce_settings(config, "pt", "pt.max_path_length");
-            save_separate_bounce_settings(config, "pt", "pt.specular_max_path_length", "specular");
-            save_separate_bounce_settings(config, "pt", "pt.glossy_max_path_length", "glossy");
-            save_separate_bounce_settings(config, "pt", "pt.diffuse_max_path_length", "diffuse");
+            save_separate_bounce_settings(config, "pt", "pt.max_specular_bounces", "specular");
+            save_separate_bounce_settings(config, "pt", "pt.max_glossy_bounces", "glossy");
+            save_separate_bounce_settings(config, "pt", "pt.max_diffuse_bounces", "diffuse");
 
             if (get_widget<bool>("advanced.unlimited_ray_intensity"))
                 config.get_parameters().remove_path("pt.max_ray_intensity");
