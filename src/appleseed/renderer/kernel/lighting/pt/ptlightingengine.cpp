@@ -159,9 +159,9 @@ namespace
                     "  ibl                       %s\n"
                     "  caustics                  %s\n"
                     "  max path length           %s\n"
-                    "  max specular path length  %s\n"
-                    "  max glossy path length    %s\n"
-                    "  max diffuse path length   %s\n"
+                    "  max specular bounces      %s\n"
+                    "  max glossy bounces        %s\n"
+                    "  max diffuse bounces       %s\n"
                     "  rr min path len.          %s\n"
                     "  next event est.           %s\n"
                     "  dl light samples          %s\n"
@@ -286,6 +286,7 @@ namespace
             uint64                      m_specular_bounces;
             uint64                      m_glossy_bounces;
             uint64                      m_diffuse_bounces;
+
             PathVisitorBase(
                 const Parameters&       params,
                 const LightSampler&     light_sampler,
