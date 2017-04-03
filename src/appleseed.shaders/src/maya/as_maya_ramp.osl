@@ -330,7 +330,7 @@ shader as_maya_ramp
             in_alphaGain,
             in_alphaOffset,
             in_invert,
-            in_alphaIsLuminance,
+            1, // this node sets alpha to color relative luminance
             out_outColor,
             out_outAlpha);
     }
