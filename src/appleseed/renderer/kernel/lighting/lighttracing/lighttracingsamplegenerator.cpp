@@ -143,10 +143,10 @@ namespace
             {
                 RENDERER_LOG_INFO(
                     "light tracing settings:\n"
-                    "  ibl              %s\n"
-                    "  caustics         %s\n"
-                    "  max path length  %s\n"
-                    "  rr min path len. %s",
+                    "  ibl                           %s\n"
+                    "  caustics                      %s\n"
+                    "  max path length               %s\n"
+                    "  rr min path length            %s",
                     m_enable_ibl ? "on" : "off",
                     m_enable_caustics ? "on" : "off",
                     m_max_path_length == size_t(~0) ? "infinite" : pretty_uint(m_max_path_length).c_str(),

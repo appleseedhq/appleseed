@@ -124,11 +124,11 @@ namespace
             {
                 RENDERER_LOG_INFO(
                     "distribution ray tracing settings:\n"
-                    "  ibl              %s\n"
-                    "  max path length  %s\n"
-                    "  rr min path len. %s\n"
-                    "  dl light samples %s\n"
-                    "  ibl env samples  %s",
+                    "  ibl                           %s\n"
+                    "  max path length               %s\n"
+                    "  rr min path length            %s\n"
+                    "  dl light samples              %s\n"
+                    "  ibl env samples               %s",
                     m_enable_ibl ? "on" : "off",
                     m_max_path_length == size_t(~0) ? "infinite" : pretty_uint(m_max_path_length).c_str(),
                     m_rr_min_path_length == size_t(~0) ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),

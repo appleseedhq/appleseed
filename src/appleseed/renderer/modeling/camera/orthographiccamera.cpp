@@ -246,12 +246,12 @@ namespace
         {
             RENDERER_LOG_INFO(
                 "camera \"%s\" settings:\n"
-                "  model            %s\n"
-                "  film width       %f\n"
-                "  film height      %f\n"
-                "  near z           %f\n"
-                "  shutter open     %f\n"
-                "  shutter close    %f",
+                "  model                         %s\n"
+                "  film width                    %f\n"
+                "  film height                   %f\n"
+                "  near z                        %f\n"
+                "  shutter open                  %f\n"
+                "  shutter close                 %f",
                 get_path().c_str(),
                 Model,
                 m_film_dimensions[0],

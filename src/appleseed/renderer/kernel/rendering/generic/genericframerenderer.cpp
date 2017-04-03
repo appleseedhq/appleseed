@@ -112,8 +112,8 @@ namespace
 
             RENDERER_LOG_INFO(
                 "rendering settings:\n"
-                "  sampling mode    %s\n"
-                "  threads          %s",
+                "  sampling mode                 %s\n"
+                "  threads                       %s",
                 get_sampling_context_mode_name(get_sampling_context_mode(params)).c_str(),
                 pretty_int(m_params.m_thread_count).c_str());
         }
