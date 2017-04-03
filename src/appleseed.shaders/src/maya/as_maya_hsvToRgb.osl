@@ -30,21 +30,18 @@
 
 shader as_maya_hsvToRgb
 [[
-    string maya_node_name = "hsvToRgb",
-    string maya_classification = "utility/color"
+    string as_maya_node_name = "hsvToRgb"
 ]]
 (
     color in_inHsv = color(0)
     [[
-        string maya_attribute_name = "inHsv",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "inHsv",
         string label = "HSV Input Color"
     ]],
 
     output color out_outRgb = color(0)
     [[
-        string maya_attribute_name = "outRgb",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "outRgb",
         string label = "RGB Output Color",
         string widget = "null"
     ]]

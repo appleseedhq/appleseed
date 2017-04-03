@@ -31,8 +31,7 @@
 
 shader as_maya_place3dTexture
 [[
-    string maya_node_name = "place3dTexture",
-    string maya_classification = "utility/general/placement/3d"
+    string as_maya_node_name = "place3dTexture"
 ]]
 (
     matrix inclusiveMatrixInverse = matrix(1)
@@ -42,8 +41,7 @@ shader as_maya_place3dTexture
 
     output matrix out_worldInverseMatrix = matrix(1)
     [[
-        string maya_attribute_name = "worldInverseMatrix",
-        string maya_attribute_type = "matrix",
+        string as_maya_attribute_name = "worldInverseMatrix",
         string label = "World Inverse Matrix",
         string widget = "null"
     ]]

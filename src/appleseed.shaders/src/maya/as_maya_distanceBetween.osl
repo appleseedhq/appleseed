@@ -30,39 +30,33 @@
 
 shader as_maya_distanceBetween
 [[
-    string maya_node_name = "distanceBetween",
-    string maya_classification = "utility/general"
+    string as_maya_node_name = "distanceBetween"
 ]]
 (
     point in_point1 = point(0)
     [[
-        string maya_attribute_name = "point1",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "point1",
         string label = "Point 1"
     ]], 
     matrix in_inMatrix1 = matrix(1)
     [[
-        string maya_attribute_name = "inMatrix1",
-        string maya_attribute_type = "matrix",
+        string as_maya_attribute_name = "inMatrix1",
         string label = "Matrix 1"
     ]],
     point in_point2 = point(0)
     [[
-        string maya_attribute_name = "point2",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "point2",
         string label = "Point 2"
     ]],
     matrix in_inMatrix2 = matrix(1)
     [[
-        string maya_attribute_name = "inMatrix2",
-        string maya_attribute_type = "matrix",
+        string as_maya_attribute_name = "inMatrix2",
         string label = "Matrix 2"
     ]],
 
     output float out_distance = 0.0
     [[
-        string maya_attribute_name = "distance",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "distance",
         string label = "Output Distance",
         string widget = "null"
     ]]

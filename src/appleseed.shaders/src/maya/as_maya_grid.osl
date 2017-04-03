@@ -33,38 +33,32 @@
 
 shader as_maya_grid
 [[
-    string maya_node_name = "grid",
-    string maya_classification = "texture/2d"
+    string as_maya_node_name = "grid"
 ]]
 (
     color in_fillerColor = color(0)
     [[
-        string maya_attribute_name = "fillerColor",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "fillerColor",
         string label = "Filler Color"
     ]],
     color in_lineColor = color(0)
     [[
-        string maya_attribute_name = "lineColor",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "lineColor",
         string label = "Line Color"
     ]],
     float in_contrast = 1.0
     [[
-        string maya_attribute_name = "contrast",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "contrast",
         string label = "Contrast"
     ]],
     float in_uWidth = 0.1
     [[
-        string maya_attribute_name = "uWidth",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "uWidth",
         string label = "U Width"
     ]],
     float in_vWidth = 0.1
     [[
-        string maya_attribute_name = "vWidth",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "vWidth",
         string label = "V Width"
     ]],
 
@@ -74,15 +68,15 @@ shader as_maya_grid
 
     output color out_outColor = color(0)
     [[
-        string maya_attribute_name = "outColor",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output float out_outAlpha = 1.0
     [[
-        string maya_attribute_name = "outAlpha",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_name = "oa",
         string label = "Output Alpha",
         string widget = "null"
     ]]

@@ -26,167 +26,102 @@
 // THE SOFTWARE.
 //
 
-// Ref: http://blog.selfshadow.com/publications/s2012-shading-course/burley/s2012_pbs_disney_brdf_slides_v2.pdf
-
-shader as_DisneyMaterial
+shader asGlass
 [[
-    string maya_node_name = "asDisneyMaterial",
-    string maya_classification = "shader/surface:appleseed/surface:swatch/appleseedRenderSwatch",
-    string help = "Disney material",
-    int maya_type_id = 1210820
+    string as_maya_node_name = "asGlass",
+    string as_maya_classification = "shader/surface:appleseed/surface:swatch/appleseedRenderSwatch",
+    string help = "Glass material",
+    int as_maya_type_id = 1210820
 ]]
 (
-    color in_color = color(0.5)
+    color in_surfaceTransmittance = color(1.0)
     [[
-        string maya_attribute_name = "color",
-        string maya_attribute_type = "color",
-        string maya_attribute_short_name = "c",
-        string label = "Surface Color",
-        string page = "Common Material Parameters"
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Transmittance Color",
+        string page = "Surface Transmittance Parameters"
     ]],
-    float in_subsurfaceAmount = 0.0
+    float in_transmittanceAmount = 0.8
     [[
+        string as_maya_attribute_name = "transmittanceAmount",
         float min = 0.0,
         float max = 1.0,
-        float slidermin = 0.0,
-        float slidermax = 1.0,
-        string label = "Subsurface",
-        string page = "Common Material Parameters"
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Transmittance Amount",
+        string page = "Surface Transmittance Parameters"
     ]],
-    float in_specularAmount = 0.5
+    color in_reflectionTint = color(1)
     [[
-        float min = 0.0,
-        float max = 1.0,
-        float slidermin = 0.0,
-        float slidermax = 1.0,
-        string label = "Specular Amount",
+        string as_maya_attribute_name = "reflectionTint",
+        string label = "Reflection Tint",
         string page = "Specular Parameters"
     ]],
-    float in_roughness = 0.5
+    color in_refractionTint = color(1)
     [[
-        float min = 0.0,
-        float max = 1.0,
-        float slidermin = 0.0,
-        float slidermax = 1.0,
-        string label = "Surface Roughness",
+        string as_maya_attribute_name = "refractionTint",
+        string label = "Refraction Tint",
         string page = "Specular Parameters"
     ]],
-    float in_specularTint = 0.0
+    float in_ior = 1.5
     [[
-        float min = 0.0,
-        float max = 1.0,
-        float slidermin = 0.0,
-        float slidermax = 1.0,
-        string label = "Specular Tinting",
+        string as_maya_attribute_name = "ior",
+        float min = 1.0,
+        float max = 10.0,
+        float softmin = 1.0,
+        float softmax = 2.0,
+        string label = "Index Of Refraction",
+        string page = "Specular Parameters",
+        int divider = 1
+    ]],
+    int in_distribution = 0
+    [[
+        string as_maya_attribute_name = "distribution",
+        string label = "Distribution",
+        string as_maya_attribute_type = "enum",
+        int min = 0,
+        int max = 1,
+        string widget = "mapper",
+        string options = "Beckmann:0|GGX:1",
         string page = "Specular Parameters"
     ]],
-    float in_metallicAmount = 0.0
+    float in_roughness = 0.1
     [[
-        float min = 0.0,
+        string as_maya_attribute_name = "roughness",
+        float min = 0.001,
         float max = 1.0,
-        float slidermin = 0.0,
+        float slidermin = 0.001,
         float slidermax = 1.0,
-        string label = "Metallicness",
+        string label = "Roughness",
         string page = "Specular Parameters",
         int divider = 1
     ]],
     float in_anisotropyAmount = 0.0
     [[
+        string as_maya_attribute_name = "anisotropyAmount",
         float min = 0.0,
         float max = 1.0,
-        float slidermin = 0.0,
-        float slidermax = 1.0,
         string label = "Anisotropy Amount",
-        string page = "Specular Parameters",
+        string page = "Specular Parameters"
     ]],
     float in_anisotropyAngle = 0.0
     [[
+        string as_maya_attribute_name = "anisotropyAngle",
         float min = 0.0,
         float max = 1.0,
         float slidermin = 0.0,
         float slidermax = 1.0,
-        string label = "Anisotropy Angle",
+        string label = "Anisotropy Rotation",
         string help = "The [0,1] range maps to [0,360] degrees range",
         string page = "Specular Parameters"
     ]],
     color in_anisotropyVectorMap = color(0)
     [[
+        string as_maya_attribute_name = "anisotropyVectorMap",
         string label = "Anisotropy Vector Map",
         string page = "Specular Parameters",
         string help = "Vector tangent field map, with XY in R,G channels"
     ]],
-    float in_sheenAmount = 0.0
-    [[
-        float min = 0.0,
-        float max = 10.0,
-        float softmin = 0.0,
-        float softmax = 1.0,
-        float slidermin = 0.0,
-        float slidermax = 1.0,
-        string label = "Sheen Amount",
-        string page = "Sheen Parameters"
-    ]],
-    float in_sheenTint = 0.5
-    [[
-        float min = 0.0,
-        float max = 1.0,
-        float slidermin = 0.0,
-        float slidermax = 1.0,
-        string label = "Sheen Tint",
-        string page = "Sheen Parameters"
-    ]],
-    float in_clearCoat = 0.0
-    [[
-        float min = 0.0,
-        float max = 100.0,
-        float softmin = 0.0,
-        float softmax = 1.0,
-        float slidermin = 0.0,
-        float slidermax = 1.0,
-        string label = "Coating Amount",
-        string page = "Clear Coat Parameters"
-    ]],
-    float in_clearCoatGlossyness = 1.0
-    [[
-        float min = 0.0,
-        float max = 1.0,
-        float slidermin = 0.0,
-        float slidermax = 1.0,
-        string label = "Coating Glossyness",
-        string page = "Clear Coat Parameters"
-    ]],
-    normal in_normalCamera = N
-    [[
-        string maya_attribute_name = "normalCamera",
-        string maya_attribute_short_name = "n",
-        string label = "Bump Normal",
-        string page = "Bump Parameters"
-    ]],
-    int in_matteOpacityMode = 2
-    [[
-        string maya_attribute_name = "matteOpacityMode",
-        string maya_attribute_type = "enum",
-        string label = "Matte Opacity Mode",
-        string widget = "mapper",
-        string options = "Black Hole:0|Solid Matte:1|Opacity Gain:2",
-        string page = "Matte Opacity Parameters"
-    ]],
-    float in_matteOpacity = 1.0
-    [[
-        string maya_attribute_name = "matteOpacity",
-        string maya_attribute_type = "float",
-        string label = "Matte Opacity",
-        string page = "Matte Opacity Parameters"
-    ]],
-    int in_maximumRayDepth = 4
-    [[
-        int min = 0,
-        int max = 32,
-        int softmin = 0,
-        int softmax = 8,
-        string label = "Ray Depth",
-        string page = "Advanced Parameters"
-    ]],    
     vector Tn = vector(0)
     [[
         int lockgeom = 0,
@@ -197,26 +132,66 @@ shader as_DisneyMaterial
         int lockgeom = 0,
         string widget = "null"
     ]],
+    color in_volumeTransmittance = 1.0
+    [[
+        string as_maya_attribute_name = "volumeTransmittance",
+        string label = "Volume Transmittance",
+        string page = "Volume Material Parameters"
+    ]],
+    float in_volumeTransmittanceDistance = 0.0
+    [[
+        string as_maya_attribute_name = "volumeTransmittanceDistance",
+        string label = "Transmittance Distance",
+        string page = "Volume Material Parameters"
+    ]],
+    normal in_normalCamera = N
+    [[
+        string as_maya_attribute_name = "normalCamera",
+        string as_maya_attribute_short_name = "n",
+        string label = "Bump Normal",
+        string page = "Bump Parameters"
+    ]],
+    int in_matteOpacityMode = 2
+    [[
+        string as_maya_attribute_name = "matteOpacityMode",
+        string label = "Matte Opacity Mode",
+        string widget = "mapper",
+        string options = "Black Hole:0|Solid Matte:1|Opacity Gain:2",
+        string page = "Matte Opacity Parameters"
+    ]],
+    float in_matteOpacity = 1.0
+    [[
+        string as_maya_attribute_name = "matteOpacity",
+        string label = "Matte Opacity",
+        string page = "Matte Opacity Parameters"
+    ]],
+    int in_maximumRayDepth = 4
+    [[
+        string as_maya_attribute_name = "maximumRayDepth",
+        int min = 0,
+        int max = 32,
+        int softmin = 0,
+        int softmax = 8,
+        string label = "Ray Depth",
+        string page = "Advanced Parameters"
+    ]],
 
     output closure color out_outColor = 0
     [[
-        string maya_attribute_name = "outColor",
-        string maya_attribute_type = "color",
-        string maya_attribute_short_name = "oc",
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
         string widget = "null"
     ]],
     output closure color out_outTransparency = 0
     [[
-        string maya_attribute_name = "outTransparency",
-        string maya_attribute_type = "color",
-        string maya_attribute_short_name = "ot",
+        string as_maya_attribute_name = "outTransparency",
+        string as_maya_attribute_short_name = "ot",
         string widget = "null"
     ]],
     output closure color out_outMatteOpacity = 0
     [[
-        string maya_attribute_name = "outMatteOpacity",
-        string maya_attribute_type = "color",
-        string maya_attribute_short_name = "om",
+        string as_maya_attribute_name = "outMatteOpacity",
+        string as_maya_attribute_short_name = "om",
         string widget = "null"
     ]]
 )
@@ -235,7 +210,7 @@ shader as_DisneyMaterial
             {
                 vector vector_map = normalize(
                     (vector) in_anisotropyVectorMap * 2.0 - 1.0);
-                
+
                 tangent = normalize(
                     vector_map[0] * Tn +
                     vector_map[1] * Bn +
@@ -256,20 +231,20 @@ shader as_DisneyMaterial
             }
         }
 
-        out_outColor = as_disney(
+        string distribution = (in_distribution) ? "ggx" : "beckmann";
+
+        out_outColor = as_glass(
+            distribution,
             Nn,
             tangent,
-            in_color,
-            in_subsurfaceAmount,
-            in_metallicAmount,
-            in_specularAmount,
-            in_specularTint,
-            in_anisotropyAmount,
+            in_transmittanceAmount * in_surfaceTransmittance,
+            in_reflectionTint,
+            in_refractionTint,
             in_roughness,
-            in_sheenAmount,
-            in_sheenTint,
-            in_clearCoat,
-            in_clearCoatGlossyness);
+            in_anisotropyAmount,
+            in_ior,
+            in_volumeTransmittance,
+            in_volumeTransmittanceDistance);
 
         closure color matte_term;
 

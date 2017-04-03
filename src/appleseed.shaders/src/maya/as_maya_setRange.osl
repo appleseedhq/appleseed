@@ -30,46 +30,39 @@
 
 shader as_maya_setRange
 [[
-    string maya_node_name = "setRange",
-    string maya_classification = "utility/general"
+    string as_maya_node_name = "setRange"
 ]]
 (
     // Components = valueX|Y|Z, use vector, not color type (R|G|B)
     vector in_value = vector(0)
     [[
-        string maya_attribute_name = "value",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "value",
         string label = "Input Value"
     ]],
     vector in_min = vector(0)
     [[
-        string maya_attribute_name = "min",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "min",
         string label = "Minimum Value"
     ]],
     vector in_max = vector(0)
     [[
-        string maya_attribute_name = "max",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "max",
         string label = "Maximum Value"
     ]],
     vector in_oldMin = vector(0)
     [[
-        string maya_attribute_name = "oldMin",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "oldMin",
         string label = "Old Minimum Value"
     ]],
     vector in_oldMax = vector(0)
     [[
-        string maya_attribute_name = "oldMax",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "oldMax",
         string label = "Old Maximum Value"
     ]],
 
     output vector out_outValue = vector(0)
     [[
-        string maya_attribute_name = "outValue",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "outValue",
         string label = "Output Value",
         string widget = "null"
     ]]

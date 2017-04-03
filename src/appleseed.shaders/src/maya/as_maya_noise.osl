@@ -34,32 +34,27 @@
 
 shader as_maya_noise
 [[
-    string maya_node_name = "noise",
-    string maya_classification = "texture/2d"
+    string as_maya_node_name = "noise"
 ]]
 (
     float in_amplitude = 1.0
     [[
-        string maya_attribute_name = "amplitude",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "amplitude",
         string label = "Amplitude"
     ]],
     float in_ratio = 0.707
     [[
-        string maya_attribute_name = "ratio",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "ratio",
         string label = "Ratio"
     ]],
     float in_threshold = 0.0
     [[
-        string maya_attribute_name = "threshold",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "threshold",
         string label = "Threshold"
     ]],
     int in_depthMax = 3
     [[
-        string maya_attribute_name = "depthMax",
-        string maya_attribute_type = "int",
+        string as_maya_attribute_name = "depthMax",
         string widget = "slider",
         int slidermin = 1,
         int slidermax = 8,
@@ -67,8 +62,7 @@ shader as_maya_noise
     ]],
     float in_frequency = 8.0
     [[
-        string maya_attribute_name = "frequency",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "frequency",
         string widget = "slider",
         float slidermin = 0.0,
         float slidermax = 100.0,
@@ -76,8 +70,7 @@ shader as_maya_noise
     ]],
     float in_frequencyRatio = 2.0
     [[
-        string maya_attribute_name = "frequencyRatio",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "frequencyRatio",
         string widget = "slider",
         float slidermin = 1.0,
         float slidermax = 10.0,
@@ -85,61 +78,52 @@ shader as_maya_noise
     ]],
     int in_inflection = 0
     [[
-        string maya_attribute_name = "inflection",
-        string maya_attribute_type = "bool",
+        string as_maya_attribute_name = "inflection",
         string widget = "checkBox",
         string label = "Inflection"
     ]],
     float in_time = 0.0
     [[
-        string maya_attribute_name = "time",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "time",
         string label = "Time"
     ]],
     int in_noiseType = 1
     [[
-        string maya_attribute_name = "noiseType",
-        string maya_attribute_type = "enum",
+        string as_maya_attribute_name = "noiseType",
         string widget = "mapper",
         string options = "Perlin:0|Billow:1|Wave:2|Wispy:3|SpaceTime:4",
         string label = "Noise Type"
     ]],
     float in_density = 1.0
     [[
-        string maya_attribute_name = "density",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "density",
         string label = "Density"
     ]],
     float in_spottyness = 0.1
     [[
-        string maya_attribute_name = "spottyness",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "spottyness",
         string label = "Spottyness"
     ]],
     float in_sizeRand = 0.0
     [[
-        string maya_attribute_name = "sizeRand",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "sizeRand",
         string label = "Size Randomness"
     ]],
     float in_randomness = 1.0
     [[
-        string maya_attribute_name = "randomness",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "randomness",
         string label = "Randomness"
     ]],
     int in_falloff = 2
     [[
-        string maya_attribute_name = "falloff",
-        string maya_attribute_type = "enum",
+        string as_maya_attribute_name = "falloff",
         string widget = "mapper",
         string options = "Linear:0|Smooth:1|Fast:2|Bubble:3",
         string label = "Falloff"
     ]],
     int in_numWaves = 5
     [[
-        string maya_attribute_name = "numWaves",
-        string maya_attribute_type = "int",
+        string as_maya_attribute_name = "numWaves",
         string widget = "slider",
         int slidermin = 1,
         int slidermax = 20,
@@ -147,8 +131,7 @@ shader as_maya_noise
     ]],
     float in_implode = 0.0
     [[
-        string maya_attribute_name = "implode",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "implode",
         string widget = "slider",
         float slidermin = -1.0,
         float slidermax = 1.0,
@@ -156,8 +139,7 @@ shader as_maya_noise
     ]],
     float in_implodeCenter[2] = {0.5, 0.5}
     [[
-        string maya_attribute_name = "implodeCenter",
-        string maya_attribute_type = "float2",
+        string as_maya_attribute_name = "implodeCenter",
         string label = "Implode Center"
     ]],
 
@@ -167,15 +149,15 @@ shader as_maya_noise
 
     output color out_outColor = color(0)
     [[
-        string maya_attribute_name = "outColor",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output float out_outAlpha = 1.0
     [[
-        string maya_attribute_name = "outAlpha",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
         string label = "Output Alpha",
         string widget = "null"
     ]]

@@ -30,55 +30,47 @@
 
 shader as_maya_plusMinusAverage
 [[
-    string maya_node_name = "plusMinusAverage",
-    string maya_classification = "utility/general"
+    string as_maya_node_name = "plusMinusAverage"
 ]]
 (
     int in_operation = 1
     [[
-        string maya_attribute_name = "operation",
-        string maya_attribute_type = "enum",
+        string as_maya_attribute_name = "operation",
         string label = "Operation",
         string widget = "mapper",
         string options = "No Operation:0|Sum:1|Subtraction:2|Average:3"
     ]],
     float in_input1D[] = {0}
     [[
-        string maya_attribute_name = "input1D",
-        string maya_attribute_type = "float[]",
+        string as_maya_attribute_name = "input1D",
         string label = "Input 1D"
     ]],
     vector in_input2D[] = {0}
     [[
-        string maya_attribute_name = "input2D",
-        string maya_attribute_type = "float2[]",
+        string as_maya_attribute_name = "input2D",
         string label = "Input 2D"
     ]],
     vector in_input3D[] = {0}
     [[
-        string maya_attribute_name = "input3D",
-        string maya_attribute_type = "vector[]",
+        string as_maya_attribute_name = "input3D",
         string label = "Input 3D"
     ]],
 
     output float out_output1D = 0.0
     [[
-        string maya_attribute_name = "output1D",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "output1D",
         string label = "Output 1D",
         string widget = "null"
     ]],
     output float out_output2D[2] = {0.0,0.0}
     [[
-        string maya_attribute_name = "output2D",
-        string maya_attribute_type = "float2",
+        string as_maya_attribute_name = "output2D",
         string label = "Output 2D",
         string widget = "null"
     ]],
     output vector out_output3D = 0.0
     [[
-        string maya_attribute_name = "output3D",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "output3D",
         string label = "Output 3D",
         string widget = "null"
     ]]

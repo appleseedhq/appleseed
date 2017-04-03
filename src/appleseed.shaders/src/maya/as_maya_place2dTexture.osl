@@ -33,116 +33,101 @@
 
 shader as_maya_place2dTexture
 [[
-    string maya_node_name = "place2dTexture",
-    string maya_classification = "utility/general/placement/2d"
+    string as_maya_node_name = "place2dTexture"
 ]]
 (
     MAYA_UV_PARAMETERS,
 
     float in_coverage[2] = {1.0, 1.0}
     [[
-        string maya_attribute_name = "coverage",
-        string maya_attribute_type = "float2",
+        string as_maya_attribute_name = "coverage",
         string label = "Coverage"
     ]],
     float in_translateFrame[2] = {0.0, 0.0}
     [[
-        string maya_attribute_name = "translateFrame",
-        string maya_attribute_type = "float2",
+        string as_maya_attribute_name = "translateFrame",
         string label = "UV Frame Translation"
     ]],
     float in_rotateFrame = 0.0
     [[
-        string maya_attribute_name = "rotateFrame",
-        string maya_attribute_type = "angle",
+        string as_maya_attribute_name = "rotateFrame",
+        string units = "degrees",
         string label = "UV Frame Rotation"
     ]],
     int in_mirrorU = 0
     [[
-        string maya_attribute_name = "mirrorU",
-        string maya_attribute_type = "bool",
+        string as_maya_attribute_name = "mirrorU",
         string label = "Mirror U",
         string widget = "checkBox"
     ]],
     int in_mirrorV = 0
     [[
-        string maya_attribute_name = "mirrorV",
-        string maya_attribute_type = "bool",
+        string as_maya_attribute_name = "mirrorV",
         string label = "Mirror V",
         string widget = "checkBox"
     ]],
     int in_stagger = 0
     [[
-        string maya_attribute_name = "stagger",
-        string maya_attribute_type = "bool",
+        string as_maya_attribute_name = "stagger",
         string label = "Stagger",
         string widget = "c heckBox"
     ]],
     int in_wrapU = 0
     [[
-        string maya_attribute_name = "wrapU",
-        string maya_attribute_type = "bool",
+        string as_maya_attribute_name = "wrapU",
         string label = "Wrap U",
         string widget = "checkBox"
     ]],
     int in_wrapV = 0
     [[
-        string maya_attribute_name = "wrapV",
-        string maya_attribute_type = "bool",
+        string as_maya_attribute_name = "wrapV",
         string label = "Wrap V",
         string widget = "checkBox"
     ]],
     float in_repeatUV[2] = {1.0, 1.0}
     [[
-        string maya_attribute_name = "repeatUV",
-        string maya_attribute_type = "float2",
+        string as_maya_attribute_name = "repeatUV",
         string label = "Repeat UV"
     ]],
     float in_offset[2] = {0.0, 0.0}
     [[
-        string maya_attribute_name = "offset",
-        string maya_attribute_type = "float2",
+        string as_maya_attribute_name = "offset",
         string label = "Offset"
     ]],
     float in_rotateUV = 0.0
     [[
-        string maya_attribute_name = "rotateUV",
-        string maya_attribute_type = "angle",
+        string as_maya_attribute_name = "rotateUV",
+        string units = "degrees",
         string label = "Rotate UV"
     ]],
     float in_noiseUV[2] = {0.0, 0.0}
     [[
-        string maya_attribute_name = "noiseUV",
-        string maya_attribute_type = "float2",
+        string as_maya_attribute_name = "noiseUV",
         string label = "Noise UV"
     ]],
     int in_fast = 0
     [[
-        string maya_attribute_name = "fast",
-        string maya_attribute_type = "bool",
+        string as_maya_attribute_name = "fast",
         string label = "Fast",
         string widget = "checkBox"
     ]],
 
     output float out_outUV[2] = {0.0, 0.0}
     [[
-        string maya_attribute_name = "outUV",
-        string maya_attribute_type = "float2",
+        string as_maya_attribute_name = "outUV",
         string label = "Output UV",
         string widget = "null"
     ]],
     output float out_outUvFilterSize[2] = {
         UNDEFINED_UVFILTER, UNDEFINED_UVFILTER}
     [[
-        string maya_attribute_name = "outUvFilterSize",
-        string maya_attribute_type = "float2",
+        string as_maya_attribute_name = "outUvFilterSize",
         string label = "Output UV Filter Size",
         string widget = "null"
     ]],
     output int out_doTransform = 1
     [[
-        string maya_attribute_name = "doTransform",
-        string maya_attribute_type = "bool",
+        string as_maya_attribute_name = "doTransform",
         string label = "Do Transform",
         string widget = "null"
     ]]

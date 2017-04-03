@@ -82,7 +82,7 @@ using namespace std;
 namespace appleseed {
 namespace studio {
 
-const QString g_appleseed_image_files_filter = "Bitmap Files (*.png;*.exr);;OpenEXR (*.exr);;PNG (*.png);;All Files (*.*)";
+const QString g_appleseed_image_files_filter = "Bitmap Files (*.png *.exr);;OpenEXR (*.exr);;PNG (*.png);;All Files (*.*)";
 
 QString get_oiio_image_files_filter()
 {
@@ -115,7 +115,7 @@ QString get_oiio_image_files_filter()
             for (const_each<vector<string> > e = exts; e; ++e)
             {
                 if (e.it() != exts.begin())
-                    sstr << ";";
+                    sstr << " ";
                 sstr << "*." << *e;
             }
 

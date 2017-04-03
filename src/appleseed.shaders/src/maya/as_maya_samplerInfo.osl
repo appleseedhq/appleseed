@@ -30,8 +30,7 @@
 
 shader as_maya_samplerInfo
 [[
-    string maya_node_name = "samplerInfo",
-    string maya_classification = "utility/general"
+    string as_maya_node_name = "samplerInfo"
 ]]
 (
     vector Tn = vector(0)
@@ -49,96 +48,84 @@ shader as_maya_samplerInfo
 
     output point out_pointCamera = P
     [[
-        string maya_attribute_name = "pointCamera",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "pointCamera",
         string label = "P In Camera Space",
         string widget = "null",
         string help = "Surface point P in camera space"
     ]],
     output point out_pointObj = P
     [[
-        string maya_attribute_name = "pointObj",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "pointObj",
         string label = "P In Object Space",
         string widget = "null",
         string help = "Surface point P in object space"
     ]],
     output point out_pointWorld = P
     [[
-        string maya_attribute_name = "pointWorld",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "pointWorld",
         string label = "P In World Space",
         string widget = "null",
         string help = "Surface point P in world space"
     ]],
     output normal out_normalCamera = N
     [[
-        string maya_attribute_name = "normalCamera",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "normalCamera",
         string label = "N In Camera Space",
         string widget = "null",
         string help = "Surface normal N in camera space"
     ]],
     output float out_uvCoord[2] = {u, v}
     [[
-        string maya_attribute_name = "uvCoord",
-        string maya_attribute_type = "float2",
+        string as_maya_attribute_name = "uvCoord",
         string label = "UV Coordinates",
         string widget = "null",
         string help = "UV coordinates"
     ]],
     output vector out_rayDirection = -I   
     [[
-        string maya_attribute_name = "rayDirection",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "rayDirection",
         string label = "I In Camera Space",
         string widget = "null",
         string help = "Viewer vector in camera space, pointing towards camera"
     ]],
     output vector out_tangentUCamera = dPdu
     [[
-        string maya_attribute_name = "tangentUCamera",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "tangentUCamera",
         string label = "TangentU In Camera Space",
         string widget = "null",
         string help = "Surface tangent along U direction, in camera space"
     ]],
     output vector out_tangentVCamera = dPdv
     [[
-        string maya_attribute_name = "tangentVCamera",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "tangentVCamera",
         string label = "TangentV In Camera Space",
         string widget = "null",
         string help = "Surface tangent along V direction, in camera space"
     ]],
     output matrix out_matrixEyeToWorld = 1
     [[
-        string maya_attribute_name = "matrixEyeToWorld",
-        string maya_attribute_type = "matrix",
+        string as_maya_attribute_name = "matrixEyeToWorld",
         string label = "Eye To World Matrix",
         string widget = "null",
         string help = "Matrix that transforms from eye to camera space"
     ]],
     output float out_pixelCenter[2] = {0.0, 0.0}
     [[
-        string maya_attribute_name = "pixelCenter",
-        string maya_attribute_type = "float[]",
+        string as_maya_attribute_name = "pixelCenter",
         string label = "Pixel Center",
         string widget = "null",
         string help = "Location of pixel corresponding to point being sampled"
     ]],
     output int out_flippedNormal = 0
     [[
-        string maya_attribute_name = "flippedNormal",
-        string maya_attribute_type = "bool",
+        string as_maya_attribute_name = "flippedNormal",
         string label = "Flipped Normal",
         string widget = "null",
         string help = "Tells is front or back face is being shaded"
     ]],
     output float out_facingRatio = 0.0
     [[
-        string maya_attribute_name = "facingRatio",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "facingRatio",
         string label = "Facing Ratio",
         string widget = "null",
         string help = "Facing ratio of object in relation to the camera"

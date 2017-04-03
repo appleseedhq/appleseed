@@ -159,4 +159,3 @@ color maya_blend_texture_layers(
 }
 
 #endif // !AS_MAYA_LAYER_HELPERS_H
-

@@ -32,27 +32,23 @@
 
 shader as_maya_gammaCorrect
 [[
-    string maya_node_name = "gammaCorrect",
-    string maya_classification = "utility/color"
+    string as_maya_node_name = "gammaCorrect"
 ]]
 (
     color in_value = color(0)
     [[
-        string maya_attribute_name = "value",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "value",
         string label = "Input Value"
     ]],
     color in_gamma = color(1)
     [[
-        string maya_attribute_name = "gamma",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "gamma",
         string label = "Gamma Correction"
     ]],
 
     output color out_outValue = color(0)
     [[
-        string maya_attribute_name = "outValue",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "outValue",
         string label = "Output Color",
         string widget = "null"
     ]]

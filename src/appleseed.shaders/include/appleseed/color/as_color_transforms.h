@@ -778,25 +778,10 @@ color transform_LCh_uv_to_linear_RGB(
 //       exclusively.
 //
 
-color deltaE_CIEDE2000(
-    color   reference_linear_RGB,
-    string  reference_color_space,
-    color   sample_linear_RGB,
-    string  sample_color_space)
-{
-    // If the colors are in a color space with a different white point,
-    // then adapt them to D65.
-
-    color reference_Lab = transform_linear_RGB_to_Lab(
-        reference_linear_RGB,
-        reference_color_space,
-        "D65");
-
-    color sampleval_Lab = transform_linear_RGB_to_Lab(
-        sample_linear_RGB,
-        sample_color_space,
-        "D65");
-    
+float deltaE_CIEDE2000(
+    color   reference_Lab,
+    color   sampleval_Lab)
+{   
     float reference_L = reference_Lab[0];
     float reference_a = reference_Lab[1];
     float reference_b = reference_Lab[2];
@@ -805,6 +790,7 @@ color deltaE_CIEDE2000(
     float sampleval_a = sampleval_Lab[1];
     float sampleval_b = sampleval_Lab[2];
 
+
     float reference_C = hypot(reference_a, reference_b);
     float sampleval_C = hypot(sampleval_a, sampleval_b);
 
@@ -812,7 +798,7 @@ color deltaE_CIEDE2000(
     float C_7 = pow(C_bar, 7);
 
     // 25^7 = 6103515625, using value directly causes an integer overflow
-    float C_7_sqrt = sqrt(C_7 / (C_7 + pow(25, 7)));
+    float C_7_sqrt = sqrt(pow(C_bar, 7) / (pow(C_bar, 7) + pow(25, 7)));
     float G = (1.0 - C_7_sqrt) / 2;
 
     float reference_a_prime = reference_a * (1 + G);
@@ -820,6 +806,7 @@ color deltaE_CIEDE2000(
 
     float reference_C_prime = hypot(reference_a_prime, reference_b);
     float sampleval_C_prime = hypot(sampleval_a_prime, sampleval_b);
+    float delta_C_prime = sampleval_C_prime - reference_C_prime;
 
     float C_bar_prime = (reference_C_prime + sampleval_C_prime) / 2;
 
@@ -835,7 +822,7 @@ color deltaE_CIEDE2000(
         reference_h_prime = mod(degrees(reference_h_prime), 360);
     }
 
-    if (sampleval_a_prime = sampleval_b)
+    if (sampleval_a_prime == sampleval_b)
     {
         sampleval_h_prime = 0;
     }
@@ -899,9 +886,47 @@ color deltaE_CIEDE2000(
 
     float delta_theta = 30.0 * exp(-sqr((H_bar_prime - 275) / 25));
 
-    float R_T = -2.0 * C_7_sqrt * sin(radians(2 * delta_theta));
+    float C_bar_7 = pow(C_bar_prime, 7);
+
+    float R_T = -2.0 * sqrt(C_bar_7 / (C_bar_7 + pow(25, 7))) *
+        sin(radians(2 * delta_theta));
 
     // K_L = K_C = K_H = 1
+
+    float deltaE_00 = sqrt(
+        sqr(delta_L_prime / S_L) +
+        sqr(delta_C_prime / S_C) +
+        sqr(delta_H_prime / S_H) +
+        R_T * (delta_C_prime / S_C) * (delta_H_prime / S_H));
+
+    return deltaE_00;
+}
+
+//
+// Overloaded deltaE_CIEDE2000, taking as reference and samples (scene-linear) RGB
+// colors instead of Lab colors.
+//
+
+float deltaE_CIEDE2000(
+    color   reference_linear_RGB,
+    string  reference_color_space,
+    color   sample_linear_RGB,
+    string  sample_color_space)
+{
+    // If the colors are in a color space with a different white point,
+    // then adapt them to D65.
+
+    color reference_Lab = transform_linear_RGB_to_Lab(
+        reference_linear_RGB,
+        reference_color_space,
+        "D65");
+
+    color sampleval_Lab = transform_linear_RGB_to_Lab(
+        sample_linear_RGB,
+        sample_color_space,
+        "D65");
+
+    return deltaE_CIEDE2000(reference_Lab, sampleval_Lab);
 }
 
 #endif // !AS_COLOR_TRANSFORMS_H

@@ -30,33 +30,28 @@
 
 shader as_maya_doubleShadingSwitch
 [[
-    string maya_node_name = "doubleShadingSwitch",
-    string maya_classification = "utility/switch"
+    string as_maya_node_name = "doubleShadingSwitch"
 ]]
 (
     vector in_inDouble[] = {0}
     [[
-        string maya_attribute_name = "inputs",
-        string maya_attribute_type = "vector[]",
+        string as_maya_attribute_name = "inputs",
         string label = "Input Values"
     ]],
     string in_inShape[] = {""}
     [[
-        string maya_attribute_name = "inputs",
-        string maya_attribute_type = "string[]",
+        string as_maya_attribute_name = "inputs",
         string label = "Shape Names"
     ]],
     float in_default[2] = {0,0}
     [[
-        string maya_attribute_name = "default",
-        string maya_attribute_type = "float[]",
+        string as_maya_attribute_name = "default",
         string label = "Default Values"
     ]],
 
     output float out_output[2] = {0,0}
     [[
-        string maya_attribute_name = "output",
-        string maya_attribute_type = "float[]",
+        string as_maya_attribute_name = "output",
         string label = "Output Values",
         string widget = "null"
     ]]

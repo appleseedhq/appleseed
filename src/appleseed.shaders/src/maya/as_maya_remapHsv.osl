@@ -33,58 +33,49 @@
 
 shader as_maya_remapHsv
 [[
-    string maya_node_name = "remapHsv",
-    string maya_classification = "utility/color"
+    string as_maya_node_name = "remapHsv"
 ]]
 (
     color in_color = color(0)
     [[
-        string maya_attribute_name = "color",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "color",
         string label = "Color"
     ]],
     float in_inputMin = 0.0
     [[
-        string maya_attribute_name = "inputMin",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "inputMin",
         string label = "Input Min"
     ]],
     float in_inputMax = 0.0
     [[
-        string maya_attribute_name = "inputMax",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "inputMax",
         string label = "Input Max"
     ]],
     float in_outputMin = 0.0
     [[
-        string maya_attribute_name = "outputMin",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "outputMin",
         string label = "Output Min"
     ]], 
     float in_outputMax = 0.0
     [[
-        string maya_attribute_name = "outputMax",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "outputMax",
         string label = "Output Max"
     ]],
     float in_hue_Position[] = {0}
     [[
-        string maya_attribute_name = "hue",
-        string maya_attribute_type = "float[]",
+        string as_maya_attribute_name = "hue",
         string label = "Hue Position",
         string page = "Hue"
     ]],
     float in_hue_FloatValue[] = {0}
     [[
-        string maya_attribute_name = "hue",
-        string maya_attribute_type = "float[]",
+        string as_maya_attribute_name = "hue",
         string label = "Hue Value",
         string page = "Hue"
     ]],
     int in_hue_Interp[] = {0}
     [[
-        string maya_attribute_name = "hue",
-        string maya_attribute_type = "int[]",
+        string as_maya_attribute_name = "hue",
         string widget = "mapper",
         string options = "None:0|Linear:1|Smooth:2|Spline:3",
         string label = "Hue Interpolation",
@@ -92,22 +83,19 @@ shader as_maya_remapHsv
     ]],
     float in_saturation_Position[] = {0}
     [[
-        string maya_attribute_name = "saturation",
-        string maya_attribute_type = "float[]",
+        string as_maya_attribute_name = "saturation",
         string label = "Saturation Position",
         string page = "Saturation"
     ]],
     float in_saturation_FloatValue[] = {0}
     [[
-        string maya_attribute_name = "saturation",
-        string maya_attribute_type = "float[]",
+        string as_maya_attribute_name = "saturation",
         string label = "Saturation Value",
         string page = "Saturation"
     ]],
     int in_saturation_Interp[] = {0}
     [[
-        string maya_attribute_name = "saturation",
-        string maya_attribute_type = "int[]",
+        string as_maya_attribute_name = "saturation",
         string widget = "mapper",
         string options = "None:0|Linear:1|Smooth:2|Spline:3",
         string label = "Saturation Interpolation",
@@ -115,22 +103,19 @@ shader as_maya_remapHsv
     ]], 
     float in_value_Position[] = {0}
     [[
-        string maya_attribute_name = "value",
-        string maya_attribute_type = "float[]",
+        string as_maya_attribute_name = "value",
         string label = "Value Position",
         string page = "Value"
     ]],
     float in_value_FloatValue[] = {0}
     [[
-        string maya_attribute_name = "value",
-        string maya_attribute_type = "float[]",
+        string as_maya_attribute_name = "value",
         string label = "Value Value",
         string page = "Value"
     ]],
     int in_value_Interp[] = {0}
     [[
-        string maya_attribute_name = "value",
-        string maya_attribute_type = "int[]",
+        string as_maya_attribute_name = "value",
         string widget = "mapper",
         string options = "None:0|Linear:1|Smooth:2|Spline:3",
         string label = "Value Interpolation",
@@ -139,8 +124,8 @@ shader as_maya_remapHsv
 
     output color out_outColor = color(0)
     [[
-        string maya_attribute_name = "outColor",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]]
