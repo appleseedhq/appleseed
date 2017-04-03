@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/intersection/tracecontext.h"
@@ -133,6 +134,7 @@ namespace
                 m_lighting_engine,
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations)
+          , m_aov_accumulators(frame.aovs())
         {
             // 1/4 of a pixel, like in Renderman RIS.
             const CanvasProperties& c = frame.image().properties();
@@ -199,6 +201,8 @@ namespace
                 shading_point_ptr = &shading_points[shading_point_index];
                 shading_point_index = 1 - shading_point_index;
 
+                m_aov_accumulators.reset();
+
                 if (iterations == 1)
                 {
                     // Shade the intersection point.
@@ -207,7 +211,13 @@ namespace
                         pixel_context,
                         m_shading_context,
                         *shading_point_ptr,
-                        shading_result);
+                        m_aov_accumulators);
+
+                    m_aov_accumulators.write(
+                        *shading_point_ptr,
+                        *m_scene.get_active_camera());
+
+                    m_aov_accumulators.flush(shading_result);
 
                     // Transform the result to the linear RGB color space.
                     shading_result.transform_to_linear_rgb(m_lighting_conditions);
@@ -215,12 +225,6 @@ namespace
                     // Apply alpha premultiplication.
                     if (shading_point_ptr->hit())
                         shading_result.apply_alpha_premult_linear_rgb();
-
-                    // Store the depth value.
-                    shading_result.m_depth =
-                        shading_point_ptr->hit()
-                            ? shading_point_ptr->get_distance()
-                            : -1.0;
                 }
                 else
                 {
@@ -231,7 +235,13 @@ namespace
                         pixel_context,
                         m_shading_context,
                         *shading_point_ptr,
-                        local_result);
+                        m_aov_accumulators);
+
+                    m_aov_accumulators.write(
+                        *shading_point_ptr,
+                        *m_scene.get_active_camera());
+
+                    m_aov_accumulators.flush(local_result);
 
                     // Transform the result to the linear RGB color space.
                     local_result.transform_to_linear_rgb(m_lighting_conditions);
@@ -329,6 +339,8 @@ namespace
 
         Vector2d                    m_image_point_dx;
         Vector2d                    m_image_point_dy;
+
+        AOVAccumulatorContainer     m_aov_accumulators;
     };
 }
 

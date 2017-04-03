@@ -30,90 +30,76 @@
 
 shader as_maya_lambert
 [[
-    string maya_node_name = "lambert",
-    string maya_classification = "shader/surface"
+    string as_maya_node_name = "lambert"
 ]]
 (
     color in_color = color(0.5)
     [[
-        string maya_attribute_name = "color",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "color",
         string label = "Color"
     ]],
     color in_transparency = color(0)
     [[
-        string maya_attribute_name = "transparency",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "transparency",
         string label = "Transparency"
     ]],
     color in_ambientColor = color(0)
     [[
-        string maya_attribute_name = "ambientColor",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "ambientColor",
         string label = "Ambient Color"
     ]],
     color in_incandescence = color(0)
     [[
-        string maya_attribute_name = "incandescence",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "incandescence",
         string label = "Incandescence Color"
     ]],
     normal in_normalCamera = N
     [[
-        string maya_attribute_name = "normalCamera",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "normalCamera",
         string label = "Bump Mapping Normal"
     ]],
     float in_diffuse = 0.8
     [[
-        string maya_attribute_name = "diffuse",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "diffuse",
         string label = "Diffuse Intensity"
     ]],
     float in_translucence = 0.0
     [[
-        string maya_attribute_name = "translucence",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "translucence",
         string label = "Translucence"
     ]],
     float in_translucenceDepth = 0.5
     [[
-        string maya_attribute_name = "translucenceDepth",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "translucenceDepth",
         string label = "Translucence Depth"
     ]],  
     float in_translucenceFocus = 0.5
     [[
-        string maya_attribute_name = "translucenceFocus",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "translucenceFocus",
         string label = "Translucence Focus"
     ]],
     int in_matteOpacityMode = 2
     [[
-        string maya_attribute_name = "matteOpacityMode",
-        string maya_attribute_type = "enum",
+        string as_maya_attribute_name = "matteOpacityMode",
         string label = "Matte Opacity Mode",
         string widget = "mapper",
         string options = "Black Hole:0|Solid Matte:1|Opacity Gain:2"
     ]],
     float in_matteOpacity = 1.0
     [[
-        string maya_attribute_name = "matteOpacity",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "matteOpacity",
         string label = "Matte Opacity"
     ]],
     int in_refractions = 0
     [[
-        string maya_attribute_name = "refractions",
-        string maya_attribute_type = "bool",
+        string as_maya_attribute_name = "refractions",
         string label = "Refractions",
         string widget = "checkBox",
         string page = "Raytrace Options"
     ]],
     float in_refractiveIndex = 1.0
     [[
-        string maya_attribute_name = "refractiveIndex",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "refractiveIndex",
         string label = "Refractive Index",
         float min = 0.010,
         float max = 3.0,
@@ -123,8 +109,7 @@ shader as_maya_lambert
     ]],
     int in_refractionLimit = 1
     [[
-        string maya_attribute_name = "refractionLimit",
-        string maya_attribute_type = "int",
+        string as_maya_attribute_name = "refractionLimit",
         string label = "Refraction Limit",
         string widget = "intslider",
         int min = 0,
@@ -135,50 +120,47 @@ shader as_maya_lambert
     ]],
     float in_shadowAttenuation = 0.5
     [[
-        string maya_attribute_name = "shadowAttenuation",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "shadowAttenuation",
         string label = "Shadow Attenuation",
         string page = "Raytrace Options"
     ]],
     int in_hideSource = 0
     [[
-        string maya_attribute_name = "hideSource",
-        string maya_attribute_type = "bool",
+        string as_maya_attribute_name = "hideSource",
         string label = "Hide Glow Source",
         string widget = "checkBox"
     ]],
     float in_glowIntensity = 0.0
     [[
-        string maya_attribute_name = "glowIntensity",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "glowIntensity",
         string label = "Glow Intensity"
     ]],
 
     output closure color out_outColor = 0
     [[
-        string maya_attribute_name = "outColor",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output closure color out_outTransparency = 0
     [[
-        string maya_attribute_name = "outTransparency",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "outTransparency",
+        string as_maya_attribute_short_name = "ot",
         string label = "Output Transparency",
         string widget = "null"
     ]],
     output closure color out_outGlowColor = 0
     [[
-        string maya_attribute_name = "outGlowColor",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "outGlowColor",
+        string as_maya_attribute_short_name = "og",
         string label = "Output Glow Color",
         string widget = "null"
     ]],
     output closure color out_outMatteOpacity = 0
     [[
-        string maya_attribute_name = "outMatteOpacity",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "outMatteOpacity",
+        string as_maya_attribute_short_name = "om",
         string label = "Output Matte Opacity",
         string widget = "null"
     ]]

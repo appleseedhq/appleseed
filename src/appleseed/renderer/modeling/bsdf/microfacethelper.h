@@ -78,6 +78,18 @@ inline void microfacet_alpha_from_roughness(
     }
 }
 
+//
+// Map highlight falloff to STD microfacet distribution function's gamma parameter
+// in a perceptually linear fashion.
+//
+
+inline float highlight_falloff_to_gama(const float highlight_falloff)
+{
+    const float t = highlight_falloff;
+    const float t2 = foundation::square(t);
+    return foundation::mix(1.51f, 40.0f, foundation::square(t2) * t);
+}
+
 class MicrofacetBRDFHelper
 {
   public:
@@ -87,6 +99,7 @@ class MicrofacetBRDFHelper
         const MDF&                      mdf,
         const float                     alpha_x,
         const float                     alpha_y,
+        const float                     gamma,
         FresnelFun                      f,
         const float                     cos_on,
         BSDFSample&                     sample)
@@ -95,7 +108,7 @@ class MicrofacetBRDFHelper
         sampling_context.split_in_place(3, 1);
         const foundation::Vector3f s = sampling_context.next2<foundation::Vector3f>();
         const foundation::Vector3f wo = sample.m_shading_basis.transform_to_local(sample.m_outgoing.get_value());
-        const foundation::Vector3f m = mdf.sample(wo, s, alpha_x, alpha_y);
+        const foundation::Vector3f m = mdf.sample(wo, s, alpha_x, alpha_y, gamma);
         const foundation::Vector3f h = sample.m_shading_basis.transform_to_parent(m);
         const foundation::Vector3f incoming = foundation::reflect(sample.m_outgoing.get_value(), h);
         const float cos_oh = foundation::dot(sample.m_outgoing.get_value(), h);
@@ -105,7 +118,7 @@ class MicrofacetBRDFHelper
         if (cos_in <= 0.0f)
             return;
 
-        const float D = mdf.D(m, alpha_x, alpha_y);
+        const float D = mdf.D(m, alpha_x, alpha_y, gamma);
 
         const float G =
             mdf.G(
@@ -113,11 +126,12 @@ class MicrofacetBRDFHelper
                 wo,
                 m,
                 alpha_x,
-                alpha_y);
+                alpha_y,
+                gamma);
 
         f(sample.m_outgoing.get_value(), h, sample.m_shading_basis.get_normal(), sample.m_value);
         sample.m_value *= D * G / (4.0f * cos_on * cos_in);
-        sample.m_probability = mdf.pdf(wo, m, alpha_x, alpha_y) / (4.0f * cos_oh);
+        sample.m_probability = mdf.pdf(wo, m, alpha_x, alpha_y, gamma) / (4.0f * cos_oh);
         sample.m_mode = ScatteringMode::Glossy;
         sample.m_incoming = foundation::Dual<foundation::Vector3f>(incoming);
         sample.compute_reflected_differentials();
@@ -128,6 +142,7 @@ class MicrofacetBRDFHelper
         const MDF&                      mdf,
         const float                     alpha_x,
         const float                     alpha_y,
+        const float                     gamma,
         const foundation::Basis3f&      shading_basis,
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,
@@ -138,7 +153,7 @@ class MicrofacetBRDFHelper
     {
         const foundation::Vector3f h = foundation::normalize(incoming + outgoing);
         const foundation::Vector3f m = shading_basis.transform_to_local(h);
-        const float D = mdf.D(m, alpha_x, alpha_y);
+        const float D = mdf.D(m, alpha_x, alpha_y, gamma);
 
         const foundation::Vector3f wo = shading_basis.transform_to_local(outgoing);
         const float G =
@@ -147,12 +162,13 @@ class MicrofacetBRDFHelper
                 wo,
                 m,
                 alpha_x,
-                alpha_y);
+                alpha_y,
+                gamma);
 
         const float cos_oh = foundation::dot(outgoing, h);
         f(outgoing, h, shading_basis.get_normal(), value);
         value *= D * G / (4.0f * cos_on * cos_in);
-        return mdf.pdf(wo, m, alpha_x, alpha_y) / (4.0f * cos_oh);
+        return mdf.pdf(wo, m, alpha_x, alpha_y, gamma) / (4.0f * cos_oh);
     }
 
     template <typename MDF>
@@ -160,6 +176,7 @@ class MicrofacetBRDFHelper
         const MDF&                      mdf,
         const float                     alpha_x,
         const float                     alpha_y,
+        const float                     gamma,
         const foundation::Basis3f&      shading_basis,
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming)
@@ -171,7 +188,8 @@ class MicrofacetBRDFHelper
                 shading_basis.transform_to_local(outgoing),
                 shading_basis.transform_to_local(h),
                 alpha_x,
-                alpha_y) / (4.0f * cos_oh);
+                alpha_y,
+                gamma) / (4.0f * cos_oh);
     }
 };
 

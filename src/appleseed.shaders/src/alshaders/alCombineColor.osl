@@ -22,67 +22,85 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-// This code comes from alshaders's OSL branch, with minimal changes.
+// This code comes from alshaders OSL branch, with minimal changes.
 // https://bitbucket.org/anderslanglands/alshaders/branch/osl
+
+// Constants
+#define MULTIPLY    0
+#define ADD         1
+#define DIVIDE      2
+#define SUBTRACT    3
+#define LERP        4
+#define DOT         5
+#define DISTANCE    6
+#define CROSS       7
 
 shader alCombineColor
 [[
-    string maya_node_name = "alCombineColor"
+    string help = "Combine two colors together.",
+    string description = "Simple mathematical operations for combining colors: multiplication, addition, division, subtraction and interpolation.",
+    string as_maya_node_name = "alCombineColor"
 ]]
 (
-    color input1 = color(0),
-    color input2 = color(1),
-    float input3 = 0,
-    int combineOp = 0,
-    output color result = color(0)
+    color in_input1 = color(0)
     [[
-        string maya_attribute_name = "outColor",
-        string maya_attribute_short_name = "oc"
+        string label = "Input 1",
+        string as_maya_attribute_name = "input1"
+    ]],
+    color in_input2 = color(1)
+    [[
+        string label = "Input 2",
+        string as_maya_attribute_name = "input2"
+    ]],
+    float in_input3 = 0
+    [[
+        string label = "Input 3",
+        string as_maya_attribute_name = "input3"
+    ]],
+    int in_combineOp = 0
+    [[
+        string label = "Combine Op",
+        string widget = "mapper",
+        string options = "multiply 1*2:0|add 1+2:1|divide 1/2:2|subtract 1-2:3|lerp(1, 2, 3):4|dot(1, 2):5|distance(1 -> 2):6|cross(1, 2):7",
+        string as_maya_attribute_name = "combineOp"
+    ]],
+    output color out_result = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc"
     ]]
 )
 {
-    if (combineOp == 0)
+    if (in_combineOp == MULTIPLY)
     {
-        // multiply
-        result = input1*input2;
+        out_result = in_input1 * in_input2;
     }
-    else if (combineOp == 1)
+    else if (in_combineOp == ADD)
     {
-        // add
-        result = input1+input2;
+        out_result = in_input1 + in_input2;
     }
-    else if (combineOp == 2)
+    else if (in_combineOp == DIVIDE)
     {
-        // divide
-        result = input1/input2;
+        out_result = in_input1 / in_input2;
     }
-    else if (combineOp == 3)
+    else if (in_combineOp == SUBTRACT)
     {
-        // subtract
-        result = input1-input2;
+        out_result = in_input1 - in_input2;
     }
-    else if (combineOp == 4)
+    else if (in_combineOp == LERP)
     {
-        // lerp
-        if (input3 <= 0) result = input1;
-        else if (input3 >= 1) result = input2;
-        else result = mix(input1, input2, input3);
+        out_result = mix(in_input1, in_input2, clamp(in_input3, 0.0, 1.0));
     }
-    else if (combineOp == 5)
+    else if (in_combineOp == DOT)
     {
-        // dot
-        result = dot(input1, input2);
+        out_result = dot(in_input1, in_input2);
     }
-    else if (combineOp == 6)
+    else if (in_combineOp == DISTANCE)
     {
-        // distance
-        result = distance(input1, input2);
+        out_result = distance(in_input1, in_input2);
     }
-    else if (combineOp == 7)
+    else if (in_combineOp == CROSS)
     {
-        // cross
-        result = cross(input1, input2);
+        out_result = cross(in_input1, in_input2);
     }
-    else
-        result = input1;
 }

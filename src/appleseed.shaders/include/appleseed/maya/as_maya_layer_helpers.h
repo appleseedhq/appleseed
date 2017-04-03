@@ -158,5 +158,4 @@ color maya_blend_texture_layers(
     return output_color;
 }
 
-#endif // AS_MAYA_LAYER_HELPERS_H
-
+#endif // !AS_MAYA_LAYER_HELPERS_H

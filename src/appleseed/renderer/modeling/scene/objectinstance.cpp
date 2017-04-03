@@ -162,8 +162,11 @@ ObjectInstance::ObjectInstance(
     // Retrieve ray bias distance.
     m_ray_bias_distance = params.get_optional<double>("ray_bias_distance", 0.0);
 
-    // Retrieve SSS set.
+    // Retrieve SSS set ID.
     impl->m_sss_set_identifier = params.get_optional<std::string>("sss_set_id", "");
+
+    // Retrieve flip normals flag.
+    m_flip_normals = params.get_optional<bool>("flip_normals");
 
     // No bound object yet.
     m_object = 0;

@@ -38,6 +38,7 @@
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
+#include "renderer/utility/triangle.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/intersection/rayplane.h"
@@ -382,7 +383,7 @@ void ShadingPoint::refine_and_offset() const
 
         // Compute the geometric normal to the hit triangle in assembly instance space.
         // Note that it doesn't need to be normalized at this point.
-        m_asm_geo_normal = Vector3d(cross(m_v1 - m_v0, m_v2 - m_v0));
+        m_asm_geo_normal = Vector3d(compute_triangle_normal(m_v0, m_v1, m_v2));
         m_asm_geo_normal = m_object_instance->get_transform().normal_to_parent(m_asm_geo_normal);
         m_asm_geo_normal = faceforward(m_asm_geo_normal, local_ray.m_dir);
 
@@ -614,119 +615,117 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
     }
 }
 
-void ShadingPoint::compute_geometric_normal() const
+void ShadingPoint::compute_normals() const
 {
     if (m_primitive_type == PrimitiveTriangle)
-    {
-        if (m_members & HasWorldSpaceTriangleVertices)
-        {
-            // We already have the world space vertices of the hit triangle.
-            // Use them to compute the geometric normal directly in world space.
-            m_geometric_normal = cross(m_v1_w - m_v0_w, m_v2_w - m_v0_w);
-        }
-        else
-        {
-            cache_source_geometry();
-
-            // Compute the object instance space geometric normal.
-            const Vector3d v0(m_v0);
-            const Vector3d v1(m_v1);
-            const Vector3d v2(m_v2);
-            m_geometric_normal = cross(v1 - v0, v2 - v0);
-
-            // Transform the geometric normal to world space.
-            m_geometric_normal =
-                m_assembly_instance_transform.normal_to_parent(
-                    m_object_instance->get_transform().normal_to_parent(m_geometric_normal));
-        }
-
-        // Normalize the geometric normal.
-        m_geometric_normal = normalize(m_geometric_normal);
-
-        if (m_members & HasTriangleVertexNormals)
-        {
-            // We have per-vertex normals, so we can compute the original shading normal:
-            // place the geometric normal in the same hemisphere as the original shading normal.
-            if (dot(m_geometric_normal, get_original_shading_normal()) < 0.0)
-                m_geometric_normal = -m_geometric_normal;
-
-            // Remember which side of the geometric surface we hit.
-            m_side =
-                dot(m_ray.m_dir, m_geometric_normal) > 0.0
-                    ? ObjectInstance::BackSide
-                    : ObjectInstance::FrontSide;
-
-            // Finally make the geometric normal face the direction of the incoming ray.
-            if (m_side == ObjectInstance::BackSide)
-                m_geometric_normal = -m_geometric_normal;
-        }
-        else
-        {
-            // In the absence of per-vertex normals, we have no way to know if we are
-            // hitting the front face or the back face of the surface. Assume we are
-            // always hitting the front face...
-            m_side = ObjectInstance::FrontSide;
-
-            // ...and if the geometric normal is not facing the ray, flip it.
-            if (dot(m_ray.m_dir, m_geometric_normal) > 0.0)
-                m_geometric_normal = -m_geometric_normal;
-        }
-    }
+        compute_triangle_normals();
     else
     {
         assert(is_curve_primitive());
-
-        // We assume flat ribbons facing incoming rays.
-        m_geometric_normal = -m_ray.m_dir;
-        m_side = ObjectInstance::FrontSide;
+        compute_curve_normals();
     }
 }
 
-void ShadingPoint::compute_original_shading_normal() const
+void ShadingPoint::compute_triangle_normals() const
 {
-    if (m_primitive_type == PrimitiveTriangle)
+    cache_source_geometry();
+
+    //
+    // Compute the geometric normal to the triangle.
+    //
+
+    if (m_members & HasWorldSpaceTriangleVertices)
     {
-        cache_source_geometry();
-
-        if (m_members & HasTriangleVertexNormals)
-        {
-            // Compute the object instance space shading normal.
-            m_original_shading_normal =
-                  Vector3d(m_n0) * static_cast<double>(1.0 - m_bary[0] - m_bary[1])
-                + Vector3d(m_n1) * static_cast<double>(m_bary[0])
-                + Vector3d(m_n2) * static_cast<double>(m_bary[1]);
-
-            // Transform the shading normal to world space.
-            m_original_shading_normal =
-                m_assembly_instance_transform.normal_to_parent(
-                    m_object_instance->get_transform().normal_to_parent(m_original_shading_normal));
-
-            // Normalize the shading normal.
-            m_original_shading_normal = normalize(m_original_shading_normal);
-        }
-        else
-        {
-            // Use the geometric normal if per-vertex normals are absent.
-            m_original_shading_normal = get_geometric_normal();
-        }
+        // We already have the world space vertices of the hit triangle.
+        // Use them to compute the geometric normal directly in world space.
+        m_geometric_normal = compute_triangle_normal(m_v0_w, m_v1_w, m_v2_w);
     }
     else
     {
-        assert(is_curve_primitive());
+        // Compute the object instance space geometric normal.
+        const Vector3d v0(m_v0);
+        const Vector3d v1(m_v1);
+        const Vector3d v2(m_v2);
+        m_geometric_normal = compute_triangle_normal(v0, v1, v2);
 
-        // We assume flat ribbons facing incoming rays.
-        m_original_shading_normal = -m_ray.m_dir;
+        // Transform the geometric normal to world space.
+        m_geometric_normal =
+            m_assembly_instance_transform.normal_to_parent(
+                m_object_instance->get_transform().normal_to_parent(m_geometric_normal));
     }
+
+    m_geometric_normal = normalize(m_geometric_normal);
+
+    //
+    // Compute the unperturbed shading normal.
+    //
+
+    if (m_members & HasTriangleVertexNormals)
+    {
+        // Compute the object instance space shading normal.
+        m_original_shading_normal =
+              Vector3d(m_n0) * static_cast<double>(1.0 - m_bary[0] - m_bary[1])
+            + Vector3d(m_n1) * static_cast<double>(m_bary[0])
+            + Vector3d(m_n2) * static_cast<double>(m_bary[1]);
+
+        // Transform the shading normal to world space.
+        m_original_shading_normal =
+            m_assembly_instance_transform.normal_to_parent(
+                m_object_instance->get_transform().normal_to_parent(m_original_shading_normal));
+
+        m_original_shading_normal = normalize(m_original_shading_normal);
+    }
+    else
+    {
+        // Use the geometric normal if per-vertex normals are absent.
+        m_original_shading_normal = m_geometric_normal;
+    }
+
+    //
+    // Determine which side of the geometric surface we hit, and flip the normals.
+    //
+    // In order to shade front and back sides indifferently, we need the geometric
+    // normal to be facing the incoming ray and the shading normals (original and
+    // modified) to be in the same hemisphere as the geometric normal.
+    //
+
+    // If we have per-vertex normals, the shading normal decides which side is front.
+    // Since we must compute which side we hit by checking the geometric normal,
+    // place the geometric normal in the same hemisphere as the shading normal.
+    if ((m_members & HasTriangleVertexNormals) &&
+        dot(m_geometric_normal, m_original_shading_normal) < 0.0)
+        m_geometric_normal = -m_geometric_normal;
+
+    // Store which side of the geometric surface we hit.
+    const bool back = dot(m_ray.m_dir, m_geometric_normal) > 0.0;
+    m_side = back ^ m_object_instance->flip_normals()
+        ? ObjectInstance::BackSide
+        : ObjectInstance::FrontSide;
+
+    // Make the geometric normal face the direction of the incoming ray.
+    if (back)
+        m_geometric_normal = -m_geometric_normal;
+
+    // Place the unperturbed shading normal in the same hemisphere as the geometric normal.
+    if (dot(m_original_shading_normal, m_geometric_normal) < 0.0)
+        m_original_shading_normal = -m_original_shading_normal;
+}
+
+void ShadingPoint::compute_curve_normals() const
+{
+    // We assume flat ribbons facing incoming rays.
+
+    m_geometric_normal = m_original_shading_normal = -m_ray.m_dir;
+
+    m_side = m_object_instance->flip_normals()
+        ? ObjectInstance::BackSide
+        : ObjectInstance::FrontSide;
 }
 
 void ShadingPoint::compute_shading_basis() const
 {
     // Compute the unperturbed shading normal.
-    Vector3d sn = get_original_shading_normal();
-
-    // Place the unperturbed shading normal in the same hemisphere as the geometric normal.
-    if (get_side() == ObjectInstance::BackSide)
-        sn = -sn;
+    const Vector3d sn = get_original_shading_normal();
 
     // Retrieve or compute the first tangent direction (non-normalized).
     // Reference: Physically Based Rendering, first edition, pp. 133

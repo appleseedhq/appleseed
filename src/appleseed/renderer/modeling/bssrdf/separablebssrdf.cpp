@@ -255,9 +255,17 @@ namespace
             const bool same_sss_set =
                 incoming_point.get_object_instance().is_in_same_sss_set(outgoing_object_instance);
 
+            const float dot_nn = static_cast<float>(
+                abs(dot(projection_basis.get_normal(), incoming_point.get_shading_normal())));
+            const float dot_nn_threshold = 1e-06f;
+
             // Only consider hit points with the same material as the outgoing point
             // and belonging to the same SSS set.
-            if (same_material && same_sss_set)
+            //
+            // Also check whether the chosen axis at the outcoming point
+            // and the surface normal in the incoming point are not orthogonal.
+            // Excluding such cases makes the calculation of sample contribution more robust.
+            if (same_material && same_sss_set && dot_nn > dot_nn_threshold)
             {
                 // Make sure the incoming point is on the front side of the surface.
                 // There is no such thing as subsurface scattering seen "from the inside".

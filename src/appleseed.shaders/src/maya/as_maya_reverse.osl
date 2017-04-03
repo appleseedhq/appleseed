@@ -30,21 +30,18 @@
 
 shader as_maya_reverse
 [[
-    string maya_node_name = "reverse",
-    string maya_classification = "utility/general"
+    string as_maya_node_name = "reverse"
 ]]
 (
     color in_input = color(0)
     [[
-        string maya_attribute_name = "input",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "input",
         string label = "Input"
     ]],
 
     output color out_output = color(0)
     [[
-        string maya_attribute_name = "output",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "output",
         string label = "Output",
         string widget = "null"
     ]]

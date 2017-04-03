@@ -22,12 +22,12 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-// This code comes from alshaders's OSL branch, with minimal changes.
+// This code comes from alshaders OSL branch, with minimal changes.
 // https://bitbucket.org/anderslanglands/alshaders/branch/osl
 
 shader alRemapColor
 [[
-    string maya_node_name = "alRemapColor"
+    string as_maya_node_name = "alRemapColor"
 ]]
 (
     color input = color(0.18, 0.18, 0.18),
@@ -41,8 +41,8 @@ shader alRemapColor
     float mask = 1,
     output color result = color(0,0,0)
     [[
-        string maya_attribute_name = "outColor",
-        string maya_attribute_short_name = "oc"
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc"
     ]]
 )
 {
@@ -50,20 +50,15 @@ shader alRemapColor
 
     if (mask > 0)
     {
-        // gamma
         if (gamma != 1)
-        {
-            result = pow(result, 1/gamma);
-        }
+            result = pow(result, 1 / gamma);
 
-        // saturation
         if (saturation != 1)
         {
             float l = luminance(result);
             result = mix(color(l), result, saturation);
         }
 
-        // hue
         if (hueOffset != 0)
         {
             color hsv = transformc("hsv", result);
@@ -71,19 +66,14 @@ shader alRemapColor
             result = transformc("rgb", result);
         }
 
-        // contrast
         if (contrastVal != 1)
         {
             result = (result-color(contrastPivot))*contrastVal + color(contrastPivot);
         }
 
-        // gain & exposure
         result = result * gain * pow(2, exposure);
 
-        // mask
         if (mask < 1)
-        {
             result = mix(input, result, mask);
-        }
     }
 }

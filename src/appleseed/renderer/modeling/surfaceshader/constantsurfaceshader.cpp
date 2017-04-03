@@ -32,12 +32,12 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/aov/shadingfragmentstack.h"
 #include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/paramarray.h"
@@ -69,8 +69,8 @@ namespace
     {
       public:
         ConstantSurfaceShader(
-            const char*             name,
-            const ParamArray&       params)
+            const char*                 name,
+            const ParamArray&           params)
           : SurfaceShader(name, params)
         {
             m_inputs.declare("color", InputFormatSpectralIlluminanceWithAlpha);
@@ -103,11 +103,11 @@ namespace
         }
 
         virtual void evaluate(
-            SamplingContext&        sampling_context,
-            const PixelContext&     pixel_context,
-            const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point,
-            ShadingResult&          shading_result) const APPLESEED_OVERRIDE
+            SamplingContext&            sampling_context,
+            const PixelContext&         pixel_context,
+            const ShadingContext&       shading_context,
+            const ShadingPoint&         shading_point,
+            AOVAccumulatorContainer&    aov_accumulators) const APPLESEED_OVERRIDE
         {
             // Evaluate the shader inputs.
             InputValues values;
@@ -117,18 +117,15 @@ namespace
                 &values);
 
             // Initialize the shading result.
-            shading_result.m_color_space = ColorSpaceSpectral;
-            shading_result.m_main.m_color = values.m_color;
-            shading_result.m_aovs.m_color.set(0.0f);
-            shading_result.m_aovs.m_alpha.set(0.0f);
+            aov_accumulators.beauty().set(values.m_color);
 
             // This surface shader can override alpha.
             if (m_alpha_source == AlphaSourceColor)
-                shading_result.m_main.m_alpha = values.m_alpha;
+                aov_accumulators.alpha().set(values.m_alpha);
 
             // Apply multipliers.
-            shading_result.m_main.m_color *= values.m_color_multiplier;
-            shading_result.m_main.m_alpha *= values.m_alpha_multiplier;
+            aov_accumulators.beauty().apply_multiplier(values.m_color_multiplier);
+            aov_accumulators.alpha().apply_multiplier(Alpha(values.m_alpha_multiplier));
         }
 
       private:

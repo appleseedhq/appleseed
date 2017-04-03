@@ -1,0 +1,82 @@
+
+//
+// This software is released under the MIT licence
+//
+// Copyright (c) 2013 Anders Langlands
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of
+// this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+// the Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+
+// This code is ported from alshaders original C++ implementation.
+// https://bitbucket.org/anderslanglands/alshaders
+
+shader alBlackbody
+[[
+    string help = "Generates a Rec709 color from the blackbody spectrum for the given temperature.",
+    string description = "Useful for fire, lava, light colors and any self-illuminated object.",
+    string as_maya_node_name = "alBlackbody"
+]]
+(
+    float in_temperature = 1000
+    [[
+        string label = "Temperature",
+        float min = 273,
+        float max = 16000,
+        string help = "color. From low to high the spectrum goes through red, orange, yellow, white, blue.",
+        string as_maya_attribute_name = "temperature"
+    ]],
+    float in_strength = 1.0
+    [[
+        string label = "Strength",
+        float min = 0,
+        string help = "Multiplier on the brightness of the generated color.",
+        string as_maya_attribute_name = "strength"
+    ]],
+    float in_physicalIntensity = 1.0
+    [[
+        string label = "Physical intensity",
+        string page = "Advanced",
+        string help = "When set to the default of 1, the full range of physical brightness will be preserved. When set to 0, the generated colors will never be brighter than white. When set to a value in between, the brightness will be lerped between the two.",
+        string as_maya_attribute_name = "physicalIntensity"
+    ]],
+    float in_physicalExposure = -20.0
+    [[
+        string label = "Physical exposure",
+        string page = "Advanced",
+        string help = "An overall exposure value to apply to the color. This is useful to preserve the physical brightness curve but get low-temperature colors into a sensible range.",
+        string as_maya_attribute_name = "physicalExposure"
+    ]],
+    output color out_result = 0
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc"
+    ]]
+)
+{
+    out_result = blackbody(in_temperature);
+
+    if (in_physicalIntensity > 0)
+    {
+        out_result *= mix(
+            1,
+            pow(in_temperature, 4) * 5.67e-8 * pow(2, in_physicalExposure),
+            in_physicalIntensity);
+    }
+
+    out_result *= in_strength;
+}

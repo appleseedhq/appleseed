@@ -131,9 +131,9 @@ void ObjectCollectionItem::slot_import_objects()
             treeWidget(),
             "Import Objects...",
 #ifdef APPLESEED_WITH_ALEMBIC
-            "Geometry Files (*.abc;*.binarymesh;*.obj);;All Files (*.*)",
+            "Geometry Files (*.abc *.binarymesh *.obj);;All Files (*.*)",
 #else
-            "Geometry Files (*.binarymesh;*.obj);;All Files (*.*)",
+            "Geometry Files (*.binarymesh *.obj);;All Files (*.*)",
 #endif
             m_editor_context.m_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);

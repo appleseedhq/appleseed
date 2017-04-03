@@ -65,15 +65,6 @@ closure color as_glossy(
     float   anisotropic,
     float   ior) BUILTIN;
 
-closure color as_glossy(
-    string  distribution,
-    normal  N,
-    float   roughness,
-    float   ior)
-{
-    return as_glossy(distribution, N, vector(0), roughness, 0.0, ior);
-}
-
 closure color as_glossy_blinn(
     normal  N,
     float   exponent,
@@ -82,7 +73,9 @@ closure color as_glossy_blinn(
     return as_glossy(
         "blinn",
         N,
+        vector(0),
         exponent,
+        0,
         ior);
 }
 
@@ -94,23 +87,6 @@ closure color as_metal(
     color   edge_tint,
     float   roughness,
     float   anisotropic) BUILTIN;
-
-closure color as_metal(
-    string  distribution,
-    normal  N,
-    color   normal_reflectance,
-    color   edge_tint,
-    float   roughness)
-{
-    return as_metal(
-        distribution,
-        N,
-        vector(0),
-        normal_reflectance,
-        edge_tint,
-        roughness,
-        0.0);
-}
 
 closure color as_glass(
     string  distribution,
@@ -124,31 +100,6 @@ closure color as_glass(
     float   ior,
     color   volume_transmittance,
     float   volume_transmittance_distance) BUILTIN;
-
-closure color as_glass(
-    string  distribution,
-    normal  N,
-    color   surface_transmittance,
-    color   reflection_tint,
-    color   refraction_tint,
-    float   roughness,
-    float   ior,
-    color   volume_transmittance,
-    float   volume_transmittance_distance)
-{
-    return as_glass(
-        distribution,
-        N,
-        vector(0),
-        surface_transmittance,
-        reflection_tint,
-        refraction_tint,
-        roughness,
-        0.0,
-        ior,
-        volume_transmittance,
-        volume_transmittance_distance);
-}
 
 closure color as_subsurface(
     string  profile,

@@ -241,36 +241,37 @@ ItemBase* ScenePickingHandler::pick(const QPoint& point)
     stringstream sstr;
 
     sstr << "picking details:" << endl;
-    sstr << "  pixel coords     " << pix << endl;
-    sstr << "  ndc coords       " << ndc << endl;
-    sstr << "  primitive type   " << get_primitive_type_name(result.m_primitive_type) << endl;
-    sstr << "  distance         " << result.m_distance << endl;
 
-    sstr << "  bary             " << filter_neg_zero(result.m_bary) << endl;
-    sstr << "  uv               " << filter_neg_zero(result.m_uv) << endl;
-    sstr << "  duvdx            " << filter_neg_zero(result.m_duvdx) << endl;
-    sstr << "  duvdy            " << filter_neg_zero(result.m_duvdy) << endl;
-    sstr << "  point            " << filter_neg_zero(result.m_point) << endl;
-    sstr << "  dpdu             " << filter_neg_zero(result.m_dpdu) << endl;
-    sstr << "  dpdv             " << filter_neg_zero(result.m_dpdv) << endl;
-    sstr << "  dndu             " << filter_neg_zero(result.m_dndu) << endl;
-    sstr << "  dndv             " << filter_neg_zero(result.m_dndv) << endl;
-    sstr << "  dpdx             " << filter_neg_zero(result.m_dpdx) << endl;
-    sstr << "  dpdy             " << filter_neg_zero(result.m_dpdy) << endl;
-    sstr << "  geometric normal " << filter_neg_zero(result.m_geometric_normal) << endl;
-    sstr << "  shading normal   " << filter_neg_zero(result.m_original_shading_normal) << endl;
-    sstr << "  side             " << get_side_name(result.m_side) << endl;
+    sstr << "  pixel coordinates             " << pix << endl;
+    sstr << "  ndc coordinates               " << ndc << endl;
+    sstr << "  primitive type                " << get_primitive_type_name(result.m_primitive_type) << endl;
+    sstr << "  distance                      " << result.m_distance << endl;
 
-    sstr << print_entity("  camera           ", result.m_camera) << endl;
-    sstr << print_entity("  assembly inst.   ", result.m_assembly_instance) << endl;
-    sstr << print_entity("  assembly         ", result.m_assembly) << endl;
-    sstr << print_entity("  object inst.     ", result.m_object_instance) << endl;
-    sstr << print_entity("  object           ", result.m_object) << endl;
-    sstr << print_entity("  material         ", result.m_material) << endl;
-    sstr << print_entity("  surface shader   ", result.m_surface_shader) << endl;
-    sstr << print_entity("  bsdf             ", result.m_bsdf) << endl;
-    sstr << print_entity("  bssrdf           ", result.m_bssrdf) << endl;
-    sstr << print_entity("  edf              ", result.m_edf);
+    sstr << "  barycentric coordinates       " << filter_neg_zero(result.m_bary) << endl;
+    sstr << "  uv coordinates                " << filter_neg_zero(result.m_uv) << endl;
+    sstr << "  duvdx                         " << filter_neg_zero(result.m_duvdx) << endl;
+    sstr << "  duvdy                         " << filter_neg_zero(result.m_duvdy) << endl;
+    sstr << "  point                         " << filter_neg_zero(result.m_point) << endl;
+    sstr << "  dpdu                          " << filter_neg_zero(result.m_dpdu) << endl;
+    sstr << "  dpdv                          " << filter_neg_zero(result.m_dpdv) << endl;
+    sstr << "  dndu                          " << filter_neg_zero(result.m_dndu) << endl;
+    sstr << "  dndv                          " << filter_neg_zero(result.m_dndv) << endl;
+    sstr << "  dpdx                          " << filter_neg_zero(result.m_dpdx) << endl;
+    sstr << "  dpdy                          " << filter_neg_zero(result.m_dpdy) << endl;
+    sstr << "  geometric normal              " << filter_neg_zero(result.m_geometric_normal) << endl;
+    sstr << "  shading normal                " << filter_neg_zero(result.m_original_shading_normal) << endl;
+    sstr << "  side                          " << get_side_name(result.m_side) << endl;
+
+    sstr << print_entity("  camera                        ", result.m_camera) << endl;
+    sstr << print_entity("  assembly instance             ", result.m_assembly_instance) << endl;
+    sstr << print_entity("  assembly                      ", result.m_assembly) << endl;
+    sstr << print_entity("  object instance               ", result.m_object_instance) << endl;
+    sstr << print_entity("  object                        ", result.m_object) << endl;
+    sstr << print_entity("  material                      ", result.m_material) << endl;
+    sstr << print_entity("  surface shader                ", result.m_surface_shader) << endl;
+    sstr << print_entity("  bsdf                          ", result.m_bsdf) << endl;
+    sstr << print_entity("  bssrdf                        ", result.m_bssrdf) << endl;
+    sstr << print_entity("  edf                           ", result.m_edf);
 
     RENDERER_LOG_INFO("%s", sstr.str().c_str());
 

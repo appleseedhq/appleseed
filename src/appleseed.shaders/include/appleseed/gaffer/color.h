@@ -35,4 +35,4 @@ color saturate(color Color, float Factor)
     return mix(color(lum), Color, Factor);
 }
 
-#endif
+#endif // !APPLESEED_SHADERS_COLOR_H

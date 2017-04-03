@@ -30,40 +30,34 @@
 
 shader as_maya_vectorProduct
 [[
-    string maya_node_name = "vectorProduct",
-    string maya_classification = "utility/general"
+    string as_maya_node_name = "vectorProduct"
 ]]
 (
     // components = input1X|Y|Z
     vector in_input1 = vector(0)
     [[
-        string maya_attribute_name = "input1",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "input1",
         string label = "Input Vector 1"
     ]],
     vector in_input2 = vector(0)
     [[
-        string maya_attribute_name = "input2",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "input2",
         string label = "Input Vector 2"
     ]],
     matrix in_matrix = matrix(1)
     [[
-        string maya_attribute_name = "matrix",
-        string maya_attribute_type = "matrix",
+        string as_maya_attribute_name = "matrix",
         string label = "Input Matrix"
     ]],
     int in_normalizeOutput = 0
     [[
-        string maya_attribute_name = "normalizeOutput",
-        string maya_attribute_type = "bool",
+        string as_maya_attribute_name = "normalizeOutput",
         string label = "Normalize Output",
         string widget = "checkBox"
     ]],
     int in_operation = 1
     [[
-        string maya_attribute_name = "operation",
-        string maya_attribute_type = "enum",
+        string as_maya_attribute_name = "operation",
         string label = "Operation",
         string widget = "mapper",
         string options = "None:0|Dot Product:1|Cross Product:2|Vector Matrix Product:3|Point Matrix Product:4"
@@ -72,8 +66,7 @@ shader as_maya_vectorProduct
     // Components = outputX|Y|Z
     output vector out_output = vector(0)
     [[
-        string maya_attribute_name = "output",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "output",
         string label = "Output",
         string widget = "null"
     ]]

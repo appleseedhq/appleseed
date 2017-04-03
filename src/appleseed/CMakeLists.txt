@@ -454,11 +454,11 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_transform.cpp
     foundation/meta/tests/test_triangulator.cpp
     foundation/meta/tests/test_typetraits.cpp
-    foundation/meta/tests/test_unzipper.cpp
     foundation/meta/tests/test_utility_filter.cpp
     foundation/meta/tests/test_vector.cpp
     foundation/meta/tests/test_voxelgrid.cpp
     foundation/meta/tests/test_windows.cpp
+    foundation/meta/tests/test_zip.cpp
 )
 if (WITH_DISNEY_MATERIAL)
     list (APPEND foundation_meta_tests_sources
@@ -703,10 +703,13 @@ source_group ("foundation\\utility\\test" FILES
 )
 
 set (foundation_utility_minizip_sources
+    foundation/utility/minizip/crypt.h
     foundation/utility/minizip/ioapi.c
     foundation/utility/minizip/ioapi.h
     foundation/utility/minizip/unzip.c
     foundation/utility/minizip/unzip.h
+    foundation/utility/minizip/zip.c
+    foundation/utility/minizip/zip.h
 )
 list (APPEND appleseed_sources
     ${foundation_utility_minizip_sources}
@@ -772,14 +775,14 @@ set (foundation_utility_sources
     foundation/utility/typetraits.h
     foundation/utility/uid.cpp
     foundation/utility/uid.h
-    foundation/utility/unzipper.cpp
-    foundation/utility/unzipper.h
     foundation/utility/version.h
     foundation/utility/vpythonfile.cpp
     foundation/utility/vpythonfile.h
     foundation/utility/xercesc.cpp
     foundation/utility/xercesc.h
     foundation/utility/xmlelement.h
+    foundation/utility/zip.cpp
+    foundation/utility/zip.h
 )
 if (WITH_DISNEY_MATERIAL)
     list (APPEND foundation_utility_sources
@@ -872,6 +875,8 @@ source_group ("renderer\\global" FILES
 )
 
 set (renderer_kernel_aov_sources
+    renderer/kernel/aov/aovaccumulator.cpp
+    renderer/kernel/aov/aovaccumulator.h
     renderer/kernel/aov/aovsettings.h
     renderer/kernel/aov/imagestack.cpp
     renderer/kernel/aov/imagestack.h
@@ -1246,6 +1251,28 @@ list (APPEND appleseed_sources
 )
 source_group ("renderer\\meta\\tests" FILES
     ${renderer_meta_tests_sources}
+)
+
+set (renderer_modeling_aov_sources
+    renderer/modeling/aov/aov.cpp
+    renderer/modeling/aov/aov.h
+    renderer/modeling/aov/aovcontainer.h
+    renderer/modeling/aov/aovfactoryregistrar.cpp
+    renderer/modeling/aov/aovfactoryregistrar.h
+    renderer/modeling/aov/aovtraits.h
+    renderer/modeling/aov/depthaov.cpp
+    renderer/modeling/aov/depthaov.h
+    renderer/modeling/aov/iaovfactory.h
+    renderer/modeling/aov/normalaov.cpp
+    renderer/modeling/aov/normalaov.h
+    renderer/modeling/aov/uvaov.cpp
+    renderer/modeling/aov/uvaov.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_aov_sources}
+)
+source_group ("renderer\\modeling\\aov" FILES
+    ${renderer_modeling_aov_sources}
 )
 
 set (renderer_modeling_bsdf_sources
@@ -1744,14 +1771,10 @@ set (renderer_modeling_surfaceshader_sources
     renderer/modeling/surfaceshader/diagnosticsurfaceshader.cpp
     renderer/modeling/surfaceshader/diagnosticsurfaceshader.h
     renderer/modeling/surfaceshader/isurfaceshaderfactory.h
-    renderer/modeling/surfaceshader/oslsurfaceshader.cpp
-    renderer/modeling/surfaceshader/oslsurfaceshader.h
     renderer/modeling/surfaceshader/physicalsurfaceshader.cpp
     renderer/modeling/surfaceshader/physicalsurfaceshader.h
     renderer/modeling/surfaceshader/surfaceshader.cpp
     renderer/modeling/surfaceshader/surfaceshader.h
-    renderer/modeling/surfaceshader/surfaceshadercollection.cpp
-    renderer/modeling/surfaceshader/surfaceshadercollection.h
     renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.cpp
     renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.h
     renderer/modeling/surfaceshader/surfaceshadertraits.h
@@ -1801,6 +1824,7 @@ set (renderer_utility_sources
     renderer/utility/testutils.h
     renderer/utility/transformsequence.cpp
     renderer/utility/transformsequence.h
+    renderer/utility/triangle.h
 )
 list (APPEND appleseed_sources
     ${renderer_utility_sources}

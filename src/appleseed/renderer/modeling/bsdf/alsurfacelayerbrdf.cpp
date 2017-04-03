@@ -180,7 +180,8 @@ namespace
                 wo,
                 Vector3f(s[0], s[1], s[2]),
                 values->m_precomputed.m_alpha_x,
-                values->m_precomputed.m_alpha_y);
+                values->m_precomputed.m_alpha_y,
+                0.0f);
             assert(m.y > 0.0f);
 
             float layer_weight;
@@ -431,8 +432,8 @@ namespace
                 return;
             }
 
-            const float D = mdf.D(m, values.m_precomputed.m_alpha_x, values.m_precomputed.m_alpha_y);
-            const float G = mdf.G(wi, wo, m, values.m_precomputed.m_alpha_x, values.m_precomputed.m_alpha_y);
+            const float D = mdf.D(m, values.m_precomputed.m_alpha_x, values.m_precomputed.m_alpha_y, 0.0f);
+            const float G = mdf.G(wi, wo, m, values.m_precomputed.m_alpha_x, values.m_precomputed.m_alpha_y, 0.0f);
             value *= D * G / denom;
         }
 
@@ -447,7 +448,7 @@ namespace
                 return 0.0f;
 
             const float jacobian = 1.0f / (4.0f * abs(cos_wom));
-            return jacobian * mdf.pdf(wo, m, values.m_precomputed.m_alpha_x, values.m_precomputed.m_alpha_y);
+            return jacobian * mdf.pdf(wo, m, values.m_precomputed.m_alpha_x, values.m_precomputed.m_alpha_y, 0.0f);
         }
 
         static GGXMDF        m_ggx_mdf;

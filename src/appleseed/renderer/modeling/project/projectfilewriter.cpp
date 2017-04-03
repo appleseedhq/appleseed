@@ -31,6 +31,7 @@
 #include "projectfilewriter.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/camera/camera.h"
@@ -78,9 +79,10 @@
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/xmlelement.h"
+#include "foundation/utility/zip.h"
 
 // Boost headers.
-#include "boost/filesystem/path.hpp"
+#include "boost/filesystem.hpp"
 
 // Standard headers.
 #include <algorithm>
@@ -96,6 +98,7 @@
 using namespace boost;
 using namespace foundation;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace renderer
 {
@@ -309,6 +312,12 @@ namespace
                 write(**i);
         }
 
+        // Write an <aov> element.
+        void write(const AOV& aov)
+        {
+            write_entity("aov", aov);
+        }
+
         // Write an <assembly> element.
         void write(const Assembly& assembly)
         {
@@ -380,6 +389,18 @@ namespace
 
             write_params(assembly_instance.get_parameters());
             write_transform_sequence(assembly_instance.transform_sequence());
+        }
+
+        // Write an <aovs> element.
+        void write_aovs(const Frame& frame)
+        {
+            if (!frame.aovs().empty())
+            {
+                XMLElement element("aovs", m_file, m_indenter);
+                element.write(XMLElement::HasChildElements);
+
+                write_collection(frame.aovs());
+            }
         }
 
         // Write an <assign_material> element.
@@ -537,10 +558,12 @@ namespace
             XMLElement element("frame", m_file, m_indenter);
             element.add_attribute("name", frame.get_name());
             element.write(
-                !frame.get_parameters().empty()
+                !frame.get_parameters().empty() ||
+                !frame.aovs().empty()
                     ? XMLElement::HasChildElements
                     : XMLElement::HasNoContent);
             write_params(frame.get_parameters());
+            write_aovs(frame);
         }
 
         // Write a <light> element.
@@ -876,6 +899,17 @@ bool ProjectFileWriter::write(
     const char*     filepath,
     const int       options)
 {
+    return
+        bf::path(filepath).extension() == ".appleseedz"
+            ? write_packed_project_file(project, filepath, options)
+            : write_plain_project_file(project, filepath, options);
+}
+
+bool ProjectFileWriter::write_plain_project_file(
+    const Project&  project,
+    const char*     filepath,
+    const int       options)
+{
     RENDERER_LOG_INFO("writing project file %s...", filepath);
 
     if (!(options & OmitHandlingAssetFiles))
@@ -923,6 +957,55 @@ bool ProjectFileWriter::write(
 
     RENDERER_LOG_INFO("wrote project file %s.", filepath);
     return true;
+}
+
+bool ProjectFileWriter::write_packed_project_file(
+    const Project&  project,
+    const char*     filepath,
+    const int       options)
+{
+    const bf::path project_path(filepath);
+
+    const bf::path temp_directory =
+        project_path.parent_path() /
+        project_path.filename().replace_extension(".unpacked");
+
+    const bf::path temp_project_filepath =
+        temp_directory /
+        project_path.filename().replace_extension(".appleseed");
+
+    if (!bf::create_directory(temp_directory))
+    {
+        RENDERER_LOG_ERROR("failed to create directory %s", temp_directory.string().c_str());
+        return false;
+    }
+
+    bool success = true;
+
+    try
+    {
+        success =
+            write_plain_project_file(
+                project,
+                temp_project_filepath.string().c_str(),
+                options | ProjectFileWriter::CopyAllAssets);
+
+        if (success)
+        {
+            RENDERER_LOG_INFO("packing project to %s...", filepath);
+            zip(filepath, temp_directory.string());
+        }
+    }
+    catch (const std::exception&)
+    {
+        RENDERER_LOG_ERROR("failed to write project file %s.", filepath);
+        success = false;
+    }
+
+    if (bf::exists(temp_directory))
+        bf::remove_all(temp_directory);
+
+    return success;
 }
 
 }   // namespace renderer

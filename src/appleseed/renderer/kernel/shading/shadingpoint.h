@@ -164,9 +164,9 @@ class ShadingPoint
     // Return the original world space shading normal at the intersection point.
     const foundation::Vector3d& get_original_shading_normal() const;
 
-    // Return the world space (possibly modified) shading normal at the intersection point.
-    // The shading normal is always in the same hemisphere as the geometric normal, but it is
-    // not always facing the incoming ray, i.e. dot(ray_dir, shading_normal) may be negative.
+    // Return the (possibly modified) world space shading normal at the intersection point.
+    // The shading normal is always in the same hemisphere as the geometric normal but it is
+    // not necessarily facing the incoming ray, i.e. dot(ray_dir, shading_normal) may be negative.
     const foundation::Vector3d& get_shading_normal() const;
 
     // Set/get the world space orthonormal basis around the (possibly modified) shading normal.
@@ -289,23 +289,23 @@ class ShadingPoint
     // Flags to keep track of which on-demand results have been computed and cached.
     enum Members
     {
-        HasSourceGeometry                = 1 << 0,
-        HasTriangleVertexNormals         = 1 << 1,
-        HasTriangleVertexTangents        = 1 << 2,
-        HasUV0                           = 1 << 3,
-        HasPoint                         = 1 << 4,
-        HasBiasedPoint                   = 1 << 5,
-        HasRefinedPoints                 = 1 << 6,
-        HasWorldSpacePartialDerivatives  = 1 << 7,
-        HasGeometricNormal               = 1 << 8,
-        HasOriginalShadingNormal         = 1 << 9,
-        HasShadingBasis                  = 1 << 10,
-        HasWorldSpaceTriangleVertices    = 1 << 11,
-        HasMaterials                     = 1 << 12,
-        HasWorldSpacePointVelocity       = 1 << 13,
-        HasAlpha                         = 1 << 14,
-        HasScreenSpacePartialDerivatives = 1 << 15,
-        HasOSLShaderGlobals              = 1 << 16
+        HasSourceGeometry               = 1 << 0,
+        HasTriangleVertexNormals        = 1 << 1,
+        HasTriangleVertexTangents       = 1 << 2,
+        HasUV0                          = 1 << 3,
+        HasPoint                        = 1 << 4,
+        HasBiasedPoint                  = 1 << 5,
+        HasRefinedPoints                = 1 << 6,
+        HasWorldSpaceDerivatives        = 1 << 7,
+        HasGeometricNormal              = 1 << 8,
+        HasOriginalShadingNormal        = 1 << 9,
+        HasShadingBasis                 = 1 << 10,
+        HasWorldSpaceTriangleVertices   = 1 << 11,
+        HasMaterials                    = 1 << 12,
+        HasWorldSpacePointVelocity      = 1 << 13,
+        HasAlpha                        = 1 << 14,
+        HasScreenSpaceDerivatives       = 1 << 15,
+        HasOSLShaderGlobals             = 1 << 16
     };
     mutable foundation::uint32          m_members;
 
@@ -367,6 +367,9 @@ class ShadingPoint
 
     void compute_world_space_partial_derivatives() const;
     void compute_screen_space_partial_derivatives() const;
+    void compute_normals() const;
+    void compute_triangle_normals() const;
+    void compute_curve_normals() const;
     void compute_geometric_normal() const;
     void compute_shading_normal() const;
     void compute_original_shading_normal() const;
@@ -536,10 +539,10 @@ inline const foundation::Vector2f& ShadingPoint::get_duvdx(const size_t uvset) c
     assert(hit());
     assert(uvset == 0);     // todo: support multiple UV sets
 
-    if (!(m_members & HasScreenSpacePartialDerivatives))
+    if (!(m_members & HasScreenSpaceDerivatives))
     {
         compute_screen_space_partial_derivatives();
-        m_members |= HasScreenSpacePartialDerivatives;
+        m_members |= HasScreenSpaceDerivatives;
     }
 
     return m_duvdx;
@@ -550,10 +553,10 @@ inline const foundation::Vector2f& ShadingPoint::get_duvdy(const size_t uvset) c
     assert(hit());
     assert(uvset == 0);     // todo: support multiple UV sets
 
-    if (!(m_members & HasScreenSpacePartialDerivatives))
+    if (!(m_members & HasScreenSpaceDerivatives))
     {
         compute_screen_space_partial_derivatives();
-        m_members |= HasScreenSpacePartialDerivatives;
+        m_members |= HasScreenSpaceDerivatives;
     }
 
     return m_duvdy;
@@ -588,10 +591,10 @@ inline const foundation::Vector3d& ShadingPoint::get_dpdu(const size_t uvset) co
     assert(hit());
     assert(uvset == 0);     // todo: support multiple UV sets
 
-    if (!(m_members & HasWorldSpacePartialDerivatives))
+    if (!(m_members & HasWorldSpaceDerivatives))
     {
         compute_world_space_partial_derivatives();
-        m_members |= HasWorldSpacePartialDerivatives;
+        m_members |= HasWorldSpaceDerivatives;
     }
 
     return m_dpdu;
@@ -602,10 +605,10 @@ inline const foundation::Vector3d& ShadingPoint::get_dpdv(const size_t uvset) co
     assert(hit());
     assert(uvset == 0);     // todo: support multiple UV sets
 
-    if (!(m_members & HasWorldSpacePartialDerivatives))
+    if (!(m_members & HasWorldSpaceDerivatives))
     {
         compute_world_space_partial_derivatives();
-        m_members |= HasWorldSpacePartialDerivatives;
+        m_members |= HasWorldSpaceDerivatives;
     }
 
     return m_dpdv;
@@ -616,10 +619,10 @@ inline const foundation::Vector3d& ShadingPoint::get_dndu(const size_t uvset) co
     assert(hit());
     assert(uvset == 0);     // todo: support multiple UV sets
 
-    if (!(m_members & HasWorldSpacePartialDerivatives))
+    if (!(m_members & HasWorldSpaceDerivatives))
     {
         compute_world_space_partial_derivatives();
-        m_members |= HasWorldSpacePartialDerivatives;
+        m_members |= HasWorldSpaceDerivatives;
     }
 
     return m_dndu;
@@ -630,10 +633,10 @@ inline const foundation::Vector3d& ShadingPoint::get_dndv(const size_t uvset) co
     assert(hit());
     assert(uvset == 0);     // todo: support multiple UV sets
 
-    if (!(m_members & HasWorldSpacePartialDerivatives))
+    if (!(m_members & HasWorldSpaceDerivatives))
     {
         compute_world_space_partial_derivatives();
-        m_members |= HasWorldSpacePartialDerivatives;
+        m_members |= HasWorldSpaceDerivatives;
     }
 
     return m_dndv;
@@ -643,10 +646,10 @@ inline const foundation::Vector3d& ShadingPoint::get_dpdx() const
 {
     assert(hit());
 
-    if (!(m_members & HasScreenSpacePartialDerivatives))
+    if (!(m_members & HasScreenSpaceDerivatives))
     {
         compute_screen_space_partial_derivatives();
-        m_members |= HasScreenSpacePartialDerivatives;
+        m_members |= HasScreenSpaceDerivatives;
     }
 
     return m_dpdx;
@@ -656,10 +659,10 @@ inline const foundation::Vector3d& ShadingPoint::get_dpdy() const
 {
     assert(hit());
 
-    if (!(m_members & HasScreenSpacePartialDerivatives))
+    if (!(m_members & HasScreenSpaceDerivatives))
     {
         compute_screen_space_partial_derivatives();
-        m_members |= HasScreenSpacePartialDerivatives;
+        m_members |= HasScreenSpaceDerivatives;
     }
 
     return m_dpdy;
@@ -671,8 +674,8 @@ inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
 
     if (!(m_members & HasGeometricNormal))
     {
-        compute_geometric_normal();
-        m_members |= HasGeometricNormal;
+        compute_normals();
+        m_members |= HasGeometricNormal | HasOriginalShadingNormal;
     }
 
     return m_geometric_normal;
@@ -684,8 +687,8 @@ inline const foundation::Vector3d& ShadingPoint::get_original_shading_normal() c
 
     if (!(m_members & HasOriginalShadingNormal))
     {
-        compute_original_shading_normal();
-        m_members |= HasOriginalShadingNormal;
+        compute_normals();
+        m_members |= HasGeometricNormal | HasOriginalShadingNormal;
     }
 
     return m_original_shading_normal;
@@ -699,10 +702,9 @@ inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
 inline void ShadingPoint::set_shading_basis(const foundation::Basis3d& basis) const
 {
     assert(hit());
-
     m_shading_basis = basis;
     m_members |= HasShadingBasis;
-    m_members &= ~HasScreenSpacePartialDerivatives;
+    m_members &= ~HasScreenSpaceDerivatives;
 }
 
 inline const foundation::Basis3d& ShadingPoint::get_shading_basis() const
@@ -721,7 +723,13 @@ inline const foundation::Basis3d& ShadingPoint::get_shading_basis() const
 inline ObjectInstance::Side ShadingPoint::get_side() const
 {
     assert(hit());
-    get_geometric_normal();
+
+    if (!(m_members & HasGeometricNormal))
+    {
+        compute_normals();
+        m_members |= HasGeometricNormal | HasOriginalShadingNormal;
+    }
+
     return m_side;
 }
 

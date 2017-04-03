@@ -55,11 +55,27 @@ class APPLESEED_DLLSYMBOL ProjectFileWriter
         CopyAllAssets               = 1 << 3    // copy all asset files (by default copy asset files with relative paths only)
     };
 
-    // Write a project to disk. Return true on success, false otherwise.
+    // Write a project to disk.
+    // Returns true on success, false otherwise.
     static bool write(
         const Project&  project,
         const char*     filepath,
         const int       options = Defaults);
+
+  private:
+    // Write a project to disk as a plain project file.
+    // Returns true on success, false otherwise.
+    static bool write_plain_project_file(
+        const Project&  project,
+        const char*     filepath,
+        const int       options);
+
+    // Write a project file to disk as a packed project file.
+    // Returns true on success, false otherwise.
+    static bool write_packed_project_file(
+        const Project&  project,
+        const char*     filepath,
+        const int       options);
 };
 
 }       // namespace renderer

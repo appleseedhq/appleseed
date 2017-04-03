@@ -88,7 +88,8 @@ namespace
                     Vector3f(0.0f, 0.0f, 0.0f),
                     Vector3f(s[0], s[1], 0.0f),
                     m_alpha,
-                    m_alpha);
+                    m_alpha,
+                    0.0f);
         }
 
         float evaluate(const float cos_alpha) const
@@ -97,7 +98,8 @@ namespace
                 WardMDF().D(
                     Vector3f(0.0f, cos_alpha, 0.0f),
                     m_alpha,
-                    m_alpha);
+                    m_alpha,
+                    0.0f);
         }
 
         float evaluate_pdf(const float cos_alpha) const
@@ -107,7 +109,8 @@ namespace
                     Vector3f(0.0f, 0.0f, 0.0f),
                     Vector3f(0.0f, cos_alpha, 0.0f),
                     m_alpha,
-                    m_alpha);
+                    m_alpha,
+                    0.0f);
         }
 
       private:

@@ -28,21 +28,18 @@
 
 shader as_maya_transposeMatrix
 [[
-    string maya_node_name = "transposeMatrix",
-    string maya_classification = "utility/scalar"
+    string as_maya_node_name = "transposeMatrix"
 ]]
 (
     matrix in_inputMatrix = matrix(1)
     [[
-        string maya_attribute_name = "inputMatrix",
-        string maya_attribute_type = "matrix",
+        string as_maya_attribute_name = "inputMatrix",
         string label = "Input Matrix"
     ]],
 
     output matrix out_outputMatrix = matrix(1)
     [[
-        string maya_attribute_name = "outputMatrix",
-        string maya_attribute_type = "matrix",
+        string as_maya_attribute_name = "outputMatrix",
         string label = "Output Matrix"
     ]]
 )

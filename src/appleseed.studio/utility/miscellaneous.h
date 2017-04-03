@@ -65,6 +65,8 @@ bool file_exists(const QString& path);
 // Load an icon and its variants (hover, disabled...) from the application's icons directory.
 QIcon load_icons(const QString& base_name);
 
+QString get_extension(renderer::ParamArray& settings, const QString& target_dialog);
+
 QString get_open_filename(
     QWidget*                parent,
     const QString&          caption,

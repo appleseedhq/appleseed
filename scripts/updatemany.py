@@ -38,7 +38,7 @@ import subprocess
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-DEFAULT_TOOL_FILENAME = "updateprojectfile.exe" if os.name == "nt" else "updateprojectfile"
+DEFAULT_TOOL_FILENAME = "projecttool.exe" if os.name == "nt" else "projecttool"
 
 
 #--------------------------------------------------------------------------------------------------
@@ -62,7 +62,7 @@ def walk(directory, recursive):
 
 def update_project_file(filepath, tool_path):
     print("updating {0}...".format(filepath))
-    subprocess.call([tool_path, filepath])
+    subprocess.call([tool_path, "update", filepath])
 
 
 #--------------------------------------------------------------------------------------------------
@@ -89,7 +89,7 @@ def main():
     parser = argparse.ArgumentParser(description="normalize multiple project files and update "
                                      "them to the latest format revision if necessary.")
     parser.add_argument("-t", "--tool-path", metavar="tool-path",
-                        help="set the path to the updateprojectfile tool")
+                        help="set the path to the projecttool binary")
     parser.add_argument("-r", "--recursive", action='store_true', dest="recursive",
                         help="scan the specified directory and all its subdirectories")
     parser.add_argument("directory", help="directory to scan")

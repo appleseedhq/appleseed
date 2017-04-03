@@ -31,6 +31,7 @@
 #define APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_ENVIRONMENTSHADER_H
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/connectableentity.h"
 
 // appleseed.foundation headers.
@@ -44,7 +45,6 @@
 namespace renderer  { class ParamArray; }
 namespace renderer  { class PixelContext; }
 namespace renderer  { class ShadingContext; }
-namespace renderer  { class ShadingResult; }
 
 namespace renderer
 {
@@ -73,7 +73,8 @@ class APPLESEED_DLLSYMBOL EnvironmentShader
         const ShadingContext&           shading_context,
         const PixelContext&             pixel_context,
         const foundation::Vector3d&     direction,                      // world space direction, pointing toward the environment
-        ShadingResult&                  shading_result) const = 0;
+        Spectrum&                       value,
+        Alpha&                          alpha) const = 0;
 };
 
 }       // namespace renderer

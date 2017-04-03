@@ -51,7 +51,6 @@
 #include <QStringList>
 #include <Qt>
 #include <QTreeWidget>
-#include <QTreeWidgetItem>
 
 // Standard headers.
 #include <cstddef>
@@ -134,6 +133,14 @@ void TestWindow::build_connections()
         this, SLOT(slot_on_test_item_check_state_changed(QTreeWidgetItem*, int)));
 
     connect(
+        m_ui->lineEdit_filter, SIGNAL(textChanged(const QString&)),
+        this, SLOT(slot_filter_text_changed(const QString&)));
+
+    connect(
+        m_ui->pushButton_clear_filter, SIGNAL(clicked()),
+        this, SLOT(slot_clear_filter_text()));
+
+    connect(
         m_ui->buttonbox->button(QDialogButtonBox::Close), SIGNAL(clicked()),
         this, SLOT(close()));
 
@@ -200,7 +207,7 @@ namespace
     }
 }
 
-void TestWindow::populate_tests_treeview()
+void TestWindow::populate_tests_treeview() const
 {
     TestSuiteRepository& suite_repository = TestSuiteRepository::instance();
 
@@ -249,7 +256,7 @@ namespace
     }
 }
 
-void TestWindow::update_checked_tests_label()
+void TestWindow::update_checked_tests_label() const
 {
     size_t test_case_count;
     size_t checked_test_case_count;
@@ -365,19 +372,57 @@ namespace
     }
 }
 
-void TestWindow::slot_on_test_item_check_state_changed(QTreeWidgetItem* item, int column)
+void TestWindow::slot_on_test_item_check_state_changed(QTreeWidgetItem* item, int column) const
 {
     update_item_check_state(m_ui->treewidget_tests, item, column);
     update_checked_tests_label();
 }
 
-void TestWindow::slot_check_all_tests()
+namespace
+{
+    bool do_filter_items(QTreeWidgetItem* item, const QRegExp& regexp)
+    {
+        bool any_children_visible = false;
+
+        for (int i = 0; i < item->childCount(); ++i)
+        {
+            if (do_filter_items(item->child(i), regexp))
+            {
+                any_children_visible = true;
+                break;
+            }
+        }
+
+        const bool visible = any_children_visible || regexp.indexIn(item->text(0)) >= 0;
+
+        item->setHidden(!visible);
+
+        return visible;
+    }
+}
+
+void TestWindow::slot_filter_text_changed(const QString& pattern) const
+{
+    const QRegExp regexp(pattern);
+
+    for (int i = 0; i < m_ui->treewidget_tests->topLevelItemCount(); ++i) 
+    {
+        do_filter_items(m_ui->treewidget_tests->topLevelItem(i), regexp);
+    }
+}
+
+void TestWindow::slot_clear_filter_text() const
+{
+    m_ui->lineEdit_filter->clear();
+}
+
+void TestWindow::slot_check_all_tests() const
 {
     set_all_items_check_state(m_ui->treewidget_tests, 0, Qt::Checked);
     update_checked_tests_label();
 }
 
-void TestWindow::slot_uncheck_all_tests()
+void TestWindow::slot_uncheck_all_tests() const
 {
     set_all_items_check_state(m_ui->treewidget_tests, 0, Qt::Unchecked);
     update_checked_tests_label();
@@ -392,7 +437,7 @@ namespace
     {
         for (int i = 0; i < parent->childCount(); ++i)
         {
-            QTreeWidgetItem* item = parent->child(i);
+            const QTreeWidgetItem* item = parent->child(i);
 
             if (item->checkState(0) == Qt::Checked)
             {
@@ -443,7 +488,7 @@ void TestWindow::slot_run_tests()
     }
 }
 
-void TestWindow::slot_on_tests_execution_complete(const int passed_count, const int failed_count)
+void TestWindow::slot_on_tests_execution_complete(const int passed_count, const int failed_count) const
 {
     if (failed_count == 0)
         m_result_widget->set_all_passed();
@@ -451,16 +496,18 @@ void TestWindow::slot_on_tests_execution_complete(const int passed_count, const 
     enable_widgets(true);
 }
 
-void TestWindow::enable_widgets(const bool enabled)
+void TestWindow::enable_widgets(const bool enabled) const
 {
     m_ui->treewidget_tests->setEnabled(enabled);
     m_ui->pushbutton_check_all->setEnabled(enabled);
     m_ui->pushbutton_uncheck_all->setEnabled(enabled);
     m_ui->pushbutton_run->setEnabled(enabled);
     m_ui->pushbutton_clear->setEnabled(enabled);
+    m_ui->pushButton_clear_filter->setEnabled(enabled);
+    m_ui->lineEdit_filter->setEnabled(enabled);
 }
 
-void TestWindow::slot_clear_output_treeview()
+void TestWindow::slot_clear_output_treeview() const
 {
     m_ui->treewidget_output->clear();
     m_ui->label_tests_results->clear();
@@ -489,7 +536,7 @@ namespace
     }
 }
 
-void TestWindow::slot_filter_output_treeview()
+void TestWindow::slot_filter_output_treeview() const
 {
     const bool show_passed =
         m_ui->checkbox_show_all->checkState() == Qt::Checked;

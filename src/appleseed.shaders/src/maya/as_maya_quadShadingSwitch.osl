@@ -30,52 +30,44 @@
 
 shader as_maya_quadShadingSwitch
 [[
-    string maya_node_name = "quadShadingSwitch",
-    string maya_classification = "utility/switch"
+    string as_maya_node_name = "quadShadingSwitch"
 ]]
 (
     color in_inTriple[] = {0}
     [[
-        string maya_attribute_name = "inputs",
-        string maya_attribute_type = "vector[]",
+        string as_maya_attribute_name = "inputs",
         string label = "Triple Value Component"
     ]],
     float in_inSingle[] = {0.0}
     [[
-        string maya_attribute_name = "inputs",
-        string maya_attribute_type = "float[]",
+        string as_maya_attribute_name = "inputs",
         string label = "Single Value Component"
     ]],
     string in_inShape[] = {""}
     [[
-        string maya_attribute_name = "inputs",
-        string maya_attribute_type = "string[]",
+        string as_maya_attribute_name = "inputs",
         string label = "Shape Name"
     ]],
     color in_defTriple = color(0.8)
     [[
-        string maya_attribute_name = "default",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "default",
         string label = "Default Triple Value"
     ]],
     float in_defSingle = 0.0
     [[
-        string maya_attribute_name = "default",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "default",
         string label = "Default Single Value"
     ]],
 
     output color out_outTriple = color(0)
     [[
-        string maya_attribute_name = "output",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "output",
         string label = "Output Triple Value",
         string widget = "null"
     ]],
     output float out_outSingle = 0.0
     [[
-        string maya_attribute_name = "output",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "output",
         string label = "Output Single Value",
         string widget = "null"
     ]]

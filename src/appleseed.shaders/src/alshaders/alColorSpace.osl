@@ -1,0 +1,113 @@
+
+//
+// This software is released under the MIT licence
+//
+// Copyright (c) 2013 Anders Langlands
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of
+// this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+// the Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+
+// This code is ported from alshaders original C++ implementation.
+// https://bitbucket.org/anderslanglands/alshaders
+
+// Constants.
+#define SRGB    0
+#define CINEON  1
+#define LOGC    2
+
+// Utilities.
+float sRgbToLin(float c)
+{
+    if (c > 1.0)
+        return c;
+    else if (c <= 0.04045)
+        return c / 12.92;
+    else
+        return pow((c + 0.055) / 1.055, 2.4);
+}
+
+color sRgbToLin(color c)
+{
+    return color(sRgbToLin(c[0]), sRgbToLin(c[1]), sRgbToLin(c[2]));
+}
+
+float cineonToLin(float c)
+{
+    float RefWhite = 685.0;
+    float RefBlack = 95.0;
+    c *= 1023.0;
+    float Gain = 1.0 / (1.0 - pow(10.0, (RefBlack - RefWhite) * 0.002 / 0.6));
+    float Offset = Gain - 1.0;
+    c = pow(10.0, (c - RefWhite) * 0.002 / 0.6) * Gain - Offset;
+    return max(0.0, c);
+}
+
+color cineonToLin(color c)
+{
+    return color(cineonToLin(c[0]), cineonToLin(c[1]), cineonToLin(c[2]));
+}
+
+float logCToLin(float c)
+{
+    if (c > 0.1496582)
+        return (pow(10.0, (c - 0.385537) / 0.2471896) - 0.052272) / 5.555556;
+    else
+        return (c - 0.092809) / 5.367655;
+}
+
+color logCToLin(color c)
+{
+    return color(logCToLin(c[0]), logCToLin(c[1]), logCToLin(c[2]));
+}
+
+
+shader alColorSpace
+[[
+    string help = "Simple color-space transforms.",
+    string description = "Converts a color to linear Rec.709 from a given color space.",
+    string as_maya_node_name = "alColorSpace"
+]]
+(
+    color in_input = color(0)
+    [[
+        string label = "Input",
+        string help = "Color to be transformed.",
+        string as_maya_attribute_name = "input"
+    ]],
+    int in_sourceSpace = 0
+    [[
+        string label = "Source space",
+        string widget = "mapper",
+        string options = "sRGB:0|Cineon:1|LogC:2",
+        string help = "Source color space. The input will be transformed from this space to linear Rec.709.",
+        string as_maya_attribute_name = "sourceSpace"
+    ]],
+    output color out_result = 0
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc"
+    ]]
+)
+{
+    if (in_sourceSpace == SRGB)
+        out_result = sRgbToLin(in_input);
+    else if (in_sourceSpace == CINEON)
+        out_result = cineonToLin(in_input);
+    else if (in_sourceSpace == LOGC)
+        out_result = logCToLin(in_input);
+}

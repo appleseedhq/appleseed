@@ -30,35 +30,30 @@
 
 shader as_maya_singleShadingSwitch
 [[
-    string maya_node_name = "singleShadingSwitch",
-    string maya_classification = "utility/switch"
+    string as_maya_node_name = "singleShadingSwitch"
 ]]
 (
     float in_inSingle[] = {0.0}
     [[
-        string maya_attribute_name = "inputs",
-        string maya_attribute_type = "float[]",
+        string as_maya_attribute_name = "inputs",
         string label = "Input Value"
     ]],
 
     string in_inShape[] = {""}
     [[
-        string maya_attribute_name = "inputs",
-        string maya_attribute_type = "string[]",
+        string as_maya_attribute_name = "inputs",
         string label = "Input Shape Name"
     ]],
 
     float in_default = 0.0
     [[
-        string maya_attribute_name = "default",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "default",
         string label = "Default Value"
     ]],
 
     output float out_output = 0.0
     [[
-        string maya_attribute_name = "output",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "output",
         string label = "Output Value",
         string widget = "null"
     ]]

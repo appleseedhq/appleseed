@@ -40,10 +40,10 @@
 #include "foundation/utility/autoreleaseptr.h"
 
 // Forward declarations.
+namespace renderer  { class AOVAccumulatorContainer; }
 namespace renderer  { class ParamArray; }
 namespace renderer  { class PixelContext; }
 namespace renderer  { class ShadingContext; }
-namespace renderer  { class ShadingResult; }
 
 namespace renderer
 {
@@ -61,11 +61,11 @@ class ShadingEngine
 
     // Shade a given intersection point.
     void shade(
-        SamplingContext&        sampling_context,
-        const PixelContext&     pixel_context,
-        const ShadingContext&   shading_context,
-        const ShadingPoint&     shading_point,
-        ShadingResult&          shading_result) const;
+        SamplingContext&            sampling_context,
+        const PixelContext&         pixel_context,
+        const ShadingContext&       shading_context,
+        const ShadingPoint&         shading_point,
+        AOVAccumulatorContainer&    aov_accumulators) const;
 
   private:
     foundation::auto_release_ptr<SurfaceShader> m_diagnostic_surface_shader;
@@ -73,18 +73,18 @@ class ShadingEngine
     void create_diagnostic_surface_shader(const ParamArray& params);
 
     void shade_hit_point(
-        SamplingContext&        sampling_context,
-        const PixelContext&     pixel_context,
-        const ShadingContext&   shading_context,
-        const ShadingPoint&     shading_point,
-        ShadingResult&          shading_result) const;
+        SamplingContext&            sampling_context,
+        const PixelContext&         pixel_context,
+        const ShadingContext&       shading_context,
+        const ShadingPoint&         shading_point,
+        AOVAccumulatorContainer&    aov_accumulators) const;
 
     void shade_environment(
-        SamplingContext&        sampling_context,
-        const PixelContext&     pixel_context,
-        const ShadingContext&   shading_context,
-        const ShadingPoint&     shading_point,
-        ShadingResult&          shading_result) const;
+        SamplingContext&            sampling_context,
+        const PixelContext&         pixel_context,
+        const ShadingContext&       shading_context,
+        const ShadingPoint&         shading_point,
+        AOVAccumulatorContainer&    aov_accumulators) const;
 };
 
 
@@ -97,7 +97,7 @@ inline void ShadingEngine::shade(
     const PixelContext&         pixel_context,
     const ShadingContext&       shading_context,
     const ShadingPoint&         shading_point,
-    ShadingResult&              shading_result) const
+    AOVAccumulatorContainer&    aov_accumulators) const
 {
     if (shading_point.hit())
     {
@@ -107,7 +107,7 @@ inline void ShadingEngine::shade(
                 pixel_context,
                 shading_context,
                 shading_point,
-                shading_result);
+                aov_accumulators);
     }
     else
     {
@@ -117,7 +117,7 @@ inline void ShadingEngine::shade(
                 pixel_context,
                 shading_context,
                 shading_point,
-                shading_result);
+                aov_accumulators);
     }
 }
 

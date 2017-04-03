@@ -92,7 +92,7 @@ class MainWindow
     void open_and_render_project(const QString& filepath, const QString& configuration);
 
   signals:
-    void signal_crop_window_cleared();
+    void signal_refresh_attribute_editor(const foundation::Dictionary& values) const;
 
   private:
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
@@ -201,6 +201,17 @@ class MainWindow
     // Miscellaneous.
     void print_startup_information();
     virtual void closeEvent(QCloseEvent* event);
+    void do_save_project(const int filter);
+    static QString get_filter_string(const int filter);
+
+    // Enum of filters for save project dialog.
+    enum ProjectDialogFilter
+    {
+        ProjectDialogFilterAllProjects    = 1 << 0,  // all appleseed extensions
+        ProjectDialogFilterPlainProjects  = 1 << 1,  // .appleseed extension
+        ProjectDialogFilterPackedProjects = 1 << 2,  // .appleseedz extension
+        ProjectDialogFilterAllFiles       = 1 << 3   // all extensions
+    };
 
   private slots:
     // Project I/O.
@@ -213,6 +224,7 @@ class MainWindow
     void slot_open_project_complete(const QString& filepath, const bool successful);
     void slot_save_project();
     void slot_save_project_as();
+    void slot_pack_project_as();
     void slot_project_modified();
 
     // Project file monitoring.

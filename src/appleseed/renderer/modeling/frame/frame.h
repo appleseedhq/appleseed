@@ -31,6 +31,8 @@
 #define APPLESEED_RENDERER_MODELING_FRAME_FRAME_H
 
 // appleseed.renderer headers.
+#include "renderer/modeling/aov/aov.h"
+#include "renderer/modeling/aov/aovcontainer.h"
 #include "renderer/modeling/entity/entity.h"
 
 // appleseed.foundation headers.
@@ -56,6 +58,7 @@ namespace foundation    { class Image; }
 namespace foundation    { class ImageAttributes; }
 namespace foundation    { class LightingConditions; }
 namespace foundation    { class Tile; }
+namespace renderer      { class AOV; }
 namespace renderer      { class ImageStack; }
 namespace renderer      { class ParamArray; }
 
@@ -87,8 +90,23 @@ class APPLESEED_DLLSYMBOL Frame
     // Access the main underlying image.
     foundation::Image& image() const;
 
+    // Clear the main image to transparent black.
+    void clear_main_image();
+
     // Access the AOV images.
     ImageStack& aov_images() const;
+
+    // Add an AOV if it does not exist.
+    void add_aov(foundation::auto_release_ptr<AOV> aov);
+
+    // Transfer AOVs.
+    void transfer_aovs(AOVContainer& aovs);
+
+    // Access the AOVs.
+    AOVContainer& aovs() const;
+
+    // Create an extra AOV image if it does not exist.
+    size_t create_extra_aov_image(const char* name) const;
 
     // Return the reconstruction filter used by the main image and the AOV images.
     const foundation::Filter2f& get_filter() const;
@@ -131,9 +149,6 @@ class APPLESEED_DLLSYMBOL Frame
         const size_t    pixel_y,                // y coordinate of the pixel in the tile
         const double    sample_x,               // x coordinate of the sample in the pixel, in [0,1)
         const double    sample_y) const;        // y coordinate of the sample in the pixel, in [0,1)
-
-    // Clear the main image to transparent black.
-    void clear_main_image();
 
     // Write the main image / the AOV images to disk.
     // Return true if successful, false otherwise.

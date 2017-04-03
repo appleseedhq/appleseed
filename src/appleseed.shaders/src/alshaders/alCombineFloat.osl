@@ -22,49 +22,69 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-// This code comes from alshaders's OSL branch, with minimal changes.
+// This code comes from alshaders OSL branch, with minimal changes.
 // https://bitbucket.org/anderslanglands/alshaders/branch/osl
+
+// Constants.
+#define MULTIPLY    0
+#define ADD         1
+#define DIVIDE      2
+#define SUBTRACT    3
+#define LERP        4
 
 shader alCombineFloat
 [[
-    string maya_node_name = "alCombineFloat"
+    string help = "Combine two floats together.",
+    string description = "Simple mathematical operations for combining floats: multiplication, addition, division, subtraction and interpolation.",
+    string as_maya_node_name = "alCombineFloat"
 ]]
 (
-    float input1 = 0,
-    float input2 = 1,
-    float input3 = 0,
-    int combineOp = 0,
-    output float result = 0
+    float in_input1 = 0
     [[
-        string maya_attribute_name = "outValue"
+        string label = "Input 1",
+        string as_maya_attribute_name = "input1"
+    ]],
+    float in_input2 = 0
+    [[
+        string label = "Input 2",
+        string as_maya_attribute_name = "input2"
+    ]],
+    float in_input3 = 0
+    [[
+        string label = "Input 3",
+        string as_maya_attribute_name = "input3"
+    ]],
+    int in_combineOp = 0
+    [[
+        string label = "Combine Op",
+        string widget = "mapper",
+        string options = "multiply 1*2:0|add 1+2:1|divide 1/2:2|subtract 1-2:3|lerp(1, 2, 3):4",
+        string as_maya_attribute_name = "combineOp"
+    ]],
+    output float out_result = 0
+    [[
+        string as_maya_attribute_name = "outValue"
     ]]
 )
 {
-    if (combineOp==0)
+    if (in_combineOp == MULTIPLY)
     {
-        // multiply
-        result = input1*input2;
+        out_result = in_input1 * in_input2;
     }
-    else if (combineOp == 1)
+    else if (in_combineOp == ADD)
     {
-        // add
-        result = input1+input2;
+        out_result = in_input1 + in_input2;
     }
-    else if (combineOp == 2)
+    else if (in_combineOp == DIVIDE)
     {
-        // divide
-        result = input1/input2;
+        out_result = in_input1 / in_input2;
     }
-    else if (combineOp == 3)
+    else if (in_combineOp == SUBTRACT)
     {
-        // subtract
-        result = input1-input2;
+        out_result = in_input1 - in_input2;
     }
-    else
+    else if (in_combineOp == LERP)
     {
-        // lerp
-        if (input3 <= 0) result = input1;
-        else if (input3 >= 1) result = input2;
-        else result = mix(input1, input2, input3);
+        out_result = mix(in_input1, in_input2, clamp(in_input3, 0.0, 1.0));
     }
 }

@@ -30,47 +30,40 @@
 
 shader as_maya_condition
 [[
-    string maya_node_name = "condition",
-    string maya_classification = "utility/general"
+    string as_maya_node_name = "condition"
 ]]
 (
     int in_operation = 0
     [[
-        string maya_attribute_name = "operation",
-        string maya_attribute_type = "enum",
+        string as_maya_attribute_name = "operation",
         string label = "Operation",
         string widget = "mapper",
         string options = "Equal:0|Not Equal:1|Greater Than:2|Greater Or Equal:3|Less Than:4|Less Or Equal:5"
     ]],
     float in_firstTerm = 0.0
     [[
-        string maya_attribute_name = "firstTerm",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "firstTerm",
         string label = "First Term"
     ]],
     float in_secondTerm = 0.0
     [[
-        string maya_attribute_name = "secondTerm",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "secondTerm",
         string label = "Second Term"
     ]],
     color in_colorIfTrue = color(0)
     [[
-        string maya_attribute_name = "colorIfTrue",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "colorIfTrue",
         string label = "Color If True"
     ]],
     color in_colorIfFalse = color(0)
     [[
-        string maya_attribute_name = "colorIfFalse",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "colorIfFalse",
         string label = "Color If False"
     ]],
 
     output color out_outColor = color(0)
     [[
-        string maya_attribute_name = "outColor",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "outColor",
         string lable = "Output Color",
         string widget = "null"
     ]]
