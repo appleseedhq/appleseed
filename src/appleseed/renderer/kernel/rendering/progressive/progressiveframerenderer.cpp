@@ -179,8 +179,8 @@ namespace
 
             RENDERER_LOG_INFO(
                 "rendering settings:\n"
-                "  sampling mode    %s\n"
-                "  threads          %s",
+                "  sampling mode                 %s\n"
+                "  threads                       %s",
                 get_sampling_context_mode_name(get_sampling_context_mode(params)).c_str(),
                 pretty_int(m_params.m_thread_count).c_str());
         }
@@ -485,9 +485,9 @@ namespace
 
                 RENDERER_LOG_DEBUG(
                     "display thread:\n"
-                    "  buffer to frame     : %s\n"
-                    "  frame to widget     : %s\n"
-                    "  total               : %s (%s fps)",
+                    "  buffer to frame               %s\n"
+                    "  frame to widget               %s\n"
+                    "  total                         %s (%s fps)",
                     pretty_time(t2 - t1).c_str(),
                     pretty_time(t3 - t2).c_str(),
                     pretty_time(t3 - t1).c_str(),

@@ -154,19 +154,19 @@ namespace
             void print() const
             {
                 RENDERER_LOG_INFO(
-                    "path tracing settings:        \n"
-                    "  direct lighting           %s\n"
-                    "  ibl                       %s\n"
-                    "  caustics                  %s\n"
-                    "  max path length           %s\n"
-                    "  max specular bounces      %s\n"
-                    "  max glossy bounces        %s\n"
-                    "  max diffuse bounces       %s\n"
-                    "  rr min path len.          %s\n"
-                    "  next event est.           %s\n"
-                    "  dl light samples          %s\n"
-                    "  ibl env samples           %s\n"
-                    "  max ray intens.           %s",
+                    "path tracing settings:\n"
+                    "  direct lighting               %s\n"
+                    "  ibl                           %s\n"
+                    "  caustics                      %s\n"
+                    "  max path length               %s\n"
+                    "  max specular bounces          %s\n"
+                    "  max glossy bounces            %s\n"
+                    "  max diffuse bounces           %s\n"
+                    "  rr min path length            %s\n"
+                    "  next event estimation         %s\n"
+                    "  dl light samples              %s\n"
+                    "  ibl env samples               %s\n"
+                    "  max ray intensity             %s",
                     m_enable_dl ? "on" : "off",
                     m_enable_ibl ? "on" : "off",
                     m_enable_caustics ? "on" : "off",
