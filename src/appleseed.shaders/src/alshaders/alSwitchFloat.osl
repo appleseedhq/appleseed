@@ -22,12 +22,12 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-// This code comes from alshaders's OSL branch, with minimal changes.
+// This code comes from alshaders OSL branch, with minimal changes.
 // https://bitbucket.org/anderslanglands/alshaders/branch/osl
 
 shader alSwitchFloat
 [[
-    string maya_node_name = "alSwitchFloat"
+    string as_maya_node_name = "alSwitchFloat"
 ]]
 (
     float inputA = 0,
@@ -42,14 +42,17 @@ shader alSwitchFloat
     float threshold=0.5,
     output float result = 0
     [[
-        string maya_attribute_name = "outValue"
+        string as_maya_attribute_name = "outValue"
     ]]
 )
 {
     float input = floor(mixer);
-    if (mixer-input >= threshold) input++;
+    if (mixer - input >= threshold)
+        input++;
+
     input = clamp(input, 0, 7);
-    if (input == 0) result = inputA;
+
+         if (input == 0) result = inputA;
     else if (input == 1) result = inputB;
     else if (input == 2) result = inputC;
     else if (input == 3) result = inputD;

@@ -22,77 +22,85 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-// This code comes from alshaders's OSL branch, with minimal changes.
+// This code comes from alshaders OSL branch, with minimal changes.
 // https://bitbucket.org/anderslanglands/alshaders/branch/osl
 
-#define BM_NORMAL         0
-#define BM_LIGHTEN        1
-#define BM_DARKEN         2
-#define BM_MULTIPLY       3
-#define BM_AVERAGE        4
-#define BM_ADD            5
-#define BM_SUBTRACT       6
-#define BM_DIFFERENCE     7
-#define BM_NEGATION       8
-#define BM_EXCLUSION      9
-#define BM_SCREEN        10
-#define BM_OVERLAY       11
-#define BM_SOFTLIGHT     12
-#define BM_HARDLIGHT     13
-#define BM_COLORDODGE    14
-#define BM_COLORBURN     15
-#define BM_LINEARDODGE   16
-#define BM_LINEARBURN    17
-#define BM_LINEARLIGHT   18
-#define BM_VIVIDLIGHT    19
-#define BM_PINLIGHT      20
-#define BM_HARDMIX       21
-#define BM_REFLECT       22
-#define BM_GLOW          23
-#define BM_PHOENIX       24
+// Constants.
+#define NORMAL         0
+#define LIGHTEN        1
+#define DARKEN         2
+#define MULTIPLY       3
+#define AVERAGE        4
+#define ADD            5
+#define SUBTRACT       6
+#define DIFFERENCE     7
+#define NEGATION       8
+#define EXCLUSION      9
+#define SCREEN        10
+#define OVERLAY       11
+#define SOFTLIGHT     12
+#define HARDLIGHT     13
+#define COLORDODGE    14
+#define COLORBURN     15
+#define LINEARDODGE   16
+#define LINEARBURN    17
+#define LINEARLIGHT   18
+#define VIVIDLIGHT    19
+#define PINLIGHT      20
+#define HARDMIX       21
+#define REFLECT       22
+#define GLOW          23
+#define PHOENIX       24
 
 color overlay(color l1, color l2)
 {
-    color result;
+    color out_result;
     for (int i=0; i < 3; ++i)
     {
-        l1[i] < 0.5 ? result[i] = 2.0 * l1[i] * l2[i] : result[i] = (1.0 - 2.0 * (1.0-l1[i]) * (1.0-l2[i]));
+        l1[i] < 0.5
+            ? out_result[i] = 2.0 * l1[i] * l2[i]
+            : out_result[i] = (1.0 - 2.0 * (1.0 - l1[i]) * (1.0 - l2[i]));
     }
 
-    return result;
+    return out_result;
 }
 
 color softlight(color l1, color l2)
 {
-    color result;
+    color out_result;
     for (int i=0; i < 3; ++i)
     {
         if (l2[i] < 0.5)
-            result[i] = 2.0 * l1[i] * l2[i] + (l1[i]*l1[i]) * (1.0 - 2.0 * l2[i]);
+            out_result[i] = 2.0 * l1[i] * l2[i] + (l1[i]*l1[i]) * (1.0 - 2.0 * l2[i]);
         else
-            result[i] = sqrt(l1[i]) * (2.0 * l2[i] - 1.0) + 2.0 * l1[i] * (1.0 - l2[i]);
+            out_result[i] = sqrt(l1[i]) * (2.0 * l2[i] - 1.0) + 2.0 * l1[i] * (1.0 - l2[i]);
     }
 
-    return result;
+    return out_result;
 }
 
-float colordodgef(float l1, float l2)
+float colordodgef(float l1, float l2, int clamp_result)
 {
+    float result;
+
     if (l2 == 1.0)
-        return l2;
+        result = l2;
     else
-        return min(l1 / (1.0 - l2), 1.0);
-}
+        result = min(l1 / (1.0 - l2), 1.0);
 
-color colordodge(color l1, color l2)
-{
-    color result;
-    for (int i=0; i < 3; ++i)
-    {
-        result[i] = colordodgef(l1[i], l2[i]);
-    }
+     if (clamp_result)
+        result = min(result, 1.0);
 
     return result;
+}
+
+color colordodge(color l1, color l2, int clamp_result)
+{
+    color out_result;
+    for (int i=0; i < 3; ++i)
+        out_result[i] = colordodgef(l1[i], l2[i], clamp_result);
+
+    return out_result;
 }
 
 float colorburnf(float l1, float l2)
@@ -105,184 +113,500 @@ float colorburnf(float l1, float l2)
 
 color colorburn(color l1, color l2)
 {
-    color result;
+    color out_result;
     for (int i=0; i < 3; ++i)
     {
-        result[i] = colorburnf(l1[i], l2[i]);
+        out_result[i] = colorburnf(l1[i], l2[i]);
     }
 
-    return result;
+    return out_result;
 }
 
-color linearlight(color l1, color l2)
+color linearlight(color l1, color l2, int clamp_result)
 {
-    color result;
+    color out_result;
     for (int i=0; i < 3; ++i)
     {
         if (l2[i] < 0.5)
-            result[i] = max(l1[i] + 2.0 * l2[i] - 1.0, 0.0);
+            out_result[i] = max(l1[i] + 2.0 * l2[i] - 1.0, 0.0);
         else
-            result[i] = min(l1[i] + 2.0 * (l2[i] - 0.5), 1.0);
+            out_result[i] = min(l1[i] + 2.0 * (l2[i] - 0.5), 1.0);
     }
 
-    return result;
+    if (clamp_result)
+        out_result = clamp(out_result, color(0), color(1));
+
+    return out_result;
 }
 
-color vividlight(color l1, color l2)
+color vividlight(color l1, color l2, int clamp_result)
 {
-    color result;
+    color out_result;
     for (int i=0; i < 3; ++i)
     {
         if (l2[i] < 0.5)
-            result[i] = colorburnf(l1[i], 2.0 * l2[i]);
+            out_result[i] = colorburnf(l1[i], 2.0 * l2[i]);
         else
-            result[i] = colordodgef(l1[i], 2.0 * (l2[i] - 0.5));
+            out_result[i] = colordodgef(l1[i], 2.0 * (l2[i] - 0.5), clamp_result);
     }
 
-    return result;
+    return out_result;
 }
 
 color pinlight(color l1, color l2)
 {
-    color result;
+    color out_result;
     for (int i=0; i < 3; ++i)
     {
         if (l2[i] < 0.5)
-            result[i] = min(l1[i], 2.0 * l2[i]);
+            out_result[i] = min(l1[i], 2.0 * l2[i]);
         else
-            result[i] = max(l1[i], 2.0 * (l2[i] - 0.5));
+            out_result[i] = max(l1[i], 2.0 * (l2[i] - 0.5));
     }
 
-    return result;
+    return out_result;
 }
 
-color hardmix(color l1, color l2)
+color hardmix(color l1, color l2, int clamp_result)
 {
-    color result = vividlight(l1, l2);
+    color out_result = vividlight(l1, l2, clamp_result);
     for (int i=0; i < 3; ++i)
-    {
-        result[i] < 0.5 ? result[i] = 0.0 : result[i] = 1.0;
-    }
+        out_result[i] < 0.5 ? out_result[i] = 0.0 : out_result[i] = 1.0;
 
-    return result;
+    return out_result;
 }
 
-color reflect(color l1, color l2)
+color reflect(color l1, color l2, int clamp_result)
 {
-    color result;
+    color out_result;
     for (int i=0; i < 3; ++i)
     {
         if (l2[i] == 1.0)
-            result[i] = l2[i];
+            out_result[i] = l2[i];
         else
-            result[i] = min((l1[i]*l1[i]) / (1.0 - l2[i]), 1.0);
+            out_result[i] = min((l1[i]*l1[i]) / (1.0 - l2[i]), 1.0);
     }
 
-    return result;
+    if (clamp_result)
+        out_result = clamp(out_result, color(0), color(1));
+
+    return out_result;
 }
 
-color blend(color l1, color l2, float a, int mode)
+color blend(color l1, color l2, float a, int mode, int clamp_result)
 {
-    color result = l2;
-    if (mode == BM_LIGHTEN)
-        result = max(l1, l2);
-    else if (mode == BM_DARKEN)
-        result = min(l1, l2);
-    else if (mode == BM_MULTIPLY)
-        result = l1 * l2;
-    else if (mode == BM_AVERAGE)
-        result = (l1 + l2) * 0.5;
-    else if (mode == BM_ADD || mode == BM_LINEARDODGE)
-        result = min(l1 + l2, color(1));
-    else if (mode == BM_SUBTRACT || mode == BM_LINEARBURN)
-        result = max(l1 + l2 - color(1), color(0));
-    else if (mode == BM_DIFFERENCE)
-        result = fabs(l1 - l2);
-    else if (mode == BM_NEGATION)
-        result = color(1) - fabs(color(1) - l1 - l2);
-    else if (mode == BM_EXCLUSION)
-        result = l1 + l2 - (2.0 * l1 * l2);
-    else if (mode == BM_SCREEN)
-        result = color(1) - ((color(1)-l1) * (color(1)-l2));
-    else if (mode == BM_OVERLAY)
-        result = overlay(l1, l2);
-    else if (mode == BM_SOFTLIGHT)
-        result = softlight(l1, l2);
-    else if (mode == BM_HARDLIGHT)
-        result = overlay(l2, l1);
-    else if (mode == BM_COLORDODGE)
-        result = colordodge(l1, l2);
-    else if (mode == BM_COLORBURN)
-        result = colorburn(l1, l2);
-    else if (mode == BM_LINEARLIGHT)
-        result = linearlight(l1, l2);
-    else if (mode == BM_VIVIDLIGHT)
-        result = vividlight(l1, l2);
-    else if (mode == BM_PINLIGHT)
-        result = pinlight(l1, l2);
-    else if (mode == BM_HARDMIX)
-        result = hardmix(l1, l2);
-    else if (mode == BM_REFLECT)
-        result = reflect(l1, l2);
-    else if (mode == BM_GLOW)
-        result = reflect(l2, l1);
-    else if (mode == BM_PHOENIX)
-        result = min(l1, l2) - max(l1, l2) + color(1);
+    color out_result = l2;
+    if (mode == LIGHTEN)
+        out_result = max(l1, l2);
+    else if (mode == DARKEN)
+        out_result = min(l1, l2);
+    else if (mode == MULTIPLY)
+        out_result = l1 * l2;
+    else if (mode == AVERAGE)
+        out_result = (l1 + l2) * 0.5;
+    else if (mode == ADD || mode == LINEARDODGE)
+    {
+        out_result = min(l1 + l2, color(1));
+        if (clamp_result)
+            out_result = min(out_result, color(1));
+    }
+    else if (mode == SUBTRACT || mode == LINEARBURN)
+    {
+        out_result = max(l1 + l2 - color(1), color(0));
+        if (clamp_result)
+            out_result = max(out_result, color(0));
+    }
+    else if (mode == DIFFERENCE)
+        out_result = fabs(l1 - l2);
+    else if (mode == NEGATION)
+        out_result = color(1) - fabs(color(1) - l1 - l2);
+    else if (mode == EXCLUSION)
+        out_result = l1 + l2 - (2.0 * l1 * l2);
+    else if (mode == SCREEN)
+        out_result = color(1) - ((color(1) - l1) * (color(1) - l2));
+    else if (mode == OVERLAY)
+        out_result = overlay(l1, l2);
+    else if (mode == SOFTLIGHT)
+        out_result = softlight(l1, l2);
+    else if (mode == HARDLIGHT)
+        out_result = overlay(l2, l1);
+    else if (mode == COLORDODGE)
+        out_result = colordodge(l1, l2, clamp_result);
+    else if (mode == COLORBURN)
+        out_result = colorburn(l1, l2);
+    else if (mode == LINEARLIGHT)
+        out_result = linearlight(l1, l2, clamp_result);
+    else if (mode == VIVIDLIGHT)
+        out_result = vividlight(l1, l2, clamp_result);
+    else if (mode == PINLIGHT)
+        out_result = pinlight(l1, l2);
+    else if (mode == HARDMIX)
+        out_result = hardmix(l1, l2, clamp_result);
+    else if (mode == REFLECT)
+        out_result = reflect(l1, l2, clamp_result);
+    else if (mode == GLOW)
+        out_result = reflect(l2, l1, clamp_result);
+    else if (mode == PHOENIX)
+        out_result = min(l1, l2) - max(l1, l2) + color(1);
 
-    return result;
+    return mix(l1, out_result, a);
 }
 
 shader alLayerColor
 [[
-    string maya_node_name = "alLayerColor"
+    string as_maya_node_name = "alLayerColor",
+    string help = "Layer multiple colors together.",
+    string description = "Layer up to eight color channels together with a variety of Photoshop-styl blending modes."
 ]]
 (
-    color layer1 = color(0),
-    float layer1a = 0,
-    int layer1Blend = 0,
-
-    color layer2 = color(0),
-    float layer2a = 0,
-    int layer2Blend = 0,
-
-    color layer3 = color(0),
-    float layer3a = 0,
-    int layer3Blend = 0,
-
-    color layer4 = color(0),
-    float layer4a = 0,
-    int layer4Blend = 0,
-
-    color layer5 = color(0),
-    float layer5a = 0,
-    int layer5Blend = 0,
-
-    color layer6 = color(0),
-    float layer6a = 0,
-    int layer6Blend = 0,
-
-    color layer7 = color(0),
-    float layer7a = 0,
-    int layer7Blend = 0,
-
-    color layer8 = color(0),
-    float layer8a = 0,
-    int layer8Blend = 0,
-
-    output color result = 0
+    int in_clamp_result = 0
     [[
-        string maya_attribute_name = "outColor",
-        string maya_attribute_short_name = "oc"
+        string label = "Clamp",
+        string widget = "checkBox",
+        string help = "Clamp the result of the blend operations",
+        string as_maya_attribute_name = "clamp_result"
+    ]],
+
+    string in_layer1name = ""
+    [[
+        string page = "Background",
+        string label = "Name",
+        string help = "A descriptive name for this layer",
+        string as_maya_attribute_name = "layer1name"
+    ]],
+    int in_layer1enabled = 1
+    [[
+        string page = "Background",
+        string label = "Enabled",
+        string widget = "checkBox",
+        string help = "Toggle this layer on or off",
+        string as_maya_attribute_name = "layer1enabled"
+    ]],
+    color in_layer1 = color(0)
+    [[
+        string page = "Background",
+        string label = "Input",
+        string help = "The background layer (will be blended over black if its alpha is not 1.)",
+        string as_maya_attribute_name = "layer1"
+    ]],
+    float in_layer1a = 0
+    [[
+        string page = "Background",
+        string label = "Alpha",
+        string help = "The alpha of the background layer",
+        string as_maya_attribute_name = "layer1a"
+    ]],
+    int in_layer1blend = 0
+    [[
+        string page = "Background",
+        string label = "Mode",
+        string help = "Blend mode for the background layer.",
+        string widget = "mapper",
+        string options = "Normal:0|Lighten:1|Darken:2|Multiply:3|Average:4|Add:5|Subtract:6|Difference:7|Negation:8|Exclusion:9|Screen:10|Overlay:11|Soft Light:12|Hard Light:13|Color Dodge:14|Color Burn:15|Linear Dodge:16|Linear Burn:17|Linear Light:18|Vivid Light:19|Pin Light:20|Hard Mix:21|Reflect:22|Glow:23|Phoenix:24",
+        string as_maya_attribute_name = "layer1blend"
+    ]],
+
+    string in_layer2name = ""
+    [[
+        string page = "Layer 2",
+        string label = "Name",
+        string help = "A descriptive name for this layer",
+        string as_maya_attribute_name = "layer2name"
+    ]],
+    int in_layer2enabled = 1
+    [[
+        string page = "Layer 2",
+        string label = "Enabled",
+        string widget = "checkBox",
+        string help = "Toggle this layer on or off",
+        string as_maya_attribute_name = "layer2enabled"
+    ]],
+    color in_layer2 = color(0)
+    [[
+        string page = "Layer 2",
+        string label = "Input",
+        string help = "The color to be layered",
+        string as_maya_attribute_name = "layer2"
+    ]],
+    float in_layer2a = 0
+    [[
+        string page = "Layer 2",
+        string label = "Alpha",
+        string help = "The alpha used to blend this layer over the layers below",
+        string as_maya_attribute_name = "layer2a"
+    ]],
+    int in_layer2blend = 0
+    [[
+        string page = "Layer 2",
+        string label = "Mode",
+        string help = "The blend mode used to blend this layer over the layers below.",
+        string widget = "mapper",
+        string options = "Normal:0|Lighten:1|Darken:2|Multiply:3|Average:4|Add:5|Subtract:6|Difference:7|Negation:8|Exclusion:9|Screen:10|Overlay:11|Soft Light:12|Hard Light:13|Color Dodge:14|Color Burn:15|Linear Dodge:16|Linear Burn:17|Linear Light:18|Vivid Light:19|Pin Light:20|Hard Mix:21|Reflect:22|Glow:23|Phoenix:24",
+        string as_maya_attribute_name = "layer2blend"
+    ]],
+
+    string in_layer3name = ""
+    [[
+        string page = "Layer 3",
+        string label = "Name",
+        string help = "A descriptive name for this layer",
+        string as_maya_attribute_name = "layer3name"
+    ]],
+    int in_layer3enabled = 1
+    [[
+        string page = "Layer 3",
+        string label = "Enabled",
+        string widget = "checkBox",
+        string help = "Toggle this layer on or off",
+        string as_maya_attribute_name = "layer3enabled"
+    ]],
+    color in_layer3 = color(0)
+    [[
+        string page = "Layer 3",
+        string label = "Input",
+        string help = "The color to be layered",
+        string as_maya_attribute_name = "layer3"
+    ]],
+    float in_layer3a = 0
+    [[
+        string page = "Layer 3",
+        string label = "Alpha",
+        string help = "The alpha used to blend this layer over the layers below",
+        string as_maya_attribute_name = "layer3a"
+    ]],
+    int in_layer3blend = 0
+    [[
+        string page = "Layer 3",
+        string label = "Mode",
+        string help = "The blend mode used to blend this layer over the layers below.",
+        string widget = "mapper",
+        string options = "Normal:0|Lighten:1|Darken:2|Multiply:3|Average:4|Add:5|Subtract:6|Difference:7|Negation:8|Exclusion:9|Screen:10|Overlay:11|Soft Light:12|Hard Light:13|Color Dodge:14|Color Burn:15|Linear Dodge:16|Linear Burn:17|Linear Light:18|Vivid Light:19|Pin Light:20|Hard Mix:21|Reflect:22|Glow:23|Phoenix:24",
+        string as_maya_attribute_name = "layer3blend"
+    ]],
+
+    string in_layer4name = ""
+    [[
+        string page = "Layer 4",
+        string label = "Name",
+        string help = "A descriptive name for this layer",
+        string as_maya_attribute_name = "layer4name"
+    ]],
+    int in_layer4enabled = 1
+    [[
+        string page = "Layer 4",
+        string label = "Enabled",
+        string widget = "checkBox",
+        string help = "Toggle this layer on or off",
+        string as_maya_attribute_name = "layer4enabled"
+    ]],
+    color in_layer4 = color(0)
+    [[
+        string page = "Layer 4",
+        string label = "Input",
+        string help = "The color to be layered",
+        string as_maya_attribute_name = "layer4"
+    ]],
+    float in_layer4a = 0
+    [[
+        string page = "Layer 4",
+        string label = "Alpha",
+        string help = "The alpha used to blend this layer over the layers below",
+        string as_maya_attribute_name = "layer4a"
+    ]],
+    int in_layer4blend = 0
+    [[
+        string page = "Layer 4",
+        string label = "Mode",
+        string help = "The blend mode used to blend this layer over the layers below.",
+        string widget = "mapper",
+        string options = "Normal:0|Lighten:1|Darken:2|Multiply:3|Average:4|Add:5|Subtract:6|Difference:7|Negation:8|Exclusion:9|Screen:10|Overlay:11|Soft Light:12|Hard Light:13|Color Dodge:14|Color Burn:15|Linear Dodge:16|Linear Burn:17|Linear Light:18|Vivid Light:19|Pin Light:20|Hard Mix:21|Reflect:22|Glow:23|Phoenix:24",
+        string as_maya_attribute_name = "layer4blend"
+    ]],
+
+    string in_layer5name = ""
+    [[
+        string page = "Layer 5",
+        string label = "Name",
+        string help = "A descriptive name for this layer",
+        string as_maya_attribute_name = "layer5name"
+    ]],
+    int in_layer5enabled = 1
+    [[
+        string page = "Layer 5",
+        string label = "Enabled",
+        string widget = "checkBox",
+        string help = "Toggle this layer on or off",
+        string as_maya_attribute_name = "layer5enabled"
+    ]],
+    color in_layer5 = color(0)
+    [[
+        string page = "Layer 5",
+        string label = "Input",
+        string help = "The color to be layered",
+        string as_maya_attribute_name = "layer5"
+    ]],
+    float in_layer5a = 0
+    [[
+        string page = "Layer 5",
+        string label = "Alpha",
+        string help = "The alpha used to blend this layer over the layers below",
+        string as_maya_attribute_name = "layer5a"
+    ]],
+    int in_layer5blend = 0
+    [[
+        string page = "Layer 5",
+        string label = "Mode",
+        string help = "The blend mode used to blend this layer over the layers below.",
+        string widget = "mapper",
+        string options = "Normal:0|Lighten:1|Darken:2|Multiply:3|Average:4|Add:5|Subtract:6|Difference:7|Negation:8|Exclusion:9|Screen:10|Overlay:11|Soft Light:12|Hard Light:13|Color Dodge:14|Color Burn:15|Linear Dodge:16|Linear Burn:17|Linear Light:18|Vivid Light:19|Pin Light:20|Hard Mix:21|Reflect:22|Glow:23|Phoenix:24",
+        string as_maya_attribute_name = "layer5blend"
+    ]],
+
+    string in_layer6name = ""
+    [[
+        string page = "Layer 6",
+        string label = "Name",
+        string help = "A descriptive name for this layer",
+        string as_maya_attribute_name = "layer6name"
+    ]],
+    int in_layer6enabled = 1
+    [[
+        string page = "Layer 6",
+        string label = "Enabled",
+        string widget = "checkBox",
+        string help = "Toggle this layer on or off",
+        string as_maya_attribute_name = "layer6enabled"
+    ]],
+    color in_layer6 = color(0)
+    [[
+        string page = "Layer 6",
+        string label = "Input",
+        string help = "The color to be layered",
+        string as_maya_attribute_name = "layer6"
+    ]],
+    float in_layer6a = 0
+    [[
+        string page = "Layer 6",
+        string label = "Alpha",
+        string help = "The alpha used to blend this layer over the layers below",
+        string as_maya_attribute_name = "layer6a"
+    ]],
+    int in_layer6blend = 0
+    [[
+        string page = "Layer 6",
+        string label = "Mode",
+        string help = "The blend mode used to blend this layer over the layers below.",
+        string widget = "mapper",
+        string options = "Normal:0|Lighten:1|Darken:2|Multiply:3|Average:4|Add:5|Subtract:6|Difference:7|Negation:8|Exclusion:9|Screen:10|Overlay:11|Soft Light:12|Hard Light:13|Color Dodge:14|Color Burn:15|Linear Dodge:16|Linear Burn:17|Linear Light:18|Vivid Light:19|Pin Light:20|Hard Mix:21|Reflect:22|Glow:23|Phoenix:24",
+        string as_maya_attribute_name = "layer6blend"
+    ]],
+
+    string in_layer7name = ""
+    [[
+        string page = "Layer 7",
+        string label = "Name",
+        string help = "A descriptive name for this layer",
+        string as_maya_attribute_name = "layer7name"
+    ]],
+    int in_layer7enabled = 1
+    [[
+        string page = "Layer 7",
+        string label = "Enabled",
+        string widget = "checkBox",
+        string help = "Toggle this layer on or off",
+        string as_maya_attribute_name = "layer7enabled"
+    ]],
+    color in_layer7 = color(0)
+    [[
+        string page = "Layer 7",
+        string label = "Input",
+        string help = "The color to be layered",
+        string as_maya_attribute_name = "layer7"
+    ]],
+    float in_layer7a = 0
+    [[
+        string page = "Layer 7",
+        string label = "Alpha",
+        string help = "The alpha used to blend this layer over the layers below",
+        string as_maya_attribute_name = "layer7a"
+    ]],
+    int in_layer7blend = 0
+    [[
+        string page = "Layer 7",
+        string label = "Mode",
+        string help = "The blend mode used to blend this layer over the layers below.",
+        string widget = "mapper",
+        string options = "Normal:0|Lighten:1|Darken:2|Multiply:3|Average:4|Add:5|Subtract:6|Difference:7|Negation:8|Exclusion:9|Screen:10|Overlay:11|Soft Light:12|Hard Light:13|Color Dodge:14|Color Burn:15|Linear Dodge:16|Linear Burn:17|Linear Light:18|Vivid Light:19|Pin Light:20|Hard Mix:21|Reflect:22|Glow:23|Phoenix:24",
+        string as_maya_attribute_name = "layer7blend"
+    ]],
+
+    string in_layer8name = ""
+    [[
+        string page = "Layer 8",
+        string label = "Name",
+        string help = "A descriptive name for this layer",
+        string as_maya_attribute_name = "layer8name"
+    ]],
+    int in_layer8enabled = 1
+    [[
+        string page = "Layer 8",
+        string label = "Enabled",
+        string widget = "checkBox",
+        string help = "Toggle this layer on or off",
+        string as_maya_attribute_name = "layer8enabled"
+    ]],
+    color in_layer8 = color(0)
+    [[
+        string page = "Layer 8",
+        string label = "Input",
+        string help = "The color to be layered",
+        string as_maya_attribute_name = "layer8"
+    ]],
+    float in_layer8a = 0
+    [[
+        string page = "Layer 8",
+        string label = "Alpha",
+        string help = "The alpha used to blend this layer over the layers below",
+        string as_maya_attribute_name = "layer8a"
+    ]],
+    int in_layer8blend = 0
+    [[
+        string page = "Layer 8",
+        string label = "Mode",
+        string help = "The blend mode used to blend this layer over the layers below.",
+        string widget = "mapper",
+        string options = "Normal:0|Lighten:1|Darken:2|Multiply:3|Average:4|Add:5|Subtract:6|Difference:7|Negation:8|Exclusion:9|Screen:10|Overlay:11|Soft Light:12|Hard Light:13|Color Dodge:14|Color Burn:15|Linear Dodge:16|Linear Burn:17|Linear Light:18|Vivid Light:19|Pin Light:20|Hard Mix:21|Reflect:22|Glow:23|Phoenix:24",
+        string as_maya_attribute_name = "layer8blend"
+    ]],
+
+    output color out_result = 0
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc"
     ]]
 )
 {
-    result = blend(result, layer1, layer1a, layer1Blend);
-    result = blend(result, layer2, layer2a, layer2Blend);
-    result = blend(result, layer3, layer3a, layer3Blend);
-    result = blend(result, layer4, layer4a, layer4Blend);
-    result = blend(result, layer5, layer5a, layer5Blend);
-    result = blend(result, layer6, layer6a, layer6Blend);
-    result = blend(result, layer7, layer7a, layer7Blend);
-    result = blend(result, layer8, layer8a, layer8Blend);
+    if (in_layer1enabled)
+        out_result = blend(out_result, in_layer1, in_layer1a, in_layer1blend, in_clamp_result);
 
+    if (in_layer2enabled)
+        out_result = blend(out_result, in_layer2, in_layer2a, in_layer2blend, in_clamp_result);
+
+    if (in_layer3enabled)
+        out_result = blend(out_result, in_layer3, in_layer3a, in_layer3blend, in_clamp_result);
+
+    if (in_layer4enabled)
+        out_result = blend(out_result, in_layer4, in_layer4a, in_layer4blend, in_clamp_result);
+
+    if (in_layer5enabled)
+        out_result = blend(out_result, in_layer5, in_layer5a, in_layer5blend, in_clamp_result);
+
+    if (in_layer6enabled)
+        out_result = blend(out_result, in_layer6, in_layer6a, in_layer6blend, in_clamp_result);
+
+    if (in_layer7enabled)
+        out_result = blend(out_result, in_layer7, in_layer7a, in_layer7blend, in_clamp_result);
+
+    if (in_layer8enabled)
+        out_result = blend(out_result, in_layer8, in_layer8a, in_layer8blend, in_clamp_result);
 }

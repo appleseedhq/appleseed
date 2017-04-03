@@ -22,55 +22,100 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-// This code comes from alshaders's OSL branch, with minimal changes.
+// This code comes from alshaders OSL branch, with minimal changes.
 // https://bitbucket.org/anderslanglands/alshaders/branch/osl
 
 shader alJitterColor
 [[
-    string maya_node_name = "alJitterColor"
+    string as_maya_node_name = "alJitterColor",
+    string help = "Applies random color variation within a range.",
+    string description = "Use this in a network attached to multiple objects to add random color variation to each object."
 ]]
 (
-    color input = color(1),
-    float minSaturation = 0.0,
-    float maxSaturation = 1.0,
-    float minHueOffset = -1.0,
-    float maxHueOffset = 1.0,
-    float minGain = 0.0,
-    float maxGain = 1.0,
-    float clampResult = 1,
-    float signal = 0.0,
-    output color result = color(0)
+    color in_input = color(1)
     [[
-        string maya_attribute_name = "outColor",
-        string maya_attribute_short_name = "oc"
+        string label = "Input",
+        string help = "The input color to be jittered.",
+        string as_maya_attribute_name = "input"
+    ]],
+    float in_minSaturation = 0.0
+    [[
+        string label = "Min Saturation",
+        string help = "Minimum random saturation scale to apply.",
+        string as_maya_attribute_name = "minSaturation"
+    ]],
+    float in_maxSaturation = 1.0
+    [[
+        string label = "Max Saturation",
+        string help = "Maximum random saturation scale to apply.",
+        string as_maya_attribute_name = "maxSaturation"
+    ]],
+    float in_minHueOffset = -1.0
+    [[
+        string label = "Min Hue Offset",
+        string help = "Minimum hue offset to apply.",
+        string as_maya_attribute_name = "minHueOffset"
+    ]],
+    float in_maxHueOffset = 1.0
+    [[
+        string label = "Max Hue Offset",
+        string help = "Maximum hue offset to apply.",
+        string as_maya_attribute_name = "maxHueOffset"
+    ]],
+    float in_minGain = 0.0
+    [[
+        string label = "Min Gain",
+        string help = "Minimum random gain to apply.",
+        string as_maya_attribute_name = "minGain"
+    ]],
+    float in_maxGain = 1.0
+    [[
+        string label = "Max Gain",
+        string help = "Maximum random gain to apply.",
+        string as_maya_attribute_name = "maxGain"
+    ]],
+    float in_clampResult = 1
+    [[
+        string label = "Clamp",
+        string help = "If enabled, the output color will be clamped to 0-1.",
+        string as_maya_attribute_name = "clampResult"
+    ]],
+    float in_signal = 0.0
+    [[
+        string label = "Signal",
+        string help = "Signal to use to drive the randomization. This wants to be a unique value per object such as the object id.",
+        string as_maya_attribute_name = "signal"
+    ]],
+    output color out_result = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc"
     ]]
 )
 {
-    result = input;
+    out_result = in_input;
 
-    float saturation = noise("cell", signal, 51731.132151);
-    saturation = mix(minSaturation, maxSaturation, saturation);
+    float saturation = noise("cell", in_signal, 51731.132151);
+    saturation = mix(in_minSaturation, in_maxSaturation, saturation);
     if (saturation != 1)
     {
-        float l = luminance(result);
-        result = mix(color(l), result, saturation);
+        float l = luminance(out_result);
+        out_result = mix(color(l), out_result, saturation);
     }
 
-    float hueOffset = noise("cell", signal, 173.1231);
-    hueOffset = mix(minHueOffset, maxHueOffset, hueOffset);
+    float hueOffset = noise("cell", in_signal, 173.1231);
+    hueOffset = mix(in_minHueOffset, in_maxHueOffset, hueOffset);
     if (hueOffset != 0)
     {
-        color hsv = transformc("hsv", result);
+        color hsv = transformc("hsv", out_result);
         hsv[0] += hueOffset;
-        result = transformc("rgb", hsv);
+        out_result = transformc("rgb", hsv);
     }
 
-    float gain = noise("cell", signal, 413.7254);
-    gain = mix(minGain, maxGain, gain);
-    result *= gain;
+    float gain = noise("cell", in_signal, 413.7254);
+    gain = mix(in_minGain, in_maxGain, gain);
+    out_result *= gain;
 
-    if (clampResult)
-    {
-        result = clamp(result, color(0), color(1));
-    }
+    if (in_clampResult)
+        out_result = clamp(out_result, color(0), color(1));
 }

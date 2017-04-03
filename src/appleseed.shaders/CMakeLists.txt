@@ -92,6 +92,17 @@ source_group ("include\\appleseed" FILES
     ${appleseed_library_osl_headers}
 )
 
+set (alshaders_osl_headers
+    include/alshaders/remap.h
+    include/alshaders/space.h
+)
+list (APPEND osl_headers
+    ${alshaders_osl_headers}
+)
+source_group ("include\\alshaders" FILES
+    ${alshaders_osl_headers}
+)
+
 
 #--------------------------------------------------------------------------------------------------
 # Source files.
@@ -236,15 +247,26 @@ source_group ("src\\maya" FILES
 )
 
 set (appleseed_alshaders_osl_sources
-     src/alshaders/alCombineColor.osl
-     src/alshaders/alCombineFloat.osl
-     src/alshaders/alJitterColor.osl
-     src/alshaders/alLayerColor.osl
-     src/alshaders/alLayerFloat.osl
-     src/alshaders/alRemapColor.osl
-     src/alshaders/alSurface.osl
-     src/alshaders/alSwitchColor.osl
-     src/alshaders/alSwitchFloat.osl
+    #src/alshaders/alBlackbody.osl
+    #src/alshaders/alCellNoise.osl
+    src/alshaders/alColorSpace.osl
+    src/alshaders/alCombineColor.osl
+    src/alshaders/alCombineFloat.osl
+    #src/alshaders/alCurvature.osl
+    #src/alshaders/alFlake.osl
+    #src/alshaders/alFlowNoise.osl
+    src/alshaders/alFractal.osl
+    src/alshaders/alJitterColor.osl
+    src/alshaders/alLayerColor.osl
+    src/alshaders/alLayerFloat.osl
+    src/alshaders/alLayer.osl
+    src/alshaders/alPattern.osl
+    src/alshaders/alRemapColor.osl
+    src/alshaders/alRemapFloat.osl
+    src/alshaders/alSurface.osl
+    src/alshaders/alSwitchColor.osl
+    src/alshaders/alSwitchFloat.osl
+    #src/alshaders/alTriplanar.osl
 )
 list (APPEND osl_sources
     ${appleseed_alshaders_osl_sources}

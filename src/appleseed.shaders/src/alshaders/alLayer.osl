@@ -1,0 +1,83 @@
+
+//
+// This software is released under the MIT licence
+//
+// Copyright (c) 2013 Anders Langlands
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of
+// this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+// the Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+
+// This code is ported from alshaders original C++ implementation.
+// https://bitbucket.org/anderslanglands/alshaders
+
+// Constants.
+#define kOff    0
+#define kLayer1 1
+#define kLayer2 2
+#define kMixer  3
+
+shader alLayer
+[[
+    string help = "Layer two shaders together",
+    string description = "Simply blends two surface shaders, including all their AOVs.",
+
+    string as_maya_node_name = "alLayer"
+]]
+(
+    closure color in_layer1 = 0
+    [[
+        string label = "Layer 1",
+        string help = "The bottom layer to blend.",
+        string as_maya_attribute_name = "layer1"
+    ]],
+    closure color in_layer2 = 0
+    [[
+        string label = "Layer 2",
+        string help = "The top layer to blend.",
+        string as_maya_attribute_name = "layer2"
+    ]],
+    float in_mix = 0.0
+    [[
+        string label = "Mix",
+        string help = "The amount to blend from the bottom layer to the top.",
+        string as_maya_attribute_name = "mix"
+    ]],
+    int in_debug = 0
+    [[
+        string label = "Debug",
+        string help = "Allows you to quickly preview each layer and the mix value.",
+        string widget = "mapper",
+        string options = "off:0|layer1:1|layer2:2|mixer:3",
+        string as_maya_attribute_name = "debug"
+    ]],
+    output closure color out_result = 0
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc"
+    ]]
+)
+{
+    if (in_debug == kOff)
+        out_result = mix(in_layer1, in_layer2, in_mix);
+    else if (in_debug == kLayer1)
+        out_result = in_layer1;
+    else if (in_debug == kLayer2)
+        out_result = in_layer2;
+    else if (in_debug == kMixer)
+        out_result = in_mix * emission();
+}
