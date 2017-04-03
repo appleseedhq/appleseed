@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Aytek Aman, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -51,59 +50,59 @@ BENCHMARK_SUITE(Foundation_Math_Basis)
 
             for (size_t i = 0; i < N; ++i)
             {
-                m_normal[i] = rand_vector1<Vector<T, 3>>(rng);
+                m_normal[i] = rand_vector1<Vector<T, 3> >(rng);
                 m_normal[i] = normalize(m_normal[i]);
             }
         }
 
-        Basis3<T> build_Original(const Vector<T, 3>& normal) const
+        static Basis3<T> build_original(const Vector<T, 3>& normal)
         {
-            const Vector<T, 3> m_n = normal;
+            const Vector<T, 3> n = normal;
 
-            Vector<T, 3> m_u, m_v;
+            Vector<T, 3> u, v;
 
-            if (std::abs(m_n[0]) < std::abs(m_n[1]))
+            if (std::abs(n[0]) < std::abs(n[1]))
             {
-                if (std::abs(m_n[0]) < std::abs(m_n[2]))
+                if (std::abs(n[0]) < std::abs(n[2]))
                 {
-                    // m_n[0] is the smallest component.
-                    m_u[0] = T(0.0);
-                    m_u[1] = -m_n[2];
-                    m_u[2] = m_n[1];
+                    // n[0] is the smallest component.
+                    u[1] = -n[2];
+                    u[0] = T(0.0);
+                    u[2] = n[1];
                 }
                 else
                 {
-                    // m_n[2] is the smallest component.
-                    m_u[0] = -m_n[1];
-                    m_u[1] = m_n[0];
-                    m_u[2] = T(0.0);
+                    // n[2] is the smallest component.
+                    u[0] = -n[1];
+                    u[1] = n[0];
+                    u[2] = T(0.0);
                 }
             }
             else
             {
-                if (std::abs(m_n[1]) < std::abs(m_n[2]))
+                if (std::abs(n[1]) < std::abs(n[2]))
                 {
-                    // m_n[1] is the smallest component.
-                    m_u[0] = -m_n[2];
-                    m_u[1] = T(0.0);
-                    m_u[2] = m_n[0];
+                    // n[1] is the smallest component.
+                    u[0] = -n[2];
+                    u[1] = T(0.0);
+                    u[2] = n[0];
                 }
                 else
                 {
-                    // m_n[2] is the smallest component.
-                    m_u[0] = -m_n[1];
-                    m_u[1] = m_n[0];
-                    m_u[2] = T(0.0);
+                    // n[2] is the smallest component.
+                    u[0] = -n[1];
+                    u[1] = n[0];
+                    u[2] = T(0.0);
                 }
             }
 
             // u is orthogonal to n, but not unit-length. Normalize it.
-            m_u = normalize(m_u);
+            u = normalize(u);
 
             // Compute v.
-            m_v = cross(m_u, m_n);
+            v = cross(u, n);
 
-            return Basis3<T>(m_n, m_u, m_v);
+            return Basis3<T>(n, u, v);
         }
     };
 
@@ -116,7 +115,7 @@ BENCHMARK_SUITE(Foundation_Math_Basis)
     BENCHMARK_CASE_F(OriginalBuild_SinglePrecision, BuildFixture<float>)
     {
         for (size_t i = 0; i < N; ++i)
-            m_result[i] = build_Original(m_normal[i]);
+            m_result[i] = build_original(m_normal[i]);
     }
 
     BENCHMARK_CASE_F(BranchlessBuild_DoublePrecision, BuildFixture<double>)
@@ -128,6 +127,6 @@ BENCHMARK_SUITE(Foundation_Math_Basis)
     BENCHMARK_CASE_F(OriginalBuild_DoublePrecision, BuildFixture<double>)
     {
         for (size_t i = 0; i < N; ++i)
-            m_result[i] = build_Original(m_normal[i]);
+            m_result[i] = build_original(m_normal[i]);
     }
 }
