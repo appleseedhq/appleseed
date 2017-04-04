@@ -452,19 +452,23 @@ void MainWindow::build_toolbar()
     // File actions.
     //
 
-    m_action_new_project = new QAction(load_icons("project_new"), "New Project", this);
+    QKeySequence new_project_shortcut = m_ui->action_file_new_project->shortcut().toString(QKeySequence::NativeText);
+    m_action_new_project = new QAction(load_icons("project_new"), "New Project (" + new_project_shortcut + ")", this);
     connect(m_action_new_project, SIGNAL(triggered()), SLOT(slot_new_project()));
     m_ui->main_toolbar->addAction(m_action_new_project);
 
-    m_action_open_project = new QAction(load_icons("project_open"), "Open Project...", this);
+    QKeySequence open_project_shortcut = m_ui->action_file_open_project->shortcut().toString(QKeySequence::NativeText);
+    m_action_open_project = new QAction(load_icons("project_open"), "Open Project... (" + open_project_shortcut + ")", this);
     connect(m_action_open_project, SIGNAL(triggered()), SLOT(slot_open_project()));
     m_ui->main_toolbar->addAction(m_action_open_project);
 
-    m_action_save_project = new QAction(load_icons("project_save") , "Save Project", this);
+    QKeySequence save_project_shortcut = m_ui->action_file_save_project->shortcut().toString(QKeySequence::NativeText);
+    m_action_save_project = new QAction(load_icons("project_save") , "Save Project (" + save_project_shortcut + ")", this);
     connect(m_action_save_project, SIGNAL(triggered()), SLOT(slot_save_project()));
     m_ui->main_toolbar->addAction(m_action_save_project);
 
-    m_action_reload_project = new QAction(load_icons("project_reload"), "Reload Project", this);
+    QKeySequence reload_project_shortcut = m_ui->action_file_reload_project->shortcut().toString(QKeySequence::NativeText);
+    m_action_reload_project = new QAction(load_icons("project_reload"), "Reload Project (" + reload_project_shortcut + ")", this);
     connect(m_action_reload_project, SIGNAL(triggered()), SLOT(slot_reload_project()));
     m_ui->main_toolbar->addAction(m_action_reload_project);
 
@@ -479,19 +483,23 @@ void MainWindow::build_toolbar()
     // Rendering actions.
     //
 
-    m_action_start_interactive_rendering = new QAction(load_icons("rendering_start_interactive"), "Start Interactive Rendering", this);
+    QKeySequence start_interactive_rendering_shortcut = m_ui->action_rendering_start_interactive_rendering->shortcut().toString(QKeySequence::NativeText);
+    m_action_start_interactive_rendering = new QAction(load_icons("rendering_start_interactive"), "Start Interactive Rendering (" + start_interactive_rendering_shortcut + ")", this);
     connect(m_action_start_interactive_rendering, SIGNAL(triggered()), SLOT(slot_start_interactive_rendering()));
     m_ui->main_toolbar->addAction(m_action_start_interactive_rendering);
 
-    m_action_start_final_rendering = new QAction(load_icons("rendering_start_final"), "Start Final Rendering", this);
+    QKeySequence start_final_rendering_shortcut = m_ui->action_rendering_start_final_rendering->shortcut().toString(QKeySequence::NativeText);
+    m_action_start_final_rendering = new QAction(load_icons("rendering_start_final"), "Start Final Rendering (" + start_final_rendering_shortcut + ")", this);
     connect(m_action_start_final_rendering, SIGNAL(triggered()), SLOT(slot_start_final_rendering()));
     m_ui->main_toolbar->addAction(m_action_start_final_rendering);
 
-    m_action_stop_rendering = new QAction(load_icons("rendering_stop"), "Stop Rendering", this);
+    QKeySequence stop_rendering_shortcut = m_ui->action_rendering_stop_rendering->shortcut().toString(QKeySequence::NativeText);
+    m_action_stop_rendering = new QAction(load_icons("rendering_stop"), "Stop Rendering (" + stop_rendering_shortcut + ")", this);
     connect(m_action_stop_rendering, SIGNAL(triggered()), &m_rendering_manager, SLOT(slot_abort_rendering()));
     m_ui->main_toolbar->addAction(m_action_stop_rendering);
 
-    m_action_rendering_settings = new QAction(load_icons("rendering_settings"), "Rendering Settings...", this);
+    QKeySequence rendering_settings_shortcut = m_ui->action_rendering_rendering_settings->shortcut().toString(QKeySequence::NativeText);
+    m_action_rendering_settings = new QAction(load_icons("rendering_settings"), "Rendering Settings... (" + rendering_settings_shortcut + ")", this);
     connect(m_action_rendering_settings, SIGNAL(triggered()), SLOT(slot_show_rendering_settings_window()));
     m_ui->main_toolbar->addAction(m_action_rendering_settings);
 }
