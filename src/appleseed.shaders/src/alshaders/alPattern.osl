@@ -1,0 +1,125 @@
+
+//
+// This software is released under the MIT licence
+//
+// Copyright (c) 2013 Anders Langlands
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of
+// this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+// the Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+
+// This code comes from alshaders OSL branch, with minimal changes.
+// https://bitbucket.org/anderslanglands/alshaders/branch/osl
+
+#include "alshaders/remap.h"
+#include "alshaders/space.h"
+
+// Constants.
+#define SINE    0
+#define SQUARE  1
+#define SAW     2
+
+shader alPattern
+[[
+    string help = "Simple pattern generator.",
+    string description = "Generate different periodic wave signals to be used as the basis for other effects.",
+    string as_maya_node_name = "alPattern"
+]]
+(
+    SPACE_DECLARE_PARAMS,
+    int in_axis = 0
+    [[
+        string label = "Axis",
+        string widget = "mapper",
+        string options = "X:0|Y:1|Z:2",
+        string as_maya_attribute_name = "axis"
+    ]],
+    int in_shape = 0
+    [[
+        string label = "Shape",
+        string widget = "mapper",
+        string options = "sin:0|square:1|saw:2",
+        string help = "Pattern to generate.",
+        string as_maya_attribute_name = "shape"
+    ]],
+    float in_frequency = 5
+    [[
+        string label = "Frequency",
+        string help = "Frequency of the pattern.",
+        string as_maya_attribute_name = "frequency"
+    ]],
+    float in_offset = 0
+    [[
+        string label = "offset",
+        string help = "Offset of the pattern. You can plug a noise in here to get warped patterns.",
+        string as_maya_attribute_name = "offset"
+    ]],
+    color in_color1 = 0
+    [[
+        string label = "Color 1",
+        string help = "Color to use when the pattern value is 0.",
+        string as_maya_attribute_name = "color1"
+    ]],
+    color in_color2 = 1
+    [[
+        string label = "Color 2",
+        string help = "Color to use when the pattern value is 1.",
+        string as_maya_attribute_name = "color2"
+    ]],
+    REMAP_FLOAT_DECLARE_PARAMS("Remap"),
+    output color out_result = 0
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc"
+    ]]
+)
+{
+    point pp;
+    if (in_space == SPACE_WORLD)
+        pp = in_p;
+    else if (in_space == SPACE_OBJECT)
+        pp = transform("object", in_p);
+    else if (in_space == SPACE_PREF)
+        pp = Pref;
+    else if (in_space == SPACE_UV)
+        pp = point(u, v, 0);
+
+    pp *= in_frequency;
+
+    float x;
+
+    if (in_axis == 0)
+        x = pp[0];
+    else if (in_axis == 1)
+        x = pp[1];
+    else // if (in_axis == 2)
+        x = pp[2];
+
+    x += in_offset;
+
+    float r = 0;
+    if (in_shape == SINE)
+        r = sin(x);
+    else if (in_shape == SQUARE)
+        r = sin(x) > 0 ? 1 : 0;
+    else if (in_shape == SAW)
+        r = mod(x * 0.25, 1);
+
+    RemapFloatParams rmp = REMAP_FLOAT_CREATE;
+    r = remap(r, rmp);
+    out_result = mix(in_color1, in_color2, r);
+}

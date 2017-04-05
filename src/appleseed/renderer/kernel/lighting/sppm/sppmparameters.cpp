@@ -123,9 +123,9 @@ void SPPMParameters::print() const
 {
     RENDERER_LOG_INFO(
         "sppm settings:\n"
-        "  photon type      %s\n"
-        "  dl               %s\n"
-        "  ibl              %s",
+        "  photon type                   %s\n"
+        "  dl                            %s\n"
+        "  ibl                           %s",
         m_photon_type == Monochromatic ? "monochromatic" : "polychromatic",
         m_dl_mode == RayTraced ? "ray traced" :
         m_dl_mode == SPPM ? "sppm" : "off",
@@ -133,10 +133,10 @@ void SPPMParameters::print() const
 
     RENDERER_LOG_INFO(
         "sppm photon tracing settings:\n"
-        "  light photons    %s\n"
-        "  env. photons     %s\n"
-        "  max path length  %s\n"
-        "  rr min path len. %s",
+        "  light photons                 %s\n"
+        "  environment photons           %s\n"
+        "  max path length               %s\n"
+        "  rr min path length            %s",
         pretty_uint(m_light_photon_count).c_str(),
         pretty_uint(m_env_photon_count).c_str(),
         m_photon_tracing_max_path_length == size_t(~0) ? "infinite" : pretty_uint(m_photon_tracing_max_path_length).c_str(),
@@ -144,12 +144,12 @@ void SPPMParameters::print() const
 
     RENDERER_LOG_INFO(
         "sppm path tracing settings:\n"
-        "  max path length  %s\n"
-        "  rr min path len. %s\n"
-        "  initial radius   %s%%\n"
-        "  alpha            %s\n"
-        "  max photons/est. %s\n"
-        "  dl light samples %s",
+        "  max path length               %s\n"
+        "  rr min path length            %s\n"
+        "  initial radius                %s%%\n"
+        "  alpha                         %s\n"
+        "  max photons per estimate      %s\n"
+        "  dl light samples              %s",
         m_path_tracing_max_path_length == size_t(~0) ? "infinite" : pretty_uint(m_path_tracing_max_path_length).c_str(),
         m_path_tracing_rr_min_path_length == size_t(~0) ? "infinite" : pretty_uint(m_path_tracing_rr_min_path_length).c_str(),
         pretty_scalar(m_initial_radius_percents, 3).c_str(),

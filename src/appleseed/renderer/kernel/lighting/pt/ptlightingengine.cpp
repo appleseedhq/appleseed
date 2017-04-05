@@ -98,6 +98,9 @@ namespace
             const bool      m_enable_caustics;              // are caustics enabled?
 
             const size_t    m_max_path_length;              // maximum path length, ~0 for unlimited
+            const size_t    m_max_specular_bounces;         // maximum number of specular bounces, ~0 for unlimited
+            const size_t    m_max_glossy_bounces;           // maximum number of glossy bounces, ~0 for unlimited
+            const size_t    m_max_diffuse_bounces;          // maximum number of diffuse bounces, ~0 for unlimited
             const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
             const bool      m_next_event_estimation;        // use next event estimation?
 
@@ -114,8 +117,11 @@ namespace
               : m_enable_dl(params.get_optional<bool>("enable_dl", true))
               , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
               , m_enable_caustics(params.get_optional<bool>("enable_caustics", false))
-              , m_max_path_length(nz(params.get_optional<size_t>("max_path_length", 0)))
-              , m_rr_min_path_length(nz(params.get_optional<size_t>("rr_min_path_length", 6)))
+              , m_max_path_length(fixup_path_length(params.get_optional<size_t>("max_path_length", 0)))
+              , m_max_specular_bounces(fixup_bounces(params.get_optional<int>("max_specular_bounces", -1)))
+              , m_max_glossy_bounces(fixup_bounces(params.get_optional<int>("max_glossy_bounces", -1)))
+              , m_max_diffuse_bounces(fixup_bounces(params.get_optional<int>("max_diffuse_bounces", -1)))
+              , m_rr_min_path_length(fixup_path_length(params.get_optional<size_t>("rr_min_path_length", 6)))
               , m_next_event_estimation(params.get_optional<bool>("next_event_estimation", true))
               , m_dl_light_sample_count(params.get_optional<float>("dl_light_samples", 1.0f))
               , m_ibl_env_sample_count(params.get_optional<float>("ibl_env_samples", 1.0f))
@@ -135,28 +141,39 @@ namespace
                         : 0.0f;
             }
 
-            static size_t nz(const size_t x)
+            static size_t fixup_path_length(const size_t x)
             {
                 return x == 0 ? ~0 : x;
+            }
+
+            static size_t fixup_bounces(const int x)
+            {
+                return x == -1 ? ~0 : x;
             }
 
             void print() const
             {
                 RENDERER_LOG_INFO(
                     "path tracing settings:\n"
-                    "  direct lighting  %s\n"
-                    "  ibl              %s\n"
-                    "  caustics         %s\n"
-                    "  max path length  %s\n"
-                    "  rr min path len. %s\n"
-                    "  next event est.  %s\n"
-                    "  dl light samples %s\n"
-                    "  ibl env samples  %s\n"
-                    "  max ray intens.  %s",
+                    "  direct lighting               %s\n"
+                    "  ibl                           %s\n"
+                    "  caustics                      %s\n"
+                    "  max path length               %s\n"
+                    "  max specular bounces          %s\n"
+                    "  max glossy bounces            %s\n"
+                    "  max diffuse bounces           %s\n"
+                    "  rr min path length            %s\n"
+                    "  next event estimation         %s\n"
+                    "  dl light samples              %s\n"
+                    "  ibl env samples               %s\n"
+                    "  max ray intensity             %s",
                     m_enable_dl ? "on" : "off",
                     m_enable_ibl ? "on" : "off",
                     m_enable_caustics ? "on" : "off",
                     m_max_path_length == size_t(~0) ? "infinite" : pretty_uint(m_max_path_length).c_str(),
+                    m_max_specular_bounces == size_t(~0) ? "infinite" : pretty_uint(m_max_specular_bounces).c_str(),
+                    m_max_glossy_bounces == size_t(~0) ? "infinite" : pretty_uint(m_max_glossy_bounces).c_str(),
+                    m_max_diffuse_bounces == size_t(~0) ? "infinite" : pretty_uint(m_max_diffuse_bounces).c_str(),
                     m_rr_min_path_length == size_t(~0) ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
                     m_next_event_estimation ? "on" : "off",
                     pretty_scalar(m_dl_light_sample_count).c_str(),
@@ -266,6 +283,9 @@ namespace
             const EnvironmentEDF*       m_env_edf;
             Spectrum&                   m_path_radiance;
             bool                        m_omit_emitted_light;   // todo: get rid of this
+            uint64                      m_specular_bounces;
+            uint64                      m_glossy_bounces;
+            uint64                      m_diffuse_bounces;
 
             PathVisitorBase(
                 const Parameters&       params,
@@ -281,6 +301,9 @@ namespace
               , m_env_edf(scene.get_environment()->get_environment_edf())
               , m_path_radiance(path_radiance)
               , m_omit_emitted_light(false)
+              , m_specular_bounces(0)
+              , m_glossy_bounces(0)
+              , m_diffuse_bounces(0)
             {
             }
 
@@ -289,6 +312,30 @@ namespace
                 const ScatteringMode::Mode  next_mode)
             {
                 assert(next_mode != ScatteringMode::Absorption);
+
+                // Count the number of diffuse bounces.
+                if (ScatteringMode::has_diffuse(next_mode))
+                    m_diffuse_bounces++;
+
+                // Don't exceed the maximum limit of diffuse bounces.
+                if (m_diffuse_bounces > m_params.m_max_diffuse_bounces)
+                    return false;
+
+                // Count the number of glossy bounces.
+                if (ScatteringMode::has_glossy(next_mode))
+                    m_glossy_bounces++;
+
+                // Don't exceed the maximum limit of glossy bounces.
+                if (m_glossy_bounces > m_params.m_max_glossy_bounces)
+                    return false;
+
+                // Count the number of specular bounces.
+                if (ScatteringMode::has_specular(next_mode))
+                    m_specular_bounces++;
+
+                // Don't exceed the maximum limit of specular bounces.
+                if (m_specular_bounces > m_params.m_max_specular_bounces)
+                    return false;
 
                 if (!m_params.m_enable_caustics)
                 {
@@ -746,6 +793,36 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("min", "1")
             .insert("label", "Max Path Length")
             .insert("help", "Maximum number of path bounces"));
+
+    metadata.dictionaries().insert(
+        "max_specular_bounces",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "8")
+            .insert("unlimited", "true")
+            .insert("min", "0")
+            .insert("label", "Max Specular Bounces")
+            .insert("help", "Maximum number of specular bounces"));
+
+    metadata.dictionaries().insert(
+        "max_glossy_bounces",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "8")
+            .insert("unlimited", "true")
+            .insert("min", "0")
+            .insert("label", "Max Glossy Bounces")
+            .insert("help", "Maximum number of glossy bounces"));
+
+    metadata.dictionaries().insert(
+        "max_diffuse_bounces",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "8")
+            .insert("unlimited", "true")
+            .insert("min", "0")
+            .insert("label", "Max Diffuse Bounces")
+            .insert("help", "Maximum number of diffuse bounces"));
 
     metadata.dictionaries().insert(
         "rr_min_path_length",

@@ -163,17 +163,17 @@ void Frame::print_settings()
 {
     RENDERER_LOG_INFO(
         "frame settings:\n"
-        "  camera           %s\n"
-        "  resolution       %s x %s\n"
-        "  tile size        %s x %s\n"
-        "  pixel format     %s\n"
-        "  filter           %s\n"
-        "  filter size      %f\n"
-        "  color space      %s\n"
-        "  premult. alpha   %s\n"
-        "  clamping         %s\n"
-        "  gamma correction %f\n"
-        "  crop window      (%s, %s)-(%s, %s)",
+        "  camera                        %s\n"
+        "  resolution                    %s x %s\n"
+        "  tile size                     %s x %s\n"
+        "  pixel format                  %s\n"
+        "  filter                        %s\n"
+        "  filter size                   %f\n"
+        "  color space                   %s\n"
+        "  premultiplied alpha           %s\n"
+        "  clamping                      %s\n"
+        "  gamma correction              %f\n"
+        "  crop window                   (%s, %s)-(%s, %s)",
         get_active_camera_name(),
         pretty_uint(impl->m_frame_width).c_str(),
         pretty_uint(impl->m_frame_height).c_str(),
