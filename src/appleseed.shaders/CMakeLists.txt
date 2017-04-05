@@ -390,7 +390,7 @@ set (src_alshaders_sources
     src/alshaders/alCombineFloat.osl
     #src/alshaders/alCurvature.osl
     #src/alshaders/alFlake.osl
-    #src/alshaders/alFlowNoise.osl
+    src/alshaders/alFlowNoise.osl
     src/alshaders/alFractal.osl
     src/alshaders/alJitterColor.osl
     src/alshaders/alLayerColor.osl
