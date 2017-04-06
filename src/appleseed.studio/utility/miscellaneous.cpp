@@ -187,13 +187,18 @@ QString get_extension(ParamArray& settings, const QString& target_dialog)
 {
     QString filter = get_value(settings, target_dialog + SETTINGS_SELECTED_FILTER);
 
-    const int ext_start = filter.lastIndexOf('(') + 2;
+    const int ext_start = filter.lastIndexOf('(') + 1;
     const int ext_end = filter.lastIndexOf(')');
 
-    if (ext_start != string::npos && ext_end != string::npos && ext_start < ext_end)
-        return filter.mid(ext_start, ext_end - ext_start);
+    if (ext_start == -1 || ext_end == -1 || ext_start > ext_end)
+        return "";
+
+    QStringList extensions = filter.mid(ext_start, ext_end - ext_start).split(' ');
+
+    if (extensions.length() == 1 && extensions[0] != "*.*")
+        return extensions[0].mid(1);
     else
-        return QString("");
+        return ".appleseed";
 }
 
 QString get_open_filename(
