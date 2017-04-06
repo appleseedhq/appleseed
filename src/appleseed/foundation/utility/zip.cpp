@@ -135,16 +135,22 @@ namespace
         return (bf::path(unzipped_dir) / bf::path(filename)).string();
     }
 
+    void create_subdirectories(const string& filepath)
+    {
+        const bf::path parent_path = bf::path(filepath).parent_path();
+        if (!bf::exists(parent_path))
+            bf::create_directories(parent_path);
+    }
+
     void extract_current_file(unzFile& zip_file, const string& unzipped_dir)
     {
         const string filepath = get_filepath(zip_file, unzipped_dir);
 
         if (is_zip_entry_directory(filepath))
-        {
-            bf::create_directories(filepath);
             return;
-        }
-        else open_current_file(zip_file);
+
+        create_subdirectories(filepath);
+        open_current_file(zip_file);
 
         fstream out(filepath.c_str(), ios_base::out | ios_base::binary);
         if (out.fail())
