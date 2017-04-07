@@ -33,183 +33,159 @@
 
 shader as_maya_envChrome
 [[
-    string maya_node_name = "envChrome",
-    string maya_classification = "texture/environment"
+    string as_maya_node_name = "envChrome"
 ]]
 (
     color in_skyColor = color(0.784, 0.784, 1.0)
     [[
-        string maya_attribute_name = "skyColor",
-        string maya_attribute_type = "color",
+        string as_maya_attribute_name = "skyColor",
         string label = "Sky Color",
         string page = "Sky Attributes"
     ]],
     color in_zenithColor = color(0.392, 0.392, 1.0)
     [[
-        string maya_attribute_name = "zenithColor",
-        string maya_attribute_type = "color",
+        string as_maya_attribute_name = "zenithColor",
         string label = "Zenith Color",
         string page = "Sky Attributes"
     ]],
     color in_lightColor = color(0.784, 0.784, 1.0)
     [[
-        string maya_attribute_name = "lightColor",
-        string maya_attribute_type = "color",
+        string as_maya_attribute_name = "lightColor",
         string label = "Light Color",
         string page = "Sky Attributes"
     ]],
     float in_lightWidth = 0.5
     [[
-        string maya_attribute_name = "lightWidth",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "lightWidth",
         string label = "Light Width",
         string page = "Environment Chrome Attributes"
     ]],
     float in_lightWidthGain = 1.0
     [[
-        string maya_attribute_name = "lightWidthGain",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "lightWidthGain",
         string label = "Light Width Gain",
         string page = "Environment Chrome Attributes"
     ]],
     float in_lightWidthOffset = 0.0
     [[
-        string maya_attribute_name = "lightWidthOffset",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "lightWidthOffset",
         string label = "Light Width Offset",
         string page = "Environment Chrome Attributes"
     ]],
     float in_lightDepth = 0.1
     [[
-        string maya_attribute_name = "lightDepth",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "lightDepth",
         string label = "Light Depth",
         string page = "Environment Chrome Attributes"
     ]],
     float in_lightDepthGain = 1.0
     [[
-        string maya_attribute_name = "lightDepthGain",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "lightDepthGain",
         string label = "Light Depth Gain",
         string page = "Environment Chrome Attributes"
     ]],
     float in_lightDepthOffset = 0.0
     [[
-        string maya_attribute_name = "lightDepthOffset",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "lightDepthOffset",
         string label = "Light Depth Offset",
         string page = "Environment Chrome Attributes"
     ]],
     int in_realFloor = 0
     [[
-        string maya_attribute_name = "realFloor",
-        string maya_attribute_type = "bool",
+        string as_maya_attribute_name = "realFloor",
         string label = "Real Floor",
         string widget = "checkBox",
         string page = "Floor Attributes"
     ]],
     color in_floorColor = color(0.588, 0.588, 0.784)
     [[
-        string maya_attribute_name = "floorColor",
-        string maya_attribute_type = "color",
+        string as_maya_attribute_name = "floorColor",
         string label = "Floor Color",
         string page = "Floor Attributes"
     ]],
     float in_floorAltitude = -1.0
     [[
-        string maya_attribute_name = "floorAltitude",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "floorAltitude",
         string label = "Floor Altitude",
         string page = "Floor Attributes"
     ]],
     color in_horizonColor = color(0)
     [[
-        string maya_attribute_name = "horizonColor",
-        string maya_attribute_type = "color",
+        string as_maya_attribute_name = "horizonColor",
         string label = "Horizon Color",
         string page = "Floor Attributes"
     ]],
     color in_gridColor = color(0)
     [[
-        string maya_attribute_name = "gridColor",
-        string maya_attribute_type = "color",
+        string as_maya_attribute_name = "gridColor",
         string label = "Grid Color",
         string page = "Grid Placement"
     ]],
     float in_gridWidth = 0.1
     [[
-        string maya_attribute_name = "gridWidth",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "gridWidth",
         string label = "Grid Width",
         string page = "Grid Placement"
     ]],
     float in_gridWidthGain = 1.0
     [[
-        string maya_attribute_name = "gridWidthGain",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "gridWidthGain",
         string label = "Grid Width Gain",
         string page = "Grid Placement"
     ]],
     float in_gridWidthOffset = 0.0
     [[
-        string maya_attribute_name = "gridWidthOffset",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "gridWidthOffset",
         string label = "Grid Width Offset",
         string page = "Grid Placement"
     ]],
     float in_gridDepth = 0.1
     [[
-        string maya_attribute_name = "gridDepth",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "gridDepth",
         string label = "Grid Depth",
         string page = "Grid Placement"
     ]],
     float in_gridDepthGain = 1.0
     [[
-        string maya_attribute_name = "gridDepthGain",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "gridDepthGain",
         string label = "Grid Depth Gain",
         string page = "Grid Placement"
     ]],
     float in_gridDepthOffset = 0.0
     [[
-        string maya_attribute_name = "gridDepthOffset",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "gridDepthOffset",
         string label = "Grid Depth Offset",
         string page = "Grid Placement"
     ]],
     matrix in_placementMatrix = matrix(1)
     [[
-        string maya_attribute_name = "placementMatrix",
-        string maya_attribute_type = "matrix",
+        string as_maya_attribute_name = "placementMatrix",
         string label = "Placement Matrix"
     ]],
     point in_pointCamera = P
     [[
-        string maya_attribute_name = "pointCamera",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "pointCamera",
         string label = "Surface Point",
         string widget = "null"
     ]],
     normal in_normalCamera = N
     [[
-        string maya_attribute_name = "normalCamera",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "normalCamera",
         string label = "Surface Normal",
         string widget = "null"
     ]],
 
     output color out_outColor = color(0)
     [[
-        string maya_attribute_name = "outColor",
-        string maya_attribute_type = "color",
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output float out_outAlpha = 1.0
     [[
-        string maya_attribute_name = "outAlpha",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
         string label = "Output Alpha",
         string widget = "null"
     ]]

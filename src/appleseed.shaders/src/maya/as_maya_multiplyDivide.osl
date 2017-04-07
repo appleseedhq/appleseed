@@ -30,35 +30,30 @@
 
 shader as_maya_multiplyDivide
 [[
-    string maya_node_name = "multiplyDivide",
-    string maya_classification = "utility/general"
+    string as_maya_node_name = "multiplyDivide"
 ]]
 (
     int in_operation = 1
     [[
-        string maya_attribute_name = "operation",
-        string maya_attribute_type = "enum",
+        string as_maya_attribute_name = "operation",
         string label = "Operation",
         string widget = "mapper",
         string options = "No Operation:0|Multiply:1|Divide:2|Power:3"
     ]],
     vector in_input1 = 1.0
     [[
-        string maya_attribute_name = "input1",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "input1",
         string label = "Input 1"
     ]],
     vector in_input2 = 1.0
     [[
-        string maya_attribute_name = "input2",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "input2",
         string label = "Input 2"
     ]],
 
     output vector out_output = 1.0
     [[
-        string maya_attribute_name = "output",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "output",
         string label = "Output",
         string widget = "null"
     ]]

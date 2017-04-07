@@ -37,6 +37,7 @@
 #include "renderer/api/object.h"
 #include "renderer/api/project.h"
 #include "renderer/api/scene.h"
+#include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/cdf.h"
@@ -134,7 +135,7 @@ namespace
             const GVector3& v2 = object.get_vertex(triangle.m_v2);
 
             // Compute the geometric normal to the triangle and the area of the triangle.
-            GVector3 normal = cross(v1 - v0, v2 - v0);
+            GVector3 normal = compute_triangle_normal(v0, v1, v2);
             const GScalar normal_norm = norm(normal);
             if (normal_norm == GScalar(0.0))
                 continue;

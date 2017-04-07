@@ -33,6 +33,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/triangle.h"
+#include "renderer/utility/triangle.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -67,7 +68,7 @@ void compute_smooth_vertex_normals_base_pose(MeshObject& object)
         const GVector3& v0 = object.get_vertex(triangle.m_v0);
         const GVector3& v1 = object.get_vertex(triangle.m_v1);
         const GVector3& v2 = object.get_vertex(triangle.m_v2);
-        const GVector3 normal = normalize(cross(v1 - v0, v2 - v0));
+        const GVector3 normal = normalize(compute_triangle_normal(v0, v1, v2));
 
         normals[triangle.m_v0] += normal;
         normals[triangle.m_v1] += normal;
@@ -94,7 +95,7 @@ void compute_smooth_vertex_normals_pose(MeshObject& object, const size_t motion_
         const GVector3& v0 = object.get_vertex_pose(triangle.m_v0, motion_segment_index);
         const GVector3& v1 = object.get_vertex_pose(triangle.m_v1, motion_segment_index);
         const GVector3& v2 = object.get_vertex_pose(triangle.m_v2, motion_segment_index);
-        const GVector3 normal = normalize(cross(v1 - v0, v2 - v0));
+        const GVector3 normal = normalize(compute_triangle_normal(v0, v1, v2));
 
         normals[triangle.m_v0] += normal;
         normals[triangle.m_v1] += normal;

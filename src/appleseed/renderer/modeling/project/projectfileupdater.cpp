@@ -72,6 +72,7 @@
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/modeling/surfaceshader/physicalsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/paramarray.h"
 
@@ -1356,6 +1357,58 @@ namespace
             }
         }
     };
+
+    //
+    // Update from revision 15 to revision 16.
+    //
+
+    class UpdateFromRevision_15
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_15(Project& project)
+          : Updater(project, 15)
+        {
+        }
+
+        virtual void update() APPLESEED_OVERRIDE
+        {
+            if (Scene* scene = m_project.get_scene())
+                update_physical_surface_shader_inputs(scene->assemblies());
+        }
+
+      private:
+        static void update_physical_surface_shader_inputs(AssemblyContainer& assemblies)
+        {
+            for (each<AssemblyContainer> i = assemblies; i; ++i)
+            {
+                update_physical_surface_shader_inputs(*i);
+                update_physical_surface_shader_inputs(i->assemblies());
+            }
+        }
+
+        static void update_physical_surface_shader_inputs(Assembly& assembly)
+        {
+            for (each<SurfaceShaderContainer> i = assembly.surface_shaders(); i; ++i)
+                update_physical_surface_shader_inputs(*i);
+        }
+
+        static void update_physical_surface_shader_inputs(SurfaceShader& surface_shader)
+        {
+            if (strcmp(surface_shader.get_model(), PhysicalSurfaceShaderFactory().get_model()) == 0)
+            {
+                move_if_exist(surface_shader, "lighting_samples", "front_lighting_samples");
+
+                ParamArray& params = surface_shader.get_parameters();
+                params.strings().remove("translucency");
+                params.strings().remove("back_lighting_samples");
+                params.strings().remove("aerial_persp_sky_color");
+                params.strings().remove("aerial_persp_mode");
+                params.strings().remove("aerial_persp_distance");
+                params.strings().remove("aerial_persp_intensity");
+            }
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(
@@ -1403,6 +1456,7 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(12);
       CASE_UPDATE_FROM_REVISION(13);
       CASE_UPDATE_FROM_REVISION(14);
+      CASE_UPDATE_FROM_REVISION(15);
 
       case ProjectFormatRevision:
         // Project is up-to-date.

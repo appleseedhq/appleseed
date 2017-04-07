@@ -86,12 +86,15 @@ set (cxx_compiler_flags_common
     -Wno-reorder
 )
 if (WARNINGS_AS_ERRORS)
-    set (c_compiler_flags_common
-        ${c_compiler_flags_common}
-        -Werror                                         # treat Warnings As Errors
-    )
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR
+        CMAKE_BUILD_TYPE STREQUAL "Profile" OR
+        CMAKE_BUILD_TYPE STREQUAL "Release")
+        set (c_compiler_flags_common
+            ${c_compiler_flags_common}
+            -Werror                                     # treat Warnings As Errors
+        )
+    endif()
 endif ()
-
 if (USE_CPP11)
     set (cxx_compiler_flags_common
         ${cxx_compiler_flags_common}
@@ -109,8 +112,6 @@ elseif (CMAKE_COMPILER_IS_GNUCC AND (NOT CMAKE_COMPILER_IS_CLANG))
         add_definitions (-D_GLIBCXX_USE_CXX11_ABI=0)
     endif()
 endif ()
-
-# SIMD compiler flags.
 if (is_x86)
     if (USE_SSE)
         set (c_compiler_flags_common
@@ -155,7 +156,6 @@ elseif (TARGET_ARCH MATCHES "PPC")
         )
     endif ()
 endif ()
-
 set (exe_linker_flags_common
     -Werror                                             # Treat Warnings As Errors
 )

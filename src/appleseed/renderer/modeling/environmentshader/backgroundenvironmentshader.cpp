@@ -30,11 +30,8 @@
 #include "backgroundenvironmentshader.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/aov/shadingfragmentstack.h"
 #include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/shading/shadingcontext.h"
-#include "renderer/kernel/shading/shadingfragment.h"
-#include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 
 // appleseed.foundation headers.
@@ -61,8 +58,8 @@ namespace
     {
       public:
         BackgroundEnvironmentShader(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : EnvironmentShader(name, params)
         {
             m_inputs.declare("color", InputFormatSpectralIlluminance);
@@ -83,7 +80,8 @@ namespace
             const ShadingContext&   shading_context,
             const PixelContext&     pixel_context,
             const Vector3d&         direction,
-            ShadingResult&          shading_result) const APPLESEED_OVERRIDE
+            Spectrum&               value,
+            Alpha&                  alpha) const APPLESEED_OVERRIDE
         {
             const Vector2f s(pixel_context.get_sample_position());
 
@@ -93,11 +91,8 @@ namespace
                 Vector2f(s[0], 1.0f - s[1]),
                 &values);
 
-            shading_result.m_color_space = ColorSpaceSpectral;
-            shading_result.m_main.m_color = values.m_color;
-            shading_result.m_main.m_alpha[0] = values.m_alpha;
-            shading_result.m_aovs.m_color.set(0.0f);
-            shading_result.m_aovs.m_alpha.set(0.0f);
+            value = values.m_color;
+            alpha = Alpha(values.m_alpha);
         }
 
       private:

@@ -30,33 +30,29 @@
 
 shader as_maya_clamp
 [[
-    string maya_node_name = "clamp",
-    string maya_classification = "utility/general"
+    string as_maya_node_name = "clamp",
+    string as_maya_classification = "utility/general"
 ]]
 (
     color in_min = color(0)
     [[
-        string maya_attribute_name = "min",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "min",
         string label = "Lower Bound"
     ]],
     color in_max = color(0)
     [[
-        string maya_attribute_name = "max",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "max",
         string label = "Upper Bound"
     ]],
     color in_input = color(0)
     [[
-        string maya_attribute_name = "input",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "input",
         string label = "Input Color"
     ]],
 
     output color out_output = color(0)
     [[
-        string maya_attribute_name = "output",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "output",
         string label = "Output Color",
         string widget = "null"
     ]]

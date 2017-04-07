@@ -113,11 +113,6 @@ class APPLESEED_DLLSYMBOL Entity
     virtual void collect_asset_paths(foundation::StringArray& paths) const;
     virtual void update_asset_paths(const foundation::StringDictionary& mappings);
 
-    // Set/get the index of the render layer for this entity.
-    // Use ~0 to disable render layer assignment.
-    void set_render_layer_index(const size_t render_layer);
-    size_t get_render_layer_index() const;
-
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
@@ -138,7 +133,6 @@ class APPLESEED_DLLSYMBOL Entity
     const foundation::UniqueID          m_class_uid;
     Entity*                             m_parent;
     ParamArray                          m_params;
-    size_t                              m_render_layer;
 
     // Destructor.
     ~Entity();
@@ -184,16 +178,6 @@ inline ParamArray& Entity::get_parameters()
 inline const ParamArray& Entity::get_parameters() const
 {
     return m_params;
-}
-
-inline void Entity::set_render_layer_index(const size_t render_layer)
-{
-    m_render_layer = render_layer;
-}
-
-inline size_t Entity::get_render_layer_index() const
-{
-    return m_render_layer;
 }
 
 }       // namespace renderer

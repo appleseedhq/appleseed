@@ -28,22 +28,19 @@
 
 shader as_maya_multMatrix
 [[
-    string maya_node_name = "multMatrix",
-    string maya_classification = "utility/scalar"
+    string as_maya_node_name = "multMatrix"
 ]]
 (
     matrix in_matrixIn[] = {0}
     [[
-        string maya_attribute_name = "matrixIn",
-        string maya_attribute_type = "matrix[]",
+        string as_maya_attribute_name = "matrixIn",
         string label = "Input Matrix"
     ]],
 
     // The output matrix param is indeed named matrixSum, not matrixProduct.
     output matrix out_matrixSum = 0 
     [[
-        string maya_attribute_name = "matrixSum",
-        string maya_attribute_type = "matrix",
+        string as_maya_attribute_name = "matrixSum",
         string label = "Output Matrix",
         string widget = "null"
     ]]

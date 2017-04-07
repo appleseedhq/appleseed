@@ -76,6 +76,7 @@
     <addaction name="separator"/>
     <addaction name="action_file_save_project"/>
     <addaction name="action_file_save_project_as"/>
+    <addaction name="action_file_pack_project_as"/>
     <addaction name="separator"/>
     <addaction name="action_file_exit"/>
    </widget>
@@ -453,6 +454,11 @@
    </property>
    <property name="text">
     <string>Monitor Project File</string>
+   </property>
+  </action>
+  <action name="action_file_pack_project_as">
+   <property name="text">
+    <string>&amp;Pack Project As...</string>
    </property>
   </action>
  </widget>

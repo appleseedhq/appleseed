@@ -42,7 +42,7 @@
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/uid.h"
 
-// Boost headers
+// Boost headers.
 #include "boost/unordered/unordered_map.hpp"
 
 // Standard headers.

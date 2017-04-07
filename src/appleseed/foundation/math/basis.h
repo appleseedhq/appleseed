@@ -178,57 +178,23 @@ inline void Basis3<T>::build(const VectorType& normal)
     //
     // Reference:
     //
-    //   Hughes, J. F., and Moller, T. Building an Orthonormal Basis from a Unit Vector.
-    //   Journal of Graphics Tools 4, 4 (1999), 33-35.
-    //   http://www.cs.brown.edu/research/pubs/pdfs/1999/Hughes-1999-BAO.pdf
+    //   Tom Duff, James Burgess, Per Christensen, Christophe Hery, Andrew Kensler, 
+    //   Max Liani, and Ryusuke Villemin, Building an Orthonormal Basis, Revisited, 
+    //   Journal of Computer Graphics Techniques (JCGT), vol. 6, no. 1, 1-8, 2017
+    //   http://jcgt.org/published/0006/01/01/paper-lowres.pdf
     //
 
     assert(is_normalized(normal));
 
-    // n is simply the input vector.
     m_n = normal;
 
-    // Compute u so that it is orthogonal to n.
-    if (std::abs(m_n[0]) < std::abs(m_n[1]))
-    {
-        if (std::abs(m_n[0]) < std::abs(m_n[2]))
-        {
-            // m_n[0] is the smallest component.
-            m_u[0] =  T(0.0);
-            m_u[1] = -m_n[2];
-            m_u[2] =  m_n[1];
-        }
-        else
-        {
-            // m_n[2] is the smallest component.
-            m_u[0] = -m_n[1];
-            m_u[1] =  m_n[0];
-            m_u[2] =  T(0.0);
-        }
-    }
-    else
-    {
-        if (std::abs(m_n[1]) < std::abs(m_n[2]))
-        {
-            // m_n[1] is the smallest component.
-            m_u[0] = -m_n[2];
-            m_u[1] =  T(0.0);
-            m_u[2] =  m_n[0];
-        }
-        else
-        {
-            // m_n[2] is the smallest component.
-            m_u[0] = -m_n[1];
-            m_u[1] =  m_n[0];
-            m_u[2] =  T(0.0);
-        }
-    }
+    const T sign = m_n[2] < T(0.0) ? T(-1.0) : T(1.0);
 
-    // u is orthogonal to n, but not unit-length. Normalize it.
-    m_u = normalize(m_u);
+    const T a = T(-1.0) / (sign + m_n[2]);
+    const T b = m_n[0] * m_n[1] * a;
 
-    // Compute v.
-    m_v = cross(m_u, m_n);
+    m_u = VectorType(b, sign + m_n[1] * m_n[1] * a, -m_n[1]);
+    m_v = VectorType(T(1.0) + sign * m_n[0] * m_n[0] * a, sign * b, -sign * m_n[0]);
 
 #ifndef NDEBUG
     checks();

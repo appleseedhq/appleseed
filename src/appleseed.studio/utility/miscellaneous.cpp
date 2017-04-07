@@ -82,7 +82,7 @@ using namespace std;
 namespace appleseed {
 namespace studio {
 
-const QString g_appleseed_image_files_filter = "Bitmap Files (*.png;*.exr);;OpenEXR (*.exr);;PNG (*.png);;All Files (*.*)";
+const QString g_appleseed_image_files_filter = "Bitmap Files (*.png *.exr);;OpenEXR (*.exr);;PNG (*.png);;All Files (*.*)";
 
 QString get_oiio_image_files_filter()
 {
@@ -115,7 +115,7 @@ QString get_oiio_image_files_filter()
             for (const_each<vector<string> > e = exts; e; ++e)
             {
                 if (e.it() != exts.begin())
-                    sstr << ";";
+                    sstr << " ";
                 sstr << "*." << *e;
             }
 
@@ -181,6 +181,19 @@ namespace
     {
         settings.insert_path(key.toAscii().constData(), value);
     }
+}
+
+QString get_extension(ParamArray& settings, const QString& target_dialog)
+{
+    QString filter = get_value(settings, target_dialog + SETTINGS_SELECTED_FILTER);
+
+    const int ext_start = filter.lastIndexOf('(') + 2;
+    const int ext_end = filter.lastIndexOf(')');
+
+    if (ext_start != string::npos && ext_end != string::npos && ext_start < ext_end)
+        return filter.mid(ext_start, ext_end - ext_start);
+    else
+        return QString("");
 }
 
 QString get_open_filename(

@@ -1,0 +1,127 @@
+
+//
+// This software is released under the MIT licence
+//
+// Copyright (c) 2013 Anders Langlands
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of
+// this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+// the Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+
+// This code is ported from alshaders original C++ implementation.
+// https://bitbucket.org/anderslanglands/alshaders
+
+// Constants.
+#define TANGENT 0
+#define WORLD   1
+
+// Utilities.
+vector uniformSampleHemisphere(float u1, float u2)
+{
+    float y = u1;
+    float r = sqrt(max(0.0, 1.0 - y * y));
+    float phi = 2.0 * M_PI * u2;
+    float x = r * cos(phi);
+    float z = r * sin(phi);
+    return vector(x, y, z);
+}
+
+shader alFlake
+[[
+    string help = "Generate a normal map of randomly-oriented flakes.",
+    string description = "Useful for car paint shaders, granite and other polished minerals. To use, connect it as a tangent-space normal map to alSurface, making sure Gamma is set 1. Then connect a smooth normal (alInputVector set to Ns) to the Diffuse and Specular 1 Normal parameters. This will use the flake normal for Specular 2 only and the original smooth normal for Diffuse and Specular 1.",
+    string as_maya_node_name = "alFlake"
+]]
+(
+    int in_space = 0
+    [[
+        string label = "Space",
+        string help = "Select the space for normal computation. When world is selected you should plug the output of this node directly into the normal override parameter of your desired lobe on alSurface. When tangent is selected you should use this as a tangent-space normal map with the regular Arnold bump shader.",
+        string widget = "mapper",
+        string options = "tangent:0|world:1",
+        string as_maya_attribute_name = "space"
+    ]],
+    float in_amount = 0.7
+    [[
+        string label = "Amount",
+        string help = "Proportion of the surface that is covered by flakes",
+        float min = 0.0,
+        float max = 1.0,
+        string as_maya_attribute_name = "amount"
+    ]],
+    float in_size = 0.01
+    [[
+        string label = "Size",
+        string help = "Size of the flakes",
+        string as_maya_attribute_name = "size"
+    ]],
+    float in_divergence = .5
+    [[
+        string label = "Divergence",
+        string help = "How much the flake normals diverge from the surface normal.",
+        float min = 0.0,
+        float max = 1.0,
+        string as_maya_attribute_name = "divergence"
+    ]],
+    point in_p = point(0)
+    [[
+        string label = "P",
+        string help = "Connect a point here to override the space used for flake calculation.",
+        string as_maya_attribute_name = "P"
+    ]],
+    vector Tn = vector(0)
+    [[
+        int lockgeom = 0,
+        string widget = "null"
+    ]],
+    vector Bn = vector(0)
+    [[
+        int lockgeom = 0,
+        string widget = "null"
+    ]],
+    output vector out_result = 0
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc"
+    ]]
+)
+{
+    // todo: implement me...
+
+    /*
+    vector result;
+    float amount = clamp(in_amount, 0, 1);
+    float divergence = clamp(in_divergence, 0, 1);
+    point pp = in_p / in_size;
+
+    // TODO: generate a pseudo random number in a smarter way.
+    vector uu = noise("uperlin", pp);
+
+    if (uu[0] < amount)
+    {
+        vector d = uniformSampleHemisphere(uu[1], uu[2]);
+
+        // blend it in.
+        result = mix(vector(0, 1, 0), d, divergence);
+    }
+
+    if (in_space == WORLD)
+        out_result = Tn * result[0] + N * result[1] + Bn * result[2];
+    else
+        out_result = result * 0.5 + vector(0.5);
+    */
+}

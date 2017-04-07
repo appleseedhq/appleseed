@@ -43,6 +43,7 @@
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
+namespace renderer      { class AOVAccumulatorContainer; }
 namespace renderer      { class EnvironmentShader; }
 namespace renderer      { class ParamArray; }
 

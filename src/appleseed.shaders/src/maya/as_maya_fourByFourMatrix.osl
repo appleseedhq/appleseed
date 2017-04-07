@@ -30,126 +30,108 @@
 
 shader as_maya_fourByFourMatrix
 [[
-    string maya_node_name = "fourByFourMatrix",
-    string maya_classification = "utility/scalar"
+    string as_maya_node_name = "fourByFourMatrix"
 ]]
 (
     float in_in00 = 1.0
     [[
-        string maya_attribute_name = "in00",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "in00",
         string label = "Row 0, Column 0",
         string help = "Input at row 0, column 0"
     ]],
     float in_in01 = 0.0
     [[
-        string maya_attribute_name = "in01",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "in01",
         string label = "Row 0, Column 1",
         string help = "Input at row 0, column 1"           
     ]],  
     float in_in02 = 0.0
     [[
-        string maya_attribute_name = "in02",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "in02",
         string label = "Row 0, Column 2",
         string help = "Input at row 0, column 2"        
     ]],
     float in_in03 = 0.0
     [[
-        string maya_attribute_name = "in03",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "in03",
         string label = "Row 0, Column 3",
         string help = "Input at row 0, column 3"        
     ]],  
     float in_in10 = 0.0
     [[
-        string maya_attribute_name = "in10",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "in10",
         string label = "Row 1, Column 0",
         string help = "Input at row 1, column 0"        
     ]],
     float in_in11 = 1.0
     [[
-        string maya_attribute_name = "in11",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "in11",
         string label = "Row 1, Column 1",
         string help = "Input at row 1, column 1"        
     ]],  
     float in_in12 = 0.0
     [[
-        string maya_attribute_name = "in12",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "in12",
         string label = "Row 1, Column 2",
         string help = "Input at row 1, column 2"        
     ]],
     float in_in13 = 0.0
     [[
-        string maya_attribute_name = "in13",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "in13",
         string label = "Row 1, Column 3",
         string help = "Input at row 1, column 3"        
     ]], 
     float in_in20 = 0.0
     [[
-        string maya_attribute_name = "in20",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "in20",
         string label = "Row 2, Column 0",
         string help = "Input at row 2, column 0"        
     ]],
     float in_in21 = 0.0
     [[
-        string maya_attribute_name = "in21",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "in21",
         string label = "Row 2, Column 1",
         string help = "Input at row 2, column 1"        
     ]],  
     float in_in22 = 1.0
     [[
-        string maya_attribute_name = "in22",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "in22",
         string label = "Row 2, Column 2",
         string help = "Input at row 2, column 2"        
     ]],
     float in_in23 = 0.0
     [[
-        string maya_attribute_name = "in23",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "in23",
         string label = "Row 2, Column 3",
         string help = "Input at row 2, column 3"        
     ]],  
     float in_in30 = 0.0
     [[
-        string maya_attribute_name = "in30",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "in30",
         string label = "Row 3, Column 0",
         string help = "Input at row 3, column 0"        
     ]],
     float in_in31 = 0.0
     [[
-        string maya_attribute_name = "in31",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "in31",
         string label = "Row 3, Column 1",
         string help = "Input at row 3, column 1"        
     ]],  
     float in_in32 = 0.0
     [[
-        string maya_attribute_name = "in32",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "in32",
         string label = "Row 3, Column 2",
         string help = "Input at row 3, column 2"        
     ]],
     float in_in33 = 1.0
     [[
-        string maya_attribute_name = "in33",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "in33",
         string label = "Row 3, Column 3",
         string help = "Input at row 3, column 3"        
     ]],  
     output matrix out_output = 1
     [[
-        string maya_attribute_name = "output",
-        string maya_attribute_type = "matrix",
+        string as_maya_attribute_name = "output",
         string label = "Output 4x4 Matrix",
         string widget = "null"
     ]]

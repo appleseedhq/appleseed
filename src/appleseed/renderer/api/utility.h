@@ -39,5 +39,6 @@
 #include "renderer/utility/settingsparsing.h"
 #include "renderer/utility/testutils.h"
 #include "renderer/utility/transformsequence.h"
+#include "renderer/utility/triangle.h"
 
 #endif  // !APPLESEED_RENDERER_API_UTILITY_H

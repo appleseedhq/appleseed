@@ -30,27 +30,23 @@
 
 shader as_maya_wtAddMatrix
 [[
-    string maya_node_name = "wtAddMatrix",
-    string maya_classification = "utility/scalar"
+    string as_maya_node_name = "wtAddMatrix"
 ]]
 (
     matrix in_matrixIn[] = {matrix(1)}
     [[
-        string maya_attribute_name = "wtMatrix[].matrixIn",
-        string maya_attribute_type = "matrix[]",
+        string as_maya_attribute_name = "wtMatrix[].matrixIn",
         string label = "Input Matrix"
     ]],
     float in_weightIn[] = {0.0}
     [[
-        string maya_attribute_name = "wtMatrix[].weightIn",
-        string maya_attribute_type = "float[]",
+        string as_maya_attribute_name = "wtMatrix[].weightIn",
         string label = "Input Weight"
     ]],
 
     output matrix out_matrixSum = 0 
     [[
-        string maya_attribute_name = "matrixSum",
-        string maya_attribute_type = "matrix",
+        string as_maya_attribute_name = "matrixSum",
         string label = "Output Matrix",
         string widget = "null"
     ]]

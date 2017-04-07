@@ -1,0 +1,72 @@
+
+//
+// This software is released under the MIT licence
+//
+// Copyright (c) 2013 Anders Langlands
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of
+// this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+// the Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+
+// This code is ported from alshaders original C++ implementation.
+// https://bitbucket.org/anderslanglands/alshaders
+
+#include "alshaders/remap.h"
+
+shader alCurvature
+[[
+    string help = "Measure the local curvature of the surface.",
+    string description = "Can be used to create effects such as stretch maps and dirt maps, or to simulate wear and tear. For best results remap and combine with a noise function then use it to drive layering effects in your surface shader.",
+    string as_maya_node_name = "alCurvature"
+]]
+(
+    int in_mode = 0
+    [[
+        string label = "Mode",
+        string help = "Select the type of curvature to output. positive selects convex regions while negative selects concave regions.",
+        string widget = "mapper",
+        string options = "positive:0|negative:1",
+        string as_maya_attribute_name = "mode"
+    ]],
+    int in_samples = 3
+    [[
+        string label = "Samples",
+        string help = "The sampling rate for the curvature calculation.",
+        string as_maya_attribute_name = "samples"
+    ]],
+    float in_sampleRadius = 1.0
+    [[
+        string label = "Radius",
+        string help = "The radius to consider when estimating the curvature. Smaller values pick out finer detail, while larger values give a smoother result.",
+        string as_maya_attribute_name = "sampleRadius"
+    ]],
+    string in_traceSet = ""
+    [[
+        string label = "Trace set",
+        string help = "Enter a trace set here to restrict the curvature calculation to only consider that set of objects.",
+        string as_maya_attribute_name = "traceSet"
+    ]],
+    REMAP_FLOAT_DECLARE_PARAMS("Remap"),
+    output color out_result = 0
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc"
+    ]]
+)
+{
+    // todo: implement me...
+}

@@ -30,26 +30,22 @@
 
 shader as_maya_clearCoat
 [[
-    string maya_node_name = "clearCoat",
-    string maya_classification = "utility/general"
+    string as_maya_node_name = "clearCoat"
 ]]
 (
     float in_index = 1.8
     [[
-        string maya_attribute_name = "index",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "index",
         string label = "Index Of Refraction"
     ]],
     float in_scale = 1.55
     [[
-        string maya_attribute_name = "scale",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "scale",
         string label = "Scale"
     ]],
     float in_bias = -0.1
     [[
-        string maya_attribute_name = "bias",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "bias",
         string label = "Bias",
         string widget = "slider",
         float min = -1.0,
@@ -60,21 +56,18 @@ shader as_maya_clearCoat
     ]],
     vector in_rayDirection = vector(1)
     [[
-        string maya_attribute_name = "rayDirection",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "rayDirection",
         string label = "rayDirection"
     ]],
     normal in_normalCamera = normal(0,0,1)
     [[
-        string maya_attribute_name = "normalCamera",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "normalCamera",
         string label = "Bump Normal"
     ]],
 
     output float out_outValue = 0.0
     [[
-        string maya_attribute_name = "outValue",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "outValue",
         string label = "Output Value",
         string widget = "null"
     ]]

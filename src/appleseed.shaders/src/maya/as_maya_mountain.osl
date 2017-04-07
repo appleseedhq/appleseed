@@ -34,72 +34,61 @@
 
 shader as_maya_mountain
 [[
-    string maya_node_name = "mountain",
-    string maya_classification = "texture/2d"
+    string as_maya_node_name = "mountain"
 ]]
 (
     color in_snowColor = color(1)
     [[
-        string maya_attribute_name = "snowColor",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "snowColor",
         string label = "Snow Color"
     ]],
     color in_rockColor = color(0.262, 0.102, 0.0)
     [[
-        string maya_attribute_name = "rockColor",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "rockColor",
         string label = "Rock Color"
     ]],
     float in_amplitude = 1.0
     [[
-        string maya_attribute_name = "amplitude",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "amplitude",
         string label = "Amplitude"
     ]],
     float in_snowRoughness = 0.4
     [[
-        string maya_attribute_name = "snowRoughness",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "snowRoughness",
         string label = "Snow Roughness"
     ]],
     float in_rockRoughness = 0.707
     [[
-        string maya_attribute_name = "rockRoughness",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "rockRoughness",
         string label = "Rock Roughness"
     ]],
     float in_boundary = 1.0
     [[
-        string maya_attribute_name = "boundary",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "boundary",
         string label = "Boundary"
     ]],
     float in_snowAltitude = 0.5
     [[
-        string maya_attribute_name = "snowAltitude",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "snowAltitude",
         string label = "Snow Altitude"
     ]],
     float in_snowDropoff = 2.0
     [[
-        string maya_attribute_name = "snowDropoff",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "snowDropoff",
         float slidermin = 0.0,
         float slidermax = 2.0,
         string label = "Snow Dropoff"
     ]],
     float in_snowSlope = 0.8
     [[
-        string maya_attribute_name = "snowSlope",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "snowSlope",
         float slidermin = 0.0,
         float slidermax = 3.0,
         string label = "Snow Slope"
     ]],
     float in_depthMax = 20.0
     [[
-        string maya_attribute_name = "depthMax",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "depthMax",
         float slidermin = 0.0,
         float slidermax = 40.0,
         string label = "Depth Max"
@@ -111,15 +100,15 @@ shader as_maya_mountain
 
     output color out_outColor = color(0)
     [[
-        string maya_attribute_name = "outColor",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output float out_outAlpha = 1.0
     [[
-        string maya_attribute_name = "outAlpha",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
         string label = "Output Alpha",
         string widget = "null"
     ]]

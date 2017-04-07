@@ -30,27 +30,23 @@
 
 shader as_maya_multDoubleLinear
 [[
-    string maya_node_name = "multDoubleLinear",
-    string maya_classification = "utility/scalar"
+    string as_maya_node_name = "multDoubleLinear"
 ]]
 (
     float in_input1 = 0.0
     [[
-        string maya_attribute_name = "input1",
-        string maya_attribute_type = "double",
+        string as_maya_attribute_name = "input1",
         string label = "Input 1"
     ]],
     float in_input2 = 0.0
     [[
-        string maya_attribute_name = "input2",
-        string maya_attribute_type = "double",
+        string as_maya_attribute_name = "input2",
         string label = "Input 2"
     ]],
 
     output float out_output = 0.0
     [[
-        string maya_attribute_name = "output",
-        string maya_attribute_type = "double",
+        string as_maya_attribute_name = "output",
         string label = "Product Of Input Values",
         string widget = "null"
     ]]

@@ -46,6 +46,9 @@ set (standard_osl_headers
     oslutil.h
     stdosl.h
 )
+list (APPEND osl_headers
+    ${standard_osl_headers}
+)
 source_group ("include\\standard" FILES
     ${standard_osl_headers}
 )
@@ -55,19 +58,25 @@ set (gaffer_osl_headers
     include/appleseed/gaffer/transform.h
     include/appleseed/gaffer/udim.h
 )
-list (APPEND appleseed_osl_headers ${gaffer_osl_headers})
+list (APPEND osl_headers
+    ${gaffer_osl_headers}
+)
 source_group ("include\\gaffer" FILES
     ${gaffer_osl_headers}
 )
 
 set (appleseed_library_osl_headers
-    include/appleseed/color/as_color_data.h
+    include/appleseed/color/as_chromatic_adaptation.h
     include/appleseed/color/as_color_helpers.h
+    include/appleseed/color/as_color_transforms.h
+    include/appleseed/color/as_colorimetry.h
+    include/appleseed/color/as_transfer_functions.h
     include/appleseed/fractal/as_fractal_helpers.h
     include/appleseed/fractal/as_noise_helpers.h
     include/appleseed/fractal/as_noise_tables.h
     include/appleseed/material/as_material_helpers.h
     include/appleseed/math/as_math_helpers.h
+    include/appleseed/maya/as_maya_cms_syncolor_idt.h
     include/appleseed/maya/as_maya_fractal_helpers.h
     include/appleseed/maya/as_maya_helpers.h
     include/appleseed/maya/as_maya_layer_helpers.h
@@ -76,14 +85,22 @@ set (appleseed_library_osl_headers
     include/appleseed/maya/as_maya_transform_helpers.h
     include/appleseed/pattern/as_pattern_helpers.h
 )
-list (APPEND appleseed_osl_headers ${appleseed_library_osl_headers})
+list (APPEND osl_headers
+    ${appleseed_library_osl_headers}
+)
 source_group ("include\\appleseed" FILES
     ${appleseed_library_osl_headers}
 )
 
+set (alshaders_osl_headers
+    include/alshaders/remap.h
+    include/alshaders/space.h
+)
 list (APPEND osl_headers
-    ${standard_osl_headers}
-    ${appleseed_osl_headers}
+    ${alshaders_osl_headers}
+)
+source_group ("include\\alshaders" FILES
+    ${alshaders_osl_headers}
 )
 
 
@@ -150,7 +167,9 @@ set (gaffer_osl_sources
      src/gaffer/vector/as_vector_normalize.osl
      src/gaffer/vector/as_vector_split.osl
 )
-list (APPEND osl_sources ${gaffer_osl_sources})
+list (APPEND osl_sources
+    ${gaffer_osl_sources}
+)
 source_group ("src\\gaffer" FILES
     ${gaffer_osl_sources}
 )
@@ -160,8 +179,6 @@ set (appleseed_maya_osl_sources
      src/maya/as_maya_addMatrix.osl
      src/maya/as_maya_anisotropic.osl
      src/maya/as_maya_areaLight.osl
-     src/maya/as_maya_asDisneyMaterial.osl
-     src/maya/as_maya_asGlass.osl
      src/maya/as_maya_blendColors.osl
      src/maya/as_maya_blinn.osl
      src/maya/as_maya_bulge.osl
@@ -222,25 +239,51 @@ set (appleseed_maya_osl_sources
      src/maya/as_maya_vectorProduct.osl
      src/maya/as_maya_wtAddMatrix.osl
 )
-list (APPEND osl_sources ${appleseed_maya_osl_sources})
+list (APPEND osl_sources
+    ${appleseed_maya_osl_sources}
+)
 source_group ("src\\maya" FILES
     ${appleseed_maya_osl_sources}
 )
 
 set (appleseed_alshaders_osl_sources
-     src/alshaders/alCombineColor.osl
-     src/alshaders/alCombineFloat.osl
-     src/alshaders/alJitterColor.osl
-     src/alshaders/alLayerColor.osl
-     src/alshaders/alLayerFloat.osl
-     src/alshaders/alRemapColor.osl
-     src/alshaders/alSurface.osl
-     src/alshaders/alSwitchColor.osl
-     src/alshaders/alSwitchFloat.osl
+    #src/alshaders/alBlackbody.osl
+    #src/alshaders/alCellNoise.osl
+    src/alshaders/alColorSpace.osl
+    src/alshaders/alCombineColor.osl
+    src/alshaders/alCombineFloat.osl
+    #src/alshaders/alCurvature.osl
+    #src/alshaders/alFlake.osl
+    #src/alshaders/alFlowNoise.osl
+    src/alshaders/alFractal.osl
+    src/alshaders/alJitterColor.osl
+    src/alshaders/alLayerColor.osl
+    src/alshaders/alLayerFloat.osl
+    src/alshaders/alLayer.osl
+    src/alshaders/alPattern.osl
+    src/alshaders/alRemapColor.osl
+    src/alshaders/alRemapFloat.osl
+    src/alshaders/alSurface.osl
+    src/alshaders/alSwitchColor.osl
+    src/alshaders/alSwitchFloat.osl
+    #src/alshaders/alTriplanar.osl
 )
-list (APPEND osl_sources ${appleseed_alshaders_osl_sources})
+list (APPEND osl_sources
+    ${appleseed_alshaders_osl_sources}
+)
 source_group ("src\\alshaders" FILES
     ${appleseed_alshaders_osl_sources}
+)
+
+set (appleseed_osl_sources
+     src/appleseed/asDisneyMaterial.osl
+     src/appleseed/asGlass.osl
+)
+list (APPEND osl_sources
+    ${appleseed_osl_sources}
+)
+source_group ("src\\appleseed" FILES
+    ${appleseed_osl_sources}
 )
 
 
@@ -278,7 +321,7 @@ add_custom_command (
     TARGET SANDBOX
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/include
-        ${PROJECT_SOURCE_DIR}/sandbox/shaders/
+        ${PROJECT_SOURCE_DIR}/sandbox/shaders/include
     MAIN_DEPENDENCY ${appleseed_osl_headers}
 )
 

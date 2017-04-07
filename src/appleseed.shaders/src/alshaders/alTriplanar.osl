@@ -1,0 +1,314 @@
+
+//
+// This software is released under the MIT licence
+//
+// Copyright (c) 2017 Esteban Tovagliari, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of
+// this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+// the Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+
+// This code is ported from alshaders original C++ implementation.
+// https://bitbucket.org/anderslanglands/alshaders
+
+// Constants.
+#define NS_WORLD        0
+#define NS_OBJECT       1
+#define NS_PREF         2
+#define N_GEOMETRIC     0
+#define N_SMOOTH        1
+#define N_SMOOTHNOBUMP  2
+#define TM_REGULAR      0
+#define TM_CELLNOISE    1
+
+vector computeBlendWeights(normal inNormal, float blendSoftness)
+{
+    vector weights = fabs(inNormal);
+    float weightsum = 0;
+    for (int i = 0; i < 3; i++)
+    {
+        weights[i] = weights[i] - (1.0 - blendSoftness) / 2.0;
+        weights[i] = max(weights[i], 0.0);
+        weightsum += weights[i];
+    }
+
+    if (weightsum != 0)
+        weights /= weightsum;
+
+    return weights;
+}
+
+point rotateUVs(point uvs, float degrees)
+{
+    float phi = degrees / 360.0 * M_PI * 2.0;
+
+    vector orientVectorX = vector(cos(phi), sin(phi), 0.0);
+    vector orientVectorZ = vector(0.0, 0.0, 1.0);
+    vector orientVectorY = cross(orientVectorX, orientVectorZ);
+
+    return point(
+        dot(uvs, orientVectorX),
+        dot(uvs, orientVectorY),
+        dot(uvs, orientVectorZ));
+}
+
+color lookupRegular(
+    string          textureMap,
+    point           PP,
+    float           scale,
+    float           rot,
+    float           weight,
+    output float    a)
+{
+    if (weight > 0.0)
+    {
+        point ProjP = rotateUVs(PP, rot);
+        point dProjPx = Dx(ProjP);
+        point dProjPy = Dy(ProjP);
+        float dudx = dProjPx[2] * scale;
+        float dudy = dProjPy[2] * scale;
+        float dvdx = dProjPx[1] * scale;
+        float dvdy = dProjPy[1] * scale;
+
+        color col = texture(
+            textureMap,
+            ProjP[0],
+            ProjP[1],
+            dudx,
+            dudy,
+            dvdx,
+            dvdy,
+            "wrap", "periodic",
+            "missingcolor", color(0.0),
+            "missingalpha", 1.0,
+            "alpha", a);
+        a *= weight;
+        return col * weight;
+    }
+    else
+    {
+        a = 0.0;
+        return color(0);
+    }
+}
+
+/*
+bool lookupCellNoise(
+    float u,
+    float v,
+    float dudx,
+    float dudy,
+    float dvdx,
+    float dvdy,
+    float cellSoftness,
+    float rot,
+    float rotjitter,
+    AtShaderGlobals *sg,
+    AtTextureHandle *handle,
+    AtTextureParams *params,
+    AtRGBA *textureResult)
+{
+    point PP = point(u, v, 0);
+
+    int samples = (cellSoftness == 0) ? 1 : 3;
+    // run cellnoise
+    float weights[3];
+    float f[3];
+    AtVector delta[3];
+    AtUInt32 id[3];
+    AiCellular(P, samples, 1, 1.92, 1, f, delta, id);
+
+    if(samples == 1)
+    {
+        weights[0] = 1;
+    }
+    else
+    {
+        // find closest cell
+        float closestDistance = 100000;
+        float distances[3];
+        for(int i = 0; i < samples; i++)
+        {
+            distances[i] = AiV3Length(delta[i]);
+            closestDistance = MIN(distances[i], closestDistance);
+        }
+
+        float weightsum = 0;
+        for(int i=0; i<samples; ++i){
+            float diff = distances[i] - closestDistance;
+            weights[i] = cellSoftness - diff;
+            weights[i] = MAX(0, weights[i]);
+            weightsum += weights[i];
+        }
+        if(weightsum){
+            for(int i=0; i<samples; ++i){
+                weights[i] /= weightsum;
+            }
+        }
+    }
+
+    bool success = false;
+    *textureResult = AI_RGBA_BLACK;
+    sg->dudx = dudx;
+    sg->dudy = dudy;
+    sg->dvdx = dvdx;
+    sg->dvdy = dvdy;
+    for(int i=0; i<samples; ++i){
+        if(weights[i] > 0){
+            // pick direction for orientation
+            AtVector orientVectorX;
+            double jitter = (random(id[i])-0.5) * rotjitter;
+            double phi = modulo(rot/360. + jitter, 1) * AI_PI * 2.;
+            orientVectorX.x = cosf(phi);
+            orientVectorX.y = sinf(phi);
+            orientVectorX.z = 0;
+
+            AtVector orientVectorZ;
+            orientVectorZ.x = 0;
+            orientVectorZ.y = 0;
+            orientVectorZ.z = 1;
+
+            AtVector orientVectorY = AiV3Cross(orientVectorX, orientVectorZ);
+
+            AiV3RotateToFrame(delta[i], orientVectorX, orientVectorY, orientVectorZ);
+
+            // find new uv coordinates, set the center of the cell to be 0.5/0.5;
+            sg->u = delta[i].x * 0.75 - 0.5;
+            sg->v = delta[i].y * 0.75 - 0.5;
+
+            // texture lookup
+            bool currentSuccess = false;
+            *textureResult += AiTextureHandleAccess(sg, handle, params, &success) * weights[i];
+            success |= currentSuccess;
+        }
+    }
+
+    return success;
+}
+*/
+
+shader alTriplanar
+[[
+    string as_maya_node_name = "alTriplanar",
+    string help = "Useful for quickly adding bombing patterns of texture to objects to add variation and breakup."
+]]
+(
+    color input = color(0),
+    int space = 0,
+    int normalType = 0
+    [[
+        string as_maya_attribute_name = "normal"
+    ]],
+    int tiling = 0,
+    float frequency = 1.0,
+    string textureMap = ""
+    [[
+        string as_maya_attribute_name = "texture"
+    ]],
+    float blendSoftness = 0.1,
+    float cellSoftness = 0.1,
+    float scalex = 1.0,
+    float scaley = 1.0,
+    float scalez = 1.0,
+    float offsetx = 0.0,
+    float offsety = 0.0,
+    float offsetz = 0.0,
+    float rotx = 0.0,
+    float roty = 0.0,
+    float rotz = 0.0,
+    float rotjitterx = 1.0,
+    float rotjittery = 1.0,
+    float rotjitterz = 1.0,
+    int  mipMapBias = 0,
+    output color result = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc"
+    ]]
+)
+{
+    point PP;
+
+    if (space == NS_WORLD)
+        PP = P;
+    else if (space == NS_OBJECT)
+        PP = transform("object", P);
+    else if (space == NS_PREF)
+    {
+        // We don't have Pref yet.
+        PP = transform("object", P);
+    }
+
+    vector dpdx = Dx(PP);
+    vector dpdy = Dy(PP);
+
+    normal NN;
+    if (normalType == N_GEOMETRIC)
+        NN = Ng;
+    else // N_SMOOTH and N_SMOOTHNOBUMP
+        NN = N;
+
+    vector scale = vector(1.0 / scalex, 1.0 / scaley, 1.0 / scalez);
+    vector offset = vector(offsetx, offsety, offsetz);
+    vector rot = vector(rotx, roty, rotz);
+    vector rotjitter = vector(rotjitterx, rotjittery, rotjitterz);
+
+    vector weights = computeBlendWeights(NN, blendSoftness);
+
+    PP *= frequency;
+    result = input;
+
+    color colx, coly, colz;
+    float ax, ay, az;
+
+    if (tiling == TM_REGULAR)
+    {
+        // lookup X
+        point ProjP = point(
+            (PP[2] + 123.94 + offset[0]) * scale[0],
+            (PP[1] +  87.22 + offset[0]) * scale[0],
+            0.0);
+        colx = lookupRegular(textureMap, ProjP, scale[0], rot[0], weights[0], ax);
+
+        // lookup Y
+        ProjP = point(
+            (PP[0] + 74.1 + offset[1]) * scale[1],
+            (PP[2] +  9.2 + offset[1]) * scale[1],
+            0.0);
+        coly = lookupRegular(textureMap, ProjP, scale[1], rot[1], weights[1], ay);
+
+        // lookup Z
+        ProjP = point(
+            (PP[0] + 123.94 + offset[2]) * scale[2],
+            (PP[1] +  87.22 + offset[2]) * scale[2],
+            0.0);
+        colz = lookupRegular(textureMap, ProjP, scale[2], rot[2], weights[2], az);
+    }
+    else if (tiling == TM_CELLNOISE)
+    {
+        // todo: implement this.
+        colx = coly = colz = color(0);
+        ax = ay = az = 0.0;
+    }
+
+    result = colx + coly + colz;
+
+    int num_channels;
+    gettextureinfo(textureMap, "channels", num_channels);
+    if (num_channels == 2 || num_channels == 4)
+        result = mix(input, result, ax + ay + az);
+}

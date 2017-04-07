@@ -154,4 +154,4 @@ float filtered_pulsetrain(
     }
 }
 
-#endif // AS_PATTERN_HELPERS_H
+#endif // !AS_PATTERN_HELPERS_H

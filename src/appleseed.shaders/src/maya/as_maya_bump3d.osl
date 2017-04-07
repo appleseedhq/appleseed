@@ -32,99 +32,83 @@
 
 shader as_maya_bump3d
 [[
-    string maya_node_name = "bump3d",
-    string maya_classification = "utility/general/bump"
+    string as_maya_node_name = "bump3d"
 ]]
 (
     point in_pointCamera = P
     [[
-        string maya_attribute_name = "pointCamera",
-        string maya_attribute_type = "float3",
+        string as_maya_attribute_name = "pointCamera",
         string label = "Surface Point"
     ]],
     point in_pointObj = point(0)
     [[
-        string maya_attribute_name = "pointObj",
-        string maya_attribute_type = "float3",
+        string as_maya_attribute_name = "pointObj",
         string label = "Point Object Space"
     ]],
     point in_refPointObj = point(0)
     [[
-        string maya_attribute_name = "refPointObj",
-        string maya_attribute_type = "float3",
+        string as_maya_attribute_name = "refPointObj",
         string label = "Reference Point Object Space"
     ]],
     point in_refPointCamera = point(0)
     [[
-        string maya_attribute_name = "refPointCamera",
-        string maya_attribute_type = "float3",
+        string as_maya_attribute_name = "refPointCamera",
         string label = "Reference Surface Point"
     ]],
     point in_rayOrigin = point(0)
     [[
-        string maya_attribute_name = "rayOrigin",
-        string maya_attribute_type = "float3",
+        string as_maya_attribute_name = "rayOrigin",
         string label = "Ray Origin"
     ]],
     float in_xPixelAngle = 0.002053
     [[
-        string maya_attribute_name = "xPixelAngle",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "xPixelAngle",
         string label = "X Pixel Angle"
     ]],
     int in_infoBits = 0
     [[
-        string maya_attribute_name = "infoBits",
-        string maya_attribute_type = "int",
+        string as_maya_attribute_name = "infoBits",
         string label = "Info Bits"
     ]],
     normal in_normalCamera = N
     [[
-        string maya_attribute_name = "normalCamera",
-        string maya_attribute_type = "float3",
+        string as_maya_attribute_name = "normalCamera",
         string label = "Surface Normal"
     ]],
     vector in_tangentUCamera = vector(1.0, 0.0, 0.0)
     [[
-        string maya_attribute_name = "tangentUCamera",
-        string maya_attribute_type = "float3",
+        string as_maya_attribute_name = "tangentUCamera",
         string label = "Tangent U Direction"
     ]],
     vector in_tangentVCamera = vector(0.0, 1.0, 0.0)
     [[
-        string maya_attribute_name = "tangentVCamera",
-        string maya_attribute_type = "float3",
+        string as_maya_attribute_name = "tangentVCamera",
         string label = "Tangent V Direction"
     ]],
     int in_adjustEdges = 0
     [[
-        string maya_attribute_name = "adjustEdges",
-        string maya_attribute_type = "bool",
+        string as_maya_attribute_name = "adjustEdges",
         string label = "Adjust Edges",
         string widget = "checkBox"
     ]],
     float in_bumpDepth = 1.0
     [[
-        string maya_attribute_name = "bumpDepth",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "bumpDepth",
         string label = "Bump Depth"
     ]],
     float in_bumpFilter = 1.0
     [[
-        string maya_attribute_name = "bumpFilter",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "bumpFilter",
         string label = "Bump Filter"
     ]],
     float in_bumpFilterOffset = 0.0
     [[
-        string maya_attribute_name = "bumpFilterOffset",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "bumpFilterOffset",
         string label = "Bump Filter Offset"
     ]],
     float in_bumpValue = 0.0
     [[
-        string maya_attribute_name = "bumpValue",
-        string maya_attribute_type = "float",
+        string as_maya_attribute_name = "bumpValue",
         string label = "Bump Value"
     ]],
 
@@ -132,8 +116,8 @@ shader as_maya_bump3d
 
     output normal out_outNormal = normal(0.0, 0.0, 1.0)
     [[
-        string maya_attribute_name = "outNormal",
-        string maya_attribute_type = "vector",
+        string as_maya_attribute_name = "outNormal",
+        string as_maya_attribute_short_name = "n",
         string label = "Output Normal",
         string widget = "null"
     ]]

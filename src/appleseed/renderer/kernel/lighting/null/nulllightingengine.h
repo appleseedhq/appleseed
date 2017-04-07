@@ -41,7 +41,6 @@
 namespace renderer  { class PixelContext; }
 namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingPoint; }
-namespace renderer  { class SpectrumStack; }
 
 namespace renderer
 {
@@ -66,8 +65,7 @@ class NullLightingEngine
         const PixelContext&     pixel_context,
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point,
-        Spectrum&               radiance,
-        SpectrumStack&          aovs) APPLESEED_OVERRIDE
+        Spectrum&               radiance) APPLESEED_OVERRIDE
     {
     }
 };
