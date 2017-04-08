@@ -42,7 +42,7 @@ shader asVoronoi
     [[
         string as_maya_attribute_name = "surfacePoint",
         string label = "Surface Point",
-        string page = "Noise Parameters",
+        string page = "Cell Parameters",
         string widget = "null"
     ]],
     color in_color1 = color(1,0.3,0.05)
@@ -181,7 +181,6 @@ shader asVoronoi
     [[
         string as_maya_attribute_name = "placementMatrix",
         string label = "Placement Matrix",
-        string widget = "null",
         string page = "Placement Parameters"
     ]],
 
@@ -206,7 +205,7 @@ shader asVoronoi
     output float out_outFeatures[4] = {0.0, 0.0, 0.0, 0.0}
     [[
         string as_maya_attribute_name = "outFeatures",
-        string label = "OUtput Features",
+        string label = "Output Features",
         string widget = "null"
     ]],
     output point out_outPositions[4] = {0.0, 0.0, 0.0, 0.0}
@@ -345,7 +344,7 @@ shader asVoronoi
             // CMS singleton and pass it as argument.
             // Use hardcoded chromaticities Rec.709, but instead of using
             // OSL default luminance(), use explicit AS luminance as a 
-            // reminder the correct color space should be used.
+            // reminder that the correct color space should be used.
 
             out_outAlpha = as_luminance(out_outIDs[0], "Rec.709");
         }
