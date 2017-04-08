@@ -154,7 +154,7 @@ float metric_3D(
     float Akritean_coverage)
 {
     vector delta = test_position - surface_position;
-    float dist;
+    float dist = 0;
 
     if (metric == 0)
     {
@@ -179,13 +179,33 @@ float metric_3D(
 
         dist = mix(L2, L1, Akritean_coverage);
     }
-    else
+    else if (metric == 5)
     {
         float dx = pow(abs(delta[0]), Minkowski_P);
         float dy = pow(abs(delta[1]), Minkowski_P);
         float dz = pow(abs(delta[2]), Minkowski_P);
 
         dist = pow(dx + dy + dz, 1 / Minkowski_P);
+    }
+    else
+    {
+        float r1 = length(test_position);
+        float r2 = length(surface_position);
+
+        float theta1 = atan2(test_position[1], -test_position[0]) + M_PI;
+        float theta2 = atan2(surface_position[1], -surface_position[0]) + M_PI;
+
+        float abs_delta_theta = abs(theta1 - theta2);
+        float delta_theta = min(abs_delta_theta, M_2PI - abs_delta_theta);
+
+        if (delta_theta <= 2)
+        {
+            dist = min(r1, r2) * delta_theta + abs(r1 - r2);
+        }
+        else
+        {
+            dist = r1 + r2;
+        }
     }
     return dist;
 }
@@ -196,14 +216,11 @@ void voronoi_3df1(
     int metric,
     float Minkowski_P,
     float Akritean_coverage,
-    output float feature,
-    output point position)
+    output float features[4],
+    output point positions[4],
+    output color cell_IDs[4])
 {
     float dist;
-    vector delta;
-
-    feature = 1000;
-    position = 0;
 
     point test_cell, test_position;
     point this_cell = point(floor(surface_point[0]) + 0.5,
@@ -227,11 +244,57 @@ void voronoi_3df1(
                     test_position,
                     Minkowski_P,
                     Akritean_coverage);
-                
-                if (dist < feature)
+
+
+                if (dist < features[0])
                 {
-                    feature = dist;
-                    position = test_position;
+                    features[3] = features[2];
+                    features[2] = features[1];
+                    features[1] = features[0];
+                    features[0] = dist;
+
+                    positions[3] = positions[2];
+                    positions[2] = positions[1];
+                    positions[1] = positions[0];
+                    positions[0] = test_position;
+
+                    cell_IDs[3] = cell_IDs[2];
+                    cell_IDs[2] = cell_IDs[1];
+                    cell_IDs[1] = cell_IDs[0];
+                    cell_IDs[0] = cellnoise(test_position);
+                }
+                else if (dist < features[1])
+                {
+                    features[3] = features[2];
+                    features[2] = features[1];
+                    features[1] = dist;
+
+                    positions[3] = positions[2];
+                    positions[2] = positions[1];
+                    positions[1] = test_position;
+
+                    cell_IDs[3] = cell_IDs[2];
+                    cell_IDs[2] = cell_IDs[1];
+                    cell_IDs[1] = cellnoise(test_position);
+                }
+                else if (dist < features[2])
+                {
+                    features[3] = features[2];
+                    features[2] = dist;
+
+                    positions[3] = positions[2];
+                    positions[2] = test_position;
+
+                    cell_IDs[3] = cell_IDs[2];
+                    cell_IDs[2] = cellnoise(test_position);
+                }
+                else if (dist < features[3])
+                {
+                    features[3] = dist;
+
+                    positions[3] = test_position;
+
+                    cell_IDs[3] = cellnoise(test_position);
                 }
             }
         }
