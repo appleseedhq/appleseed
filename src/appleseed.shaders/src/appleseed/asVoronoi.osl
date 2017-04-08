@@ -266,7 +266,7 @@ shader asVoronoi
                 break;
             }
 
-            voronoi_3df1(
+            voronoi_3D(
                 surface_point,
                 in_jittering,
                 in_metric,

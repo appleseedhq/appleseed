@@ -230,7 +230,7 @@ float metric_3D(
     return dist;
 }
 
-void voronoi_3df1(
+void voronoi_3D(
     point surface_point,
     float jittering,
     int metric,
