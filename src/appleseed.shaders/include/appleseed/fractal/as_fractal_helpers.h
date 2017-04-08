@@ -166,7 +166,7 @@ float metric_3D(
     }
     else if (metric == 2)
     {
-        dist = max(delta[0], max(delta[1], delta[2]));
+        dist = max(abs(delta[0]), max(abs(delta[1]), abs(delta[2])));
     }
     else if (metric == 3)
     {
