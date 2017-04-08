@@ -94,7 +94,7 @@ float fBm(
 //
 //          5) Minkowski metric, with parameter P.
 //
-//          6) For the 2D case, Karlsruhe or Moscow metric.
+//          6) Karlsruhe or Moscow metric.
 //
 
 float metric_2D(
@@ -118,7 +118,7 @@ float metric_2D(
     }
     else if (metric == 2)
     {
-        dist = max(delta[0], delta[1]);
+        dist = max(abs(delta[0]), abs(delta[1]));
     }
     else if (metric == 3)
     {
@@ -140,9 +140,24 @@ float metric_2D(
     }
     else
     {
-        dist = 0; // TODO
-    }
+        float r1 = hypot(test_position[0], test_position[1]);
+        float r2 = hypot(surface_position[0], surface_position[1]);
 
+        float theta1 = atan2(test_position[1], -test_position[0]) + M_PI;
+        float theta2 = atan2(surface_position[1], -surface_position[0]) + M_PI;
+
+        float abs_delta_theta = abs(theta1 - theta2);
+        float delta_theta = min(abs_delta_theta, M_2PI - abs_delta_theta);
+
+        if (delta_theta <= 2)
+        {
+            dist = min(r1, r2) * delta_theta + abs(r1 - r2);
+        }
+        else
+        {
+            dist = r1 + r2;
+        }
+    }
     return dist;
 }
 
