@@ -278,6 +278,8 @@ source_group ("src\\alshaders" FILES
 set (appleseed_osl_sources
      src/appleseed/asDisneyMaterial.osl
      src/appleseed/asGlass.osl
+     src/appleseed/asVoronoi2D.osl
+     src/appleseed/asVoronoi3D.osl
 )
 list (APPEND osl_sources
     ${appleseed_osl_sources}

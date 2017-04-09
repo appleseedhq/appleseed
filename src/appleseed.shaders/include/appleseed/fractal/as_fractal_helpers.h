@@ -230,6 +230,94 @@ float metric_3D(
     return dist;
 }
 
+void voronoi_2D(
+    float st[2],
+    float jittering,
+    int metric,
+    float Minkowski_P,
+    float Akritean_coverage,
+    output float features[4],
+    output point positions[4],
+    output color cell_IDs[4])
+{
+    float dist;
+
+    float test_cell[2], test_position[2];
+    float this_cell[2] = {floor(st[0]) + 0.5, floor(st[1]) + 0.5};
+
+    for (int i = -1; i <= 1; ++i)
+    {
+        for (int j = -1; j <= 1; ++j)
+        {
+            test_cell[0] = this_cell[0] + i;
+            test_cell[1] = this_cell[1] + j;
+
+            test_position[0] = test_cell[0] + jittering *
+                (cellnoise(test_cell[0], test_cell[1]) - 0.5);
+
+            test_position[1] = test_cell[1] + jittering *
+                (cellnoise(test_cell[0] + 42, test_cell[1] + 23) - 0.5);
+                    
+            dist = metric_2D(
+                metric,
+                st,
+                test_position,
+                Minkowski_P,
+                Akritean_coverage);
+            
+            if (dist < features[0])
+            {
+                features[3] = features[2];
+                features[2] = features[1];
+                features[1] = features[0];
+                features[0] = dist;
+
+                positions[3] = positions[2];
+                positions[2] = positions[1];
+                positions[1] = positions[0];
+                positions[0] = point(test_position[0], test_position[1], 0);
+
+                cell_IDs[3] = cell_IDs[2];
+                cell_IDs[2] = cell_IDs[1];
+                cell_IDs[1] = cell_IDs[0];
+                cell_IDs[0] = cellnoise(test_position[0], test_position[1]);
+            }
+            else if (dist < features[1])
+            {
+                features[3] = features[2];
+                features[2] = features[1];
+                features[1] = dist;
+
+                positions[3] = positions[2];
+                positions[2] = positions[1];
+                positions[1] = point(test_position[0], test_position[1], 0);
+
+                cell_IDs[3] = cell_IDs[2];
+                cell_IDs[2] = cell_IDs[1];
+                cell_IDs[1] = cellnoise(test_position[0], test_position[1]);
+            }
+            else if (dist < features[2])
+            {
+                features[3] = features[2];
+                features[2] = dist;
+
+                positions[3] = positions[2];
+                positions[2] = point(test_position[0], test_position[1], 0);
+                
+                cell_IDs[3] = cell_IDs[2];
+                cell_IDs[2] = cellnoise(test_position[0], test_position[1]);
+            }
+            else if (dist < features[3])
+            {
+                features[3] = dist;
+                positions[3] = point(test_position[0], test_position[1], 0);
+
+                cell_IDs[3] = cellnoise(test_position[0], test_position[1]);
+            }
+        }
+    }
+}
+
 void voronoi_3D(
     point surface_point,
     float jittering,

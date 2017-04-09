@@ -31,9 +31,9 @@
 #include "appleseed/maya/as_maya_helpers.h"
 #include "appleseed/maya/as_maya_transform_helpers.h"
 
-shader asVoronoi
+shader asVoronoi3D
 [[
-    string as_maya_node_name = "asVoronoi",
+    string as_maya_node_name = "asVoronoi3D",
     string as_maya_classification = "appleseed/texture:textures/other",
     int as_maya_type_id = 1210822
 ]]
@@ -98,7 +98,8 @@ shader asVoronoi
         float softmin = 0.1,
         float softmax = 10.0,
         string label = "Lacunarity",
-        string page = "Recursion Parameters"
+        string page = "Recursion Parameters",
+        int as_maya_attribute_connectable = 0
     ]],
     float in_persistence = 1.0
     [[
@@ -245,10 +246,8 @@ shader asVoronoi
     }
     else if (in_amplitude)
     {
-
-        // passing the arrays as parameters to the call will not have any
-        // results, so a full copy needs to be made from temporaries to
-        // output parameters.
+        // Passing the output arrays directly seems not to get the arrays 
+        // filled, so use temporary copies for now.
 
         float tmp_features[4] = {1000, 1000, 1000, 1000};
         point tmp_positions[4] = {0, 0, 0, 0};
@@ -276,7 +275,7 @@ shader asVoronoi
                 tmp_positions,
                 tmp_IDs);
 
-            // Only the "pebbles" mode requires the accumulation
+            // Only the "pebbles" mode requires the accumulation.
 
             if (in_featuresMode == 9)
             {
@@ -290,9 +289,8 @@ shader asVoronoi
         out_outPositions = tmp_positions;
         out_outIDs = tmp_IDs;
 
-        // Determine output modes for main output variables, color, alpha,
-        // having in mind the 4 features, positions, IDs are in resp
-        // array outputs.
+        // Basic feature mode outputs, for more the user can use the
+        // extra output parameters directly.
         
         if (in_featuresMode == 0)
         {
@@ -338,13 +336,9 @@ shader asVoronoi
         }
         else if (in_featuresMode == 10)
         {
-            // Relative luminance should be chromaticities aware, but we
-            // cannot query the render space from here unless we write a
-            // custom importer for this node, to get the data from the Maya
-            // CMS singleton and pass it as argument.
-            // Use hardcoded chromaticities Rec.709, but instead of using
-            // OSL default luminance(), use explicit AS luminance as a 
-            // reminder that the correct color space should be used.
+            // We need to get the render space information in order to get
+            // the correct relative luminance. For now set to Rec.709
+            // primaries.
 
             out_outAlpha = as_luminance(out_outIDs[0], "Rec.709");
         }

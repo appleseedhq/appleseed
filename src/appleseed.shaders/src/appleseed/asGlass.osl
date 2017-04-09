@@ -29,7 +29,7 @@
 shader asGlass
 [[
     string as_maya_node_name = "asGlass",
-    string as_maya_classification = "shader/surface:appleseed/surface:swatch/appleseedRenderSwatch",
+    string as_maya_classification = "appleseed/surface:swatch/appleseedRenderSwatch",
     string help = "Glass material",
     int as_maya_type_id = 1210820
 ]]
