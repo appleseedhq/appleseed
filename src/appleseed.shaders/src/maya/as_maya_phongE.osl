@@ -28,6 +28,8 @@
 
 // Ref: $MAYA_LOCATION/docs/Nodes/phongE.html
 
+#include "appleseed/color/as_color_helpers.h"
+
 shader as_maya_phongE
 [[
     string as_maya_node_name = "phongE"
@@ -43,7 +45,7 @@ shader as_maya_phongE
     [[
         string as_maya_attribute_name = "transparency",
         string label = "Transparency",
-        string page = "Common Material Attributes"        
+        string page = "Common Material Attributes"
     ]],
     color in_ambientColor = color(0)
     [[
@@ -80,7 +82,7 @@ shader as_maya_phongE
         string as_maya_attribute_name = "translucenceDepth",
         string label = "Translucence Depth",
         string page = "Common Material Attributes"
-    ]],  
+    ]],
     float in_translucenceFocus = 0.5
     [[
         string as_maya_attribute_name = "translucenceFocus",
@@ -215,7 +217,7 @@ shader as_maya_phongE
         string widget = "null"
     ]]
 )
-{   
+{
     if (raytype("shadow"))
     {
         color transparency = in_transparency ;
@@ -229,7 +231,12 @@ shader as_maya_phongE
                 in_shadowAttenuation
                 );
         }
-        out_outColor = transparency * transparent();
+
+        if (as_max_component(transparency) > 0.0)
+        {
+            out_outColor = transparency * transparent();
+        }
+
         out_outTransparency = out_outColor;
     }
     else
@@ -246,7 +253,7 @@ shader as_maya_phongE
         if (in_color)
         {
             diffuse_term = opacity * in_diffuse * in_color * diffuse(Nn);
-            
+
             translucency_term = opacity * in_translucence *
                 in_color * translucent(Nn);
         }
@@ -271,7 +278,7 @@ shader as_maya_phongE
 
             opacity = 1.0;
         }
-        else
+        else if (as_max_component(in_transparency) > 0.0)
         {
             transparency_term = in_transparency * transparent();
         }
@@ -283,7 +290,7 @@ shader as_maya_phongE
 
             // Parameter "highlight size" controls the tails of the specular
             // term (i.e: gamma in GTR MDF). Not implemented yet.
-            
+
             specular_term = opacity * specular_color *
                 microfacet(
                     "ggx",
@@ -291,7 +298,7 @@ shader as_maya_phongE
                     in_roughness,
                     0.0,    // eta
                     0);     // refract
-        } 
+        }
 
         closure color matte_term;
 
@@ -307,7 +314,7 @@ shader as_maya_phongE
         {
             matte_term = in_matteOpacity * holdout();
         }
-        
+
         if (in_glowIntensity)
         {
             // glow_term = opacity * in_glowIntensity * post_glow();

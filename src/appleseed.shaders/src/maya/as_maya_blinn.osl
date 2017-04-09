@@ -28,6 +28,7 @@
 
 // Ref: $MAYA_LOCATION/docs/Nodes/blinn.html
 
+#include "appleseed/color/as_color_helpers.h"
 #include "appleseed/math/as_math_helpers.h"
 
 shader as_maya_blinn
@@ -45,7 +46,7 @@ shader as_maya_blinn
     [[
         string as_maya_attribute_name = "transparency",
         string label = "Transparency",
-        string page = "Common Material Attributes"        
+        string page = "Common Material Attributes"
     ]],
     color in_ambientColor = color(0)
     [[
@@ -82,7 +83,7 @@ shader as_maya_blinn
         string as_maya_attribute_name = "translucenceDepth",
         string label = "Translucence Depth",
         string page = "Common Material Attributes"
-    ]],  
+    ]],
     float in_translucenceFocus = 0.5
     [[
         string as_maya_attribute_name = "translucenceFocus",
@@ -210,7 +211,7 @@ shader as_maya_blinn
         string widget = "null"
     ]]
 )
-{   
+{
     if (raytype("shadow"))
     {
         color transparency = in_transparency;
@@ -224,7 +225,12 @@ shader as_maya_blinn
                 in_shadowAttenuation
                 );
         }
-        out_outColor = transparency * transparent();
+
+        if (as_max_component(transparency) > 0.0)
+        {
+            out_outColor = transparency * transparent();
+        }
+
         out_outTransparency = out_outColor;
     }
     else
@@ -265,11 +271,11 @@ shader as_maya_blinn
 
             opacity = 1.0;
         }
-        else
+        else if (as_max_component(in_transparency) > 0.0)
         {
             transparency_term = in_transparency * transparent();
         }
-        
+
         if (in_specularColor)
         {
             // Specular roll-off is a simple Fresnel term, get eta, solve
@@ -303,7 +309,7 @@ shader as_maya_blinn
         {
             matte_term = in_matteOpacity * holdout();
         }
-        
+
         if (in_glowIntensity)
         {
             // glow_term = opacity * in_glowIntensity * post_glow();
