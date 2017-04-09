@@ -94,7 +94,7 @@ bool Material::has_alpha_map() const
     return get_non_empty(m_params, "alpha_map") != 0;
 }
 
-bool Material::has_uniform_opacity() const
+bool Material::has_uniform_alpha_map_value_of_one() const
 {
     const Source* source = get_uncached_alpha_map();
 
