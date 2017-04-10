@@ -28,6 +28,8 @@
 
 // Ref: $MAYA_LOCATION/docs/Nodes/lambert.html
 
+#include "appleseed/color/as_color_helpers.h"
+
 shader as_maya_lambert
 [[
     string as_maya_node_name = "lambert"
@@ -72,7 +74,7 @@ shader as_maya_lambert
     [[
         string as_maya_attribute_name = "translucenceDepth",
         string label = "Translucence Depth"
-    ]],  
+    ]],
     float in_translucenceFocus = 0.5
     [[
         string as_maya_attribute_name = "translucenceFocus",
@@ -165,7 +167,7 @@ shader as_maya_lambert
         string widget = "null"
     ]]
 )
-{   
+{
     if (raytype("shadow"))
     {
         color transparency = in_transparency;
@@ -179,7 +181,12 @@ shader as_maya_lambert
                 in_shadowAttenuation
                 );
         }
-        out_outColor = transparency * transparent();
+
+        if (as_max_component(transparency) > 0.0)
+        {
+            out_outColor = transparency * transparent();
+        }
+
         out_outTransparency = out_outColor;
     }
     else
@@ -219,7 +226,7 @@ shader as_maya_lambert
 
             opacity = 1.0;
         }
-        else
+        else if (as_max_component(in_transparency) > 0.0)
         {
             transparency_term = in_transparency * transparent();
         }
