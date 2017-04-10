@@ -28,6 +28,7 @@
 
 // Ref: $MAYA_LOCATION/docs/Nodes/anisotropic.html
 
+#include "appleseed/color/as_color_helpers.h"
 #include "appleseed/math/as_math_helpers.h"
 
 shader as_maya_anisotropic
@@ -267,7 +268,12 @@ shader as_maya_anisotropic
                 in_shadowAttenuation
                 );
         }
-        out_outColor = transparency * transparent();
+
+        if (as_max_component(transparency) > 0.0)
+        {
+            out_outColor = transparency * transparent();
+        }
+
         out_outTransparency = out_outColor;
     }
     else
@@ -308,7 +314,7 @@ shader as_maya_anisotropic
 
             opacity = 1.0;
         }
-        else
+        else if (as_max_component(in_transparency) > 0.0)
         {
             transparency_term = in_transparency * transparent();
         }

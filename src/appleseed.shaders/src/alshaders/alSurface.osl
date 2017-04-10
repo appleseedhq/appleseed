@@ -26,6 +26,7 @@
 // THE SOFTWARE.
 //
 
+#include "appleseed/color/as_color_helpers.h"
 #include "appleseed/material/as_material_helpers.h"
 
 // Constants.
@@ -35,17 +36,6 @@
 #define SSSMODE_DIFFUSION   1
 #define SSSMODE_DIRECTIONAL 2
 #define SSSMODE_EMPIRICAL   3
-
-// Utility.
-float minh(color c)
-{
-    return min(c[0], min(c[1], c[2]));
-}
-
-float maxh(color c)
-{
-    return max(c[0], max(c[1], c[2]));
-}
 
 shader alSurface
 [[
@@ -336,7 +326,7 @@ shader alSurface
     color transmissionColor = in_transmissionColor * in_transmissionStrength;
     color diffuseColor = in_diffuseColor * in_diffuseStrength;
     color backlightColor = in_backlightColor * in_backlightStrength;
-    float t_sum = maxh(transmissionColor) + maxh(diffuseColor) + maxh(backlightColor);
+    float t_sum = as_max_component(transmissionColor) + as_max_component(diffuseColor) + as_max_component(backlightColor);
 
     if (t_sum > 1.0)
     {
@@ -346,28 +336,28 @@ shader alSurface
         backlightColor    *= t_sum_inv;
     }
 
-    if (maxh(diffuseColor) < IMPORTANCE_EPS || in_sssMix == 1.0)
+    if (as_max_component(diffuseColor) < IMPORTANCE_EPS || in_sssMix == 1.0)
         do_diffuse = 0;
 
-    if (maxh(backlightColor) < IMPORTANCE_EPS || in_sssMix == 1.0)
+    if (as_max_component(backlightColor) < IMPORTANCE_EPS || in_sssMix == 1.0)
         do_backlight = 0;
 
-    if (in_sssMix == 0.0 || maxh(diffuseColor) < IMPORTANCE_EPS)
+    if (in_sssMix == 0.0 || as_max_component(diffuseColor) < IMPORTANCE_EPS)
         do_sss = 0;
 
-    if (maxh(transmissionColor) < IMPORTANCE_EPS || in_sssMix == 1.0)
+    if (as_max_component(transmissionColor) < IMPORTANCE_EPS || in_sssMix == 1.0)
         do_transmission = 0;
 
     color emissionColor = in_emissionColor * in_emissionStrength;
-    if (maxh(emissionColor) < IMPORTANCE_EPS)
+    if (as_max_component(emissionColor) < IMPORTANCE_EPS)
         do_emission = 0;
 
     color specular1Color = in_specular1Color * in_specular1Strength;
-    if (maxh(specular1Color) < IMPORTANCE_EPS)
+    if (as_max_component(specular1Color) < IMPORTANCE_EPS)
         do_glossy = 0;
 
     color specular2Color = in_specular2Color * in_specular2Strength;
-    if (maxh(specular2Color) < IMPORTANCE_EPS)
+    if (as_max_component(specular2Color) < IMPORTANCE_EPS)
         do_glossy2 = 0;
 
     // Create closures.
@@ -446,7 +436,7 @@ shader alSurface
         color volumeTransmittanceColor = color(1);
         float volumeTransmittanceDistance = 0.0;
 
-        if (minh(in_ssAttenuationColor) < 1.0)
+        if (as_min_component(in_ssAttenuationColor) < 1.0)
         {
             color sigmaA =
                 (color(1) - clamp(in_ssAttenuationColor, color(0), color(0.999))) * in_ssDensityScale;
