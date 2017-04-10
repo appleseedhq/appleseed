@@ -34,17 +34,10 @@
 shader asVoronoi2D
 [[
     string as_maya_node_name = "asVoronoi2D",
-    string as_maya_classification = "appleseed/texture:textures/other",
+    string as_maya_classification = "appleseed/texture/2d",
     int as_maya_type_id = 1210823
 ]]
 (
-    point in_surfacePoint = P
-    [[
-        string as_maya_attribute_name = "surfacePoint",
-        string label = "Surface Point",
-        string page = "Cell Parameters",
-        string widget = "null"
-    ]],
     color in_color1 = color(1,0.3,0.05)
     [[
         string as_maya_attribute_name = "color",
@@ -167,22 +160,16 @@ shader asVoronoi2D
     [[
         string as_maya_attribute_name = "featuresMode",
         string widget = "mapper",
-        string options = "Feature 1:0|Feature 2:1|Feature 3:2|Feature 4:3|F1 + F2:4|F1 - F2:5|F1 * F2:6|F1 / F2:7|F1 ^ F2:8|Pebbles:9|Cell ID 1:10|Cell ID 2:11|Cell ID 3:12|Cell ID 4:13",
+        string options = "Feature 1:0|Feature 2:1|Feature 3:2|Feature 4:3|F1 + F2:4|F2 - F1:5|F1 * F2:6|F1 / F2:7|F1 ^ F2:8|Pebbles:9|Cell ID 1:10|Cell ID 2:11|Cell ID 3:12|Cell ID 4:13",
         string label = "Features Mode",
         string page = "Cell Parameters"
     ]],
-    int in_softEdges = 1
+    point in_surfacePoint = P
     [[
-        string as_maya_attribute_name = "softEdges",
-        string label = "Soft Edges",
-        string widget = "checkBox",
-        string page = "Placement Parameters"
-    ]],
-    matrix in_placementMatrix = matrix(1)
-    [[
-        string as_maya_attribute_name = "placementMatrix",
-        string label = "Placement Matrix",
-        string page = "Placement Parameters"
+        string as_maya_attribute_name = "surfacePoint",
+        string label = "Surface Point",
+        string page = "Cell Parameters",
+        string widget = "null"
     ]],
 
     MAYA_COLORBALANCE_PARAMETERS,
@@ -284,7 +271,14 @@ shader asVoronoi2D
             {
                 sum += amplitude * tmp_features[0];
                 amplitude *= gain;
-            }           
+            }
+            else
+            {
+                tmp_features[0] *= amplitude;
+                tmp_features[1] *= amplitude;
+                tmp_features[2] *= amplitude;
+                tmp_features[3] *= amplitude;
+            }
             st[0] *= lacunarity;
             st[1] *= lacunarity;
         }
@@ -318,7 +312,7 @@ shader asVoronoi2D
         }
         else if (in_featuresMode == 5)
         {
-            out_outAlpha = out_outFeatures[0] - out_outFeatures[1];
+            out_outAlpha = out_outFeatures[1] - out_outFeatures[0];
         }
         else if (in_featuresMode == 6)
         {
