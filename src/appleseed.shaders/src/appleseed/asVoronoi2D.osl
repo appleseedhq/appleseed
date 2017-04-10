@@ -1,0 +1,387 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/fractal/as_fractal_helpers.h"
+#include "appleseed/math/as_math_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/maya/as_maya_transform_helpers.h"
+
+shader asVoronoi2D
+[[
+    string as_maya_node_name = "asVoronoi2D",
+    string as_maya_classification = "appleseed/texture/2d",
+    int as_maya_type_id = 1210823
+]]
+(
+    color in_color1 = color(1,0.3,0.05)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Color 1",
+        string page = "Color Parameters"
+    ]],
+    color in_color2 = color(0.1,0.3, 0.9)
+    [[
+        string as_maya_attribute_name = "color2",
+        string label = "Color 2",
+        string page = "Color Parameters"
+    ]],
+    float in_contrast = 0.5
+    [[
+        string as_maya_attribute_name = "contrast",
+        string widget = "slider",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Contrast",
+        string page = "Color Parameters"
+    ]],
+    float in_amplitude = 1.0
+    [[
+        string as_maya_attribute_name = "amplitude",
+        string widget = "slider",
+        float min = -10.0,
+        float max = 10.0,
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Amplitude",
+        string page = "Recursion Parameters"
+    ]],
+    int in_octaves = 3
+    [[
+        string as_maya_attribute_name = "octaves",
+        int as_maya_attribute_connectable = 0,
+        string widget = "slider",
+        int min = 1,
+        int max = 6,
+        int softmin = 1,
+        int softmax = 4,
+        string label = "Octaves",
+        string page = "Recursion Parameters"
+    ]],
+    float in_lacunarity = 2.217
+    [[
+        string as_maya_attribute_name = "lacunarity",
+        int as_maya_attribute_connectable = 0,
+        string widget = "slider",
+        float min = 0.01,
+        float max = 100.0,
+        float softmin = 0.1,
+        float softmax = 10.0,
+        string label = "Lacunarity",
+        string page = "Recursion Parameters"
+    ]],
+    float in_persistence = 1.0
+    [[
+        string as_maya_attribute_name = "persistence",
+        string widget = "slider",
+        float min = 0.0,
+        float max = 10.0,
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Persistence",
+        string page = "Recursion Parameters"
+    ]],
+    float in_density = 1.0
+    [[
+        string as_maya_attribute_name = "density",
+        string widget = "slider",
+        float min = 0.0,
+        float max = 5.0,
+        float softmin = 1.0,
+        float softmax = 3.0,
+        string label = "Initial Density",
+        string page = "Cell Parameters"
+    ]],
+    float in_jittering = 1.0
+    [[
+        string as_maya_attribute_name = "jittering",
+        string widget = "slider",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Jittering",
+        string page = "Cell Parameters",
+        int divider = 1
+    ]],
+    int in_metric = 0
+    [[
+        string as_maya_attribute_name = "metric",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        string widget = "mapper",
+        string options = "Euclidian Distance:0|Sum of Square Difference:1|Tchebychev Distance:2|Sum of Absolute Difference:3|Akritean Distance:4|Minkowski Metric:5|Karlsruhe Metric:6",
+        string label = "Metric",
+        string page = "Cell Parameters",
+        int divider = 1
+    ]],
+    float in_Minkowski_p = 5.0
+    [[
+        string as_maya_attribute_name = "Minkowski_p",
+        string widget = "slider",
+        float min = 0.01,
+        float max = 50.0,
+        float softmin = 0.1,
+        float softmax = 10.0,
+        string label = "Minkowski Parameter",
+        string page = "Cell Parameters"
+    ]],
+    float in_coverage = 0.5
+    [[
+        string as_maya_attribute_name = "coverage",
+        string widget = "slider",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Akritean Coverage",
+        string page = "Cell Parameters",
+        int divider = 1
+    ]],
+    int in_featuresMode = 0
+    [[
+        string as_maya_attribute_name = "featuresMode",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        string widget = "mapper",
+        string options = "Feature 1:0|Feature 2:1|Feature 3:2|Feature 4:3|F1 + F2:4|F2 - F1:5|F1 * F2:6|F1 / F2:7|F1 ^ F2:8|Pebbles:9|Cell ID 1:10|Cell ID 2:11|Cell ID 3:12|Cell ID 4:13",
+        string label = "Features Mode",
+        string page = "Cell Parameters"
+    ]],
+    point in_surfacePoint = P
+    [[
+        string as_maya_attribute_name = "surfacePoint",
+        int as_maya_attribute_hidden = 1,
+        string label = "Surface Point",
+        string page = "Cell Parameters",
+        string widget = "null"
+    ]],
+
+    MAYA_COLORBALANCE_PARAMETERS,
+    MAYA_EFFECTS_PARAMETERS,
+    MAYA_UV_PARAMETERS,
+
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
+        string label = "Output Alpha"
+    ]],
+    output float out_outFeatures[4] = {0.0, 0.0, 0.0, 0.0}
+    [[
+        string as_maya_attribute_name = "outFeatures",
+        string label = "Output Features"
+    ]],
+    output point out_outPositions[4] = {0.0, 0.0, 0.0, 0.0}
+    [[
+        string as_maya_attribute_name = "outPositions",
+        string label = "Output Positions"
+    ]],
+    output color out_outIDs[4] = {0, 0, 0, 0}
+    [[
+        string as_maya_attribute_name = "outIDs",
+        string label = "Output IDs"
+    ]]
+)
+{
+    if (in_uvCoord[0] == OUTSIDE_UVFRAME || in_uvCoord[1] == OUTSIDE_UVFRAME)
+    {
+        out_outColor = in_defaultColor;
+        out_outAlpha = maya_luminance(in_defaultColor);
+    }
+    else if (in_amplitude)
+    {
+        float st[2] = {in_uvCoord[0], in_uvCoord[1]};
+
+        st[0] = mod(st[0], UVWRAP);
+        st[1] = mod(st[1], UVWRAP);
+
+        st[0] *= in_density;
+        st[1] *= in_density;
+
+        float dsdt[2] = {
+            in_filter *
+                (in_uvFilterSize[0] == UNDEFINED_UVFILTER
+                    ? filterwidth(st[0])
+                    : in_uvFilterSize[0]),
+            in_filter *
+                (in_uvFilterSize[1] == UNDEFINED_UVFILTER
+                    ? filterwidth(st[1])
+                    : in_uvFilterSize[1])};
+
+            dsdt[0] += 2 * in_filterOffset;
+            dsdt[1] += 2 * in_filterOffset;
+
+        // Passing the output arrays directly seems not to get the arrays 
+        // filled, so use temporary copies for now.
+
+        float tmp_features[4] = {1000, 1000, 1000, 1000};
+        point tmp_positions[4] = {0, 0, 0, 0};
+        color tmp_IDs[4] = {0, 0, 0, 0};
+
+        float lacunarity = in_lacunarity, amplitude = in_amplitude;
+        float gain = in_persistence, sum = 0.0;
+
+        for (int i = 0; i < in_octaves; ++i)
+        {
+            if (!amplitude)
+            {
+                break;
+            }
+
+            voronoi_2D(
+                st,
+                in_jittering,
+                in_metric,
+                in_Minkowski_p,
+                in_coverage,
+                tmp_features,
+                tmp_positions,
+                tmp_IDs);
+
+            // Only the "pebbles" mode requires the accumulation.
+
+            if (in_featuresMode == 9)
+            {
+                sum += amplitude * tmp_features[0];
+                amplitude *= gain;
+            }
+            else
+            {
+                tmp_features[0] *= amplitude;
+                tmp_features[1] *= amplitude;
+                tmp_features[2] *= amplitude;
+                tmp_features[3] *= amplitude;
+            }
+            st[0] *= lacunarity;
+            st[1] *= lacunarity;
+        }
+
+        out_outFeatures = tmp_features;
+        out_outPositions = tmp_positions;
+        out_outIDs = tmp_IDs;
+
+        // Basic feature mode outputs, for more the user can use the
+        // extra output parameters directly.
+        
+        if (in_featuresMode == 0)
+        {
+            out_outAlpha = out_outFeatures[0];
+        }
+        else if (in_featuresMode == 1)
+        {
+            out_outAlpha = out_outFeatures[1];
+        }
+        else if (in_featuresMode == 2)
+        {
+            out_outAlpha = out_outFeatures[2];
+        }
+        else if (in_featuresMode == 3)
+        {
+            out_outAlpha = out_outFeatures[3];
+        }
+        else if (in_featuresMode == 4)
+        {
+            out_outAlpha = out_outFeatures[0] + out_outFeatures[1];
+        }
+        else if (in_featuresMode == 5)
+        {
+            out_outAlpha = out_outFeatures[1] - out_outFeatures[0];
+        }
+        else if (in_featuresMode == 6)
+        {
+            out_outAlpha = out_outFeatures[0] * out_outFeatures[1];
+        }
+        else if (in_featuresMode == 7)
+        {
+            out_outAlpha = out_outFeatures[0] / max(EPS, out_outFeatures[1]);
+        }
+        else if (in_featuresMode == 8)
+        {
+            out_outAlpha = pow(out_outFeatures[0], out_outFeatures[1]);
+        }
+        else if (in_featuresMode == 9)
+        {
+            out_outAlpha =
+                abs(sum) * pow(out_outFeatures[0], out_outFeatures[1]) -
+                    sum  * pow(out_outFeatures[2], out_outFeatures[3]);
+        }
+        else if (in_featuresMode == 10)
+        {
+            // We need to get the render space information in order to get
+            // the correct relative luminance. For now set to Rec.709
+            // primaries.
+
+            out_outAlpha = as_luminance(out_outIDs[0], "Rec.709");
+        }
+        else if (in_featuresMode == 11)
+        {
+            out_outAlpha = as_luminance(out_outIDs[1], "Rec.709");
+        }
+        else if (in_featuresMode == 12)
+        {
+            out_outAlpha = as_luminance(out_outIDs[2], "Rec.709");
+        }
+        else if (in_featuresMode == 13)
+        {
+            out_outAlpha = as_luminance(out_outIDs[3], "Rec.709");
+        }
+        else
+        {
+#ifdef DEBUG
+            string shadername = "";
+            getattribute("shader:shadername", shadername);
+
+            warning("[WARNING]: Invalid Feature Mode selected in %s, %s:%i\n",
+                    shadername, __FILE__, __LINE__);
+#endif
+            out_outAlpha = 0.0;
+        }
+
+        color color_blend = mix(in_color2, in_color1, in_contrast);
+
+        out_outColor = mix(in_color2, color_blend, 1 - out_outAlpha);
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha);
+    }
+    else
+    {
+        out_outColor = color(0);
+        out_outAlpha = 1 - 0.5 * in_contrast;
+    }
+}

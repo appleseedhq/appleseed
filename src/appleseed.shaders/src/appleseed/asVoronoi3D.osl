@@ -31,20 +31,13 @@
 #include "appleseed/maya/as_maya_helpers.h"
 #include "appleseed/maya/as_maya_transform_helpers.h"
 
-shader asVoronoi
+shader asVoronoi3D
 [[
-    string as_maya_node_name = "asVoronoi",
-    string as_maya_classification = "appleseed/texture:textures/other",
+    string as_maya_node_name = "asVoronoi3D",
+    string as_maya_classification = "appleseed/texture/3d",
     int as_maya_type_id = 1210822
 ]]
 (
-    point in_surfacePoint = P
-    [[
-        string as_maya_attribute_name = "surfacePoint",
-        string label = "Surface Point",
-        string page = "Cell Parameters",
-        string widget = "null"
-    ]],
     color in_color1 = color(1,0.3,0.05)
     [[
         string as_maya_attribute_name = "color",
@@ -81,6 +74,7 @@ shader asVoronoi
     int in_octaves = 3
     [[
         string as_maya_attribute_name = "octaves",
+        int as_maya_attribute_connectable = 0,
         string widget = "slider",
         int min = 1,
         int max = 6,
@@ -98,7 +92,8 @@ shader asVoronoi
         float softmin = 0.1,
         float softmax = 10.0,
         string label = "Lacunarity",
-        string page = "Recursion Parameters"
+        string page = "Recursion Parameters",
+        int as_maya_attribute_connectable = 0
     ]],
     float in_persistence = 1.0
     [[
@@ -135,6 +130,8 @@ shader asVoronoi
     int in_metric = 0
     [[
         string as_maya_attribute_name = "metric",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
         string widget = "mapper",
         string options = "Euclidian Distance:0|Sum of Square Difference:1|Tchebychev Distance:2|Sum of Absolute Difference:3|Akritean Distance:4|Minkowski Metric:5|Karlsruhe Metric:6",
         string label = "Metric",
@@ -165,14 +162,17 @@ shader asVoronoi
     int in_featuresMode = 0
     [[
         string as_maya_attribute_name = "featuresMode",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
         string widget = "mapper",
-        string options = "Feature 1:0|Feature 2:1|Feature 3:2|Feature 4:3|F1 + F2:4|F1 - F2:5|F1 * F2:6|F1 / F2:7|F1 ^ F2:8|Pebbles:9|Cell ID 1:10|Cell ID 2:11|Cell ID 3:12|Cell ID 4:13",
+        string options = "Feature 1:0|Feature 2:1|Feature 3:2|Feature 4:3|F1 + F2:4|F2 - F1:5|F1 * F2:6|F1 / F2:7|F1 ^ F2:8|Pebbles:9|Cell ID 1:10|Cell ID 2:11|Cell ID 3:12|Cell ID 4:13",
         string label = "Features Mode",
         string page = "Cell Parameters"
     ]],
     int in_softEdges = 1
     [[
         string as_maya_attribute_name = "softEdges",
+        int as_maya_attribute_hidden = 1,
         string label = "Soft Edges",
         string widget = "checkBox",
         string page = "Placement Parameters"
@@ -183,6 +183,14 @@ shader asVoronoi
         string label = "Placement Matrix",
         string page = "Placement Parameters"
     ]],
+    point in_surfacePoint = P
+    [[
+        string as_maya_attribute_name = "surfacePoint",
+        int as_maya_attribute_hidden = 1,
+        string label = "Surface Point",
+        string page = "Cell Parameters",
+        string widget = "null"
+    ]],
 
     MAYA_COLORBALANCE_PARAMETERS,
     MAYA_EFFECTS_PARAMETERS,
@@ -192,8 +200,7 @@ shader asVoronoi
     [[
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
-        string label = "Output Color",
-        string widget = "null"
+        string label = "Output Color"
     ]],
     output float out_outAlpha = 1.0
     [[
@@ -205,20 +212,17 @@ shader asVoronoi
     output float out_outFeatures[4] = {0.0, 0.0, 0.0, 0.0}
     [[
         string as_maya_attribute_name = "outFeatures",
-        string label = "Output Features",
-        string widget = "null"
+        string label = "Output Features"
     ]],
     output point out_outPositions[4] = {0.0, 0.0, 0.0, 0.0}
     [[
         string as_maya_attribute_name = "outPositions",
-        string label = "Output Positions",
-        string widget = "null"
+        string label = "Output Positions"
     ]],
     output color out_outIDs[4] = {0, 0, 0, 0}
     [[
         string as_maya_attribute_name = "outIDs",
-        string label = "Output IDs",
-        string widget = "null"
+        string label = "Output IDs"
     ]]
 )
 {
@@ -245,10 +249,8 @@ shader asVoronoi
     }
     else if (in_amplitude)
     {
-
-        // passing the arrays as parameters to the call will not have any
-        // results, so a full copy needs to be made from temporaries to
-        // output parameters.
+        // Passing the output arrays directly seems not to get the arrays 
+        // filled, so use temporary copies for now.
 
         float tmp_features[4] = {1000, 1000, 1000, 1000};
         point tmp_positions[4] = {0, 0, 0, 0};
@@ -276,13 +278,20 @@ shader asVoronoi
                 tmp_positions,
                 tmp_IDs);
 
-            // Only the "pebbles" mode requires the accumulation
+            // Only the "pebbles" mode requires the accumulation.
 
             if (in_featuresMode == 9)
             {
                 sum += amplitude * tmp_features[0];
                 amplitude *= gain;
-            }           
+            }
+            else
+            {
+                tmp_features[0] *= amplitude;
+                tmp_features[1] *= amplitude;
+                tmp_features[2] *= amplitude;
+                tmp_features[3] *= amplitude;
+            }
             surface_point *= lacunarity;
         }
 
@@ -290,9 +299,8 @@ shader asVoronoi
         out_outPositions = tmp_positions;
         out_outIDs = tmp_IDs;
 
-        // Determine output modes for main output variables, color, alpha,
-        // having in mind the 4 features, positions, IDs are in resp
-        // array outputs.
+        // Basic feature mode outputs, for more the user can use the
+        // extra output parameters directly.
         
         if (in_featuresMode == 0)
         {
@@ -316,7 +324,7 @@ shader asVoronoi
         }
         else if (in_featuresMode == 5)
         {
-            out_outAlpha = out_outFeatures[0] - out_outFeatures[1];
+            out_outAlpha = out_outFeatures[1] - out_outFeatures[0];
         }
         else if (in_featuresMode == 6)
         {
@@ -338,13 +346,9 @@ shader asVoronoi
         }
         else if (in_featuresMode == 10)
         {
-            // Relative luminance should be chromaticities aware, but we
-            // cannot query the render space from here unless we write a
-            // custom importer for this node, to get the data from the Maya
-            // CMS singleton and pass it as argument.
-            // Use hardcoded chromaticities Rec.709, but instead of using
-            // OSL default luminance(), use explicit AS luminance as a 
-            // reminder that the correct color space should be used.
+            // We need to get the render space information in order to get
+            // the correct relative luminance. For now set to Rec.709
+            // primaries.
 
             out_outAlpha = as_luminance(out_outIDs[0], "Rec.709");
         }

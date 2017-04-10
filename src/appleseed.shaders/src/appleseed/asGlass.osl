@@ -29,7 +29,7 @@
 shader asGlass
 [[
     string as_maya_node_name = "asGlass",
-    string as_maya_classification = "shader/surface:appleseed/surface:swatch/appleseedRenderSwatch",
+    string as_maya_classification = "appleseed/surface:swatch/appleseedRenderSwatch",
     string help = "Glass material",
     int as_maya_type_id = 1210820
 ]]
@@ -66,10 +66,13 @@ shader asGlass
     float in_ior = 1.5
     [[
         string as_maya_attribute_name = "ior",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_hidden = 1,
         float min = 1.0,
         float max = 10.0,
         float softmin = 1.0,
         float softmax = 2.0,
+        string widget = "slider",
         string label = "Index Of Refraction",
         string page = "Specular Parameters",
         int divider = 1
@@ -77,6 +80,9 @@ shader asGlass
     int in_distribution = 0
     [[
         string as_maya_attribute_name = "distribution",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
         string label = "Distribution",
         string as_maya_attribute_type = "enum",
         int min = 0,
@@ -90,8 +96,7 @@ shader asGlass
         string as_maya_attribute_name = "roughness",
         float min = 0.001,
         float max = 1.0,
-        float slidermin = 0.001,
-        float slidermax = 1.0,
+        string widget = "slider",
         string label = "Roughness",
         string page = "Specular Parameters",
         int divider = 1
@@ -101,6 +106,7 @@ shader asGlass
         string as_maya_attribute_name = "anisotropyAmount",
         float min = 0.0,
         float max = 1.0,
+        string widget = "slider",
         string label = "Anisotropy Amount",
         string page = "Specular Parameters"
     ]],
@@ -111,6 +117,7 @@ shader asGlass
         float max = 1.0,
         float slidermin = 0.0,
         float slidermax = 1.0,
+        string widget = "slider",
         string label = "Anisotropy Rotation",
         string help = "The [0,1] range maps to [0,360] degrees range",
         string page = "Specular Parameters"
@@ -125,11 +132,13 @@ shader asGlass
     vector Tn = vector(0)
     [[
         int lockgeom = 0,
+        int as_maya_attribute_hidden = 1,
         string widget = "null"
     ]],
     vector Bn = vector(0)
     [[
         int lockgeom = 0,
+        int as_maya_attribute_hidden = 1,
         string widget = "null"
     ]],
     color in_volumeTransmittance = 1.0
@@ -141,6 +150,9 @@ shader asGlass
     float in_volumeTransmittanceDistance = 0.0
     [[
         string as_maya_attribute_name = "volumeTransmittanceDistance",
+        float min = 0.0,
+        float max = 1e+9,
+        string widget = "slider",
         string label = "Transmittance Distance",
         string page = "Volume Material Parameters"
     ]],
@@ -154,6 +166,9 @@ shader asGlass
     int in_matteOpacityMode = 2
     [[
         string as_maya_attribute_name = "matteOpacityMode",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
         string label = "Matte Opacity Mode",
         string widget = "mapper",
         string options = "Black Hole:0|Solid Matte:1|Opacity Gain:2",
@@ -162,16 +177,22 @@ shader asGlass
     float in_matteOpacity = 1.0
     [[
         string as_maya_attribute_name = "matteOpacity",
+        int as_maya_attribute_hidden = 1,
+        string widget = "slider",
         string label = "Matte Opacity",
         string page = "Matte Opacity Parameters"
     ]],
     int in_maximumRayDepth = 4
     [[
         string as_maya_attribute_name = "maximumRayDepth",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
         int min = 0,
         int max = 32,
         int softmin = 0,
         int softmax = 8,
+        string widget = "slider",
         string label = "Ray Depth",
         string page = "Advanced Parameters"
     ]],
@@ -179,20 +200,18 @@ shader asGlass
     output closure color out_outColor = 0
     [[
         string as_maya_attribute_name = "outColor",
-        string as_maya_attribute_short_name = "oc",
-        string widget = "null"
+        string as_maya_attribute_short_name = "oc"
     ]],
     output closure color out_outTransparency = 0
     [[
         string as_maya_attribute_name = "outTransparency",
-        string as_maya_attribute_short_name = "ot",
-        string widget = "null"
+        string as_maya_attribute_short_name = "ot"
     ]],
     output closure color out_outMatteOpacity = 0
     [[
         string as_maya_attribute_name = "outMatteOpacity",
         string as_maya_attribute_short_name = "om",
-        string widget = "null"
+        int as_maya_attribute_hidden = 1
     ]]
 )
 {
