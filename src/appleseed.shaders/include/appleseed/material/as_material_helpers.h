@@ -29,6 +29,13 @@
 #ifndef AS_MATERIAL_HELPERS_H
 #define AS_MATERIAL_HELPERS_H
 
+#define IMPORTANCE_THRESHOLD    1.0e-5
+
+#define BSSRDF_MODE_CUBIC       0
+#define BSSRDF_MODE_DIFFUSION   1
+#define BSSRDF_MODE_DIRECTIONAL 2
+#define BSSRDF_MODE_EMPIRICAL   3
+
 float microfacet_roughness(float roughness, float depth_scale)
 {
     float out = roughness;
