@@ -181,4 +181,9 @@ float random_noise(int index)
     return rng_table(ndx);
 }
 
+float random_unoise(int index)
+{
+    return random_noise(index) * 0.5 + 0.5;
+}
+
 #endif // !AS_NOISE_HELPERS_H
