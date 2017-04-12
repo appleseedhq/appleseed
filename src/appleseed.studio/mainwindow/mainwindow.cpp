@@ -1243,7 +1243,6 @@ void MainWindow::slot_save_project_as()
 {
     assert(m_project_manager.is_project_open());
     do_save_project(
-        ProjectDialogFilterAllProjects |
         ProjectDialogFilterPlainProjects |
         ProjectDialogFilterPackedProjects);
 }
