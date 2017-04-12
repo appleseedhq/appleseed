@@ -300,7 +300,7 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
             );
 
         ASSERT_TRUE(success);
-        ASSERT_TRUE(exists(m_output_directory / "test_pack_valid_project.appleseedz");
-        ASSERT_FALSE(exists((m_output_directory / "test_pack_valid_project.unpacked"));
+        ASSERT_TRUE(exists(m_output_directory / "test_pack_valid_project.appleseedz"));
+        ASSERT_FALSE(exists(m_output_directory / "test_pack_valid_project.unpacked"));
     }
 }
