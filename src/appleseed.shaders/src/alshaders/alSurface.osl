@@ -323,8 +323,7 @@ shader alSurface
     color transmissionColor = in_transmissionColor * in_transmissionStrength;
     color diffuseColor = in_diffuseColor * in_diffuseStrength;
     color backlightColor = in_backlightColor * in_backlightStrength;
-    float t_sum = max(transmissionColor) + max(diffuseColor) +
-                  max(backlightColor);
+    float t_sum = max(transmissionColor) + max(diffuseColor) + max(backlightColor);
 
     if (t_sum > 1.0)
     {
@@ -404,8 +403,7 @@ shader alSurface
             {
                 color radius = max(
                     color(0.0001),
-                    in_sssRadius * in_sssRadiusColor /
-                        (in_sssDensityScale * 7.0));
+                    in_sssRadius * in_sssRadiusColor / (in_sssDensityScale * 7.0));
 
                 out_result += sssColor * sssWeight1 *
                 as_subsurface(
