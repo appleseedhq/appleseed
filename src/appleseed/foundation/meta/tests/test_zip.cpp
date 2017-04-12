@@ -81,7 +81,7 @@ TEST_SUITE(Foundation_Utility_Zip)
         }
     }
 
-    TEST_CASE(ZipUnzip_UnzipsCorrectDirectory)
+    TEST_CASE(ZipUnzipRoundtrip)
     {
         const string InitialDirectory = "unit tests/inputs/test_zip";
         const string TargetZip = "unit tests/outputs/test_zip.zip";

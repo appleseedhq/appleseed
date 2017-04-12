@@ -290,19 +290,17 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
 
     TEST_CASE_F(Write_PackValidProject, Fixture)
     {
-        const string PackedProjectName = "test_pack_valid_project.appleseedz";
-
         create_project();
 
         const bool success =
             ProjectFileWriter::write(
                 m_project.ref(),
-                (m_output_directory / PackedProjectName).string().c_str(),
+                (m_output_directory / "test_pack_valid_project.appleseedz").string().c_str(),
                 ProjectFileWriter::Defaults
             );
 
         ASSERT_TRUE(success);
-        ASSERT_TRUE(exists(m_output_directory / PackedProjectName));
-        ASSERT_FALSE(exists((m_output_directory / PackedProjectName).replace_extension(".unpacked")));
+        ASSERT_TRUE(exists(m_output_directory / "test_pack_valid_project.appleseedz");
+        ASSERT_FALSE(exists((m_output_directory / "test_pack_valid_project.unpacked"));
     }
 }
