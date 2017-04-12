@@ -81,6 +81,40 @@ TEST_SUITE(Foundation_Utility_Zip)
         }
     }
 
+    TEST_CASE(ZipUnzipRoundtrip)
+    {
+        const string InitialDirectory = "unit tests/inputs/test_zip";
+        const string TargetZip = "unit tests/outputs/test_zip.zip";
+        const string TargetDirectory = "unit tests/outputs/test_zip";
+
+        try
+        {
+            ASSERT_TRUE(bf::exists(InitialDirectory));
+            ASSERT_FALSE(bf::exists(TargetZip));
+            ASSERT_FALSE(bf::exists(TargetDirectory));
+
+            zip(TargetZip, InitialDirectory);
+            unzip(TargetZip, TargetDirectory);
+
+            const set<string> expected_files = recursive_ls(InitialDirectory);
+            const set<string> actual_files = recursive_ls(TargetDirectory);
+
+            ASSERT_EQ(expected_files.size(), actual_files.size());
+
+            for (set<string>::iterator it = actual_files.begin(); it != actual_files.end(); ++it)
+                EXPECT_EQ(1, expected_files.count(*it));
+
+            bf::remove(TargetZip);
+            bf::remove_all(TargetDirectory);
+        }
+        catch (const exception& e)
+        {
+            bf::remove(TargetZip);
+            bf::remove_all(TargetDirectory);
+            throw e;
+        }
+    }
+
     TEST_CASE(IsZipFile_GivenValidZipFile_ReturnsTrue)
     {
         EXPECT_TRUE(is_zip_file("unit tests/inputs/test_zip_validzipfile.zip"));

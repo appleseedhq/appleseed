@@ -968,7 +968,7 @@ bool ProjectFileWriter::write_packed_project_file(
 
     const bf::path temp_directory =
         project_path.parent_path() /
-        project_path.filename().replace_extension(".unpacked");
+        project_path.filename().replace_extension(".unpacked.temp");
 
     const bf::path temp_project_filepath =
         temp_directory /
