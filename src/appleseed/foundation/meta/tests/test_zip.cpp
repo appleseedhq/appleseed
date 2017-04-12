@@ -96,13 +96,13 @@ TEST_SUITE(Foundation_Utility_Zip)
             zip(TargetZip, InitialDirectory);
             unzip(TargetZip, TargetDirectory);
 
-            const set<string> ExpectedFiles = recursive_ls(InitialDirectory);
-            const set<string> ActualFiles = recursive_ls(TargetDirectory);
+            const set<string> expected_files = recursive_ls(InitialDirectory);
+            const set<string> actual_files = recursive_ls(TargetDirectory);
 
-            ASSERT_EQ(ActualFiles.size(), ExpectedFiles.size());
+            ASSERT_EQ(actual_files.size(), expected_files.size());
 
-            for (set<string>::iterator it = ActualFiles.begin(); it != ActualFiles.end(); ++it)
-                EXPECT_EQ(1, ExpectedFiles.count(*it));
+            for (set<string>::iterator it = actual_files.begin(); it != actual_files.end(); ++it)
+                EXPECT_EQ(1, expected_files.count(*it));
 
             bf::remove(TargetZip);
             bf::remove_all(TargetDirectory);
