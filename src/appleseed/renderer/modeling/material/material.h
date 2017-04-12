@@ -82,6 +82,9 @@ class APPLESEED_DLLSYMBOL Material
     // Return true if this material has an alpha map.
     bool has_alpha_map() const;
 
+    // Return true if this material has an uniform alpha value equals to 1.0f.
+    bool has_uniform_alpha_map_value_of_one() const;
+
     // Return the name the surface shader bound to this material, or 0 if the material doesn't have one.
     const char* get_surface_shader_name() const;
 
