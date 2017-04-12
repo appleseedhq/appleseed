@@ -212,6 +212,8 @@ shader as_maya_water
     else
     {
         float sqr_spread_start = sqr(in_spreadStart);
+
+        int seed = 23;
         
         // initial values
         int f_num_waves = 0;
@@ -235,24 +237,28 @@ shader as_maya_water
 
             for (int i = 0; i < in_numberOfWaves; ++i)
             {                    
-                float random_index = i + 0.5 * random_noise(i + 42) *
+                float random_index = (i + 0.5 * random_noise(i + seed++)) *
                     in_subWaveFrequency;
 
                 float frequency = pow(2, random_index);
 
-                float windwards = 0.75 + 0.25 * random_noise(i + 234);
+                float windwards = 0.75 + 0.25 * random_noise(i + seed++);
 
-                float sidewards = random_noise(i + 423) - 0.5;
+                int extra = (int) random_noise(i + seed++);// * 52965217;
+
+                float sidewards = random_noise(i + extra + seed++) - 0.5;
 
                 float sum = hypot(windwards, sidewards) + 0.001;
 
                 float wave_number = M_2PI * 
-                    (frequency * in_waveFrequency + 1.0e-7);
+                    (frequency * in_waveFrequency + EPS);
 
-                current_waves[i].number_U = (wind_UV[0] * windwards -
+                // Swap U,V waves to match Maya.
+
+                current_waves[i].number_V = (wind_UV[0] * windwards -
                     wind_UV[1] * sidewards) * wave_number / sum;
 
-                current_waves[i].number_V = (wind_UV[1] * windwards +
+                current_waves[i].number_U = (wind_UV[1] * windwards +
                     wind_UV[0] * sidewards) * wave_number / sum;
 
                 current_waves[i].angle_frequency = in_waveTime *
