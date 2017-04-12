@@ -451,20 +451,19 @@ void MainWindow::build_toolbar()
     //
     // File actions.
     //
-
-    m_action_new_project = new QAction(load_icons("project_new"), "New Project", this);
+    m_action_new_project = new QAction(load_icons("project_new"), combine_name_and_shortcut("New Project", m_ui->action_file_new_project->shortcut()), this);
     connect(m_action_new_project, SIGNAL(triggered()), SLOT(slot_new_project()));
     m_ui->main_toolbar->addAction(m_action_new_project);
 
-    m_action_open_project = new QAction(load_icons("project_open"), "Open Project...", this);
+    m_action_open_project = new QAction(load_icons("project_open"), combine_name_and_shortcut("Open Project...", m_ui->action_file_open_project->shortcut()), this);
     connect(m_action_open_project, SIGNAL(triggered()), SLOT(slot_open_project()));
     m_ui->main_toolbar->addAction(m_action_open_project);
 
-    m_action_save_project = new QAction(load_icons("project_save") , "Save Project", this);
+    m_action_save_project = new QAction(load_icons("project_save") , combine_name_and_shortcut("Save Project", m_ui->action_file_save_project->shortcut()), this);
     connect(m_action_save_project, SIGNAL(triggered()), SLOT(slot_save_project()));
     m_ui->main_toolbar->addAction(m_action_save_project);
 
-    m_action_reload_project = new QAction(load_icons("project_reload"), "Reload Project", this);
+    m_action_reload_project = new QAction(load_icons("project_reload"), combine_name_and_shortcut("Reload Project", m_ui->action_file_reload_project->shortcut()), this);
     connect(m_action_reload_project, SIGNAL(triggered()), SLOT(slot_reload_project()));
     m_ui->main_toolbar->addAction(m_action_reload_project);
 
@@ -478,20 +477,19 @@ void MainWindow::build_toolbar()
     //
     // Rendering actions.
     //
-
-    m_action_start_interactive_rendering = new QAction(load_icons("rendering_start_interactive"), "Start Interactive Rendering", this);
+    m_action_start_interactive_rendering = new QAction(load_icons("rendering_start_interactive"), combine_name_and_shortcut("Start Interactive Rendering", m_ui->action_rendering_start_interactive_rendering->shortcut()), this);
     connect(m_action_start_interactive_rendering, SIGNAL(triggered()), SLOT(slot_start_interactive_rendering()));
     m_ui->main_toolbar->addAction(m_action_start_interactive_rendering);
 
-    m_action_start_final_rendering = new QAction(load_icons("rendering_start_final"), "Start Final Rendering", this);
+    m_action_start_final_rendering = new QAction(load_icons("rendering_start_final"), combine_name_and_shortcut("Start Final Rendering", m_ui->action_rendering_start_final_rendering->shortcut()), this);
     connect(m_action_start_final_rendering, SIGNAL(triggered()), SLOT(slot_start_final_rendering()));
     m_ui->main_toolbar->addAction(m_action_start_final_rendering);
 
-    m_action_stop_rendering = new QAction(load_icons("rendering_stop"), "Stop Rendering", this);
+    m_action_stop_rendering = new QAction(load_icons("rendering_stop"), combine_name_and_shortcut("Stop Rendering", m_ui->action_rendering_stop_rendering->shortcut()), this);
     connect(m_action_stop_rendering, SIGNAL(triggered()), &m_rendering_manager, SLOT(slot_abort_rendering()));
     m_ui->main_toolbar->addAction(m_action_stop_rendering);
 
-    m_action_rendering_settings = new QAction(load_icons("rendering_settings"), "Rendering Settings...", this);
+    m_action_rendering_settings = new QAction(load_icons("rendering_settings"), combine_name_and_shortcut("Rendering Settings...", m_ui->action_rendering_rendering_settings->shortcut()), this);
     connect(m_action_rendering_settings, SIGNAL(triggered()), SLOT(slot_show_rendering_settings_window()));
     m_ui->main_toolbar->addAction(m_action_rendering_settings);
 }
