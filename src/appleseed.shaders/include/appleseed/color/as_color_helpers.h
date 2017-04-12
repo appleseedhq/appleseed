@@ -210,14 +210,4 @@ float as_luminance(color in_C, string colorspace)
            coeffs[2] * in_C[2];
 }
 
-float as_min_component(color in_C)
-{
-    return min(in_C[0], min(in_C[1], in_C[2]));
-}
-
-float as_max_component(color in_C)
-{
-    return max(in_C[0], max(in_C[1], in_C[2]));
-}
-
 #endif // !AS_COLOR_HELPERS_H

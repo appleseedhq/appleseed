@@ -29,6 +29,8 @@
 #ifndef AS_MATERIAL_HELPERS_H
 #define AS_MATERIAL_HELPERS_H
 
+#define IMPORTANCE_THRESHOLD    1.0e-5
+
 float microfacet_roughness(float roughness, float depth_scale)
 {
     float out = roughness;
