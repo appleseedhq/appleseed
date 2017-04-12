@@ -32,8 +32,8 @@
 #include "appleseed/maya/as_maya_fractal_helpers.h"
 #include "appleseed/maya/as_maya_helpers.h"
 
-#ifndef MAYA_MAX_WAVES
-#define MAYA_MAX_WAVES  100
+#ifndef MAYA_WATER2D_MAX_WAVES
+#define MAYA_WATER2D_MAX_WAVES  100
 #endif
 
 struct CurrentWave
@@ -209,20 +209,14 @@ shader as_maya_water
         out_outColor = in_defaultColor;
         out_outAlpha = maya_luminance(in_defaultColor);
     }
-    else
+    else if (in_waveAmplitude > 0)
     {
+        int f_num_waves = 0, seed = 23;
+        float f_spread = 1.0, f_envelope_scale = 1.0;
         float sqr_spread_start = sqr(in_spreadStart);
 
-        int seed = 23;
-        
-        // initial values
-        int f_num_waves = 0;
-        float f_spread = 1.0, f_envelope_scale = 1.0;
-
-        void rebuildWaves(output CurrentWave current_waves[])
+        void buildWaves(output CurrentWave current_waves[])
         {
-            // data block should have access to current (and modified)
-            // attrs
             if (in_numberOfWaves > 0 && in_numberOfWaves != f_num_waves)
             {
                 f_num_waves = in_numberOfWaves;
@@ -244,16 +238,16 @@ shader as_maya_water
 
                 float windwards = 0.75 + 0.25 * random_noise(i + seed++);
 
-                int extra = (int) random_noise(i + seed++);// * 52965217;
+                int extra = (int) random_noise(i + seed++);
 
                 float sidewards = random_noise(i + extra + seed++) - 0.5;
 
-                float sum = hypot(windwards, sidewards) + 0.001;
+                float sum = hypot(windwards, sidewards) + EPS;
 
                 float wave_number = M_2PI * 
                     (frequency * in_waveFrequency + EPS);
 
-                // Swap U,V waves to match Maya.
+                // Swap U,V waves to match Maya's results.
 
                 current_waves[i].number_V = (wind_UV[0] * windwards -
                     wind_UV[1] * sidewards) * wave_number / sum;
@@ -275,11 +269,11 @@ shader as_maya_water
                 float sp = sqr(in_spreadRate * in_rippleTime);
                 sp += sqr_spread_start;
 
-                f_spread = max(1.0e-19, sp);
+                f_spread = max(EPS, sp);
 
                 sp = in_spreadStart * in_rippleAmplitude / sqrt(f_spread);
 
-                float arg = max(1.0e-12, in_rippleTime * in_groupVelocity);
+                float arg = max(EPS, in_rippleTime * in_groupVelocity);
 
                 sp *= in_dropSize / (in_dropSize + sqrt(arg));
 
@@ -287,11 +281,11 @@ shader as_maya_water
             }
         }
 
-        CurrentWave current_waves[MAYA_MAX_WAVES];
+        CurrentWave current_waves[MAYA_WATER2D_MAX_WAVES];
 
         if (in_numberOfWaves > 0 && in_numberOfWaves != f_num_waves)
         {
-            rebuildWaves(current_waves);
+            buildWaves(current_waves);
         }
 
         float st[2] = {in_uvCoord[0], in_uvCoord[1]}, value = 0.5;
@@ -387,7 +381,7 @@ shader as_maya_water
             }
         }
 
-        // Contribution from the linear water waves.
+        // Total waves contribution.
 
         for (int i = 0; i < in_numberOfWaves; ++i)
         {
@@ -399,6 +393,22 @@ shader as_maya_water
         }
         
         out_outColor = color(value);
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha
+            );
+    }
+    else
+    {
+        out_outColor = color(0.5);
 
         maya_colorBalance(
             in_colorGain,
