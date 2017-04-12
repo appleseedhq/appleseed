@@ -149,7 +149,7 @@ QString make_app_path(const QString& path)
 
 QString combine_name_and_shortcut(const QString& name, const QKeySequence& shortcut)
 {
-	return name + " (" + shortcut.toString(QKeySequence::NativeText) + ")";
+    return name + " (" + shortcut.toString(QKeySequence::NativeText) + ")";
 }    
     
 bool file_exists(const QString& path)
