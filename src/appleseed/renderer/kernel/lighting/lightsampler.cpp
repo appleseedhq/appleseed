@@ -374,6 +374,7 @@ void LightSampler::collect_emitting_triangles(
                     emitting_triangle.m_n2 = side == 0 ? n2 : -n2;
                     emitting_triangle.m_geometric_normal = side == 0 ? geometric_normal : -geometric_normal;
                     emitting_triangle.m_triangle_support_plane = triangle_support_plane;
+                    emitting_triangle.m_area = static_cast<float>(area);
                     emitting_triangle.m_rcp_area = static_cast<float>(rcp_area);
                     emitting_triangle.m_triangle_prob = 0.0f;   // will be initialized once the emitting triangle CDF is built
                     emitting_triangle.m_material = material;

@@ -60,6 +60,14 @@ void ILightingEngineFactory::add_common_params_metadata(
                 .insert("help", "Number of samples used to estimate direct lighting"));
 
         metadata.dictionaries().insert(
+            "dl_low_light_threshold",
+            Dictionary()
+                .insert("type", "float")
+                .insert("default", "0.0")
+                .insert("label", "Low Light Threshold")
+                .insert("help", "Light contribution threshold to disable shadow rays"));
+
+        metadata.dictionaries().insert(
             "ibl_env_samples",
             Dictionary()
                 .insert("type", "float")

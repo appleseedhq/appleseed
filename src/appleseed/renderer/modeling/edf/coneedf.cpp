@@ -52,7 +52,6 @@ namespace renderer      { class Assembly; }
 namespace renderer      { class Project; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -193,6 +192,11 @@ namespace
                 return 0.0f;
 
             return sample_cone_uniform_pdf(m_cos_half_angle);
+        }
+
+        virtual float get_uncached_max_contribution() const APPLESEED_OVERRIDE
+        {
+            return get_max_contribution("radiance", "radiance_multiplier");
         }
 
       private:

@@ -90,6 +90,7 @@ namespace
             const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
 
             const float     m_dl_light_sample_count;        // number of light samples used to estimate direct illumination
+            const float     m_dl_low_light_threshold;       // light contribution threshold to disable shadow rays
             const float     m_ibl_env_sample_count;         // number of environment samples used to estimate IBL
 
             float           m_rcp_dl_light_sample_count;
@@ -100,6 +101,7 @@ namespace
               , m_max_path_length(nz(params.get_optional<size_t>("max_path_length", 0)))
               , m_rr_min_path_length(nz(params.get_optional<size_t>("rr_min_path_length", 6)))
               , m_dl_light_sample_count(params.get_optional<float>("dl_light_samples", 1.0f))
+              , m_dl_low_light_threshold(params.get_optional<float>("dl_low_light_threshold", 0.0f))
               , m_ibl_env_sample_count(params.get_optional<float>("ibl_env_samples", 1.0f))
             {
                 // Precompute the reciprocal of the number of light samples.
@@ -128,11 +130,13 @@ namespace
                     "  max path length               %s\n"
                     "  rr min path length            %s\n"
                     "  dl light samples              %s\n"
+                    "  dl light threshold            %s\n"
                     "  ibl env samples               %s",
                     m_enable_ibl ? "on" : "off",
                     m_max_path_length == size_t(~0) ? "infinite" : pretty_uint(m_max_path_length).c_str(),
                     m_rr_min_path_length == size_t(~0) ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
                     pretty_scalar(m_dl_light_sample_count).c_str(),
+                    pretty_scalar(m_dl_low_light_threshold, 3).c_str(),
                     pretty_scalar(m_ibl_env_sample_count).c_str());
             }
         };
@@ -295,6 +299,7 @@ namespace
                     ScatteringMode::All,
                     bsdf_sample_count,
                     light_sample_count,
+                    m_params.m_dl_low_light_threshold,
                     false);             // not computing indirect lighting
 
                 // Always sample both the lights and the BSDF.

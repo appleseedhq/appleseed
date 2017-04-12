@@ -34,6 +34,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/input/source.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/api/apistring.h"
@@ -43,6 +44,7 @@
 #include <string>
 
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
@@ -104,6 +106,8 @@ bool EDF::on_frame_begin(
             get_path().c_str());
     }
 
+    m_max_contribution = get_uncached_max_contribution();
+
     if (get_uncached_importance_multiplier() <= 0.0f)
     {
         RENDERER_LOG_WARNING(
@@ -126,6 +130,54 @@ void* EDF::evaluate_inputs(
         data);
 
     return data;
+}
+
+float EDF::get_max_contribution_scalar(const Source* source) const
+{
+    assert(source);
+
+    if (!source || !source->is_uniform())
+        return numeric_limits<float>::max();
+
+    float value;
+
+    source->evaluate_uniform(value);
+
+    return value;
+}
+
+float EDF::get_max_contribution_spectrum(const Source* source) const
+{
+    assert(source);
+
+    if (!source || !source->is_uniform())
+        return numeric_limits<float>::max();
+
+    Spectrum spectrum;
+
+    source->evaluate_uniform(spectrum);
+
+    return max_value(spectrum);
+}
+
+float EDF::get_max_contribution(const Source* input, const Source* multiplier) const
+{
+    const float max_contribution_spectrum = get_max_contribution_spectrum(input);
+
+    if (max_contribution_spectrum == numeric_limits<float>::max())
+        return numeric_limits<float>::max();
+
+    const float max_contribution_scalar = get_max_contribution_scalar(multiplier);
+
+    if (max_contribution_scalar == numeric_limits<float>::max())
+        return numeric_limits<float>::max();
+
+    return max_contribution_spectrum * max_contribution_scalar;
+}
+
+float EDF::get_max_contribution(const char* input_name, const char* multiplier_name) const
+{
+    return get_max_contribution(m_inputs.source(input_name), m_inputs.source(multiplier_name));
 }
 
 }   // namespace renderer

@@ -71,6 +71,7 @@ struct SPPMParameters
     const float                 m_alpha;                                // radius shrinking control
     const size_t                m_max_photons_per_estimate;             // maximum number of photons per density estimation
     const float                 m_dl_light_sample_count;                // number of light samples used to estimate direct illumination in ray traced mode
+    const float                 m_dl_low_light_threshold;               // light contribution threshold to disable shadow rays
     float                       m_rcp_dl_light_sample_count;
 
     const bool                  m_view_photons;                         // debug mode to visualize the photons

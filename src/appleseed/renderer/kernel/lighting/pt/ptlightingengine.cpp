@@ -105,6 +105,7 @@ namespace
             const bool      m_next_event_estimation;        // use next event estimation?
 
             const float     m_dl_light_sample_count;        // number of light samples used to estimate direct illumination
+            const float     m_dl_low_light_threshold;       // light contribution threshold to disable shadow rays
             const float     m_ibl_env_sample_count;         // number of environment samples used to estimate IBL
 
             const bool      m_has_max_ray_intensity;
@@ -124,6 +125,7 @@ namespace
               , m_rr_min_path_length(fixup_path_length(params.get_optional<size_t>("rr_min_path_length", 6)))
               , m_next_event_estimation(params.get_optional<bool>("next_event_estimation", true))
               , m_dl_light_sample_count(params.get_optional<float>("dl_light_samples", 1.0f))
+              , m_dl_low_light_threshold(params.get_optional<float>("dl_low_light_threshold", 0.0f))
               , m_ibl_env_sample_count(params.get_optional<float>("ibl_env_samples", 1.0f))
               , m_has_max_ray_intensity(params.strings().exist("max_ray_intensity"))
               , m_max_ray_intensity(params.get_optional<float>("max_ray_intensity", 0.0f))
@@ -165,6 +167,7 @@ namespace
                     "  rr min path length            %s\n"
                     "  next event estimation         %s\n"
                     "  dl light samples              %s\n"
+                    "  dl light threshold            %s\n"
                     "  ibl env samples               %s\n"
                     "  max ray intensity             %s",
                     m_enable_dl ? "on" : "off",
@@ -177,6 +180,7 @@ namespace
                     m_rr_min_path_length == size_t(~0) ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
                     m_next_event_estimation ? "on" : "off",
                     pretty_scalar(m_dl_light_sample_count).c_str(),
+                    pretty_scalar(m_dl_low_light_threshold, 3).c_str(),
                     pretty_scalar(m_ibl_env_sample_count).c_str(),
                     m_has_max_ray_intensity ? pretty_scalar(m_max_ray_intensity).c_str() : "infinite");
             }
@@ -568,6 +572,7 @@ namespace
                     scattering_modes,
                     bsdf_sample_count,
                     light_sample_count,
+                    m_params.m_dl_low_light_threshold,
                     m_is_indirect_lighting);
 
                 if (last_vertex)

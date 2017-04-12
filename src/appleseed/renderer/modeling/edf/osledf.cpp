@@ -213,6 +213,11 @@ namespace
             return probability;
         }
 
+        virtual float get_uncached_max_contribution() const APPLESEED_OVERRIDE
+        {
+            return get_max_contribution("radiance", "radiance_multiplier");
+        }
+
       private:
         auto_release_ptr<EDF> m_diffuse_edf;
 
