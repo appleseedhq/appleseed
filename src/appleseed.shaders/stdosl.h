@@ -53,11 +53,6 @@
 #define BUILTIN [[ int builtin = 1 ]]
 #define BUILTIN_DERIV [[ int builtin = 1, int deriv = 1 ]]
 
-// appleseed OSL extensions.
-// Must be included after BUILTIN is defined.
-#include "as_osl_extensions.h"
-
-
 #define PERCOMP1(name)                          \
     normal name (normal x) BUILTIN;             \
     vector name (vector x) BUILTIN;             \
@@ -504,6 +499,10 @@ string concat (string a, string b, string c, string d, string e, string f) {
 
 
 // Closures
+//
+// Include AS OSL extensions. We need some previously defined built-ins
+
+#include "as_osl_extensions.h"    
 
 closure color emission() BUILTIN;
 closure color background() BUILTIN;

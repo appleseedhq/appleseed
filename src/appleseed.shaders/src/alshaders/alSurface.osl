@@ -29,13 +29,10 @@
 #include "appleseed/color/as_color_helpers.h"
 #include "appleseed/material/as_material_helpers.h"
 
-// Constants.
-#define IMPORTANCE_EPS 1e-5
-
-#define SSSMODE_CUBIC       0
-#define SSSMODE_DIFFUSION   1
-#define SSSMODE_DIRECTIONAL 2
-#define SSSMODE_EMPIRICAL   3
+#define BSSRDF_MODE_CUBIC       0
+#define BSSRDF_MODE_DIFFUSION   1
+#define BSSRDF_MODE_DIRECTIONAL 2
+#define BSSRDF_MODE_EMPIRICAL   3
 
 shader alSurface
 [[
@@ -326,7 +323,7 @@ shader alSurface
     color transmissionColor = in_transmissionColor * in_transmissionStrength;
     color diffuseColor = in_diffuseColor * in_diffuseStrength;
     color backlightColor = in_backlightColor * in_backlightStrength;
-    float t_sum = as_max_component(transmissionColor) + as_max_component(diffuseColor) + as_max_component(backlightColor);
+    float t_sum = max(transmissionColor) + max(diffuseColor) + max(backlightColor);
 
     if (t_sum > 1.0)
     {
@@ -336,42 +333,48 @@ shader alSurface
         backlightColor    *= t_sum_inv;
     }
 
-    if (as_max_component(diffuseColor) < IMPORTANCE_EPS || in_sssMix == 1.0)
+    if (max(diffuseColor) < IMPORTANCE_THRESHOLD || in_sssMix == 1.0)
         do_diffuse = 0;
 
-    if (as_max_component(backlightColor) < IMPORTANCE_EPS || in_sssMix == 1.0)
+    if (max(backlightColor) < IMPORTANCE_THRESHOLD || in_sssMix == 1.0)
         do_backlight = 0;
 
-    if (in_sssMix == 0.0 || as_max_component(diffuseColor) < IMPORTANCE_EPS)
+    if (in_sssMix == 0.0 || max(diffuseColor) < IMPORTANCE_THRESHOLD)
         do_sss = 0;
 
-    if (as_max_component(transmissionColor) < IMPORTANCE_EPS || in_sssMix == 1.0)
+    if (max(transmissionColor) < IMPORTANCE_THRESHOLD || in_sssMix == 1.0)
         do_transmission = 0;
 
     color emissionColor = in_emissionColor * in_emissionStrength;
-    if (as_max_component(emissionColor) < IMPORTANCE_EPS)
+
+    if (max(emissionColor) < IMPORTANCE_THRESHOLD)
         do_emission = 0;
 
     color specular1Color = in_specular1Color * in_specular1Strength;
-    if (as_max_component(specular1Color) < IMPORTANCE_EPS)
+
+    if (max(specular1Color) < IMPORTANCE_THRESHOLD)
         do_glossy = 0;
 
     color specular2Color = in_specular2Color * in_specular2Strength;
-    if (as_max_component(specular2Color) < IMPORTANCE_EPS)
+
+    if (max(specular2Color) < IMPORTANCE_THRESHOLD)
         do_glossy2 = 0;
 
     // Create closures.
     normal globalNormal = normalize(in_globalNormal);
 
     normal diffuseNormal = globalNormal;
-    if (isconnected(in_diffuseNormal) == 1)
+
+    if (isconnected(in_diffuseNormal))
         diffuseNormal = normalize(in_diffuseNormal);
 
     if (do_diffuse)
-        out_result += diffuseColor * (1.0 - in_sssMix) * oren_nayar(diffuseNormal, in_diffuseRoughness);
+        out_result += diffuseColor *
+            (1.0 - in_sssMix) * oren_nayar(diffuseNormal, in_diffuseRoughness);
 
     if (do_backlight)
-        out_result += backlightColor * (1.0 - in_sssMix) * translucent(diffuseNormal);
+        out_result += backlightColor *
+            (1.0 - in_sssMix) * translucent(diffuseNormal);
 
     if (do_sss)
     {
@@ -389,27 +392,30 @@ shader alSurface
 
         float sssIor = 1.3;
 
-        if (in_sssMode == SSSMODE_DIFFUSION || in_sssMode == SSSMODE_DIRECTIONAL)
+        if (in_sssMode == BSSRDF_MODE_DIFFUSION ||
+            in_sssMode == BSSRDF_MODE_DIRECTIONAL)
         {
             // TODO: implement this.
         }
-        else // SSSMODE_CUBIC || SSSMODE_EMPIRICAL
+        else // BSSRDF_MODE_CUBIC || BSSRDF_MODE_EMPIRICAL
         {
-            if (sssWeight1 > IMPORTANCE_EPS)
+            if (sssWeight1 > IMPORTANCE_THRESHOLD)
             {
                 color radius = max(
                     color(0.0001),
                     in_sssRadius * in_sssRadiusColor / (in_sssDensityScale * 7.0));
 
-                out_result += sssColor * sssWeight1 * as_subsurface(
-                    in_sssMode == SSSMODE_CUBIC ? "gaussian" : "normalized_diffusion",
+                out_result += sssColor * sssWeight1 *
+                as_subsurface(
+                    in_sssMode == BSSRDF_MODE_CUBIC
+                    ? "gaussian"
+                    : "normalized_diffusion",
                     diffuseNormal,
                     color(1, 1, 1),
                     radius,
                     sssIor,
                     "fresnel_weight", 0.0);
             }
-
             // TODO: add lobes 2 and 3.
         }
     }
@@ -417,11 +423,13 @@ shader alSurface
     if (do_transmission)
     {
         normal transmissionNormal = globalNormal;
-        if (isconnected(in_transmissionNormal) == 1)
+
+        if (isconnected(in_transmissionNormal))
             transmissionNormal = normalize(in_transmissionNormal);
 
         float transmissionRoughness;
         float transmissionIor;
+
         if (in_transmissionLinkToSpecular1)
         {
             transmissionRoughness = in_specular1Roughness;
@@ -436,10 +444,11 @@ shader alSurface
         color volumeTransmittanceColor = color(1);
         float volumeTransmittanceDistance = 0.0;
 
-        if (as_min_component(in_ssAttenuationColor) < 1.0)
+        if (min(in_ssAttenuationColor) < 1.0)
         {
-            color sigmaA =
-                (color(1) - clamp(in_ssAttenuationColor, color(0), color(0.999))) * in_ssDensityScale;
+            color sigmaA = (color(1) - clamp(
+                    in_ssAttenuationColor,
+                    color(0), color(0.999))) * in_ssDensityScale;
 
             // Convert to transmittance.
             volumeTransmittanceColor = exp(-sigmaA);
@@ -466,11 +475,13 @@ shader alSurface
     if (do_glossy2)
     {
         normal specular2Normal = globalNormal;
-        if (isconnected(in_specular2Normal) == 1)
+
+        if (isconnected(in_specular2Normal))
             specular2Normal = normalize(in_specular2Normal);
 
         vector T = Tn;
-        if (in_specular2Rotation != 0.0)
+
+        if (in_specular2Rotation != 0)
         {
             T = rotate(
                 T,
@@ -496,11 +507,13 @@ shader alSurface
     if (do_glossy)
     {
         normal specular1Normal = globalNormal;
-        if (isconnected(in_specular1Normal) == 1)
+
+        if (isconnected(in_specular1Normal))
             specular1Normal = normalize(in_specular1Normal);
 
         vector T = Tn;
-        if (in_specular1Rotation != 0.0)
+
+        if (in_specular1Rotation != 0)
         {
             T = rotate(
                 T,

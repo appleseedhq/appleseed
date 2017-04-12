@@ -182,7 +182,7 @@ shader as_maya_lambert
                 );
         }
 
-        if (as_max_component(transparency) > 0.0)
+        if (transparency)
         {
             out_outColor = transparency * transparent();
         }
@@ -226,7 +226,7 @@ shader as_maya_lambert
 
             opacity = 1.0;
         }
-        else if (as_max_component(in_transparency) > 0.0)
+        else if (in_transparency)
         {
             transparency_term = in_transparency * transparent();
         }

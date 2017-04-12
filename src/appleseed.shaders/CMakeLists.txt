@@ -372,6 +372,7 @@ set (src_maya_sources
      src/maya/as_maya_uv2Components.osl
      src/maya/as_maya_vector2Components.osl
      src/maya/as_maya_vectorProduct.osl
+     src/maya/as_maya_water.osl
      src/maya/as_maya_wtAddMatrix.osl
 )
 list (APPEND osl_sources
