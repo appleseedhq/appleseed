@@ -99,7 +99,7 @@ TEST_SUITE(Foundation_Utility_Zip)
             const set<string> expected_files = recursive_ls(InitialDirectory);
             const set<string> actual_files = recursive_ls(TargetDirectory);
 
-            ASSERT_EQ(actual_files.size(), expected_files.size());
+            ASSERT_EQ(expected_files.size(), actual_files.size());
 
             for (set<string>::iterator it = actual_files.begin(); it != actual_files.end(); ++it)
                 EXPECT_EQ(1, expected_files.count(*it));
