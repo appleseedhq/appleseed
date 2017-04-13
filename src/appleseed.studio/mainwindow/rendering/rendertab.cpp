@@ -232,8 +232,8 @@ void RenderTab::create_toolbar()
     // Create the Set Render Region button in the render toolbar.
     m_set_render_region_button = new QToolButton();
     m_set_render_region_button->setIcon(load_icons("renderwidget_set_render_region"));
-    m_set_render_region_button->setToolTip("Set Render Region");
     m_set_render_region_button->setShortcut(Qt::Key_R);
+    m_set_render_region_button->setToolTip(combine_name_and_shortcut("Set Render Region", m_set_render_region_button->shortcut()));
     m_set_render_region_button->setCheckable(true);
     connect(
         m_set_render_region_button, SIGNAL(toggled(bool)),
@@ -243,8 +243,8 @@ void RenderTab::create_toolbar()
     // Create the Clear Render Region button in the render toolbar.
     m_clear_render_region_button = new QToolButton();
     m_clear_render_region_button->setIcon(load_icons("renderwidget_clear_render_region"));
-    m_clear_render_region_button->setToolTip("Clear Render Region");
     m_clear_render_region_button->setShortcut(Qt::Key_C);
+    m_clear_render_region_button->setToolTip(combine_name_and_shortcut("Clear Render Region", m_clear_render_region_button->shortcut()));
     connect(
         m_clear_render_region_button, SIGNAL(clicked()),
         SIGNAL(signal_clear_render_region()));
@@ -253,8 +253,8 @@ void RenderTab::create_toolbar()
     // Create the Clear Frame button in the render toolbar.
     m_clear_frame_button = new QToolButton();
     m_clear_frame_button->setIcon(load_icons("renderwidget_clear_frame"));
-    m_clear_frame_button->setToolTip("Clear Frame");
     m_clear_frame_button->setShortcut(Qt::Key_X);
+    m_clear_frame_button->setToolTip(combine_name_and_shortcut("Clear Frame", m_clear_frame_button->shortcut()));
     connect(
         m_clear_frame_button, SIGNAL(clicked()),
         SIGNAL(signal_clear_frame()));
@@ -265,8 +265,8 @@ void RenderTab::create_toolbar()
     // Create the Reset Zoom button in the render toolbar.
     m_reset_zoom_button = new QToolButton();
     m_reset_zoom_button->setIcon(load_icons("renderwidget_reset_zoom"));
-    m_reset_zoom_button->setToolTip("Reset Zoom");
     m_reset_zoom_button->setShortcut(Qt::Key_Asterisk);
+    m_reset_zoom_button->setToolTip(combine_name_and_shortcut("Reset Zoom", m_reset_zoom_button->shortcut()));
     connect(
         m_reset_zoom_button, SIGNAL(clicked()),
         SIGNAL(signal_reset_zoom()));
@@ -277,8 +277,8 @@ void RenderTab::create_toolbar()
     // Create the Pixel Inspector button in the render toolbar.
     m_pixel_inspector_button = new QToolButton();
     m_pixel_inspector_button->setIcon(load_icons("renderwidget_toggle_pixel_inspector"));
-    m_pixel_inspector_button->setToolTip("Toggle Pixel Inspector");
     m_pixel_inspector_button->setShortcut(Qt::Key_I);
+    m_pixel_inspector_button->setToolTip(combine_name_and_shortcut("Toggle Pixel Inspector", m_pixel_inspector_button->shortcut()));
     m_pixel_inspector_button->setCheckable(true);
     m_pixel_inspector_button->setChecked(false);
     connect(
