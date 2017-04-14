@@ -59,6 +59,9 @@ QString combine_paths(const QString& lhs, const QString& rhs);
 // Combine the application's base path and a given relative path.
 QString make_app_path(const QString& path);
 
+// Combine the action tooltip's name and shortcut.
+QString combine_name_and_shortcut(const QString& name, const QKeySequence& shortcut);
+
 // Check whether a file exists.
 bool file_exists(const QString& path);
 
