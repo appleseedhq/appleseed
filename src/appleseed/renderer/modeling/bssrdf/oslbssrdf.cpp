@@ -188,7 +188,10 @@ namespace
                             bsdf_sample);
 
                 if (result)
+                {
                     bssrdf_sample.m_value *= c->get_closure_weight(closure_index);
+                    bssrdf_sample.m_probability *= c->get_closure_pdf_weight(closure_index);
+                }
 
                 return result;
             }
