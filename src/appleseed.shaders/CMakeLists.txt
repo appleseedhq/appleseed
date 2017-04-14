@@ -444,40 +444,29 @@ else ()
     )
 endif ()
 
-# Copy OSL header files to the sandbox.
+
+#--------------------------------------------------------------------------------------------------
+# Compile shaders and deploy header files to sandbox.
+#--------------------------------------------------------------------------------------------------
+
+# Build lists of absolute paths to OSL header files, in the sources and in the sandbox.
 foreach (osl_header ${osl_headers})
-    get_filename_component (path ${osl_header} PATH)
-    add_custom_command (
-        TARGET SANDBOX
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/sandbox/shaders/${path}
-        COMMAND ${CMAKE_COMMAND} -E copy
-            ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/${osl_header}
-            ${PROJECT_SOURCE_DIR}/sandbox/shaders/${path}
-        MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/${osl_header}
-    )
+    list (APPEND abs_osl_headers_sources ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/${osl_header})
+    list (APPEND abs_osl_headers_sandbox ${PROJECT_SOURCE_DIR}/sandbox/shaders/${osl_header})
 endforeach ()
 
-
-#--------------------------------------------------------------------------------------------------
-# Compile shaders.
-#--------------------------------------------------------------------------------------------------
-
-macro (osl_compile osl_src oso_obj headers)
-    # Get the absolute path to the .osl source file.
-    get_filename_component (osl_src_abs ${osl_src} ABSOLUTE)
-
+# Compile OSL shaders into the sandbox.
+foreach (osl_source ${osl_sources})
     # Build the .oso destination file name.
-    get_filename_component (osl_src_we ${osl_src} NAME_WE)
-    set (oso_filename ${osl_src_we}.oso)
+    get_filename_component (osl_source_we ${osl_source} NAME_WE)
+    set (oso_filename ${osl_source_we}.oso)
 
     # Build the sandbox destination directory.
-    get_filename_component (osl_dir ${osl_src} PATH)
+    get_filename_component (osl_dir ${osl_source} PATH)
     string (
         REGEX REPLACE
-        "src/"
-        "${PROJECT_SOURCE_DIR}/sandbox/shaders/"
-        oso_dir
-        ${osl_dir}
+        "src/" "${PROJECT_SOURCE_DIR}/sandbox/shaders/"
+        oso_dir ${osl_dir}
     )
 
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -491,27 +480,29 @@ macro (osl_compile osl_src oso_obj headers)
         COMMAND ${CMAKE_COMMAND} -E make_directory ${oso_dir}
         COMMAND ${PROJECT_SOURCE_DIR}/sandbox/bin/oslc ${OSL_OPTIONS}
             -I"${PROJECT_SOURCE_DIR}/src/appleseed.shaders/include"
-            -o "${oso_dir}/${oso_filename}" "${osl_src_abs}"
-        MAIN_DEPENDENCY ${osl_src_abs}
-        DEPENDS ${${headers}} ${osl_src_abs}
+            -o "${oso_dir}/${oso_filename}" "${PROJECT_SOURCE_DIR}/src/appleseed.shaders/${osl_source}"
+        MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/${osl_source}
+        DEPENDS ${abs_osl_headers_sources} ${abs_osl_headers_sandbox}
     )
-endmacro ()
-
-# Build a list of absolute paths to OSL headers.
-foreach (osl_header ${osl_headers})
-    list (APPEND abs_osl_headers ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/${osl_header})
 endforeach ()
 
-# Compile all shaders.
-foreach (osl_shader ${osl_sources})
-    osl_compile (${osl_shader} oso_obj abs_osl_headers)
-    list (APPEND oso_objs ${oso_obj})
+# Copy OSL header files to the sandbox.
+foreach (osl_header ${osl_headers})
+    get_filename_component (path ${osl_header} PATH)
+    add_custom_command (
+        OUTPUT ${PROJECT_SOURCE_DIR}/sandbox/shaders/${osl_header}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/sandbox/shaders/${path}
+        COMMAND ${CMAKE_COMMAND} -E copy
+            ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/${osl_header}
+            ${PROJECT_SOURCE_DIR}/sandbox/shaders/${osl_header}
+        MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/${osl_header}
+    )
 endforeach ()
 
 add_custom_target (
     appleseed.shaders ALL
-    DEPENDS ${oso_objs}
-    SOURCES ${osl_sources} ${abs_osl_headers}
+    DEPENDS ${abs_osl_headers_sandbox}
+    SOURCES ${abs_osl_headers_sources} ${osl_sources}
 )
 
 add_dependencies (appleseed.shaders SANDBOX)
