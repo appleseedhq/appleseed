@@ -49,7 +49,7 @@ set (standard_osl_headers
 list (APPEND osl_headers
     ${standard_osl_headers}
 )
-source_group ("include\\standard" FILES
+source_group ("" FILES
     ${standard_osl_headers}
 )
 
@@ -58,10 +58,10 @@ set (include_appleseed_gaffer_sources
     include/appleseed/gaffer/transform.h
     include/appleseed/gaffer/udim.h
 )
-list (APPEND appleseed_osl_headers
+list (APPEND osl_headers
     ${include_appleseed_gaffer_sources}
 )
-source_group ("include\\gaffer" FILES
+source_group ("include\\appleseed\\gaffer" FILES
     ${include_appleseed_gaffer_sources}
 )
 
@@ -72,7 +72,7 @@ set (include_appleseed_color_sources
     include/appleseed/color/as_colorimetry.h
     include/appleseed/color/as_transfer_functions.h
 )
-list (APPEND appleseed_osl_headers
+list (APPEND osl_headers
     ${include_appleseed_color_sources}
 )
 source_group ("include\\appleseed\\color" FILES
@@ -84,7 +84,7 @@ set (include_appleseed_fractal_sources
     include/appleseed/fractal/as_noise_helpers.h
     include/appleseed/fractal/as_noise_tables.h
 )
-list (APPEND appleseed_osl_headers
+list (APPEND osl_headers
     ${include_appleseed_fractal_sources}
 )
 source_group ("include\\appleseed\\fractal" FILES
@@ -94,7 +94,7 @@ source_group ("include\\appleseed\\fractal" FILES
 set (include_appleseed_material_sources
     include/appleseed/material/as_material_helpers.h
 )
-list (APPEND appleseed_osl_headers
+list (APPEND osl_headers
     ${include_appleseed_material_sources}
 )
 source_group ("include\\appleseed\\material" FILES
@@ -104,7 +104,7 @@ source_group ("include\\appleseed\\material" FILES
 set (include_appleseed_math_sources
     include/appleseed/math/as_math_helpers.h
 )
-list (APPEND appleseed_osl_headers
+list (APPEND osl_headers
     ${include_appleseed_math_sources}
 )
 source_group ("include\\appleseed\\math" FILES
@@ -120,7 +120,7 @@ set (include_appleseed_maya_sources
     include/appleseed/maya/as_maya_ramp_helpers.h
     include/appleseed/maya/as_maya_transform_helpers.h
 )
-list (APPEND appleseed_osl_headers
+list (APPEND osl_headers
     ${include_appleseed_maya_sources}
 )
 source_group ("include\\appleseed\\maya" FILES
@@ -130,7 +130,7 @@ source_group ("include\\appleseed\\maya" FILES
 set (include_appleseed_pattern_sources
     include/appleseed/pattern/as_pattern_helpers.h
 )
-list (APPEND appleseed_osl_headers
+list (APPEND osl_headers
     ${include_appleseed_pattern_sources}
 )
 source_group ("include\\appleseed\\pattern" FILES
@@ -141,15 +141,11 @@ set (include_alshaders_sources
     include/alshaders/remap.h
     include/alshaders/space.h
 )
-list (APPEND appleseed_osl_headers
+list (APPEND osl_headers
     ${include_alshaders_sources}
 )
 source_group ("include\\alshaders" FILES
     ${include_alshaders_sources}
-)
-
-list (APPEND osl_headers
-    ${appleseed_osl_headers}
 )
 
 
@@ -448,24 +444,18 @@ else ()
     )
 endif ()
 
-# Copy standard OSL header files to the sandbox.
-foreach (osl_header ${standard_osl_headers})
-    get_filename_component (osl_header_filename ${osl_header} NAME)
+# Copy OSL header files to the sandbox.
+foreach (osl_header ${osl_headers})
+    get_filename_component (path ${osl_header} PATH)
     add_custom_command (
         TARGET SANDBOX
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/sandbox/shaders/${path}
         COMMAND ${CMAKE_COMMAND} -E copy
-            ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/${osl_header_filename}
-            ${PROJECT_SOURCE_DIR}/sandbox/shaders/)
+            ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/${osl_header}
+            ${PROJECT_SOURCE_DIR}/sandbox/shaders/${path}
+        MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/${osl_header}
+    )
 endforeach ()
-
-# Copy appleseed OSL header files to the sandbox.
-add_custom_command (
-    TARGET SANDBOX
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/include
-        ${PROJECT_SOURCE_DIR}/sandbox/shaders/include
-    MAIN_DEPENDENCY ${appleseed_osl_headers}
-)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -500,8 +490,8 @@ macro (osl_compile osl_src oso_obj headers)
         OUTPUT ${oso_dir}/${oso_filename}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${oso_dir}
         COMMAND ${PROJECT_SOURCE_DIR}/sandbox/bin/oslc ${OSL_OPTIONS}
-                -I"${PROJECT_SOURCE_DIR}/src/appleseed.shaders/include"
-                -o "${oso_dir}/${oso_filename}" "${osl_src_abs}"
+            -I"${PROJECT_SOURCE_DIR}/src/appleseed.shaders/include"
+            -o "${oso_dir}/${oso_filename}" "${osl_src_abs}"
         MAIN_DEPENDENCY ${osl_src_abs}
         DEPENDS ${${headers}} ${osl_src_abs}
     )
