@@ -854,7 +854,7 @@ namespace
             light_samples->setToolTip(m_params_metadata.get_path("drt.dl_light_samples.help"));
             sublayout->addRow("Light Samples:", light_samples);
 
-            QDoubleSpinBox* low_light_threshold = create_double_input("advanced.dl.low_light_threshold", 0.0, 1000.0, 3, 1.0);
+            QDoubleSpinBox* low_light_threshold = create_double_input("advanced.dl.low_light_threshold", 0.0, 1000.0, 3, 0.1);
             low_light_threshold->setToolTip(m_params_metadata.get_path("drt.dl_low_light_threshold.help"));
             sublayout->addRow("Low Light Threshold:", low_light_threshold);
         }
@@ -974,7 +974,7 @@ namespace
             light_samples->setToolTip(m_params_metadata.get_path("pt.dl_light_samples.help"));
             sublayout->addRow("Light Samples:", light_samples); 
 
-            QDoubleSpinBox* low_light_threshold = create_double_input("advanced.dl.low_light_threshold", 0.0, 1000.0, 3, 1.0);
+            QDoubleSpinBox* low_light_threshold = create_double_input("advanced.dl.low_light_threshold", 0.0, 1000.0, 3, 0.1);
             low_light_threshold->setToolTip(m_params_metadata.get_path("pt.dl_low_light_threshold.help"));
             sublayout->addRow("Low Light Threshold:", low_light_threshold);
         }
