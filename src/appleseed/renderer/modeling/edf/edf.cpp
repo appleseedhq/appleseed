@@ -134,7 +134,9 @@ void* EDF::evaluate_inputs(
 
 float EDF::get_max_contribution_scalar(const Source* source) const
 {
-    if (!source || !source->is_uniform())
+    assert(source);
+
+    if (!source->is_uniform())
         return numeric_limits<float>::max();
 
     float value;
@@ -145,7 +147,9 @@ float EDF::get_max_contribution_scalar(const Source* source) const
 
 float EDF::get_max_contribution_spectrum(const Source* source) const
 {
-    if (!source || !source->is_uniform())
+    assert(source);
+
+    if (!source->is_uniform())
         return numeric_limits<float>::max();
 
     Spectrum spectrum;
