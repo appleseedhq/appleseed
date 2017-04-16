@@ -45,7 +45,11 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/arena.h"
 
+// Standard headers.
+#include <limits>
+
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
@@ -215,7 +219,8 @@ namespace
 
         virtual float get_uncached_max_contribution() const APPLESEED_OVERRIDE
         {
-            return get_max_contribution("radiance", "radiance_multiplier");
+            // We can't know the max contribution of OSL EDFs.
+            return numeric_limits<float>::max();
         }
 
       private:
