@@ -66,6 +66,17 @@ ShadingEngine::ShadingEngine(const ParamArray& params)
     create_diagnostic_surface_shader(params);
 }
 
+bool ShadingEngine::on_frame_begin(
+    const Project&              project,
+    OnFrameBeginRecorder&       recorder,
+    IAbortSwitch*               abort_switch)
+{
+    return
+        m_diagnostic_surface_shader.get()
+            ? m_diagnostic_surface_shader->on_frame_begin(project, 0, recorder, abort_switch)
+            : true;
+}
+
 void ShadingEngine::create_diagnostic_surface_shader(const ParamArray& params)
 {
     if (params.dictionaries().exist("override_shading"))

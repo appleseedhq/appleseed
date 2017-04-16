@@ -93,8 +93,7 @@ RendererComponents::RendererComponents(
     ITileCallbackFactory*   tile_callback_factory,
     TextureStore&           texture_store,
     OIIO::TextureSystem&    texture_system,
-    OSL::ShadingSystem&     shading_system
-    )
+    OSL::ShadingSystem&     shading_system)
   : m_project(project)
   , m_params(params)
   , m_tile_callback_factory(tile_callback_factory)
@@ -109,7 +108,7 @@ RendererComponents::RendererComponents(
 {
 }
 
-bool RendererComponents::initialize()
+bool RendererComponents::create()
 {
     if (!create_lighting_engine_factory())
         return false;
@@ -133,11 +132,6 @@ bool RendererComponents::initialize()
         return false;
 
     return true;
-}
-
-IFrameRenderer& RendererComponents::get_frame_renderer()
-{
-    return *m_frame_renderer.get();
 }
 
 bool RendererComponents::create_lighting_engine_factory()

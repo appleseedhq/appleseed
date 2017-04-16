@@ -45,6 +45,7 @@ namespace renderer      { class IFrameRenderer; }
 namespace renderer      { class ITileCallback; }
 namespace renderer      { class ITileCallbackFactory; }
 namespace renderer      { class Project; }
+namespace renderer      { class RendererComponents; }
 namespace renderer      { class SerialRendererController; }
 
 namespace renderer
@@ -96,7 +97,7 @@ class APPLESEED_DLLSYMBOL MasterRenderer
 
     // Render a frame sequence until the sequence is completed or rendering is aborted.
     IRendererController::Status render_frame_sequence(
-        IFrameRenderer&             frame_renderer,
+        RendererComponents&         components,
         foundation::IAbortSwitch&   abort_switch);
 
     // Wait until the the frame is completed or rendering is aborted.

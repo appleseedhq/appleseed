@@ -40,10 +40,13 @@
 #include "foundation/utility/autoreleaseptr.h"
 
 // Forward declarations.
-namespace renderer  { class AOVAccumulatorContainer; }
-namespace renderer  { class ParamArray; }
-namespace renderer  { class PixelContext; }
-namespace renderer  { class ShadingContext; }
+namespace foundation    { class IAbortSwitch; }
+namespace renderer      { class AOVAccumulatorContainer; }
+namespace renderer      { class OnFrameBeginRecorder; }
+namespace renderer      { class ParamArray; }
+namespace renderer      { class PixelContext; }
+namespace renderer      { class Project; }
+namespace renderer      { class ShadingContext; }
 
 namespace renderer
 {
@@ -58,6 +61,13 @@ class ShadingEngine
   public:
     // Constructor.
     explicit ShadingEngine(const ParamArray& params);
+
+    // This method is called once before rendering each frame.
+    // Returns true on success, false otherwise.
+    bool on_frame_begin(
+        const Project&              project,
+        OnFrameBeginRecorder&       recorder,
+        foundation::IAbortSwitch*   abort_switch = 0);
 
     // Shade a given intersection point.
     void shade(

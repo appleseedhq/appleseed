@@ -88,7 +88,9 @@ class RendererComponents
         OIIO::TextureSystem&    texture_system,
         OSL::ShadingSystem&     shading_system);
 
-    bool initialize();
+    bool create();
+
+    ShadingEngine& get_shading_engine();
 
     IFrameRenderer& get_frame_renderer();
 
@@ -122,6 +124,21 @@ class RendererComponents
     bool create_tile_renderer_factory();
     bool create_frame_renderer_factory();
 };
+
+
+//
+// RendererComponents class implementation.
+//
+
+inline ShadingEngine& RendererComponents::get_shading_engine()
+{
+    return m_shading_engine;
+}
+
+inline IFrameRenderer& RendererComponents::get_frame_renderer()
+{
+    return *m_frame_renderer.get();
+}
 
 }       // namespace renderer
 
