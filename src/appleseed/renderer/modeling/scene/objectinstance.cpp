@@ -459,7 +459,11 @@ bool ObjectInstance::on_frame_begin(
 
     const EntityDefMessageContext context("object instance", this);
 
-    if (uses_alpha_mapping())
+    const bool uses_materials_alpha_mapping =
+        renderer::uses_alpha_mapping(m_back_materials) ||
+        renderer::uses_alpha_mapping(m_front_materials);
+
+    if (uses_materials_alpha_mapping)
     {
         if (m_front_materials != m_back_materials)
         {
