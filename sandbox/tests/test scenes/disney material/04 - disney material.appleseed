@@ -244,7 +244,6 @@ $x * 0.85
         <configuration name="final" base="base_final">
             <parameter name="lighting_engine" value="pt" />
             <parameter name="pixel_renderer" value="uniform" />
-            <parameter name="rendering_threads" value="4" />
             <parameter name="shading_result_framebuffer" value="ephemeral" />
             <parameters name="adaptive_pixel_renderer">
                 <parameter name="enable_diagnostics" value="false" />

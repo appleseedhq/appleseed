@@ -170,7 +170,6 @@
         <configuration name="final" base="base_final">
             <parameter name="lighting_engine" value="pt" />
             <parameter name="pixel_renderer" value="uniform" />
-            <parameter name="rendering_threads" value="auto" />
             <parameter name="sampling_mode" value="qmc" />
             <parameter name="shading_result_framebuffer" value="ephemeral" />
             <parameters name="adaptive_pixel_renderer">
@@ -223,7 +222,6 @@
         </configuration>
         <configuration name="interactive" base="base_interactive">
             <parameter name="lighting_engine" value="pt" />
-            <parameter name="rendering_threads" value="auto" />
             <parameter name="sampling_mode" value="qmc" />
             <parameters name="drt">
                 <parameter name="dl_light_samples" value="1.000000" />

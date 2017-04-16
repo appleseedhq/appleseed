@@ -235,7 +235,6 @@
             <parameter name="frame_renderer" value="generic" />
             <parameter name="lighting_engine" value="pt" />
             <parameter name="pixel_renderer" value="uniform" />
-            <parameter name="rendering_threads" value="auto" />
             <parameter name="sample_generator" value="generic" />
             <parameter name="sample_renderer" value="generic" />
             <parameter name="sampling_mode" value="qmc" />
@@ -263,7 +262,6 @@
             <parameter name="frame_renderer" value="progressive" />
             <parameter name="lighting_engine" value="pt" />
             <parameter name="pixel_renderer" value="uniform" />
-            <parameter name="rendering_threads" value="1" />
             <parameter name="sample_generator" value="generic" />
             <parameter name="sample_renderer" value="generic" />
             <parameter name="sampling_mode" value="qmc" />

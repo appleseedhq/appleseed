@@ -279,7 +279,6 @@ $var3</parameter>
         </configuration>
         <configuration name="interactive" base="base_interactive">
             <parameter name="lighting_engine" value="pt" />
-            <parameter name="rendering_threads" value="2" />
             <parameters name="drt">
                 <parameter name="dl_light_samples" value="1" />
                 <parameter name="enable_ibl" value="true" />
