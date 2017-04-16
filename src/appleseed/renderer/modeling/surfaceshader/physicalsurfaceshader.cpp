@@ -90,8 +90,6 @@ namespace
         {
             m_inputs.declare("color_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("alpha_multiplier", InputFormatFloat, "1.0");
-
-            m_lighting_samples = m_params.get_optional<size_t>("lighting_samples", 1);
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -102,6 +100,16 @@ namespace
         virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
+        }
+
+        virtual bool on_frame_begin(
+            const Project&              project,
+            const BaseGroup*            parent,
+            OnFrameBeginRecorder&       recorder,
+            IAbortSwitch*               abort_switch) APPLESEED_OVERRIDE
+        {
+            m_lighting_samples = m_params.get_optional<size_t>("lighting_samples", 1);
+            return true;
         }
 
         virtual void evaluate(
