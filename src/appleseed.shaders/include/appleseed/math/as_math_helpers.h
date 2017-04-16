@@ -60,4 +60,31 @@ float fast_gain(float value, float g)
         : fast_bias(value * 2 - 1, 1 - g) * 0.5 + 0.5;
 }
 
+// Random number generators: good ones are hard to find.
+// Stephen K. Park and Keith W. Miller.
+int rand_int(int seed)
+{
+    // Constants.
+    int a = 16807;
+    int q = 127773;
+    int r = 2836;
+    int m = 2147483647;
+
+    int hi = seed / q;
+    int lo = seed % q;
+    int x = a * lo - r * hi;
+
+    // Return result (and new seed).
+    return x > 0 ? x : x + m;
+}
+
+int rand_float(int seed, output float result)
+{
+    int x = rand_int(seed);
+    result = x / 2147483647;
+
+    // Return new seed.
+    return x;
+}
+
 #endif // !AS_MATH_HELPERS_H
