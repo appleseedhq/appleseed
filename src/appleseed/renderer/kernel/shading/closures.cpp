@@ -31,7 +31,22 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
-#include "renderer/global/globaltypes.h"
+#include "renderer/modeling/bsdf/alsurfacelayerbrdf.h"
+#include "renderer/modeling/bsdf/ashikhminbrdf.h"
+#include "renderer/modeling/bsdf/diffusebtdf.h"
+#include "renderer/modeling/bsdf/disneybrdf.h"
+#include "renderer/modeling/bsdf/glassbsdf.h"
+#include "renderer/modeling/bsdf/glossybrdf.h"
+#include "renderer/modeling/bsdf/metalbrdf.h"
+#include "renderer/modeling/bsdf/orennayarbrdf.h"
+#include "renderer/modeling/bsdf/sheenbrdf.h"
+#include "renderer/modeling/bssrdf/dipolebssrdf.h"
+#include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
+#include "renderer/modeling/bssrdf/gaussianbssrdf.h"
+#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
+#include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
+#endif
+#include "renderer/modeling/edf/diffuseedf.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/cdf.h"

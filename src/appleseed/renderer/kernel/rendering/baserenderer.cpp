@@ -36,6 +36,7 @@
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"

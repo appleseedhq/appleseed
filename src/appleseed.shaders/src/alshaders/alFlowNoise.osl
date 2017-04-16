@@ -25,8 +25,7 @@
 // This code is ported from alshaders original C++ implementation.
 // https://bitbucket.org/anderslanglands/alshaders
 
-#include "appleseed/fractal/as_extra_noises.h"
-
+#include "alshaders/noise.h"
 #include "alshaders/remap.h"
 #include "alshaders/space.h"
 
@@ -94,12 +93,45 @@ shader alFlowNoise
         string help = "Color to use when the noise value is 1.",
         string as_maya_attribute_name = "color2"
     ]],
-    output closure color out_result = 0
+    output color out_result = 0
     [[
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc"
     ]]
 )
 {
-    // todo: implement me...
+    point pp;
+    if (in_space == SPACE_WORLD)
+        pp = in_p;
+    else if (in_space == SPACE_OBJECT)
+        pp = transform("object", in_p);
+    else if (in_space == SPACE_PREF)
+        pp = Pref;
+    else if (in_space == SPACE_UV)
+        pp = point(u, v, 0);
+
+    pp *= in_frequency;
+
+    float n;
+    float g = 1.0;
+    float result = 0.0;
+    vector deriv;
+    vector advect = 0;
+
+    for (int i = 0; i < in_octaves; ++i)
+    {
+        n = srdnoise(pp + advect, in_angle, deriv);
+
+        if (in_turbulent)
+            n = abs(n);
+
+        result += n * g;
+        advect -= deriv * in_advection * g;
+        pp *= in_lacunarity;
+        g *= in_gain;
+    }
+
+    RemapFloatParams rmp = REMAP_FLOAT_CREATE;
+    result = remap(result, rmp);
+    out_result = mix(in_color1, in_color2, result);
 }
