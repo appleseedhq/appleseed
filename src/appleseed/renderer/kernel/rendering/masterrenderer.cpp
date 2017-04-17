@@ -252,14 +252,12 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         texture_store,
         *m_texture_system,
         *m_shading_system);
-    if (!components.initialize())
+    if (!components.create())
         return IRendererController::AbortRendering;
 
     // Execute the main rendering loop.
     const IRendererController::Status status =
-        render_frame_sequence(
-            components.get_frame_renderer(),
-            abort_switch);
+        render_frame_sequence(components, abort_switch);
 
     // Perform post-render rendering actions.
     m_project.get_scene()->on_render_end(m_project);
@@ -271,11 +269,12 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 }
 
 IRendererController::Status MasterRenderer::render_frame_sequence(
-    IFrameRenderer&         frame_renderer,
+    RendererComponents&     components,
     IAbortSwitch&           abort_switch)
 {
     while (true)
     {
+        IFrameRenderer& frame_renderer = components.get_frame_renderer();
         assert(!frame_renderer.is_rendering());
 
         // The on_frame_begin() method of the renderer controller might alter the scene
@@ -285,7 +284,8 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
 
         // Perform pre-frame rendering actions. Don't proceed if that failed.
         OnFrameBeginRecorder recorder;
-        if (!m_project.get_scene()->on_frame_begin(m_project, 0, recorder, &abort_switch))
+        if (!components.get_shading_engine().on_frame_begin(m_project, recorder, &abort_switch) ||
+            !m_project.get_scene()->on_frame_begin(m_project, 0, recorder, &abort_switch))
         {
             recorder.on_frame_end(m_project);
             m_renderer_controller->on_frame_end();

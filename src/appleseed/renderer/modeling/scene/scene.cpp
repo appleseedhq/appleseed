@@ -370,6 +370,8 @@ bool Scene::on_frame_begin(
 
     bool success = true;
 
+    success = success && impl->m_default_surface_shader->on_frame_begin(project, this, recorder, abort_switch);
+
     success = success && invoke_on_frame_begin(project, this, colors(), recorder, abort_switch);
     success = success && invoke_on_frame_begin(project, this, textures(), recorder, abort_switch);
     success = success && invoke_on_frame_begin(project, this, texture_instances(), recorder, abort_switch);
@@ -393,6 +395,7 @@ void Scene::on_frame_end(
     const BaseGroup*        parent)
 {
     m_camera = 0;
+
     Entity::on_frame_end(project, parent);
 }
 

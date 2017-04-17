@@ -66,11 +66,10 @@ class AOVAccumulator
     virtual void reset() = 0;
 
     // Write a value to the accumulator.
-    // Normally, this is used for geometry AOVs
-    // like normals, velocity, ...
+    // Normally, this is used for geometry AOVs like normals, velocity...
     virtual void write(
-        const ShadingPoint&     shading_point,
-        const Camera&           camera);
+        const ShadingPoint& shading_point,
+        const Camera&       camera);
 
     // Flush the result.
     virtual void flush(ShadingResult& result) = 0;
@@ -154,8 +153,8 @@ class AOVAccumulatorContainer
 
     // Write a sample to all accumulators.
     void write(
-        const ShadingPoint&     shading_point,
-        const Camera&           camera);
+        const ShadingPoint& shading_point,
+        const Camera&       camera);
 
     // Flush all the accumulators.
     void flush(ShadingResult& result);
@@ -167,9 +166,9 @@ class AOVAccumulatorContainer
     AlphaAOVAccumulator& alpha();
 
   private:
-    bool insert(foundation::auto_release_ptr<AOVAccumulator>& aov_accum);
+    bool insert(foundation::auto_release_ptr<AOVAccumulator> aov_accum);
 
-    enum { MaxAovAccumulators = MaxAOVCount + 2 }; // MaxAOVCount + Beauty + Alpha.
+    enum { MaxAovAccumulators = MaxAOVCount + 2 };  // MaxAOVCount + Beauty + Alpha
 
     size_t          m_size;
     AOVAccumulator* m_accumulators[MaxAovAccumulators];

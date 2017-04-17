@@ -136,11 +136,10 @@ float EDF::get_max_contribution_scalar(const Source* source) const
 {
     assert(source);
 
-    if (!source || !source->is_uniform())
+    if (!source->is_uniform())
         return numeric_limits<float>::max();
 
     float value;
-
     source->evaluate_uniform(value);
 
     return value;
@@ -150,11 +149,10 @@ float EDF::get_max_contribution_spectrum(const Source* source) const
 {
     assert(source);
 
-    if (!source || !source->is_uniform())
+    if (!source->is_uniform())
         return numeric_limits<float>::max();
 
     Spectrum spectrum;
-
     source->evaluate_uniform(spectrum);
 
     return max_value(spectrum);
@@ -162,22 +160,25 @@ float EDF::get_max_contribution_spectrum(const Source* source) const
 
 float EDF::get_max_contribution(const Source* input, const Source* multiplier) const
 {
-    const float max_contribution_spectrum = get_max_contribution_spectrum(input);
+    const float max_contribution_input = get_max_contribution_spectrum(input);
 
-    if (max_contribution_spectrum == numeric_limits<float>::max())
+    if (max_contribution_input == numeric_limits<float>::max())
         return numeric_limits<float>::max();
 
-    const float max_contribution_scalar = get_max_contribution_scalar(multiplier);
+    const float max_contribution_multiplier = get_max_contribution_scalar(multiplier);
 
-    if (max_contribution_scalar == numeric_limits<float>::max())
+    if (max_contribution_multiplier == numeric_limits<float>::max())
         return numeric_limits<float>::max();
 
-    return max_contribution_spectrum * max_contribution_scalar;
+    return max_contribution_input * max_contribution_multiplier;
 }
 
 float EDF::get_max_contribution(const char* input_name, const char* multiplier_name) const
 {
-    return get_max_contribution(m_inputs.source(input_name), m_inputs.source(multiplier_name));
+    return
+        get_max_contribution(
+            m_inputs.source(input_name),
+            m_inputs.source(multiplier_name));
 }
 
 }   // namespace renderer

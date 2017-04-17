@@ -144,7 +144,6 @@
         </configuration>
         <configuration name="interactive" base="base_interactive">
             <parameter name="lighting_engine" value="pt" />
-            <parameter name="rendering_threads" value="1" />
             <parameter name="sampling_mode" value="qmc" />
             <parameters name="drt">
                 <parameter name="dl_light_samples" value="1.000000" />
