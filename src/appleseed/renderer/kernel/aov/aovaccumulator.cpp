@@ -194,8 +194,7 @@ void AOVAccumulatorContainer::flush(ShadingResult& result)
         m_accumulators[i]->flush(result);
 }
 
-bool AOVAccumulatorContainer::insert(
-    auto_release_ptr<AOVAccumulator>& aov_accum)
+bool AOVAccumulatorContainer::insert(auto_release_ptr<AOVAccumulator> aov_accum)
 {
     assert(aov_accum.get());
 
