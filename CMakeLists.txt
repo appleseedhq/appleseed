@@ -48,6 +48,10 @@ if (POLICY CMP0043)
     cmake_policy (SET CMP0043 OLD)  # consume the content of the suffixed COMPILE_DEFINITIONS_<CONFIG>
 endif ()
 
+if (POLICY CMP0026)
+    cmake_policy (SET CMP0026 OLD)  # disallow use of the LOCATION target property (cmake 3.0)
+endif ()
+
 include (src/cmake/utilities.txt)
 
 
