@@ -190,8 +190,8 @@ namespace
                     const string message = texture_system.geterror();
                     if (!message.empty())
                     {
-                        const string trimmed_message = trim_both(message);
-                        RENDERER_LOG_ERROR("oiio: %s", trimmed_message.c_str());
+                        const string modified_message = prefix_all_lines(trim_both(message), "oiio: ");
+                        RENDERER_LOG_ERROR("%s", modified_message.c_str());
                     }
                     return Color3f(1.0f, 0.0f, 1.0f);
                 }

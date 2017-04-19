@@ -47,28 +47,28 @@ namespace renderer
 
 void OIIOErrorHandler::operator()(int errcode, const string& msg)
 {
-    const string trimmed_msg = trim_right(msg, "\r\n");
+    const string modified_msg = prefix_all_lines(trim_both(msg), "osl: ");
 
     switch (errcode)
     {
       case EH_WARNING:
-        RENDERER_LOG_WARNING("osl: %s", trimmed_msg.c_str());
+        RENDERER_LOG_WARNING("%s", modified_msg.c_str());
         break;
 
       case EH_ERROR:
-        RENDERER_LOG_ERROR("osl: %s", trimmed_msg.c_str());
+        RENDERER_LOG_ERROR("%s", modified_msg.c_str());
         break;
 
       case EH_SEVERE:
-        RENDERER_LOG_FATAL("osl: %s", trimmed_msg.c_str());
+        RENDERER_LOG_FATAL("%s", modified_msg.c_str());
         break;
 
       case EH_DEBUG:
-        RENDERER_LOG_DEBUG("osl: %s", trimmed_msg.c_str());
+        RENDERER_LOG_DEBUG("%s", modified_msg.c_str());
         break;
 
       default:
-        RENDERER_LOG_DEBUG("osl: %s", trimmed_msg.c_str());
+        RENDERER_LOG_DEBUG("%s", modified_msg.c_str());
         break;
     }
 }

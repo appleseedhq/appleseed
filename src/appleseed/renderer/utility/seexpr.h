@@ -150,8 +150,9 @@ class TextureSeExprFunc
             const std::string message = m_texture_system->geterror();
             if (!message.empty())
             {
-                const std::string trimmed_message = foundation::trim_both(message);
-                RENDERER_LOG_ERROR("oiio: %s", trimmed_message.c_str());
+                const std::string modified_message =
+                    foundation::prefix_all_lines(foundation::trim_both(message), "oiio: ");
+                RENDERER_LOG_ERROR("%s", modified_message.c_str());
             }
             result = SeVec3d(1.0, 0.0, 1.0);
             return;

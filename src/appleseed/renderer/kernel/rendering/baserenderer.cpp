@@ -118,8 +118,8 @@ BaseRenderer::~BaseRenderer()
     delete m_renderer_services;
 
     const string stats = m_texture_system->getstats();
-    const string trimmed_stats = trim_right(stats, "\r\n");
-    RENDERER_LOG_DEBUG("oiio: %s", trimmed_stats.c_str());
+    const string modified_stats = prefix_all_lines(trim_both(stats), "oiio: ");
+    RENDERER_LOG_DEBUG("%s", modified_stats.c_str());
 
     RENDERER_LOG_DEBUG("destroying oiio texture system...");
     OIIO::TextureSystem::destroy(m_texture_system);
