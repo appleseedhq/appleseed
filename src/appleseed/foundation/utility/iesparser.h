@@ -29,9 +29,6 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_IESPARSER_H
 #define APPLESEED_FOUNDATION_UTILITY_IESPARSER_H
 
-// appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
-
 // Boost headers.
 #include "boost/algorithm/string.hpp"
 #include "boost/unordered_map.hpp"
@@ -41,6 +38,7 @@
 #include <vector>
 
 // Foundation headers.
+#include "foundation/core/exceptions/exception.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/test.h"
 
@@ -144,7 +142,7 @@ public:
         PhotometricTypeA
     };
 
-    // Types of symmetry that candela values have with respect to horiontal angle 
+    // Types of symmetry that candela values have with respect to horziontal angle 
     enum SymmetryType
     {
         NoSymmetry,
@@ -441,7 +439,7 @@ private:
     std::vector<double> horizontal_angles;
     PhotometricGrid candela_values;
 
-    // Keywords
+    // Keywords.
     KeywordsDictionary keywords_dictionary;
 
     //
