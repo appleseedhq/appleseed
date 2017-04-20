@@ -40,6 +40,7 @@
 #include <vector>
 
 // Foundation headers.
+#include "foundation/math/scalar.h"
 #include "foundation/utility/countof.h"
 #include "foundation/utility/foreach.h"
 
@@ -175,13 +176,6 @@ namespace
                 return false;
         }
         return true;
-    }
-
-    bool IsApproximatelyEqual(double first, double second, double threshold = 1e-08)
-    {
-        if (first - threshold < second && second < first + threshold)
-            return true;
-        return false;
     }
 }
 
@@ -615,14 +609,14 @@ void IESParser::parse_angles(std::istream& input_stream)
     assert(photometric_type != PhotometricTypeNotSpecified);
     if (photometric_type == PhotometricTypeC)
     {
-        if (!IsApproximatelyEqual(vertical_angles.front(), 0.0) &&
-            !IsApproximatelyEqual(vertical_angles.front(), 90.0))
+        if (!feq(vertical_angles.front(), 0.0) &&
+            !feq(vertical_angles.front(), 90.0))
         {
             throw ParsingException("With photometric type C,"
                 "first vertical angle must be either 0 or 90 degrees", line_counter);
         }
-        if (!IsApproximatelyEqual(vertical_angles.back(), 90.0) &&
-            !IsApproximatelyEqual(vertical_angles.back(), 180.0))
+        if (!feq(vertical_angles.back(), 90.0) &&
+            !feq(vertical_angles.back(), 180.0))
         {
             throw ParsingException("With photometric type C,"
                 "last vertical angle must be either 90 or 180 degrees", line_counter);
@@ -631,19 +625,19 @@ void IESParser::parse_angles(std::istream& input_stream)
     else if (photometric_type == PhotometricTypeA ||
         photometric_type == PhotometricTypeB)
     {
-        if (!IsApproximatelyEqual(vertical_angles.front(), -90.0f) &&
-            !IsApproximatelyEqual(vertical_angles.front(), 0.0f))
+        if (!feq(vertical_angles.front(), -90.0) &&
+            !feq(vertical_angles.front(), 0.0))
         {
             throw ParsingException("With photometric type A or B,"
                 "first vertical angle must be either -90 or 0 degrees", line_counter);
         }
-        if (!IsApproximatelyEqual(vertical_angles.back(), 90.0f))
+        if (!feq(vertical_angles.back(), 90.0))
         {
             throw ParsingException("With photometric type A or B,"
                 "last vertical angle must be 90 degrees", line_counter);
         }
     }
-    if (IsApproximatelyEqual(vertical_angles.front(), vertical_angles.back()))
+    if (feq(vertical_angles.front(), vertical_angles.back()))
     {
         throw ParsingException("First and last vertical angles must be different", line_counter);
     }
@@ -665,9 +659,9 @@ void IESParser::parse_angles(std::istream& input_stream)
     }
     if (photometric_type == PhotometricTypeC)
     {
-        if (IsApproximatelyEqual(horizontal_angles.front(), 90.0))
+        if (feq(horizontal_angles.front(), 90.0))
         {
-            if (IsApproximatelyEqual(horizontal_angles.back(), 270.0))
+            if (feq(horizontal_angles.back(), 270.0))
             {
                 symmetry = SymmetricHalvesY;
             }
@@ -678,21 +672,21 @@ void IESParser::parse_angles(std::istream& input_stream)
                     line_counter);
             }
         }
-        else if (IsApproximatelyEqual(horizontal_angles.front(), 0.0))
+        else if (feq(horizontal_angles.front(), 0.0))
         {
-            if (IsApproximatelyEqual(horizontal_angles.back(), 0.0))
+            if (feq(horizontal_angles.back(), 0.0))
             {
                 symmetry = FullySymmetric;
             }
-            else if (IsApproximatelyEqual(horizontal_angles.back(), 90.0))
+            else if (feq(horizontal_angles.back(), 90.0))
             {
                 symmetry = SymmetricQuadrants;
             }
-            else if (IsApproximatelyEqual(horizontal_angles.back(), 180.0))
+            else if (feq(horizontal_angles.back(), 180.0))
             {
                 symmetry = SymmetricHalvesX;
             }
-            else if (IsApproximatelyEqual(horizontal_angles.back(), 360.0))
+            else if (feq(horizontal_angles.back(), 360.0))
             {
                 symmetry = NoSymmetry;
             }
@@ -711,13 +705,13 @@ void IESParser::parse_angles(std::istream& input_stream)
     else if (photometric_type == PhotometricTypeA ||
         photometric_type == PhotometricTypeB)
     {
-        if (IsApproximatelyEqual(horizontal_angles.front(), 0.0f) &&
-            IsApproximatelyEqual(horizontal_angles.back(), 90.0f))
+        if (feq(horizontal_angles.front(), 0.0) &&
+            feq(horizontal_angles.back(), 90.0))
         {
             symmetry = SymmetricHalvesX;
         }
-        else if (IsApproximatelyEqual(horizontal_angles.front(), -90.0f) &&
-            IsApproximatelyEqual(horizontal_angles.back(), 90.0f))
+        else if (feq(horizontal_angles.front(), -90.0) &&
+            feq(horizontal_angles.back(), 90.0))
         {
             symmetry = NoSymmetry;
         }
