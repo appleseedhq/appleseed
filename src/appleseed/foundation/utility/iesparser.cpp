@@ -187,19 +187,19 @@ void IESParser::parse(std::istream& input_stream)
 {
     reset(input_stream);
 
-    // parse version.
+    // Parse version.
     parse_format_version(input_stream);
 
-    // parse block before TILT and TILT line.
+    // Parse block before TILT and TILT line.
     parse_keywords_and_tilt(input_stream);
 
-    // parse TILT data if it is included
+    // Parse TILT data if it is included.
     if (tilt_specification == IncludeTilt)
     {
         parse_tilt_data(input_stream);
     }
 
-    // parse the rest of the data
+    // Parse the rest of the data.
     parse_photometric_data(input_stream);
     parse_angles(input_stream);
     parse_candela_values(input_stream);
@@ -595,7 +595,7 @@ void IESParser::parse_candela_values(std::istream& input_stream)
 
 void IESParser::parse_angles(std::istream& input_stream)
 {
-    // parse vertical angles:
+    // Parse vertical angles:
 
     try
     {
@@ -647,7 +647,7 @@ void IESParser::parse_angles(std::istream& input_stream)
             " must be mentioned in increasing order", line_counter);
     }
 
-    // parse horizontal angles:
+    // Parse horizontal angles:
 
     try
     {
