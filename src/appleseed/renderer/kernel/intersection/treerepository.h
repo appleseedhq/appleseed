@@ -44,6 +44,10 @@
 namespace renderer
 {
 
+//
+// A collection of trees indexed by their 64-bit key (typically a hash of their content).
+//
+
 template <typename TreeType>
 class TreeRepository
   : public foundation::NonCopyable
@@ -51,60 +55,15 @@ class TreeRepository
   public:
     typedef foundation::Lazy<TreeType> LazyTreeType;
 
-    ~TreeRepository()
-    {
-        for (foundation::each<TreeContainer> i = m_trees; i; ++i)
-            delete i->second.m_tree;
-    }
+    ~TreeRepository();
 
-    void insert(const foundation::uint64 key, LazyTreeType* tree)
-    {
-        assert(m_trees.find(key) == m_trees.end());
+    void insert(const foundation::uint64 key, LazyTreeType* tree);
 
-        TreeInfo info;
-        info.m_tree = tree;
-        info.m_ref = 1;
-
-        m_trees.insert(std::make_pair(key, info));
-        m_index.insert(std::make_pair(tree, key));
-    }
-
-    LazyTreeType* acquire(const foundation::uint64 key)
-    {
-        const typename TreeContainer::iterator i = m_trees.find(key);
-
-        if (i == m_trees.end())
-            return 0;
-
-        ++i->second.m_ref;
-        return i->second.m_tree;
-    }
-
-    void release(LazyTreeType* tree)
-    {
-        const typename TreeIndex::iterator i = m_index.find(tree);
-        assert(i != m_index.end());
-
-        const typename TreeContainer::iterator t = m_trees.find(i->second);
-        assert(t != m_trees.end());
-
-        assert(t->second.m_ref > 0);
-        --t->second.m_ref;
-
-        if (t->second.m_ref == 0)
-        {
-            delete t->second.m_tree;
-            m_trees.erase(t);
-            m_index.erase(i);
-        }
-    }
+    LazyTreeType* acquire(const foundation::uint64 key);
+    void release(LazyTreeType* tree);
 
     template <typename Func>
-    void for_each(Func& func)
-    {
-        for (foundation::each<TreeContainer> i = m_trees; i; ++i)
-            func(*(i->second.m_tree), i->second.m_ref);
-    }
+    void for_each(Func& func);
 
   private:
     struct TreeInfo
@@ -119,6 +78,71 @@ class TreeRepository
     TreeContainer       m_trees;
     TreeIndex           m_index;
 };
+
+
+//
+// TreeRepository class implementation.
+//
+
+template <typename TreeType>
+TreeRepository<TreeType>::~TreeRepository()
+{
+    for (foundation::each<TreeContainer> i = m_trees; i; ++i)
+        delete i->second.m_tree;
+}
+
+template <typename TreeType>
+void TreeRepository<TreeType>::insert(const foundation::uint64 key, LazyTreeType* tree)
+{
+    assert(m_trees.find(key) == m_trees.end());
+
+    TreeInfo info;
+    info.m_tree = tree;
+    info.m_ref = 1;
+
+    m_trees.insert(std::make_pair(key, info));
+    m_index.insert(std::make_pair(tree, key));
+}
+
+template <typename TreeType>
+typename TreeRepository<TreeType>::LazyTreeType* TreeRepository<TreeType>::acquire(const foundation::uint64 key)
+{
+    const typename TreeContainer::iterator i = m_trees.find(key);
+
+    if (i == m_trees.end())
+        return 0;
+
+    ++i->second.m_ref;
+    return i->second.m_tree;
+}
+
+template <typename TreeType>
+void TreeRepository<TreeType>::release(LazyTreeType* tree)
+{
+    const typename TreeIndex::iterator i = m_index.find(tree);
+    assert(i != m_index.end());
+
+    const typename TreeContainer::iterator t = m_trees.find(i->second);
+    assert(t != m_trees.end());
+
+    assert(t->second.m_ref > 0);
+    --t->second.m_ref;
+
+    if (t->second.m_ref == 0)
+    {
+        delete t->second.m_tree;
+        m_trees.erase(t);
+        m_index.erase(i);
+    }
+}
+
+template <typename TreeType>
+template <typename Func>
+void TreeRepository<TreeType>::for_each(Func& func)
+{
+    for (foundation::each<TreeContainer> i = m_trees; i; ++i)
+        func(*(i->second.m_tree), i->second.m_ref);
+}
 
 }       // namespace renderer
 
