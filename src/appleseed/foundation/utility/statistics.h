@@ -217,7 +217,7 @@ class Statistics
 
     void merge(const Statistics& other);
 
-    std::string to_string(const size_t max_header_length = 16) const;
+    std::string to_string(const size_t max_header_length = 30) const;
 
   private:
     typedef std::vector<Entry*> EntryVector;
@@ -248,7 +248,7 @@ class StatisticsVector
 
     void merge(const StatisticsVector& other);
 
-    std::string to_string(const size_t max_header_length = 16) const;
+    std::string to_string(const size_t max_header_length = 30) const;
 
   private:
     struct NamedStatistics
