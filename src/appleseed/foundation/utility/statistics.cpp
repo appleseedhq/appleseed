@@ -115,7 +115,7 @@ string Statistics::to_string(const size_t max_header_length) const
             sstr << entry->m_name.substr(0, max_header_length);
         else sstr << entry->m_name << string(max_header_length - entry->m_name.size(), ' ');
 
-        sstr << ' ' << entry->to_string();
+        sstr << entry->to_string();
     }
 
     return sstr.str();
