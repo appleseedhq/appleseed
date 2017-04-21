@@ -37,7 +37,7 @@
 #include <fstream>
 
 // Boost headers.
-#include "boost\lexical_cast.hpp"
+#include "boost/lexical_cast.hpp"
 
 using namespace foundation;
 

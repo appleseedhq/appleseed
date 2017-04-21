@@ -27,13 +27,13 @@
 //
 
 // Interface header.
-#include "IESParser.h"
+#include "iesparser.h"
 
 // Boost headers.
-#include "boost\lexical_cast.hpp"
-#include "boost\regex.hpp"
-#include "boost\algorithm\string.hpp"
-#include "boost\algorithm\cxx11\any_of.hpp"
+#include "boost/lexical_cast.hpp"
+#include "boost/regex.hpp"
+#include "boost/algorithm/string.hpp"
+#include "boost/algorithm/cxx11/any_of.hpp"
 
 // Standard headers.
 #include <string>
