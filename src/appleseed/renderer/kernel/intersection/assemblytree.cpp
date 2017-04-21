@@ -543,13 +543,10 @@ namespace
     {
         void operator()(Lazy<TreeType>& tree, const size_t ref_count)
         {
-            Update<TreeType> update(&tree);
+            Access<TreeType> update(&tree);
 
-            if (update.get())
-            {
-                const bool enable_intersection_filters = ref_count == 1;
-                update->update_non_geometry(enable_intersection_filters);
-            }
+            const bool enable_intersection_filters = ref_count == 1;
+            update->update_non_geometry(enable_intersection_filters);
         }
     };
 }

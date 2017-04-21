@@ -117,16 +117,3 @@ TEST_SUITE(Foundation_Utility_Lazy_Access)
         EXPECT_EQ(0, access.get());
     }
 }
-
-TEST_SUITE(Foundation_Utility_Lazy_Update)
-{
-    TEST_CASE(Get_GivenUpdateBoundToNonConstructedObject_ReturnsNullPointer)
-    {
-        auto_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
-        Lazy<Object> object(factory);
-
-        Update<Object> access(&object);
-
-        EXPECT_EQ(0, access.get());
-    }
-}
