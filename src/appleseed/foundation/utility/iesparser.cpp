@@ -152,7 +152,7 @@ namespace
         output->clear();
         output->reserve(tokens.size());
 
-        for (each<std::vector<std::string>> token = tokens; ++token; token)
+        for (each< std::vector<std::string> > token = tokens; ++token; token)
         {
             try
             {
@@ -182,6 +182,14 @@ namespace
 //
 // Class implementation.
 //
+
+IESParser::IESParser() :
+    ignore_allowed_keywords(false),
+    ignore_required_keywords(false),
+    ignore_empty_lines(true),
+    ignore_tilt(false)
+{}
+
 
 void IESParser::parse(std::istream& input_stream)
 {

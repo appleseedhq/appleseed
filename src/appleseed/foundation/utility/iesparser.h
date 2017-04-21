@@ -31,6 +31,7 @@
 
 // Boost headers.
 #include "boost/algorithm/string.hpp"
+#include "boost/lexical_cast.hpp"
 #include "boost/unordered_map.hpp"
 
 // Standard headers.
@@ -61,6 +62,8 @@ namespace foundation
 class IESParser
 {
 public:
+    // Constructor.
+    IESParser();
 
     // Exception that can store erroneous line number.
     class Exception : public foundation::Exception
@@ -167,7 +170,7 @@ public:
         double height;
     };
 
-    typedef std::vector<std::vector<double>> PhotometricGrid;
+    typedef std::vector< std::vector<double> > PhotometricGrid;
 
     // Parse input stream containing IESNA LM-63 Photometric Data.
     void parse(std::istream& input_stream);
@@ -290,10 +293,10 @@ public:
     }
 
     // Options:
-    bool ignore_allowed_keywords = false;  // if true, all keywors are allowed not depending on format version
-    bool ignore_required_keywords = false; // if true, some required keywors can be missing
-    bool ignore_empty_lines = true;        // if true, than the file can contain whitespace lines
-    bool ignore_tilt = false;              // if true, TILT section is not parsed
+    bool ignore_allowed_keywords;  // if true, all keywors are allowed not depending on format version
+    bool ignore_required_keywords; // if true, some required keywors can be missing
+    bool ignore_empty_lines;       // if true, than the file can contain whitespace lines
+    bool ignore_tilt;              // if true, TILT section is not parsed
 
 private:
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Iesparser, ParseFormat);
