@@ -210,23 +210,24 @@ TEST_SUITE(Foundation_Utility_Iesparser)
             std::istringstream input_stream("\n-0 1    2  3 \n\t4");
             parser.reset(input_stream);
             std::vector<int> result = parser.parse_to_vector<int>(input_stream, 5);
-            std::vector<int> expected = { 0, 1, 2, 3, 4 };
-            EXPECT_EQ(result, expected);
+            EXPECT_EQ(result.size(), 5);
+            for (int i = 0; i < 5; ++i)
+                EXPECT_FEQ(result[i], i);
         }
         {
             std::istringstream input_stream("\n1e-1\n\n\n0.2\n\n0.3 0.4\n\n\n0.5\n\n\n");
             parser.reset(input_stream);
             std::vector<double> result = parser.parse_to_vector<double>(input_stream, 5);
-            std::vector<double> expected = { 0.1, 0.2, 0.3, 0.4, 0.5 };
+            EXPECT_EQ(result.size(), 5);
             for (int i = 0; i < 5; ++i)
-                EXPECT_FEQ(result[i], expected[i]);
+                EXPECT_FEQ(result[i], (i + 1) * 0.1);
         }
         {
             std::istringstream input_stream("0");
             parser.reset(input_stream);
             std::vector<int> result = parser.parse_to_vector<int>(input_stream, 1);
-            std::vector<int> expected = { 0 };
-            EXPECT_EQ(result, expected);
+            EXPECT_EQ(result.size(), 1);
+            EXPECT_EQ(result[0], 0);
         }
     }
 

@@ -397,10 +397,10 @@ private:
                     expected_number_of_values).c_str(), line_counter);
             }
 
-            for (auto& token : tokens)
+            for (each< std::vector<std::string> > token = tokens; token; ++token)
             {
                 output.push_back(
-                    boost::lexical_cast<ValueType>(token));
+                    boost::lexical_cast<ValueType>(*token));
             }
 
             read_trimmed_line(input_stream);
