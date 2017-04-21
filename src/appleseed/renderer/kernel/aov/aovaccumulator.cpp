@@ -82,7 +82,7 @@ BeautyAOVAccumulator::BeautyAOVAccumulator()
 
 void BeautyAOVAccumulator::set(const Spectrum& value)
 {
-    m_color_space = ColorSpaceSpectral;
+    m_color_space = value.is_rgb() ? ColorSpaceLinearRGB : ColorSpaceSpectral;
     m_color = value;
 }
 
