@@ -149,8 +149,6 @@ namespace
                 m_mdf.reset(new GGXMDF());
             else if (mdf == "beckmann")
                 m_mdf.reset(new BeckmannMDF());
-            else if (mdf == "blinn")
-                m_mdf.reset(new BlinnMDF());
             else return false;
 
             return true;

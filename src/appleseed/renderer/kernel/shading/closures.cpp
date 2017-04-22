@@ -33,6 +33,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/bsdf/alsurfacelayerbrdf.h"
 #include "renderer/modeling/bsdf/ashikhminbrdf.h"
+#include "renderer/modeling/bsdf/blinnbrdf.h"
 #include "renderer/modeling/bsdf/diffusebtdf.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/bsdf/glassbsdf.h"
@@ -82,7 +83,6 @@ namespace
     //
 
     const OIIO::ustring g_beckmann_str("beckmann");
-    const OIIO::ustring g_blinn_str("blinn");
     const OIIO::ustring g_ggx_str("ggx");
 
     const OIIO::ustring g_standard_dipole_profile_str("standard_dipole");
@@ -211,6 +211,62 @@ namespace
             };
 
             shading_system.register_closure(name(), id(), params, 0, 0);
+        }
+    };
+
+    struct BlinnClosure
+    {
+        struct Params
+        {
+            OSL::Vec3       N;
+            float           exponent;
+            float           ior;
+        };
+
+        static const char* name()
+        {
+            return "as_blinn";
+        }
+
+        static ClosureID id()
+        {
+            return BlinnID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_FLOAT_PARAM(Params, exponent),
+                CLOSURE_FLOAT_PARAM(Params, ior),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, 0, 0);
+
+            g_closure_convert_funs[id()] = &convert_closure;
+        }
+
+        static void convert_closure(
+            CompositeSurfaceClosure&    composite_closure,
+            const Basis3f&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight,
+            Arena&                      arena)
+        {
+            const Params* p = static_cast<const Params*>(osl_params);
+
+            BlinnBRDFInputValues* values =
+                composite_closure.add_closure<BlinnBRDFInputValues>(
+                    BlinnID,
+                    shading_basis,
+                    weight,
+                    p->N,
+                    arena);
+
+            values->m_exponent = max(p->exponent, 0.001f);
+            values->m_ior = max(p->ior, 0.001f);
         }
     };
 
@@ -598,17 +654,6 @@ namespace
                 values =
                     composite_closure.add_closure<GlossyBRDFInputValues>(
                         GlossyBeckmannID,
-                        shading_basis,
-                        weight,
-                        p->N,
-                        p->T,
-                        arena);
-            }
-            else if (p->dist == g_blinn_str)
-            {
-                values =
-                    composite_closure.add_closure<GlossyBRDFInputValues>(
-                        GlossyBlinnID,
                         shading_basis,
                         weight,
                         p->N,
@@ -1875,6 +1920,7 @@ void register_closures(OSL::ShadingSystem& shading_system)
     register_closure<AlSurfaceLayerClosure>(shading_system);
     register_closure<AshikhminShirleyClosure>(shading_system);
     register_closure<BackgroundClosure>(shading_system);
+    register_closure<BlinnClosure>(shading_system);
     register_closure<DebugClosure>(shading_system);
     register_closure<DiffuseClosure>(shading_system);
     register_closure<DisneyClosure>(shading_system);

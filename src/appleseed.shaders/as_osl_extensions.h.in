@@ -68,19 +68,10 @@ closure color as_glossy(
     float   anisotropic,
     float   ior) BUILTIN;
 
-closure color as_glossy_blinn(
+closure color as_blinn(
     normal  N,
     float   exponent,
-    float   ior)
-{
-    return as_glossy(
-        "blinn",
-        N,
-        vector(0),
-        exponent,
-        0,
-        ior);
-}
+    float   ior) BUILTIN;
 
 closure color as_metal(
     string  distribution,
