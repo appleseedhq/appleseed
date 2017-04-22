@@ -60,6 +60,7 @@ APPLESEED_DECLARE_INPUT_VALUES(MetalBRDFInputValues)
     Spectrum    m_edge_tint;
     float       m_reflectance_multiplier;
     float       m_roughness;
+    float       m_highlight_falloff;
     float       m_anisotropy;
 
     struct Precomputed

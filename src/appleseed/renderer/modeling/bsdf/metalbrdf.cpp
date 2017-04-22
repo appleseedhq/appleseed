@@ -104,6 +104,7 @@ namespace
             m_inputs.declare("edge_tint", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("roughness", InputFormatFloat, "0.15");
+            m_inputs.declare("highlight_falloff", InputFormatFloat, "0.4");
             m_inputs.declare("anisotropy", InputFormatFloat, "0.0");
         }
 
@@ -196,13 +197,14 @@ namespace
                 values->m_anisotropy,
                 alpha_x,
                 alpha_y);
+            const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
             MicrofacetBRDFHelper::sample(
                 sampling_context,
                 *m_mdf,
                 alpha_x,
                 alpha_y,
-                0.0f,
+                gamma,
                 f,
                 cos_on,
                 sample);
@@ -237,6 +239,7 @@ namespace
                 values->m_anisotropy,
                 alpha_x,
                 alpha_y);
+            const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
             FresnelConductorFun f(
                 values->m_precomputed.m_n,
@@ -247,7 +250,7 @@ namespace
                 *m_mdf,
                 alpha_x,
                 alpha_y,
-                0.0f,
+                gamma,
                 shading_basis,
                 outgoing,
                 incoming,
@@ -283,12 +286,13 @@ namespace
                 values->m_anisotropy,
                 alpha_x,
                 alpha_y);
+            const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
             return MicrofacetBRDFHelper::pdf(
                 *m_mdf,
                 alpha_x,
                 alpha_y,
-                0.0f,
+                gamma,
                 shading_basis,
                 outgoing,
                 incoming);
@@ -384,6 +388,16 @@ DictionaryArray MetalBRDFFactory::get_input_metadata() const
             .insert("min_value", "0.0")
             .insert("max_value", "1.0")
             .insert("default", "0.15"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "highlight_falloff")
+            .insert("label", "Highlight Falloff")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
+            .insert("use", "optional")
+            .insert("default", "0.4"));
 
     metadata.push_back(
         Dictionary()
