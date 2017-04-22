@@ -531,6 +531,7 @@ closure color microfacet(
             color(0),   // reflection tint
             color(1),   // refraction tint
             xalpha,     // roughness
+            0.5,        // highlight falloff
             anisotropy,
             eta,
             color(1),   // volume transmittance
@@ -543,6 +544,7 @@ closure color microfacet(
             N,
             U,
             xalpha,     // roughness
+            0.5,        // highlight falloff
             anisotropy,
             eta);
     }
@@ -577,6 +579,7 @@ closure color refraction(normal N, float eta)
         color(0),       // reflection tint
         color(1),       // refraction tint
         0.0,            // roughness
+        0.5,            // highlight falloff
         0.0,            // anisotropy
         eta,
         color(1),       // volume transmittance
