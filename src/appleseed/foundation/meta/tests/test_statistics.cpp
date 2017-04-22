@@ -55,7 +55,7 @@ TEST_SUITE(Foundation_Utility_Statistics)
 
         stats.insert<uint64>("some value", 17000);
 
-        EXPECT_EQ("  some value       17,000", stats.to_string());
+        EXPECT_EQ("  some value                    17,000", stats.to_string());
     }
 
     TEST_CASE(SingleFloatingPointStatistic)
@@ -64,7 +64,7 @@ TEST_SUITE(Foundation_Utility_Statistics)
 
         stats.insert("some value", 42.6);
 
-        EXPECT_EQ("  some value       42.6", stats.to_string());
+        EXPECT_EQ("  some value                    42.6", stats.to_string());
     }
 
     TEST_CASE(SingleStringStatistic)
@@ -73,7 +73,7 @@ TEST_SUITE(Foundation_Utility_Statistics)
 
         stats.insert<string>("some value", "bunny");
 
-        EXPECT_EQ("  some value       bunny", stats.to_string());
+        EXPECT_EQ("  some value                    bunny", stats.to_string());
     }
 
     TEST_CASE(SingleDefaultInitializedUnsignedIntegerPopulationStatistic)
@@ -82,7 +82,7 @@ TEST_SUITE(Foundation_Utility_Statistics)
 
         stats.insert("some value", Population<size_t>());
 
-        EXPECT_EQ("  some value       avg 0.0  min 0  max 0  dev 0.0", stats.to_string());
+        EXPECT_EQ("  some value                    avg 0.0  min 0  max 0  dev 0.0", stats.to_string());
     }
 
     TEST_CASE(SingleUnsignedIntegerPopulationStatistic)
@@ -96,7 +96,7 @@ TEST_SUITE(Foundation_Utility_Statistics)
 
         stats.insert("some value", pop);
 
-        EXPECT_EQ("  some value       avg 2.0  min 1  max 3  dev 0.8", stats.to_string());
+        EXPECT_EQ("  some value                    avg 2.0  min 1  max 3  dev 0.8", stats.to_string());
     }
 
     TEST_CASE(SingleUnsignedIntegerPopulationStatisticWithUnit)
@@ -110,7 +110,7 @@ TEST_SUITE(Foundation_Utility_Statistics)
 
         stats.insert("some value", pop, "%");
 
-        EXPECT_EQ("  some value       avg 2.0%  min 1%  max 3%  dev 0.8%", stats.to_string());
+        EXPECT_EQ("  some value                    avg 2.0%  min 1%  max 3%  dev 0.8%", stats.to_string());
     }
 
     TEST_CASE(SingleFloatingPointPopulationStatistic)
@@ -124,7 +124,7 @@ TEST_SUITE(Foundation_Utility_Statistics)
 
         stats.insert("some value", pop);
 
-        EXPECT_EQ("  some value       avg 0.2  min 0.1  max 0.3  dev 0.1", stats.to_string());
+        EXPECT_EQ("  some value                    avg 0.2  min 0.1  max 0.3  dev 0.1", stats.to_string());
     }
 
     TEST_CASE(SingleFloatingPointPopulationStatisticWithUnit)
@@ -138,7 +138,7 @@ TEST_SUITE(Foundation_Utility_Statistics)
 
         stats.insert("some value", pop, "%");
 
-        EXPECT_EQ("  some value       avg 0.2%  min 0.1%  max 0.3%  dev 0.1%", stats.to_string());
+        EXPECT_EQ("  some value                    avg 0.2%  min 0.1%  max 0.3%  dev 0.1%", stats.to_string());
     }
 
     TEST_CASE(SingleStatisticWithLongTitle)
@@ -147,7 +147,7 @@ TEST_SUITE(Foundation_Utility_Statistics)
 
         stats.insert<uint64>("the name of this value is too long to fit", 17);
 
-        EXPECT_EQ("  the name of this 17", stats.to_string());
+        EXPECT_EQ("  the name of this value is too 17", stats.to_string());
     }
 
     TEST_CASE(MultipleStatistics)
@@ -157,7 +157,7 @@ TEST_SUITE(Foundation_Utility_Statistics)
         stats.insert<uint64>("first value", 17);
         stats.insert("second value", 42.6);
 
-        EXPECT_EQ("  first value      17\n  second value     42.6", stats.to_string());
+        EXPECT_EQ("  first value                   17\n  second value                  42.6", stats.to_string());
     }
 
     TEST_CASE(Merge_GivenNewStatistic_InsertsIt)
@@ -170,7 +170,7 @@ TEST_SUITE(Foundation_Utility_Statistics)
 
         stats.merge(other_stats);
 
-        EXPECT_EQ("  existing value   17\n  new value        42", stats.to_string());
+        EXPECT_EQ("  existing value                17\n  new value                     42", stats.to_string());
     }
 
     TEST_CASE(Merge_GivenExistingStatisticOfSameType_MergesIt)
@@ -183,7 +183,7 @@ TEST_SUITE(Foundation_Utility_Statistics)
 
         stats.merge(other_stats);
 
-        EXPECT_EQ("  existing value   17,042", stats.to_string());
+        EXPECT_EQ("  existing value                17,042", stats.to_string());
     }
 }
 
@@ -201,6 +201,6 @@ TEST_SUITE(Foundation_Utility_StatisticsVector)
         vec.insert("stats 1", stats1);
         vec.insert("stats 2", stats2);
 
-        EXPECT_EQ("stats 1:\n  counter 1        17\nstats 2:\n  counter 2        42", vec.to_string());
+        EXPECT_EQ("stats 1:\n  counter 1                     17\nstats 2:\n  counter 2                     42", vec.to_string());
     }
 }
