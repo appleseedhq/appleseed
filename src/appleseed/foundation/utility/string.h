@@ -191,6 +191,11 @@ std::string replace(
     const std::string&      old_string,
     const std::string&      new_string);
 
+// Prefix all lines of a multi-line string.
+std::string prefix_all_lines(
+    const std::string&      s,
+    const std::string&      prefix);
+
 // Formatting functions, similar to the .NET String.Format() method.
 // Placeholders are of the form {n} with n starting at 0, e.g. {0}, {1}, etc.
 // Example: format("Hello {0}", "World") will return "Hello World".
@@ -752,6 +757,13 @@ inline std::string replace(
     } while ((pos = result.find(old_string, pos)) != std::string::npos);
 
     return result;
+}
+
+inline std::string prefix_all_lines(
+    const std::string&      s,
+    const std::string&      prefix)
+{
+    return prefix + replace(s, "\n", "\n" + prefix);
 }
 
 template <typename T1>

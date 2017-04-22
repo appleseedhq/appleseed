@@ -139,12 +139,12 @@ void TreeStatistics<Tree, Builder>::print(Logger& logger)
 {
     LOG_DEBUG(
         logger,
-        "  build time       %s\n"
-        "  size             %s  %s %s\n"
-        "  nodes            total %s  interior %s  leaves %s\n"
-        "  empty leaves     leaves %s  volume %s\n"
-        "  leaf depth       avg %.1f  min %s  max %s  dev %.1f\n"
-        "  leaf size        avg %.1f  min %s  max %s  dev %.1f",
+        "  build time                    %s\n"
+        "  size                          %s  %s %s\n"
+        "  nodes                         total %s  interior %s  leaves %s\n"
+        "  empty leaves                  leaves %s  volume %s\n"
+        "  leaf depth                    avg %.1f  min %s  max %s  dev %.1f\n"
+        "  leaf size                     avg %.1f  min %s  max %s  dev %.1f",
         pretty_time(m_build_time).c_str(),
         pretty_size(m_memory_size).c_str(),
         pretty_uint(m_tree_size).c_str(),

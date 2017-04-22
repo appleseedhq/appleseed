@@ -84,7 +84,10 @@ bool uses_alpha_mapping(const MaterialArray& materials)
         if (materials[i])
         {
             if (const ShaderGroup* sg = materials[i]->get_uncached_osl_surface())
-                return sg->has_transparency();
+            {
+                if (sg->has_transparency())
+                    return true;
+            }
 
             if (materials[i]->has_alpha_map() && !materials[i]->has_uniform_alpha_map_value_of_one())
                 return true;
