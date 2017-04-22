@@ -82,5 +82,6 @@ shader as_metal_surface
         NormalReflectance,
         EdgeTint,
         microfacet_roughness(Roughness, RoughnessDepthScale),
+        0.5,    // Highlight falloff.
         Anisotropic);
 }

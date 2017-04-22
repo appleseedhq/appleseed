@@ -260,6 +260,7 @@ shader asGlass
             in_reflectionTint,
             in_refractionTint,
             in_roughness,
+            0.5,    // Highlight falloff.
             in_anisotropyAmount,
             in_ior,
             in_volumeTransmittance,

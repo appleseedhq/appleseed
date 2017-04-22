@@ -82,6 +82,7 @@ shader as_glass_surface
         ReflectionTint,
         RefractionTint,
         Roughness,
+        0.5,            // Highlight falloff.
         Anisotropic,
         Ior,
         VolumeTransmittance,
