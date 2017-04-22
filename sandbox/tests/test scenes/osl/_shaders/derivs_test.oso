@@ -11,7 +11,7 @@ global	float	v	%read{1,1} %write{2147483647,-1} %derivs
 global	closure color	Ci	%read{2147483647,-1} %write{19,19}
 local	float	s	%read{5,10} %write{0,6} %derivs
 local	float	t	%read{4,10} %write{1,5} %derivs
-local	float	___305_tmp	%read{6,6} %write{4,4} %derivs
+local	float	___320_tmp	%read{6,6} %write{4,4} %derivs
 local	float	value	%read{13,14} %write{9,10} %derivs
 local	float	deriv	%read{17,17} %write{13,14}
 const	int	$const1	1		%read{2,2} %write{2147483647,-1}
@@ -44,13 +44,13 @@ code ___main___
 	if		$tmp1 7 7 	%argrw{"r"}
 # derivs_test.osl:13
 #         float tmp = t;
-	assign		___305_tmp t 	%line{13} %argrw{"wr"}
+	assign		___320_tmp t 	%line{13} %argrw{"wr"}
 # derivs_test.osl:14
 #         t = s;
 	assign		t s 	%line{14} %argrw{"wr"}
 # derivs_test.osl:15
 #         s = tmp;
-	assign		s ___305_tmp 	%line{15} %argrw{"wr"}
+	assign		s ___320_tmp 	%line{15} %argrw{"wr"}
 # derivs_test.osl:20
 #     if (analytic)
 	if		analytic 10 11 	%line{20} %argrw{"r"}
@@ -71,9 +71,9 @@ code ___main___
 #     Ci = clamp(deriv, 0.0, 1.0) * diffuse(N);
 	closure		$tmp4 $const8 N 	%line{34} %argrw{"wrr"}
 	functioncall	$const11 19 	%argrw{"r"}
-# /hdd/packages/osl/1.7.5/shaders/stdosl.h:144
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:144
 # PERCOMP1 (logb)
-	min		$tmp6 deriv $const10 	%filename{"/hdd/packages/osl/1.7.5/shaders/stdosl.h"} %line{144} %argrw{"wrr"}
+	min		$tmp6 deriv $const10 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{144} %argrw{"wrr"}
 	max		$tmp5 $tmp6 $const9 	%argrw{"wrr"}
 # derivs_test.osl:34
 #     Ci = clamp(deriv, 0.0, 1.0) * diffuse(N);
