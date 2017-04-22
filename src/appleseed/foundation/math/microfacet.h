@@ -450,12 +450,7 @@ class StdMDF
         const float         alpha_y,
         const float         gamma) const;
 
-    float gamma_fraction(
-        const float         numerator,
-        const float         denominator) const;
-
-    float abgamma(
-        const float         x) const;
+    float S2(const float cot_theta, const float gamma) const;
 };
 
 }       // namespace foundation
