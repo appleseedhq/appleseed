@@ -113,9 +113,9 @@ TEST_SUITE(Foundation_Math_Microfacet)
         size_t                      num_runs,
         const float                 alpha_x,
         const float                 alpha_y,
+        const float                 gamma,
         const float                 angle_step,
-        WeakWhiteFurnaceTestResult& result,
-        const float                 gamma = 0.0f)
+        WeakWhiteFurnaceTestResult& result)
     {
         result.m_min_G1 =  numeric_limits<float>::max();
         result.m_max_G1 = -numeric_limits<float>::max();
@@ -252,10 +252,11 @@ TEST_SUITE(Foundation_Math_Microfacet)
     TEST_CASE(BeckmannMDF_Isotropic_WeakWhiteFurnace)
     {
         WeakWhiteFurnaceTestResult result;
-        weak_white_furnace_test<BeckmannMDF >(
+        weak_white_furnace_test<BeckmannMDF>(
             WeakWhiteFurnaceRuns,
             0.6f,
             0.6f,
+            0.0f,
             WeakWhiteFurnaceAngleStep,
             result);
 
@@ -265,10 +266,11 @@ TEST_SUITE(Foundation_Math_Microfacet)
     TEST_CASE(BeckmannMDF_Anisotropic_WeakWhiteFurnace)
     {
         WeakWhiteFurnaceTestResult result;
-        weak_white_furnace_test<BeckmannMDF >(
+        weak_white_furnace_test<BeckmannMDF>(
             WeakWhiteFurnaceRuns,
             0.25f,
             0.5f,
+            0.0f,
             WeakWhiteFurnaceAngleStep,
             result);
 
@@ -310,10 +312,11 @@ TEST_SUITE(Foundation_Math_Microfacet)
     TEST_CASE(GGXMDF_Isotropic_WeakWhiteFurnace)
     {
         WeakWhiteFurnaceTestResult result;
-        weak_white_furnace_test<GGXMDF >(
+        weak_white_furnace_test<GGXMDF>(
             WeakWhiteFurnaceRuns,
             0.35f,
             0.35f,
+            0.0f,
             WeakWhiteFurnaceAngleStep,
             result);
 
@@ -323,10 +326,11 @@ TEST_SUITE(Foundation_Math_Microfacet)
     TEST_CASE(GGXMDF_Anisotropic_WeakWhiteFurnace)
     {
         WeakWhiteFurnaceTestResult result;
-        weak_white_furnace_test<GGXMDF >(
+        weak_white_furnace_test<GGXMDF>(
             WeakWhiteFurnaceRuns,
             0.25f,
             0.5f,
+            0.0f,
             WeakWhiteFurnaceAngleStep,
             result);
 
@@ -373,6 +377,20 @@ TEST_SUITE(Foundation_Math_Microfacet)
         const float integral = integrate(mdf, 10.0f, IntegrationSampleCount);
 
         EXPECT_FEQ_EPS(1.0f, integral, IntegrationEps);
+    }
+
+    TEST_CASE(GTR1MDF_Isotropic_WeakWhiteFurnace)
+    {
+        WeakWhiteFurnaceTestResult result;
+        weak_white_furnace_test<GTR1MDF>(
+            WeakWhiteFurnaceRuns,
+            0.21f,
+            0.21f,
+            0.0f,
+            WeakWhiteFurnaceAngleStep,
+            result);
+
+        EXPECT_WEAK_WHITE_FURNACE_PASS(result)
     }
 
     //
@@ -460,6 +478,20 @@ TEST_SUITE(Foundation_Math_Microfacet)
                 EXPECT_TRUE(foundation::FP<float>::is_finite(std_D)); // check that D doesn't produce NaN
             }
         }
+    }
+
+    TEST_CASE(StdMDF_Isotropic_WeakWhiteFurnace)
+    {
+        WeakWhiteFurnaceTestResult result;
+        weak_white_furnace_test<StdMDF>(
+            WeakWhiteFurnaceRuns,
+            0.6f,
+            0.6f,
+            2.0f,
+            WeakWhiteFurnaceAngleStep,
+            result);
+
+        EXPECT_WEAK_WHITE_FURNACE_PASS(result)
     }
 
 #undef EXPECT_WEAK_WHITE_FURNACE_PASS

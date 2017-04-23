@@ -332,6 +332,10 @@ float BeckmannMDF::lambda(
 
     const float sin_theta = sqrt(max(0.0f, 1.0f - square(cos_theta)));
 
+    // Normal incidence. No shadowing.
+    if (sin_theta == 0.0f)
+        return 0.0f;
+
     const float alpha =
         projected_roughness(
             v,
@@ -495,7 +499,7 @@ float GGXMDF::lambda(
     const float         alpha_y,
     const float         gamma) const
 {
-    const float cos_theta = abs(v.y);
+    const float cos_theta = v.y;
 
     if (cos_theta == 0.0f)
         return 0.0f;
@@ -721,17 +725,19 @@ float GTR1MDF::lambda(
     const float         alpha_y,
     const float         gamma) const
 {
-    const float cos_theta = abs(v.y);
+    const float cos_theta = v.y;
 
     if (cos_theta == 0.0f)
         return 0.0f;
 
-    if (cos_theta == 1.0f)
-        return 1.0f;
-
     // [2] section 3.2.
     const float cos_theta_2 = square(cos_theta);
     const float sin_theta = sqrt(max(0.0f, 1.0f - square(cos_theta)));
+
+    // Normal incidence. No shadowing.
+    if (sin_theta == 0.0f)
+        return 0.0f;
+
     const float cot_theta_2 = cos_theta_2 / square(sin_theta);
     const float cot_theta = sqrt(cot_theta_2);
     const float alpha_2 = square(alpha_x);
@@ -846,8 +852,9 @@ float StdMDF::lambda(
 
     const float sin_theta = sqrt(max(0.0f, 1.0f - square(cos_theta)));
 
+    // Normal incidence. No shadowing.
     if (sin_theta == 0.0f)
-        return 1.0f;
+        return 0.0f;
 
     const float A =
         projected_roughness(
