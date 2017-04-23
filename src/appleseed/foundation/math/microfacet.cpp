@@ -502,7 +502,6 @@ float GGXMDF::lambda(
 
     const float cos_theta_2 = square(cos_theta);
     const float sin_theta = sqrt(max(0.0f, 1.0f - square(cos_theta)));
-    const float tan_theta_2 = square(sin_theta) / cos_theta_2;
 
     const float alpha =
         projected_roughness(
@@ -511,6 +510,7 @@ float GGXMDF::lambda(
             alpha_x,
             alpha_y);
 
+    const float tan_theta_2 = square(sin_theta) / cos_theta_2;
     const float a2_rcp = square(alpha) * tan_theta_2;
     return (-1.0f + sqrt(1.0f + a2_rcp)) * 0.5f;
 }
@@ -800,7 +800,7 @@ float StdMDF::D(
 
     // [1] Equation 18.
     const float den = 1.0f + tan_theta_2 * A / (gamma - 1.0f);
-    const float den4 = std::pow(den, gamma / 4.0f);
+    const float den4 = pow(den, gamma / 4.0f);
     const float den0 = Pi<float>() * den4;
     const float den1 = alpha_x * den4;
     const float den2 = alpha_y * den4;
@@ -864,8 +864,8 @@ float StdMDF::lambda(
     const float frac_a1_sg1 = (gamma - 1.0f) / pg1_cot_theta_a_2;
     float a1_sg1 = pow(frac_a1_sg1, gamma);
     a1_sg1 *= 1.0f / ((2.0f * gamma - 3.0f) * cot_theta_a);
-    a1_sg1 *= std::pow(pg1_cot_theta_a_2, 3.0 / 2.0);
-    const float a2 = std::sqrt(gamma - 1.0f);
+    a1_sg1 *= pow(pg1_cot_theta_a_2, 3.0f / 2.0f);
+    const float a2 = sqrt(gamma - 1.0f);
     const float a2_sg2 = a2 * Sg2;
     const float gfrac = gamma_fraction(gamma - 0.5f, gamma) / SqrtPi<float>();
     return ((a1_sg1 + a2_sg2) * gfrac - 0.5f);
@@ -888,6 +888,9 @@ Vector3f StdMDF::sample(
     const float         alpha_y,
     const float         gamma) const
 {
+    // todo:
+    // implement the improved sampling strategy in the supplemental material of [1].
+
     float theta, phi;
     const float b = pow(1.0f - s[1], 1.0f / (1.0f - gamma)) - 1.0f;
 
@@ -899,8 +902,10 @@ Vector3f StdMDF::sample(
     }
     else
     {
-        // [1] Equation 19.
-        phi = atan(alpha_y * tan(TwoPi<float>() * s[0]) / alpha_x);
+        // [1] Equation 19 plus the changes in the Mitsuba sample implementation.
+        phi =
+            atan(alpha_y / alpha_x * tan(Pi<float>() + TwoPi<float>() * s[0])) +
+            Pi<float>() * floor(2.0f * s[0] + 0.5f);
 
         // [1] Equation 20.
         const float cos_phi_2 = square(cos(phi));
