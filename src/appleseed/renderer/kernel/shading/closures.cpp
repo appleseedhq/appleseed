@@ -1596,11 +1596,7 @@ void CompositeSurfaceClosure::process_closure_tree(
     if (closure == 0)
         return;
 
-#if OSL_LIBRARY_VERSION_CODE >= 10700
     switch (closure->id)
-#else
-    switch (closure->type)
-#endif
     {
       case OSL::ClosureColor::MUL:
         {
@@ -1653,11 +1649,7 @@ void CompositeSubsurfaceClosure::process_closure_tree(
     if (closure == 0)
         return;
 
-#if OSL_LIBRARY_VERSION_CODE >= 10700
     switch (closure->id)
-#else
-    switch (closure->type)
-#endif
     {
       case OSL::ClosureColor::MUL:
         {
@@ -1749,11 +1741,7 @@ void CompositeEmissionClosure::process_closure_tree(
     if (closure == 0)
         return;
 
-#if OSL_LIBRARY_VERSION_CODE >= 10700
     switch (closure->id)
-#else
-    switch (closure->type)
-#endif
     {
       case OSL::ClosureColor::MUL:
         {
@@ -1813,11 +1801,7 @@ namespace
     {
         if (closure)
         {
-#if OSL_LIBRARY_VERSION_CODE >= 10700
             switch (closure->id)
-#else
-            switch (closure->type)
-#endif
             {
               case OSL::ClosureColor::MUL:
                 {

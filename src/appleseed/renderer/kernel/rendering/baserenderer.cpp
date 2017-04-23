@@ -77,11 +77,7 @@ BaseRenderer::BaseRenderer(
     m_renderer_services = new RendererServices(m_project, *m_texture_system);
 
     RENDERER_LOG_DEBUG("creating osl shading system...");
-#if OSL_LIBRARY_VERSION_CODE >= 10700
     m_shading_system = new OSL::ShadingSystem(
-#else
-    m_shading_system = OSL::ShadingSystem::create(
-#endif
         m_renderer_services,
         m_texture_system,
         m_error_handler);
@@ -109,12 +105,7 @@ BaseRenderer::~BaseRenderer()
 {
     RENDERER_LOG_DEBUG("destroying osl shading system...");
     m_project.get_scene()->release_optimized_osl_shader_groups();
-#if OSL_LIBRARY_VERSION_CODE >= 10700
     delete m_shading_system;
-#else
-    OSL::ShadingSystem::destroy(m_shading_system);
-#endif
-
     delete m_renderer_services;
 
     const string stats = m_texture_system->getstats();

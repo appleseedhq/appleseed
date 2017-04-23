@@ -232,11 +232,7 @@ bool ShaderGroup::create_optimized_osl_shader_group(
                     memset(&sg, 0, sizeof(OSL::ShaderGlobals));
 
                     if (shading_system.execute(
-#if OSL_LIBRARY_VERSION_CODE >= 10700
                             ctx,
-#else
-                            *ctx,
-#endif
                             *impl->m_shader_group_ref,
                             sg,
                             false))
