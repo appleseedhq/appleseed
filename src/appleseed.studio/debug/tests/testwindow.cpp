@@ -293,7 +293,7 @@ namespace
         const int               column,
         const Qt::CheckState    state)
     {
-        const bool previous_block = widget->blockSignals(true);
+        const bool were_signals_blocked = widget->blockSignals(true);
 
         for (int i = 0; i < widget->topLevelItemCount(); ++i)
         {
@@ -302,7 +302,7 @@ namespace
             set_child_items_check_state(item, column, state);
         }
 
-        widget->blockSignals(previous_block);
+        widget->blockSignals(were_signals_blocked);
     }
 
     bool has_child_items(
@@ -362,13 +362,13 @@ namespace
         QTreeWidgetItem*        item,
         const int               column)
     {
-        const bool previous_block = widget->blockSignals(true);
+        const bool were_signals_blocked = widget->blockSignals(true);
 
         const Qt::CheckState state = item->checkState(column);
         set_child_items_check_state(item, column, state);
         update_parent_items_check_state(item->parent(), column);
 
-        widget->blockSignals(previous_block);
+        widget->blockSignals(were_signals_blocked);
     }
 }
 
