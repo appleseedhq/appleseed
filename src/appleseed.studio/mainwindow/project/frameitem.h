@@ -53,8 +53,8 @@ namespace studio {
 
 class FrameItem
   : public ItemBase
-  , public EntityCreatorBase
   , public IEntityValueProvider
+  , private EntityCreatorBase
 {
     Q_OBJECT
 
