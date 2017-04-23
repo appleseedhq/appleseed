@@ -404,22 +404,6 @@ TEST_SUITE(Foundation_Math_Microfacet)
         EXPECT_FEQ_EPS(1.0f, integral, IntegrationEps);
     }
 
-    TEST_CASE(StdMDF_Isotropic_WeakWhiteFurnace)
-    {
-        WeakWhiteFurnaceTestResult result;
-        weak_white_furnace_test<StdMDF >(
-            WeakWhiteFurnaceRuns,
-            0.6f,
-            0.6f,
-            WeakWhiteFurnaceAngleStep,
-            result,
-            2.0f);
-
-        EXPECT_WEAK_WHITE_FURNACE_PASS(result)
-    }
-
-    // Expect StdMDF and GGXMDF to be the same for gamma = 2
-
     TEST_CASE(StdMDF_2_GGXMDF_G1_comparison)
     {
         const StdMDF std;
@@ -437,8 +421,6 @@ TEST_SUITE(Foundation_Math_Microfacet)
         }
     }
 
-    // Check for lambda overflow
-
     TEST_CASE(StdMDF_lambda_overflow)
     {
         const StdMDF std;
@@ -446,7 +428,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
         const float gamma_max = 40.0f;
         const float gamma_step = 2.0f;
         const size_t num_sample = 128;
-        for (float i = 10.0f; i <= gamma_max; i += gamma_step)
+        for (float i = 2.0f; i <= gamma_max; i += gamma_step)
         {
             for (size_t j = 0; j < num_sample; ++j)
             {
@@ -460,8 +442,6 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     }
 
-    // Check for D overflow
-
     TEST_CASE(StdMDF_D_overflow)
     {
         const StdMDF std;
@@ -469,7 +449,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
         const float gamma_max = 40.0f;
         const float gamma_step = 2.0f;
         const size_t num_sample = 128;
-        for (float i = 10.0f; i <= gamma_max; i += gamma_step)
+        for (float i = 2.0f; i <= gamma_max; i += gamma_step)
         {
             for (size_t j = 0; j < num_sample; ++j)
             {
@@ -480,7 +460,6 @@ TEST_SUITE(Foundation_Math_Microfacet)
                 EXPECT_TRUE(foundation::FP<float>::is_finite(std_D)); // check that D doesn't produce NaN
             }
         }
-
     }
 
 #undef EXPECT_WEAK_WHITE_FURNACE_PASS
