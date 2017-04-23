@@ -72,10 +72,6 @@ namespace
     //
     // Glass BSDF.
     //
-    //    A future version of this BSDF will support multiple scattering.
-    //    For that reason, the only available microfacet distribution functions
-    //    are those that support it (Beckmann and GGX).
-    //
     // References:
     //
     //   [1] Microfacet Models for Refraction through Rough Surfaces
@@ -102,6 +98,7 @@ namespace
             m_inputs.declare("reflection_tint", InputFormatSpectralReflectance, "1.0");
             m_inputs.declare("refraction_tint", InputFormatSpectralReflectance, "1.0");
             m_inputs.declare("roughness", InputFormatFloat, "0.15");
+            m_inputs.declare("highlight_falloff", InputFormatFloat, "0.4");
             m_inputs.declare("anisotropy", InputFormatFloat, "0.0");
             m_inputs.declare("ior", InputFormatFloat, "1.5");
             m_inputs.declare("volume_transmittance", InputFormatSpectralReflectance, "1.0");
@@ -141,13 +138,15 @@ namespace
                 m_params.get_required<string>(
                     "mdf",
                     "ggx",
-                    make_vector("beckmann", "ggx"),
+                    make_vector("beckmann", "ggx", "std"),
                     context);
 
             if (mdf == "ggx")
                 m_mdf.reset(new GGXMDF());
             else if (mdf == "beckmann")
                 m_mdf.reset(new BeckmannMDF());
+            else if (mdf == "std")
+                m_mdf.reset(new StdMDF());
             else return false;
 
             const string volume_parameterization =
@@ -217,13 +216,14 @@ namespace
                 values->m_anisotropy,
                 alpha_x,
                 alpha_y);
+            const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
             const Vector3f wo = backfacing_policy.transform_to_local(sample.m_outgoing.get_value());
 
             // Compute the microfacet normal by sampling the MDF.
             sampling_context.split_in_place(4, 1);
             const Vector4f s = sampling_context.next2<Vector4f>();
-            Vector3f m = m_mdf->sample(wo, Vector3f(s[0], s[1], s[2]), alpha_x, alpha_y, 0.0f);
+            Vector3f m = m_mdf->sample(wo, Vector3f(s[0], s[1], s[2]), alpha_x, alpha_y, gamma);
             assert(m.y > 0.0f);
 
             const float cos_wom = clamp(dot(wo, m), -1.0f, 1.0f);
@@ -255,12 +255,13 @@ namespace
                     m,
                     alpha_x,
                     alpha_y,
+                    gamma,
                     F,
                     sample.m_value);
 
                 sample.m_probability =
                     r_probability *
-                    reflection_pdf(wo, m, cos_wom, alpha_x, alpha_y, 0.0f);
+                    reflection_pdf(wo, m, cos_wom, alpha_x, alpha_y, gamma);
             }
             else
             {
@@ -287,12 +288,13 @@ namespace
                     m,
                     alpha_x,
                     alpha_y,
+                    gamma,
                     1.0f - F,
                     sample.m_value);
 
                 sample.m_probability =
                     (1.0f - r_probability) *
-                    refraction_pdf(wi, wo, m, alpha_x, alpha_y, 0.0f, values->m_precomputed.m_eta);
+                    refraction_pdf(wi, wo, m, alpha_x, alpha_y, gamma, values->m_precomputed.m_eta);
             }
 
             if (sample.m_probability < 1.0e-9f)
@@ -329,6 +331,7 @@ namespace
                 values->m_anisotropy,
                 alpha_x,
                 alpha_y);
+            const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
             const Vector3f wi = backfacing_policy.transform_to_local(incoming);
             const Vector3f wo = backfacing_policy.transform_to_local(outgoing);
@@ -347,12 +350,13 @@ namespace
                     m,
                     alpha_x,
                     alpha_y,
+                    gamma,
                     F,
                     value);
 
                 return
                     choose_reflection_probability(values, F) *
-                    reflection_pdf(wo, m, cos_wom, alpha_x, alpha_y, 0.0f);
+                    reflection_pdf(wo, m, cos_wom, alpha_x, alpha_y, gamma);
             }
             else
             {
@@ -369,12 +373,13 @@ namespace
                     m,
                     alpha_x,
                     alpha_y,
+                    gamma,
                     1.0f - F,
                     value);
 
                 return
                     (1.0f - choose_reflection_probability(values, F)) *
-                    refraction_pdf(wi, wo, m, alpha_x, alpha_y, 0.0f, values->m_precomputed.m_eta);
+                    refraction_pdf(wi, wo, m, alpha_x, alpha_y, gamma, values->m_precomputed.m_eta);
             }
         }
 
@@ -398,6 +403,7 @@ namespace
                 values->m_anisotropy,
                 alpha_x,
                 alpha_y);
+            const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
             const Vector3f wi = backfacing_policy.transform_to_local(incoming);
             const Vector3f wo = backfacing_policy.transform_to_local(outgoing);
@@ -411,7 +417,7 @@ namespace
 
                 return
                     choose_reflection_probability(values, F) *
-                    reflection_pdf(wo, m, cos_wom, alpha_x, alpha_y, 0.0f);
+                    reflection_pdf(wo, m, cos_wom, alpha_x, alpha_y, gamma);
             }
             else
             {
@@ -422,7 +428,7 @@ namespace
 
                 return
                     (1.0f - choose_reflection_probability(values, F)) *
-                    refraction_pdf(wi, wo, m, alpha_x, alpha_y, 0.0f, values->m_precomputed.m_eta);
+                    refraction_pdf(wi, wo, m, alpha_x, alpha_y, gamma, values->m_precomputed.m_eta);
             }
         }
 
@@ -553,6 +559,7 @@ namespace
             const Vector3f&         h,
             const float             alpha_x,
             const float             alpha_y,
+            const float             gamma,
             const float             F,
             Spectrum&               value) const
         {
@@ -564,8 +571,8 @@ namespace
                 return;
             }
 
-            const float D = m_mdf->D(h, alpha_x, alpha_y, 0.0f);
-            const float G = m_mdf->G(wi, wo, h, alpha_x, alpha_y, 0.0f);
+            const float D = m_mdf->D(h, alpha_x, alpha_y, gamma);
+            const float G = m_mdf->G(wi, wo, h, alpha_x, alpha_y, gamma);
 
             value = values->m_precomputed.m_reflection_color;
             value *= F * D * G / denom;
@@ -605,6 +612,7 @@ namespace
             const Vector3f&         h,
             const float             alpha_x,
             const float             alpha_y,
+            const float             gamma,
             const float             T,
             Spectrum&               value) const
         {
@@ -620,8 +628,8 @@ namespace
                 return;
             }
 
-            const float D = m_mdf->D(h, alpha_x, alpha_y, 0.0f);
-            const float G = m_mdf->G(wi, wo, h, alpha_x, alpha_y, 0.0f);
+            const float D = m_mdf->D(h, alpha_x, alpha_y, gamma);
+            const float G = m_mdf->G(wi, wo, h, alpha_x, alpha_y, gamma);
             const float multiplier = abs(dots) * square(values->m_precomputed.m_eta / sqrt_denom) * T * D * G;
 
             value = values->m_precomputed.m_refraction_color;
@@ -684,7 +692,8 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
             .insert("items",
                 Dictionary()
                     .insert("Beckmann", "beckmann")
-                    .insert("GGX", "ggx"))
+                    .insert("GGX", "ggx")
+                    .insert("STD", "std"))
             .insert("use", "required")
             .insert("default", "ggx"));
 
@@ -757,6 +766,16 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
             .insert("min_value", "0.0")
             .insert("max_value", "1.0")
             .insert("default", "0.15"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "highlight_falloff")
+            .insert("label", "Highlight Falloff")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
+            .insert("use", "optional")
+            .insert("default", "0.4"));
 
     metadata.push_back(
         Dictionary()

@@ -38,6 +38,10 @@ float erf(const float x);
 // Inverse error function.
 float erf_inv(const float x);
 
+// Gamma function.
+float gamma(const float x);
+float gamma_fraction(const float num, const float denom);
+
 }       // namespace foundation
 
 #endif  // !APPLESEED_FOUNDATION_MATH_SPECIAL_FUNCTIONS_H

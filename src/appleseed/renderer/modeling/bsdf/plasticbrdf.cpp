@@ -96,8 +96,8 @@ namespace
             m_inputs.declare("specular_reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("specular_reflectance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("roughness", InputFormatFloat, "0.15");
-            m_inputs.declare("ior", InputFormatFloat, "1.5");
             m_inputs.declare("highlight_falloff", InputFormatFloat, "0.4");
+            m_inputs.declare("ior", InputFormatFloat, "1.5");
             m_inputs.declare("diffuse_reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("diffuse_reflectance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("internal_scattering", InputFormatFloat, "1.0");
@@ -544,16 +544,6 @@ DictionaryArray PlasticBRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "ior")
-            .insert("label", "Index of Refraction")
-            .insert("type", "numeric")
-            .insert("min_value", "1.0")
-            .insert("max_value", "2.5")
-            .insert("use", "required")
-            .insert("default", "1.5"));
-
-    metadata.push_back(
-        Dictionary()
             .insert("name", "highlight_falloff")
             .insert("label", "Highlight Falloff")
             .insert("type", "numeric")
@@ -561,6 +551,16 @@ DictionaryArray PlasticBRDFFactory::get_input_metadata() const
             .insert("max_value", "1.0")
             .insert("use", "optional")
             .insert("default", "0.4"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "ior")
+            .insert("label", "Index of Refraction")
+            .insert("type", "numeric")
+            .insert("min_value", "1.0")
+            .insert("max_value", "2.5")
+            .insert("use", "required")
+            .insert("default", "1.5"));
 
     metadata.push_back(
         Dictionary()

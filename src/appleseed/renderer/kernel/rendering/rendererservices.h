@@ -260,13 +260,6 @@ class RendererServices
         OSL::ShaderGlobals*         sg,
         void*                       val) APPLESEED_OVERRIDE;
 
-#if OSL_LIBRARY_VERSION_CODE < 10700
-    virtual bool has_userdata(
-        OIIO::ustring       name,
-        OIIO::TypeDesc      type,
-        OSL::ShaderGlobals* sg) APPLESEED_OVERRIDE;
-#endif
-
   private:
     // This code is based on OSL's test renderer.
     typedef bool (RendererServices::*AttrGetterFun)(

@@ -59,6 +59,7 @@ APPLESEED_DECLARE_INPUT_VALUES(GlossyBRDFInputValues)
     Spectrum    m_reflectance;
     float       m_reflectance_multiplier;
     float       m_roughness;
+    float       m_highlight_falloff;
     float       m_anisotropy;
     float       m_ior;
 

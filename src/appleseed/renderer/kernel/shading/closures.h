@@ -66,6 +66,7 @@ enum ClosureID
 {
     // BSDF closures.
     AshikhminShirleyID,
+    BlinnID,
     DiffuseID,
     DisneyID,
     OrenNayarID,
@@ -78,15 +79,17 @@ enum ClosureID
     GlassID,
     GlassBeckmannID,
     GlassGGXID,
+    GlassSTDID,
 
     GlossyID,
     GlossyBeckmannID,
-    GlossyBlinnID,
     GlossyGGXID,
+    GlossySTDID,
 
     MetalID,
     MetalBeckmannID,
     MetalGGXID,
+    MetalSTDID,
 
     // BSSRDF closures.
     SubsurfaceID,

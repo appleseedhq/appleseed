@@ -2,72 +2,63 @@ OpenShadingLanguage 1.00
 # Compiled by oslc 1.7.4
 # options: 
 surface diffuse_mirror_mix
+param	vector	Tn	0 0 0		%meta{int,lockgeom,0}  %read{9,15} %write{2147483647,-1}
 param	float	Kd	1		%read{1,1} %write{2147483647,-1}
 param	color	Cs	1 1 1		%read{1,1} %write{2147483647,-1}
-param	float	Kr	0		%read{11,18} %write{2147483647,-1}
-global	point	P	%read{3,13} %write{2147483647,-1}
-global	normal	N	%read{0,17} %write{2147483647,-1}
-global	closure color	Ci	%read{12,19} %write{2,19}
+param	float	Kr	0		%read{10,16} %write{2147483647,-1}
+global	point	P	%read{3,12} %write{2147483647,-1}
+global	normal	N	%read{0,15} %write{2147483647,-1}
+global	closure color	Ci	%read{11,17} %write{2,17}
 temp	closure color	$tmp1	%read{2,2} %write{0,0}
 const	string	$const1	"diffuse"		%read{0,0} %write{2147483647,-1}
 temp	color	$tmp2	%read{2,2} %write{1,1}
 const	int	$const2	2		%read{3,3} %write{2147483647,-1}
 temp	float	$tmp3	%read{4,4} %write{3,3}
-const	float	$const3	0		%read{4,17} %write{2147483647,-1}
+const	float	$const3	0		%read{4,15} %write{2147483647,-1}
 temp	int	$tmp4	%read{5,5} %write{4,4}
-const	int	$const4	0		%read{6,13} %write{2147483647,-1}
+const	int	$const4	0		%read{6,12} %write{2147483647,-1}
 temp	float	$tmp5	%read{7,7} %write{6,6}
 temp	int	$tmp6	%read{8,8} %write{7,7}
-temp	closure color	$tmp7	%read{11,11} %write{10,10}
-const	string	$const5	"ggx"		%read{10,17} %write{2147483647,-1}
-const	float	$const6	0.1		%read{10,17} %write{2147483647,-1}
-const	float	$const7	1.5		%read{10,17} %write{2147483647,-1}
-const	string	$const8	"as_glossy"		%read{9,17} %write{2147483647,-1}
-const	vector	$const9	0 0 0		%read{10,17} %write{2147483647,-1}
-temp	closure color	$tmp9	%read{12,12} %write{11,11}
-temp	float	$tmp10	%read{14,14} %write{13,13}
-temp	int	$tmp11	%read{15,15} %write{14,14}
-temp	closure color	$tmp12	%read{18,18} %write{17,17}
-temp	closure color	$tmp14	%read{19,19} %write{18,18}
+temp	closure color	$tmp7	%read{10,10} %write{9,9}
+const	string	$const5	"ggx"		%read{9,15} %write{2147483647,-1}
+const	float	$const6	0.1		%read{9,15} %write{2147483647,-1}
+const	float	$const7	0.5		%read{9,15} %write{2147483647,-1}
+const	float	$const8	1.5		%read{9,15} %write{2147483647,-1}
+const	string	$const9	"as_glossy"		%read{9,15} %write{2147483647,-1}
+temp	closure color	$tmp8	%read{11,11} %write{10,10}
+temp	float	$tmp9	%read{13,13} %write{12,12}
+temp	int	$tmp10	%read{14,14} %write{13,13}
+temp	closure color	$tmp11	%read{16,16} %write{15,15}
+temp	closure color	$tmp12	%read{17,17} %write{16,16}
 code ___main___
-# diffuse_mirror_mix.osl:4
+# diffuse_mirror_mix.osl:8
 #     Ci = Cs * Kd * diffuse(N);
-	closure		$tmp1 $const1 N 	%filename{"diffuse_mirror_mix.osl"} %line{4} %argrw{"wrr"}
+	closure		$tmp1 $const1 N 	%filename{"diffuse_mirror_mix.osl"} %line{8} %argrw{"wrr"}
 	mul		$tmp2 Cs Kd 	%argrw{"wrr"}
 	mul		Ci $tmp1 $tmp2 	%argrw{"wrr"}
-# diffuse_mirror_mix.osl:6
+# diffuse_mirror_mix.osl:10
 #     if (P[2] < 0.0)
-	compref		$tmp3 P $const2 	%line{6} %argrw{"wrr"}
+	compref		$tmp3 P $const2 	%line{10} %argrw{"wrr"}
 	lt		$tmp4 $tmp3 $const3 	%argrw{"wrr"}
-	if		$tmp4 13 20 	%argrw{"r"}
-# diffuse_mirror_mix.osl:8
-# 	    if (P[0] < 0.0)
-	compref		$tmp5 P $const4 	%line{8} %argrw{"wrr"}
+	if		$tmp4 12 18 	%argrw{"r"}
+# diffuse_mirror_mix.osl:12
+#         if (P[0] < 0.0)
+	compref		$tmp5 P $const4 	%line{12} %argrw{"wrr"}
 	lt		$tmp6 $tmp5 $const3 	%argrw{"wrr"}
-	if		$tmp6 13 13 	%argrw{"r"}
-# diffuse_mirror_mix.osl:9
-# 	    	Ci += Kr * as_glossy("ggx", N, 0.1, 1.5);
-	functioncall	$const8 11 	%line{9} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/as_osl_extensions.h:90
-#     float   anisotropic,
-	closure		$tmp7 $const8 $const5 N $const9 $const6 $const3 $const7 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/as_osl_extensions.h"} %line{90} %argrw{"wrrrrrrr"}
-# diffuse_mirror_mix.osl:9
-# 	    	Ci += Kr * as_glossy("ggx", N, 0.1, 1.5);
-	mul		$tmp9 $tmp7 Kr 	%filename{"diffuse_mirror_mix.osl"} %line{9} %argrw{"wrr"}
-	add		Ci Ci $tmp9 	%argrw{"wrr"}
+	if		$tmp6 12 12 	%argrw{"r"}
 # diffuse_mirror_mix.osl:13
-# 	    if (P[0] > 0.0)
-	compref		$tmp10 P $const4 	%line{13} %argrw{"wrr"}
-	gt		$tmp11 $tmp10 $const3 	%argrw{"wrr"}
-	if		$tmp11 20 20 	%argrw{"r"}
-# diffuse_mirror_mix.osl:14
-# 	    	Ci += Kr * as_glossy("ggx", N, 0.1, 1.5);
-	functioncall	$const8 18 	%line{14} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/as_osl_extensions.h:90
-# closure color as_glossy(
-	closure		$tmp12 $const8 $const5 N $const9 $const6 $const3 $const7 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/as_osl_extensions.h"} %line{90} %argrw{"wrrrrrrr"}
-# diffuse_mirror_mix.osl:14
-# 	    	Ci += Kr * as_glossy("ggx", N, 0.1, 1.5);
-	mul		$tmp14 $tmp12 Kr 	%filename{"diffuse_mirror_mix.osl"} %line{14} %argrw{"wrr"}
-	add		Ci Ci $tmp14 	%argrw{"wrr"}
+#             Ci += Kr * as_glossy("ggx", N, Tn, 0.1, 0.5, 0.0, 1.5);
+	closure		$tmp7 $const9 $const5 N Tn $const6 $const7 $const3 $const8 	%line{13} %argrw{"wrrrrrrrr"}
+	mul		$tmp8 $tmp7 Kr 	%argrw{"wrr"}
+	add		Ci Ci $tmp8 	%argrw{"wrr"}
+# diffuse_mirror_mix.osl:17
+#         if (P[0] > 0.0)
+	compref		$tmp9 P $const4 	%line{17} %argrw{"wrr"}
+	gt		$tmp10 $tmp9 $const3 	%argrw{"wrr"}
+	if		$tmp10 18 18 	%argrw{"r"}
+# diffuse_mirror_mix.osl:18
+#             Ci += Kr * as_glossy("ggx", N, Tn, 0.1, 0.5, 0.0, 1.5);
+	closure		$tmp11 $const9 $const5 N Tn $const6 $const7 $const3 $const8 	%line{18} %argrw{"wrrrrrrrr"}
+	mul		$tmp12 $tmp11 Kr 	%argrw{"wrr"}
+	add		Ci Ci $tmp12 	%argrw{"wrr"}
 	end

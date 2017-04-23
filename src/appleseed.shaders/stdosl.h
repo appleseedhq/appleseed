@@ -502,7 +502,7 @@ string concat (string a, string b, string c, string d, string e, string f) {
 //
 // Include AS OSL extensions. We need some previously defined built-ins
 
-#include "as_osl_extensions.h"    
+#include "as_osl_extensions.h"
 
 closure color emission() BUILTIN;
 closure color background() BUILTIN;
@@ -531,6 +531,7 @@ closure color microfacet(
             color(0),   // reflection tint
             color(1),   // refraction tint
             xalpha,     // roughness
+            0.5,        // highlight falloff
             anisotropy,
             eta,
             color(1),   // volume transmittance
@@ -538,29 +539,14 @@ closure color microfacet(
     }
     else
     {
-        if (distribution != "blinn")
-        {
-            return as_glossy(
-                distribution,
-                N,
-                U,
-                xalpha,     // roughness
-                anisotropy,
-                eta);
-        }
-        else
-        {
-#ifdef DEBUG
-            warning("[WARNING]: Isotropic Blinn MDF supported only\n");
-#endif
-            return as_glossy(
-                distribution,
-                N,
-                vector(0),
-                sqrt(xalpha), // account for roughness squaring in BRDF
-                0.0,
-                eta);
-        }
+        return as_glossy(
+            distribution,
+            N,
+            U,
+            xalpha,     // roughness
+            0.5,        // highlight falloff
+            anisotropy,
+            eta);
     }
 }
 
@@ -571,15 +557,12 @@ closure color microfacet(
     float eta,
     int refr)
 {
-    // Account for roughness squaring in Blinn BRDF.
-    float m = (distribution != "blinn") ? alpha : sqrt(alpha);
-
     return microfacet(
         distribution,
         N,
         vector(0),
-        m,
-        m,
+        alpha,
+        alpha,
         eta,
         refr);
 }
@@ -596,6 +579,7 @@ closure color refraction(normal N, float eta)
         color(0),       // reflection tint
         color(1),       // refraction tint
         0.0,            // roughness
+        0.5,            // highlight falloff
         0.0,            // anisotropy
         eta,
         color(1),       // volume transmittance

@@ -558,19 +558,6 @@ bool RendererServices::get_userdata(
     return false;
 }
 
-#if OSL_LIBRARY_VERSION_CODE < 10700
-
-bool RendererServices::has_userdata(
-    OIIO::ustring               name,
-    OIIO::TypeDesc              type,
-    OSL::ShaderGlobals*         sg)
-{
-    UserDataGetterMapType::const_iterator i = m_global_user_data_getters.find(name);
-    return i != m_global_user_data_getters.end();
-}
-
-#endif
-
 #define IMPLEMENT_ATTR_GETTER(name)         \
     bool RendererServices::get_attr_##name( \
         OSL::ShaderGlobals*     sg,         \

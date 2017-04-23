@@ -286,13 +286,7 @@ shader as_maya_blinn
 
             float m = pow(1.0 / max(EPS, in_eccentricity), 8.0);
 
-            specular_term = opacity * in_specularColor *
-                microfacet(
-                    "blinn",
-                    Nn,
-                    m,
-                    eta,
-                    0);
+            specular_term = opacity * in_specularColor * as_blinn(Nn, m, eta);
         }
 
         closure color matte_term;

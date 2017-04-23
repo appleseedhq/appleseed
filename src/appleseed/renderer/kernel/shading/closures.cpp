@@ -33,6 +33,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/bsdf/alsurfacelayerbrdf.h"
 #include "renderer/modeling/bsdf/ashikhminbrdf.h"
+#include "renderer/modeling/bsdf/blinnbrdf.h"
 #include "renderer/modeling/bsdf/diffusebtdf.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/bsdf/glassbsdf.h"
@@ -82,8 +83,8 @@ namespace
     //
 
     const OIIO::ustring g_beckmann_str("beckmann");
-    const OIIO::ustring g_blinn_str("blinn");
     const OIIO::ustring g_ggx_str("ggx");
+    const OIIO::ustring g_std_str("std");
 
     const OIIO::ustring g_standard_dipole_profile_str("standard_dipole");
     const OIIO::ustring g_better_dipole_profile_str("better_dipole");
@@ -211,6 +212,62 @@ namespace
             };
 
             shading_system.register_closure(name(), id(), params, 0, 0);
+        }
+    };
+
+    struct BlinnClosure
+    {
+        struct Params
+        {
+            OSL::Vec3       N;
+            float           exponent;
+            float           ior;
+        };
+
+        static const char* name()
+        {
+            return "as_blinn";
+        }
+
+        static ClosureID id()
+        {
+            return BlinnID;
+        }
+
+        static void register_closure(OSL::ShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_FLOAT_PARAM(Params, exponent),
+                CLOSURE_FLOAT_PARAM(Params, ior),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, 0, 0);
+
+            g_closure_convert_funs[id()] = &convert_closure;
+        }
+
+        static void convert_closure(
+            CompositeSurfaceClosure&    composite_closure,
+            const Basis3f&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight,
+            Arena&                      arena)
+        {
+            const Params* p = static_cast<const Params*>(osl_params);
+
+            BlinnBRDFInputValues* values =
+                composite_closure.add_closure<BlinnBRDFInputValues>(
+                    BlinnID,
+                    shading_basis,
+                    weight,
+                    p->N,
+                    arena);
+
+            values->m_exponent = max(p->exponent, 0.001f);
+            values->m_ior = max(p->ior, 0.001f);
         }
     };
 
@@ -439,6 +496,7 @@ namespace
             OSL::Color3     reflection_tint;
             OSL::Color3     refraction_tint;
             float           roughness;
+            float           highlight_falloff;
             float           anisotropy;
             float           ior;
             OSL::Color3     volume_transmittance;
@@ -466,6 +524,7 @@ namespace
                 CLOSURE_COLOR_PARAM(Params, reflection_tint),
                 CLOSURE_COLOR_PARAM(Params, refraction_tint),
                 CLOSURE_FLOAT_PARAM(Params, roughness),
+                CLOSURE_FLOAT_PARAM(Params, highlight_falloff),
                 CLOSURE_FLOAT_PARAM(Params, anisotropy),
                 CLOSURE_FLOAT_PARAM(Params, ior),
                 CLOSURE_COLOR_PARAM(Params, volume_transmittance),
@@ -488,29 +547,14 @@ namespace
             const Params* p = static_cast<const Params*>(osl_params);
 
             GlassBSDFInputValues* values;
+            ClosureID cid;
 
             if (p->dist == g_ggx_str)
-            {
-                values =
-                    composite_closure.add_closure<GlassBSDFInputValues>(
-                        GlassGGXID,
-                        shading_basis,
-                        weight,
-                        p->N,
-                        p->T,
-                        arena);
-            }
+                cid = GlassGGXID;
             else if (p->dist == g_beckmann_str)
-            {
-                values =
-                    composite_closure.add_closure<GlassBSDFInputValues>(
-                        GlassBeckmannID,
-                        shading_basis,
-                        weight,
-                        p->N,
-                        p->T,
-                        arena);
-            }
+                cid = GlassBeckmannID;
+            else if (p->dist == g_std_str)
+                cid = GlassSTDID;
             else
             {
                 string msg("invalid microfacet distribution function: ");
@@ -518,11 +562,21 @@ namespace
                 throw ExceptionOSLRuntimeError(msg.c_str());
             }
 
+            values =
+                composite_closure.add_closure<GlassBSDFInputValues>(
+                    cid,
+                    shading_basis,
+                    weight,
+                    p->N,
+                    p->T,
+                    arena);
+
             values->m_surface_transmittance = Color3f(p->surface_transmittance);
             values->m_surface_transmittance_multiplier = 1.0f;
             values->m_reflection_tint = Color3f(p->reflection_tint);
             values->m_refraction_tint = Color3f(p->refraction_tint);
             values->m_roughness = max(p->roughness, 0.0001f);
+            values->m_highlight_falloff = saturate(p->highlight_falloff);
             values->m_anisotropy = clamp(p->anisotropy, -1.0f, 1.0f);
             values->m_ior = max(p->ior, 0.001f);
             values->m_volume_transmittance = Color3f(p->volume_transmittance);
@@ -539,6 +593,7 @@ namespace
             OSL::Vec3       N;
             OSL::Vec3       T;
             float           roughness;
+            float           highlight_falloff;
             float           anisotropy;
             float           ior;
         };
@@ -561,6 +616,7 @@ namespace
                 CLOSURE_VECTOR_PARAM(Params, N),
                 CLOSURE_VECTOR_PARAM(Params, T),
                 CLOSURE_FLOAT_PARAM(Params, roughness),
+                CLOSURE_FLOAT_PARAM(Params, highlight_falloff),
                 CLOSURE_FLOAT_PARAM(Params, anisotropy),
                 CLOSURE_FLOAT_PARAM(Params, ior),
                 CLOSURE_FINISH_PARAM(Params)
@@ -581,40 +637,14 @@ namespace
             const Params* p = static_cast<const Params*>(osl_params);
 
             GlossyBRDFInputValues* values;
+            ClosureID cid;
 
             if (p->dist == g_ggx_str)
-            {
-                values =
-                    composite_closure.add_closure<GlossyBRDFInputValues>(
-                        GlossyGGXID,
-                        shading_basis,
-                        weight,
-                        p->N,
-                        p->T,
-                        arena);
-            }
+                cid = GlossyGGXID;
             else if (p->dist == g_beckmann_str)
-            {
-                values =
-                    composite_closure.add_closure<GlossyBRDFInputValues>(
-                        GlossyBeckmannID,
-                        shading_basis,
-                        weight,
-                        p->N,
-                        p->T,
-                        arena);
-            }
-            else if (p->dist == g_blinn_str)
-            {
-                values =
-                    composite_closure.add_closure<GlossyBRDFInputValues>(
-                        GlossyBlinnID,
-                        shading_basis,
-                        weight,
-                        p->N,
-                        p->T,
-                        arena);
-            }
+                cid = GlossyBeckmannID;
+            else if (p->dist == g_std_str)
+                cid = GlossySTDID;
             else
             {
                 string msg("invalid microfacet distribution function: ");
@@ -622,9 +652,19 @@ namespace
                 throw ExceptionOSLRuntimeError(msg.c_str());
             }
 
+            values =
+                composite_closure.add_closure<GlossyBRDFInputValues>(
+                    cid,
+                    shading_basis,
+                    weight,
+                    p->N,
+                    p->T,
+                    arena);
+
             values->m_reflectance.set(1.0f);
             values->m_reflectance_multiplier = 1.0f;
             values->m_roughness = max(p->roughness, 0.0f);
+            values->m_highlight_falloff = saturate(p->highlight_falloff);
             values->m_anisotropy = clamp(p->anisotropy, -1.0f, 1.0f);
             values->m_ior = max(p->ior, 0.001f);
         }
@@ -667,6 +707,7 @@ namespace
             OSL::Color3     normal_reflectance;
             OSL::Color3     edge_tint;
             float           roughness;
+            float           highlight_falloff;
             float           anisotropy;
         };
 
@@ -690,6 +731,7 @@ namespace
                 CLOSURE_COLOR_PARAM(Params, normal_reflectance),
                 CLOSURE_COLOR_PARAM(Params, edge_tint),
                 CLOSURE_FLOAT_PARAM(Params, roughness),
+                CLOSURE_FLOAT_PARAM(Params, highlight_falloff),
                 CLOSURE_FLOAT_PARAM(Params, anisotropy),
                 CLOSURE_FINISH_PARAM(Params)
             };
@@ -709,29 +751,14 @@ namespace
             const Params* p = static_cast<const Params*>(osl_params);
 
             MetalBRDFInputValues* values;
+            ClosureID cid;
 
             if (p->dist == g_ggx_str)
-            {
-                values =
-                    composite_closure.add_closure<MetalBRDFInputValues>(
-                        MetalGGXID,
-                        shading_basis,
-                        weight,
-                        p->N,
-                        p->T,
-                        arena);
-            }
+                cid = MetalGGXID;
             else if (p->dist == g_beckmann_str)
-            {
-                values =
-                    composite_closure.add_closure<MetalBRDFInputValues>(
-                        MetalBeckmannID,
-                        shading_basis,
-                        weight,
-                        p->N,
-                        p->T,
-                        arena);
-            }
+                cid = MetalBeckmannID;
+            else if (p->dist == g_std_str)
+                cid = MetalSTDID;
             else
             {
                 string msg("invalid microfacet distribution function: ");
@@ -739,10 +766,20 @@ namespace
                 throw ExceptionOSLRuntimeError(msg.c_str());
             }
 
+            values =
+                composite_closure.add_closure<MetalBRDFInputValues>(
+                    cid,
+                    shading_basis,
+                    weight,
+                    p->N,
+                    p->T,
+                    arena);
+
             values->m_normal_reflectance = Color3f(p->normal_reflectance);
             values->m_edge_tint = Color3f(p->edge_tint);
             values->m_reflectance_multiplier = 1.0f;
             values->m_roughness = max(p->roughness, 0.0f);
+            values->m_highlight_falloff = saturate(p->highlight_falloff);
             values->m_anisotropy = clamp(p->anisotropy, -1.0f, 1.0f);
         }
     };
@@ -1559,11 +1596,7 @@ void CompositeSurfaceClosure::process_closure_tree(
     if (closure == 0)
         return;
 
-#if OSL_LIBRARY_VERSION_CODE >= 10700
     switch (closure->id)
-#else
-    switch (closure->type)
-#endif
     {
       case OSL::ClosureColor::MUL:
         {
@@ -1616,11 +1649,7 @@ void CompositeSubsurfaceClosure::process_closure_tree(
     if (closure == 0)
         return;
 
-#if OSL_LIBRARY_VERSION_CODE >= 10700
     switch (closure->id)
-#else
-    switch (closure->type)
-#endif
     {
       case OSL::ClosureColor::MUL:
         {
@@ -1712,11 +1741,7 @@ void CompositeEmissionClosure::process_closure_tree(
     if (closure == 0)
         return;
 
-#if OSL_LIBRARY_VERSION_CODE >= 10700
     switch (closure->id)
-#else
-    switch (closure->type)
-#endif
     {
       case OSL::ClosureColor::MUL:
         {
@@ -1776,11 +1801,7 @@ namespace
     {
         if (closure)
         {
-#if OSL_LIBRARY_VERSION_CODE >= 10700
             switch (closure->id)
-#else
-            switch (closure->type)
-#endif
             {
               case OSL::ClosureColor::MUL:
                 {
@@ -1875,6 +1896,7 @@ void register_closures(OSL::ShadingSystem& shading_system)
     register_closure<AlSurfaceLayerClosure>(shading_system);
     register_closure<AshikhminShirleyClosure>(shading_system);
     register_closure<BackgroundClosure>(shading_system);
+    register_closure<BlinnClosure>(shading_system);
     register_closure<DebugClosure>(shading_system);
     register_closure<DiffuseClosure>(shading_system);
     register_closure<DisneyClosure>(shading_system);

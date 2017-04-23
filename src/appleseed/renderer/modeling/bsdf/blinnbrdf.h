@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_PLASTICBRDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_PLASTICBRDF_H
+#ifndef APPLESEED_RENDERER_MODELING_BSDF_BLINNBRDF_H
+#define APPLESEED_RENDERER_MODELING_BSDF_BLINNBRDF_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -51,61 +51,36 @@ namespace renderer
 {
 
 //
-// Plastic BSDF input values.
+// Blinn BRDF input values.
 //
 
-APPLESEED_DECLARE_INPUT_VALUES(PlasticBRDFInputValues)
+APPLESEED_DECLARE_INPUT_VALUES(BlinnBRDFInputValues)
 {
-    Spectrum        m_specular_reflectance;
-    float           m_specular_reflectance_multiplier;
-    float           m_roughness;
-    float           m_highlight_falloff;
-    float           m_ior;
-
-    Spectrum        m_diffuse_reflectance;
-    float           m_diffuse_reflectance_multiplier;
-    float           m_internal_scattering;
+    float       m_exponent;
+    float       m_ior;
 
     struct Precomputed
     {
-        float       m_eta;
-        float       m_specular_weight;
-        float       m_diffuse_weight;
-        Spectrum    m_alpha;
+        float   m_outside_ior;
     };
 
-    Precomputed     m_precomputed;
+    Precomputed m_precomputed;
 };
 
 
 //
-// Plastic BSDF factory.
+// Blinn BRDF factory.
 //
 
-class APPLESEED_DLLSYMBOL PlasticBRDFFactory
-  : public IBSDFFactory
+class APPLESEED_DLLSYMBOL BlinnBRDFFactory
 {
   public:
-    // Return a string identifying this BSDF model.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
-
-    // Return metadata for this BSDF model.
-    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
-
-    // Return metadata for the inputs of this BSDF model.
-    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
-
     // Create a new BSDF instance.
-    virtual foundation::auto_release_ptr<BSDF> create(
+    foundation::auto_release_ptr<BSDF> create(
         const char*         name,
-        const ParamArray&   params) const APPLESEED_OVERRIDE;
-
-    // Static variant of the create() method above.
-    static foundation::auto_release_ptr<BSDF> static_create(
-        const char*         name,
-        const ParamArray&   params);
+        const ParamArray&   params) const;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_PLASTICBRDF_H
+#endif  // !APPLESEED_RENDERER_MODELING_BSDF_BLINNBRDF_H

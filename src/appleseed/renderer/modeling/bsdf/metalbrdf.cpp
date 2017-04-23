@@ -71,10 +71,6 @@ namespace
     //
     // Metal BRDF.
     //
-    //    A future version of this BRDF will support multiple scattering.
-    //    For that reason, the only available microfacet distribution functions
-    //    are those that support it (Beckmann and GGX).
-    //
     // References:
     //
     //   [1] Microfacet Models for Refraction through Rough Surfaces
@@ -104,6 +100,7 @@ namespace
             m_inputs.declare("edge_tint", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("roughness", InputFormatFloat, "0.15");
+            m_inputs.declare("highlight_falloff", InputFormatFloat, "0.4");
             m_inputs.declare("anisotropy", InputFormatFloat, "0.0");
         }
 
@@ -151,13 +148,15 @@ namespace
                 m_params.get_required<string>(
                     "mdf",
                     "ggx",
-                    make_vector("beckmann", "ggx"),
+                    make_vector("beckmann", "ggx", "std"),
                     context);
 
             if (mdf == "ggx")
                 m_mdf.reset(new GGXMDF());
             else if (mdf == "beckmann")
                 m_mdf.reset(new BeckmannMDF());
+            else if (mdf == "std")
+                m_mdf.reset(new StdMDF());
             else return false;
 
             return true;
@@ -172,13 +171,13 @@ namespace
         {
             const Vector3f& n = sample.m_shading_basis.get_normal();
             const Vector3f& outgoing = sample.m_outgoing.get_value();
-            const float cos_on = std::min(dot(outgoing, n), 1.0f);
+            const float cos_on = min(dot(outgoing, n), 1.0f);
             if (cos_on < 0.0f)
                 return;
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            FresnelConductorFun f(
+            const FresnelConductorFun f(
                 values->m_precomputed.m_n,
                 values->m_precomputed.m_k,
                 values->m_reflectance_multiplier);
@@ -196,13 +195,14 @@ namespace
                 values->m_anisotropy,
                 alpha_x,
                 alpha_y);
+            const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
             MicrofacetBRDFHelper::sample(
                 sampling_context,
                 *m_mdf,
                 alpha_x,
                 alpha_y,
-                0.0f,
+                gamma,
                 f,
                 cos_on,
                 sample);
@@ -237,8 +237,9 @@ namespace
                 values->m_anisotropy,
                 alpha_x,
                 alpha_y);
+            const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
-            FresnelConductorFun f(
+            const FresnelConductorFun f(
                 values->m_precomputed.m_n,
                 values->m_precomputed.m_k,
                 values->m_reflectance_multiplier);
@@ -247,7 +248,7 @@ namespace
                 *m_mdf,
                 alpha_x,
                 alpha_y,
-                0.0f,
+                gamma,
                 shading_basis,
                 outgoing,
                 incoming,
@@ -283,12 +284,13 @@ namespace
                 values->m_anisotropy,
                 alpha_x,
                 alpha_y);
+            const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
             return MicrofacetBRDFHelper::pdf(
                 *m_mdf,
                 alpha_x,
                 alpha_y,
-                0.0f,
+                gamma,
                 shading_basis,
                 outgoing,
                 incoming);
@@ -333,7 +335,8 @@ DictionaryArray MetalBRDFFactory::get_input_metadata() const
             .insert("items",
                 Dictionary()
                     .insert("Beckmann", "beckmann")
-                    .insert("GGX", "ggx"))
+                    .insert("GGX", "ggx")
+                    .insert("STD", "std"))
             .insert("use", "required")
             .insert("default", "ggx"));
 
@@ -384,6 +387,16 @@ DictionaryArray MetalBRDFFactory::get_input_metadata() const
             .insert("min_value", "0.0")
             .insert("max_value", "1.0")
             .insert("default", "0.15"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "highlight_falloff")
+            .insert("label", "Highlight Falloff")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
+            .insert("use", "optional")
+            .insert("default", "0.4"));
 
     metadata.push_back(
         Dictionary()

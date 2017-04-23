@@ -332,6 +332,10 @@ float BeckmannMDF::lambda(
 
     const float sin_theta = sqrt(max(0.0f, 1.0f - square(cos_theta)));
 
+    // Normal incidence. No shadowing.
+    if (sin_theta == 0.0f)
+        return 0.0f;
+
     const float alpha =
         projected_roughness(
             v,
@@ -495,14 +499,13 @@ float GGXMDF::lambda(
     const float         alpha_y,
     const float         gamma) const
 {
-    const float cos_theta = abs(v.y);
+    const float cos_theta = v.y;
 
     if (cos_theta == 0.0f)
         return 0.0f;
 
     const float cos_theta_2 = square(cos_theta);
     const float sin_theta = sqrt(max(0.0f, 1.0f - square(cos_theta)));
-    const float tan_theta_2 = square(sin_theta) / cos_theta_2;
 
     const float alpha =
         projected_roughness(
@@ -511,6 +514,7 @@ float GGXMDF::lambda(
             alpha_x,
             alpha_y);
 
+    const float tan_theta_2 = square(sin_theta) / cos_theta_2;
     const float a2_rcp = square(alpha) * tan_theta_2;
     return (-1.0f + sqrt(1.0f + a2_rcp)) * 0.5f;
 }
@@ -721,17 +725,19 @@ float GTR1MDF::lambda(
     const float         alpha_y,
     const float         gamma) const
 {
-    const float cos_theta = abs(v.y);
+    const float cos_theta = v.y;
 
     if (cos_theta == 0.0f)
         return 0.0f;
 
-    if (cos_theta == 1.0f)
-        return 1.0f;
-
     // [2] section 3.2.
     const float cos_theta_2 = square(cos_theta);
     const float sin_theta = sqrt(max(0.0f, 1.0f - square(cos_theta)));
+
+    // Normal incidence. No shadowing.
+    if (sin_theta == 0.0f)
+        return 0.0f;
+
     const float cot_theta_2 = cos_theta_2 / square(sin_theta);
     const float cot_theta = sqrt(cot_theta_2);
     const float alpha_2 = square(alpha_x);
@@ -788,24 +794,24 @@ float StdMDF::D(
         return 0.0;
 
     const float cos_theta_2 = square(cos_theta);
+    const float sin_theta = sqrt(max(0.0f, 1.0f - cos_theta_2));
     const float cos_theta_4 = square(cos_theta_2);
-    const float alpha_x2 = square(alpha_x);
     const float tan_theta_2 = (1.0f - cos_theta_2) / cos_theta_2;
 
-    // [1] Equation 11.
-    // Following Disney implementation idea - divide gamma power by four first to avoid explosion
-    const float A_a = pow(alpha_x, (2.0f * gamma - 2.0f) / 4.0f);
-    const float A_b = pow(gamma - 1.0f, gamma / 4.0f);
-    const float A_c = pow((gamma - 1.0f) * alpha_x2 + tan_theta_2, gamma / 4.0f);
-    const float A_num4 = A_a * A_b;
-    const float A_denom4 = max(A_c, numeric_limits<float>::epsilon());
-    const float A4 = A_num4 / A_denom4;
+    const float A = stretched_roughness(
+        h,
+        sin_theta,
+        alpha_x,
+        alpha_y);
 
-    const float A2 = A4 * A4;
-    const float A = A2 * A2;
-
-
-    return A / (Pi<float>() * cos_theta_4);
+    // [1] Equation 18.
+    const float den = 1.0f + tan_theta_2 * A / (gamma - 1.0f);
+    const float den4 = pow(den, gamma / 4.0f);
+    const float den0 = Pi<float>() * den4;
+    const float den1 = alpha_x * den4;
+    const float den2 = alpha_y * den4;
+    const float den3 = cos_theta_4 * den4;
+    return 1.0f / (den0 * den1 * den2 * den3);
 }
 
 float StdMDF::G(
@@ -833,76 +839,43 @@ float StdMDF::G1(
     return 1.0f / (1.0f + lambda(v, alpha_x, alpha_y, gamma));
 }
 
-// Disney code provided in supplement of [1].
-float StdMDF::gamma_fraction(
-    const float         numerator_arg,
-    const float         denominator_arg) const
-{
-    const float ab1 = abgamma(numerator_arg + 5.0f);
-    const float ab2 = abgamma(denominator_arg + 5.0f);
-
-    const float ac1 = 1.0f / (numerator_arg * (numerator_arg + 1.0f) * (numerator_arg + 2.0f) * (numerator_arg + 3.0f) * (numerator_arg + 4.0f));
-    const float ac2 = 1.0f / (denominator_arg * (denominator_arg + 1.0f) * (denominator_arg + 2.0f) * (denominator_arg + 3.0f) * (denominator_arg + 4.0f));
-
-    return exp(ab1 - ab2) * (ac1 / ac2);
-}
-
-// Disney code provided in supplement of [1].
-float StdMDF::abgamma(
-    const float         x) const
-{
-    const float gm0 = 1.0f /12.0f;
-    const float gm1 = 1.0f / 30.0f;
-    const float gm2 = 53.0f / 210.0f;
-    const float gm3 = 195.0f / 371.0f;
-    const float gm4 = 22999.0f / 22737.0f;
-    const float gm5 = 29944523.0f / 19733142.0f;
-    const float gm6 = 109535241009.0f / 48264275462.0f;
-
-    return (0.5f * std::log(2.0f * Pi<float>()) - x + (x - 0.5f) * std::log(x)
-             + gm0 / (x + gm1 / (x + gm2 / (x + gm3 / (x + gm4 / (x + gm5 / (x + gm6 / x)))))));
-}
-
 float StdMDF::lambda(
     const Vector3f&     v,
     const float         alpha_x,
     const float         alpha_y,
     const float         gamma) const
 {
-    const float alpha_2 = square(alpha_x);
-    const float cos_theta = abs(v.y);
-    const float sin_theta = sqrt(max(0.0f, 1.0f - square(cos_theta)));
-    const float tan_theta = sin_theta / cos_theta;
-    const float tan_theta_2 = square(tan_theta);
+    const float cos_theta = v.y;
 
-    if (tan_theta == 0.0f)
+    if (cos_theta == 0.0f)
         return 0.0f;
 
-    // If equation 14 from [1] would be implemented dirrectly as it is written,
-    // the multiplier of S1, (we'll call it here A1), would explode for gamma
-    // values over 30 because of exponent.
-    // To avoid the exponential explosion, function needs to be rewritten
-    // so that the base of the power lowers.
-    // Here we combine A1 with part of S1 which is also raised to gamma.
-    const float A1S1_a = gamma - 1.0f;
-    const float A1S1_b = alpha_x * tan_theta / (2 * gamma - 3.0f);
-    const float A1S1_c = (gamma - 1.0f + 1.0f / (alpha_2 * tan_theta_2));
-    const float A1S1 = pow(A1S1_a / A1S1_c, gamma) * A1S1_b * pow(A1S1_c, 1.5f);
+    const float sin_theta = sqrt(max(0.0f, 1.0f - square(cos_theta)));
 
-    const float A2 = sqrt(gamma - 1.0f);
-    // S2 Rational fractions for GAF approximation [1] Equation 23.
-    const float z = 1.0f / (alpha_x * tan_theta);
-    const float z_2 = square(z);
-    const float z_3 = z_2 * z;
-    const float gamma_2 = square(gamma);
-    const float gamma_3 = gamma_2 * gamma;
-    const float F_21 = (1.066f * z + 2.655f * z_2 + 4.892f * z_3) / (1.038f + 2.969f * z + 4.305f * z_2 + 4.418f * z_3);
-    const float F_22 = (14.402f - 27.145f * gamma + 20.574f * gamma_2 - 2.745f * gamma_3) / (-30.612f + 86.567f * gamma - 84.341f * gamma_2 +29.938f * gamma_3);
-    const float F_23 = (-129.404f + 324.987f * gamma - 299.305f * gamma_2 + 93.268f * gamma_3) / (-92.609f + 256.006f * gamma - 245.663f * gamma_2 + 86.064f * gamma_3);
-    const float F_24 = (6.537f + 6.074f * z - 0.623f * z_2 + 5.223f * z_3) / (6.538f + 6.103f * z - 3.218f * z_2 + 6.347f * z_3);
-    const float S2 = F_21 * (F_22 + F_23 * F_24);
+    // Normal incidence. No shadowing.
+    if (sin_theta == 0.0f)
+        return 0.0f;
 
-    return (gamma_fraction(gamma - 0.5f, gamma) / SqrtPi<float>()) * (A1S1 + A2 * S2) - 0.5f;
+    const float A =
+        projected_roughness(
+            v,
+            sin_theta,
+            alpha_x,
+            alpha_y);
+
+    const float cot_theta_a = cos_theta / (sin_theta * A);
+    const float Sg2 = S2(cot_theta_a, gamma);
+
+    const float cot_theta_a_2 = square(cot_theta_a);
+    const float pg1_cot_theta_a_2 = (gamma - 1.0f) + cot_theta_a_2;
+    const float frac_a1_sg1 = (gamma - 1.0f) / pg1_cot_theta_a_2;
+    float a1_sg1 = pow(frac_a1_sg1, gamma);
+    a1_sg1 *= 1.0f / ((2.0f * gamma - 3.0f) * cot_theta_a);
+    a1_sg1 *= pow(pg1_cot_theta_a_2, 3.0f / 2.0f);
+    const float a2 = sqrt(gamma - 1.0f);
+    const float a2_sg2 = a2 * Sg2;
+    const float gfrac = gamma_fraction(gamma - 0.5f, gamma) / SqrtPi<float>();
+    return ((a1_sg1 + a2_sg2) * gfrac - 0.5f);
 }
 
 float StdMDF::pdf(
@@ -922,12 +895,59 @@ Vector3f StdMDF::sample(
     const float         alpha_y,
     const float         gamma) const
 {
-    const float phi = TwoPi<float>() * s[0];
-    const float a = gamma - 1.0f;
+    // todo:
+    // implement the improved sampling strategy in the supplemental material of [1].
+
+    float theta, phi;
     const float b = pow(1.0f - s[1], 1.0f / (1.0f - gamma)) - 1.0f;
-    const float theta = atan(alpha_x * sqrt(a * b));
+
+    if (alpha_x == alpha_y)
+    {
+        // [1] Equations 16 and 17.
+        phi = TwoPi<float>() * s[0];
+        theta = atan(alpha_x * sqrt((gamma - 1.0f) * b));
+    }
+    else
+    {
+        // [1] Equation 19 plus the changes in the Mitsuba sample implementation.
+        phi =
+            atan(alpha_y / alpha_x * tan(Pi<float>() + TwoPi<float>() * s[0])) +
+            Pi<float>() * floor(2.0f * s[0] + 0.5f);
+
+        // [1] Equation 20.
+        const float cos_phi_2 = square(cos(phi));
+        const float sin_phi_2 = 1.0f - cos_phi_2;
+        const float A = ((cos_phi_2 / square(alpha_x)) + (sin_phi_2 / square(alpha_y))) / (gamma - 1.0f);
+        theta = atan(sqrt(b / A));
+    }
 
     return Vector3f::make_unit_vector(theta, phi);
+}
+
+float StdMDF::S2(const float cot_theta, const float gamma) const
+{
+    const float cot_theta_2 = square(cot_theta);
+    const float cot_theta_3 = cot_theta_2 * cot_theta;
+    const float gamma_2 = square(gamma);
+    const float gamma_3 = gamma_2 * gamma;
+
+    const float F21num = (1.066f * cot_theta + 2.655f * cot_theta_2 + 4.892f * cot_theta_3);
+    const float F21den = (1.038f + 2.969f * cot_theta + 4.305f * cot_theta_2 + 4.418f *cot_theta_3);
+    const float F21 = F21num / F21den;
+
+    const float F22num = (14.402f - 27.145f * gamma + 20.574f * gamma_2 - 2.745f * gamma_3);
+    const float F22den = (-30.612f + 86.567f * gamma - 84.341f * gamma_2 + 29.938f * gamma_3);
+    const float F22 = F22num / F22den;
+
+    const float F23num = (-129.404f + 324.987f * gamma - 299.305f * gamma_2 + 93.268f * gamma_3);
+    const float F23den = (-92.609f + 256.006f * gamma - 245.663f * gamma_2 + 86.064f * gamma_3);
+    const float F23 = F23num / F23den;
+
+    const float F24num = (6.537f + 6.074f * cot_theta - 0.623f * cot_theta_2 + 5.223f * cot_theta_3);
+    const float F24den = (6.538f + 6.103f * cot_theta - 3.218f * cot_theta_2 + 6.347f * cot_theta_3);
+    const float F24 = F24num / F24den;
+
+    return F21 * (F22 + F23 * F24);
 }
 
 }   // namespace foundation

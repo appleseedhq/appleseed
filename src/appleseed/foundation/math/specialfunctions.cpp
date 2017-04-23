@@ -108,4 +108,29 @@ float erf_inv(const float x)
     return p * y;
 }
 
+float gamma(const float x)
+{
+    const float gm0 = 1.0f /12.0f;
+    const float gm1 = 1.0f / 30.0f;
+    const float gm2 = 53.0f / 210.0f;
+    const float gm3 = 195.0f / 371.0f;
+    const float gm4 = 22999.0f / 22737.0f;
+    const float gm5 = 29944523.0f / 19733142.0f;
+    const float gm6 = 109535241009.0f / 48264275462.0f;
+
+    return (0.5f * std::log(2.0f * Pi<float>()) - x + (x - 0.5f) * std::log(x)
+             + gm0 / (x + gm1 / (x + gm2 / (x + gm3 / (x + gm4 / (x + gm5 / (x + gm6 / x)))))));
+}
+
+float gamma_fraction(const float num, const float denom)
+{
+    const float ab1 = gamma(num + 5.0f);
+    const float ab2 = gamma(denom + 5.0f);
+
+    const float ac1 = 1.0f / (num * (num + 1.0f) * (num + 2.0f) * (num + 3.0f) * (num + 4.0f));
+    const float ac2 = 1.0f / (denom * (denom + 1.0f) * (denom + 2.0f) * (denom + 3.0f) * (denom + 4.0f));
+
+    return std::exp(ab1 - ab2) * (ac1 / ac2);
+}
+
 }       // namespace foundation

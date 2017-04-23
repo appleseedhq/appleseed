@@ -13,7 +13,7 @@ global	closure color	Ci	%read{2147483647,-1} %write{26,26}
 local	point	q	%read{5,16} %write{3,5}
 local	float	marble	%read{10,19} %write{6,16}
 local	float	f	%read{10,16} %write{7,16}
-local	int	___319_i	%read{10,16} %write{9,16}
+local	int	___320_i	%read{10,16} %write{9,16}
 local	float[13]	marble_ramp	%read{24,24} %write{17,17}
 const	int	$const1	1		%read{0,16} %write{2147483647,-1}
 temp	int	$tmp1	%read{1,1} %write{0,0}
@@ -51,9 +51,9 @@ code ___main___
 # marble.osl:23
 #         q = transform("object", P);
 	functioncall	$const3 4 	%line{23} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:248
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:243
 #         // total internal reflection
-	transform	q $const4 $const2 P 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{248} %argrw{"wrrr"}
+	transform	q $const4 $const2 P 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{243} %argrw{"wrrr"}
 # marble.osl:25
 #         q = P;
 	assign		q P 	%filename{"marble.osl"} %line{25} %argrw{"wr"}
@@ -69,8 +69,8 @@ code ___main___
 # marble.osl:31
 #     for (int i = 0; i < NNOISE; i += 1)
 	for		$tmp2 10 11 16 17 	%line{31} %argrw{"r"}
-	assign		___319_i $const5 	%argrw{"wr"}
-	lt		$tmp2 ___319_i $const6 	%argrw{"wrr"}
+	assign		___320_i $const5 	%argrw{"wr"}
+	lt		$tmp2 ___320_i $const6 	%argrw{"wrr"}
 # marble.osl:33
 #         marble += snoise(q * f) / f;
 	mul		$tmp4 q f 	%line{33} %argrw{"wrr"}
@@ -82,7 +82,7 @@ code ___main___
 	mul		f f $const7 	%line{34} %argrw{"wrr"}
 # marble.osl:31
 #     for (int i = 0; i < NNOISE; i += 1)
-	add		___319_i ___319_i $const1 	%line{31} %argrw{"wrr"}
+	add		___320_i ___320_i $const1 	%line{31} %argrw{"wrr"}
 # marble.osl:51
 #         };
 	assign		marble_ramp $const8 	%line{51} %argrw{"wr"}
@@ -94,9 +94,9 @@ code ___main___
 	mul		$tmp9 $const11 marble 	%line{57} %argrw{"wrr"}
 	add		$tmp10 $tmp9 $const12 	%argrw{"wrr"}
 	functioncall	$const15 24 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:149
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:144
 # color  radians (color x)  { return x*(M_PI/180.0); }
-	min		$tmp11 $tmp10 $const14 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{149} %argrw{"wrr"}
+	min		$tmp11 $tmp10 $const14 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{144} %argrw{"wrr"}
 	max		$tmp8 $tmp11 $const13 	%argrw{"wrr"}
 # marble.osl:57
 #             Color * spline("catmull-rom", clamp(2 * marble + .75, 0, 1), marble_ramp),
