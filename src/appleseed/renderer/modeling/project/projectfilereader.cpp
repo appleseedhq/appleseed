@@ -3157,13 +3157,13 @@ namespace
     // returns filename of .appleseed file inside archive
     // returns "" in case there are more than 1 .appleseed files
     // "" means it's not a valid packed project
-    string get_project_name(const char* project_filepath)
+    string get_project_filename_from_archive(const char* project_filepath)
     {
         const vector<string> appleseed_files = get_filenames_with_extension_from_zip(project_filepath, ".appleseed");
         return appleseed_files.size() == 1 ? appleseed_files[0] : "";
     }
 
-    string get_unpacked_project(
+    string unpack_project(
         const string& project_filepath,
         const string& project_name,
         const bf::path& unpacked_project_directory)
@@ -3193,8 +3193,8 @@ auto_release_ptr<Project> ProjectFileReader::read(
     string actual_project_filepath;
     if (is_zip_file(project_filepath))
     {
-        string project_name = get_project_name(project_filepath);
-        if (project_name == "")
+        const string ProjectFilename = get_project_filename_from_archive(project_filepath);
+        if (ProjectFilename == "")
         {
             RENDERER_LOG_ERROR(
                 "%s looks like a packed project file, but it should contain a single *.appleseed file in order to be valid.",
@@ -3210,9 +3210,9 @@ auto_release_ptr<Project> ProjectFileReader::read(
             project_filepath,
             unpacked_project_directory.c_str());
 
-        actual_project_filepath = get_unpacked_project(
+        actual_project_filepath = unpack_project(
             project_filepath,
-            project_name,
+            ProjectFilename,
             unpacked_project_directory);
 
         project_filepath = actual_project_filepath.data();
@@ -3266,7 +3266,7 @@ auto_release_ptr<Assembly> ProjectFileReader::read_archive(
     string actual_archive_filepath;
     if (is_zip_file(archive_filepath))
     {
-        string archive_name = get_project_name(archive_filepath);
+        string archive_name = get_project_filename_from_archive(archive_filepath);
         if (archive_name == "")
         {
             RENDERER_LOG_ERROR(
@@ -3278,7 +3278,7 @@ auto_release_ptr<Assembly> ProjectFileReader::read_archive(
         const string unpacked_archive_directory =
             bf::path(archive_filepath).replace_extension(".unpacked").string();
 
-        actual_archive_filepath = get_unpacked_project(
+        actual_archive_filepath = unpack_project(
             archive_filepath,
             archive_name,
             unpacked_archive_directory);
