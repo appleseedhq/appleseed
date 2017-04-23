@@ -72,10 +72,6 @@ namespace
     //
     // Glass BSDF.
     //
-    //    A future version of this BSDF will support multiple scattering.
-    //    For that reason, the only available microfacet distribution functions
-    //    are those that support it (Beckmann and GGX).
-    //
     // References:
     //
     //   [1] Microfacet Models for Refraction through Rough Surfaces
@@ -142,13 +138,15 @@ namespace
                 m_params.get_required<string>(
                     "mdf",
                     "ggx",
-                    make_vector("beckmann", "ggx"),
+                    make_vector("beckmann", "ggx", "std"),
                     context);
 
             if (mdf == "ggx")
                 m_mdf.reset(new GGXMDF());
             else if (mdf == "beckmann")
                 m_mdf.reset(new BeckmannMDF());
+            else if (mdf == "std")
+                m_mdf.reset(new StdMDF());
             else return false;
 
             const string volume_parameterization =
@@ -694,7 +692,8 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
             .insert("items",
                 Dictionary()
                     .insert("Beckmann", "beckmann")
-                    .insert("GGX", "ggx"))
+                    .insert("GGX", "ggx")
+                    .insert("STD", "std"))
             .insert("use", "required")
             .insert("default", "ggx"));
 

@@ -98,11 +98,14 @@ namespace
             m_disney_brdf =
                 create_and_register_bsdf(DisneyID, "disney_brdf");
 
+            m_glass_beckmann_bsdf =
+                create_and_register_glass_bsdf(GlassBeckmannID, "beckmann");
+
             m_glass_ggx_bsdf =
                 create_and_register_glass_bsdf(GlassGGXID, "ggx");
 
-            m_glass_beckmann_bsdf =
-                create_and_register_glass_bsdf(GlassBeckmannID, "beckmann");
+            m_glass_std_bsdf =
+                create_and_register_glass_bsdf(GlassSTDID, "std");
 
             m_glossy_beckmann_brdf =
                 create_and_register_glossy_brdf(GlossyBeckmannID, "beckmann");
@@ -110,11 +113,17 @@ namespace
             m_glossy_ggx_brdf =
                 create_and_register_glossy_brdf(GlossyGGXID, "ggx");
 
+            m_glossy_std_brdf =
+                create_and_register_glossy_brdf(GlossySTDID, "std");
+
             m_metal_beckmann_brdf =
                 create_and_register_metal_brdf(MetalBeckmannID, "beckmann");
 
             m_metal_ggx_brdf =
                 create_and_register_metal_brdf(MetalGGXID, "ggx");
+
+            m_metal_std_brdf =
+                create_and_register_metal_brdf(MetalSTDID, "std");
 
             m_orennayar_brdf =
                 create_and_register_bsdf(OrenNayarID, "orennayar_brdf");
@@ -348,10 +357,13 @@ namespace
         auto_release_ptr<BSDF>      m_disney_brdf;
         auto_release_ptr<BSDF>      m_glass_beckmann_bsdf;
         auto_release_ptr<BSDF>      m_glass_ggx_bsdf;
+        auto_release_ptr<BSDF>      m_glass_std_bsdf;
         auto_release_ptr<BSDF>      m_glossy_beckmann_brdf;
         auto_release_ptr<BSDF>      m_glossy_ggx_brdf;
+        auto_release_ptr<BSDF>      m_glossy_std_brdf;
         auto_release_ptr<BSDF>      m_metal_beckmann_brdf;
         auto_release_ptr<BSDF>      m_metal_ggx_brdf;
+        auto_release_ptr<BSDF>      m_metal_std_brdf;
         auto_release_ptr<BSDF>      m_orennayar_brdf;
         auto_release_ptr<BSDF>      m_sheen_brdf;
 

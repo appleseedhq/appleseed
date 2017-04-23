@@ -84,6 +84,7 @@ namespace
 
     const OIIO::ustring g_beckmann_str("beckmann");
     const OIIO::ustring g_ggx_str("ggx");
+    const OIIO::ustring g_std_str("std");
 
     const OIIO::ustring g_standard_dipole_profile_str("standard_dipole");
     const OIIO::ustring g_better_dipole_profile_str("better_dipole");
@@ -546,35 +547,29 @@ namespace
             const Params* p = static_cast<const Params*>(osl_params);
 
             GlassBSDFInputValues* values;
+            ClosureID cid;
 
             if (p->dist == g_ggx_str)
-            {
-                values =
-                    composite_closure.add_closure<GlassBSDFInputValues>(
-                        GlassGGXID,
-                        shading_basis,
-                        weight,
-                        p->N,
-                        p->T,
-                        arena);
-            }
+                cid = GlassGGXID;
             else if (p->dist == g_beckmann_str)
-            {
-                values =
-                    composite_closure.add_closure<GlassBSDFInputValues>(
-                        GlassBeckmannID,
-                        shading_basis,
-                        weight,
-                        p->N,
-                        p->T,
-                        arena);
-            }
+                cid = GlassBeckmannID;
+            else if (p->dist == g_std_str)
+                cid = GlassSTDID;
             else
             {
                 string msg("invalid microfacet distribution function: ");
                 msg += p->dist.c_str();
                 throw ExceptionOSLRuntimeError(msg.c_str());
             }
+
+            values =
+                composite_closure.add_closure<GlassBSDFInputValues>(
+                    cid,
+                    shading_basis,
+                    weight,
+                    p->N,
+                    p->T,
+                    arena);
 
             values->m_surface_transmittance = Color3f(p->surface_transmittance);
             values->m_surface_transmittance_multiplier = 1.0f;
@@ -642,35 +637,29 @@ namespace
             const Params* p = static_cast<const Params*>(osl_params);
 
             GlossyBRDFInputValues* values;
+            ClosureID cid;
 
             if (p->dist == g_ggx_str)
-            {
-                values =
-                    composite_closure.add_closure<GlossyBRDFInputValues>(
-                        GlossyGGXID,
-                        shading_basis,
-                        weight,
-                        p->N,
-                        p->T,
-                        arena);
-            }
+                cid = GlossyGGXID;
             else if (p->dist == g_beckmann_str)
-            {
-                values =
-                    composite_closure.add_closure<GlossyBRDFInputValues>(
-                        GlossyBeckmannID,
-                        shading_basis,
-                        weight,
-                        p->N,
-                        p->T,
-                        arena);
-            }
+                cid = GlossyBeckmannID;
+            else if (p->dist == g_std_str)
+                cid = GlossySTDID;
             else
             {
                 string msg("invalid microfacet distribution function: ");
                 msg += p->dist.c_str();
                 throw ExceptionOSLRuntimeError(msg.c_str());
             }
+
+            values =
+                composite_closure.add_closure<GlossyBRDFInputValues>(
+                    cid,
+                    shading_basis,
+                    weight,
+                    p->N,
+                    p->T,
+                    arena);
 
             values->m_reflectance.set(1.0f);
             values->m_reflectance_multiplier = 1.0f;
@@ -762,35 +751,29 @@ namespace
             const Params* p = static_cast<const Params*>(osl_params);
 
             MetalBRDFInputValues* values;
+            ClosureID cid;
 
             if (p->dist == g_ggx_str)
-            {
-                values =
-                    composite_closure.add_closure<MetalBRDFInputValues>(
-                        MetalGGXID,
-                        shading_basis,
-                        weight,
-                        p->N,
-                        p->T,
-                        arena);
-            }
+                cid = MetalGGXID;
             else if (p->dist == g_beckmann_str)
-            {
-                values =
-                    composite_closure.add_closure<MetalBRDFInputValues>(
-                        MetalBeckmannID,
-                        shading_basis,
-                        weight,
-                        p->N,
-                        p->T,
-                        arena);
-            }
+                cid = MetalBeckmannID;
+            else if (p->dist == g_std_str)
+                cid = MetalSTDID;
             else
             {
                 string msg("invalid microfacet distribution function: ");
                 msg += p->dist.c_str();
                 throw ExceptionOSLRuntimeError(msg.c_str());
             }
+
+            values =
+                composite_closure.add_closure<MetalBRDFInputValues>(
+                    cid,
+                    shading_basis,
+                    weight,
+                    p->N,
+                    p->T,
+                    arena);
 
             values->m_normal_reflectance = Color3f(p->normal_reflectance);
             values->m_edge_tint = Color3f(p->edge_tint);

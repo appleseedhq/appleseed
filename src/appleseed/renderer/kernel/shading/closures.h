@@ -79,14 +79,17 @@ enum ClosureID
     GlassID,
     GlassBeckmannID,
     GlassGGXID,
+    GlassSTDID,
 
     GlossyID,
     GlossyBeckmannID,
     GlossyGGXID,
+    GlossySTDID,
 
     MetalID,
     MetalBeckmannID,
     MetalGGXID,
+    MetalSTDID,
 
     // BSSRDF closures.
     SubsurfaceID,
