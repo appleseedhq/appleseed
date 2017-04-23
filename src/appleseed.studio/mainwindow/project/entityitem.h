@@ -35,7 +35,7 @@
 #include "mainwindow/project/entitycreatorbase.h"
 #include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/entityitembase.h"
-#include "mainwindow/project/entityvalueprovider.h"
+#include "mainwindow/project/ientityvalueprovider.h"
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/rendering/renderingmanager.h"
@@ -68,8 +68,8 @@ namespace studio {
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
 class EntityItem
-  : public  EntityItemBase<Entity>
-  , public  IEntityValueProvider
+  : public EntityItemBase<Entity>
+  , public IEntityValueProvider
   , private EntityCreatorBase
 {
   public:
@@ -82,7 +82,7 @@ class EntityItem
     void set_fixed_position(const bool fixed);
     bool is_fixed_position() const;
 
-    virtual const foundation::Dictionary get_values() APPLESEED_OVERRIDE;
+    virtual foundation::Dictionary get_values() const APPLESEED_OVERRIDE;
 
   protected:
     typedef EntityItemBase<Entity> Base;
@@ -138,7 +138,7 @@ bool EntityItem<Entity, ParentEntity, CollectionItem>::is_fixed_position() const
 }
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
-const foundation::Dictionary EntityItem<Entity, ParentEntity, CollectionItem>::get_values()
+foundation::Dictionary EntityItem<Entity, ParentEntity, CollectionItem>::get_values() const
 {
     return renderer::EntityTraits<Entity>::get_entity_values(Base::m_entity);
 }

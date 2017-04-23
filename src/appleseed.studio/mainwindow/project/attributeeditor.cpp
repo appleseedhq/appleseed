@@ -31,7 +31,7 @@
 #include "attributeeditor.h"
 
 // appleseed.studio headers.
-#include "entityvalueprovider.h"
+#include "mainwindow/project/ientityvalueprovider.h"
 #include "utility/miscellaneous.h"
 
 // Qt headers.

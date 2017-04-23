@@ -145,6 +145,7 @@ set (mainwindow_project_sources
     mainwindow/project/fixedmodelentityitem.h
     mainwindow/project/frameitem.cpp
     mainwindow/project/frameitem.h
+    mainwindow/project/ientityvalueprovider.h
     mainwindow/project/instancecollectionitem.h
     mainwindow/project/itembase.cpp
     mainwindow/project/itembase.h
