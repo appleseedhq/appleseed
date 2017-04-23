@@ -124,6 +124,27 @@ Dictionary EntityEditor::get_values() const
     return values;
 }
 
+void EntityEditor::rebuild_form(const Dictionary& values)
+{
+    // The mappings were removed when the widgets were deleted.
+    clear_layout(m_top_layout);
+    m_widget_proxies.clear();
+
+    // Collect input metadata.
+    m_form_factory->update(values, m_input_metadata);
+
+    // Create corresponding input widgets.
+    create_form_layout();
+    for (const_each<InputMetadataCollection> i = m_input_metadata; i; ++i)
+    {
+        const bool input_widget_visible = is_input_widget_visible(*i, values);
+        create_input_widgets(*i, input_widget_visible);
+    }
+
+    if (m_custom_ui.get())
+        m_custom_ui->create_widgets(m_top_layout, values);
+}
+
 void EntityEditor::create_form_layout()
 {
     m_form_layout = new QFormLayout();
@@ -153,27 +174,6 @@ void EntityEditor::create_connections()
             m_custom_ui.get(), SIGNAL(signal_apply()),
             SLOT(slot_apply()));
     }
-}
-
-void EntityEditor::rebuild_form(const Dictionary& values)
-{
-    // The mappings were removed when the widgets were deleted.
-    clear_layout(m_top_layout);
-    m_widget_proxies.clear();
-
-    // Collect input metadata.
-    m_form_factory->update(values, m_input_metadata);
-
-    // Create corresponding input widgets.
-    create_form_layout();
-    for (const_each<InputMetadataCollection> i = m_input_metadata; i; ++i)
-    {
-        const bool input_widget_visible = is_input_widget_visible(*i, values);
-        create_input_widgets(*i, input_widget_visible);
-    }
-
-    if (m_custom_ui.get())
-        m_custom_ui->create_widgets(m_top_layout, values);
 }
 
 const Dictionary& EntityEditor::get_input_metadata(const string& name) const
@@ -499,23 +499,6 @@ void EntityEditor::slot_rebuild_form()
     rebuild_form(get_values());
 
     emit signal_applied(get_values());
-}
-
-void EntityEditor::refresh(const Dictionary& values)
-{
-    m_form_factory->update(values, m_input_metadata);
-
-    for (const_each<InputMetadataCollection> i = m_input_metadata; i; ++i)
-    {
-        const Dictionary& metadata = *i;
-
-        IInputWidgetProxy* widget_proxy = m_widget_proxies.get(
-            metadata.strings().get<string>("name"));
-
-        if (widget_proxy)
-            widget_proxy->set(
-                metadata.strings().get<string>("value"));
-    }
 }
 
 namespace

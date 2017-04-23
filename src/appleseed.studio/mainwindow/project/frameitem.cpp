@@ -74,6 +74,11 @@ FrameItem::FrameItem(
     set_allow_deletion(false);
 }
 
+Dictionary FrameItem::get_values() const
+{
+    return m_frame->get_parameters();
+}
+
 void FrameItem::slot_edit(AttributeEditor* attribute_editor)
 {
     auto_ptr<EntityEditor::IFormFactory> form_factory(
@@ -132,11 +137,6 @@ void FrameItem::edit(const Dictionary& values)
     m_frame = m_editor_context.m_project_builder.edit_frame(values);
 
     set_title(QString::fromAscii(m_frame->get_name()));
-}
-
-const Dictionary FrameItem::get_values()
-{
-    return m_frame->get_parameters();
 }
 
 }   // namespace studio

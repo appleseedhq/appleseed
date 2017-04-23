@@ -35,6 +35,7 @@
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityeditor.h"
 #include "mainwindow/project/entityeditorcontext.h"
+#include "mainwindow/project/entityeditorformfactorybase.h"
 #include "mainwindow/project/entityitem.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
 #include "mainwindow/project/projectbuilder.h"
@@ -55,6 +56,10 @@
 namespace appleseed {
 namespace studio {
 
+//
+// Entity item class for multi-model entities such as BSDFs, EDFs, etc.
+//
+
 template <typename Entity, typename ParentEntity, typename CollectionItem>
 class MultiModelEntityItem
   : public EntityItem<Entity, ParentEntity, CollectionItem>
@@ -65,6 +70,8 @@ class MultiModelEntityItem
         Entity*                 entity,
         ParentEntity&           parent,
         CollectionItem*         collection_item);
+
+    virtual foundation::Dictionary get_values() const APPLESEED_OVERRIDE;
 
   private:
     typedef EntityItem<Entity, ParentEntity, CollectionItem> Base;
@@ -93,6 +100,19 @@ MultiModelEntityItem<Entity, ParentEntity, CollectionItem>::MultiModelEntityItem
 }
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
+foundation::Dictionary MultiModelEntityItem<Entity, ParentEntity, CollectionItem>::get_values() const
+{
+    foundation::Dictionary values =
+        renderer::EntityTraits<Entity>::get_entity_values(Base::m_entity);
+
+    values.insert(
+        EntityEditorFormFactoryBase::ModelParameter,
+        Base::m_entity->get_model());
+
+    return values;
+}
+
+template <typename Entity, typename ParentEntity, typename CollectionItem>
 void MultiModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(AttributeEditor* attribute_editor)
 {
     if (!Base::allows_edition())
@@ -106,20 +126,13 @@ void MultiModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attri
     std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<ParentEntity>(Base::m_parent));
 
-    foundation::Dictionary values =
-        EntityTraitsType::get_entity_values(Base::m_entity);
-
-    values.insert(
-        EntityEditorFormFactoryBase::ModelParameter,
-        Base::m_entity->get_model());
-
     if (attribute_editor)
     {
         attribute_editor->edit(
             form_factory,
             entity_browser,
             std::auto_ptr<CustomEntityUI>(),
-            values,
+            get_values(),
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)));
     }
@@ -135,7 +148,7 @@ void MultiModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attri
             Base::m_editor_context.m_project,
             form_factory,
             entity_browser,
-            values,
+            get_values(),
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)),
             SLOT(slot_edit_accepted(foundation::Dictionary)),

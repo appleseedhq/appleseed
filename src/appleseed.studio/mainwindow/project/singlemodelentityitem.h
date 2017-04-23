@@ -55,6 +55,11 @@
 namespace appleseed {
 namespace studio {
 
+//
+// Entity item class for single-model entities such as object instances,
+// texture instances or environments.
+//
+
 template <typename Entity, typename ParentEntity, typename CollectionItem>
 class SingleModelEntityItem
   : public EntityItem<Entity, ParentEntity, CollectionItem>
@@ -65,6 +70,8 @@ class SingleModelEntityItem
         Entity*                 entity,
         ParentEntity&           parent,
         CollectionItem*         collection_item);
+
+    virtual foundation::Dictionary get_values() const APPLESEED_OVERRIDE;
 
   private:
     typedef EntityItem<Entity, ParentEntity, CollectionItem> Base;
@@ -89,6 +96,12 @@ SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::SingleModelEntityIt
 }
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
+foundation::Dictionary SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::get_values() const
+{
+    return renderer::EntityTraits<Entity>::get_entity_values(Base::m_entity);
+}
+
+template <typename Entity, typename ParentEntity, typename CollectionItem>
 void SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(AttributeEditor* attribute_editor)
 {
     if (!Base::allows_edition())
@@ -104,16 +117,13 @@ void SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attr
     std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<ParentEntity>(Base::m_parent));
 
-    const foundation::Dictionary values =
-        EntityTraitsType::get_entity_values(Base::m_entity);
-
     if (attribute_editor)
     {
         attribute_editor->edit(
             form_factory,
             entity_browser,
             std::auto_ptr<CustomEntityUI>(),
-            values,
+            get_values(),
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)));
     }
@@ -129,7 +139,7 @@ void SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attr
             Base::m_editor_context.m_project,
             form_factory,
             entity_browser,
-            values,
+            get_values(),
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)),
             SLOT(slot_edit_accepted(foundation::Dictionary)),

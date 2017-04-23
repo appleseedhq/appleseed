@@ -31,7 +31,7 @@
 #include "attributeeditor.h"
 
 // appleseed.studio headers.
-#include "entityvalueprovider.h"
+#include "mainwindow/project/ientityvalueprovider.h"
 #include "utility/miscellaneous.h"
 
 // Qt headers.
@@ -92,7 +92,7 @@ void AttributeEditor::edit(
 void AttributeEditor::refresh() const
 {
     if (m_entity_editor.get() && m_value_provider)
-        m_entity_editor.get()->refresh(m_value_provider->get_values());
+        m_entity_editor.get()->rebuild_form(m_value_provider->get_values());
 }
 
 }   // namespace studio

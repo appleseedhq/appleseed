@@ -34,6 +34,7 @@
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityeditor.h"
 #include "mainwindow/project/entityeditorcontext.h"
+#include "mainwindow/project/entityeditorformfactorybase.h"
 #include "mainwindow/project/entityitem.h"
 #include "mainwindow/project/fixedmodelentityeditorformfactory.h"
 #include "mainwindow/project/projectbuilder.h"
@@ -57,6 +58,11 @@ namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed {
 namespace studio {
 
+//
+// Entity item class for multi-model entities but for which we disallow
+// changing the model, for instance materials.
+//
+
 template <typename Entity, typename ParentEntity, typename CollectionItem>
 class FixedModelEntityItem
   : public EntityItem<Entity, ParentEntity, CollectionItem>
@@ -67,6 +73,8 @@ class FixedModelEntityItem
         Entity*                 entity,
         ParentEntity&           parent,
         CollectionItem*         collection_item);
+
+    virtual foundation::Dictionary get_values() const APPLESEED_OVERRIDE;
 
   protected:
     typedef EntityItem<Entity, ParentEntity, CollectionItem> Base;
@@ -96,6 +104,19 @@ FixedModelEntityItem<Entity, ParentEntity, CollectionItem>::FixedModelEntityItem
 }
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
+foundation::Dictionary FixedModelEntityItem<Entity, ParentEntity, CollectionItem>::get_values() const
+{
+    foundation::Dictionary values =
+        renderer::EntityTraits<Entity>::get_entity_values(Base::m_entity);
+
+    values.insert(
+        EntityEditorFormFactoryBase::ModelParameter,
+        Base::m_entity->get_model());
+
+    return values;
+}
+
+template <typename Entity, typename ParentEntity, typename CollectionItem>
 void FixedModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(AttributeEditor* attribute_editor)
 {
     if (!Base::allows_edition())
@@ -110,16 +131,13 @@ void FixedModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attri
     std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<ParentEntity>(Base::m_parent));
 
-    foundation::Dictionary values =
-        EntityTraitsType::get_entity_values(Base::m_entity);
-
     if (attribute_editor)
     {
         attribute_editor->edit(
             form_factory,
             entity_browser,
             std::auto_ptr<CustomEntityUI>(),
-            values,
+            get_values(),
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)));
     }
@@ -135,7 +153,7 @@ void FixedModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attri
             Base::m_editor_context.m_project,
             form_factory,
             entity_browser,
-            values,
+            get_values(),
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)),
             SLOT(slot_edit_accepted(foundation::Dictionary)),

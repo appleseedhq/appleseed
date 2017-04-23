@@ -215,7 +215,7 @@ void LineEditDoubleSliderAdaptor::slot_set_slider_value(const QString& value)
 {
     if (!value.isEmpty())
     {
-        m_slider->blockSignals(true);
+        const bool were_signals_blocked = m_slider->blockSignals(true);
 
         const double new_value = value.toDouble();
 
@@ -225,13 +225,13 @@ void LineEditDoubleSliderAdaptor::slot_set_slider_value(const QString& value)
             adjust_slider(new_value);
 
         m_slider->setValue(new_value);
-        m_slider->blockSignals(false);
+        m_slider->blockSignals(were_signals_blocked);
     }
 }
 
 void LineEditDoubleSliderAdaptor::slot_apply_slider_value()
 {
-    m_slider->blockSignals(true);
+    const bool were_signals_blocked = m_slider->blockSignals(true);
 
     const double new_value = m_line_edit->text().toDouble();
 
@@ -243,7 +243,7 @@ void LineEditDoubleSliderAdaptor::slot_apply_slider_value()
         adjust_slider(new_value);
 
     m_slider->setValue(new_value);
-    m_slider->blockSignals(false);
+    m_slider->blockSignals(were_signals_blocked);
 }
 
 void LineEditDoubleSliderAdaptor::adjust_slider(const double new_value)

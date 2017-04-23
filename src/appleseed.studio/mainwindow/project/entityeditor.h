@@ -108,7 +108,7 @@ class EntityEditor
 
     foundation::Dictionary get_values() const;
 
-    void refresh(const foundation::Dictionary& values);
+    void rebuild_form(const foundation::Dictionary& values);
 
   signals:
     void signal_applied(foundation::Dictionary values);
@@ -131,8 +131,6 @@ class EntityEditor
 
     void create_form_layout();
     void create_connections();
-
-    void rebuild_form(const foundation::Dictionary& values);
 
     const foundation::Dictionary& get_input_metadata(const std::string& name) const;
 
