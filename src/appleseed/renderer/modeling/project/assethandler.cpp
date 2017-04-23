@@ -210,7 +210,7 @@ bool AssetHandler::handle_asset(string& asset_path) const
 
     // Relative asset path, that does not exist. Handling is skipped.
     // Means that this file is in unprovided search path (therefore should be provided by parent project)
-    if (search_path.empty() && !exists(qualified_asset_path.c_str()))
+    if (!exists(qualified_asset_path.c_str()))
     {
         return true;
     }

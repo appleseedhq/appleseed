@@ -3193,8 +3193,8 @@ auto_release_ptr<Project> ProjectFileReader::read(
     string actual_project_filepath;
     if (is_zip_file(project_filepath))
     {
-        const string ProjectFilename = get_project_filename_from_archive(project_filepath);
-        if (ProjectFilename == "")
+        const string project_filename = get_project_filename_from_archive(project_filepath);
+        if (project_filename == "")
         {
             RENDERER_LOG_ERROR(
                 "%s looks like a packed project file, but it should contain a single *.appleseed file in order to be valid.",
@@ -3212,7 +3212,7 @@ auto_release_ptr<Project> ProjectFileReader::read(
 
         actual_project_filepath = unpack_project(
             project_filepath,
-            ProjectFilename,
+            project_filename,
             unpacked_project_directory);
 
         project_filepath = actual_project_filepath.data();
