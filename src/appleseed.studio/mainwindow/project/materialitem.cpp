@@ -113,8 +113,7 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
     }
 #endif
 
-    const Dictionary values =
-        EntityTraitsType::get_entity_values(m_entity);
+    const Dictionary values = get_values();
 
     if (attribute_editor)
     {

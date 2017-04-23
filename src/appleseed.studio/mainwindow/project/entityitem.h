@@ -82,8 +82,6 @@ class EntityItem
     void set_fixed_position(const bool fixed);
     bool is_fixed_position() const;
 
-    virtual foundation::Dictionary get_values() const APPLESEED_OVERRIDE;
-
   protected:
     typedef EntityItemBase<Entity> Base;
 
@@ -135,12 +133,6 @@ template <typename Entity, typename ParentEntity, typename CollectionItem>
 bool EntityItem<Entity, ParentEntity, CollectionItem>::is_fixed_position() const
 {
     return m_fixed_position;
-}
-
-template <typename Entity, typename ParentEntity, typename CollectionItem>
-foundation::Dictionary EntityItem<Entity, ParentEntity, CollectionItem>::get_values() const
-{
-    return renderer::EntityTraits<Entity>::get_entity_values(Base::m_entity);
 }
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>

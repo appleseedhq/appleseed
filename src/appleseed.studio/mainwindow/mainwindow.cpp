@@ -1513,6 +1513,7 @@ namespace
             Project&        project) APPLESEED_OVERRIDE
         {
             project.get_frame()->reset_crop_window();
+
             m_attribute_editor->refresh();
         }
 
@@ -1551,6 +1552,7 @@ namespace
                 AABB2i(
                     Vector2i(x0, y0),
                     Vector2i(x1, y1)));
+
             m_attribute_editor->refresh();
         }
 
