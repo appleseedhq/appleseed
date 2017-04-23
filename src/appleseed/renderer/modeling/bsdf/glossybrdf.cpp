@@ -162,7 +162,7 @@ namespace
         {
             const Vector3f& n = sample.m_shading_basis.get_normal();
             const Vector3f& outgoing = sample.m_outgoing.get_value();
-            const float cos_on = std::min(dot(outgoing, n), 1.0f);
+            const float cos_on = min(dot(outgoing, n), 1.0f);
             if (cos_on < 0.0f)
                 return;
 
@@ -230,7 +230,7 @@ namespace
                 alpha_y);
             const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
-            FresnelDielectricFun f(
+            const FresnelDielectricFun f(
                 values->m_reflectance,
                 values->m_reflectance_multiplier,
                 values->m_precomputed.m_outside_ior / values->m_ior);

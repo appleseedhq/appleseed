@@ -81,16 +81,16 @@ namespace
         }
 
         void operator()(
-            const foundation::Vector3f& o,
-            const foundation::Vector3f& h,
-            const foundation::Vector3f& n,
+            const Vector3f& o,
+            const Vector3f& h,
+            const Vector3f& n,
             Spectrum&                   value) const
         {
             float f;
-            foundation::fresnel_reflectance_dielectric(
+            fresnel_reflectance_dielectric(
                 f,
                 m_eta,
-                foundation::clamp(foundation::dot(o, h), -1.0f, 1.0f));
+                clamp(dot(o, h), -1.0f, 1.0f));
 
             value.set(f);
         }
@@ -146,7 +146,7 @@ namespace
         {
             const Vector3f& n = sample.m_shading_basis.get_normal();
             const Vector3f& outgoing = sample.m_outgoing.get_value();
-            const float cos_on = std::min(dot(outgoing, n), 1.0f);
+            const float cos_on = min(dot(outgoing, n), 1.0f);
             if (cos_on < 0.0f)
                 return;
 
@@ -186,7 +186,7 @@ namespace
                 return 0.0f;
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            FresnelFun f(values->m_precomputed.m_outside_ior / values->m_ior);
+            const FresnelFun f(values->m_precomputed.m_outside_ior / values->m_ior);
 
             return MicrofacetBRDFHelper::evaluate(
                 m_mdf,

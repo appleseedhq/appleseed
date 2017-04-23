@@ -468,11 +468,11 @@ shader alSurface
             transmissionNormal,
             vector(0),
             transmissionColor,
-            color(0),                       // Transmission only.
+            color(0),                       // transmission only
             color(1),
             transmissionRoughness,
-            0.5,                            // Highlight falloff.
-            0,                              // Anisotropy.
+            0.5,                            // highlight falloff
+            0,                              // anisotropy
             transmissionIor,
             volumeTransmittanceColor,
             volumeTransmittanceDistance);
