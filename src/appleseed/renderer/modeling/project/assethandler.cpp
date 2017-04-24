@@ -208,6 +208,13 @@ bool AssetHandler::handle_asset(string& asset_path) const
     APIString search_path;
     m_project.search_paths().qualify(asset_path, &qualified_asset_path, &search_path);
 
+    // Relative asset path, that does not exist. Handling is skipped.
+    // Means that this file is in unprovided search path (therefore should be provided by parent project)
+    if (!exists(qualified_asset_path.c_str()))
+    {
+        return true;
+    }
+
     if (search_path.empty() || path(search_path.c_str()).is_relative())
     {
         // Relative asset path, found in a relative search path or in the root directory.

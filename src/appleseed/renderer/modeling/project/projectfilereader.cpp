@@ -3153,6 +3153,28 @@ namespace
 
         return false;
     }
+
+    // returns filename of .appleseed file inside archive
+    // returns "" in case there are more than 1 .appleseed files
+    // "" means it's not a valid packed project
+    string get_project_filename_from_archive(const char* project_filepath)
+    {
+        const vector<string> appleseed_files = get_filenames_with_extension_from_zip(project_filepath, ".appleseed");
+        return appleseed_files.size() == 1 ? appleseed_files[0] : "";
+    }
+
+    string unpack_project(
+        const string& project_filepath,
+        const string& project_name,
+        const bf::path& unpacked_project_directory)
+    {
+        if (bf::exists(unpacked_project_directory))
+            bf::remove_all(unpacked_project_directory);
+
+        unzip(project_filepath, unpacked_project_directory.string());
+
+        return (unpacked_project_directory / project_name).string().c_str();
+    }
 }
 
 auto_release_ptr<Project> ProjectFileReader::read(
@@ -3171,9 +3193,8 @@ auto_release_ptr<Project> ProjectFileReader::read(
     string actual_project_filepath;
     if (is_zip_file(project_filepath))
     {
-        const vector<string> appleseed_files = get_filenames_with_extension_from_zip(project_filepath, ".appleseed");
-
-        if (appleseed_files.size() != 1)
+        const string project_filename = get_project_filename_from_archive(project_filepath);
+        if (project_filename == "")
         {
             RENDERER_LOG_ERROR(
                 "%s looks like a packed project file, but it should contain a single *.appleseed file in order to be valid.",
@@ -3189,13 +3210,11 @@ auto_release_ptr<Project> ProjectFileReader::read(
             project_filepath,
             unpacked_project_directory.c_str());
 
-        if (bf::exists(bf::path(unpacked_project_directory)))
-            bf::remove_all(bf::path(unpacked_project_directory));
+        actual_project_filepath = unpack_project(
+            project_filepath,
+            project_filename,
+            unpacked_project_directory);
 
-        unzip(project_filepath, unpacked_project_directory);
-
-        const string project_name = appleseed_files[0];
-        actual_project_filepath = (bf::path(unpacked_project_directory) / bf::path(project_name)).string().c_str();
         project_filepath = actual_project_filepath.data();
     }
 
@@ -3242,6 +3261,30 @@ auto_release_ptr<Assembly> ProjectFileReader::read_archive(
     const int               options)
 {
     assert(archive_filepath);
+
+    // Handle packed archives.
+    string actual_archive_filepath;
+    if (is_zip_file(archive_filepath))
+    {
+        string archive_name = get_project_filename_from_archive(archive_filepath);
+        if (archive_name == "")
+        {
+            RENDERER_LOG_ERROR(
+                "%s looks like a packed archive file, but it should contain a single *.appleseed file in order to be valid.",
+                archive_filepath);
+            return auto_release_ptr<Assembly>(0);
+        }
+
+        const string unpacked_archive_directory =
+            bf::path(archive_filepath).replace_extension(".unpacked").string();
+
+        actual_archive_filepath = unpack_project(
+            archive_filepath,
+            archive_name,
+            unpacked_archive_directory);
+
+        archive_filepath = actual_archive_filepath.data();
+    }
 
     XercesCContext xerces_context(global_logger());
     if (!xerces_context.is_initialized())
