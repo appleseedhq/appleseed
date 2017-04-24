@@ -54,7 +54,7 @@ namespace studio {
 class FrameItem
   : public ItemBase
   , public IEntityValueProvider
-  , private EntityCreatorBase
+  , public EntityCreatorBase    // gcc 4.8 requires public inheritance here
 {
     Q_OBJECT
 
