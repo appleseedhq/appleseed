@@ -236,31 +236,6 @@ macro (link_against_openexr target)
     endif ()
 endmacro ()
 
-macro (link_against_hdf5 target)
-    if (USE_EXTERNAL_ALEMBIC)
-        target_link_libraries (${target}
-            ${HDF5_LIBRARIES}
-            ${HDF5_HL_LIBRARIES}
-        )
-    else ()
-        target_link_libraries (${target}
-            # Static libraries must be specified in order of reverse-dependency.
-            ${CMAKE_SOURCE_DIR}/build/${platform}/hdf5/libhdf5_hl.a
-            ${CMAKE_SOURCE_DIR}/build/${platform}/hdf5/libhdf5.a
-        )
-    endif ()
-endmacro ()
-
-macro (link_against_alembic target)
-    if (USE_EXTERNAL_ALEMBIC)
-        target_link_libraries (${target} ${ALEMBIC_LIBRARIES})
-    else ()
-        target_link_libraries (${target}
-            ${CMAKE_SOURCE_DIR}/build/${platform}/alembic/libalembic.a
-        )
-    endif ()
-endmacro ()
-
 macro (link_against_xercesc target)
     if (USE_EXTERNAL_XERCES)
         target_link_libraries (${target} ${XERCES_LIBRARIES})
