@@ -200,11 +200,11 @@ const char* ObjectInstance::get_object_name() const
 
 bool ObjectInstance::is_in_same_sss_set(const ObjectInstance& other) const
 {
-    // If it is the same object instance, sss set is also the same.
+    // If it is the same object instance, the SSS set is also the same.
     if (other.get_uid() == get_uid())
         return true;
 
-    // Empty identifier indicates that object instance belongs to its individual SSS set.
+    // An empty identifier indicates that the object instance belongs to its own SSS set.
     if (impl->m_sss_set_identifier.empty() || other.impl->m_sss_set_identifier.empty())
         return false;
 

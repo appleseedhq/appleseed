@@ -71,4 +71,14 @@ VisibilityFlags::Type VisibilityFlags::parse(
     return flags;
 }
 
+ParamArray VisibilityFlags::to_dictionary(const Type flags)
+{
+    ParamArray params;
+
+    for (size_t i = 0; i < Count; ++i)
+        params.insert(Names[i], (flags & (1 << i)) != 0);
+
+    return params;
+}
+
 }   // namespace renderer

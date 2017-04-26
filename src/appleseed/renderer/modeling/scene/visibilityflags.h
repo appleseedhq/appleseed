@@ -60,9 +60,11 @@ class APPLESEED_DLLSYMBOL VisibilityFlags
         DiffuseRay      = 1 << 5,
         GlossyRay       = 1 << 6,
         SpecularRay     = 1 << 7,
-        SubsurfaceRay   = 1 << 8
+        SubsurfaceRay   = 1 << 8,
+        AllRays         = ~0
     };
 
+    // Names follow the same order as values.
     static const size_t Count;
     static const char* Names[];
 
@@ -70,6 +72,9 @@ class APPLESEED_DLLSYMBOL VisibilityFlags
     static Type parse(
         const ParamArray&       params,
         const MessageContext&   message_context);
+
+    // Convert visibility flags to a dictionary.
+    static ParamArray to_dictionary(const Type flags);
 };
 
 }       // namespace renderer

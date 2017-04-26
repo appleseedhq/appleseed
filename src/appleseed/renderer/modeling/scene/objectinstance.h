@@ -124,6 +124,9 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     RayBiasMethod get_ray_bias_method() const;
     double get_ray_bias_distance() const;
 
+    // Check if this object instance is in the same SSS set as another.
+    bool is_in_same_sss_set(const ObjectInstance& other) const;
+
     // Find the object bound to this instance.
     Object* find_object() const;
 
@@ -172,9 +175,6 @@ class APPLESEED_DLLSYMBOL ObjectInstance
 
     // Return the object bound to this instance.
     Object& get_object() const;
-
-    // Check if this object instance is in the same sss set as the given one
-    bool is_in_same_sss_set(const ObjectInstance& other) const;
 
     // Return the materials bound to this instance.
     const MaterialArray& get_front_materials() const;
