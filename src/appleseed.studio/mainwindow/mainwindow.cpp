@@ -1240,31 +1240,21 @@ void MainWindow::slot_save_project()
 void MainWindow::slot_save_project_as()
 {
     assert(m_project_manager.is_project_open());
-    do_save_project(
-        ProjectDialogFilterPlainProjects |
-        ProjectDialogFilterPackedProjects);
-}
 
-void MainWindow::slot_pack_project_as()
-{
-    assert(m_project_manager.is_project_open());
-    do_save_project(ProjectDialogFilterPackedProjects);
-}
-
-void MainWindow::do_save_project(const int filter)
-{
     QString filepath =
         get_save_filename(
             this,
             "Save As...",
-            get_filter_string(filter),
+            get_filter_string(ProjectDialogFilterPlainProjects),
             m_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 
     if (!filepath.isEmpty())
     {
-        if (QFileInfo(filepath).suffix().isEmpty())
-            filepath += get_extension(m_settings, SETTINGS_FILE_DIALOG_PROJECTS);
+        QString extension = "appleseed";
+
+        if (QFileInfo(filepath).suffix() != extension)
+            filepath += "." + extension;
 
         filepath = QDir::toNativeSeparators(filepath);
 
@@ -1278,6 +1268,31 @@ void MainWindow::do_save_project(const int filter)
 
         update_recent_files_menu(filepath);
         update_workspace();
+    }
+}
+
+void MainWindow::slot_pack_project_as()
+{
+    assert(m_project_manager.is_project_open());
+
+    QString filepath =
+        get_save_filename(
+            this,
+            "Save As...",
+            get_filter_string(ProjectDialogFilterPackedProjects),
+            m_settings,
+            SETTINGS_FILE_DIALOG_PROJECTS);
+
+    if (!filepath.isEmpty())
+    {
+        QString extension = "appleseedz";
+
+        if (QFileInfo(filepath).suffix() != extension)
+            filepath += "." + extension;
+
+        filepath = QDir::toNativeSeparators(filepath);
+
+        m_project_manager.pack_project_as(filepath.toAscii().constData());
     }
 }
 

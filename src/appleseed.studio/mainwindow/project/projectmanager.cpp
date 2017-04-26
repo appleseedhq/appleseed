@@ -89,11 +89,23 @@ bool ProjectManager::load_builtin_project(const string& name)
 
 bool ProjectManager::save_project()
 {
-    return do_save_project(m_project->get_path(), ProjectFileWriter::Defaults);
+    return save_project_as(m_project->get_path());
 }
 
 bool ProjectManager::save_project_as(const string& filepath)
 {
+    bool isSuccess = do_save_project(filepath, ProjectFileWriter::Defaults);
+
+    if (isSuccess)
+    {
+        m_project->set_path(filepath.c_str());
+        m_dirty_flag = false;
+    }
+
+    return isSuccess;
+}
+
+bool ProjectManager::pack_project_as(const string& filepath) {
     return do_save_project(filepath, ProjectFileWriter::Defaults);
 }
 
@@ -192,13 +204,7 @@ bool ProjectManager::do_save_project(
 {
     assert(m_project.get());
 
-    if (!ProjectFileWriter::write(m_project.ref(), filepath.c_str(), options))
-        return false;
-
-    m_project->set_path(filepath.c_str());
-    m_dirty_flag = false;
-
-    return true;
+    return ProjectFileWriter::write(m_project.ref(), filepath.c_str(), options);
 }
 
 }   // namespace studio
