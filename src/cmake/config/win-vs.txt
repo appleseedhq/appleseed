@@ -248,33 +248,6 @@ macro (link_against_openexr target)
     endif ()
 endmacro ()
 
-macro (link_against_hdf5 target)
-    if (USE_EXTERNAL_ALEMBIC)
-        target_link_libraries (${target}
-            ${HDF5_LIBRARIES}
-            ${HDF5_HL_LIBRARIES}
-        )
-    else ()
-        target_link_libraries (${target}
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/hdf5/Debug/hdf5d.lib
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/hdf5/Debug/hdf5_hld.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/hdf5/Release/hdf5.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/hdf5/Release/hdf5_hl.lib
-        )
-    endif ()
-endmacro ()
-
-macro (link_against_alembic target)
-    if (USE_EXTERNAL_ALEMBIC)
-        target_link_libraries (${target} ${ALEMBIC_LIBRARIES})
-    else ()
-        target_link_libraries (${target}
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/alembic/Debug/alembic.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/alembic/Release/alembic.lib
-        )
-    endif ()
-endmacro ()
-
 macro (link_against_xercesc target)
     if (USE_EXTERNAL_XERCES)
         target_link_libraries (${target} ${XERCES_LIBRARIES})
