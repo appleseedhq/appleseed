@@ -1251,10 +1251,10 @@ void MainWindow::slot_save_project_as()
 
     if (!filepath.isEmpty())
     {
-        QString extension = "appleseed";
+        const QString Extension = "appleseed";
 
-        if (QFileInfo(filepath).suffix() != extension)
-            filepath += "." + extension;
+        if (QFileInfo(filepath).suffix() != Extension)
+            filepath += "." + Extension;
 
         filepath = QDir::toNativeSeparators(filepath);
 
@@ -1278,17 +1278,17 @@ void MainWindow::slot_pack_project_as()
     QString filepath =
         get_save_filename(
             this,
-            "Save As...",
+            "Pack As...",
             get_filter_string(ProjectDialogFilterPackedProjects),
             m_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 
     if (!filepath.isEmpty())
     {
-        QString extension = "appleseedz";
+        const QString Extension = "appleseedz";
 
-        if (QFileInfo(filepath).suffix() != extension)
-            filepath += "." + extension;
+        if (QFileInfo(filepath).suffix() != Extension)
+            filepath += "." + Extension;
 
         filepath = QDir::toNativeSeparators(filepath);
 

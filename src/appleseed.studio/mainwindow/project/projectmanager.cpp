@@ -94,18 +94,19 @@ bool ProjectManager::save_project()
 
 bool ProjectManager::save_project_as(const string& filepath)
 {
-    bool isSuccess = do_save_project(filepath, ProjectFileWriter::Defaults);
+    const bool IsSuccess = do_save_project(filepath, ProjectFileWriter::Defaults);
 
-    if (isSuccess)
+    if (IsSuccess)
     {
         m_project->set_path(filepath.c_str());
         m_dirty_flag = false;
     }
 
-    return isSuccess;
+    return IsSuccess;
 }
 
-bool ProjectManager::pack_project_as(const string& filepath) {
+bool ProjectManager::pack_project_as(const string& filepath)
+{
     return do_save_project(filepath, ProjectFileWriter::Defaults);
 }
 
