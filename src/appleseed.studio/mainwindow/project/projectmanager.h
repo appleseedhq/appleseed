@@ -85,6 +85,10 @@ class ProjectManager
     // A project must be open.
     bool save_project_as(const std::string& filepath);
 
+    // Pack the current project to appleseedz archive.
+    // A project must be open.
+    bool pack_project_as(const std::string& filepath);
+
     // If a project is currently open, close it.
     void close_project();
 
