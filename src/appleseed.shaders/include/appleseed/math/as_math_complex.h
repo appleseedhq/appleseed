@@ -25,10 +25,11 @@
 // THE SOFTWARE.
 //
 
-#ifndef AS_COMPLEX_HELPERS_H
-#define AS_COMPLEX_HELPERS_H
+#ifndef AS_MATH_COMPLEX_H
+#define AS_MATH_COMPLEX_H
 
-struct Complex {
+struct Complex
+{
     float real;
     float imag;
 };
@@ -227,4 +228,4 @@ void sqrt_complex(output Complex Z)
     }
 }
 
-#endif // !AS_COMPLEX_HELPERS_H
+#endif // !AS_MATH_COMPLEX_H
