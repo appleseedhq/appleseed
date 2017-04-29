@@ -39,6 +39,7 @@
 #define AS_FRACTAL_HELPERS_H
 
 #include "appleseed/fractal/as_noise_helpers.h"
+#include "appleseed/math/as_math_complex.h"
 
 float fBm(
     point surface_point,
@@ -406,6 +407,42 @@ void voronoi_3D(
                 }
             }
         }
+    }
+}
+
+//
+// Reference:
+//
+//      Box and sphere folding: What is a Mandelbox, Tom Lowe
+//      https://sites.google.com/site/mandelbox/what-is-a-mandelbox
+//      
+//      The Mandelbox Set, Rudi Chen
+//      http://digitalfreepen.com/mandelbox370/
+//
+
+void box_fold(output Complex Z)
+{
+    Z.real = clamp(Z.real, -1.0, 1.0) * 2.0 - Z.real;
+    Z.imag = clamp(Z.imag, -1.0, 1.0) * 2.0 - Z.imag;
+}
+
+void sphere_fold(
+    float sqr_distance,
+    float sqr_box_min_radius,
+    float sqr_box_radius,
+    output Complex Z)
+{
+    if (sqr_distance < sqr_box_min_radius)
+    {
+        float tmp = sqr_box_radius / sqr_box_min_radius;
+        Z.real *= tmp;
+        Z.imag *= tmp;
+    }
+    else if (sqr_distance < sqr_box_radius)
+    {
+        float tmp = sqr_box_radius / sqr_distance;
+        Z.real *= tmp;
+        Z.imag *= tmp;
     }
 }
 

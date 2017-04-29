@@ -32,6 +32,7 @@
 #define MAYA_LATTICE_SIZE   20
 
 #include "appleseed/fractal/as_noise_helpers.h"
+#include "appleseed/math/as_math_complex.h"
 #include "appleseed/math/as_math_helpers.h"
 
 void implode_2d(
@@ -210,7 +211,8 @@ float billow_noise_2d(
     int current_step,
     int falloff_mode)
 {
-    float blob_density = 2.0 - randomness;
+    float size_randomness2 = randomness * 2;
+    float blob_density = 2.0 - size_randomness2;
 
     if (blob_density < density)
     {
@@ -231,7 +233,7 @@ float billow_noise_2d(
     int y_cell_index = (int) lattice_y, ny;
 
     float blob_size = 2.0 / blob_density;
-    float jittering = 0.5 * randomness;
+    float jittering = 0.5 * size_randomness2;
     float inv_spottyness = 1.0 - spottyness, falloff, sum = 0.0;
 
     for (int dy = -1; dy <= 1; dy++)
@@ -279,10 +281,10 @@ float billow_noise_2d(
             float sample_distance = blob_size * (
                 sqr(x_sample_distance) + sqr(y_sample_distance));
             
-            if (size_randomness)
+            if (size_randomness2)
             {
                 sample_distance /= (random_noise(index++) + 1.0) *
-                    0.5 * size_randomness + (1.0 - size_randomness);
+                    0.5 * size_randomness2 + (1.0 - size_randomness2);
             }
             else
             {
@@ -383,6 +385,207 @@ float maya_billow_noise_2d(
     }
     sum /= total_amplitude;
     return gain * sum;
+}
+
+void compute_mandelbox(
+    int iteration_depth,
+    float box_ratio,
+    float leaf_effect,
+    float sqr_box_radius,
+    float sqr_box_min_radius,
+    float sqr_escape_radius,
+    Complex C_Z,
+    Complex Z,
+    output int iteration,
+    output int decomposition_sign,
+    output float sqr_distance,
+    output float min_radius)
+{
+    Complex Z2, tmp_Z = Z;
+
+    while (iteration < iteration_depth && sqr_distance <= sqr_escape_radius)
+    {
+        box_fold(tmp_Z);
+
+        Z2.real = sqr(tmp_Z.real);
+        Z2.imag = sqr(tmp_Z.imag);
+
+        sqr_distance = Z2.real + Z2.imag;
+
+        if (leaf_effect > 0)
+        {
+            sqr_distance = mix(
+                sqr_distance,
+                abs(Z2.real - Z2.imag),
+                leaf_effect);
+        }
+
+        min_radius = min(min_radius, sqr_distance);
+
+        sphere_fold(
+            sqr_distance,
+            sqr_box_min_radius,
+            sqr_box_radius,
+            tmp_Z);
+        
+        tmp_Z.real = box_ratio * tmp_Z.real + C_Z.real;
+        tmp_Z.imag = box_ratio * tmp_Z.imag + C_Z.imag;
+        iteration++;
+    }
+    decomposition_sign = (int) sign(-tmp_Z.imag);
+}
+
+void compute_mandelbrot(
+    Complex lobes,
+    int iteration_depth,
+    float leaf_effect,
+    float sqr_escape_radius,
+    Complex C_Z,
+    Complex Z,
+    output int iteration,
+    output int decomposition_sign,
+    output float sqr_distance,
+    output float min_radius)
+{
+    Complex Z2, tmp_Z = Z;
+    
+    while (iteration < iteration_depth && sqr_distance <= sqr_escape_radius)
+    { 
+        if (lobes.real == 2)
+        {
+            square_complex(tmp_Z);
+        }
+        else
+        {
+            pow_complex(tmp_Z, lobes, tmp_Z);
+        }
+
+        tmp_Z.real += C_Z.real;
+        tmp_Z.imag += C_Z.imag;
+
+        Z2.real = sqr(tmp_Z.real);
+        Z2.imag = sqr(tmp_Z.imag);
+
+        sqr_distance = Z2.real + Z2.imag;
+
+        if (leaf_effect > 0)
+        {
+            sqr_distance = mix(
+                sqr_distance,
+                abs(Z2.real - Z2.imag),
+                leaf_effect);
+        }
+
+        min_radius = min(min_radius, sqr_distance);
+
+        iteration++;
+    }
+    decomposition_sign = (int) sign(-tmp_Z.imag);
+}
+
+//
+// Reference:
+//
+//      On Smooth Fractal Coloring Techniques, Jussi Harkonen
+//      http://jussiharkonen.com/gallery/coloring-techniques/
+//
+
+float mandelbrot_interior_coloring(
+    int i,
+    int iteration_depth,
+    int interior_method,
+    float lobes,
+    float min_radius,
+    float escape_radius,
+    float binary_decomposition)
+{
+    float mapping;
+
+    if (interior_method == 0)
+    {
+        mapping = 0;
+    }
+    else if (interior_method == 1)
+    {
+        mapping = (float) i / (float) iteration_depth;
+    }
+    else if (interior_method == 2)
+    {
+        // It doesn't match, but it's a starting point.
+
+        mapping = pow(min_radius, 0.25) * pow(escape_radius, 0.25) / log(2);
+
+        mapping = 1 - mapping;
+    }
+    else if (interior_method == 3)
+    {
+        ; // unsupported yet
+    }
+    else if (interior_method == 4)
+    {
+        ; // unsupported yet
+    }
+    else
+    {
+        ; // unsupported yet
+    }
+    mapping = clamp(mapping, 0, 1);
+
+    if (interior_method > 0)
+    {
+        mapping += binary_decomposition;
+    }
+    return mapping;
+}
+
+float mandelbrot_exterior_coloring(
+    int i,
+    int iteration_depth,
+    int exterior_method,
+    float lobes,
+    float sqr_distance,
+    float min_radius,
+    float sqr_escape_radius,
+    float binary_decomposition)
+{
+    float mapping;
+
+    if (exterior_method == 0)
+    {
+        mapping = (float) i / (float) iteration_depth;
+    }
+    else if (exterior_method == 1)
+    {
+        float ln_r = log(sqr_distance) / 2;
+        float ln_M = log(sqr_escape_radius) / 2;
+
+        mapping = (lobes != 1)
+            ? i + 1 + log(ln_M / ln_r) / log(lobes + 1)
+            : i + 1 + log(ln_M / ln_r) / M_LN2;
+
+        mapping /= iteration_depth;
+    }
+    else if (exterior_method == 2)
+    {
+        // It doesn't match at higher depth counts, but it's a good
+        // starting point.
+
+        mapping = sqrt(sqr_escape_radius) - sqrt(min_radius);
+
+        mapping /= iteration_depth;
+    }
+    else if (exterior_method == 3)
+    {
+        mapping = sqrt(sqr_distance) / iteration_depth;
+        mapping *= sqrt(sqr_escape_radius);
+    }
+    else
+    {
+        mapping = 0; // unsupported yet
+    }
+    mapping = clamp(mapping, 0, 1);
+
+    return mapping + binary_decomposition;
 }
 
 #endif // !AS_MAYA_FRACTAL_HELPERS_H
