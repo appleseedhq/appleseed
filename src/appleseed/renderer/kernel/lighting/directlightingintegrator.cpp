@@ -525,6 +525,10 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
 
         edf_value *= weight / sample.m_probability;
     }
+    else
+    {
+        edf_value *= weight;
+    }
 
     // Add the contribution of this sample to the illumination.
     edf_value *= sample.m_value;
