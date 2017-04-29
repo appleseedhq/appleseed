@@ -102,6 +102,7 @@ source_group ("include\\appleseed\\material" FILES
 )
 
 set (include_appleseed_math_sources
+    include/appleseed/math/as_math_complex.h
     include/appleseed/math/as_math_helpers.h
 )
 list (APPEND osl_headers
@@ -343,6 +344,7 @@ set (src_maya_sources
      src/maya/as_maya_lambert.osl
      src/maya/as_maya_layeredTexture.osl
      src/maya/as_maya_luminance.osl
+     src/maya/as_maya_mandelbrot.osl
      src/maya/as_maya_matrixInverse.osl
      src/maya/as_maya_mountain.osl
      src/maya/as_maya_movie.osl

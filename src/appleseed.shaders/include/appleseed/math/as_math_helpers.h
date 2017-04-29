@@ -34,7 +34,15 @@
 
 float sqr(float x) { return x * x; }
 
-// Perlin bias
+//
+// Reference:
+//
+//      Hypertexture
+//      Ken Perlin, Eric M.Hoffert
+//
+//      http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.438.4926&rep=rep1&type=pdf
+//
+
 float bias(float value, float b)
 {
     return pow(value, -log2(b));
@@ -47,7 +55,14 @@ float gain(float value, float g)
         : 1 - bias(2 - (value * 2), 1 - g) * 0.5;
 }
 
-// Schlick's bias function: http://dept-info.labri.fr/~schlick/DOC/gem2.ps.gz
+//
+// Reference:
+//
+//      Fast Alternatives To Perlin Bias And Gain Functions
+//
+//      http://dept-info.labri.u-bordeaux.fr/~schlick/DOC/gem2.ps.gz
+//
+
 float fast_bias(float value, float b)
 {
     return value / ((1 / b - 2) * (1 - value) + 1);
@@ -60,11 +75,20 @@ float fast_gain(float value, float g)
         : fast_bias(value * 2 - 1, 1 - g) * 0.5 + 0.5;
 }
 
-// Random number generators: good ones are hard to find.
-// Stephen K. Park and Keith W. Miller.
+//
+// Reference:
+//
+//      Lehmer linear congruential generator (Park-Miller)
+//
+//      Random Number Generators: Good Ones Are Hard To Find,
+//      Stephen K.Park and Keith W.Miller
+//
+//      http://www.firstpr.com.au/dsp/rand31/p1192-park.pdf
+//      https://en.wikipedia.org/wiki/Lehmer_random_number_generator
+//
+
 int rand_int(int seed)
 {
-    // Constants.
     int a = 16807;
     int q = 127773;
     int r = 2836;
@@ -74,7 +98,6 @@ int rand_int(int seed)
     int lo = seed % q;
     int x = a * lo - r * hi;
 
-    // Return result (and new seed).
     return x > 0 ? x : x + m;
 }
 
@@ -83,7 +106,6 @@ int rand_float(int seed, output float result)
     int x = rand_int(seed);
     result = x / 2147483647;
 
-    // Return new seed.
     return x;
 }
 
