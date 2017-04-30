@@ -1409,6 +1409,49 @@ namespace
             }
         }
     };
+
+    //
+    // Update from revision 16 to revision 17.
+    //
+
+    class UpdateFromRevision_16
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_16(Project& project)
+          : Updater(project, 16)
+        {
+        }
+
+        virtual void update() APPLESEED_OVERRIDE
+        {
+            for (each<ConfigurationContainer> i = m_project.configurations(); i; ++i)
+                update(*i);
+        }
+
+      private:
+        static void update(Configuration& configuration)
+        {
+            ParamArray& params = configuration.get_parameters();
+
+            if (params.get_optional<string>("lighting_engine") == "drt")
+            {
+                // The project was using DRT: switch to PT.
+                params.insert_path("lighting_engine", "pt");
+
+                // If they exist, replace DRT parameters by PT ones.
+                if (params.dictionaries().exist("drt"))
+                    params.insert("pt", params.child("drt"));
+
+                // Set PT parameters to emulate DRT.
+                params.insert_path("pt.max_diffuse_bounces", 0);
+            }
+
+            // Remove DRT parameters.
+            if (params.dictionaries().exist("drt"))
+                params.dictionaries().remove("drt");
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(
@@ -1457,6 +1500,7 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(13);
       CASE_UPDATE_FROM_REVISION(14);
       CASE_UPDATE_FROM_REVISION(15);
+      CASE_UPDATE_FROM_REVISION(16);
 
       case ProjectFormatRevision:
         // Project is up-to-date.
