@@ -393,6 +393,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_fp.cpp
     foundation/meta/tests/test_fresnel.cpp
     foundation/meta/tests/test_genericprogressiveimagefilereader.cpp
+    foundation/meta/tests/test_iesparser.cpp
     foundation/meta/tests/test_image.cpp
     foundation/meta/tests/test_imageimportancesampler.cpp
     foundation/meta/tests/test_intersection_frustumaabb.cpp
@@ -735,6 +736,8 @@ set (foundation_utility_sources
     foundation/utility/gnuplotfile.h
     foundation/utility/indenter.cpp
     foundation/utility/indenter.h
+    foundation/utility/iesparser.cpp
+    foundation/utility/iesparser.h
     foundation/utility/iostreamop.h
     foundation/utility/iterators.h
     foundation/utility/job.h
