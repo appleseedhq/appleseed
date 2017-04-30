@@ -618,7 +618,6 @@ namespace
         {
             QComboBox* combobox = create_combobox("engine");
             combobox->setToolTip(m_params_metadata.get_path("lighting_engine.help"));
-            combobox->addItem("Distribution Ray Tracer", "drt");
             combobox->addItem("Unidirectional Path Tracer", "pt");
             combobox->addItem("Stochastic Progressive Photon Mapping", "sppm");
             construct(config, combobox);
@@ -633,7 +632,6 @@ namespace
           : LightingPanel(config, parent)
         {
             QComboBox* combobox = create_combobox("engine");
-            combobox->addItem("Distribution Ray Tracer", "drt");
             combobox->addItem("Unidirectional Path Tracer", "pt");
             construct(config, combobox);
         }
@@ -778,101 +776,6 @@ namespace
         static string construct_bounce_setting_param_path(const string& bounce_type)
         {
             return "pt.max_" + bounce_type + "_bounces";
-        }
-    };
-
-    //
-    // Distribution Ray Tracer panel.
-    //
-
-    class DistributionRayTracerPanel
-      : public LightingEnginePanel
-    {
-      public:
-        DistributionRayTracerPanel(const Configuration& config, QWidget* parent = 0)
-          : LightingEnginePanel("Distribution Ray Tracer", parent)
-        {
-            fold();
-
-            QVBoxLayout* layout = new QVBoxLayout();
-            container()->setLayout(layout);
-
-            QGroupBox* groupbox = new QGroupBox("Components");
-            layout->addWidget(groupbox);
-
-            QVBoxLayout* sublayout = new QVBoxLayout();
-            groupbox->setLayout(sublayout);
-
-            sublayout->addWidget(create_checkbox("lighting_components.ibl", "Image-Based Lighting"));
-
-            create_bounce_settings_group(layout, "drt", "drt.max_path_length");
-            create_drt_advanced_settings(layout);
-
-            create_direct_link("lighting_components.ibl",           "drt.enable_ibl");
-            create_direct_link("drt.bounces.rr_start_bounce",       "drt.rr_min_path_length");
-            create_direct_link("advanced.dl.light_samples",         "drt.dl_light_samples");
-            create_direct_link("advanced.dl.low_light_threshold",   "drt.dl_low_light_threshold");
-            create_direct_link("advanced.ibl.env_samples",          "drt.ibl_env_samples");
-
-            load_directly_linked_values(config);
-
-            load_bounce_settings(config, "drt", "drt.max_path_length");
-        }
-
-        virtual void save_config(Configuration& config) const APPLESEED_OVERRIDE
-        {
-            save_directly_linked_values(config);
-
-            save_bounce_settings(config, "drt", "drt.max_path_length");
-        }
-
-      private:
-        void create_drt_advanced_settings(QVBoxLayout* parent)
-        {
-            QGroupBox* groupbox = new QGroupBox("Advanced");
-            parent->addWidget(groupbox);
-
-            QVBoxLayout* layout = new QVBoxLayout();
-            groupbox->setLayout(layout);
-
-            create_drt_advanced_dl_settings(layout);
-            create_drt_advanced_ibl_settings(layout);
-        }
-
-        void create_drt_advanced_dl_settings(QVBoxLayout* parent)
-        {
-            QGroupBox* groupbox = new QGroupBox("Direct Lighting");
-            parent->addWidget(groupbox);
-
-            QVBoxLayout* layout = create_vertical_layout();
-            groupbox->setLayout(layout);
-
-            QFormLayout* sublayout = create_form_layout();
-            layout->addLayout(sublayout);
-
-            QDoubleSpinBox* light_samples = create_double_input("advanced.dl.light_samples", 0.0, 1000000.0, 3, 1.0);
-            light_samples->setToolTip(m_params_metadata.get_path("drt.dl_light_samples.help"));
-            sublayout->addRow("Light Samples:", light_samples);
-
-            QDoubleSpinBox* low_light_threshold = create_double_input("advanced.dl.low_light_threshold", 0.0, 1000.0, 3, 0.1);
-            low_light_threshold->setToolTip(m_params_metadata.get_path("drt.dl_low_light_threshold.help"));
-            sublayout->addRow("Low Light Threshold:", low_light_threshold);
-        }
-
-        void create_drt_advanced_ibl_settings(QVBoxLayout* parent)
-        {
-            QGroupBox* groupbox = new QGroupBox("Image-Based Lighting");
-            parent->addWidget(groupbox);
-
-            QVBoxLayout* layout = create_vertical_layout();
-            groupbox->setLayout(layout);
-
-            QHBoxLayout* sublayout = create_horizontal_layout();
-            layout->addLayout(sublayout);
-
-            QDoubleSpinBox* env_samples = create_double_input("advanced.ibl.env_samples", 0.0, 1000000.0, 3, 1.0);
-            env_samples->setToolTip(m_params_metadata.get_path("drt.ibl_env_samples.help"));
-            sublayout->addLayout(create_form_layout("Environment Samples:", env_samples));
         }
     };
 
@@ -1372,7 +1275,6 @@ void RenderingSettingsWindow::create_panels(const Configuration& config)
         m_panels.push_back(new InteractiveConfigurationLightingPanel(config));
     else m_panels.push_back(new FinalConfigurationLightingPanel(config));
 
-    m_panels.push_back(new DistributionRayTracerPanel(config));
     m_panels.push_back(new UnidirectionalPathTracerPanel(config));
 
     if (!interactive)

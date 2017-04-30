@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
-#include "renderer/kernel/lighting/drt/drtlightingengine.h"
 #include "renderer/kernel/lighting/lighttracing/lighttracingsamplegenerator.h"
 #include "renderer/kernel/lighting/pt/ptlightingengine.h"
 #include "renderer/kernel/lighting/sppm/sppmlightingengine.h"
@@ -140,14 +139,6 @@ bool RendererComponents::create_lighting_engine_factory()
 
     if (name.empty())
     {
-        return true;
-    }
-    else if (name == "drt")
-    {
-        m_lighting_engine_factory.reset(
-            new DRTLightingEngineFactory(
-                m_light_sampler,
-                get_child_and_inherit_globals(m_params, "drt")));   // todo: change to "drt_lighting_engine"?
         return true;
     }
     else if (name == "pt")
