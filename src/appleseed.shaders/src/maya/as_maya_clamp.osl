@@ -31,7 +31,6 @@
 shader as_maya_clamp
 [[
     string as_maya_node_name = "clamp",
-    string as_maya_classification = "utility/general"
 ]]
 (
     color in_min = color(0)

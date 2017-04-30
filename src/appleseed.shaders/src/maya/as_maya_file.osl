@@ -33,8 +33,7 @@
 
 shader as_maya_file
 [[
-    string as_maya_node_name = "file",
-    string as_maya_classification = "texture/2d"
+    string as_maya_node_name = "file"
 ]]
 (
     string in_fileTextureName = ""
