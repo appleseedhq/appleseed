@@ -34,7 +34,7 @@
 shader asVoronoi2D
 [[
     string as_maya_node_name = "asVoronoi2D",
-    string as_maya_classification = "appleseed/texture/2d",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/2d",
     int as_maya_type_id = 1210823
 ]]
 (
@@ -238,7 +238,7 @@ shader asVoronoi2D
             dsdt[0] += 2 * in_filterOffset;
             dsdt[1] += 2 * in_filterOffset;
 
-        // Passing the output arrays directly seems not to get the arrays 
+        // Passing the output arrays directly seems not to get the arrays
         // filled, so use temporary copies for now.
 
         float tmp_features[4] = {1000, 1000, 1000, 1000};
@@ -289,7 +289,7 @@ shader asVoronoi2D
 
         // Basic feature mode outputs, for more the user can use the
         // extra output parameters directly.
-        
+
         if (in_featuresMode == 0)
         {
             out_outAlpha = out_outFeatures[0];
