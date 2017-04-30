@@ -3,8 +3,11 @@
     <head>
         <meta charset="utf-8">
         <title>appleseed Test Suite Report</title>
+        <link rel="shortcut icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsSAAALEgHS3X78AAABy0lEQVQ4y42TQWsTYRCGn/l2s+ymAUFF6A9QPHgWBQX1IFiheKkHRUQQPXhRSdhsUAMekmwW4rktCGKQEnoqePJSVPwDepAIuQlKQVGSIMvujpdN7aFbO6fhm3femXm/GVFViiwIgnNpmqbdbvddEcZmD1PVR8aYGCgkkKIOqtXqYdu2vwMax/GRXq/3YzecKWzNthfyuOU4zkIRzuwxwckd/qnCQr7vL4rICRFxVfUPMInj+GWpVNoUkXu5FptcPXCQkrkBMgfiQhYDH21V/SUigapWZqyO4/jAJRGpAjz+2v9CyfoEzOfyAvIb5bKoKo1G43iaps9F5PS2uiJ32+32CgDXD90BXf4nPR9IrFusbQ0NQKvV+lwul8+o6gNgHVh1Xbe/nVBx+yirqK6D3ufoz7OsbQ0Lv9H3/ZsicswY0wPIsuyhqg7DMHzx3z0IgqClqkEu3pN8nKd5uNPpdIJCglqtNmdZ1jegkidey4le5ZCx53nzzWZzvOse2La9NEsG3idJspEkyQbwdqbGdDpdKlwkVV3M3Wee552PomgSRdFkNBpdADqAGmOuFB6TiIyzLLsYhuGbne+DwSAFgnq9/hq4va9j2q/9BVe6udaUat83AAAAAElFTkSuQmCC"/>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
         <script>
+            'use strict';
+
             function makeImageComparator(container) {
                 var $container = $(container);
                 var first = $container.children().first();
