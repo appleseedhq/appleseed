@@ -260,7 +260,7 @@ shader as_maya_anisotropic
         color transparency = in_transparency;
 
         // Shadow attenuation: 0=constant, 1=fake caustics.
-        if (in_refractions && in_transparency > 0.0)
+        if (in_refractions && in_transparency != 0.0)
         {
             transparency *= mix(
                 transparency,
