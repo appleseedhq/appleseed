@@ -232,7 +232,7 @@ shader asVoronoi3D
 
     placement = in_placementMatrix;
 
-    point Pp = transform(placement, P);
+    point Pp = transform(placement, in_surfacePoint);
 
     float box_blending = 0.0;
 
@@ -247,7 +247,7 @@ shader asVoronoi3D
         out_outColor = in_defaultColor;
         out_outAlpha = maya_luminance(out_outColor);
     }
-    else if (in_amplitude)
+    else if (in_amplitude > 0.0)
     {
         // Passing the output arrays directly seems not to get the arrays
         // filled, so use temporary copies for now.
@@ -263,7 +263,7 @@ shader asVoronoi3D
 
         for (int i = 0; i < in_octaves; ++i)
         {
-            if (!amplitude)
+            if (amplitude > 0.0)
             {
                 break;
             }

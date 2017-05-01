@@ -169,14 +169,6 @@ shader asVoronoi2D
         string label = "Features Mode",
         string page = "Cell Parameters"
     ]],
-    point in_surfacePoint = P
-    [[
-        string as_maya_attribute_name = "surfacePoint",
-        int as_maya_attribute_hidden = 1,
-        string label = "Surface Point",
-        string page = "Cell Parameters",
-        string widget = "null"
-    ]],
 
     MAYA_COLORBALANCE_PARAMETERS,
     MAYA_EFFECTS_PARAMETERS,
@@ -215,7 +207,7 @@ shader asVoronoi2D
         out_outColor = in_defaultColor;
         out_outAlpha = maya_luminance(in_defaultColor);
     }
-    else if (in_amplitude)
+    else if (in_amplitude > 0.0)
     {
         float st[2] = {in_uvCoord[0], in_uvCoord[1]};
 
@@ -250,7 +242,7 @@ shader asVoronoi2D
 
         for (int i = 0; i < in_octaves; ++i)
         {
-            if (!amplitude)
+            if (amplitude > 0.0)
             {
                 break;
             }
