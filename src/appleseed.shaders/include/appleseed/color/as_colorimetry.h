@@ -30,8 +30,6 @@
 #define AS_COLORIMETRY_H
 
 //
-// CIE E, K constants
-//
 // Reference:
 //
 //      A Continuity Study of the CIE L* Function
@@ -43,9 +41,9 @@
 #define CIE_K   0.0088564516790356
 
 //
-// D50,D55,D60,D65,D75,DCI illuminants xy and xyz chromaticity coordinates
-//
 // Reference:
+//
+//      D50,D55,D60,D65,D75,DCI illuminants xy and xyz chromaticity coordinates
 //
 //      https://en.wikipedia.org/wiki/Standard_illuminant
 //

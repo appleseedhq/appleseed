@@ -903,8 +903,8 @@ float deltaE_CIEDE2000(
 }
 
 //
-// Overloaded deltaE_CIEDE2000, taking as reference and samples (scene-linear) RGB
-// colors instead of Lab colors.
+// Overloaded deltaE_CIEDE2000, taking as reference and samples
+// (scene-linear) RGB colors instead of Lab colors.
 //
 
 float deltaE_CIEDE2000(

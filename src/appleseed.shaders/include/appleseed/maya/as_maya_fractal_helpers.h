@@ -349,7 +349,7 @@ float maya_billow_noise_2d(
 
     for (int i = 0; i < max_depth; ++i)
     {
-        if (!amplitude)
+        if (amplitude == 0.0)
         {
             break;
         }

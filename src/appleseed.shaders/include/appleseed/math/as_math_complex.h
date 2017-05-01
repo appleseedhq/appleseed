@@ -205,7 +205,7 @@ void exp_complex(output Complex Z)
 
 void sqrt_complex(output Complex Z)
 {
-    if (Z.imag == 0 && Z.real != 0)
+    if (Z.imag == 0.0 && Z.real != 0.0)
     {
         Z.real = sqrt(Z.real);
     }
@@ -213,9 +213,9 @@ void sqrt_complex(output Complex Z)
     {
         float magnitude = hypot(Z.real, Z.imag);
 
-        if (magnitude > 0)
+        if (magnitude > 0.0)
         {
-            Z.imag = (Z.imag < 0)
+            Z.imag = (Z.imag < 0.0)
                 ? -M_SQRT1_2 * sqrt(magnitude - Z.real)
                 :  M_SQRT1_2 * sqrt(magnitude - Z.real);
 
@@ -223,7 +223,7 @@ void sqrt_complex(output Complex Z)
         }
         else
         {
-            Z.imag = Z.real = 0;
+            Z.imag = Z.real = 0.0;
         }
     }
 }

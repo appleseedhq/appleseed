@@ -38,7 +38,7 @@ int outside_place3d_volume(
     int outside = 0;
     blend_factor = 0.0;
 
-    if (!wrap || blend)
+    if (!wrap || blend > 0.0)
     {
         if (!wrap)
         {
@@ -49,7 +49,7 @@ int outside_place3d_volume(
             {
                 outside = 1;
             }
-            else if (blend)
+            else if (blend > 0.0)
             {
                 float min_distance = 1.0e+19;
 
