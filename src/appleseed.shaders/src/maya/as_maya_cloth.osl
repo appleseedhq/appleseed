@@ -119,7 +119,7 @@ shader as_maya_cloth
     {
         float st[2] = {in_uvCoord[0], in_uvCoord[1]};
 
-        if (in_randomness)
+        if (in_randomness > 0.0)
         {
             vector vnoise = noise("perlin", point(st[0], st[1], 0));
 
@@ -127,11 +127,11 @@ shader as_maya_cloth
             st[0] += vnoise[0] * in_randomness;
         }
 
-        if (in_vWave)
+        if (in_vWave > 0.0)
         {
             st[1] += sin(st[0] * M_2PI) * in_vWave;
         }
-        if (in_uWave)
+        if (in_uWave > 0.0)
         {
             st[0] -= sin(st[1] * M_2PI) * in_uWave;
         }
@@ -139,7 +139,7 @@ shader as_maya_cloth
         float u_width = in_uWidth;
         float v_width = in_vWidth;
 
-        if (in_widthSpread)
+        if (in_widthSpread > 0.0)
         {
             float spread = noise("perlin", point(st[0], st[1] / 4, 0));
 
@@ -226,7 +226,7 @@ shader as_maya_cloth
             value = 1 - value;
             float spread;
 
-            if (in_brightSpread)
+            if (in_brightSpread > 0.0)
             {
                 if (u_thread)
                 {

@@ -143,4 +143,3 @@ shader as_maya_bump3d
             in_pointCamera + (vector) surface_normal * bump_offset));
     }
 }
-

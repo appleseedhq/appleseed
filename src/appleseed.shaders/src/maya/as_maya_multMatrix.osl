@@ -46,7 +46,7 @@ shader as_maya_multMatrix
     ]]
 )
 {
-    for (int i = 0; i < arraylength(in_matrixIn); +i)
+    for (int i = 0; i < arraylength(in_matrixIn); ++i)
     {
         out_matrixSum *= in_matrixIn[i];
     }

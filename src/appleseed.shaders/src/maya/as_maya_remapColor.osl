@@ -155,4 +155,3 @@ shader as_maya_remapColor
     out_outColor = color(red, green, blue) *
         (in_outputMax - in_outputMin) + in_outputMin;
 }
-

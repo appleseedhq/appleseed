@@ -223,7 +223,7 @@ shader as_maya_phongE
         color transparency = in_transparency ;
 
         // Shadow attenuation: 0=constant, 1=fake caustics.
-        if (in_refractions && in_transparency)
+        if (in_refractions && in_transparency != 0)
         {
             transparency *= mix(
                 transparency,
@@ -232,7 +232,7 @@ shader as_maya_phongE
                 );
         }
 
-        if (max(transparency) > 0.0)
+        if (transparency != 0)
         {
             out_outColor = transparency * transparent();
         }
@@ -250,7 +250,7 @@ shader as_maya_phongE
 
         color opacity = 1.0 - in_transparency;
 
-        if (in_color)
+        if (in_color != 0)
         {
             diffuse_term = opacity * in_diffuse * in_color * diffuse(Nn);
 
@@ -258,7 +258,7 @@ shader as_maya_phongE
                 in_color * translucent(Nn);
         }
 
-        if (raytype("light") && in_incandescence)
+        if (raytype("light") && in_incandescence != 0)
         {
             incandescence_term = opacity * in_incandescence * emission();
         }
@@ -278,12 +278,12 @@ shader as_maya_phongE
 
             opacity = 1.0;
         }
-        else if (max(in_transparency) > 0)
+        else if (in_transparency != 0)
         {
             transparency_term = in_transparency * transparent();
         }
 
-        if (in_specularColor)
+        if (in_specularColor != 0)
         {
             color specular_color = in_specularColor *
                 mix(in_color, color(1), in_whiteness);
@@ -315,7 +315,7 @@ shader as_maya_phongE
             matte_term = in_matteOpacity * holdout();
         }
 
-        if (in_glowIntensity)
+        if (in_glowIntensity != 0)
         {
             // glow_term = opacity * in_glowIntensity * post_glow();
             // out_outGlowColor = glow_term;
@@ -336,4 +336,3 @@ shader as_maya_phongE
         out_outGlowColor = glow_term;
     }
 }
-
