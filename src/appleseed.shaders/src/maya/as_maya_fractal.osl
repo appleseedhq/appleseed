@@ -178,7 +178,7 @@ shader as_maya_fractal
 
         float bias_plus1, bias_minus1, bias_sqrplus1;
 
-        if (in_bias)
+        if (in_bias > 0.0)
         {
             bias_plus1 = in_bias + 1;
             bias_minus1 = in_bias - 1;
@@ -203,7 +203,7 @@ shader as_maya_fractal
                 amplitude *= (iterate - (float) recursion_level);
             }
 
-            if (!amplitude)
+            if (amplitude == 0.0)
             {
                 break;
             }
@@ -212,7 +212,7 @@ shader as_maya_fractal
                 ? noise("perlin", point(st[0], st[1], time_value))
                 : noise("perlin", st[0], st[1]);
 
-            if (in_bias)
+            if (in_bias > 0.0)
             {
                 int bias_sign = 1;
 

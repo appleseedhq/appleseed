@@ -135,22 +135,22 @@ shader as_maya_place2dTexture
 {
     float st[2] = {in_uvCoord[0], in_uvCoord[1]};
 
-    if (in_noiseUV[0] || in_noiseUV[1])
+    if (in_noiseUV[0] > 0.0 || in_noiseUV[1] > 0.0)
     {
         vector uvnoise = noise("snoise", st[0] * 15, st[1] * 15);
 
-        if (in_noiseUV[0])
+        if (in_noiseUV[0] > 0.0)
         {
             st[0] += in_noiseUV[0] * uvnoise[0];
         }
 
-        if (in_noiseUV[1])
+        if (in_noiseUV[1] > 0.0)
         {
             st[1] += in_noiseUV[1] * uvnoise[1];
         }
     }
 
-    if (in_rotateFrame)
+    if (in_rotateFrame != 0.0)
     {
         point rot = rotate(
             point(st[0], st[1], 0.0),
@@ -173,11 +173,11 @@ shader as_maya_place2dTexture
         st[0] /= coverage[0];
         st[1] /= coverage[1];
 
-        if (in_translateFrame[0])
+        if (in_translateFrame[0] != 0)
         {
             st[0] -= in_translateFrame[0] / coverage[0];
         }
-        if (in_translateFrame[1])
+        if (in_translateFrame[1] != 0)
         {
             st[1] -= in_translateFrame[1] / coverage[1];
         }
@@ -226,7 +226,7 @@ shader as_maya_place2dTexture
             }
         }
 
-        if (in_rotateUV)
+        if (in_rotateUV != 0)
         {
             point rot = rotate(
                 point(st[0], st[1], 0.0),
@@ -243,8 +243,9 @@ shader as_maya_place2dTexture
     out_outUV[0] = st[0];
     out_outUV[1] = st[1];
 
-    if (in_rotateFrame || in_translateFrame[0] || in_translateFrame[1] ||
-        in_offset[0] || in_offset[1] || in_rotateUV )
+    if (in_rotateFrame != 0 || in_offset[0] != 0 || in_offset[1] != 0 ||
+        in_translateFrame[0] != 0 || in_translateFrame[1] != 0 ||
+        in_rotateUV != 0)
     {
         out_doTransform = 1;
     }

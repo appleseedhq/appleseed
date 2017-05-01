@@ -43,8 +43,13 @@
 
 #include "appleseed/math/as_math_helpers.h"
 
-// Ref: Towards Automatic Band-Limited Procedural Shaders, from
-// https://www.cs.virginia.edu/~connelly/publications/2015_bandlimit.pdf 
+//
+// Reference:
+//
+//      Towards Automatic Band-Limited Procedural Shaders
+//
+//      https://www.cs.virginia.edu/~connelly/publications/2015_bandlimit.pdf 
+//
 
 float filtered_abs(float x, float dx)
 {

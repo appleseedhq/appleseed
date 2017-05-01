@@ -56,7 +56,7 @@ float fBm(
 
     for (int i = 0; i < octaves; ++i)
     {
-        if (!amp)
+        if (amp == 0.0)
         {
             break;
         }

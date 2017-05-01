@@ -163,7 +163,7 @@ shader as_maya_mountain
                 height_amplitude *= diff;
             }
 
-            if (!amplitude)
+            if (amplitude > 0.0)
             {
                 break;
             }
@@ -217,7 +217,7 @@ shader as_maya_mountain
                 amplitude *= iterate - (float) recursion_level;
             }
 
-            if (!amplitude)
+            if (amplitude == 0.0)
             {
                 break;
             }

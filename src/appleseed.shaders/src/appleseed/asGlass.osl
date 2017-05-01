@@ -223,7 +223,7 @@ shader asGlass
         normal Nn = normalize(in_normalCamera);
         vector tangent;
 
-        if (in_anisotropyAmount)
+        if (in_anisotropyAmount > 0.0)
         {
             if (isconnected(in_anisotropyVectorMap))
             {
@@ -240,7 +240,7 @@ shader asGlass
                 tangent = Tn;
             }
 
-            if (in_anisotropyAngle)
+            if (in_anisotropyAngle > 0.0)
             {
                 tangent = rotate(
                     tangent,

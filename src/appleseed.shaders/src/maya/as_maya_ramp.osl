@@ -154,7 +154,7 @@ shader as_maya_ramp
     {
         float st[2] = {in_uvCoord[0], in_uvCoord[1]}, noise_val = 0;
 
-        if (in_noise)
+        if (in_noise > 0.0)
         {
             noise_val = in_noise * noise(
                 "perlin",
@@ -165,15 +165,15 @@ shader as_maya_ramp
         st[0] = mod(st[0] + noise_val, 1);
         st[1] = mod(st[1] + noise_val, 1);
         
-        if (in_uWave || in_vWave)
+        if (in_uWave > 0.0 || in_vWave > 0.0)
         {
             float tmp_st[2] = {st[0], st[1]};
 
-            if (in_uWave)
+            if (in_uWave > 0.0)
             {
                 st[0] -= in_uWave * sin(tmp_st[1] * M_2PI);
             }
-            if (in_vWave)
+            if (in_vWave > 0.0)
             {
                 st[1] += in_vWave * sin(tmp_st[0] * M_2PI);
             }
@@ -289,11 +289,11 @@ shader as_maya_ramp
             out_outColor *= 0.5;
         }
 
-        if (in_hueNoise || in_satNoise || in_valNoise)
+        if (in_hueNoise > 0.0 || in_satNoise > 0.0 || in_valNoise > 0.0)
         {
             color C_hsv = transformc("rgb", "hsv", out_outColor);
 
-            if (in_hueNoise)
+            if (in_hueNoise > 0.0)
             {
                 C_hsv[0] += in_hueNoise * noise(
                     "perlin",
@@ -302,7 +302,7 @@ shader as_maya_ramp
 
                 C_hsv[0] = clamp(C_hsv[0], 0, 1);
             }
-            if (in_satNoise)
+            if (in_satNoise > 0.0)
             {
                 C_hsv[1] += in_satNoise * noise(
                     "perlin",
@@ -311,7 +311,7 @@ shader as_maya_ramp
 
                 C_hsv[1] = clamp(C_hsv[1], 0, 1);
             }
-            if (in_valNoise)
+            if (in_valNoise > 0.0)
             {
                 C_hsv[2] += in_valNoise * noise(
                     "perlin",

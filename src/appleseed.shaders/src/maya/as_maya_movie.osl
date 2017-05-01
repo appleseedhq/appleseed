@@ -176,7 +176,7 @@ shader as_maya_movie
 
         string filter = "";
 
-        if (in_filterType)
+        if (in_filterType != 0)
         {
             dsdt[0] = Dx(st[0]);
             dsdt[1] = Dx(st[1]);

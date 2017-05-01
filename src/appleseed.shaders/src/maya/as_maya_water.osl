@@ -209,7 +209,7 @@ shader as_maya_water
         out_outColor = in_defaultColor;
         out_outAlpha = maya_luminance(in_defaultColor);
     }
-    else if (in_waveAmplitude > 0)
+    else if (in_waveAmplitude > 0.0)
     {
         int f_num_waves = 0, seed = 23;
         float f_spread = 1.0, f_envelope_scale = 1.0;

@@ -137,8 +137,6 @@ shader as_maya_plusMinusAverage
                 shadername, __FILE__, __LINE__);
 #endif
         out_output1D = 0.0;
-        // interesting
-        // out_output1D = out_output2D[0] = out_output2D[1] = 0 , crashes OSL
         out_output2D[0] = 0.0;
         out_output2D[1] = 0.0;
         out_output3D = 0.0;

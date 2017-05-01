@@ -129,7 +129,9 @@ surface as_maya_areaLight
     float power = in_intensity * in_intensity_scale * pow(2.0, in_exposure);
 
     if (in_normalize)
+    {
         power /= surfacearea();
+    }
 
     out_lightIntensity = power * in_color * emission();
     Ci = out_lightIntensity;

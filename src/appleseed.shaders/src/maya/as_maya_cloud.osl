@@ -176,7 +176,7 @@ shader as_maya_cloud
         out_outAlpha = maya_luminance(out_outColor);
         return;
     }
-    else if (in_amplitude)
+    else if (in_amplitude > 0.0)
     {
         vector ripples_freq = (isconnected(in_ripples))
             ? in_ripples
@@ -186,7 +186,7 @@ shader as_maya_cloud
 
         float filter_width = 0.0;
 
-        if (in_filter)
+        if (in_filter > 0.0)
         {
             filter_width = max(EPS, sqrt(area(Pp)));
             filter_width *= in_filter + in_filterOffset;

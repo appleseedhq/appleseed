@@ -463,7 +463,7 @@ shader as_maya_mandelbrot
     {
         float mapping = 0;
 
-        if (in_amplitude > 0)
+        if (in_amplitude > 0.0)
         {
             float st[2] = {
                 mod(in_uvCoord[0], UVWRAP),
