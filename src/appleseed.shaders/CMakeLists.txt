@@ -317,6 +317,7 @@ set (src_maya_sources
      src/maya/as_maya_areaLight.osl
      src/maya/as_maya_blendColors.osl
      src/maya/as_maya_blinn.osl
+     src/maya/as_maya_brownian.osl
      src/maya/as_maya_bulge.osl
      src/maya/as_maya_bump2d.osl
      src/maya/as_maya_bump3d.osl
@@ -368,12 +369,14 @@ set (src_maya_sources
      src/maya/as_maya_samplerInfo.osl
      src/maya/as_maya_setRange.osl
      src/maya/as_maya_singleShadingSwitch.osl
+     src/maya/as_maya_solidFractal.osl
      src/maya/as_maya_stencil.osl
      src/maya/as_maya_transposeMatrix.osl
      src/maya/as_maya_tripleShadingSwitch.osl
      src/maya/as_maya_uv2Components.osl
      src/maya/as_maya_vector2Components.osl
      src/maya/as_maya_vectorProduct.osl
+     src/maya/as_maya_volumeNoise.osl
      src/maya/as_maya_water.osl
      src/maya/as_maya_wtAddMatrix.osl
 )

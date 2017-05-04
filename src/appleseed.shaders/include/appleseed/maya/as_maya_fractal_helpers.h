@@ -59,6 +59,26 @@ void implode_2d(
     }
 }
 
+void implode_3d(
+    float implode,
+    point implode_center,
+    output point Pp)
+{
+    if (implode > EPS || implode < -EPS)
+    {
+        Pp -= implode_center;
+
+        float dist = hypot(Pp[0], Pp[1], Pp[2]);
+
+        if (dist > EPS)
+        {
+            float factor = pow(dist, 1.0 - implode) / dist;
+            Pp *= factor;
+        }
+        Pp += implode_center;
+    }
+}
+
 float maya_turbulence(
     point surface_point,
     float initial_time,
@@ -163,7 +183,43 @@ float maya_cos_waves_2d(
     return sum / (float) waves;
 }
 
-float maya_waves_noise(
+float maya_cos_waves_3d(
+    point surface_point,
+    float current_time,
+    int current_step,
+    int waves)
+{
+    int seed = current_step * 50;
+
+    float x, y, z, h, phi, sum = 0.0;
+
+    for (int i = 0; i < waves; ++i)
+    {
+        x = random_noise(seed++);
+        y = random_noise(seed++);
+        z = random_noise(seed++);
+        h = hypot(x, y, z);
+
+        if (h >= EPS)
+        {
+            x /= h;
+            y /= h;
+            z /= h;
+
+            phi = random_noise(seed++);
+
+            sum += cos(
+                x * surface_point[0] * M_2PI +
+                y * surface_point[1] * M_2PI +
+                z * surface_point[2] * M_2PI +
+                phi * M_PI +
+                current_time * M_PI);
+        }
+    }
+    return sum / (float) waves;
+}
+
+float maya_waves_noise_2d(
     point surface_point,
     float amplitude,
     float initial_time,
@@ -200,6 +256,43 @@ float maya_waves_noise(
     return inflection ? sum : sum * 0.5 + 0.5;
 }
 
+float maya_waves_noise_3d(
+    point surface_point,
+    float amplitude,
+    float initial_time,
+    float frequency_ratio,
+    float ratio,
+    int max_depth,
+    int num_waves,
+    int inflection)
+{
+    point xyz = surface_point;
+    float time_ratio = sqrt(frequency_ratio);
+    float current_time = initial_time, amp = amplitude, sum = 0.0;
+
+    for (int i = 0; i < max_depth; ++i)
+    {
+        if (amp == 0.0)
+        {
+            break;
+        }
+
+        float val = amp *
+            maya_cos_waves_3d(xyz, current_time, i, num_waves);
+
+        if (inflection)
+        {
+            val = abs(val);
+        }
+
+        sum += val;
+        amp *= ratio;
+        xyz *= frequency_ratio;
+        current_time *= time_ratio;
+    }
+    return inflection ? sum : sum * 0.5 + 0.5;
+}
+
 float billow_noise_2d(
     float x,
     float y,
@@ -211,10 +304,10 @@ float billow_noise_2d(
     int current_step,
     int falloff_mode)
 {
-    float size_randomness2 = randomness * 2;
-    float blob_density = 2.0 - size_randomness2;
+    float jittering = 0.5 * randomness, inv_spottyness = 1.0 - spottyness; 
+    float blob_density = min(density, 2.0 - randomness), falloff;
 
-    if (blob_density < density)
+    if (density < blob_density)
     {
         blob_density = density;
     }
@@ -222,6 +315,8 @@ float billow_noise_2d(
     {
         return 0.0;
     }
+
+    float blob_size = 2.0 / blob_density;
 
     float lattice_x = mod(x, 1.0) * MAYA_LATTICE_SIZE;
     float lattice_y = mod(y, 1.0) * MAYA_LATTICE_SIZE;
@@ -231,10 +326,8 @@ float billow_noise_2d(
 
     int x_cell_index = (int) lattice_x, nx;
     int y_cell_index = (int) lattice_y, ny;
-
-    float blob_size = 2.0 / blob_density;
-    float jittering = 0.5 * size_randomness2;
-    float inv_spottyness = 1.0 - spottyness, falloff, sum = 0.0;
+    
+    float sum = 0.0;
 
     for (int dy = -1; dy <= 1; dy++)
     {
@@ -244,7 +337,7 @@ float billow_noise_2d(
         {
             ny -= MAYA_LATTICE_SIZE;
         }
-        else if (ny < 0)
+        else if (ny < 0.0)
         {
             ny += MAYA_LATTICE_SIZE;
         }
@@ -259,7 +352,7 @@ float billow_noise_2d(
             {
                 nx -= MAYA_LATTICE_SIZE;
             }
-            else if (nx < 0)
+            else if (nx < 0.0)
             {
                 nx += MAYA_LATTICE_SIZE;
             }
@@ -281,10 +374,10 @@ float billow_noise_2d(
             float sample_distance = blob_size * (
                 sqr(x_sample_distance) + sqr(y_sample_distance));
             
-            if (size_randomness2)
+            if (size_randomness > 0.0)
             {
                 sample_distance /= (random_noise(index++) + 1.0) *
-                    0.5 * size_randomness2 + (1.0 - size_randomness2);
+                    0.5 * size_randomness + (1.0 - size_randomness);
             }
             else
             {
@@ -315,12 +408,163 @@ float billow_noise_2d(
                         : sample_distance;
                 }
 
-                if (spottyness)
+                if (spottyness > 0.0)
                 {
                     falloff *= spottyness *
                         (random_noise(index++) + 1.0) + inv_spottyness;
                 }
                 sum += falloff;
+            }
+        }
+    }
+    return sum;
+}
+
+float billow_noise_3d(
+    float x,
+    float y,
+    float z,
+    float density,
+    float randomness,
+    float size_randomness,
+    float spottyness,
+    float current_time,
+    int current_step,
+    int falloff_mode)
+{
+    float jittering = 0.5 * randomness, inv_spottyness = 1.0 - spottyness; 
+    float blob_density = min(density, 2.0 - randomness), falloff;
+
+    if (density < blob_density)
+    {
+        blob_density = density;
+    }
+    if (blob_density < 1.0e-4)
+    {
+        return 0.0;
+    }
+
+    float blob_size = 2.0 / blob_density;
+
+    float lattice_x = mod(x, 1.0) * MAYA_LATTICE_SIZE;
+    float lattice_y = mod(y, 1.0) * MAYA_LATTICE_SIZE;
+    float lattice_z = mod(z, 1.0) * MAYA_LATTICE_SIZE;
+
+    float cell_x = lattice_x - trunc(lattice_x);
+    float cell_y = lattice_y - trunc(lattice_y);
+    float cell_z = lattice_z - trunc(lattice_z);
+
+    int x_cell_index = (int) lattice_x, nx;
+    int y_cell_index = (int) lattice_y, ny;
+    int z_cell_index = (int) lattice_z, nz;
+    
+    float sum = 0.0;
+
+    for (int dz = -1; dz <= 1; dz++)
+    {
+        nz = z_cell_index + dz;
+
+        if (nz >= MAYA_LATTICE_SIZE)
+        {
+            nz -= MAYA_LATTICE_SIZE;
+        }
+        else if (nz < 0.0)
+        {
+            nz += MAYA_LATTICE_SIZE;
+        }
+        nz *= MAYA_LATTICE_SIZE;
+
+        for (int dy = -1; dy <= 1; dy++)
+        {
+            ny = y_cell_index + dy;
+
+            if (ny >= MAYA_LATTICE_SIZE)
+            {
+                ny -= MAYA_LATTICE_SIZE;
+            }
+            else if (ny < 0.0)
+            {
+                ny += MAYA_LATTICE_SIZE;
+            }
+            ny = MAYA_LATTICE_SIZE * (ny + nz);
+
+            for (int dx = -1; dx <= 1; dx++)
+            {
+                nx = x_cell_index + dx;
+
+                if (nx >= MAYA_LATTICE_SIZE)
+                {
+                    nx -= MAYA_LATTICE_SIZE;
+                }
+                else if (nx < 0.0)
+                {
+                    nx += MAYA_LATTICE_SIZE;
+                }
+                
+                int index = nx + ny;
+
+                float pos_x =
+                    sin(current_time * 2.0 + M_2PI * random_noise(index++));
+
+                float pos_y =
+                    cos(current_time * 1.5 + M_2PI * random_noise(index++));
+
+                float pos_z =
+                    cos(current_time + M_2PI * random_noise(index++));
+
+                pos_x = pos_x * jittering + 0.5;
+                pos_y = pos_y * jittering + 0.5;
+                pos_z = pos_z * jittering * 0.5;
+
+                float x_sample_distance = cell_x - (float) dx - pos_x;
+                float y_sample_distance = cell_y - (float) dy - pos_y;
+                float z_sample_distance = cell_z - (float) dz - pos_z;
+            
+                float sample_distance = blob_size * (
+                    sqr(x_sample_distance) + sqr(y_sample_distance) +
+                    sqr(z_sample_distance));
+            
+                if (size_randomness > 0.0)
+                {
+                    sample_distance /= (random_noise(index++) + 1.0) *
+                        0.5 * size_randomness + (1.0 - size_randomness);
+                }
+                else
+                {
+                    index++;
+                }
+
+                if (sample_distance < 1.0)
+                {
+                    if (falloff_mode == 0)
+                    {
+                        falloff = 1.0 - sqrt(sample_distance);
+                    }
+                    else if (falloff_mode == 1)
+                    {
+                        falloff = 1.0 + sample_distance *
+                            (-3.0 + 2.0 * sqrt(sample_distance));
+                    }
+                    else if (falloff_mode == 2)
+                    {
+                        falloff = 1.0 - sample_distance;
+                    }
+                    else if (falloff_mode == 3)
+                    {
+                        sample_distance *= 1.1;
+
+                        falloff = (sample_distance > 1.0)
+                            ? 1.0 - (sample_distance - 1.0) * 10.0
+                            : sample_distance;
+                    }
+
+                    if (spottyness > 0.0)
+                    {
+                        falloff *= spottyness *
+                            (random_noise(index++) + 1.0) + inv_spottyness;
+                    }
+                    sum += falloff;
+                }
             }
         }
     }
@@ -344,7 +588,7 @@ float maya_billow_noise_2d(
     float x = surface_point[0] / MAYA_LATTICE_SIZE, x_offset = 0.0;
     float y = surface_point[1] / MAYA_LATTICE_SIZE, y_offset = 0.0;
 
-    float current_time = initial_time, time_ratio = sqrt(ratio);
+    float current_time = initial_time, time_ratio = sqrt(frequency_ratio);
     float amplitude = 1.0, total_amplitude = 0.0, sum = 0.0;
 
     for (int i = 0; i < max_depth; ++i)
@@ -383,8 +627,81 @@ float maya_billow_noise_2d(
 
         current_time *= time_ratio;
     }
-    sum /= total_amplitude;
-    return gain * sum;
+    sum = gain * sum / total_amplitude;
+    return sum;
+}
+
+float maya_billow_noise_3d(
+    point surface_point,
+    vector point_scale,
+    point origin,
+    float gain,
+    float initial_time,
+    float frequency_ratio,
+    float ratio,
+    float density,
+    float randomness,
+    float size_randomness,
+    float spottyness,
+    int falloff_mode,
+    int max_depth,
+    int inflection)
+{
+    float x = surface_point[0] / MAYA_LATTICE_SIZE, x_offset = 0.0;
+    float y = surface_point[1] / MAYA_LATTICE_SIZE, y_offset = 0.0;
+    float z = surface_point[2] / MAYA_LATTICE_SIZE, z_offset = 0.0;
+
+    x /= point_scale[0];
+    y /= point_scale[1];
+    z /= point_scale[2];
+
+    x += origin[0];
+    y += origin[1];
+    z += origin[2];
+
+    float current_time = initial_time, time_ratio = sqrt(frequency_ratio);
+    float amplitude = 1.0, total_amplitude = 0.0, sum = 0.0;
+
+    for (int i = 0; i < max_depth; ++i)
+    {
+        if (amplitude == 0.0)
+        {
+            break;
+        }
+
+        x_offset += 0.021;
+        y_offset += 0.33;
+        z_offset += 0.011;
+
+        float val = billow_noise_3d(
+            x + x_offset,
+            y + y_offset,
+            z + z_offset,
+            density,
+            randomness,
+            size_randomness,
+            spottyness,
+            current_time,
+            i,
+            falloff_mode);
+
+        if (inflection)
+        {
+            val = abs(val);
+        }
+
+        sum += amplitude * val;
+
+        total_amplitude += amplitude;
+        amplitude *= ratio;
+
+        x *= frequency_ratio;
+        y *= frequency_ratio;
+        z *= frequency_ratio;
+
+        current_time *= time_ratio;
+    }
+    return gain * sum / total_amplitude;
 }
 
 void compute_mandelbox(

@@ -38,11 +38,6 @@ shader as_maya_cloud
     string as_maya_node_name = "cloud"
 ]]
 (
-    matrix in_placementMatrix = matrix(1)
-    [[
-        string as_maya_attribute_name = "placementMatrix",
-        string label = "Placement Matrix"
-    ]],
     color in_color1 = color(0)
     [[
         string as_maya_attribute_name = "color1",
@@ -135,6 +130,18 @@ shader as_maya_cloud
         string label = "Ratio",
         string page = "Cloud Attributes"
     ]],
+    point in_refPointCamera = P
+    [[
+        string as_maya_attribute_name = "refPointCamera",
+        string label = "Surface Point",
+        string widget = "null"
+    ]],
+    matrix in_placementMatrix = matrix(1)
+    [[
+        string as_maya_attribute_name = "placementMatrix",
+        string label = "Placement Matrix",
+        string widget = "null"
+    ]],
 
     MAYA_COLORBALANCE_PARAMETERS,
     MAYA_EFFECTS_PARAMETERS,
@@ -160,7 +167,7 @@ shader as_maya_cloud
         ? inverse(matrix("object", "world")) * in_placementMatrix
         : in_placementMatrix;
 
-    point Pp = transform(placement, P);
+    point Pp = transform(placement, in_refPointCamera);
 
     float box_blending = 0.0;
 
@@ -251,21 +258,21 @@ shader as_maya_cloud
             out_outColor = mix(in_defaultColor, out_outColor, blend_factor);
             out_outAlpha *= (1 - blend_factor);
         }
-
-        maya_colorBalance(
-            in_colorGain,
-            in_colorOffset,
-            in_defaultColor,
-            in_alphaGain,
-            in_alphaOffset,
-            in_invert,
-            in_alphaIsLuminance,
-            out_outColor,
-            out_outAlpha);
     }
     else
     {
-        out_outColor = color(0);
-        out_outAlpha = 1 - 0.5 * in_contrast;
+        out_outColor = color(0.5);
+        out_outAlpha = 1.0 - 0.5 * in_contrast;
     }
+    
+    maya_colorBalance(
+        in_colorGain,
+        in_colorOffset,
+        in_defaultColor,
+        in_alphaGain,
+        in_alphaOffset,
+        in_invert,
+        in_alphaIsLuminance,
+        out_outColor,
+        out_outAlpha);
 }
