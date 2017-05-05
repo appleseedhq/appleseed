@@ -371,6 +371,7 @@ set (src_maya_sources
      src/maya/as_maya_singleShadingSwitch.osl
      src/maya/as_maya_solidFractal.osl
      src/maya/as_maya_stencil.osl
+     src/maya/as_maya_texture2Surface.osl
      src/maya/as_maya_transposeMatrix.osl
      src/maya/as_maya_tripleShadingSwitch.osl
      src/maya/as_maya_uv2Components.osl
