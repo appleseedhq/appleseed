@@ -33,8 +33,8 @@
 
 // Standard headers.
 #include <iostream>
-#include <sstream>
 #include <fstream>
+#include <sstream>
 
 // Boost headers.
 #include "boost/lexical_cast.hpp"
@@ -43,41 +43,42 @@ using namespace foundation;
 
 TEST_SUITE(Foundation_Utility_Iesparser)
 {
-    TEST_CASE(ReadLine)
+    TEST_CASE(ReadLine_IgnoreEmptyLines)
     {
         IESParser parser;
 
-        {
-            std::istringstream input_stream(" \n\t\t\r\n    \nline1\n  \tline2  ");
-            parser.ignore_empty_lines = true;
-            parser.reset(input_stream);
-            EXPECT_EQ(parser.line, "line1");
-            EXPECT_EQ(parser.line_counter, 4);
-            parser.read_trimmed_line(input_stream);
-            EXPECT_EQ(parser.line, "line2");
-            EXPECT_EQ(parser.line_counter, 5);
-        }
+        std::istringstream input_stream(" \n\t\t\r\n    \nline1\n  \tline2  ");
+        parser.m_ignore_empty_lines = true;
+        parser.reset(input_stream);
+        EXPECT_EQ("line1", parser.m_line);
+        EXPECT_EQ(4, parser.m_line_counter);
+        parser.read_trimmed_line(input_stream);
+        EXPECT_EQ("line2", parser.m_line);
+        EXPECT_EQ(5, parser.m_line_counter);
+    }
 
-        {
-            std::istringstream input_stream(" \tline1\n \t \nline2");
-            parser.ignore_empty_lines = false;
-            parser.reset(input_stream);
-            EXPECT_EQ(parser.line, "line1");
-            EXPECT_EQ(parser.line_counter, 1);
-            parser.read_trimmed_line(input_stream);
-            EXPECT_EQ(parser.line, "");
-            EXPECT_EQ(parser.line_counter, 2);
-            parser.read_trimmed_line(input_stream);
-            EXPECT_EQ(parser.line, "line2");
-            EXPECT_EQ(parser.line_counter, 3);
-        }
+    TEST_CASE(ReadLine_DoNotIgnoreEmptyLines)
+    {
+        IESParser parser;
+
+        std::istringstream input_stream(" \tline1\n \t \nline2");
+        parser.m_ignore_empty_lines = false;
+        parser.reset(input_stream);
+        EXPECT_EQ("line1", parser.m_line);
+        EXPECT_EQ(1, parser.m_line_counter);
+        parser.read_trimmed_line(input_stream);
+        EXPECT_EQ("", parser.m_line);
+        EXPECT_EQ(2, parser.m_line_counter);
+        parser.read_trimmed_line(input_stream);
+        EXPECT_EQ("line2", parser.m_line);
+        EXPECT_EQ(3, parser.m_line_counter);
     }
 
     TEST_CASE(CheckEmpty)
     {
         IESParser parser;
         std::istringstream input_stream(" \tline1\n \t \nline2");
-        parser.ignore_empty_lines = false;
+        parser.m_ignore_empty_lines = false;
         parser.reset(input_stream);
         parser.check_empty(input_stream);
         parser.read_trimmed_line(input_stream);
@@ -96,28 +97,28 @@ TEST_SUITE(Foundation_Utility_Iesparser)
             std::istringstream input_stream("IESNA91\n");
             parser.reset(input_stream);
             parser.parse_format_version(input_stream);
-            EXPECT_EQ(parser.format, IESParser::Format1991);
+            EXPECT_EQ(IESParser::Format1991, parser.m_format);
         }
 
         {
             std::istringstream input_stream("IESNA:LM-63-1995\n");
             parser.reset(input_stream);
             parser.parse_format_version(input_stream);
-            EXPECT_EQ(parser.format, IESParser::Format1995);
+            EXPECT_EQ(IESParser::Format1995, parser.m_format);
         }
 
         {
             std::istringstream input_stream("IESNA:LM-63-2002\n");
             parser.reset(input_stream);
             parser.parse_format_version(input_stream);
-            EXPECT_EQ(parser.format, IESParser::Format2002);
+            EXPECT_EQ(IESParser::Format2002, parser.m_format);
         }
 
         {
             std::istringstream input_stream("Some string\n");
             parser.reset(input_stream);
             parser.parse_format_version(input_stream);
-            EXPECT_EQ(parser.format, IESParser::Format1986);
+            EXPECT_EQ(IESParser::Format1986, parser.m_format);
         }
     }
 
@@ -141,48 +142,48 @@ TEST_SUITE(Foundation_Utility_Iesparser)
             "[KEYWORD] Duplicate value\n");
         parser.reset(input_stream);
 
-        parser.format = IESParser::Format1986;
+        parser.m_format = IESParser::Format1986;
         parser.parse_keywords_and_tilt(input_stream);
 
-        parser.format = IESParser::Format1995;
+        parser.m_format = IESParser::Format1995;
         parser.check_required_keywords();
 
-        parser.format = IESParser::Format1991;
-        parser.parse_keyword_line(parser.line);
+        parser.m_format = IESParser::Format1991;
+        parser.parse_keyword_line(parser.m_line);
         parser.read_trimmed_line(input_stream);
         EXPECT_EXCEPTION(IESParser::ParsingException, parser.check_required_keywords());
-        parser.parse_keyword_line(parser.line);
+        parser.parse_keyword_line(parser.m_line);
         parser.read_trimmed_line(input_stream);
         parser.check_required_keywords();
 
-        parser.format = IESParser::Format2002;
-        parser.parse_keyword_line(parser.line);
+        parser.m_format = IESParser::Format2002;
+        parser.parse_keyword_line(parser.m_line);
         parser.read_trimmed_line(input_stream);
         EXPECT_EXCEPTION(IESParser::ParsingException, parser.check_required_keywords());
-        parser.parse_keyword_line(parser.line);
+        parser.parse_keyword_line(parser.m_line);
         parser.read_trimmed_line(input_stream);
         parser.check_required_keywords();
 
-        parser.parse_keyword_line(parser.line);
+        parser.parse_keyword_line(parser.m_line);
         parser.read_trimmed_line(input_stream);
-        parser.parse_keyword_line(parser.line);
+        parser.parse_keyword_line(parser.m_line);
         parser.read_trimmed_line(input_stream);
-        parser.parse_keyword_line(parser.line);
+        parser.parse_keyword_line(parser.m_line);
         parser.read_trimmed_line(input_stream);
 
-        EXPECT_EXCEPTION(IESParser::ParsingException, parser.parse_keyword_line(parser.line));
+        EXPECT_EXCEPTION(IESParser::ParsingException, parser.parse_keyword_line(parser.m_line));
         parser.read_trimmed_line(input_stream); // Bad keyword
-        EXPECT_EXCEPTION(IESParser::ParsingException, parser.parse_keyword_line(parser.line));
+        EXPECT_EXCEPTION(IESParser::ParsingException, parser.parse_keyword_line(parser.m_line));
         parser.read_trimmed_line(input_stream); // Not a keyword-value pair
-        EXPECT_EXCEPTION(IESParser::ParsingException, parser.parse_keyword_line(parser.line));
+        EXPECT_EXCEPTION(IESParser::ParsingException, parser.parse_keyword_line(parser.m_line));
         parser.read_trimmed_line(input_stream); // EOF
-        EXPECT_EXCEPTION(IESParser::ParsingException, parser.parse_keyword_line(parser.line));
+        EXPECT_EXCEPTION(IESParser::ParsingException, parser.parse_keyword_line(parser.m_line));
 
-        EXPECT_EQ(parser.keywords_dictionary.at("KEYWORD"), "Value");
-        EXPECT_EQ(parser.keywords_dictionary.at("MANUFAC"), "Manufac is required by 1991 and 2002");
-        EXPECT_EQ(parser.keywords_dictionary.at("_USER"), "User\nMore\nMore");
-        EXPECT_EXCEPTION(std::out_of_range, parser.keywords_dictionary.at("BAD"));
-        EXPECT_EXCEPTION(std::out_of_range, parser.keywords_dictionary.at("MORE"));
+        EXPECT_EQ("Value", parser.m_keywords_dictionary.at("KEYWORD"));
+        EXPECT_EQ("Manufac is required by 1991 and 2002", parser.m_keywords_dictionary.at("MANUFAC"));
+        EXPECT_EQ("User\nMore\nMore", parser.m_keywords_dictionary.at("_USER"));
+        EXPECT_EXCEPTION(std::out_of_range, parser.m_keywords_dictionary.at("BAD"));
+        EXPECT_EXCEPTION(std::out_of_range, parser.m_keywords_dictionary.at("MORE"));
     }
 
     TEST_CASE(ParseToVector_Empty)
@@ -192,14 +193,14 @@ TEST_SUITE(Foundation_Utility_Iesparser)
             std::istringstream input_stream("");
             parser.reset(input_stream);
             std::vector<int> result = parser.parse_to_vector<int>(input_stream, 0);
-            EXPECT_EQ(result, std::vector<int>());
+            EXPECT_EQ(std::vector<int>(), result);
         }
         {
             std::istringstream input_stream("test");
             parser.reset(input_stream);
             std::vector<double> result = parser.parse_to_vector<double>(input_stream, 0);
-            EXPECT_EQ(parser.line, "test");
-            EXPECT_EQ(result, std::vector<double>());
+            EXPECT_EQ(parser.m_line, "test");
+            EXPECT_EQ(std::vector<double>(), result);
         }
     }
 
@@ -210,24 +211,24 @@ TEST_SUITE(Foundation_Utility_Iesparser)
             std::istringstream input_stream("\n-0 1    2  3 \n\t4");
             parser.reset(input_stream);
             std::vector<int> result = parser.parse_to_vector<int>(input_stream, 5);
-            EXPECT_EQ(result.size(), 5);
+            ASSERT_EQ(5, result.size());
             for (int i = 0; i < 5; ++i)
-                EXPECT_FEQ(result[i], i);
+                EXPECT_FEQ(i, result[i]);
         }
         {
             std::istringstream input_stream("\n1e-1\n\n\n0.2\n\n0.3 0.4\n\n\n0.5\n\n\n");
             parser.reset(input_stream);
             std::vector<double> result = parser.parse_to_vector<double>(input_stream, 5);
-            EXPECT_EQ(result.size(), 5);
+            ASSERT_EQ(5, result.size());
             for (int i = 0; i < 5; ++i)
-                EXPECT_FEQ(result[i], (i + 1) * 0.1);
+                EXPECT_FEQ((i + 1) * 0.1, result[i]);
         }
         {
             std::istringstream input_stream("0");
             parser.reset(input_stream);
             std::vector<int> result = parser.parse_to_vector<int>(input_stream, 1);
-            EXPECT_EQ(result.size(), 1);
-            EXPECT_EQ(result[0], 0);
+            ASSERT_EQ(1, result.size());
+            EXPECT_EQ(0, result[0]);
         }
     }
 
@@ -266,32 +267,32 @@ TEST_SUITE(Foundation_Utility_Iesparser)
         {
             std::ifstream input_stream("unit tests/inputs/test_iesparser_1.ies");
             parser.parse(input_stream);
-            EXPECT_EQ(parser.get_photometric_type(), IESParser::PhotometricTypeC);
-            EXPECT_EQ(parser.get_symmetry(), IESParser::SymmetricHalvesX);
-            EXPECT_EQ(parser.get_keyword_value("TEST"), "LTL29483P14");
-            EXPECT_EQ(parser.get_input_watts(), 170);
-            EXPECT_FEQ(parser.get_candela_multiplier(), 0.184397039525045);
-            EXPECT_EQ(parser.get_vertical_angles().size(), 73);
-            EXPECT_FEQ(parser.get_vertical_angles()[3], 7.5);
-            EXPECT_EQ(parser.get_number_of_horizontal_angles(), 73);
-            EXPECT_FEQ(parser.get_horizontal_angles()[41], 102.5);
-            EXPECT_FEQ(parser.get_horizontal_angles()[71], 177.5);
-            EXPECT_FEQ(parser.get_horizontal_angles()[72], 180.0);
-            EXPECT_FEQ(parser.get_candela_values()[0][0], 4086.0);
-            EXPECT_FEQ(parser.get_candela_values()[72][72], 0.0);
+            EXPECT_EQ(IESParser::PhotometricTypeC, parser.get_photometric_type());
+            EXPECT_EQ(IESParser::SymmetricHalvesX, parser.get_symmetry());
+            EXPECT_EQ("LTL29483P14", parser.get_keyword_value("TEST"));
+            EXPECT_EQ(170, parser.get_input_watts());
+            EXPECT_FEQ(0.184397039525045, parser.get_candela_multiplier());
+            EXPECT_EQ(73, parser.get_vertical_angles().size());
+            EXPECT_FEQ(7.5, parser.get_vertical_angles()[3]);
+            EXPECT_EQ(73, parser.get_number_of_horizontal_angles());
+            EXPECT_FEQ(102.5, parser.get_horizontal_angles()[41]);
+            EXPECT_FEQ(177.5, parser.get_horizontal_angles()[71]);
+            EXPECT_FEQ(180.0, parser.get_horizontal_angles()[72]);
+            EXPECT_FEQ(4086.0, parser.get_candela_values()[0][0]);
+            EXPECT_FEQ(0.0, parser.get_candela_values()[72][72]);
         }
         {
             std::ifstream input_stream("unit tests/inputs/test_iesparser_2.ies");
             parser.parse(input_stream);
-            EXPECT_EQ(parser.get_photometric_type(), IESParser::PhotometricTypeB);
-            EXPECT_EQ(parser.get_symmetry(), IESParser::SymmetricHalvesX);
-            EXPECT_EQ(parser.get_keyword_value("DISTRIBUTION"), "6 X 6");
-            EXPECT_EQ(parser.get_keyword_value("_LAMPPOSITION"), "0 , 0");
-            EXPECT_FEQ(parser.get_candela_multiplier(), 1.0);
-            EXPECT_FEQ(parser.get_vertical_angles()[22], 0.0);
-            EXPECT_FEQ(parser.get_horizontal_angles()[2], 3.0);
-            EXPECT_FEQ(parser.get_candela_values()[0][3], 80.0);
-            EXPECT_FEQ(parser.get_candela_values()[22][44], 1.0);
+            EXPECT_EQ(IESParser::PhotometricTypeB, parser.get_photometric_type());
+            EXPECT_EQ(IESParser::SymmetricHalvesX, parser.get_symmetry());
+            EXPECT_EQ("6 X 6", parser.get_keyword_value("DISTRIBUTION"));
+            EXPECT_EQ("0 , 0", parser.get_keyword_value("_LAMPPOSITION"));
+            EXPECT_FEQ(1.0, parser.get_candela_multiplier());
+            EXPECT_FEQ(0.0, parser.get_vertical_angles()[22]);
+            EXPECT_FEQ(3.0, parser.get_horizontal_angles()[2]);
+            EXPECT_FEQ(80.0, parser.get_candela_values()[0][3]);
+            EXPECT_FEQ(1.0, parser.get_candela_values()[22][44]);
         }
         {
             std::ifstream input_stream("unit tests/inputs/test_iesparser_3.ies");
