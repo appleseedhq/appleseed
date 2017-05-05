@@ -30,10 +30,10 @@
 #include "iesparser.h"
 
 // Boost headers.
-#include "boost/lexical_cast.hpp"
-#include "boost/regex.hpp"
 #include "boost/algorithm/string.hpp"
 #include "boost/algorithm/cxx11/any_of.hpp"
+#include "boost/lexical_cast.hpp"
+#include "boost/regex.hpp"
 
 // Standard headers.
 #include <string>
@@ -47,8 +47,8 @@
 namespace foundation
 {
 
-const char* const IESParser::KEYWORD_LINE_REGEX = "\\[(\\w*)\\]\\s*(\\S.*)?";
-const char* const IESParser::TILT_LINE_REGEX = "TILT\\s*=\\s*(\\S.*)";
+const char* const IESParser::KeywordLineRegex = "\\[(\\w*)\\]\\s*(\\S.*)?";
+const char* const IESParser::TiltLineRegex = "TILT\\s*=\\s*(\\S.*)";
 
 //
 // Auxiliary functions.
@@ -170,7 +170,7 @@ namespace
     template <typename ValueType>
     bool check_increasing_order(const std::vector<ValueType>& values)
     {
-        for (int i = 1; i < values.size(); ++i)
+        for (size_t i = 1; i < values.size(); ++i)
         {
             if (values[i] <= values[i - 1])
                 return false;
@@ -183,13 +183,19 @@ namespace
 // Class implementation.
 //
 
-IESParser::IESParser() :
-    ignore_allowed_keywords(false),
-    ignore_required_keywords(false),
-    ignore_empty_lines(true),
-    ignore_tilt(false)
-{}
+IESParser::Exception::Exception(const char* what, const int line)
+  : m_line_number(line)
+{
+    set_what(format("{0} (line {1})", what, line).c_str());
+}
 
+IESParser::IESParser()
+  : m_ignore_allowed_keywords(false)
+  , m_ignore_required_keywords(false)
+  , m_ignore_empty_lines(true)
+  , m_ignore_tilt(false)
+{
+}
 
 void IESParser::parse(std::istream& input_stream)
 {
@@ -202,7 +208,7 @@ void IESParser::parse(std::istream& input_stream)
     parse_keywords_and_tilt(input_stream);
 
     // Parse TILT data if it is included.
-    if (tilt_specification == IncludeTilt)
+    if (m_tilt_specification == IncludeTilt)
     {
         parse_tilt_data(input_stream);
     }
@@ -214,14 +220,14 @@ void IESParser::parse(std::istream& input_stream)
 
     if (!input_stream.eof())
     {
-        throw ParsingException("Expected end of file", line_counter);
+        throw ParsingException("Expected end of file", m_line_counter);
     }
 }
 
-
 bool IESParser::is_keyword_allowed_by_iesna02(const std::string& keyword)
 {
-    if (keyword == "TEST" ||
+    return
+        keyword == "TEST" ||
         keyword == "TESTLAB" ||
         keyword == "TESTDATE" ||
         keyword == "TESTMETHOD" ||
@@ -241,17 +247,13 @@ bool IESParser::is_keyword_allowed_by_iesna02(const std::string& keyword)
         keyword == "ISSUEDATE" ||
         keyword == "OTHER" ||
         keyword == "SEARCH" ||
-        keyword == "MORE")
-    {
-        return true;
-    }
-    return false;
+        keyword == "MORE";
 }
-
 
 bool IESParser::is_keyword_allowed_by_iesna95(const std::string& keyword)
 {
-    if (keyword == "TEST" ||
+    return
+        keyword == "TEST" ||
         keyword == "DATE" ||
         keyword == "NEARFIELD" ||
         keyword == "MANUFAC" ||
@@ -269,17 +271,13 @@ bool IESParser::is_keyword_allowed_by_iesna95(const std::string& keyword)
         keyword == "SEARCH" ||
         keyword == "MORE" ||
         keyword == "BLOCK" ||
-        keyword == "ENDBLOCK")
-    {
-        return true;
-    }
-    return false;
+        keyword == "ENDBLOCK";
 }
-
 
 bool IESParser::is_keyword_allowed_by_iesna91(const std::string& keyword)
 {
-    if (keyword == "TEST" ||
+    return
+        keyword == "TEST" ||
         keyword == "DATE" ||
         keyword == "MANUFAC" ||
         keyword == "LUMCAT" ||
@@ -292,62 +290,54 @@ bool IESParser::is_keyword_allowed_by_iesna91(const std::string& keyword)
         keyword == "DISTRIBUTION" ||
         keyword == "FLASHAREA" ||
         keyword == "COLORCONSTANT" ||
-        keyword == "MORE")
-    {
-        return true;
-    }
-    return false;
+        keyword == "MORE";
 }
-
 
 void IESParser::reset(std::istream& input_stream)
 {
-    line_counter = 0;
-    line = "";
+    m_line_counter = 0;
+    m_line = "";
     read_trimmed_line(input_stream);
-    keywords_dictionary.clear();
-    last_added_keyword = keywords_dictionary.end();
+    m_keywords_dictionary.clear();
+    m_last_added_keyword = m_keywords_dictionary.end();
 }
-
 
 void IESParser::read_line(std::istream& input_stream)
 {
-    line_counter++;
-    std::getline(input_stream, line);
+    m_line_counter++;
+    std::getline(input_stream, m_line);
 }
-
 
 void IESParser::read_trimmed_line(std::istream& input_stream)
 {
     do
     {
         read_line(input_stream);
-        boost::trim(line);
-    } while (ignore_empty_lines && input_stream && line.empty());
+        boost::trim(m_line);
+    } while (m_ignore_empty_lines && input_stream && m_line.empty());
 }
-
 
 void IESParser::parse_format_version(std::istream& input_stream)
 {
     check_empty(input_stream);
 
-    if (line == "IESNA91")
+    if (m_line == "IESNA91")
     {
-        format = Format1991;
+        m_format = Format1991;
     }
-    else if (line == "IESNA:LM-63-1995")
+    else if (m_line == "IESNA:LM-63-1995")
     {
-        format = Format1995;
+        m_format = Format1995;
     }
-    else if (line == "IESNA:LM-63-2002")
+    else if (m_line == "IESNA:LM-63-2002")
     {
-        format = Format2002;
+        m_format = Format2002;
     }
     else
     {
         // The first line is not a format line,
         // which is possible only when the format is LM-63-1986.
-        format = Format1986;
+        m_format = Format1986;
         // Do not read the next line, since the current one is not processed:
         return;
     }
@@ -355,33 +345,32 @@ void IESParser::parse_format_version(std::istream& input_stream)
     read_trimmed_line(input_stream);
 }
 
-
 void IESParser::parse_keywords_and_tilt(std::istream& input_stream)
 {
-    last_added_keyword = keywords_dictionary.end();
+    m_last_added_keyword = m_keywords_dictionary.end();
 
     bool tilt_reached = false;
     while (!tilt_reached)
     {
         check_empty(input_stream);
 
-        if (is_keyword_line(line))
+        if (is_keyword_line(m_line))
         {
-            parse_keyword_line(line);
+            parse_keyword_line(m_line);
         }
-        else if (is_tilt_line(line))
+        else if (is_tilt_line(m_line))
         {
-            if (!ignore_required_keywords) check_required_keywords();
+            if (!m_ignore_required_keywords) check_required_keywords();
             tilt_reached = true;
-            parse_tilt_line(line);
+            parse_tilt_line(m_line);
         }
         else
         {
-            if (format != Format1986)
+            if (m_format != Format1986)
             {
                 // LM-63-1986 format allows arbitrary data until TILT=<...> is reached.
                 // In any other case, raise the parsing exception:
-                throw ParsingException("Expected keyword line or TILT line", line_counter);
+                throw ParsingException("Expected keyword line or TILT line", m_line_counter);
             }
         }
 
@@ -389,22 +378,21 @@ void IESParser::parse_keywords_and_tilt(std::istream& input_stream)
     }
 }
 
-
 void IESParser::parse_tilt_data(std::istream& input_stream)
 {
     check_empty(input_stream);
 
     // parse lamp-to-luminaire geometry
-    if (line == "1")
-        lamp_to_luminaire_geometry = VerticalGeometry;
-    else if (line == "2")
-        lamp_to_luminaire_geometry = HorizontalInvariantGeometry;
-    else if (line == "3")
-        lamp_to_luminaire_geometry = HorizontalNonInvariantGeometry;
+    if (m_line == "1")
+        m_lamp_to_luminaire_geometry = VerticalGeometry;
+    else if (m_line == "2")
+        m_lamp_to_luminaire_geometry = HorizontalInvariantGeometry;
+    else if (m_line == "3")
+        m_lamp_to_luminaire_geometry = HorizontalNonInvariantGeometry;
     else
     {
         throw ParsingException(
-            "Wrong lamp-to-luminaire geometry value. 1, 2 or 3 was expected.", line_counter);
+            "Wrong lamp-to-luminaire geometry value, expected 1, 2 or 3", m_line_counter);
     }
 
     read_trimmed_line(input_stream);
@@ -415,18 +403,18 @@ void IESParser::parse_tilt_data(std::istream& input_stream)
     int number_of_tilt_entries;
     try
     {
-        number_of_tilt_entries = boost::lexical_cast<int>(line);
+        number_of_tilt_entries = boost::lexical_cast<int>(m_line);
     }
     catch (boost::bad_lexical_cast&)
     {
         throw ParsingException(
-            "Wrong number of tilt entries. An integer was expected.", line_counter);
+            "Wrong number of tilt entries: expected an integer value", m_line_counter);
     }
     if (number_of_tilt_entries < 0)
     {
         throw ParsingException(
-            "Wrong number of tilt entries. "
-            "Number of tilt entries must be non-negative.", line_counter);
+            "Wrong number of tilt entries: "
+            "number of tilt entries must be non-negative", m_line_counter);
     }
 
     read_trimmed_line(input_stream);
@@ -434,17 +422,17 @@ void IESParser::parse_tilt_data(std::istream& input_stream)
     check_empty(input_stream);
 
     // parse tilt angles
-    if (!string_to_vector<double>(line, &tilt_angles))
+    if (!string_to_vector<double>(m_line, &m_tilt_angles))
     {
         throw ParsingException(
             "Error while parsing tilt angles: "
-            "value is not a floating point number", line_counter);
+            "value is not a floating point number", m_line_counter);
     }
-    if (tilt_angles.size() != number_of_tilt_entries)
+    if (m_tilt_angles.size() != number_of_tilt_entries)
     {
         throw ParsingException(
             "The specified number of tilt entries does not match "
-            "the actual number of entries in the line", line_counter);
+            "the actual number of entries in the line", m_line_counter);
     }
 
     read_trimmed_line(input_stream);
@@ -452,154 +440,152 @@ void IESParser::parse_tilt_data(std::istream& input_stream)
     check_empty(input_stream);
 
     // parse tilt multipliers
-    if (!string_to_vector<double>(line, &tilt_multiplying_factors))
+    if (!string_to_vector<double>(m_line, &m_tilt_multiplying_factors))
     {
         throw ParsingException(
             "Error while parsing tilt multipliers: "
-            "value is not a floating point number", line_counter);
+            "value is not a floating point number", m_line_counter);
     }
-    if (tilt_multiplying_factors.size() != number_of_tilt_entries)
+    if (m_tilt_multiplying_factors.size() != number_of_tilt_entries)
     {
         throw ParsingException(
             "The specified number of tilt entries does not match "
-            "the actual number of tilt multipliers in the line", line_counter);
+            "the actual number of tilt multipliers in the line", m_line_counter);
     }
-    if (boost::algorithm::any_of(tilt_multiplying_factors, is_negative<double>))
+    if (boost::algorithm::any_of(m_tilt_multiplying_factors, is_negative<double>))
     {
         throw ParsingException(
             "Error while parsing tilt multipliers: "
-            "value must be non-negative", line_counter);
+            "value must be non-negative", m_line_counter);
     }
 
     read_trimmed_line(input_stream);
 }
-
 
 void IESParser::parse_photometric_data(std::istream& input_stream)
 {
     std::vector<std::string> values =
         parse_to_vector<std::string>(input_stream, 10);
 
-    if (!string_to_positive_number(values[0], &number_of_lamps))
+    if (!string_to_positive_number(values[0], &m_number_of_lamps))
     {
         throw ParsingException(
-            "Number of lamps expected to be a positive integer number",
-            line_counter);
+            "Number of lamps is expected to be a positive integer number",
+            m_line_counter);
     }
 
-    absolute_photometry = false;
+    m_absolute_photometry = false;
     if (values[1] == "-1")
     {
-        lumens_per_lamp = -1.0;
-        absolute_photometry = true;
+        m_lumens_per_lamp = -1.0;
+        m_absolute_photometry = true;
     }
-    else if (!string_to_positive_number(values[1], &lumens_per_lamp))
+    else if (!string_to_positive_number(values[1], &m_lumens_per_lamp))
     {
         throw ParsingException(
-            "Lumens per lamp expected to be a positive floating point number or -1",
-            line_counter);
-    }
-
-    if (!string_to_positive_number(values[2], &candela_multiplier))
-    {
-        throw ParsingException(
-            "Candela multiplier expected to be a positive floating point number",
-            line_counter);
+            "Lumens per lamp are expected to be a positive floating point number or -1",
+            m_line_counter);
     }
 
-    if (!string_to_positive_number(values[3], &number_of_vertical_angles))
+    if (!string_to_positive_number(values[2], &m_candela_multiplier))
     {
         throw ParsingException(
-            "Number of vertical angles expected to be a positive integer number",
-            line_counter);
+            "Candela multiplier is expected to be a positive floating point number",
+            m_line_counter);
     }
 
-    if (!string_to_positive_number(values[4], &number_of_horizontal_angles))
+    if (!string_to_positive_number(values[3], &m_number_of_vertical_angles))
     {
         throw ParsingException(
-            "Number of horizontal angles expected to be a positive integer number",
-            line_counter);
+            "Number of vertical angles is expected to be a positive integer number",
+            m_line_counter);
     }
 
-    if (!string_to_photometric_type(values[5], &photometric_type))
+    if (!string_to_positive_number(values[4], &m_number_of_horizontal_angles))
     {
         throw ParsingException(
-            "Wrong photometric type specified. Suppored values are 1, 2 or 3.",
-            line_counter);
+            "Number of horizontal angles is expected to be a positive integer number",
+            m_line_counter);
     }
 
-    if (!string_to_units_type(values[6], &luminous_opening.units_type))
+    if (!string_to_photometric_type(values[5], &m_photometric_type))
     {
         throw ParsingException(
-            "Wrong units type specified for luminous opening. Suppored values are 1 or 2.",
-            line_counter);
+            "Wrong photometric type: expected 1, 2 or 3",
+            m_line_counter);
     }
 
-    if (!string_to_number(values[7], &luminous_opening.width))
+    if (!string_to_units_type(values[6], &m_luminous_opening.m_units_type))
     {
         throw ParsingException(
-            "Wrong width specified for luminous opening. Expected floating point number.",
-            line_counter);
+            "Wrong units type for luminous opening: expected 1 or 2",
+            m_line_counter);
     }
 
-    if (!string_to_number(values[8], &luminous_opening.length))
+    if (!string_to_number(values[7], &m_luminous_opening.m_width))
     {
         throw ParsingException(
-            "Wrong length specified for luminous opening. Expected floating point number.",
-            line_counter);
+            "Wrong width for luminous opening: expected floating point number",
+            m_line_counter);
     }
 
-    if (!string_to_number(values[9], &luminous_opening.height))
+    if (!string_to_number(values[8], &m_luminous_opening.m_length))
     {
         throw ParsingException(
-            "Wrong height specified for luminous opening. Expected floating point number.",
-            line_counter);
+            "Wrong length for luminous opening: expected floating point number",
+            m_line_counter);
+    }
+
+    if (!string_to_number(values[9], &m_luminous_opening.m_height))
+    {
+        throw ParsingException(
+            "Wrong height for luminous opening: expected floating point number",
+            m_line_counter);
     }
 
     check_empty(input_stream);
 
     values = parse_to_vector<std::string>(input_stream, 3);
 
-    if (!string_to_positive_number(values[0], &ballast_factor))
+    if (!string_to_positive_number(values[0], &m_ballast_factor))
     {
         throw ParsingException(
-            "Ballast factor expected to be a positive floating point number",
-            line_counter);
+            "Ballast factor is expected to be a positive floating point number",
+            m_line_counter);
     }
 
-    if (!string_to_positive_number(values[1], &ballast_lamp_photometric_factor))
+    if (!string_to_positive_number(values[1], &m_ballast_lamp_photometric_factor))
     {
         throw ParsingException(
-            "Ballast-lamp photometric factor expected to be a positive floating point number",
-            line_counter);
+            "Ballast-lamp photometric factor is expected to be a positive floating point number",
+            m_line_counter);
     }
 
-    if (!string_to_positive_number(values[2], &input_watts))
+    if (!string_to_positive_number(values[2], &m_input_watts))
     {
         throw ParsingException(
-            "Input Watts expected to be a positive floating point number",
-            line_counter);
+            "Input watts are expected to be a positive floating point number",
+            m_line_counter);
     }
 }
-
 
 void IESParser::parse_candela_values(std::istream& input_stream)
 {
-    candela_values.resize(number_of_horizontal_angles);
-    for (each<PhotometricGrid> i = candela_values; i; ++i)
+    m_candela_values.resize(m_number_of_horizontal_angles);
+    for (each<PhotometricGrid> i = m_candela_values; i; ++i)
     {
         try
         {
-            *i = parse_to_vector<double>(input_stream, number_of_vertical_angles);
+            *i = parse_to_vector<double>(input_stream, m_number_of_vertical_angles);
         }
         catch (boost::bad_lexical_cast&)
         {
-            throw ParsingException("Candela values"
-                " must be floating point numbers", line_counter);
+            throw ParsingException(
+                "Error while parsing candela values: "
+                "value is not a floating point number", m_line_counter);
         }
     }
 }
-
 
 void IESParser::parse_angles(std::istream& input_stream)
 {
@@ -607,249 +593,257 @@ void IESParser::parse_angles(std::istream& input_stream)
 
     try
     {
-        vertical_angles = parse_to_vector<double>(input_stream, number_of_vertical_angles);
+        m_vertical_angles = parse_to_vector<double>(input_stream, m_number_of_vertical_angles);
     }
     catch (boost::bad_lexical_cast&)
     {
-        throw ParsingException("Vertical angles must be floating point numbers", line_counter);
+        throw ParsingException(
+            "Error while parsing vertical angles: "
+            "value is not a floating point number", m_line_counter);
     }
 
-    assert(photometric_type != PhotometricTypeNotSpecified);
-    if (photometric_type == PhotometricTypeC)
+    assert(m_photometric_type != PhotometricTypeNotSpecified);
+
+    if (m_photometric_type == PhotometricTypeC)
     {
-        if (!feq(vertical_angles.front(), 0.0) &&
-            !feq(vertical_angles.front(), 90.0))
+        if (!feq(m_vertical_angles.front(), 0.0) &&
+            !feq(m_vertical_angles.front(), 90.0))
         {
-            throw ParsingException("With photometric type C,"
-                "first vertical angle must be either 0 or 90 degrees", line_counter);
+            throw ParsingException(
+                "With photometric type C, first vertical angle "
+                "must be either 0 or 90 degrees", m_line_counter);
         }
-        if (!feq(vertical_angles.back(), 90.0) &&
-            !feq(vertical_angles.back(), 180.0))
+        if (!feq(m_vertical_angles.back(), 90.0) &&
+            !feq(m_vertical_angles.back(), 180.0))
         {
-            throw ParsingException("With photometric type C,"
-                "last vertical angle must be either 90 or 180 degrees", line_counter);
-        }
-    }
-    else if (photometric_type == PhotometricTypeA ||
-        photometric_type == PhotometricTypeB)
-    {
-        if (!feq(vertical_angles.front(), -90.0) &&
-            !feq(vertical_angles.front(), 0.0))
-        {
-            throw ParsingException("With photometric type A or B,"
-                "first vertical angle must be either -90 or 0 degrees", line_counter);
-        }
-        if (!feq(vertical_angles.back(), 90.0))
-        {
-            throw ParsingException("With photometric type A or B,"
-                "last vertical angle must be 90 degrees", line_counter);
+            throw ParsingException(
+                "With photometric type C, last vertical angle "
+                "must be either 90 or 180 degrees", m_line_counter);
         }
     }
-    if (feq(vertical_angles.front(), vertical_angles.back()))
+    else if (m_photometric_type == PhotometricTypeA ||
+             m_photometric_type == PhotometricTypeB)
     {
-        throw ParsingException("First and last vertical angles must be different", line_counter);
+        if (!feq(m_vertical_angles.front(), -90.0) &&
+            !feq(m_vertical_angles.front(), 0.0))
+        {
+            throw ParsingException(
+                "With photometric types A and B, first vertical angle "
+                "must be either -90 or 0 degrees", m_line_counter);
+        }
+        if (!feq(m_vertical_angles.back(), 90.0))
+        {
+            throw ParsingException(
+                "With photometric types A and B, last vertical angle "
+                "must be 90 degrees", m_line_counter);
+        }
     }
-    if (!check_increasing_order(vertical_angles))
+    if (feq(m_vertical_angles.front(), m_vertical_angles.back()))
     {
-        throw ParsingException("Vertical angles"
-            " must be mentioned in increasing order", line_counter);
+        throw ParsingException(
+            "First and last vertical angles must be different", m_line_counter);
+    }
+    if (!check_increasing_order(m_vertical_angles))
+    {
+        throw ParsingException(
+            "Vertical angles must be mentioned in increasing order", m_line_counter);
     }
 
     // Parse horizontal angles:
 
     try
     {
-        horizontal_angles = parse_to_vector<double>(input_stream, number_of_horizontal_angles);
+        m_horizontal_angles = parse_to_vector<double>(input_stream, m_number_of_horizontal_angles);
     }
     catch (boost::bad_lexical_cast&)
     {
-        throw ParsingException("Horizontal angles must be floating point numbers", line_counter);
+        throw ParsingException(
+            "Error while parsing horizontal angles: "
+            "value is not a floating point number", m_line_counter);
     }
-    if (photometric_type == PhotometricTypeC)
+    if (m_photometric_type == PhotometricTypeC)
     {
-        if (feq(horizontal_angles.front(), 90.0))
+        if (feq(m_horizontal_angles.front(), 90.0))
         {
-            if (feq(horizontal_angles.back(), 270.0))
+            if (feq(m_horizontal_angles.back(), 270.0))
             {
-                symmetry = SymmetricHalvesY;
+                m_symmetry = SymmetricHalvesY;
             }
             else
             {
-                throw ParsingException("With photometric type C, if the first"
-                    " horizontal angle is 90 degrees, then the last angle can be only 270 degrees",
-                    line_counter);
+                throw ParsingException(
+                    "With photometric type C, if the first horizontal angle "
+                    "is 90 degrees, then the last angle can be only 270 degrees",
+                    m_line_counter);
             }
         }
-        else if (feq(horizontal_angles.front(), 0.0))
+        else if (feq(m_horizontal_angles.front(), 0.0))
         {
-            if (feq(horizontal_angles.back(), 0.0))
+            if (feq(m_horizontal_angles.back(), 0.0))
             {
-                symmetry = FullySymmetric;
+                m_symmetry = FullySymmetric;
             }
-            else if (feq(horizontal_angles.back(), 90.0))
+            else if (feq(m_horizontal_angles.back(), 90.0))
             {
-                symmetry = SymmetricQuadrants;
+                m_symmetry = SymmetricQuadrants;
             }
-            else if (feq(horizontal_angles.back(), 180.0))
+            else if (feq(m_horizontal_angles.back(), 180.0))
             {
-                symmetry = SymmetricHalvesX;
+                m_symmetry = SymmetricHalvesX;
             }
-            else if (feq(horizontal_angles.back(), 360.0))
+            else if (feq(m_horizontal_angles.back(), 360.0))
             {
-                symmetry = NoSymmetry;
+                m_symmetry = NoSymmetry;
             }
             else
             {
-                throw ParsingException("With photometric type C, the last horizontal angle"
-                    " can be only 0, 90, 180 or 360 degrees", line_counter);
+                throw ParsingException(
+                    "With photometric type C, the last horizontal angle "
+                    "can be only 0, 90, 180 or 360 degrees", m_line_counter);
             }
         }
         else
         {
-            throw ParsingException("With photometric type C, the first horizontal angle"
-                " can be only 0 or 90 degrees", line_counter);
+            throw ParsingException(
+                "With photometric type C, the first horizontal angle "
+                "can be only 0 or 90 degrees", m_line_counter);
         }
     }
-    else if (photometric_type == PhotometricTypeA ||
-        photometric_type == PhotometricTypeB)
+    else if (m_photometric_type == PhotometricTypeA ||
+             m_photometric_type == PhotometricTypeB)
     {
-        if (feq(horizontal_angles.front(), 0.0) &&
-            feq(horizontal_angles.back(), 90.0))
+        if (feq(m_horizontal_angles.front(), 0.0) &&
+            feq(m_horizontal_angles.back(), 90.0))
         {
-            symmetry = SymmetricHalvesX;
+            m_symmetry = SymmetricHalvesX;
         }
-        else if (feq(horizontal_angles.front(), -90.0) &&
-            feq(horizontal_angles.back(), 90.0))
+        else if (feq(m_horizontal_angles.front(), -90.0) &&
+                 feq(m_horizontal_angles.back(), 90.0))
         {
-            symmetry = NoSymmetry;
+            m_symmetry = NoSymmetry;
         }
         else
         {
-            throw ParsingException("With photometric type C, the first horizontal angle"
-                " can be only 0 or -90 degrees, the last horizontal angle should be 90 degrees",
-                line_counter);
+            throw ParsingException(
+                "With photometric types A and B, the first horizontal angle "
+                "can be only 0 or -90 degrees, and the last horizontal "
+                "angle must be 90 degrees", m_line_counter);
         }
     }
-    if (!check_increasing_order(horizontal_angles))
+    if (!check_increasing_order(m_horizontal_angles))
     {
-        throw ParsingException("Horizontal angles"
-            " must be mentioned in increasing order", line_counter);
+        throw ParsingException(
+            "Horizontal angles must be mentioned in increasing order", m_line_counter);
     }
 }
-
 
 bool IESParser::is_keyword_line(const std::string& line)
 {
-    boost::regex regex(KEYWORD_LINE_REGEX);
-    return boost::regex_match(line, regex);
+    static const boost::regex Regex(KeywordLineRegex);
+    return boost::regex_match(line, Regex);
 }
-
 
 bool IESParser::is_tilt_line(const std::string& line)
 {
-    boost::regex regex(TILT_LINE_REGEX);
-    return boost::regex_match(line, regex);
+    static const boost::regex Regex(TiltLineRegex);
+    return boost::regex_match(line, Regex);
 }
-
 
 void IESParser::parse_keyword_line(const std::string& line)
 {
-    boost::regex regex(KEYWORD_LINE_REGEX);
+    static const boost::regex Regex(KeywordLineRegex);
     boost::smatch what;
-    if (!boost::regex_match(line, what, regex))
+    if (!boost::regex_match(line, what, Regex))
     {
-        throw ParsingException("Keyword is expected", line_counter);
+        throw ParsingException("Keyword is expected", m_line_counter);
     }
 
-    std::string key = what[1];
-    std::string value = what[2];
+    const std::string key = what[1];
+    const std::string value = what[2];
 
     // Check if the specified standard allows this keyword.
-    if (!ignore_allowed_keywords) accept_keyword(key);
+    if (!m_ignore_allowed_keywords) accept_keyword(key);
 
     // Process MORE, BLOCK and ENDBLOCK keywords separately.
     // For all other keywords - just add them to dictionary.
     process_block_keyword(key);
     if (key == "MORE")
     {
-        if (last_added_keyword == keywords_dictionary.end())
+        if (m_last_added_keyword == m_keywords_dictionary.end())
         {
             throw ParsingException(
-                "Keyword MORE occured before any other keyword", line_counter);
+                "Keyword MORE occured before any other keyword", m_line_counter);
         }
-        last_added_keyword->second += ("\n" + value);
+        m_last_added_keyword->second += ("\n" + value);
     }
     else
     {
-        KeywordsDictionary::iterator it = keywords_dictionary.find(key);
-        if (it != keywords_dictionary.end())
+        KeywordsDictionary::iterator it = m_keywords_dictionary.find(key);
+        if (it != m_keywords_dictionary.end())
         {
-            throw ParsingException(
-                ("Keyword " + key + " is duplicated").c_str(), line_counter);
+            static const char* ErrorMsg = "Keyword {0} is duplicated";
+            throw ParsingException(format(ErrorMsg, key).c_str(), m_line_counter);
         }
-        keywords_dictionary[key] = value;
-        last_added_keyword = keywords_dictionary.find(key);
+        m_keywords_dictionary[key] = value;
+        m_last_added_keyword = m_keywords_dictionary.find(key);
     }
 }
-
 
 void IESParser::parse_tilt_line(const std::string& line)
 {
-    boost::regex regex(TILT_LINE_REGEX);
+    static const boost::regex Regex(TiltLineRegex);
     boost::smatch what;
-    if (!boost::regex_match(line, what, regex))
+    if (!boost::regex_match(line, what, Regex))
     {
-        throw ParsingException("TILT line is expected", line_counter);
+        throw ParsingException("TILT line is expected", m_line_counter);
     }
 
-    std::string value = what[1];
+    const std::string value = what[1];
 
     if (value == "INCLUDE")
-        tilt_specification = IncludeTilt;
+        m_tilt_specification = IncludeTilt;
     else if (value == "NONE")
-        tilt_specification = NoTilt;
-    else if (!ignore_tilt)
+        m_tilt_specification = NoTilt;
+    else if (!m_ignore_tilt)
     {
         throw NotSupportedException(
-            "TILT specification from file is not supported", line_counter);
+            "TILT specification from file is not supported", m_line_counter);
     }
 }
-
 
 void IESParser::process_block_keyword(const std::string& keyword)
 {
     if (keyword == "ENDBLOCK" || keyword == "BLOCK")
     {
-        throw NotSupportedException("Block keywords are not supported", line_counter);
+        throw NotSupportedException("Block keywords are not supported", m_line_counter);
     }
 }
-
 
 void IESParser::accept_keyword(const std::string& keyword)
 {
     if (keyword.empty())
     {
-        throw ParsingException("Keyword is empty", line_counter);
+        throw ParsingException("Keyword is empty", m_line_counter);
     }
 
-    assert(format != UnknownFormat);
+    assert(m_format != UnknownFormat);
 
-    switch (format)
+    switch (m_format)
     {
     case Format2002:
         if (!(keyword[0] == '_' || is_keyword_allowed_by_iesna02(keyword)))
         {
-            throw ParsingException(
-                ("Keyword " + keyword + " is not allowed by IESNA LM-63-2002 standard").c_str(),
-                line_counter);
+            static const char* ErrorMsg =
+                "Keyword {0} is not allowed by IESNA LM-63-2002 standard";
+            throw ParsingException(format(ErrorMsg, keyword).c_str(), m_line_counter);
         }
         break;
     case Format1995:
         if (!(keyword[0] == '_' || is_keyword_allowed_by_iesna95(keyword)))
         {
-            throw ParsingException(
-                ("Keyword " + keyword + " is not allowed by IESNA LM-63-95 standard").c_str(),
-                line_counter);
+            static const char* ErrorMsg =
+                "Keyword {0} is not allowed by IESNA LM-63-95 standard";
+            throw ParsingException(format(ErrorMsg, keyword).c_str(), m_line_counter);
         }
         break;
     case Format1991:
@@ -857,24 +851,22 @@ void IESParser::accept_keyword(const std::string& keyword)
         {
             throw ParsingException(
                 "User keywords are not allowed by IESNA LM-63-91 standard",
-                line_counter);
+                m_line_counter);
         }
         if (!is_keyword_allowed_by_iesna91(keyword))
         {
-            throw ParsingException(
-                ("Keyword " + keyword + " is not allowed by IESNA LM-63-91 standard").c_str(),
-                line_counter);
+            static const char* ErrorMsg = "Keyword {0} is not allowed by IESNA LM-63-91 standard";
+            throw ParsingException(format(ErrorMsg, keyword).c_str(), m_line_counter);
         }
         break;
     }
 }
 
-
 void IESParser::check_required_keywords() const
 {
-    assert(format != UnknownFormat);
+    assert(m_format != UnknownFormat);
 
-    switch (format)
+    switch (m_format)
     {
     case Format2002:
         check_iesna02_required_keywords();
@@ -890,57 +882,52 @@ void IESParser::check_required_keywords() const
     }
 }
 
-
 void IESParser::check_iesna02_required_keywords() const
 {
-    const char* REQUIRED_KEYWORDS[] =
+    static const char* RequiredKeywords[] =
     {
         "TEST",
         "TESTLAB",
         "ISSUEDATE",
         "MANUFAC"
     };
-    for (size_t i = 0; i < countof(REQUIRED_KEYWORDS); ++i)
+    for (size_t i = 0; i < countof(RequiredKeywords); ++i)
     {
-        const char*& required_keyword = REQUIRED_KEYWORDS[i];
-        if (keywords_dictionary.count(required_keyword) == 0)
+        const char* required_keyword = RequiredKeywords[i];
+        if (m_keywords_dictionary.count(required_keyword) == 0)
         {
-            throw ParsingException(
-                (std::string("Keyword ") + required_keyword +
-                ", required by IESNA LM-63-91 standard, was not found").c_str(),
-                line_counter);
+            static const char* ErrorMsg =
+                "Keyword {0}, required by IESNA LM-63-2002 standard, was not found";
+            throw ParsingException(format(ErrorMsg, required_keyword).c_str(), m_line_counter);
         }
     }
 }
 
-
 void IESParser::check_iesna91_required_keywords() const
 {
-    const char* REQUIRED_KEYWORDS[] =
+    static const char* RequiredKeywords[] =
     {
         "TEST",
         "MANUFAC"
     };
-    for (size_t i = 0; i < countof(REQUIRED_KEYWORDS); ++i)
+    for (size_t i = 0; i < countof(RequiredKeywords); ++i)
     {
-        const char*& required_keyword = REQUIRED_KEYWORDS[i];
-        if (keywords_dictionary.count(required_keyword) == 0)
+        const char* required_keyword = RequiredKeywords[i];
+        if (m_keywords_dictionary.count(required_keyword) == 0)
         {
-            throw ParsingException(
-                (std::string("Keyword ") + required_keyword +
-                 ", required by IESNA LM-63-91 standard, was not found").c_str(),
-                line_counter);
+            static const char* ErrorMsg =
+                "Keyword {0}, required by IESNA LM-63-91 standard, was not found";
+            throw ParsingException(format(ErrorMsg, required_keyword).c_str(), m_line_counter);
         }
     }
 }
 
-
 void IESParser::check_empty(std::istream& input_stream) const
 {
     if (!input_stream)
-        throw ParsingException("End of file is not expectied", line_counter);
-    if (line.empty())
-        throw ParsingException("Empty line is not expected", line_counter);
+        throw ParsingException("End of file is not expectied", m_line_counter);
+    if (m_line.empty())
+        throw ParsingException("Empty line is not expected", m_line_counter);
 }
 
 } // namespace foundation

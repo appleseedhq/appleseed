@@ -740,10 +740,10 @@ set (foundation_utility_sources
     foundation/utility/foreach.h
     foundation/utility/gnuplotfile.cpp
     foundation/utility/gnuplotfile.h
-    foundation/utility/indenter.cpp
-    foundation/utility/indenter.h
     foundation/utility/iesparser.cpp
     foundation/utility/iesparser.h
+    foundation/utility/indenter.cpp
+    foundation/utility/indenter.h
     foundation/utility/iostreamop.h
     foundation/utility/iterators.h
     foundation/utility/job.h

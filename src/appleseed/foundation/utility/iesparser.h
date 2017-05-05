@@ -41,10 +41,12 @@
 // Foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
 DECLARE_TEST_CASE(Foundation_Utility_Iesparser, ParseFormat);
-DECLARE_TEST_CASE(Foundation_Utility_Iesparser, ReadLine);
+DECLARE_TEST_CASE(Foundation_Utility_Iesparser, ReadLine_IgnoreEmptyLines);
+DECLARE_TEST_CASE(Foundation_Utility_Iesparser, ReadLine_DoNotIgnoreEmptyLines);
 DECLARE_TEST_CASE(Foundation_Utility_Iesparser, CheckEmpty);
 DECLARE_TEST_CASE(Foundation_Utility_Iesparser, ParseKeywords);
 DECLARE_TEST_CASE(Foundation_Utility_Iesparser, ParseToVector_Empty);
@@ -69,19 +71,15 @@ public:
     class Exception : public foundation::Exception
     {
     public:
-        Exception(const char* message, int line)
-            : line_number(line)
-        {
-            set_what(message);
-        }
+        Exception(const char* message, const int line);
 
         virtual int line() const throw ()
         {
-            return line_number;
+            return m_line_number;
         }
 
     protected:
-        int line_number;
+        int m_line_number;
     };
 
     // Exception that is thrown when file format violates the IES specifications.
@@ -90,7 +88,8 @@ public:
     public:
         ParsingException(const char* message, int line) :
             Exception(message, line)
-        {}
+        {
+        }
     };
 
     // Exception that is thrown when the feature of IES file is not supported by this parser.
@@ -164,10 +163,10 @@ public:
             Meters
         };
 
-        UnitsType units_type;
-        double width;
-        double length;
-        double height;
+        UnitsType   m_units_type;
+        double      m_width;
+        double      m_length;
+        double      m_height;
     };
 
     typedef std::vector< std::vector<double> > PhotometricGrid;
@@ -189,128 +188,127 @@ public:
     //
     Format get_format() const
     {
-        return format;
+        return m_format;
     }
 
     LampToLuminaireGeometry get_lamp_to_luminaire_geometry() const
     {
-        return lamp_to_luminaire_geometry;
+        return m_lamp_to_luminaire_geometry;
     }
 
     const std::vector<double>& get_tilt_angles() const
     {
-        return tilt_angles;
+        return m_tilt_angles;
     }
 
     const std::vector<double>& get_tilt_multiplying_factors() const
     {
-        return tilt_multiplying_factors;
+        return m_tilt_multiplying_factors;
     }
 
     int get_number_of_lamps() const
     {
-        return number_of_lamps;
+        return m_number_of_lamps;
     }
 
     double get_lumens_per_lamp() const
     {
-        return lumens_per_lamp;
+        return m_lumens_per_lamp;
     }
 
     bool is_absolute_photometry() const
     {
-        return absolute_photometry;
+        return m_absolute_photometry;
     }
 
     double get_candela_multiplier() const
     {
-        return candela_multiplier;
+        return m_candela_multiplier;
     }
 
     int get_number_of_vertical_angles() const
     {
-        return number_of_vertical_angles;
+        return m_number_of_vertical_angles;
     }
 
     int get_number_of_horizontal_angles() const
     {
-        return number_of_horizontal_angles;
+        return m_number_of_horizontal_angles;
     }
 
     PhotometricType get_photometric_type() const
     {
-        return photometric_type;
+        return m_photometric_type;
     }
 
     const LuminousOpeningShape& get_luminous_opening() const
     {
-        return luminous_opening;
+        return m_luminous_opening;
     }
 
     double get_ballast_factor() const
     {
-        return ballast_factor;
+        return m_ballast_factor;
     }
 
     double get_ballast_lamp_photometric_factor() const
     {
-        return ballast_lamp_photometric_factor;
+        return m_ballast_lamp_photometric_factor;
     }
 
     double get_input_watts() const
     {
-        return input_watts;
+        return m_input_watts;
     }
 
     SymmetryType get_symmetry() const
     {
-        return symmetry;
+        return m_symmetry;
     }
 
     const std::vector<double>& get_vertical_angles() const
     {
-        return vertical_angles;
+        return m_vertical_angles;
     }
 
     const std::vector<double>& get_horizontal_angles() const
     {
-        return horizontal_angles;
+        return m_horizontal_angles;
     }
 
     const PhotometricGrid& get_candela_values() const
     {
-        return candela_values;
+        return m_candela_values;
     }
 
     const KeywordsDictionary& get_keywords_dictionary() const
     {
-        return keywords_dictionary;
+        return m_keywords_dictionary;
     }
 
     const std::string& get_keyword_value(const std::string& keyword) const
     {
-        return keywords_dictionary.at(keyword);
+        return m_keywords_dictionary.at(keyword);
     }
 
     // Options:
-    bool ignore_allowed_keywords;  // if true, all keywors are allowed not depending on format version
-    bool ignore_required_keywords; // if true, some required keywors can be missing
-    bool ignore_empty_lines;       // if true, than the file can contain whitespace lines
-    bool ignore_tilt;              // if true, TILT section is not parsed
+    bool m_ignore_allowed_keywords;  // if true, all keywors are allowed not depending on format version
+    bool m_ignore_required_keywords; // if true, some required keywors can be missing
+    bool m_ignore_empty_lines;       // if true, than the file can contain whitespace lines
+    bool m_ignore_tilt;              // if true, TILT section is not parsed
 
 private:
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Iesparser, ParseFormat);
-    GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Iesparser, ReadLine);
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Iesparser, ReadLine_IgnoreEmptyLines);
+    GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Iesparser, ReadLine_DoNotIgnoreEmptyLines);
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Iesparser, CheckEmpty);
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Iesparser, ParseKeywords);
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Iesparser, ParseToVector_Empty);
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Iesparser, ParseToVector_Good);
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Iesparser, ParseToVector_Bad);
 
-    static const char* const KEYWORD_LINE_REGEX;
-    static const char* const TILT_LINE_REGEX;
-
-    static const int MAX_KEYWORD_LENGTH = 18;
+    static const char* const KeywordLineRegex;
+    static const char* const TiltLineRegex;
 
     // Reset parser.
     void reset(std::istream& input_stream);
@@ -341,8 +339,7 @@ private:
 
     void parse_candela_values(std::istream& input_stream);
 
-    // Check if the line defines a valid keyword-value pair
-    // and the keyword passes the used standard requirements.
+    // Check if the line defines a valid keyword-value pair.
     static bool is_keyword_line(const std::string& line);
 
     // Check if the line is a valid TILT=<...> line.
@@ -377,30 +374,29 @@ private:
     // Can also raise a boost::bad_cast exception, when a token cannot be converted
     // to the value of specified type.
     template <typename ValueType>
-    std::vector<ValueType> parse_to_vector(
-        std::istream& input_stream, size_t count)
+    std::vector<ValueType> parse_to_vector(std::istream& input_stream, size_t count)
     {
         std::vector<ValueType> output;
         output.reserve(count);
+
         while (output.size() < count)
         {
             check_empty(input_stream);
 
             std::vector<std::string> tokens;
-            boost::split(tokens, line, isspace, boost::token_compress_on);
+            boost::split(tokens, m_line, isspace, boost::token_compress_on);
             if (output.size() + tokens.size() > count)
             {
                 std::string expected_number_of_values =
                     boost::lexical_cast<std::string>(count - output.size());
+                static const char* ErrorMsg = "Too many values in the line, expected {0}";
                 throw ParsingException(
-                    ("Too many values in the line, expected " + 
-                    expected_number_of_values).c_str(), line_counter);
+                    format(ErrorMsg, expected_number_of_values).c_str(), m_line_counter);
             }
 
             for (each< std::vector<std::string> > token = tokens; token; ++token)
             {
-                output.push_back(
-                    boost::lexical_cast<ValueType>(*token));
+                output.push_back(boost::lexical_cast<ValueType>(*token));
             }
 
             read_trimmed_line(input_stream);
@@ -414,44 +410,44 @@ private:
     //
 
     // File format.
-    Format format;
+    Format                          m_format;
 
     // TILT specification.
-    TiltSpecification tilt_specification;
-    std::string tilt_specification_filename;
+    TiltSpecification               m_tilt_specification;
+    std::string                     m_tilt_specification_filename;
 
     // TILT section.
-    LampToLuminaireGeometry lamp_to_luminaire_geometry;
-    std::vector<double> tilt_angles;
-    std::vector<double> tilt_multiplying_factors;
+    LampToLuminaireGeometry         m_lamp_to_luminaire_geometry;
+    std::vector<double>             m_tilt_angles;
+    std::vector<double>             m_tilt_multiplying_factors;
 
     // Photometric information.
-    int number_of_lamps;
-    double lumens_per_lamp;
-    bool absolute_photometry;
-    double candela_multiplier;
-    int number_of_vertical_angles;
-    int number_of_horizontal_angles;
-    PhotometricType photometric_type;
-    LuminousOpeningShape luminous_opening;
-    double ballast_factor;
-    double ballast_lamp_photometric_factor;
-    double input_watts;
-    SymmetryType symmetry;
-    std::vector<double> vertical_angles;
-    std::vector<double> horizontal_angles;
-    PhotometricGrid candela_values;
+    int                             m_number_of_lamps;
+    double                          m_lumens_per_lamp;
+    bool                            m_absolute_photometry;
+    double                          m_candela_multiplier;
+    int                             m_number_of_vertical_angles;
+    int                             m_number_of_horizontal_angles;
+    PhotometricType                 m_photometric_type;
+    LuminousOpeningShape            m_luminous_opening;
+    double                          m_ballast_factor;
+    double                          m_ballast_lamp_photometric_factor;
+    double                          m_input_watts;
+    SymmetryType                    m_symmetry;
+    std::vector<double>             m_vertical_angles;
+    std::vector<double>             m_horizontal_angles;
+    PhotometricGrid                 m_candela_values;
 
     // Keywords.
-    KeywordsDictionary keywords_dictionary;
+    KeywordsDictionary              m_keywords_dictionary;
 
     //
     // Variables that describe the current parsing state:
     //
 
-    KeywordsDictionary::iterator last_added_keyword;
-    int line_counter;
-    std::string line;
+    KeywordsDictionary::iterator    m_last_added_keyword;
+    int                             m_line_counter;
+    std::string                     m_line;
 };
 
 } // namespace foundation
