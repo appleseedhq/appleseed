@@ -235,7 +235,7 @@ shader as_maya_volumeNoise
 )
 {
     matrix placement = (in_local)
-        ? inverse(matrix("object", "world")) * in_placementMatrix
+        ? matrix("common", "object") * in_placementMatrix
         : in_placementMatrix;
 
     point Pp = transform(placement, in_refPointCamera);

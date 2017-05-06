@@ -33,57 +33,6 @@
 #include "appleseed/color/as_colorimetry.h"
 #include "appleseed/math/as_math_helpers.h"
 
-//
-// Reference:
-//
-//      Colour Space Conversions
-//
-//      http://www.poynton.com/PDFs/coloureq.pdf
-//      http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_xyY.html
-//      
-
-color transform_XYZ_to_xyY(color XYZ, float white_xy[2])
-{
-    color xyY;
-
-    if (XYZ[0] == XYZ[1] == XYZ[2] == 0.0)
-    {
-        xyY = color(white_xy[0], white_xy[1], XYZ[1]);
-    }
-    else
-    {
-        float XYZ_sum = XYZ[0] + XYZ[1] + XYZ[2];
-
-        xyY = color(XYZ[0] / XYZ_sum, XYZ[1] / XYZ_sum, XYZ[1]);
-    }
-    return xyY;
-}
-
-//
-// Reference:
-//
-//      xyY to XYZ conversion
-//
-//      http://www.brucelindbloom.com/index.html?Eqn_xyY_to_XYZ.html
-//
-
-color transform_xyY_to_XYZ(color xyY)
-{
-    color XYZ;
-
-    if (xyY[1] != 0)
-    {
-        XYZ[0] = xyY[0] * xyY[2] / xyY[1];
-        XYZ[1] = xyY[2];
-        XYZ[2] = (1.0 - xyY[0] - xyY[1]) * xyY[2] / xyY[1]; // z = 1-x-y
-    }
-    else
-    {
-        XYZ = color(0);
-    }
-    return XYZ;
-}
-
 color get_illuminant_xyY(string illuminant)
 {
     color white_xyY;
@@ -124,6 +73,73 @@ color get_illuminant_xyY(string illuminant)
         return color(0);
     }
     return white_xyY;
+}
+
+void get_illuminant_xyY(string illuminant, output float white_xy[2])
+{
+    color white_xyY = get_illuminant_xyY(illuminant);
+    white_xy[0] = white_xyY[0];
+    white_xy[1] = white_xyY[1];
+}
+
+//
+// Reference:
+//
+//      Colour Space Conversions
+//
+//      http://www.poynton.com/PDFs/coloureq.pdf
+//      http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_xyY.html
+//      
+
+color transform_XYZ_to_xyY(color XYZ, float white_xy[2])
+{
+    color xyY;
+
+    if (XYZ[0] == XYZ[1] == XYZ[2] == 0.0)
+    {
+        xyY = color(white_xy[0], white_xy[1], XYZ[1]);
+    }
+    else
+    {
+        float XYZ_sum = XYZ[0] + XYZ[1] + XYZ[2];
+
+        xyY = color(XYZ[0] / XYZ_sum, XYZ[1] / XYZ_sum, XYZ[1]);
+    }
+    return xyY;
+}
+
+color transform_XYZ_to_xyY(color XYZ, string illuminant)
+{
+    float white_xy[2];
+
+    get_illuminant_xyY(illuminant, white_xy);
+
+    return transform_XYZ_to_xyY(XYZ, white_xy);
+}
+
+//
+// Reference:
+//
+//      xyY to XYZ conversion
+//
+//      http://www.brucelindbloom.com/index.html?Eqn_xyY_to_XYZ.html
+//
+
+color transform_xyY_to_XYZ(color xyY)
+{
+    color XYZ;
+
+    if (xyY[1] != 0)
+    {
+        XYZ[0] = xyY[0] * xyY[2] / xyY[1];
+        XYZ[1] = xyY[2];
+        XYZ[2] = (1.0 - xyY[0] - xyY[1]) * xyY[2] / xyY[1]; // z = 1-x-y
+    }
+    else
+    {
+        XYZ = color(0);
+    }
+    return XYZ;
 }
 
 color get_illuminant_XYZ(string illuminant)
