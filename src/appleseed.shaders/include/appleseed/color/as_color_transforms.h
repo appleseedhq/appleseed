@@ -95,15 +95,15 @@ color transform_XYZ_to_xyY(color XYZ, float white_xy[2])
 {
     color xyY;
 
-    if (XYZ[0] == XYZ[1] == XYZ[2] == 0.0)
-    {
-        xyY = color(white_xy[0], white_xy[1], XYZ[1]);
-    }
-    else
+    if (XYZ != 0)
     {
         float XYZ_sum = XYZ[0] + XYZ[1] + XYZ[2];
 
         xyY = color(XYZ[0] / XYZ_sum, XYZ[1] / XYZ_sum, XYZ[1]);
+    }
+    else
+    {
+        xyY = color(white_xy[0], white_xy[1], XYZ[1]);
     }
     return xyY;
 }
