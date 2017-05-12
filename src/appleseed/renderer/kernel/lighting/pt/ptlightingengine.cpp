@@ -80,7 +80,7 @@ namespace
     //
     // Path Tracing lighting engine.
     //
-    // Implementation of Monte Carlo backward path tracing with and without next event estimation.
+    // Monte Carlo backward path tracing with and without next event estimation.
     //
     // Reference:
     //
