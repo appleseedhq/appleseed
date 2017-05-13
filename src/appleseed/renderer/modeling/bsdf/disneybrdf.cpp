@@ -429,44 +429,41 @@ namespace
                     sample);
                 sample.m_probability *= weights[SheenComponent];
             }
+            else if (s < cdf[SpecularComponent])
+            {
+                float alpha_x, alpha_y;
+                microfacet_alpha_from_roughness(
+                    values->m_roughness,
+                    values->m_anisotropic,
+                    alpha_x,
+                    alpha_y);
+
+                const GGXMDF ggx_mdf;
+                MicrofacetBRDFHelper::sample(
+                    sampling_context,
+                    ggx_mdf,
+                    alpha_x,
+                    alpha_y,
+                    0.0f,
+                    DisneySpecularFresnelFun(*values),
+                    cos_on,
+                    sample);
+                sample.m_probability *= weights[SpecularComponent];
+            }
             else
             {
-                if (s < cdf[SpecularComponent])
-                {
-                    float alpha_x, alpha_y;
-                    microfacet_alpha_from_roughness(
-                        values->m_roughness,
-                        values->m_anisotropic,
-                        alpha_x,
-                        alpha_y);
-
-                    const GGXMDF ggx_mdf;
-                    MicrofacetBRDFHelper::sample(
-                        sampling_context,
-                        ggx_mdf,
-                        alpha_x,
-                        alpha_y,
-                        0.0f,
-                        DisneySpecularFresnelFun(*values),
-                        cos_on,
-                        sample);
-                    sample.m_probability *= weights[SpecularComponent];
-                }
-                else
-                {
-                    const float alpha = clearcoat_roughness(values);
-                    const GTR1MDF gtr1_mdf;
-                    MicrofacetBRDFHelper::sample(
-                        sampling_context,
-                        gtr1_mdf,
-                        alpha,
-                        alpha,
-                        0.0f,
-                        DisneyClearcoatFresnelFun(*values),
-                        cos_on,
-                        sample);
-                    sample.m_probability *= weights[CleatcoatComponent];
-                }
+                const float alpha = clearcoat_roughness(values);
+                const GTR1MDF gtr1_mdf;
+                MicrofacetBRDFHelper::sample(
+                    sampling_context,
+                    gtr1_mdf,
+                    alpha,
+                    alpha,
+                    0.0f,
+                    DisneyClearcoatFresnelFun(*values),
+                    cos_on,
+                    sample);
+                sample.m_probability *= weights[CleatcoatComponent];
             }
         }
 
