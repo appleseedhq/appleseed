@@ -48,7 +48,7 @@ namespace renderer
 {
 
 //
-// AlSurface Layer BRDF input values.
+// AlSurface layer BRDF input values.
 //
 
 APPLESEED_DECLARE_INPUT_VALUES(AlSurfaceLayerBRDFInputValues)
@@ -81,7 +81,7 @@ APPLESEED_DECLARE_INPUT_VALUES(AlSurfaceLayerBRDFInputValues)
 
 
 //
-// AlSurface Layer BRDF factory.
+// AlSurface layer BRDF factory.
 //
 
 class APPLESEED_DLLSYMBOL AlSurfaceLayerBRDFFactory

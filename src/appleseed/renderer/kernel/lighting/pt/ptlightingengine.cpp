@@ -80,7 +80,7 @@ namespace
     //
     // Path Tracing lighting engine.
     //
-    // Monte Carlo backward path tracing with and without next event estimation.
+    // Implementation of Monte Carlo backward path tracing with and without next event estimation.
     //
     // Reference:
     //
@@ -98,9 +98,10 @@ namespace
             const bool      m_enable_caustics;              // are caustics enabled?
 
             const size_t    m_max_path_length;              // maximum path length, ~0 for unlimited
-            const size_t    m_max_specular_bounces;         // maximum number of specular bounces, ~0 for unlimited
-            const size_t    m_max_glossy_bounces;           // maximum number of glossy bounces, ~0 for unlimited
             const size_t    m_max_diffuse_bounces;          // maximum number of diffuse bounces, ~0 for unlimited
+            const size_t    m_max_glossy_bounces;           // maximum number of glossy bounces, ~0 for unlimited
+            const size_t    m_max_specular_bounces;         // maximum number of specular bounces, ~0 for unlimited
+
             const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
             const bool      m_next_event_estimation;        // use next event estimation?
 
@@ -119,9 +120,9 @@ namespace
               , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
               , m_enable_caustics(params.get_optional<bool>("enable_caustics", false))
               , m_max_path_length(fixup_path_length(params.get_optional<size_t>("max_path_length", 0)))
-              , m_max_specular_bounces(fixup_bounces(params.get_optional<int>("max_specular_bounces", -1)))
-              , m_max_glossy_bounces(fixup_bounces(params.get_optional<int>("max_glossy_bounces", -1)))
               , m_max_diffuse_bounces(fixup_bounces(params.get_optional<int>("max_diffuse_bounces", -1)))
+              , m_max_glossy_bounces(fixup_bounces(params.get_optional<int>("max_glossy_bounces", -1)))
+              , m_max_specular_bounces(fixup_bounces(params.get_optional<int>("max_specular_bounces", -1)))
               , m_rr_min_path_length(fixup_path_length(params.get_optional<size_t>("rr_min_path_length", 6)))
               , m_next_event_estimation(params.get_optional<bool>("next_event_estimation", true))
               , m_dl_light_sample_count(params.get_optional<float>("dl_light_samples", 1.0f))
@@ -231,7 +232,6 @@ namespace
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             Spectrum&               radiance)               // output radiance, in W.sr^-1.m^-2
-
         {
             PathVisitor path_visitor(
                 m_params,
@@ -490,7 +490,6 @@ namespace
                     {
                         const Material::RenderData& material_data =
                             vertex.m_shading_point->get_material()->get_render_data();
-
                         if (material_data.m_shader_group)
                         {
                             m_sampling_context.split_in_place(2, 1);
@@ -501,7 +500,7 @@ namespace
                     }
                 }
 
-                // Direct lighting.
+                // Direct lighting contribution.
                 if (m_params.m_enable_dl || vertex.m_path_length > 1)
                 {
                     if (vertex.m_bsdf)
@@ -517,7 +516,7 @@ namespace
                     }
                 }
 
-                // Image-based lighting.
+                // Image-based lighting contribution.
                 if (m_params.m_enable_ibl && m_env_edf)
                 {
                     if (vertex.m_bsdf)

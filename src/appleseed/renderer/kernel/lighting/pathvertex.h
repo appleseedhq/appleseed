@@ -82,7 +82,7 @@ class PathVertex
     const BSSRDF*               m_bssrdf;
     const void*                 m_bssrdf_data;
 
-    // Properties of the last scattering event (for multiple importance sampling).
+    // Properties of the scattering event leading to this vertex.
     ScatteringMode::Mode        m_prev_mode;
     float                       m_prev_prob;
 

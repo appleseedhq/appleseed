@@ -279,9 +279,7 @@ namespace
                 // Evaluate the diffuse component of the BRDF (equation 5).
                 const float a = 1.0f - pow5(1.0f - 0.5f * cos_in);
                 const float b = 1.0f - pow5(1.0f - 0.5f * cos_on);
-                Spectrum diffuse = rval.m_kd;
-                diffuse *= a * b;
-                value += diffuse;
+                madd(value, rval.m_kd, a * b);
 
                 // Evaluate the PDF of the diffuse component.
                 const float pdf_diffuse = cos_in * RcpPi<float>();

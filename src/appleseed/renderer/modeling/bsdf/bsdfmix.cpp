@@ -142,25 +142,22 @@ namespace
 
             const Values* values = static_cast<const Values*>(data);
 
-            // Retrieve blending weights.
-            const float w[2] = { values->m_inputs->m_weight[0], values->m_inputs->m_weight[1] };
-
             // Handle absorption.
-            const float total_weight = w[0] + w[1];
+            const float total_weight = values->m_inputs->m_weight[0] + values->m_inputs->m_weight[1];
             if (total_weight == 0.0f)
                 return;
 
             // Choose which of the two BSDFs to sample.
             sampling_context.split_in_place(1, 1);
             const float s = sampling_context.next2<float>();
-            const size_t bsdf_index = s * total_weight < w[0] ? 0 : 1;
+            const size_t bsdf_index = s * total_weight < values->m_inputs->m_weight[0] ? 0 : 1;
 
             // Sample the chosen BSDF.
             m_bsdf[bsdf_index]->sample(
                 sampling_context,
                 values->m_child_inputs[bsdf_index],
                 adjoint,
-                false,                      // do not multiply by |cos(incoming, normal)|
+                false,              // do not multiply by |cos(incoming, normal)|
                 sample);
         }
 

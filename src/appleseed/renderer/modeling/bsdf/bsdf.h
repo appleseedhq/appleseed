@@ -162,7 +162,7 @@ class APPLESEED_DLLSYMBOL BSDF
         const foundation::Basis3f&  shading_basis,              // world space orthonormal basis around shading normal
         const foundation::Vector3f& outgoing,                   // world space outgoing direction, unit-length
         const foundation::Vector3f& incoming,                   // world space incoming direction, unit-length
-        const int                   modes,                      // selected scattering modes
+        const int                   modes,                      // enabled scattering modes
         Spectrum&                   value) const = 0;           // BSDF value, or BSDF value * |cos(incoming, normal)|
 
     // Evaluate the PDF for a given pair of directions.
@@ -172,7 +172,7 @@ class APPLESEED_DLLSYMBOL BSDF
         const foundation::Basis3f&  shading_basis,              // world space orthonormal basis around shading normal
         const foundation::Vector3f& outgoing,                   // world space outgoing direction, unit-length
         const foundation::Vector3f& incoming,                   // world space incoming direction, unit-length
-        const int                   modes) const = 0;           // selected scattering modes
+        const int                   modes) const = 0;           // enabled scattering modes
 
     // Compute the index of refraction of the interior medium.
     virtual float sample_ior(

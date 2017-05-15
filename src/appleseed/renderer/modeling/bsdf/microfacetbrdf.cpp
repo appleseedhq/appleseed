@@ -335,7 +335,7 @@ namespace
                 {
                     const float a = glossiness_to_roughness(glossiness);
                     const GGXMDF ggx_mdf;
-                    pdf =  MicrofacetBRDFHelper::evaluate(
+                    pdf = MicrofacetBRDFHelper::evaluate(
                         ggx_mdf,
                         a,
                         a,

@@ -151,7 +151,7 @@ namespace
                 sampling_context,
                 values->m_child_inputs[bsdf_index],
                 adjoint,
-                false,                      // do not multiply by |cos(incoming, normal)|
+                false,              // do not multiply by |cos(incoming, normal)|
                 sample);
         }
 
