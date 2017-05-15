@@ -167,6 +167,9 @@ namespace
                 path_visitor,
                 m_params.m_path_tracing_rr_min_path_length,
                 m_params.m_path_tracing_max_path_length,
+                ~0, // max diffuse bounces
+                ~0, // max glossy bounces
+                ~0, // max specular bounces
                 shading_context.get_max_iterations());
 
             const size_t path_length =
@@ -241,7 +244,33 @@ namespace
                 return true;
             }
 
-            void visit_vertex(const PathVertex& vertex)
+            void on_miss(const PathVertex& vertex)
+            {
+                assert(vertex.m_prev_mode != ScatteringMode::Absorption);
+
+                // Can't look up the environment if there's no environment EDF.
+                if (m_env_edf == 0)
+                    return;
+
+                // When IBL is disabled, only specular reflections should contribute here.
+                if (!m_params.m_enable_ibl && vertex.m_prev_mode != ScatteringMode::Specular)
+                    return;
+
+                // Evaluate the environment EDF.
+                Spectrum env_radiance(Spectrum::Illuminance);
+                float env_prob;
+                m_env_edf->evaluate(
+                    m_shading_context,
+                    -Vector3f(vertex.m_outgoing.get_value()),
+                    env_radiance,
+                    env_prob);
+
+                // Update the path radiance.
+                env_radiance *= vertex.m_throughput;
+                m_path_radiance += env_radiance;
+            }
+
+            void on_hit(const PathVertex& vertex)
             {
                 Spectrum vertex_radiance(0.0f, Spectrum::Illuminance);
 
@@ -265,6 +294,10 @@ namespace
                 // Update the path radiance.
                 vertex_radiance *= vertex.m_throughput;
                 m_path_radiance += vertex_radiance;
+            }
+
+            void on_scatter(const PathVertex& vertex)
+            {
             }
 
             void add_direct_lighting_contribution(
@@ -529,32 +562,6 @@ namespace
 
                 // Add the emitted light contribution.
                 vertex_radiance += emitted_radiance;
-            }
-
-            void visit_environment(const PathVertex& vertex)
-            {
-                assert(vertex.m_prev_mode != ScatteringMode::Absorption);
-
-                // Can't look up the environment if there's no environment EDF.
-                if (m_env_edf == 0)
-                    return;
-
-                // When IBL is disabled, only specular reflections should contribute here.
-                if (!m_params.m_enable_ibl && vertex.m_prev_mode != ScatteringMode::Specular)
-                    return;
-
-                // Evaluate the environment EDF.
-                Spectrum env_radiance(Spectrum::Illuminance);
-                float env_prob;
-                m_env_edf->evaluate(
-                    m_shading_context,
-                    -Vector3f(vertex.m_outgoing.get_value()),
-                    env_radiance,
-                    env_prob);
-
-                // Update the path radiance.
-                env_radiance *= vertex.m_throughput;
-                m_path_radiance += env_radiance;
             }
         };
 

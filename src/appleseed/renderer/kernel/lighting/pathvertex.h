@@ -70,6 +70,7 @@ class PathVertex
 
     // Path properties.
     size_t                      m_path_length;
+    int                         m_scattering_modes;
     Spectrum                    m_throughput;
 
     // Current vertex properties.

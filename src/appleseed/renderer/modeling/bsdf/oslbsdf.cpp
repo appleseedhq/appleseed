@@ -215,6 +215,7 @@ namespace
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
+            const int               modes,
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
@@ -233,6 +234,7 @@ namespace
                         c->get_closure_input_values(closure_index),
                         adjoint,
                         false,
+                        modes,
                         sample);
 
                 sample.m_value *= c->get_closure_weight(closure_index);

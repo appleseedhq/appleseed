@@ -149,6 +149,7 @@ class APPLESEED_DLLSYMBOL BSDF
         const void*                 data,                       // input values
         const bool                  adjoint,                    // if true, use the adjoint scattering kernel
         const bool                  cosine_mult,                // if true, multiply by |cos(incoming, normal)|
+        const int                   modes,                      // allowed scattering modes
         BSDFSample&                 sample) const = 0;
 
     // Evaluate the BSDF for a given pair of directions. Return the PDF value

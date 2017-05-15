@@ -165,6 +165,7 @@ namespace
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
+            const int               modes,
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
             const InputValues* values = static_cast<const InputValues*>(data);
@@ -215,6 +216,7 @@ namespace
                     values->m_substrate_closure_data,
                     adjoint,
                     false, // do not multiply by |cos(incoming, normal)|
+                    modes,
                     sample);
                 sample.m_value *= 1.0f - layer_weight;
                 sample.m_probability *= 1.0f - layer_weight;

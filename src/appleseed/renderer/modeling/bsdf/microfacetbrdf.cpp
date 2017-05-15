@@ -164,8 +164,12 @@ namespace
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
+            const int               modes,
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
+            if (!ScatteringMode::has_glossy(modes))
+                return;
+
             const Vector3f& n = sample.m_shading_basis.get_normal();
             const float cos_on = std::min(dot(sample.m_outgoing.get_value(), n), 1.0f);
             if (cos_on < 0.0f)

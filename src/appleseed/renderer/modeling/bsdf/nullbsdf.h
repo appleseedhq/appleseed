@@ -71,6 +71,7 @@ class NullBSDF
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
+        const int                       modes,
         BSDFSample&                     sample) const APPLESEED_OVERRIDE
     {
     }

@@ -442,6 +442,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
         m_bsdf_data,
         false,                  // not adjoint
         true,                   // multiply by |cos(incoming, normal)|
+        m_bsdf_sampling_modes,
         sample);
 
     // Filter scattering modes.

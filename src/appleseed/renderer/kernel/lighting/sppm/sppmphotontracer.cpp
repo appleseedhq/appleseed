@@ -138,7 +138,12 @@ namespace
             return true;
         }
 
-        void visit_vertex(const PathVertex& vertex)
+        void on_miss(const PathVertex& vertex)
+        {
+            // The photon escapes.
+        }
+
+        void on_hit(const PathVertex& vertex)
         {
             if (vertex.m_path_length > 1 || m_store_direct)
             {
@@ -188,9 +193,8 @@ namespace
             }
         }
 
-        void visit_environment(const PathVertex& vertex)
+        void on_scatter(const PathVertex& vertex)
         {
-            // The photon escapes, nothing to do.
         }
     };
 
@@ -405,6 +409,9 @@ namespace
                 path_visitor,
                 m_params.m_photon_tracing_rr_min_path_length,
                 m_params.m_photon_tracing_max_path_length,
+                ~0, // max diffuse bounces
+                ~0, // max glossy bounces
+                ~0, // max specular bounces
                 m_params.m_max_iterations,
                 edf->get_light_near_start());               // don't illuminate points closer than the light near start value
 
@@ -465,6 +472,9 @@ namespace
                 path_visitor,
                 m_params.m_photon_tracing_rr_min_path_length,
                 m_params.m_photon_tracing_max_path_length,
+                ~0, // max diffuse bounces
+                ~0, // max glossy bounces
+                ~0, // max specular bounces
                 m_params.m_max_iterations);
 
             // Trace the photon path.
@@ -663,6 +673,9 @@ namespace
                 path_visitor,
                 m_params.m_photon_tracing_rr_min_path_length,
                 m_params.m_photon_tracing_max_path_length,
+                ~0, // max diffuse bounces
+                ~0, // max glossy bounces
+                ~0, // max specular bounces
                 m_params.m_max_iterations);
 
             // Trace the photon path.

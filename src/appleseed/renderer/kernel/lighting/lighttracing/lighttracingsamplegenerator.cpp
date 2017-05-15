@@ -378,7 +378,12 @@ namespace
                 emit_sample(sample_position, radiance);
             }
 
-            void visit_vertex(const PathVertex& vertex)
+            void on_miss(const PathVertex& vertex)
+            {
+                // The particle escapes.
+            }
+
+            void on_hit(const PathVertex& vertex)
             {
                 // Don't process this vertex if there is no BSDF.
                 if (vertex.m_bsdf == 0)
@@ -450,9 +455,8 @@ namespace
                 emit_sample(sample_position, radiance);
             }
 
-            void visit_environment(const PathVertex& vertex)
+            void on_scatter(const PathVertex& vertex)
             {
-                // The particle escapes.
             }
 
             void emit_sample(
@@ -645,6 +649,9 @@ namespace
                 path_visitor,
                 m_params.m_rr_min_path_length,
                 m_params.m_max_path_length,
+                ~0, // max diffuse bounces
+                ~0, // max glossy bounces
+                ~0, // max specular bounces
                 m_params.m_max_iterations,
                 material_data.m_edf->get_light_near_start());   // don't illuminate points closer than the light near start value
 
@@ -722,6 +729,9 @@ namespace
                 path_visitor,
                 m_params.m_rr_min_path_length,
                 m_params.m_max_path_length,
+                ~0, // max diffuse bounces
+                ~0, // max glossy bounces
+                ~0, // max specular bounces
                 m_params.m_max_iterations);
 
             // Handle the light vertex separately.
@@ -809,6 +819,9 @@ namespace
                 path_visitor,
                 m_params.m_rr_min_path_length,
                 m_params.m_max_path_length,
+                ~0, // max diffuse bounces
+                ~0, // max glossy bounces
+                ~0, // max specular bounces
                 m_params.m_max_iterations);
 
             // Trace the light path.

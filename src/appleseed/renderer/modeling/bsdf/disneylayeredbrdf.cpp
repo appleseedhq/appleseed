@@ -140,6 +140,7 @@ void DisneyLayeredBRDF::sample(
     const void*                 data,
     const bool                  adjoint,
     const bool                  cosine_mult,
+    const int                   modes,
     BSDFSample&                 sample) const
 {
     if (m_parent->get_layer_count() == 0)
@@ -150,6 +151,7 @@ void DisneyLayeredBRDF::sample(
         data,
         adjoint,
         cosine_mult,
+        modes,
         sample);
 }
 
