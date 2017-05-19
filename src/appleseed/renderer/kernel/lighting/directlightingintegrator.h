@@ -145,6 +145,7 @@ class DirectLightingIntegrator
         Spectrum&                       radiance) const;
 
     void add_emitting_triangle_sample_contribution(
+        SamplingContext&                sampling_context,
         const LightSample&              sample,
         const foundation::MISHeuristic  mis_heuristic,
         const foundation::Dual3d&       outgoing,

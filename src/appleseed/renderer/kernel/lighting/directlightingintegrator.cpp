@@ -43,6 +43,7 @@
 #include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/rr.h"
 #include "foundation/math/scalar.h"
 
 // Standard headers.
@@ -171,6 +172,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling(
         if (sample.m_triangle)
         {
             add_emitting_triangle_sample_contribution(
+                sampling_context,
                 sample,
                 mis_heuristic,
                 outgoing,
@@ -223,6 +225,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
                 sample);
 
             add_emitting_triangle_sample_contribution(
+                sampling_context,
                 sample,
                 mis_heuristic,
                 outgoing,
@@ -536,6 +539,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
 }
 
 void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
+    SamplingContext&            sampling_context,
     const LightSample&          sample,
     const MISHeuristic          mis_heuristic,
     const Dual3d&               outgoing,
@@ -589,9 +593,23 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
         edf->get_max_contribution() * 
         sample.m_triangle->m_area;
 
+    // Probability of taking the light contribution into account.
+    float contribution_prob = 1.0f;
+
     // Don't use this sample if the approximate contribution is low.
     if (approximate_contribution < m_low_light_threshold)
-        return;
+    {
+        // Generate a uniform sample in [0,1).
+        sampling_context.split_in_place(1, 1);
+        const float s = sampling_context.next2<float>();
+
+        // Compute the probability of taking the light contribution into account.
+        contribution_prob = approximate_contribution / m_low_light_threshold;
+
+        // Russian Roulette to skip low contribution.
+        if (!foundation::pass_rr(contribution_prob, s))
+            return;
+    }    
 
     // Compute the transmission factor between the light sample and the shading point.
     const float transmission =
@@ -644,7 +662,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
         edf_value);
 
     const float g = static_cast<float>(cos_on * rcp_sample_square_distance);
-    float weight = transmission * g / sample.m_probability;
+    float weight = (transmission * g) / (sample.m_probability * contribution_prob);
 
     // Apply MIS weighting.
     weight *=
