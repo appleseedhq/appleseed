@@ -596,7 +596,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     // Probability of taking the light contribution into account.
     float contribution_prob = 1.0f;
 
-    // Don't use this sample if the approximate contribution is low.
+    // Use Russian Roulette to skip this sample if the approximate contribution is low.
     if (approximate_contribution < m_low_light_threshold)
     {
         // Generate a uniform sample in [0,1).
