@@ -37,9 +37,7 @@
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #include "renderer/modeling/bssrdf/gaussianbssrdf.h"
 #include "renderer/modeling/bssrdf/ibssrdffactory.h"
-#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
-#endif
 #include "renderer/modeling/bssrdf/separablebssrdf.h"
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
 

@@ -34,9 +34,7 @@
 #include "renderer/modeling/bssrdf/dipolebssrdf.h"
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #include "renderer/modeling/bssrdf/gaussianbssrdf.h"
-#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
-#endif
 #include "renderer/modeling/bssrdf/sss.h"
 #include "renderer/modeling/bssrdf/separablebssrdf.h"
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
@@ -529,8 +527,6 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         EXPECT_FEQ_EPS(Rd, integral, 1.0e-2f);
     }
 
-#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
-
     //
     // Normalized Diffusion BSSRDF.
     //
@@ -800,8 +796,6 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         EXPECT_FEQ_EPS(Rd, integral, 1.0e-2f);
     }
-
-#endif
 
     //
     // Standard dipole BSSRDF.
