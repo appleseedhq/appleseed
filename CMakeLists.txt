@@ -108,7 +108,6 @@ option (WITH_STUDIO                         "Build appleseed.studio"            
 option (WITH_TOOLS                          "Build appleseed tools"                                 ON)
 option (WITH_PYTHON                         "Build Python bindings"                                 ON)
 option (WITH_DISNEY_MATERIAL                "Build Disney material"                                 OFF)
-option (WITH_NORMALIZED_DIFFUSION_BSSRDF    "Build Normalized Diffusion BSSRDF (patented)"          OFF)
 option (WITH_PARTIO                         "Build Partio support (used in unit tests)"             OFF)
 
 option (USE_CPP11                           "Use C++11"                                             OFF)
@@ -254,10 +253,6 @@ if (WITH_DISNEY_MATERIAL)
             find_package (SeExprEditor REQUIRED)
         endif ()
     endif ()
-endif ()
-
-if (WITH_NORMALIZED_DIFFUSION_BSSRDF)
-    add_definitions (-DAPPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF)
 endif ()
 
 if (WITH_PARTIO)

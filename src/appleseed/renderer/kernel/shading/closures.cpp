@@ -44,9 +44,7 @@
 #include "renderer/modeling/bssrdf/dipolebssrdf.h"
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #include "renderer/modeling/bssrdf/gaussianbssrdf.h"
-#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
-#endif
 #include "renderer/modeling/edf/diffuseedf.h"
 
 // appleseed.foundation headers.
@@ -1066,7 +1064,6 @@ namespace
 
             if (p->profile == g_normalized_diffusion_profile_str)
             {
-#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
                 NormalizedDiffusionBSSRDFInputValues* values =
                     composite_closure.add_closure<NormalizedDiffusionBSSRDFInputValues>(
                         SubsurfaceNormalizedDiffusionID,
@@ -1076,9 +1073,6 @@ namespace
                         arena);
 
                 copy_parameters(p, values);
-#else
-                throw ExceptionOSLRuntimeError("unknown subsurface profile: normalized_diffusion");
-#endif
             }
             else if (p->profile == g_gaussian_profile_str)
             {

@@ -34,9 +34,7 @@
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #include "renderer/modeling/bssrdf/gaussianbssrdf.h"
 #include "renderer/modeling/bssrdf/ibssrdffactory.h"
-#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
-#endif
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
 
 // appleseed.foundation headers.
@@ -66,9 +64,7 @@ BSSRDFFactoryRegistrar::BSSRDFFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new BetterDipoleBSSRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new DirectionalDipoleBSSRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new GaussianBSSRDFFactory()));
-#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
     register_factory(auto_ptr<FactoryType>(new NormalizedDiffusionBSSRDFFactory()));
-#endif
     register_factory(auto_ptr<FactoryType>(new StandardDipoleBSSRDFFactory()));
 }
 
