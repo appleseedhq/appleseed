@@ -79,7 +79,7 @@ class PathTracer
     PathTracer(
         PathVisitor&            path_visitor,
         const size_t            rr_min_path_length,
-        const size_t            max_path_length,
+        const size_t            max_bounces,
         const size_t            max_diffuse_bounces,
         const size_t            max_glossy_bounces,
         const size_t            max_specular_bounces,
@@ -100,7 +100,7 @@ class PathTracer
   private:
     PathVisitor&                m_path_visitor;
     const size_t                m_rr_min_path_length;
-    const size_t                m_max_path_length;
+    const size_t                m_max_bounces;
     const size_t                m_max_diffuse_bounces;
     const size_t                m_max_glossy_bounces;
     const size_t                m_max_specular_bounces;
@@ -122,7 +122,7 @@ template <typename PathVisitor, bool Adjoint>
 inline PathTracer<PathVisitor, Adjoint>::PathTracer(
     PathVisitor&                path_visitor,
     const size_t                rr_min_path_length,
-    const size_t                max_path_length,
+    const size_t                max_bounces,
     const size_t                max_diffuse_bounces,
     const size_t                max_glossy_bounces,
     const size_t                max_specular_bounces,
@@ -130,7 +130,7 @@ inline PathTracer<PathVisitor, Adjoint>::PathTracer(
     const double                near_start)
   : m_path_visitor(path_visitor)
   , m_rr_min_path_length(rr_min_path_length)
-  , m_max_path_length(max_path_length)
+  , m_max_bounces(max_bounces)
   , m_max_diffuse_bounces(max_diffuse_bounces)
   , m_max_glossy_bounces(max_glossy_bounces)
   , m_max_specular_bounces(max_specular_bounces)
@@ -447,7 +447,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         }
 
         // Honor the global bounce limit.
-        if (vertex.m_path_length > m_max_path_length)
+        const size_t bounces = vertex.m_path_length - 1;
+        if (bounces == m_max_bounces)
             break;
 
         // Terminate the path if no above-surface scattering possible.

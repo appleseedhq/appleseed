@@ -166,7 +166,7 @@ namespace
             PathTracer<PathVisitor, false> path_tracer(     // false = not adjoint
                 path_visitor,
                 m_params.m_path_tracing_rr_min_path_length,
-                m_params.m_path_tracing_max_path_length,
+                m_params.m_path_tracing_max_bounces,
                 ~0, // max diffuse bounces
                 ~0, // max glossy bounces
                 ~0, // max specular bounces
@@ -699,12 +699,13 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
                             .insert("help", "Do not estimate direct lighting"))));
 
     metadata.dictionaries().insert(
-        "photon_tracing_max_path_length",
+        "photon_tracing_max_bounces",
         Dictionary()
             .insert("type", "int")
             .insert("default", "8")
             .insert("unlimited", "true")
-            .insert("label", "Max Photon Path Length")
+            .insert("min", "0")
+            .insert("label", "Max Photon Bounces")
             .insert("help", "Maximum number of photon bounces"));
 
     metadata.dictionaries().insert(
@@ -715,12 +716,13 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
             .insert("help", "Consider pruning low contribution photons starting with this bounce"));
 
     metadata.dictionaries().insert(
-        "path_tracing_max_path_length",
+        "path_tracing_max_bounces",
         Dictionary()
             .insert("type", "int")
             .insert("default", "8")
             .insert("unlimited", "true")
-            .insert("label", "Max Path Length")
+            .insert("min", "0")
+            .insert("label", "Max Bounces")
             .insert("help", "Maximum number of path bounces"));
 
     metadata.dictionaries().insert(

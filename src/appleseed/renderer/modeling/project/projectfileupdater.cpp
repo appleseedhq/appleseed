@@ -1452,6 +1452,69 @@ namespace
                 params.dictionaries().remove("drt");
         }
     };
+
+    //
+    // Update from revision 17 to revision 18.
+    //
+
+    class UpdateFromRevision_17
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_17(Project& project)
+          : Updater(project, 17)
+        {
+        }
+
+        virtual void update() APPLESEED_OVERRIDE
+        {
+            for (each<ConfigurationContainer> i = m_project.configurations(); i; ++i)
+                update(*i);
+        }
+
+      private:
+        static void update(Configuration& configuration)
+        {
+            ParamArray& params = configuration.get_parameters();
+
+            if (params.dictionaries().exist("pt"))
+            {
+                Dictionary& pt_params = params.dictionary("pt");
+                convert_max_path_length_to_max_bounces(pt_params, "max_path_length", "max_bounces");
+            }
+
+            if (params.dictionaries().exist("sppm"))
+            {
+                Dictionary& sppm_params = params.dictionary("sppm");
+                convert_max_path_length_to_max_bounces(sppm_params, "photon_tracing_max_path_length", "photon_tracing_max_bounces");
+                convert_max_path_length_to_max_bounces(sppm_params, "path_tracing_max_path_length", "path_tracing_max_bounces");
+            }
+
+            if (params.dictionaries().exist("lighttracing"))
+            {
+                Dictionary& lt_params = params.dictionary("lighttracing");
+                convert_max_path_length_to_max_bounces(lt_params, "max_path_length", "max_bounces");
+            }
+        }
+
+        static void convert_max_path_length_to_max_bounces(
+            Dictionary& params,
+            const char* max_path_length_param_name,
+            const char* max_bounces_param_name)
+        {
+            if (params.strings().exist(max_path_length_param_name))
+            {
+                const size_t max_path_length = params.get<size_t>(max_path_length_param_name);
+                const int max_bounces =
+                    max_path_length == 0
+                        ? -1
+                        : static_cast<int>(max_path_length - 1);
+
+                params.strings().remove(max_path_length_param_name);
+                params.insert(max_bounces_param_name, max_bounces);
+            }
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(
@@ -1501,6 +1564,7 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(14);
       CASE_UPDATE_FROM_REVISION(15);
       CASE_UPDATE_FROM_REVISION(16);
+      CASE_UPDATE_FROM_REVISION(17);
 
       case ProjectFormatRevision:
         // Project is up-to-date.

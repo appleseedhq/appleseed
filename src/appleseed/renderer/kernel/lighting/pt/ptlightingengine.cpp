@@ -97,7 +97,7 @@ namespace
             const bool      m_enable_ibl;                   // is image-based lighting enabled?
             const bool      m_enable_caustics;              // are caustics enabled?
 
-            const size_t    m_max_path_length;              // maximum path length, ~0 for unlimited
+            const size_t    m_max_bounces;                  // maximum number of bounces, ~0 for unlimited
             const size_t    m_max_diffuse_bounces;          // maximum number of diffuse bounces, ~0 for unlimited
             const size_t    m_max_glossy_bounces;           // maximum number of glossy bounces, ~0 for unlimited
             const size_t    m_max_specular_bounces;         // maximum number of specular bounces, ~0 for unlimited
@@ -119,7 +119,7 @@ namespace
               : m_enable_dl(params.get_optional<bool>("enable_dl", true))
               , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
               , m_enable_caustics(params.get_optional<bool>("enable_caustics", false))
-              , m_max_path_length(fixup_path_length(params.get_optional<size_t>("max_path_length", 0)))
+              , m_max_bounces(fixup_bounces(params.get_optional<int>("max_bounces", -1)))
               , m_max_diffuse_bounces(fixup_bounces(params.get_optional<int>("max_diffuse_bounces", -1)))
               , m_max_glossy_bounces(fixup_bounces(params.get_optional<int>("max_glossy_bounces", -1)))
               , m_max_specular_bounces(fixup_bounces(params.get_optional<int>("max_specular_bounces", -1)))
@@ -144,14 +144,14 @@ namespace
                         : 0.0f;
             }
 
+            static size_t fixup_bounces(const int x)
+            {
+                return x == -1 ? ~0 : x;
+            }
+
             static size_t fixup_path_length(const size_t x)
             {
                 return x == 0 ? ~0 : x;
-            }
-
-            static size_t fixup_bounces(const int x)
-            {
-                return x == -1 ? ~0 : x + 1;
             }
 
             void print() const
@@ -161,10 +161,10 @@ namespace
                     "  direct lighting               %s\n"
                     "  ibl                           %s\n"
                     "  caustics                      %s\n"
-                    "  max path length               %s\n"
-                    "  max specular bounces          %s\n"
-                    "  max glossy bounces            %s\n"
+                    "  max bounces                   %s\n"
                     "  max diffuse bounces           %s\n"
+                    "  max glossy bounces            %s\n"
+                    "  max specular bounces          %s\n"
                     "  rr min path length            %s\n"
                     "  next event estimation         %s\n"
                     "  dl light samples              %s\n"
@@ -174,11 +174,11 @@ namespace
                     m_enable_dl ? "on" : "off",
                     m_enable_ibl ? "on" : "off",
                     m_enable_caustics ? "on" : "off",
-                    m_max_path_length == size_t(~0) ? "infinite" : pretty_uint(m_max_path_length).c_str(),
-                    m_max_specular_bounces == size_t(~0) ? "infinite" : pretty_uint(m_max_specular_bounces).c_str(),
-                    m_max_glossy_bounces == size_t(~0) ? "infinite" : pretty_uint(m_max_glossy_bounces).c_str(),
-                    m_max_diffuse_bounces == size_t(~0) ? "infinite" : pretty_uint(m_max_diffuse_bounces).c_str(),
-                    m_rr_min_path_length == size_t(~0) ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
+                    m_max_bounces == ~0 ? "infinite" : pretty_uint(m_max_bounces).c_str(),
+                    m_max_diffuse_bounces == ~0 ? "infinite" : pretty_uint(m_max_diffuse_bounces).c_str(),
+                    m_max_glossy_bounces == ~0 ? "infinite" : pretty_uint(m_max_glossy_bounces).c_str(),
+                    m_max_specular_bounces == ~0 ? "infinite" : pretty_uint(m_max_specular_bounces).c_str(),
+                    m_rr_min_path_length == ~0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
                     m_next_event_estimation ? "on" : "off",
                     pretty_scalar(m_dl_light_sample_count).c_str(),
                     pretty_scalar(m_dl_low_light_threshold, 3).c_str(),
@@ -244,8 +244,10 @@ namespace
             PathTracer<PathVisitor, false> path_tracer(     // false = not adjoint
                 path_visitor,
                 m_params.m_rr_min_path_length,
-                m_params.m_max_path_length,
-                m_params.m_max_diffuse_bounces,
+                m_params.m_max_bounces == ~0 ? ~0 : m_params.m_max_bounces + 1,
+                m_params.m_max_diffuse_bounces == ~0 ? ~0 : m_params.m_max_diffuse_bounces + 1,
+                //m_params.m_max_glossy_bounces == 0 ? ~0 : m_params.m_max_glossy_bounces + 1,
+                //m_params.m_max_specular_bounces == 0 ? ~0 : m_params.m_max_specular_bounces + 1,
                 m_params.m_max_glossy_bounces,
                 m_params.m_max_specular_bounces,
                 shading_context.get_max_iterations());
@@ -745,24 +747,24 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("help", "Enable caustics"));
 
     metadata.dictionaries().insert(
-        "max_path_length",
-        Dictionary()
-            .insert("type", "int")
-            .insert("default", "8")
-            .insert("unlimited", "true")
-            .insert("min", "1")
-            .insert("label", "Max Path Length")
-            .insert("help", "Maximum number of path bounces"));
-
-    metadata.dictionaries().insert(
-        "max_specular_bounces",
+        "max_bounces",
         Dictionary()
             .insert("type", "int")
             .insert("default", "8")
             .insert("unlimited", "true")
             .insert("min", "0")
-            .insert("label", "Max Specular Bounces")
-            .insert("help", "Maximum number of specular bounces"));
+            .insert("label", "Max Bounces")
+            .insert("help", "Maximum number of bounces"));
+
+    metadata.dictionaries().insert(
+        "max_diffuse_bounces",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "8")
+            .insert("unlimited", "true")
+            .insert("min", "0")
+            .insert("label", "Max Diffuse Bounces")
+            .insert("help", "Maximum number of diffuse bounces"));
 
     metadata.dictionaries().insert(
         "max_glossy_bounces",
@@ -775,14 +777,14 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("help", "Maximum number of glossy bounces"));
 
     metadata.dictionaries().insert(
-        "max_diffuse_bounces",
+        "max_specular_bounces",
         Dictionary()
             .insert("type", "int")
             .insert("default", "8")
             .insert("unlimited", "true")
             .insert("min", "0")
-            .insert("label", "Max Diffuse Bounces")
-            .insert("help", "Maximum number of diffuse bounces"));
+            .insert("label", "Max Specular Bounces")
+            .insert("help", "Maximum number of specular bounces"));
 
     metadata.dictionaries().insert(
         "rr_min_path_length",
