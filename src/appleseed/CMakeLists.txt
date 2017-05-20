@@ -1358,6 +1358,8 @@ set (renderer_modeling_bssrdf_sources
     renderer/modeling/bssrdf/gaussianbssrdf.cpp
     renderer/modeling/bssrdf/gaussianbssrdf.h
     renderer/modeling/bssrdf/ibssrdffactory.h
+    renderer/modeling/bssrdf/normalizeddiffusionbssrdf.cpp
+    renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h
     renderer/modeling/bssrdf/oslbssrdf.cpp
     renderer/modeling/bssrdf/oslbssrdf.h
     renderer/modeling/bssrdf/separablebssrdf.cpp
@@ -1367,12 +1369,6 @@ set (renderer_modeling_bssrdf_sources
     renderer/modeling/bssrdf/standarddipolebssrdf.cpp
     renderer/modeling/bssrdf/standarddipolebssrdf.h
 )
-if (WITH_NORMALIZED_DIFFUSION_BSSRDF)
-    list (APPEND renderer_modeling_bssrdf_sources
-        renderer/modeling/bssrdf/normalizeddiffusionbssrdf.cpp
-        renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h
-    )
-endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_bssrdf_sources}
 )

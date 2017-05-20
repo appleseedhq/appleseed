@@ -38,9 +38,7 @@
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #include "renderer/modeling/bssrdf/gaussianbssrdf.h"
-#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
-#endif
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
 
 // appleseed.foundation headers.
@@ -89,12 +87,10 @@ namespace
                     SubsurfaceGaussianID,
                     "gaussian");
 
-#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
             m_normalized =
                 create_and_register_bssrdf<NormalizedDiffusionBSSRDFFactory>(
                     SubsurfaceNormalizedDiffusionID,
                     "normalized_diffusion");
-#endif
 
             m_std_dipole =
                 create_and_register_bssrdf<StandardDipoleBSSRDFFactory>(
@@ -249,9 +245,7 @@ namespace
         auto_release_ptr<BSSRDF>    m_better_dipole;
         auto_release_ptr<BSSRDF>    m_dir_dipole;
         auto_release_ptr<BSSRDF>    m_gaussian;
-#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
         auto_release_ptr<BSSRDF>    m_normalized;
-#endif
         auto_release_ptr<BSSRDF>    m_std_dipole;
 
         BSSRDF*                     m_all_bssrdfs[NumClosuresIDs];
