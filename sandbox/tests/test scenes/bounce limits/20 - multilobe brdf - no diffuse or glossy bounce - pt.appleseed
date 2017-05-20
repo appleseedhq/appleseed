@@ -87,10 +87,10 @@
         <frame name="beauty">
             <parameter name="camera" value="camera" />
             <parameter name="clamping" value="false" />
-            <parameter name="color_space" value="srgb" />
+            <parameter name="color_space" value="linear_rgb" />
             <parameter name="filter" value="box" />
             <parameter name="filter_size" value="0.5" />
-            <parameter name="gamma_correction" value="1.0" />
+            <parameter name="gamma_correction" value="4.0" />
             <parameter name="pixel_format" value="half" />
             <parameter name="premultiplied_alpha" value="true" />
             <parameter name="resolution" value="512 512" />
