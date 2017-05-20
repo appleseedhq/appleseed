@@ -32,6 +32,7 @@
 #define MAYA_LATTICE_SIZE   20
 
 #include "appleseed/fractal/as_noise_helpers.h"
+#include "appleseed/fractal/as_noise_tables.h"
 #include "appleseed/math/as_math_complex.h"
 #include "appleseed/math/as_math_helpers.h"
 
@@ -903,6 +904,108 @@ float mandelbrot_exterior_coloring(
     mapping = clamp(mapping, 0, 1);
 
     return mapping + binary_decomposition;
+}
+
+float recurrence(
+    float size,
+    point sample_center,
+    float shaker,
+    float melt)
+{
+    float tex_random_table[4096] = { TX_RANTABLE };
+    float tex_noise_offset[12] = { NOISE_TABLE_OFFSET };
+
+    float randomTable(int x, int y, int z)
+    {
+        return tex_random_table[
+            ((((x) ^ ((y) >> 4) ^ ((z) >> 8)) & 0xff) ^
+            ((((y) ^ ((z) >> 4) ^ ((x) >> 8)) & 0xff) << 4) ^
+            ((((z) ^ ((x) >> 4) ^ ((y) >> 8)) & 0xff) << 8) & 0xfff)];
+    }
+    
+    int nb, nb1, gainin;
+    float tmp_size = size;
+
+    if (tmp_size < melt * 2)
+    {
+        tmp_size = melt * 2;
+    }
+    if (tmp_size < EPS)
+    {
+        tmp_size = 1.0;
+    }
+
+    float delta = size;
+
+    if (tmp_size < 0.00390625)
+    {
+        nb = 10;
+    }
+    else
+    {
+        nb = 1;
+
+        for (int i = 0; i < 10; ++i)
+        {
+            if (tmp_size > 1)
+            {
+                break;
+            }
+            tmp_size *= 2;
+            nb++;
+        }
+    }
+
+    nb1 = nb - 1, gainin = 1;
+
+    float out_recurrence = 0;    
+
+    for (int i = 0; i < nb; i++, gainin <<= 1)
+    {
+        float nx = sample_center[0] * gainin + tex_noise_offset[i];
+        float ny = sample_center[1] * gainin + tex_noise_offset[i + 1];
+        float nz = sample_center[2] * gainin + tex_noise_offset[i + 2];
+
+        int xi = (int) floor(nx);
+        int yi = (int) floor(ny);
+        int zi = (int) floor(nz);
+
+        float xf = nx - xi;
+        float yf = ny - yi;
+        float zf = nz - zi;
+
+        float h0 = randomTable(xi, yi, zi);
+        float h1 = randomTable(xi + 1, yi, zi);
+        float h2 = randomTable(xi, yi, zi + 1);
+        float h3 = randomTable(xi + 1, yi, zi + 1);
+        float h4 = randomTable(xi, yi + 1, zi);
+        float h5 = randomTable(xi + 1, yi + 1, zi);
+        float h6 = randomTable(xi, yi + 1, zi + 1);
+        float h7 = randomTable(xi + 1, yi + 1, zi + 1);
+
+        float xzf = xf * zf;
+
+        float tmp1 = h0 + xf * (h1 - h0) + zf * (h2 - h0) +
+                    xzf * (h0 + h3 - h1 - h2);
+
+        float tmp2 = h4 + xf * (h5 - h4) + zf * (h6 - h4) +
+                    xzf * (h4 + h7 - h5 - h6);
+
+        if (nb == 1)
+        {
+            out_recurrence = (tmp1 + yf * (tmp2 - tmp1)) * shaker;
+        }
+        else if (i == nb1)
+        {
+            out_recurrence += (tmp1 + yf * (tmp2 - tmp1)) *
+                2.0 * (2.0 / gainin - delta);
+        }
+        else
+        {
+            out_recurrence += (tmp1 + yf * (tmp2 - tmp1)) / gainin;
+        }
+    }
+    return out_recurrence;
 }
 
 #endif // !AS_MAYA_FRACTAL_HELPERS_H
