@@ -587,30 +587,33 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     cos_on *= rcp_sample_distance;
     incoming *= rcp_sample_distance;
     
-    // Compute the approximate contribution.
-    const double approximate_contribution = 
-        cos_on * 
-        rcp_sample_square_distance * 
-        edf->get_max_contribution() * 
-        sample.m_triangle->m_area;
-
-    // Probability of taking the light contribution into account.
+    // Probabilistically skip light samples with low maximum contribution.
     float contribution_prob = 1.0f;
-
-    // Use Russian Roulette to skip this sample if the approximate contribution is low.
-    if (approximate_contribution < m_low_light_threshold)
+    if (m_low_light_threshold > 0.0f)
     {
-        // Generate a uniform sample in [0,1).
-        sampling_context.split_in_place(1, 1);
-        const float s = sampling_context.next2<float>();
+        // Compute the approximate maximum contribution of this light sample.
+        const float max_contribution =
+            static_cast<float>(
+                cos_on *
+                rcp_sample_square_distance *
+                edf->get_max_contribution() *
+                sample.m_triangle->m_area);
 
-        // Compute the probability of taking the light contribution into account.
-        contribution_prob = approximate_contribution / m_low_light_threshold;
+        // Use Russian Roulette to skip this sample if its maximum contribution is low.
+        if (max_contribution < m_low_light_threshold)
+        {
+            // Generate a uniform sample in [0,1).
+            sampling_context.split_in_place(1, 1);
+            const float s = sampling_context.next2<float>();
 
-        // Russian Roulette to skip low contribution.
-        if (!foundation::pass_rr(contribution_prob, s))
-            return;
-    }    
+            // Compute the probability of taking the sample's contribution into account.
+            contribution_prob = max_contribution / m_low_light_threshold;
+
+            // Russian Roulette.
+            if (!pass_rr(contribution_prob, s))
+                return;
+        }
+    }
 
     // Compute the transmission factor between the light sample and the shading point.
     const float transmission =
