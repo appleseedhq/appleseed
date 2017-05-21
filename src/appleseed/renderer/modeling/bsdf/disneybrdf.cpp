@@ -401,8 +401,14 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
+            float weights[NumComponents];
+            compute_component_weights(values, weights);
+
             float cdf[NumComponents];
-            compute_component_cdf(values, cdf);
+            cdf[DiffuseComponent]   = weights[DiffuseComponent];
+            cdf[SheenComponent]     = weights[SheenComponent]     + cdf[DiffuseComponent];
+            cdf[SpecularComponent]  = weights[SpecularComponent]  + cdf[SheenComponent];
+            cdf[CleatcoatComponent] = weights[CleatcoatComponent] + cdf[SpecularComponent];
 
             // Choose which of the components to sample.
             sampling_context.split_in_place(1, 1);
@@ -414,6 +420,7 @@ namespace
                     sampling_context,
                     values,
                     sample);
+                sample.m_probability *= weights[DiffuseComponent];
             }
             else if (s < cdf[SheenComponent])
             {
@@ -421,43 +428,43 @@ namespace
                     sampling_context,
                     values,
                     sample);
+                sample.m_probability *= weights[SheenComponent];
+            }
+            else if (s < cdf[SpecularComponent])
+            {
+                float alpha_x, alpha_y;
+                microfacet_alpha_from_roughness(
+                    values->m_roughness,
+                    values->m_anisotropic,
+                    alpha_x,
+                    alpha_y);
+
+                const GGXMDF ggx_mdf;
+                MicrofacetBRDFHelper::sample(
+                    sampling_context,
+                    ggx_mdf,
+                    alpha_x,
+                    alpha_y,
+                    0.0f,
+                    DisneySpecularFresnelFun(*values),
+                    cos_on,
+                    sample);
+                sample.m_probability *= weights[SpecularComponent];
             }
             else
             {
-                if (s < cdf[SpecularComponent])
-                {
-                    float alpha_x, alpha_y;
-                    microfacet_alpha_from_roughness(
-                        values->m_roughness,
-                        values->m_anisotropic,
-                        alpha_x,
-                        alpha_y);
-
-                    const GGXMDF ggx_mdf;
-                    MicrofacetBRDFHelper::sample(
-                        sampling_context,
-                        ggx_mdf,
-                        alpha_x,
-                        alpha_y,
-                        0.0f,
-                        DisneySpecularFresnelFun(*values),
-                        cos_on,
-                        sample);
-                }
-                else
-                {
-                    const float alpha = clearcoat_roughness(values);
-                    const GTR1MDF gtr1_mdf;
-                    MicrofacetBRDFHelper::sample(
-                        sampling_context,
-                        gtr1_mdf,
-                        alpha,
-                        alpha,
-                        0.0f,
-                        DisneyClearcoatFresnelFun(*values),
-                        cos_on,
-                        sample);
-                }
+                const float alpha = clearcoat_roughness(values);
+                const GTR1MDF gtr1_mdf;
+                MicrofacetBRDFHelper::sample(
+                    sampling_context,
+                    gtr1_mdf,
+                    alpha,
+                    alpha,
+                    0.0f,
+                    DisneyClearcoatFresnelFun(*values),
+                    cos_on,
+                    sample);
+                sample.m_probability *= weights[CleatcoatComponent];
             }
         }
 
@@ -669,16 +676,6 @@ namespace
             weights[SheenComponent] *= total_weight_rcp;
             weights[SpecularComponent] *= total_weight_rcp;
             weights[CleatcoatComponent] *= total_weight_rcp;
-        }
-
-        static void compute_component_cdf(
-            const InputValues*      values,
-            float                   cdf[NumComponents])
-        {
-            compute_component_weights(values, cdf);
-            cdf[SheenComponent] += cdf[DiffuseComponent];
-            cdf[SpecularComponent] += cdf[SheenComponent];
-            cdf[CleatcoatComponent] += cdf[SpecularComponent];
         }
 
         static float clearcoat_roughness(const InputValues* values)
