@@ -186,7 +186,7 @@ namespace
             assert(m.y > 0.0f);
 
             float layer_weight;
-            fresnel_term(*values, wo, m, sample.m_value, layer_weight);
+            fresnel_term(*values, modes, wo, m, sample.m_value, layer_weight);
 
             // Choose between layer and substrate.
             if (s[3] < layer_weight)
@@ -247,7 +247,7 @@ namespace
 
             float layer_weight;
             Spectrum f_value;
-            fresnel_term(*values, wo, m, f_value, layer_weight);
+            fresnel_term(*values, modes, wo, m, f_value, layer_weight);
 
             if (ScatteringMode::has_glossy(modes) && (wi.y * wo.y >= 0.0f))
             {
@@ -294,7 +294,7 @@ namespace
 
             float layer_weight;
             Spectrum value;
-            fresnel_term(*values, wo, m, value, layer_weight);
+            fresnel_term(*values, modes, wo, m, value, layer_weight);
 
             float probability = 0.0f;
 
@@ -368,11 +368,18 @@ namespace
 
         static void fresnel_term(
             const InputValues&      values,
+            const int               modes,
             Vector3f                wo,
             const Vector3f&         m,
             Spectrum&               value,
             float&                  weight)
         {
+            if (!ScatteringMode::has_glossy(modes))
+            {
+                weight = 0.0f;
+                return;
+            }
+
             if (wo.y < 0.0f)
                 wo = -wo;
 

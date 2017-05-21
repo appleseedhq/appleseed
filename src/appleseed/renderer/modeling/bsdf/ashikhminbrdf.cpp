@@ -209,7 +209,7 @@ namespace
             const float cos_oh = min(abs(dot(sample.m_outgoing.get_value(), h)), 1.0f);
             const float cos_hn = dot(h, sample.m_shading_basis.get_normal());
 
-            float pdf_diffuse, pdf_glossy;
+            float pdf_diffuse = 0.0f, pdf_glossy = 0.0f;
             sample.m_value.set(0.0f);
 
             if (ScatteringMode::has_diffuse(modes))
@@ -284,7 +284,7 @@ namespace
             const float cos_hu = dot(h, shading_basis.get_tangent_u());
             const float cos_hv = dot(h, shading_basis.get_tangent_v());
 
-            float pdf_diffuse, pdf_glossy;
+            float pdf_diffuse = 0.0f, pdf_glossy = 0.0f;
             value.set(0.0f);
 
             if (ScatteringMode::has_diffuse(modes))
@@ -358,7 +358,7 @@ namespace
             const float cos_hu = dot(h, shading_basis.get_tangent_u());
             const float cos_hv = dot(h, shading_basis.get_tangent_v());
 
-            float pdf_diffuse, pdf_glossy;
+            float pdf_diffuse = 0.0f, pdf_glossy = 0.0f;
 
             if (ScatteringMode::has_diffuse(modes))
             {
