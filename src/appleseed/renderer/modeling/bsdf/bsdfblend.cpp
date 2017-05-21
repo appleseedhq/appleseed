@@ -135,6 +135,7 @@ namespace
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
+            const int               modes,
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
             assert(m_bsdf[0] && m_bsdf[1]);
@@ -151,7 +152,8 @@ namespace
                 sampling_context,
                 values->m_child_inputs[bsdf_index],
                 adjoint,
-                false,                      // do not multiply by |cos(incoming, normal)|
+                false,              // do not multiply by |cos(incoming, normal)|
+                modes,
                 sample);
         }
 

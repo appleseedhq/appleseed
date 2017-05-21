@@ -119,7 +119,7 @@ namespace
             const size_t                m_max_iterations;
             const bool                  m_report_self_intersections;
 
-            const size_t                m_max_path_length;              // maximum path length, ~0 for unlimited
+            const size_t                m_max_bounces;                  // maximum number of bounces, ~0 for unlimited
             const size_t                m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
 
             explicit Parameters(const ParamArray& params)
@@ -129,12 +129,17 @@ namespace
               , m_transparency_threshold(params.get_optional<float>("transparency_threshold", 0.001f))
               , m_max_iterations(params.get_optional<size_t>("max_iterations", 1000))
               , m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
-              , m_max_path_length(nz(params.get_optional<size_t>("max_path_length", 0)))
-              , m_rr_min_path_length(nz(params.get_optional<size_t>("rr_min_path_length", 3)))
+              , m_max_bounces(fixup_bounces(params.get_optional<int>("max_bounces", -1)))
+              , m_rr_min_path_length(fixup_path_length(params.get_optional<size_t>("rr_min_path_length", 3)))
             {
             }
 
-            static size_t nz(const size_t x)
+            static size_t fixup_bounces(const int x)
+            {
+                return x == -1 ? ~0 : x;
+            }
+
+            static size_t fixup_path_length(const size_t x)
             {
                 return x == 0 ? ~0 : x;
             }
@@ -145,12 +150,12 @@ namespace
                     "light tracing settings:\n"
                     "  ibl                           %s\n"
                     "  caustics                      %s\n"
-                    "  max path length               %s\n"
+                    "  max bounces                   %s\n"
                     "  rr min path length            %s",
                     m_enable_ibl ? "on" : "off",
                     m_enable_caustics ? "on" : "off",
-                    m_max_path_length == size_t(~0) ? "infinite" : pretty_uint(m_max_path_length).c_str(),
-                    m_rr_min_path_length == size_t(~0) ? "infinite" : pretty_uint(m_rr_min_path_length).c_str());
+                    m_max_bounces == ~0 ? "infinite" : pretty_uint(m_max_bounces).c_str(),
+                    m_rr_min_path_length == ~0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str());
             }
         };
 
@@ -378,7 +383,12 @@ namespace
                 emit_sample(sample_position, radiance);
             }
 
-            void visit_vertex(const PathVertex& vertex)
+            void on_miss(const PathVertex& vertex)
+            {
+                // The particle escapes.
+            }
+
+            void on_hit(const PathVertex& vertex)
             {
                 // Don't process this vertex if there is no BSDF.
                 if (vertex.m_bsdf == 0)
@@ -450,9 +460,8 @@ namespace
                 emit_sample(sample_position, radiance);
             }
 
-            void visit_environment(const PathVertex& vertex)
+            void on_scatter(const PathVertex& vertex)
             {
-                // The particle escapes.
             }
 
             void emit_sample(
@@ -644,7 +653,10 @@ namespace
             PathTracerType path_tracer(
                 path_visitor,
                 m_params.m_rr_min_path_length,
-                m_params.m_max_path_length,
+                m_params.m_max_bounces,
+                ~0, // max diffuse bounces
+                ~0, // max glossy bounces
+                ~0, // max specular bounces
                 m_params.m_max_iterations,
                 material_data.m_edf->get_light_near_start());   // don't illuminate points closer than the light near start value
 
@@ -721,7 +733,10 @@ namespace
             PathTracerType path_tracer(
                 path_visitor,
                 m_params.m_rr_min_path_length,
-                m_params.m_max_path_length,
+                m_params.m_max_bounces,
+                ~0, // max diffuse bounces
+                ~0, // max glossy bounces
+                ~0, // max specular bounces
                 m_params.m_max_iterations);
 
             // Handle the light vertex separately.
@@ -808,7 +823,10 @@ namespace
             PathTracerType path_tracer(
                 path_visitor,
                 m_params.m_rr_min_path_length,
-                m_params.m_max_path_length,
+                m_params.m_max_bounces,
+                ~0, // max diffuse bounces
+                ~0, // max glossy bounces
+                ~0, // max specular bounces
                 m_params.m_max_iterations);
 
             // Trace the light path.

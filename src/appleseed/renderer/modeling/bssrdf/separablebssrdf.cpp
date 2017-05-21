@@ -391,6 +391,7 @@ bool SeparableBSSRDF::do_sample(
         bssrdf_sample.m_brdf_data,
         false,
         true,
+        ScatteringMode::All,
         bsdf_sample);
 
     // Evaluate the BSSRDF.

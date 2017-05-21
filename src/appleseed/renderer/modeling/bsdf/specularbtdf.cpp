@@ -113,8 +113,12 @@ namespace
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
+            const int               modes,
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
+            if (!ScatteringMode::has_specular(modes))
+                return;
+
             const InputValues* values = static_cast<const InputValues*>(data);
 
             const Vector3f& shading_normal = sample.m_shading_basis.get_normal();

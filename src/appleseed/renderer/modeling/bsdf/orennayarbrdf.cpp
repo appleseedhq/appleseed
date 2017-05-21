@@ -99,8 +99,12 @@ namespace
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
+            const int           modes,
             BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
+            if (!ScatteringMode::has_diffuse(modes))
+                return;
+
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);
             const Vector2f s = sampling_context.next2<Vector2f>();

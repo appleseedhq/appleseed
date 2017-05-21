@@ -618,7 +618,6 @@ namespace
         {
             QComboBox* combobox = create_combobox("engine");
             combobox->setToolTip(m_params_metadata.get_path("lighting_engine.help"));
-            combobox->addItem("Distribution Ray Tracer", "drt");
             combobox->addItem("Unidirectional Path Tracer", "pt");
             combobox->addItem("Stochastic Progressive Photon Mapping", "sppm");
             construct(config, combobox);
@@ -633,7 +632,6 @@ namespace
           : LightingPanel(config, parent)
         {
             QComboBox* combobox = create_combobox("engine");
-            combobox->addItem("Distribution Ray Tracer", "drt");
             combobox->addItem("Unidirectional Path Tracer", "pt");
             construct(config, combobox);
         }
@@ -697,24 +695,24 @@ namespace
             const string widget_base_key = prefix + ".bounces.";
 
             QSpinBox* max_bounces = create_integer_input(widget_base_key + "max_bounces", 0, 10000, 1);
-            QSpinBox* max_specular_bounces = create_integer_input(widget_base_key + "max_specular_bounces", 0, 10000, 1);
-            QSpinBox* max_glossy_bounces = create_integer_input(widget_base_key + "max_glossy_bounces", 0, 10000, 1);
             QSpinBox* max_diffuse_bounces = create_integer_input(widget_base_key + "max_diffuse_bounces", 0, 10000, 1);
+            QSpinBox* max_glossy_bounces = create_integer_input(widget_base_key + "max_glossy_bounces", 0, 10000, 1);
+            QSpinBox* max_specular_bounces = create_integer_input(widget_base_key + "max_specular_bounces", 0, 10000, 1);
             max_bounces->setToolTip(m_params_metadata.get_path((config_param_path + ".help").c_str()));
 
             QCheckBox* unlimited_bounces = create_checkbox(widget_base_key + "unlimited_bounces", "Unlimited");
-            QCheckBox* unlimited_specular_bounces = create_checkbox(widget_base_key + "unlimited_specular_bounces", "Unlimited");
-            QCheckBox* unlimited_glossy_bounces = create_checkbox(widget_base_key + "unlimited_glossy_bounces", "Unlimited");
             QCheckBox* unlimited_diffuse_bounces = create_checkbox(widget_base_key + "unlimited_diffuse_bounces", "Unlimited");
+            QCheckBox* unlimited_glossy_bounces = create_checkbox(widget_base_key + "unlimited_glossy_bounces", "Unlimited");
+            QCheckBox* unlimited_specular_bounces = create_checkbox(widget_base_key + "unlimited_specular_bounces", "Unlimited");
 
             layout->addRow("Max Global Bounces:", create_horizontal_group(max_bounces, unlimited_bounces));
-            layout->addRow("Max Specular Bounces:", create_horizontal_group(max_specular_bounces, unlimited_specular_bounces));
-            layout->addRow("Max Glossy Bounces:", create_horizontal_group(max_glossy_bounces, unlimited_glossy_bounces));
             layout->addRow("Max Diffuse Bounces:", create_horizontal_group(max_diffuse_bounces, unlimited_diffuse_bounces));
+            layout->addRow("Max Glossy Bounces:", create_horizontal_group(max_glossy_bounces, unlimited_glossy_bounces));
+            layout->addRow("Max Specular Bounces:", create_horizontal_group(max_specular_bounces, unlimited_specular_bounces));
             connect(unlimited_bounces, SIGNAL(toggled(bool)), max_bounces, SLOT(setDisabled(bool)));
-            connect(unlimited_specular_bounces, SIGNAL(toggled(bool)), max_specular_bounces, SLOT(setDisabled(bool)));
-            connect(unlimited_glossy_bounces, SIGNAL(toggled(bool)), max_glossy_bounces, SLOT(setDisabled(bool)));
             connect(unlimited_diffuse_bounces, SIGNAL(toggled(bool)), max_diffuse_bounces, SLOT(setDisabled(bool)));
+            connect(unlimited_glossy_bounces, SIGNAL(toggled(bool)), max_glossy_bounces, SLOT(setDisabled(bool)));
+            connect(unlimited_specular_bounces, SIGNAL(toggled(bool)), max_specular_bounces, SLOT(setDisabled(bool)));
 
             QSpinBox* russian_roulette_start = create_integer_input(widget_base_key + "rr_start_bounce", 1, 10000, 1);
             russian_roulette_start->setToolTip(m_params_metadata.get_path("pt.rr_min_path_length.help"));
@@ -726,13 +724,12 @@ namespace
             const string&           widget_key_prefix,
             const string&           param_path)
         {
-            const size_t DefaultMaxBounces = 8;
+            const int DefaultMaxBounces = 8;
 
-            const size_t max_path_length =
-                get_config<size_t>(config, param_path, 0);
+            const int max_bounces = get_config<int>(config, param_path, -1);
 
-            set_widget(widget_key_prefix + ".bounces.unlimited_bounces", max_path_length == 0);
-            set_widget(widget_key_prefix + ".bounces.max_bounces", max_path_length == 0 ? DefaultMaxBounces : max_path_length - 1);
+            set_widget(widget_key_prefix + ".bounces.unlimited_bounces", max_bounces == -1);
+            set_widget(widget_key_prefix + ".bounces.max_bounces", max_bounces == -1 ? DefaultMaxBounces : max_bounces);
         }
 
         void save_bounce_settings(
@@ -740,12 +737,12 @@ namespace
             const string&           widget_key_prefix,
             const string&           param_path) const
         {
-            const size_t max_path_length =
+            const int max_bounces =
                 !get_widget<bool>(widget_key_prefix + ".bounces.unlimited_bounces")
-                    ? get_widget<size_t>(widget_key_prefix + ".bounces.max_bounces") + 1
-                    : 0;
+                    ? get_widget<int>(widget_key_prefix + ".bounces.max_bounces")
+                    : -1;
 
-            set_config(config, param_path, max_path_length);
+            set_config(config, param_path, max_bounces);
         }
 
         void load_separate_bounce_settings(
@@ -753,10 +750,10 @@ namespace
             const string&           widget_key_prefix,
             const string&           bounce_type)
         {
-            const size_t DefaultMaxBounces = 8;
+            const int DefaultMaxBounces = 8;
 
             const int max_bounces =
-                get_config<int>(config, construct_bounce_setting_param_path(bounce_type), -1);
+                get_config<int>(config, construct_bounce_param_path(bounce_type), -1);
 
             set_widget(widget_key_prefix + ".bounces.unlimited_" + bounce_type + "_bounces", max_bounces == -1);
             set_widget(widget_key_prefix + ".bounces.max_" + bounce_type + "_bounces", max_bounces == -1 ? DefaultMaxBounces : max_bounces);
@@ -772,107 +769,12 @@ namespace
                     ? get_widget<int>(widget_key_prefix + ".bounces.max_" + bounce_type + "_bounces")
                     : -1;
 
-            set_config(config, construct_bounce_setting_param_path(bounce_type), max_bounces);
+            set_config(config, construct_bounce_param_path(bounce_type), max_bounces);
         }
 
-        static string construct_bounce_setting_param_path(const string& bounce_type)
+        static string construct_bounce_param_path(const string& bounce_type)
         {
             return "pt.max_" + bounce_type + "_bounces";
-        }
-    };
-
-    //
-    // Distribution Ray Tracer panel.
-    //
-
-    class DistributionRayTracerPanel
-      : public LightingEnginePanel
-    {
-      public:
-        DistributionRayTracerPanel(const Configuration& config, QWidget* parent = 0)
-          : LightingEnginePanel("Distribution Ray Tracer", parent)
-        {
-            fold();
-
-            QVBoxLayout* layout = new QVBoxLayout();
-            container()->setLayout(layout);
-
-            QGroupBox* groupbox = new QGroupBox("Components");
-            layout->addWidget(groupbox);
-
-            QVBoxLayout* sublayout = new QVBoxLayout();
-            groupbox->setLayout(sublayout);
-
-            sublayout->addWidget(create_checkbox("lighting_components.ibl", "Image-Based Lighting"));
-
-            create_bounce_settings_group(layout, "drt", "drt.max_path_length");
-            create_drt_advanced_settings(layout);
-
-            create_direct_link("lighting_components.ibl",           "drt.enable_ibl");
-            create_direct_link("drt.bounces.rr_start_bounce",       "drt.rr_min_path_length");
-            create_direct_link("advanced.dl.light_samples",         "drt.dl_light_samples");
-            create_direct_link("advanced.dl.low_light_threshold",   "drt.dl_low_light_threshold");
-            create_direct_link("advanced.ibl.env_samples",          "drt.ibl_env_samples");
-
-            load_directly_linked_values(config);
-
-            load_bounce_settings(config, "drt", "drt.max_path_length");
-        }
-
-        virtual void save_config(Configuration& config) const APPLESEED_OVERRIDE
-        {
-            save_directly_linked_values(config);
-
-            save_bounce_settings(config, "drt", "drt.max_path_length");
-        }
-
-      private:
-        void create_drt_advanced_settings(QVBoxLayout* parent)
-        {
-            QGroupBox* groupbox = new QGroupBox("Advanced");
-            parent->addWidget(groupbox);
-
-            QVBoxLayout* layout = new QVBoxLayout();
-            groupbox->setLayout(layout);
-
-            create_drt_advanced_dl_settings(layout);
-            create_drt_advanced_ibl_settings(layout);
-        }
-
-        void create_drt_advanced_dl_settings(QVBoxLayout* parent)
-        {
-            QGroupBox* groupbox = new QGroupBox("Direct Lighting");
-            parent->addWidget(groupbox);
-
-            QVBoxLayout* layout = create_vertical_layout();
-            groupbox->setLayout(layout);
-
-            QFormLayout* sublayout = create_form_layout();
-            layout->addLayout(sublayout);
-
-            QDoubleSpinBox* light_samples = create_double_input("advanced.dl.light_samples", 0.0, 1000000.0, 3, 1.0);
-            light_samples->setToolTip(m_params_metadata.get_path("drt.dl_light_samples.help"));
-            sublayout->addRow("Light Samples:", light_samples);
-
-            QDoubleSpinBox* low_light_threshold = create_double_input("advanced.dl.low_light_threshold", 0.0, 1000.0, 3, 0.1);
-            low_light_threshold->setToolTip(m_params_metadata.get_path("drt.dl_low_light_threshold.help"));
-            sublayout->addRow("Low Light Threshold:", low_light_threshold);
-        }
-
-        void create_drt_advanced_ibl_settings(QVBoxLayout* parent)
-        {
-            QGroupBox* groupbox = new QGroupBox("Image-Based Lighting");
-            parent->addWidget(groupbox);
-
-            QVBoxLayout* layout = create_vertical_layout();
-            groupbox->setLayout(layout);
-
-            QHBoxLayout* sublayout = create_horizontal_layout();
-            layout->addLayout(sublayout);
-
-            QDoubleSpinBox* env_samples = create_double_input("advanced.ibl.env_samples", 0.0, 1000000.0, 3, 1.0);
-            env_samples->setToolTip(m_params_metadata.get_path("drt.ibl_env_samples.help"));
-            sublayout->addLayout(create_form_layout("Environment Samples:", env_samples));
         }
     };
 
@@ -902,7 +804,7 @@ namespace
             sublayout->addWidget(create_checkbox("lighting_components.ibl", "Image-Based Lighting"));
             sublayout->addWidget(create_checkbox("lighting_components.caustics", "Caustics"));
 
-            create_separate_bounce_settings_group(layout, "pt", "pt.max_path_length");
+            create_separate_bounce_settings_group(layout, "pt", "pt.max_bounces");
             create_pt_advanced_settings(layout);
 
             create_direct_link("lighting_components.dl",           "pt.enable_dl");
@@ -916,10 +818,10 @@ namespace
 
             load_directly_linked_values(config);
 
-            load_bounce_settings(config, "pt", "pt.max_path_length");
-            load_separate_bounce_settings(config, "pt", "specular");
-            load_separate_bounce_settings(config, "pt", "glossy");
+            load_bounce_settings(config, "pt", "pt.max_bounces");
             load_separate_bounce_settings(config, "pt", "diffuse");
+            load_separate_bounce_settings(config, "pt", "glossy");
+            load_separate_bounce_settings(config, "pt", "specular");
 
             set_widget("advanced.unlimited_ray_intensity", !config.get_parameters().exist_path("pt.max_ray_intensity"));
             set_widget("advanced.max_ray_intensity", get_config<double>(config, "pt.max_ray_intensity", 1.0));
@@ -929,10 +831,10 @@ namespace
         {
             save_directly_linked_values(config);
 
-            save_bounce_settings(config, "pt", "pt.max_path_length");
-            save_separate_bounce_settings(config, "pt", "specular");
-            save_separate_bounce_settings(config, "pt", "glossy");
+            save_bounce_settings(config, "pt", "pt.max_bounces");
             save_separate_bounce_settings(config, "pt", "diffuse");
+            save_separate_bounce_settings(config, "pt", "glossy");
+            save_separate_bounce_settings(config, "pt", "specular");
 
             if (get_widget<bool>("advanced.unlimited_ray_intensity"))
                 config.get_parameters().remove_path("pt.max_ray_intensity");
@@ -1039,8 +941,8 @@ namespace
 
             load_directly_linked_values(config);
 
-            load_bounce_settings(config, "photon_tracing", "sppm.photon_tracing_max_path_length");
-            load_bounce_settings(config, "radiance_estimation", "sppm.path_tracing_max_path_length");
+            load_bounce_settings(config, "photon_tracing", "sppm.photon_tracing_max_bounces");
+            load_bounce_settings(config, "radiance_estimation", "sppm.path_tracing_max_bounces");
 
             const string dl_mode = get_config<string>(config, "sppm.dl_mode", "rt");
             if (dl_mode == "rt")
@@ -1059,8 +961,8 @@ namespace
         {
             save_directly_linked_values(config);
 
-            save_bounce_settings(config, "photon_tracing", "sppm.photon_tracing_max_path_length");
-            save_bounce_settings(config, "radiance_estimation", "sppm.path_tracing_max_path_length");
+            save_bounce_settings(config, "photon_tracing", "sppm.photon_tracing_max_bounces");
+            save_bounce_settings(config, "radiance_estimation", "sppm.path_tracing_max_bounces");
 
             set_config(config, "sppm.dl_mode",
                 get_widget<bool>("lighting_components.dl.rt") ? "rt" :
@@ -1131,7 +1033,7 @@ namespace
             QFormLayout* sublayout = create_form_layout();
             layout->addLayout(sublayout);
 
-            create_bounce_settings(sublayout, "photon_tracing", "sppm.photon_tracing_max_path_length");
+            create_bounce_settings(sublayout, "photon_tracing", "sppm.photon_tracing_max_bounces");
             
             QSpinBox* light_photons = create_integer_input("photon_tracing.light_photons", 0, 1000000000, 100000);
             light_photons->setToolTip(m_params_metadata.get_path("sppm.light_photons_per_pass.help"));
@@ -1153,7 +1055,7 @@ namespace
             QFormLayout* sublayout = create_form_layout();
             layout->addLayout(sublayout);
 
-            create_bounce_settings(sublayout, "radiance_estimation", "sppm.path_tracing_max_path_length");
+            create_bounce_settings(sublayout, "radiance_estimation", "sppm.path_tracing_max_bounces");
 
             QDoubleSpinBox* initial_radius = create_double_input("radiance_estimation.initial_radius", 0.001, 100.0, 3, 0.1, "%");
             initial_radius->setToolTip(m_params_metadata.get_path("sppm.initial_radius.help"));
@@ -1372,7 +1274,6 @@ void RenderingSettingsWindow::create_panels(const Configuration& config)
         m_panels.push_back(new InteractiveConfigurationLightingPanel(config));
     else m_panels.push_back(new FinalConfigurationLightingPanel(config));
 
-    m_panels.push_back(new DistributionRayTracerPanel(config));
     m_panels.push_back(new UnidirectionalPathTracerPanel(config));
 
     if (!interactive)

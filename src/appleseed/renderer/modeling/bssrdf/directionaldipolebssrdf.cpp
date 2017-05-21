@@ -207,14 +207,11 @@ namespace
                         : 1.0f / square(3.0f * sigma_t);                                // backlit
                 const float dr = sqrt(r2 + zr2);                                        // distance to real ray source
 
-                // Compute position of virtual source.
+                // Compute position of and distance to virtual source.
                 const Vector3f xv = xi + (2.0f * A * de) * ni_star;                     // position of the virtual ray source
                 const Vector3f xoxv = xo - xv;
                 const float dot_xoxv_no = dot(xoxv, no);
-
-                // Compute distance to virtual source.
                 const float dv = norm(xoxv);                                            // distance to virtual ray source
-                assert(feq(dv, sqrt(r2 + square(2.0f * A * de)), 1.0e-2f));             // true because we computed xv using ni_star, not ni
 
                 // Evaluate the BSSRDF.
                 const float sdr = sd_prime(cphi_eta, ce_eta, D, sigma_tr, dot_wr_xoxi, dot_wr_no, dot_xoxi_no, dr);

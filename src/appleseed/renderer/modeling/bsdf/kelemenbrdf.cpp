@@ -175,7 +175,9 @@ namespace
                 !m_inputs.source("specular_reflectance_multiplier")->is_uniform() ||
                 !m_inputs.source("roughness")->is_uniform())
             {
-                RENDERER_LOG_ERROR("the \"specular_reflectance\", \"specular_reflectance_multiplier\" and \"roughness\" parameters of the Kelemen BRDF model must be uniform.");
+                RENDERER_LOG_ERROR(
+                    "the \"specular_reflectance\", \"specular_reflectance_multiplier\" "
+                    "and \"roughness\" parameters of the Kelemen BRDF model must be uniform.");
                 return false;
             }
 
@@ -221,8 +223,12 @@ namespace
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
+            const int               modes,
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
+            if (!ScatteringMode::has_diffuse_or_glossy(modes))
+                return;
+
             // Define aliases to match the notations in the paper.
             const Vector3f& V = sample.m_outgoing.get_value();
             const Vector3f& N = sample.m_shading_basis.get_normal();
@@ -244,11 +250,9 @@ namespace
             matte_albedo *= values->m_rm;
             matte_albedo *= values->m_rm_multiplier;
 
-            // Compute the probability of a specular bounce.
-            const float specular_prob = average_value(specular_albedo_V);
-
-            // Compute the probability of a matte bounce.
+            // Compute the probabilities of matte and specular bounces.
             const float matte_prob = average_value(matte_albedo);
+            const float specular_prob = 1.0f - matte_prob;
 
             // Generate a uniform sample in [0,1)^3.
             sampling_context.split_in_place(3, 1);
@@ -259,7 +263,8 @@ namespace
             float dot_LN, dot_HN, dot_HV;
 
             // Select a component and sample it to compute the incoming direction.
-            if (s[2] < matte_prob)
+            if (ScatteringMode::has_diffuse(modes) &&
+                (!ScatteringMode::has_glossy(modes) || s[2] < matte_prob))
             {
                 mode = ScatteringMode::Diffuse;
 
@@ -276,7 +281,7 @@ namespace
                 dot_HN = dot(H, N);
                 dot_HV = dot(H, V);
             }
-            else if (s[2] < matte_prob + specular_prob)
+            else
             {
                 mode = ScatteringMode::Glossy;
 
@@ -298,44 +303,47 @@ namespace
                 if (dot_LN < 0.0f)
                     return;
             }
-            else
-                return;
 
-            // Compute the specular albedo for the incoming angle.
-            Spectrum specular_albedo_L;
-            evaluate_a_spec(m_a_spec, dot_LN, specular_albedo_L);
+            float pdf_matte, pdf_specular;
+            sample.m_value.set(0.0f);
 
-            // Specular component (equation 3).
-            Spectrum rs(values->m_rs);
-            rs *= values->m_rs_multiplier;
-            Spectrum fr_spec;
-            evaluate_fr_spec(*m_mdf.get(), rs, dot_HV, dot_HN, fr_spec);
+            if (ScatteringMode::has_diffuse(modes))
+            {
+                // Compute the specular albedo for the incoming angle.
+                Spectrum specular_albedo_L;
+                evaluate_a_spec(m_a_spec, dot_LN, specular_albedo_L);
 
-            // Matte component (last equation of section 2.2f).
-            sample.m_value.set(1.0f);
-            sample.m_value -= specular_albedo_L;
-            sample.m_value *= matte_albedo;
-            sample.m_value *= m_s;
+                // Matte component (last equation of section 2.2f).
+                Spectrum matte_comp(1.0f);
+                matte_comp -= specular_albedo_L;
+                matte_comp *= matte_albedo;
+                matte_comp *= m_s;
+                sample.m_value += matte_comp;
 
-            // The final value of the BRDF is the sum of the specular and matte components.
-            sample.m_value += fr_spec;
+                // Evaluate the PDF of the incoming direction for the matte component.
+                pdf_matte = dot_LN * RcpPi<float>();
+                assert(pdf_matte >= 0.0f);
+            }
 
-            // Evaluate the PDF of the incoming direction for the specular component.
-            const float pdf_H = m_mdf->evaluate_pdf(dot_HN);
-            const float pdf_specular = pdf_H / (4.0f * dot_HV);
-            assert(pdf_specular >= 0.0f);
+            if (ScatteringMode::has_glossy(modes))
+            {
+                // Specular component (equation 3).
+                Spectrum rs(values->m_rs);
+                rs *= values->m_rs_multiplier;
+                Spectrum fr_spec;
+                evaluate_fr_spec(*m_mdf.get(), rs, dot_HV, dot_HN, fr_spec);
+                sample.m_value += fr_spec;
 
-            // Evaluate the PDF of the incoming direction for the matte component.
-            const float pdf_matte = dot_LN * RcpPi<float>();
-            assert(pdf_matte >= 0.0f);
+                // Evaluate the PDF of the incoming direction for the specular component.
+                const float pdf_H = m_mdf->evaluate_pdf(dot_HN);
+                pdf_specular = pdf_H / (4.0f * dot_HV);
+                assert(pdf_specular >= 0.0f);
+            }
 
-            // Evaluate the final PDF.
-            sample.m_probability = specular_prob * pdf_specular + matte_prob * pdf_matte;
-            assert(sample.m_probability >= 0.0f);
-
-            // Set the scattering mode.
             sample.m_mode = mode;
-
+            sample.m_probability =
+                ScatteringMode::has_diffuse_and_glossy(modes) ? matte_prob * pdf_matte + specular_prob * pdf_specular :
+                ScatteringMode::has_diffuse(modes) ? pdf_matte : pdf_specular;
             sample.m_incoming = Dual3f(incoming);
             sample.compute_reflected_differentials();
         }
@@ -364,26 +372,33 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            value.set(0.0f);
-            float probability = 0.0f;
-
             // Compute the halfway vector.
             const Vector3f H = normalize(L + V);
             const float dot_HN = dot(H, N);
             const float dot_HL = min(dot(H, L), 1.0f);
 
-            // Compute the specular albedos for the outgoing and incoming angles.
-            Spectrum specular_albedo_V, specular_albedo_L;
+            // Compute the specular albedo for the outgoing angle.
+            Spectrum specular_albedo_V;
             evaluate_a_spec(m_a_spec, dot_VN, specular_albedo_V);
-            evaluate_a_spec(m_a_spec, dot_LN, specular_albedo_L);
+
+            // Compute the matte albedo.
+            Spectrum matte_albedo(1.0f);
+            matte_albedo -= specular_albedo_V;
+            matte_albedo *= values->m_rm;
+            matte_albedo *= values->m_rm_multiplier;
+
+            // Compute the probabilities of matte and specular bounces.
+            const float matte_prob = average_value(matte_albedo);
+            const float specular_prob = 1.0f - matte_prob;
+
+            float pdf_matte, pdf_specular;
+            value.set(0.0f);
 
             if (ScatteringMode::has_diffuse(modes))
             {
-                // Compute the matte albedo.
-                Spectrum matte_albedo(1.0f);
-                matte_albedo -= specular_albedo_V;
-                matte_albedo *= values->m_rm;
-                matte_albedo *= values->m_rm_multiplier;
+                // Compute the specular albedo for the incoming angle.
+                Spectrum specular_albedo_L;
+                evaluate_a_spec(m_a_spec, dot_LN, specular_albedo_L);
 
                 // Compute the matte component (last equation of section 2.2f).
                 Spectrum matte_comp(1.0f);
@@ -392,13 +407,9 @@ namespace
                 matte_comp *= m_s;
                 value += matte_comp;
 
-                // Compute the probability of a matte bounce.
-                const float matte_prob = average_value(matte_albedo);
-
                 // Evaluate the PDF of the incoming direction for the matte component.
-                const float pdf_matte = dot_LN * RcpPi<float>();
+                pdf_matte = dot_LN * RcpPi<float>();
                 assert(pdf_matte >= 0.0f);
-                probability += matte_prob * pdf_matte;
             }
 
             if (ScatteringMode::has_glossy(modes))
@@ -410,17 +421,16 @@ namespace
                 evaluate_fr_spec(*m_mdf.get(), rs, dot_HL, dot_HN, fr_spec);
                 value += fr_spec;
 
-                // Compute the probability of a specular bounce.
-                const float specular_prob = average_value(specular_albedo_V);
-
                 // Evaluate the PDF of the incoming direction for the specular component.
                 const float pdf_H = m_mdf->evaluate_pdf(dot_HN);
-                const float pdf_specular = pdf_H / (4.0f * dot_HL);
+                pdf_specular = pdf_H / (4.0f * dot_HL);
                 assert(pdf_specular >= 0.0f);
-                probability += specular_prob * pdf_specular;
             }
 
-            return probability;
+            return
+                ScatteringMode::has_diffuse_and_glossy(modes) ? matte_prob * pdf_matte + specular_prob * pdf_specular :
+                ScatteringMode::has_diffuse(modes) ? pdf_matte :
+                ScatteringMode::has_glossy(modes) ? pdf_specular : 0.0f;
         }
 
         virtual float evaluate_pdf(
@@ -444,8 +454,6 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            float probability = 0.0f;
-
             // Compute the halfway vector.
             const Vector3f H = normalize(L + V);
             const float dot_HN = dot(H, N);
@@ -455,36 +463,37 @@ namespace
             Spectrum specular_albedo_V;
             evaluate_a_spec(m_a_spec, dot_VN, specular_albedo_V);
 
+            // Compute the matte albedo.
+            Spectrum matte_albedo(1.0f);
+            matte_albedo -= specular_albedo_V;
+            matte_albedo *= values->m_rm;
+            matte_albedo *= values->m_rm_multiplier;
+
+            // Compute the probabilities of matte and specular bounces.
+            const float matte_prob = average_value(matte_albedo);
+            const float specular_prob = 1.0f - matte_prob;
+
+            float pdf_matte, pdf_specular;
+
             if (ScatteringMode::has_diffuse(modes))
             {
-                // Compute the matte albedo.
-                Spectrum matte_albedo(1.0f);
-                matte_albedo -= specular_albedo_V;
-                matte_albedo *= values->m_rm;
-                matte_albedo *= values->m_rm_multiplier;
-
-                // Compute the probability of a matte bounce.
-                const float matte_prob = average_value(matte_albedo);
-
                 // Evaluate the PDF of the incoming direction for the matte component.
-                const float pdf_matte = dot_LN * RcpPi<float>();
+                pdf_matte = dot_LN * RcpPi<float>();
                 assert(pdf_matte >= 0.0f);
-                probability += matte_prob * pdf_matte;
             }
 
             if (ScatteringMode::has_glossy(modes))
             {
-                // Compute the probability of a specular bounce.
-                const float specular_prob = average_value(specular_albedo_V);
-
                 // Evaluate the PDF of the incoming direction for the specular component.
                 const float pdf_H = m_mdf->evaluate_pdf(dot_HN);
-                const float pdf_specular = pdf_H / (4.0f * dot_HL);
+                pdf_specular = pdf_H / (4.0f * dot_HL);
                 assert(pdf_specular >= 0.0f);
-                probability += specular_prob * pdf_specular;
             }
 
-            return probability;
+            return
+                ScatteringMode::has_diffuse_and_glossy(modes) ? matte_prob * pdf_matte + specular_prob * pdf_specular :
+                ScatteringMode::has_diffuse(modes) ? pdf_matte :
+                ScatteringMode::has_glossy(modes) ? pdf_specular : 0.0f;
         }
 
       private:
