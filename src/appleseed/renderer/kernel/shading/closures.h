@@ -108,10 +108,6 @@ enum ClosureID
     HoldoutID,
     TransparentID,
 
-    // Layered BSDF closures. (Must be last.)
-    FirstLayeredClosure,
-    AlSurfaceLayerID = FirstLayeredClosure,
-
     NumClosuresIDs
 };
 
@@ -291,11 +287,6 @@ class APPLESEED_ALIGN(16) CompositeEmissionClosure
 void process_transparency_tree(const OSL::ClosureColor* ci, Alpha& alpha);
 float process_holdout_tree(const OSL::ClosureColor* ci);
 foundation::Color3f process_background_tree(const OSL::ClosureColor* ci);
-
-void inject_layered_closure_values(
-    const size_t    closure_id,
-    const BSDF*     osl_bsdf,
-    void*           data);
 
 void register_closures(OSL::ShadingSystem& shading_system);
 

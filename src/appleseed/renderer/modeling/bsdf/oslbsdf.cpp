@@ -35,7 +35,6 @@
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/bsdf/alsurfacelayerbrdf.h"
 #include "renderer/modeling/bsdf/blinnbrdf.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
@@ -130,8 +129,6 @@ namespace
 
             m_sheen_brdf =
                 create_and_register_bsdf(SheenID, "sheen_brdf");
-
-            m_alsurface_layer_brdf = create_and_register_alsurface_layer_bsdf();
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -169,36 +166,15 @@ namespace
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point) const APPLESEED_OVERRIDE
         {
+            Arena& arena = shading_context.get_arena();
+
             CompositeSurfaceClosure* c =
-                shading_context.get_arena().allocate_noinit<CompositeSurfaceClosure>();
+                arena.allocate_noinit<CompositeSurfaceClosure>();
 
             new (c) CompositeSurfaceClosure(
                 Basis3f(shading_point.get_shading_basis()),
                 shading_point.get_osl_shader_globals().Ci,
-                shading_context.get_arena());
-
-            // Inject values into any children layered closures.
-            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
-            {
-                const ClosureID cid = c->get_closure_type(i);
-                if (cid >= FirstLayeredClosure)
-                    inject_layered_closure_values(cid, this, c->get_closure_input_values(i));
-            }
-
-            prepare_inputs(
-                shading_context.get_arena(),
-                shading_point,
-                c);
-
-            return c;
-        }
-
-        virtual void prepare_inputs(
-            Arena&                  arena,
-            const ShadingPoint&     shading_point,
-            void*                   data) const APPLESEED_OVERRIDE
-        {
-            CompositeSurfaceClosure* c = static_cast<CompositeSurfaceClosure*>(data);
+                arena);
 
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
@@ -208,6 +184,8 @@ namespace
                         shading_point,
                         c->get_closure_input_values(i));
             }
+
+            return c;
         }
 
         virtual void sample(
@@ -352,7 +330,6 @@ namespace
 
       private:
         BSDF*                       m_all_bsdfs[NumClosuresIDs];
-        auto_release_ptr<BSDF>      m_alsurface_layer_brdf;
         auto_release_ptr<BSDF>      m_ashikhmin_shirley_brdf;
         auto_release_ptr<BSDF>      m_blinn_brdf;
         auto_release_ptr<BSDF>      m_diffuse_btdf;
@@ -436,17 +413,6 @@ namespace
                     ParamArray().insert("mdf", mdf_name));
 
             m_all_bsdfs[cid] = bsdf.get();
-            return bsdf;
-        }
-
-        auto_release_ptr<BSDF> create_and_register_alsurface_layer_bsdf()
-        {
-            auto_release_ptr<BSDF> bsdf =
-                AlSurfaceLayerBRDFFactory().create(
-                    "alsurface_layer",
-                    ParamArray());
-
-            m_all_bsdfs[AlSurfaceLayerID] = bsdf.get();
             return bsdf;
         }
 

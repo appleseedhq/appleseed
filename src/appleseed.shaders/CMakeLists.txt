@@ -402,7 +402,6 @@ set (src_alshaders_sources
     src/alshaders/alPattern.osl
     src/alshaders/alRemapColor.osl
     src/alshaders/alRemapFloat.osl
-    src/alshaders/alSurface.osl
     src/alshaders/alSwitchColor.osl
     src/alshaders/alSwitchFloat.osl
     #src/alshaders/alTriplanar.osl
