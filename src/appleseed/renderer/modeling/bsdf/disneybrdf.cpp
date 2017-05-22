@@ -422,42 +422,39 @@ namespace
                     values,
                     sample);
             }
+            else if (s < cdf[SpecularComponent])
+            {
+                float alpha_x, alpha_y;
+                microfacet_alpha_from_roughness(
+                    values->m_roughness,
+                    values->m_anisotropic,
+                    alpha_x,
+                    alpha_y);
+
+                const GGXMDF ggx_mdf;
+                MicrofacetBRDFHelper::sample(
+                    sampling_context,
+                    ggx_mdf,
+                    alpha_x,
+                    alpha_y,
+                    0.0f,
+                    DisneySpecularFresnelFun(*values),
+                    cos_on,
+                    sample);
+            }
             else
             {
-                if (s < cdf[SpecularComponent])
-                {
-                    float alpha_x, alpha_y;
-                    microfacet_alpha_from_roughness(
-                        values->m_roughness,
-                        values->m_anisotropic,
-                        alpha_x,
-                        alpha_y);
-
-                    const GGXMDF ggx_mdf;
-                    MicrofacetBRDFHelper::sample(
-                        sampling_context,
-                        ggx_mdf,
-                        alpha_x,
-                        alpha_y,
-                        0.0f,
-                        DisneySpecularFresnelFun(*values),
-                        cos_on,
-                        sample);
-                }
-                else
-                {
-                    const float alpha = clearcoat_roughness(values);
-                    const GTR1MDF gtr1_mdf;
-                    MicrofacetBRDFHelper::sample(
-                        sampling_context,
-                        gtr1_mdf,
-                        alpha,
-                        alpha,
-                        0.0f,
-                        DisneyClearcoatFresnelFun(*values),
-                        cos_on,
-                        sample);
-                }
+                const float alpha = clearcoat_roughness(values);
+                const GTR1MDF gtr1_mdf;
+                MicrofacetBRDFHelper::sample(
+                    sampling_context,
+                    gtr1_mdf,
+                    alpha,
+                    alpha,
+                    0.0f,
+                    DisneyClearcoatFresnelFun(*values),
+                    cos_on,
+                    sample);
             }
         }
 
@@ -491,23 +488,27 @@ namespace
             {
                 if (weights[DiffuseComponent] != 0.0f)
                 {
-                    pdf += DisneyDiffuseComponent().evaluate(
-                        values,
-                        shading_basis,
-                        outgoing,
-                        incoming,
-                        value) * weights[DiffuseComponent];
+                    pdf +=
+                        weights[DiffuseComponent] *
+                        DisneyDiffuseComponent().evaluate(
+                            values,
+                            shading_basis,
+                            outgoing,
+                            incoming,
+                            value);
                 }
 
                 if (weights[SheenComponent] != 0.0f)
                 {
                     Spectrum sheen;
-                    pdf += DisneySheenComponent().evaluate(
-                        values,
-                        shading_basis,
-                        outgoing,
-                        incoming,
-                        sheen) * weights[SheenComponent];
+                    pdf +=
+                        weights[SheenComponent] *
+                        DisneySheenComponent().evaluate(
+                            values,
+                            shading_basis,
+                            outgoing,
+                            incoming,
+                            sheen);
                     value += sheen;
                 }
             }
@@ -516,7 +517,6 @@ namespace
             {
                 if (weights[SpecularComponent] != 0.0f)
                 {
-                    Spectrum spec;
                     float alpha_x, alpha_y;
                     microfacet_alpha_from_roughness(
                         values->m_roughness,
@@ -524,39 +524,45 @@ namespace
                         alpha_x,
                         alpha_y);
 
+                    Spectrum spec;
                     const GGXMDF ggx_mdf;
-                    pdf += MicrofacetBRDFHelper::evaluate(
-                        ggx_mdf,
-                        alpha_x,
-                        alpha_y,
-                        0.0f,
-                        shading_basis,
-                        outgoing,
-                        incoming,
-                        DisneySpecularFresnelFun(*values),
-                        cos_in,
-                        cos_on,
-                        spec) * weights[SpecularComponent];
+                    pdf +=
+                        weights[SpecularComponent] *
+                        MicrofacetBRDFHelper::evaluate(
+                            ggx_mdf,
+                            alpha_x,
+                            alpha_y,
+                            0.0f,
+                            shading_basis,
+                            outgoing,
+                            incoming,
+                            DisneySpecularFresnelFun(*values),
+                            cos_in,
+                            cos_on,
+                            spec);
                     value += spec;
                 }
 
                 if (weights[ClearcoatComponent] != 0.0f)
                 {
-                    Spectrum clear;
                     const float alpha = clearcoat_roughness(values);
+
+                    Spectrum clear;
                     const GTR1MDF gtr1_mdf;
-                    pdf += MicrofacetBRDFHelper::evaluate(
-                        gtr1_mdf,
-                        alpha,
-                        alpha,
-                        0.0f,
-                        shading_basis,
-                        outgoing,
-                        incoming,
-                        DisneyClearcoatFresnelFun(*values),
-                        cos_in,
-                        cos_on,
-                        clear) * weights[ClearcoatComponent];
+                    pdf +=
+                        weights[ClearcoatComponent] *
+                        MicrofacetBRDFHelper::evaluate(
+                            gtr1_mdf,
+                            alpha,
+                            alpha,
+                            0.0f,
+                            shading_basis,
+                            outgoing,
+                            incoming,
+                            DisneyClearcoatFresnelFun(*values),
+                            cos_in,
+                            cos_on,
+                            clear);
                     value += clear;
                 }
             }
@@ -590,16 +596,16 @@ namespace
             {
                 if (weights[DiffuseComponent] != 0.0f)
                 {
-                    pdf += DisneyDiffuseComponent().evaluate_pdf(
-                        shading_basis,
-                        incoming) * weights[DiffuseComponent];
+                    pdf +=
+                        weights[DiffuseComponent] *
+                        DisneyDiffuseComponent().evaluate_pdf(shading_basis, incoming);
                 }
 
                 if (weights[SheenComponent] != 0.0f)
                 {
-                    pdf += DisneySheenComponent().evaluate_pdf(
-                        shading_basis,
-                        incoming) * weights[SheenComponent];
+                    pdf +=
+                        weights[SheenComponent] *
+                        DisneySheenComponent().evaluate_pdf(shading_basis, incoming);
                 }
             }
 
@@ -615,28 +621,32 @@ namespace
                         alpha_y);
 
                     const GGXMDF ggx_mdf;
-                    pdf += MicrofacetBRDFHelper::pdf(
-                        ggx_mdf,
-                        alpha_x,
-                        alpha_y,
-                        0.0f,
-                        shading_basis,
-                        outgoing,
-                        incoming) * weights[SpecularComponent];
+                    pdf +=
+                        weights[SpecularComponent] *
+                        MicrofacetBRDFHelper::pdf(
+                            ggx_mdf,
+                            alpha_x,
+                            alpha_y,
+                            0.0f,
+                            shading_basis,
+                            outgoing,
+                            incoming);
                 }
 
                 if (weights[ClearcoatComponent] != 0.0f)
                 {
                     const float alpha = clearcoat_roughness(values);
                     const GTR1MDF gtr1_mdf;
-                    pdf += MicrofacetBRDFHelper::pdf(
-                        gtr1_mdf,
-                        alpha,
-                        alpha,
-                        0.0f,
-                        shading_basis,
-                        outgoing,
-                        incoming) * weights[ClearcoatComponent];
+                    pdf +=
+                        weights[ClearcoatComponent] *
+                        MicrofacetBRDFHelper::pdf(
+                            gtr1_mdf,
+                            alpha,
+                            alpha,
+                            0.0f,
+                            shading_basis,
+                            outgoing,
+                            incoming);
                 }
             }
 
