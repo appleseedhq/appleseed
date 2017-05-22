@@ -138,17 +138,6 @@ source_group ("include\\appleseed\\pattern" FILES
     ${include_appleseed_pattern_sources}
 )
 
-set (include_alshaders_sources
-    include/alshaders/remap.h
-    include/alshaders/space.h
-)
-list (APPEND osl_headers
-    ${include_alshaders_sources}
-)
-source_group ("include\\alshaders" FILES
-    ${include_alshaders_sources}
-)
-
 
 #--------------------------------------------------------------------------------------------------
 # Source files.
@@ -383,34 +372,6 @@ list (APPEND osl_sources
 )
 source_group ("src\\maya" FILES
     ${src_maya_sources}
-)
-
-set (src_alshaders_sources
-    #src/alshaders/alBlackbody.osl
-    #src/alshaders/alCellNoise.osl
-    src/alshaders/alColorSpace.osl
-    src/alshaders/alCombineColor.osl
-    src/alshaders/alCombineFloat.osl
-    #src/alshaders/alCurvature.osl
-    #src/alshaders/alFlake.osl
-    src/alshaders/alFlowNoise.osl
-    src/alshaders/alFractal.osl
-    src/alshaders/alJitterColor.osl
-    src/alshaders/alLayerColor.osl
-    src/alshaders/alLayerFloat.osl
-    src/alshaders/alLayer.osl
-    src/alshaders/alPattern.osl
-    src/alshaders/alRemapColor.osl
-    src/alshaders/alRemapFloat.osl
-    src/alshaders/alSwitchColor.osl
-    src/alshaders/alSwitchFloat.osl
-    #src/alshaders/alTriplanar.osl
-)
-list (APPEND osl_sources
-    ${src_alshaders_sources}
-)
-source_group ("src\\alshaders" FILES
-    ${src_alshaders_sources}
 )
 
 set (src_appleseed_sources
