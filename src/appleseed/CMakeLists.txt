@@ -787,12 +787,6 @@ if (WITH_DISNEY_MATERIAL)
         foundation/utility/seexpr.h
     )
 endif ()
-if (WITH_PARTIO)
-    list (APPEND foundation_utility_sources
-        foundation/utility/partiofile.cpp
-        foundation/utility/partiofile.h
-    )
-endif ()
 list (APPEND appleseed_sources
     ${foundation_utility_sources}
 )
@@ -1870,10 +1864,6 @@ link_against_osl (appleseed)
 
 if (WITH_DISNEY_MATERIAL)
     link_against_seexpr (appleseed)
-endif ()
-
-if (WITH_PARTIO)
-    link_against_partio (appleseed)
 endif ()
 
 target_link_libraries (appleseed
