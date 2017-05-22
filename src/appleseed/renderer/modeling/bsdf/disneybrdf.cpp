@@ -326,7 +326,7 @@ namespace
             DiffuseComponent,
             SheenComponent,
             SpecularComponent,
-            CleatcoatComponent,
+            ClearcoatComponent,
             NumComponents
         };
 
@@ -540,7 +540,7 @@ namespace
                     value += spec;
                 }
 
-                if (weights[CleatcoatComponent] != 0.0f)
+                if (weights[ClearcoatComponent] != 0.0f)
                 {
                     Spectrum clear;
                     const float alpha = clearcoat_roughness(values);
@@ -556,7 +556,7 @@ namespace
                         DisneyClearcoatFresnelFun(*values),
                         cos_in,
                         cos_on,
-                        clear) * weights[CleatcoatComponent];
+                        clear) * weights[ClearcoatComponent];
                     value += clear;
                 }
             }
@@ -625,7 +625,7 @@ namespace
                         incoming) * weights[SpecularComponent];
                 }
 
-                if (weights[CleatcoatComponent] != 0.0f)
+                if (weights[ClearcoatComponent] != 0.0f)
                 {
                     const float alpha = clearcoat_roughness(values);
                     const GTR1MDF gtr1_mdf;
@@ -636,7 +636,7 @@ namespace
                         0.0f,
                         shading_basis,
                         outgoing,
-                        incoming) * weights[CleatcoatComponent];
+                        incoming) * weights[ClearcoatComponent];
                 }
             }
 
@@ -653,13 +653,13 @@ namespace
             weights[DiffuseComponent] = lerp(values->m_precomputed.m_base_color_luminance, 0.0f, values->m_metallic);
             weights[SheenComponent] = lerp(values->m_sheen, 0.0f, values->m_metallic);
             weights[SpecularComponent] = lerp(values->m_specular, 1.0f, values->m_metallic);
-            weights[CleatcoatComponent] = values->m_clearcoat * 0.25f;
+            weights[ClearcoatComponent] = values->m_clearcoat * 0.25f;
 
             const float total_weight =
                 weights[DiffuseComponent] +
                 weights[SheenComponent] +
                 weights[SpecularComponent] +
-                weights[CleatcoatComponent];
+                weights[ClearcoatComponent];
 
             if (total_weight == 0.0f)
                 return;
@@ -668,7 +668,7 @@ namespace
             weights[DiffuseComponent] *= total_weight_rcp;
             weights[SheenComponent] *= total_weight_rcp;
             weights[SpecularComponent] *= total_weight_rcp;
-            weights[CleatcoatComponent] *= total_weight_rcp;
+            weights[ClearcoatComponent] *= total_weight_rcp;
         }
 
         static void compute_component_cdf(
@@ -678,7 +678,7 @@ namespace
             compute_component_weights(values, cdf);
             cdf[SheenComponent] += cdf[DiffuseComponent];
             cdf[SpecularComponent] += cdf[SheenComponent];
-            cdf[CleatcoatComponent] += cdf[SpecularComponent];
+            cdf[ClearcoatComponent] += cdf[SpecularComponent];
         }
 
         static float clearcoat_roughness(const InputValues* values)
