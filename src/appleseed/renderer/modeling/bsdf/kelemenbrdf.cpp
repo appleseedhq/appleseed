@@ -226,9 +226,6 @@ namespace
             const int               modes,
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
-            if (!ScatteringMode::has_diffuse_or_glossy(modes))
-                return;
-
             // Define aliases to match the notations in the paper.
             const Vector3f& V = sample.m_outgoing.get_value();
             const Vector3f& N = sample.m_shading_basis.get_normal();
@@ -250,9 +247,15 @@ namespace
             matte_albedo *= values->m_rm;
             matte_albedo *= values->m_rm_multiplier;
 
-            // Compute the probabilities of matte and specular bounces.
-            const float matte_prob = average_value(matte_albedo);
-            const float specular_prob = 1.0f - matte_prob;
+            // Compute component weights.
+            float matte_weight = ScatteringMode::has_diffuse(modes) ? average_value(matte_albedo) : 0.0f;
+            float specular_weight = ScatteringMode::has_glossy(modes) ? 1.0f - matte_weight : 0.0f;
+            const float total_weight = matte_weight + specular_weight;
+            if (total_weight == 0.0f)
+                return;
+            const float rcp_total_weight = 1.0f / total_weight;
+            matte_weight *= rcp_total_weight;
+            specular_weight *= rcp_total_weight;
 
             // Generate a uniform sample in [0,1)^3.
             sampling_context.split_in_place(3, 1);
@@ -263,8 +266,7 @@ namespace
             float dot_LN, dot_HN, dot_HV;
 
             // Select a component and sample it to compute the incoming direction.
-            if (ScatteringMode::has_diffuse(modes) &&
-                (!ScatteringMode::has_glossy(modes) || s[2] < matte_prob))
+            if (s[2] < matte_weight)
             {
                 mode = ScatteringMode::Diffuse;
 
@@ -304,7 +306,7 @@ namespace
                     return;
             }
 
-            float pdf_matte, pdf_specular;
+            float pdf_matte = 0.0f, pdf_specular = 0.0f;
             sample.m_value.set(0.0f);
 
             if (ScatteringMode::has_diffuse(modes))
@@ -341,9 +343,7 @@ namespace
             }
 
             sample.m_mode = mode;
-            sample.m_probability =
-                ScatteringMode::has_diffuse_and_glossy(modes) ? matte_prob * pdf_matte + specular_prob * pdf_specular :
-                ScatteringMode::has_diffuse(modes) ? pdf_matte : pdf_specular;
+            sample.m_probability = matte_weight * pdf_matte + specular_weight * pdf_specular;
             sample.m_incoming = Dual3f(incoming);
             sample.compute_reflected_differentials();
         }
@@ -387,11 +387,17 @@ namespace
             matte_albedo *= values->m_rm;
             matte_albedo *= values->m_rm_multiplier;
 
-            // Compute the probabilities of matte and specular bounces.
-            const float matte_prob = average_value(matte_albedo);
-            const float specular_prob = 1.0f - matte_prob;
+            // Compute component weights.
+            float matte_weight = ScatteringMode::has_diffuse(modes) ? average_value(matte_albedo) : 0.0f;
+            float specular_weight = ScatteringMode::has_glossy(modes) ? 1.0f - matte_weight : 0.0f;
+            const float total_weight = matte_weight + specular_weight;
+            if (total_weight == 0.0f)
+                return 0.0f;
+            const float rcp_total_weight = 1.0f / total_weight;
+            matte_weight *= rcp_total_weight;
+            specular_weight *= rcp_total_weight;
 
-            float pdf_matte, pdf_specular;
+            float pdf_matte = 0.0f, pdf_specular = 0.0f;
             value.set(0.0f);
 
             if (ScatteringMode::has_diffuse(modes))
@@ -427,10 +433,7 @@ namespace
                 assert(pdf_specular >= 0.0f);
             }
 
-            return
-                ScatteringMode::has_diffuse_and_glossy(modes) ? matte_prob * pdf_matte + specular_prob * pdf_specular :
-                ScatteringMode::has_diffuse(modes) ? pdf_matte :
-                ScatteringMode::has_glossy(modes) ? pdf_specular : 0.0f;
+            return matte_weight * pdf_matte + specular_weight * pdf_specular;
         }
 
         virtual float evaluate_pdf(
@@ -469,11 +472,17 @@ namespace
             matte_albedo *= values->m_rm;
             matte_albedo *= values->m_rm_multiplier;
 
-            // Compute the probabilities of matte and specular bounces.
-            const float matte_prob = average_value(matte_albedo);
-            const float specular_prob = 1.0f - matte_prob;
+            // Compute component weights.
+            float matte_weight = ScatteringMode::has_diffuse(modes) ? average_value(matte_albedo) : 0.0f;
+            float specular_weight = ScatteringMode::has_glossy(modes) ? 1.0f - matte_weight : 0.0f;
+            const float total_weight = matte_weight + specular_weight;
+            if (total_weight == 0.0f)
+                return 0.0f;
+            const float rcp_total_weight = 1.0f / total_weight;
+            matte_weight *= rcp_total_weight;
+            specular_weight *= rcp_total_weight;
 
-            float pdf_matte, pdf_specular;
+            float pdf_matte = 0.0f, pdf_specular = 0.0f;
 
             if (ScatteringMode::has_diffuse(modes))
             {
@@ -490,10 +499,7 @@ namespace
                 assert(pdf_specular >= 0.0f);
             }
 
-            return
-                ScatteringMode::has_diffuse_and_glossy(modes) ? matte_prob * pdf_matte + specular_prob * pdf_specular :
-                ScatteringMode::has_diffuse(modes) ? pdf_matte :
-                ScatteringMode::has_glossy(modes) ? pdf_specular : 0.0f;
+            return matte_weight * pdf_matte + specular_weight * pdf_specular;
         }
 
       private:
