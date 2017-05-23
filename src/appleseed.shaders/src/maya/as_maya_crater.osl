@@ -198,13 +198,17 @@ shader as_maya_crater
     {
         out_outColor = in_defaultColor;
         out_outAlpha = maya_luminance(out_outColor);
+        out_outNormal = N;
+
         return;
     }
     else
     {
+        // Output color.
+
         float sample_size = sqrt(area(in_refPointCamera));
 
-        float value = recurrence(
+        float value = recurrenceN(
             sample_size,
             in_refPointCamera,
             in_shaker,
@@ -218,7 +222,7 @@ shader as_maya_crater
         m1 = sqr(sqr(m1)) * in_balance * coeff;
         m2 = (-m2 + 1.0) * coeff;
 
-        float p1 = (m1 + m2);
+        float p1 = m1 + m2;
         float p2 = sqr(p1);
 
         for (int i = 0; i < 3; ++i)
@@ -243,6 +247,26 @@ shader as_maya_crater
                     out_outColor[i] = 0.0;
             }
         }
+
+        // Output normal.
+
+        vector tmp_normal = recurrence3(
+            sample_size,
+            in_refPointCamera,
+            in_normDepth,
+            in_normMelt);
+
+        coeff = 1.0 / (in_normBalance + 1.0);
+
+        m1 = sqr(sin(value * in_normFrequency));
+        m2 = sqr(sqr(m1 - 1.0));
+
+        m1 = sqr(sqr(m1)) * in_normBalance * coeff;
+        m2 = (-m2 + 1.0) * coeff;
+
+        p1 = m1 + m2;
+        
+        out_outNormal = normalize((normal) tmp_normal * p1 + in_normalCamera);
     }
 
     maya_colorBalance(
