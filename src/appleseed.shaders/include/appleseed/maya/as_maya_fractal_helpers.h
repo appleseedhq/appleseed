@@ -29,12 +29,12 @@
 #ifndef AS_MAYA_FRACTAL_HELPERS_H
 #define AS_MAYA_FRACTAL_HELPERS_H
 
-#define MAYA_LATTICE_SIZE   20
-
 #include "appleseed/fractal/as_noise_helpers.h"
 #include "appleseed/fractal/as_noise_tables.h"
 #include "appleseed/math/as_math_complex.h"
 #include "appleseed/math/as_math_helpers.h"
+
+#define MAYA_LATTICE_SIZE   20
 
 void implode_2d(
     float implode,
@@ -705,6 +705,43 @@ float maya_billow_noise_3d(
     return gain * sum / total_amplitude;
 }
 
+
+//
+// Reference:
+//
+//      Box and sphere folding: What is a Mandelbox, Tom Lowe
+//      https://sites.google.com/site/mandelbox/what-is-a-mandelbox
+//      
+//      The Mandelbox Set, Rudi Chen
+//      http://digitalfreepen.com/mandelbox370/
+//
+
+void box_fold(output Complex Z)
+{
+    Z.real = clamp(Z.real, -1.0, 1.0) * 2.0 - Z.real;
+    Z.imag = clamp(Z.imag, -1.0, 1.0) * 2.0 - Z.imag;
+}
+
+void sphere_fold(
+    float sqr_distance,
+    float sqr_box_min_radius,
+    float sqr_box_radius,
+    output Complex Z)
+{
+    if (sqr_distance < sqr_box_min_radius)
+    {
+        float tmp = sqr_box_radius / sqr_box_min_radius;
+        Z.real *= tmp;
+        Z.imag *= tmp;
+    }
+    else if (sqr_distance < sqr_box_radius)
+    {
+        float tmp = sqr_box_radius / sqr_distance;
+        Z.real *= tmp;
+        Z.imag *= tmp;
+    }
+}
+
 void compute_mandelbox(
     int iteration_depth,
     float box_ratio,
@@ -904,42 +941,6 @@ float mandelbrot_exterior_coloring(
     mapping = clamp(mapping, 0, 1);
 
     return mapping + binary_decomposition;
-}
-
-//
-// Reference:
-//
-//      Box and sphere folding: What is a Mandelbox, Tom Lowe
-//      https://sites.google.com/site/mandelbox/what-is-a-mandelbox
-//      
-//      The Mandelbox Set, Rudi Chen
-//      http://digitalfreepen.com/mandelbox370/
-//
-
-void box_fold(output Complex Z)
-{
-    Z.real = clamp(Z.real, -1.0, 1.0) * 2.0 - Z.real;
-    Z.imag = clamp(Z.imag, -1.0, 1.0) * 2.0 - Z.imag;
-}
-
-void sphere_fold(
-    float sqr_distance,
-    float sqr_box_min_radius,
-    float sqr_box_radius,
-    output Complex Z)
-{
-    if (sqr_distance < sqr_box_min_radius)
-    {
-        float tmp = sqr_box_radius / sqr_box_min_radius;
-        Z.real *= tmp;
-        Z.imag *= tmp;
-    }
-    else if (sqr_distance < sqr_box_radius)
-    {
-        float tmp = sqr_box_radius / sqr_distance;
-        Z.real *= tmp;
-        Z.imag *= tmp;
-    }
 }
 
 //
