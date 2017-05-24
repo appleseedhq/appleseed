@@ -257,6 +257,12 @@ shader as_maya_rock
 
         out_outColor = in_color1 * out + in_color2 * inv;
         out_outAlpha = maya_luminance(out_outColor);
+
+        if (!in_wrap && in_blend)
+        {
+            out_outColor = mix(in_defaultColor, out_outColor, box_blending);
+            out_outAlpha *= box_blending;
+        }
     }
 
     maya_colorBalance(

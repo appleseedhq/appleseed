@@ -160,13 +160,8 @@ shader as_maya_brownian
         
         if (!in_wrap && in_blend)
         {
-            // Arbitrary values that match roughly. Improvements welcome.
-            float blend_factor = clamp(
-                smoothstep(in_blend * 0.05, in_blend * 0.65, box_blending),
-                0, 1);
-
-            out_outColor = mix(in_defaultColor, out_outColor, blend_factor);
-            out_outAlpha *= (1 - blend_factor);
+            out_outColor = mix(in_defaultColor, out_outColor, box_blending);
+            out_outAlpha *= box_blending;
         }
 
         maya_colorBalance(

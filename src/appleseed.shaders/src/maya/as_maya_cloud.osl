@@ -248,15 +248,8 @@ shader as_maya_cloud
 
         if (!in_wrap && in_blend)
         {
-            // Totally arbitrary values for the lower and upper bounds in 
-            // order to match (roughly) Maya's results, and it still isn't
-            // quite right.
-            float blend_factor = clamp(
-                smoothstep(in_blend * 0.05, in_blend * 0.65, box_blending),
-                0, 1);
-
-            out_outColor = mix(in_defaultColor, out_outColor, blend_factor);
-            out_outAlpha *= (1 - blend_factor);
+            out_outColor = mix(in_defaultColor, out_outColor, box_blending);
+            out_outAlpha *= box_blending;
         }
     }
     else
