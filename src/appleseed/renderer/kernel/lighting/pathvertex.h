@@ -165,7 +165,7 @@ inline const Material* PathVertex::get_material() const
 inline float PathVertex::get_bsdf_prob_area() const
 {
     // Make sure we're coming from a valid scattering event.
-    assert(m_prev_mode != ScatteringMode::Absorption);
+    assert(m_prev_mode != ScatteringMode::None);
     assert(m_prev_prob > 0.0f);
 
     // Veach: 8.2.2.2 eq. 8.10.

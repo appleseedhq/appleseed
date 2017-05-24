@@ -287,7 +287,7 @@ namespace
                 const ScatteringMode::Mode  prev_mode,
                 const ScatteringMode::Mode  next_mode) const
             {
-                assert(next_mode != ScatteringMode::Absorption);
+                assert(next_mode != ScatteringMode::None);
 
                 if (!m_params.m_enable_caustics)
                 {

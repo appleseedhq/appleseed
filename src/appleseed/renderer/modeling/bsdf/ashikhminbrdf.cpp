@@ -108,9 +108,6 @@ namespace
             const int           modes,
             BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
-            if (!ScatteringMode::has_diffuse_or_glossy(modes))
-                return;
-
             // No reflection below the shading surface.
             const float cos_on = dot(sample.m_outgoing.get_value(), sample.m_shading_basis.get_normal());
             if (cos_on < 0.0f)
@@ -122,6 +119,16 @@ namespace
             RVal rval;
             if (!compute_rval(rval, values))
                 return;
+
+            // Compute component weights.
+            float diffuse_weight = ScatteringMode::has_diffuse(modes) ? rval.m_pd : 0.0f;
+            float glossy_weight = ScatteringMode::has_glossy(modes) ? rval.m_pg : 0.0f;
+            const float total_weight = diffuse_weight + glossy_weight;
+            if (total_weight == 0.0f)
+                return;
+            const float rcp_total_weight = 1.0f / total_weight;
+            diffuse_weight *= rcp_total_weight;
+            glossy_weight *= rcp_total_weight;
 
             // Compute shininess-related values.
             SVal sval;
@@ -136,8 +143,7 @@ namespace
             float exp;
 
             // Select a component and sample it to compute the incoming direction.
-            if (ScatteringMode::has_diffuse(modes) &&
-                (!ScatteringMode::has_glossy(modes) || s[2] < rval.m_pd))
+            if (s[2] < diffuse_weight)
             {
                 mode = ScatteringMode::Diffuse;
 
@@ -209,7 +215,7 @@ namespace
             const float cos_oh = min(abs(dot(sample.m_outgoing.get_value(), h)), 1.0f);
             const float cos_hn = dot(h, sample.m_shading_basis.get_normal());
 
-            float pdf_diffuse, pdf_glossy;
+            float pdf_diffuse = 0.0f, pdf_glossy = 0.0f;
             sample.m_value.set(0.0f);
 
             if (ScatteringMode::has_diffuse(modes))
@@ -239,9 +245,7 @@ namespace
             }
 
             sample.m_mode = mode;
-            sample.m_probability =
-                ScatteringMode::has_diffuse_and_glossy(modes) ? rval.m_pd * pdf_diffuse + rval.m_pg * pdf_glossy :
-                ScatteringMode::has_diffuse(modes) ? pdf_diffuse : pdf_glossy;
+            sample.m_probability = diffuse_weight * pdf_diffuse + glossy_weight * pdf_glossy;
             sample.m_incoming = Dual3f(incoming);
             sample.compute_reflected_differentials();
         }
@@ -271,6 +275,16 @@ namespace
             if (!compute_rval(rval, values))
                 return 0.0f;
 
+            // Compute component weights.
+            float diffuse_weight = ScatteringMode::has_diffuse(modes) ? rval.m_pd : 0.0f;
+            float glossy_weight = ScatteringMode::has_glossy(modes) ? rval.m_pg : 0.0f;
+            const float total_weight = diffuse_weight + glossy_weight;
+            if (total_weight == 0.0f)
+                return 0.0f;
+            const float rcp_total_weight = 1.0f / total_weight;
+            diffuse_weight *= rcp_total_weight;
+            glossy_weight *= rcp_total_weight;
+
             // Compute shininess-related values.
             SVal sval;
             compute_sval(sval, values->m_nu, values->m_nv);
@@ -284,7 +298,7 @@ namespace
             const float cos_hu = dot(h, shading_basis.get_tangent_u());
             const float cos_hv = dot(h, shading_basis.get_tangent_v());
 
-            float pdf_diffuse, pdf_glossy;
+            float pdf_diffuse = 0.0f, pdf_glossy = 0.0f;
             value.set(0.0f);
 
             if (ScatteringMode::has_diffuse(modes))
@@ -317,10 +331,7 @@ namespace
                 assert(pdf_glossy >= 0.0f);
             }
 
-            return
-                ScatteringMode::has_diffuse_and_glossy(modes) ? rval.m_pd * pdf_diffuse + rval.m_pg * pdf_glossy :
-                ScatteringMode::has_diffuse(modes) ? pdf_diffuse :
-                ScatteringMode::has_glossy(modes) ? pdf_glossy : 0.0f;
+            return diffuse_weight * pdf_diffuse + glossy_weight * pdf_glossy;
         }
 
         virtual float evaluate_pdf(
@@ -345,6 +356,16 @@ namespace
             if (!compute_rval(rval, values))
                 return 0.0f;
 
+            // Compute component weights.
+            float diffuse_weight = ScatteringMode::has_diffuse(modes) ? rval.m_pd : 0.0f;
+            float glossy_weight = ScatteringMode::has_glossy(modes) ? rval.m_pg : 0.0f;
+            const float total_weight = diffuse_weight + glossy_weight;
+            if (total_weight == 0.0f)
+                return 0.0f;
+            const float rcp_total_weight = 1.0f / total_weight;
+            diffuse_weight *= rcp_total_weight;
+            glossy_weight *= rcp_total_weight;
+
             // Compute shininess-related values.
             SVal sval;
             compute_sval(sval, values->m_nu, values->m_nv);
@@ -358,7 +379,7 @@ namespace
             const float cos_hu = dot(h, shading_basis.get_tangent_u());
             const float cos_hv = dot(h, shading_basis.get_tangent_v());
 
-            float pdf_diffuse, pdf_glossy;
+            float pdf_diffuse = 0.0f, pdf_glossy = 0.0f;
 
             if (ScatteringMode::has_diffuse(modes))
             {
@@ -381,10 +402,7 @@ namespace
                 assert(pdf_glossy >= 0.0f);
             }
 
-            return
-                ScatteringMode::has_diffuse_and_glossy(modes) ? rval.m_pd * pdf_diffuse + rval.m_pg * pdf_glossy :
-                ScatteringMode::has_diffuse(modes) ? pdf_diffuse :
-                ScatteringMode::has_glossy(modes) ? pdf_glossy : 0.0f;
+            return diffuse_weight * pdf_diffuse + glossy_weight * pdf_glossy;
         }
 
       private:

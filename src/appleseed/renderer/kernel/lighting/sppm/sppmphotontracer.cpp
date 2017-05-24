@@ -122,7 +122,7 @@ namespace
             const ScatteringMode::Mode  prev_mode,
             const ScatteringMode::Mode  next_mode) const
         {
-            assert(next_mode != ScatteringMode::Absorption);
+            assert(next_mode != ScatteringMode::None);
 
             // Terminate the path at the first vertex if we aren't interested in indirect photons.
             if (!m_store_indirect)

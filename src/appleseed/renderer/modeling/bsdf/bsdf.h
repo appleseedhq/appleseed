@@ -143,7 +143,7 @@ class APPLESEED_DLLSYMBOL BSDF
     // Given an outgoing direction, sample the BSDF and compute the incoming
     // direction, its probability density and the value of the BSDF for this
     // pair of directions. Return the scattering mode. If the scattering mode
-    // is Absorption, the BSDF and PDF values are undefined.
+    // is None, the BSDF and PDF values are undefined.
     virtual void sample(
         SamplingContext&            sampling_context,
         const void*                 data,                       // input values

@@ -52,7 +52,7 @@ class NullBSDF
 {
   public:
     NullBSDF()
-      : BSDF("null_bsdf", Reflective, ScatteringMode::Absorption, ParamArray())
+      : BSDF("null_bsdf", Reflective, ScatteringMode::None, ParamArray())
     {
     }
 
