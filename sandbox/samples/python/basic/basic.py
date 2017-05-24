@@ -32,6 +32,7 @@ import signal
 import sys
 import time
 import threading
+import os
 
 import appleseed as asr
 
@@ -39,8 +40,10 @@ import appleseed as asr
 def build_project():
     # Create an empty project.
     project = asr.Project('test project')
+
     paths = project.get_search_paths()
-    paths.append('data')
+    new_search_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
+    paths.append(new_search_path)
     project.set_search_paths(paths)
 
     # Add default configurations to the project.
