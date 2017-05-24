@@ -216,9 +216,12 @@ shader as_maya_marble
         {
             float diffusion = max(0.01, in_diffusion);
             vein = vein - in_veinWidth;
-            vein = clamp((1.0 - in_contrast) * exp(-vein / diffusion), 0, 1);
+            vein = (1.0 - in_contrast) * exp(-vein / diffusion);
 
-            out_outColor = mix(in_fillerColor, in_veinColor, vein);
+            color A = max(0, in_fillerColor * (1.0 - vein));
+            color B = max(0, in_veinColor * vein);
+
+            out_outColor = A + B;
         }
 
         out_outAlpha = maya_luminance(out_outColor);
