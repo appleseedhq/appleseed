@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -206,10 +206,16 @@ shader as_maya_crater
     {
         // Output color.
 
-        float sample_size = sqrt(area(in_refPointCamera));
+        float filter_width = 0.0;
+
+        if (in_filter > 0.0)
+        {
+            filter_width = in_filter * max(EPS, sqrt(area(Pp)));
+            filter_width += in_filterOffset;
+        }
 
         float value = recurrenceN(
-            sample_size,
+            filter_width,
             in_refPointCamera,
             in_shaker,
             in_melt);
@@ -251,7 +257,7 @@ shader as_maya_crater
         // Output normal.
 
         vector tmp_normal = recurrence3(
-            sample_size,
+            filter_width,
             in_refPointCamera,
             in_normDepth,
             in_normMelt);
