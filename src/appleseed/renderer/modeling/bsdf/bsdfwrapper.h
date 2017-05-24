@@ -124,7 +124,7 @@ void BSDFWrapper<BSDFImpl>::sample(
         modes,
         sample);
 
-    if (sample.m_mode != ScatteringMode::Absorption)
+    if (sample.m_mode != ScatteringMode::None)
     {
         assert(foundation::is_normalized(sample.m_incoming.get_value(), 1.0e-5f));
         assert(sample.m_probability == BSDFImpl::DiracDelta || sample.m_probability > 0.0f);

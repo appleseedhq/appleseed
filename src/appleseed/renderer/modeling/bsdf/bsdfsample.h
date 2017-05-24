@@ -58,9 +58,9 @@ class BSDFSample
 
     // Outputs.
     ScatteringMode::Mode            m_mode;                 // scattering mode
-    foundation::Dual3f              m_incoming;             // world space incoming direction, unit-length, defined only if m_mode != Absorption
-    float                           m_probability;          // PDF value, defined only if m_mode != Absorption
-    Spectrum                        m_value;                // BSDF value, defined only if m_mode != Absorption
+    foundation::Dual3f              m_incoming;             // world space incoming direction, unit-length, defined only if m_mode != None
+    float                           m_probability;          // PDF value, defined only if m_mode != None
+    Spectrum                        m_value;                // BSDF value, defined only if m_mode != None
 
     // Constructor.
     BSDFSample(
@@ -92,7 +92,7 @@ inline BSDFSample::BSDFSample(
   , m_geometric_normal(shading_point->get_geometric_normal())
   , m_shading_basis(shading_point->get_shading_basis())
   , m_outgoing(outgoing)
-  , m_mode(ScatteringMode::Absorption)
+  , m_mode(ScatteringMode::None)
 {
 }
 

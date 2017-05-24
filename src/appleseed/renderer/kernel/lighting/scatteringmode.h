@@ -54,7 +54,7 @@ class ScatteringMode
 
     enum Mode
     {
-        Absorption          = 0,
+        None                = 0,
         Diffuse             = 1 << DiffuseBitShift,
         Glossy              = 1 << GlossyBitShift,
         Specular            = 1 << SpecularBitShift,

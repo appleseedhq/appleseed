@@ -471,7 +471,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         m_path_visitor.on_scatter(vertex);
 
         // Terminate the path if all scattering modes are disabled.
-        if (vertex.m_scattering_modes == ScatteringMode::Absorption)
+        if (vertex.m_scattering_modes == ScatteringMode::None)
 		    break;
 
         // Above-surface scattering.
@@ -487,7 +487,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         }
 
         // Terminate the path if it gets absorbed.
-        if (bsdf_sample.m_mode == ScatteringMode::Absorption)
+        if (bsdf_sample.m_mode == ScatteringMode::None)
             break;
 
         // Terminate the path if this scattering event is not accepted.

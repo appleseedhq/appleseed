@@ -235,7 +235,7 @@ namespace
                 const ScatteringMode::Mode  prev_mode,
                 const ScatteringMode::Mode  next_mode) const
             {
-                assert(next_mode != ScatteringMode::Absorption);
+                assert(next_mode != ScatteringMode::None);
 
                 // No diffuse bounces.
                 if (ScatteringMode::has_diffuse(next_mode))
@@ -246,7 +246,7 @@ namespace
 
             void on_miss(const PathVertex& vertex)
             {
-                assert(vertex.m_prev_mode != ScatteringMode::Absorption);
+                assert(vertex.m_prev_mode != ScatteringMode::None);
 
                 // Can't look up the environment if there's no environment EDF.
                 if (m_env_edf == 0)

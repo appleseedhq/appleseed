@@ -314,7 +314,7 @@ namespace
                 const ScatteringMode::Mode  prev_mode,
                 const ScatteringMode::Mode  next_mode)
             {
-                assert(next_mode != ScatteringMode::Absorption);
+                assert(next_mode != ScatteringMode::None);
 
                 if (!m_params.m_enable_caustics)
                 {
@@ -359,7 +359,7 @@ namespace
 
             void on_miss(const PathVertex& vertex)
             {
-                assert(vertex.m_prev_mode != ScatteringMode::Absorption);
+                assert(vertex.m_prev_mode != ScatteringMode::None);
 
                 // Can't look up the environment if there's no environment EDF.
                 if (m_env_edf == 0)
@@ -410,7 +410,7 @@ namespace
                     vertex.m_scattering_modes &= ~(ScatteringMode::Glossy | ScatteringMode::Specular);
 
                 // Terminate the path if all scattering modes are disabled.
-                if (vertex.m_scattering_modes == ScatteringMode::Absorption)
+                if (vertex.m_scattering_modes == ScatteringMode::None)
                     return;
             }
         };
@@ -444,7 +444,7 @@ namespace
 
             void on_miss(const PathVertex& vertex)
             {
-                assert(vertex.m_prev_mode != ScatteringMode::Absorption);
+                assert(vertex.m_prev_mode != ScatteringMode::None);
 
                 // Can't look up the environment if there's no environment EDF.
                 if (m_env_edf == 0)
@@ -512,7 +512,7 @@ namespace
 
             void on_scatter(PathVertex& vertex)
             {
-                assert(vertex.m_scattering_modes != ScatteringMode::Absorption);
+                assert(vertex.m_scattering_modes != ScatteringMode::None);
 
                 // Any light contribution after a diffuse or glossy bounce is considered indirect.
                 if (ScatteringMode::has_diffuse_or_glossy(vertex.m_prev_mode))
@@ -523,7 +523,7 @@ namespace
                     vertex.m_scattering_modes &= ~(ScatteringMode::Glossy | ScatteringMode::Specular);
 
                 // Terminate the path if all scattering modes are disabled.
-                if (vertex.m_scattering_modes == ScatteringMode::Absorption)
+                if (vertex.m_scattering_modes == ScatteringMode::None)
                     return;
 
                 Spectrum vertex_radiance(0.0f, Spectrum::Illuminance);
