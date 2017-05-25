@@ -159,17 +159,23 @@ shader as_maya_snow
                     (in_snowColor[i] - in_surfaceColor[i]);
             }
         }
-    }
 
-    maya_colorBalance(
-        in_colorGain,
-        in_colorOffset,
-        in_defaultColor,
-        in_alphaGain,
-        in_alphaOffset,
-        in_invert,
-        in_alphaIsLuminance,
-        out_outColor,
-        out_outAlpha
-        );
+        if (!in_wrap && in_blend)
+        {
+            out_outColor = mix(in_defaultColor, out_outColor, box_blending);
+            out_outAlpha *= box_blending;
+        }
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha
+            );
+    }
 }
