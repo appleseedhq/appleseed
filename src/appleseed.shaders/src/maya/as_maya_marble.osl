@@ -103,6 +103,21 @@ shader as_maya_marble
         string label = "Ripples",
         string page = "Noise Attributes"
     ]],
+    float in_ripplesX = 1.0
+    [[
+        string as_maya_attribute_name = "ripplesX",
+        string widget = "null"
+    ]],
+    float in_ripplesY = 1.0
+    [[
+        string as_maya_attribute_name = "ripplesY",
+        string widget = "null"
+    ]],
+    float in_ripplesZ = 1.0
+    [[
+        string as_maya_attribute_name = "ripplesZ",
+        string widget = "null"
+    ]],
     float in_depth[2] = {0.0, 20.0}
     [[
         string as_maya_attribute_name = "depth",
@@ -180,7 +195,14 @@ shader as_maya_marble
 
         // Essentially a fBm with an extra iteration for fract(iterate).
 
-        vector xyz = in_ripples * 0.75; // better match with the magic number
+        // The ripples parameter seems to use only the separate X,Y,Z fields,
+        // and the vector type only when a connection exists.
+        
+        vector ripples = isconnected(in_ripples)
+            ? in_ripples
+            : vector(in_ripplesX, in_ripplesY, in_ripplesZ);
+
+        vector xyz = ripples * 0.75; // better match with the magic number
         float amp = 1.0, sum = 0.0;
 
         for (int i = 0; i < octaves + 1; ++i)
@@ -225,17 +247,23 @@ shader as_maya_marble
         }
 
         out_outAlpha = maya_luminance(out_outColor);
-    }
 
-    maya_colorBalance(
-        in_colorGain,
-        in_colorOffset,
-        in_defaultColor,
-        in_alphaGain,
-        in_alphaOffset,
-        in_invert,
-        in_alphaIsLuminance,
-        out_outColor,
-        out_outAlpha
-        );
+        if (!in_wrap && in_blend)
+        {
+            out_outColor = mix(in_defaultColor, out_outColor, box_blending);
+            out_outAlpha *= box_blending;
+        }
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha
+            );
+    }
 }
