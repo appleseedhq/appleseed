@@ -117,6 +117,21 @@ shader as_maya_volumeNoise
         string label = "Scale",
         string page = "Volume Noise Attributes"
     ]],
+    float in_scaleX = 1.0
+    [[
+        string as_maya_attribute_name = "scaleX",
+        string widget = "null"
+    ]],
+    float in_scaleY = 1.0
+    [[
+        string as_maya_attribute_name = "scaleY",
+        string widget = "null"
+    ]],
+    float in_scaleZ = 1.0
+    [[
+        string as_maya_attribute_name = "scaleZ",
+        string widget = "null"
+    ]],
     point in_origin = point(0)
     [[
         string as_maya_attribute_name = "origin",
@@ -124,6 +139,21 @@ shader as_maya_volumeNoise
         string page = "Volume Noise Attributes",
         int divider = 1
     ]],
+    float in_originX = 1.0
+    [[
+        string as_maya_attribute_name = "originX",
+        string widget = "null"
+    ]],
+    float in_originY = 1.0
+    [[
+        string as_maya_attribute_name = "originY",
+        string widget = "null"
+    ]],
+    float in_originZ = 1.0
+    [[
+        string as_maya_attribute_name = "originZ",
+        string widget = "null"
+    ]], 
     float in_implode = 0.0
     [[
         string as_maya_attribute_name = "implode",
@@ -141,6 +171,21 @@ shader as_maya_volumeNoise
         string label = "Implode Center",,
         string page = "Volume Noise Attributes",
         int divider = 1
+    ]],
+    float in_implodeCenterX = 1.0
+    [[
+        string as_maya_attribute_name = "implodeCenterX",
+        string widget = "null"
+    ]],
+    float in_implodeCenterY = 1.0
+    [[
+        string as_maya_attribute_name = "implodeCenterY",
+        string widget = "null"
+    ]],
+    float in_implodeCenterZ = 1.0
+    [[
+        string as_maya_attribute_name = "implodeCenterZ",
+        string widget = "null"
     ]],
     int in_noiseType = 1
     [[
@@ -252,9 +297,10 @@ shader as_maya_volumeNoise
     {
         out_outColor = in_defaultColor;
         out_outAlpha = maya_luminance(out_outColor);
+
         return;
     }
-    else if (in_amplitude > 0.0)
+    else
     {
         float filter_width = 0.0, val = 0.0;
 
@@ -266,7 +312,17 @@ shader as_maya_volumeNoise
 
         if (in_implode)
         {
-            implode_3d(in_implode, in_implodeCenter, Pp);
+            // The X,Y,Z fields are used directly instead of the filled
+            // vector type if no connection is present.
+            // This applies to scale and origin parameters as well.
+
+            point center = isconnected(in_implodeCenter)
+                ? in_implodeCenter
+                : point(in_implodeCenter[0],
+                        in_implodeCenter[1],
+                        in_implodeCenter[2]);
+
+            implode_3d(in_implode, center, Pp);
         }
 
         Pp *= in_frequency;  
@@ -298,10 +354,18 @@ shader as_maya_volumeNoise
         }
         else if (in_noiseType == 1)
         {
+            vector noise_scale = isconnected(in_scale)
+                ? in_scale
+                : vector(in_scaleX, in_scaleY, in_scaleZ);
+
+            point origin = isconnected(in_origin)
+                ? in_origin
+                : point(in_originX, in_originY, in_originZ);
+
             val = maya_billow_noise_3d(
                 Pp,
-                in_scale,
-                in_origin,
+                noise_scale,
+                origin,
                 in_amplitude,
                 in_time,
                 in_frequencyRatio,
@@ -391,6 +455,12 @@ shader as_maya_volumeNoise
 
         out_outAlpha = clamp(val + in_threshold, 0.0, 1.0);
         out_outColor = color(out_outAlpha);
+
+        if (!in_wrap && in_blend)
+        {
+            out_outColor = mix(in_defaultColor, out_outColor, box_blending);
+            out_outAlpha *= box_blending;
+        }
 
         maya_colorBalance(
             in_colorGain,
