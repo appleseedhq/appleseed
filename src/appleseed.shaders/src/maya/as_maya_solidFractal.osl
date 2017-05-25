@@ -78,6 +78,21 @@ shader as_maya_solidFractal
         string page = "Solid Fractal Attributes",
         int divider = 1
     ]],
+    float in_ripplesX = 1.0
+    [[
+        string as_maya_attribute_name = "ripplesX",
+        string widget = "null"
+    ]],
+    float in_ripplesY = 1.0
+    [[
+        string as_maya_attribute_name = "ripplesY",
+        string widget = "null"
+    ]],
+    float in_ripplesZ = 1.0
+    [[
+        string as_maya_attribute_name = "ripplesZ",
+        string widget = "null"
+    ]],
     float in_depth[2] = {0.0, 0.8}
     [[
         string as_maya_attribute_name = "depth",
@@ -185,10 +200,16 @@ shader as_maya_solidFractal
             filter_width = in_filter * max(EPS, sqrt(area(Pp)));
             filter_width += in_filterOffset;
         }
-        
-        float max_ripples = max(in_ripples), iterate;
 
-        filter_width *= max_ripples;
+        // It seems the ripples X,Y,Z fields are used directly instead of the
+        // main vector attribute if no connection is made.
+
+        vector ripples = isconnected(in_ripples)
+            ? in_ripples
+            : vector(in_ripplesX, in_ripplesY, in_ripplesZ);
+
+        filter_width *= max(ripples);
+        float iterate;
 
         if (in_frequencyRatio == 2.0)
         {
@@ -207,11 +228,11 @@ shader as_maya_solidFractal
 
         int max_iteration = (int) floor(iterate);
         
-        vector frequency = in_ripples * 0.5; // better match with .5 factor
+        vector frequency = ripples * 0.5; // better match with .5 factor
         vector offset = vector(0);
 
         float anim_time = (in_animated) ? in_time + time : 0.0;
-        float amplitude = in_amplitude, val, out = 0.0;
+        float amplitude = in_amplitude, val, out_value = 0.0;
         float bias_plus1, bias_minus1, sqr_bias_plus1;
 
         if (in_bias != 0)
@@ -221,7 +242,7 @@ shader as_maya_solidFractal
             sqr_bias_plus1 = sqr(bias_plus1);
         }
 
-        for (int i = 0; i < max_iteration + 1 && amplitude > 0.0; ++i)
+        for (int i = 0; i < max_iteration + 1; ++i)
         {
             if (i == max_iteration)
             {
@@ -263,33 +284,58 @@ shader as_maya_solidFractal
 
             if (in_inflection)
             {
-                val = (val > 0.0) ? val * 2.0 - 1.0 : -val * 2.0 - 1.0;
+                val = abs(val) * 2.0 - 1.0;
             }
 
-            out += amplitude * val;
-
+            out_value += amplitude * val;
+            
             frequency *= in_frequencyRatio;
             anim_time *= in_timeRatio;
             amplitude *= in_ratio;
         }
 
-        out_outAlpha = clamp(out * .5 + .5 + in_threshold, 0.0, 1.0);
+        out_outAlpha = clamp(out_value * .5 + .5 + in_threshold, 0.0, 1.0);
         out_outColor = color(out_outAlpha);
+
+        if (!in_wrap && in_blend)
+        {
+            out_outColor = mix(in_defaultColor, out_outColor, box_blending);
+            out_outAlpha *= box_blending;
+        }
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha
+            );
     }
     else
     {
         out_outColor = color(0.5);
-        out_outAlpha = 0;
+        out_outAlpha = 1.0;
+
+        if (!in_wrap && in_blend)
+        {
+            out_outColor = mix(in_defaultColor, out_outColor, box_blending);
+            out_outAlpha *= box_blending;
+        }
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha
+            );
     }
-    
-    maya_colorBalance(
-        in_colorGain,
-        in_colorOffset,
-        in_defaultColor,
-        in_alphaGain,
-        in_alphaOffset,
-        in_invert,
-        in_alphaIsLuminance,
-        out_outColor,
-        out_outAlpha);
 }
