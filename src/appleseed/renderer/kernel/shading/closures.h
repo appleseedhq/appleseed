@@ -80,6 +80,7 @@ enum ClosureID
     GlassBeckmannID,
     GlassGGXID,
     GlassSTDID,
+    LastGlassClosure = GlassSTDID,
 
     GlossyID,
     GlossyBeckmannID,
@@ -134,14 +135,15 @@ class APPLESEED_ALIGN(16) CompositeClosure
   : public foundation::NonCopyable
 {
   public:
+    enum { MaxClosureEntries = 16 };
+
     size_t get_closure_count() const;
+
     ClosureID get_closure_type(const size_t index) const;
-    const Spectrum& get_closure_weight(const size_t index) const;
-    float get_closure_pdf_weight(const size_t index) const;
     void* get_closure_input_values(const size_t index) const;
 
-    size_t choose_closure(SamplingContext& sampling_context) const;
-    size_t choose_closure(const float w) const;
+    const Spectrum& get_closure_weight(const size_t index) const;
+    float get_closure_scalar_weight(const size_t index) const;
 
     const foundation::Basis3f& get_closure_shading_basis(const size_t index) const;
 
@@ -172,19 +174,14 @@ class APPLESEED_ALIGN(16) CompositeClosure
         foundation::Arena&          arena);
 
   protected:
-    enum { MaxClosureEntries = 16 };
-
     size_t                          m_closure_count;
     void*                           m_input_values[MaxClosureEntries];
     ClosureID                       m_closure_types[MaxClosureEntries];
     Spectrum                        m_weights[MaxClosureEntries];
-    float                           m_cdf[MaxClosureEntries];
-    float                           m_pdf_weights[MaxClosureEntries];
+    float                           m_scalar_weights[MaxClosureEntries];
     foundation::Basis3f             m_bases[MaxClosureEntries];
 
     CompositeClosure();
-
-    void compute_cdf();
 
     template <typename InputValues>
     InputValues* do_add_closure(
@@ -210,6 +207,15 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
         const foundation::Basis3f&  original_shading_basis,
         const OSL::ClosureColor*    ci,
         foundation::Arena&          arena);
+
+    int compute_pdfs(
+        const int                   modes,
+        float                       pdf[MaxClosureEntries]) const;
+
+    size_t choose_closure(
+        const float                 w,
+        const size_t                num_closures,
+        float                       pdfs[MaxClosureEntries]) const;
 
     void add_ior(
         const foundation::Color3f&  weight,
@@ -243,13 +249,21 @@ class APPLESEED_ALIGN(16) CompositeSubsurfaceClosure
         const OSL::ClosureColor*    ci,
         foundation::Arena&          arena);
 
+    float get_closure_pdf_weight(const size_t index) const;
+
+    size_t choose_closure(const float w) const;
+
   private:
+    float                           m_pdf_weights[MaxClosureEntries];
+    float                           m_cdf[MaxClosureEntries];
+
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
         const foundation::Basis3f&  original_shading_basis,
         const foundation::Color3f&  weight,
         foundation::Arena&          arena);
 
+    void compute_cdf();
 };
 
 
@@ -272,11 +286,20 @@ class APPLESEED_ALIGN(16) CompositeEmissionClosure
         const float                 max_weight_component,
         foundation::Arena&          arena);
 
+    float get_closure_pdf_weight(const size_t index) const;
+
+    size_t choose_closure(const float w) const;
+
   private:
+    float                           m_pdf_weights[MaxClosureEntries];
+    float                           m_cdf[MaxClosureEntries];
+
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
         const foundation::Color3f&  weight,
         foundation::Arena&          arena);
+
+    void compute_cdf();
 };
 
 
@@ -306,28 +329,50 @@ inline ClosureID CompositeClosure::get_closure_type(const size_t index) const
     return m_closure_types[index];
 }
 
-inline const Spectrum& CompositeClosure::get_closure_weight(const size_t index) const
-{
-    assert(index < get_closure_count());
-    return m_weights[index];
-}
-
-inline float CompositeClosure::get_closure_pdf_weight(const size_t index) const
-{
-    assert(index < get_closure_count());
-    return m_pdf_weights[index];
-}
-
 inline void* CompositeClosure::get_closure_input_values(const size_t index) const
 {
     assert(index < get_closure_count());
     return m_input_values[index];
 }
 
+inline const Spectrum& CompositeClosure::get_closure_weight(const size_t index) const
+{
+    assert(index < get_closure_count());
+    return m_weights[index];
+}
+
+inline float CompositeClosure::get_closure_scalar_weight(const size_t index) const
+{
+    assert(index < get_closure_count());
+    return m_scalar_weights[index];
+}
+
 inline const foundation::Basis3f& CompositeClosure::get_closure_shading_basis(const size_t index) const
 {
     assert(index < get_closure_count());
     return m_bases[index];
+}
+
+
+//
+// CompositeSubsurfaceClosure class implementation.
+//
+
+inline float CompositeSubsurfaceClosure::get_closure_pdf_weight(const size_t index) const
+{
+    assert(index < get_closure_count());
+    return m_pdf_weights[index];
+}
+
+
+//
+// CompositeEmissionClosure class implementation.
+//
+
+inline float CompositeEmissionClosure::get_closure_pdf_weight(const size_t index) const
+{
+    assert(index < get_closure_count());
+    return m_pdf_weights[index];
 }
 
 }       // namespace renderer

@@ -111,7 +111,10 @@ namespace
 
             if (c->get_closure_count() > 0)
             {
-                const size_t closure_index = c->choose_closure(sampling_context);
+                sampling_context.split_in_place(1, 1);
+                const size_t closure_index = c->choose_closure(
+                    sampling_context.next2<float>());
+
                 const EDF& edf = edf_from_closure_id(c->get_closure_type(closure_index));
                 edf.sample(
                     sampling_context,
