@@ -40,21 +40,21 @@ shader as_maya_snow
     color in_snowColor = color(1)
     [[
         string as_maya_attribute_name = "snowColor",
-        string as_maya_attribute_name_short = "sn",
+        string as_maya_attribute_short_name = "sn",
         string label = "Snow Color",
         string page = "Snow Attributes"
     ]],
     color in_surfaceColor = color(0.5, 0.0, 0.0)
     [[
         string as_maya_attribute_name = "surfaceColor",
-        string as_maya_attribute_name_short = "su",
+        string as_maya_attribute_short_name = "su",
         string label = "Surface Color",
         string page = "Snow Attributes"
     ]],
     float in_threshold = 0.5
     [[
         string as_maya_attribute_name = "threshold",
-        string as_maya_attribute_name_short = "th",
+        string as_maya_attribute_short_name = "th",
         float min = 0.0,
         float max = 1.0,
         string label = "Threshold",
@@ -63,7 +63,7 @@ shader as_maya_snow
     float in_depthDecay = 5.0
     [[
         string as_maya_attribute_name = "depthDecay",
-        string as_maya_attribute_name_short = "dd",
+        string as_maya_attribute_short_name = "dd",
         float min = 0.0,
         float softmax = 10.0,
         string label = "Depth Decay",
@@ -72,7 +72,7 @@ shader as_maya_snow
     float in_thickness = 1.0
     [[
         string as_maya_attribute_name = "thickness",
-        string as_maya_attribute_name_short = "tn",
+        string as_maya_attribute_short_name = "tn",
         float min = 0.0,
         float max = 1.0,
         string label = "Thickness",
@@ -81,14 +81,14 @@ shader as_maya_snow
     normal in_normalCamera = N
     [[
         string as_maya_attribute_name = "normalCamera",
-        string as_maya_attribute_name_short = "n",
+        string as_maya_attribute_short_name = "n",
         string label = "Normal",
         string widget = "null"
     ]],
     point in_refPointCamera = P
     [[
         string as_maya_attribute_name = "refPointCamera",
-        string as_maya_attribute_name_short = "rpc",
+        string as_maya_attribute_short_name = "rpc",
         string label = "Surface Point",
         string widget = "null"
     ]],
@@ -106,14 +106,14 @@ shader as_maya_snow
     output color out_outColor = color(0)
     [[
         string as_maya_attribute_name = "outColor",
-        string as_maya_attribute_name_short = "oc",
+        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output float out_outAlpha = 1.0
     [[
         string as_maya_attribute_name = "outAlpha",
-        string as_maya_attribute_name_short = "oa",
+        string as_maya_attribute_short_name = "oa",
         string label = "Output Alpha",
         string widget = "null"
     ]]

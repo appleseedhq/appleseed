@@ -40,21 +40,21 @@ shader as_maya_marble
     color in_fillerColor = color(1)
     [[
         string as_maya_attribute_name = "fillerColor",
-        string as_maya_attribute_name_short = "fc",
+        string as_maya_attribute_short_name = "fc",
         string label = "Filler Color",
         string page = "Marble Attributes"
     ]],
     color in_veinColor = color(0.298, 0.0, 0.0)
     [[
         string as_maya_attribute_name = "veinColor",
-        string as_maya_attribute_name_short = "vc",
+        string as_maya_attribute_short_name = "vc",
         string label = "Vein Color",
         string page = "Marble Attributes"
     ]],
     float in_veinWidth = 0.1
     [[
         string as_maya_attribute_name = "veinWidth",
-        string as_maya_attribute_name_short = "vw",
+        string as_maya_attribute_short_name = "vw",
         float min = 0.0,
         float softmax = 1.0,
         string label = "Vein Width",
@@ -63,7 +63,7 @@ shader as_maya_marble
     float in_diffusion = 0.5
     [[
         string as_maya_attribute_name = "diffusion",
-        string as_maya_attribute_name_short = "di",
+        string as_maya_attribute_short_name = "di",
         float softmin = 0.0,
         float softmax = 1.0,
         string label = "Diffusion",
@@ -72,7 +72,7 @@ shader as_maya_marble
     float in_contrast = 0.5
     [[
         string as_maya_attribute_name = "contrast",
-        string as_maya_attribute_name_short = "c",
+        string as_maya_attribute_short_name = "c",
         float softmin = 0.0,
         float softmax = 1.0,
         string label = "Contrast",
@@ -81,7 +81,7 @@ shader as_maya_marble
     float in_amplitude = 1.5
     [[
         string as_maya_attribute_name = "amplitude",
-        string as_maya_attribute_name_short = "a",
+        string as_maya_attribute_short_name = "a",
         float min = 0.0,
         float softmax = 1.5,
         string label = "Amplitude",
@@ -90,7 +90,7 @@ shader as_maya_marble
     float in_ratio = 0.707
     [[
         string as_maya_attribute_name = "ratio",
-        string as_maya_attribute_name_short = "ra",
+        string as_maya_attribute_short_name = "ra",
         float min = 0.0,
         float max = 1.0,
         string label = "Ratio",
@@ -99,7 +99,7 @@ shader as_maya_marble
     vector in_ripples = vector(1)
     [[
         string as_maya_attribute_name = "ripples",
-        string as_maya_attribute_name_short = "r",
+        string as_maya_attribute_short_name = "r",
         string label = "Ripples",
         string page = "Noise Attributes"
     ]],
@@ -121,7 +121,7 @@ shader as_maya_marble
     float in_depth[2] = {0.0, 20.0}
     [[
         string as_maya_attribute_name = "depth",
-        string as_maya_attribute_name_short = "d",
+        string as_maya_attribute_short_name = "d",
         string label = "Depth",
         string page = "Noise Attributes"
     ]],
@@ -129,7 +129,7 @@ shader as_maya_marble
     point in_refPointCamera = P
     [[
         string as_maya_attribute_name = "refPointCamera",
-        string as_maya_attribute_name_short = "rpc",
+        string as_maya_attribute_short_name = "rpc",
         string label = "Surface Point",
         string widget = "null"
     ]],
@@ -147,14 +147,14 @@ shader as_maya_marble
     output color out_outColor = color(0)
     [[
         string as_maya_attribute_name = "outColor",
-        string as_maya_attribute_name_short = "oc",
+        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output float out_outAlpha = 1.0
     [[
         string as_maya_attribute_name = "outAlpha",
-        string as_maya_attribute_name_short = "oa",
+        string as_maya_attribute_short_name = "oa",
         string label = "Output Alpha",
         string widget = "null"
     ]]

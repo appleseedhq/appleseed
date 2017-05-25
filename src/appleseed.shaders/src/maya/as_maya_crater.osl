@@ -42,7 +42,7 @@ shader as_maya_crater
     float in_shaker = 1.5
     [[
         string as_maya_attribute_name = "shaker",
-        string as_maya_attribute_name_short = "sh",
+        string as_maya_attribute_short_name = "sh",
         float min = 0.0,
         float softmax = 20.0,
         string label = "Shaker",
@@ -51,28 +51,28 @@ shader as_maya_crater
     color in_channel1 = color(1, 0, 0)
     [[
         string as_maya_attribute_name = "channel1",
-        string as_maya_attribute_name_short = "c1",
+        string as_maya_attribute_short_name = "c1",
         string label = "Channel 1",
         string page = "Crater Attributes"
     ]],
     color in_channel2 = color(0, 1, 0)
     [[
         string as_maya_attribute_name = "channel2",
-        string as_maya_attribute_name_short = "c2",
+        string as_maya_attribute_short_name = "c2",
         string label = "Channel 2",
         string page = "Crater Attributes"
     ]],
     color in_channel3 = color(0, 0, 1)
     [[
         string as_maya_attribute_name = "channel3",
-        string as_maya_attribute_name_short = "c3",
+        string as_maya_attribute_short_name = "c3",
         string label = "Channel 3",
         string page = "Crater Attributes"
     ]],
     float in_melt = 0.0
     [[
         string as_maya_attribute_name = "melt",
-        string as_maya_attribute_name_short = "m",
+        string as_maya_attribute_short_name = "m",
         float min = 0.0,
         float softmax = 1.0,
         string label = "Melt",
@@ -81,7 +81,7 @@ shader as_maya_crater
     float in_balance = 0.0
     [[
         string as_maya_attribute_name = "balance",
-        string as_maya_attribute_name_short = "ba",
+        string as_maya_attribute_short_name = "ba",
         float min = 0.0,
         float softmax = 1.0,
         string label = "Balance",
@@ -90,7 +90,7 @@ shader as_maya_crater
     float in_frequency = 2.0
     [[
         string as_maya_attribute_name = "frequency",
-        string as_maya_attribute_name_short = "fr",
+        string as_maya_attribute_short_name = "fr",
         float min = 0.0,
         float softmax = 10.0,
         string label = "Frequency",
@@ -135,14 +135,14 @@ shader as_maya_crater
     normal in_normalCamera = N
     [[
         string as_maya_attribute_name = "normalCamera",
-        string as_maya_attribute_name_short = "n",
+        string as_maya_attribute_short_name = "n",
         string label = "Normal",
         string widget = "null"
     ]],
     point in_refPointCamera = P
     [[
         string as_maya_attribute_name = "refPointCamera",
-        string as_maya_attribute_name_short = "rpc",
+        string as_maya_attribute_short_name = "rpc",
         string label = "Surface Point",
         string widget = "null"
     ]],
@@ -160,21 +160,21 @@ shader as_maya_crater
     output color out_outColor = color(0)
     [[
         string as_maya_attribute_name = "outColor",
-        string as_maya_attribute_name_short = "oc",
+        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output float out_outAlpha = 1.0
     [[
         string as_maya_attribute_name = "outAlpha",
-        string as_maya_attribute_name_short = "oa",
+        string as_maya_attribute_short_name = "oa",
         string label = "Output Alpha",
         string widget = "null"
     ]],
     output normal out_outNormal = N
     [[
         string as_maya_attribute_name = "outNormal",
-        string as_maya_attribute_name_short = "o",
+        string as_maya_attribute_short_name = "o",
         string label = "Output Normal",
         string widget = "null"
     ]]

@@ -92,21 +92,21 @@ shader as_maya_rock
     color in_color1 = color(0.235, 0.0, 0.0)
     [[
         string as_maya_attribute_name = "color1",
-        string as_maya_attribute_name_short = "c1",
+        string as_maya_attribute_short_name = "c1",
         string label = "Color 1",
         string page = "Rock Attributes"
     ]],
     color in_color2 = color(1.0)
     [[
         string as_maya_attribute_name = "color2",
-        string as_maya_attribute_name_short = "c2",
+        string as_maya_attribute_short_name = "c2",
         string label = "Color 2",
         string page = "Rock Attributes"
     ]],
     float in_grainSize = 0.01
     [[
         string as_maya_attribute_name = "grainSize",
-        string as_maya_attribute_name_short = "gs",
+        string as_maya_attribute_short_name = "gs",
         float min = 0.0,
         float softmax = 0.1,
         string label = "Grain Size",
@@ -115,7 +115,7 @@ shader as_maya_rock
     float in_diffusion = 1.0
     [[
         string as_maya_attribute_name = "diffusion",
-        string as_maya_attribute_name_short = "di",
+        string as_maya_attribute_short_name = "di",
         float min = 0.0,
         float softmax = 1.0,
         string label = "Diffusion",
@@ -124,7 +124,7 @@ shader as_maya_rock
     float in_mixRatio = 0.5
     [[
         string as_maya_attribute_name = "mixRatio",
-        string as_maya_attribute_name_short = "mr",
+        string as_maya_attribute_short_name = "mr",
         float min = 0.0,
         float softmax = 1.0,
         string label = "Mix Ratio",
@@ -133,7 +133,7 @@ shader as_maya_rock
     point in_refPointCamera = P
     [[
         string as_maya_attribute_name = "refPointCamera",
-        string as_maya_attribute_name_short = "rpc",
+        string as_maya_attribute_short_name = "rpc",
         string label = "Surface Point",
         string widget = "null"
     ]],
@@ -151,14 +151,14 @@ shader as_maya_rock
     output color out_outColor = color(0)
     [[
         string as_maya_attribute_name = "outColor",
-        string as_maya_attribute_name_short = "oc",
+        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output float out_outAlpha = 1.0
     [[
         string as_maya_attribute_name = "outAlpha",
-        string as_maya_attribute_name_short = "oa",
+        string as_maya_attribute_short_name = "oa",
         string label = "Output Alpha",
         string widget = "null"
     ]]

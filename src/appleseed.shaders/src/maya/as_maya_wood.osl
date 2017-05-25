@@ -26,64 +26,156 @@
 // THE SOFTWARE.
 //
 
-// Ref: $MAYA_LOCATION/docs/Nodes/stucco.html
+// Ref: $MAYA_LOCATION/docs/Nodes/wood.html
 
 #include "appleseed/maya/as_maya_fractal_helpers.h"
 #include "appleseed/maya/as_maya_helpers.h"
 #include "appleseed/maya/as_maya_transform_helpers.h"
 
-shader as_maya_stucco
+shader as_maya_wood
 [[
-    string as_maya_node_name = "stucco"
+    string as_maya_node_name = "wood"
 ]]
 (
-    float in_shaker = 20.0
+    color in_fillerColor = color(0.824, 0.627, 0.471)
     [[
-        string as_maya_attribute_name = "shaker",
-        string as_maya_attribute_short_name = "sh",
+        string as_maya_attribute_name = "fillerColor",
+        string as_maya_attribute_short_name = "fc",
+        string label = "Filler Color",
+        string page = "Wood Attributes"
+    ]],
+    color in_veinColor = color(0.157, 0.078, 0.039)
+    [[
+        string as_maya_attribute_name = "veinColor",
+        string as_maya_attribute_short_name = "vc",
+        string label = "Vein Color",
+        string page = "Wood Attributes"
+    ]],
+    float in_veinSpread = 0.25
+    [[
+        string as_maya_attribute_name = "veinSpread",
+        string as_maya_attribute_short_name = "v",
         float min = 0.0,
-        float softmax = 20.0,
-        string label = "Shaker",
-        string page = "Crater Attributes"
+        float softmax = 3.0,
+        string label = "Vein Spread",
+        string page = "Wood Attributes"
     ]],
-    color in_channel1 = color(1, 0, 0)
+    float in_layerSize = 0.05
     [[
-        string as_maya_attribute_name = "channel1",
-        string as_maya_attribute_short_name = "c1",
-        string label = "Channel 1",
-        string page = "Crater Attributes"
+        string as_maya_attribute_name = "layerSize",
+        string as_maya_attribute_short_name = "ls",
+        float min = 0.005,
+        float softmax = 0.5,
+        string label = "Layer Size",
+        string page = "Wood Attributes"
     ]],
-    color in_channel2 = color(0, 1, 0)
+    float in_randomness = 0.5
     [[
-        string as_maya_attribute_name = "channel2",
-        string as_maya_attribute_short_name = "c2",
-        string label = "Channel 2",
-        string page = "Crater Attributes"
+        string as_maya_attribute_name = "randomness",
+        string as_maya_attribute_short_name = "rd",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Randomness",
+        string page = "Wood Attributes"
     ]],
-    color in_channel3 = color(0, 0, 1)
+    float in_age = 20.0
     [[
-        string as_maya_attribute_name = "channel3",
-        string as_maya_attribute_short_name = "c3",
-        string label = "Channel 3",
-        string page = "Crater Attributes"
+        string as_maya_attribute_name = "age",
+        string as_maya_attribute_short_name = "a",
+        float min = 0.0,
+        float softmax = 100.0,
+        string label = "Age",
+        string page = "Wood Attributes"
     ]],
-    float in_normDepth = 1.0
+    color in_grainColor = color(0.118, 0.039, 0.0)
     [[
-        string as_maya_attribute_name = "normDepth",
-        string as_maya_attribute_short_name = "nd",
-        float softmin = -5.0,
-        float softmax = 5.0,
-        string label = "Normal Depth",
-        string page = "Normal Options"
+        string as_maya_attribute_name = "grainColor",
+        string as_maya_attribute_short_name = "gc",
+        string label = "Grain Color",
+        string page = "Wood Attributes"
     ]],
-    float in_normMelt = 0.1
+    float in_grainContrast = 0.5
     [[
-        string as_maya_attribute_name = "normMelt",
-        string as_maya_attribute_short_name = "nm",
+        string as_maya_attribute_name = "grainContrast",
+        string as_maya_attribute_short_name = "gx",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Grain Contrast",
+        string page = "Wood Attributes"
+    ]],
+    float in_grainSpacing = 0.01
+    [[
+        string as_maya_attribute_name = "grainSpacing",
+        string as_maya_attribute_short_name = "gs",
+        float min = 0.0,
+        float softmin = 0.01,
+        float softmax = 0.1,
+        string label = "Grain Spacing",
+        string page = "Wood Attributes"
+    ]],
+    float in_center[2] = {0.5, -0.5}
+    [[
+        string as_maya_attribute_name = "center",
+        string as_maya_attribute_short_name = "c",
+        float softmin = -1.0,
+        float softmax = 1.0,
+        string label = "Center",
+        string page = "Wood Attributes"
+    ]],
+    float in_amplitudeX = 0.0
+    [[
+        string as_maya_attribute_name = "amplitudeX",
+        string as_maya_attribute_short_name = "ax",
         float softmin = 0.0,
         float softmax = 1.0,
-        string label = "Normal Melt",
-        string page = "Normal Options"
+        string label = "Amplitude X",
+        string page = "Noise Attributes"
+    ]],
+    float in_amplitudeY = 0.0
+    [[
+        string as_maya_attribute_name = "amplitudeY",
+        string as_maya_attribute_short_name = "ay",
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Amplitude Y",
+        string page = "Noise Attributes"
+    ]],
+    float in_ratio = 0.35
+    [[
+        string as_maya_attribute_name = "ratio",
+        string as_maya_attribute_short_name = "ra",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Ratio",
+        string page = "Noise Attributes"
+    ]],
+    vector in_ripples = vector(1)
+    [[
+        string as_maya_attribute_name = "ripples",
+        string as_maya_attribute_short_name = "r",
+        string label = "Ripples",
+        string page = "Noise Attributes"
+    ]],
+    float in_ripplesX = 1.0
+    [[
+        string as_maya_attribute_name = "ripplesX",
+        string as_maya_attribute_short_name = "rx",
+        string widget = "null"
+    ]],
+    float in_ripplesY = 1.0
+    [[
+        string as_maya_attribute_name = "ripplesY",
+        string as_maya_attribute_short_name = "ry",
+        string widget = "null"
+    ]],
+    float in_depth[2] = {0.0, 8.0}
+    [[
+        string as_maya_attribute_name = "depth",
+        string as_maya_attribute_short_name = "d",
+        float min = 0.0,
+        float softmax = 8.0,
+        string label = "Depth",
+        string page = "Noise Attributes"
     ]],
     normal in_normalCamera = N
     [[
