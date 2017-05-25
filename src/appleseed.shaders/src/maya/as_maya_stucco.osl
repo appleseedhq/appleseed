@@ -151,7 +151,7 @@ shader as_maya_stucco
     {
         out_outColor = in_defaultColor;
         out_outAlpha = maya_luminance(out_outColor);
-        out_outNormal = N;
+        out_outNormal = in_normalCamera;
 
         return;
     }
@@ -166,24 +166,10 @@ shader as_maya_stucco
         }
 
         float value = recurrence(filter_width, Pp, in_shaker, 0.0);
+        value = value * 0.25 + 0.5;
 
         out_outAlpha = value;
-
-        value = min(1.0, value);
-        float inv = 1.0 - value;
-
-        if (value < EPS)
-        {
-            out_outColor = in_channel2;
-        }
-        else if (inv < EPS)
-        {
-            out_outColor = in_channel1;
-        }
-        else
-        {
-            out_outColor = in_channel1 * value + in_channel2 * inv;
-        }
+        out_outColor = mix(in_channel2, in_channel1, min(1.0, sqr(value)));
 
         // Normal output.
         float melt = 0.1 * in_normMelt;
@@ -197,17 +183,17 @@ shader as_maya_stucco
             out_outNormal *= box_blending;
         }
         out_outNormal = normalize(out_outNormal + in_normalCamera);
-    }
 
-    maya_colorBalance(
-        in_colorGain,
-        in_colorOffset,
-        in_defaultColor,
-        in_alphaGain,
-        in_alphaOffset,
-        in_invert,
-        in_alphaIsLuminance,
-        out_outColor,
-        out_outAlpha
-        );
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha
+            );
+    }
 }

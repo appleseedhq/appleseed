@@ -198,7 +198,7 @@ shader as_maya_crater
     {
         out_outColor = in_defaultColor;
         out_outAlpha = maya_luminance(out_outColor);
-        out_outNormal = N;
+        out_outNormal = in_normalCamera;
 
         return;
     }

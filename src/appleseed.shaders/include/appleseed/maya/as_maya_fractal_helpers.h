@@ -979,16 +979,16 @@ float recurrence(
 
         for (int i = 0; i < 10; ++i)
         {
-            if (tmp_size > 1)
+            if (tmp_size > 1.0)
             {
                 break;
             }
-            tmp_size *= 2;
+            tmp_size *= 2.0;
             nb++;
         }
     }
 
-    int nb1 = nb - 1, gainin = 1;
+    int nb1 = nb - 1, gainin = 0x1;
     float out_recurrence = 0;    
 
     for (int i = 0; i < nb; i++, gainin <<= 1)
