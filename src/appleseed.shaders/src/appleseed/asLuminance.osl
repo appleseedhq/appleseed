@@ -43,8 +43,7 @@ shader asLuminance
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Input Color",
-        string page = "Color Attributes",
-        int divider = 1
+        string page = "Color Attributes"
     ]],
     int in_deriveFromMayaCMS = 1
     [[
@@ -52,47 +51,50 @@ shader asLuminance
         string as_maya_attribute_short_name = "dm",
         string widget = "checkBox",
         string label = "Use Maya CMS",
-        string page = "Color Attributes"
+        string page = "Color Space",
+        int divider = 1
     ]],
-    int in_inputPrimariesSpace = 0
+    int in_inputColorSpace = 0
     [[
-        string as_maya_attribute_name = "inputPrimariesSpace",
+        string as_maya_attribute_name = "inputColorSpace",
         string as_maya_attribute_short_name = "is",
         int as_maya_attribute_keyable = 0,
         string widget = "mapper",
-        string options = "ACES 2065-1 AP0:0|ACEScg AP1:1|Rec.2020:2|DCI-P3:3|Rec.709/sRGB:4|User-set xy Primaries:5",
-        string label = "Input Primaries",
-        string page = "Color Attributes"
+        string options = "ACES 2065-1 AP0:0|ACEScg AP1:1|Rec.2020:2|DCI-P3:3|Rec.709/sRGB:4|Chromaticity Coordinates:5",
+        string label = "Input Color Space",
+        string page = "Color Space",
+        int divider = 1
     ]],
-    float in_xyChromaticityCoordinatesR[2] = {0.317, 0.329}
+    float in_chromaticityCoordsR[2] = {0.317, 0.329}
     [[
-        string as_maya_attribute_name = "xyChromaticityCoordinatesR",
+        string as_maya_attribute_name = "chromaticityCoordsR",
         string as_maya_attribute_short_name = "pr",
         int as_maya_attribute_keyable = 0,
         float min = 0.0,
         float max = 1.0,
-        string label = "R xy Chromaticity Coordinates",
-        string page = "Color Attributes/Primaries"
+        string label = "R xy Coordinates",
+        string page = "Color Space"
     ]],
-    float in_xyChromaticityCoordinatesG[2] = {0.317, 0.329}
+    float in_chromaticityCoordsG[2] = {0.317, 0.329}
     [[
-        string as_maya_attribute_name = "xyChromaticityCoordinatesG",
+        string as_maya_attribute_name = "chromaticityCoordsG",
         string as_maya_attribute_short_name = "pg",
         int as_maya_attribute_keyable = 0,
         float min = 0.0,
         float max = 1.0,
-        string label = "G xy Chromaticity Coordinates",
-        string page = "Color Attributes/Primaries"
+        string label = "G xy Coordinates",
+        string page = "Color Space"
     ]],
-    float in_xyChromaticityCoordinatesB[2] = {0.317, 0.329}
+    float in_chromaticityCoordsB[2] = {0.317, 0.329}
     [[
-        string as_maya_attribute_name = "xyChromaticityCoordinatesB",
+        string as_maya_attribute_name = "chromaticityCoordsB",
         string as_maya_attribute_short_name = "pb",
         int as_maya_attribute_keyable = 0,
         float min = 0.0,
         float max = 1.0,
-        string label = "B xy Chromaticity Coordinates",
-        string page = "Color Attributes/Primaries"
+        string label = "B xy Coordinates",
+        string page = "Color Space",
+        int divider = 1
     ]],
     int in_inputIlluminants = 0
     [[
@@ -100,10 +102,11 @@ shader asLuminance
         string as_maya_attribute_short_name = "ii",
         int as_maya_attribute_keyable = 0,
         string widget = "mapper",
-        string options = "D50:0|D55:1|D60:2|D65:3|D75:4|DCI:5|E:6|D Illuminant CCT:7|White Point xy:8",
+        string options = "Standard Illuminant D50:0|Standard Illuminant D55:1|Standard Illuminant D60:2|Standard Illuminant D65:3|Standard Illuminant D75:4|DCI White Point:5|Equal Energy White Point E:6|Correlated Color Temperature:7|WP Chromaticity Coordinates:8",
         string label = "Illuminants",
-        string page = "Color Attributes/Primaries",
-        string help = "Preset illuminants, correlated color temperature or explicit white point xy chromaticity coordinates."
+        string page = "Color Space",
+        string help = "Preset illuminants, correlated color temperature or explicit white point xy chromaticity coordinates.",
+        int divider = 1
     ]],
     int in_colorTemperature = 6504
     [[
@@ -113,17 +116,17 @@ shader asLuminance
         int min = 4000,
         int max = 25000,
         string label = "Color Temperature",
-        string page = "Color Attributes/Primaries"
+        string page = "Color Space"
     ]],
-    float in_xyChromaticityCoordinatesW[2] = {0.3127, 0.329}
+    float in_chromaticityCoordsW[2] = {0.3127, 0.329}
     [[
-        string as_maya_attribute_name = "xyChromaticityCoordinatesW",
+        string as_maya_attribute_name = "chromaticityCoordsW",
         string as_maya_attribute_short_name = "pw",
         int as_maya_attribute_keyable = 0,
         float min = 0.0,
         float max = 1.0,
-        string label = "W xy Chromaticity Coordinates",
-        string page = "Color Attributes/Primaries"
+        string label = "W xy Coordinates",
+        string page = "Color Space"
     ]],
 
     MAYA_COLORMANAGEMENT_PARAMETERS,
@@ -184,23 +187,23 @@ shader asLuminance
         }
         else
         {
-            if (in_inputPrimariesSpace == 5)
+            if (in_inputColorSpace == 5)
             {
                 color RGBW[4]; // explicit R,G,B,W primaries
 
                 RGBW[0] = transform_xyY_to_XYZ(
-                    color(in_xyChromaticityCoordinatesR[0],
-                          in_xyChromaticityCoordinatesR[1],
+                    color(in_chromaticityCoordsR[0],
+                          in_chromaticityCoordsR[1],
                           1.0));
 
                 RGBW[1] = transform_xyY_to_XYZ(
-                    color(in_xyChromaticityCoordinatesG[0],
-                          in_xyChromaticityCoordinatesG[1],
+                    color(in_chromaticityCoordsG[0],
+                          in_chromaticityCoordsG[1],
                           1.0));
 
                 RGBW[2] = transform_xyY_to_XYZ(
-                    color(in_xyChromaticityCoordinatesB[0],
-                          in_xyChromaticityCoordinatesB[1],
+                    color(in_chromaticityCoordsB[0],
+                          in_chromaticityCoordsB[1],
                           1.0));
 
                 if (in_inputIlluminants < 6)
@@ -262,8 +265,8 @@ shader asLuminance
                 {
                     // explicit white point xy coordinates
                     RGBW[3] = transform_xyY_to_XYZ(
-                        color(in_xyChromaticityCoordinatesW[0],
-                              in_xyChromaticityCoordinatesW[1],
+                        color(in_chromaticityCoordsW[0],
+                              in_chromaticityCoordsW[1],
                               1.0));
                 }
 
@@ -299,27 +302,27 @@ shader asLuminance
             }
             else
             {
-                if (in_inputPrimariesSpace == 0)
+                if (in_inputColorSpace == 0)
                 {
                     // ACES 2065-1 AP0
                     coeffs = color(ACES_D60_LUMINANCE_COEFFS);
                 }
-                else if (in_inputPrimariesSpace == 1)
+                else if (in_inputColorSpace == 1)
                 {
                     // ACEScg AP1
                     coeffs = color(ACESCG_D60_LUMINANCE_COEFFS);
                 }
-                else if (in_inputPrimariesSpace == 2)
+                else if (in_inputColorSpace == 2)
                 {
                     // Rec.2020
                     coeffs = color(REC2020_D65_LUMINANCE_COEFFS);
                 }
-                else if (in_inputPrimariesSpace == 3)
+                else if (in_inputColorSpace == 3)
                 {
                     // DCI-P3 primaries
                     coeffs = color(DCIP3_DCI_LUMINANCE_COEFFS);
                 }
-                else if (in_inputPrimariesSpace == 4)
+                else if (in_inputColorSpace == 4)
                 {
                     // Rec.709/sRGB primaries
                     coeffs = color(REC709_D65_LUMINANCE_COEFFS);
