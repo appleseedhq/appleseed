@@ -38,7 +38,7 @@
 
 float as_luminance_D65(color in_C, string colorspace)
 {
-    color coeffs = color(0);
+    color coeffs;
 
     if (colorspace == "Rec.601")
     {
@@ -81,12 +81,12 @@ float as_luminance_D65(color in_C, string colorspace)
     }
     return coeffs[0] * in_C[0] +
            coeffs[1] * in_C[1] +
-           coeffs[2] + in_C[2];
+           coeffs[2] * in_C[2];
 }
 
 float as_luminance_D60(color in_C, string colorspace)
 {
-    color coeffs = color(0);
+    color coeffs;
 
     if (colorspace == "Rec.601")
     {
@@ -129,12 +129,12 @@ float as_luminance_D60(color in_C, string colorspace)
     }
     return coeffs[0] * in_C[0] +
            coeffs[1] * in_C[1] +
-           coeffs[2] + in_C[2];
+           coeffs[2] * in_C[2];
 }
 
 float as_luminance_DCI(color in_C, string colorspace)
 {
-    color coeffs = color(0);
+    color coeffs;
 
     if (colorspace == "Rec.601")
     {
@@ -177,37 +177,42 @@ float as_luminance_DCI(color in_C, string colorspace)
     }
     return coeffs[0] * in_C[0] +
            coeffs[1] * in_C[1] +
-           coeffs[2] + in_C[2];
+           coeffs[2] * in_C[2];
 }
 
 float as_luminance(color in_C, string colorspace, string illuminant)
 {
-    color coeffs = color(0);
+    float Y;
 
     if (illuminant == "D60")
     {
-        coeffs = as_luminance_D60(in_C, colorspace);
+        Y = as_luminance_D60(in_C, colorspace);
+    }
+    else if (illuminant = "D65")
+    {
+        Y = as_luminance_D65(in_C, colorspace);
     }
     else if (illuminant == "DCI")
     {
-        coeffs = as_luminance_DCI(in_C, colorspace);
+        Y = as_luminance_DCI(in_C, colorspace);
     }
     else
     {
-        coeffs = as_luminance_D65(in_C, colorspace);
+#ifdef DEBUG
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
+
+        warning("[WARNING]: Unsupported illuminant in %s, %s:%i\n",
+                shadername, __FILE__, __LINE__);
+#endif
+        Y = 0;
     }
-    return coeffs[0] * in_C[0] +
-           coeffs[1] * in_C[1] +
-           coeffs[2] + in_C[2];
+    return Y;
 }
 
 float as_luminance(color in_C, string colorspace)
 {
-    color coeffs = as_luminance_D65(in_C, colorspace);
-
-    return coeffs[0] * in_C[0] +
-           coeffs[1] * in_C[1] +
-           coeffs[2] * in_C[2];
+    return as_luminance_D65(in_C, colorspace);
 }
 
 #endif // !AS_COLOR_HELPERS_H
