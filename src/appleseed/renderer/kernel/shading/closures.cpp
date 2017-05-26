@@ -1455,6 +1455,26 @@ InputValues* CompositeClosure::do_add_closure(
     return values;
 }
 
+void CompositeClosure::compute_pdfs(float pdfs[MaxClosureEntries])
+{
+    const size_t closure_count = get_closure_count();
+
+    float total_weight = 0.0f;
+    for (size_t i = 0; i < closure_count; ++i)
+    {
+        pdfs[i] = m_scalar_weights[i];
+        total_weight += pdfs[i];
+    }
+
+    if (total_weight != 0.0f)
+    {
+        const float rcp_total_weight = 1.0f / total_weight;
+
+        for (size_t i = 0; i < closure_count; ++i)
+            pdfs[i] *= rcp_total_weight;
+    }
+}
+
 
 //
 // CompositeSurfaceClosure class implementation.
@@ -1496,9 +1516,9 @@ CompositeSurfaceClosure::CompositeSurfaceClosure(
 
 int CompositeSurfaceClosure::compute_pdfs(
     const int                   modes,
-    float                       pdf[MaxClosureEntries]) const
+    float                       pdfs[MaxClosureEntries]) const
 {
-    memset(pdf, 0, sizeof(float) * MaxClosureEntries);
+    memset(pdfs, 0, sizeof(float) * MaxClosureEntries);
 
     int num_closures = 0;
     float sum_weights = 0.0f;
@@ -1510,19 +1530,19 @@ int CompositeSurfaceClosure::compute_pdfs(
 
         if (closure_modes & modes)
         {
-            pdf[i] = m_scalar_weights[i];
+            pdfs[i] = m_scalar_weights[i];
             sum_weights += m_scalar_weights[i];
             ++num_closures;
         }
         else
-            pdf[i] = 0.0f;
+            pdfs[i] = 0.0f;
     }
 
     if (sum_weights != 0.0f)
     {
         const float rcp_sum_weights = 1.0f / sum_weights;
         for (size_t i = 0, e = get_closure_count(); i < e; ++i)
-            pdf[i] *= rcp_sum_weights;
+            pdfs[i] *= rcp_sum_weights;
     }
 
     return num_closures;
@@ -1536,15 +1556,7 @@ size_t CompositeSurfaceClosure::choose_closure(
     assert(num_closures > 0);
     assert(num_closures < MaxClosureEntries);
 
-    float u = 0.0f;
-
-    for (size_t i = 0; i < num_closures; ++i)
-    {
-        u += pdfs[i];
-        if (w < u) return i;
-    }
-
-    return num_closures - 1;
+    return sample_pdf_linear_search(pdfs, num_closures, w);
 }
 
 void CompositeSurfaceClosure::add_ior(
@@ -1621,13 +1633,13 @@ CompositeSubsurfaceClosure::CompositeSubsurfaceClosure(
     Arena&                      arena)
 {
     process_closure_tree(ci, original_shading_basis, Color3f(1.0f), arena);
-    compute_cdf();
+    compute_pdfs(m_pdfs);
 }
 
 size_t CompositeSubsurfaceClosure::choose_closure(const float w) const
 {
     assert(get_closure_count() > 0);
-    return sample_cdf_linear_search(m_cdf, w);
+    return sample_pdf_linear_search(m_pdfs, get_closure_count(), w);
 }
 
 void CompositeSubsurfaceClosure::process_closure_tree(
@@ -1678,37 +1690,6 @@ void CompositeSubsurfaceClosure::process_closure_tree(
     }
 }
 
-void CompositeSubsurfaceClosure::compute_cdf()
-{
-    const size_t closure_count = get_closure_count();
-
-    if (closure_count == 1)
-    {
-        m_pdf_weights[0] = 1.0f;
-        m_cdf[0] = 1.0f;
-    }
-    else if (closure_count > 1)
-    {
-        float total_weight = 0.0f;
-        for (size_t i = 0; i < closure_count; ++i)
-        {
-            m_pdf_weights[i] = m_scalar_weights[i];
-            total_weight += m_pdf_weights[i];
-            m_cdf[i] = total_weight;
-        }
-
-        const float rcp_total_weight = 1.0f / total_weight;
-
-        for (size_t i = 0; i < closure_count; ++i)
-            m_pdf_weights[i] *= rcp_total_weight;
-
-        for (size_t i = 0; i < closure_count - 1; ++i)
-            m_cdf[i] *= rcp_total_weight;
-
-        m_cdf[closure_count - 1] = 1.0f;
-    }
-}
-
 
 //
 // CompositeEmissionClosure class implementation.
@@ -1719,13 +1700,13 @@ CompositeEmissionClosure::CompositeEmissionClosure(
     Arena&                      arena)
 {
     process_closure_tree(ci, Color3f(1.0f), arena);
-    compute_cdf();
+    compute_pdfs(m_pdfs);
 }
 
 size_t CompositeEmissionClosure::choose_closure(const float w) const
 {
     assert(get_closure_count() > 0);
-    return sample_cdf_linear_search(m_cdf, w);
+    return sample_pdf_linear_search(m_pdfs, get_closure_count(), w);
 }
 
 template <typename InputValues>
@@ -1744,7 +1725,7 @@ InputValues* CompositeEmissionClosure::add_closure(
 
     m_closure_types[m_closure_count] = closure_type;
     m_weights[m_closure_count] = weight;
-    m_pdf_weights[m_closure_count] = max_weight_component;
+    m_pdfs[m_closure_count] = max_weight_component;
 
     InputValues* values = arena.allocate<InputValues>();
     m_input_values[m_closure_count] = values;
@@ -1800,37 +1781,6 @@ void CompositeEmissionClosure::process_closure_tree(
             }
         }
         break;
-    }
-}
-
-void CompositeEmissionClosure::compute_cdf()
-{
-    const size_t closure_count = get_closure_count();
-
-    if (closure_count == 1)
-    {
-        m_pdf_weights[0] = 1.0f;
-        m_cdf[0] = 1.0f;
-    }
-    else if (closure_count > 1)
-    {
-        float total_weight = 0.0f;
-        for (size_t i = 0; i < closure_count; ++i)
-        {
-            m_pdf_weights[i] = m_scalar_weights[i];
-            total_weight += m_pdf_weights[i];
-            m_cdf[i] = total_weight;
-        }
-
-        const float rcp_total_weight = 1.0f / total_weight;
-
-        for (size_t i = 0; i < closure_count; ++i)
-            m_pdf_weights[i] *= rcp_total_weight;
-
-        for (size_t i = 0; i < closure_count - 1; ++i)
-            m_cdf[i] *= rcp_total_weight;
-
-        m_cdf[closure_count - 1] = 1.0f;
     }
 }
 

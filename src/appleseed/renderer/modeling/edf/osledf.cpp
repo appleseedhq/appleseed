@@ -187,7 +187,7 @@ namespace
                 if (edf_prob > 0.0f)
                 {
                     value += s;
-                    probability += edf_prob * c->get_closure_pdf_weight(i);
+                    probability += edf_prob * c->get_closure_pdf(i);
                 }
             }
         }
@@ -214,7 +214,7 @@ namespace
                         outgoing);
 
                 if (edf_prob > 0.0f)
-                    probability += edf_prob * c->get_closure_pdf_weight(i);
+                    probability += edf_prob * c->get_closure_pdf(i);
             }
 
             return probability;

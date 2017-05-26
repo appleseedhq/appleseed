@@ -192,6 +192,8 @@ class APPLESEED_ALIGN(16) CompositeClosure
         const bool                  has_tangent,
         const foundation::Vector3f& tangent,
         foundation::Arena&          arena);
+
+    void compute_pdfs(float pdfs[MaxClosureEntries]);
 };
 
 
@@ -249,21 +251,18 @@ class APPLESEED_ALIGN(16) CompositeSubsurfaceClosure
         const OSL::ClosureColor*    ci,
         foundation::Arena&          arena);
 
-    float get_closure_pdf_weight(const size_t index) const;
+    float get_closure_pdf(const size_t index) const;
 
     size_t choose_closure(const float w) const;
 
   private:
-    float                           m_pdf_weights[MaxClosureEntries];
-    float                           m_cdf[MaxClosureEntries];
+    float                           m_pdfs[MaxClosureEntries];
 
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
         const foundation::Basis3f&  original_shading_basis,
         const foundation::Color3f&  weight,
         foundation::Arena&          arena);
-
-    void compute_cdf();
 };
 
 
@@ -286,20 +285,17 @@ class APPLESEED_ALIGN(16) CompositeEmissionClosure
         const float                 max_weight_component,
         foundation::Arena&          arena);
 
-    float get_closure_pdf_weight(const size_t index) const;
+    float get_closure_pdf(const size_t index) const;
 
     size_t choose_closure(const float w) const;
 
   private:
-    float                           m_pdf_weights[MaxClosureEntries];
-    float                           m_cdf[MaxClosureEntries];
+    float                           m_pdfs[MaxClosureEntries];
 
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
         const foundation::Color3f&  weight,
         foundation::Arena&          arena);
-
-    void compute_cdf();
 };
 
 
@@ -358,10 +354,10 @@ inline const foundation::Basis3f& CompositeClosure::get_closure_shading_basis(co
 // CompositeSubsurfaceClosure class implementation.
 //
 
-inline float CompositeSubsurfaceClosure::get_closure_pdf_weight(const size_t index) const
+inline float CompositeSubsurfaceClosure::get_closure_pdf(const size_t index) const
 {
     assert(index < get_closure_count());
-    return m_pdf_weights[index];
+    return m_pdfs[index];
 }
 
 
@@ -369,10 +365,10 @@ inline float CompositeSubsurfaceClosure::get_closure_pdf_weight(const size_t ind
 // CompositeEmissionClosure class implementation.
 //
 
-inline float CompositeEmissionClosure::get_closure_pdf_weight(const size_t index) const
+inline float CompositeEmissionClosure::get_closure_pdf(const size_t index) const
 {
     assert(index < get_closure_count());
-    return m_pdf_weights[index];
+    return m_pdfs[index];
 }
 
 }       // namespace renderer
