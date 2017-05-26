@@ -512,6 +512,7 @@ namespace
             values->m_radiance.set_intent(Spectrum::Illuminance);
             values->m_radiance = weight / max_weight_component;
             values->m_radiance_multiplier = max_weight_component;
+            values->m_exposure = 0.0f;
         }
     };
 

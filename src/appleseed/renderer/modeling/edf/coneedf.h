@@ -59,6 +59,7 @@ APPLESEED_DECLARE_INPUT_VALUES(ConeEDFInputValues)
 {
     Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
     float       m_radiance_multiplier;  // emitted radiance multiplier
+    float       m_exposure;             // emitted radiance exposure
     float       m_angle;                // cone angle
 };
 

@@ -41,6 +41,7 @@
 #include "foundation/utility/arena.h"
 
 // Standard headers.
+#include <cmath>
 #include <string>
 
 using namespace foundation;
@@ -158,7 +159,10 @@ float EDF::get_max_contribution_spectrum(const Source* source) const
     return max_value(spectrum);
 }
 
-float EDF::get_max_contribution(const Source* input, const Source* multiplier) const
+float EDF::get_max_contribution(
+    const Source*           input,
+    const Source*           multiplier,
+    const Source*           exposure) const
 {
     const float max_contribution_input = get_max_contribution_spectrum(input);
 
@@ -170,15 +174,24 @@ float EDF::get_max_contribution(const Source* input, const Source* multiplier) c
     if (max_contribution_multiplier == numeric_limits<float>::max())
         return numeric_limits<float>::max();
 
-    return max_contribution_input * max_contribution_multiplier;
+    const float max_contribution_exposure = get_max_contribution_scalar(exposure);
+
+    if (max_contribution_exposure == numeric_limits<float>::max())
+        return numeric_limits<float>::max();
+
+    return max_contribution_input * max_contribution_multiplier * pow(2.0f, max_contribution_exposure);
 }
 
-float EDF::get_max_contribution(const char* input_name, const char* multiplier_name) const
+float EDF::get_max_contribution(
+    const char*             input_name,
+    const char*             multiplier_name,
+    const char*             exposure_name) const
 {
     return
         get_max_contribution(
             m_inputs.source(input_name),
-            m_inputs.source(multiplier_name));
+            m_inputs.source(multiplier_name),
+            m_inputs.source(exposure_name));
 }
 
 }   // namespace renderer
