@@ -58,10 +58,10 @@ struct SPPMParameters
     const size_t                m_env_photon_count;                     // number of photons emitted from the environment
     const size_t                m_photon_packet_size;                   // number of photons per tracing job
 
-    const size_t                m_photon_tracing_max_path_length;       // maximum photon tracing path length, ~0 for unlimited
+    const size_t                m_photon_tracing_max_bounces;           // maximum number of photon bounces, ~0 for unlimited
     const size_t                m_photon_tracing_rr_min_path_length;    // minimum photon tracing path length before Russian Roulette kicks in, ~0 for unlimited
 
-    const size_t                m_path_tracing_max_path_length;         // maximum path tracing path length, ~0 for unlimited
+    const size_t                m_path_tracing_max_bounces;             // maximum number of path bounces, ~0 for unlimited
     const size_t                m_path_tracing_rr_min_path_length;      // minimum path tracing path length before Russian Roulette kicks in, ~0 for unlimited
 
     const float                 m_transparency_threshold;

@@ -97,10 +97,11 @@ namespace
             const bool      m_enable_ibl;                   // is image-based lighting enabled?
             const bool      m_enable_caustics;              // are caustics enabled?
 
-            const size_t    m_max_path_length;              // maximum path length, ~0 for unlimited
-            const size_t    m_max_specular_bounces;         // maximum number of specular bounces, ~0 for unlimited
-            const size_t    m_max_glossy_bounces;           // maximum number of glossy bounces, ~0 for unlimited
+            const size_t    m_max_bounces;                  // maximum number of bounces, ~0 for unlimited
             const size_t    m_max_diffuse_bounces;          // maximum number of diffuse bounces, ~0 for unlimited
+            const size_t    m_max_glossy_bounces;           // maximum number of glossy bounces, ~0 for unlimited
+            const size_t    m_max_specular_bounces;         // maximum number of specular bounces, ~0 for unlimited
+
             const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
             const bool      m_next_event_estimation;        // use next event estimation?
 
@@ -118,10 +119,10 @@ namespace
               : m_enable_dl(params.get_optional<bool>("enable_dl", true))
               , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
               , m_enable_caustics(params.get_optional<bool>("enable_caustics", false))
-              , m_max_path_length(fixup_path_length(params.get_optional<size_t>("max_path_length", 0)))
-              , m_max_specular_bounces(fixup_bounces(params.get_optional<int>("max_specular_bounces", -1)))
-              , m_max_glossy_bounces(fixup_bounces(params.get_optional<int>("max_glossy_bounces", -1)))
+              , m_max_bounces(fixup_bounces(params.get_optional<int>("max_bounces", -1)))
               , m_max_diffuse_bounces(fixup_bounces(params.get_optional<int>("max_diffuse_bounces", -1)))
+              , m_max_glossy_bounces(fixup_bounces(params.get_optional<int>("max_glossy_bounces", -1)))
+              , m_max_specular_bounces(fixup_bounces(params.get_optional<int>("max_specular_bounces", -1)))
               , m_rr_min_path_length(fixup_path_length(params.get_optional<size_t>("rr_min_path_length", 6)))
               , m_next_event_estimation(params.get_optional<bool>("next_event_estimation", true))
               , m_dl_light_sample_count(params.get_optional<float>("dl_light_samples", 1.0f))
@@ -143,14 +144,14 @@ namespace
                         : 0.0f;
             }
 
-            static size_t fixup_path_length(const size_t x)
-            {
-                return x == 0 ? ~0 : x;
-            }
-
             static size_t fixup_bounces(const int x)
             {
                 return x == -1 ? ~0 : x;
+            }
+
+            static size_t fixup_path_length(const size_t x)
+            {
+                return x == 0 ? ~0 : x;
             }
 
             void print() const
@@ -160,10 +161,10 @@ namespace
                     "  direct lighting               %s\n"
                     "  ibl                           %s\n"
                     "  caustics                      %s\n"
-                    "  max path length               %s\n"
-                    "  max specular bounces          %s\n"
-                    "  max glossy bounces            %s\n"
+                    "  max bounces                   %s\n"
                     "  max diffuse bounces           %s\n"
+                    "  max glossy bounces            %s\n"
+                    "  max specular bounces          %s\n"
                     "  rr min path length            %s\n"
                     "  next event estimation         %s\n"
                     "  dl light samples              %s\n"
@@ -173,11 +174,11 @@ namespace
                     m_enable_dl ? "on" : "off",
                     m_enable_ibl ? "on" : "off",
                     m_enable_caustics ? "on" : "off",
-                    m_max_path_length == size_t(~0) ? "infinite" : pretty_uint(m_max_path_length).c_str(),
-                    m_max_specular_bounces == size_t(~0) ? "infinite" : pretty_uint(m_max_specular_bounces).c_str(),
-                    m_max_glossy_bounces == size_t(~0) ? "infinite" : pretty_uint(m_max_glossy_bounces).c_str(),
-                    m_max_diffuse_bounces == size_t(~0) ? "infinite" : pretty_uint(m_max_diffuse_bounces).c_str(),
-                    m_rr_min_path_length == size_t(~0) ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
+                    m_max_bounces == ~0 ? "infinite" : pretty_uint(m_max_bounces).c_str(),
+                    m_max_diffuse_bounces == ~0 ? "infinite" : pretty_uint(m_max_diffuse_bounces).c_str(),
+                    m_max_glossy_bounces == ~0 ? "infinite" : pretty_uint(m_max_glossy_bounces).c_str(),
+                    m_max_specular_bounces == ~0 ? "infinite" : pretty_uint(m_max_specular_bounces).c_str(),
+                    m_rr_min_path_length == ~0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
                     m_next_event_estimation ? "on" : "off",
                     pretty_scalar(m_dl_light_sample_count).c_str(),
                     pretty_scalar(m_dl_low_light_threshold, 3).c_str(),
@@ -231,7 +232,6 @@ namespace
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             Spectrum&               radiance)               // output radiance, in W.sr^-1.m^-2
-
         {
             PathVisitor path_visitor(
                 m_params,
@@ -244,7 +244,12 @@ namespace
             PathTracer<PathVisitor, false> path_tracer(     // false = not adjoint
                 path_visitor,
                 m_params.m_rr_min_path_length,
-                m_params.m_max_path_length,
+                m_params.m_max_bounces == ~0 ? ~0 : m_params.m_max_bounces + 1,
+                m_params.m_max_diffuse_bounces == ~0 ? ~0 : m_params.m_max_diffuse_bounces + 1,
+                //m_params.m_max_glossy_bounces == 0 ? ~0 : m_params.m_max_glossy_bounces + 1,
+                //m_params.m_max_specular_bounces == 0 ? ~0 : m_params.m_max_specular_bounces + 1,
+                m_params.m_max_glossy_bounces,
+                m_params.m_max_specular_bounces,
                 shading_context.get_max_iterations());
 
             const size_t path_length =
@@ -286,10 +291,7 @@ namespace
             const ShadingContext&       m_shading_context;
             const EnvironmentEDF*       m_env_edf;
             Spectrum&                   m_path_radiance;
-            bool                        m_omit_emitted_light;   // todo: get rid of this
-            uint64                      m_specular_bounces;
-            uint64                      m_glossy_bounces;
-            uint64                      m_diffuse_bounces;
+            bool                        m_omit_emitted_light;
 
             PathVisitorBase(
                 const Parameters&       params,
@@ -305,9 +307,6 @@ namespace
               , m_env_edf(scene.get_environment()->get_environment_edf())
               , m_path_radiance(path_radiance)
               , m_omit_emitted_light(false)
-              , m_specular_bounces(0)
-              , m_glossy_bounces(0)
-              , m_diffuse_bounces(0)
             {
             }
 
@@ -315,31 +314,7 @@ namespace
                 const ScatteringMode::Mode  prev_mode,
                 const ScatteringMode::Mode  next_mode)
             {
-                assert(next_mode != ScatteringMode::Absorption);
-
-                // Count the number of diffuse bounces.
-                if (ScatteringMode::has_diffuse(next_mode))
-                    m_diffuse_bounces++;
-
-                // Don't exceed the maximum limit of diffuse bounces.
-                if (m_diffuse_bounces > m_params.m_max_diffuse_bounces)
-                    return false;
-
-                // Count the number of glossy bounces.
-                if (ScatteringMode::has_glossy(next_mode))
-                    m_glossy_bounces++;
-
-                // Don't exceed the maximum limit of glossy bounces.
-                if (m_glossy_bounces > m_params.m_max_glossy_bounces)
-                    return false;
-
-                // Count the number of specular bounces.
-                if (ScatteringMode::has_specular(next_mode))
-                    m_specular_bounces++;
-
-                // Don't exceed the maximum limit of specular bounces.
-                if (m_specular_bounces > m_params.m_max_specular_bounces)
-                    return false;
+                assert(next_mode != ScatteringMode::None);
 
                 if (!m_params.m_enable_caustics)
                 {
@@ -382,27 +357,9 @@ namespace
             {
             }
 
-            void visit_vertex(const PathVertex& vertex)
+            void on_miss(const PathVertex& vertex)
             {
-                if ((!m_omit_emitted_light || m_params.m_enable_caustics) &&
-                    vertex.m_edf &&
-                    vertex.m_cos_on > 0.0 &&
-                    (vertex.m_path_length > 2 || m_params.m_enable_dl) &&
-                    (vertex.m_path_length < 2 || (vertex.m_edf->get_flags() & EDF::CastIndirectLight)))
-                {
-                    // Compute the emitted radiance.
-                    Spectrum emitted_radiance(Spectrum::Illuminance);
-                    vertex.compute_emitted_radiance(m_shading_context, emitted_radiance);
-
-                    // Update the path radiance.
-                    emitted_radiance *= vertex.m_throughput;
-                    m_path_radiance += emitted_radiance;
-                }
-            }
-
-            void visit_environment(const PathVertex& vertex)
-            {
-                assert(vertex.m_prev_mode != ScatteringMode::Absorption);
+                assert(vertex.m_prev_mode != ScatteringMode::None);
 
                 // Can't look up the environment if there's no environment EDF.
                 if (m_env_edf == 0)
@@ -424,6 +381,37 @@ namespace
                 // Update path radiance.
                 env_radiance *= vertex.m_throughput;
                 m_path_radiance += env_radiance;
+            }
+
+            void on_hit(const PathVertex& vertex)
+            {
+                // Emitted light contribution.
+                if ((!m_omit_emitted_light || m_params.m_enable_caustics) &&
+                    vertex.m_edf &&
+                    vertex.m_cos_on > 0.0 &&
+                    (vertex.m_path_length > 2 || m_params.m_enable_dl) &&
+                    (vertex.m_path_length < 2 || (vertex.m_edf->get_flags() & EDF::CastIndirectLight)))
+                {
+                    // Compute the emitted radiance.
+                    Spectrum emitted_radiance(Spectrum::Illuminance);
+                    vertex.compute_emitted_radiance(m_shading_context, emitted_radiance);
+
+                    // Update the path radiance.
+                    emitted_radiance *= vertex.m_throughput;
+                    m_path_radiance += emitted_radiance;
+                }
+            }
+
+            void on_scatter(PathVertex& vertex)
+            {
+                // When caustics are disabled, disable glossy and specular components after a diffuse bounce.
+                // Note that accept_scattering() is later going to return false in this case.
+                if (!m_params.m_enable_caustics && vertex.m_prev_mode == ScatteringMode::Diffuse)
+                    vertex.m_scattering_modes &= ~(ScatteringMode::Glossy | ScatteringMode::Specular);
+
+                // Terminate the path if all scattering modes are disabled.
+                if (vertex.m_scattering_modes == ScatteringMode::None)
+                    return;
             }
         };
 
@@ -454,239 +442,9 @@ namespace
             {
             }
 
-            void visit_vertex(const PathVertex& vertex)
+            void on_miss(const PathVertex& vertex)
             {
-                // Any light contribution after a diffuse or glossy bounce is considered indirect.
-                if (ScatteringMode::has_diffuse_or_glossy(vertex.m_prev_mode))
-                    m_is_indirect_lighting = true;
-
-                const int scattering_modes =
-                    !m_params.m_enable_caustics && vertex.m_prev_mode == ScatteringMode::Diffuse
-                        ? ScatteringMode::Diffuse
-                        : ScatteringMode::All;
-
-                const bool last_vertex = vertex.m_path_length == m_params.m_max_path_length;
-
-                Spectrum vertex_radiance(0.0f, Spectrum::Illuminance);
-
-                // Emitted light.
-                if ((!m_omit_emitted_light || m_params.m_enable_caustics) &&
-                    vertex.m_edf &&
-                    vertex.m_cos_on > 0.0 &&
-                    (vertex.m_path_length > 2 || m_params.m_enable_dl) &&
-                    (vertex.m_path_length < 2 || (vertex.m_edf->get_flags() & EDF::CastIndirectLight)))
-                {
-                    add_emitted_light_contribution(
-                        vertex,
-                        vertex_radiance);
-                }
-
-                if (vertex.m_bssrdf == 0)
-                {
-                    // If we have an OSL shader and this is not the last vertex of the path,
-                    // we need to choose one of the closures and set its shading basis into the shading point
-                    // for the DirectLightingIntegrator to use it.
-                    if (!last_vertex && (m_params.m_enable_dl || m_params.m_enable_ibl))
-                    {
-                        const Material::RenderData& material_data =
-                            vertex.m_shading_point->get_material()->get_render_data();
-
-                        if (material_data.m_shader_group)
-                        {
-                            m_sampling_context.split_in_place(2, 1);
-                            m_shading_context.choose_bsdf_closure_shading_basis(
-                                *vertex.m_shading_point,
-                                m_sampling_context.next2<Vector2f>());
-                        }
-                    }
-                }
-
-                // Direct lighting.
-                if (m_params.m_enable_dl || vertex.m_path_length > 1)
-                {
-                    if (vertex.m_bsdf)
-                    {
-                        add_direct_lighting_contribution_bsdf(
-                            *vertex.m_shading_point,
-                            vertex.m_outgoing,
-                            *vertex.m_bsdf,
-                            vertex.m_bsdf_data,
-                            last_vertex,
-                            scattering_modes,
-                            vertex_radiance);
-                    }
-                }
-
-                // Image-based lighting.
-                if (m_params.m_enable_ibl && m_env_edf)
-                {
-                    if (vertex.m_bsdf)
-                    {
-                        add_image_based_lighting_contribution_bsdf(
-                            *vertex.m_shading_point,
-                            vertex.m_outgoing,
-                            *vertex.m_bsdf,
-                            vertex.m_bsdf_data,
-                            last_vertex,
-                            scattering_modes,
-                            vertex_radiance);
-                    }
-                }
-
-                // Apply path throughput.
-                vertex_radiance *= vertex.m_throughput;
-
-                // Optionally clamp secondary rays contribution.
-                if (m_params.m_has_max_ray_intensity && vertex.m_path_length > 1)
-                    clamp_contribution(vertex_radiance);
-
-                // Update path radiance.
-                m_path_radiance += vertex_radiance;
-            }
-
-            void add_direct_lighting_contribution_bsdf(
-                const ShadingPoint&     shading_point,
-                const Dual3d&           outgoing,
-                const BSDF&             bsdf,
-                const void*             bsdf_data,
-                const bool              last_vertex,
-                const int               scattering_modes,
-                Spectrum&               vertex_radiance)
-            {
-                Spectrum dl_radiance(Spectrum::Illuminance);
-
-                const size_t light_sample_count =
-                    stochastic_cast<size_t>(
-                        m_sampling_context,
-                        m_params.m_dl_light_sample_count);
-
-                const size_t bsdf_sample_count = last_vertex ? light_sample_count : 1;
-
-                const DirectLightingIntegrator integrator(
-                    m_shading_context,
-                    m_light_sampler,
-                    shading_point,
-                    bsdf,
-                    bsdf_data,
-                    scattering_modes,
-                    scattering_modes,
-                    bsdf_sample_count,
-                    light_sample_count,
-                    m_params.m_dl_low_light_threshold,
-                    m_is_indirect_lighting);
-
-                if (last_vertex)
-                {
-                    // This path won't be extended: sample both the lights and the BSDF.
-                    integrator.compute_outgoing_radiance_combined_sampling_low_variance(
-                        m_sampling_context,
-                        outgoing,
-                        dl_radiance);
-                }
-                else
-                {
-                    // This path will be extended via BSDF sampling: sample the lights only.
-                    integrator.compute_outgoing_radiance_light_sampling_low_variance(
-                        m_sampling_context,
-                        MISPower2,
-                        outgoing,
-                        dl_radiance);
-                }
-
-                // Divide by the sample count when this number is less than 1.
-                if (m_params.m_rcp_dl_light_sample_count > 0.0f)
-                    dl_radiance *= m_params.m_rcp_dl_light_sample_count;
-
-                // Add direct lighting contribution.
-                vertex_radiance += dl_radiance;
-            }
-
-            void add_emitted_light_contribution(
-                const PathVertex&       vertex,
-                Spectrum&               vertex_radiance)
-            {
-                // Compute the emitted radiance.
-                Spectrum emitted_radiance(Spectrum::Illuminance);
-                vertex.compute_emitted_radiance(m_shading_context, emitted_radiance);
-
-                // Multiple importance sampling.
-                if (vertex.m_prev_mode != ScatteringMode::Specular)
-                {
-                    const float light_sample_count = max(m_params.m_dl_light_sample_count, 1.0f);
-                    const float mis_weight =
-                        mis_power2(
-                            1.0f * vertex.get_bsdf_prob_area(),
-                            light_sample_count * vertex.get_light_prob_area(m_light_sampler));
-                    emitted_radiance *= mis_weight;
-                }
-
-                // Add emitted light contribution.
-                vertex_radiance += emitted_radiance;
-            }
-
-            void add_image_based_lighting_contribution_bsdf(
-                const ShadingPoint&     shading_point,
-                const Dual3d&           outgoing,
-                const BSDF&             bsdf,
-                const void*             bsdf_data,
-                const bool              last_vertex,
-                const int               scattering_modes,
-                Spectrum&               vertex_radiance)
-            {
-                Spectrum ibl_radiance(Spectrum::Illuminance);
-
-                const size_t env_sample_count =
-                    stochastic_cast<size_t>(
-                        m_sampling_context,
-                        m_params.m_ibl_env_sample_count);
-
-                const size_t bsdf_sample_count = last_vertex ? env_sample_count : 1;
-
-                if (last_vertex)
-                {
-                    // This path won't be extended: sample both the environment and the BSDF.
-                    compute_ibl_combined_sampling(
-                        m_sampling_context,
-                        m_shading_context,
-                        *m_env_edf,
-                        shading_point,
-                        outgoing,
-                        bsdf,
-                        bsdf_data,
-                        scattering_modes,
-                        scattering_modes,
-                        bsdf_sample_count,
-                        env_sample_count,
-                        ibl_radiance);
-                }
-                else
-                {
-                    // This path will be extended via BSDF sampling: sample the environment only.
-                    compute_ibl_environment_sampling(
-                        m_sampling_context,
-                        m_shading_context,
-                        *m_env_edf,
-                        shading_point,
-                        outgoing,
-                        bsdf,
-                        bsdf_data,
-                        scattering_modes,
-                        bsdf_sample_count,
-                        env_sample_count,
-                        ibl_radiance);
-                }
-
-                // Divide by the sample count when this number is less than 1.
-                if (m_params.m_rcp_ibl_env_sample_count > 0.0f)
-                    ibl_radiance *= m_params.m_rcp_ibl_env_sample_count;
-
-                // Add image-based lighting contribution.
-                vertex_radiance += ibl_radiance;
-            }
-
-            void visit_environment(const PathVertex& vertex)
-            {
-                assert(vertex.m_prev_mode != ScatteringMode::Absorption);
+                assert(vertex.m_prev_mode != ScatteringMode::None);
 
                 // Can't look up the environment if there's no environment EDF.
                 if (m_env_edf == 0)
@@ -731,6 +489,205 @@ namespace
 
                 // Update the path radiance.
                 m_path_radiance += env_radiance;
+            }
+
+            void on_hit(const PathVertex& vertex)
+            {
+                // Emitted light contribution.
+                if ((!m_omit_emitted_light || m_params.m_enable_caustics) &&
+                    vertex.m_edf &&
+                    vertex.m_cos_on > 0.0 &&
+                    (vertex.m_path_length > 2 || m_params.m_enable_dl) &&
+                    (vertex.m_path_length < 2 || (vertex.m_edf->get_flags() & EDF::CastIndirectLight)))
+                {
+                    // Compute the emitted radiance.
+                    Spectrum emitted_radiance(0.0f, Spectrum::Illuminance);
+                    add_emitted_light_contribution(vertex, emitted_radiance);
+
+                    // Update the path radiance.
+                    emitted_radiance *= vertex.m_throughput;
+                    m_path_radiance += emitted_radiance;
+                }
+            }
+
+            void on_scatter(PathVertex& vertex)
+            {
+                assert(vertex.m_scattering_modes != ScatteringMode::None);
+
+                // Any light contribution after a diffuse or glossy bounce is considered indirect.
+                if (ScatteringMode::has_diffuse_or_glossy(vertex.m_prev_mode))
+                    m_is_indirect_lighting = true;
+
+                // When caustics are disabled, disable glossy and specular components after a diffuse bounce.
+                if (!m_params.m_enable_caustics && vertex.m_prev_mode == ScatteringMode::Diffuse)
+                    vertex.m_scattering_modes &= ~(ScatteringMode::Glossy | ScatteringMode::Specular);
+
+                // Terminate the path if all scattering modes are disabled.
+                if (vertex.m_scattering_modes == ScatteringMode::None)
+                    return;
+
+                Spectrum vertex_radiance(0.0f, Spectrum::Illuminance);
+
+                if (vertex.m_bssrdf == 0)
+                {
+                    // If we have an OSL shader, we need to choose one of the closures and set
+                    // its shading basis into the shading point for the DirectLightingIntegrator
+                    // to use it.
+                    if (m_params.m_enable_dl || m_params.m_enable_ibl)
+                    {
+                        const Material::RenderData& material_data =
+                            vertex.m_shading_point->get_material()->get_render_data();
+                        if (material_data.m_shader_group)
+                        {
+                            m_sampling_context.split_in_place(2, 1);
+                            m_shading_context.choose_bsdf_closure_shading_basis(
+                                *vertex.m_shading_point,
+                                m_sampling_context.next2<Vector2f>());
+                        }
+                    }
+                }
+
+                // Direct lighting contribution.
+                if (m_params.m_enable_dl || vertex.m_path_length > 1)
+                {
+                    if (vertex.m_bsdf)
+                    {
+                        add_direct_lighting_contribution_bsdf(
+                            *vertex.m_shading_point,
+                            vertex.m_outgoing,
+                            *vertex.m_bsdf,
+                            vertex.m_bsdf_data,
+                            vertex.m_scattering_modes,
+                            vertex_radiance);
+                    }
+                }
+
+                // Image-based lighting contribution.
+                if (m_params.m_enable_ibl && m_env_edf)
+                {
+                    if (vertex.m_bsdf)
+                    {
+                        add_image_based_lighting_contribution_bsdf(
+                            *vertex.m_shading_point,
+                            vertex.m_outgoing,
+                            *vertex.m_bsdf,
+                            vertex.m_bsdf_data,
+                            vertex.m_scattering_modes,
+                            vertex_radiance);
+                    }
+                }
+
+                // Apply path throughput.
+                vertex_radiance *= vertex.m_throughput;
+
+                // Optionally clamp secondary rays contribution.
+                if (m_params.m_has_max_ray_intensity && vertex.m_path_length > 1)
+                    clamp_contribution(vertex_radiance);
+
+                // Update path radiance.
+                m_path_radiance += vertex_radiance;
+            }
+
+            void add_emitted_light_contribution(
+                const PathVertex&       vertex,
+                Spectrum&               vertex_radiance)
+            {
+                // Compute the emitted radiance.
+                Spectrum emitted_radiance(Spectrum::Illuminance);
+                vertex.compute_emitted_radiance(m_shading_context, emitted_radiance);
+
+                // Multiple importance sampling.
+                if (vertex.m_prev_mode != ScatteringMode::Specular)
+                {
+                    const float light_sample_count = max(m_params.m_dl_light_sample_count, 1.0f);
+                    const float mis_weight =
+                        mis_power2(
+                            1.0f * vertex.get_bsdf_prob_area(),
+                            light_sample_count * vertex.get_light_prob_area(m_light_sampler));
+                    emitted_radiance *= mis_weight;
+                }
+
+                // Add emitted light contribution.
+                vertex_radiance += emitted_radiance;
+            }
+
+            void add_direct_lighting_contribution_bsdf(
+                const ShadingPoint&     shading_point,
+                const Dual3d&           outgoing,
+                const BSDF&             bsdf,
+                const void*             bsdf_data,
+                const int               scattering_modes,
+                Spectrum&               vertex_radiance)
+            {
+                Spectrum dl_radiance(Spectrum::Illuminance);
+
+                const size_t light_sample_count =
+                    stochastic_cast<size_t>(
+                        m_sampling_context,
+                        m_params.m_dl_light_sample_count);
+
+                // This path will be extended via BSDF sampling: sample the lights only.
+                const DirectLightingIntegrator integrator(
+                    m_shading_context,
+                    m_light_sampler,
+                    shading_point,
+                    bsdf,
+                    bsdf_data,
+                    scattering_modes,   // bsdf_sampling_modes (unused)
+                    scattering_modes,   // light_sampling_modes
+                    1,                  // bsdf_sample_count
+                    light_sample_count,
+                    m_params.m_dl_low_light_threshold,
+                    m_is_indirect_lighting);
+                integrator.compute_outgoing_radiance_light_sampling_low_variance(
+                    m_sampling_context,
+                    MISPower2,
+                    outgoing,
+                    dl_radiance);
+
+                // Divide by the sample count when this number is less than 1.
+                if (m_params.m_rcp_dl_light_sample_count > 0.0f)
+                    dl_radiance *= m_params.m_rcp_dl_light_sample_count;
+
+                // Add direct lighting contribution.
+                vertex_radiance += dl_radiance;
+            }
+
+            void add_image_based_lighting_contribution_bsdf(
+                const ShadingPoint&     shading_point,
+                const Dual3d&           outgoing,
+                const BSDF&             bsdf,
+                const void*             bsdf_data,
+                const int               scattering_modes,
+                Spectrum&               vertex_radiance)
+            {
+                Spectrum ibl_radiance(Spectrum::Illuminance);
+
+                const size_t env_sample_count =
+                    stochastic_cast<size_t>(
+                        m_sampling_context,
+                        m_params.m_ibl_env_sample_count);
+
+                // This path will be extended via BSDF sampling: sample the environment only.
+                compute_ibl_environment_sampling(
+                    m_sampling_context,
+                    m_shading_context,
+                    *m_env_edf,
+                    shading_point,
+                    outgoing,
+                    bsdf,
+                    bsdf_data,
+                    scattering_modes,
+                    1,                  // bsdf_sample_count
+                    env_sample_count,
+                    ibl_radiance);
+
+                // Divide by the sample count when this number is less than 1.
+                if (m_params.m_rcp_ibl_env_sample_count > 0.0f)
+                    ibl_radiance *= m_params.m_rcp_ibl_env_sample_count;
+
+                // Add image-based lighting contribution.
+                vertex_radiance += ibl_radiance;
             }
 
             void clamp_contribution(Spectrum& radiance) const
@@ -790,24 +747,24 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("help", "Enable caustics"));
 
     metadata.dictionaries().insert(
-        "max_path_length",
-        Dictionary()
-            .insert("type", "int")
-            .insert("default", "8")
-            .insert("unlimited", "true")
-            .insert("min", "1")
-            .insert("label", "Max Path Length")
-            .insert("help", "Maximum number of path bounces"));
-
-    metadata.dictionaries().insert(
-        "max_specular_bounces",
+        "max_bounces",
         Dictionary()
             .insert("type", "int")
             .insert("default", "8")
             .insert("unlimited", "true")
             .insert("min", "0")
-            .insert("label", "Max Specular Bounces")
-            .insert("help", "Maximum number of specular bounces"));
+            .insert("label", "Max Bounces")
+            .insert("help", "Maximum number of bounces"));
+
+    metadata.dictionaries().insert(
+        "max_diffuse_bounces",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "8")
+            .insert("unlimited", "true")
+            .insert("min", "0")
+            .insert("label", "Max Diffuse Bounces")
+            .insert("help", "Maximum number of diffuse bounces"));
 
     metadata.dictionaries().insert(
         "max_glossy_bounces",
@@ -820,14 +777,14 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("help", "Maximum number of glossy bounces"));
 
     metadata.dictionaries().insert(
-        "max_diffuse_bounces",
+        "max_specular_bounces",
         Dictionary()
             .insert("type", "int")
             .insert("default", "8")
             .insert("unlimited", "true")
             .insert("min", "0")
-            .insert("label", "Max Diffuse Bounces")
-            .insert("help", "Maximum number of diffuse bounces"));
+            .insert("label", "Max Specular Bounces")
+            .insert("help", "Maximum number of specular bounces"));
 
     metadata.dictionaries().insert(
         "rr_min_path_length",

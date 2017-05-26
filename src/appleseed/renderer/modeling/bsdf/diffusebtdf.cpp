@@ -107,8 +107,12 @@ namespace
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
+            const int               modes,
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
+            if (!ScatteringMode::has_diffuse(modes))
+                return;
+
             const InputValues* values = static_cast<const InputValues*>(data);
             const BackfacingPolicy backfacing_policy(sample.m_shading_basis, values->m_precomputed.m_backfacing);
             const Vector3f wo = backfacing_policy.transform_to_local(sample.m_outgoing.get_value());

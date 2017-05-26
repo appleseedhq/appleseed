@@ -922,17 +922,6 @@ source_group ("renderer\\kernel\\intersection" FILES
     ${renderer_kernel_intersection_sources}
 )
 
-set (renderer_kernel_lighting_drt_sources
-    renderer/kernel/lighting/drt/drtlightingengine.cpp
-    renderer/kernel/lighting/drt/drtlightingengine.h
-)
-list (APPEND appleseed_sources
-    ${renderer_kernel_lighting_drt_sources}
-)
-source_group ("renderer\\kernel\\lighting\\drt" FILES
-    ${renderer_kernel_lighting_drt_sources}
-)
-
 set (renderer_kernel_lighting_lighttracing_sources
     renderer/kernel/lighting/lighttracing/lighttracingsamplegenerator.cpp
     renderer/kernel/lighting/lighttracing/lighttracingsamplegenerator.h

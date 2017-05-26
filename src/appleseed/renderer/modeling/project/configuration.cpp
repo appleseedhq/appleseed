@@ -31,7 +31,6 @@
 #include "configuration.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/lighting/drt/drtlightingengine.h"
 #include "renderer/kernel/lighting/pt/ptlightingengine.h"
 #include "renderer/kernel/lighting/sppm/sppmlightingengine.h"
 #include "renderer/kernel/rendering/final/adaptivepixelrenderer.h"
@@ -134,18 +133,13 @@ Dictionary Configuration::get_metadata()
         "lighting_engine",
         Dictionary()
             .insert("type", "enum")
-            .insert("values", "drt|pt|sppm")
+            .insert("values", "pt|sppm")
             .insert("default", "pt")
             .insert("label", "Lighting Engine")
             .insert("help", "Lighting engine used when rendering")
             .insert(
                 "options",
                 Dictionary()
-                    .insert(
-                        "drt",
-                        Dictionary()
-                            .insert("label", "Distribution Ray Tracer")
-                            .insert("help", "Distribution ray tracing"))
                     .insert(
                         "pt",
                         Dictionary()
@@ -184,7 +178,6 @@ Dictionary Configuration::get_metadata()
         "progressive_frame_renderer",
         ProgressiveFrameRendererFactory::get_params_metadata());
 
-    metadata.dictionaries().insert("drt", DRTLightingEngineFactory::get_params_metadata());
     metadata.dictionaries().insert("pt", PTLightingEngineFactory::get_params_metadata());
     metadata.dictionaries().insert("sppm", SPPMLightingEngineFactory::get_params_metadata());
 

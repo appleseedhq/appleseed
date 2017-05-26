@@ -68,6 +68,7 @@ class BSDFWrapper
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
+        const int                       modes,
         BSDFSample&                     sample) const APPLESEED_OVERRIDE;
 
     virtual float evaluate(
@@ -109,6 +110,7 @@ void BSDFWrapper<BSDFImpl>::sample(
     const void*                         data,
     const bool                          adjoint,
     const bool                          cosine_mult,
+    const int                           modes,
     BSDFSample&                         sample) const
 {
     assert(foundation::is_normalized(sample.m_geometric_normal));
@@ -119,9 +121,10 @@ void BSDFWrapper<BSDFImpl>::sample(
         data,
         adjoint,
         false,
+        modes,
         sample);
 
-    if (sample.m_mode != ScatteringMode::Absorption)
+    if (sample.m_mode != ScatteringMode::None)
     {
         assert(foundation::is_normalized(sample.m_incoming.get_value(), 1.0e-5f));
         assert(sample.m_probability == BSDFImpl::DiracDelta || sample.m_probability > 0.0f);

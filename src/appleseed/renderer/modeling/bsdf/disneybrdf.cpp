@@ -320,13 +320,13 @@ namespace
       : public BSDF
     {
       public:
-        // BRDF components.
-        enum
+        // Components of this BRDF.
+        enum Components
         {
             DiffuseComponent,
             SheenComponent,
             SpecularComponent,
-            CleatcoatComponent,
+            ClearcoatComponent,
             NumComponents
         };
 
@@ -390,73 +390,166 @@ namespace
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
+            const int               modes,
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
             // No reflection below the shading surface.
+            const Vector3f& outgoing = sample.m_outgoing.get_value();
             const Vector3f& n = sample.m_shading_basis.get_normal();
-            const float cos_on = dot(sample.m_outgoing.get_value(), n);
+            const float cos_on = dot(outgoing, n);
             if (cos_on < 0.0f)
                 return;
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
+            // Compute component weights.
+            float weights[NumComponents];
+            if (!compute_component_weights(values, modes, weights))
+                return;
+
+            // Compute CDF to sample components.
             float cdf[NumComponents];
-            compute_component_cdf(values, cdf);
+            cdf[DiffuseComponent] = weights[DiffuseComponent];
+            cdf[SheenComponent] = cdf[DiffuseComponent] + weights[SheenComponent];
+            cdf[SpecularComponent] = cdf[SheenComponent] + weights[SpecularComponent];
+            cdf[ClearcoatComponent] = cdf[SpecularComponent] + weights[ClearcoatComponent];
 
             // Choose which of the components to sample.
             sampling_context.split_in_place(1, 1);
             const float s = sampling_context.next2<float>();
 
+            // Sample the chosen component.
             if (s < cdf[DiffuseComponent])
             {
-                DisneyDiffuseComponent().sample(
-                    sampling_context,
-                    values,
-                    sample);
+                DisneyDiffuseComponent().sample(sampling_context, values, sample);
+                sample.m_probability *= weights[DiffuseComponent];
+                weights[DiffuseComponent] = 0.0f;
             }
             else if (s < cdf[SheenComponent])
             {
-                DisneySheenComponent().sample(
+                DisneySheenComponent().sample(sampling_context, values, sample);
+                sample.m_probability *= weights[SheenComponent];
+                weights[SheenComponent] = 0.0f;
+            }
+            else if (s < cdf[SpecularComponent])
+            {
+                float alpha_x, alpha_y;
+                microfacet_alpha_from_roughness(
+                    values->m_roughness,
+                    values->m_anisotropic,
+                    alpha_x,
+                    alpha_y);
+                const GGXMDF ggx_mdf;
+                MicrofacetBRDFHelper::sample(
                     sampling_context,
-                    values,
+                    ggx_mdf,
+                    alpha_x,
+                    alpha_y,
+                    0.0f,
+                    DisneySpecularFresnelFun(*values),
+                    cos_on,
                     sample);
+                sample.m_probability *= weights[SpecularComponent];
+                weights[SpecularComponent] = 0.0f;
             }
             else
             {
-                if (s < cdf[SpecularComponent])
-                {
-                    float alpha_x, alpha_y;
-                    microfacet_alpha_from_roughness(
-                        values->m_roughness,
-                        values->m_anisotropic,
-                        alpha_x,
-                        alpha_y);
+                const float alpha = clearcoat_roughness(values);
+                const GTR1MDF gtr1_mdf;
+                MicrofacetBRDFHelper::sample(
+                    sampling_context,
+                    gtr1_mdf,
+                    alpha,
+                    alpha,
+                    0.0f,
+                    DisneyClearcoatFresnelFun(*values),
+                    cos_on,
+                    sample);
+                sample.m_probability *= weights[ClearcoatComponent];
+                weights[ClearcoatComponent] = 0.0f;
+            }
 
-                    const GGXMDF ggx_mdf;
-                    MicrofacetBRDFHelper::sample(
-                        sampling_context,
+            // No reflection below the shading surface.
+            const Vector3f& incoming = sample.m_incoming.get_value();
+            const float cos_in = dot(incoming, n);
+            if (cos_in <= 0.0f)
+                return;
+
+            if (weights[DiffuseComponent] > 0.0f)
+            {
+                Spectrum diffuse;
+                sample.m_probability +=
+                    weights[DiffuseComponent] *
+                    DisneyDiffuseComponent().evaluate(
+                        values,
+                        sample.m_shading_basis,
+                        outgoing,
+                        incoming,
+                        diffuse);
+                sample.m_value += diffuse;
+            }
+
+            if (weights[SheenComponent] > 0.0f)
+            {
+                Spectrum sheen;
+                sample.m_probability +=
+                    weights[SheenComponent] *
+                    DisneySheenComponent().evaluate(
+                        values,
+                        sample.m_shading_basis,
+                        outgoing,
+                        incoming,
+                        sheen);
+                sample.m_value += sheen;
+            }
+
+            if (weights[SpecularComponent] > 0.0f)
+            {
+                float alpha_x, alpha_y;
+                microfacet_alpha_from_roughness(
+                    values->m_roughness,
+                    values->m_anisotropic,
+                    alpha_x,
+                    alpha_y);
+                Spectrum spec;
+                const GGXMDF ggx_mdf;
+                sample.m_probability +=
+                    weights[SpecularComponent] *
+                    MicrofacetBRDFHelper::evaluate(
                         ggx_mdf,
                         alpha_x,
                         alpha_y,
                         0.0f,
+                        sample.m_shading_basis,
+                        outgoing,
+                        incoming,
                         DisneySpecularFresnelFun(*values),
+                        cos_in,
                         cos_on,
-                        sample);
-                }
-                else
-                {
-                    const float alpha = clearcoat_roughness(values);
-                    const GTR1MDF gtr1_mdf;
-                    MicrofacetBRDFHelper::sample(
-                        sampling_context,
+                        spec);
+                sample.m_value += spec;
+            }
+
+            if (weights[ClearcoatComponent] > 0.0f)
+            {
+                const float alpha = clearcoat_roughness(values);
+                Spectrum clear;
+                const GTR1MDF gtr1_mdf;
+                sample.m_probability +=
+                    weights[ClearcoatComponent] *
+                    MicrofacetBRDFHelper::evaluate(
                         gtr1_mdf,
                         alpha,
                         alpha,
                         0.0f,
+                        sample.m_shading_basis,
+                        outgoing,
+                        incoming,
                         DisneyClearcoatFresnelFun(*values),
+                        cos_in,
                         cos_on,
-                        sample);
-                }
+                        clear);
+                sample.m_value += clear;
             }
         }
 
@@ -480,51 +573,52 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
+            // Compute component weights.
             float weights[NumComponents];
-            compute_component_weights(values, weights);
+            compute_component_weights(values, modes, weights);
 
             value.set(0.0f);
             float pdf = 0.0f;
 
-            if (ScatteringMode::has_diffuse(modes))
+            if (weights[DiffuseComponent] > 0.0f)
             {
-                if (weights[DiffuseComponent] != 0.0f)
-                {
-                    pdf += DisneyDiffuseComponent().evaluate(
+                pdf +=
+                    weights[DiffuseComponent] *
+                    DisneyDiffuseComponent().evaluate(
                         values,
                         shading_basis,
                         outgoing,
                         incoming,
-                        value) * weights[DiffuseComponent];
-                }
-
-                if (weights[SheenComponent] != 0.0f)
-                {
-                    Spectrum sheen;
-                    pdf += DisneySheenComponent().evaluate(
-                        values,
-                        shading_basis,
-                        outgoing,
-                        incoming,
-                        sheen) * weights[SheenComponent];
-                    value += sheen;
-                }
+                        value);
             }
 
-            if (ScatteringMode::has_glossy(modes))
+            if (weights[SheenComponent] > 0.0f)
             {
-                if (weights[SpecularComponent] != 0.0f)
-                {
-                    Spectrum spec;
-                    float alpha_x, alpha_y;
-                    microfacet_alpha_from_roughness(
-                        values->m_roughness,
-                        values->m_anisotropic,
-                        alpha_x,
-                        alpha_y);
+                Spectrum sheen;
+                pdf +=
+                    weights[SheenComponent] *
+                    DisneySheenComponent().evaluate(
+                        values,
+                        shading_basis,
+                        outgoing,
+                        incoming,
+                        sheen);
+                value += sheen;
+            }
 
-                    const GGXMDF ggx_mdf;
-                    pdf += MicrofacetBRDFHelper::evaluate(
+            if (weights[SpecularComponent] > 0.0f)
+            {
+                float alpha_x, alpha_y;
+                microfacet_alpha_from_roughness(
+                    values->m_roughness,
+                    values->m_anisotropic,
+                    alpha_x,
+                    alpha_y);
+                Spectrum spec;
+                const GGXMDF ggx_mdf;
+                pdf +=
+                    weights[SpecularComponent] *
+                    MicrofacetBRDFHelper::evaluate(
                         ggx_mdf,
                         alpha_x,
                         alpha_y,
@@ -535,16 +629,18 @@ namespace
                         DisneySpecularFresnelFun(*values),
                         cos_in,
                         cos_on,
-                        spec) * weights[SpecularComponent];
-                    value += spec;
-                }
+                        spec);
+                value += spec;
+            }
 
-                if (weights[CleatcoatComponent] != 0.0f)
-                {
-                    Spectrum clear;
-                    const float alpha = clearcoat_roughness(values);
-                    const GTR1MDF gtr1_mdf;
-                    pdf += MicrofacetBRDFHelper::evaluate(
+            if (weights[ClearcoatComponent] > 0.0f)
+            {
+                const float alpha = clearcoat_roughness(values);
+                Spectrum clear;
+                const GTR1MDF gtr1_mdf;
+                pdf +=
+                    weights[ClearcoatComponent] *
+                    MicrofacetBRDFHelper::evaluate(
                         gtr1_mdf,
                         alpha,
                         alpha,
@@ -555,9 +651,8 @@ namespace
                         DisneyClearcoatFresnelFun(*values),
                         cos_in,
                         cos_on,
-                        clear) * weights[CleatcoatComponent];
-                    value += clear;
-                }
+                        clear);
+                value += clear;
             }
 
             return pdf;
@@ -580,63 +675,61 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
+            // Compute component weights.
             float weights[NumComponents];
-            compute_component_weights(values, weights);
+            compute_component_weights(values, modes, weights);
 
             float pdf = 0.0f;
 
-            if (ScatteringMode::has_diffuse(modes))
+            if (weights[DiffuseComponent] > 0.0f)
             {
-                if (weights[DiffuseComponent] != 0.0f)
-                {
-                    pdf += DisneyDiffuseComponent().evaluate_pdf(
-                        shading_basis,
-                        incoming) * weights[DiffuseComponent];
-                }
-
-                if (weights[SheenComponent] != 0.0f)
-                {
-                    pdf += DisneySheenComponent().evaluate_pdf(
-                        shading_basis,
-                        incoming) * weights[SheenComponent];
-                }
+                pdf +=
+                    weights[DiffuseComponent] *
+                    DisneyDiffuseComponent().evaluate_pdf(shading_basis, incoming);
             }
 
-            if (ScatteringMode::has_glossy(modes))
+            if (weights[SheenComponent] > 0.0f)
             {
-                if (weights[SpecularComponent] != 0.0f)
-                {
-                    float alpha_x, alpha_y;
-                    microfacet_alpha_from_roughness(
-                        values->m_roughness,
-                        values->m_anisotropic,
-                        alpha_x,
-                        alpha_y);
+                pdf +=
+                    weights[SheenComponent] *
+                    DisneySheenComponent().evaluate_pdf(shading_basis, incoming);
+            }
 
-                    const GGXMDF ggx_mdf;
-                    pdf += MicrofacetBRDFHelper::pdf(
+            if (weights[SpecularComponent] > 0.0f)
+            {
+                float alpha_x, alpha_y;
+                microfacet_alpha_from_roughness(
+                    values->m_roughness,
+                    values->m_anisotropic,
+                    alpha_x,
+                    alpha_y);
+                const GGXMDF ggx_mdf;
+                pdf +=
+                    weights[SpecularComponent] *
+                    MicrofacetBRDFHelper::pdf(
                         ggx_mdf,
                         alpha_x,
                         alpha_y,
                         0.0f,
                         shading_basis,
                         outgoing,
-                        incoming) * weights[SpecularComponent];
-                }
+                        incoming);
+            }
 
-                if (weights[CleatcoatComponent] != 0.0f)
-                {
-                    const float alpha = clearcoat_roughness(values);
-                    const GTR1MDF gtr1_mdf;
-                    pdf += MicrofacetBRDFHelper::pdf(
+            if (weights[ClearcoatComponent] > 0.0f)
+            {
+                const float alpha = clearcoat_roughness(values);
+                const GTR1MDF gtr1_mdf;
+                pdf +=
+                    weights[ClearcoatComponent] *
+                    MicrofacetBRDFHelper::pdf(
                         gtr1_mdf,
                         alpha,
                         alpha,
                         0.0f,
                         shading_basis,
                         outgoing,
-                        incoming) * weights[CleatcoatComponent];
-                }
+                        incoming);
             }
 
             return pdf;
@@ -645,39 +738,49 @@ namespace
       private:
         typedef DisneyBRDFInputValues InputValues;
 
-        static void compute_component_weights(
+        static bool compute_component_weights(
             const InputValues*      values,
+            const int               modes,
             float                   weights[NumComponents])
         {
-            weights[DiffuseComponent] = lerp(values->m_precomputed.m_base_color_luminance, 0.0f, values->m_metallic);
-            weights[SheenComponent] = lerp(values->m_sheen, 0.0f, values->m_metallic);
-            weights[SpecularComponent] = lerp(values->m_specular, 1.0f, values->m_metallic);
-            weights[CleatcoatComponent] = values->m_clearcoat * 0.25f;
+            if (ScatteringMode::has_diffuse(modes))
+            {
+                weights[DiffuseComponent] = lerp(values->m_precomputed.m_base_color_luminance, 0.0f, values->m_metallic);
+                weights[SheenComponent] = lerp(values->m_sheen, 0.0f, values->m_metallic);
+            }
+            else
+            {
+                weights[DiffuseComponent] = 0.0f;
+                weights[SheenComponent] = 0.0f;
+            }
+
+            if (ScatteringMode::has_glossy(modes))
+            {
+                weights[SpecularComponent] = lerp(values->m_specular, 1.0f, values->m_metallic);
+                weights[ClearcoatComponent] = values->m_clearcoat * 0.25f;
+            }
+            else
+            {
+                weights[SpecularComponent] = 0.0f;
+                weights[ClearcoatComponent] = 0.0f;
+            }
 
             const float total_weight =
                 weights[DiffuseComponent] +
                 weights[SheenComponent] +
                 weights[SpecularComponent] +
-                weights[CleatcoatComponent];
+                weights[ClearcoatComponent];
 
             if (total_weight == 0.0f)
-                return;
+                return false;
 
-            const float total_weight_rcp = 1.0f / total_weight;
-            weights[DiffuseComponent] *= total_weight_rcp;
-            weights[SheenComponent] *= total_weight_rcp;
-            weights[SpecularComponent] *= total_weight_rcp;
-            weights[CleatcoatComponent] *= total_weight_rcp;
-        }
+            const float rcp_total_weight = 1.0f / total_weight;
+            weights[DiffuseComponent] *= rcp_total_weight;
+            weights[SheenComponent] *= rcp_total_weight;
+            weights[SpecularComponent] *= rcp_total_weight;
+            weights[ClearcoatComponent] *= rcp_total_weight;
 
-        static void compute_component_cdf(
-            const InputValues*      values,
-            float                   cdf[NumComponents])
-        {
-            compute_component_weights(values, cdf);
-            cdf[SheenComponent] += cdf[DiffuseComponent];
-            cdf[SpecularComponent] += cdf[SheenComponent];
-            cdf[CleatcoatComponent] += cdf[SpecularComponent];
+            return true;
         }
 
         static float clearcoat_roughness(const InputValues* values)

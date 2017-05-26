@@ -158,6 +158,7 @@ namespace
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
+            const int               modes,
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
             const Vector3f& n = sample.m_shading_basis.get_normal();
@@ -176,27 +177,31 @@ namespace
             // If roughness is zero use reflection.
             if (values->m_roughness == 0.0f)
             {
-                SpecularBRDFHelper::sample(f, sample);
+                if (ScatteringMode::has_specular(modes))
+                    SpecularBRDFHelper::sample(f, sample);
                 return;
             }
 
-            float alpha_x, alpha_y;
-            microfacet_alpha_from_roughness(
-                values->m_roughness,
-                values->m_anisotropy,
-                alpha_x,
-                alpha_y);
-            const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
+            if (ScatteringMode::has_glossy(modes))
+            {
+                float alpha_x, alpha_y;
+                microfacet_alpha_from_roughness(
+                    values->m_roughness,
+                    values->m_anisotropy,
+                    alpha_x,
+                    alpha_y);
+                const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
-            MicrofacetBRDFHelper::sample(
-                sampling_context,
-                *m_mdf,
-                alpha_x,
-                alpha_y,
-                gamma,
-                f,
-                cos_on,
-                sample);
+                MicrofacetBRDFHelper::sample(
+                    sampling_context,
+                    *m_mdf,
+                    alpha_x,
+                    alpha_y,
+                    gamma,
+                    f,
+                    cos_on,
+                    sample);
+            }
         }
 
         virtual float evaluate(

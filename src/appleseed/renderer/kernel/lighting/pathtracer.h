@@ -79,7 +79,10 @@ class PathTracer
     PathTracer(
         PathVisitor&            path_visitor,
         const size_t            rr_min_path_length,
-        const size_t            max_path_length,
+        const size_t            max_bounces,
+        const size_t            max_diffuse_bounces,
+        const size_t            max_glossy_bounces,
+        const size_t            max_specular_bounces,
         const size_t            max_iterations = 1000,
         const double            near_start = 0.0);          // abort tracing if the first ray is shorter than this
 
@@ -97,7 +100,10 @@ class PathTracer
   private:
     PathVisitor&                m_path_visitor;
     const size_t                m_rr_min_path_length;
-    const size_t                m_max_path_length;
+    const size_t                m_max_bounces;
+    const size_t                m_max_diffuse_bounces;
+    const size_t                m_max_glossy_bounces;
+    const size_t                m_max_specular_bounces;
     const size_t                m_max_iterations;
     const double                m_near_start;
 
@@ -116,12 +122,18 @@ template <typename PathVisitor, bool Adjoint>
 inline PathTracer<PathVisitor, Adjoint>::PathTracer(
     PathVisitor&                path_visitor,
     const size_t                rr_min_path_length,
-    const size_t                max_path_length,
+    const size_t                max_bounces,
+    const size_t                max_diffuse_bounces,
+    const size_t                max_glossy_bounces,
+    const size_t                max_specular_bounces,
     const size_t                max_iterations,
     const double                near_start)
   : m_path_visitor(path_visitor)
   , m_rr_min_path_length(rr_min_path_length)
-  , m_max_path_length(max_path_length)
+  , m_max_bounces(max_bounces)
+  , m_max_diffuse_bounces(max_diffuse_bounces)
+  , m_max_glossy_bounces(max_glossy_bounces)
+  , m_max_specular_bounces(max_specular_bounces)
   , m_max_iterations(max_iterations)
   , m_near_start(near_start)
 {
@@ -159,6 +171,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
     PathVertex vertex(sampling_context);
     vertex.m_path_length = 1;
+    vertex.m_scattering_modes = ScatteringMode::All;
     vertex.m_throughput.set(1.0f);
     vertex.m_shading_point = &shading_point;
     vertex.m_prev_mode = ScatteringMode::Specular;
@@ -169,6 +182,9 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
     // here to silence a gcc warning.
     foundation::Vector3d medium_start(0.0);
 
+    size_t diffuse_bounces = 0;
+    size_t glossy_bounces = 0;
+    size_t specular_bounces = 0;
     size_t iterations = 0;
 
     while (true)
@@ -184,10 +200,10 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 #endif
 
         // Put a hard limit on the number of iterations.
-        if (++iterations >= m_max_iterations)
+        if (iterations++ == m_max_iterations)
         {
             RENDERER_LOG_WARNING(
-                "reached hard iteration limit (%s), breaking path trace loop.",
+                "reached hard iteration limit (%s), breaking path tracing loop.",
                 foundation::pretty_int(m_max_iterations).c_str());
             break;
         }
@@ -212,7 +228,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         // Terminate the path if the ray didn't hit anything.
         if (!vertex.m_shading_point->hit())
         {
-            m_path_visitor.visit_environment(vertex);
+            m_path_visitor.on_miss(vertex);
             break;
         }
 
@@ -401,61 +417,25 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             vertex.m_bsdf_data = bssrdf_sample.m_brdf_data;
         }
 
+        // Let the path visitor handle a hit.
         // cos(outgoing, normal) is used for changes of probability measure. In the case of subsurface
         // scattering, we purposely compute it at the outgoing vertex even though it may be used at
         // the incoming vertex if we need to change the probability of reaching this vertex by BSDF
         // sampling from projected solid angle measure to area measure.
         vertex.m_cos_on = foundation::dot(vertex.m_outgoing.get_value(), vertex.get_shading_normal());
-
-        // Pass this vertex to the path visitor.
-        m_path_visitor.visit_vertex(vertex);
-
-        // Honor the user bounce limit.
-        if (vertex.m_path_length >= m_max_path_length)
-            break;
-
-        // Terminate the path if no above-surface scattering possible.
-        if (!vertex.m_bsdf)
-            break;
-
-        // Above-surface scattering.
-        if (!vertex.m_bssrdf)
-        {
-            // Sample the BSDF.
-            vertex.m_bsdf->sample(
-                sampling_context,
-                vertex.m_bsdf_data,
-                Adjoint,
-                true,       // multiply by |cos(incoming, normal)|
-                bsdf_sample);
-
-            // Terminate the path if it gets absorbed.
-            if (bsdf_sample.m_mode == ScatteringMode::Absorption)
-                break;
-
-            // Terminate the path if this scattering event is not accepted.
-            if (!m_path_visitor.accept_scattering(vertex.m_prev_mode, bsdf_sample.m_mode))
-                break;
-        }
-
-        // Properties of this scattering event.
-        vertex.m_prev_mode = bsdf_sample.m_mode;
-        vertex.m_prev_prob = bsdf_sample.m_probability;
-
-        // Update the path throughput.
-        if (bsdf_sample.m_probability != BSDF::DiracDelta)
-            bsdf_sample.m_value /= bsdf_sample.m_probability;
-        vertex.m_throughput *= bsdf_sample.m_value;
+        m_path_visitor.on_hit(vertex);
 
         // Use Russian Roulette to cut the path without introducing bias.
-        if (vertex.m_path_length >= m_rr_min_path_length)
+        float scattering_prob;
+        if (vertex.m_path_length > m_rr_min_path_length)
         {
             // Generate a uniform sample in [0,1).
             sampling_context.split_in_place(1, 1);
             const float s = sampling_context.next2<float>();
 
             // Compute the probability of extending this path.
-            const float scattering_prob = std::min(foundation::max_value(bsdf_sample.m_value), 1.0f);
+            // todo: make max scattering prob lower (0.99) to avoid getting stuck?
+            scattering_prob = std::min(foundation::max_value(vertex.m_throughput), 1.0f);
 
             // Russian Roulette.
             if (!foundation::pass_rr(scattering_prob, s))
@@ -466,8 +446,68 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             vertex.m_throughput /= scattering_prob;
         }
 
-        // Keep track of the number of bounces.
+        // Honor the global bounce limit.
+        const size_t bounces = vertex.m_path_length - 1;
+        if (bounces == m_max_bounces)
+            break;
+
+        // Terminate the path if no above-surface scattering possible.
+        if (vertex.m_bsdf == 0)
+            break;
+
+        //
+        // New bounce.
+        // 
+
+        // Determine which scattering modes are still enabled.
+        if (diffuse_bounces >= m_max_diffuse_bounces)
+            vertex.m_scattering_modes &= ~ScatteringMode::Diffuse;
+        if (glossy_bounces >= m_max_glossy_bounces)
+            vertex.m_scattering_modes &= ~ScatteringMode::Glossy;
+        if (specular_bounces >= m_max_specular_bounces)
+            vertex.m_scattering_modes &= ~ScatteringMode::Specular;
+
+        // Let the path visitor handle the scattering event.
+        m_path_visitor.on_scatter(vertex);
+
+        // Terminate the path if all scattering modes are disabled.
+        if (vertex.m_scattering_modes == ScatteringMode::None)
+		    break;
+
+        // Above-surface scattering.
+        if (vertex.m_bssrdf == 0)
+        {
+            vertex.m_bsdf->sample(
+                sampling_context,
+                vertex.m_bsdf_data,
+                Adjoint,
+                true,       // multiply by |cos(incoming, normal)|
+                vertex.m_scattering_modes,
+                bsdf_sample);
+        }
+
+        // Terminate the path if it gets absorbed.
+        if (bsdf_sample.m_mode == ScatteringMode::None)
+            break;
+
+        // Terminate the path if this scattering event is not accepted.
+        if (!m_path_visitor.accept_scattering(vertex.m_prev_mode, bsdf_sample.m_mode))
+            break;
+
+        // Save the scattering properties for MIS at light-emitting vertices.
+        vertex.m_prev_mode = bsdf_sample.m_mode;
+        vertex.m_prev_prob = bsdf_sample.m_probability;
+
+        // Update path throughput.
+        if (bsdf_sample.m_probability != BSDF::DiracDelta)
+            bsdf_sample.m_value /= bsdf_sample.m_probability;
+        vertex.m_throughput *= bsdf_sample.m_value;
+
+        // Update bounce counters.
         ++vertex.m_path_length;
+        diffuse_bounces += (bsdf_sample.m_mode >> ScatteringMode::DiffuseBitShift) & 1;
+        glossy_bounces += (bsdf_sample.m_mode >> ScatteringMode::GlossyBitShift) & 1;
+        specular_bounces += (bsdf_sample.m_mode >> ScatteringMode::SpecularBitShift) & 1;
 
         // Construct the scattered ray.
         const foundation::Vector3d incoming(bsdf_sample.m_incoming.get_value());
@@ -475,7 +515,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             vertex.m_shading_point->get_biased_point(incoming),
             incoming,
             ray.m_time,
-            ScatteringMode::get_vis_flags(vertex.m_prev_mode),
+            ScatteringMode::get_vis_flags(bsdf_sample.m_mode),
             ray.m_depth + 1);
         next_ray.m_dir = foundation::improve_normalization<2>(next_ray.m_dir);
 

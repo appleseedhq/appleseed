@@ -96,8 +96,12 @@ namespace
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
+            const int           modes,
             BSDFSample&         sample) const APPLESEED_OVERRIDE
         {
+            if (!ScatteringMode::has_diffuse(modes))
+                return;
+
             // No reflection below the shading surface.
             const float cos_on = dot(sample.m_outgoing.get_value(), sample.m_shading_basis.get_normal());
             if (cos_on < 0.0f)

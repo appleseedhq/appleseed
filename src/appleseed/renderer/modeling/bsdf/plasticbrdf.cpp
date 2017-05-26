@@ -172,6 +172,7 @@ namespace
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
+            const int               modes,
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
             const Basis3f& shading_basis(sample.m_shading_basis);
@@ -200,7 +201,8 @@ namespace
             Vector3f wi;
 
             // Choose between specular and diffuse.
-            if (s[3] < specular_probability)
+            if (ScatteringMode::has_glossy(modes) &&
+                (!ScatteringMode::has_diffuse(modes) || s[3] < specular_probability))
             {
                 wi = improve_normalization(reflect(wo, m));
                 if (wi.y <= 0.0f)
@@ -208,6 +210,9 @@ namespace
 
                 if (alpha == 0.0f)
                 {
+                    if (!ScatteringMode::has_specular(modes))
+                        return;
+
                     sample.m_value = values->m_specular_reflectance;
                     sample.m_value *= F;
                     sample.m_probability = DiracDelta;
@@ -275,15 +280,17 @@ namespace
             const Vector3f wo = shading_basis.transform_to_local(outgoing);
             const Vector3f wi = shading_basis.transform_to_local(incoming);
 
-            const Vector3f m = alpha == 0.0f ?
-                Vector3f(0.0f, 1.0f, 0.0f) :
-                normalize(wi + wo);
+            const Vector3f m =
+                alpha == 0.0f
+                    ? Vector3f(0.0f, 1.0f, 0.0f)
+                    : normalize(wi + wo);
 
             const float Fo = fresnel_reflectance(wo, m, values->m_precomputed.m_eta);
             const float Fi = fresnel_reflectance(wi, m, values->m_precomputed.m_eta);
             const float specular_probability = choose_specular_probability(*values, Fo);
 
-            float probability = 0.0f;
+            float pdf_glossy, pdf_diffuse;
+
             value.resize(values->m_specular_reflectance.size());
             value.set(0.0f);
 
@@ -300,7 +307,7 @@ namespace
                     Fo,
                     value);
 
-                probability = specular_probability * specular_pdf(*m_mdf, alpha, gamma, wo, m);
+                pdf_glossy = specular_pdf(*m_mdf, alpha, gamma, wo, m);
             }
 
             if (ScatteringMode::has_diffuse(modes))
@@ -313,12 +320,15 @@ namespace
                     Fo,
                     Fi,
                     substrate_value);
-
-                probability += wi.y * RcpPi<float>() * (1.0f - specular_probability);
                 value += substrate_value;
+
+                pdf_diffuse = wi.y * RcpPi<float>();
             }
 
-            return probability;
+            return
+                ScatteringMode::has_diffuse_and_glossy(modes) ? lerp(pdf_diffuse, pdf_glossy, specular_probability) :
+                ScatteringMode::has_diffuse(modes) ? pdf_diffuse :
+                ScatteringMode::has_glossy(modes) ? pdf_glossy : 0.0f;
         }
 
         virtual float evaluate_pdf(
@@ -350,15 +360,18 @@ namespace
             const float F = fresnel_reflectance(wo, m, values->m_precomputed.m_eta);
             const float specular_probability = choose_specular_probability(*values, F);
 
-            float probability = 0.0f;
+            float pdf_glossy, pdf_diffuse;
 
             if (ScatteringMode::has_glossy(modes))
-                probability = specular_probability * specular_pdf(*m_mdf, alpha, gamma, wo, m);
+                pdf_glossy = specular_pdf(*m_mdf, alpha, gamma, wo, m);
 
             if (ScatteringMode::has_diffuse(modes))
-                probability += wi.y * RcpPi<float>() * (1.0f - specular_probability);
+                pdf_diffuse = wi.y * RcpPi<float>();
 
-            return probability;
+            return
+                ScatteringMode::has_diffuse_and_glossy(modes) ? lerp(pdf_diffuse, pdf_glossy, specular_probability) :
+                ScatteringMode::has_diffuse(modes) ? pdf_diffuse :
+                ScatteringMode::has_glossy(modes) ? pdf_glossy : 0.0f;
         }
 
       private:

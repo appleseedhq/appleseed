@@ -52,7 +52,7 @@ class NullBSDF
 {
   public:
     NullBSDF()
-      : BSDF("null_bsdf", Reflective, ScatteringMode::Absorption, ParamArray())
+      : BSDF("null_bsdf", Reflective, ScatteringMode::None, ParamArray())
     {
     }
 
@@ -71,6 +71,7 @@ class NullBSDF
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
+        const int                       modes,
         BSDFSample&                     sample) const APPLESEED_OVERRIDE
     {
     }

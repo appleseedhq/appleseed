@@ -525,6 +525,7 @@ void DiagnosticSurfaceShader::evaluate(
                         material_data.m_bsdf->evaluate_inputs(shading_context, shading_point),
                         false,
                         false,
+                        ScatteringMode::All,
                         sample);
 
                     if (!sample.m_incoming.has_derivatives())

@@ -161,6 +161,8 @@ void Frame::release()
 
 void Frame::print_settings()
 {
+    const char* camera_name = get_active_camera_name();
+
     RENDERER_LOG_INFO(
         "frame settings:\n"
         "  camera                        %s\n"
@@ -174,7 +176,7 @@ void Frame::print_settings()
         "  clamping                      %s\n"
         "  gamma correction              %f\n"
         "  crop window                   (%s, %s)-(%s, %s)",
-        get_active_camera_name(),
+        camera_name ? camera_name : "none",
         pretty_uint(impl->m_frame_width).c_str(),
         pretty_uint(impl->m_frame_height).c_str(),
         pretty_uint(impl->m_tile_width).c_str(),
