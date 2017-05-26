@@ -33,57 +33,6 @@
 #include "appleseed/color/as_colorimetry.h"
 #include "appleseed/math/as_math_helpers.h"
 
-//
-// Reference:
-//
-//      Colour Space Conversions
-//
-//      http://www.poynton.com/PDFs/coloureq.pdf
-//      http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_xyY.html
-//      
-
-color transform_XYZ_to_xyY(color XYZ, float white_xy[2])
-{
-    color xyY;
-
-    if (XYZ[0] == XYZ[1] == XYZ[2] == 0.0)
-    {
-        xyY = color(white_xy[0], white_xy[1], XYZ[1]);
-    }
-    else
-    {
-        float XYZ_sum = XYZ[0] + XYZ[1] + XYZ[2];
-
-        xyY = color(XYZ[0] / XYZ_sum, XYZ[1] / XYZ_sum, XYZ[1]);
-    }
-    return xyY;
-}
-
-//
-// Reference:
-//
-//      xyY to XYZ conversion
-//
-//      http://www.brucelindbloom.com/index.html?Eqn_xyY_to_XYZ.html
-//
-
-color transform_xyY_to_XYZ(color xyY)
-{
-    color XYZ;
-
-    if (xyY[1] != 0)
-    {
-        XYZ[0] = xyY[0] * xyY[2] / xyY[1];
-        XYZ[1] = xyY[2];
-        XYZ[2] = (1.0 - xyY[0] - xyY[1]) * xyY[2] / xyY[1]; // z = 1-x-y
-    }
-    else
-    {
-        XYZ = color(0);
-    }
-    return XYZ;
-}
-
 color get_illuminant_xyY(string illuminant)
 {
     color white_xyY;
@@ -124,6 +73,73 @@ color get_illuminant_xyY(string illuminant)
         return color(0);
     }
     return white_xyY;
+}
+
+void get_illuminant_xyY(string illuminant, output float white_xy[2])
+{
+    color white_xyY = get_illuminant_xyY(illuminant);
+    white_xy[0] = white_xyY[0];
+    white_xy[1] = white_xyY[1];
+}
+
+//
+// Reference:
+//
+//      Colour Space Conversions
+//
+//      http://www.poynton.com/PDFs/coloureq.pdf
+//      http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_xyY.html
+//      
+
+color transform_XYZ_to_xyY(color XYZ, float white_xy[2])
+{
+    color xyY;
+
+    if (XYZ != 0)
+    {
+        float XYZ_sum = XYZ[0] + XYZ[1] + XYZ[2];
+
+        xyY = color(XYZ[0] / XYZ_sum, XYZ[1] / XYZ_sum, XYZ[1]);
+    }
+    else
+    {
+        xyY = color(white_xy[0], white_xy[1], XYZ[1]);
+    }
+    return xyY;
+}
+
+color transform_XYZ_to_xyY(color XYZ, string illuminant)
+{
+    float white_xy[2];
+
+    get_illuminant_xyY(illuminant, white_xy);
+
+    return transform_XYZ_to_xyY(XYZ, white_xy);
+}
+
+//
+// Reference:
+//
+//      xyY to XYZ conversion
+//
+//      http://www.brucelindbloom.com/index.html?Eqn_xyY_to_XYZ.html
+//
+
+color transform_xyY_to_XYZ(color xyY)
+{
+    color XYZ;
+
+    if (xyY[1] != 0)
+    {
+        XYZ[0] = xyY[0] * xyY[2] / xyY[1];
+        XYZ[1] = xyY[2];
+        XYZ[2] = (1.0 - xyY[0] - xyY[1]) * xyY[2] / xyY[1]; // z = 1-x-y
+    }
+    else
+    {
+        XYZ = color(0);
+    }
+    return XYZ;
 }
 
 color get_illuminant_XYZ(string illuminant)
@@ -410,18 +426,57 @@ color transform_XYZ_to_linear_RGB(
 //
 // Reference:
 //
-//      Color Transformation Equations, 5.2
+//      CIE 1960 color space
 //
-//      http://www.poynton.com/PDFs/coloureq.pdf
+//      https://en.wikipedia.org/wiki/CIE_1960_color_space
 //
 
-color transform_xyY_to_CIE_Yuv(color xyY)
+color transform_XYZ_to_UCS(color XYZ)
 {
-    float denom = 6 * xyY[1] - xyY[0] + 1.5;
-    float CIE_u = 2 * xyY[0] / denom;
-    float CIE_v = 3 * xyY[1] / denom;
+    float U = 2 * XYZ[0] / 3.0;
+    float V = XYZ[1];
+    float W = (-XYZ[0] + 3 * XYZ[1] + XYZ[2]) / 2.0;
 
-    return color(xyY[2], CIE_u, CIE_v);
+    return color(U, V, W);
+}
+
+color transform_UCS_to_XYZ(color UCS)
+{
+    float X = 3 * UCS[0] / 2.0;
+    float Y = UCS[1];
+    float Z = 3 * (UCS[0] - 3 * UCS[1] + 2 * UCS[2]) / 2.0;
+
+    return color(X, Y, Z);
+}
+
+color transform_UCS_to_uv(color UCS)
+{
+    float denom = UCS[0] + UCS[1] + UCS[2];
+
+    return color(UCS[0] / denom, UCS[1] / denom, 1.0);
+}
+
+void transform_UCS_to_uv(color UCS, output float uv[2])
+{
+    color UCS_uv = transform_UCS_to_uv(UCS);
+
+    uv[0] = UCS_uv[0];
+    uv[1] = UCS_uv[1];
+}
+
+color transform_XYZ_to_uv(color XYZ)
+{
+    float denom = XYZ[0] + 15 * XYZ[1] + 3 * XYZ[2];
+
+    return color(4 * XYZ[0] / denom, 6 * XYZ[1] / denom, 1.0);
+}
+
+void transform_XYZ_to_uv(color XYZ, output float uv[2])
+{
+    color UCS_uv = transform_XYZ_to_uv(XYZ);
+
+    uv[0] = UCS_uv[0];
+    uv[1] = UCS_uv[1];
 }
 
 //
@@ -456,7 +511,7 @@ color transform_XYZ_to_Lab(color XYZ_color, float reference_white_xy[2])
 {
     return transform_XYZ_to_Lab(
         XYZ_color,
-        color( reference_white_xy[0], reference_white_xy[1], 1.0));
+        color(reference_white_xy[0], reference_white_xy[1], 1.0));
 }
 
 color transform_XYZ_to_Lab(color XYZ_color, string illuminant)
@@ -532,7 +587,7 @@ color transform_XYZ_to_Luv(color XYZ_color, color reference_white_xyY)
     float v_prime_r = 9 * XYZ_white[1] / denom_r;
 
     float L = (y_r > CIE_E)
-        ? 116 * pow(y_r, 1/3) - 16
+        ? 116 * pow(y_r, 1.0 / 3.0) - 16
         : CIE_K * y_r;
 
     float Luv_u = 13 * L * (u_prime - u_prime_r);
@@ -572,12 +627,12 @@ color transform_Luv_to_XYZ(color Luv, color reference_white_xyY)
     float v0 = 9 * white_XYZ[1] / denom_r;
 
     float Y = (Luv[0] > CIE_K * CIE_E)
-        ? pow((Luv[0] + 16) / 116, 1 / 3)
+        ? pow((Luv[0] + 16) / 116, 3.0)
         : Luv[0] / CIE_K;
 
-    float a = (52 * Luv[0] / (Luv[1] + 13 * Luv[0] * u0) - 1) / 3;
+    float a = (52 * Luv[0] / (Luv[1] + 13 * Luv[0] * u0) - 1) / 3.0;
     float b = -5 * Y;
-    float c = -1 / 3;
+    float c = -1.0 / 3.0;
     float d = Y * (39 * Luv[0] / (Luv[2] + 13 * Luv[0] * v0) - 5);
 
     float X = (d - b) / (a - c);
@@ -612,9 +667,9 @@ color transform_Luv_to_XYZ(color Luv, string illuminant)
 
 color transform_Lab_to_LCh_ab(color Lab)
 {
-    float h = mod(degrees(atan2(Lab[2], Lab[1])), 360);
-    float C = hypot(Lab[1], Lab[2]);
     float L = Lab[0];
+    float C = hypot(Lab[1], Lab[2]);
+    float h = mod(degrees(atan2(Lab[1], Lab[2])), 360);
 
     return color(L, C, h);
 }
@@ -692,7 +747,7 @@ color transform_Luv_to_LCh_uv(color Luv)
 {
     float L = Luv[0];
     float C = hypot(Luv[1], Luv[2]);
-    float h = mod(degrees(atan2(Luv[2], Luv[1])), 360);
+    float h = mod(degrees(atan2(Luv[1], Luv[2])), 360);
 
     return color(L, C, h);
 }
