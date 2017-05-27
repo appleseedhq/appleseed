@@ -39,21 +39,18 @@ shader as_maya_checker
     color in_color1 = color(1)
     [[
         string as_maya_attribute_name = "color1",
-        string as_maya_attribute_short_name = "c1",
         string label = "Color 1",
         string page = "Checker Attributes"
     ]],
     color in_color2 = color(0)
     [[
         string as_maya_attribute_name = "color2",
-        string as_maya_attribute_short_name = "c2",
         string label = "Color 2",
         string page = "Checker Attributes"
     ]],
     float in_contrast = 1.0
     [[
         string as_maya_attribute_name = "contrast",
-        string as_maya_attribute_short_name = "ct",
         string label = "Contrast",
         string page = "Checker Attributes"
     ]],
@@ -65,14 +62,12 @@ shader as_maya_checker
     output color out_outColor = color(0)
     [[
         string as_maya_attribute_name = "outColor",
-        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output float out_outAlpha = 1.0
     [[
         string as_maya_attribute_name = "outAlpha",
-        string as_maya_attribute_short_name = "oa",
         string label = "Output Alpha",
         string widget = "null"
     ]]

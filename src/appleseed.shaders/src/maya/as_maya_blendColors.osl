@@ -55,7 +55,6 @@ shader as_maya_blendColors
     output color out_output = color(0)
     [[
         string as_maya_attribute_name = "output",
-        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]]

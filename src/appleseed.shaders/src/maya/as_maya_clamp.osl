@@ -36,21 +36,18 @@ shader as_maya_clamp
     color in_min = color(0)
     [[
         string as_maya_attribute_name = "min",
-        string as_maya_attribute_short_name = "mn",
         string label = "Lower Bound",
         string page = "Clamp Color Attributes"
     ]],
     color in_max = color(0)
     [[
         string as_maya_attribute_name = "max",
-        string as_maya_attribute_short_name = "mx",
         string label = "Upper Bound",
         string page = "Clamp Color Attributes"
     ]],
     color in_input = color(0)
     [[
         string as_maya_attribute_name = "input",
-        string as_maya_attribute_short_name = "ip",
         string label = "Input Color",
         string page = "Clamp Color Attributes"
     ]],
@@ -58,7 +55,6 @@ shader as_maya_clamp
     output color out_output = color(0)
     [[
         string as_maya_attribute_name = "output",
-        string as_maya_attribute_short_name = "op",
         string label = "Output Color",
         string widget = "null"
     ]]
