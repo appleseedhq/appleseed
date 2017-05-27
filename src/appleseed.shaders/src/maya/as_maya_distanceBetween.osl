@@ -36,22 +36,26 @@ shader as_maya_distanceBetween
     point in_point1 = point(0)
     [[
         string as_maya_attribute_name = "point1",
-        string label = "Point 1"
+        string label = "Point 1",
+        string page = "Distance Between Attributes"
     ]], 
     matrix in_inMatrix1 = matrix(1)
     [[
         string as_maya_attribute_name = "inMatrix1",
-        string label = "Matrix 1"
+        string label = "Matrix 1",
+        string widget = "null"
     ]],
     point in_point2 = point(0)
     [[
         string as_maya_attribute_name = "point2",
-        string label = "Point 2"
+        string label = "Point 2",
+        string page = "Distance Between Attributes"
     ]],
     matrix in_inMatrix2 = matrix(1)
     [[
         string as_maya_attribute_name = "inMatrix2",
-        string label = "Matrix 2"
+        string label = "Matrix 2",
+        string widget = "null"
     ]],
 
     output float out_distance = 0.0

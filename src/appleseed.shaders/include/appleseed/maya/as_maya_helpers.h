@@ -42,7 +42,6 @@
     color in_defaultColor = color(0.5)                                      \
     [[                                                                      \
         string as_maya_attribute_name = "defaultColor",                     \
-        string as_maya_attribute_short_name = "dc",                         \
         int as_maya_attribute_hidden = 1,                                   \
         string label = "Default Color",                                     \
         string page = "Color Balance"                                       \
@@ -50,7 +49,6 @@
     color in_colorGain = color(1.0)                                         \
     [[                                                                      \
         string as_maya_attribute_name = "colorGain",                        \
-        string as_maya_attribute_short_name = "cg",                         \
         int as_maya_attribute_hidden = 1,                                   \
         string label = "Color Gain",                                        \
         string page = "Color Balance"                                       \
@@ -58,7 +56,6 @@
     color in_colorOffset = color(0.0)                                       \
     [[                                                                      \
         string as_maya_attribute_name = "colorOffset",                      \
-        string as_maya_attribute_short_name = "co",                         \
         int as_maya_attribute_hidden = 1,                                   \
         string label = "Color Offset",                                      \
         string page = "Color Balance"                                       \
@@ -66,7 +63,6 @@
     float in_alphaGain = 1.0                                                \
     [[                                                                      \
         string as_maya_attribute_name = "alphaGain",                        \
-        string as_maya_attribute_short_name = "ag",                         \
         int as_maya_attribute_hidden = 1,                                   \
         string label = "Alpha Gain",                                        \
         string page = "Color Balance"                                       \
@@ -74,7 +70,6 @@
     float in_alphaOffset = 0.0                                              \
     [[                                                                      \
         string as_maya_attribute_name = "alphaOffset",                      \
-        string as_maya_attribute_short_name = "ao",                         \
         int as_maya_attribute_hidden = 1,                                   \
         string label = "Alpha Offset",                                      \
         string page = "Color Balance"                                       \
@@ -82,7 +77,6 @@
     int in_alphaIsLuminance = 1                                             \
     [[                                                                      \
         string as_maya_attribute_name = "alphaIsLuminance",                 \
-        string as_maya_attribute_short_name = "ail",                        \
         int as_maya_attribute_hidden = 1,                                   \
         string label = "Alpha Is Luminance",                                \
         string widget = "checkBox",                                         \
@@ -117,7 +111,6 @@
     int in_wrap = 1                                                         \
     [[                                                                      \
         string as_maya_attribute_name = "wrap",                             \
-        string as_maya_attribute_short_name = "w",                          \
         int as_maya_attribute_hidden = 1,                                   \
         string label = "Wrap",                                              \
         string widget = "checkBox",                                         \
@@ -126,7 +119,6 @@
     int in_local = 0                                                        \
     [[                                                                      \
         string as_maya_attribute_name = "local",                            \
-        string as_maya_attribute_short_name = "lo",                         \
         int as_maya_attribute_hidden = 1,                                   \
         string label = "Local",                                             \
         string widget = "checkBox",                                         \
@@ -135,7 +127,6 @@
     float in_blend = 0.0                                                    \
     [[                                                                      \
         string as_maya_attribute_name = "blend",                            \
-        string as_maya_attribute_short_name = "b",                          \
         int as_maya_attribute_hidden = 1,                                   \
         string label = "Blend",                                             \
         string widget = "slider",                                           \
@@ -150,7 +141,6 @@
     float in_uvCoord[2] = {u, v}                                            \
     [[                                                                      \
         string as_maya_attribute_name = "uvCoord",                          \
-        string as_maya_attribute_short_name = "uv",                         \
         string label = "UV Coordinates",                                    \
         string page = "UV Coordinates"                                      \
     ]],                                                                     \
@@ -158,7 +148,6 @@
         UNDEFINED_UVFILTER, UNDEFINED_UVFILTER}                             \
     [[                                                                      \
         string as_maya_attribute_name = "uvFilterSize",                     \
-        string as_maya_attribute_short_name = "fs",                         \
         int as_maya_attribute_hidden = 1,                                   \
         string label = "UV Filter Size",                                    \
         string page = "UV Coordinates"                                      \
