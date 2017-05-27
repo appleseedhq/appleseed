@@ -88,6 +88,8 @@
     [[                                                                      \
         string as_maya_attribute_name = "filter",                           \
         int as_maya_attribute_hidden = 1,                                   \
+        float min = 0.0,                                                    \
+        float softmax = 1.0,                                                \
         string label = "Filter",                                            \
         string page = "Effects"                                             \
     ]],                                                                     \
@@ -95,6 +97,8 @@
     [[                                                                      \
         string as_maya_attribute_name = "filterOffset",                     \
         int as_maya_attribute_hidden = 1,                                   \
+        float softmin = 0.0,                                                \
+        float softmax = 1.0,                                                \
         string label = "Filter Offset",                                     \
         string page = "Effects"                                             \
     ]],                                                                     \
@@ -129,11 +133,8 @@
         string as_maya_attribute_name = "blend",                            \
         int as_maya_attribute_hidden = 1,                                   \
         string label = "Blend",                                             \
-        string widget = "slider",                                           \
         float min = 0.0,                                                    \
         float max = 1.0,                                                    \
-        float slidermin = 0.0,                                              \
-        float slidermax = 1.0,                                              \
         string page = "Effects"                                             \
     ]]
 
