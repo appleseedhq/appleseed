@@ -38,7 +38,8 @@ shader as_maya_luminance
     color in_value = color(0)
     [[
         string as_maya_attribute_name = "value",
-        string label = "Input Color"
+        string label = "Input Color",
+        string page = "Luminance Attributes"
     ]],
 
     output float out_outValue = 0

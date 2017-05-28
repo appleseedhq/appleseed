@@ -36,35 +36,39 @@ shader as_maya_layeredTexture
     string as_maya_node_name = "layeredTexture"
 ]]
 (
-    color in_color[] = {0}
+    color in_color[] = {color(0)}
     [[
         string as_maya_attribute_name = "inputs",
-        string label = "Color"
+        string label = "Color",
+        string page = "Layered Texture Attributes"
     ]],
     float in_alpha[] = {1.0}
     [[
         string as_maya_attribute_name = "inputs",
-        string label = "Alpha"
+        string label = "Alpha",
+        string page = "Layered Texture Attributes"
     ]],
     int in_blendMode[] = {1}
     [[
         string as_maya_attribute_name = "inputs",
         string label = "Blend Mode",
         string widget = "mapper",
-        string options =
-        "None:0|Over:1|In:2|Out:3|Add:4|Subtract:5|Multiply:6|Difference:7|Lighten:8|Darken:9|Saturate:10|Desaturate:11|Illuminate:12"
+        string options = "None:0|Over:1|In:2|Out:3|Add:4|Subtract:5|Multiply:6|Difference:7|Lighten:8|Darken:9|Saturate:10|Desaturate:11|Illuminate:12",
+        string page = "Layered Texture Attributes"
     ]],
     int in_isVisible[] = {1}
     [[
         string as_maya_attribute_name = "inputs",
         string label = "Visible",
-        string widget = "checkBox"
+        string widget = "checkBox",
+        string page = "Layered Texture Attributes"
     ]],
     int in_alphaIsLuminance = 0
     [[
         string as_maya_attribute_name = "alphaIsLuminance",
         string label = "Alpha Is Luminance",
-        string widget = "checkBox"
+        string widget = "checkBox",
+        string page = "Layered Texture Attributes"
     ]],
     output float out_outAlpha = 0.0
     [[
@@ -75,14 +79,12 @@ shader as_maya_layeredTexture
     output color out_outColor = color(0)
     [[
         string as_maya_attribute_name = "outColor",
-        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output color out_outTransparency = color(0)
     [[
         string as_maya_attribute_name = "outTransparency",
-        string as_maya_attribute_short_name = "ot",
         string label = "Output Transparency",
         string widget = "null"
     ]]

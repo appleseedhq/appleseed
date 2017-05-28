@@ -39,27 +39,8 @@ shader as_maya_remapValue
     float in_inputValue = 0.0
     [[
         string as_maya_attribute_name = "inputValue",
-        string label = "Color"
-    ]],
-    float in_inputMin = 0.0
-    [[
-        string as_maya_attribute_name = "inputMin",
-        string label = "Input Min"
-    ]],
-    float in_inputMax = 0.0
-    [[
-        string as_maya_attribute_name = "inputMax",
-        string label = "Input Max"
-    ]],
-    float in_outputMin = 0.0
-    [[
-        string as_maya_attribute_name = "outputMin",
-        string label = "Output Min"
-    ]], 
-    float in_outputMax = 0.0
-    [[
-        string as_maya_attribute_name = "outputMax",
-        string label = "Output Max"
+        string label = "Color",
+        string page = "Remap Value Attributes"
     ]],
     float in_value_Position[] = {0}
     [[
@@ -76,7 +57,7 @@ shader as_maya_remapValue
     int in_value_Interp[] = {0}
     [[
         string as_maya_attribute_name = "value",
-        string widget = "mapper",
+        //string widget = "mapper",
         string options = "None:0|Linear:1|Smooth:2|Spline:3",
         string label = "Value Interpolation",
         string page = "Value"
@@ -96,10 +77,34 @@ shader as_maya_remapValue
     int in_color_Interp[] = {0}
     [[
         string as_maya_attribute_name = "color",
-        string widget = "mapper",
+        //string widget = "mapper",
         string options = "None:0|Linear:1|Smooth:2|Spline:3",
         string label = "Color Interpolation",
         string page = "Color Attributes"
+    ]],
+    float in_inputMin = 0.0
+    [[
+        string as_maya_attribute_name = "inputMin",
+        string label = "Input Min",
+        string page = "Input And Ouput Attributes"
+    ]],
+    float in_inputMax = 0.0
+    [[
+        string as_maya_attribute_name = "inputMax",
+        string label = "Input Max",
+        string page = "Input And Ouput Attributes"
+    ]],
+    float in_outputMin = 0.0
+    [[
+        string as_maya_attribute_name = "outputMin",
+        string label = "Output Min",
+        string page = "Input And Ouput Attributes"
+    ]], 
+    float in_outputMax = 0.0
+    [[
+        string as_maya_attribute_name = "outputMax",
+        string label = "Output Max",
+        string page = "Input And Ouput Attributes"
     ]],
 
     output float out_outValue = 0.0
@@ -111,7 +116,6 @@ shader as_maya_remapValue
     output color out_outColor = color(0)
     [[
         string as_maya_attribute_name = "outColor",
-        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]]

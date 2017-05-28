@@ -36,7 +36,8 @@ shader as_maya_rgbToHsv
     color in_inRgb = color(0)
     [[
         string as_maya_attribute_name = "inRgb",
-        string label = "RGB Input"
+        string label = "RGB Input",
+        string page = "RGB To HSV Attributes"
     ]],
 
     output color out_outHsv = color(0)
