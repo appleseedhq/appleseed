@@ -108,7 +108,6 @@ option (WITH_STUDIO                         "Build appleseed.studio"            
 option (WITH_TOOLS                          "Build appleseed tools"                                 ON)
 option (WITH_PYTHON                         "Build Python bindings"                                 ON)
 option (WITH_DISNEY_MATERIAL                "Build Disney material"                                 OFF)
-option (WITH_PARTIO                         "Build Partio support (used in unit tests)"             OFF)
 
 option (USE_CPP11                           "Use C++11"                                             OFF)
 option (USE_STATIC_BOOST                    "Use static Boost libraries"                            ON)
@@ -255,11 +254,6 @@ if (WITH_DISNEY_MATERIAL)
     endif ()
 endif ()
 
-if (WITH_PARTIO)
-    add_definitions (-DAPPLESEED_WITH_PARTIO)
-    find_package (Partio REQUIRED)
-endif ()
-
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.
@@ -327,10 +321,6 @@ if (WITH_DISNEY_MATERIAL)
     else ()
         include_directories (${APPLESEED_DEPS_STAGE_DIR}/SeExpr-debug/include)
     endif ()
-endif ()
-
-if (WITH_PARTIO)
-    include_directories (${PARTIO_INCLUDE_DIRS})
 endif ()
 
 

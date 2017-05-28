@@ -110,12 +110,6 @@ class OSLShaderGroupExec
         const ShaderGroup&              shader_group,
         const foundation::Vector3f&     outgoing) const;
 
-    void execute_surface_shader(
-        const ShaderGroup&              shader_group,
-        const ShadingPoint&             shading_point,
-        const foundation::Color3f&      color,
-        const float                     alpha) const;
-
     void do_execute(
         const ShaderGroup&              shader_group,
         const ShadingPoint&             shading_point,

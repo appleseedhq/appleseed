@@ -104,17 +104,23 @@ class CDF
 // Sampling and inversion functions.
 //
 
-template <typename RandomAccessIter, typename Weight>
-size_t sample_cdf(
-    RandomAccessIter    begin,
-    RandomAccessIter    end,
-    const Weight        x);
+template <typename T>
+size_t sample_pdf_linear_search(
+    const T*            pdf,
+    const size_t        size,
+    const T             x);
 
 template <typename T>
 size_t sample_cdf_linear_search(
     const T*            cdf,
     const size_t        size,
     const T             x);
+
+template <typename RandomAccessIter, typename Weight>
+size_t sample_cdf(
+    RandomAccessIter    begin,
+    RandomAccessIter    end,
+    const Weight        x);
 
 // Numerically invert the CDF function cdf, with corresponding PDF pdf,
 // using a combination of bisection and Newton's method.
@@ -128,7 +134,6 @@ T invert_cdf_function(
     const T             guess,              // initial root guess
     const T             eps,                // root precision
     const size_t        max_iterations);    // max root refinement iterations
-
 
 //
 // CDF class implementation.
@@ -233,20 +238,25 @@ inline const std::pair<Item, Weight>& CDF<Item, Weight>::sample(const Weight x) 
 // Functions implementation.
 //
 
-template <typename RandomAccessIter, typename Weight>
-inline size_t sample_cdf(
-    RandomAccessIter    begin,
-    RandomAccessIter    end,
-    const Weight        x)
+template <typename T>
+inline size_t sample_pdf_linear_search(
+    const T*            pdf,
+    const size_t        size,
+    const T             x)
 {
-    assert(begin != end);
-    assert(x >= Weight(0.0));
-    assert(x < Weight(1.0));
+    assert(size > 0);
+    assert(x >= T(0.0));
+    assert(x < T(1.0));
 
-    const RandomAccessIter i = std::upper_bound(begin, end, x);
-    assert(i < end);
+    T u = T(0.0);
 
-    return i - begin;
+    for (size_t i = 0; i < size; ++i)
+    {
+        u += pdf[i];
+        if (x < u) return i;
+    }
+
+    return size - 1;
 }
 
 template <typename T>
@@ -263,6 +273,22 @@ inline size_t sample_cdf_linear_search(
         i++;
 
     return i;
+}
+
+template <typename RandomAccessIter, typename Weight>
+inline size_t sample_cdf(
+    RandomAccessIter    begin,
+    RandomAccessIter    end,
+    const Weight        x)
+{
+    assert(begin != end);
+    assert(x >= Weight(0.0));
+    assert(x < Weight(1.0));
+
+    const RandomAccessIter i = std::upper_bound(begin, end, x);
+    assert(i < end);
+
+    return i - begin;
 }
 
 template <typename CDF, typename PDF, typename T>
