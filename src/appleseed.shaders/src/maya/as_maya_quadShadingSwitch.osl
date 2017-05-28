@@ -36,27 +36,32 @@ shader as_maya_quadShadingSwitch
     color in_inTriple[] = {0}
     [[
         string as_maya_attribute_name = "inputs",
-        string label = "Triple Value Component"
+        string label = "Triple Value Component",
+        string page = "Switch Attributes"
     ]],
     float in_inSingle[] = {0.0}
     [[
         string as_maya_attribute_name = "inputs",
-        string label = "Single Value Component"
+        string label = "Single Value Component",
+        string page = "Switch Attributes"
     ]],
     string in_inShape[] = {""}
     [[
         string as_maya_attribute_name = "inputs",
-        string label = "Shape Name"
+        string label = "Shape Name",
+        string page = "Switch Attributes"
     ]],
     color in_defTriple = color(0.8)
     [[
         string as_maya_attribute_name = "default",
-        string label = "Default Triple Value"
+        string label = "Default Triple Value",
+        string page = "Switch Attributes"
     ]],
     float in_defSingle = 0.0
     [[
         string as_maya_attribute_name = "default",
-        string label = "Default Single Value"
+        string label = "Default Single Value",
+        string page = "Switch Attributes"
     ]],
 
     output color out_outTriple = color(0)

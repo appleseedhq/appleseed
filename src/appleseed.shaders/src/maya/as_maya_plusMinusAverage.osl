@@ -38,22 +38,26 @@ shader as_maya_plusMinusAverage
         string as_maya_attribute_name = "operation",
         string label = "Operation",
         string widget = "mapper",
-        string options = "No Operation:0|Sum:1|Subtraction:2|Average:3"
+        string options = "No Operation:0|Sum:1|Subtraction:2|Average:3",
+        string page = "Plus-Minus-Average Attributes"
     ]],
     float in_input1D[] = {0}
     [[
         string as_maya_attribute_name = "input1D",
-        string label = "Input 1D"
+        string label = "Input 1D",
+        string page = "Plus-Minus-Average Attributes"
     ]],
     vector in_input2D[] = {0}
     [[
         string as_maya_attribute_name = "input2D",
-        string label = "Input 2D"
+        string label = "Input 2D",
+        string page = "Plus-Minus-Average Attributes"
     ]],
     vector in_input3D[] = {0}
     [[
         string as_maya_attribute_name = "input3D",
-        string label = "Input 3D"
+        string label = "Input 3D",
+        string page = "Plus-Minus-Average Attributes"
     ]],
 
     output float out_output1D = 0.0

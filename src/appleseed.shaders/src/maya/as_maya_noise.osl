@@ -40,17 +40,20 @@ shader as_maya_noise
     float in_amplitude = 1.0
     [[
         string as_maya_attribute_name = "amplitude",
-        string label = "Amplitude"
+        string label = "Amplitude",
+        string page = "Noise Attributes"
     ]],
     float in_ratio = 0.707
     [[
         string as_maya_attribute_name = "ratio",
-        string label = "Ratio"
+        string label = "Ratio",
+        string page = "Noise Attributes"
     ]],
     float in_threshold = 0.0
     [[
         string as_maya_attribute_name = "threshold",
-        string label = "Threshold"
+        string label = "Threshold",
+        string page = "Noise Attributes"
     ]],
     int in_depthMax = 3
     [[
@@ -58,7 +61,8 @@ shader as_maya_noise
         string widget = "slider",
         int slidermin = 1,
         int slidermax = 8,
-        string label = "Maximum Depth"
+        string label = "Maximum Depth",
+        string page = "Noise Attributes"
     ]],
     float in_frequency = 8.0
     [[
@@ -66,7 +70,8 @@ shader as_maya_noise
         string widget = "slider",
         float slidermin = 0.0,
         float slidermax = 100.0,
-        string label = "Frequency"
+        string label = "Frequency",
+        string page = "Noise Attributes"
     ]],
     float in_frequencyRatio = 2.0
     [[
@@ -74,52 +79,61 @@ shader as_maya_noise
         string widget = "slider",
         float slidermin = 1.0,
         float slidermax = 10.0,
-        string label = "Frequency Ratio"
+        string label = "Frequency Ratio",
+        string page = "Noise Attributes"
     ]],
     int in_inflection = 0
     [[
         string as_maya_attribute_name = "inflection",
         string widget = "checkBox",
-        string label = "Inflection"
+        string label = "Inflection",
+        string page = "Noise Attributes"
     ]],
     float in_time = 0.0
     [[
         string as_maya_attribute_name = "time",
-        string label = "Time"
+        string label = "Time",
+        string page = "Noise Attributes"
     ]],
     int in_noiseType = 1
     [[
         string as_maya_attribute_name = "noiseType",
         string widget = "mapper",
         string options = "Perlin:0|Billow:1|Wave:2|Wispy:3|SpaceTime:4",
-        string label = "Noise Type"
+        string label = "Noise Type",
+        string page = "Noise Attributes"
     ]],
     float in_density = 1.0
     [[
         string as_maya_attribute_name = "density",
-        string label = "Density"
+        string label = "Density",
+        string page = "Noise Attributes"
     ]],
     float in_spottyness = 0.1
     [[
         string as_maya_attribute_name = "spottyness",
-        string label = "Spottyness"
+        string label = "Spottyness",
+        string page = "Noise Attributes"
     ]],
     float in_sizeRand = 0.0
     [[
         string as_maya_attribute_name = "sizeRand",
-        string label = "Size Randomness"
+        string label = "Size Randomness",
+        string page = "Noise Attributes"
     ]],
     float in_randomness = 1.0
     [[
         string as_maya_attribute_name = "randomness",
-        string label = "Randomness"
+        string label = "Randomness",
+        string page = "Noise Attributes"
     ]],
     int in_falloff = 2
     [[
         string as_maya_attribute_name = "falloff",
         string widget = "mapper",
         string options = "Linear:0|Smooth:1|Fast:2|Bubble:3",
-        string label = "Falloff"
+        string label = "Falloff",
+        string page = "Noise Attributes"
     ]],
     int in_numWaves = 5
     [[
@@ -127,7 +141,8 @@ shader as_maya_noise
         string widget = "slider",
         int slidermin = 1,
         int slidermax = 20,
-        string label = "Number of Waves"
+        string label = "Number of Waves",
+        string page = "Noise Attributes"
     ]],
     float in_implode = 0.0
     [[
@@ -135,12 +150,14 @@ shader as_maya_noise
         string widget = "slider",
         float slidermin = -1.0,
         float slidermax = 1.0,
-        string label = "Implode"
+        string label = "Implode",
+        string page = "Noise Attributes"
     ]],
     float in_implodeCenter[2] = {0.5, 0.5}
     [[
         string as_maya_attribute_name = "implodeCenter",
-        string label = "Implode Center"
+        string label = "Implode Center",
+        string page = "Noise Attributes"
     ]],
 
     MAYA_COLORBALANCE_PARAMETERS,
@@ -150,14 +167,12 @@ shader as_maya_noise
     output color out_outColor = color(0)
     [[
         string as_maya_attribute_name = "outColor",
-        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output float out_outAlpha = 1.0
     [[
         string as_maya_attribute_name = "outAlpha",
-        string as_maya_attribute_short_name = "oa",
         string label = "Output Alpha",
         string widget = "null"
     ]]

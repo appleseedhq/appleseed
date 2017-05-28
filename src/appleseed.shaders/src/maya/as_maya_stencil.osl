@@ -39,54 +39,64 @@ shader as_maya_stencil
     color in_image = color(0)
     [[
         string as_maya_attribute_name = "image",
-        string label = "Image Input"
-    ]],
-    float in_mask = 0.0
-    [[
-        string as_maya_attribute_name = "mask",
-        string label = "Input Mask"
+        string label = "Image Input",
+        string page = "Stencil Attributes"
     ]],
     float in_edgeBlend = 0.0
     [[
         string as_maya_attribute_name = "edgeBlend",
-        string label = "Edge Blend"
+        string label = "Edge Blend",
+        string page = "Stencil Attributes"
+    ]],
+    float in_mask = 0.0
+    [[
+        string as_maya_attribute_name = "mask",
+        string label = "Input Mask",
+        string page = "Stencil Attributes"
     ]],
     int in_keyMasking = 0
     [[
         string as_maya_attribute_name = "keyMasking",
         string label = "Key Masking",
-        string widget = "checkBox"
+        string widget = "checkBox",
+        string page = "HSV Color Key"
     ]],
     int in_positiveKey = 0
     [[
         string as_maya_attribute_name = "positiveKey",
         string label = "Positive Key",
-        string widget = "checkBox"
+        string widget = "checkBox",
+        string page = "HSV Color Key"
     ]],
     color in_colorKey = color(0)
     [[
         string as_maya_attribute_name = "colorKey",
-        string label = "Color Key"
+        string label = "Color Key",
+        string page = "HSV Color Key"
     ]],
     float in_hueRange = 0.5
     [[
         string as_maya_attribute_name = "hueRange",
-        string label = "Hue Range"
+        string label = "Hue Range",
+        string page = "HSV Color Key"
     ]],
     float in_saturationRange = 0.5
     [[
         string as_maya_attribute_name = "saturationRange",
-        string label = "Saturation Range"
+        string label = "Saturation Range",
+        string page = "HSV Color Key"
     ]],
     float in_valueRange = 0.5
     [[
         string as_maya_attribute_name = "valueRange",
-        string label = "Value Range"
+        string label = "Value Range",
+        string page = "HSV Color Key"
     ]],
     float in_threshold = 0.5
     [[
         string as_maya_attribute_name = "threshold",
-        string label = "Threshold"
+        string label = "Threshold",
+        string page = "HSV Color Key"
     ]],
 
     MAYA_COLORBALANCE_PARAMETERS,
@@ -96,7 +106,6 @@ shader as_maya_stencil
     output color out_outColor = color(0)
     [[
         string as_maya_attribute_name = "outColor",
-        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],

@@ -36,23 +36,25 @@ shader as_maya_blendColors
     color in_color1 = color(1,0,0)
     [[
         string as_maya_attribute_name = "color1",
-        string label = "Color 1"
+        string label = "Color 1",
+        string page = "Blend Color Attributes"
     ]],
     color in_color2 = color(0,0,1)
     [[
         string as_maya_attribute_name = "color2",
-        string label = "Color 2"
+        string label = "Color 2",
+        string page = "Blend Color Attributes"
     ]],
     float in_blender = 0.0
     [[
         string as_maya_attribute_name = "blender",
-        string label = "Weight"
+        string label = "Weight",
+        string page = "Blend Color Attributes"
     ]],
 
     output color out_output = color(0)
     [[
         string as_maya_attribute_name = "output",
-        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]]

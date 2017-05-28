@@ -38,27 +38,32 @@ shader as_maya_condition
         string as_maya_attribute_name = "operation",
         string label = "Operation",
         string widget = "mapper",
-        string options = "Equal:0|Not Equal:1|Greater Than:2|Greater Or Equal:3|Less Than:4|Less Or Equal:5"
+        string options = "Equal:0|Not Equal:1|Greater Than:2|Greater Or Equal:3|Less Than:4|Less Or Equal:5",
+        string page = "Condition Attributes"
     ]],
     float in_firstTerm = 0.0
     [[
         string as_maya_attribute_name = "firstTerm",
-        string label = "First Term"
+        string label = "First Term",
+        string page = "Condition Attributes"
     ]],
     float in_secondTerm = 0.0
     [[
         string as_maya_attribute_name = "secondTerm",
-        string label = "Second Term"
+        string label = "Second Term",
+        string page = "Condition Attributes"
     ]],
     color in_colorIfTrue = color(0)
     [[
         string as_maya_attribute_name = "colorIfTrue",
-        string label = "Color If True"
+        string label = "Color If True",
+        string page = "Condition Attributes"
     ]],
     color in_colorIfFalse = color(0)
     [[
         string as_maya_attribute_name = "colorIfFalse",
-        string label = "Color If False"
+        string label = "Color If False",
+        string page = "Condition Attributes"
     ]],
 
     output color out_outColor = color(0)

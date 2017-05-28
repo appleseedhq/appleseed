@@ -39,27 +39,32 @@ shader as_maya_grid
     color in_fillerColor = color(0)
     [[
         string as_maya_attribute_name = "fillerColor",
-        string label = "Filler Color"
+        string label = "Filler Color",
+        string page = "Grid Attributes"
     ]],
     color in_lineColor = color(0)
     [[
         string as_maya_attribute_name = "lineColor",
-        string label = "Line Color"
+        string label = "Line Color",
+        string page = "Grid Attributes"
     ]],
     float in_contrast = 1.0
     [[
         string as_maya_attribute_name = "contrast",
-        string label = "Contrast"
+        string label = "Contrast",
+        string page = "Grid Attributes"
     ]],
     float in_uWidth = 0.1
     [[
         string as_maya_attribute_name = "uWidth",
-        string label = "U Width"
+        string label = "U Width",
+        string page = "Grid Attributes"
     ]],
     float in_vWidth = 0.1
     [[
         string as_maya_attribute_name = "vWidth",
-        string label = "V Width"
+        string label = "V Width",
+        string page = "Grid Attributes"
     ]],
 
     MAYA_COLORBALANCE_PARAMETERS,
@@ -69,7 +74,6 @@ shader as_maya_grid
     output color out_outColor = color(0)
     [[
         string as_maya_attribute_name = "outColor",
-        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],

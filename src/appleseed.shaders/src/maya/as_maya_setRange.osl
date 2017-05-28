@@ -37,27 +37,32 @@ shader as_maya_setRange
     vector in_value = vector(0)
     [[
         string as_maya_attribute_name = "value",
-        string label = "Input Value"
+        string label = "Input Value",
+        string page = "Set Range Attributes"
     ]],
     vector in_min = vector(0)
     [[
         string as_maya_attribute_name = "min",
-        string label = "Minimum Value"
+        string label = "Minimum Value",
+        string page = "Set Range Attributes"
     ]],
     vector in_max = vector(0)
     [[
         string as_maya_attribute_name = "max",
-        string label = "Maximum Value"
+        string label = "Maximum Value",
+        string page = "Set Range Attributes"
     ]],
     vector in_oldMin = vector(0)
     [[
         string as_maya_attribute_name = "oldMin",
-        string label = "Old Minimum Value"
+        string label = "Old Minimum Value",
+        string page = "Set Range Attributes"
     ]],
     vector in_oldMax = vector(0)
     [[
         string as_maya_attribute_name = "oldMax",
-        string label = "Old Maximum Value"
+        string label = "Old Maximum Value",
+        string page = "Set Range Attributes"
     ]],
 
     output vector out_outValue = vector(0)
