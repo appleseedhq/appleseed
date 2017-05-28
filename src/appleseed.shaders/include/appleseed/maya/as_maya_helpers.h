@@ -174,7 +174,6 @@
     [[                                                                      \
         string as_maya_attribute_name = "colorSpace",                       \
         int as_maya_attribute_hidden = 1,                                   \
-        string widget = "string",                                           \
         string label = "Color Space",                                       \
         string page = "File Attributes"                                     \
     ]],                                                                     \

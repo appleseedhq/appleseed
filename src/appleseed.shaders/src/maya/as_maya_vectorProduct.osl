@@ -37,30 +37,35 @@ shader as_maya_vectorProduct
     vector in_input1 = vector(0)
     [[
         string as_maya_attribute_name = "input1",
-        string label = "Input Vector 1"
+        string label = "Input Vector 1",
+        string page = "Vector Product Attributes"
     ]],
     vector in_input2 = vector(0)
     [[
         string as_maya_attribute_name = "input2",
-        string label = "Input Vector 2"
+        string label = "Input Vector 2",
+        string page = "Vector Product Attributes"
     ]],
     matrix in_matrix = matrix(1)
     [[
         string as_maya_attribute_name = "matrix",
-        string label = "Input Matrix"
+        string label = "Input Matrix",
+        string page = "Vector Product Attributes"
     ]],
     int in_normalizeOutput = 0
     [[
         string as_maya_attribute_name = "normalizeOutput",
         string label = "Normalize Output",
-        string widget = "checkBox"
+        string widget = "checkBox",
+        string page = "Vector Product Attributes"
     ]],
     int in_operation = 1
     [[
         string as_maya_attribute_name = "operation",
         string label = "Operation",
         string widget = "mapper",
-        string options = "None:0|Dot Product:1|Cross Product:2|Vector Matrix Product:3|Point Matrix Product:4"
+        string options = "None:0|Dot Product:1|Cross Product:2|Vector Matrix Product:3|Point Matrix Product:4",
+        string page = "Vector Product Attributes"
     ]],
 
     // Components = outputX|Y|Z

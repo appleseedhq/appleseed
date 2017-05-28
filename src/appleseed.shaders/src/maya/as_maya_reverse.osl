@@ -36,7 +36,8 @@ shader as_maya_reverse
     color in_input = color(0)
     [[
         string as_maya_attribute_name = "input",
-        string label = "Input"
+        string label = "Input",
+        string page = "Reverse Attributes"
     ]],
 
     output color out_output = color(0)

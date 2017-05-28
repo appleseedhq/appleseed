@@ -38,12 +38,14 @@ shader as_maya_gammaCorrect
     color in_value = color(0)
     [[
         string as_maya_attribute_name = "value",
-        string label = "Input Value"
+        string label = "Input Value",
+        string page = "Gamma Correction Attributes"
     ]],
     color in_gamma = color(1)
     [[
         string as_maya_attribute_name = "gamma",
-        string label = "Gamma Correction"
+        string label = "Gamma Correction",
+        string page = "Gamma Correction Attributes"
     ]],
 
     output color out_outValue = color(0)

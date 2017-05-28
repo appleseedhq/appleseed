@@ -33,84 +33,101 @@
 
 shader as_maya_place2dTexture
 [[
-    string as_maya_node_name = "place2dTexture"
+    string as_maya_node_name = "place2dTexture",
+    string help = "ZOMGER",
+    string URL = "http://www.appleseedhq.net"
 ]]
 (
-    MAYA_UV_PARAMETERS,
-
     float in_coverage[2] = {1.0, 1.0}
     [[
         string as_maya_attribute_name = "coverage",
-        string label = "Coverage"
+        string label = "Coverage",
+        string page = "2D Texture Placement Attributes",
+        string help = "FOO BAR"
     ]],
     float in_translateFrame[2] = {0.0, 0.0}
     [[
         string as_maya_attribute_name = "translateFrame",
-        string label = "UV Frame Translation"
+        string label = "UV Frame Translation",
+        string page = "2D Texture Placement Attributes"
     ]],
     float in_rotateFrame = 0.0
     [[
         string as_maya_attribute_name = "rotateFrame",
+        string widget = "slider",
         string units = "degrees",
-        string label = "UV Frame Rotation"
+        string label = "UV Frame Rotation",
+        string page = "2D Texture Placement Attributes"
     ]],
     int in_mirrorU = 0
     [[
         string as_maya_attribute_name = "mirrorU",
         string label = "Mirror U",
-        string widget = "checkBox"
+        string widget = "checkBox",
+        string page = "2D Texture Placement Attributes"
     ]],
     int in_mirrorV = 0
     [[
         string as_maya_attribute_name = "mirrorV",
         string label = "Mirror V",
-        string widget = "checkBox"
+        string widget = "checkBox",
+        string page = "2D Texture Placement Attributes"
     ]],
     int in_stagger = 0
     [[
         string as_maya_attribute_name = "stagger",
         string label = "Stagger",
-        string widget = "c heckBox"
+        string widget = "checkBox",
+        string page = "2D Texture Placement Attributes"
     ]],
     int in_wrapU = 0
     [[
         string as_maya_attribute_name = "wrapU",
         string label = "Wrap U",
-        string widget = "checkBox"
+        string widget = "checkBox",
+        string page = "2D Texture Placement Attributes"
     ]],
     int in_wrapV = 0
     [[
         string as_maya_attribute_name = "wrapV",
         string label = "Wrap V",
-        string widget = "checkBox"
+        string widget = "checkBox",
+        string page = "2D Texture Placement Attributes"
     ]],
     float in_repeatUV[2] = {1.0, 1.0}
     [[
         string as_maya_attribute_name = "repeatUV",
-        string label = "Repeat UV"
+        string label = "Repeat UV",
+        string page = "2D Texture Placement Attributes"
     ]],
     float in_offset[2] = {0.0, 0.0}
     [[
         string as_maya_attribute_name = "offset",
-        string label = "Offset"
+        string label = "Offset",
+        string page = "2D Texture Placement Attributes"
     ]],
     float in_rotateUV = 0.0
     [[
         string as_maya_attribute_name = "rotateUV",
         string units = "degrees",
-        string label = "Rotate UV"
+        string label = "Rotate UV",
+        string page = "2D Texture Placement Attributes"
     ]],
     float in_noiseUV[2] = {0.0, 0.0}
     [[
         string as_maya_attribute_name = "noiseUV",
-        string label = "Noise UV"
+        string label = "Noise UV",
+        string page = "2D Texture Placement Attributes"
     ]],
     int in_fast = 0
     [[
         string as_maya_attribute_name = "fast",
         string label = "Fast",
-        string widget = "checkBox"
+        string widget = "checkBox",
+        string page = "2D Texture Placement Attributes"
     ]],
+
+    MAYA_UV_PARAMETERS,
 
     output float out_outUV[2] = {0.0, 0.0}
     [[

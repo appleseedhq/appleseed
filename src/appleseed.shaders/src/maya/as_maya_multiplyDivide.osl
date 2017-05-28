@@ -38,17 +38,20 @@ shader as_maya_multiplyDivide
         string as_maya_attribute_name = "operation",
         string label = "Operation",
         string widget = "mapper",
-        string options = "No Operation:0|Multiply:1|Divide:2|Power:3"
+        string options = "No Operation:0|Multiply:1|Divide:2|Power:3",
+        string page = "Multiply-Divide Attributes"
     ]],
     vector in_input1 = 1.0
     [[
         string as_maya_attribute_name = "input1",
-        string label = "Input 1"
+        string label = "Input 1",
+        string page = "Multiply-Divide Attributes"
     ]],
     vector in_input2 = 1.0
     [[
         string as_maya_attribute_name = "input2",
-        string label = "Input 2"
+        string label = "Input 2",
+        string page = "Multiply-Divide Attributes"
     ]],
 
     output vector out_output = 1.0

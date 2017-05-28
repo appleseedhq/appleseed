@@ -80,8 +80,7 @@ shader as_maya_file
         string as_maya_attribute_name = "ptexFilterType",
         string label = "Ptex Filter Type",
         string widget = "mapper",
-        string options =
-        "Point:0|Bilinear:1|Box:2|Gaussian:3|Bicubic:4|B-Spline:5|Catmull-Rom:6|Mitchell:7",
+        string options = "Point:0|Bilinear:1|Box:2|Gaussian:3|Bicubic:4|B-Spline:5|Catmull-Rom:6|Mitchell:7",
         string page = "Ptex Controls"
     ]],
     float in_ptexFilterWidth = 0.0
