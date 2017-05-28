@@ -57,7 +57,7 @@ shader as_maya_remapHsv
     int in_hue_Interp[] = {0}
     [[
         string as_maya_attribute_name = "hue",
-        string widget = "mapper",
+        //string widget = "mapper",
         string options = "None:0|Linear:1|Smooth:2|Spline:3",
         string label = "Hue Interpolation",
         string page = "Hue"
@@ -77,7 +77,7 @@ shader as_maya_remapHsv
     int in_saturation_Interp[] = {0}
     [[
         string as_maya_attribute_name = "saturation",
-        string widget = "mapper",
+        //string widget = "mapper",
         string options = "None:0|Linear:1|Smooth:2|Spline:3",
         string label = "Saturation Interpolation",
         string page = "Saturation"
@@ -97,7 +97,7 @@ shader as_maya_remapHsv
     int in_value_Interp[] = {0}
     [[
         string as_maya_attribute_name = "value",
-        string widget = "mapper",
+        //string widget = "mapper",
         string options = "None:0|Linear:1|Smooth:2|Spline:3",
         string label = "Value Interpolation",
         string page = "Value"

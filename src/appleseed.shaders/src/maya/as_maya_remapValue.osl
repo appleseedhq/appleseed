@@ -57,7 +57,7 @@ shader as_maya_remapValue
     int in_value_Interp[] = {0}
     [[
         string as_maya_attribute_name = "value",
-        string widget = "mapper",
+        //string widget = "mapper",
         string options = "None:0|Linear:1|Smooth:2|Spline:3",
         string label = "Value Interpolation",
         string page = "Value"
@@ -77,7 +77,7 @@ shader as_maya_remapValue
     int in_color_Interp[] = {0}
     [[
         string as_maya_attribute_name = "color",
-        string widget = "mapper",
+        //string widget = "mapper",
         string options = "None:0|Linear:1|Smooth:2|Spline:3",
         string label = "Color Interpolation",
         string page = "Color Attributes"
