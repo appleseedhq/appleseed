@@ -44,13 +44,13 @@ shader as_maya_contrast
     color in_contrast = color(0)
     [[
         string as_maya_attribute_name = "contrast",
-        string label = "Contrast"",
+        string label = "Contrast",
         string page = "Contrast Attributes"
     ]],
     color in_bias = color(0)
     [[
         string as_maya_attribute_name = "bias",
-        string label = "Bias"",
+        string label = "Bias",
         string page = "Contrast Attributes"
     ]],
 
