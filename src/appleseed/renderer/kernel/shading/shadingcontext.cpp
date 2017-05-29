@@ -145,19 +145,6 @@ void ShadingContext::execute_osl_background(
             outgoing);
 }
 
-void ShadingContext::execute_osl_surface_shader(
-    const ShaderGroup&      shader_group,
-    const ShadingPoint&     shading_point,
-    const Color3f&          color,
-    const float             alpha) const
-{
-    m_shadergroup_exec.execute_surface_shader(
-        shader_group,
-        shading_point,
-        color,
-        alpha);
-}
-
 void ShadingContext::choose_bsdf_closure_shading_basis(
     const ShadingPoint&     shading_point,
     const Vector2f&         s) const

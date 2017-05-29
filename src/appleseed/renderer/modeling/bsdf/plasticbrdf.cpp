@@ -289,7 +289,7 @@ namespace
             const float Fi = fresnel_reflectance(wi, m, values->m_precomputed.m_eta);
             const float specular_probability = choose_specular_probability(*values, Fo);
 
-            float pdf_glossy, pdf_diffuse;
+            float pdf_glossy = 0.0f, pdf_diffuse = 0.0f;
 
             value.resize(values->m_specular_reflectance.size());
             value.set(0.0f);
@@ -360,7 +360,7 @@ namespace
             const float F = fresnel_reflectance(wo, m, values->m_precomputed.m_eta);
             const float specular_probability = choose_specular_probability(*values, F);
 
-            float pdf_glossy, pdf_diffuse;
+            float pdf_glossy = 0.0f, pdf_diffuse = 0.0f;
 
             if (ScatteringMode::has_glossy(modes))
                 pdf_glossy = specular_pdf(*m_mdf, alpha, gamma, wo, m);

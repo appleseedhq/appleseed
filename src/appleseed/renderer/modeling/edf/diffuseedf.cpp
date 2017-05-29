@@ -44,6 +44,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cmath>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
@@ -51,6 +52,7 @@ namespace renderer      { class Assembly; }
 namespace renderer      { class Project; }
 
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
@@ -74,6 +76,7 @@ namespace
         {
             m_inputs.declare("radiance", InputFormatSpectralIlluminance);
             m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("exposure", InputFormatFloat, "0.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -117,7 +120,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= values->m_radiance_multiplier;
+            value *= values->m_radiance_multiplier * pow(2.0f, values->m_exposure);
 
             probability = wo.y * RcpPi<float>();
             assert(probability > 0.0f);
@@ -144,7 +147,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= values->m_radiance_multiplier;
+            value *= values->m_radiance_multiplier * pow(2.0f, values->m_exposure);
         }
 
         virtual void evaluate(
@@ -170,7 +173,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= values->m_radiance_multiplier;
+            value *= values->m_radiance_multiplier * pow(2.0f, values->m_exposure);
 
             probability = cos_on * RcpPi<float>();
         }
@@ -195,7 +198,7 @@ namespace
 
         virtual float get_uncached_max_contribution() const APPLESEED_OVERRIDE
         {
-            return get_max_contribution("radiance", "radiance_multiplier");
+            return get_max_contribution("radiance", "radiance_multiplier", "exposure");
         }
 
       private:
@@ -247,6 +250,17 @@ DictionaryArray DiffuseEDFFactory::get_input_metadata() const
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
             .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "exposure")
+            .insert("label", "Exposure")
+            .insert("type", "numeric")
+            .insert("use", "optional")
+            .insert("default", "0.0")
+            .insert("min_value", "-64.0")
+            .insert("max_value", "64.0")
+            .insert("help", "Exposure"));
 
     add_common_input_metadata(metadata);
 
