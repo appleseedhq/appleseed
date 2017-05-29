@@ -107,7 +107,9 @@ void LightSample::make_shading_point(
 LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
   : m_params(params)
   , m_emitting_triangle_hash_table(m_triangle_key_hasher)
+  , m_light_tree(scene)
 {
+
     RENDERER_LOG_INFO("collecting light emitters...");
 
     // Collect all non-physical lights.
@@ -118,6 +120,10 @@ LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
     collect_emitting_triangles(
         scene.assembly_instances(),
         TransformSequence());
+
+    m_light_tree.build(
+        m_non_physical_lights,
+        m_emitting_triangles);
 
     // Build the hash table of emitting triangles.
     build_emitting_triangle_hash_table();
