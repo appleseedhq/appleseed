@@ -32,12 +32,13 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/lighting/lighttypes.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
 #include "foundation/utility/alignedvector.h"
-#include "renderer/kernel/lighting/lighttypes.h"
+#include "foundation/utility/uid.h"
 
 // Forward declarations.
 namespace renderer      { class Scene; }
@@ -77,10 +78,10 @@ class LightTree
     typedef std::vector<NonPhysicalLightInfo>    NonPhysicalLightVector;
     typedef std::vector<EmittingTriangle>        EmittingTriangleVector;
 
-    // struct Item
-    // {
-        
-    // };
+    struct Item
+    {
+        foundation::UniqueID m_tree_node_uid;
+    };  
 
     NonPhysicalLightVector      m_non_physical_lights;
     EmittingTriangleVector      m_emitting_triangles;
