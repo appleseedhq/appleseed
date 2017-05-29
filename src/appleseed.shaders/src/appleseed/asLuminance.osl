@@ -304,32 +304,26 @@ shader asLuminance
             {
                 if (in_inputColorSpace == 0)
                 {
-                    // ACES 2065-1 AP0
                     coeffs = color(ACES_D60_LUMINANCE_COEFFS);
                 }
                 else if (in_inputColorSpace == 1)
                 {
-                    // ACEScg AP1
                     coeffs = color(ACESCG_D60_LUMINANCE_COEFFS);
                 }
                 else if (in_inputColorSpace == 2)
                 {
-                    // Rec.2020
                     coeffs = color(REC2020_D65_LUMINANCE_COEFFS);
                 }
                 else if (in_inputColorSpace == 3)
                 {
-                    // DCI-P3 primaries
                     coeffs = color(DCIP3_DCI_LUMINANCE_COEFFS);
                 }
                 else if (in_inputColorSpace == 4)
                 {
-                    // Rec.709/sRGB primaries
                     coeffs = color(REC709_D65_LUMINANCE_COEFFS);
                 }
                 else
                 {
-                    // invalid primaries
                     coeffs = color(0);
                 }
             }

@@ -45,15 +45,13 @@ shader asColorTransform
         string page = "Color Attributes",
         int divider = 1
     ]],
-
     int in_inputSpace = 0
     [[
         string as_maya_attribute_name = "inputSpace",
         string as_maya_attribute_short_name = "is",
         int as_maya_attribute_keyable = 0,
         string widget = "mapper",
-        string options =
-        "RGB:0|HSV:1|HSL:2|XYZ:3|xyY:4|CIE L*a*b*:5|CIE L*u*v*:6|LCHab:7|LCHuv:8|CIE UCS:9",
+        string options = "RGB:0|HSV:1|HSL:2|XYZ:3|xyY:4|CIE L*a*b*:5|CIE L*u*v*:6|LCHab:7|LCHuv:8|CIE UCS:9",
         string label = "Input Space",
         string page = "Color Attributes"
     ]],
@@ -63,8 +61,7 @@ shader asColorTransform
         string as_maya_attribute_short_name = "os",
         int as_maya_attribute_keyable = 0,
         string widget = "mapper",
-        string options =
-        "RGB:0|HSV:1|HSL:2|XYZ:3|xyY:4|CIE L*a*b*:5|CIE L*u*v*:6|LCHab:7|LCHuv:8|CIE UCS:9",
+        string options = "RGB:0|HSV:1|HSL:2|XYZ:3|xyY:4|CIE L*a*b*:5|CIE L*u*v*:6|LCHab:7|LCHuv:8|CIE UCS:9",
         string label = "Output Space",
         string page = "Color Attributes"
     ]],
@@ -85,9 +82,8 @@ shader asColorTransform
         string space = "", illuminant = "";
         color XYZ = color(0);
 
-        // Some color _models_ require knowledge of the white point xy
-        // chromaticity coordinates as well as relative luminance, which 
-        // is dependent on the color _space_.
+        // Some color models require knowledge of the primaries and white
+        // point xy chromaticity coordinates, as well as relative luminance.
 
         if (in_colorManagementEnabled)
         {

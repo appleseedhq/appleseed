@@ -109,4 +109,14 @@ int rand_float(int seed, output float result)
     return x;
 }
 
+float fract(float x)
+{
+    return x - floor(x);
+}
+
+int fract(int x)
+{
+    return x - (int) floor(x);
+}
+
 #endif // !AS_MATH_HELPERS_H

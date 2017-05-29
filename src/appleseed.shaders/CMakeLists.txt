@@ -333,6 +333,7 @@ set (src_maya_sources
      src/maya/as_maya_components2Vector.osl
      src/maya/as_maya_condition.osl
      src/maya/as_maya_contrast.osl
+     src/maya/as_maya_crater.osl
      src/maya/as_maya_distanceBetween.osl
      src/maya/as_maya_doubleShadingSwitch.osl
      src/maya/as_maya_envChrome.osl
@@ -346,6 +347,7 @@ set (src_maya_sources
      src/maya/as_maya_layeredTexture.osl
      src/maya/as_maya_luminance.osl
      src/maya/as_maya_mandelbrot.osl
+     src/maya/as_maya_marble.osl
      src/maya/as_maya_matrixInverse.osl
      src/maya/as_maya_mountain.osl
      src/maya/as_maya_movie.osl
@@ -366,11 +368,14 @@ set (src_maya_sources
      src/maya/as_maya_remapValue.osl
      src/maya/as_maya_reverse.osl
      src/maya/as_maya_rgbToHsv.osl
+     src/maya/as_maya_rock.osl
      src/maya/as_maya_samplerInfo.osl
      src/maya/as_maya_setRange.osl
      src/maya/as_maya_singleShadingSwitch.osl
+     src/maya/as_maya_snow.osl
      src/maya/as_maya_solidFractal.osl
      src/maya/as_maya_stencil.osl
+     src/maya/as_maya_stucco.osl
      src/maya/as_maya_texture2Surface.osl
      src/maya/as_maya_transposeMatrix.osl
      src/maya/as_maya_tripleShadingSwitch.osl
@@ -379,6 +384,7 @@ set (src_maya_sources
      src/maya/as_maya_vectorProduct.osl
      src/maya/as_maya_volumeNoise.osl
      src/maya/as_maya_water.osl
+     src/maya/as_maya_wood.osl
      src/maya/as_maya_wtAddMatrix.osl
 )
 list (APPEND osl_sources

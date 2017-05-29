@@ -28,9 +28,14 @@
 
 // Ref: $MAYA_LOCATION/docs/Nodes/wood.html
 
+//#include "appleseed/fractal/as_noise_helpers.h"
 #include "appleseed/maya/as_maya_fractal_helpers.h"
 #include "appleseed/maya/as_maya_helpers.h"
 #include "appleseed/maya/as_maya_transform_helpers.h"
+
+#define NUMRAD      10000
+#define NUMTX       256
+#define NUMTXM      512
 
 shader as_maya_wood
 [[
@@ -168,6 +173,12 @@ shader as_maya_wood
         string as_maya_attribute_short_name = "ry",
         string widget = "null"
     ]],
+    float in_ripplesZ = 1.0
+    [[
+        string as_maya_attribute_name = "ripplesZ",
+        string as_maya_attribute_short_name = "rz",
+        string widget = "null"
+    ]],
     float in_depth[2] = {0.0, 8.0}
     [[
         string as_maya_attribute_name = "depth",
@@ -176,13 +187,6 @@ shader as_maya_wood
         float softmax = 8.0,
         string label = "Depth",
         string page = "Noise Attributes"
-    ]],
-    normal in_normalCamera = N
-    [[
-        string as_maya_attribute_name = "normalCamera",
-        string as_maya_attribute_short_name = "n",
-        string label = "Normal",
-        string widget = "null"
     ]],
     point in_refPointCamera = P
     [[
@@ -215,13 +219,6 @@ shader as_maya_wood
         string as_maya_attribute_short_name = "oa",
         string label = "Output Alpha",
         string widget = "null"
-    ]],
-    output normal out_outNormal = N
-    [[
-        string as_maya_attribute_name = "outNormal",
-        string as_maya_attribute_short_name = "o",
-        string label = "Output Normal",
-        string widget = "null"
     ]]
 )
 {
@@ -243,7 +240,6 @@ shader as_maya_wood
     {
         out_outColor = in_defaultColor;
         out_outAlpha = maya_luminance(out_outColor);
-        out_outNormal = in_normalCamera;
 
         return;
     }
@@ -257,24 +253,107 @@ shader as_maya_wood
             filter_width += in_filterOffset;
         }
 
-        float value = recurrence(filter_width, Pp, in_shaker, 0.0);
-        value = value * 0.25 + 0.5;
+        float displace_u, displace_v;
 
-        out_outAlpha = value;
-        out_outColor = mix(in_channel2, in_channel1, min(1.0, sqr(value)));
+        if (in_amplitudeX > 0.0 || in_amplitudeY > 0.0)
+        {
+            vector ripples = isconnected(in_ripples)
+                ? in_ripples
+                : vector(in_ripplesX, in_ripplesY, in_ripplesZ);
 
-        // Normal output.
-        float melt = 0.1 * in_normMelt;
+            filter_width *= max(ripples);
+
+            float iterate = -log2(filter_width);
+            iterate = clamp(iterate, in_depth[0], in_depth[1]);
+
+            int max_iteration = (int) floor(iterate);
+
+            vector frequency = ripples * 0.5;
+            float amplitude = 1.0, noise_x = 0.0, noise_y = 0.0;
+
+            for (int i = 0; i < max_iteration + 1; ++i)
+            {
+                if (i == max_iteration)
+                {
+                    amplitude *= iterate - max_iteration;
+                }
+                if (amplitude == 0.0)
+                {
+                    break;
+                }
+
+                noise_x += amplitude *
+                    filtered_snoise(Pp * frequency, 0, filter_width);
+
+                noise_y += amplitude *
+                    filtered_snoise(Pp * frequency, 0, filter_width);
+
+                frequency *= 2.0;
+                amplitude *= in_ratio;
+            }
+
+            float factor = 1.0 - sqr(in_ratio);
+
+            displace_u = in_amplitudeX * noise_x * factor + Pp[0];
+            displace_v = in_amplitudeY * noise_y * factor + Pp[1];
+        }
+        else
+        {
+            displace_u = Pp[0];
+            displace_v = Pp[1];
+        }
+        displace_u -= floor(displace_u);
+        displace_v -= floor(displace_v);
+
+        float delta_u = displace_u - in_center[0];
+        float delta_v = displace_v - in_center[1];
+
+        //
+        float aging = (2.0 * sqrt(max(0.005, in_layerSize))) /
+                      (max(EPS, in_age) * 0.5 + 7.5);
+
+        float width = filter_width / aging;
+        float fade = smoothstep(0.2, 0.7, width), decay = 0.0;
         
-        out_outNormal = recurrence3(filter_width, Pp, in_normDepth, melt);
+        if (fade < 1.0)
+        {
+            float radius = hypot(delta_u, delta_v);
+            
+            decay = sqrt(radius);
+            decay += noise(decay * 3) * in_randomness * 0.2;
+            
+            decay = decay / aging;
+            decay = decay - floor(decay);
+            decay = smoothstep(0, in_veinSpread * 2.5, decay);
+            decay = sqrt(decay);
+        }
+        out_outColor = mix(in_veinColor, in_fillerColor, decay);
 
+        if (in_grainContrast > 0.0)
+        {
+            float grain_frequency = 1.0 / in_grainSpacing;
+            float grain_spacing = max(0.000175, in_grainSpacing);
+
+            float grain = sqr(noise(Pp * grain_frequency));
+            
+            grain *= max(0.025, in_grainContrast) *
+                smoothstep(0.75, 1.5, sqrt(filter_width) / grain_spacing);
+
+            grain_spacing = pow(grain_spacing, 1.0 / 5.0);
+
+            grain = smoothstep(0.5 * grain_spacing + 0.03,
+                               1.5 * grain_spacing + 0.03,
+                               grain);
+
+            out_outColor = mix(out_outColor, in_grainColor, sqrt(grain));
+        }
+        out_outAlpha = maya_luminance(out_outColor);
+        
         if (!in_wrap && in_blend)
         {
             out_outColor = mix(in_defaultColor, out_outColor, box_blending);
             out_outAlpha *= box_blending;
-            out_outNormal *= box_blending;
         }
-        out_outNormal = normalize(out_outNormal + in_normalCamera);
 
         maya_colorBalance(
             in_colorGain,
