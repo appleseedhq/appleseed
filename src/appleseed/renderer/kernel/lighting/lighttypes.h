@@ -34,15 +34,16 @@
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/utility/transformsequence.h"
 
+// appleseed. foundation headers.
+#include "foundation/math/aabb.h"
+
 // Forward declarations.
-namespace renderer  { class Assembly; }
 namespace renderer  { class AssemblyInstance; }
 namespace renderer  { class Light; }
 namespace renderer  { class Material; }
 
 namespace renderer
 {
-
 //
 // Non-physical light.
 //
@@ -75,6 +76,64 @@ class EmittingTriangle
     const Material*             m_material;
 };
 
-}
+//
+// Any kind of light source. Both non-physical light and emitting triangle.
+//
+
+class LightSource
+  : public foundation::NonCopyable
+{
+  public:
+    // Constructor.
+    LightSource();
+
+
+    // Destructor
+    virtual ~LightSource();
+
+    // Get the reference to the source position.
+    virtual foundation::Vector3d get_position() const = 0;
+    
+    // Get the light bounding box
+    virtual foundation::AABB3d get_bbox() const = 0;
+};
+
+//
+// Non-physical light source
+//
+
+class NonPhysicalLightSource
+  : public LightSource
+{
+  public:
+    NonPhysicalLightSource(const NonPhysicalLightInfo* light);
+
+  private:
+    virtual foundation::Vector3d get_position() const APPLESEED_OVERRIDE;
+    virtual foundation::AABB3d get_bbox() const APPLESEED_OVERRIDE;
+
+    // Get the reference to an actual source.
+    const NonPhysicalLightInfo* m_light_info;
+};
+
+//
+// Emitting triangle light source.
+//
+
+class EmittingTriangleLightSource
+  : public LightSource
+{
+  public:
+    EmittingTriangleLightSource(const EmittingTriangle* light);
+
+  private:
+    virtual foundation::Vector3d get_position() const APPLESEED_OVERRIDE;
+    virtual foundation::AABB3d get_bbox() const APPLESEED_OVERRIDE;
+
+    // Get the reference to an actual source.
+    const EmittingTriangle* m_light;
+};
+
+} // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTYPES_H

@@ -33,6 +33,8 @@
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
 
+// Standard headers.
+
 namespace renderer
 {
 
@@ -48,26 +50,40 @@ LightTree::LightTree(const Scene& scene)
 LightTree::~LightTree()
 {
     RENDERER_LOG_INFO("Deleting the light tree...");
+    for(foundation::const_each<LightSourcePointerVector> i = m_light_sources; i; ++i)
+    {
+        delete *i;
+    }
 }
 
 void LightTree::build(
         const std::vector<NonPhysicalLightInfo>     non_physical_lights,
         const std::vector<EmittingTriangle>         emitting_triangles)
 {
-    m_non_physical_lights = non_physical_lights;
-    m_emitting_triangles = emitting_triangles;
 
     RENDERER_LOG_INFO("Building a tree");
-    AABBVector light_bboxes;
-    for (foundation::const_each<NonPhysicalLightVector> i = m_non_physical_lights; i; ++i)
+    // AABBVector light_bboxes;
+
+    RENDERER_LOG_INFO("Collecting light sources...");
+    // Collect all possible light sources into one vector
+    for (foundation::const_each<NonPhysicalLightVector> i = non_physical_lights; i; ++i)
     {
-        RENDERER_LOG_INFO("Non physical light");
+        LightSource* light_source = new NonPhysicalLightSource(&*i);
+        foundation::Vector3d position = light_source->get_position();
+        m_light_sources.push_back(light_source);
+
+        RENDERER_LOG_INFO("Non physical light at coordinates [%f %f %f]", position[0], position[1], position[2]);
     }
 
-    for (foundation::const_each<EmittingTriangleVector> i = m_emitting_triangles; i; ++i)
+    for (foundation::const_each<EmittingTriangleVector> i = emitting_triangles; i; ++i)
     {
-        RENDERER_LOG_INFO("Emitting triangle");
+        LightSource* light_source = new EmittingTriangleLightSource(&*i);
+        foundation::Vector3d position = light_source->get_position();
+        m_light_sources.push_back(light_source);
+        RENDERER_LOG_INFO("Emitting triangle centroid at coordinates [%f %f %f]", position[0], position[1], position[2]);
     }
+
+
 }
 
 }   // namespace renderer
