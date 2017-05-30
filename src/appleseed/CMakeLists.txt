@@ -979,6 +979,7 @@ set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/lightsampler.cpp
     renderer/kernel/lighting/lightsampler.h
     renderer/kernel/lighting/lighttypes.h
+    renderer/kernel/lighting/lighttypes.cpp
     renderer/kernel/lighting/lighttree.cpp
     renderer/kernel/lighting/lighttree.h
     renderer/kernel/lighting/pathtracer.h

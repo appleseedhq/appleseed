@@ -35,14 +35,12 @@
 #include "renderer/utility/transformsequence.h"
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
 namespace renderer  { class AssemblyInstance; }
 namespace renderer  { class Light; }
 namespace renderer  { class Material; }
 
 namespace renderer
 {
-
 //
 // Non-physical light.
 //
@@ -73,6 +71,59 @@ class EmittingTriangle
     float                       m_rcp_area;                     // world space triangle area reciprocal
     float                       m_triangle_prob;                // probability density of this triangle
     const Material*             m_material;
+};
+
+//
+// Any kind of light source. Both non-physical light and emitting triangle.
+//
+
+class LightSource
+  : public foundation::NonCopyable
+{
+  public:
+    // Constructor.
+    LightSource();
+
+
+    // Destructor
+    ~LightSource();
+
+    // Get reference to an actual source.
+    // virtual foundation::Vector3d get_position() const = 0;
+};
+
+//
+// Non-physical light source
+//
+
+class NonPhysicalLightSource
+  : public LightSource
+{
+  public:
+    NonPhysicalLightSource(NonPhysicalLightInfo& light);
+
+  private:
+    // Get reference to an actual source.
+    virtual foundation::Vector3d get_position() const APPLESEED_OVERRIDE;
+
+    NonPhysicalLightInfo& m_light;
+};
+
+//
+// Emitting triangle light source.
+//
+
+class EmittingTriangleLightSource
+  : public LightSource
+{
+  public:
+    EmittingTriangleLightSource(EmittingTriangle& light);
+
+  private:
+    // Get reference to an actual source.
+    virtual foundation::Vector3d get_position() const APPLESEED_OVERRIDE;
+
+    EmittingTriangle& m_light;
 };
 
 }
