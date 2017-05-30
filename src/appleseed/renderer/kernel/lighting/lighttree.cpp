@@ -33,6 +33,8 @@
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
 
+// Standard headers.
+
 namespace renderer
 {
 
@@ -54,17 +56,20 @@ void LightTree::build(
         const std::vector<NonPhysicalLightInfo>     non_physical_lights,
         const std::vector<EmittingTriangle>         emitting_triangles)
 {
-    m_non_physical_lights = non_physical_lights;
-    m_emitting_triangles = emitting_triangles;
 
     RENDERER_LOG_INFO("Building a tree");
-    AABBVector light_bboxes;
-    for (foundation::const_each<NonPhysicalLightVector> i = m_non_physical_lights; i; ++i)
+    // AABBVector light_bboxes;
+    std::vector<LightSource*> light_sources;
+
+    for (foundation::const_each<NonPhysicalLightVector> i = non_physical_lights; i; ++i)
     {
+        NonPhysicalLightSource non_physical_light(*i);
+        m_non_physical_lights.push_back(non_physical_light);
+        light_sources.push_back(&m_non_physical_lights.back());
         RENDERER_LOG_INFO("Non physical light");
     }
 
-    for (foundation::const_each<EmittingTriangleVector> i = m_emitting_triangles; i; ++i)
+    for (foundation::const_each<EmittingTriangleVector> i = emitting_triangles; i; ++i)
     {
         RENDERER_LOG_INFO("Emitting triangle");
     }

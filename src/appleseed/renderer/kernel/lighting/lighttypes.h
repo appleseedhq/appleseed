@@ -89,7 +89,7 @@ class LightSource
     ~LightSource();
 
     // Get reference to an actual source.
-    // virtual foundation::Vector3d get_position() const = 0;
+    virtual foundation::Vector3d get_position() const = 0;
 };
 
 //
@@ -100,13 +100,13 @@ class NonPhysicalLightSource
   : public LightSource
 {
   public:
-    NonPhysicalLightSource(NonPhysicalLightInfo& light);
+    NonPhysicalLightSource(const NonPhysicalLightInfo& light);
 
   private:
     // Get reference to an actual source.
     virtual foundation::Vector3d get_position() const APPLESEED_OVERRIDE;
 
-    NonPhysicalLightInfo& m_light;
+    const NonPhysicalLightInfo& m_light;
 };
 
 //
@@ -126,6 +126,6 @@ class EmittingTriangleLightSource
     EmittingTriangle& m_light;
 };
 
-}
+} // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTYPES_H

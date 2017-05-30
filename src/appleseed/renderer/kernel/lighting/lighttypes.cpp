@@ -45,7 +45,7 @@ LightSource::~LightSource()
 // Non-physical light source class implementation
 //
 
-NonPhysicalLightSource::NonPhysicalLightSource(NonPhysicalLightInfo& light)
+NonPhysicalLightSource::NonPhysicalLightSource(const NonPhysicalLightInfo& light)
 : m_light(light)
 {
 }
