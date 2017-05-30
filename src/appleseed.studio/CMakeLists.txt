@@ -246,6 +246,8 @@ set (mainwindow_sources
     mainwindow/configurationmanagerwindow.cpp
     mainwindow/configurationmanagerwindow.h
     mainwindow/configurationmanagerwindow.ui
+    mainwindow/consolewidget.cpp
+    mainwindow/consolewidget.h
     mainwindow/logwidget.cpp
     mainwindow/logwidget.h
     mainwindow/mainwindow.cpp
