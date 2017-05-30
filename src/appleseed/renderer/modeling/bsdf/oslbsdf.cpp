@@ -35,7 +35,6 @@
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/bsdf/alsurfacelayerbrdf.h"
 #include "renderer/modeling/bsdf/blinnbrdf.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
@@ -130,8 +129,6 @@ namespace
 
             m_sheen_brdf =
                 create_and_register_bsdf(SheenID, "sheen_brdf");
-
-            m_alsurface_layer_brdf = create_and_register_alsurface_layer_bsdf();
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -169,36 +166,15 @@ namespace
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point) const APPLESEED_OVERRIDE
         {
+            Arena& arena = shading_context.get_arena();
+
             CompositeSurfaceClosure* c =
-                shading_context.get_arena().allocate_noinit<CompositeSurfaceClosure>();
+                arena.allocate_noinit<CompositeSurfaceClosure>();
 
             new (c) CompositeSurfaceClosure(
                 Basis3f(shading_point.get_shading_basis()),
                 shading_point.get_osl_shader_globals().Ci,
-                shading_context.get_arena());
-
-            // Inject values into any children layered closures.
-            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
-            {
-                const ClosureID cid = c->get_closure_type(i);
-                if (cid >= FirstLayeredClosure)
-                    inject_layered_closure_values(cid, this, c->get_closure_input_values(i));
-            }
-
-            prepare_inputs(
-                shading_context.get_arena(),
-                shading_point,
-                c);
-
-            return c;
-        }
-
-        virtual void prepare_inputs(
-            Arena&                  arena,
-            const ShadingPoint&     shading_point,
-            void*                   data) const APPLESEED_OVERRIDE
-        {
-            CompositeSurfaceClosure* c = static_cast<CompositeSurfaceClosure*>(data);
+                arena);
 
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
@@ -208,6 +184,8 @@ namespace
                         shading_point,
                         c->get_closure_input_values(i));
             }
+
+            return c;
         }
 
         virtual void sample(
@@ -220,24 +198,63 @@ namespace
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
 
-            if (c->get_closure_count() > 0)
+            float pdfs[CompositeSurfaceClosure::MaxClosureEntries];
+            const int num_matching_closures = c->compute_pdfs(modes, pdfs);
+
+            if (num_matching_closures == 0)
+                return;
+
+            sampling_context.split_in_place(1, 1);
+            const size_t closure_index = c->choose_closure(
+                sampling_context.next2<float>(),
+                num_matching_closures,
+                pdfs);
+            const Basis3f& modified_basis = c->get_closure_shading_basis(closure_index);
+
+            sample.m_shading_basis = modified_basis;
+            sample.m_shading_point->set_shading_basis(Basis3d(modified_basis));
+
+            bsdf_from_closure_id(c->get_closure_type(closure_index))
+                .sample(
+                    sampling_context,
+                    c->get_closure_input_values(closure_index),
+                    adjoint,
+                    false,
+                    modes,
+                    sample);
+            sample.m_value *= c->get_closure_weight(closure_index);
+
+            if (sample.m_mode == ScatteringMode::Specular || sample.m_probability == 0.0f)
+                return;
+
+            sample.m_probability *= pdfs[closure_index];
+            pdfs[closure_index] = 0.0f;
+
+            // Evaluate the closures we didn't sample.
+            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
-                const size_t closure_index = c->choose_closure(sampling_context);
-                const Basis3f& modified_basis = c->get_closure_shading_basis(closure_index);
+                if (pdfs[i] > 0.0f)
+                {
+                    Spectrum s;
+                    const float pdf =
+                        bsdf_from_closure_id(c->get_closure_type(i))
+                            .evaluate(
+                                c->get_closure_input_values(i),
+                                adjoint,
+                                false,
+                                sample.m_geometric_normal,
+                                c->get_closure_shading_basis(closure_index),
+                                sample.m_outgoing.get_value(),
+                                sample.m_incoming.get_value(),
+                                modes,
+                                s)  * pdfs[i];
 
-                sample.m_shading_basis = modified_basis;
-                sample.m_shading_point->set_shading_basis(Basis3d(modified_basis));
-
-                bsdf_from_closure_id(c->get_closure_type(closure_index))
-                    .sample(
-                        sampling_context,
-                        c->get_closure_input_values(closure_index),
-                        adjoint,
-                        false,
-                        modes,
-                        sample);
-
-                sample.m_value *= c->get_closure_weight(closure_index);
+                    if (pdf > 0.0f)
+                    {
+                        madd(sample.m_value, s, c->get_closure_weight(i));
+                        sample.m_probability += pdf;
+                    }
+                }
             }
         }
 
@@ -254,29 +271,35 @@ namespace
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
 
+            float pdfs[CompositeSurfaceClosure::MaxClosureEntries];
+            c->compute_pdfs(modes, pdfs);
+
             float prob = 0.0f;
             value.set(0.0f);
 
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
-                Spectrum s;
-                const float bsdf_prob =
-                    bsdf_from_closure_id(c->get_closure_type(i))
-                        .evaluate(
-                            c->get_closure_input_values(i),
-                            adjoint,
-                            false,
-                            geometric_normal,
-                            c->get_closure_shading_basis(i),
-                            outgoing,
-                            incoming,
-                            modes,
-                            s);
-
-                if (bsdf_prob > 0.0f)
+                if (pdfs[i] > 0.0f)
                 {
-                    madd(value, s, c->get_closure_weight(i));
-                    prob += bsdf_prob * c->get_closure_pdf_weight(i);
+                    Spectrum s;
+                    const float pdf =
+                        bsdf_from_closure_id(c->get_closure_type(i))
+                            .evaluate(
+                                c->get_closure_input_values(i),
+                                adjoint,
+                                false,
+                                geometric_normal,
+                                c->get_closure_shading_basis(i),
+                                outgoing,
+                                incoming,
+                                modes,
+                                s) * pdfs[i];
+
+                    if (pdf > 0.0f)
+                    {
+                        madd(value, s, c->get_closure_weight(i));
+                        prob += pdf;
+                    }
                 }
             }
 
@@ -293,22 +316,25 @@ namespace
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
 
+            float pdfs[CompositeSurfaceClosure::MaxClosureEntries];
+            c->compute_pdfs(modes, pdfs);
+
             float prob = 0.0f;
 
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
-                const float bsdf_prob =
-                    bsdf_from_closure_id(c->get_closure_type(i))
-                        .evaluate_pdf(
-                            c->get_closure_input_values(i),
-                            geometric_normal,
-                            c->get_closure_shading_basis(i),
-                            outgoing,
-                            incoming,
-                            modes);
-
-                if (bsdf_prob > 0.0f)
-                    prob += bsdf_prob * c->get_closure_pdf_weight(i);
+                if (pdfs[i] > 0.0f)
+                {
+                    prob +=
+                        bsdf_from_closure_id(c->get_closure_type(i))
+                            .evaluate_pdf(
+                                c->get_closure_input_values(i),
+                                geometric_normal,
+                                c->get_closure_shading_basis(i),
+                                outgoing,
+                                incoming,
+                                modes) * pdfs[i];
+                }
             }
 
             return prob;
@@ -330,29 +356,27 @@ namespace
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
 
-            absorption.set(0.0f);
+            absorption.set(1.0f);
 
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
-                Spectrum a;
-                bsdf_from_closure_id(c->get_closure_type(i))
-                    .compute_absorption(
-                        c->get_closure_input_values(i),
-                        distance,
-                        a);
-                const float w = c->get_closure_pdf_weight(i);
-
-                // absorption += lerp(1.0f, a, w)
-                a *= w;
-                absorption += a;
-                a.set(1.0f - w);
-                absorption += a;
+                const ClosureID cid = c->get_closure_type(i);
+                if (cid > GlassID && cid <= LastGlassClosure)
+                {
+                    const float w = c->get_closure_scalar_weight(i);
+                    Spectrum a;
+                    bsdf_from_closure_id(cid)
+                        .compute_absorption(
+                            c->get_closure_input_values(i),
+                            distance * w,
+                            a);
+                    absorption *= a;
+                }
             }
         }
 
       private:
         BSDF*                       m_all_bsdfs[NumClosuresIDs];
-        auto_release_ptr<BSDF>      m_alsurface_layer_brdf;
         auto_release_ptr<BSDF>      m_ashikhmin_shirley_brdf;
         auto_release_ptr<BSDF>      m_blinn_brdf;
         auto_release_ptr<BSDF>      m_diffuse_btdf;
@@ -436,17 +460,6 @@ namespace
                     ParamArray().insert("mdf", mdf_name));
 
             m_all_bsdfs[cid] = bsdf.get();
-            return bsdf;
-        }
-
-        auto_release_ptr<BSDF> create_and_register_alsurface_layer_bsdf()
-        {
-            auto_release_ptr<BSDF> bsdf =
-                AlSurfaceLayerBRDFFactory().create(
-                    "alsurface_layer",
-                    ParamArray());
-
-            m_all_bsdfs[AlSurfaceLayerID] = bsdf.get();
             return bsdf;
         }
 

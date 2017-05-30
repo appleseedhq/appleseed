@@ -787,12 +787,6 @@ if (WITH_DISNEY_MATERIAL)
         foundation/utility/seexpr.h
     )
 endif ()
-if (WITH_PARTIO)
-    list (APPEND foundation_utility_sources
-        foundation/utility/partiofile.cpp
-        foundation/utility/partiofile.h
-    )
-endif ()
 list (APPEND appleseed_sources
     ${foundation_utility_sources}
 )
@@ -1262,8 +1256,6 @@ source_group ("renderer\\modeling\\aov" FILES
 )
 
 set (renderer_modeling_bsdf_sources
-    renderer/modeling/bsdf/alsurfacelayerbrdf.cpp
-    renderer/modeling/bsdf/alsurfacelayerbrdf.h
     renderer/modeling/bsdf/ashikhminbrdf.cpp
     renderer/modeling/bsdf/ashikhminbrdf.h
     renderer/modeling/bsdf/backfacingpolicy.h
@@ -1872,10 +1864,6 @@ link_against_osl (appleseed)
 
 if (WITH_DISNEY_MATERIAL)
     link_against_seexpr (appleseed)
-endif ()
-
-if (WITH_PARTIO)
-    link_against_partio (appleseed)
 endif ()
 
 target_link_libraries (appleseed

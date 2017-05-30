@@ -56,9 +56,6 @@
 #include "foundation/utility/arena.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/gnuplotfile.h"
-#ifdef APPLESEED_WITH_PARTIO
-#include "foundation/utility/partiofile.h"
-#endif
 #include "foundation/utility/poison.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
@@ -695,76 +692,6 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.new_plot().set_points(points);
         plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_cdf.gnuplot");
     }
-
-#ifdef APPLESEED_WITH_PARTIO
-
-    TEST_CASE(NormalizedDiffusion_GeneratePartioFile)
-    {
-        const float A = 1.0f;
-        const float L = 1;
-        const float s = normalized_diffusion_s_dmfp(A);
-
-        const size_t SampleCount = 1000;
-        MersenneTwister rng;
-
-        PartioFile particles;
-        Partio::ParticleAttribute pos_attr = particles.add_vector_attribute("position");
-        Partio::ParticleAttribute col_attr = particles.add_color_attribute("color");
-
-        for (size_t i = 0; i < SampleCount; ++i)
-        {
-            const float u = rand_double2(rng);
-            const float r = normalized_diffusion_sample(u, L, s);
-            const float phi = TwoPi<float>() * rand_double2(rng);
-            const Vector3d sample(r * cos(phi), 0.0f, r * sin(phi));
-
-            Partio::ParticleIndex p = particles.add_particle();
-            particles.set_vector_attribute(p, pos_attr, sample);
-            particles.set_color_attribute(p, col_attr, Color3d(1.0, 1.0, 1.0));
-        }
-
-        // Add a circle of particles of radius max_radius.
-        const size_t CircleCount = 100;
-        const float max_radius = normalized_diffusion_max_radius(L, s);
-
-        for (size_t i = 0; i < CircleCount; ++i)
-        {
-            const float phi = fit<size_t, float>(i, 0, CircleCount - 1, 0.0f, TwoPi<float>());
-            const Vector3d c(max_radius * cos(phi), 0.0f, max_radius * sin(phi));
-
-            Partio::ParticleIndex p = particles.add_particle();
-            particles.set_vector_attribute(p, pos_attr, c);
-            particles.set_color_attribute(p, col_attr, Color3d(0.0, 0.0, 1.0));
-        }
-
-        // Add particles with the value of the profile.
-        const size_t ProfileCount = 500;
-        for (size_t i = 0; i < ProfileCount; ++i)
-        {
-            const float r = fit<size_t, float>(i, 0, ProfileCount - 1, 0.0f, max_radius);
-            const float v = normalized_diffusion_profile(r, L, s, A) * r;
-
-            Partio::ParticleIndex p = particles.add_particle();
-            particles.set_vector_attribute(p, pos_attr, Vector3d(r, v, 0.0f));
-            particles.set_color_attribute(p, col_attr, Color3d(1.0, 0.0, 0.0));
-
-            p = particles.add_particle();
-            particles.set_vector_attribute(p, pos_attr, Vector3d(-r, v, 0.0f));
-            particles.set_color_attribute(p, col_attr, Color3d(1.0, 0.0, 0.0));
-
-            p = particles.add_particle();
-            particles.set_vector_attribute(p, pos_attr, Vector3d(0.0f, v, r));
-            particles.set_color_attribute(p, col_attr, Color3d(1.0, 0.0, 0.0));
-
-            p = particles.add_particle();
-            particles.set_vector_attribute(p, pos_attr, Vector3d(0.0f, v, -r));
-            particles.set_color_attribute(p, col_attr, Color3d(1.0, 0.0, 0.0));
-        }
-
-        particles.write("unit tests/outputs/test_sss_nd_sampling_particles.bgeo");
-    }
-
-#endif
 
     TEST_CASE(NormalizedDiffusion_MaxRadius)
     {
