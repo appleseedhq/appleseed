@@ -268,7 +268,7 @@ shader as_maya_wood
 
             int max_iteration = (int) floor(iterate);
 
-            vector frequency = ripples * 0.5;
+            vector frequency = ripples * 0.5; // better match
             float amplitude = 1.0, noise_x = 0.0, noise_y = 0.0;
 
             for (int i = 0; i < max_iteration + 1; ++i)
@@ -302,42 +302,38 @@ shader as_maya_wood
             displace_u = Pp[0];
             displace_v = Pp[1];
         }
-        displace_u -= floor(displace_u);
-        displace_v -= floor(displace_v);
 
-        float delta_u = displace_u - in_center[0];
-        float delta_v = displace_v - in_center[1];
-
-        //
         float aging = (2.0 * sqrt(max(0.005, in_layerSize))) /
-                      (max(EPS, in_age) * 0.5 + 7.5);
+                      (0.5 * max(EPS, in_age) + 7.5);
 
         float width = filter_width / aging;
-        float fade = smoothstep(0.2, 0.7, width), decay = 0.0;
-        
-        if (fade < 1.0)
-        {
-            float radius = hypot(delta_u, delta_v);
-            
-            decay = sqrt(radius);
-            decay += noise(decay * 3) * in_randomness * 0.2;
-            
-            decay = decay / aging;
-            decay = decay - floor(decay);
-            decay = smoothstep(0, in_veinSpread * 2.5, decay);
-            decay = sqrt(decay);
-        }
-        out_outColor = mix(in_veinColor, in_fillerColor, decay);
+        float decay = smoothstep(0.25, 0.75, width), weight = 0.0;
 
+        if (decay < 1.0)
+        {
+            displace_u -= floor(displace_u) - in_center[0];
+            displace_v -= floor(displace_v) - in_center[1];
+
+            float radius = hypot(displace_u, displace_v);
+
+            weight = sqrt(radius);
+            weight = weight + noise(weight * 3.0) * in_randomness * 0.25;
+
+            weight = mod(weight / aging, 1.0);
+            weight = smoothstep(0.0, in_veinSpread * 2.5, weight);
+            weight = sqrt(weight);
+        }
+        out_outColor = mix(in_veinColor, in_fillerColor, weight);
+        
         if (in_grainContrast > 0.0)
         {
-            float grain_frequency = 1.0 / in_grainSpacing;
             float grain_spacing = max(0.000175, in_grainSpacing);
+            float inv_frequency = 1.0 / grain_spacing;
 
-            float grain = sqr(noise(Pp * grain_frequency));
+            float grain = sqr(noise(Pp * inv_frequency));
             
-            grain *= max(0.025, in_grainContrast) *
-                smoothstep(0.75, 1.5, sqrt(filter_width) / grain_spacing);
+            grain *= max(0.025, in_grainContrast);
+            grain *= smoothstep(0.75, 1.5, sqrt(filter_width) * inv_frequency);
 
             grain_spacing = pow(grain_spacing, 1.0 / 5.0);
 
