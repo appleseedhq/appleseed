@@ -52,6 +52,7 @@ NonPhysicalLightSource::NonPhysicalLightSource(const NonPhysicalLightInfo* light
 
 foundation::Vector3d NonPhysicalLightSource::get_position()  const
 {
+    // Test fetching position data
     foundation::Vector3d test_vec;
     test_vec[0] = 0.0;
     test_vec[1] = 1.0;
@@ -70,11 +71,9 @@ EmittingTriangleLightSource::EmittingTriangleLightSource(const EmittingTriangle*
 
 foundation::Vector3d EmittingTriangleLightSource::get_position() const
 {
-    foundation::Vector3d test_vec;
-    test_vec[0] = 0.0;
-    test_vec[1] = 1.0;
-    test_vec[2] = 2.0;
-    return test_vec;
+    foundation::Vector3d position0 = m_light->m_v0;
+
+    return position0;
 }
 
 }   // namespace renderer

@@ -63,13 +63,15 @@ void LightTree::build(
     for (foundation::const_each<NonPhysicalLightVector> i = non_physical_lights; i; ++i)
     {
         m_light_sources.push_back(new NonPhysicalLightSource(&*i));
-        RENDERER_LOG_INFO("Non physical light");
+        foundation::Vector3d position = m_light_sources.back()->get_position();
+        RENDERER_LOG_INFO("Non physical light at coordinates [%f %f %f]", position[0], position[1], position[2]);
     }
 
     for (foundation::const_each<EmittingTriangleVector> i = emitting_triangles; i; ++i)
     {
         m_light_sources.push_back(new EmittingTriangleLightSource(&*i));
-        RENDERER_LOG_INFO("Emitting triangle");
+        foundation::Vector3d position = m_light_sources.back()->get_position();
+        RENDERER_LOG_INFO("Emitting triangle with world space vertices [%f %f %f]", position[0], position[1], position[2]);
     }
 }
 
