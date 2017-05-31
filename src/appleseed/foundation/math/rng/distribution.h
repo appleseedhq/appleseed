@@ -198,6 +198,7 @@ inline double rand1(RNG& rng, const double min, const double max)
 template <typename RNG>
 inline float rand_float2(RNG& rng)
 {
+    // 2.3283063e-010f is the biggest float K such that K * (2^32 - 1) < 1.
     return rng.rand_uint32() * 2.3283063e-010f;
 }
 

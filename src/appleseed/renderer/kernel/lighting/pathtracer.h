@@ -472,7 +472,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
         // Terminate the path if all scattering modes are disabled.
         if (vertex.m_scattering_modes == ScatteringMode::None)
-		    break;
+            break;
 
         // Above-surface scattering.
         if (vertex.m_bssrdf == 0)

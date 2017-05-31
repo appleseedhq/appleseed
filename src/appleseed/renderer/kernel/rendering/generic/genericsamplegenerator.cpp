@@ -108,8 +108,8 @@ namespace
         virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
         {
             Statistics stats;
-            stats.insert("max. samp. dim.", m_total_sampling_dim);
-            stats.insert("max. samp. inst.", m_total_sampling_inst);
+            stats.insert("max sampling dimension", m_total_sampling_dim);
+            stats.insert("max sampling instance", m_total_sampling_inst);
 
             StatisticsVector vec;
             vec.insert("generic sample generator statistics", stats);

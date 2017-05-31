@@ -48,9 +48,9 @@ Statistics TraversalStatistics::get_statistics() const
     stats.insert("traversals", m_traversal_count);
     stats.insert("visited nodes", m_visited_nodes);
     stats.insert("visited leaves", m_visited_leaves);
-    stats.insert("inter. bboxes", m_intersected_bboxes);
+    stats.insert("intersected bboxes", m_intersected_bboxes);
     stats.insert("discarded nodes", m_discarded_nodes);
-    stats.insert("inter. items", m_intersected_items);
+    stats.insert("intersected items", m_intersected_items);
     return stats;
 }
 

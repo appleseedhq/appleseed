@@ -126,8 +126,8 @@ namespace
                 shading_point.get_uv(0),
                 &values);
 
+            // Compute lighting.
             Spectrum radiance(Spectrum::Illuminance);
-
             compute_lighting(
                 values,
                 sampling_context,
@@ -135,8 +135,6 @@ namespace
                 shading_context,
                 shading_point,
                 radiance);
-
-            // Initialize the shading result.
             aov_accumulators.beauty().set(radiance);
 
             // Apply multipliers.
