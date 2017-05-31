@@ -31,6 +31,7 @@
 
 // API headers.
 #include "renderer/modeling/phasefunction/isotropicphasefunction.h"
+#include "renderer/modeling/phasefunction/henyeyphasefunction.h"
 #include "renderer/modeling/phasefunction/phasefunction.h"
 #include "renderer/modeling/phasefunction/phasefunctionfactoryregistrar.h"
 #include "renderer/modeling/phasefunction/phasefunctiontraits.h"

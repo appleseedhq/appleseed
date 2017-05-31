@@ -30,6 +30,7 @@
 #include "phasefunctionfactoryregistrar.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/phasefunction/henyeyphasefunction.h"
 #include "renderer/modeling/phasefunction/isotropicphasefunction.h"
 
 // appleseed.foundation headers.
@@ -56,6 +57,7 @@ namespace renderer
     PhaseFunctionFactoryRegistrar::PhaseFunctionFactoryRegistrar()
         : impl(new Impl())
     {
+        register_factory(auto_ptr<FactoryType>(new HenyeyPhaseFunctionFactory()));
         register_factory(auto_ptr<FactoryType>(new IsotropicPhaseFunctionFactory()));
     }
 
