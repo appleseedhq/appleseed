@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,36 +26,19 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_BREAKPOINT_H
-#define APPLESEED_FOUNDATION_PLATFORM_BREAKPOINT_H
+// Interface header.
+#include "debugger.h"
 
-// appleseed.foundation headers.
-#ifdef _MSC_VER
-#include "foundation/platform/windows.h"
-#endif
+namespace foundation
+{
 
-// Standard headers.
-#ifndef _MSC_VER
-#include <csignal>
-#endif
-
-
-//
-// Break the execution of the program into the debugger.
-//
-
-// Visual C++.
-#if defined _MSC_VER
-
-    // Reference: http://msdn.microsoft.com/en-us/library/windows/desktop/ms679297(v=vs.85).aspx.
-    #define BREAKPOINT() DebugBreak()
-
-// Other platforms.
+bool is_debugger_attached()
+{
+#ifdef _WIN32
+    return IsDebuggerPresent() ? true : false;
 #else
-
-    // Reference: http://stackoverflow.com/questions/4326414/set-breakpoint-in-c-or-c-code-programmatically-for-gdb-on-linux.
-    #define BREAKPOINT() std::raise(SIGINT)
-
+    return false;
 #endif
+}
 
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_BREAKPOINT_H
+}   // namespace foundation

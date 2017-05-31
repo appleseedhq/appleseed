@@ -480,12 +480,13 @@ source_group ("foundation\\platform\\snprintf" FILES
 set (foundation_platform_sources
     foundation/platform/arch.h
     foundation/platform/atomic.h
-    foundation/platform/breakpoint.h
     foundation/platform/compiler.cpp
     foundation/platform/compiler.h
     foundation/platform/console.cpp
     foundation/platform/console.h
     foundation/platform/datetime.h
+    foundation/platform/debugger.cpp
+    foundation/platform/debugger.h
     foundation/platform/defaulttimers.cpp
     foundation/platform/defaulttimers.h
     foundation/platform/exrheaderguards.h

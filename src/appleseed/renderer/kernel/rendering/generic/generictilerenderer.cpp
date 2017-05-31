@@ -52,7 +52,7 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/arch.h"
-#include "foundation/platform/breakpoint.h"
+#include "foundation/platform/debugger.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/iostreamop.h"
