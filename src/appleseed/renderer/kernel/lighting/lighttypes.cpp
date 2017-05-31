@@ -45,7 +45,7 @@ LightSource::~LightSource()
 // Non-physical light source class implementation
 //
 
-NonPhysicalLightSource::NonPhysicalLightSource(const NonPhysicalLightInfo& light)
+NonPhysicalLightSource::NonPhysicalLightSource(const NonPhysicalLightInfo* light)
 : m_light(light)
 {
 }
@@ -63,7 +63,7 @@ foundation::Vector3d NonPhysicalLightSource::get_position()  const
 // Emitting triangle light source class implementation
 //
 
-EmittingTriangleLightSource::EmittingTriangleLightSource(EmittingTriangle& light)
+EmittingTriangleLightSource::EmittingTriangleLightSource(EmittingTriangle* light)
 : m_light(light)
 {
 }

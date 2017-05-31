@@ -88,7 +88,7 @@ class LightSource
     // Destructor
     ~LightSource();
 
-    // Get reference to an actual source.
+    // Get the reference to the source position.
     virtual foundation::Vector3d get_position() const = 0;
 };
 
@@ -100,13 +100,13 @@ class NonPhysicalLightSource
   : public LightSource
 {
   public:
-    NonPhysicalLightSource(const NonPhysicalLightInfo& light);
+    NonPhysicalLightSource(const NonPhysicalLightInfo* light);
 
   private:
-    // Get reference to an actual source.
     virtual foundation::Vector3d get_position() const APPLESEED_OVERRIDE;
 
-    const NonPhysicalLightInfo& m_light;
+    // Get the reference to an actual source.
+    const NonPhysicalLightInfo* m_light;
 };
 
 //
@@ -117,13 +117,13 @@ class EmittingTriangleLightSource
   : public LightSource
 {
   public:
-    EmittingTriangleLightSource(EmittingTriangle& light);
+    EmittingTriangleLightSource(EmittingTriangle* light);
 
   private:
-    // Get reference to an actual source.
     virtual foundation::Vector3d get_position() const APPLESEED_OVERRIDE;
 
-    EmittingTriangle& m_light;
+    // Get the reference to an actual source.
+    EmittingTriangle* m_light;
 };
 
 } // namespace renderer

@@ -63,9 +63,9 @@ void LightTree::build(
 
     for (foundation::const_each<NonPhysicalLightVector> i = non_physical_lights; i; ++i)
     {
-        NonPhysicalLightSource non_physical_light(*i);
+        NonPhysicalLightSource *non_physical_light = new NonPhysicalLightSource(&*i);
         m_non_physical_lights.push_back(non_physical_light);
-        light_sources.push_back(&m_non_physical_lights.back());
+        light_sources.push_back(m_non_physical_lights.back());
         RENDERER_LOG_INFO("Non physical light");
     }
 
