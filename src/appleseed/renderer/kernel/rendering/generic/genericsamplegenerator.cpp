@@ -109,7 +109,6 @@ namespace
         {
             Statistics stats;
             stats.insert("max sampling dimension", m_total_sampling_dim);
-            stats.insert("max sampling instance", m_total_sampling_inst);
 
             StatisticsVector vec;
             vec.insert("generic sample generator statistics", stats);
@@ -145,7 +144,6 @@ namespace
         const double                        m_window_height_next_pow3;
 
         Population<uint64>                  m_total_sampling_dim;
-        Population<uint64>                  m_total_sampling_inst;
 
         virtual size_t generate_samples(
             const size_t                    sequence_index,
@@ -192,6 +190,9 @@ namespace
                 sample_position,
                 shading_result);
 
+            // Update sampling statistics.
+            m_total_sampling_dim.insert(sampling_context.get_total_dimension());
+
             // Report then ignore invalid samples.
             if (!shading_result.is_valid_linear_rgb())
             {
@@ -206,9 +207,6 @@ namespace
                 shading_result.m_main.m_color.rgb(),
                 shading_result.m_main.m_alpha[0]);
             samples.push_back(sample);
-
-            m_total_sampling_dim.insert(sampling_context.get_total_dimension());
-            m_total_sampling_inst.insert(sampling_context.get_total_instance());
 
             return 1;
         }
