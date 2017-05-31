@@ -59,18 +59,16 @@ void LightTree::build(
 
     RENDERER_LOG_INFO("Building a tree");
     // AABBVector light_bboxes;
-    std::vector<LightSource*> light_sources;
 
     for (foundation::const_each<NonPhysicalLightVector> i = non_physical_lights; i; ++i)
     {
-        NonPhysicalLightSource *non_physical_light = new NonPhysicalLightSource(&*i);
-        m_non_physical_lights.push_back(non_physical_light);
-        light_sources.push_back(m_non_physical_lights.back());
+        m_light_sources.push_back(new NonPhysicalLightSource(&*i));
         RENDERER_LOG_INFO("Non physical light");
     }
 
     for (foundation::const_each<EmittingTriangleVector> i = emitting_triangles; i; ++i)
     {
+        m_light_sources.push_back(new EmittingTriangleLightSource(&*i));
         RENDERER_LOG_INFO("Emitting triangle");
     }
 }

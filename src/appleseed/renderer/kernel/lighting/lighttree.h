@@ -78,17 +78,12 @@ class LightTree
     typedef std::vector<NonPhysicalLightInfo>     NonPhysicalLightVector;
     typedef std::vector<EmittingTriangle>         EmittingTriangleVector;
 
-    typedef std::vector<NonPhysicalLightSource*>         NonPhysicalLightSources;
-    typedef std::vector<EmittingTriangleLightSource*>    EmittingTriangleSources;
-
     struct Item
     {
         foundation::UniqueID m_tree_node_uid;
     };  
 
-    NonPhysicalLightSources      m_non_physical_lights;
-    EmittingTriangleSources      m_emitting_triangles;
-
+    std::vector<LightSource*>   m_light_sources;
 };
 
 }

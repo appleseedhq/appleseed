@@ -63,7 +63,7 @@ foundation::Vector3d NonPhysicalLightSource::get_position()  const
 // Emitting triangle light source class implementation
 //
 
-EmittingTriangleLightSource::EmittingTriangleLightSource(EmittingTriangle* light)
+EmittingTriangleLightSource::EmittingTriangleLightSource(const EmittingTriangle* light)
 : m_light(light)
 {
 }

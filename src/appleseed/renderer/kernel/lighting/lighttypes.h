@@ -117,13 +117,13 @@ class EmittingTriangleLightSource
   : public LightSource
 {
   public:
-    EmittingTriangleLightSource(EmittingTriangle* light);
+    EmittingTriangleLightSource(const EmittingTriangle* light);
 
   private:
     virtual foundation::Vector3d get_position() const APPLESEED_OVERRIDE;
 
     // Get the reference to an actual source.
-    EmittingTriangle* m_light;
+    const EmittingTriangle* m_light;
 };
 
 } // namespace renderer
