@@ -32,6 +32,7 @@
 # Packages.
 #--------------------------------------------------------------------------------------------------
 
+
 # OpenGL.
 find_package (OpenGL REQUIRED)
 
@@ -483,6 +484,7 @@ endif ()
 include_directories (
     .
     ../appleseed.shared
+    ${PYTHON_INCLUDE_DIRS}
 )
 
 
@@ -507,6 +509,7 @@ target_link_libraries (appleseed.studio
     ${Boost_LIBRARIES}
     ${QT_LIBRARIES}
     ${OPENGL_LIBRARY}
+    ${PYTHON_LIBRARIES}
 )
 
 if (WITH_DISNEY_MATERIAL)
