@@ -93,6 +93,20 @@ uint64 mix_uint64(
 
 
 //
+// Hash a 32-bit integer into a single-precision floating point value in [0,1).
+//
+// Reference:
+//
+//   Correlated Multi-Jittered Sampling
+//   https://graphics.pixar.com/library/MultiJitteredSampling/paper.pdf
+//
+
+float hash_uint32_pixar(
+    const uint32 value,
+    const uint32 scramble);
+
+
+//
 // Integer hash functions implementation.
 //
 
@@ -204,6 +218,24 @@ inline uint64 mix_uint64(
     const uint64 h2 = hash_uint64(h1 + c);      // h2 =    h( h( h( a ) + b ) + c )
     const uint64 h3 = hash_uint64(h2 + d);      // h3 = h( h( h( h( a ) + b ) + c ) + d )
     return h3;
+}
+
+inline float hash_uint32_pixar(
+    const uint32 value,
+    const uint32 scramble)
+{
+    uint32 result = value;
+    result ^= scramble;
+    result ^= result >> 17;
+    result ^= result >> 10;
+    result *= 0xb36534e5;
+    result ^= result >> 12;
+    result ^= result >> 21;
+    result *= 0x93fc4795;
+    result ^= 0xdf6e307f;
+    result ^= result >> 17;
+    result *= 1 | scramble >> 18;
+    return result * (1.0f / 4294967808.0f);
 }
 
 }       // namespace foundation
