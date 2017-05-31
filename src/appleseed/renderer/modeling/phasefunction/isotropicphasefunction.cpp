@@ -40,221 +40,223 @@
 
 namespace renderer
 {
-    namespace
+
+namespace
+{
+    const char* Model = "isotropic_phasefunction";
+}
+
+//
+// Isotropic phase function.
+//
+class IsotropicPhaseFunction
+    : public PhaseFunction
+{
+    public:
+    IsotropicPhaseFunction(
+        const char*             name,
+        const ParamArray&       params)
+        : PhaseFunction(name, params)
     {
-        const char* Model = "isotropic_phasefunction";
+        m_inputs.declare("scattering", InputFormatSpectralReflectance);
+        m_inputs.declare("scattering_multiplier", InputFormatFloat, "1.0");
+        m_inputs.declare("extinction", InputFormatSpectralReflectance);
+        m_inputs.declare("extinction_multiplier", InputFormatFloat, "1.0");
     }
 
-    //
-    // Isotropic phase function.
-    //
-    class IsotropicPhaseFunction
-      : public PhaseFunction
+    virtual void release() APPLESEED_OVERRIDE
     {
-    public:
-        IsotropicPhaseFunction(
-            const char*             name,
-            const ParamArray&       params)
-            : PhaseFunction(name, params)
-        {
-            m_inputs.declare("scattering", InputFormatSpectralReflectance);
-            m_inputs.declare("scattering_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("extinction", InputFormatSpectralReflectance);
-            m_inputs.declare("extinction_multiplier", InputFormatFloat, "1.0");
-        }
+        delete this;
+    }
 
-        virtual void release() APPLESEED_OVERRIDE
-        {
-            delete this;
-        }
-
-        virtual const char* get_model() const APPLESEED_OVERRIDE
-        {
-            return Model;
-        }
-        
-        virtual bool is_homogeneous() const
-        {
-            return true;
-        }
-
-        virtual void prepare_inputs(
-            foundation::Arena&          arena,
-            const ShadingRay&           shading_point,
-            void*                       data
-            ) const APPLESEED_OVERRIDE
-        {
-            InputValues* values = static_cast<InputValues*>(data);
-
-            // Ensure that extinction spectrum has unit norm, which is neccessary for distance sampling
-            const float extinction_norm = foundation::max_value(values->m_extinction);
-            values->m_extinction /= extinction_norm;
-            values->m_extinction_multiplier *= extinction_norm;
-        }
-
-        virtual float sample_distance(
-            SamplingContext&            sampling_context,
-            const ShadingRay&           volume_ray,
-            const void*                 data,
-            float&                      distance
-            ) const APPLESEED_OVERRIDE
-        {
-            const InputValues* values = static_cast<const InputValues*>(data);
-
-            float ray_length = norm(volume_ray.m_dir) * (volume_ray.m_tmax - volume_ray.m_tmin);
-
-            // Sample distance.
-            sampling_context.split_in_place(1, 1);
-            const float s = sampling_context.next2<float>();
-            distance = foundation::sample_exponential_distribution_on_segment(
-                s, values->m_extinction_multiplier, 0.0f, ray_length);
-
-            // Return corresponding PDF value.
-            return foundation::exponential_distribution_on_segment_pdf(
-                distance, values->m_extinction_multiplier, 0.0f, ray_length);
-        }
-
-        virtual float sample(
-            SamplingContext&            sampling_context,
-            const ShadingRay&           volume_ray,
-            const void*                 data,
-            float                       distance,
-            foundation::Vector3f&       incoming,
-            Spectrum&                   value
-            ) const APPLESEED_OVERRIDE
-        {
-            const InputValues* values = static_cast<const InputValues*>(data);
-
-            // Sample incoming direction.
-            sampling_context.split_in_place(2, 1);
-            const foundation::Vector2f s = sampling_context.next2<foundation::Vector2f>();
-            incoming = foundation::sample_sphere_uniform(s);
-
-            // Evaluate this direction and return corresponding PDF value.
-            return evaluate(volume_ray, data, distance, incoming, value);
-        }
-
-        virtual float evaluate(
-            const ShadingRay&           volume_ray,
-            const void*                 data,
-            float                       distance,
-            const foundation::Vector3f& incoming,
-            Spectrum&                   value
-            ) const APPLESEED_OVERRIDE
-        {
-            const InputValues* values = static_cast<const InputValues*>(data);
-
-            float pdf = evaluate_pdf(volume_ray, data, distance, incoming);
-            evaluate_transmission(volume_ray, data, distance, value);
-            value *= pdf * values->m_scattering_multiplier * values->m_scattering;
-
-            return pdf;
-        }
-
-        virtual float evaluate_pdf(
-            const ShadingRay&           volume_ray,
-            const void*                 data,
-            float                       distance,
-            const foundation::Vector3f& incoming
-            ) const APPLESEED_OVERRIDE
-        {
-            return foundation::RcpPi<float>();
-        }
-
-        virtual void evaluate_transmission(
-            const ShadingRay&           volume_ray,
-            const void*                 data,
-            float                       distance,
-            Spectrum&                   spectrum
-            ) const APPLESEED_OVERRIDE
-        {
-            const InputValues* values = static_cast<const InputValues*>(data);
-
-            spectrum = foundation::exp(-distance * values->m_extinction_multiplier * values->m_extinction);
-        }
-
-        virtual void evaluate_transmission(
-            const ShadingRay&           volume_ray,
-            const void*                 data,
-            Spectrum&                   spectrum
-            ) const APPLESEED_OVERRIDE
-        {
-            const float distance = 
-                norm(volume_ray.m_dir) *
-                (volume_ray.m_tmax - volume_ray.m_tmin);
-            evaluate_transmission(volume_ray, data, distance, spectrum);
-        }
-
-    private:
-        typedef IsotropicPhaseFunctionInputValues InputValues;
-    };
-
-
-    //
-    // IsotropicPhaseFunctionFactory class implementation.
-    //
-
-    const char* IsotropicPhaseFunctionFactory::get_model() const
+    virtual const char* get_model() const APPLESEED_OVERRIDE
     {
         return Model;
     }
-
-    foundation::Dictionary IsotropicPhaseFunctionFactory::get_model_metadata() const
+        
+    virtual bool is_homogeneous() const
     {
-        return
-            foundation::Dictionary()
-            .insert("name", Model)
-            .insert("label", "Isotropic Phase Function");
+        return true;
     }
 
-    foundation::DictionaryArray IsotropicPhaseFunctionFactory::get_input_metadata() const
+    virtual void prepare_inputs(
+        foundation::Arena&          arena,
+        const ShadingRay&           shading_point,
+        void*                       data
+        ) const APPLESEED_OVERRIDE
     {
-        foundation::DictionaryArray metadata;
+        InputValues* values = static_cast<InputValues*>(data);
 
-        metadata.push_back(
-            foundation::Dictionary()
-                .insert("name", "scattering")
-                .insert("label", "Scattering Coefficient")
-                .insert("type", "colormap")
-                .insert("entity_types",
-                    foundation::Dictionary().insert("color", "Colors"))
-                .insert("use", "required")
-                .insert("default", "0.5"));
+        // Ensure that extinction spectrum has unit norm, which is neccessary for distance sampling
+        const float extinction_norm = foundation::max_value(values->m_extinction);
+        values->m_extinction /= extinction_norm;
+        values->m_extinction_multiplier *= extinction_norm;
+    }
 
-        metadata.push_back(
-            foundation::Dictionary()
-                .insert("name", "scattering_multiplier")
-                .insert("label", "Scattering Coefficient Multiplier")
-                .insert("type", "colormap")
-                .insert("use", "optional")
-                .insert("default", "1.0"));
+    virtual float sample_distance(
+        SamplingContext&            sampling_context,
+        const ShadingRay&           volume_ray,
+        const void*                 data,
+        float&                      distance
+        ) const APPLESEED_OVERRIDE
+    {
+        const InputValues* values = static_cast<const InputValues*>(data);
 
-        metadata.push_back(
-            foundation::Dictionary()
+        float ray_length = norm(volume_ray.m_dir) * (volume_ray.m_tmax - volume_ray.m_tmin);
+
+        // Sample distance.
+        sampling_context.split_in_place(1, 1);
+        const float s = sampling_context.next2<float>();
+        distance = foundation::sample_exponential_distribution_on_segment(
+            s, values->m_extinction_multiplier, 0.0f, ray_length);
+
+        // Return corresponding PDF value.
+        return foundation::exponential_distribution_on_segment_pdf(
+            distance, values->m_extinction_multiplier, 0.0f, ray_length);
+    }
+
+    virtual float sample(
+        SamplingContext&            sampling_context,
+        const ShadingRay&           volume_ray,
+        const void*                 data,
+        float                       distance,
+        foundation::Vector3f&       incoming) const APPLESEED_OVERRIDE
+    {
+        const InputValues* values = static_cast<const InputValues*>(data);
+
+        // Sample incoming direction.
+        sampling_context.split_in_place(2, 1);
+        const foundation::Vector2f s = sampling_context.next2<foundation::Vector2f>();
+        incoming = foundation::sample_sphere_uniform(s);
+
+        return foundation::RcpPi<float>();
+    }
+
+    virtual float evaluate(
+        const ShadingRay&           volume_ray,
+        const void*                 data,
+        float                       distance,
+        const foundation::Vector3f& incoming) const APPLESEED_OVERRIDE
+    {
+        return foundation::RcpPi<float>();
+    }
+
+    virtual void evaluate_transmission(
+        const ShadingRay&           volume_ray,
+        const void*                 data,
+        float                       distance,
+        Spectrum&                   spectrum) const APPLESEED_OVERRIDE
+    {
+        const InputValues* values = static_cast<const InputValues*>(data);
+
+        spectrum = foundation::exp(-distance * values->m_extinction_multiplier * values->m_extinction);
+    }
+
+    virtual void evaluate_transmission(
+        const ShadingRay&           volume_ray,
+        const void*                 data,
+        Spectrum&                   spectrum) const APPLESEED_OVERRIDE
+    {
+        const float distance = 
+            norm(volume_ray.m_dir) *
+            (volume_ray.m_tmax - volume_ray.m_tmin);
+        evaluate_transmission(volume_ray, data, distance, spectrum);
+    }
+
+    virtual void scattering_coefficient(
+        const ShadingRay&           volume_ray,
+        const void*                 data,
+        float                       distance,
+        Spectrum&                   spectrum) const APPLESEED_OVERRIDE
+    {
+        const InputValues* values = static_cast<const InputValues*>(data);
+        spectrum = values->m_scattering * values->m_scattering_multiplier;
+    }
+
+    virtual void extinction_coefficient(
+        const ShadingRay&           volume_ray,
+        const void*                 data,
+        float                       distance,
+        Spectrum&                   spectrum) const APPLESEED_OVERRIDE
+    {
+        const InputValues* values = static_cast<const InputValues*>(data);
+        spectrum = values->m_extinction * values->m_extinction_multiplier;
+    }
+
+  private:
+    typedef IsotropicPhaseFunctionInputValues InputValues;
+};
+
+
+//
+// IsotropicPhaseFunctionFactory class implementation.
+//
+
+const char* IsotropicPhaseFunctionFactory::get_model() const
+{
+    return Model;
+}
+
+foundation::Dictionary IsotropicPhaseFunctionFactory::get_model_metadata() const
+{
+    return
+        foundation::Dictionary()
+        .insert("name", Model)
+        .insert("label", "Isotropic Phase Function");
+}
+
+foundation::DictionaryArray IsotropicPhaseFunctionFactory::get_input_metadata() const
+{
+    foundation::DictionaryArray metadata;
+
+    metadata.push_back(
+        foundation::Dictionary()
             .insert("name", "scattering")
             .insert("label", "Scattering Coefficient")
             .insert("type", "colormap")
             .insert("entity_types",
-            foundation::Dictionary().insert("color", "Colors"))
+                foundation::Dictionary().insert("color", "Colors"))
             .insert("use", "required")
             .insert("default", "0.5"));
 
-        metadata.push_back(
-            foundation::Dictionary()
+    metadata.push_back(
+        foundation::Dictionary()
             .insert("name", "scattering_multiplier")
             .insert("label", "Scattering Coefficient Multiplier")
-            .insert("type", "colormap")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "200.0")
             .insert("use", "optional")
             .insert("default", "1.0"));
 
-        return metadata;
-    }
+    metadata.push_back(
+        foundation::Dictionary()
+        .insert("name", "extinction")
+        .insert("label", "Extinction Coefficient")
+        .insert("type", "colormap")
+        .insert("entity_types",
+        foundation::Dictionary().insert("color", "Colors"))
+        .insert("use", "required")
+        .insert("default", "0.5"));
 
-    foundation::auto_release_ptr<PhaseFunction> IsotropicPhaseFunctionFactory::create(
-        const char*         name,
-        const ParamArray&   params) const
-    {
-        return foundation::auto_release_ptr<PhaseFunction>(
-            new IsotropicPhaseFunction(name, params));
-    }
+    metadata.push_back(
+        foundation::Dictionary()
+        .insert("name", "extinction_multiplier")
+        .insert("label", "Extinction Coefficient Multiplier")
+        .insert("type", "numeric")
+        .insert("min_value", "0.0")
+        .insert("max_value", "200.0")
+        .insert("use", "optional")
+        .insert("default", "1.0"));
+
+    return metadata;
+}
+
+foundation::auto_release_ptr<PhaseFunction> IsotropicPhaseFunctionFactory::create(
+    const char*         name,
+    const ParamArray&   params) const
+{
+    return foundation::auto_release_ptr<PhaseFunction>(
+        new IsotropicPhaseFunction(name, params));
+}
 }

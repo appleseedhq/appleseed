@@ -69,6 +69,9 @@
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/meshobjectreader.h"
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/phasefunction/phasefunction.h"
+#include "renderer/modeling/phasefunction/phasefunctionfactoryregistrar.h"
+#include "renderer/modeling/phasefunction/iphasefunctionfactory.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
 #include "renderer/modeling/project/eventcounters.h"
@@ -400,6 +403,7 @@ namespace
         ElementOutput,
         ElementParameter,
         ElementParameters,
+        ElementPhaseFunction,
         ElementProject,
         ElementRenderLayerAssignment,
         ElementRotation,
@@ -1345,6 +1349,27 @@ namespace
 
 
     //
+    // <phase_function> element handler.
+    //
+
+    class PhaseFunctionElementHandler
+        : public EntityElementHandler<
+        PhaseFunction,
+        PhaseFunctionFactoryRegistrar,
+        ParametrizedElementHandler>
+    {
+    public:
+        explicit PhaseFunctionElementHandler(ParseContext& context)
+            : EntityElementHandler<
+            PhaseFunction,
+            PhaseFunctionFactoryRegistrar,
+            ParametrizedElementHandler>("phase_function", context)
+        {
+        }
+    };
+
+
+    //
     // <surface_shader> element handler.
     //
 
@@ -2069,6 +2094,7 @@ namespace
             m_materials.clear();
             m_objects.clear();
             m_object_instances.clear();
+            m_phase_functions.clear();
             m_shader_groups.clear();
             m_surface_shaders.clear();
             m_textures.clear();
@@ -2099,6 +2125,7 @@ namespace
                 m_assembly->materials().swap(m_materials);
                 m_assembly->objects().swap(m_objects);
                 m_assembly->object_instances().swap(m_object_instances);
+                m_assembly->phase_functions().swap(m_phase_functions);
                 m_assembly->shader_groups().swap(m_shader_groups);
                 m_assembly->surface_shaders().swap(m_surface_shaders);
                 m_assembly->textures().swap(m_textures);
@@ -2180,6 +2207,12 @@ namespace
                     static_cast<ObjectInstanceElementHandler*>(handler)->get_object_instance());
                 break;
 
+              case ElementPhaseFunction:
+                insert(
+                    m_phase_functions,
+                    static_cast<PhaseFunctionElementHandler*>(handler)->get_entity());
+                break;
+
               case ElementShaderGroup:
                 insert(
                     m_shader_groups,
@@ -2229,6 +2262,7 @@ namespace
         MaterialContainer           m_materials;
         ObjectContainer             m_objects;
         ObjectInstanceContainer     m_object_instances;
+        PhaseFunctionContainer      m_phase_functions;
         ShaderGroupContainer        m_shader_groups;
         SurfaceShaderContainer      m_surface_shaders;
         TextureContainer            m_textures;

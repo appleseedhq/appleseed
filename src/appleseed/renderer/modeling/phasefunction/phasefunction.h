@@ -103,22 +103,12 @@ class APPLESEED_DLLSYMBOL PhaseFunction
         const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
         const void*                 data,                       // input values
         float                       distance,                   // distance to the point on this volume segment
-        foundation::Vector3f&       incoming,                   // sampled direction
-        Spectrum&                   value) const = 0;           // light value
-
-    // Evaluate phase function in the given point on the ray for the incoming direction
-    // and calculate the amount of in-scattered light that reaches the origin of the
-    // ray considering the transmission factor. Return the PDF value.
-    virtual float evaluate(
-        const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
-        const void*                 data,                       // input values
-        float                       distance,                   // distance to the point on this volume segment
-        const foundation::Vector3f& incoming,                   // world space incoming direction, unit-length
-        Spectrum&                   value) const = 0;           // light value
+        foundation::Vector3f&       incoming                    // sampled direction
+        ) const = 0;
 
     // Evaluate PDF value of this phase function in the given point
     // on the ray and for the given incoming direction
-    virtual float evaluate_pdf(
+    virtual float evaluate(
         const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
         const void*                 data,                       // input values
         float                       distance,                   // distance to the point on this volume segment
@@ -135,6 +125,20 @@ class APPLESEED_DLLSYMBOL PhaseFunction
     virtual void evaluate_transmission(
         const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
         const void*                 data,                       // input values
+        Spectrum&                   spectrum) const = 0;        // resulting spectrum
+
+    // Get the scatering coefficient (spectrum) in certain point
+    virtual void scattering_coefficient(
+        const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
+        const void*                 data,                       // input values
+        float                       distance,                   // distance to the point on this volume segment
+        Spectrum&                   spectrum) const = 0;        // resulting spectrum
+
+    // Get the extinction coefficient (spectrum) in certain point
+    virtual void extinction_coefficient(
+        const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
+        const void*                 data,                       // input values
+        float                       distance,                   // distance to the point on this volume segment
         Spectrum&                   spectrum) const = 0;        // resulting spectrum
 };
 
