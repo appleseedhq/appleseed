@@ -75,7 +75,7 @@ void LightTree::build(
     {
         m_light_sources.push_back(new EmittingTriangleLightSource(&*i));
         foundation::Vector3d position = m_light_sources.back()->get_position();
-        RENDERER_LOG_INFO("Emitting triangle with world space vertices [%f %f %f]", position[0], position[1], position[2]);
+        RENDERER_LOG_INFO("Emitting triangle centroid at coordinates [%f %f %f]", position[0], position[1], position[2]);
     }
 }
 

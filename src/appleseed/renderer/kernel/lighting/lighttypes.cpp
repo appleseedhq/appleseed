@@ -77,9 +77,13 @@ EmittingTriangleLightSource::EmittingTriangleLightSource(const EmittingTriangle*
 
 foundation::Vector3d EmittingTriangleLightSource::get_position() const
 {
-    foundation::Vector3d position0 = m_light->m_v0;
+    foundation::Vector3d vertex0 = m_light->m_v0;
+    foundation::Vector3d vertex1 = m_light->m_v1;
+    foundation::Vector3d vertex2 = m_light->m_v2;
+    
+    foundation::Vector3d centroid = (vertex0 + vertex1 + vertex2) / 3;
 
-    return position0;
+    return centroid;
 }
 
 }   // namespace renderer
