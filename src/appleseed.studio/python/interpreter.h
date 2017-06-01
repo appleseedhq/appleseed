@@ -26,46 +26,28 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_CONSOLEWIDGET_H
-#define APPLESEED_STUDIO_MAINWINDOW_CONSOLEWIDGET_H
+#ifndef APPLESEED_STUDIO_PYTHON_INTERPRETER_H
+#define APPLESEED_STUDIO_PYTHON_INTERPRETER_H
 
-// appleseed.studio headers
-#include "python/interpreter.h"
-
-// Qt headers.
-#include <QObject>
-#include <QSplitter>
-
-// Forward declarations.
-class QAction;
-class QString;
-class QWidget;
-class QTextEdit;
+// appleseed.foundation headers.
+#include <foundation/core/concepts/noncopyable.h>
 
 namespace appleseed {
 namespace studio {
 
-class ConsoleWidget
-    : public QSplitter
+class PythonInterpreter
+  : public foundation::NonCopyable
 {
-  Q_OBJECT
-
   public:
-    explicit ConsoleWidget(QWidget* parent = 0);
-
-  public slots:
-    void slot_execute_command();
+    static PythonInterpreter& instance();
+    char* execute_command(const char* command);
 
   private:
-    PythonInterpreter* interpreter;
-
-    QTextEdit* input;
-    QTextEdit* output;
-
-    QAction* m_action_execute_selection;
+    PythonInterpreter();
+    ~PythonInterpreter();
 };
 
-}       // namespace studio
-}       // namespace appleseed
+} // namespace studio
+} // namespace appleseed
 
-#endif //APPLESEED_CONSOLEWIDGET_H
+#endif //APPLESEED_STUDIO_PYTHON_INTERPRETER_H
