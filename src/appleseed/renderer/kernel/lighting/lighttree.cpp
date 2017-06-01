@@ -64,6 +64,7 @@ void LightTree::build(
     RENDERER_LOG_INFO("Building a tree");
     // AABBVector light_bboxes;
 
+    // Collect all possible light sources into one vector
     for (foundation::const_each<NonPhysicalLightVector> i = non_physical_lights; i; ++i)
     {
         m_light_sources.push_back(new NonPhysicalLightSource(&*i));
