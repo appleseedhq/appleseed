@@ -34,6 +34,9 @@
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/utility/transformsequence.h"
 
+// appleseed. foundation headers.
+#include "foundation/math/aabb.h"
+
 // Forward declarations.
 namespace renderer  { class AssemblyInstance; }
 namespace renderer  { class Light; }
@@ -90,6 +93,9 @@ class LightSource
 
     // Get the reference to the source position.
     virtual foundation::Vector3d get_position() const = 0;
+    
+    // Get the light bounding box
+    virtual foundation::AABB3d get_bbox() const = 0;
 };
 
 //
@@ -104,6 +110,7 @@ class NonPhysicalLightSource
 
   private:
     virtual foundation::Vector3d get_position() const APPLESEED_OVERRIDE;
+    virtual foundation::AABB3d get_bbox() const APPLESEED_OVERRIDE;
 
     // Get the reference to an actual source.
     const NonPhysicalLightInfo* m_light_info;
@@ -121,6 +128,7 @@ class EmittingTriangleLightSource
 
   private:
     virtual foundation::Vector3d get_position() const APPLESEED_OVERRIDE;
+    virtual foundation::AABB3d get_bbox() const APPLESEED_OVERRIDE;
 
     // Get the reference to an actual source.
     const EmittingTriangle* m_light;
