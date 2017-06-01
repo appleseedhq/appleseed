@@ -59,7 +59,7 @@ namespace renderer
     class APPLESEED_DLLSYMBOL PhaseFunctionFactoryRegistrar
         : public foundation::NonCopyable
     {
-    public:
+      public:
         typedef IPhaseFunctionFactory FactoryType;
         typedef PhaseFunctionFactoryArray FactoryArrayType;
 
@@ -78,7 +78,7 @@ namespace renderer
         // Lookup a factory by name.
         const FactoryType* lookup(const char* name) const;
 
-    private:
+      private:
         struct Impl;
         Impl* impl;
     };

@@ -59,7 +59,7 @@ namespace
 class HenyeyPhaseFunction
     : public PhaseFunction
 {
-    public:
+  public:
     HenyeyPhaseFunction(
         const char*             name,
         const ParamArray&       params)
@@ -285,7 +285,7 @@ foundation::DictionaryArray HenyeyPhaseFunctionFactory::get_input_metadata() con
         .insert("label", "Extinction Coefficient")
         .insert("type", "colormap")
         .insert("entity_types",
-        foundation::Dictionary().insert("color", "Colors"))
+            foundation::Dictionary().insert("color", "Colors"))
         .insert("use", "required")
         .insert("default", "0.5"));
 
@@ -319,4 +319,5 @@ foundation::auto_release_ptr<PhaseFunction> HenyeyPhaseFunctionFactory::create(
     return foundation::auto_release_ptr<PhaseFunction>(
         new HenyeyPhaseFunction(name, params));
 }
-}
+
+}   // namespace renderer

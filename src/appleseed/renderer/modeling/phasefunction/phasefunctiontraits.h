@@ -44,44 +44,44 @@ namespace renderer  { class PhaseFunctionFactoryRegistrar; }
 namespace renderer
 {
 
-    //
-    // PhaseFunction entity traits.
-    //
+//
+// PhaseFunction entity traits.
+//
 
-    template <>
-    struct EntityTraits<PhaseFunction>
+template <>
+struct EntityTraits<PhaseFunction>
+{
+    typedef PhaseFunctionContainer ContainerType;
+    typedef PhaseFunctionFactoryRegistrar FactoryRegistrarType;
+
+    static const char* get_entity_type_name()                           { return "phase_function"; }
+    static const char* get_human_readable_entity_type_name()            { return "Phase Function"; }
+    static const char* get_human_readable_collection_type_name()        { return "Phase Functions"; }
+
+    template <typename ParentEntity>
+    static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.phase_functions(); }
+
+    static foundation::Dictionary get_entity_values(const PhaseFunction* entity)
     {
-        typedef PhaseFunctionContainer ContainerType;
-        typedef PhaseFunctionFactoryRegistrar FactoryRegistrarType;
+        return entity->get_parameters();
+    }
 
-        static const char* get_entity_type_name()                           { return "phase_function"; }
-        static const char* get_human_readable_entity_type_name()            { return "Phase Function"; }
-        static const char* get_human_readable_collection_type_name()        { return "Phase Functions"; }
+    template <typename ParentEntity>
+    static void insert_entity(
+        foundation::auto_release_ptr<PhaseFunction>  entity,
+        ParentEntity&                                parent)
+    {
+        get_entity_container(parent).insert(entity);
+    }
 
-        template <typename ParentEntity>
-        static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.phase_functions(); }
-
-        static foundation::Dictionary get_entity_values(const PhaseFunction* entity)
-        {
-            return entity->get_parameters();
-        }
-
-        template <typename ParentEntity>
-        static void insert_entity(
-            foundation::auto_release_ptr<PhaseFunction>  entity,
-            ParentEntity&                                parent)
-        {
-            get_entity_container(parent).insert(entity);
-        }
-
-        template <typename ParentEntity>
-        static void remove_entity(
-            PhaseFunction*                      entity,
-            ParentEntity&                       parent)
-        {
-            get_entity_container(parent).remove(entity);
-        }
-    };
+    template <typename ParentEntity>
+    static void remove_entity(
+        PhaseFunction*                      entity,
+        ParentEntity&                       parent)
+    {
+        get_entity_container(parent).remove(entity);
+    }
+};
 
 }       // namespace renderer
 

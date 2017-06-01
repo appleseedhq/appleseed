@@ -56,16 +56,16 @@ class APPLESEED_DLLSYMBOL IPhaseFunctionFactory
     // Destructor.
     virtual ~IPhaseFunctionFactory() {}
 
-    // Return a string identifying this BSSRDF model.
+    // Return a string identifying this Phase Function model.
     virtual const char* get_model() const = 0;
 
-    // Return metadata for this BSSRDF model.
+    // Return metadata for this Phase Function model.
     virtual foundation::Dictionary get_model_metadata() const = 0;
 
-    // Return metadata for the inputs of this BSSRDF model.
+    // Return metadata for the inputs of this Phase Function model.
     virtual foundation::DictionaryArray get_input_metadata() const = 0;
 
-    // Create a new BSSRDF instance.
+    // Create a new Phase Function instance.
     virtual foundation::auto_release_ptr<PhaseFunction> create(
         const char*         name,
         const ParamArray&   params) const = 0;

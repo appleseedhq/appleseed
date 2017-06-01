@@ -52,7 +52,7 @@ namespace
 class IsotropicPhaseFunction
     : public PhaseFunction
 {
-    public:
+  public:
     IsotropicPhaseFunction(
         const char*             name,
         const ParamArray&       params)
