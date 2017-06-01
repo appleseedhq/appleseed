@@ -86,7 +86,7 @@ class LightSource
 
 
     // Destructor
-    ~LightSource();
+    virtual ~LightSource();
 
     // Get the reference to the source position.
     virtual foundation::Vector3d get_position() const = 0;

@@ -77,6 +77,7 @@ class LightTree
   private:
     typedef std::vector<NonPhysicalLightInfo>     NonPhysicalLightVector;
     typedef std::vector<EmittingTriangle>         EmittingTriangleVector;
+    typedef std::vector<LightSource*>         LightSourcePointerVector;
 
     struct Item
     {

@@ -50,6 +50,10 @@ LightTree::LightTree(const Scene& scene)
 LightTree::~LightTree()
 {
     RENDERER_LOG_INFO("Deleting the light tree...");
+    for(foundation::const_each<LightSourcePointerVector> i = m_light_sources; i; ++i)
+    {
+        delete *i;
+    }
 }
 
 void LightTree::build(
