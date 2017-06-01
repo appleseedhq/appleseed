@@ -282,6 +282,17 @@ source_group ("meta\\tests" FILES
     ${meta_tests_sources}
 )
 
+set (python_sources
+    python/interpreter.cpp
+    python/interpreter.h
+)
+list (APPEND appleseed.studio_sources
+    ${python_sources}
+)
+source_group ("python" FILES
+    ${python_sources}
+)
+
 set (utility_sources
     utility/chartwidget.cpp
     utility/chartwidget.h

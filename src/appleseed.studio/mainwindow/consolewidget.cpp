@@ -44,6 +44,8 @@ namespace studio {
 ConsoleWidget::ConsoleWidget(QWidget* parent)
     : QSplitter(parent)
 {
+    interpreter = &PythonInterpreter::instance();
+
     output = new QTextEdit(this);
     output->setUndoRedoEnabled(false);
     output->setLineWrapMode(QTextEdit::WidgetWidth);
@@ -76,10 +78,12 @@ ConsoleWidget::ConsoleWidget(QWidget* parent)
 
 void ConsoleWidget::slot_execute_command()
 {
-    QString selected = input->textCursor().selectedText();
+    QString selected = input->textCursor().selectedText().replace(QChar(8233), "\n");
 
     output->clear();
     output->append(selected);
+
+    interpreter->execute_command(selected.toStdString().c_str());
 
     m_action_execute_selection->setChecked(false);
 }
