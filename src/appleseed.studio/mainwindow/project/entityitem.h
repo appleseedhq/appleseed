@@ -178,6 +178,9 @@ void EntityItem<Entity, ParentEntity, CollectionItem>::edit(const foundation::Di
     // Move the item to its sorted position.
     if (!m_fixed_position && old_entity_name != new_entity_name)
         move_to_sorted_position(this);
+
+    if (Base::m_attrubute_editor)
+        Base::m_attrubute_editor->refresh();
 }
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>

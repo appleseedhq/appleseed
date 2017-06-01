@@ -128,6 +128,8 @@ void MultiModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attri
 
     if (attribute_editor)
     {
+        Base::m_attrubute_editor = attribute_editor;
+
         attribute_editor->edit(
             form_factory,
             entity_browser,
