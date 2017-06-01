@@ -30,6 +30,12 @@
 // Interface header.
 #include "lighttypes.h"
 
+// appleseed. renderer headers.
+#include "renderer/modeling/light/light.h"
+
+// appleseed.foundation headers.
+#include "foundation/math/transform.h"
+
 namespace renderer
 {
 
@@ -46,18 +52,18 @@ LightSource::~LightSource()
 //
 
 NonPhysicalLightSource::NonPhysicalLightSource(const NonPhysicalLightInfo* light)
-: m_light(light)
+: m_light_info(light)
 {
 }
 
 foundation::Vector3d NonPhysicalLightSource::get_position()  const
 {
-    // Test fetching position data
-    foundation::Vector3d test_vec;
-    test_vec[0] = 0.0;
-    test_vec[1] = 1.0;
-    test_vec[2] = 2.0;
-    return test_vec;
+    const Light* light = m_light_info->m_light;
+    foundation::Vector3d position = light->get_transform()
+                                          .get_local_to_parent()
+                                          .extract_translation();
+    
+    return position;
 }
 
 //

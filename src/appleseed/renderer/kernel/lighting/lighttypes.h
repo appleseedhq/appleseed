@@ -106,7 +106,7 @@ class NonPhysicalLightSource
     virtual foundation::Vector3d get_position() const APPLESEED_OVERRIDE;
 
     // Get the reference to an actual source.
-    const NonPhysicalLightInfo* m_light;
+    const NonPhysicalLightInfo* m_light_info;
 };
 
 //
