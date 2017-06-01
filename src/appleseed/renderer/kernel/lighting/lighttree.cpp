@@ -64,20 +64,26 @@ void LightTree::build(
     RENDERER_LOG_INFO("Building a tree");
     // AABBVector light_bboxes;
 
+    RENDERER_LOG_INFO("Collecting light sources...");
     // Collect all possible light sources into one vector
     for (foundation::const_each<NonPhysicalLightVector> i = non_physical_lights; i; ++i)
     {
-        m_light_sources.push_back(new NonPhysicalLightSource(&*i));
-        foundation::Vector3d position = m_light_sources.back()->get_position();
+        LightSource* light_source = new NonPhysicalLightSource(&*i);
+        foundation::Vector3d position = light_source->get_position();
+        m_light_sources.push_back(light_source);
+
         RENDERER_LOG_INFO("Non physical light at coordinates [%f %f %f]", position[0], position[1], position[2]);
     }
 
     for (foundation::const_each<EmittingTriangleVector> i = emitting_triangles; i; ++i)
     {
-        m_light_sources.push_back(new EmittingTriangleLightSource(&*i));
-        foundation::Vector3d position = m_light_sources.back()->get_position();
+        LightSource* light_source = new EmittingTriangleLightSource(&*i);
+        foundation::Vector3d position = light_source->get_position();
+        m_light_sources.push_back(light_source);
         RENDERER_LOG_INFO("Emitting triangle centroid at coordinates [%f %f %f]", position[0], position[1], position[2]);
     }
+
+
 }
 
 }   // namespace renderer
