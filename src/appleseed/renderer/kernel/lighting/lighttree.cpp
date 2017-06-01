@@ -70,8 +70,12 @@ void LightTree::build(
     {
         LightSource* light_source = new NonPhysicalLightSource(&*i);
         foundation::Vector3d position = light_source->get_position();
+        foundation::AABB3d bbox = light_source->get_bbox();
         m_light_sources.push_back(light_source);
-        m_items.push_back(position);
+        m_items.push_back(
+            Item(
+                bbox,
+                position));
 
         RENDERER_LOG_INFO("Non physical light at coordinates [%f %f %f]", position[0], position[1], position[2]);
     }
@@ -80,8 +84,13 @@ void LightTree::build(
     {
         LightSource* light_source = new EmittingTriangleLightSource(&*i);
         foundation::Vector3d position = light_source->get_position();
+        foundation::AABB3d bbox = light_source->get_bbox();
         m_light_sources.push_back(light_source);
-        m_items.push_back(position);
+        m_items.push_back(
+            Item(
+                bbox,
+                position));
+        
         RENDERER_LOG_INFO("Emitting triangle centroid at coordinates [%f %f %f]", position[0], position[1], position[2]);
     }
 

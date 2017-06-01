@@ -84,6 +84,7 @@ class LightTree
 
         Item(
             // const UniqueID          uid,
+            foundation::AABB3d      bbox,
             foundation::Vector3d    position) //what to do with a triangle??
           ://non physicall light id - get_class_uid()
           m_position(position)
@@ -95,7 +96,7 @@ class LightTree
     typedef std::vector<NonPhysicalLightInfo>       NonPhysicalLightVector;
     typedef std::vector<LightSource*>               LightSourcePointerVector;
     typedef std::vector<Item>                       ItemVector;
-    
+
     LightSourcePointerVector   m_light_sources;
     ItemVector                 m_items;
 };
