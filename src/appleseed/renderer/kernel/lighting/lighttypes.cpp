@@ -71,10 +71,14 @@ foundation::Vector3d NonPhysicalLightSource::get_position()  const
 
 foundation::AABB3d NonPhysicalLightSource::get_bbox() const
 {
-    // Non physical light has no real size - hence we are fixing some small value for bbox
+    const Light* light = m_light_info->m_light;
+    foundation::Vector3d position = light->get_transform()
+                                          .get_local_to_parent()
+                                          .extract_translation();
+    // Non physical light has no real size - hence we are fixing some small value for the bbox
     return foundation::AABB3d(
-                foundation::Vector3d( 0.01,  0.01,  0.01),
-                foundation::Vector3d(-0.01, -0.01, -0.01));
+                foundation::Vector3d(position[0] + 0.01, position[1] + 0.01, position[2] + 0.01),
+                foundation::Vector3d(position[0] - 0.01, position[1] - 0.01, position[2] - 0.01));
 }
 
 //
@@ -105,17 +109,13 @@ foundation::AABB3d EmittingTriangleLightSource::get_bbox() const
     foundation::Vector3d vertex1 = m_light->m_v1;
     foundation::Vector3d vertex2 = m_light->m_v2;
 
-    foundation::Vector3d min = foundation::Vector3d(
-                foundation::min(vertex0[0], vertex1[0], vertex2[0]),
-                foundation::min(vertex0[1], vertex1[1], vertex2[1]),
-                foundation::min(vertex0[2], vertex1[2], vertex2[2]));
+    foundation::AABB3d bbox;
+    bbox.invalidate();
+    bbox.insert(vertex0);
+    bbox.insert(vertex1);
+    bbox.insert(vertex2);
 
-    foundation::Vector3d max = foundation::Vector3d(
-                foundation::max(vertex0[0], vertex1[0], vertex2[0]),
-                foundation::max(vertex0[1], vertex1[1], vertex2[1]),
-                foundation::max(vertex0[2], vertex1[2], vertex2[2]));
-
-    return foundation::AABB3d(min, max);
+    return bbox;
 }
 
 }   // namespace renderer

@@ -80,7 +80,8 @@ class Builder
         Tree&           tree,
         Partitioner&    partitioner,
         const size_t    size,
-        const size_t    items_per_leaf_hint);
+        const size_t    items_per_leaf_hint,
+        const bool      write = false);
 
     // Return the construction time.
     double get_build_time() const;
@@ -98,7 +99,8 @@ class Builder
         const size_t    node_index,
         const size_t    begin,
         const size_t    end,
-        const AABBType& bbox);
+        const AABBType& bbox,
+        const bool      write = false);
 };
 
 
@@ -118,7 +120,8 @@ void Builder<Tree, Partitioner>::build(
     Tree&               tree,
     Partitioner&        partitioner,
     const size_t        size,
-    const size_t        items_per_leaf_hint)
+    const size_t        items_per_leaf_hint,
+    const bool          write)
 {
     // Start stopwatch.
     Stopwatch<Timer> stopwatch;
@@ -147,7 +150,8 @@ void Builder<Tree, Partitioner>::build(
         0,              // node index
         0,              // begin
         size,           // end
-        root_bbox);
+        root_bbox,
+        write);
 
     // Measure and save construction time.
     stopwatch.measure();
@@ -167,7 +171,8 @@ void Builder<Tree, Partitioner>::subdivide_recurse(
     const size_t        node_index,
     const size_t        begin,
     const size_t        end,
-    const AABBType&     bbox)
+    const AABBType&     bbox,
+    const bool          write)
 {
     assert(node_index < tree.m_nodes.size());
 
@@ -175,7 +180,7 @@ void Builder<Tree, Partitioner>::subdivide_recurse(
     size_t pivot = end;
     if (end - begin > 1)
     {
-        pivot = partitioner.partition(begin, end, typename Partitioner::AABBType(bbox));
+        pivot = partitioner.partition(begin, end, typename Partitioner::AABBType(bbox), write);
         assert(pivot > begin);
         assert(pivot <= end);
     }
@@ -216,7 +221,8 @@ void Builder<Tree, Partitioner>::subdivide_recurse(
             left_node_index,
             begin,
             pivot,
-            left_bbox);
+            left_bbox,
+            write);
 
         // Recurse into the right subtree.
         subdivide_recurse(
@@ -225,7 +231,8 @@ void Builder<Tree, Partitioner>::subdivide_recurse(
             right_node_index,
             pivot,
             end,
-            right_bbox);
+            right_bbox,
+            write);
     }
 }
 

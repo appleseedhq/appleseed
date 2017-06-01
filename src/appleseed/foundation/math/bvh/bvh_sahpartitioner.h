@@ -66,7 +66,8 @@ class SAHPartitioner
     size_t partition(
         const size_t            begin,
         const size_t            end,
-        const AABBType&         bbox);
+        const AABBType&         bbox,
+        const bool              write = false);
 
   private:
     static const size_t Dimension = AABBType::Dimension;
@@ -100,7 +101,8 @@ template <typename AABBVector>
 size_t SAHPartitioner<AABBVector>::partition(
     const size_t                begin,
     const size_t                end,
-    const AABBType&             bbox)
+    const AABBType&             bbox,
+    const bool                  write)
 {
     // Don't split leaves containing only degenerate triangles.
     if (bbox.rank() < Dimension - 1)
@@ -165,7 +167,7 @@ size_t SAHPartitioner<AABBVector>::partition(
     const size_t pivot = begin + best_split_pivot;
     assert(pivot < end);
 
-    PartitionerBase<AABBVector>::sort_indices(best_split_dim, begin, end, pivot);
+    PartitionerBase<AABBVector>::sort_indices(best_split_dim, begin, end, pivot, write);
 
     return pivot;
 }

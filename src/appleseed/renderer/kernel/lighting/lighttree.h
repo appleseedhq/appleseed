@@ -31,13 +31,13 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTREE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globallogger.h"
 #include "renderer/kernel/lighting/lighttypes.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
 #include "foundation/utility/alignedvector.h"
+#include "foundation/utility/statistics.h"
 #include "foundation/utility/uid.h"
 
 // Forward declarations.
@@ -75,16 +75,32 @@ class LightTree
         const std::vector<EmittingTriangle>         emitting_triangles);
 
   private:
-    typedef std::vector<NonPhysicalLightInfo>     NonPhysicalLightVector;
-    typedef std::vector<EmittingTriangle>         EmittingTriangleVector;
-    typedef std::vector<LightSource*>         LightSourcePointerVector;
-
     struct Item
     {
-        foundation::UniqueID m_tree_node_uid;
+        // foundation::UniqueID    m_light_uid;
+        foundation::Vector3d    m_position;
+
+        Item() {}
+
+        Item(
+            // const UniqueID          uid, //what to do with a triangle??
+            foundation::AABB3d      bbox,
+            foundation::Vector3d    position)
+          ://non physicall light id - get_class_uid()
+          m_position(position)
+        {
+        }
     };  
 
-    std::vector<LightSource*>   m_light_sources;
+    typedef std::vector<EmittingTriangle>           EmittingTriangleVector;
+    typedef std::vector<NonPhysicalLightInfo>       NonPhysicalLightVector;
+    typedef std::vector<LightSource*>               LightSourcePointerVector;
+    typedef std::vector<Item>                       ItemVector;
+
+    LightSourcePointerVector   m_light_sources;
+    ItemVector                 m_items;
+
+    void store_items_in_leaves(foundation::Statistics& statistics);
 };
 
 }
