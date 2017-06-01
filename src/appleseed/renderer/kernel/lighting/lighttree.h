@@ -75,16 +75,29 @@ class LightTree
         const std::vector<EmittingTriangle>         emitting_triangles);
 
   private:
-    typedef std::vector<NonPhysicalLightInfo>     NonPhysicalLightVector;
-    typedef std::vector<EmittingTriangle>         EmittingTriangleVector;
-    typedef std::vector<LightSource*>         LightSourcePointerVector;
-
     struct Item
     {
-        foundation::UniqueID m_tree_node_uid;
+        // foundation::UniqueID    m_light_uid;
+        foundation::Vector3d    m_position;
+
+        Item() {}
+
+        Item(
+            // const UniqueID          uid,
+            foundation::Vector3d    position) //what to do with a triangle??
+          ://non physicall light id - get_class_uid()
+          m_position(position)
+        {
+        }
     };  
 
-    std::vector<LightSource*>   m_light_sources;
+    typedef std::vector<EmittingTriangle>           EmittingTriangleVector;
+    typedef std::vector<NonPhysicalLightInfo>       NonPhysicalLightVector;
+    typedef std::vector<LightSource*>               LightSourcePointerVector;
+    typedef std::vector<Item>                       ItemVector;
+    
+    LightSourcePointerVector   m_light_sources;
+    ItemVector                 m_items;
 };
 
 }
