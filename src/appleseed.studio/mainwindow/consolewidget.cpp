@@ -29,6 +29,9 @@
 // Interface header.
 #include "consolewidget.h"
 
+// appleseed.studio headers.
+#include "outputredirector.h"
+
 // Qt headers.
 #include <QAction>
 #include <QContextMenuEvent>
@@ -38,14 +41,12 @@ namespace appleseed {
 namespace studio {
 
 //
-// LogWidget class implementation.
+// ConsoleWidget class implementation.
 //
 
 ConsoleWidget::ConsoleWidget(QWidget* parent)
     : QSplitter(parent)
 {
-    interpreter = &PythonInterpreter::instance();
-
     output = new QTextEdit(this);
     output->setUndoRedoEnabled(false);
     output->setLineWrapMode(QTextEdit::WidgetWidth);
@@ -87,12 +88,10 @@ ConsoleWidget::ConsoleWidget(QWidget* parent)
 
     connect(m_action_focus_on_input, SIGNAL(triggered()), input, SLOT(setFocus()));
     addAction(m_action_focus_on_input);
-}
 
-void ConsoleWidget::write_output(const char* str)
-{
-    output->clear();
-    output->append(str);
+    interpreter = &PythonInterpreter::instance();
+    OutputRedirector redirector(output);
+    interpreter->redirect_output(redirector);
 }
 
 void ConsoleWidget::slot_execute_selection()
@@ -109,6 +108,7 @@ void ConsoleWidget::slot_execute_all()
 
 void ConsoleWidget::execute(QString script)
 {
+    output->clear();
     interpreter->execute_command(script.toStdString().c_str());
 
     m_action_execute_selection->setChecked(false);

@@ -26,51 +26,27 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_CONSOLEWIDGET_H
-#define APPLESEED_STUDIO_MAINWINDOW_CONSOLEWIDGET_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_OUTPUTREDIRECTOR_H
+#define APPLESEED_STUDIO_MAINWINDOW_OUTPUTREDIRECTOR_H
 
-// appleseed.studio headers
-#include "python/pythoninterpreter.h"
-
-// Qt headers.
-#include <QObject>
-#include <QSplitter>
-
-// Forward declarations.
-class QAction;
-class QString;
-class QWidget;
+//Forward declarations.
 class QTextEdit;
 
 namespace appleseed {
 namespace studio {
 
-class ConsoleWidget
-    : public QSplitter
+class OutputRedirector
 {
-  Q_OBJECT
-
   public:
-    explicit ConsoleWidget(QWidget* parent = 0);
+    OutputRedirector(QTextEdit* output);
 
-  public slots:
-    void slot_execute_selection();
-    void slot_execute_all();
+    void write(const char* str);
 
   private:
-    PythonInterpreter* interpreter;
-
-    QTextEdit* input;
     QTextEdit* output;
-
-    QAction* m_action_execute_selection;
-    QAction* m_action_execute_all;
-    QAction* m_action_focus_on_input;
-
-    void execute(QString script);
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif //APPLESEED_STUDIO_MAINWINDOW_CONSOLEWIDGET_H
+#endif //APPLESEED_STUDIO_MAINWINDOW_OUTPUTREDIRECTOR_H

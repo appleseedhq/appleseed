@@ -26,28 +26,30 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_PYTHON_INTERPRETER_H
-#define APPLESEED_STUDIO_PYTHON_INTERPRETER_H
+// Interface header.
+#include "outputredirector.h"
 
-// appleseed.foundation headers.
-#include <foundation/core/concepts/noncopyable.h>
+// Forward declarations.
+#include <QTextEdit>
 
 namespace appleseed {
 namespace studio {
 
-class PythonInterpreter
-  : public foundation::NonCopyable
+//
+// OutputRedirector class implementation
+//
+
+OutputRedirector::OutputRedirector(QTextEdit* output)
+    : output(output)
 {
-  public:
-    static PythonInterpreter& instance();
-    char* execute_command(const char* command);
+}
 
-  private:
-    PythonInterpreter();
-    ~PythonInterpreter();
-};
+void OutputRedirector::write(const char* str)
+{
+    output->moveCursor(QTextCursor::End);
+    output->insertPlainText(str);
+    output->moveCursor(QTextCursor::End);
+}
 
-} // namespace studio
-} // namespace appleseed
-
-#endif //APPLESEED_STUDIO_PYTHON_INTERPRETER_H
+}   // namespace studio
+}   // namespace appleseed
