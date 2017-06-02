@@ -78,6 +78,7 @@ void LightTree::build(
                 position));
 
         RENDERER_LOG_INFO("Non physical light at coordinates [%f %f %f]", position[0], position[1], position[2]);
+        RENDERER_LOG_INFO("Non physical light bbox center [%f %f %f]", bbox.center()[0], bbox.center()[1], bbox.center()[2]);
     }
 
     for (foundation::const_each<EmittingTriangleVector> i = emitting_triangles; i; ++i)
@@ -92,8 +93,7 @@ void LightTree::build(
                 position));
 
         RENDERER_LOG_INFO("Emitting triangle centroid at coordinates [%f %f %f]", position[0], position[1], position[2]);
-        RENDERER_LOG_INFO("Emitting triangle bbox volume [%f]", bbox.volume());
-        RENDERER_LOG_INFO("Emitting triangle bbox rank [%zu]", bbox.rank());
+        RENDERER_LOG_INFO("Emitting triangle bbox center [%f %f %f]", bbox.center()[0], bbox.center()[1], bbox.center()[2]);
     }
 
 

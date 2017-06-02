@@ -83,9 +83,9 @@ class LightTree
         Item() {}
 
         Item(
-            // const UniqueID          uid,
+            // const UniqueID          uid, //what to do with a triangle??
             foundation::AABB3d      bbox,
-            foundation::Vector3d    position) //what to do with a triangle??
+            foundation::Vector3d    position)
           ://non physicall light id - get_class_uid()
           m_position(position)
         {

@@ -71,10 +71,14 @@ foundation::Vector3d NonPhysicalLightSource::get_position()  const
 
 foundation::AABB3d NonPhysicalLightSource::get_bbox() const
 {
-    // Non physical light has no real size - hence we are fixing some small value for bbox
+    const Light* light = m_light_info->m_light;
+    foundation::Vector3d position = light->get_transform()
+                                          .get_local_to_parent()
+                                          .extract_translation();
+    // Non physical light has no real size - hence we are fixing some small value for the bbox
     return foundation::AABB3d(
-                foundation::Vector3d( 0.01,  0.01,  0.01),
-                foundation::Vector3d(-0.01, -0.01, -0.01));
+                foundation::Vector3d(position[0] + 0.01, position[1] + 0.01, position[2] + 0.01),
+                foundation::Vector3d(position[0] - 0.01, position[1] - 0.01, position[2] - 0.01));
 }
 
 //
