@@ -256,6 +256,8 @@ set (mainwindow_sources
     mainwindow/mainwindow.ui
     mainwindow/minimizebutton.cpp
     mainwindow/minimizebutton.h
+    mainwindow/outputredirector.cpp
+    mainwindow/outputredirector.h
     mainwindow/qtlogtarget.cpp
     mainwindow/qtlogtarget.h
     mainwindow/renderingsettingswindow.cpp
@@ -283,8 +285,8 @@ source_group ("meta\\tests" FILES
 )
 
 set (python_sources
-    python/interpreter.cpp
-    python/interpreter.h
+    python/pythoninterpreter.cpp
+    python/pythoninterpreter.h
 )
 list (APPEND appleseed.studio_sources
     ${python_sources}

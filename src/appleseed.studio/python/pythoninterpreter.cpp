@@ -26,51 +26,57 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_CONSOLEWIDGET_H
-#define APPLESEED_STUDIO_MAINWINDOW_CONSOLEWIDGET_H
+// Interface header.
+#include "pythoninterpreter.h"
 
-// appleseed.studio headers
-#include "python/pythoninterpreter.h"
+// Studio headers.
+#include "mainwindow/outputredirector.h"
 
-// Qt headers.
-#include <QObject>
-#include <QSplitter>
+// Boost headers.
+#include "boost/python.hpp"
 
-// Forward declarations.
-class QAction;
-class QString;
-class QWidget;
-class QTextEdit;
+#include <string>
+
+namespace bpy = boost::python;
 
 namespace appleseed {
 namespace studio {
 
-class ConsoleWidget
-    : public QSplitter
+//
+// PythonInterpreter class implementation
+//
+
+PythonInterpreter& PythonInterpreter::instance()
 {
-  Q_OBJECT
+    static PythonInterpreter interpreter;
+    return interpreter;
+}
 
-  public:
-    explicit ConsoleWidget(QWidget* parent = 0);
+void PythonInterpreter::execute_command(const char* command)
+{
+    PyRun_SimpleString(command);
+}
 
-  public slots:
-    void slot_execute_selection();
-    void slot_execute_all();
+void PythonInterpreter::redirect_output(OutputRedirector redirector)
+{
+    bpy::class_<OutputRedirector>("OutputRedirector", bpy::no_init)
+        .def("write", &OutputRedirector::write);
 
-  private:
-    PythonInterpreter* interpreter;
+    bpy::object sys_module = bpy::import("sys");
+    sys_module.attr("stdout") = redirector;
+    sys_module.attr("stderr") = redirector;
 
-    QTextEdit* input;
-    QTextEdit* output;
+}
 
-    QAction* m_action_execute_selection;
-    QAction* m_action_execute_all;
-    QAction* m_action_focus_on_input;
+PythonInterpreter::PythonInterpreter()
+{
+    Py_Initialize();
+}
 
-    void execute(QString script);
-};
+PythonInterpreter::~PythonInterpreter()
+{
+    Py_Finalize();
+}
 
-}       // namespace studio
-}       // namespace appleseed
-
-#endif //APPLESEED_STUDIO_MAINWINDOW_CONSOLEWIDGET_H
+} // namespace studio
+} // namespace appleseed

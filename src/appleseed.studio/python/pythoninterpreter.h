@@ -26,36 +26,33 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "interpreter.h"
+#ifndef APPLESEED_STUDIO_PYTHON_INTERPRETER_H
+#define APPLESEED_STUDIO_PYTHON_INTERPRETER_H
 
-// Boost headers.
-#include "boost/python.hpp"
+// appleseed.foundation headers.
+#include <foundation/core/concepts/noncopyable.h>
 
 namespace appleseed {
 namespace studio {
 
-PythonInterpreter& PythonInterpreter::instance()
-{
-    static PythonInterpreter interpreter;
-    return interpreter;
-}
+// Forward declarations.
+class OutputRedirector;
 
-char* PythonInterpreter::execute_command(const char* command)
+class PythonInterpreter
+  : public foundation::NonCopyable
 {
-    PyRun_SimpleString(command);
-    return (char *) "";
-}
+  public:
+    static PythonInterpreter& instance();
+    void execute_command(const char* command);
 
-PythonInterpreter::PythonInterpreter()
-{
-    Py_Initialize();
-}
+    void redirect_output(OutputRedirector redirector);
 
-PythonInterpreter::~PythonInterpreter()
-{
-    Py_Finalize();
-}
+  private:
+    PythonInterpreter();
+    ~PythonInterpreter();
+};
 
 } // namespace studio
 } // namespace appleseed
+
+#endif //APPLESEED_STUDIO_PYTHON_INTERPRETER_H
