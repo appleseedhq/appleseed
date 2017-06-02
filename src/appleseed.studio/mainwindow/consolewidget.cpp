@@ -68,24 +68,51 @@ ConsoleWidget::ConsoleWidget(QWidget* parent)
     this->insertWidget(1, input);
     this->setOrientation(Qt::Vertical);
 
-    m_action_execute_selection = new QAction("Execute script", this);
+    m_action_execute_selection = new QAction("Execute selection as python script", this);
     m_action_execute_selection->setShortcut(Qt::CTRL + Qt::Key_Return);
     m_action_execute_selection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
 
-    connect(m_action_execute_selection, SIGNAL(triggered()), this, SLOT(slot_execute_command()));
+    connect(m_action_execute_selection, SIGNAL(triggered()), this, SLOT(slot_execute_selection()));
     addAction(m_action_execute_selection);
+
+    m_action_execute_all = new QAction("Execute all text in input as python script", this);
+    m_action_execute_all->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_Return);
+    m_action_execute_all->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
+    connect(m_action_execute_all, SIGNAL(triggered()), this, SLOT(slot_execute_all()));
+    addAction(m_action_execute_all);
+
+    m_action_focus_on_input = new QAction("Focus on console input", this);
+    m_action_focus_on_input->setShortcut(Qt::CTRL + Qt::Key_L);
+
+    connect(m_action_focus_on_input, SIGNAL(triggered()), input, SLOT(setFocus()));
+    addAction(m_action_focus_on_input);
 }
 
-void ConsoleWidget::slot_execute_command()
+void ConsoleWidget::write_output(const char* str)
+{
+    output->clear();
+    output->append(str);
+}
+
+void ConsoleWidget::slot_execute_selection()
 {
     QString selected = input->textCursor().selectedText().replace(QChar(8233), "\n");
+    execute(selected);
+}
 
-    output->clear();
-    output->append(selected);
+void ConsoleWidget::slot_execute_all()
+{
+    QString script = input->toPlainText().replace(QChar(8233), "\n");
+    execute(script);
+}
 
-    interpreter->execute_command(selected.toStdString().c_str());
+void ConsoleWidget::execute(QString script)
+{
+    interpreter->execute_command(script.toStdString().c_str());
 
     m_action_execute_selection->setChecked(false);
+    m_action_execute_all->setChecked(false);
 }
 
 }   // namespace studio

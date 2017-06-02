@@ -54,7 +54,8 @@ class ConsoleWidget
     explicit ConsoleWidget(QWidget* parent = 0);
 
   public slots:
-    void slot_execute_command();
+    void slot_execute_selection();
+    void slot_execute_all();
 
   private:
     PythonInterpreter* interpreter;
@@ -63,6 +64,10 @@ class ConsoleWidget
     QTextEdit* output;
 
     QAction* m_action_execute_selection;
+    QAction* m_action_execute_all;
+    QAction* m_action_focus_on_input;
+
+    void execute(QString script);
 };
 
 }       // namespace studio
