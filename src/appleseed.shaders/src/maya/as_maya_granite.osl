@@ -188,12 +188,9 @@ shader as_maya_granite
         // color filler, with "creases" as the difference of the first two
         // features.
 
-        //Pp = 2.0 * Pp / sqrt(max(0.01, 0.5 * in_cellSize));
         Pp = 5.0 * Pp / in_cellSize;
-
         point this_cell = floor(Pp) + 0.5, test_cell, test_position;
 
-        //float radius = in_density; //0.8 * sqrt(0.5 * in_density);
         float radius = sqrt(0.5 * in_density);
 
         float cell_mix1 = 1.0 - in_mixRatio;
