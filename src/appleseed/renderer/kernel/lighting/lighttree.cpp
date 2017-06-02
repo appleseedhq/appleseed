@@ -62,7 +62,7 @@ void LightTree::build(
 {
 
     RENDERER_LOG_INFO("Building a tree");
-    // AABBVector light_bboxes;
+    AABBVector light_bboxes;
 
     RENDERER_LOG_INFO("Collecting light sources...");
     // Collect all possible light sources into one vector
@@ -72,6 +72,7 @@ void LightTree::build(
         foundation::Vector3d position = light_source->get_position();
         foundation::AABB3d bbox = light_source->get_bbox();
         m_light_sources.push_back(light_source);
+        light_bboxes.push_back(bbox);
         m_items.push_back(
             Item(
                 bbox,
@@ -87,6 +88,7 @@ void LightTree::build(
         foundation::Vector3d position = light_source->get_position();
         foundation::AABB3d bbox = light_source->get_bbox();
         m_light_sources.push_back(light_source);
+        light_bboxes.push_back(bbox);
         m_items.push_back(
             Item(
                 bbox,
@@ -96,6 +98,13 @@ void LightTree::build(
         RENDERER_LOG_INFO("Emitting triangle bbox center [%f %f %f]", bbox.center()[0], bbox.center()[1], bbox.center()[2]);
     }
 
+    // Create the partitioner.
+    typedef foundation::bvh::SAHPartitioner<AABBVector> Partitioner;
+    Partitioner partitioner(light_bboxes);
+
+    // Build the assembly tree.
+    typedef foundation::bvh::Builder<LightTree, Partitioner> Builder;
+    Builder builder;
 
 }
 
