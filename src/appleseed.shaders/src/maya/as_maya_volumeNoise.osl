@@ -312,10 +312,6 @@ shader as_maya_volumeNoise
 
         if (in_implode)
         {
-            // The X,Y,Z fields are used directly instead of the filled
-            // vector type if no connection is present.
-            // This applies to scale and origin parameters as well.
-
             point center = isconnected(in_implodeCenter)
                 ? in_implodeCenter
                 : point(in_implodeCenter[0],

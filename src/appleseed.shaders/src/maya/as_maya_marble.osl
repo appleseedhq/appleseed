@@ -194,15 +194,12 @@ shader as_maya_marble
         int octaves = (int) floor(iterate);
 
         // Essentially a fBm with an extra iteration for fract(iterate).
-
-        // The ripples parameter seems to use only the separate X,Y,Z fields,
-        // and the vector type only when a connection exists.
         
         vector ripples = isconnected(in_ripples)
             ? in_ripples
             : vector(in_ripplesX, in_ripplesY, in_ripplesZ);
 
-        vector xyz = ripples * 0.75; // better match with the magic number
+        vector xyz = ripples * 0.75; // better match
         float amp = 1.0, sum = 0.0;
 
         for (int i = 0; i < octaves + 1; ++i)

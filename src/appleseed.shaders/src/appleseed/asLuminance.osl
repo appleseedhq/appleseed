@@ -113,7 +113,7 @@ shader asLuminance
         string as_maya_attribute_name = "colorTemperature",
         string as_maya_attribute_short_name = "ct",
         int as_maya_attribute_keyable = 0,
-        int min = 4000,
+        int min = 1667,
         int max = 25000,
         string label = "Color Temperature",
         string page = "Color Space"
@@ -294,7 +294,7 @@ shader asLuminance
                 // |SrYr SgYg SbYb|
                 // |SrZr SgZg SbZb|
                 //
-                // but we only want the Y coefficients
+                // but we only want the Y coefficients.
 
                 coeffs = color(Sr * RGBW[0][1],
                                Sg * RGBW[1][1],

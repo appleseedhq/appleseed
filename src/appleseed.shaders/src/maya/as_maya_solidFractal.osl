@@ -201,9 +201,6 @@ shader as_maya_solidFractal
             filter_width += in_filterOffset;
         }
 
-        // It seems the ripples X,Y,Z fields are used directly instead of the
-        // main vector attribute if no connection is made.
-
         vector ripples = isconnected(in_ripples)
             ? in_ripples
             : vector(in_ripplesX, in_ripplesY, in_ripplesZ);
