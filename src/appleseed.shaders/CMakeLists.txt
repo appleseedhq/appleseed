@@ -330,6 +330,7 @@ set (src_maya_sources
      src/maya/as_maya_fourByFourMatrix.osl
      src/maya/as_maya_fractal.osl
      src/maya/as_maya_gammaCorrect.osl
+     src/maya/as_maya_granite.osl
      src/maya/as_maya_grid.osl
      src/maya/as_maya_hsvToRgb.osl
      src/maya/as_maya_lambert.osl
