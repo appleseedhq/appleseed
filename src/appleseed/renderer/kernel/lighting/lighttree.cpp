@@ -90,8 +90,10 @@ void LightTree::build(
             Item(
                 bbox,
                 position));
-        
+
         RENDERER_LOG_INFO("Emitting triangle centroid at coordinates [%f %f %f]", position[0], position[1], position[2]);
+        RENDERER_LOG_INFO("Emitting triangle bbox volume [%f]", bbox.volume());
+        RENDERER_LOG_INFO("Emitting triangle bbox rank [%zu]", bbox.rank());
     }
 
 
