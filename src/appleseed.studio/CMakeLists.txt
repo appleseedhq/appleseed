@@ -32,6 +32,12 @@
 # Packages.
 #--------------------------------------------------------------------------------------------------
 
+# Python
+if (PYTHON_MAJOR_VERSION STREQUAL "3")
+    message( FATAL_ERROR "Python 2.7 needed" )
+else ()
+    find_package (Boost 1.55 COMPONENTS python)
+endif ()
 
 # OpenGL.
 find_package (OpenGL REQUIRED)

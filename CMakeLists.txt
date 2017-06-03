@@ -582,12 +582,6 @@ if (WITH_PYTHON)
         set (PYTHON_MINOR_VERSION "7")
     endif ()
 
-    if (PYTHON_MAJOR_VERSION STREQUAL "3")
-        find_package (Boost 1.55 COMPONENTS python3)
-    else ()
-        find_package (Boost 1.55 COMPONENTS python)
-    endif ()
-
     add_subdirectory (src/appleseed.python)
 endif ()
 
