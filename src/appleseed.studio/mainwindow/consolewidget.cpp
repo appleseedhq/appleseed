@@ -119,7 +119,7 @@ ConsoleWidget::ConsoleWidget(QWidget* parent)
 
 void ConsoleWidget::slot_execute_selection()
 {
-    // QTextCursor returned by textCursor function use QChar(8233) istead of newline
+    // QTextCursor returned by textCursor function use QChar(8233) instead of newline
     // It breaks Python indentation rules so it has to be replaced
     QString selected = input->textCursor().selectedText().replace(QChar(8233), "\n");
     execute(selected);
@@ -127,7 +127,7 @@ void ConsoleWidget::slot_execute_selection()
 
 void ConsoleWidget::slot_execute_all()
 {
-    // QTextCursor returned by textCursor function use QChar(8233) istead of newline
+    // QTextCursor returned by textCursor function use QChar(8233) instead of newline
     // It breaks Python indentation rules so it has to be replaced
     QString script = input->toPlainText().replace(QChar(8233), "\n");
     execute(script);
