@@ -89,9 +89,7 @@ ConsoleWidget::ConsoleWidget(QWidget* parent)
     connect(m_action_focus_on_input, SIGNAL(triggered()), input, SLOT(setFocus()));
     addAction(m_action_focus_on_input);
 
-    interpreter = &PythonInterpreter::instance();
-    OutputRedirector redirector(output);
-    interpreter->redirect_output(redirector);
+    PythonInterpreter::instance().redirect_output(OutputRedirector(output));
 }
 
 void ConsoleWidget::slot_execute_selection()
@@ -106,10 +104,9 @@ void ConsoleWidget::slot_execute_all()
     execute(script);
 }
 
-void ConsoleWidget::execute(QString script)
+void ConsoleWidget::execute(const QString& script)
 {
-    output->clear();
-    interpreter->execute_command(script.toStdString().c_str());
+    PythonInterpreter::instance().execute_command(script.toStdString().c_str());
 
     m_action_execute_selection->setChecked(false);
     m_action_execute_all->setChecked(false);
