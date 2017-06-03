@@ -56,6 +56,7 @@ class ConsoleWidget
   public slots:
     void slot_execute_selection();
     void slot_execute_all();
+    void slot_clear_output();
 
   private:
     QTextEdit* input;
@@ -63,6 +64,7 @@ class ConsoleWidget
 
     QAction* m_action_execute_selection;
     QAction* m_action_execute_all;
+    QAction* m_action_clear_selection;
     QAction* m_action_focus_on_input;
 
     void execute(const QString& script);
