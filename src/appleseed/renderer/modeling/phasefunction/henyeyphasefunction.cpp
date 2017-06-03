@@ -41,6 +41,7 @@
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/phasefunction/phasefunction.h"
 
+using namespace foundation;
 
 namespace renderer
 {
@@ -88,7 +89,7 @@ class HenyeyPhaseFunction
     }
 
     virtual void prepare_inputs(
-        foundation::Arena&          arena,
+        Arena&          arena,
         const ShadingRay&           shading_point,
         void*                       data
         ) const APPLESEED_OVERRIDE
@@ -96,7 +97,7 @@ class HenyeyPhaseFunction
         InputValues* values = static_cast<InputValues*>(data);
 
         // Ensure that extinction spectrum has unit norm, which is neccessary for distance sampling
-        const float extinction_norm = foundation::max_value(values->m_extinction);
+        const float extinction_norm = max_value(values->m_extinction);
         values->m_extinction /= extinction_norm;
         values->m_extinction_multiplier *= extinction_norm;
     }
@@ -115,28 +116,27 @@ class HenyeyPhaseFunction
         // Sample distance.
         sampling_context.split_in_place(1, 1);
         const float s = sampling_context.next2<float>();
-        distance = foundation::sample_exponential_distribution_on_segment(
+        distance = sample_exponential_distribution_on_segment(
             s, values->m_extinction_multiplier, 0.0f, ray_length);
 
         // Return corresponding PDF value.
-        return foundation::exponential_distribution_on_segment_pdf(
+        return exponential_distribution_on_segment_pdf(
             distance, values->m_extinction_multiplier, 0.0f, ray_length);
     }
 
     virtual float sample(
-        SamplingContext&            sampling_context,
-        const ShadingRay&           volume_ray,
-        const void*                 data,
-        float                       distance,
-        foundation::Vector3f&       incoming) const APPLESEED_OVERRIDE
+        SamplingContext&      sampling_context,
+        const ShadingRay&     volume_ray,
+        const void*           data,
+        float                 distance,
+        Vector3f&             incoming) const APPLESEED_OVERRIDE
     {
         const InputValues* values = static_cast<const InputValues*>(data);
-        const foundation::Vector3f outgoing =
-            foundation::Vector3f(foundation::normalize(volume_ray.m_dir));
-        const foundation::Basis3f basis(outgoing);
+        const Vector3f outgoing = Vector3f(normalize(volume_ray.m_dir));
+        const Basis3f basis(outgoing);
 
         //
-        // x = 1/2g * (1 + g^2 - [(1 - g^2) / (1 + g*s)]^2),
+        // x = 1/(2g) * (1 + g^2 - [(1 - g^2) / (1 + g*s)]^2),
         // where x is cos(phi) and s is uniform random sample from [-1; 1].
         //
 
@@ -146,36 +146,45 @@ class HenyeyPhaseFunction
         sampling_context.split_in_place(1, 2);
         const float s = 2.0f * sampling_context.next2<float>() - 1.0f;
 
-        const float t = (1.0f - sqr_g) / (1.0f + g*s);
-        const float cosine = 0.5f * g * (1 + sqr_g - t * t);
+        float cosine;
+        if (g < +1e-5f && g > -1e-5f)
+        {
+            cosine = s;
+        }
+        else
+        {
+            const float t = (1.0f - sqr_g) / (1.0f + g*s);
+            cosine = 0.5f / g * (1 + sqr_g - t * t);
+        }
         const float sine = sqrt(1.0f - cosine * cosine);
 
-        const foundation::Vector2f tangent =
-            foundation::sample_circle_uniform(sampling_context.next2<float>());
+        const Vector2f tangent =
+            sample_circle_uniform(sampling_context.next2<float>());
 
         incoming =
             basis.get_tangent_u() * tangent.x * sine +
             basis.get_tangent_v() * tangent.y * sine +
             basis.get_normal()    * cosine;
 
+        assert(feq(norm(incoming), 1.0f));
+
         // Evaluate PDF.
 
         const float numerator = (1.0f - sqr_g);
-        const float denumerator = powf(1 + sqr_g - 2*g*cosine, -1.5f);
+        const float denominator = powf(1.0f + sqr_g - 2.0f*g*cosine, -1.5f);
 
-        return foundation::RcpFourPi<float>() * numerator * denumerator;
+        return RcpFourPi<float>() * numerator * denominator;
     }
 
     virtual float evaluate(
         const ShadingRay&           volume_ray,
         const void*                 data,
         float                       distance,
-        const foundation::Vector3f& incoming) const APPLESEED_OVERRIDE
+        const Vector3f& incoming) const APPLESEED_OVERRIDE
     {
         const InputValues* values = static_cast<const InputValues*>(data);
-        const foundation::Vector3f outgoing =
-            foundation::Vector3f(foundation::normalize(volume_ray.m_dir));
-        const float cosine = foundation::dot(incoming, outgoing);
+        const Vector3f outgoing = Vector3f(normalize(volume_ray.m_dir));
+        const float cosine = dot(incoming, outgoing);
 
         //
         // p(x) = 1/2 * (1 - g^2) / (1 + g^2 - 2gx)^(3/2),
@@ -186,10 +195,10 @@ class HenyeyPhaseFunction
         const float sqr_g = g * g;
 
         const float numerator = (1.0f - sqr_g);
-        const float denumerator = powf(1.0f + sqr_g - 2*g*cosine, -1.5f);
+        const float denominator = powf(1.0f + sqr_g - 2.0f*g*cosine, -1.5f);
 
         // Additionally divide by TwoPi, because we sample over the sphere
-        return foundation::RcpFourPi<float>() * numerator * denumerator;
+        return RcpFourPi<float>() * numerator * denominator;
     }
 
     virtual void evaluate_transmission(
@@ -200,7 +209,7 @@ class HenyeyPhaseFunction
     {
         const InputValues* values = static_cast<const InputValues*>(data);
 
-        spectrum = foundation::exp(-distance * values->m_extinction_multiplier * values->m_extinction);
+        spectrum = exp(-distance * values->m_extinction_multiplier * values->m_extinction);
     }
 
     virtual void evaluate_transmission(
@@ -248,30 +257,30 @@ const char* HenyeyPhaseFunctionFactory::get_model() const
     return Model;
 }
 
-foundation::Dictionary HenyeyPhaseFunctionFactory::get_model_metadata() const
+Dictionary HenyeyPhaseFunctionFactory::get_model_metadata() const
 {
     return
-        foundation::Dictionary()
+        Dictionary()
         .insert("name", Model)
         .insert("label", "Henyey-Greenstein Phase Function");
 }
 
-foundation::DictionaryArray HenyeyPhaseFunctionFactory::get_input_metadata() const
+DictionaryArray HenyeyPhaseFunctionFactory::get_input_metadata() const
 {
-    foundation::DictionaryArray metadata;
+    DictionaryArray metadata;
 
     metadata.push_back(
-        foundation::Dictionary()
+        Dictionary()
             .insert("name", "scattering")
             .insert("label", "Scattering Coefficient")
             .insert("type", "colormap")
             .insert("entity_types",
-                foundation::Dictionary().insert("color", "Colors"))
+                Dictionary().insert("color", "Colors"))
             .insert("use", "required")
             .insert("default", "0.5"));
 
     metadata.push_back(
-        foundation::Dictionary()
+        Dictionary()
             .insert("name", "scattering_multiplier")
             .insert("label", "Scattering Coefficient Multiplier")
             .insert("type", "numeric")
@@ -281,17 +290,17 @@ foundation::DictionaryArray HenyeyPhaseFunctionFactory::get_input_metadata() con
             .insert("default", "1.0"));
 
     metadata.push_back(
-        foundation::Dictionary()
+        Dictionary()
         .insert("name", "extinction")
         .insert("label", "Extinction Coefficient")
         .insert("type", "colormap")
         .insert("entity_types",
-            foundation::Dictionary().insert("color", "Colors"))
+            Dictionary().insert("color", "Colors"))
         .insert("use", "required")
         .insert("default", "0.5"));
 
     metadata.push_back(
-        foundation::Dictionary()
+        Dictionary()
         .insert("name", "extinction_multiplier")
         .insert("label", "Extinction Coefficient Multiplier")
         .insert("type", "numeric")
@@ -301,7 +310,7 @@ foundation::DictionaryArray HenyeyPhaseFunctionFactory::get_input_metadata() con
         .insert("default", "1.0"));
 
     metadata.push_back(
-        foundation::Dictionary()
+        Dictionary()
         .insert("name", "average_cosine")
         .insert("label", "Average cosine (g)")
         .insert("type", "numeric")
@@ -313,11 +322,11 @@ foundation::DictionaryArray HenyeyPhaseFunctionFactory::get_input_metadata() con
     return metadata;
 }
 
-foundation::auto_release_ptr<PhaseFunction> HenyeyPhaseFunctionFactory::create(
+auto_release_ptr<PhaseFunction> HenyeyPhaseFunctionFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return foundation::auto_release_ptr<PhaseFunction>(
+    return auto_release_ptr<PhaseFunction>(
         new HenyeyPhaseFunction(name, params));
 }
 
