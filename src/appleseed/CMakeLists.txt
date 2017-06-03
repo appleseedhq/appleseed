@@ -332,6 +332,7 @@ set (foundation_meta_benchmarks_sources
     foundation/meta/benchmarks/benchmark_distance.cpp
     foundation/meta/benchmarks/benchmark_fastmath.cpp
     foundation/meta/benchmarks/benchmark_filteredtile.cpp
+    foundation/meta/benchmarks/benchmark_hash.cpp
     foundation/meta/benchmarks/benchmark_imageimportancesampler.cpp
     foundation/meta/benchmarks/benchmark_integerdivision.cpp
     foundation/meta/benchmarks/benchmark_intersection.cpp

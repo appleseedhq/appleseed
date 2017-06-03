@@ -42,7 +42,7 @@ using namespace foundation;
 
 TEST_SUITE(Foundation_Math_Hash)
 {
-    const size_t N = 10000000;
+    const size_t N = 1000000;
     const size_t BinCount = 100;
     const float ScaleToUnit = 2.3283063e-010f;
 
@@ -53,27 +53,26 @@ TEST_SUITE(Foundation_Math_Hash)
 
         fprintf(file, FMT_SIZE_T " values, " FMT_SIZE_T " bins\n\n", N, BinCount);
 
+        const double Expected = N / BinCount;
+        double deviation = 0.0;
+        for (size_t i = 0; i < BinCount; ++i)
+            deviation += square(bins[i] - Expected) / Expected;
+        fprintf(file, "Deviation from expected value: %f\n\n", deviation);
+
         for (size_t i = 0; i < BinCount; ++i)
         {
             const size_t value = bins[i];
             const size_t Scale = (N / BinCount) / 100;
-            fprintf(file, "%u\t", i);
+            fprintf(file, FMT_SIZE_T "\t", i);
             for (size_t j = 0; j < value / Scale; ++j)
                 fprintf(file, "#");
             fprintf(file, "\n");
         }
 
-        const double Expected = N / BinCount;
-        double deviation = 0.0;
-
-        for (size_t i = 0; i < BinCount; ++i)
-            deviation += square(bins[i] - Expected) / Expected;
-
-        fprintf(file, "\nDeviation from expected value: %f\n", deviation);
         fclose(file);
     }
 
-    TEST_CASE(MersenneTwister_Distribution)
+    TEST_CASE(MersenneTwister)
     {
         size_t bins[BinCount];
         for (size_t i = 0; i < BinCount; ++i)
@@ -91,7 +90,7 @@ TEST_SUITE(Foundation_Math_Hash)
         plot_histogram("unit tests/outputs/test_hash_mersennetwister.txt", bins);
     }
 
-    TEST_CASE(HashUInt32_Distribution)
+    TEST_CASE(HashUInt32_Counter)
     {
         size_t bins[BinCount];
         for (size_t i = 0; i < BinCount; ++i)
@@ -104,26 +103,28 @@ TEST_SUITE(Foundation_Math_Hash)
             ++bins[truncate<size_t>(x * BinCount)];
         }
 
-        plot_histogram("unit tests/outputs/test_hash_hashuint32.txt", bins);
+        plot_histogram("unit tests/outputs/test_hash_hashuint32_counter.txt", bins);
     }
 
-    TEST_CASE(HashUInt32Alt_Distribution)
+    TEST_CASE(HashUInt32_RandomNumbers)
     {
         size_t bins[BinCount];
         for (size_t i = 0; i < BinCount; ++i)
             bins[i] = 0;
 
+        MersenneTwister rng;
+
         for (uint32 i = 0; i < N; ++i)
         {
-            const float x = hash_uint32_alt(i) * ScaleToUnit;
+            const float x = hash_uint32(rng.rand_uint32()) * ScaleToUnit;
             assert(x >= 0.0f && x < 1.0f);
             ++bins[truncate<size_t>(x * BinCount)];
         }
 
-        plot_histogram("unit tests/outputs/test_hash_hashuint32alt.txt", bins);
+        plot_histogram("unit tests/outputs/test_hash_hashuint32_random.txt", bins);
     }
 
-    TEST_CASE(HashUInt32Pixar_Distribution)
+    TEST_CASE(HashUInt32Pixar_Counter)
     {
         size_t bins[BinCount];
         for (size_t i = 0; i < BinCount; ++i)
@@ -136,10 +137,28 @@ TEST_SUITE(Foundation_Math_Hash)
             ++bins[truncate<size_t>(x * BinCount)];
         }
 
-        plot_histogram("unit tests/outputs/test_hash_hashuint32pixar.txt", bins);
+        plot_histogram("unit tests/outputs/test_hash_hashuint32pixar_counter.txt", bins);
     }
 
-    TEST_CASE(MixUInt32_Distribution)
+    TEST_CASE(HashUInt32Pixar_RandomNumbers)
+    {
+        size_t bins[BinCount];
+        for (size_t i = 0; i < BinCount; ++i)
+            bins[i] = 0;
+
+        MersenneTwister rng;
+
+        for (uint32 i = 0; i < N; ++i)
+        {
+            const float x = hash_uint32_pixar(rng.rand_uint32(), 12345678);
+            assert(x >= 0.0f && x < 1.0f);
+            ++bins[truncate<size_t>(x * BinCount)];
+        }
+
+        plot_histogram("unit tests/outputs/test_hash_hashuint32pixar_random.txt", bins);
+    }
+
+    TEST_CASE(MixUInt32)
     {
         size_t bins[BinCount];
         for (size_t i = 0; i < BinCount; ++i)

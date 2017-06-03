@@ -55,7 +55,6 @@ namespace foundation
 
 // Hash a 32-bit integer into a 32-bit integer.
 uint32 hash_uint32(uint32 key);
-uint32 hash_uint32_alt(uint32 key);             // same as hash_uint32(), alternative algorithm
 
 // Hash a 64-bit integer into a 64-bit integer.
 uint64 hash_uint64(uint64 key);
@@ -111,17 +110,6 @@ float hash_uint32_pixar(
 //
 
 inline uint32 hash_uint32(uint32 key)
-{
-    key = ~key + (key << 15);                   // key = (key << 15) - key - 1;
-    key = key ^ (key >> 12);
-    key = key + (key << 2);
-    key = key ^ (key >> 4);
-    key = key * 2057;                           // key = (key + (key << 3)) + (key << 11);
-    key = key ^ (key >> 16);
-    return key;
-}
-
-inline uint32 hash_uint32_alt(uint32 key)
 {
     key = (key ^ 61) ^ (key >> 16);
     key = key + (key << 3);
