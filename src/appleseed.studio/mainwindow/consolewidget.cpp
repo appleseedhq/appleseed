@@ -111,9 +111,6 @@ void ConsoleWidget::slot_execute_all()
 void ConsoleWidget::execute(const QString& script)
 {
     PythonInterpreter::instance().execute_command(script.toStdString().c_str());
-
-    m_action_execute_selection->setChecked(false);
-    m_action_execute_all->setChecked(false);
 }
 
 }   // namespace studio
