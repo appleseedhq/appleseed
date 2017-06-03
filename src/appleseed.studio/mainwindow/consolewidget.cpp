@@ -83,6 +83,13 @@ ConsoleWidget::ConsoleWidget(QWidget* parent)
     connect(m_action_execute_all, SIGNAL(triggered()), this, SLOT(slot_execute_all()));
     addAction(m_action_execute_all);
 
+    m_action_clear_selection = new QAction("Clear console output", this);
+    m_action_clear_selection->setShortcut(Qt::CTRL + Qt::Key_D);
+    m_action_clear_selection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
+    connect(m_action_clear_selection, SIGNAL(triggered()), this, SLOT(slot_clear_output()));
+    addAction(m_action_clear_selection);
+
     m_action_focus_on_input = new QAction("Focus on console input", this);
     m_action_focus_on_input->setShortcut(Qt::CTRL + Qt::Key_L);
 
@@ -106,6 +113,11 @@ void ConsoleWidget::slot_execute_all()
     // It breaks Python indentation rules so it has to be replaced
     QString script = input->toPlainText().replace(QChar(8233), "\n");
     execute(script);
+}
+
+void ConsoleWidget::slot_clear_output()
+{
+    output->clear();
 }
 
 void ConsoleWidget::execute(const QString& script)
