@@ -59,8 +59,8 @@ class ConsoleWidget
     void slot_clear_output();
 
   private:
-    QTextEdit* input;
     QTextEdit* output;
+    QTextEdit* input;
 
     QAction* m_action_execute_selection;
     QAction* m_action_execute_all;

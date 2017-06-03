@@ -36,6 +36,8 @@
 #include <QAction>
 #include <QContextMenuEvent>
 #include <QTextEdit>
+#include <QPushButton>
+#include <QHBoxLayout>
 
 namespace appleseed {
 namespace studio {
@@ -47,6 +49,21 @@ namespace studio {
 ConsoleWidget::ConsoleWidget(QWidget* parent)
     : QSplitter(parent)
 {
+    QWidget* buttons = new QWidget();
+    QPushButton *m_button_exec_selection = new QPushButton("ES");
+    connect(m_button_exec_selection, SIGNAL(clicked()), this, SLOT(slot_execute_selection()));
+    QPushButton *m_button_exec_all = new QPushButton("EA");
+    connect(m_button_exec_all, SIGNAL(clicked()), this, SLOT(slot_execute_all()));
+    QPushButton *m_button_clear_output = new QPushButton("CO");
+    connect(m_button_clear_output, SIGNAL(clicked()), this, SLOT(slot_clear_output()));
+
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->addWidget(m_button_exec_selection);
+    layout->addWidget(m_button_exec_all);
+    layout->addWidget(m_button_clear_output);
+
+    buttons->setLayout(layout);
+
     output = new QTextEdit(this);
     output->setUndoRedoEnabled(false);
     output->setLineWrapMode(QTextEdit::WidgetWidth);
@@ -65,8 +82,9 @@ ConsoleWidget::ConsoleWidget(QWidget* parent)
         Qt::TextEditable |
         Qt::TextEditorInteraction);
 
-    this->insertWidget(0, output);
-    this->insertWidget(1, input);
+    this->insertWidget(0, buttons);
+    this->insertWidget(1, output);
+    this->insertWidget(2, input);
     this->setOrientation(Qt::Vertical);
 
     m_action_execute_selection = new QAction("Execute selection as python script", this);
