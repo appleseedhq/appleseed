@@ -178,7 +178,7 @@ class HenyeyPhaseFunction
         const float cosine = foundation::dot(incoming, outgoing);
 
         //
-        // p(x) = 1/4pi * (1 - g^2) / (1 + g^2 - 2gx)^(3/2),
+        // p(x) = 1/2 * (1 - g^2) / (1 + g^2 - 2gx)^(3/2),
         // where x is cos(phi) and g is the average cosine parameter.
         //
 
@@ -188,6 +188,7 @@ class HenyeyPhaseFunction
         const float numerator = (1.0f - sqr_g);
         const float denumerator = powf(1.0f + sqr_g - 2*g*cosine, -1.5f);
 
+        // Additionally divide by TwoPi, because we sample over the sphere
         return foundation::RcpFourPi<float>() * numerator * denumerator;
     }
 
