@@ -89,30 +89,28 @@ ConsoleWidget::ConsoleWidget(QWidget* parent)
     connect(m_action_focus_on_input, SIGNAL(triggered()), input, SLOT(setFocus()));
     addAction(m_action_focus_on_input);
 
-    interpreter = &PythonInterpreter::instance();
-    OutputRedirector redirector(output);
-    interpreter->redirect_output(redirector);
+    PythonInterpreter::instance().redirect_output(OutputRedirector(output));
 }
 
 void ConsoleWidget::slot_execute_selection()
 {
+    // QTextCursor returned by textCursor function use QChar(8233) istead of newline
+    // It breaks Python indentation rules so it has to be replaced
     QString selected = input->textCursor().selectedText().replace(QChar(8233), "\n");
     execute(selected);
 }
 
 void ConsoleWidget::slot_execute_all()
 {
+    // QTextCursor returned by textCursor function use QChar(8233) istead of newline
+    // It breaks Python indentation rules so it has to be replaced
     QString script = input->toPlainText().replace(QChar(8233), "\n");
     execute(script);
 }
 
-void ConsoleWidget::execute(QString script)
+void ConsoleWidget::execute(const QString& script)
 {
-    output->clear();
-    interpreter->execute_command(script.toStdString().c_str());
-
-    m_action_execute_selection->setChecked(false);
-    m_action_execute_all->setChecked(false);
+    PythonInterpreter::instance().execute_command(script.toStdString().c_str());
 }
 
 }   // namespace studio

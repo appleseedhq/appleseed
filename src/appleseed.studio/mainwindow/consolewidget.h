@@ -58,8 +58,6 @@ class ConsoleWidget
     void slot_execute_all();
 
   private:
-    PythonInterpreter* interpreter;
-
     QTextEdit* input;
     QTextEdit* output;
 
@@ -67,7 +65,7 @@ class ConsoleWidget
     QAction* m_action_execute_all;
     QAction* m_action_focus_on_input;
 
-    void execute(QString script);
+    void execute(const QString& script);
 };
 
 }       // namespace studio
