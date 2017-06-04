@@ -47,47 +47,47 @@ using namespace std;
 namespace renderer
 {
 
-    APPLESEED_DEFINE_APIARRAY(PhaseFunctionFactoryArray);
+APPLESEED_DEFINE_APIARRAY(PhaseFunctionFactoryArray);
 
-    struct PhaseFunctionFactoryRegistrar::Impl
-    {
-        Registrar<IPhaseFunctionFactory> m_registrar;
-    };
+struct PhaseFunctionFactoryRegistrar::Impl
+{
+    Registrar<IPhaseFunctionFactory> m_registrar;
+};
 
-    PhaseFunctionFactoryRegistrar::PhaseFunctionFactoryRegistrar()
-        : impl(new Impl())
-    {
-        register_factory(auto_ptr<FactoryType>(new HenyeyPhaseFunctionFactory()));
-        register_factory(auto_ptr<FactoryType>(new IsotropicPhaseFunctionFactory()));
-    }
+PhaseFunctionFactoryRegistrar::PhaseFunctionFactoryRegistrar()
+    : impl(new Impl())
+{
+    register_factory(auto_ptr<FactoryType>(new HenyeyPhaseFunctionFactory()));
+    register_factory(auto_ptr<FactoryType>(new IsotropicPhaseFunctionFactory()));
+}
 
-    PhaseFunctionFactoryRegistrar::~PhaseFunctionFactoryRegistrar()
-    {
-        delete impl;
-    }
+PhaseFunctionFactoryRegistrar::~PhaseFunctionFactoryRegistrar()
+{
+    delete impl;
+}
 
-    void PhaseFunctionFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
-    {
-        const string model = factory->get_model();
-        impl->m_registrar.insert(model, factory);
-    }
+void PhaseFunctionFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+{
+    const string model = factory->get_model();
+    impl->m_registrar.insert(model, factory);
+}
 
-    PhaseFunctionFactoryArray PhaseFunctionFactoryRegistrar::get_factories() const
-    {
-        FactoryArrayType factories;
+PhaseFunctionFactoryArray PhaseFunctionFactoryRegistrar::get_factories() const
+{
+    FactoryArrayType factories;
 
-        for (const_each<Registrar<FactoryType>::Items> i = impl->m_registrar.items(); i; ++i)
-            factories.push_back(i->second);
+    for (const_each<Registrar<FactoryType>::Items> i = impl->m_registrar.items(); i; ++i)
+        factories.push_back(i->second);
 
-        return factories;
-    }
+    return factories;
+}
 
-    const PhaseFunctionFactoryRegistrar::FactoryType* 
-        PhaseFunctionFactoryRegistrar::lookup(const char* name) const
-    {
-        assert(name);
+const PhaseFunctionFactoryRegistrar::FactoryType* 
+    PhaseFunctionFactoryRegistrar::lookup(const char* name) const
+{
+    assert(name);
 
-        return impl->m_registrar.lookup(name);
-    }
+    return impl->m_registrar.lookup(name);
+}
 
 }   // namespace renderer

@@ -36,10 +36,13 @@
 #include "foundation/utility/containers/dictionary.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/phasefunction/phasefunction.h"
+
+// Standard headers.
+#include <cmath>
 
 using namespace foundation;
 
@@ -58,18 +61,18 @@ namespace
 //
 
 class HenyeyPhaseFunction
-    : public PhaseFunction
+  : public PhaseFunction
 {
   public:
     HenyeyPhaseFunction(
-        const char*             name,
-        const ParamArray&       params)
-        : PhaseFunction(name, params)
+        const char*           name,
+        const ParamArray&     params)
+          : PhaseFunction(name, params)
     {
         m_inputs.declare("scattering", InputFormatSpectralReflectance);
         m_inputs.declare("scattering_multiplier", InputFormatFloat, "1.0");
-        m_inputs.declare("extinction", InputFormatSpectralReflectance);
-        m_inputs.declare("extinction_multiplier", InputFormatFloat, "1.0");
+        m_inputs.declare("absorption", InputFormatSpectralReflectance);
+        m_inputs.declare("absorption_multiplier", InputFormatFloat, "1.0");
         m_inputs.declare("average_cosine", InputFormatFloat, "1.0");
     }
 
@@ -88,40 +91,52 @@ class HenyeyPhaseFunction
         return true;
     }
 
+    virtual size_t compute_input_data_size() const APPLESEED_OVERRIDE
+    {
+        return sizeof(InputValues);
+    }
+
     virtual void prepare_inputs(
-        Arena&          arena,
-        const ShadingRay&           shading_point,
-        void*                       data
+        Arena&                arena,
+        const ShadingRay&     shading_point,
+        void*                 data
         ) const APPLESEED_OVERRIDE
     {
         InputValues* values = static_cast<InputValues*>(data);
 
-        // Ensure that extinction spectrum has unit norm, which is neccessary for distance sampling
-        const float extinction_norm = max_value(values->m_extinction);
-        values->m_extinction /= extinction_norm;
-        values->m_extinction_multiplier *= extinction_norm;
+        // Precompute extinction.
+        values->m_precomputed.m_normalized_extinction =
+            values->m_absorption_multiplier * values->m_absorption +
+            values->m_scattering_multiplier * values->m_scattering;
+
+        // Ensure that extinction spectrum has unit norm, which is neccessary for distance sampling.
+        const float extinction_norm = max_value(values->m_precomputed.m_normalized_extinction);
+        values->m_precomputed.m_normalized_extinction /= extinction_norm;
+        values->m_precomputed.m_extinction_multiplier *= extinction_norm;
     }
 
     virtual float sample_distance(
-        SamplingContext&            sampling_context,
-        const ShadingRay&           volume_ray,
-        const void*                 data,
-        float&                      distance
+        SamplingContext&       sampling_context,
+        const ShadingRay&      volume_ray,
+        const void*            data,
+        float&                 distance
         ) const APPLESEED_OVERRIDE
     {
         const InputValues* values = static_cast<const InputValues*>(data);
 
-        float ray_length = norm(volume_ray.m_dir) * (volume_ray.m_tmax - volume_ray.m_tmin);
+        const float ray_length = static_cast<float>(
+            norm(volume_ray.m_dir) *
+            (volume_ray.m_tmax - volume_ray.m_tmin));
 
         // Sample distance.
         sampling_context.split_in_place(1, 1);
         const float s = sampling_context.next2<float>();
         distance = sample_exponential_distribution_on_segment(
-            s, values->m_extinction_multiplier, 0.0f, ray_length);
+            s, values->m_precomputed.m_extinction_multiplier, 0.0f, ray_length);
 
         // Return corresponding PDF value.
         return exponential_distribution_on_segment_pdf(
-            distance, values->m_extinction_multiplier, 0.0f, ray_length);
+            distance, values->m_precomputed.m_extinction_multiplier, 0.0f, ray_length);
     }
 
     virtual float sample(
@@ -154,9 +169,9 @@ class HenyeyPhaseFunction
         else
         {
             const float t = (1.0f - sqr_g) / (1.0f + g*s);
-            cosine = 0.5f / g * (1 + sqr_g - t * t);
+            cosine = 0.5f / g * (1.0f + sqr_g - t * t);
         }
-        const float sine = sqrt(1.0f - cosine * cosine);
+        const float sine = std::sqrt(1.0f - cosine * cosine);
 
         const Vector2f tangent =
             sample_circle_uniform(sampling_context.next2<float>());
@@ -171,16 +186,16 @@ class HenyeyPhaseFunction
         // Evaluate PDF.
 
         const float numerator = (1.0f - sqr_g);
-        const float denominator = powf(1.0f + sqr_g - 2.0f*g*cosine, -1.5f);
+        const float denominator = std::powf(1.0f + sqr_g - 2.0f*g*cosine, -1.5f);
 
         return RcpFourPi<float>() * numerator * denominator;
     }
 
     virtual float evaluate(
-        const ShadingRay&           volume_ray,
-        const void*                 data,
-        float                       distance,
-        const Vector3f& incoming) const APPLESEED_OVERRIDE
+        const ShadingRay&     volume_ray,
+        const void*           data,
+        float                 distance,
+        const Vector3f&       incoming) const APPLESEED_OVERRIDE
     {
         const InputValues* values = static_cast<const InputValues*>(data);
         const Vector3f outgoing = Vector3f(normalize(volume_ray.m_dir));
@@ -197,50 +212,62 @@ class HenyeyPhaseFunction
         const float numerator = (1.0f - sqr_g);
         const float denominator = powf(1.0f + sqr_g - 2.0f*g*cosine, -1.5f);
 
-        // Additionally divide by TwoPi, because we sample over the sphere
+        // Additionally divide by TwoPi, because we sample over the sphere.
         return RcpFourPi<float>() * numerator * denominator;
     }
 
     virtual void evaluate_transmission(
-        const ShadingRay&           volume_ray,
-        const void*                 data,
-        float                       distance,
-        Spectrum&                   spectrum) const APPLESEED_OVERRIDE
+        const ShadingRay&     volume_ray,
+        const void*           data,
+        float                 distance,
+        Spectrum&             spectrum) const APPLESEED_OVERRIDE
     {
         const InputValues* values = static_cast<const InputValues*>(data);
 
-        spectrum = exp(-distance * values->m_extinction_multiplier * values->m_extinction);
+        extinction_coefficient(volume_ray, data, distance, spectrum);
+        spectrum = exp(-distance * spectrum);
     }
 
     virtual void evaluate_transmission(
-        const ShadingRay&           volume_ray,
-        const void*                 data,
-        Spectrum&                   spectrum) const APPLESEED_OVERRIDE
+        const ShadingRay&     volume_ray,
+        const void*           data,
+        Spectrum&             spectrum) const APPLESEED_OVERRIDE
     {
-        const float distance = 
-            norm(volume_ray.m_dir) *
-            (volume_ray.m_tmax - volume_ray.m_tmin);
+        const float distance = static_cast<float>(
+            norm(volume_ray.m_dir) * (volume_ray.m_tmax - volume_ray.m_tmin));
         evaluate_transmission(volume_ray, data, distance, spectrum);
     }
 
     virtual void scattering_coefficient(
-        const ShadingRay&           volume_ray,
-        const void*                 data,
-        float                       distance,
-        Spectrum&                   spectrum) const APPLESEED_OVERRIDE
+        const ShadingRay&     volume_ray,
+        const void*           data,
+        float                 distance,
+        Spectrum&             spectrum) const APPLESEED_OVERRIDE
     {
         const InputValues* values = static_cast<const InputValues*>(data);
         spectrum = values->m_scattering * values->m_scattering_multiplier;
     }
 
-    virtual void extinction_coefficient(
-        const ShadingRay&           volume_ray,
-        const void*                 data,
-        float                       distance,
-        Spectrum&                   spectrum) const APPLESEED_OVERRIDE
+    virtual void absorption_coefficient(
+        const ShadingRay&    volume_ray,
+        const void*          data,
+        float                distance,
+        Spectrum&            spectrum) const APPLESEED_OVERRIDE
     {
         const InputValues* values = static_cast<const InputValues*>(data);
-        spectrum = values->m_extinction * values->m_extinction_multiplier;
+        spectrum = values->m_absorption * values->m_absorption_multiplier;
+    }
+
+    virtual void extinction_coefficient(
+        const ShadingRay&    volume_ray,
+        const void*          data,
+        float                distance,
+        Spectrum&            spectrum) const APPLESEED_OVERRIDE
+    {
+        const InputValues* values = static_cast<const InputValues*>(data);
+        spectrum =
+            values->m_precomputed.m_extinction_multiplier *
+            values->m_precomputed.m_normalized_extinction;
     }
 
   private:
@@ -275,7 +302,8 @@ DictionaryArray HenyeyPhaseFunctionFactory::get_input_metadata() const
             .insert("label", "Scattering Coefficient")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary().insert("color", "Colors"))
+                Dictionary()
+                    .insert("color", "Colors"))
             .insert("use", "required")
             .insert("default", "0.5"));
 
@@ -291,33 +319,34 @@ DictionaryArray HenyeyPhaseFunctionFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-        .insert("name", "extinction")
-        .insert("label", "Extinction Coefficient")
+        .insert("name", "absorption")
+        .insert("label", "Absorption Coefficient")
         .insert("type", "colormap")
         .insert("entity_types",
-            Dictionary().insert("color", "Colors"))
+            Dictionary()
+                .insert("color", "Colors"))
         .insert("use", "required")
         .insert("default", "0.5"));
 
     metadata.push_back(
         Dictionary()
-        .insert("name", "extinction_multiplier")
-        .insert("label", "Extinction Coefficient Multiplier")
-        .insert("type", "numeric")
-        .insert("min_value", "0.0")
-        .insert("max_value", "200.0")
-        .insert("use", "optional")
-        .insert("default", "1.0"));
+            .insert("name", "absorption_multiplier")
+            .insert("label", "Absorption Coefficient Multiplier")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "200.0")
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()
-        .insert("name", "average_cosine")
-        .insert("label", "Average cosine (g)")
-        .insert("type", "numeric")
-        .insert("min_value", "-1.0")
-        .insert("max_value", "1.0")
-        .insert("use", "required")
-        .insert("default", "0.0"));
+            .insert("name", "average_cosine")
+            .insert("label", "Average Cosine (g)")
+            .insert("type", "numeric")
+            .insert("min_value", "-0.9")
+            .insert("max_value", "0.9")
+            .insert("use", "required")
+            .insert("default", "0.0"));
 
     return metadata;
 }
@@ -326,8 +355,7 @@ auto_release_ptr<PhaseFunction> HenyeyPhaseFunctionFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<PhaseFunction>(
-        new HenyeyPhaseFunction(name, params));
+    return auto_release_ptr<PhaseFunction>(new HenyeyPhaseFunction(name, params));
 }
 
 }   // namespace renderer

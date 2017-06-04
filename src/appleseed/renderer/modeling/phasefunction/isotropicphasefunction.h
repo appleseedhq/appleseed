@@ -56,10 +56,18 @@ namespace renderer
 
 APPLESEED_DECLARE_INPUT_VALUES(IsotropicPhaseFunctionInputValues)
 {
+    Spectrum    m_absorption;               // absorption coefficient of the media
+    float       m_absorption_multiplier;    // absorption coefficient multiplier
     Spectrum    m_scattering;               // scattering coefficient of the media
     float       m_scattering_multiplier;    // scattering coefficient multiplier
-    Spectrum    m_extinction;               // extinction coefficient of the media
-    float       m_extinction_multiplier;    // extinction coefficient multiplier
+
+    struct Precomputed
+    {
+        Spectrum    m_normalized_extinction;    // extinction coefficient of the media (normalized)
+        float       m_extinction_multiplier;    // extinction coefficient multiplier
+    };
+
+    Precomputed m_precomputed;
 };
 
 //
@@ -67,10 +75,9 @@ APPLESEED_DECLARE_INPUT_VALUES(IsotropicPhaseFunctionInputValues)
 //
 
 class APPLESEED_DLLSYMBOL IsotropicPhaseFunctionFactory
-    : public IPhaseFunctionFactory
+  : public IPhaseFunctionFactory
 {
   public:
-
     // Return a string identifying this Phase Function model.
     virtual const char* get_model() const APPLESEED_OVERRIDE;
 

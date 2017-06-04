@@ -45,43 +45,43 @@ namespace renderer  { class IPhaseFunctionFactory; }
 namespace renderer
 {
 
-    //
-    // An array of phase function factories.
-    //
+//
+// An array of phase function factories.
+//
 
-    APPLESEED_DECLARE_APIARRAY(PhaseFunctionFactoryArray, IPhaseFunctionFactory*);
+APPLESEED_DECLARE_APIARRAY(PhaseFunctionFactoryArray, IPhaseFunctionFactory*);
 
 
-    //
-    // Phase function factory registrar.
-    //
+//
+// Phase function factory registrar.
+//
 
-    class APPLESEED_DLLSYMBOL PhaseFunctionFactoryRegistrar
-        : public foundation::NonCopyable
-    {
-      public:
-        typedef IPhaseFunctionFactory FactoryType;
-        typedef PhaseFunctionFactoryArray FactoryArrayType;
+class APPLESEED_DLLSYMBOL PhaseFunctionFactoryRegistrar
+    : public foundation::NonCopyable
+{
+  public:
+    typedef IPhaseFunctionFactory FactoryType;
+    typedef PhaseFunctionFactoryArray FactoryArrayType;
 
-        // Constructor.
-        PhaseFunctionFactoryRegistrar();
+    // Constructor.
+    PhaseFunctionFactoryRegistrar();
 
-        // Destructor.
-        ~PhaseFunctionFactoryRegistrar();
+    // Destructor.
+    ~PhaseFunctionFactoryRegistrar();
 
-        // Register a light factory.
-        void register_factory(std::auto_ptr<FactoryType> factory);
+    // Register a light factory.
+    void register_factory(std::auto_ptr<FactoryType> factory);
 
-        // Retrieve the registered factories.
-        FactoryArrayType get_factories() const;
+    // Retrieve the registered factories.
+    FactoryArrayType get_factories() const;
 
-        // Lookup a factory by name.
-        const FactoryType* lookup(const char* name) const;
+    // Lookup a factory by name.
+    const FactoryType* lookup(const char* name) const;
 
-      private:
-        struct Impl;
-        Impl* impl;
-    };
+  private:
+    struct Impl;
+    Impl* impl;
+};
 
 }       // namespace renderer
 

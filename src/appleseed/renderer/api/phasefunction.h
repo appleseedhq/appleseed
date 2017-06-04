@@ -30,11 +30,11 @@
 #define APPLESEED_RENDERER_API_PHASEFUNCTION_H
 
 // API headers.
-#include "renderer/modeling/phasefunction/isotropicphasefunction.h"
 #include "renderer/modeling/phasefunction/henyeyphasefunction.h"
+#include "renderer/modeling/phasefunction/iphasefunctionfactory.h"
+#include "renderer/modeling/phasefunction/isotropicphasefunction.h"
 #include "renderer/modeling/phasefunction/phasefunction.h"
 #include "renderer/modeling/phasefunction/phasefunctionfactoryregistrar.h"
 #include "renderer/modeling/phasefunction/phasefunctiontraits.h"
-#include "renderer/modeling/phasefunction/iphasefunctionfactory.h"
 
 #endif  // !APPLESEED_RENDERER_API_PHASEFUNCTION_H

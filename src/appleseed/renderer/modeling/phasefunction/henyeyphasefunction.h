@@ -31,8 +31,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/phasefunction/iphasefunctionfactory.h"
 #include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/phasefunction/iphasefunctionfactory.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -56,11 +56,19 @@ namespace renderer
 
 APPLESEED_DECLARE_INPUT_VALUES(HenyeyPhaseFunctionInputValues)
 {
+    Spectrum    m_absorption;               // absorption coefficient of the media
+    float       m_absorption_multiplier;    // absorption coefficient multiplier
     Spectrum    m_scattering;               // scattering coefficient of the media
     float       m_scattering_multiplier;    // scattering coefficient multiplier
-    Spectrum    m_extinction;               // extinction coefficient of the media
-    float       m_extinction_multiplier;    // extinction coefficient multiplier
-    float       m_average_cosine;           // assymetry parameter, often referred as g
+    float       m_average_cosine;           // asymmetry parameter, often referred as g
+
+    struct Precomputed
+    {
+        Spectrum    m_normalized_extinction;    // extinction coefficient of the media (normalized)
+        float       m_extinction_multiplier;    // extinction coefficient multiplier
+    };
+
+    Precomputed m_precomputed;
 };
 
 //
@@ -68,10 +76,9 @@ APPLESEED_DECLARE_INPUT_VALUES(HenyeyPhaseFunctionInputValues)
 //
 
 class APPLESEED_DLLSYMBOL HenyeyPhaseFunctionFactory
-    : public IPhaseFunctionFactory
+  : public IPhaseFunctionFactory
 {
   public:
-
     // Return a string identifying this Phase Function model.
     virtual const char* get_model() const APPLESEED_OVERRIDE;
 

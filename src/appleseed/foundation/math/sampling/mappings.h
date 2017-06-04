@@ -546,7 +546,7 @@ inline T sample_exponential_distribution_on_segment(
     assert(s >= T(0.0));
     assert(s < T(1.0));
 
-    T tail = T(1.0) - std::exp(-(r - l) * a);
+    const T tail = T(1.0) - std::exp(-(r - l) * a);
     return l - std::log(T(1.0) - s * tail) / a;
 }
 
@@ -559,8 +559,10 @@ inline T exponential_distribution_on_segment_pdf(
 {
     assert(x >= T(0.0));
 
-    T left = std::exp(-a * (x - l));
-    T right = std::exp(-a * (x - r));
+    if (x < l || x > r)
+        return T(0.0);
+    const T left = std::exp(-a * (x - l));
+    const T right = std::exp(-a * (x - r));
     return a * (left - right);
 }
 

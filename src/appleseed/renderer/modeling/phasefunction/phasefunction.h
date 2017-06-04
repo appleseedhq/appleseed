@@ -53,7 +53,7 @@ namespace renderer
 {
 
 class APPLESEED_DLLSYMBOL PhaseFunction
-    : public ConnectableEntity
+  : public ConnectableEntity
 {
   public:
     // Return the unique ID of this class of entities.
@@ -107,34 +107,41 @@ class APPLESEED_DLLSYMBOL PhaseFunction
         ) const = 0;
 
     // Evaluate PDF value of this phase function in the given point
-    // on the ray and for the given incoming direction
+    // on the ray and for the given incoming direction.
     virtual float evaluate(
         const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
         const void*                 data,                       // input values
         float                       distance,                   // distance to the point on this volume segment
         const foundation::Vector3f& incoming) const = 0;        // world space incoming direction, unit-length
 
-    // Evaluate the transmission (spectrum) between the front end of the ray and a given point
+    // Evaluate the transmission (spectrum) between the front end of the ray and a given point.
     virtual void evaluate_transmission(
         const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
         const void*                 data,                       // input values
         float                       distance,                   // distance to the point on this volume segment
         Spectrum&                   spectrum) const = 0;        // resulting spectrum
 
-    // Evaluate the transmission (spectrum) of the entire ray 
+    // Evaluate the transmission (spectrum) of the entire ray.
     virtual void evaluate_transmission(
         const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
         const void*                 data,                       // input values
         Spectrum&                   spectrum) const = 0;        // resulting spectrum
 
-    // Get the scatering coefficient (spectrum) in certain point
+    // Get the scatering coefficient (spectrum) in certain point.
     virtual void scattering_coefficient(
         const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
         const void*                 data,                       // input values
         float                       distance,                   // distance to the point on this volume segment
         Spectrum&                   spectrum) const = 0;        // resulting spectrum
 
-    // Get the extinction coefficient (spectrum) in certain point
+    // Get the absorption coefficient (spectrum) in certain point.
+    virtual void absorption_coefficient(
+        const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
+        const void*                 data,                       // input values
+        float                       distance,                   // distance to the point on this volume segment
+        Spectrum&                   spectrum) const = 0;        // resulting spectrum
+
+    // Get the extinction coefficient (spectrum) in certain point.
     virtual void extinction_coefficient(
         const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
         const void*                 data,                       // input values
@@ -142,6 +149,6 @@ class APPLESEED_DLLSYMBOL PhaseFunction
         Spectrum&                   spectrum) const = 0;        // resulting spectrum
 };
 
-}
+}   // namespace renderer
 
 #endif // !APPLESEED_RENDERER_MODELING_PHASEFUNCTION_PHASEFUNCTION_H

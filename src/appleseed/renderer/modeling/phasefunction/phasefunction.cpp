@@ -42,49 +42,49 @@ using namespace foundation;
 namespace renderer
 {
 
-    //
-    // Phase Function class implementation.
-    //
+//
+// Phase Function class implementation.
+//
 
-    namespace
-    {
-        const UniqueID g_class_uid = new_guid();
-    }
-
-    UniqueID PhaseFunction::get_class_uid()
-    {
-        return g_class_uid;
-    }
-
-    PhaseFunction::PhaseFunction(
-        const char*             name,
-        const ParamArray&       params)
-        : ConnectableEntity(g_class_uid, params)
-    {
-        set_name(name);
-    }
-
-    size_t PhaseFunction::compute_input_data_size() const
-    {
-        return get_inputs().compute_data_size();
-    }
-
-    void* PhaseFunction::evaluate_inputs(
-        const ShadingContext&   shading_context,
-        const ShadingRay&       volume_ray) const
-    {
-        void* data = shading_context.get_arena().allocate(compute_input_data_size());
-
-        get_inputs().evaluate_uniforms(data);
-
-        return data;
-    }
-
-    void PhaseFunction::prepare_inputs(
-        foundation::Arena&          arena,
-        const ShadingRay&           shading_point,
-        void*                       data) const
-    {
-    }
-
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
 }
+
+UniqueID PhaseFunction::get_class_uid()
+{
+    return g_class_uid;
+}
+
+PhaseFunction::PhaseFunction(
+    const char*             name,
+    const ParamArray&       params)
+    : ConnectableEntity(g_class_uid, params)
+{
+    set_name(name);
+}
+
+size_t PhaseFunction::compute_input_data_size() const
+{
+    return get_inputs().compute_data_size();
+}
+
+void* PhaseFunction::evaluate_inputs(
+    const ShadingContext&   shading_context,
+    const ShadingRay&       volume_ray) const
+{
+    void* data = shading_context.get_arena().allocate(compute_input_data_size());
+
+    get_inputs().evaluate_uniforms(data);
+
+    return data;
+}
+
+void PhaseFunction::prepare_inputs(
+    foundation::Arena&          arena,
+    const ShadingRay&           shading_point,
+    void*                       data) const
+{
+}
+
+}   // namespace renderer

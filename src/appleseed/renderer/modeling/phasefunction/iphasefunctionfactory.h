@@ -50,7 +50,7 @@ namespace renderer
 //
 
 class APPLESEED_DLLSYMBOL IPhaseFunctionFactory
-    : public foundation::NonCopyable
+  : public foundation::NonCopyable
 {
   public:
     // Destructor.

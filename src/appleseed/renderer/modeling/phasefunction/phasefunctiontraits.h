@@ -30,8 +30,8 @@
 #define APPLESEED_RENDERER_MODELING_PHASEFUNCTION_PHASEFUNCTIONTRAITS_H
 
 // appleseed.renderer headers.
-#include "renderer/modeling/phasefunction/phasefunction.h"
 #include "renderer/modeling/entity/entitytraits.h"
+#include "renderer/modeling/phasefunction/phasefunction.h"
 #include "renderer/modeling/scene/containers.h"
 
 // appleseed.foundation headers.

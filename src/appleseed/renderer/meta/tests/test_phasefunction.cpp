@@ -37,8 +37,8 @@
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/entity/onframebeginrecorder.h"
 #include "renderer/modeling/input/scalarsource.h"
-#include "renderer/modeling/phasefunction/phasefunction.h"
 #include "renderer/modeling/phasefunction/henyeyphasefunction.h"
+#include "renderer/modeling/phasefunction/phasefunction.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/texture/texture.h"
@@ -55,17 +55,23 @@
 #include "foundation/utility/gnuplotfile.h"
 #include "foundation/utility/test.h"
 
+// Boost headers.
+#include "boost/bind.hpp"
+
+// Standard headers.
+#include <vector>
+
 using namespace foundation;
 using namespace renderer;
 
-TEST_SUITE(Renderer_Modeling_PhaseFunction_PhaseFunction)
+TEST_SUITE(Renderer_Modeling_PhaseFunction)
 {
     struct Fixture
       : public TestFixtureBase
     {
-        // Number of MC samples to do integrations
+        // Number of MC samples to do integrations.
         static const int NumberOfSamples = 200000;
-        // Number of samples to draw
+        // Number of samples to draw.
         static const int NumberOfSamplesPlot = 100;
 
         ParamArray base_parameters;
@@ -123,17 +129,16 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction_PhaseFunction)
             return procedure(shading_context, arena);
         }
 
-        // Integrate PDF of phase function (direction sampling) using straightforward Monte-Carlo approach
+        // Integrate PDF of phase function (direction sampling) using straightforward Monte-Carlo approach.
         static float integrate_phase_function_direction_pdf(
             PhaseFunction& phase_function,
             ShadingContext& shading_context,
             Arena& arena)
         {
-            void* data = 0;
             ShadingRay shading_ray;
             shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
             shading_ray.m_dir = Vector3d(1.0f, 0.0f, 0.0f);
-            data = phase_function.evaluate_inputs(shading_context, shading_ray);
+            void* data = phase_function.evaluate_inputs(shading_context, shading_ray);
             phase_function.prepare_inputs(arena, shading_ray, data);
 
             MersenneTwister rng;
@@ -145,24 +150,22 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction_PhaseFunction)
                 sampling_context.split_in_place(2, 1);
                 Vector2f s = sampling_context.next2<Vector2f>();
                 Vector3f incoming = sample_sphere_uniform<float>(s);
-                float value = phase_function.evaluate(shading_ray, data, 0.5f, incoming);
-                integral += value;
+                integral += phase_function.evaluate(shading_ray, data, 0.5f, incoming);
             }
 
             return integral * foundation::FourPi<float>() / NumberOfSamples;
         }
 
-        // Check if probabilistic sampling is consistent with the returned PDF values
+        // Check if probabilistic sampling is consistent with the returned PDF values.
         static Vector3f check_direction_sampling_consistency(
             PhaseFunction& phase_function,
             ShadingContext& shading_context,
             Arena& arena)
         {
-            void* data = 0;
             ShadingRay shading_ray;
             shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
             shading_ray.m_dir = Vector3d(1.0f, 0.0f, 0.0f);
-            data = phase_function.evaluate_inputs(shading_context, shading_ray);
+            void* data = phase_function.evaluate_inputs(shading_context, shading_ray);
             phase_function.prepare_inputs(arena, shading_ray, data);
 
             MersenneTwister rng;
@@ -172,7 +175,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction_PhaseFunction)
             for (int i = 0; i < NumberOfSamples; ++i)
             {
                 Vector3f incoming;
-                float pdf = phase_function.sample(
+                const float pdf = phase_function.sample(
                     sampling_context, shading_ray, data, 0.5f, incoming);
                 bias += incoming / pdf;
             }
@@ -185,11 +188,10 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction_PhaseFunction)
             ShadingContext& shading_context,
             Arena& arena)
         {
-            void* data = 0;
             ShadingRay shading_ray;
             shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
             shading_ray.m_dir = Vector3d(1.0f, 0.0f, 0.0f);
-            data = phase_function.evaluate_inputs(shading_context, shading_ray);
+            void* data = phase_function.evaluate_inputs(shading_context, shading_ray);
             phase_function.prepare_inputs(arena, shading_ray, data);
 
             MersenneTwister rng;
@@ -212,11 +214,10 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction_PhaseFunction)
             ShadingContext& shading_context,
             Arena& arena)
         {
-            void* data = 0;
             ShadingRay shading_ray;
             shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
             shading_ray.m_dir = Vector3d(1.0f, 0.0f, 0.0f);
-            data = phase_function.evaluate_inputs(shading_context, shading_ray);
+            void* data = phase_function.evaluate_inputs(shading_context, shading_ray);
             phase_function.prepare_inputs(arena, shading_ray, data);
 
             MersenneTwister rng;
@@ -227,7 +228,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction_PhaseFunction)
             for (int i = 0; i < NumberOfSamplesPlot; ++i)
             {
                 Vector3f incoming;
-                float pdf = phase_function.sample(
+                const float pdf = phase_function.sample(
                     sampling_context, shading_ray, data, 0.5f, incoming);
                 points.emplace_back(incoming.x * pdf, incoming.y * pdf);
             }
@@ -245,7 +246,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction_PhaseFunction)
                 phase_function_factory.create("phase_function", base_parameters);
             phase_function->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
 
-            float integral = setup_environment_and_evaluate<float>(
+            const float integral = setup_environment_and_evaluate<float>(
                 boost::bind(
                     &Fixture::integrate_phase_function_direction_pdf,
                     boost::ref(*phase_function.get()), _1, _2));
@@ -263,7 +264,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction_PhaseFunction)
                 phase_function_factory.create("phase_function", base_parameters);
             phase_function->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
 
-            Vector3f bias = setup_environment_and_evaluate<Vector3f>(
+            const Vector3f bias = setup_environment_and_evaluate<Vector3f>(
                 boost::bind(
                     &Fixture::check_direction_sampling_consistency,
                     boost::ref(*phase_function.get()), _1, _2));
@@ -283,7 +284,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction_PhaseFunction)
                 phase_function_factory.create("phase_function", base_parameters);
             phase_function->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
 
-            float average_cosine = setup_environment_and_evaluate<float>(
+            const float average_cosine = setup_environment_and_evaluate<float>(
                 boost::bind(
                     &Fixture::get_aposteriori_average_cosine,
                     boost::ref(*phase_function.get()), _1, _2));
@@ -294,7 +295,6 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction_PhaseFunction)
 
     TEST_CASE_F(PlotHenyeySamples, Fixture)
     {
-
         GnuplotFile plotfile;
         plotfile.set_title(
             "Samples of Henyey-Greenstein Phase Function"
@@ -317,10 +317,11 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction_PhaseFunction)
                 phase_function_factory.create("phase_function", base_parameters);
             phase_function->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
 
-            std::vector<Vector2f> points = setup_environment_and_evaluate<std::vector<Vector2f>>(
-                boost::bind(
-                    &Fixture::generate_samples_for_plot,
-                    boost::ref(*phase_function.get()), _1, _2));
+            const std::vector<Vector2f> points =
+                setup_environment_and_evaluate<std::vector<Vector2f>>(
+                    boost::bind(
+                        &Fixture::generate_samples_for_plot,
+                        boost::ref(*phase_function.get()), _1, _2));
 
             plotfile
                 .new_plot()

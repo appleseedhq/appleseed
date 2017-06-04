@@ -69,9 +69,9 @@
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/meshobjectreader.h"
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/phasefunction/iphasefunctionfactory.h"
 #include "renderer/modeling/phasefunction/phasefunction.h"
 #include "renderer/modeling/phasefunction/phasefunctionfactoryregistrar.h"
-#include "renderer/modeling/phasefunction/iphasefunctionfactory.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
 #include "renderer/modeling/project/eventcounters.h"
@@ -1353,17 +1353,17 @@ namespace
     //
 
     class PhaseFunctionElementHandler
-        : public EntityElementHandler<
-        PhaseFunction,
-        PhaseFunctionFactoryRegistrar,
-        ParametrizedElementHandler>
+      : public EntityElementHandler<
+                   PhaseFunction,
+                   PhaseFunctionFactoryRegistrar,
+                   ParametrizedElementHandler>
     {
-    public:
+      public:
         explicit PhaseFunctionElementHandler(ParseContext& context)
-            : EntityElementHandler<
-            PhaseFunction,
-            PhaseFunctionFactoryRegistrar,
-            ParametrizedElementHandler>("phase function", context)
+          : EntityElementHandler<
+                PhaseFunction,
+                PhaseFunctionFactoryRegistrar,
+                ParametrizedElementHandler>("phase function", context)
         {
         }
     };
