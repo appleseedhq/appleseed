@@ -136,8 +136,6 @@ class IsotropicPhaseFunction
         float                distance,
         Vector3f&            incoming) const APPLESEED_OVERRIDE
     {
-        const InputValues* values = static_cast<const InputValues*>(data);
-
         // Sample incoming direction.
         sampling_context.split_in_place(2, 1);
         const Vector2f s = sampling_context.next2<Vector2f>();
@@ -161,8 +159,6 @@ class IsotropicPhaseFunction
         float                 distance,
         Spectrum&             spectrum) const APPLESEED_OVERRIDE
     {
-        const InputValues* values = static_cast<const InputValues*>(data);
-
         extinction_coefficient(volume_ray, data, distance, spectrum);
         spectrum = exp(-distance * spectrum);
     }

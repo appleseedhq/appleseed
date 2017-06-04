@@ -222,8 +222,6 @@ class HenyeyPhaseFunction
         float                 distance,
         Spectrum&             spectrum) const APPLESEED_OVERRIDE
     {
-        const InputValues* values = static_cast<const InputValues*>(data);
-
         extinction_coefficient(volume_ray, data, distance, spectrum);
         spectrum = exp(-distance * spectrum);
     }

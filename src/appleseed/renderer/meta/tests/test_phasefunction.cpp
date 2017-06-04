@@ -231,7 +231,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
                 Vector3f incoming;
                 const float pdf = phase_function.sample(
                     sampling_context, shading_ray, data, 0.5f, incoming);
-                points.emplace_back(incoming.x * pdf, incoming.y * pdf);
+                points.push_back(Vector2f(incoming.x * pdf, incoming.y * pdf));
             }
 
             return points;
@@ -319,7 +319,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
             phase_function->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
 
             const std::vector<Vector2f> points =
-                setup_environment_and_evaluate<std::vector<Vector2f>>(
+                setup_environment_and_evaluate<std::vector<Vector2f> >(
                     boost::bind(
                         &Fixture::generate_samples_for_plot,
                         boost::ref(*phase_function.get()), _1, _2));
