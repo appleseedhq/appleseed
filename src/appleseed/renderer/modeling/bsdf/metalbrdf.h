@@ -67,6 +67,7 @@ APPLESEED_DECLARE_INPUT_VALUES(MetalBRDFInputValues)
     {
         Spectrum m_n;
         Spectrum m_k;
+        float    m_outside_ior;
     };
 
     Precomputed m_precomputed;

@@ -132,6 +132,7 @@ namespace
                 values->m_edge_tint,
                 values->m_precomputed.m_n,
                 values->m_precomputed.m_k);
+            values->m_precomputed.m_outside_ior = shading_point.get_ray().get_current_ior();
         }
 
         virtual bool on_frame_begin(
@@ -181,6 +182,7 @@ namespace
             const FresnelConductorFun f(
                 values->m_precomputed.m_n,
                 values->m_precomputed.m_k,
+                values->m_precomputed.m_outside_ior,
                 values->m_reflectance_multiplier);
 
             // If roughness is zero use reflection.
@@ -247,6 +249,7 @@ namespace
             const FresnelConductorFun f(
                 values->m_precomputed.m_n,
                 values->m_precomputed.m_k,
+                values->m_precomputed.m_outside_ior,
                 values->m_reflectance_multiplier);
 
             return MicrofacetBRDFHelper::evaluate(
