@@ -835,6 +835,7 @@ set (renderer_api_sources
     renderer/api/log.h
     renderer/api/material.h
     renderer/api/object.h
+    renderer/api/phasefunction.h
     renderer/api/project.h
     renderer/api/rendering.h
     renderer/api/scene.h
@@ -1209,6 +1210,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_lightsampler.cpp
     renderer/meta/tests/test_localsampleaccumulationbuffer.cpp
     renderer/meta/tests/test_paramarray.cpp
+    renderer/meta/tests/test_phasefunction.cpp
     renderer/meta/tests/test_pinholecamera.cpp
     renderer/meta/tests/test_pixelsampler.cpp
     renderer/meta/tests/test_projectfilereader.cpp
@@ -1634,6 +1636,25 @@ list (APPEND appleseed_sources
 )
 source_group ("renderer\\modeling\\object" FILES
     ${renderer_modeling_object_sources}
+)
+
+set (renderer_modeling_phasefunction_sources
+    renderer/modeling/phasefunction/henyeyphasefunction.cpp
+    renderer/modeling/phasefunction/henyeyphasefunction.h
+    renderer/modeling/phasefunction/iphasefunctionfactory.h
+    renderer/modeling/phasefunction/isotropicphasefunction.cpp
+    renderer/modeling/phasefunction/isotropicphasefunction.h
+    renderer/modeling/phasefunction/phasefunction.cpp
+    renderer/modeling/phasefunction/phasefunction.h
+    renderer/modeling/phasefunction/phasefunctionfactoryregistrar.cpp
+    renderer/modeling/phasefunction/phasefunctionfactoryregistrar.h
+    renderer/modeling/phasefunction/phasefunctiontraits.cpp
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_phasefunction_sources}
+)
+source_group ("renderer\\modeling\\phasefunction" FILES
+    ${renderer_modeling_phasefunction_sources}
 )
 
 set (renderer_modeling_project_sources
