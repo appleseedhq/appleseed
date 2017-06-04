@@ -385,8 +385,10 @@ source_group ("src\\maya" FILES
 )
 
 set (src_appleseed_sources
+     src/appleseed/asColorTransform.osl
      src/appleseed/asDisneyMaterial.osl
      src/appleseed/asGlass.osl
+     src/appleseed/asLuminance.osl
      src/appleseed/asVoronoi2D.osl
      src/appleseed/asVoronoi3D.osl
 )
