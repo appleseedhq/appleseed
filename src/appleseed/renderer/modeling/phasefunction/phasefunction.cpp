@@ -59,7 +59,7 @@ UniqueID PhaseFunction::get_class_uid()
 PhaseFunction::PhaseFunction(
     const char*             name,
     const ParamArray&       params)
-    : ConnectableEntity(g_class_uid, params)
+      : ConnectableEntity(g_class_uid, params)
 {
     set_name(name);
 }

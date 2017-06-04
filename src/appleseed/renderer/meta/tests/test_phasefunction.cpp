@@ -57,6 +57,7 @@
 
 // Boost headers.
 #include "boost/bind.hpp"
+#include "boost/ref.hpp"
 
 // Standard headers.
 #include <vector>
@@ -74,13 +75,13 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
         // Number of samples to draw.
         static const int NumberOfSamplesPlot = 100;
 
-        ParamArray base_parameters;
-        const HenyeyPhaseFunctionFactory phase_function_factory;
+        ParamArray m_base_parameters;
+        const HenyeyPhaseFunctionFactory m_phase_function_factory;
 
         Fixture()
-          : phase_function_factory()
+          : m_phase_function_factory()
         {
-            base_parameters
+            m_base_parameters
                 .insert("scattering", "0.5")
                 .insert("scattering_multiplier", "1.0")
                 .insert("extinction", "0.5")
@@ -243,7 +244,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
         for (int i = 0; i < countof(G); ++i)
         {
             auto_release_ptr<PhaseFunction> phase_function =
-                phase_function_factory.create("phase_function", base_parameters);
+                m_phase_function_factory.create("phase_function", m_base_parameters);
             phase_function->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
 
             const float integral = setup_environment_and_evaluate<float>(
@@ -261,7 +262,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
         for (int i = 0; i < countof(G); ++i)
         {
             auto_release_ptr<PhaseFunction> phase_function =
-                phase_function_factory.create("phase_function", base_parameters);
+                m_phase_function_factory.create("phase_function", m_base_parameters);
             phase_function->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
 
             const Vector3f bias = setup_environment_and_evaluate<Vector3f>(
@@ -281,7 +282,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
         for (int i = 0; i < countof(G); ++i)
         {
             auto_release_ptr<PhaseFunction> phase_function =
-                phase_function_factory.create("phase_function", base_parameters);
+                m_phase_function_factory.create("phase_function", m_base_parameters);
             phase_function->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
 
             const float average_cosine = setup_environment_and_evaluate<float>(
@@ -314,7 +315,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
         for (int i = 0; i < countof(G); ++i)
         {
             auto_release_ptr<PhaseFunction> phase_function =
-                phase_function_factory.create("phase_function", base_parameters);
+                m_phase_function_factory.create("phase_function", m_base_parameters);
             phase_function->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
 
             const std::vector<Vector2f> points =

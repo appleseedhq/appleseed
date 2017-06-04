@@ -3100,6 +3100,7 @@ namespace
             register_factory_helper<ObjectInstanceElementHandler>("object_instance", ElementObjectInstance);
             register_factory_helper<OutputElementHandler>("output", ElementOutput);
             register_factory_helper<ParameterElementHandler>("parameter", ElementParameter);
+            register_factory_helper<ParametersElementHandler>("parameters", ElementParameters);
             register_factory_helper<PhaseFunctionElementHandler>("phase_function", ElementPhaseFunction);
             register_factory_helper<RenderLayerAssignmentElementHandler>("render_layer_assignment", ElementRenderLayerAssignment);
             register_factory_helper<RotationElementHandler>("rotation", ElementRotation);

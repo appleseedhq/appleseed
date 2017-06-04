@@ -162,9 +162,9 @@ class HenyeyPhaseFunction
         const float s = 2.0f * sampling_context.next2<float>() - 1.0f;
 
         float cosine;
-        if (g < +1e-5f && g > -1e-5f)
+        if (std::abs(g) < +1e-5f)
         {
-            cosine = s;
+            cosine = s; // isotropic
         }
         else
         {
@@ -186,7 +186,7 @@ class HenyeyPhaseFunction
         // Evaluate PDF.
 
         const float numerator = (1.0f - sqr_g);
-        const float denominator = std::powf(1.0f + sqr_g - 2.0f*g*cosine, -1.5f);
+        const float denominator = std::pow(1.0f + sqr_g - 2.0f*g*cosine, -1.5f);
 
         return RcpFourPi<float>() * numerator * denominator;
     }
@@ -210,7 +210,7 @@ class HenyeyPhaseFunction
         const float sqr_g = g * g;
 
         const float numerator = (1.0f - sqr_g);
-        const float denominator = powf(1.0f + sqr_g - 2.0f*g*cosine, -1.5f);
+        const float denominator = std::pow(1.0f + sqr_g - 2.0f*g*cosine, -1.5f);
 
         // Additionally divide by TwoPi, because we sample over the sphere.
         return RcpFourPi<float>() * numerator * denominator;
@@ -288,8 +288,8 @@ Dictionary HenyeyPhaseFunctionFactory::get_model_metadata() const
 {
     return
         Dictionary()
-        .insert("name", Model)
-        .insert("label", "Henyey-Greenstein Phase Function");
+            .insert("name", Model)
+            .insert("label", "Henyey-Greenstein Phase Function");
 }
 
 DictionaryArray HenyeyPhaseFunctionFactory::get_input_metadata() const
