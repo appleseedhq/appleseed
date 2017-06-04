@@ -56,7 +56,7 @@ APPLESEED_DECLARE_APIARRAY(PhaseFunctionFactoryArray, IPhaseFunctionFactory*);
 //
 
 class APPLESEED_DLLSYMBOL PhaseFunctionFactoryRegistrar
-    : public foundation::NonCopyable
+  : public foundation::NonCopyable
 {
   public:
     typedef IPhaseFunctionFactory FactoryType;

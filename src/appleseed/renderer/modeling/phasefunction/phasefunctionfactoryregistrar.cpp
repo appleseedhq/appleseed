@@ -55,7 +55,7 @@ struct PhaseFunctionFactoryRegistrar::Impl
 };
 
 PhaseFunctionFactoryRegistrar::PhaseFunctionFactoryRegistrar()
-    : impl(new Impl())
+  : impl(new Impl())
 {
     register_factory(auto_ptr<FactoryType>(new HenyeyPhaseFunctionFactory()));
     register_factory(auto_ptr<FactoryType>(new IsotropicPhaseFunctionFactory()));

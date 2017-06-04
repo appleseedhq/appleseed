@@ -98,7 +98,7 @@ class HenyeyPhaseFunction
 
     virtual void prepare_inputs(
         Arena&                arena,
-        const ShadingRay&     shading_point,
+        const ShadingRay&     volume_ray,
         void*                 data
         ) const APPLESEED_OVERRIDE
     {
