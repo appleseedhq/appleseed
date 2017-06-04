@@ -1648,7 +1648,7 @@ set (renderer_modeling_phasefunction_sources
     renderer/modeling/phasefunction/phasefunction.h
     renderer/modeling/phasefunction/phasefunctionfactoryregistrar.cpp
     renderer/modeling/phasefunction/phasefunctionfactoryregistrar.h
-    renderer/modeling/phasefunction/phasefunctiontraits.cpp
+    renderer/modeling/phasefunction/phasefunctiontraits.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_phasefunction_sources}
