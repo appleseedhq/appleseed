@@ -181,7 +181,7 @@ macro (link_against_oiio target)
 endmacro ()
 
 macro (link_against_osl target)
-    target_link_libraries (${target} ${OSL_EXEC_LIBRARY} ${OSL_QUERY_LIBRARY})
+    target_link_libraries (${target} ${OSL_EXEC_LIBRARY} ${OSL_COMP_LIBRARY} ${OSL_QUERY_LIBRARY})
 endmacro ()
 
 macro (link_against_seexpr target)
