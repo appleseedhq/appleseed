@@ -45,6 +45,7 @@
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
+#include "renderer/modeling/phasefunction/phasefunction.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 
@@ -71,13 +72,14 @@ namespace renderer
 // A generic path tracer.
 //
 
-template <typename PathVisitor, bool Adjoint>
+template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
 class PathTracer
   : public foundation::NonCopyable
 {
   public:
     PathTracer(
         PathVisitor&            path_visitor,
+        VolumeVisitor&          volume_visitor,
         const size_t            rr_min_path_length,
         const size_t            max_bounces,
         const size_t            max_diffuse_bounces,
@@ -97,8 +99,15 @@ class PathTracer
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point);
 
+    size_t march(
+        SamplingContext&        sampling_context,
+        const ShadingContext&   shading_context,
+        const ShadingRay&       ray,
+        PathVertex&             vertex);
+
   private:
     PathVisitor&                m_path_visitor;
+    VolumeVisitor&              m_volume_visitor,
     const size_t                m_rr_min_path_length;
     const size_t                m_max_bounces;
     const size_t                m_max_diffuse_bounces;
@@ -118,9 +127,10 @@ class PathTracer
 // PathTracer class implementation.
 //
 
-template <typename PathVisitor, bool Adjoint>
-inline PathTracer<PathVisitor, Adjoint>::PathTracer(
+template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
+inline PathTracer<PathVisitor, VolumeVisitor, Adjoint>::PathTracer(
     PathVisitor&                path_visitor,
+    VolumeVisitor&              volume_visitor,
     const size_t                rr_min_path_length,
     const size_t                max_bounces,
     const size_t                max_diffuse_bounces,
@@ -129,6 +139,7 @@ inline PathTracer<PathVisitor, Adjoint>::PathTracer(
     const size_t                max_iterations,
     const double                near_start)
   : m_path_visitor(path_visitor)
+  , m_volume_visitor(volume_visitor)
   , m_rr_min_path_length(rr_min_path_length)
   , m_max_bounces(max_bounces)
   , m_max_diffuse_bounces(max_diffuse_bounces)
@@ -139,8 +150,8 @@ inline PathTracer<PathVisitor, Adjoint>::PathTracer(
 {
 }
 
-template <typename PathVisitor, bool Adjoint>
-inline size_t PathTracer<PathVisitor, Adjoint>::trace(
+template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
+inline size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
     SamplingContext&            sampling_context,
     const ShadingContext&       shading_context,
     const ShadingRay&           ray,
@@ -156,8 +167,8 @@ inline size_t PathTracer<PathVisitor, Adjoint>::trace(
             shading_point);
 }
 
-template <typename PathVisitor, bool Adjoint>
-size_t PathTracer<PathVisitor, Adjoint>::trace(
+template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
+size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
     SamplingContext&            sampling_context,
     const ShadingContext&       shading_context,
     const ShadingPoint&         shading_point)
@@ -579,12 +590,22 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             next_ray.copy_media_from(ray);
         }
 
-        // Trace the ray.
         shading_points[shading_point_index].clear();
-        shading_context.get_intersector().trace(
-            next_ray,
-            shading_points[shading_point_index],
-            vertex.m_shading_point);
+        const ShadingRay::Medium* current_medium = next_ray.get_current_medium();
+        if (current_medium->m_material->get_render_data().m_phase_function != 0)
+        {
+            // This ray is being cast into a participating medium
+            march(sampling_context, shading_context,
+                vertex, next_ray, shading_points[shading_point_index]);
+        }
+        else
+        {
+            // This ray is being cast into an ordinary medium
+            shading_context.get_intersector().trace(
+                next_ray,
+                shading_points[shading_point_index],
+                vertex.m_shading_point);
+        }
 
         // Update the pointers to the shading points.
         vertex.m_shading_point = &shading_points[shading_point_index];
@@ -594,8 +615,41 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
     return vertex.m_path_length;
 }
 
-template <typename PathVisitor, bool Adjoint>
-inline bool PathTracer<PathVisitor, Adjoint>::pass_through(
+template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
+size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
+    SamplingContext&        sampling_context,
+    const ShadingContext&   shading_context,
+    const ShadingRay&       ray,
+    PathVertex&             vertex)
+{
+    const ShadingRay::Medium* medium = ray.get_current_medium();
+    PhaseFunction* phase_function = medium->m_material->get_render_data().m_phase_function;
+
+    shading_context.get_intersector().trace(
+        ray,
+        shading_points[shading_point_index],
+        vertex.m_shading_point);
+
+    const ShadingRay& volume_ray = vertex.m_shading_point->get_ray();
+
+    void* data = phase_function->evaluate_inputs(shading_context, volume_ray);
+    phase_function->prepare_inputs(shading_context.get_arena(), volume_ray, data);
+
+    m_volume_visitor.visit(volume_ray);
+
+    if (vertex.m_shading_point->hit())
+    {
+        Spectrum transmission;
+        phase_function->evaluate_transmission(volume_ray, data, transmission);
+
+        vertex.m_throughput *= transmission;
+    }
+
+    return 0; // number of scattering events
+}
+
+template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
+inline bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::pass_through(
     SamplingContext&            sampling_context,
     const Alpha                 alpha)
 {
