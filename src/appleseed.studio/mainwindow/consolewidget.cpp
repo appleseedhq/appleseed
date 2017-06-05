@@ -36,8 +36,8 @@
 #include <QAction>
 #include <QContextMenuEvent>
 #include <QTextEdit>
-#include <QPushButton>
 #include <QHBoxLayout>
+#include <QToolBar>
 
 namespace appleseed {
 namespace studio {
@@ -49,21 +49,6 @@ namespace studio {
 ConsoleWidget::ConsoleWidget(QWidget* parent)
     : QSplitter(parent)
 {
-    QWidget* buttons = new QWidget();
-    QPushButton *m_button_exec_selection = new QPushButton("ES");
-    connect(m_button_exec_selection, SIGNAL(clicked()), this, SLOT(slot_execute_selection()));
-    QPushButton *m_button_exec_all = new QPushButton("EA");
-    connect(m_button_exec_all, SIGNAL(clicked()), this, SLOT(slot_execute_all()));
-    QPushButton *m_button_clear_output = new QPushButton("CO");
-    connect(m_button_clear_output, SIGNAL(clicked()), this, SLOT(slot_clear_output()));
-
-    QHBoxLayout *layout = new QHBoxLayout;
-    layout->addWidget(m_button_exec_selection);
-    layout->addWidget(m_button_exec_all);
-    layout->addWidget(m_button_clear_output);
-
-    buttons->setLayout(layout);
-
     output = new QTextEdit(this);
     output->setUndoRedoEnabled(false);
     output->setLineWrapMode(QTextEdit::WidgetWidth);
@@ -82,28 +67,29 @@ ConsoleWidget::ConsoleWidget(QWidget* parent)
         Qt::TextEditable |
         Qt::TextEditorInteraction);
 
-    this->insertWidget(0, buttons);
-    this->insertWidget(1, output);
-    this->insertWidget(2, input);
-    this->setOrientation(Qt::Vertical);
-
-    m_action_execute_selection = new QAction("Execute selection as python script", this);
+    m_action_execute_selection = new QAction(this);
     m_action_execute_selection->setShortcut(Qt::CTRL + Qt::Key_Return);
     m_action_execute_selection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    m_action_execute_selection->setText("ES");
+    m_action_execute_selection->setToolTip("Execute selection as python script");
 
     connect(m_action_execute_selection, SIGNAL(triggered()), this, SLOT(slot_execute_selection()));
     addAction(m_action_execute_selection);
 
-    m_action_execute_all = new QAction("Execute all text in input as python script", this);
+    m_action_execute_all = new QAction(this);
     m_action_execute_all->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_Return);
     m_action_execute_all->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    m_action_execute_all->setText("EA");
+    m_action_execute_all->setToolTip("Execute all text in input as python script");
 
     connect(m_action_execute_all, SIGNAL(triggered()), this, SLOT(slot_execute_all()));
     addAction(m_action_execute_all);
 
-    m_action_clear_selection = new QAction("Clear console output", this);
+    m_action_clear_selection = new QAction(this);
     m_action_clear_selection->setShortcut(Qt::CTRL + Qt::Key_D);
     m_action_clear_selection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    m_action_clear_selection->setText("CO");
+    m_action_clear_selection->setToolTip("Clear console output");
 
     connect(m_action_clear_selection, SIGNAL(triggered()), this, SLOT(slot_clear_output()));
     addAction(m_action_clear_selection);
@@ -113,6 +99,16 @@ ConsoleWidget::ConsoleWidget(QWidget* parent)
 
     connect(m_action_focus_on_input, SIGNAL(triggered()), input, SLOT(setFocus()));
     addAction(m_action_focus_on_input);
+
+    QToolBar* toolBar = new QToolBar();
+    toolBar->addAction(m_action_execute_selection);
+    toolBar->addAction(m_action_execute_all);
+    toolBar->addAction(m_action_clear_selection);
+
+    this->insertWidget(0, toolBar);
+    this->insertWidget(1, output);
+    this->insertWidget(2, input);
+    this->setOrientation(Qt::Vertical);
 
     PythonInterpreter::instance().redirect_output(OutputRedirector(output));
 }
