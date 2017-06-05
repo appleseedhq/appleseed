@@ -31,6 +31,7 @@
 
 // appleseed.studio headers.
 #include "outputredirector.h"
+#include "pythoninput.h"
 
 // Qt headers.
 #include <QAction>
@@ -57,15 +58,7 @@ ConsoleWidget::ConsoleWidget(QWidget* parent)
         Qt::TextSelectableByMouse |
         Qt::TextSelectableByKeyboard);
 
-    input = new QTextEdit(this);
-    input->setUndoRedoEnabled(true);
-    input->setLineWrapMode(QTextEdit::WidgetWidth);
-    input->setReadOnly(false);
-    input->setTextInteractionFlags(
-        Qt::TextSelectableByMouse |
-        Qt::TextSelectableByKeyboard |
-        Qt::TextEditable |
-        Qt::TextEditorInteraction);
+    input = new PythonInput(this);
 
     m_action_execute_selection = new QAction(this);
     m_action_execute_selection->setShortcut(Qt::CTRL + Qt::Key_Return);

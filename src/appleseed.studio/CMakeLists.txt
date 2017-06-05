@@ -264,6 +264,8 @@ set (mainwindow_sources
     mainwindow/minimizebutton.h
     mainwindow/outputredirector.cpp
     mainwindow/outputredirector.h
+    mainwindow/pythoninput.cpp
+    mainwindow/pythoninput.h
     mainwindow/qtlogtarget.cpp
     mainwindow/qtlogtarget.h
     mainwindow/renderingsettingswindow.cpp
