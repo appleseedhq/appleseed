@@ -66,6 +66,11 @@
 #include <sstream>
 #include <string>
 
+
+#include <QPixmap>
+#include <QImage>
+#include <QImageReader>
+
 using namespace appleseed::studio;
 using namespace appleseed::shared;
 using namespace foundation;
@@ -282,7 +287,36 @@ int main(int argc, char* argv[])
     // QApplication sets C locale to the user's locale, we need to fix this.
     std::setlocale(LC_ALL, "C");
 
-    // Make sure the application is correctly installed, terminate if not.
+    FILE* f = fopen("test.txt", "wt"); // in /sandbox/bin/Release/test.txt
+    fprintf(f, "\nIN STUDIO main()\n");
+    fprintf(f, "%s\n", std::setlocale(LC_ALL, 0));
+    fclose(f);
+
+    // QT changes locale when loading image from disk for the very first time.
+    // The problem was tracked for both QImage and QPixmap.
+    // Both classes in their `load()` function call `QImageReader.read()`
+    // which results in change of the locale back to system settings.
+    // This is a dirty fix which loads any image at the very beginning and
+    // resets the locale right after, thus preventing the `QImageReader.read()`
+    // to change it again (as it happens only on the very first `read`).
+    //
+    // In appleseed.studio code the locale change occurs in `miscellaneous.cpp`,
+    // `load_icons()`, line 170.
+    {
+    QImageReader qimReader("/home/gospodnetic/Desktop/appleseed/sandbox/icons/project_new_hover.png"); // any image
+    qimReader.read();
+    }
+    f = fopen("test.txt", "at");
+    fprintf(f, "\nIN STUDIO main() after QImageReader.read()\n");
+    fprintf(f, "%s\n", std::setlocale(LC_ALL, 0));
+    fclose(f);
+
+    std::setlocale(LC_ALL, "C");
+    f = fopen("test.txt", "at");
+    fprintf(f, "\nIN STUDIO main() after resetting locale to 'C'\n");
+    fprintf(f, "%s\n", std::setlocale(LC_ALL, 0));
+    fclose(f);
+
     check_installation();
 
     // Create and configure a logger.

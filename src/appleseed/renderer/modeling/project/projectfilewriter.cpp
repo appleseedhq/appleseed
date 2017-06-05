@@ -921,12 +921,6 @@ bool ProjectFileWriter::write_plain_project_file(
 {
     RENDERER_LOG_INFO("writing project file %s...", filepath);
 
-    // NOTE: temporary fix
-    std::setlocale(LC_ALL, "C");
-    FILE* f = fopen("/home/gospodnetic/Desktop/Petra/tmp/test.txt", "wt");
-    fprintf(f, "%s\n", std::setlocale(LC_ALL, 0));
-    fclose(f);
-
     if (!(options & OmitHandlingAssetFiles))
     {
         // Manage references to external asset files.
