@@ -123,8 +123,6 @@ void ConsoleWidget::slot_execute_selection()
 
 void ConsoleWidget::slot_execute_all()
 {
-    // QTextCursor returned by textCursor function use QChar(8233) instead of newline
-    // It breaks Python indentation rules so it has to be replaced
     QString script = input->toPlainText().replace(QChar(8233), "\n");
     execute(script);
 }
