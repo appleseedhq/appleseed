@@ -53,7 +53,8 @@ class PythonInput
     void keyPressEvent(QKeyEvent* event);
 
   private:
-    void indent_like_previous();
+    void indent();
+    void indent_like_previous(std::string previous);
     void insert_spaces(int count);
 };
 
