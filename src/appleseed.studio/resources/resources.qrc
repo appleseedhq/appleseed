@@ -1,5 +1,8 @@
 <RCC>
     <qresource prefix="/">
+        <file>icons/clear_button_icon.png</file>
+        <file>icons/exec_all_button_icon.png</file>
+        <file>icons/exec_button_icon.png</file>
         <file>images/appleseed-logo-256.png</file>
         <file>patterns/texture.png</file>
         <file>widgets/checkbox_checked_disabled.png</file>
