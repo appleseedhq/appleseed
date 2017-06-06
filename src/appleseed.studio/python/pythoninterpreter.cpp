@@ -71,6 +71,14 @@ void PythonInterpreter::redirect_output(OutputRedirector redirector)
 PythonInterpreter::PythonInterpreter()
 {
     Py_Initialize();
+
+    // Add path to appleseed module to sys.path so python can find it
+    bpy::import("sys").attr("path").attr("append")("../../lib/Debug/python2.7");
+
+    // Imports appleseed module and creates asd alias for it
+    // so we can refer to it by both names
+    PyRun_SimpleString("import appleseed\n"
+                           "asr=appleseed");
 }
 
 PythonInterpreter::~PythonInterpreter()
