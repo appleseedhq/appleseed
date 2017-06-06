@@ -29,6 +29,9 @@
 // Interface header.
 #include "pythoninput.h"
 
+// Studio headers.
+#include "pythonhighlighter.h"
+
 // Qt headers.
 #include <QKeyEvent>
 #include <QString>
@@ -51,6 +54,8 @@ PythonInput::PythonInput(QWidget* parent)
         Qt::TextSelectableByKeyboard |
         Qt::TextEditable |
         Qt::TextEditorInteraction);
+
+    new PythonSyntaxHighlighter(this->document());
 }
 
 void PythonInput::keyPressEvent(QKeyEvent* event)

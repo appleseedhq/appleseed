@@ -264,6 +264,8 @@ set (mainwindow_sources
     mainwindow/minimizebutton.h
     mainwindow/outputredirector.cpp
     mainwindow/outputredirector.h
+    mainwindow/pythonhighlighter.cpp
+    mainwindow/pythonhighlighter.h
     mainwindow/pythoninput.cpp
     mainwindow/pythoninput.h
     mainwindow/qtlogtarget.cpp
