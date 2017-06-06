@@ -38,6 +38,7 @@
 #include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
 #include "foundation/utility/alignedvector.h"
+#include "foundation/utility/statistics.h"
 #include "foundation/utility/uid.h"
 
 // Forward declarations.
@@ -99,6 +100,8 @@ class LightTree
 
     LightSourcePointerVector   m_light_sources;
     ItemVector                 m_items;
+
+    void store_items_in_leaves(foundation::Statistics& statistics);
 };
 
 }

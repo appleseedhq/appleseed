@@ -32,6 +32,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
+#include "foundation/math/permutation.h"
+#include "foundation/platform/timers.h"
 
 // Standard headers.
 
@@ -62,6 +64,7 @@ void LightTree::build(
 {
 
     RENDERER_LOG_INFO("Building a tree");
+    foundation::Statistics statistics;
     AABBVector light_bboxes;
 
     RENDERER_LOG_INFO("Collecting light sources...");
@@ -78,8 +81,10 @@ void LightTree::build(
                 bbox,
                 position));
 
-        RENDERER_LOG_INFO("Non physical light at coordinates [%f %f %f]", position[0], position[1], position[2]);
-        RENDERER_LOG_INFO("Non physical light bbox center [%f %f %f]", bbox.center()[0], bbox.center()[1], bbox.center()[2]);
+        RENDERER_LOG_INFO("Non physical light at coordinates [%f %f %f]",
+                            position[0], position[1], position[2]);
+        RENDERER_LOG_INFO("Non physical light bbox center [%f %f %f]",
+                            bbox.center()[0], bbox.center()[1], bbox.center()[2]);
     }
 
     for (foundation::const_each<EmittingTriangleVector> i = emitting_triangles; i; ++i)
@@ -94,18 +99,82 @@ void LightTree::build(
                 bbox,
                 position));
 
-        RENDERER_LOG_INFO("Emitting triangle centroid at coordinates [%f %f %f]", position[0], position[1], position[2]);
-        RENDERER_LOG_INFO("Emitting triangle bbox center [%f %f %f]", bbox.center()[0], bbox.center()[1], bbox.center()[2]);
+        RENDERER_LOG_INFO("Emitting triangle centroid at coordinates [%f %f %f]",
+                            position[0], position[1], position[2]);
+        RENDERER_LOG_INFO("Emitting triangle bbox center [%f %f %f]",
+                            bbox.center()[0], bbox.center()[1], bbox.center()[2]);
     }
 
     // Create the partitioner.
     typedef foundation::bvh::SAHPartitioner<AABBVector> Partitioner;
     Partitioner partitioner(light_bboxes);
 
-    // Build the assembly tree.
+    // Build the light tree.
     typedef foundation::bvh::Builder<LightTree, Partitioner> Builder;
     Builder builder;
+    builder.build<foundation::DefaultWallclockTimer>(*this, partitioner, m_items.size(), 1);
+    statistics.insert_time("build time", builder.get_build_time());
 
+    if (!m_items.empty())
+    {
+        RENDERER_LOG_INFO("Items not empty\nPartitioning...");
+
+        const std::vector<size_t>& ordering = partitioner.get_item_ordering();
+        assert(m_items.size() == ordering.size());
+
+        RENDERER_LOG_INFO("Reordering...");
+        // Reorder the items according to the tree ordering.
+        ItemVector temp_lights(ordering.size());
+        foundation::small_item_reorder(
+            &m_items[0],
+            &temp_lights[0],
+            &ordering[0],
+            ordering.size());
+
+        RENDERER_LOG_INFO("Storing items in leaves...");
+        
+        // Store the items in the tree leaves whenever possible.
+        store_items_in_leaves(statistics);
+    }
+
+    // Print light tree statistics.
+    RENDERER_LOG_INFO("%s",
+        foundation::StatisticsVector::make(
+            "light tree statistics",
+            statistics).to_string().c_str());
+}
+
+void LightTree::store_items_in_leaves(foundation::Statistics& statistics)
+{
+    size_t leaf_count = 0;
+    size_t fat_leaf_count = 0;
+
+    const size_t node_count = m_nodes.size();
+
+    for (size_t i = 0; i < node_count; ++i)
+    {
+        NodeType& node = m_nodes[i];
+
+        if (node.is_leaf())
+        {
+            ++leaf_count;
+
+            const size_t item_count = node.get_item_count();
+
+            if (item_count <= NodeType::MaxUserDataSize / sizeof(Item))
+            {
+                ++fat_leaf_count;
+
+                const size_t item_begin = node.get_item_index();
+                Item* user_data = &node.get_user_data<Item>();
+
+                for (size_t j = 0; j < item_count; ++j)
+                    user_data[j] = m_items[item_begin + j];
+            }
+        }
+    }
+
+    statistics.insert_percent("fat leaves", fat_leaf_count, leaf_count);
 }
 
 }   // namespace renderer
