@@ -45,6 +45,7 @@ PythonInput::PythonInput(QWidget* parent)
     setUndoRedoEnabled(true);
     setLineWrapMode(QTextEdit::WidgetWidth);
     setReadOnly(false);
+    setAcceptRichText(false);
     setTextInteractionFlags(
         Qt::TextSelectableByMouse |
         Qt::TextSelectableByKeyboard |
