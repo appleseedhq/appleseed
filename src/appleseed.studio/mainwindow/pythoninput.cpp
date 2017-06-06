@@ -55,9 +55,7 @@ PythonInput::PythonInput(QWidget* parent)
 void PythonInput::keyPressEvent(QKeyEvent* event)
 {
     if (event->key() == Qt::Key_Tab)
-    {
         insert_spaces(4);
-    }
     else
     {
         QTextEdit::keyPressEvent(event);

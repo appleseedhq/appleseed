@@ -98,10 +98,10 @@ ConsoleWidget::ConsoleWidget(QWidget* parent)
     toolBar->addAction(m_action_execute_all);
     toolBar->addAction(m_action_clear_selection);
 
-    this->insertWidget(0, toolBar);
-    this->insertWidget(1, output);
-    this->insertWidget(2, input);
-    this->setOrientation(Qt::Vertical);
+    insertWidget(0, toolBar);
+    insertWidget(1, output);
+    insertWidget(2, input);
+    setOrientation(Qt::Vertical);
 
     PythonInterpreter::instance().redirect_output(OutputRedirector(output));
 }
@@ -116,8 +116,7 @@ void ConsoleWidget::slot_execute_selection()
 
 void ConsoleWidget::slot_execute_all()
 {
-    QString script = input->toPlainText().replace(QChar(8233), "\n");
-    execute(script);
+    execute(input->toPlainText());
 }
 
 void ConsoleWidget::slot_clear_output()
