@@ -57,29 +57,26 @@ ConsoleWidget::ConsoleWidget(QWidget* parent)
 
     input = new PythonInput(this);
 
-    m_action_execute_selection = new QAction(this);
+    m_action_execute_selection = new QAction(QIcon(":icons/exec_button_icon.png"),
+                                             "Execute selection", this);
     m_action_execute_selection->setShortcut(Qt::CTRL + Qt::Key_Return);
     m_action_execute_selection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    m_action_execute_selection->setText("ES");
-    m_action_execute_selection->setToolTip("Execute selection as python script");
 
     connect(m_action_execute_selection, SIGNAL(triggered()), this, SLOT(slot_execute_selection()));
     addAction(m_action_execute_selection);
 
-    m_action_execute_all = new QAction(this);
+    m_action_execute_all = new QAction(QIcon(":icons/exec_all_button_icon.png"),
+                                       "Execute all text", this);
     m_action_execute_all->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_Return);
     m_action_execute_all->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    m_action_execute_all->setText("EA");
-    m_action_execute_all->setToolTip("Execute all text in input as python script");
 
     connect(m_action_execute_all, SIGNAL(triggered()), this, SLOT(slot_execute_all()));
     addAction(m_action_execute_all);
 
-    m_action_clear_selection = new QAction(this);
+    m_action_clear_selection = new QAction(QIcon(":icons/clear_button_icon.png"),
+                                           "Clear console output", this);
     m_action_clear_selection->setShortcut(Qt::CTRL + Qt::Key_D);
     m_action_clear_selection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    m_action_clear_selection->setText("CO");
-    m_action_clear_selection->setToolTip("Clear console output");
 
     connect(m_action_clear_selection, SIGNAL(triggered()), this, SLOT(slot_clear_output()));
     addAction(m_action_clear_selection);
