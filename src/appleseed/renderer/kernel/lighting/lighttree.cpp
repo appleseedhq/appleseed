@@ -105,8 +105,10 @@ void LightTree::build(
                             bbox.center()[0], bbox.center()[1], bbox.center()[2]);
     }
 
+    RENDERER_LOG_INFO("Number of light sources: %zu", m_light_sources.size());
+
     // Create the partitioner.
-    typedef foundation::bvh::SAHPartitioner<AABBVector> Partitioner;
+    typedef foundation::bvh::MedianPartitioner<AABBVector> Partitioner;
     Partitioner partitioner(light_bboxes);
 
     // Build the light tree.
@@ -117,8 +119,6 @@ void LightTree::build(
 
     if (!m_items.empty())
     {
-        RENDERER_LOG_INFO("Items not empty\nPartitioning...");
-
         const std::vector<size_t>& ordering = partitioner.get_item_ordering();
         assert(m_items.size() == ordering.size());
 
@@ -132,7 +132,7 @@ void LightTree::build(
             ordering.size());
 
         RENDERER_LOG_INFO("Storing items in leaves...");
-        
+
         // Store the items in the tree leaves whenever possible.
         store_items_in_leaves(statistics);
     }
@@ -174,6 +174,8 @@ void LightTree::store_items_in_leaves(foundation::Statistics& statistics)
         }
     }
 
+    RENDERER_LOG_INFO("leaf_count... %zu", leaf_count);
+    RENDERER_LOG_INFO("fat_leaf_count... %zu", fat_leaf_count);
     statistics.insert_percent("fat leaves", fat_leaf_count, leaf_count);
 }
 
