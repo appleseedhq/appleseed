@@ -40,15 +40,7 @@ matrix:
 
         - os: linux
           compiler: gcc
-          env: GCC_VERSION=5 USE_CPP11=OFF
-
-        - os: linux
-          compiler: gcc
           env: GCC_VERSION=5 USE_CPP11=ON
-
-        - os: linux
-          compiler: gcc
-          env: GCC_VERSION=6 USE_CPP11=OFF
 
         - os: linux
           compiler: gcc
