@@ -247,6 +247,60 @@
                     </matrix>
                 </transform>
             </light>
+            <light name="sl2" model="spot_light">
+                <parameter name="cast_indirect_light" value="true" />
+                <parameter name="exposure" value="0.0" />
+                <parameter name="importance_multiplier" value="1.0" />
+                <parameter name="inner_angle" value="20.0" />
+                <parameter name="intensity" value="1.0" />
+                <parameter name="intensity_multiplier" value="1.0" />
+                <parameter name="outer_angle" value="30.0" />
+                <parameter name="tilt_angle" value="0.0" />
+                <transform>
+                    <matrix>
+                        0.100000001490116 0.000000000000000 0.000000000000000 2.068044371902943
+                        0.000000000000000 0.000000000000000 0.100000001490116 -15.100000001490116
+                        0.000000000000000 -0.100000001490116 0.000000000000000 5.128827154636383
+                        0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
+                    </matrix>
+                </transform>
+            </light>
+            <light name="sl3" model="spot_light">
+                <parameter name="cast_indirect_light" value="true" />
+                <parameter name="exposure" value="0.0" />
+                <parameter name="importance_multiplier" value="1.0" />
+                <parameter name="inner_angle" value="20.0" />
+                <parameter name="intensity" value="1.0" />
+                <parameter name="intensity_multiplier" value="1.0" />
+                <parameter name="outer_angle" value="30.0" />
+                <parameter name="tilt_angle" value="0.0" />
+                <transform>
+                    <matrix>
+                        0.100000001490116 0.000000000000000 0.000000000000000 2.068044371902943
+                        0.000000000000000 0.000000000000000 0.100000001490116 -15.100000001490116
+                        0.000000000000000 -0.100000001490116 0.000000000000000 5.128827154636383
+                        0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
+                    </matrix>
+                </transform>
+            </light>
+            <light name="sl4" model="spot_light">
+                <parameter name="cast_indirect_light" value="true" />
+                <parameter name="exposure" value="0.0" />
+                <parameter name="importance_multiplier" value="1.0" />
+                <parameter name="inner_angle" value="20.0" />
+                <parameter name="intensity" value="1.0" />
+                <parameter name="intensity_multiplier" value="1.0" />
+                <parameter name="outer_angle" value="30.0" />
+                <parameter name="tilt_angle" value="0.0" />
+                <transform>
+                    <matrix>
+                        0.100000001490116 0.000000000000000 0.000000000000000 2.068044371902943
+                        0.000000000000000 0.000000000000000 0.100000001490116 -15.100000001490116
+                        0.000000000000000 -0.100000001490116 0.000000000000000 5.128827154636383
+                        0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
+                    </matrix>
+                </transform>
+            </light>
             <light name="sunl" model="sun_light">
                 <parameter name="cast_indirect_light" value="true" />
                 <parameter name="importance_multiplier" value="1.0" />
