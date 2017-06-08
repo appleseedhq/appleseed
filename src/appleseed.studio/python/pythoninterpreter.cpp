@@ -32,6 +32,9 @@
 // Studio headers.
 #include "mainwindow/outputredirector.h"
 
+// appleseed.foundation headers.
+#include "foundation/platform/path.h"
+
 // Boost headers.
 #include "boost/python.hpp"
 #include "boost/filesystem.hpp"
@@ -72,7 +75,7 @@ PythonInterpreter::PythonInterpreter()
 {
     Py_Initialize();
 
-    const bf::path bin(bf::current_path());
+    const bf::path bin(foundation::get_executable_directory());
     const bf::path configuration = bin.filename();
     const bf::path lib(bin.parent_path().parent_path()
                        / "lib" / configuration / "python2.7");
