@@ -30,6 +30,9 @@
 // Interface header.
 #include "lighttree.h"
 
+// appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
 #include "foundation/math/permutation.h"
@@ -81,10 +84,10 @@ void LightTree::build(
                 bbox,
                 position));
 
-        RENDERER_LOG_INFO("Non physical light at coordinates [%f %f %f]",
-                            position[0], position[1], position[2]);
         RENDERER_LOG_INFO("Non physical light bbox center [%f %f %f]",
-                            bbox.center()[0], bbox.center()[1], bbox.center()[2]);
+                            bbox.center()[0],
+                            bbox.center()[1],
+                            bbox.center()[2]);
     }
 
     for (foundation::const_each<EmittingTriangleVector> i = emitting_triangles; i; ++i)
@@ -107,14 +110,15 @@ void LightTree::build(
 
     RENDERER_LOG_INFO("Number of light sources: %zu", m_light_sources.size());
 
+    FILE* f = fopen("sorting_test.txt", "wt"); // in /sandbox/bin/Release/test.txt
     // Create the partitioner.
-    typedef foundation::bvh::MedianPartitioner<AABBVector> Partitioner;
+    typedef foundation::bvh::SAHPartitioner<AABBVector> Partitioner;
     Partitioner partitioner(light_bboxes);
-
+    fclose(f);
     // Build the light tree.
     typedef foundation::bvh::Builder<LightTree, Partitioner> Builder;
     Builder builder;
-    builder.build<foundation::DefaultWallclockTimer>(*this, partitioner, m_items.size(), 1);
+    builder.build<foundation::DefaultWallclockTimer>(*this, partitioner, m_items.size(), 1, true);
     statistics.insert_time("build time", builder.get_build_time());
 
     if (!m_items.empty())

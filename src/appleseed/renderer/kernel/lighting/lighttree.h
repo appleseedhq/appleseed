@@ -31,7 +31,6 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTREE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globallogger.h"
 #include "renderer/kernel/lighting/lighttypes.h"
 
 // appleseed.foundation headers.

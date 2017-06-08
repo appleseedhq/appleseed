@@ -30,6 +30,8 @@
 #ifndef APPLESEED_FOUNDATION_MATH_BVH_BVH_PARTITIONERBASE_H
 #define APPLESEED_FOUNDATION_MATH_BVH_BVH_PARTITIONERBASE_H
 
+// appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/bvh/bvh_bboxsortpredicate.h"
@@ -78,7 +80,8 @@ class PartitionerBase
         const size_t            dimension,
         const size_t            begin,
         const size_t            end,
-        const size_t            pivot);
+        const size_t            pivot,
+        const bool              write = false);
 
   private:
     std::vector<size_t>         m_tmp;
@@ -97,8 +100,11 @@ PartitionerBase<AABBVector>::PartitionerBase(
 {
     const size_t size = m_bboxes.size();
 
+    FILE* f = fopen("sorting_test.txt", "at"); // in /sandbox/bin/Release/test.txt
+    fprintf(f, "PartitionerBase constructor\n");
     for (size_t d = 0; d < Dimension; ++d)
     {
+        fprintf(f, "DIMENSION d: %zu\n", d);
         std::vector<size_t>& indices = m_indices[d];
 
         // Identity ordering.
@@ -106,10 +112,26 @@ PartitionerBase<AABBVector>::PartitionerBase(
         for (size_t i = 0; i < size; ++i)
             indices[i] = i;
 
-        // Sort the items according to their bounding boxes.
+        fprintf(f, "m_indices before bbox sort: [ ");
+        for(size_t m = 0; m < m_indices[d].size(); m++)
+        {
+            fprintf(f, "%lu ", m_indices[d][m]);
+        }
+        fprintf(f, "]\n");
+        
+        // Sort the items according to the centre of their bounding boxes.
         BboxSortPredicate<AABBVectorType> predicate(m_bboxes, d);
         std::sort(indices.begin(), indices.end(), predicate);
+        
+        fprintf(f, "m_indices after bbox sort: [ ");
+        for(size_t m = 0; m < m_indices[d].size(); m++)
+        {
+            fprintf(f, "%lu ", m_indices[d][m]);
+        }
+        fprintf(f, "]\n");
     }
+    fprintf(f, "PartitionerBase constructor end\n");
+    fclose(f);
 
     m_tmp.resize(size);
     m_tags.resize(size);
@@ -136,23 +158,77 @@ void PartitionerBase<AABBVector>::sort_indices(
     const size_t                dimension,
     const size_t                begin,
     const size_t                end,
-    const size_t                pivot)
+    const size_t                pivot,
+    const bool                  write)
 {
+    FILE* f = fopen("sorting_test.txt", "at"); // in /sandbox/bin/Release/test.txt
+    if(write)
+    {
+        fprintf(f, "\nSORTING INDICES...\n");
+        fprintf(f, "DIMENSION argument: %zu\n", dimension);
+        fprintf(f, "PIVOT: %zu\n", pivot);
+    }
+
     const std::vector<size_t>& split_indices = m_indices[dimension];
+
+    if(write)
+    {
+        fprintf(f, "split_indices: [ ");
+        for(size_t m = 0; m < split_indices.size(); m++)
+        {
+            fprintf(f, "%lu ", split_indices[m]);
+        }
+        fprintf(f, "]\n");
+    }
 
     enum { Left = 0, Right = 1 };
 
     for (size_t i = begin; i < pivot; ++i)
         m_tags[split_indices[i]] = Left;
 
+    if(write)
+    {
+        fprintf(f, "\ntags: [ ");
+        for(size_t m = 0; m < m_tags.size(); m++)
+        {
+            fprintf(f, "%d ", m_tags[m]);
+        }
+        fprintf(f, "]\n");
+    }
+
     for (size_t i = pivot; i < end; ++i)
         m_tags[split_indices[i]] = Right;
 
+    if(write)
+    {
+        fprintf(f, "\ntags: [ ");
+        for(size_t m = 0; m < m_tags.size(); m++)
+        {
+            fprintf(f, "%d ", m_tags[m]);
+        }
+        fprintf(f, "]\n");
+    }
+
     for (size_t d = 0; d < Dimension; ++d)
     {
+        if(write)
+        {
+            fprintf(f, "\nDIMENSION d: %zu\n", d);
+        }
         if (d != dimension)
         {
+            fprintf(f, "\nd != dimension\n");
             std::vector<size_t>& indices = m_indices[d];
+
+            if(write)
+            {
+                fprintf(f, "indices: [ ");
+                for(size_t m = 0; m < indices.size(); m++)
+                {
+                    fprintf(f, "%lu ", indices[m]);
+                }
+                fprintf(f, "]\n");
+            }
 
             size_t left = begin;
             size_t right = pivot;
@@ -161,15 +237,37 @@ void PartitionerBase<AABBVector>::sort_indices(
             {
                 const size_t index = indices[i];
 
+                if(write)
+                {
+                    fprintf(f, "\nINDEX: %zu\n", i);
+                }
                 if (m_tags[index] == Left)
                 {
                     assert(left < pivot);
                     m_tmp[left++] = index;
+                    if(write)
+                    {
+                        fprintf(f, "\nleft: %zu\n", left);
+                    }
                 }
                 else
                 {
                     assert(right < end);
                     m_tmp[right++] = index;
+                    if(write)
+                    {
+                        fprintf(f, "\nright: %zu\n", right);
+                    }
+                }
+
+                if(write)
+                {
+                    fprintf(f, "\nm_tmp: [ ");
+                    for(size_t m = 0; m < m_tmp.size(); m++)
+                    {
+                        fprintf(f, "%lu ", m_tmp[m]);
+                    }
+                    fprintf(f, "]\n");
                 }
             }
 
@@ -187,14 +285,35 @@ void PartitionerBase<AABBVector>::sort_indices(
                     m_tmp[i] = indices[i];
 
                 m_tmp.swap(indices);
+
+                if(write)
+                {
+                    fprintf(f, "\nm_tmp: [ ");
+                    for(size_t m = 0; m < m_tmp.size(); m++)
+                    {
+                        fprintf(f, "%lu ", m_tmp[m]);
+                    }
+                    fprintf(f, "]\n");
+                }
             }
             else
             {
                 for (size_t i = begin; i < end; ++i)
                     indices[i] = m_tmp[i];
+
+                if(write)
+                {
+                    fprintf(f, "indices: [ ");
+                    for(size_t m = 0; m < indices.size(); m++)
+                    {
+                        fprintf(f, "%lu ", indices[m]);
+                    }
+                    fprintf(f, "]\n");
+                }
             }
         }
     }
+    fclose(f);
 }
 
 template <typename Tree>
