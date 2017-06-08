@@ -34,10 +34,10 @@
 
 // Boost headers.
 #include "boost/python.hpp"
-
-#include <string>
+#include "boost/filesystem.hpp"
 
 namespace bpy = boost::python;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace studio {
@@ -72,8 +72,13 @@ PythonInterpreter::PythonInterpreter()
 {
     Py_Initialize();
 
+    const bf::path bin(bf::current_path());
+    const bf::path configuration = bin.filename();
+    const bf::path lib(bin.parent_path().parent_path()
+                       / "lib" / configuration / "python2.7");
+
     // Add path to appleseed module to sys.path so python can find it
-    bpy::import("sys").attr("path").attr("append")("../../lib/Debug/python2.7");
+    bpy::import("sys").attr("path").attr("append")(lib.string());
 
     // Imports appleseed module and creates asd alias for it
     // so we can refer to it by both names
