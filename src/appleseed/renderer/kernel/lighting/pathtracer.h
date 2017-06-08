@@ -103,11 +103,12 @@ class PathTracer
         SamplingContext&        sampling_context,
         const ShadingContext&   shading_context,
         const ShadingRay&       ray,
-        PathVertex&             vertex);
+        PathVertex&             vertex,
+        ShadingPoint&           shading_point);
 
   private:
     PathVisitor&                m_path_visitor;
-    VolumeVisitor&              m_volume_visitor,
+    VolumeVisitor&              m_volume_visitor;
     const size_t                m_rr_min_path_length;
     const size_t                m_max_bounces;
     const size_t                m_max_diffuse_bounces;
@@ -592,11 +593,12 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 
         shading_points[shading_point_index].clear();
         const ShadingRay::Medium* current_medium = next_ray.get_current_medium();
-        if (current_medium->m_material->get_render_data().m_phase_function != 0)
+        if (current_medium != 0 && 
+            current_medium->m_material->get_render_data().m_phase_function != 0)
         {
             // This ray is being cast into a participating medium
             march(sampling_context, shading_context,
-                vertex, next_ray, shading_points[shading_point_index]);
+                next_ray, vertex, shading_points[shading_point_index]);
         }
         else
         {
@@ -620,17 +622,18 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
     SamplingContext&        sampling_context,
     const ShadingContext&   shading_context,
     const ShadingRay&       ray,
-    PathVertex&             vertex)
+    PathVertex&             vertex,
+    ShadingPoint&           exit_point)
 {
     const ShadingRay::Medium* medium = ray.get_current_medium();
-    PhaseFunction* phase_function = medium->m_material->get_render_data().m_phase_function;
+    const PhaseFunction* phase_function = medium->m_material->get_render_data().m_phase_function;
 
     shading_context.get_intersector().trace(
         ray,
-        shading_points[shading_point_index],
+        exit_point,
         vertex.m_shading_point);
 
-    const ShadingRay& volume_ray = vertex.m_shading_point->get_ray();
+    const ShadingRay& volume_ray = exit_point.get_ray();
 
     void* data = phase_function->evaluate_inputs(shading_context, volume_ray);
     phase_function->prepare_inputs(shading_context.get_arena(), volume_ray, data);

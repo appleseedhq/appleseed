@@ -245,6 +245,13 @@ namespace
         }
 
       private:
+        struct VolumeVisitorEmpty
+          {
+              void visit(const ShadingRay& volume_ray)
+              {
+              }
+          };
+
         struct PathVisitor
         {
             const Parameters&               m_params;
@@ -484,7 +491,7 @@ namespace
             }
         };
 
-        typedef PathTracer<PathVisitor, true> PathTracerType;   // true = adjoint
+        typedef PathTracer<PathVisitor, VolumeVisitorEmpty, true> PathTracerType;   // true = adjoint
 
         const Parameters                m_params;
 
@@ -650,8 +657,10 @@ namespace
                 sampling_context,
                 samples,
                 initial_flux);
+            VolumeVisitorEmpty volume_visitor;
             PathTracerType path_tracer(
                 path_visitor,
+                volume_visitor,
                 m_params.m_rr_min_path_length,
                 m_params.m_max_bounces,
                 ~0, // max diffuse bounces
@@ -730,8 +739,10 @@ namespace
                 sampling_context,
                 samples,
                 initial_flux);
+            VolumeVisitorEmpty volume_visitor;
             PathTracerType path_tracer(
                 path_visitor,
+                volume_visitor,
                 m_params.m_rr_min_path_length,
                 m_params.m_max_bounces,
                 ~0, // max diffuse bounces
@@ -820,8 +831,10 @@ namespace
                 sampling_context,
                 samples,
                 initial_flux);
+            VolumeVisitorEmpty volume_visitor;
             PathTracerType path_tracer(
                 path_visitor,
+                volume_visitor,
                 m_params.m_rr_min_path_length,
                 m_params.m_max_bounces,
                 ~0, // max diffuse bounces

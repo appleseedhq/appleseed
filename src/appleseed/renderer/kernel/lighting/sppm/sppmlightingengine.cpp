@@ -163,8 +163,11 @@ namespace
                 m_answer,
                 radiance);
 
-            PathTracer<PathVisitor, false> path_tracer(     // false = not adjoint
+            VolumeVisitorEmpty volume_visitor;
+
+            PathTracer<PathVisitor, VolumeVisitorEmpty, false> path_tracer(     // false = not adjoint
                 path_visitor,
+                volume_visitor,
                 m_params.m_path_tracing_rr_min_path_length,
                 m_params.m_path_tracing_max_bounces,
                 ~0, // max diffuse bounces
@@ -313,15 +316,19 @@ namespace
 
                 const size_t bsdf_sample_count = light_sample_count;
 
+                const BSDFSampler bsdf_sampler(
+                    *vertex.m_bsdf,
+                    vertex.m_bsdf_data,
+                    ScatteringMode::Diffuse,
+                    *vertex.m_shading_point);
+
                 // Unlike in the path tracer, we need to sample the diffuse components
                 // of the BSDF because we won't extend the path after a diffuse bounce.
                 const DirectLightingIntegrator integrator(
                     m_shading_context,
                     m_light_sampler,
-                    *vertex.m_shading_point,
-                    *vertex.m_bsdf,
-                    vertex.m_bsdf_data,
-                    ScatteringMode::Diffuse,
+                    bsdf_sampler,
+                    vertex.m_shading_point->get_time(),
                     ScatteringMode::All,
                     bsdf_sample_count,
                     light_sample_count,
@@ -562,6 +569,13 @@ namespace
 
                 // Add the emitted light contribution.
                 vertex_radiance += emitted_radiance;
+            }
+        };
+
+        struct VolumeVisitorEmpty
+        {
+            void visit(const ShadingRay& volume_ray)
+            {
             }
         };
 

@@ -68,22 +68,151 @@ namespace renderer
 //   samples passed to the constructor plus the number of non-physical lights in the scene.
 //
 
+class IMaterialSampler
+{
+  public:
+    virtual const foundation::Vector3d& get_point() const = 0;
+
+    virtual bool contributes_to_light_sampling() const = 0;
+
+    virtual const ShadingPoint& trace(
+        const ShadingContext&        shading_context,
+        const foundation::Vector3f&  direction,
+        float&                       transmission) const = 0;
+
+    virtual float trace_between(
+        const ShadingContext& shading_context,
+        const foundation::Vector3d& target_position
+        ) const = 0;
+
+    virtual bool sample(
+        SamplingContext&   sampling_context,
+        const foundation::Dual3d&      outgoing,
+        foundation::Dual3f&            incoming,
+        Spectrum&          value,
+        float&             pdf) const = 0;
+
+    virtual float evaluate(
+        int                light_sampling_modes,
+        foundation::Vector3f           outgoing,
+        foundation::Vector3f           incoming,
+        Spectrum&          value
+        ) const = 0;
+
+    virtual bool cull_incoming_direction(
+        const foundation::Vector3d& incoming) const = 0;
+};
+
+class BSDFSampler : public IMaterialSampler
+{
+  public:
+    BSDFSampler(
+        const BSDF&          bsdf,
+        const void*          bsdf_data,
+        const int            bsdf_sampling_modes,
+        const ShadingPoint&  shading_point);
+
+    virtual const foundation::Vector3d& get_point() const;
+
+    virtual bool contributes_to_light_sampling() const;
+
+    virtual float trace_between(
+        const ShadingContext&         shading_context,
+        const foundation::Vector3d&   target_position
+        ) const;
+
+    virtual bool sample(
+        SamplingContext&             sampling_context,
+        const foundation::Dual3d&    outgoing,
+        foundation::Dual3f&          incoming,
+        Spectrum&                    value,
+        float&                       pdf) const;
+
+    virtual float evaluate(
+        int                     light_sampling_modes,
+        foundation::Vector3f    outgoing,
+        foundation::Vector3f    incoming,
+        Spectrum&               value
+        ) const;
+
+    virtual const ShadingPoint& trace(
+        const ShadingContext&          shading_context,
+        const foundation::Vector3f&    direction,
+        float&                         transmission) const override;
+
+    virtual bool cull_incoming_direction(const foundation::Vector3d& incoming) const;
+
+  private:
+    const BSDF&                      m_bsdf;
+    const void*                      m_bsdf_data;
+    const int                        m_bsdf_sampling_modes;
+    const foundation::Basis3d&       m_shading_basis;
+    const foundation::Vector3d&      m_geometric_normal;
+    const ShadingPoint&              m_shading_point;
+};
+
+class PhaseFunctionSampler : public IMaterialSampler
+{
+  public:
+    PhaseFunctionSampler(
+        const ShadingRay&        volume_ray,
+        const PhaseFunction&     phasefunction,
+        const void*              phasefunction_data,
+        const float              distance);
+
+    virtual const foundation::Vector3d& get_point() const;
+
+    virtual bool contributes_to_light_sampling() const;
+
+    virtual bool sample(
+        SamplingContext&           sampling_context,
+        const foundation::Dual3d&  outgoing,
+        foundation::Dual3f&        incoming,
+        Spectrum&                  value,
+        float&                     pdf) const;
+
+    virtual float evaluate(
+        int                   light_sampling_modes,
+        foundation::Vector3f  outgoing,
+        foundation::Vector3f  incoming,
+        Spectrum&             value
+        ) const;
+
+    virtual float trace_between(
+        const ShadingContext&        shading_context,
+        const foundation::Vector3d&  target_position
+        ) const;
+
+    virtual const ShadingPoint& trace(
+        const ShadingContext&        shading_context,
+        const foundation::Vector3f&  direction,
+        float&                       transmission) const override;
+
+    virtual bool cull_incoming_direction(
+        const foundation::Vector3d&  incoming) const;
+
+  private:
+    const ShadingRay&          m_volume_ray;
+    const PhaseFunction&       m_phasefunction;
+    const void*                m_phasefunction_data;
+    const float                m_distance;
+    const foundation::Vector3d m_point;
+};
+
 class DirectLightingIntegrator
 {
   public:
     // Constructor.
-    DirectLightingIntegrator(
-        const ShadingContext&           shading_context,
-        const LightSampler&             light_sampler,
-        const ShadingPoint&             shading_point,              // point at which to integrate direct lighting
-        const BSDF&                     bsdf,                       // BSDF at 'shading_point'
-        const void*                     bsdf_data,                  // input data of the BSDF
-        const int                       bsdf_sampling_modes,        // permitted scattering modes during BSDF sampling
-        const int                       light_sampling_modes,       // permitted scattering modes during environment sampling
-        const size_t                    bsdf_sample_count,          // number of samples in BSDF sampling
-        const size_t                    light_sample_count,         // number of samples in light sampling
-        const float                     low_light_threshold,        // light contribution threshold to disable shadow rays
-        const bool                      indirect);                  // are we computing indirect lighting?
+      DirectLightingIntegrator::DirectLightingIntegrator(
+          const ShadingContext&       shading_context,
+          const LightSampler&         light_sampler,
+          const IMaterialSampler&     material_sampler,
+          const ShadingRay::Time&     m_time,
+          const int                   light_sampling_modes,
+          const size_t                material_sample_count,        // number of samples in material sampling
+          const size_t                light_sample_count,           // number of samples in light sampling
+          const float                 low_light_threshold,          // light contribution threshold to disable shadow rays 
+          const bool                  indirect);                    // are we computing indirect lighting?
 
     // Compute outgoing radiance due to direct lighting via combined BSDF and light sampling.
     void compute_outgoing_radiance_combined_sampling(
@@ -124,17 +253,11 @@ class DirectLightingIntegrator
   private:
     const ShadingContext&               m_shading_context;
     const LightSampler&                 m_light_sampler;
-    const ShadingPoint&                 m_shading_point;
-    const foundation::Vector3d&         m_point;
-    const foundation::Vector3d&         m_geometric_normal;
-    const foundation::Basis3d&          m_shading_basis;
     const ShadingRay::Time&             m_time;
-    const BSDF&                         m_bsdf;
-    const void*                         m_bsdf_data;
-    const int                           m_bsdf_sampling_modes;
+    const IMaterialSampler&             m_material_sampler;
     const int                           m_light_sampling_modes;
     const float                         m_low_light_threshold;
-    const size_t                        m_bsdf_sample_count;
+    const size_t                        m_material_sample_count;
     const size_t                        m_light_sample_count;
     const bool                          m_indirect;
 
