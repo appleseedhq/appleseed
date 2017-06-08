@@ -136,6 +136,7 @@ set (foundation_math_bvh_sources
     foundation/math/bvh/bvh_builder.h
     foundation/math/bvh/bvh_intersector.h
     foundation/math/bvh/bvh_medianpartitioner.h
+    foundation/math/bvh/bvh_middlepartitioner.h
     foundation/math/bvh/bvh_node.h
     foundation/math/bvh/bvh_partitionerbase.h
     foundation/math/bvh/bvh_sahpartitioner.h

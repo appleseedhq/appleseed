@@ -112,7 +112,7 @@ void LightTree::build(
 
     FILE* f = fopen("sorting_test.txt", "wt"); // in /sandbox/bin/Release/test.txt
     // Create the partitioner.
-    typedef foundation::bvh::SAHPartitioner<AABBVector> Partitioner;
+    typedef foundation::bvh::MiddlePartitioner<AABBVector> Partitioner;
     Partitioner partitioner(light_bboxes);
     fclose(f);
     // Build the light tree.
