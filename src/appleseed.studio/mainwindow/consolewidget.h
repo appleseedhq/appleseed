@@ -29,7 +29,7 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_CONSOLEWIDGET_H
 #define APPLESEED_STUDIO_MAINWINDOW_CONSOLEWIDGET_H
 
-// appleseed.studio headers
+// appleseed.studio headers.
 #include "python/pythoninterpreter.h"
 
 // Qt headers.
@@ -68,6 +68,8 @@ class ConsoleWidget
     QAction* m_action_focus_on_input;
 
     void execute(const QString& script);
+
+    void init_actions();
 };
 
 }       // namespace studio

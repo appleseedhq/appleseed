@@ -36,8 +36,6 @@
 // Qt headers.
 #include <QAction>
 #include <QContextMenuEvent>
-#include <QTextEdit>
-#include <QHBoxLayout>
 #include <QToolBar>
 
 namespace appleseed {
@@ -60,6 +58,23 @@ ConsoleWidget::ConsoleWidget(QWidget* parent)
 
     input = new PythonInput(this);
 
+    init_actions();
+
+    QToolBar* toolBar = new QToolBar();
+    toolBar->addAction(m_action_execute_selection);
+    toolBar->addAction(m_action_execute_all);
+    toolBar->addAction(m_action_clear_selection);
+
+    insertWidget(0, toolBar);
+    insertWidget(1, output);
+    insertWidget(2, input);
+    setOrientation(Qt::Vertical);
+
+    PythonInterpreter::instance().redirect_output(OutputRedirector(output));
+}
+
+void ConsoleWidget::init_actions()
+{
     m_action_execute_selection = new QAction(QIcon(":icons/exec_button_icon.png"),
                                              "Execute selection", this);
     m_action_execute_selection->setShortcut(Qt::CTRL + Qt::Key_Return);
@@ -89,25 +104,13 @@ ConsoleWidget::ConsoleWidget(QWidget* parent)
 
     connect(m_action_focus_on_input, SIGNAL(triggered()), input, SLOT(setFocus()));
     addAction(m_action_focus_on_input);
-
-    QToolBar* toolBar = new QToolBar();
-    toolBar->addAction(m_action_execute_selection);
-    toolBar->addAction(m_action_execute_all);
-    toolBar->addAction(m_action_clear_selection);
-
-    insertWidget(0, toolBar);
-    insertWidget(1, output);
-    insertWidget(2, input);
-    setOrientation(Qt::Vertical);
-
-    PythonInterpreter::instance().redirect_output(OutputRedirector(output));
 }
 
 void ConsoleWidget::slot_execute_selection()
 {
     // QTextCursor returned by textCursor function use QChar(8233) instead of newline
     // It breaks Python indentation rules so it has to be replaced
-    QString selected = input->textCursor().selectedText().replace(QChar(8233), "\n");
+    const QString selected = input->textCursor().selectedText().replace(QChar(8233), "\n");
     execute(selected);
 }
 

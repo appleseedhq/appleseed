@@ -29,7 +29,7 @@
 // Interface header.
 #include "outputredirector.h"
 
-// Forward declarations.
+// Qt headers.
 #include <QTextEdit>
 
 namespace appleseed {
