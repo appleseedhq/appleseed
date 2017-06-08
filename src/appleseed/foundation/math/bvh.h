@@ -35,6 +35,7 @@
 #include "foundation/math/bvh/bvh_builder.h"
 #include "foundation/math/bvh/bvh_intersector.h"
 #include "foundation/math/bvh/bvh_medianpartitioner.h"
+#include "foundation/math/bvh/bvh_middlepartitioner.h"
 #include "foundation/math/bvh/bvh_node.h"
 #include "foundation/math/bvh/bvh_partitionerbase.h"
 #include "foundation/math/bvh/bvh_sahpartitioner.h"

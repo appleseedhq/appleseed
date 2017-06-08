@@ -68,8 +68,8 @@ class LightTree
     ~LightTree();
 
     // Build the tree based on the lights collected by the LightSampler.
-    // TODO: Remove light lists from arguments when they start being collected by the
-    //       LightTree class itself.
+    // TODO: Remove light lists from arguments when they start being collected
+    //       by the LightTree class itself.
     void build(
         const std::vector<NonPhysicalLightInfo>     non_physical_lights,
         const std::vector<EmittingTriangle>         emitting_triangles);
@@ -82,12 +82,13 @@ class LightTree
 
         Item() {}
 
+        // Item contains bbox and position of each light source.
+        // Position is needed because of EM light source - center
+        // of the bbox will not be the same as the centroid of the triangle
         Item(
-            // const UniqueID          uid, //what to do with a triangle??
             foundation::AABB3d      bbox,
-            foundation::Vector3d    position)
-          ://non physicall light id - get_class_uid()
-          m_position(position)
+            foundation::Vector3d    position) 
+          :m_position(position)
         {
         }
     };  
