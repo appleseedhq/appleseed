@@ -101,48 +101,17 @@ class FresnelDielectricFun
     const float     m_eta;
 };
 
-class FresnelFriendlyConductorFun
-{
-  public:
-    FresnelFriendlyConductorFun(
-        const Spectrum&             normal_reflectance,
-        const Spectrum&             edge_tint,
-        const float                 reflectance_multiplier)
-      : m_r(normal_reflectance)
-      , m_g(edge_tint)
-      , m_reflectance_multiplier(reflectance_multiplier)
-    {
-    }
-
-    void operator()(
-        const foundation::Vector3f& o,
-        const foundation::Vector3f& h,
-        const foundation::Vector3f& n,
-        Spectrum&                   value) const
-    {
-        foundation::artist_friendly_fresnel_reflectance_conductor(
-            value,
-            m_r,
-            m_g,
-            foundation::dot(o, h));
-        value *= m_reflectance_multiplier;
-    }
-
-  private:
-    const Spectrum& m_r;
-    const Spectrum& m_g;
-    const float     m_reflectance_multiplier;
-};
-
 class FresnelConductorFun
 {
   public:
     FresnelConductorFun(
-        const Spectrum&             n,
-        const Spectrum&             k,
+        const Spectrum&             nt,
+        const Spectrum&             kt,
+        const float                 ni,
         const float                 reflectance_multiplier)
-      : m_n(n)
-      , m_k(k)
+      : m_nt(nt)
+      , m_kt(kt)
+      , m_ni(ni)
       , m_reflectance_multiplier(reflectance_multiplier)
     {
     }
@@ -155,15 +124,17 @@ class FresnelConductorFun
     {
         foundation::fresnel_reflectance_conductor(
             value,
-            m_n,
-            m_k,
+            m_nt,
+            m_kt,
+            m_ni,
             foundation::dot(o, h));
         value *= m_reflectance_multiplier;
     }
 
   private:
-    const Spectrum& m_n;
-    const Spectrum& m_k;
+    const Spectrum& m_nt;
+    const Spectrum& m_kt;
+    const float     m_ni;
     const float     m_reflectance_multiplier;
 };
 
