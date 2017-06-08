@@ -52,8 +52,8 @@ class HighlightingRule
 };
 
 // Implementation of highlighting for Python code.
-class PythonSyntaxHighlighter :
-    public QSyntaxHighlighter
+class PythonSyntaxHighlighter
+  : public QSyntaxHighlighter
 {
     Q_OBJECT
 
@@ -85,4 +85,5 @@ class PythonSyntaxHighlighter :
 } // namespace studio
 } // namespace appleseed
 
-#endif //APPLESEED_STUDIO_PYTHONHIGHLIGHTER_H
+#endif // !APPLESEED_STUDIO_PYTHONHIGHLIGHTER_H
+

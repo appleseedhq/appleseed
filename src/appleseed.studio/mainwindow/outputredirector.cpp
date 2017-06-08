@@ -29,7 +29,7 @@
 // Interface header.
 #include "outputredirector.h"
 
-// Forward declarations.
+// Qt headers.
 #include <QTextEdit>
 
 namespace appleseed {
@@ -40,7 +40,7 @@ namespace studio {
 //
 
 OutputRedirector::OutputRedirector(QTextEdit* output)
-    : output(output)
+  : output(output)
 {
 }
 
@@ -53,3 +53,4 @@ void OutputRedirector::write(const char* str)
 
 }   // namespace studio
 }   // namespace appleseed
+

@@ -32,6 +32,9 @@
 // Studio headers.
 #include "mainwindow/outputredirector.h"
 
+// appleseed.foundation headers.
+#include "foundation/platform/path.h"
+
 // Boost headers.
 #include "boost/python.hpp"
 #include "boost/filesystem.hpp"
@@ -72,18 +75,18 @@ PythonInterpreter::PythonInterpreter()
 {
     Py_Initialize();
 
-    const bf::path bin(bf::current_path());
+    const bf::path bin(foundation::get_executable_directory());
     const bf::path configuration = bin.filename();
     const bf::path lib(bin.parent_path().parent_path()
                        / "lib" / configuration / "python2.7");
 
-    // Add path to appleseed module to sys.path so python can find it
+    // Add path to appleseed module to sys.path so python can find it.
     bpy::import("sys").attr("path").attr("append")(lib.string());
 
     // Imports appleseed module and creates asd alias for it
-    // so we can refer to it by both names
+    // so we can refer to it by both names.
     PyRun_SimpleString("import appleseed\n"
-                           "asr=appleseed");
+                       "asr=appleseed");
 }
 
 PythonInterpreter::~PythonInterpreter()
@@ -93,3 +96,4 @@ PythonInterpreter::~PythonInterpreter()
 
 } // namespace studio
 } // namespace appleseed
+
