@@ -189,7 +189,7 @@ shader asLuminance
         {
             if (in_inputColorSpace == 5)
             {
-                color RGBW[4]; // explicit R,G,B,W primaries
+                color RGBW[4]; // explicit R,G,B,W chromaticity coordinates
 
                 RGBW[0] = transform_xyY_to_XYZ(
                     color(in_chromaticityCoordsR[0],
@@ -263,7 +263,8 @@ shader asLuminance
                 }
                 else
                 {
-                    // explicit white point xy coordinates
+                    // Explicit white point xy chromaticity coordinates.
+
                     RGBW[3] = transform_xyY_to_XYZ(
                         color(in_chromaticityCoordsW[0],
                               in_chromaticityCoordsW[1],

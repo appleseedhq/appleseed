@@ -110,47 +110,47 @@ shader asColorTransform
 
         // Transform first to an intermediary space XYZ.
 
-        if (in_inputSpace == 0) // RGB
+        if (in_inputSpace == 0)
         {
             XYZ = transform_linear_RGB_to_XYZ(in_color, space, illuminant);
         }
-        else if (in_inputSpace == 1) // HSV
+        else if (in_inputSpace == 1)
         {
             color RGB = transformc("hsv", "rgb", in_color);
             XYZ = transform_linear_RGB_to_XYZ(RGB, space, illuminant);
         }
-        else if (in_inputSpace == 2) // HSL
+        else if (in_inputSpace == 2)
         {
             color RGB = transformc("hsl", "rgb", in_color);
             XYZ = transform_linear_RGB_to_XYZ(RGB, space, illuminant);
         }
-        else if (in_inputSpace == 3) // XYZ
+        else if (in_inputSpace == 3)
         {
             XYZ = in_color;
         }
-        else if (in_inputSpace == 4) // xyY
+        else if (in_inputSpace == 4)
         {
             XYZ = transform_xyY_to_XYZ(in_color);
         }
-        else if (in_inputSpace == 5) // Lab
+        else if (in_inputSpace == 5)
         {
             XYZ = transform_Lab_to_XYZ(in_color, illuminant);
         }
-        else if (in_inputSpace == 6) // Luv
+        else if (in_inputSpace == 6)
         {
             XYZ = transform_Luv_to_XYZ(in_color, illuminant);
         }
-        else if (in_inputSpace == 7) // LCh_ab
+        else if (in_inputSpace == 7)
         {
             color Lab = transform_LCh_ab_to_Lab(in_color);
             XYZ = transform_Lab_to_XYZ(Lab, illuminant);
         }
-        else if (in_inputSpace == 8) // LCh_uv
+        else if (in_inputSpace == 8)
         {
             color Luv = transform_LCh_uv_to_Luv(in_color);
             XYZ = transform_Luv_to_XYZ(Luv, illuminant);
         }
-        else if (in_inputSpace == 9) // UCS
+        else if (in_inputSpace == 9)
         {
             XYZ = transform_UCS_to_XYZ(in_color);
         }
@@ -169,47 +169,47 @@ shader asColorTransform
 
         color out = color(0);
         
-        if (in_outputSpace == 0) // RGB
+        if (in_outputSpace == 0)
         {
             out = transform_XYZ_to_linear_RGB(XYZ, space, illuminant);
         }
-        else if (in_outputSpace == 1) // HSV
+        else if (in_outputSpace == 1)
         {
             color RGB = transform_XYZ_to_linear_RGB(XYZ, space, illuminant);
             out = transformc("rgb", "hsv", RGB);
         }
-        else if (in_outputSpace == 2) // HSL
+        else if (in_outputSpace == 2)
         {
             color RGB = transform_XYZ_to_linear_RGB(XYZ, space, illuminant);
             out = transformc("rgb", "hsl", RGB);
         }
-        else if (in_outputSpace == 3) // XYZ
+        else if (in_outputSpace == 3)
         {
             out = XYZ;
         }
-        else if (in_outputSpace == 4) // xyY
+        else if (in_outputSpace == 4)
         {
             out = transform_XYZ_to_xyY(XYZ, illuminant);
         }
-        else if (in_outputSpace == 5) // Lab
+        else if (in_outputSpace == 5)
         {
             out = transform_XYZ_to_Lab(XYZ, illuminant);
         }
-        else if (in_outputSpace == 6) // Luv
+        else if (in_outputSpace == 6)
         {
             out = transform_XYZ_to_Luv(XYZ, illuminant);
         }
-        else if (in_outputSpace == 7) // LCh_ab
+        else if (in_outputSpace == 7)
         {
             color Lab = transform_XYZ_to_Lab(XYZ, illuminant);
             out = transform_Lab_to_LCh_ab(Lab);
         }
-        else if (in_outputSpace == 8) // LCh_uv
+        else if (in_outputSpace == 8)
         {
             color Luv = transform_XYZ_to_Luv(XYZ, illuminant);
             out = transform_Luv_to_LCh_uv(Luv);
         }
-        else if (in_outputSpace == 9) // UCS
+        else if (in_outputSpace == 9)
         {
             out = transform_XYZ_to_UCS(XYZ);
         }
