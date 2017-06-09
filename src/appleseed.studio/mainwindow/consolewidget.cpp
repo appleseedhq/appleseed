@@ -131,3 +131,4 @@ void ConsoleWidget::execute(const QString& script)
 
 }   // namespace studio
 }   // namespace appleseed
+

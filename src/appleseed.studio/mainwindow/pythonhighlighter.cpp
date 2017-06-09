@@ -175,3 +175,4 @@ const QTextCharFormat PythonSyntaxHighlighter::getTextCharFormat(int r, int g, i
 
 } // namespace studio
 } // namespace appleseed
+

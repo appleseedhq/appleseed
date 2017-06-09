@@ -56,3 +56,4 @@ class PythonInterpreter
 } // namespace appleseed
 
 #endif // !APPLESEED_STUDIO_PYTHONINTERPRETER_H
+

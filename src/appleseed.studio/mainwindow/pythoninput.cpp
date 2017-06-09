@@ -112,3 +112,4 @@ void PythonInput::insert_spaces(int count)
 
 } // namespace studio
 } // namespace appleseed
+

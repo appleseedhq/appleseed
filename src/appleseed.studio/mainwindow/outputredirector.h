@@ -50,3 +50,4 @@ class OutputRedirector
 }       // namespace appleseed
 
 #endif // !APPLESEED_STUDIO_MAINWINDOW_OUTPUTREDIRECTOR_H
+

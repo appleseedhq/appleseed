@@ -96,3 +96,4 @@ PythonInterpreter::~PythonInterpreter()
 
 } // namespace studio
 } // namespace appleseed
+

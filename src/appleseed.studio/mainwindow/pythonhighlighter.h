@@ -86,3 +86,4 @@ class PythonSyntaxHighlighter
 } // namespace appleseed
 
 #endif // !APPLESEED_STUDIO_PYTHONHIGHLIGHTER_H
+

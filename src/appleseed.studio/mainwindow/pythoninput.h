@@ -62,3 +62,4 @@ class PythonInput
 }       // namespace appleseed
 
 #endif // !APPLESEED_STUDIO_PYTHONINPUT_H
+
