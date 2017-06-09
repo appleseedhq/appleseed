@@ -113,7 +113,7 @@ class APPLESEED_DLLSYMBOL Material
     // Return the EDF of the material, or 0 if the material doesn't have one.
     const EDF* get_uncached_edf() const;
 
-    // Return the Phase Function of the material, or 0 if the material doesn't have one.
+    // Return the phase function of the material, or 0 if the material doesn't have one.
     const PhaseFunction* get_uncached_phase_function() const;
 
     // Return the source bound to the alpha map input, or 0 if the material doesn't have an alpha map.

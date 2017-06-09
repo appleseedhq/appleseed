@@ -67,7 +67,7 @@ class HenyeyPhaseFunction
     HenyeyPhaseFunction(
         const char*           name,
         const ParamArray&     params)
-          : PhaseFunction(name, params)
+      : PhaseFunction(name, params)
     {
         m_inputs.declare("scattering", InputFormatSpectralReflectance);
         m_inputs.declare("scattering_multiplier", InputFormatFloat, "1.0");
@@ -172,7 +172,7 @@ class HenyeyPhaseFunction
             cosine = 0.5f / g * (1.0f + sqr_g - t * t);
         }
 
-        const float sine = std::sqrt(clamp(1.0f - cosine * cosine, 0.0f, 1.0f));
+        const float sine = std::sqrt(saturate(1.0f - cosine * cosine));
 
         const Vector2f tangent = sample_circle_uniform(sampling_context.next2<float>());
 
@@ -186,7 +186,7 @@ class HenyeyPhaseFunction
         // Evaluate PDF.
 
         const float numerator = (1.0f - sqr_g);
-        const float denominator = std::pow(1.0f + sqr_g - 2.0f*g*cosine, -1.5f);
+        const float denominator = std::pow(1.0f + sqr_g - 2.0f * g * cosine, -1.5f);
 
         return RcpFourPi<float>() * numerator * denominator;
     }
@@ -210,7 +210,7 @@ class HenyeyPhaseFunction
         const float sqr_g = g * g;
 
         const float numerator = (1.0f - sqr_g);
-        const float denominator = std::pow(1.0f + sqr_g - 2.0f*g*cosine, -1.5f);
+        const float denominator = std::pow(1.0f + sqr_g - 2.0f * g * cosine, -1.5f);
 
         // Additionally divide by TwoPi, because we sample over the sphere.
         return RcpFourPi<float>() * numerator * denominator;
@@ -223,7 +223,7 @@ class HenyeyPhaseFunction
         Spectrum&             spectrum) const APPLESEED_OVERRIDE
     {
         extinction_coefficient(volume_ray, data, distance, spectrum);
-        for (int i = 0; i < spectrum.size(); ++i)
+        for (size_t i = 0, e = spectrum.size(); i < e; ++i)
             spectrum[i] = std::exp(-distance * spectrum[i]);
     }
 

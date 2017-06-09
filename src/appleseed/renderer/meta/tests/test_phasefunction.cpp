@@ -75,16 +75,16 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
       : public TestFixtureBase
     {
         // Number of MC samples to do integrations.
-        static const int NumberOfSamples = 30000;
+        static const size_t NumberOfSamples = 50000;
         // Number of samples to draw.
-        static const int NumberOfSamplesPlot = 100;
+        static const size_t NumberOfSamplesPlot = 100;
 
         ParamArray m_base_parameters;
         HenyeyPhaseFunctionFactory m_phase_function_factory;
 
         template <typename Procedure>
-        auto setup_environment_and_evaluate(Procedure procedure)
-            -> decltype(procedure(std::declval<ShadingContext>(), std::declval<Arena>()))
+        typename std::result_of<Procedure(ShadingContext&, Arena&)>::type
+            setup_environment_and_evaluate(Procedure procedure)
         {
             TextureStore texture_store(m_scene);
             TextureCache texture_cache(texture_store);
@@ -138,11 +138,10 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
             phase_function.prepare_inputs(arena, shading_ray, data);
 
             MersenneTwister rng;
-            SamplingContext sampling_context(rng, SamplingContext::RNGMode);
+            SamplingContext sampling_context(rng, SamplingContext::RNGMode, 2, NumberOfSamples);
 
             float integral = 0.0f;
-            sampling_context.split_in_place(2, NumberOfSamples);
-            for (int i = 0; i < NumberOfSamples; ++i)
+            for (size_t i = 0; i < NumberOfSamples; ++i)
             {
                 const Vector2f s = sampling_context.next2<Vector2f>();
                 const Vector3f incoming = sample_sphere_uniform<float>(s);
@@ -168,7 +167,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
             SamplingContext sampling_context(rng, SamplingContext::RNGMode);
 
             Vector3f bias = Vector3f(0.0f);
-            for (int i = 0; i < NumberOfSamples; ++i)
+            for (size_t i = 0; i < NumberOfSamples; ++i)
             {
                 Vector3f incoming;
                 const float pdf = phase_function.sample(
@@ -176,7 +175,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
                 bias += incoming / pdf;
             }
 
-            return feq(bias / NumberOfSamples, Vector3f(0.0f), 0.5f);
+            return feq(bias / NumberOfSamples, Vector3f(0.0f), 0.1f);
         }
 
         // Sample a given phase function and find average cosine of scattering angle.
@@ -195,7 +194,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
             SamplingContext sampling_context(rng, SamplingContext::RNGMode);
 
             Vector3f bias = Vector3f(0.0f);
-            for (int i = 0; i < NumberOfSamples; ++i)
+            for (size_t i = 0; i < NumberOfSamples; ++i)
             {
                 Vector3f incoming;
                 phase_function.sample(
@@ -222,7 +221,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
 
             std::vector<Vector2f> points;
             points.reserve(NumberOfSamples);
-            for (int i = 0; i < NumberOfSamplesPlot; ++i)
+            for (size_t i = 0; i < NumberOfSamplesPlot; ++i)
             {
                 Vector3f incoming;
                 const float pdf = phase_function.sample(
@@ -237,7 +236,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
     TEST_CASE_F(CheckHenyeyPdfIntegratesToOne, Fixture)
     {
         static const float G[4] = { -0.5f, 0.0f, +0.3f, +0.8f };
-        for (int i = 0; i < countof(G); ++i)
+        for (size_t i = 0; i < countof(G); ++i)
         {
             auto_release_ptr<PhaseFunction> phase_function =
                 m_phase_function_factory.create("phase_function", m_base_parameters);
@@ -254,7 +253,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
     TEST_CASE_F(CheckHenyeySamplingConsistency, Fixture)
     {
         static const float G[4] = { -0.5f, 0.0f, +0.3f, +0.8f };
-        for (int i = 0; i < countof(G); ++i)
+        for (size_t i = 0; i < countof(G); ++i)
         {
             auto_release_ptr<PhaseFunction> phase_function =
                 m_phase_function_factory.create("phase_function", m_base_parameters);
@@ -271,7 +270,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
     TEST_CASE_F(CheckHenyeyAverageCosine, Fixture)
     {
         static const float G[4] = { -0.5f, 0.0f, +0.3f, +0.8f };
-        for (int i = 0; i < countof(G); ++i)
+        for (size_t i = 0; i < countof(G); ++i)
         {
             auto_release_ptr<PhaseFunction> phase_function =
                 m_phase_function_factory.create("phase_function", m_base_parameters);
@@ -303,7 +302,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
             "magenta",
         };
         static const float G[3] = { -0.5f, +0.3f, 0.0f };
-        for (int i = 0; i < countof(G); ++i)
+        for (size_t i = 0; i < countof(G); ++i)
         {
             auto_release_ptr<PhaseFunction> phase_function =
                 m_phase_function_factory.create("phase_function", m_base_parameters);

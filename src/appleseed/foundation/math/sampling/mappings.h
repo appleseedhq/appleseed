@@ -557,10 +557,7 @@ inline T exponential_distribution_on_segment_pdf(
     const T l,
     const T r)
 {
-    assert(x >= T(0.0));
-
-    if (x < l || x > r)
-        return T(0.0);
+    if (x < l || x > r) return T(0.0);
     const T left = std::exp(-a * (x - l));
     const T right = std::exp(-a * (x - r));
     return a * (left - right);

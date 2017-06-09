@@ -59,7 +59,7 @@ class IsotropicPhaseFunction
     IsotropicPhaseFunction(
         const char*           name,
         const ParamArray&     params)
-          : PhaseFunction(name, params)
+      : PhaseFunction(name, params)
     {
         m_inputs.declare("scattering", InputFormatSpectralReflectance);
         m_inputs.declare("scattering_multiplier", InputFormatFloat, "1.0");
@@ -110,7 +110,7 @@ class IsotropicPhaseFunction
         SamplingContext&       sampling_context,
         const ShadingRay&      volume_ray,
         const void*            data,
-        float&           distance
+        float&                 distance
         ) const APPLESEED_OVERRIDE
     {
         const InputValues* values = static_cast<const InputValues*>(data);
@@ -160,7 +160,8 @@ class IsotropicPhaseFunction
         Spectrum&             spectrum) const APPLESEED_OVERRIDE
     {
         extinction_coefficient(volume_ray, data, distance, spectrum);
-        spectrum = exp(-distance * spectrum);
+        for (size_t i = 0, e = spectrum.size(); i < e; ++i)
+            spectrum[i] = std::exp(-distance * spectrum[i]);
     }
 
     virtual void evaluate_transmission(
