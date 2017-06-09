@@ -111,14 +111,15 @@ void LightTree::build(
     RENDERER_LOG_INFO("Number of light sources: %zu", m_light_sources.size());
 
     FILE* f = fopen("sorting_test.txt", "wt"); // in /sandbox/bin/Release/test.txt
+    fclose(f);
+
     // Create the partitioner.
     typedef foundation::bvh::MiddlePartitioner<AABBVector> Partitioner;
     Partitioner partitioner(light_bboxes);
-    fclose(f);
     // Build the light tree.
     typedef foundation::bvh::Builder<LightTree, Partitioner> Builder;
     Builder builder;
-    builder.build<foundation::DefaultWallclockTimer>(*this, partitioner, m_items.size(), 1, true);
+    builder.build<foundation::DefaultWallclockTimer>(*this, partitioner, m_items.size(), 1);
     statistics.insert_time("build time", builder.get_build_time());
 
     if (!m_items.empty())
@@ -126,7 +127,6 @@ void LightTree::build(
         const std::vector<size_t>& ordering = partitioner.get_item_ordering();
         assert(m_items.size() == ordering.size());
 
-        RENDERER_LOG_INFO("Reordering...");
         // Reorder the items according to the tree ordering.
         ItemVector temp_lights(ordering.size());
         foundation::small_item_reorder(
@@ -134,8 +134,6 @@ void LightTree::build(
             &temp_lights[0],
             &ordering[0],
             ordering.size());
-
-        RENDERER_LOG_INFO("Storing items in leaves...");
 
         // Store the items in the tree leaves whenever possible.
         store_items_in_leaves(statistics);

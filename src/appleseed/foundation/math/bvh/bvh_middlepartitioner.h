@@ -63,8 +63,7 @@ class MiddlePartitioner
     size_t partition(
         const size_t            begin,
         const size_t            end,
-        const AABBType&         bbox,
-        const bool              write);
+        const AABBType&         bbox);
 
   private:
     const size_t                m_max_leaf_size;
@@ -88,8 +87,7 @@ template <typename AABBVector>
 inline size_t MiddlePartitioner<AABBVector>::partition(
     const size_t                begin,
     const size_t                end,
-    const AABBType&             bbox,
-    const bool                  write)
+    const AABBType&             bbox)
 {
     const size_t count = end - begin;
     assert(count > 1);
@@ -133,7 +131,7 @@ inline size_t MiddlePartitioner<AABBVector>::partition(
     const size_t pivot = split_point;
     assert(pivot < end);
 
-    PartitionerBase<AABBVector>::sort_indices(split_dim, begin, end, pivot, true);
+    PartitionerBase<AABBVector>::sort_indices(split_dim, begin, end, pivot);
 
     return pivot;
 }
