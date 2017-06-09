@@ -154,6 +154,7 @@ class MainWindow
     // Other UI elements.
     void build_toolbar();
     void build_log_panel();
+    void build_python_console_panel();
     void build_project_explorer();
     void build_minimize_buttons();
     void build_connections();

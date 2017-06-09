@@ -28,32 +28,12 @@
 #
 
 #--------------------------------------------------------------------------------------------------
-# Python.
+# Packages.
 #--------------------------------------------------------------------------------------------------
 
-find_package (PythonLibs REQUIRED)
-
-# Splitting version string into list.
-string (REGEX MATCHALL "[0123456789]+" PYTHON_VERSION_LIST "${PYTHONLIBS_VERSION_STRING}")
-
-if (PYTHON_VERSION_LIST)
-    # Accessing major and minor version numbers with the version list we got.
-    list (GET PYTHON_VERSION_LIST 0 PYTHON_MAJOR_VERSION)
-    list (GET PYTHON_VERSION_LIST 1 PYTHON_MINOR_VERSION)
-else ()
-    # Default to latest Python 2 release if version string cannot be read.
-    message (STATUS "Cannot find Python version. Using 2.7 by default")
-    set (PYTHON_MAJOR_VERSION "2")
-    set (PYTHON_MINOR_VERSION "7")
-endif ()
-
-
-#--------------------------------------------------------------------------------------------------
-# Boost libraries.
-#--------------------------------------------------------------------------------------------------
-
+# Python
 if (PYTHON_MAJOR_VERSION STREQUAL "3")
-    find_package (Boost 1.55 COMPONENTS python3)
+    message ( FATAL_ERROR "Python 2.x needed" )
 else ()
     find_package (Boost 1.55 COMPONENTS python)
 endif ()

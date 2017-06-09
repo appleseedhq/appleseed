@@ -35,6 +35,7 @@
 
 // appleseed.studio headers.
 #include "help/about/aboutwindow.h"
+#include "mainwindow/consolewidget.h"
 #include "mainwindow/logwidget.h"
 #include "mainwindow/minimizebutton.h"
 #include "mainwindow/project/attributeeditor.h"
@@ -130,6 +131,7 @@ MainWindow::MainWindow(QWidget* parent)
     build_menus();
     build_toolbar();
     build_log_panel();
+    build_python_console_panel();
     build_project_explorer();
 
     build_connections();
@@ -259,6 +261,7 @@ void MainWindow::build_menus()
     m_ui->menu_view->addAction(m_ui->project_explorer->toggleViewAction());
     m_ui->menu_view->addAction(m_ui->attribute_editor->toggleViewAction());
     m_ui->menu_view->addAction(m_ui->log->toggleViewAction());
+    m_ui->menu_view->addAction(m_ui->python_console->toggleViewAction());
     m_ui->menu_view->addSeparator();
 
     QAction* fullscreen_action = m_ui->menu_view->addAction("Fullscreen");
@@ -510,6 +513,14 @@ void MainWindow::build_log_panel()
     global_logger().add_target(m_log_target.get());
 }
 
+void MainWindow::build_python_console_panel()
+{
+    ConsoleWidget* console_widget = new ConsoleWidget(m_ui->python_console_contents);
+    m_ui->python_console_contents->layout()->addWidget(console_widget);
+
+    console_widget->setObjectName("textedit_console");
+}
+
 void MainWindow::build_project_explorer()
 {
     m_ui->treewidget_project_explorer_scene->setColumnWidth(0, 220);    // name
@@ -533,6 +544,7 @@ void MainWindow::build_minimize_buttons()
     m_minimize_buttons.push_back(new MinimizeButton(m_ui->project_explorer));
     m_minimize_buttons.push_back(new MinimizeButton(m_ui->attribute_editor));
     m_minimize_buttons.push_back(new MinimizeButton(m_ui->log));
+    m_minimize_buttons.push_back(new MinimizeButton(m_ui->python_console));
 
     for (size_t i = 0; i < m_minimize_buttons.size(); ++i)
     {
