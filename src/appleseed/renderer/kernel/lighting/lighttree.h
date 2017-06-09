@@ -31,6 +31,7 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTREE_H
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/lighttypes.h"
 
 // appleseed.foundation headers.
@@ -48,13 +49,40 @@ namespace renderer      { class EmittingTriangle; }
 namespace renderer{
 
 //
+// LightTreeNode implementation
+//
+template<typename AABB> 
+class LightTreeNode
+    : public foundation::bvh::Node<AABB>
+{
+  public:
+    LightTreeNode()
+      : m_node_energy(0)
+    {
+    }
+
+    float get_node_energy() const
+    {
+        return m_node_energy;
+    };
+
+    void set_node_energy(float energy)
+    {
+        m_node_energy = energy;
+    };
+  
+  private:
+    float  m_node_energy;
+};
+
+//
 // Light tree.
 //
 
 class LightTree
   : public foundation::bvh::Tree<
                foundation::AlignedVector<
-                   foundation::bvh::Node<foundation::AABB3d>
+                   LightTreeNode<foundation::AABB3d>
                >
             >
 {
@@ -74,21 +102,26 @@ class LightTree
         const std::vector<NonPhysicalLightInfo>     non_physical_lights,
         const std::vector<EmittingTriangle>         emitting_triangles);
 
+
   private:
     struct Item
     {
-        // foundation::UniqueID    m_light_uid;
-        foundation::Vector3d    m_position;
+        foundation::AABB3d      m_bbox;
+        size_t                  m_light_sources_index;
 
         Item() {}
 
-        // Item contains bbox and position of each light source.
-        // Position is needed because of EM light source - center
-        // of the bbox will not be the same as the centroid of the triangle
+        // Item contains bbox and source index of each light source
+        // source_index represents the light index in m_light_sources vector
+        //
+        // NOTE: Index will be used to retrieve all the needed values like
+        //       position and light energy because otherwise compiling fails with
+        //       > static assertion failed: sizeof(U) <= MAX_USER_DATA_SIZE
         Item(
             foundation::AABB3d      bbox,
-            foundation::Vector3d    position) 
-          :m_position(position)
+            size_t                  source_index) 
+            :m_bbox(bbox)
+            ,m_light_sources_index(source_index)
         {
         }
     };  
@@ -102,6 +135,8 @@ class LightTree
     ItemVector                 m_items;
 
     void store_items_in_leaves(foundation::Statistics& statistics);
+    void update_nodes_energy();
+    float update_energy(size_t node_index);
 };
 
 }

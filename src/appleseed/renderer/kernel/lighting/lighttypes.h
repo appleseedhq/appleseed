@@ -31,6 +31,7 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTYPES_H
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/utility/transformsequence.h"
 
@@ -96,6 +97,10 @@ class LightSource
     
     // Get the light bounding box
     virtual foundation::AABB3d get_bbox() const = 0;
+
+    // Get the light intensity
+    // NOTE: currently works only for NPL point lights!!
+    virtual Spectrum get_intensity() const = 0;
 };
 
 //
@@ -111,6 +116,7 @@ class NonPhysicalLightSource
   private:
     virtual foundation::Vector3d get_position() const APPLESEED_OVERRIDE;
     virtual foundation::AABB3d get_bbox() const APPLESEED_OVERRIDE;
+    virtual Spectrum get_intensity() const APPLESEED_OVERRIDE;
 
     // Get the reference to an actual source.
     const NonPhysicalLightInfo* m_light_info;
@@ -129,6 +135,7 @@ class EmittingTriangleLightSource
   private:
     virtual foundation::Vector3d get_position() const APPLESEED_OVERRIDE;
     virtual foundation::AABB3d get_bbox() const APPLESEED_OVERRIDE;
+    virtual Spectrum get_intensity() const APPLESEED_OVERRIDE;
 
     // Get the reference to an actual source.
     const EmittingTriangle* m_light;

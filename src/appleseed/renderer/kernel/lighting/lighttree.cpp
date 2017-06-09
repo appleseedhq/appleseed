@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/global/globaltypes.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -71,19 +72,24 @@ void LightTree::build(
     AABBVector light_bboxes;
 
     RENDERER_LOG_INFO("Collecting light sources...");
+    size_t light_index = 0;
+
     // Collect all possible light sources into one vector
     for (foundation::const_each<NonPhysicalLightVector> i = non_physical_lights; i; ++i)
     {
         LightSource* light_source = new NonPhysicalLightSource(&*i);
-        foundation::Vector3d position = light_source->get_position();
         foundation::AABB3d bbox = light_source->get_bbox();
         m_light_sources.push_back(light_source);
         light_bboxes.push_back(bbox);
         m_items.push_back(
             Item(
                 bbox,
-                position));
+                light_index++));
 
+        // Test output
+        RENDERER_LOG_INFO("Non physical light index: %zu", light_index-1);
+        Spectrum spectrum = light_source->get_intensity();
+        RENDERER_LOG_INFO("Non physical light intensity: %f", spectrum[0]);
         RENDERER_LOG_INFO("Non physical light bbox center [%f %f %f]",
                             bbox.center()[0],
                             bbox.center()[1],
@@ -93,19 +99,13 @@ void LightTree::build(
     for (foundation::const_each<EmittingTriangleVector> i = emitting_triangles; i; ++i)
     {
         LightSource* light_source = new EmittingTriangleLightSource(&*i);
-        foundation::Vector3d position = light_source->get_position();
         foundation::AABB3d bbox = light_source->get_bbox();
         m_light_sources.push_back(light_source);
         light_bboxes.push_back(bbox);
         m_items.push_back(
             Item(
                 bbox,
-                position));
-
-        RENDERER_LOG_INFO("Emitting triangle centroid at coordinates [%f %f %f]",
-                            position[0], position[1], position[2]);
-        RENDERER_LOG_INFO("Emitting triangle bbox center [%f %f %f]",
-                            bbox.center()[0], bbox.center()[1], bbox.center()[2]);
+                light_index++));
     }
 
     RENDERER_LOG_INFO("Number of light sources: %zu", m_light_sources.size());
@@ -122,6 +122,7 @@ void LightTree::build(
     builder.build<foundation::DefaultWallclockTimer>(*this, partitioner, m_items.size(), 1);
     statistics.insert_time("build time", builder.get_build_time());
 
+    // Reorder m_items vector to match the ordering in the LightTree
     if (!m_items.empty())
     {
         const std::vector<size_t>& ordering = partitioner.get_item_ordering();
@@ -144,6 +145,8 @@ void LightTree::build(
         foundation::StatisticsVector::make(
             "light tree statistics",
             statistics).to_string().c_str());
+
+    RENDERER_LOG_INFO("Number of nodes: %zu", m_nodes.size());
 }
 
 void LightTree::store_items_in_leaves(foundation::Statistics& statistics)
@@ -176,9 +179,40 @@ void LightTree::store_items_in_leaves(foundation::Statistics& statistics)
         }
     }
 
-    RENDERER_LOG_INFO("leaf_count... %zu", leaf_count);
-    RENDERER_LOG_INFO("fat_leaf_count... %zu", fat_leaf_count);
-    statistics.insert_percent("fat leaves", fat_leaf_count, leaf_count);
+    // Set total energy for each node of the LightTree
+    update_nodes_energy();
+}
+
+void LightTree::update_nodes_energy()
+{
+    // Make sure the tree was built.
+    assert(!tree.m_nodes.empty());
+
+    // Start energy update with the root node
+    float energy = update_energy(m_nodes[0].get_child_node_index()) // left child
+                 + update_energy(m_nodes[0].get_child_node_index() + 1);  // right child
+    
+    m_nodes[0].set_node_energy(energy);
+}
+
+float LightTree::update_energy(size_t node_index)
+{
+    float energy = 0;
+
+    if (!m_nodes[node_index].is_leaf())
+    {
+        energy = update_energy(m_nodes[node_index].get_child_node_index()) // left child
+               + update_energy(m_nodes[node_index].get_child_node_index() + 1);  // right child    
+        m_nodes[node_index].set_node_energy(energy);        
+    }
+    else
+    {
+        size_t item_index = m_nodes[node_index].get_item_index();
+        size_t light_source_index = m_items[item_index].m_light_sources_index;
+        energy = m_light_sources[light_source_index]->get_intensity()[0];
+        m_nodes[node_index].set_node_energy(energy);
+    }
+    return energy;
 }
 
 }   // namespace renderer
