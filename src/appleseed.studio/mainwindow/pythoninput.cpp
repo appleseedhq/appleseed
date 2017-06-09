@@ -72,13 +72,14 @@ void PythonInput::keyPressEvent(QKeyEvent* event)
 
 void PythonInput::indent()
 {
-    QStringList text = toPlainText().split('\n');
-    std::string previous = text[text.size() - 2].toStdString();
+    const QStringList text = toPlainText().split('\n');
+    const std::string previous = text[text.size() - 2].toStdString();
 
     indent_like_previous(previous);
 
     // if last non-space character in previous line is ':' add 4 spaces indentation
-    for (std::string::reverse_iterator it = previous.rbegin(); it != previous.rend(); ++it) {
+    for (std::string::const_reverse_iterator it = previous.rbegin();
+         it != previous.rend(); ++it) {
         if (*it == ':')
         {
             insert_spaces(4);
@@ -89,10 +90,10 @@ void PythonInput::indent()
     }
 }
 
-void PythonInput::indent_like_previous(std::string previous)
+void PythonInput::indent_like_previous(const std::string &previous)
 {
     int indentation = 0;
-    for (int i = 0; i < previous.size(); ++i)
+    for (size_t i = 0; i < previous.size(); ++i)
     {
         if (previous[i] == ' ')
             indentation++;
@@ -105,10 +106,7 @@ void PythonInput::indent_like_previous(std::string previous)
 
 void PythonInput::insert_spaces(int count)
 {
-    std::string spaces = "";
-    for (int i = 0; i < count; ++i)
-        spaces.push_back(' ');
-
+    std::string spaces(count, ' ');
     insertPlainText(spaces.c_str());
 }
 

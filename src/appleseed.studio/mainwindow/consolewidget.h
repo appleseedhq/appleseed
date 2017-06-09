@@ -46,7 +46,7 @@ namespace appleseed {
 namespace studio {
 
 class ConsoleWidget
-    : public QSplitter
+  : public QSplitter
 {
   Q_OBJECT
 
@@ -75,4 +75,5 @@ class ConsoleWidget
 }       // namespace studio
 }       // namespace appleseed
 
-#endif //APPLESEED_STUDIO_MAINWINDOW_CONSOLEWIDGET_H
+#endif // !APPLESEED_STUDIO_MAINWINDOW_CONSOLEWIDGET_H
+

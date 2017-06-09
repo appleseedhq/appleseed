@@ -587,7 +587,7 @@ endif ()
 
 if (WITH_STUDIO)
     if (NOT WITH_PYTHON)
-        message(FATAL_ERROR "WITH_PYTHON should be \"ON\" to build the appleseed.studio")
+        message (FATAL_ERROR "WITH_PYTHON should be \"ON\" to build appleseed.studio")
     endif()
     add_subdirectory (src/appleseed.studio)
 endif ()

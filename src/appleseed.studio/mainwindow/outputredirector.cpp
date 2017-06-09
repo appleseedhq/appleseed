@@ -40,7 +40,7 @@ namespace studio {
 //
 
 OutputRedirector::OutputRedirector(QTextEdit* output)
-    : output(output)
+  : output(output)
 {
 }
 

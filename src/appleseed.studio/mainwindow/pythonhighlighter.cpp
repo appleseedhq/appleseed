@@ -30,7 +30,7 @@ namespace appleseed {
 namespace studio {
 
 PythonSyntaxHighlighter::PythonSyntaxHighlighter(QTextDocument *parent)
-    : QSyntaxHighlighter(parent)
+  : QSyntaxHighlighter(parent)
 {
     keywords = QStringList() << "and" << "assert" << "break" << "class" << "continue" << "def" <<
                              "del" << "elif" << "else" << "except" << "exec" << "finally" <<

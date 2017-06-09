@@ -42,7 +42,7 @@ namespace appleseed {
 namespace studio {
 
 class PythonInput
-    : public QTextEdit
+  : public QTextEdit
 {
     Q_OBJECT
 
@@ -54,11 +54,11 @@ class PythonInput
 
   private:
     void indent();
-    void indent_like_previous(std::string previous);
+    void indent_like_previous(const std::string &previous);
     void insert_spaces(int count);
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif //APPLESEED_STUDIO_PYTHONINPUT_H
+#endif // !APPLESEED_STUDIO_PYTHONINPUT_H
