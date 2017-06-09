@@ -92,7 +92,7 @@ void PythonInput::indent()
 
 void PythonInput::indent_like_previous(const std::string &previous)
 {
-    int indentation = 0;
+    size_t indentation = 0;
     for (size_t i = 0; i < previous.size(); ++i)
     {
         if (previous[i] == ' ')
@@ -104,9 +104,9 @@ void PythonInput::indent_like_previous(const std::string &previous)
     insert_spaces(indentation);
 }
 
-void PythonInput::insert_spaces(int count)
+void PythonInput::insert_spaces(const size_t count)
 {
-    std::string spaces(count, ' ');
+    const std::string spaces(count, ' ');
     insertPlainText(spaces.c_str());
 }
 

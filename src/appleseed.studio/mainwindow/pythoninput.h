@@ -55,7 +55,7 @@ class PythonInput
   private:
     void indent();
     void indent_like_previous(const std::string &previous);
-    void insert_spaces(int count);
+    void insert_spaces(size_t count);
 };
 
 }       // namespace studio
