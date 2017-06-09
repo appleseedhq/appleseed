@@ -28,7 +28,6 @@
 //
 
 // appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
 #include "gillocks.h"
 
 // appleseed.renderer headers.
@@ -37,6 +36,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/python.h"
 
 namespace bpy = boost::python;
 using namespace foundation;

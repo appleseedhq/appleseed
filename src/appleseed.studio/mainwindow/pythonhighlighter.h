@@ -82,8 +82,7 @@ class PythonSyntaxHighlighter
     QRegExp triDoubleQuote;
 };
 
-} // namespace studio
-} // namespace appleseed
+}       // namespace studio
+}       // namespace appleseed
 
-#endif // !APPLESEED_STUDIO_PYTHONHIGHLIGHTER_H
-
+#endif  // !APPLESEED_STUDIO_PYTHONHIGHLIGHTER_H

@@ -31,11 +31,11 @@
 #define APPLESEED_PYTHON_UNALIGNEDTRANSFORM_H
 
 // appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
 #include "unalignedmatrix44.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
+#include "foundation/platform/python.h"
 
 namespace foundation
 {

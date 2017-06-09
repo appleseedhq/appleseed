@@ -494,6 +494,7 @@ set (foundation_platform_sources
     foundation/platform/oslheaderguards.h
     foundation/platform/path.cpp
     foundation/platform/path.h
+    foundation/platform/python.h
     foundation/platform/sharedlibrary.cpp
     foundation/platform/sharedlibrary.h
     foundation/platform/snprintf.h

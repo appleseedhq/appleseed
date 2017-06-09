@@ -60,12 +60,12 @@ ConsoleWidget::ConsoleWidget(QWidget* parent)
 
     init_actions();
 
-    QToolBar* toolBar = new QToolBar();
-    toolBar->addAction(m_action_execute_selection);
-    toolBar->addAction(m_action_execute_all);
-    toolBar->addAction(m_action_clear_selection);
+    QToolBar* toolbar = new QToolBar();
+    toolbar->addAction(m_action_execute_selection);
+    toolbar->addAction(m_action_execute_all);
+    toolbar->addAction(m_action_clear_selection);
 
-    insertWidget(0, toolBar);
+    insertWidget(0, toolbar);
     insertWidget(1, output);
     insertWidget(2, input);
     setOrientation(Qt::Vertical);
@@ -75,24 +75,24 @@ ConsoleWidget::ConsoleWidget(QWidget* parent)
 
 void ConsoleWidget::init_actions()
 {
-    m_action_execute_selection = new QAction(QIcon(":icons/exec_button_icon.png"),
-                                             "Execute Selection", this);
+    m_action_execute_selection =
+        new QAction(QIcon(":icons/exec_button_icon.png"), "Execute Selection", this);
     m_action_execute_selection->setShortcut(Qt::CTRL + Qt::Key_Return);
     m_action_execute_selection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
 
     connect(m_action_execute_selection, SIGNAL(triggered()), this, SLOT(slot_execute_selection()));
     addAction(m_action_execute_selection);
 
-    m_action_execute_all = new QAction(QIcon(":icons/exec_all_button_icon.png"),
-                                       "Execute All Text", this);
+    m_action_execute_all =
+        new QAction(QIcon(":icons/exec_all_button_icon.png"), "Execute All Text", this);
     m_action_execute_all->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_Return);
     m_action_execute_all->setShortcutContext(Qt::WidgetWithChildrenShortcut);
 
     connect(m_action_execute_all, SIGNAL(triggered()), this, SLOT(slot_execute_all()));
     addAction(m_action_execute_all);
 
-    m_action_clear_selection = new QAction(QIcon(":icons/clear_button_icon.png"),
-                                           "Clear Console Output", this);
+    m_action_clear_selection =
+        new QAction(QIcon(":icons/clear_button_icon.png"), "Clear Console Output", this);
     m_action_clear_selection->setShortcut(Qt::CTRL + Qt::Key_D);
     m_action_clear_selection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
 
@@ -108,8 +108,8 @@ void ConsoleWidget::init_actions()
 
 void ConsoleWidget::slot_execute_selection()
 {
-    // QTextCursor returned by textCursor function use QChar(8233) instead of newline
-    // It breaks Python indentation rules so it has to be replaced
+    // QTextCursor returned by textCursor() function uses QChar(8233) instead of newline.
+    // It breaks Python indentation rules so it has to be replaced.
     const QString selected = input->textCursor().selectedText().replace(QChar(8233), "\n");
     execute(selected);
 }
@@ -131,4 +131,3 @@ void ConsoleWidget::execute(const QString& script)
 
 }   // namespace studio
 }   // namespace appleseed
-

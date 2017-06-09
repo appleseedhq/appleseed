@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_PYTHONINTERPRETER_H
-#define APPLESEED_STUDIO_PYTHONINTERPRETER_H
+#ifndef APPLESEED_STUDIO_PYTHON_PYTHONINTERPRETER_H
+#define APPLESEED_STUDIO_PYTHON_PYTHONINTERPRETER_H
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -52,8 +52,7 @@ class PythonInterpreter
     ~PythonInterpreter();
 };
 
-} // namespace studio
-} // namespace appleseed
+}       // namespace studio
+}       // namespace appleseed
 
-#endif // !APPLESEED_STUDIO_PYTHONINTERPRETER_H
-
+#endif  // !APPLESEED_STUDIO_PYTHON_PYTHONINTERPRETER_H

@@ -30,13 +30,11 @@
 #ifndef APPLESEED_PYTHON_UNALIGNEDMATRIX44_H
 #define APPLESEED_PYTHON_UNALIGNEDMATRIX44_H
 
-// appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
-
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
 #include "foundation/math/quaternion.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/python.h"
 #include "foundation/utility/iostreamop.h"
 
 // Standard headers.

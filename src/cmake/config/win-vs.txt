@@ -380,24 +380,24 @@ macro (add_copy_target_to_sandbox_py_module_command target)
     get_sandbox_lib_path (lib_path)
 
     add_custom_command (TARGET ${target} POST_BUILD
-        COMMAND if not exist "${bin_path}\\appleseed" mkdir "${bin_path}\\appleseed"
-        COMMAND ${CMAKE_COMMAND} -E copy "$(TargetPath)" "${bin_path}\\appleseed"
+        COMMAND if not exist "${lib_path}\\appleseed" mkdir "${lib_path}\\appleseed"
+        COMMAND ${CMAKE_COMMAND} -E copy "$(TargetPath)" "${lib_path}\\appleseed"
     )
 endmacro ()
 
 macro (add_copy_py_file_to_sandbox_py_module_command py_src)
-    get_sandbox_bin_path (bin_path)
+    get_sandbox_lib_path (lib_path)
 
     add_custom_command (TARGET appleseed.python POST_BUILD
-        COMMAND if not exist "${bin_path}\\appleseed" mkdir "${bin_path}\\appleseed"
-        COMMAND ${CMAKE_COMMAND} -E copy "${py_src}" "${bin_path}\\appleseed"
+        COMMAND if not exist "${lib_path}\\appleseed" mkdir "${lib_path}\\appleseed"
+        COMMAND ${CMAKE_COMMAND} -E copy "${py_src}" "${lib_path}\\appleseed"
     )
 endmacro ()
 
 macro (add_copy_dir_to_sandbox_py_module_command py_dir)
-    get_sandbox_lib_path (sandbox_path)
+    get_sandbox_lib_path (lib_path)
 
     add_custom_command (TARGET appleseed.python POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory "${py_dir}" "${bin_path}\\appleseed"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory "${py_dir}" "${lib_path}\\appleseed"
     )
 endmacro ()

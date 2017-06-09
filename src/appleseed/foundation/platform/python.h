@@ -27,33 +27,28 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PYTHON_PYSEED_H
-#define APPLESEED_PYTHON_PYSEED_H
+#ifndef APPLESEED_FOUNDATION_PLATFORM_PYTHON_H
+#define APPLESEED_FOUNDATION_PLATFORM_PYTHON_H
 
 #if defined _MSC_VER
     // C4244: conversion from 'Py_ssize_t' to 'unsigned int', possible loss of data
     __pragma(warning(push))             \
     __pragma(warning(disable: 4244))
+
+    // Redefined in pyconfig.h.
+    #undef copysign
 #endif
 
 // Boost headers.
 #include "boost/python/detail/wrap_python.hpp"  // has to be first, to avoid redefinition warnings
 #include "boost/python.hpp"
 
+#if defined _MSC_VER
+    __pragma(warning(pop))
+#endif
+
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
-
-namespace boost {
-namespace python {
-
-template <typename T>
-struct pointee<foundation::auto_release_ptr<T> >
-{
-    typedef T type;
-};
-
-}       // namespace python
-}       // namespace boost
 
 namespace foundation
 {
@@ -66,8 +61,4 @@ T* get_pointer(const auto_release_ptr<T>& p)
 
 }       // namespace foundation
 
-#if defined _MSC_VER
-    __pragma(warning(pop))
-#endif
-
-#endif  // !APPLESEED_PYTHON_PYSEED_H
+#endif  // !APPLESEED_FOUNDATION_PLATFORM_PYTHON_H

@@ -53,4 +53,3 @@ void OutputRedirector::write(const char* str)
 
 }   // namespace studio
 }   // namespace appleseed
-
