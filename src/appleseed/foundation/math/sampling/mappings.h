@@ -185,6 +185,21 @@ T exponential_distribution_pdf(
     const T x,
     const T a);
 
+// Map a uniform random sample in [0,1) to an exponential distribution on segment [l, r).
+// of the form exp(-a*(x - l)) - exp(-a*(x - r)).
+template <typename T>
+T sample_exponential_distribution_on_segment(
+    const T s,
+    const T a,
+    const T l,
+    const T r);
+template <typename T>
+T exponential_distribution_on_segment_pdf(
+    const T x,
+    const T a,
+    const T l,
+    const T r);
+
 
 //
 // Equiangular sampling along a ray with respect to a point.
@@ -519,6 +534,33 @@ inline T exponential_distribution_pdf(
     assert(x >= T(0.0));
 
     return a * std::exp(-a * x);
+}
+
+template <typename T>
+inline T sample_exponential_distribution_on_segment(
+    const T s,
+    const T a,
+    const T l,
+    const T r)
+{
+    assert(s >= T(0.0));
+    assert(s < T(1.0));
+
+    const T tail = T(1.0) - std::exp(-(r - l) * a);
+    return l - std::log(T(1.0) - s * tail) / a;
+}
+
+template <typename T>
+inline T exponential_distribution_on_segment_pdf(
+    const T x,
+    const T a,
+    const T l,
+    const T r)
+{
+    if (x < l || x > r) return T(0.0);
+    const T left = std::exp(-a * (x - l));
+    const T right = std::exp(-a * (x - r));
+    return a * (left - right);
 }
 
 template <typename T>

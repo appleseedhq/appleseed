@@ -64,6 +64,7 @@ namespace
             m_inputs.declare("edf", InputFormatEntity, "");
             m_inputs.declare("alpha_map", InputFormatFloat, "");
             m_inputs.declare("displacement_map", InputFormatSpectralReflectance, "");
+            m_inputs.declare("phase_function", InputFormatEntity, "");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -155,6 +156,15 @@ DictionaryArray GenericMaterialFactory::get_input_metadata() const
 
     add_alpha_map_metadata(metadata);
     add_displacement_metadata(metadata);
+
+    metadata.push_back(
+        Dictionary()
+        .insert("name", "phase_function")
+        .insert("label", "Phase Function")
+        .insert("type", "entity")
+        .insert("entity_types",
+            Dictionary().insert("phase_function", "Phase Function"))
+        .insert("use", "optional"));
 
     return metadata;
 }

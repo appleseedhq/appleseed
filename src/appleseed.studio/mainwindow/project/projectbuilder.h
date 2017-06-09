@@ -45,6 +45,7 @@
 #include "renderer/api/environmentshader.h"
 #include "renderer/api/light.h"
 #include "renderer/api/material.h"
+#include "renderer/api/phasefunction.h"
 #include "renderer/api/project.h"
 #include "renderer/api/scene.h"
 #include "renderer/api/surfaceshader.h"
@@ -124,6 +125,7 @@ class ProjectBuilder
     renderer::EnvironmentShaderFactoryRegistrar     m_environment_shader_factory_registrar;
     renderer::LightFactoryRegistrar                 m_light_factory_registrar;
     renderer::MaterialFactoryRegistrar              m_material_factory_registrar;
+    renderer::PhaseFunctionFactoryRegistrar         m_phase_function_factory_registrar;
     renderer::RenderLayerRuleFactoryRegistrar       m_render_layer_rule_factory_registrar;
     renderer::SurfaceShaderFactoryRegistrar         m_surface_shader_factory_registrar;
     renderer::TextureFactoryRegistrar               m_texture_factory_registrar;
@@ -196,6 +198,13 @@ inline const renderer::EntityTraits<renderer::Material>::FactoryRegistrarType&
 ProjectBuilder::get_factory_registrar<renderer::Material>() const
 {
     return m_material_factory_registrar;
+}
+
+template <>
+inline const renderer::EntityTraits<renderer::PhaseFunction>::FactoryRegistrarType&
+ProjectBuilder::get_factory_registrar<renderer::PhaseFunction>() const
+{
+    return m_phase_function_factory_registrar;
 }
 
 template <>
