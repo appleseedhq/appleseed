@@ -31,6 +31,7 @@
 #include "lighttypes.h"
 
 // appleseed. renderer headers.
+#include "renderer/modeling/input/source.h"
 #include "renderer/modeling/light/light.h"
 
 // appleseed.foundation headers.
@@ -83,8 +84,10 @@ foundation::AABB3d NonPhysicalLightSource::get_bbox() const
 
 Spectrum NonPhysicalLightSource::get_intensity() const
 {
-    DynamicSpectrum31f hard_coded_placeholder(foundation::Color3f(1.0f, 2.0f, 3.0f));
-    return hard_coded_placeholder;
+    const Light* light = m_light_info->m_light;
+    Spectrum intensity;
+    light->get_inputs().find("intensity").source()->evaluate_uniform(intensity);
+    return intensity;
 }
 
 //
