@@ -109,14 +109,12 @@ int rand_float(int seed, output float result)
     return x;
 }
 
-float fract(float x)
+float random(float x)
 {
-    return x - floor(x);
-}
+    vector A = vector(u, v, 0);
+    vector B = vector(4.213536, 8.34621351, 0);
 
-int fract(int x)
-{
-    return x - (int) floor(x);
+    return mod(sin(dot(A, B)) * 917853.4917593, 1.0);
 }
 
 #endif // !AS_MATH_HELPERS_H
