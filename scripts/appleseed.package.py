@@ -50,7 +50,7 @@ import zipfile
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.4.5"
+VERSION = "2.4.6"
 SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 
 
@@ -335,8 +335,11 @@ class PackageBuilder:
             dest_path = os.path.join(dest_dir, lib_name)
             if not os.path.exists(dest_path):
                 progress("  Copying {0} to {1}".format(lib, dest_dir))
-                shutil.copy(lib, dest_dir)
-                make_writable(dest_path)
+                try:
+                    shutil.copy(lib, dest_dir)
+                    make_writable(dest_path)
+                except IOError:
+                    info("WARNING: could not copy {0} to {1}".format(lib, dest_dir))
 
     def add_headers_to_stage(self):
         progress("Adding headers to staging directory")
@@ -397,7 +400,7 @@ class PackageBuilder:
         archive_util.make_zipfile(package_base_path, "appleseed")
 
     def remove_stage(self):
-        progress("Deleting staging directory...")
+        progress("Deleting staging directory")
         safe_delete_directory("appleseed")
 
     def run(self, cmdline):
@@ -442,7 +445,7 @@ class MacPackageBuilder(PackageBuilder):
         self.shared_lib_ext = ".dylib"
         self.system_libs_prefixes = ["/System/Library/", "/usr/lib/libcurl", "/usr/lib/libc++",
                                      "/usr/lib/libbz2", "/usr/lib/libSystem", "usr/lib/libz",
-                                     "/usr/lib/libncurses"]
+                                     "/usr/lib/libncurses", "/usr/lib/libobjc.A.dylib"]
 
     def alter_stage(self):
         safe_delete_file("appleseed/bin/.DS_Store")
@@ -574,6 +577,11 @@ class MacPackageBuilder(PackageBuilder):
 
             libs.add(lib)
 
+        if False:
+            info("Dependencies for file {0}:".format(filename))
+            for lib in libs:
+                info("    {0}".format(lib))
+
         return libs
 
     def get_qt_frameworks_for_file(self, filename, fix_paths=True):
@@ -695,6 +703,12 @@ class LinuxPackageBuilder(PackageBuilder):
 
 def main():
     print("appleseed.package version " + VERSION)
+    print("")
+
+    print("IMPORTANT:");
+    print("")
+    print("  - You may need to run this tool with sudo on Linux and macOS")
+    print("  - Make sure there are no obsolete binaries in sandbox/bin")
     print("")
 
     settings = Settings()
