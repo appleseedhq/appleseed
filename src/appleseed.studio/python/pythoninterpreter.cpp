@@ -34,9 +34,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/path.h"
+#include "foundation/platform/python.h"
 
 // Boost headers.
-#include "boost/python.hpp"
 #include "boost/filesystem.hpp"
 
 namespace bpy = boost::python;

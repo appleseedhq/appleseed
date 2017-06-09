@@ -86,7 +86,6 @@ set (sources
     logging.py
     metadata.h
     module.cpp
-    pyseed.h
     unalignedmatrix44.h
     unalignedtransform.h
 )

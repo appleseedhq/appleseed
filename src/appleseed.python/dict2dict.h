@@ -30,8 +30,8 @@
 #ifndef APPLESEED_PYTHON_DICT2DICT_H
 #define APPLESEED_PYTHON_DICT2DICT_H
 
-// appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
+// appleseed.foundation headers.
+#include "foundation/platform/python.h"
 
 // Forward declarations.
 namespace foundation    { class Dictionary; }

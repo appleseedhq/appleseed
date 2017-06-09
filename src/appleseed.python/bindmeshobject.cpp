@@ -28,7 +28,6 @@
 //
 
 // appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
 #include "bindentitycontainers.h"
 #include "dict2dict.h"
 
@@ -36,6 +35,7 @@
 #include "renderer/api/object.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/python.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.
