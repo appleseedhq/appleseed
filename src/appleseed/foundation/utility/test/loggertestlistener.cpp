@@ -154,7 +154,7 @@ namespace
             split(message, "\n", tokens);
 
             // Print the message.
-            for (const_each<vector<string> > i = tokens; i; ++i)
+            for (const_each<vector<string>> i = tokens; i; ++i)
                 LOG_ERROR(m_logger, "      %s", i->c_str());
         }
 

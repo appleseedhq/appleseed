@@ -130,7 +130,7 @@ struct TriangleSSKSupportPlane
 
 // Poisoning.
 template <typename T>
-class PoisonImpl<TriangleSSKSupportPlane<T> >
+class PoisonImpl<TriangleSSKSupportPlane<T>>
 {
   public:
     static void do_poison(TriangleSSKSupportPlane<T>& plane);
@@ -466,7 +466,7 @@ inline T TriangleSSKSupportPlane<T>::intersect(
 }
 
 template <typename T>
-void PoisonImpl<TriangleSSKSupportPlane<T> >::do_poison(TriangleSSKSupportPlane<T>& plane)
+void PoisonImpl<TriangleSSKSupportPlane<T>>::do_poison(TriangleSSKSupportPlane<T>& plane)
 {
     poison(plane.m_nu);
     poison(plane.m_nv);

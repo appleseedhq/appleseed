@@ -363,7 +363,7 @@ inline void Statistics::insert(
     const std::string&                  unit)
 {
     insert(
-        std::auto_ptr<PopulationEntry<T> >(
+        std::auto_ptr<PopulationEntry<T>>(
             new PopulationEntry<T>(name, unit, value)));
 }
 

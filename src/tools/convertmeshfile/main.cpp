@@ -326,7 +326,7 @@ int main(int argc, const char* argv[])
     // Optionally print the bounding box of each loaded mesh.
     if (cl.m_print_bboxes.is_set())
     {
-        for (const_each<list<Mesh> > i = builder.get_meshes(); i; ++i)
+        for (const_each<list<Mesh>> i = builder.get_meshes(); i; ++i)
             print_bbox(logger, *i);
     }
 
@@ -334,7 +334,7 @@ int main(int argc, const char* argv[])
     GenericMeshFileWriter writer(output_filepath.c_str());
     try
     {
-        for (const_each<list<Mesh> > i = builder.get_meshes(); i; ++i)
+        for (const_each<list<Mesh>> i = builder.get_meshes(); i; ++i)
         {
             const MeshWalker walker(*i);
             writer.write(walker);

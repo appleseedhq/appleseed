@@ -233,7 +233,7 @@ namespace
         IShadingResultFrameBufferFactory*   m_framebuffer_factory;
         int                                 m_margin_width;
         int                                 m_margin_height;
-        vector<Vector<int16, 2> >           m_pixel_ordering;
+        vector<Vector<int16, 2>>            m_pixel_ordering;
         SamplingContext::RNGType            m_rng;
 
         void compute_tile_margins(const Frame& frame, const bool primary)

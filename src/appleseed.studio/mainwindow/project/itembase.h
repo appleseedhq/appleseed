@@ -115,7 +115,7 @@ QList<Item*> ItemBase::get_action_items()
 
     if (action && !action->data().isNull())
     {
-        const QList<Item*> items = qlist_static_cast<Item*>(action->data().value<QList<ItemBase*> >());
+        const QList<Item*> items = qlist_static_cast<Item*>(action->data().value<QList<ItemBase*>>());
 
         if (!items.empty())
             return items;

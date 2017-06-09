@@ -361,7 +361,7 @@ namespace
             collect_assembly_instances(assembly_instances, assembly_uid);
 
         // Remove assembly instances and their corresponding project items.
-        for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
+        for (const_each<vector<UniqueID>> i = remove_list; i; ++i)
         {
             assembly_instances.remove(*i);
             delete item_registry.get_item(*i);

@@ -92,7 +92,7 @@ SearchPaths::SearchPaths(const char* envvar, const char separator)
         vector<string> paths;
         split(value, string(&separator, 1), paths);
 
-        for (const_each<vector<string> > i = paths; i; ++i)
+        for (const_each<vector<string>> i = paths; i; ++i)
         {
             const bf::path fp(*i);
 
@@ -190,7 +190,7 @@ void SearchPaths::split_and_push_back(const char* paths, const char separator)
     vector<string> path_list;
     split(paths, string(&separator, 1), path_list);
 
-    for (const_each<vector<string> > i = path_list; i; ++i)
+    for (const_each<vector<string>> i = path_list; i; ++i)
         push_back(i->c_str());
 }
 

@@ -104,7 +104,7 @@ namespace
             collect_texture_instances(texture_instances, texture_uid);
 
         // Remove texture instances and their corresponding project items.
-        for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
+        for (const_each<vector<UniqueID>> i = remove_list; i; ++i)
         {
             texture_instances.remove(texture_instances.get_by_uid(*i));
             delete item_registry.get_item(*i);

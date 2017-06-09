@@ -169,7 +169,7 @@ public:
         double      m_height;
     };
 
-    typedef std::vector< std::vector<double> > PhotometricGrid;
+    typedef std::vector<std::vector<double>> PhotometricGrid;
 
     // Parse input stream containing IESNA LM-63 Photometric Data.
     void parse(std::istream& input_stream);
@@ -394,7 +394,7 @@ private:
                     format(ErrorMsg, expected_number_of_values).c_str(), m_line_counter);
             }
 
-            for (each< std::vector<std::string> > token = tokens; token; ++token)
+            for (each<std::vector<std::string>> token = tokens; token; ++token)
             {
                 output.push_back(boost::lexical_cast<ValueType>(*token));
             }

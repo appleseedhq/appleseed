@@ -126,7 +126,7 @@ void DisneyMaterialCustomUI::create_widgets(
     }
     else
     {
-        for (const_each<vector<Dictionary> > i = layer_definitions; i; ++i)
+        for (const_each<vector<Dictionary>> i = layer_definitions; i; ++i)
             append_new_layer(*i);
     }
 }

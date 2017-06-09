@@ -555,7 +555,7 @@ void TriangleTree::build_bvh(
     const GScalar triangle_intersection_cost = params.get_optional<GScalar>("triangle_intersection_cost", TriangleTreeDefaultTriangleIntersectionCost);
 
     // Create the partitioner.
-    typedef bvh::SAHPartitioner<vector<GAABB3> > Partitioner;
+    typedef bvh::SAHPartitioner<vector<GAABB3>> Partitioner;
     Partitioner partitioner(
         triangle_bboxes,
         max_leaf_size,
@@ -661,7 +661,7 @@ void TriangleTree::build_sbvh(
     const GScalar triangle_intersection_cost = params.get_optional<GScalar>("triangle_intersection_cost", TriangleTreeDefaultTriangleIntersectionCost);
 
     // Create the partitioner.
-    typedef bvh::SBVHPartitioner<TriangleItemHandler, vector<AABB3d> > Partitioner;
+    typedef bvh::SBVHPartitioner<TriangleItemHandler, vector<AABB3d>> Partitioner;
     TriangleItemHandler triangle_handler(
         triangle_vertex_infos,
         triangle_vertices,

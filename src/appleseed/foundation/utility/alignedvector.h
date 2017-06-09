@@ -74,9 +74,9 @@ struct VectorElementWrapper
 };
 
 #ifdef _MSC_VER
-#define ALIGNED_VECTOR_BASE std::vector<VectorElementWrapper<T>, AlignedAllocator<VectorElementWrapper<T> > >
+#define ALIGNED_VECTOR_BASE std::vector<VectorElementWrapper<T>, AlignedAllocator<VectorElementWrapper<T>>>
 #else
-#define ALIGNED_VECTOR_BASE std::vector<T, AlignedAllocator<T> >
+#define ALIGNED_VECTOR_BASE std::vector<T, AlignedAllocator<T>>
 #endif
 
 template <typename T>

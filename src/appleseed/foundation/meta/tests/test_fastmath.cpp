@@ -136,7 +136,7 @@ TEST_SUITE(Foundation_Math_FastMath)
 
         for (size_t f = 0; f < function_count; ++f)
         {
-            vector<Vector<T, 2> > points(step_count);
+            vector<Vector<T, 2>> points(step_count);
 
             for (size_t i = 0; i < step_count; ++i)
             {

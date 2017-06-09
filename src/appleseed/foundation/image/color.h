@@ -88,7 +88,7 @@ class Color
 
 // Poisoning.
 template <typename T, size_t N>
-class PoisonImpl<Color<T, N> >
+class PoisonImpl<Color<T, N>>
 {
   public:
     static void do_poison(Color<T, N>& c);
@@ -340,7 +340,7 @@ inline const T& Color<T, N>::operator[](const size_t i) const
 }
 
 template <typename T, size_t N>
-void PoisonImpl<Color<T, N> >::do_poison(Color<T, N>& c)
+void PoisonImpl<Color<T, N>>::do_poison(Color<T, N>& c)
 {
     for (size_t i = 0; i < N; ++i)
         poison(c[i]);

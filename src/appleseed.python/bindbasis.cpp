@@ -56,11 +56,11 @@ namespace
     template <typename T>
     void do_bind_basis(const char* class_name)
     {
-        bpy::class_<Basis3<T> >(class_name)
+        bpy::class_<Basis3<T>>(class_name)
             .def(bpy::init<>())
-            .def(bpy::init<Vector<T, 3> >())
-            .def(bpy::init<Vector<T, 3>, Vector<T, 3> >())
-            .def(bpy::init<Vector<T, 3>, Vector<T, 3>, Vector<T, 3> >())
+            .def(bpy::init<Vector<T, 3>>())
+            .def(bpy::init<Vector<T, 3>, Vector<T, 3>>())
+            .def(bpy::init<Vector<T, 3>, Vector<T, 3>, Vector<T, 3>>())
 
             .def("transform_to_local", &transform_to_local<T>)
             .def("transform_to_parent", &transform_to_parent<T>)

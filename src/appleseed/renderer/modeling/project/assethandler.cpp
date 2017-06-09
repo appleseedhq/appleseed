@@ -159,7 +159,7 @@ bool AssetHandler::handle_assets() const
     do_collect_asset_paths(paths, m_project.render_layer_rules());
     do_collect_asset_paths(paths, m_project.configurations());
 
-    vector<string> unique_paths = array_vector<vector<string> >(paths);
+    vector<string> unique_paths = array_vector<vector<string>>(paths);
     sort(unique_paths.begin(), unique_paths.end());
     unique_paths.erase(
         unique(unique_paths.begin(), unique_paths.end()),
