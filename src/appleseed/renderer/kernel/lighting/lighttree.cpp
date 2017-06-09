@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/global/globaltypes.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -76,6 +77,10 @@ void LightTree::build(
     {
         LightSource* light_source = new NonPhysicalLightSource(&*i);
         foundation::Vector3d position = light_source->get_position();
+        Spectrum spectrum = light_source->get_intensity();
+
+        RENDERER_LOG_INFO("Non physical light spectrum at 0: %f", spectrum[0]);
+
         foundation::AABB3d bbox = light_source->get_bbox();
         m_light_sources.push_back(light_source);
         light_bboxes.push_back(bbox);

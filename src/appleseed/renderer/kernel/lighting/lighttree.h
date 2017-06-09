@@ -77,7 +77,6 @@ class LightTree
   private:
     struct Item
     {
-        // foundation::UniqueID    m_light_uid;
         foundation::Vector3d    m_position;
 
         Item() {}

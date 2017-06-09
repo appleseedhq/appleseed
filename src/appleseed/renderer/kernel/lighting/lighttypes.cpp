@@ -81,6 +81,12 @@ foundation::AABB3d NonPhysicalLightSource::get_bbox() const
                 foundation::Vector3d(position[0] - 0.01, position[1] - 0.01, position[2] - 0.01));
 }
 
+Spectrum NonPhysicalLightSource::get_intensity() const
+{
+    DynamicSpectrum31f hard_coded_placeholder(foundation::Color3f(1.0f, 2.0f, 3.0f));
+    return hard_coded_placeholder;
+}
+
 //
 // Emitting triangle light source class implementation
 //
@@ -116,6 +122,12 @@ foundation::AABB3d EmittingTriangleLightSource::get_bbox() const
     bbox.insert(vertex2);
 
     return bbox;
+}
+
+Spectrum EmittingTriangleLightSource::get_intensity() const
+{
+    DynamicSpectrum31f hard_coded_placeholder(foundation::Color3f(1.0f, 2.0f, 3.0f));
+    return hard_coded_placeholder;
 }
 
 }   // namespace renderer
