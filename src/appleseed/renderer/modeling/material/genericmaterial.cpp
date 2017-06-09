@@ -92,6 +92,7 @@ namespace
             m_render_data.m_bssrdf = get_uncached_bssrdf();
             m_render_data.m_edf = get_uncached_edf();
             m_render_data.m_basis_modifier = create_basis_modifier(context);
+            m_render_data.m_phase_function = get_uncached_phase_function();
 
             if (m_render_data.m_edf && m_render_data.m_alpha_map)
             {
