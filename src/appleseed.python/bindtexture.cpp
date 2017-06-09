@@ -28,7 +28,6 @@
 //
 
 // appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
 #include "bindentitycontainers.h"
 #include "dict2dict.h"
 #include "metadata.h"
@@ -39,6 +38,7 @@
 #include "renderer/api/texture.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/python.h"
 #include "foundation/utility/searchpaths.h"
 
 namespace bpy = boost::python;

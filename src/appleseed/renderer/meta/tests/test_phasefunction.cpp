@@ -175,7 +175,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
                 bias += incoming / pdf;
             }
 
-            return feq(bias / NumberOfSamples, Vector3f(0.0f), 0.1f);
+            return feq(bias / static_cast<float>(NumberOfSamples), Vector3f(0.0f), 0.1f);
         }
 
         // Sample a given phase function and find average cosine of scattering angle.

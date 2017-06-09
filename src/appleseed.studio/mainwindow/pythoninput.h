@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_PYTHONINPUT_H
-#define APPLESEED_STUDIO_PYTHONINPUT_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONINPUT_H
+#define APPLESEED_STUDIO_MAINWINDOW_PYTHONINPUT_H
 
 // appleseed.studio headers
 #include "python/pythoninterpreter.h"
@@ -54,12 +54,11 @@ class PythonInput
 
   private:
     void indent();
-    void indent_like_previous(const std::string &previous);
-    void insert_spaces(size_t count);
+    void indent_like_previous(const std::string& previous);
+    void insert_spaces(const size_t count);
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif // !APPLESEED_STUDIO_PYTHONINPUT_H
-
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PYTHONINPUT_H

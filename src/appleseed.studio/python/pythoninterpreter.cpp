@@ -29,14 +29,14 @@
 // Interface header.
 #include "pythoninterpreter.h"
 
-// Studio headers.
+// appleseed.studio headers.
 #include "mainwindow/outputredirector.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/path.h"
+#include "foundation/platform/python.h"
 
 // Boost headers.
-#include "boost/python.hpp"
 #include "boost/filesystem.hpp"
 
 namespace bpy = boost::python;
@@ -68,7 +68,6 @@ void PythonInterpreter::redirect_output(OutputRedirector redirector)
     bpy::object sys_module = bpy::import("sys");
     sys_module.attr("stdout") = redirector;
     sys_module.attr("stderr") = redirector;
-
 }
 
 PythonInterpreter::PythonInterpreter()
@@ -94,6 +93,5 @@ PythonInterpreter::~PythonInterpreter()
     Py_Finalize();
 }
 
-} // namespace studio
-} // namespace appleseed
-
+}   // namespace studio
+}   // namespace appleseed

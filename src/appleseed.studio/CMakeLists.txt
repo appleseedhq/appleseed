@@ -32,9 +32,9 @@
 # Packages.
 #--------------------------------------------------------------------------------------------------
 
-# Python
-if (PYTHON_MAJOR_VERSION STREQUAL "3")
-    message ( FATAL_ERROR "Python 2.x needed" )
+# Boost.
+if (NOT PYTHON_MAJOR_VERSION STREQUAL "2")
+    message (FATAL_ERROR "Python 2.x needed")
 else ()
     find_package (Boost 1.55 COMPONENTS python)
 endif ()

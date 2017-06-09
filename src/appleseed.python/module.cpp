@@ -27,11 +27,11 @@
 // THE SOFTWARE.
 //
 
-// appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
-
 // appleseed.renderer headers.
 #include "renderer/api/version.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/python.h"
 
 // Forward declarations.
 void bind_aov();

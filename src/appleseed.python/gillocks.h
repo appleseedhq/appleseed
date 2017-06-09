@@ -30,11 +30,9 @@
 #ifndef APPLESEED_PYTHON_GILLOCKS_H
 #define APPLESEED_PYTHON_GILLOCKS_H
 
-// appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
-
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/platform/python.h"
 
 // This class locks Python's Global interpreter lock on construction
 // and unlocks it on destruction. A classic lock.
