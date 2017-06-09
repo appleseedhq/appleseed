@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2017 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2017 Gleb Mishchenko, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,54 +26,34 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "partiofile.h"
+#ifndef APPLESEED_STUDIO_PYTHONINTERPRETER_H
+#define APPLESEED_STUDIO_PYTHONINTERPRETER_H
 
-// Standard headers.
-#include <cstddef>
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 
-using namespace std;
+namespace appleseed {
+namespace studio {
 
-namespace foundation
+// Forward declarations.
+class OutputRedirector;
+
+class PythonInterpreter
+  : public foundation::NonCopyable
 {
+  public:
+    static PythonInterpreter& instance();
+    void execute_command(const char* command);
 
-//
-// PartioFile class implementation.
-//
+    void redirect_output(OutputRedirector redirector);
 
-PartioFile::PartioFile()
-{
-    m_particles = Partio::create();
-}
+  private:
+    PythonInterpreter();
+    ~PythonInterpreter();
+};
 
-PartioFile::~PartioFile()
-{
-    m_particles->release();
-}
+} // namespace studio
+} // namespace appleseed
 
-Partio::ParticleAttribute PartioFile::add_float_attribute(const char* name)
-{
-    return m_particles->addAttribute(name, Partio::FLOAT, 1);
-}
+#endif // !APPLESEED_STUDIO_PYTHONINTERPRETER_H
 
-Partio::ParticleAttribute PartioFile::add_vector_attribute(const char* name)
-{
-    return m_particles->addAttribute(name, Partio::VECTOR, 3);
-}
-
-Partio::ParticleAttribute PartioFile::add_color_attribute(const char* name)
-{
-    return m_particles->addAttribute(name, Partio::VECTOR, 3);
-}
-
-Partio::ParticleIndex PartioFile::add_particle()
-{
-    return m_particles->addParticle();
-}
-
-void PartioFile::write(const char* filepath) const
-{
-    Partio::write(filepath, *m_particles);
-}
-
-}   // namespace foundation

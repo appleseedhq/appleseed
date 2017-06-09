@@ -283,6 +283,17 @@
     </widget>
    </widget>
   </widget>
+  <widget class="QDockWidget" name="python_console">
+   <property name="windowTitle">
+    <string>Console</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="python_console_contents">
+     <layout class="QGridLayout" name="gridLayout_10"/>
+   </widget>
+  </widget>
   <action name="action_file_new_project">
    <property name="text">
     <string>&amp;New Project</string>

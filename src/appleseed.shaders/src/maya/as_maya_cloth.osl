@@ -39,12 +39,14 @@ shader as_maya_cloth
     color in_gapColor = color(0)
     [[
         string as_maya_attribute_name = "gapColor",
-        string label = "Gap Color"
+        string label = "Gap Color",
+        string page = "Cloth Attributes"
     ]],
     color in_uColor = color(1)
     [[
         string as_maya_attribute_name = "uColor",
-        string label = "U Color"
+        string label = "U Color",
+        string page = "Cloth Attributes"
     ]],
     color in_vColor = color(0.5)
     [[
@@ -54,43 +56,51 @@ shader as_maya_cloth
     float in_uWidth = 0.75
     [[
         string as_maya_attribute_name = "uWidth",
-        string label = "U Width"
+        string label = "U Width",
+        string page = "Cloth Attributes"
     ]],
     float in_vWidth = 0.75
     [[
         string as_maya_attribute_name = "vWidth",
-        string label = "V Width"
+        string label = "V Width",
+        string page = "Cloth Attributes"
     ]],
     float in_uWave = 0.0
     [[
         string as_maya_attribute_name = "uWave",
-        string label = "U Wave"
+        string label = "U Wave",
+        string page = "Cloth Attributes"
     ]],
     float in_vWave = 0.0
     [[
         string as_maya_attribute_name = "vWave",
-        string label = "V Wave"
+        string label = "V Wave",
+        string page = "Cloth Attributes"
     ]],
     float in_randomness = 0.0
     [[
         string as_maya_attribute_name = "randomness",
-        string label = "Randomness"
+        string label = "Randomness",
+        string page = "Cloth Attributes"
     ]],
     float in_widthSpread = 0.0
     [[
         string as_maya_attribute_name = "widthSpread",
-        string label = "Width Spread"
+        string label = "Width Spread",
+        string page = "Cloth Attributes"
     ]],
     float in_brightSpread = 0.0
     [[
         string as_maya_attribute_name = "brightSpread",
-        string label = "Bright Spread"
+        string label = "Bright Spread",
+        string page = "Cloth Attributes"
     ]],
     int in_invert = 0
     [[
         string as_maya_attribute_name = "invert",
         string label = "Invert",
-        string widget = "checkBox"
+        string widget = "checkBox",
+        string page = "Effects",
     ]],
 
     MAYA_COLORBALANCE_PARAMETERS,

@@ -108,7 +108,6 @@ option (WITH_STUDIO                         "Build appleseed.studio"            
 option (WITH_TOOLS                          "Build appleseed tools"                                 ON)
 option (WITH_PYTHON                         "Build Python bindings"                                 ON)
 option (WITH_DISNEY_MATERIAL                "Build Disney material"                                 OFF)
-option (WITH_PARTIO                         "Build Partio support (used in unit tests)"             OFF)
 
 option (USE_CPP11                           "Use C++11"                                             OFF)
 option (USE_STATIC_BOOST                    "Use static Boost libraries"                            ON)
@@ -255,11 +254,6 @@ if (WITH_DISNEY_MATERIAL)
     endif ()
 endif ()
 
-if (WITH_PARTIO)
-    add_definitions (-DAPPLESEED_WITH_PARTIO)
-    find_package (Partio REQUIRED)
-endif ()
-
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.
@@ -269,7 +263,6 @@ endif ()
 include_directories (
     src/appleseed
     src/lz4
-    ${PYTHON_INCLUDE_DIRS}
 )
 
 if (USE_EXTERNAL_ZLIB)
@@ -327,10 +320,6 @@ if (WITH_DISNEY_MATERIAL)
     else ()
         include_directories (${APPLESEED_DEPS_STAGE_DIR}/SeExpr-debug/include)
     endif ()
-endif ()
-
-if (WITH_PARTIO)
-    include_directories (${PARTIO_INCLUDE_DIRS})
 endif ()
 
 
@@ -566,12 +555,31 @@ if (WITH_CLI)
     add_subdirectory (src/appleseed.cli)
 endif ()
 
-if (WITH_STUDIO)
-    add_subdirectory (src/appleseed.studio)
+if (WITH_PYTHON)
+    find_package (PythonLibs REQUIRED)
+
+    # Splitting version string into list.
+    string (REGEX MATCHALL "[0123456789]+" PYTHON_VERSION_LIST "${PYTHONLIBS_VERSION_STRING}")
+
+    if (PYTHON_VERSION_LIST)
+        # Accessing major and minor version numbers with the version list we got.
+        list (GET PYTHON_VERSION_LIST 0 PYTHON_MAJOR_VERSION)
+        list (GET PYTHON_VERSION_LIST 1 PYTHON_MINOR_VERSION)
+    else ()
+        # Default to latest Python 2 release if version string cannot be read.
+        message (STATUS "Cannot find Python version. Using 2.7 by default")
+        set (PYTHON_MAJOR_VERSION "2")
+        set (PYTHON_MINOR_VERSION "7")
+    endif ()
+
+    add_subdirectory (src/appleseed.python)
 endif ()
 
-if (WITH_PYTHON)
-    add_subdirectory (src/appleseed.python)
+if (WITH_STUDIO)
+    if (NOT WITH_PYTHON)
+        message (FATAL_ERROR "WITH_PYTHON should be \"ON\" to build appleseed.studio")
+    endif()
+    add_subdirectory (src/appleseed.studio)
 endif ()
 
 if (WITH_TOOLS)

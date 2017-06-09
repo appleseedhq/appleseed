@@ -167,7 +167,10 @@ namespace
 
             if (c->get_closure_count() > 0)
             {
-                const size_t closure_index = c->choose_closure(sampling_context);
+                sampling_context.split_in_place(1, 1);
+                const size_t closure_index = c->choose_closure(
+                    sampling_context.next2<float>());
+
                 const Basis3f& modified_basis = c->get_closure_shading_basis(closure_index);
 
                 outgoing_point.set_shading_basis(Basis3d(modified_basis));
@@ -186,7 +189,7 @@ namespace
                 if (result)
                 {
                     bssrdf_sample.m_value *= c->get_closure_weight(closure_index);
-                    bssrdf_sample.m_probability *= c->get_closure_pdf_weight(closure_index);
+                    bssrdf_sample.m_probability *= c->get_closure_pdf(closure_index);
                 }
 
                 return result;

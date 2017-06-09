@@ -40,60 +40,61 @@ shader as_maya_movie
     [[
         string as_maya_attribute_name = "fileTextureName",
         string label = "Image File",
-        string widget = "filename"
+        string widget = "filename",
+        string page = "File Attributes"
     ]],
     int in_disableFileLoad = 0
     [[
         string as_maya_attribute_name = "disableFileLoad",
         string label = "Disable File Load",
-        string widget = "checkBox"
+        string widget = "checkBox",
+        string page = "File Attributes"
     ]],
     int in_useFrameExtension = 0
     [[
         string as_maya_attribute_name = "useFrameExtension",
         string label = "Use Frame Extension",
-        string widget = "checkBox"
+        string widget = "checkBox",
+        string page = "File Attributes"
     ]],
     int in_frameExtension = 1
     [[
         string as_maya_attribute_name = "frameExtension",
         string label = "Frame Extension",
         string widget = "number",
-        int slider = 0
+        int slider = 0,
+        string page = "File Attributes"
     ]],
     int in_frameOffset = 0
     [[
         string as_maya_attribute_name = "frameOffset",
         string label = "Frame Offset",
         string widget = "number",
-        int slider = 0
+        int slider = 0,
+        string page = "File Attributes"
     ]],
     int in_filterType = 3
     [[
         string as_maya_attribute_name = "filterType",
         string label = "Filter Type",
         string widget = "mapper",
-        string options = "None:0|Mip Map:1|Box:2|Quadratic:3|Quartic:4|Gaussian:5"
-    ]],
-    float in_filterWidth = 0.707
-    [[
-        string as_maya_attribute_name = "filterWidth",
-        string label = "Filter Width"
+        string options = "None:0|Mip Map:1|Box:2|Quadratic:3|Quartic:4|Gaussian:5",
+        string page = "File Attributes"
     ]],
     int in_preFilter = 0
     [[
         string as_maya_attribute_name = "preFilter",
         string label = "Pre-Filter",
-        string widget = "checkBox"
+        string widget = "checkBox",
+        string page = "File Attributes"
     ]],
     float in_preFilterRadius = 2.0
     [[
         string as_maya_attribute_name = "preFilterRadius",
         string label = "Pre-Filter Radius",
-        int slider = 1,
-        int slidermin = 1,
-        int slidermax = 10,
-        int digits = 4
+        float min = 1.0,
+        float max = 10.0,
+        string page = "File Attributes"
     ]],
 
     MAYA_COLORMANAGEMENT_PARAMETERS,
@@ -104,21 +105,18 @@ shader as_maya_movie
     output color out_outColor = color(0)
     [[
         string as_maya_attribute_name = "outColor",
-        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output float out_outAlpha = 1.0
     [[
         string as_maya_attribute_name = "outAlpha",
-        string as_maya_attribute_short_name = "oa",
         string label = "Output File Alpha",
         string widget = "null"
     ]],
     output color out_outTransparency = color(0)
     [[
         string as_maya_attribute_name = "outTransparency",
-        string as_maya_attribute_short_name = "ot",
         string label = "Output Transparency",
         string widget = "null"
     ]],
@@ -224,7 +222,7 @@ shader as_maya_movie
 
         if (in_preFilter)
         {
-            float fw = in_filterWidth * in_preFilterRadius;
+            float fw = in_preFilterRadius;
 
             dsdt[0] *= fw;
             dsdt[1] *= fw;

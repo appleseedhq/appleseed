@@ -50,6 +50,7 @@
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/phasefunction/phasefunction.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
@@ -174,6 +175,7 @@ void InputBinder::build_assembly_symbol_table(
         insert_entities(symbols, assembly.lights(), SymbolTable::SymbolLight);
         insert_entities(symbols, assembly.objects(), SymbolTable::SymbolObject);
         insert_entities(symbols, assembly.object_instances(), SymbolTable::SymbolObjectInstance);
+        insert_entities(symbols, assembly.phase_functions(), SymbolTable::SymbolPhaseFunction);
     }
     catch (const SymbolTable::ExceptionDuplicateSymbol& e)
     {
@@ -370,6 +372,16 @@ void InputBinder::bind_assembly_entities_inputs(
             scene,
             scene_symbols,
             SymbolTable::symbol_name(SymbolTable::SymbolEDF),
+            *i);
+    }
+
+    // Bind phase punctions inputs.
+    for (each<PhaseFunctionContainer> i = assembly.phase_functions(); i; ++i)
+    {
+        bind_assembly_entity_inputs(
+            scene,
+            scene_symbols,
+            SymbolTable::symbol_name(SymbolTable::SymbolPhaseFunction),
             *i);
     }
 
@@ -645,6 +657,7 @@ bool InputBinder::try_bind_assembly_entity_to_input(
           BIND(SymbolTable::SymbolLight, assembly.lights());
           BIND(SymbolTable::SymbolObject, assembly.objects());
           BIND(SymbolTable::SymbolObjectInstance, assembly.object_instances());
+          BIND(SymbolTable::SymbolPhaseFunction, assembly.phase_functions());
         }
 
         #undef BIND

@@ -36,82 +36,82 @@ shader as_maya_file
     string as_maya_node_name = "file"
 ]]
 (
-    string in_fileTextureName = ""
-    [[
-        string as_maya_attribute_name = "fileTextureName",
-        string label = "Image File",
-        string widget = "filename"
-    ]],
-    int in_disableFileLoad = 0
-    [[
-        string as_maya_attribute_name = "disableFileLoad",
-        string label = "Disable File Load",
-        string widget = "checkBox"
-    ]],
     int in_filterType = 3
     [[
         string as_maya_attribute_name = "filterType",
         string label = "Filter Type",
         string widget = "mapper",
-        string options = "None:0|Mip Map:1|Box:2|Quadratic:3|Quartic:4|Gaussian:5"
-    ]],
-    float in_filterWidth = 0.707
-    [[
-        string as_maya_attribute_name = "filterWidth",
-        string label = "Filter Width"
+        string options = "None:0|Mip Map:1|Box:2|Quadratic:3|Quartic:4|Gaussian:5",
+        string page = "File Attributes"
     ]],
     int in_preFilter = 0
     [[
         string as_maya_attribute_name = "preFilter",
         string label = "Pre-Filter",
-        string widget = "checkBox"
+        string widget = "checkBox",
+        string page = "File Attributes"
     ]],
     float in_preFilterRadius = 2.0
     [[
         string as_maya_attribute_name = "preFilterRadius",
         string label = "Pre-Filter Radius",
-        int slider = 1,
-        int slidermin = 1,
-        int slidermax = 10,
-        int digits = 4
+        float min = 1.0,
+        float max = 10.0,
+        string page = "File Attributes",
+        int divider = 1
     ]],
-    int in_useMaximumRes = 0
+    string in_fileTextureName = ""
     [[
-        string as_maya_attribute_name = "useMaximumRes",
-        string label = "Use Maximum Res",
-        string widget = "checkBox"
+        string as_maya_attribute_name = "fileTextureName",
+        string label = "Image File",
+        string widget = "filename",
+        string page = "File Attributes",
+        int divider = 1
     ]],
-    float in_ptexFilterBlur = 0.0
+    int in_disableFileLoad = 0
     [[
-        string as_maya_attribute_name = "ptexFilterBlur",
-        string label = "PTex Filter Blur",
-        int slider = 1
-    ]],
-    float in_ptexFilterWidth = 0.0
-    [[
-        string as_maya_attribute_name = "ptexFilterWidth",
-        string label = "PTex Filter Width",
-        int slider = 1
+        string as_maya_attribute_name = "disableFileLoad",
+        string label = "Disable File Load",
+        string widget = "checkBox",
+        string page = "File Attributes"
     ]],
     int in_ptexFilterType = 3
     [[
         string as_maya_attribute_name = "ptexFilterType",
-        string label = "PTex Filter Type",
+        string label = "Ptex Filter Type",
         string widget = "mapper",
-        string options =
-        "Point:0|Bilinear:1|Box:2|Gaussian:3|Bicubic:4|B-Spline:5|Catmull-Rom:6|Mitchell:7"
+        string options = "Point:0|Bilinear:1|Box:2|Gaussian:3|Bicubic:4|B-Spline:5|Catmull-Rom:6|Mitchell:7",
+        string page = "Ptex Controls"
+    ]],
+    float in_ptexFilterWidth = 0.0
+    [[
+        string as_maya_attribute_name = "ptexFilterWidth",
+        float min = -10.0,
+        float max = 10.0,
+        string label = "Ptex Filter Width",
+        string page = "Ptex Controls"
+    ]],
+    float in_ptexFilterBlur = 0.0
+    [[
+        string as_maya_attribute_name = "ptexFilterBlur",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Ptex Filter Blur",
+        string page = "Ptex Controls"
     ]],
     int in_ptexFilterInterpolateLevels = 0
     [[
         string as_maya_attribute_name = "ptexFilterInterpolateLevels",
-        string label = "PTex Filter Interpolate Levels",
-        string widget = "checkBox"
+        string label = "Ptex Filter Interpolate Levels",
+        string widget = "checkBox",
+        string page = "Ptex Controls"
     ]],
 
     float in_exposure = 0.0
     [[
         string as_maya_attribute_name = "exposure",
-        string label = "Exposure"
+        string label = "Exposure",
+        string page = "Color Balance"
     ]],
 
     MAYA_COLORMANAGEMENT_PARAMETERS,
@@ -122,21 +122,18 @@ shader as_maya_file
     output color out_outColor = color(0)
     [[
         string as_maya_attribute_name = "outColor",
-        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output float out_outAlpha = 1.0
     [[
         string as_maya_attribute_name = "outAlpha",
-        string as_maya_attribute_short_name = "oa",
         string label = "Output File Alpha",
         string widget = "null"
     ]],
     output color out_outTransparency = color(0)
     [[
         string as_maya_attribute_name = "outTransparency",
-        string as_maya_attribute_short_name = "ot",
         string label = "Output Transparency",
         string widget = "null"
     ]],
@@ -305,7 +302,7 @@ shader as_maya_file
 
         if (in_preFilter)
         {
-            float fw = in_filterWidth * in_preFilterRadius;
+            float fw = in_preFilterRadius;
 
             dsdt[0] *= fw;
             dsdt[1] *= fw;
@@ -313,7 +310,7 @@ shader as_maya_file
             dsdt[3] *= fw;
         }
 
-        if (in_filterType == 1 && in_useMaximumRes)
+        if (in_filterType == 1)
         {
             out_outColor =
                 texture(

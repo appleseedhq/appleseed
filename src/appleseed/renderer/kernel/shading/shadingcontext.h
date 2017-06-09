@@ -132,12 +132,6 @@ class ShadingContext
         const foundation::Vector3f& outgoing,
         Spectrum&                   value) const;
 
-    void execute_osl_surface_shader(
-        const ShaderGroup&          shader_group,
-        const ShadingPoint&         shading_point,
-        const foundation::Color3f&  color,
-        const float                 alpha) const;
-
     // Choose one of the bsdf closures and set its shading basis in shading point.
     void choose_bsdf_closure_shading_basis(
         const ShadingPoint&         shading_point,

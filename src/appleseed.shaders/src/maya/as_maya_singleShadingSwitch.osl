@@ -36,19 +36,22 @@ shader as_maya_singleShadingSwitch
     float in_inSingle[] = {0.0}
     [[
         string as_maya_attribute_name = "inputs",
-        string label = "Input Value"
+        string label = "Input Value",
+        string page = "Switch Attributes"
     ]],
 
     string in_inShape[] = {""}
     [[
         string as_maya_attribute_name = "inputs",
-        string label = "Input Shape Name"
+        string label = "Input Shape Name",
+        string page = "Switch Attributes"
     ]],
 
     float in_default = 0.0
     [[
         string as_maya_attribute_name = "default",
-        string label = "Default Value"
+        string label = "Default Value",
+        string page = "Switch Attributes"
     ]],
 
     output float out_output = 0.0

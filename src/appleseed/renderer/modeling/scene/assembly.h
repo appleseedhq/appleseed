@@ -96,6 +96,9 @@ class APPLESEED_DLLSYMBOL Assembly
     // Access the objects.
     ObjectContainer& objects() const;
 
+    // Access the phase functions.
+    PhaseFunctionContainer& phase_functions() const;
+
     // Access the object instances.
     ObjectInstanceContainer& object_instances() const;
 

@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2017 Artem Bishev, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,88 +26,74 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_ALSURFACELAYERBRDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_ALSURFACELAYERBRDF_H
+#ifndef APPLESEED_RENDERER_MODELING_PHASEFUNCTION_HENYEYPHASEFUNCTION_H
+#define APPLESEED_RENDERER_MODELING_PHASEFUNCTION_HENYEYPHASEFUNCTION_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/bsdf/ibsdffactory.h"
 #include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/phasefunction/iphasefunctionfactory.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
-namespace renderer      { class BSDF; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class PhaseFunction; }
 
 namespace renderer
 {
 
 //
-// AlSurface layer BRDF input values.
+// Henyey-Greenstein phase function input values.
 //
 
-APPLESEED_DECLARE_INPUT_VALUES(AlSurfaceLayerBRDFInputValues)
+APPLESEED_DECLARE_INPUT_VALUES(HenyeyPhaseFunctionInputValues)
 {
-    // Substrate.
-    void*           m_substrate;
-    void*           m_substrate_closure_data;
-    const BSDF*     m_osl_bsdf;
-
-    // Microfacet.
-    int             m_distribution;
-    Spectrum        m_reflectance;
-    float           m_roughness;
-    float           m_anisotropy;
-
-    // Fresnel.
-    int             m_fresnel_mode;
-    float           m_ior;
-    Spectrum        m_normal_reflectance;
-    Spectrum        m_edge_tint;
+    Spectrum    m_absorption;               // absorption coefficient of the media
+    float       m_absorption_multiplier;    // absorption coefficient multiplier
+    Spectrum    m_scattering;               // scattering coefficient of the media
+    float       m_scattering_multiplier;    // scattering coefficient multiplier
+    float       m_average_cosine;           // asymmetry parameter, often referred as g
 
     struct Precomputed
     {
-        float       m_alpha_x;
-        float       m_alpha_y;
+        Spectrum    m_normalized_extinction;    // extinction coefficient of the media (normalized)
+        float       m_extinction_multiplier;    // extinction coefficient multiplier
     };
 
-    Precomputed     m_precomputed;
+    Precomputed m_precomputed;
 };
 
-
 //
-// AlSurface layer BRDF factory.
+// Henyey-Greenstein phase function factory.
 //
 
-class APPLESEED_DLLSYMBOL AlSurfaceLayerBRDFFactory
-  : public IBSDFFactory
+class APPLESEED_DLLSYMBOL HenyeyPhaseFunctionFactory
+  : public IPhaseFunctionFactory
 {
   public:
-    // Return a string identifying this BSDF model.
+    // Return a string identifying this phase function model.
     virtual const char* get_model() const APPLESEED_OVERRIDE;
 
-    // Return metadata for this BSDF model.
+    // Return metadata for this phase function model.
     virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
 
-    // Return metadata for the inputs of this BSDF model.
+    // Return metadata for the inputs of this phase function model.
     virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 
-    // Create a new BSDF instance.
-    virtual foundation::auto_release_ptr<BSDF> create(
+    // Create a new phase function instance.
+    virtual foundation::auto_release_ptr<PhaseFunction> create(
         const char*         name,
         const ParamArray&   params) const APPLESEED_OVERRIDE;
-
-    // Static variant of the create() method above.
-    static foundation::auto_release_ptr<BSDF> static_create(
-        const char*         name,
-        const ParamArray&   params);
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_ALSURFACELAYERBRDF_H
+#endif  // !APPLESEED_RENDERER_MODELING_PHASEFUNCTION_HENYEYPHASEFUNCTION_H

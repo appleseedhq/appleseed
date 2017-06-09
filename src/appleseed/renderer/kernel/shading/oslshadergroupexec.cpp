@@ -33,6 +33,7 @@
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
+#include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 
 // Standard headers.
@@ -182,20 +183,6 @@ Color3f OSLShaderGroupExec::execute_background(
     return process_background_tree(sg.Ci);
 }
 
-void OSLShaderGroupExec::execute_surface_shader(
-    const ShaderGroup&              shader_group,
-    const ShadingPoint&             shading_point,
-    const Color3f&                  color,
-    const float                     alpha) const
-{
-    shading_point.m_surface_shader_color = color;
-    shading_point.m_surface_shader_alpha = alpha;
-    do_execute(
-        shader_group,
-        shading_point,
-        shading_point.get_ray().m_flags);
-}
-
 void OSLShaderGroupExec::do_execute(
     const ShaderGroup&              shader_group,
     const ShadingPoint&             shading_point,
@@ -224,12 +211,14 @@ void OSLShaderGroupExec::choose_bsdf_closure_shading_basis(
         shading_point.get_osl_shader_globals().Ci,
         m_arena);
 
-    if (c.get_closure_count() > 0)
-    {
-        const size_t index = c.choose_closure(s[1]);
-        shading_point.set_shading_basis(
-            Basis3d(c.get_closure_shading_basis(index)));
-    }
+    float pdfs[CompositeSurfaceClosure::MaxClosureEntries];
+    const size_t num_closures = c.compute_pdfs(ScatteringMode::All, pdfs);
+    if (num_closures == 0)
+        return;
+
+    const size_t index = c.choose_closure(s[1], num_closures, pdfs);
+    shading_point.set_shading_basis(
+        Basis3d(c.get_closure_shading_basis(index)));
 }
 
 }   // namespace renderer

@@ -36,12 +36,14 @@ shader as_maya_addDoubleLinear
     float in_input1 = 0.0
     [[
         string as_maya_attribute_name = "input1",
-        string label = "Input 1"
+        string label = "Input 1",
+        string page = "Add Double Linear Attributes"
     ]],
     float in_input2 = 0.0
     [[
         string as_maya_attribute_name = "input2",
-        string label = "Input 2"
+        string label = "Input 2",
+        string page = "Add Double Linear Attributes"
     ]],
 
     output float out_output = 0.0

@@ -36,17 +36,20 @@ shader as_maya_doubleShadingSwitch
     vector in_inDouble[] = {0}
     [[
         string as_maya_attribute_name = "inputs",
-        string label = "Input Values"
+        string label = "Input Values",
+        string page = "Switch Attributes"
     ]],
     string in_inShape[] = {""}
     [[
         string as_maya_attribute_name = "inputs",
-        string label = "Shape Names"
+        string label = "Shape Names",
+        string page = "Switch Attributes"
     ]],
     float in_default[2] = {0,0}
     [[
         string as_maya_attribute_name = "default",
-        string label = "Default Values"
+        string label = "Default Values",
+        string page = "Switch Attributes"
     ]],
 
     output float out_output[2] = {0,0}

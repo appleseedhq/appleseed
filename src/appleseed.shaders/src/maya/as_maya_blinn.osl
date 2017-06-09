@@ -185,28 +185,24 @@ shader as_maya_blinn
     output closure color out_outColor = 0
     [[
         string as_maya_attribute_name = "outColor",
-        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output closure color out_outTransparency = 0
     [[
         string as_maya_attribute_name = "outTransparency",
-        string as_maya_attribute_short_name = "ot",
         string label = "Output Transparency",
         string widget = "null"
     ]],
     output closure color out_outGlowColor = 0
     [[
         string as_maya_attribute_name = "outGlowColor",
-        string as_maya_attribute_short_name = "og",
         string label = "Output Glow Color",
         string widget = "null"
     ]],
     output closure color out_outMatteOpacity = 0
     [[
         string as_maya_attribute_name = "outMatteOpacity",
-        string as_maya_attribute_short_name = "om",
         string label = "Output Matte Opacity",
         string widget = "null"
     ]]

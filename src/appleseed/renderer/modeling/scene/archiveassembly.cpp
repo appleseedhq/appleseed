@@ -125,6 +125,7 @@ bool ArchiveAssembly::expand_contents(
             materials().swap(assembly->materials());
             objects().swap(assembly->objects());
             object_instances().swap(assembly->object_instances());
+            phase_functions().swap(assembly->phase_functions());
             shader_groups().swap(assembly->shader_groups());
             surface_shaders().swap(assembly->surface_shaders());
             textures().swap(assembly->textures());
