@@ -32,6 +32,13 @@
 # Packages.
 #--------------------------------------------------------------------------------------------------
 
+# Python
+if (PYTHON_MAJOR_VERSION STREQUAL "3")
+    message ( FATAL_ERROR "Python 2.x needed" )
+else ()
+    find_package (Boost 1.55 COMPONENTS python)
+endif ()
+
 # OpenGL.
 find_package (OpenGL REQUIRED)
 
@@ -246,6 +253,8 @@ set (mainwindow_sources
     mainwindow/configurationmanagerwindow.cpp
     mainwindow/configurationmanagerwindow.h
     mainwindow/configurationmanagerwindow.ui
+    mainwindow/consolewidget.cpp
+    mainwindow/consolewidget.h
     mainwindow/logwidget.cpp
     mainwindow/logwidget.h
     mainwindow/mainwindow.cpp
@@ -253,6 +262,12 @@ set (mainwindow_sources
     mainwindow/mainwindow.ui
     mainwindow/minimizebutton.cpp
     mainwindow/minimizebutton.h
+    mainwindow/outputredirector.cpp
+    mainwindow/outputredirector.h
+    mainwindow/pythonhighlighter.cpp
+    mainwindow/pythonhighlighter.h
+    mainwindow/pythoninput.cpp
+    mainwindow/pythoninput.h
     mainwindow/qtlogtarget.cpp
     mainwindow/qtlogtarget.h
     mainwindow/renderingsettingswindow.cpp
@@ -277,6 +292,17 @@ list (APPEND appleseed.studio_sources
 )
 source_group ("meta\\tests" FILES
     ${meta_tests_sources}
+)
+
+set (python_sources
+    python/pythoninterpreter.cpp
+    python/pythoninterpreter.h
+)
+list (APPEND appleseed.studio_sources
+    ${python_sources}
+)
+source_group ("python" FILES
+    ${python_sources}
 )
 
 set (utility_sources
@@ -481,6 +507,7 @@ endif ()
 include_directories (
     .
     ../appleseed.shared
+    ${PYTHON_INCLUDE_DIRS}
 )
 
 
@@ -505,6 +532,7 @@ target_link_libraries (appleseed.studio
     ${Boost_LIBRARIES}
     ${QT_LIBRARIES}
     ${OPENGL_LIBRARY}
+    ${PYTHON_LIBRARIES}
 )
 
 if (WITH_DISNEY_MATERIAL)
