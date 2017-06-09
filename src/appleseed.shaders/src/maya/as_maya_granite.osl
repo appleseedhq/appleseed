@@ -109,7 +109,7 @@ shader as_maya_granite
         string as_maya_attribute_name_short = "s",
         float min = 0.0,
         float softmax = 1.0,
-        string label = "Spottyness",
+        string label = "Spottiness",
         string page = "Granite Attributes"
     ]],
     float in_threshold = 0.5
