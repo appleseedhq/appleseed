@@ -375,7 +375,7 @@ void InputBinder::bind_assembly_entities_inputs(
             *i);
     }
 
-    // Bind Phase Functions inputs.
+    // Bind phase punctions inputs.
     for (each<PhaseFunctionContainer> i = assembly.phase_functions(); i; ++i)
     {
         bind_assembly_entity_inputs(

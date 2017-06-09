@@ -46,7 +46,7 @@ namespace renderer
 {
 
 //
-// Phase Function factory interface.
+// Phase function factory interface.
 //
 
 class APPLESEED_DLLSYMBOL IPhaseFunctionFactory
@@ -56,16 +56,16 @@ class APPLESEED_DLLSYMBOL IPhaseFunctionFactory
     // Destructor.
     virtual ~IPhaseFunctionFactory() {}
 
-    // Return a string identifying this Phase Function model.
+    // Return a string identifying this phase function model.
     virtual const char* get_model() const = 0;
 
-    // Return metadata for this Phase Function model.
+    // Return metadata for this phase function model.
     virtual foundation::Dictionary get_model_metadata() const = 0;
 
-    // Return metadata for the inputs of this Phase Function model.
+    // Return metadata for the inputs of this phase function model.
     virtual foundation::DictionaryArray get_input_metadata() const = 0;
 
-    // Create a new Phase Function instance.
+    // Create a new phase function instance.
     virtual foundation::auto_release_ptr<PhaseFunction> create(
         const char*         name,
         const ParamArray&   params) const = 0;

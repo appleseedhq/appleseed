@@ -95,7 +95,7 @@ class APPLESEED_DLLSYMBOL Material
     // Return the name the BSSRDF bound to this material, or 0 if the material doesn't have one.
     const char* get_bssrdf_name() const;
 
-    // Return the name the Phase Function bound to this material, or 0 if the material doesn't have one.
+    // Return the name the phase function bound to this material, or 0 if the material doesn't have one.
     const char* get_phase_function_name() const;
 
     // Return the name the EDF bound to this material, or 0 if the material doesn't have one.

@@ -51,6 +51,7 @@ namespace
 //
 // Isotropic phase function.
 //
+
 class IsotropicPhaseFunction
   : public PhaseFunction
 {
@@ -109,14 +110,13 @@ class IsotropicPhaseFunction
         SamplingContext&       sampling_context,
         const ShadingRay&      volume_ray,
         const void*            data,
-        float&                 distance
+        float&           distance
         ) const APPLESEED_OVERRIDE
     {
         const InputValues* values = static_cast<const InputValues*>(data);
 
         const float ray_length = static_cast<float>(
-            norm(volume_ray.m_dir) *
-            (volume_ray.m_tmax - volume_ray.m_tmin));
+            norm(volume_ray.m_dir) * (volume_ray.m_tmax - volume_ray.m_tmin));
 
         // Sample distance.
         sampling_context.split_in_place(1, 1);
@@ -133,7 +133,7 @@ class IsotropicPhaseFunction
         SamplingContext&     sampling_context,
         const ShadingRay&    volume_ray,
         const void*          data,
-        float                distance,
+        const float          distance,
         Vector3f&            incoming) const APPLESEED_OVERRIDE
     {
         // Sample incoming direction.
@@ -147,7 +147,7 @@ class IsotropicPhaseFunction
     virtual float evaluate(
         const ShadingRay&   volume_ray,
         const void*         data,
-        float               distance,
+        const float         distance,
         const Vector3f&     incoming) const APPLESEED_OVERRIDE
     {
         return RcpFourPi<float>();
@@ -156,7 +156,7 @@ class IsotropicPhaseFunction
     virtual void evaluate_transmission(
         const ShadingRay&     volume_ray,
         const void*           data,
-        float                 distance,
+        const float           distance,
         Spectrum&             spectrum) const APPLESEED_OVERRIDE
     {
         extinction_coefficient(volume_ray, data, distance, spectrum);
@@ -176,7 +176,7 @@ class IsotropicPhaseFunction
     virtual void scattering_coefficient(
         const ShadingRay&     volume_ray,
         const void*           data,
-        float                 distance,
+        const float           distance,
         Spectrum&             spectrum) const APPLESEED_OVERRIDE
     {
         const InputValues* values = static_cast<const InputValues*>(data);
@@ -186,7 +186,7 @@ class IsotropicPhaseFunction
     virtual void absorption_coefficient(
         const ShadingRay&    volume_ray,
         const void*          data,
-        float                distance,
+        const float          distance,
         Spectrum&            spectrum) const APPLESEED_OVERRIDE
     {
         const InputValues* values = static_cast<const InputValues*>(data);
@@ -196,7 +196,7 @@ class IsotropicPhaseFunction
     virtual void extinction_coefficient(
         const ShadingRay&    volume_ray,
         const void*          data,
-        float                distance,
+        const float          distance,
         Spectrum&            spectrum) const APPLESEED_OVERRIDE
     {
         const InputValues* values = static_cast<const InputValues*>(data);

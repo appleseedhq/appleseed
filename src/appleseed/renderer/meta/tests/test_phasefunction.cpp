@@ -26,6 +26,10 @@
 // THE SOFTWARE.
 //
 
+// We are using standard library in this compile unit
+// and don't need boost placeholders.
+#define BOOST_BIND_NO_PLACEHOLDERS
+
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
@@ -55,15 +59,15 @@
 #include "foundation/utility/gnuplotfile.h"
 #include "foundation/utility/test.h"
 
-// Boost headers.
-#include "boost/bind.hpp"
-#include "boost/ref.hpp"
-
 // Standard headers.
+#include <functional>
+#include <memory>
+#include <utility>
 #include <vector>
 
 using namespace foundation;
 using namespace renderer;
+using namespace std::placeholders;
 
 TEST_SUITE(Renderer_Modeling_PhaseFunction)
 {
@@ -71,38 +75,29 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
       : public TestFixtureBase
     {
         // Number of MC samples to do integrations.
-        static const int NumberOfSamples = 200000;
+        static const int NumberOfSamples = 30000;
         // Number of samples to draw.
         static const int NumberOfSamplesPlot = 100;
 
         ParamArray m_base_parameters;
-        const HenyeyPhaseFunctionFactory m_phase_function_factory;
+        HenyeyPhaseFunctionFactory m_phase_function_factory;
 
-        Fixture()
-          : m_phase_function_factory()
-        {
-            m_base_parameters
-                .insert("scattering", "0.5")
-                .insert("scattering_multiplier", "1.0")
-                .insert("extinction", "0.5")
-                .insert("extinction_coefficient", "1.0");
-        }
-
-        template <typename ReturnType, typename Procedure>
-        ReturnType setup_environment_and_evaluate(Procedure procedure)
+        template <typename Procedure>
+        auto setup_environment_and_evaluate(Procedure procedure)
+            -> decltype(procedure(std::declval<ShadingContext>(), std::declval<Arena>()))
         {
             TextureStore texture_store(m_scene);
             TextureCache texture_cache(texture_store);
 
-            boost::shared_ptr<OIIO::TextureSystem> texture_system(
+            std::shared_ptr<OIIO::TextureSystem> texture_system(
                 OIIO::TextureSystem::create(),
-                boost::bind(&OIIO::TextureSystem::destroy, _1));
+                [](OIIO::TextureSystem* object) { OIIO::TextureSystem::destroy(object); });
 
             RendererServices renderer_services(
                 m_project,
                 *texture_system);
 
-            boost::shared_ptr<OSL::ShadingSystem> shading_system(
+            std::shared_ptr<OSL::ShadingSystem> shading_system(
                 new OSL::ShadingSystem(&renderer_services, texture_system.get()));
 
             Intersector intersector(
@@ -131,7 +126,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
         }
 
         // Integrate PDF of phase function (direction sampling) using straightforward Monte-Carlo approach.
-        static float integrate_phase_function_direction_pdf(
+        static float integrate_phase_function_pdf(
             PhaseFunction& phase_function,
             ShadingContext& shading_context,
             Arena& arena)
@@ -146,11 +141,11 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
             SamplingContext sampling_context(rng, SamplingContext::RNGMode);
 
             float integral = 0.0f;
+            sampling_context.split_in_place(2, NumberOfSamples);
             for (int i = 0; i < NumberOfSamples; ++i)
             {
-                sampling_context.split_in_place(2, 1);
-                Vector2f s = sampling_context.next2<Vector2f>();
-                Vector3f incoming = sample_sphere_uniform<float>(s);
+                const Vector2f s = sampling_context.next2<Vector2f>();
+                const Vector3f incoming = sample_sphere_uniform<float>(s);
                 integral += phase_function.evaluate(shading_ray, data, 0.5f, incoming);
             }
 
@@ -158,7 +153,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
         }
 
         // Check if probabilistic sampling is consistent with the returned PDF values.
-        static Vector3f check_direction_sampling_consistency(
+        static bool check_sampling_consistency(
             PhaseFunction& phase_function,
             ShadingContext& shading_context,
             Arena& arena)
@@ -181,9 +176,10 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
                 bias += incoming / pdf;
             }
 
-            return bias / NumberOfSamples;
+            return feq(bias / NumberOfSamples, Vector3f(0.0f), 0.5f);
         }
 
+        // Sample a given phase function and find average cosine of scattering angle.
         static float get_aposteriori_average_cosine(
             PhaseFunction& phase_function,
             ShadingContext& shading_context,
@@ -231,14 +227,14 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
                 Vector3f incoming;
                 const float pdf = phase_function.sample(
                     sampling_context, shading_ray, data, 0.5f, incoming);
-                points.push_back(Vector2f(incoming.x * pdf, incoming.y * pdf));
+                points.emplace_back(incoming.x * pdf, incoming.y * pdf);
             }
 
             return points;
         }
     };
 
-    TEST_CASE_F(CheckHenyeyDirectionPdfIntegratesToOne, Fixture)
+    TEST_CASE_F(CheckHenyeyPdfIntegratesToOne, Fixture)
     {
         static const float G[4] = { -0.5f, 0.0f, +0.3f, +0.8f };
         for (int i = 0; i < countof(G); ++i)
@@ -247,16 +243,15 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
                 m_phase_function_factory.create("phase_function", m_base_parameters);
             phase_function->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
 
-            const float integral = setup_environment_and_evaluate<float>(
-                boost::bind(
-                    &Fixture::integrate_phase_function_direction_pdf,
-                    boost::ref(*phase_function.get()), _1, _2));
+            const float integral = setup_environment_and_evaluate(
+                std::bind(&Fixture::integrate_phase_function_pdf,
+                    std::ref(*phase_function.get()), _1, _2));
 
             EXPECT_FEQ_EPS(1.0f, integral, 0.05f);
         }
     }
 
-    TEST_CASE_F(CheckHenyeyDirectionSamplingConsistency, Fixture)
+    TEST_CASE_F(CheckHenyeySamplingConsistency, Fixture)
     {
         static const float G[4] = { -0.5f, 0.0f, +0.3f, +0.8f };
         for (int i = 0; i < countof(G); ++i)
@@ -265,14 +260,11 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
                 m_phase_function_factory.create("phase_function", m_base_parameters);
             phase_function->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
 
-            const Vector3f bias = setup_environment_and_evaluate<Vector3f>(
-                boost::bind(
-                    &Fixture::check_direction_sampling_consistency,
-                    boost::ref(*phase_function.get()), _1, _2));
+            const bool consistent = setup_environment_and_evaluate(
+                std::bind(&Fixture::check_sampling_consistency,
+                    std::ref(*phase_function.get()), _1, _2));
 
-            EXPECT_FEQ_EPS(0.0f, bias.x, 0.05f);
-            EXPECT_FEQ_EPS(0.0f, bias.y, 0.05f);
-            EXPECT_FEQ_EPS(0.0f, bias.z, 0.05f);
+            EXPECT_TRUE(consistent);
         }
     }
 
@@ -285,10 +277,9 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
                 m_phase_function_factory.create("phase_function", m_base_parameters);
             phase_function->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
 
-            const float average_cosine = setup_environment_and_evaluate<float>(
-                boost::bind(
-                    &Fixture::get_aposteriori_average_cosine,
-                    boost::ref(*phase_function.get()), _1, _2));
+            const float average_cosine = setup_environment_and_evaluate(
+                std::bind(&Fixture::get_aposteriori_average_cosine,
+                    std::ref(*phase_function.get()), _1, _2));
 
             EXPECT_FEQ_EPS(G[i], average_cosine, 0.05f);
         }
@@ -299,7 +290,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
         GnuplotFile plotfile;
         plotfile.set_title(
             "Samples of Henyey-Greenstein Phase Function"
-            " (multiplied to PDF)");
+            " (multiplied by PDF)");
         plotfile.set_xlabel("X");
         plotfile.set_ylabel("Y");
         plotfile.set_xrange(-0.6, +0.6);
@@ -319,10 +310,9 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
             phase_function->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
 
             const std::vector<Vector2f> points =
-                setup_environment_and_evaluate<std::vector<Vector2f> >(
-                    boost::bind(
-                        &Fixture::generate_samples_for_plot,
-                        boost::ref(*phase_function.get()), _1, _2));
+                setup_environment_and_evaluate(
+                    std::bind(&Fixture::generate_samples_for_plot,
+                        std::ref(*phase_function.get()), _1, _2));
 
             plotfile
                 .new_plot()

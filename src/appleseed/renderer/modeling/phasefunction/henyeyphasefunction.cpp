@@ -143,7 +143,7 @@ class HenyeyPhaseFunction
         SamplingContext&      sampling_context,
         const ShadingRay&     volume_ray,
         const void*           data,
-        float                 distance,
+        const float           distance,
         Vector3f&             incoming) const APPLESEED_OVERRIDE
     {
         const InputValues* values = static_cast<const InputValues*>(data);
@@ -152,7 +152,7 @@ class HenyeyPhaseFunction
 
         //
         // x = 1/(2g) * (1 + g^2 - [(1 - g^2) / (1 + g*s)]^2),
-        // where x is cos(phi) and s is uniform random sample from [-1; 1].
+        // where x is cos(phi) and s is a uniform random sample from [-1; 1].
         //
 
         const float g = values->m_average_cosine;
@@ -168,13 +168,13 @@ class HenyeyPhaseFunction
         }
         else
         {
-            const float t = (1.0f - sqr_g) / (1.0f + g*s);
+            const float t = (1.0f - sqr_g) / (1.0f + g * s);
             cosine = 0.5f / g * (1.0f + sqr_g - t * t);
         }
-        const float sine = std::sqrt(1.0f - cosine * cosine);
 
-        const Vector2f tangent =
-            sample_circle_uniform(sampling_context.next2<float>());
+        const float sine = std::sqrt(clamp(1.0f - cosine * cosine, 0.0f, 1.0f));
+
+        const Vector2f tangent = sample_circle_uniform(sampling_context.next2<float>());
 
         incoming =
             basis.get_tangent_u() * tangent.x * sine +
@@ -194,7 +194,7 @@ class HenyeyPhaseFunction
     virtual float evaluate(
         const ShadingRay&     volume_ray,
         const void*           data,
-        float                 distance,
+        const float           distance,
         const Vector3f&       incoming) const APPLESEED_OVERRIDE
     {
         const InputValues* values = static_cast<const InputValues*>(data);
@@ -219,11 +219,12 @@ class HenyeyPhaseFunction
     virtual void evaluate_transmission(
         const ShadingRay&     volume_ray,
         const void*           data,
-        float                 distance,
+        const float           distance,
         Spectrum&             spectrum) const APPLESEED_OVERRIDE
     {
         extinction_coefficient(volume_ray, data, distance, spectrum);
-        spectrum = exp(-distance * spectrum);
+        for (int i = 0; i < spectrum.size(); ++i)
+            spectrum[i] = std::exp(-distance * spectrum[i]);
     }
 
     virtual void evaluate_transmission(
@@ -239,33 +240,34 @@ class HenyeyPhaseFunction
     virtual void scattering_coefficient(
         const ShadingRay&     volume_ray,
         const void*           data,
-        float                 distance,
+        const float           distance,
         Spectrum&             spectrum) const APPLESEED_OVERRIDE
     {
         const InputValues* values = static_cast<const InputValues*>(data);
-        spectrum = values->m_scattering * values->m_scattering_multiplier;
+        spectrum = values->m_scattering;
+        spectrum *= values->m_scattering_multiplier;
     }
 
     virtual void absorption_coefficient(
         const ShadingRay&    volume_ray,
         const void*          data,
-        float                distance,
+        const float          distance,
         Spectrum&            spectrum) const APPLESEED_OVERRIDE
     {
         const InputValues* values = static_cast<const InputValues*>(data);
-        spectrum = values->m_absorption * values->m_absorption_multiplier;
+        spectrum = values->m_absorption;
+        spectrum *= values->m_absorption_multiplier;
     }
 
     virtual void extinction_coefficient(
         const ShadingRay&    volume_ray,
         const void*          data,
-        float                distance,
+        const float          distance,
         Spectrum&            spectrum) const APPLESEED_OVERRIDE
     {
         const InputValues* values = static_cast<const InputValues*>(data);
-        spectrum =
-            values->m_precomputed.m_extinction_multiplier *
-            values->m_precomputed.m_normalized_extinction;
+        spectrum = values->m_precomputed.m_normalized_extinction;
+        spectrum *= values->m_precomputed.m_extinction_multiplier;
     }
 
   private:

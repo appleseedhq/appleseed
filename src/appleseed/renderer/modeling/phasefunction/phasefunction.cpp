@@ -30,8 +30,8 @@
 #include "phasefunction.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/shading/shadingcontext.h"
+#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
@@ -43,7 +43,7 @@ namespace renderer
 {
 
 //
-// Phase Function class implementation.
+// PhaseFunction class implementation.
 //
 
 namespace
