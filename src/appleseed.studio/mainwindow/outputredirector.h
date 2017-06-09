@@ -29,7 +29,7 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_OUTPUTREDIRECTOR_H
 #define APPLESEED_STUDIO_MAINWINDOW_OUTPUTREDIRECTOR_H
 
-//Forward declarations.
+// Forward declarations.
 class QTextEdit;
 
 namespace appleseed {
@@ -49,5 +49,4 @@ class OutputRedirector
 }       // namespace studio
 }       // namespace appleseed
 
-#endif // !APPLESEED_STUDIO_MAINWINDOW_OUTPUTREDIRECTOR_H
-
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_OUTPUTREDIRECTOR_H

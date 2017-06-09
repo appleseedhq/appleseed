@@ -29,7 +29,7 @@
 // Interface header.
 #include "pythoninput.h"
 
-// Studio headers.
+// appleseed.studio headers.
 #include "pythonhighlighter.h"
 
 // Qt headers.
@@ -77,7 +77,7 @@ void PythonInput::indent()
 
     indent_like_previous(previous);
 
-    // if last non-space character in previous line is ':' add 4 spaces indentation
+    // If last non-space character in previous line is ':' add 4 spaces indentation.
     for (std::string::const_reverse_iterator it = previous.rbegin();
          it != previous.rend(); ++it) {
         if (*it == ':')
@@ -90,7 +90,7 @@ void PythonInput::indent()
     }
 }
 
-void PythonInput::indent_like_previous(const std::string &previous)
+void PythonInput::indent_like_previous(const std::string& previous)
 {
     size_t indentation = 0;
     for (size_t i = 0; i < previous.size(); ++i)
@@ -110,6 +110,5 @@ void PythonInput::insert_spaces(const size_t count)
     insertPlainText(spaces.c_str());
 }
 
-} // namespace studio
-} // namespace appleseed
-
+}   // namespace studio
+}   // namespace appleseed
