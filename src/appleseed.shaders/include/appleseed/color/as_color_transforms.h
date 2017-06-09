@@ -284,7 +284,7 @@ void get_RGB_to_XYZ_matrix(
         getattribute("shader:shadername", shadername);
 
         warning("[WARNING]:Unsupported/unknown color space %s in %s, %s:%i\n",
-                color_space, shadername, __FILE__, __NAME__);
+                color_space, shadername, __FILE__, __LINE__);
 #endif
         exit(); // no color space nor illuminant, no point in continuing
     }
