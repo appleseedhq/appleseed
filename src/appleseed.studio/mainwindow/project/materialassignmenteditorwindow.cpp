@@ -155,7 +155,7 @@ void MaterialAssignmentEditorWindow::create_widgets()
 
     if (!slot_names.empty())
     {
-        for (const_each<set<string> > i = slot_names; i; ++i)
+        for (const_each<set<string>> i = slot_names; i; ++i)
             create_widgets_for_slot(layout, i->c_str());
         return;
     }

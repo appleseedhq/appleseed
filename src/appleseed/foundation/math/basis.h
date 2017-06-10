@@ -116,7 +116,7 @@ class Basis3
 
 // Poisoning.
 template <typename T>
-class PoisonImpl<Basis3<T> >
+class PoisonImpl<Basis3<T>>
 {
   public:
     static void do_poison(Basis3<T>& basis);
@@ -295,7 +295,7 @@ inline const Vector<T, 3>& Basis3<T>::get_tangent_v() const
 }
 
 template <typename T>
-void PoisonImpl<Basis3<T> >::do_poison(Basis3<T>& basis)
+void PoisonImpl<Basis3<T>>::do_poison(Basis3<T>& basis)
 {
     poison(basis.m_n);
     poison(basis.m_u);

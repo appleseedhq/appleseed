@@ -141,7 +141,7 @@ void bind_typed_entity_vector(const char* name)
         .def("insert", &renderer::TypedEntityVector<T>::insert)
         .def("remove", &detail::typed_entity_vector_remove<T>)
 
-        .def("__iter__", boost::python::iterator<renderer::TypedEntityVector<T>, boost::python::return_internal_reference<> >());
+        .def("__iter__", boost::python::iterator<renderer::TypedEntityVector<T>, boost::python::return_internal_reference<>>());
 }
 
 template <typename T>

@@ -138,7 +138,7 @@ class Transform
 
 // Poisoning.
 template <typename T>
-class PoisonImpl<Transform<T> >
+class PoisonImpl<Transform<T>>
 {
   public:
     static void do_poison(Transform<T>& transform);
@@ -249,7 +249,7 @@ inline Transform<T>::Transform(
 }
 
 template <typename T>
-void PoisonImpl<Transform<T> >::do_poison(Transform<T>& transform)
+void PoisonImpl<Transform<T>>::do_poison(Transform<T>& transform)
 {
     poison(transform.m_local_to_parent);
     poison(transform.m_parent_to_local);

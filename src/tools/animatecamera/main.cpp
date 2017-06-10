@@ -123,7 +123,7 @@ namespace
     template <typename T>
     struct TransformPairComparer
     {
-        typedef pair<Transform<T>, Transform<T> > TransformPair;
+        typedef pair<Transform<T>, Transform<T>> TransformPair;
 
         bool operator()(const TransformPair& lhs, const TransformPair& rhs) const
         {
@@ -361,7 +361,7 @@ namespace
         virtual vector<size_t> do_generate()
         {
             typedef pair<Transformd, Transformd> TransformPair;
-            typedef map<TransformPair, size_t, TransformPairComparer<double> > TransformMap;
+            typedef map<TransformPair, size_t, TransformPairComparer<double>> TransformMap;
 
             TransformMap transform_map;
             vector<size_t> frames;

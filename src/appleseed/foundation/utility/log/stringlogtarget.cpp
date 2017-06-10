@@ -73,7 +73,7 @@ void StringLogTarget::write(
     vector<string> lines;
     split(message, "\n", lines);
 
-    for (const_each<vector<string> > i = lines; i; ++i)
+    for (const_each<vector<string>> i = lines; i; ++i)
     {
         impl->m_str.append(header);
         impl->m_str.append(*i);

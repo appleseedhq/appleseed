@@ -197,7 +197,7 @@ void CurveTree::build_bvh(
         plural(m_curve_keys.size(), "curve").c_str());
 
     // Create the partitioner.
-    typedef bvh::SAHPartitioner<vector<GAABB3> > Partitioner;
+    typedef bvh::SAHPartitioner<vector<GAABB3>> Partitioner;
     Partitioner partitioner(
         curve_bboxes,
         CurveTreeDefaultMaxLeafSize,

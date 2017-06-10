@@ -94,7 +94,7 @@ class RNGSamplingContext
     template <typename T> struct Tag {};
 
     template <typename T> T next2(Tag<T>);
-    template <typename T, size_t N> Vector<T, N> next2(Tag<Vector<T, N> >);
+    template <typename T, size_t N> Vector<T, N> next2(Tag<Vector<T, N>>);
 };
 
 
@@ -172,7 +172,7 @@ inline T RNGSamplingContext<RNG>::next2(Tag<T>)
 
 template <typename RNG>
 template <typename T, size_t N>
-inline Vector<T, N> RNGSamplingContext<RNG>::next2(Tag<Vector<T, N> >)
+inline Vector<T, N> RNGSamplingContext<RNG>::next2(Tag<Vector<T, N>>)
 {
     Vector<T, N> v;
 

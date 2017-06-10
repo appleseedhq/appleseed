@@ -52,7 +52,7 @@ namespace
             bpy::throw_error_already_set();
         }
 
-        auto_ptr<UnalignedMatrix44<T> > r(new UnalignedMatrix44<T>());
+        auto_ptr<UnalignedMatrix44<T>> r(new UnalignedMatrix44<T>());
 
         for (size_t i = 0; i < 4 * 4; ++i)
         {
@@ -172,14 +172,14 @@ namespace
         return bpy::make_tuple(yaw, pitch, roll);
     }
 
-    void bind_typed_matrix4_extra(bpy::class_<UnalignedMatrix44<float> >& X)
+    void bind_typed_matrix4_extra(bpy::class_<UnalignedMatrix44<float>>& X)
     {
-        X.def(bpy::init<UnalignedMatrix44<double> >());
+        X.def(bpy::init<UnalignedMatrix44<double>>());
     }
 
-    void bind_typed_matrix4_extra(bpy::class_<UnalignedMatrix44<double> >& X)
+    void bind_typed_matrix4_extra(bpy::class_<UnalignedMatrix44<double>>& X)
     {
-        X.def(bpy::init<UnalignedMatrix44<float> >());
+        X.def(bpy::init<UnalignedMatrix44<float>>());
     }
 
     template <typename T>
@@ -189,7 +189,7 @@ namespace
         UnalignedMatrix44<T>(*rot2)(const Vector<T, 3>&, T) = &UnalignedMatrix44<T>::make_rotation;
         UnalignedMatrix44<T>(*rot3)(const Quaternion<T>&) = &UnalignedMatrix44<T>::make_rotation;
 
-        bpy::class_<UnalignedMatrix44<T> > X(class_name);
+        bpy::class_<UnalignedMatrix44<T>> X(class_name);
 
         X.def("identity", &UnalignedMatrix44<T>::identity).staticmethod("identity")
             .def("make_translation", &UnalignedMatrix44<T>::make_translation).staticmethod("make_translation")
@@ -231,9 +231,9 @@ void bind_matrix()
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
     bpy::implicitly_convertible<UnalignedMatrix44<float>, Imath::M44f>();
-    bpy::implicitly_convertible<Imath::M44f, UnalignedMatrix44<float> >();
+    bpy::implicitly_convertible<Imath::M44f, UnalignedMatrix44<float>>();
 
     bpy::implicitly_convertible<UnalignedMatrix44<double>, Imath::M44d>();
-    bpy::implicitly_convertible<Imath::M44d, UnalignedMatrix44<double> >();
+    bpy::implicitly_convertible<Imath::M44d, UnalignedMatrix44<double>>();
 #endif
 }

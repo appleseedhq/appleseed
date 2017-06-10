@@ -130,7 +130,7 @@ class APPLESEED_DLLSYMBOL JobQueue
         }
     };
 
-    typedef std::list<JobInfo, PoolAllocator<JobInfo, 64> > JobList;
+    typedef std::list<JobInfo, PoolAllocator<JobInfo, 64>> JobList;
 
     typedef std::pair<JobInfo, JobList::iterator> RunningJobInfo;
 

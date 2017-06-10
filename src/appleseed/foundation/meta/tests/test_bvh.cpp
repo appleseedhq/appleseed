@@ -102,7 +102,7 @@ TEST_SUITE(Foundation_Math_BVH_SpatialBuilder)
 
     TEST_CASE(InstantiateSpatialBuilderAndSBVHPartitioner)
     {
-        typedef AlignedVector<bvh::Node<AABB3d> > NodeVector;
+        typedef AlignedVector<bvh::Node<AABB3d>> NodeVector;
         typedef vector<AABB3d> AABBVector;
 
         typedef bvh::Tree<NodeVector> Tree;
@@ -142,7 +142,7 @@ TEST_SUITE(Foundation_Math_BVH_Intersector_2D)
     TEST_CASE(InstantiateIntersectorIn2DCase)
     {
         bvh::Intersector<
-            bvh::Tree<AlignedVector<NodeType> >,
+            bvh::Tree<AlignedVector<NodeType>>,
             Ray2d,
             Visitor
         > intersector;

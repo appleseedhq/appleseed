@@ -89,7 +89,7 @@ class Ray
 
 // Poisoning.
 template <typename T, size_t N>
-class PoisonImpl<Ray<T, N> >
+class PoisonImpl<Ray<T, N>>
 {
   public:
     static void do_poison(Ray<T, N>& ray);
@@ -236,7 +236,7 @@ inline typename Ray<T, N>::VectorType Ray<T, N>::point_at(const ValueType t) con
 }
 
 template <typename T, size_t N>
-void PoisonImpl<Ray<T, N> >::do_poison(Ray<T, N>& ray)
+void PoisonImpl<Ray<T, N>>::do_poison(Ray<T, N>& ray)
 {
     poison(ray.m_org);
     poison(ray.m_dir);

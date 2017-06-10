@@ -40,7 +40,7 @@ namespace foundation
 //
 //   vector<int> v;
 //   ...
-//   for (const_each<vector<int> > i = v; i; ++i)
+//   for (const_each<vector<int>> i = v; i; ++i)
 //       cerr << *i << endl;
 //
 

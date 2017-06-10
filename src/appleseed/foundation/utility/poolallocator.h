@@ -58,7 +58,7 @@ namespace impl
         size_t ItemsPerPage
     >
     class Pool
-      : public Singleton<Pool<ItemSize, ItemsPerPage> >
+      : public Singleton<Pool<ItemSize, ItemsPerPage>>
     {
       public:
         // Allocate a memory block.
@@ -101,7 +101,7 @@ namespace impl
         }
 
       private:
-        friend class Singleton<Pool<ItemSize, ItemsPerPage> >;
+        friend class Singleton<Pool<ItemSize, ItemsPerPage>>;
 
         union Node
         {

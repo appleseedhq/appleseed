@@ -359,7 +359,7 @@ set<string> recursive_ls(const bf::path& dir)
             const string dirname = current_path.filename().string();
             const set<string> files_in_subdir = recursive_ls(current_path);
 
-            for (const_each<set<string> > fi = files_in_subdir; fi; ++fi)
+            for (const_each<set<string>> fi = files_in_subdir; fi; ++fi)
                 files.insert(dirname + "/" + *fi);
         }
         else

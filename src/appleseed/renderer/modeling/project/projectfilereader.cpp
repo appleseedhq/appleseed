@@ -1450,7 +1450,7 @@ namespace
       : public EntityElementHandler<
                    EnvironmentEDF,
                    EnvironmentEDFFactoryRegistrar,
-                   TransformSequenceElementHandler<ParametrizedElementHandler> >
+                   TransformSequenceElementHandler<ParametrizedElementHandler>>
     {
       public:
         explicit EnvironmentEDFElementHandler(ParseContext& context)
@@ -1504,7 +1504,7 @@ namespace
       : public EntityElementHandler<
                    Light,
                    LightFactoryRegistrar,
-                   TransformSequenceElementHandler<ParametrizedElementHandler> >
+                   TransformSequenceElementHandler<ParametrizedElementHandler>>
     {
       public:
         explicit LightElementHandler(ParseContext& context)
@@ -1558,7 +1558,7 @@ namespace
       : public EntityElementHandler<
                    Camera,
                    CameraFactoryRegistrar,
-                   TransformSequenceElementHandler<ParametrizedElementHandler> >
+                   TransformSequenceElementHandler<ParametrizedElementHandler>>
     {
       public:
         explicit CameraElementHandler(ParseContext& context)
@@ -3118,7 +3118,7 @@ namespace
             register_factory_helper<TranslationElementHandler>("translation", ElementTranslation);
             register_factory_helper<ValuesElementHandler>("values", ElementValues);
 
-            auto_ptr<IElementHandlerFactory<ProjectElementID> > factory(
+            auto_ptr<IElementHandlerFactory<ProjectElementID>> factory(
                 new ProjectElementHandlerFactory(m_context, project));
 
             register_factory("project", ElementProject, factory);
@@ -3166,7 +3166,7 @@ namespace
         template <typename ElementHandler>
         void register_factory_helper(const string& name, const ProjectElementID id)
         {
-            auto_ptr<IElementHandlerFactory<ProjectElementID> > factory(
+            auto_ptr<IElementHandlerFactory<ProjectElementID>> factory(
                 new GenericElementHandlerFactory<ElementHandler>(m_context));
 
             register_factory(name, id, factory);

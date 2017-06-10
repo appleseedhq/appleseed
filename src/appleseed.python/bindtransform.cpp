@@ -59,7 +59,7 @@ namespace
     template <typename T>
     void bind_typed_transform(const char* class_name)
     {
-        bpy::class_<UnalignedTransform<T> > X(class_name);
+        bpy::class_<UnalignedTransform<T>> X(class_name);
         X.def(bpy::init<const UnalignedMatrix44<T>&>())
             .def(bpy::init<const UnalignedMatrix44<T>&>())
             .def(bpy::init<const UnalignedMatrix44<T>&, const UnalignedMatrix44<T>&>())

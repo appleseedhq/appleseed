@@ -63,7 +63,7 @@ void FileLogTargetBase::write_message(
     split(message, "\n", lines);
 
     // Emit the lines.
-    for (const_each<vector<string> > i = lines; i; ++i)
+    for (const_each<vector<string>> i = lines; i; ++i)
         fprintf(file, "%s%s\n", header, i->c_str());
 }
 

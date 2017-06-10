@@ -1672,7 +1672,7 @@ inline renderer::DynamicSpectrum<T, N> exp(const renderer::DynamicSpectrum<T, N>
 }
 
 template <typename T, size_t N>
-class PoisonImpl<renderer::DynamicSpectrum<T, N> >
+class PoisonImpl<renderer::DynamicSpectrum<T, N>>
 {
   public:
     static void do_poison(renderer::DynamicSpectrum<T, N>& s)

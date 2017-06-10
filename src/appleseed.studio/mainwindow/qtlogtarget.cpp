@@ -99,7 +99,7 @@ void QtLogTarget::write(
     vector<QString> lines;
     split(message, "\n", lines);
 
-    for (const_each<vector<QString> > i = lines; i; ++i)
+    for (const_each<vector<QString>> i = lines; i; ++i)
     {
         const QString line = header_string + *i + "\n";
         emit signal_append_item(color, line);

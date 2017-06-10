@@ -877,12 +877,12 @@ namespace
             vector<MaterialInfo> materials;
             collect_refractive_materials(assembly, materials);
 
-            for (each<vector<MaterialInfo> > i = materials; i; ++i)
+            for (each<vector<MaterialInfo>> i = materials; i; ++i)
             {
                 if (i->m_updated)
                     continue;
 
-                for (each<vector<MaterialInfo> > j = succ(i); j; ++j)
+                for (each<vector<MaterialInfo>> j = succ(i); j; ++j)
                 {
                     if (j->m_updated)
                         continue;

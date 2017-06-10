@@ -662,8 +662,8 @@ namespace
         }
     };
 
-    typedef BSDFWrapper<GlassBSDFImpl<FlipBackfacingNormalsPolicy> > AppleseedGlassBSDF;
-    typedef BSDFWrapper<GlassBSDFImpl<UseOriginalNormalsPolicy> > OSLGlassBSDF;
+    typedef BSDFWrapper<GlassBSDFImpl<FlipBackfacingNormalsPolicy>> AppleseedGlassBSDF;
+    typedef BSDFWrapper<GlassBSDFImpl<UseOriginalNormalsPolicy>> OSLGlassBSDF;
 }
 
 

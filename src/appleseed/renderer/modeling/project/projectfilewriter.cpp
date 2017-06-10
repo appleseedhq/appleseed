@@ -309,7 +309,7 @@ namespace
         {
             const SortedMutableEntityVector<Collection> sorted(collection);
 
-            for (const_each<SortedMutableEntityVector<Collection> > i = sorted; i; ++i)
+            for (const_each<SortedMutableEntityVector<Collection>> i = sorted; i; ++i)
                 write(**i);
         }
 
@@ -599,7 +599,7 @@ namespace
             const SortedMutableEntityVector<ObjectContainer> sorted(objects);
             set<string> groups;
 
-            for (const_each<SortedMutableEntityVector<ObjectContainer> > i = sorted; i; ++i)
+            for (const_each<SortedMutableEntityVector<ObjectContainer>> i = sorted; i; ++i)
             {
                 Object& object = **i;
 

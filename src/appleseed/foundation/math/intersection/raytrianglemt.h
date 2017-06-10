@@ -110,7 +110,7 @@ struct TriangleMTSupportPlane
 
 // Poisoning.
 template <typename T>
-class PoisonImpl<TriangleMTSupportPlane<T> >
+class PoisonImpl<TriangleMTSupportPlane<T>>
 {
   public:
     static void do_poison(TriangleMTSupportPlane<T>& plane);
@@ -304,7 +304,7 @@ inline T TriangleMTSupportPlane<T>::intersect(
 }
 
 template <typename T>
-void PoisonImpl<TriangleMTSupportPlane<T> >::do_poison(TriangleMTSupportPlane<T>& plane)
+void PoisonImpl<TriangleMTSupportPlane<T>>::do_poison(TriangleMTSupportPlane<T>& plane)
 {
     poison(plane.m_v0);
     poison(plane.m_e0);

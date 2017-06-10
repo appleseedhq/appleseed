@@ -208,8 +208,8 @@ namespace
         typedef DiffuseBTDFInputValues InputValues;
     };
 
-    typedef BSDFWrapper<DiffuseBTDFImpl<FlipBackfacingNormalsPolicy> > AppleseedDiffuseBTDF;
-    typedef BSDFWrapper<DiffuseBTDFImpl<UseOriginalNormalsPolicy> > OSLDiffuseBTDF;
+    typedef BSDFWrapper<DiffuseBTDFImpl<FlipBackfacingNormalsPolicy>> AppleseedDiffuseBTDF;
+    typedef BSDFWrapper<DiffuseBTDFImpl<UseOriginalNormalsPolicy>> OSLDiffuseBTDF;
 }
 
 
