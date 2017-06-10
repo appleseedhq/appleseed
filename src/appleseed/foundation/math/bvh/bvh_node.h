@@ -34,9 +34,6 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 
-// Boost headers.
-#include "boost/static_assert.hpp"
-
 // Standard headers.
 #include <cassert>
 #include <cstddef>
@@ -257,7 +254,7 @@ template <typename AABB>
 template <typename U>
 inline const U& Node<AABB>::get_user_data() const
 {
-    BOOST_STATIC_ASSERT(sizeof(U) <= MAX_USER_DATA_SIZE);
+    static_assert(sizeof(U) <= MAX_USER_DATA_SIZE, "Not enough space in BVH node for user data");
     return *reinterpret_cast<const U*>(m_bbox_data);
 }
 
@@ -265,7 +262,7 @@ template <typename AABB>
 template <typename U>
 inline U& Node<AABB>::get_user_data()
 {
-    BOOST_STATIC_ASSERT(sizeof(U) <= MAX_USER_DATA_SIZE);
+    static_assert(sizeof(U) <= MAX_USER_DATA_SIZE, "Not enough space in BVH node for user data");
     return *reinterpret_cast<U*>(m_bbox_data);
 }
 

@@ -30,9 +30,6 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_CASTS_H
 #define APPLESEED_FOUNDATION_UTILITY_CASTS_H
 
-// Boost headers.
-#include "boost/static_assert.hpp"
-
 namespace foundation
 {
 
@@ -67,7 +64,9 @@ Target binary_cast(Source s);
 template <typename Target, typename Source>
 inline Target binary_cast(Source s)
 {
-    BOOST_STATIC_ASSERT(sizeof(Target) == sizeof(Source));
+    static_assert(
+        sizeof(Target) == sizeof(Source),
+        "foundation::binary_cast() expects the source and target types to have the same size");
 
     return *static_cast<const Target*>(static_cast<const void*>(&s));
 }
@@ -77,7 +76,9 @@ inline Target binary_cast(Source s)
 template <typename Target, typename Source>
 inline Target binary_cast(Source s)
 {
-    BOOST_STATIC_ASSERT(sizeof(Target) == sizeof(Source));
+    static_assert(
+        sizeof(Target) == sizeof(Source),
+        "foundation::binary_cast() expects the source and target types to have the same size");
 
     union
     {
