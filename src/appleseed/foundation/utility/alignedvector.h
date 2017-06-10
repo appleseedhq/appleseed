@@ -135,15 +135,10 @@ class AlignedVector
     {
     }
 
-#if (defined __GNUC__ && defined __GXX_EXPERIMENTAL_CXX0X__) || \
-    (defined _MSC_VER && _MSC_VER >= 1600)
-
     AlignedVector(Base&& rhs)
       : Base(rhs)
     {
     }
-
-#endif
 };
 
 #undef ALIGNED_VECTOR_BASE
