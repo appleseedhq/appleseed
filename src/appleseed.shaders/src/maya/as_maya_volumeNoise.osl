@@ -26,15 +26,17 @@
 // THE SOFTWARE.
 //
 
-// Ref: $MAYA_LOCATION/docs/Nodes/noise.html
+// Ref: $MAYA_LOCATION/docs/Nodes/volumeNoise.html
 
 #include "appleseed/fractal/as_fractal_helpers.h"
+#include "appleseed/math/as_math_helpers.h"
 #include "appleseed/maya/as_maya_fractal_helpers.h"
 #include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/maya/as_maya_transform_helpers.h"
 
-shader as_maya_noise
+shader as_maya_volumeNoise
 [[
-    string as_maya_node_name = "noise"
+    string as_maya_node_name = "volumeNoise"
 ]]
 (
     float in_threshold = 0.0
@@ -43,7 +45,7 @@ shader as_maya_noise
         float min = 0.0,
         float max = 1.0,
         string label = "Threshold",
-        string page = "Noise Attributes"
+        string page = "Volume Noise Attributes"
     ]],
     float in_amplitude = 1.0
     [[
@@ -51,7 +53,7 @@ shader as_maya_noise
         float min = 0.0,
         float softmax = 1.0,
         string label = "Amplitude",
-        string page = "Noise Attributes" 
+        string page = "Volume Noise Attributes"
     ]],
     float in_ratio = 0.707
     [[
@@ -59,7 +61,7 @@ shader as_maya_noise
         float min = 0.0,
         float max = 1.0,
         string label = "Ratio",
-        string page = "Noise Attributes"
+        string page = "Volume Noise Attributes"
     ]],
     float in_frequencyRatio = 2.0
     [[
@@ -70,7 +72,7 @@ shader as_maya_noise
         float slidermin = 1.0,
         float slidermax = 10.0,
         string label = "Frequency Ratio",
-        string page = "Noise Attributes"
+        string page = "Volume Noise Attributes"
     ]],
     int in_depthMax = 3
     [[
@@ -81,14 +83,14 @@ shader as_maya_noise
         int slidermin = 1,
         int slidermax = 8,
         string label = "Maximum Depth",
-        string page = "Noise Attributes"
+        string page = "Volume Noise Attributes"
     ]],
     int in_inflection = 0
     [[
         string as_maya_attribute_name = "inflection",
         string widget = "checkBox",
-        string label = "Inflection",,
-        string page = "Noise Attributes",
+        string label = "Inflection",
+        string page = "Volume Noise Attributes",
         int divider = 1
     ]],
     float in_time = 0.0
@@ -97,7 +99,7 @@ shader as_maya_noise
         float softmin = 0.0,
         float softmax = 10.0,
         string label = "Time",
-        string page = "Noise Attributes"
+        string page = "Volume Noise Attributes"
     ]],
     float in_frequency = 8.0
     [[
@@ -105,27 +107,85 @@ shader as_maya_noise
         string widget = "slider",
         float slidermin = 0.0,
         float slidermax = 100.0,
-        string label = "Frequency",,
-        string page = "Noise Attributes",
+        string label = "Frequency",
+        string page = "Volume Noise Attributes",
         int divider = 1
     ]],
+    vector in_scale = vector(1)
+    [[
+        string as_maya_attribute_name = "scale",
+        string label = "Scale",
+        string page = "Volume Noise Attributes"
+    ]],
+    float in_scaleX = 1.0
+    [[
+        string as_maya_attribute_name = "scaleX",
+        string widget = "null"
+    ]],
+    float in_scaleY = 1.0
+    [[
+        string as_maya_attribute_name = "scaleY",
+        string widget = "null"
+    ]],
+    float in_scaleZ = 1.0
+    [[
+        string as_maya_attribute_name = "scaleZ",
+        string widget = "null"
+    ]],
+    point in_origin = point(0)
+    [[
+        string as_maya_attribute_name = "origin",
+        string label = "Origin",
+        string page = "Volume Noise Attributes",
+        int divider = 1
+    ]],
+    float in_originX = 1.0
+    [[
+        string as_maya_attribute_name = "originX",
+        string widget = "null"
+    ]],
+    float in_originY = 1.0
+    [[
+        string as_maya_attribute_name = "originY",
+        string widget = "null"
+    ]],
+    float in_originZ = 1.0
+    [[
+        string as_maya_attribute_name = "originZ",
+        string widget = "null"
+    ]], 
     float in_implode = 0.0
     [[
         string as_maya_attribute_name = "implode",
-        float min = -1.0,
-        float max = 1.0,
+        float softmin = -1.0,
+        float softmax = 1.0,
         string widget = "slider",
         float slidermin = -1.0,
         float slidermax = 1.0,
         string label = "Implode",
-        string page = "Noise Attributes"
+        string page = "Volume Noise Attributes"
     ]],
-    float in_implodeCenter[2] = {0.5, 0.5}
+    point in_implodeCenter = point(0.5)
     [[
         string as_maya_attribute_name = "implodeCenter",
         string label = "Implode Center",,
-        string page = "Noise Attributes",
+        string page = "Volume Noise Attributes",
         int divider = 1
+    ]],
+    float in_implodeCenterX = 1.0
+    [[
+        string as_maya_attribute_name = "implodeCenterX",
+        string widget = "null"
+    ]],
+    float in_implodeCenterY = 1.0
+    [[
+        string as_maya_attribute_name = "implodeCenterY",
+        string widget = "null"
+    ]],
+    float in_implodeCenterZ = 1.0
+    [[
+        string as_maya_attribute_name = "implodeCenterZ",
+        string widget = "null"
     ]],
     int in_noiseType = 1
     [[
@@ -133,7 +193,7 @@ shader as_maya_noise
         string widget = "mapper",
         string options = "Perlin:0|Billow:1|Wave:2|Wispy:3|SpaceTime:4",
         string label = "Noise Type",
-        string page = "Noise Attributes"
+        string page = "Volume Noise Attributes"
     ]],
     float in_density = 1.0
     [[
@@ -141,7 +201,7 @@ shader as_maya_noise
         float min = 0.0,
         float softmax = 1.0,
         string label = "Density",
-        string page = "Noise Attributes"
+        string page = "Volume Noise Attributes"
     ]],
     float in_spottyness = 0.1
     [[
@@ -149,7 +209,7 @@ shader as_maya_noise
         float min = 0.0,
         float softmax = 1.0,
         string label = "Spottyness",
-        string page = "Noise Attributes"
+        string page = "Volume Noise Attributes"
     ]],
     float in_sizeRand = 0.0
     [[
@@ -157,7 +217,7 @@ shader as_maya_noise
         float min = 0.0,
         float softmax = 1.0,
         string label = "Size Randomness",
-        string page = "Noise Attributes"
+        string page = "Volume Noise Attributes"
     ]],
     float in_randomness = 1.0
     [[
@@ -165,7 +225,7 @@ shader as_maya_noise
         float min = 0.0,
         float softmax = 1.0,
         string label = "Randomness",
-        string page = "Noise Attributes"
+        string page = "Volume Noise Attributes"
     ]],
     int in_falloff = 2
     [[
@@ -173,23 +233,35 @@ shader as_maya_noise
         string widget = "mapper",
         string options = "Linear:0|Smooth:1|Fast:2|Bubble:3",
         string label = "Falloff",
-        string page = "Noise Attributes"
+        string page = "Volume Noise Attributes"
     ]],
     int in_numWaves = 5
     [[
         string as_maya_attribute_name = "numWaves",
+        string widget = "slider",
         int min = 1,
         int max = 20,
-        string widget = "slider",
         int slidermin = 1,
         int slidermax = 20,
         string label = "Number of Waves",
-        string page = "Noise Attributes"
+        string page = "Volume Noise Attributes"
+    ]],
+    point in_refPointCamera = P
+    [[
+        string as_maya_attribute_name = "refPointCamera",
+        string label = "Surface Point",
+        string widget = "null"
+    ]],
+    matrix in_placementMatrix = matrix(1)
+    [[
+        string as_maya_attribute_name = "placementMatrix",
+        string label = "Placement Matrix",
+        string widget = "null"
     ]],
 
     MAYA_COLORBALANCE_PARAMETERS,
     MAYA_EFFECTS_PARAMETERS,
-    MAYA_UV_PARAMETERS,
+    MAYA_EFFECTS_3DTEX_PARAMETERS,
 
     output color out_outColor = color(0)
     [[
@@ -207,57 +279,58 @@ shader as_maya_noise
     ]]
 )
 {
-    if (in_uvCoord[0] == OUTSIDE_UVFRAME || in_uvCoord[1] == OUTSIDE_UVFRAME)
+    matrix placement = (in_local)
+        ? matrix("common", "object") * in_placementMatrix
+        : in_placementMatrix;
+
+    point Pp = transform(placement, in_refPointCamera);
+
+    float box_blending = 0.0;
+
+    int outside_box = outside_place3d_volume(
+        Pp,
+        in_wrap,
+        in_blend,
+        box_blending);
+
+    if (outside_box)
     {
         out_outColor = in_defaultColor;
-        out_outAlpha = maya_luminance(in_defaultColor);
-    }
-    else if (in_amplitude == 0.0)
-    {
-        out_outAlpha = (in_noiseType == 1) ? 0.0 : 0.5;
-        out_outColor = color(out_outAlpha);
+        out_outAlpha = maya_luminance(out_outColor);
+
+        return;
     }
     else
     {
-        float st[2] = {in_uvCoord[0], in_uvCoord[1]};
+        float filter_width = 0.0, val = 0.0;
 
-        float dsdt[2] = {
-            in_filter *
-                (in_uvFilterSize[0] == UNDEFINED_UVFILTER
-                    ? filterwidth(st[0])
-                    : in_uvFilterSize[0]),
-            in_filter *
-                (in_uvFilterSize[1] == UNDEFINED_UVFILTER
-                    ? filterwidth(st[1])
-                    : in_uvFilterSize[1])};
-
-
-        // The filter size factors seem to match Maya's result better.
-
-        dsdt[0] += 2 * in_filterOffset;
-        dsdt[1] += 2 * in_filterOffset;
-
-        float filter_size = abs(max(dsdt[0], dsdt[1])), val = 0.0;
-
-        filter_size = clamp(filter_size, 1.0e-8, 0.5);
-
-        point coords = point(st[0], st[1], 0);
+        if (in_filter > 0.0)
+        {
+            filter_width = max(EPS, sqrt(area(Pp)));
+            filter_width *= in_filter + in_filterOffset;
+        }
 
         if (in_implode)
         {
-            implode_2d(in_implode, in_implodeCenter, coords[0], coords[1]);
+            point center = isconnected(in_implodeCenter)
+                ? in_implodeCenter
+                : point(in_implodeCenter[0],
+                        in_implodeCenter[1],
+                        in_implodeCenter[2]);
+
+            implode_3d(in_implode, center, Pp);
         }
 
-        coords *= in_frequency;  
+        Pp *= in_frequency;  
              
         if (in_noiseType == 0)
         {
             if (in_inflection)
             {
                 val = maya_turbulence(
-                    coords,
+                    Pp,
                     in_time,
-                    filter_size,
+                    filter_width,
                     in_amplitude,
                     in_depthMax,
                     in_frequencyRatio,
@@ -266,9 +339,9 @@ shader as_maya_noise
             else
             {
                 val = maya_fBm(
-                    coords,
+                    Pp,
                     in_time,
-                    filter_size,
+                    filter_width,
                     in_amplitude,
                     in_depthMax,
                     in_frequencyRatio,
@@ -277,8 +350,18 @@ shader as_maya_noise
         }
         else if (in_noiseType == 1)
         {
-            val = maya_billow_noise_2d(
-                coords,
+            vector noise_scale = isconnected(in_scale)
+                ? in_scale
+                : vector(in_scaleX, in_scaleY, in_scaleZ);
+
+            point origin = isconnected(in_origin)
+                ? in_origin
+                : point(in_originX, in_originY, in_originZ);
+
+            val = maya_billow_noise_3d(
+                Pp,
+                noise_scale,
+                origin,
                 in_amplitude,
                 in_time,
                 in_frequencyRatio,
@@ -293,8 +376,8 @@ shader as_maya_noise
         }
         else if (in_noiseType == 2)
         {
-            val = maya_waves_noise_2d(
-                coords,
+            val = maya_waves_noise_3d(
+                Pp,
                 in_amplitude,
                 in_time,
                 in_frequencyRatio,
@@ -305,14 +388,14 @@ shader as_maya_noise
         }
         else if (in_noiseType == 3)
         {
-            coords += (vector) noise("uperlin", coords * 0.2) * 2.5;
+            Pp += (vector) noise("uperlin", Pp * 0.2) * 2.5;
             
             if (in_inflection)
             {
                 val = maya_turbulence(
-                    coords,
+                    Pp,
                     in_time,
-                    filter_size,
+                    filter_width,
                     in_amplitude,
                     in_depthMax,
                     in_frequencyRatio,
@@ -321,9 +404,9 @@ shader as_maya_noise
             else
             {
                 val = maya_fBm(
-                    coords,
+                    Pp,
                     in_time,
-                    filter_size,
+                    filter_width,
                     in_amplitude,
                     in_depthMax,
                     in_frequencyRatio,
@@ -335,9 +418,9 @@ shader as_maya_noise
             if (in_inflection)
             {
                 val = maya_turbulence(
-                    coords,
+                    Pp,
                     in_time + time,
-                    filter_size,
+                    filter_width,
                     in_amplitude,
                     in_depthMax,
                     in_frequencyRatio,
@@ -346,9 +429,9 @@ shader as_maya_noise
             else
             {
                 val = fBm(
-                    coords,
+                    Pp,
                     in_time + time,
-                    filter_size,
+                    filter_width,
                     in_amplitude,
                     in_depthMax,
                     in_frequencyRatio,
@@ -368,6 +451,12 @@ shader as_maya_noise
 
         out_outAlpha = clamp(val + in_threshold, 0.0, 1.0);
         out_outColor = color(out_outAlpha);
+
+        if (!in_wrap && in_blend)
+        {
+            out_outColor = mix(in_defaultColor, out_outColor, box_blending);
+            out_outAlpha *= box_blending;
+        }
 
         maya_colorBalance(
             in_colorGain,

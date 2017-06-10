@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,57 +26,82 @@
 // THE SOFTWARE.
 //
 
-// Ref: $MAYA_LOCATION/docs/Nodes/cloud.html
+// Ref: $MAYA_LOCATION/docs/Nodes/marble.html
 
-#include "appleseed/fractal/as_fractal_helpers.h"
-#include "appleseed/math/as_math_helpers.h"
+#include "appleseed/fractal/as_noise_helpers.h"
 #include "appleseed/maya/as_maya_helpers.h"
 #include "appleseed/maya/as_maya_transform_helpers.h"
 
-shader as_maya_cloud
+shader as_maya_marble
 [[
-    string as_maya_node_name = "cloud"
+    string as_maya_node_name = "marble"
 ]]
 (
-    color in_color1 = color(0)
+    color in_fillerColor = color(1)
     [[
-        string as_maya_attribute_name = "color1",
-        string label = "Color 1",
-        string page = "Cloud Attributes"
+        string as_maya_attribute_name = "fillerColor",
+        string as_maya_attribute_short_name = "fc",
+        string label = "Filler Color",
+        string page = "Marble Attributes"
     ]],
-    color in_color2 = color(1)
+    color in_veinColor = color(0.298, 0.0, 0.0)
     [[
-        string as_maya_attribute_name = "color2",
-        string label = "Color 2",
-        string page = "Cloud Attributes"
+        string as_maya_attribute_name = "veinColor",
+        string as_maya_attribute_short_name = "vc",
+        string label = "Vein Color",
+        string page = "Marble Attributes"
+    ]],
+    float in_veinWidth = 0.1
+    [[
+        string as_maya_attribute_name = "veinWidth",
+        string as_maya_attribute_short_name = "vw",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Vein Width",
+        string page = "Marble Attributes"
+    ]],
+    float in_diffusion = 0.5
+    [[
+        string as_maya_attribute_name = "diffusion",
+        string as_maya_attribute_short_name = "di",
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Diffusion",
+        string page = "Marble Attributes"
     ]],
     float in_contrast = 0.5
     [[
         string as_maya_attribute_name = "contrast",
+        string as_maya_attribute_short_name = "c",
+        float softmin = 0.0,
+        float softmax = 1.0,
         string label = "Contrast",
-        string page = "Cloud Attributes"
+        string page = "Marble Attributes"
     ]],
-    float in_amplitude = 1.0
+    float in_amplitude = 1.5
     [[
         string as_maya_attribute_name = "amplitude",
-        string label = "Amplitude",
+        string as_maya_attribute_short_name = "a",
         float min = 0.0,
-        float max = 5.0,
-        float slidermin = 0.0,
-        float slidermax = 5.0,
-        string page = "Cloud Attributes"
+        float softmax = 1.5,
+        string label = "Amplitude",
+        string page = "Noise Attributes"
     ]],
-    float in_depth[2] = {0.0, 0.8}
+    float in_ratio = 0.707
     [[
-        string as_maya_attribute_name = "depth",
-        string label = "XY Recursion Depth",
-        string page = "Cloud Attributes"
+        string as_maya_attribute_name = "ratio",
+        string as_maya_attribute_short_name = "ra",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Ratio",
+        string page = "Noise Attributes"
     ]],
     vector in_ripples = vector(1)
     [[
         string as_maya_attribute_name = "ripples",
+        string as_maya_attribute_short_name = "r",
         string label = "Ripples",
-        string page = "Cloud Attributes"
+        string page = "Noise Attributes"
     ]],
     float in_ripplesX = 1.0
     [[
@@ -93,46 +118,18 @@ shader as_maya_cloud
         string as_maya_attribute_name = "ripplesZ",
         string widget = "null"
     ]],
-    int in_softEdges = 1
+    float in_depth[2] = {0.0, 20.0}
     [[
-        string as_maya_attribute_name = "softEdges",
-        string label = "Soft Edges",
-        string widget = "checkBox",
-        string page = "Cloud Attributes"
+        string as_maya_attribute_name = "depth",
+        string as_maya_attribute_short_name = "d",
+        string label = "Depth",
+        string page = "Noise Attributes"
     ]],
-    float in_edgeThresh = 1.0
-    [[
-        string as_maya_attribute_name = "edgeThresh",
-        string label = "Edge Threshold",
-        string page = "Cloud Attributes"
-    ]],
-    float in_centerThresh = 0.0
-    [[
-        string as_maya_attribute_name = "centerThresh",
-        string label = "Center Threshold",
-        string page = "Cloud Attributes"
-    ]],
-    float in_transpRange = 0.5
-    [[
-        string as_maya_attribute_name = "transpRange",
-        string label = "Transparency Range",
-        string page = "Cloud Attributes"
-    ]],
-    float in_ratio = 0.707
-    [[
-        string as_maya_attribute_name = "ratio",
-        string label = "Ratio",
-        string page = "Cloud Attributes"
-    ]],
-    normal in_normalCamera = N
-    [[
-        string as_maya_attribute_name = "normalCamera",
-        string label = "Surface Normal",
-        string widget = "null"
-    ]],
+
     point in_refPointCamera = P
     [[
         string as_maya_attribute_name = "refPointCamera",
+        string as_maya_attribute_short_name = "rpc",
         string label = "Surface Point",
         string widget = "null"
     ]],
@@ -150,12 +147,14 @@ shader as_maya_cloud
     output color out_outColor = color(0)
     [[
         string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
         string label = "Output Color",
         string widget = "null"
     ]],
     output float out_outAlpha = 1.0
     [[
         string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
         string label = "Output Alpha",
         string widget = "null"
     ]]
@@ -181,17 +180,8 @@ shader as_maya_cloud
         out_outAlpha = maya_luminance(out_outColor);
         return;
     }
-    else if (in_amplitude > 0.0)
+    else
     {
-        // The ripples parameter seems to use only the separate X,Y,Z
-        // fields, and the vector type only when a connection exists.
-        
-        vector ripples = isconnected(in_ripples)
-            ? in_ripples
-            : vector(in_ripplesX, in_ripplesY, in_ripplesZ);
-
-        Pp *= ripples * 0.5; // frequency seems cut off by half roughly
-
         float filter_width = 0.0;
 
         if (in_filter > 0.0)
@@ -200,51 +190,60 @@ shader as_maya_cloud
             filter_width += in_filterOffset;
         }
 
-        float weight = fBm(
-            Pp,
-            0.0, // time
-            filter_width,
-            in_amplitude,
-            (int) max(in_depth[0], in_depth[1]),
-            2.17, // lacunarity default
-            in_ratio);
+        float iterate = clamp(-log2(filter_width), in_depth[0], in_depth[1]);
+        int octaves = (int) floor(iterate);
 
-        weight = weight * 0.5 + 0.5;
-        weight = clamp(weight, 0, 1);
+        // Essentially a fBm with an extra iteration for fract(iterate).
+        
+        vector ripples = isconnected(in_ripples)
+            ? in_ripples
+            : vector(in_ripplesX, in_ripplesY, in_ripplesZ);
 
-        color color_blend = mix(in_color2, in_color1, in_contrast);
+        vector xyz = ripples * 0.75; // better match
+        float amp = 1.0, sum = 0.0;
 
-        out_outColor = mix(in_color2, color_blend, 1.0 - weight);
-        out_outAlpha = weight;
-
-        float cos_wo = dot(normalize(-I), normalize(in_normalCamera));
-
-        float facing_ratio = (cos_wo >= EPS)
-            ? sqrt(1.0 - max(EPS, sqr(cos_wo)))
-            : cos_wo;
-
-        float threshold = mix(in_centerThresh, in_edgeThresh, facing_ratio);
-
-        float transparency_range = max(EPS, in_transpRange);
-        float density = (threshold - out_outAlpha) / transparency_range;
-
-        if (density > 1.0)
+        for (int i = 0; i < octaves + 1; ++i)
         {
-            out_outAlpha = 1.0;
+            if (i == octaves)
+            {
+                amp *= iterate - octaves;
+            }
+            if (amp == 0.0)
+            {
+                break;
+            }
+
+            sum += amp * filtered_snoise(Pp * xyz + 0.5, 0, filter_width);
+            amp *= in_ratio;
+            xyz *= 2;
         }
-        else if (density < -10.0)
+
+        float vein = in_amplitude * sum * (1.0 - sqr(in_ratio)) + Pp[1];
+        vein -= floor(vein);
+
+        if (vein >= 0.5)
         {
-            out_outAlpha = 0.0;
+            vein = 1.0 - vein;
+        }
+        vein *= 2.0;
+
+        if (vein < in_veinWidth)
+        {
+            out_outColor = in_veinColor;
         }
         else
         {
-            out_outAlpha = clamp(exp(density), 0.0, 1.0);
+            float diffusion = max(0.01, in_diffusion);
+            vein = vein - in_veinWidth;
+            vein = (1.0 - in_contrast) * exp(-vein / diffusion);
+
+            color A = max(0, in_fillerColor * (1.0 - vein));
+            color B = max(0, in_veinColor * vein);
+
+            out_outColor = A + B;
         }
-        
-        if (in_softEdges)
-        {
-            out_outColor *= 1.0 - out_outAlpha;
-        }
+
+        out_outAlpha = maya_luminance(out_outColor);
 
         if (!in_wrap && in_blend)
         {
@@ -261,22 +260,7 @@ shader as_maya_cloud
             in_invert,
             in_alphaIsLuminance,
             out_outColor,
-            out_outAlpha);
-    }
-    else
-    {
-        out_outColor = mix(in_color2, in_color1, in_contrast);
-        out_outAlpha = 1.0 - 0.5 * in_contrast;
-
-        maya_colorBalance(
-            in_colorGain,
-            in_colorOffset,
-            in_defaultColor,
-            in_alphaGain,
-            in_alphaOffset,
-            in_invert,
-            in_alphaIsLuminance,
-            out_outColor,
-            out_outAlpha);
+            out_outAlpha
+            );
     }
 }

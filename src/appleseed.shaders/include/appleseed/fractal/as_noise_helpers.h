@@ -34,6 +34,20 @@
 #define NOISE_CUBE_MASK     31
 #define NOISE_TABLE_SIZE    65536
 
+#define NOISE_TABLE_OFFSET      \
+        4591.4587373,           \
+        7862.765425343,         \
+        3987.83537,             \
+        1234.6778,              \
+        4387.876733,            \
+        5243.89786798,          \
+        5476.326984679,         \
+        4326.9689689,           \
+        2098.4323678,           \
+        9798.50896724561,       \
+        7487.31456896,          \
+        8679.23356864786
+
 #include "appleseed/fractal/as_noise_tables.h"
 #include "appleseed/maya/as_maya_helpers.h"
 
