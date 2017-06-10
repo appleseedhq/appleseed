@@ -65,6 +65,7 @@ const Vector3d& BSDFSampler::get_point() const
 
 bool BSDFSampler::contributes_to_light_sampling() const
 {
+    // There cannot be any contribution for purely specular BSDFs.
     return !m_bsdf.is_purely_specular();
 }
 
