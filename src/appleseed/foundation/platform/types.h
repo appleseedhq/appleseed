@@ -33,13 +33,9 @@
 // appleseed.foundation headers.
 #include "foundation/platform/arch.h"
 
-// Make sure that uintptr_t is defined on all platforms.
-#if defined _MSC_VER
+// Standard headers.
 #include <cstddef>
-#endif
-#if defined __GNUC__
-#include <stdint.h>
-#endif
+#include <cstdint>
 
 namespace foundation
 {
