@@ -167,24 +167,6 @@ namespace foundation
 
 
 //
-// Define the APPLESEED_FINAL qualifier as a synonym for the 'final' keyword in C++11.
-//
-
-// Visual C++: supported since Visual Studio 2012.
-#if _MSC_VER >= 1700
-    #define APPLESEED_FINAL final
-
-// gcc: supported since gcc 4.7 when C++11 mode is enabled.
-#elif defined __GNUC__ && __cplusplus >= 201103
-    #define APPLESEED_FINAL final
-
-// Other compilers: the APPLESEED_FINAL qualifier has no effect.
-#else
-    #define APPLESEED_OVERRIDE
-#endif
-
-
-//
 //  A macro to provide the compiler with branch prediction information.
 //  Usage: replace if (cond) with if (APPLESEED_LIKELY(cond))
 //  Warning: programmers are notoriously bad at guessing this.
