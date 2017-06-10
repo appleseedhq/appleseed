@@ -550,7 +550,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                 next_ray.m_has_differentials = true;
             }
 
-            // Path is not terminated.
+            // Path survived the checks.
             terminate_path = false;
         }
         else
@@ -566,6 +566,9 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                 ray.m_time,
                 ray.m_flags,
                 ray.m_depth);
+
+            // Path survived the checks.
+            terminate_path = false;
         }
 
         if (terminate_path) break;
