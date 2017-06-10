@@ -111,8 +111,9 @@ class HenyeyPhaseFunction
 
         // Ensure that extinction spectrum has unit norm, which is neccessary for distance sampling.
         const float extinction_norm = max_value(values->m_precomputed.m_normalized_extinction);
-        values->m_precomputed.m_normalized_extinction /= extinction_norm;
-        values->m_precomputed.m_extinction_multiplier *= extinction_norm;
+        if (extinction_norm < +1e-06)
+            values->m_precomputed.m_normalized_extinction /= extinction_norm;
+        values->m_precomputed.m_extinction_multiplier = extinction_norm;
     }
 
     virtual float sample_distance(
